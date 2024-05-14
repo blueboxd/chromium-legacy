@@ -100,7 +100,7 @@ std::string GaiaScreen::GetResultString(Result result) {
     case Result::ENTER_QUICK_START:
       return "EnterQuickStart";
     case Result::QUICK_START_ONGOING:
-      return "QuickStartOngoing";
+      return BaseScreen::kNotApplicable;
   }
 }
 
@@ -113,6 +113,16 @@ GaiaScreen::GaiaScreen(base::WeakPtr<TView> view,
 
 GaiaScreen::~GaiaScreen() {
   backlights_forced_off_observation_.Reset();
+}
+
+bool GaiaScreen::MaybeSkip(WizardContext& context) {
+  // Continue QuickStart flow if there is an ongoing setup.
+  if (context.quick_start_setup_ongoing) {
+    exit_callback_.Run(Result::QUICK_START_ONGOING);
+    return true;
+  }
+
+  return false;
 }
 
 void GaiaScreen::LoadOnlineGaia() {
@@ -195,12 +205,6 @@ void GaiaScreen::ShowImpl() {
   if (!view_)
     return;
 
-  // Continue QuickStart flow if there is an ongoing setup.
-  if (context()->quick_start_setup_ongoing) {
-    exit_callback_.Run(Result::QUICK_START_ONGOING);
-    return;
-  }
-
   if (!backlights_forced_off_observation_.IsObserving()) {
     backlights_forced_off_observation_.Observe(
         Shell::Get()->backlights_forced_off_setter());
@@ -212,17 +216,12 @@ void GaiaScreen::ShowImpl() {
   context()->skip_to_login_for_tests = false;
   view_->Show();
 
-  // QuickStart should not be enabled for Demo mode or OS Install flows
-  if (features::IsOobeQuickStartEnabled() &&
-      !DemoSetupController::IsOobeDemoSetupFlowInProgress() &&
-      !switches::IsOsInstallAllowed()) {
-    // Determine the QuickStart button visibility
-    WizardController::default_controller()
-        ->quick_start_controller()
-        ->DetermineEntryPointVisibility(
-            base::BindOnce(&GaiaScreen::SetQuickStartButtonVisibility,
-                           weak_ptr_factory_.GetWeakPtr()));
-  }
+  // Determine the QuickStart button visibility
+  WizardController::default_controller()
+      ->quick_start_controller()
+      ->DetermineEntryPointVisibility(
+          base::BindOnce(&GaiaScreen::SetQuickStartButtonVisibility,
+                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GaiaScreen::HideImpl() {
@@ -320,7 +319,7 @@ void GaiaScreen::OnGetAuthFactorsConfiguration(
   bool is_gaia_password_configured = true;
   if (error.has_value()) {
     LOG(WARNING) << "Failed to get auth factors configuration, code "
-                 << error->get_cryptohome_code()
+                 << error->get_cryptohome_error()
                  << ", skip fetching reauth request token";
   } else {
     const auto& config = user_context->GetAuthFactorsConfiguration();

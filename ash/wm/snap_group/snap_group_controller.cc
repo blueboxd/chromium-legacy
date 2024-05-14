@@ -4,6 +4,8 @@
 
 #include "ash/wm/snap_group/snap_group_controller.h"
 
+#include <vector>
+
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -76,18 +78,16 @@ bool SnapGroupController::AddSnapGroup(aura::Window* window1,
   std::unique_ptr<SnapGroup> snap_group =
       std::make_unique<SnapGroup>(window1, window2);
 
-  for (Observer& observer : observers_) {
-    observer.OnSnapGroupCreated();
-  }
-
-  // Bounds have to be refreshed after snap group is created together with
-  // divider. Otherwise, the snap ratio will not be precisely calculated see
-  // `GetCurrentSnapRatio()` in window_state.cc.
-  snap_group->RefreshWindowBoundsInSnapGroup(/*add_snap_group=*/true);
-
   window_to_snap_group_map_.emplace(window1, snap_group.get());
   window_to_snap_group_map_.emplace(window2, snap_group.get());
+
+  // Bounds have to be refreshed after snap group is created together with
+  // divider and added to `window_to_snap_group_map_`. Otherwise, the snap ratio
+  // will not be precisely calculated see `GetCurrentSnapRatio()` in
+  // window_state.cc.
+  auto* snap_group_ptr = snap_group.get();
   snap_groups_.push_back(std::move(snap_group));
+  snap_group_ptr->RefreshWindowBoundsInSnapGroup(/*on_snap_group_added=*/true);
 
   return true;
 }
@@ -100,18 +100,14 @@ bool SnapGroupController::RemoveSnapGroup(SnapGroup* snap_group) {
         base::Contains(window_to_snap_group_map_, window2));
 
   if (!Shell::Get()->IsInTabletMode()) {
-    snap_group->RefreshWindowBoundsInSnapGroup(/*add_snap_group=*/false);
+    snap_group->RefreshWindowBoundsInSnapGroup(/*on_snap_group_added=*/false);
   }
 
   window_to_snap_group_map_.erase(window1);
   window_to_snap_group_map_.erase(window2);
   snap_group->StopObservingWindows();
 
-  for (Observer& observer : observers_) {
-    observer.OnSnapGroupRemoved(snap_group);
-  }
-
-  base::EraseIf(snap_groups_, base::MatchesUniquePtr(snap_group));
+  std::erase_if(snap_groups_, base::MatchesUniquePtr(snap_group));
 
   return true;
 }
@@ -146,14 +142,6 @@ bool SnapGroupController::CanEnterOverview() const {
   return can_enter_overview_;
 }
 
-void SnapGroupController::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void SnapGroupController::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void SnapGroupController::MinimizeTopMostSnapGroup() {
   auto* topmost_snap_group = GetTopmostSnapGroup();
   topmost_snap_group->MinimizeWindows();
@@ -186,17 +174,34 @@ void SnapGroupController::RestoreTopmostSnapGroup() {
   }
 }
 
+void SnapGroupController::OnOverviewModeStarting() {
+  for (const auto& snap_group : snap_groups_) {
+    snap_group->HideDivider();
+  }
+}
+
 void SnapGroupController::OnOverviewModeEnded() {
-  RestoreSnapGroups();
+  for (const auto& snap_group : snap_groups_) {
+    snap_group->ShowDivider();
+  }
 }
 
 void SnapGroupController::OnDisplayTabletStateChanged(
     display::TabletState state) {
-  if (state != display::TabletState::kExitingTabletMode) {
-    return;
+  switch (state) {
+    case display::TabletState::kInClamshellMode:
+    case display::TabletState::kEnteringTabletMode:
+      break;
+    case display::TabletState::kInTabletMode:
+      OnTabletModeStarted();
+      break;
+    case display::TabletState::kExitingTabletMode:
+      // TODO(b/327269057): Consider moving split view transition here.
+      // Currently it's handled by `MaybeEndSplitViewAndOverview()` in
+      // `TabletModeWindowManager`.
+      RestoreSnapGroups();
+      break;
   }
-
-  RestoreSnapGroups();
 }
 
 aura::Window* SnapGroupController::RetrieveTheOtherWindowInSnapGroup(
@@ -235,6 +240,13 @@ void SnapGroupController::RestoreSnapState(SnapGroup* snap_group) {
   base::AutoReset<bool> bypass(&can_enter_overview_, false);
   split_view_controller->SnapWindow(window1, SnapPosition::kPrimary);
   split_view_controller->SnapWindow(window2, SnapPosition::kSecondary);
+}
+
+void SnapGroupController::OnTabletModeStarted() {
+  // TODO(b/327269057): Define tablet <-> clamshell transition.
+  while (!snap_groups_.empty()) {
+    RemoveSnapGroup(snap_groups_.back().get());
+  }
 }
 
 }  // namespace ash

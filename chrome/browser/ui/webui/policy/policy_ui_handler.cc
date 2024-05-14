@@ -152,6 +152,9 @@ void PolicyUIHandler::AddCommonLocalizedStringsToSource(
       {"reloadPoliciesDone", IDS_POLICY_RELOAD_POLICIES_DONE},
       {"copyPoliciesDone", IDS_COPY_POLICIES_DONE},
       {"exportPoliciesDone", IDS_EXPORT_POLICIES_JSON_DONE},
+      {"sort", IDS_POLICY_TABLE_COLUMN_SORT},
+      {"sortAscending", IDS_POLICY_TABLE_COLUMN_SORT_ASCENDING},
+      {"sortDescending", IDS_POLICY_TABLE_COLUMN_SORT_DESCENDING},
 #if !BUILDFLAG(IS_CHROMEOS)
       {"reportUploading", IDS_REPORT_UPLOADING},
       {"reportUploaded", IDS_REPORT_UPLOADED},
@@ -175,9 +178,15 @@ void PolicyUIHandler::RegisterMessages() {
   policy_value_and_status_observation_.Observe(
       policy_value_and_status_aggregator_.get());
 
-  schema_registry_observation_.Observe(Profile::FromWebUI(web_ui())
-                                           ->GetPolicySchemaRegistryService()
-                                           ->registry());
+  const auto* policy_schema_registry_service =
+      Profile::FromWebUI(web_ui())->GetPolicySchemaRegistryService();
+  // In case web_ui() represents an OffTheRecordProfileImpl object (like in a
+  // guest session), there's no PolicySchemaRegistryService, so nothing to
+  // observe there. The profile has no policies anyway.
+  if (policy_schema_registry_service) {
+    schema_registry_observation_.Observe(
+        policy_schema_registry_service->registry());
+  }
 
   web_ui()->RegisterMessageCallback(
       "exportPoliciesJSON",
@@ -403,19 +412,35 @@ void PolicyUIHandler::HandleUploadReport(const base::Value::List& args) {
       enterprise_reporting::CloudProfileReportingServiceFactory::GetForProfile(
           Profile::FromWebUI(web_ui()))
           ->report_scheduler();
-  CHECK(profile_report_scheduler);
 
-  if (report_scheduler) {
+  if (report_scheduler && profile_report_scheduler) {
     const auto on_report_uploaded = base::BarrierClosure(
         2, base::BindOnce(&PolicyUIHandler::OnReportUploaded,
                           weak_factory_.GetWeakPtr(), callback_id));
     report_scheduler->UploadFullReport(on_report_uploaded);
     profile_report_scheduler->UploadFullReport(on_report_uploaded);
-  } else {
+    return;
+  }
+
+  if (report_scheduler) {
+    report_scheduler->UploadFullReport(
+        base::BindOnce(&PolicyUIHandler::OnReportUploaded,
+                       weak_factory_.GetWeakPtr(), callback_id));
+    return;
+  }
+
+  if (profile_report_scheduler) {
     profile_report_scheduler->UploadFullReport(
         base::BindOnce(&PolicyUIHandler::OnReportUploaded,
                        weak_factory_.GetWeakPtr(), callback_id));
+    return;
   }
+
+  // TODO(335639255): Consider disable the button when neither report
+  // scheduler are ready. On at least show an error message to ask people
+  // to try again.
+  OnReportUploaded(callback_id);
+
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 

@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/events/wheel_event.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -25,7 +26,9 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
+#include "third_party/blink/renderer/core/inspector/inspector_network_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_page_agent.h"
+#include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -288,6 +291,7 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
   case CSSSelector::k##pseudoType:        \
     return #pseudoType;
     DEFINE_STRING_MAPPING(PseudoActiveViewTransition)
+    DEFINE_STRING_MAPPING(PseudoActiveViewTransitionType)
     DEFINE_STRING_MAPPING(PseudoUnknown)
     DEFINE_STRING_MAPPING(PseudoEmpty)
     DEFINE_STRING_MAPPING(PseudoFirstChild)
@@ -424,9 +428,6 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoUnparsed)
 #undef DEFINE_STRING_MAPPING
   }
-
-  NOTREACHED();
-  return "";
 }
 
 String UrlForFrame(LocalFrame* frame) {
@@ -479,13 +480,24 @@ const char* NotStreamedReasonString(ScriptStreamer::NotStreamingReason reason) {
       return "not a javascript module";
     case ScriptStreamer::NotStreamingReason::kLoadingCancelled:
       return "loading was cancelled";
+    case ScriptStreamer::NotStreamingReason::
+        kBackgroundResponseProcessorWillBeUsed:
+      return "Backgound streaming will be used";
+    case ScriptStreamer::NotStreamingReason::kNonJavascriptModuleBackground:
+      return "not a javascript module (background)";
+    case ScriptStreamer::NotStreamingReason::kHasCodeCacheBackground:
+      return "script has code-cache available (background)";
+    case ScriptStreamer::NotStreamingReason::kScriptTooSmallBackground:
+      return "script too small (background)";
+    case ScriptStreamer::NotStreamingReason::kErrorOccurredBackground:
+      return "an error occurred (background)";
+    case ScriptStreamer::NotStreamingReason::kEncodingNotSupportedBackground:
+      return "encoding not supported (background)";
     case ScriptStreamer::NotStreamingReason::kDidntTryToStartStreaming:
     case ScriptStreamer::NotStreamingReason::kAlreadyLoaded:
     case ScriptStreamer::NotStreamingReason::kInvalid:
-      NOTREACHED();
+      NOTREACHED_NORETURN();
   }
-  NOTREACHED();
-  return "";
 }
 
 }  // namespace
@@ -517,27 +529,20 @@ const char inspector_schedule_style_invalidation_tracking_event::kRuleSet[] =
     "ruleset";
 
 const char* ResourcePriorityString(ResourceLoadPriority priority) {
-  const char* priority_string = nullptr;
   switch (priority) {
     case ResourceLoadPriority::kVeryLow:
-      priority_string = "VeryLow";
-      break;
+      return "VeryLow";
     case ResourceLoadPriority::kLow:
-      priority_string = "Low";
-      break;
+      return "Low";
     case ResourceLoadPriority::kMedium:
-      priority_string = "Medium";
-      break;
+      return "Medium";
     case ResourceLoadPriority::kHigh:
-      priority_string = "High";
-      break;
+      return "High";
     case ResourceLoadPriority::kVeryHigh:
-      priority_string = "VeryHigh";
-      break;
+      return "VeryHigh";
     case ResourceLoadPriority::kUnresolved:
-      break;
+      return nullptr;
   }
-  return priority_string;
 }
 
 const char* FetchPriorityString(
@@ -549,8 +554,6 @@ const char* FetchPriorityString(
       return "low";
     case mojom::blink::FetchPriorityHint::kHigh:
       return "high";
-    default:
-      NOTREACHED();
   }
 }
 
@@ -831,32 +834,43 @@ void inspector_change_resource_priority_event::Data(
 namespace {
 String GetRenderBlockingStringFromBehavior(
     RenderBlockingBehavior render_blocking_behavior) {
-  String render_blocking_string;
   switch (render_blocking_behavior) {
     case RenderBlockingBehavior::kUnset:
-      break;
+      return String();
     case RenderBlockingBehavior::kBlocking:
-      render_blocking_string = "blocking";
-      break;
+      return "blocking";
     case RenderBlockingBehavior::kNonBlocking:
-      render_blocking_string = "non_blocking";
-      break;
+      return "non_blocking";
     case RenderBlockingBehavior::kNonBlockingDynamic:
-      render_blocking_string = "dynamically_injected_non_blocking";
-      break;
+      return "dynamically_injected_non_blocking";
     case RenderBlockingBehavior::kInBodyParserBlocking:
-      render_blocking_string = "in_body_parser_blocking";
-      break;
+      return "in_body_parser_blocking";
     case RenderBlockingBehavior::kPotentiallyBlocking:
-      render_blocking_string = "potentially_blocking";
-      break;
-    default:
-      NOTREACHED();
+      return "potentially_blocking";
   }
-  return render_blocking_string;
 }
 
 }  // namespace
+
+void SetInitiator(Document* document,
+                  FetchInitiatorInfo initiator_info,
+                  perfetto::TracedDictionary& dict) {
+  auto initiator =
+      InspectorNetworkAgent::BuildInitiatorObject(document, initiator_info, 0);
+  auto initiatorDict = dict.AddDictionary("initiator");
+
+  initiatorDict.Add("fetchType", initiator_info.name);
+  initiatorDict.Add("type", initiator->getType());
+  if (initiator->hasColumnNumber()) {
+    initiatorDict.Add("columnNumber", initiator->getColumnNumber(-1));
+  }
+  if (initiator->hasLineNumber()) {
+    initiatorDict.Add("lineNumber", initiator->getLineNumber(-1));
+  }
+  if (initiator->hasUrl()) {
+    initiatorDict.Add("url", initiator->getUrl(""));
+  }
+}
 
 void inspector_send_request_event::Data(
     perfetto::TracedValue context,
@@ -889,6 +903,8 @@ void inspector_send_request_event::Data(
   dict.Add("fetchPriorityHint",
            FetchPriorityString(request.GetFetchPriorityHint()));
   SetCallStack(execution_context->GetIsolate(), dict);
+  SetInitiator(frame ? frame->GetDocument() : nullptr,
+               resource_loader_options.initiator_info, dict);
 }
 
 void inspector_change_render_blocking_behavior_event::Data(
@@ -1010,6 +1026,8 @@ void inspector_receive_response_event::Data(perfetto::TracedValue context,
     auto info = dict.AddDictionary("staticRoutingInfo");
     info.Add("ruleIdMatched",
              response.GetServiceWorkerRouterInfo()->RuleIdMatched());
+    info.Add("matchedSourceType",
+             response.GetServiceWorkerRouterInfo()->MatchedSourceType());
   }
 
   SetHeaders(dict.AddItem("headers"), response.HttpHeaderFields());
@@ -1330,6 +1348,23 @@ void inspector_produce_script_cache_event::Data(
   auto dict = std::move(context).WriteDictionary();
   FillLocation(dict, url, text_position);
   dict.Add("producedCacheSize", cache_size);
+}
+
+void inspector_handle_post_message_event::Data(
+    perfetto::TracedValue context,
+    ExecutionContext* execution_context,
+    const MessageEvent& message_event) {
+  auto dict = std::move(context).WriteDictionary();
+  dict.Add("traceId", base::NumberToString(message_event.GetTraceId()));
+}
+
+void inspector_schedule_post_message_event::Data(
+    perfetto::TracedValue context,
+    ExecutionContext* execution_context,
+    uint64_t trace_id) {
+  auto dict = std::move(context).WriteDictionary();
+  dict.Add("traceId", base::NumberToString(trace_id));
+  SetCallStack(execution_context->GetIsolate(), dict);
 }
 
 void inspector_function_call_event::Data(

@@ -20,6 +20,7 @@
 #include "chromeos/ash/components/nearby/presence/nearby_presence_service.h"
 #include "chromeos/ash/services/nearby/public/cpp/nearby_process_manager.h"
 #include "chromeos/ash/services/nearby/public/mojom/nearby_connections.mojom.h"
+#include "chromeos/ash/services/nearby/public/mojom/nearby_connections_types.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
@@ -78,12 +79,11 @@ class NearbyConnectionsManagerImpl
       base::WeakPtr<BandwidthUpgradeListener> listener) override;
   void UpgradeBandwidth(const std::string& endpoint_id) override;
   base::WeakPtr<NearbyConnectionsManager> GetWeakPtr() override;
-  void ConnectV3(ash::nearby::presence::NearbyPresenceService::PresenceDevice
-                     remote_presence_device,
+  void ConnectV3(nearby::presence::PresenceDevice remote_presence_device,
                  DataUsage data_usage,
                  NearbyConnectionCallback callback) override;
-  void DisconnectV3(ash::nearby::presence::NearbyPresenceService::PresenceDevice
-                        remote_presence_device) override;
+  void DisconnectV3(
+      nearby::presence::PresenceDevice remote_presence_device) override;
 
  private:
   using AdvertisingOptions = nearby::connections::mojom::AdvertisingOptions;
@@ -109,6 +109,7 @@ class NearbyConnectionsManagerImpl
   using InitialConnectionInfoV3Ptr =
       nearby::connections::mojom::InitialConnectionInfoV3Ptr;
   using PayloadListenerV3 = nearby::connections::mojom::PayloadListenerV3;
+  using BandwidthInfoPtr = nearby::connections::mojom::BandwidthInfoPtr;
   using Status = nearby::connections::mojom::Status;
   using Medium = nearby::connections::mojom::Medium;
 
@@ -139,14 +140,17 @@ class NearbyConnectionsManagerImpl
   // ConnectionListenerV3:
   void OnConnectionInitiated(PresenceDevicePtr remote_device,
                              InitialConnectionInfoV3Ptr info) override;
+  void OnConnectionResult(PresenceDevicePtr remote_device,
+                          Status status) override;
   void OnDisconnected(PresenceDevicePtr remote_device) override;
+  void OnBandwidthChanged(PresenceDevicePtr remote_device,
+                          BandwidthInfoPtr bandwidth_info) override;
 
   void OnConnectionTimedOut(const std::string& endpoint_id);
   void OnConnectionRequested(const std::string& endpoint_id,
                              ConnectionsStatus status);
   void OnConnectionRequestedV3(
-      ash::nearby::presence::NearbyPresenceService::PresenceDevice
-          remote_presence_device,
+      nearby::presence::PresenceDevice remote_presence_device,
       ConnectionsStatus status);
   void OnNearbyProcessStopped(
       ash::nearby::NearbyProcessManager::NearbyProcessShutdownReason
@@ -177,6 +181,9 @@ class NearbyConnectionsManagerImpl
   // A map of endpoint_id to NearbyConnection.
   base::flat_map<std::string, std::unique_ptr<NearbyConnectionImpl>>
       connections_;
+  // A map of endpoint_id to NearbyConnection for V3 connections.
+  base::flat_map<std::string, std::unique_ptr<NearbyConnectionImpl>>
+      connections_v3_;
   // A map of endpoint_id to timers that timeout a connection request.
   base::flat_map<std::string, std::unique_ptr<base::OneShotTimer>>
       connect_timeout_timers_;
@@ -194,6 +201,12 @@ class NearbyConnectionsManagerImpl
   base::flat_set<std::string> on_bandwidth_changed_endpoint_ids_;
   // For metrics. A map of endpoint_id to current upgraded medium.
   base::flat_map<std::string, Medium> current_upgraded_mediums_;
+  // For metrics. A set of endpoint_ids for which we have received the first
+  // OnBandwidthChanged V3 event.
+  base::flat_set<std::string> on_bandwidth_changed_endpoint_ids_v3_;
+  // For metrics. A map of endpoint_id to current upgraded medium for V3
+  // connections.
+  base::flat_map<std::string, Medium> current_upgraded_mediums_v3_;
 
   const std::string service_id_;
 

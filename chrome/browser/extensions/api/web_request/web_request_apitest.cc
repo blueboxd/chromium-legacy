@@ -105,8 +105,8 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/service_worker/service_worker_task_queue.h"
 #include "extensions/browser/service_worker/service_worker_test_utils.h"
-#include "extensions/browser/service_worker_task_queue.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/features/feature.h"
@@ -848,9 +848,6 @@ enum class ProfileMode {
 };
 
 struct ARTestParams {
-  ARTestParams(ProfileMode profile_mode, ContextType context_type)
-      : profile_mode(profile_mode), context_type(context_type) {}
-
   ProfileMode profile_mode;
   ContextType context_type;
 };
@@ -1030,8 +1027,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
       << message_;
 }
 
-// TODO(crbug.com/1450976): test is flaky on Mac11.
-#if BUILDFLAG(IS_MAC)
+// TODO: crbug.com/1450976 - Re-enable tests on Mac and Lacros.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_WebRequestCORSWithExtraHeaders \
   DISABLED_WebRequestCORSWithExtraHeaders
 #else
@@ -2002,7 +1999,8 @@ class ExtensionWebRequestApiWebTransportTest
 
 // Test that the webRequest events are dispatched for the WebTransport
 // handshake.
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiWebTransportTest, Main) {
+// TODO(crbug.com/326122304): Re-enable this test
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiWebTransportTest, DISABLED_Main) {
   ASSERT_TRUE(RunTest("test_webtransport.html")) << message_;
 }
 
@@ -3364,9 +3362,6 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
 }
 
 struct SWTestParams {
-  SWTestParams(bool extra_info_spec, ContextType context_type)
-      : extra_info_spec(extra_info_spec), context_type(context_type) {}
-
   // This parameter is for opt_extraInfoSpec passed to addEventListener.
   // 'blocking' and 'requestHeaders' if it's false, and 'extraHeaders' in
   // addition to them if it's true.
@@ -4149,9 +4144,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 }
 
 struct SWBTestParams {
-  SWBTestParams(bool extra_info_spec, ContextType context_type)
-      : extra_info_spec(extra_info_spec), context_type(context_type) {}
-
   // The parameter is for opt_extraInfoSpec passed to addEventListener.
   // 'blocking' if it's false, and 'extraHeaders' in addition to them
   // if it's true.
@@ -5095,9 +5087,6 @@ enum class RedirectType {
 };
 
 struct RITestParams {
-  RITestParams(RedirectType redirect_type, ContextType context_type)
-      : redirect_type(redirect_type), context_type(context_type) {}
-
   RedirectType redirect_type;
   ContextType context_type;
 };

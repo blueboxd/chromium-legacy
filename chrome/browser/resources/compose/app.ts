@@ -26,7 +26,7 @@ import {Debouncer, microTask, PolymerElement, timeOut} from '//resources/polymer
 
 import {ComposeAppAnimator} from './animations/app_animator.js';
 import {getTemplate} from './app.html.js';
-import type {ComposeDialogCallbackRouter, ComposeResponse, ConfigurableParams, PartialComposeResponse, StyleModifiers} from './compose.mojom-webui.js';
+import type {ComposeResponse, ComposeUntrustedDialogCallbackRouter, ConfigurableParams, PartialComposeResponse, StyleModifiers} from './compose.mojom-webui.js';
 import {CloseReason, Length, Tone, UserFeedback} from './compose.mojom-webui.js';
 import type {ComposeApiProxy} from './compose_api_proxy.js';
 import {ComposeApiProxyImpl} from './compose_api_proxy.js';
@@ -239,10 +239,10 @@ export class ComposeAppElement extends ComposeAppElementBase {
   private bodyResizeObserver_: ResizeObserver;
   enableAnimations: boolean;
   private eventTracker_: EventTracker = new EventTracker();
-  private router_: ComposeDialogCallbackRouter = this.apiProxy_.getRouter();
+  private router_: ComposeUntrustedDialogCallbackRouter =
+      this.apiProxy_.getRouter();
   private showFirstRunDialog_: boolean;
   private showMainAppDialog_: boolean;
-  private showSavedStateDialog_: boolean;
   private showMSBBDialog_: boolean;
   private shouldShowMSBBDialog_: boolean;
   private editedInput_: string;
@@ -253,7 +253,7 @@ export class ComposeAppElement extends ComposeAppElementBase {
   private isEditSubmitEnabled_: boolean;
   private isSubmitEnabled_: boolean;
   private loading_: boolean;
-  private response_: ComposeResponse|undefined;
+  private response_: ComposeResponse|null;
   private partialResponse_: PartialComposeResponse|undefined;
   private saveAppStateDebouncer_: Debouncer;
   private scrollCheckDebouncer_: Debouncer;
@@ -265,7 +265,6 @@ export class ComposeAppElement extends ComposeAppElementBase {
   private undoEnabled_: boolean;
   private userHasModifiedState_: boolean = false;
   private lastTriggerElement_: TriggerElement;
-  private savedStateNotificationTimeout_: number;
   private outputComplete_: boolean = true;
   private hasOutput_: boolean = false;
   private displayedText_: string;
@@ -314,10 +313,6 @@ export class ComposeAppElement extends ComposeAppElementBase {
         this.saveComposeAppState_();
       }
     });
-    // For detecting when to show the Saved State Notification.
-    this.eventTracker_.add(window, 'blur', () => {
-      this.onWindowBlur_();
-    });
     this.bodyResizeObserver_ = new ResizeObserver(() => {
       this.scrollCheckDebouncer_ = Debouncer.debounce(
           this.scrollCheckDebouncer_, timeOut.after(20), () => {
@@ -352,7 +347,6 @@ export class ComposeAppElement extends ComposeAppElementBase {
 
       this.showMainAppDialog_ =
           initialState.freComplete && initialState.msbbState;
-      this.showSavedStateDialog_ = false;
 
       if (initialState.initialInput) {
         this.input_ = initialState.initialInput;
@@ -580,44 +574,13 @@ export class ComposeAppElement extends ComposeAppElementBase {
     this.apiProxy_.openComposeSettings();
   }
 
-  private onWindowBlur_() {
-    if (!loadTimeData.getBoolean('enableSavedStateNotification')) {
-      return;
-    }
-
-    // When pressing tab from the last focusable element on the page, the
-    // browser seems to reset focus onto document.body and cause a temporary
-    // window blur. Do not show the saved state notification in this case
-    // since this allows users to hit tab from the last focusable element
-    // to loop focus back to the first focusable element.
-    if (document.activeElement === document.body) {
-      return;
-    }
-
-    // Show Saved State Notification if losing focus from the main app dialog.
-    if (this.showMainAppDialog_) {
-      this.showMainAppDialog_ = false;
-      this.showSavedStateDialog_ = true;
-
-      this.savedStateNotificationTimeout_ = setTimeout(() => {
-        this.apiProxy_.closeUi(CloseReason.kLostFocus);
-      }, loadTimeData.getInteger('savedStateTimeoutInMilliseconds'));
-    }
-  }
-
-  private onSavedStateDialogClick_() {
-    clearTimeout(this.savedStateNotificationTimeout_);
-    this.showMainAppDialog_ = true;
-    this.showSavedStateDialog_ = false;
-  }
-
   private compose_(inputEdited: boolean = false) {
     assert(this.$.textarea.validate());
     assert(this.submitted_);
     this.$.body.scrollTop = 0;
     this.loading_ = true;
     this.animator_.transitionInLoading();
-    this.response_ = undefined;
+    this.response_ = null;
     this.partialResponse_ = undefined;
     this.saveComposeAppState_();  // Ensure state is saved before compose call.
     this.apiProxy_.compose(this.input_, inputEdited);
@@ -630,7 +593,7 @@ export class ComposeAppElement extends ComposeAppElementBase {
     const resultHeight = this.$.resultContainer.offsetHeight;
     this.$.body.scrollTop = 0;
     this.loading_ = true;
-    this.response_ = undefined;
+    this.response_ = null;
     this.partialResponse_ = undefined;
     this.saveComposeAppState_();  // Ensure state is saved before compose call.
     this.apiProxy_.rewrite(style);
@@ -763,6 +726,8 @@ export class ComposeAppElement extends ComposeAppElementBase {
         return this.i18n('errorRequestThrottled');
       case ComposeStatus.kOffline:
         return this.i18n('errorOffline');
+      case ComposeStatus.kRequestTimeout:
+        return this.i18n('errorTryAgainLater');
       case ComposeStatus.kClientError:
       case ComposeStatus.kMisconfiguration:
       case ComposeStatus.kServerError:

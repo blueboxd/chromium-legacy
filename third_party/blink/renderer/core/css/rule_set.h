@@ -29,7 +29,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/cascade_layer.h"
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
-#include "third_party/blink/renderer/core/css/css_position_fallback_rule.h"
+#include "third_party/blink/renderer/core/css/css_position_try_rule.h"
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/resolver/media_query_result.h"
 #include "third_party/blink/renderer/core/css/robin_hood_map.h"
@@ -86,9 +86,9 @@ enum class ValidPropertyFilter : unsigned {
   // ::target-text. Only properties listed in
   // https://drafts.csswg.org/css-pseudo-4/#highlight-styling are valid.
   kHighlight,
-  // Defined in @try block of a @position-fallback rule. Only properties listed
-  // in https://drafts.csswg.org/css-anchor-position-1/#fallback-rule are valid.
-  kPositionFallback,
+  // Defined in a @position-try rule. Only properties listed in
+  // https://drafts.csswg.org/css-anchor-position-1/#fallback-rule are valid.
+  kPositionTry,
 };
 
 class CSSSelector;
@@ -466,9 +466,11 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
       const {
     return view_transition_rules_;
   }
-  const HeapVector<Member<StyleRulePositionFallback>>& PositionFallbackRules()
-      const {
-    return position_fallback_rules_;
+  const HeapVector<Member<StyleRulePositionTry>>& PositionTryRules() const {
+    return position_try_rules_;
+  }
+  const HeapVector<Member<StyleRuleFunction>>& FunctionRules() const {
+    return function_rules_;
   }
   base::span<const RuleData> SlottedPseudoElementRules() const {
     return slotted_pseudo_element_rules_;
@@ -588,7 +590,8 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   void AddCounterStyleRule(StyleRuleCounterStyle*);
   void AddFontPaletteValuesRule(StyleRuleFontPaletteValues*);
   void AddFontFeatureValuesRule(StyleRuleFontFeatureValues*);
-  void AddPositionFallbackRule(StyleRulePositionFallback*);
+  void AddPositionTryRule(StyleRulePositionTry*);
+  void AddFunctionRule(StyleRuleFunction*);
   void AddViewTransitionRule(StyleRuleViewTransition*);
 
   bool MatchMediaForAddRules(const MediaQueryEvaluator& evaluator,
@@ -701,8 +704,9 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   HeapVector<Member<StyleRuleKeyframes>> keyframes_rules_;
   HeapVector<Member<StyleRuleProperty>> property_rules_;
   HeapVector<Member<StyleRuleCounterStyle>> counter_style_rules_;
-  HeapVector<Member<StyleRulePositionFallback>> position_fallback_rules_;
+  HeapVector<Member<StyleRulePositionTry>> position_try_rules_;
   HeapVector<MediaQuerySetResult> media_query_set_results_;
+  HeapVector<Member<StyleRuleFunction>> function_rules_;
 
   // Whether there is a ruleset bucket for rules with a selector on
   // the style attribute (which is rare, but allowed). If so, the caller

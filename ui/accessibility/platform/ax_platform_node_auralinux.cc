@@ -2458,12 +2458,19 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
 }
 
 void AXPlatformNodeAuraLinux::SetDocumentParentOnFrameIfNecessary() {
-  if (GetAtkRole() != ATK_ROLE_DOCUMENT_WEB)
+  if (GetRole() != ax::mojom::Role::kRootWebArea) {
     return;
+  }
 
   if (!GetDelegate()->IsWebContent())
     return;
 
+  // If there is a parent, then this is not the root document.
+  if (GetDelegate()->node()->GetUnignoredParent()) {
+    return;
+  }
+
+  // Get the ATK parent, which will cross over into the UI hierarchy.
   AtkObject* parent_atk_object = GetParent();
   AXPlatformNodeAuraLinux* parent =
       AXPlatformNodeAuraLinux::FromAtkObject(parent_atk_object);
@@ -2685,12 +2692,9 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
     case ax::mojom::Role::kDateTime:
       return ATK_ROLE_DATE_EDITOR;
     case ax::mojom::Role::kDefinition:
-    case ax::mojom::Role::kDescriptionListDetail:
       return ATK_ROLE_DESCRIPTION_VALUE;
     case ax::mojom::Role::kDescriptionList:
       return ATK_ROLE_DESCRIPTION_LIST;
-    case ax::mojom::Role::kDescriptionListTerm:
-      return ATK_ROLE_DESCRIPTION_TERM;
     case ax::mojom::Role::kDetails:
       return ATK_ROLE_PANEL;
     case ax::mojom::Role::kDialog:
@@ -3032,7 +3036,9 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
     case ax::mojom::Role::kKeyboard:
     case ax::mojom::Role::kNone:
       return ATK_ROLE_REDUNDANT_OBJECT;
+    case ax::mojom::Role::kDescriptionListTermDeprecated:
     case ax::mojom::Role::kPreDeprecated:
+    case ax::mojom::Role::kDescriptionListDetailDeprecated:
       NOTREACHED_NORETURN();
   }
 }

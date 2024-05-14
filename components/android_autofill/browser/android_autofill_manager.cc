@@ -23,9 +23,8 @@ namespace autofill {
 
 using base::TimeTicks;
 
-AndroidAutofillManager::AndroidAutofillManager(AutofillDriver* driver,
-                                               AutofillClient* client)
-    : AutofillManager(driver, client) {
+AndroidAutofillManager::AndroidAutofillManager(AutofillDriver* driver)
+    : AutofillManager(driver) {
   StartNewLoggingSession();
   autofill_manager_observation.Observe(this);
 }
@@ -170,13 +169,6 @@ void AndroidAutofillManager::Reset() {
   StartNewLoggingSession();
 }
 
-void AndroidAutofillManager::OnContextMenuShownInField(
-    const FormGlobalId& form_global_id,
-    const FieldGlobalId& field_global_id) {
-  // Not relevant for Android. Only called via context menu in Desktop.
-  NOTREACHED();
-}
-
 void AndroidAutofillManager::OnFieldTypesDetermined(AutofillManager& manager,
                                                     FormGlobalId form,
                                                     FieldTypeSource source) {
@@ -215,12 +207,17 @@ FieldTypeGroup AndroidAutofillManager::ComputeFieldTypeGroupForField(
 
 void AndroidAutofillManager::FillOrPreviewForm(
     mojom::ActionPersistence action_persistence,
-    const FormData& form,
+    FormData form,
     FieldTypeGroup field_type_group,
     const url::Origin& triggered_origin) {
   DCHECK_EQ(action_persistence, mojom::ActionPersistence::kFill);
-  driver().ApplyFormAction(mojom::ActionType::kFill, action_persistence, form,
-                           triggered_origin, {});
+  std::erase_if(form.fields, [&](const FormFieldData& field) {
+    // The renderer doesn't fill such fields, and therefore they can be removed
+    // from here to reduce IPC traffic and avoid accidental filling.
+    return !field.is_autofilled || field.value.empty();
+  });
+  driver().ApplyFormAction(mojom::FormActionType::kFill, action_persistence,
+                           form, triggered_origin, {});
   // We do not call OnAutofillProfileOrCreditCardFormFilled() because WebView
   // doesn't have AutofillProfile or CreditCard.
   if (auto* logger = GetEventFormLogger(field_type_group)) {

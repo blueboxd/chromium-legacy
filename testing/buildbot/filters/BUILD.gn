@@ -56,12 +56,6 @@ source_set("blink_web_tests_filter") {
   data = [ "//testing/buildbot/filters/cft.blink_web_tests.filter" ]
 }
 
-source_set("cr23_pixel_browser_tests_filters") {
-  testonly = true
-
-  data = [ "//testing/buildbot/filters/win.win-rel-cft.cr23_pixel_browser_tests.filter" ]
-}
-
 source_set("browser_tests_filters") {
   testonly = true
 
@@ -71,9 +65,6 @@ source_set("browser_tests_filters") {
     "//testing/buildbot/filters/chromeos.msan.browser_tests.oobe_negative.filter",
     "//testing/buildbot/filters/chromeos.msan.browser_tests.oobe_positive.filter",
     "//testing/buildbot/filters/code_coverage.browser_tests.filter",
-    "//testing/buildbot/filters/cr23.linux.cr23_browser_tests.filter",
-    "//testing/buildbot/filters/cr23.mac.cr23_browser_tests.filter",
-    "//testing/buildbot/filters/cr23.win.cr23_browser_tests.filter",
     "//testing/buildbot/filters/fuchsia.browser_tests.filter",
     "//testing/buildbot/filters/linux-chromeos.browser_tests.pixel_tests.filter",
     "//testing/buildbot/filters/linux-chromeos.browser_tests.require_lacros.filter",
@@ -119,11 +110,11 @@ source_set("chromeos_filters") {
   data = [
     "//testing/buildbot/filters/chromeos.browser_tests.filter",
     "//testing/buildbot/filters/chromeos.amd64-generic.gl_tests_passthrough.filter",
-    "//testing/buildbot/filters/chromeos.kevin.gl_tests_validating.filter",
     "//testing/buildbot/filters/chromeos.gl_unittests.filter",
     "//testing/buildbot/filters/chromeos.media_unittests.filter",
     "//testing/buildbot/filters/chromeos.services_unittests.filter",
     "//testing/buildbot/filters/chromeos.unit_tests.filter",
+    "//testing/buildbot/filters/chromeos.volteer.gl_tests_passthrough.filter",
   ]
 }
 
@@ -131,6 +122,7 @@ source_set("components_unittests_filters") {
   testonly = true
 
   data = [
+    "//testing/buildbot/filters/android.mte.components_unittests.filter",
     "//testing/buildbot/filters/linux-lacros.components_unittests.filter",
     "//testing/buildbot/filters/rust.components_unittests.filter",
   ]
@@ -221,6 +213,7 @@ source_set("content_unittests_filters") {
   testonly = true
 
   data = [
+    "//testing/buildbot/filters/android.mte.content_unittests.filter",
     "//testing/buildbot/filters/fuchsia.lsan.content_unittests.filter",
     "//testing/buildbot/filters/webrtc.content_unittests.filter",
   ]
@@ -232,6 +225,7 @@ source_set("crashpad_tests_filters") {
   data = [
     "//testing/buildbot/filters/android.arm64_proguard_rel.crashpad_tests.filter",
     "//testing/buildbot/filters/android.emulator.crashpad_tests.filter",
+    "//testing/buildbot/filters/android.mte.crashpad_tests.filter",
     "//testing/buildbot/filters/android.pie_tot.crashpad_tests.filter",
   ]
 }
@@ -333,6 +327,7 @@ source_set("gl_tests_filters") {
     "//testing/buildbot/filters/android.pie_tot.gl_tests.filter",
     "//testing/buildbot/filters/android.samsung_a13.gl_tests.filter",
     "//testing/buildbot/filters/android.samsung_a23.gl_tests.filter",
+    "//testing/buildbot/filters/linux.uhd_770.gl_tests_passthrough.filter",
   ]
 }
 source_set("gl_unittests_filters") {
@@ -341,6 +336,7 @@ source_set("gl_unittests_filters") {
   data = [
     "//testing/buildbot/filters/android.emulator_12.gl_unittests.filter",
     "//testing/buildbot/filters/win.win_arm64.gl_unittests.filter",
+    "//testing/buildbot/filters/win.amd.5500xt.gl_unittests.filter",
   ]
 }
 
@@ -349,9 +345,6 @@ source_set("interactive_ui_tests_filters") {
 
   data = [
     "//testing/buildbot/filters/accessibility-linux.interactive_ui_tests.filter",
-    "//testing/buildbot/filters/cr23.linux.cr23_interactive_ui_tests.filter",
-    "//testing/buildbot/filters/cr23.mac.cr23_interactive_ui_tests.filter",
-    "//testing/buildbot/filters/cr23.win.cr23_interactive_ui_tests.filter",
     "//testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter",
     "//testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
     "//testing/buildbot/filters/linux.linux-rel-cft.interactive_ui_tests.filter",
@@ -383,6 +376,7 @@ source_set("linux_trusty_rel_browser_tests_filters") {
 source_set("media_unittests_filters") {
   data = [
     "//testing/buildbot/filters/android.emulator.media_unittests.filter",
+    "//testing/buildbot/filters/android.mte.media_unittests.filter",
     "//testing/buildbot/filters/fuchsia.debug.media_unittests.filter",
   ]
 }

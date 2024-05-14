@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element_with_state.h"
-#include "third_party/blink/renderer/core/html/forms/html_options_collection.h"
 #include "third_party/blink/renderer/core/html/forms/option_list.h"
 #include "third_party/blink/renderer/core/html/forms/type_ahead.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -45,6 +44,7 @@ class ExceptionState;
 class HTMLHRElement;
 class HTMLOptGroupElement;
 class HTMLOptionElement;
+class HTMLOptionsCollection;
 class LayoutUnit;
 class PopupMenu;
 class SelectType;
@@ -203,16 +203,30 @@ class CORE_EXPORT HTMLSelectElement final
   bool HandleInvokeInternal(HTMLElement& invoker,
                             AtomicString& action) override;
 
-  // SlottedButton and SlottedDatalist return the first child <button> or
-  // <datalist> in the light dom tree. If this select is in a state where the
-  // <button> or <datalist> won't be rendered, such as a <select multiple>, then
-  // nullptr will be returned.
+  // SlottedButton returns the first child <button> in the light dom tree. If
+  // this select is in a state where the <button> can't be rendered, such as a
+  // <select multiple>, then nullptr will be returned. Since this method is
+  // called during style calculation to compute internal pseudo-classes, the
+  // value of the appearance property is not checked.
   HTMLButtonElement* SlottedButton() const;
-  HTMLDataListElement* SlottedDatalist() const;
+
+  // FirstChildDatalist returns the first child <datalist> of this <select>,
+  // which will get slotted into the UA shadowroot. It is kept up to date with a
+  // mutation observer, which calls RecalcFirstChildDatalist. This doesn't just
+  // look at the slot's assigned nodes because we can't run slot assignment in
+  // some cases when we need to find the datalist.
+  HTMLDataListElement* FirstChildDatalist() const;
+  void RecalcFirstChildDatalist();
+
+  // This method returns true if the computed style is appearance:bikeshed and
+  // the SelectType supports alternate rendering based on appearance:bikeshed.
+  bool IsAppearanceBikeshed() const;
 
   void DefaultEventHandler(Event&) override;
 
  private:
+  class SelectMutationObserver;
+
   mojom::blink::FormControlType FormControlType() const override;
   const AtomicString& FormControlTypeAsString() const override;
 
@@ -314,6 +328,8 @@ class CORE_EXPORT HTMLSelectElement final
   Member<HTMLSlotElement> option_slot_;
   Member<HTMLOptionElement> last_on_change_option_;
   Member<HTMLOptionElement> suggested_option_;
+  Member<SelectMutationObserver> mutation_observer_;
+  Member<HTMLDataListElement> first_child_datalist_;
   bool uses_menu_list_ = true;
   bool is_multiple_;
   mutable bool should_recalc_list_items_;

@@ -237,8 +237,8 @@ class ConversionContext {
 
     // These fields are never nullptr.
     //
-    // Excluded from being `raw_ptr` for visible regressions in
-    // MotionMark (crbug.com/1495275#c116).
+    // RAW_PTR_EXCLUSION: Performance reasons: regressions in MotionMark
+    // (crbug.com/1495275#c116).
     RAW_PTR_EXCLUSION const TransformPaintPropertyNode* transform;
     RAW_PTR_EXCLUSION const ClipPaintPropertyNode* clip;
     RAW_PTR_EXCLUSION const EffectPaintPropertyNode* effect;
@@ -283,7 +283,7 @@ class ConversionContext {
     // UpdateSaveLayerBounds().
     size_t save_layer_id;
     // The transform space when the SaveLayer[Alpha]Op was emitted.
-    raw_ptr<const TransformPaintPropertyNode, ExperimentalRenderer> transform;
+    raw_ptr<const TransformPaintPropertyNode> transform;
     // Records the bounds of the effect which initiated the entry. Note that
     // the effect is not |effect| (which is the previous effect), but the
     // |current_effect_| when this entry is the top of the stack.

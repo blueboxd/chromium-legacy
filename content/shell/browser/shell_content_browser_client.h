@@ -142,7 +142,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       content::PosixFileDescriptorInfo* mappings) override;
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) ||
         // BUILDFLAG(IS_ANDROID)
-  device::GeolocationManager* GetGeolocationManager() override;
+  device::GeolocationSystemPermissionManager*
+  GetGeolocationSystemPermissionManager() override;
   void OnNetworkServiceCreated(
       network::mojom::NetworkService* network_service) override;
   void ConfigureNetworkContextParams(
@@ -164,9 +165,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   // Turns on features via permissions policy for Isolated App
   // Web Platform Tests.
   std::optional<blink::ParsedPermissionsPolicy>
-  GetPermissionsPolicyForIsolatedWebApp(
-      content::BrowserContext* browser_context,
-      const url::Origin& app_origin) override;
+  GetPermissionsPolicyForIsolatedWebApp(WebContents* web_contents,
+                                        const url::Origin& app_origin) override;
 
   void CreateFeatureListAndFieldTrials();
 

@@ -9,8 +9,8 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.RootMatchers.isDialog;
+import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.thatMatchesFirst;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
@@ -25,7 +25,6 @@ import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
@@ -38,17 +37,19 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
+import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.settings.AccountManagementFragment;
+import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
-import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
@@ -65,24 +66,22 @@ import java.util.List;
 /** Tests {@link AccountManagementFragment}. */
 @RunWith(ParameterizedRunner.class)
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
+@DoNotBatch(reason = "TODO(crbug.com/1168590): SyncTestRule doesn't support batching.")
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class AccountManagementFragmentTest {
     private static final String CHILD_ACCOUNT_NAME =
             AccountManagerTestRule.generateChildEmail("account@gmail.com");
 
-    public final SettingsActivityTestRule<AccountManagementFragment> mSettingsActivityTestRule =
+    private final SyncTestRule mSyncTestRule = new SyncTestRule();
+
+    private final SettingsActivityTestRule<AccountManagementFragment> mSettingsActivityTestRule =
             new SettingsActivityTestRule<>(AccountManagementFragment.class);
 
-    public final ChromeTabbedActivityTestRule mActivityTestRule =
-            new ChromeTabbedActivityTestRule();
-
     // SettingsActivity has to be finished before the outer CTA can be finished or trying to finish
-    // CTA won't work.
+    // CTA won't work (SyncTestRule extends CTARule).
     @Rule
     public final RuleChain mRuleChain =
-            RuleChain.outerRule(mActivityTestRule).around(mSettingsActivityTestRule);
-
-    @Rule public final SigninTestRule mSigninTestRule = new SigninTestRule();
+            RuleChain.outerRule(mSyncTestRule).around(mSettingsActivityTestRule);
 
     @Rule
     public final ChromeRenderTestRule mRenderTestRule =
@@ -117,16 +116,11 @@ public class AccountManagementFragmentTest {
                 isMigrateAccountManagementSettingsToCapabilitiesFlagEnabled);
     }
 
-    @Before
-    public void setUp() {
-        mActivityTestRule.startMainActivityOnBlankPage();
-    }
-
     @Test
     @MediumTest
     @Feature("RenderTest")
     public void testAccountManagementFragmentView() throws Exception {
-        mSigninTestRule.addTestAccountThenSigninAndEnableSync();
+        mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         mSettingsActivityTestRule.startSettingsActivity();
         View view = mSettingsActivityTestRule.getFragment().getView();
         onViewWaiting(allOf(is(view), isDisplayed()));
@@ -137,8 +131,8 @@ public class AccountManagementFragmentTest {
     @MediumTest
     @Feature("RenderTest")
     public void testSignedInAccountShownOnTop() throws Exception {
-        mSigninTestRule.addAccount("testSecondary@gmail.com");
-        mSigninTestRule.addTestAccountThenSigninAndEnableSync();
+        mSyncTestRule.addAccount("testSecondary@gmail.com");
+        mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         mSettingsActivityTestRule.startSettingsActivity();
         View view = mSettingsActivityTestRule.getFragment().getView();
         onViewWaiting(allOf(is(view), isDisplayed()));
@@ -149,12 +143,13 @@ public class AccountManagementFragmentTest {
     @MediumTest
     public void testAccountManagementViewForChildAccountWithNonDisplayableAccountEmail()
             throws Exception {
+        final SigninTestRule signinTestRule = mSyncTestRule.getSigninTestRule();
         AccountInfo accountInfo =
-                mSigninTestRule.addAccount(
+                signinTestRule.addAccount(
                         CHILD_ACCOUNT_NAME,
                         SigninTestRule.NON_DISPLAYABLE_EMAIL_ACCOUNT_CAPABILITIES);
-        mSigninTestRule.waitForSeeding();
-        mSigninTestRule.waitForSignin(accountInfo);
+        signinTestRule.waitForSeeding();
+        signinTestRule.waitForSignin(accountInfo);
         mSettingsActivityTestRule.startSettingsActivity();
 
         // Force update the fragment so that NON_DISPLAYABLE_EMAIL_ACCOUNT_CAPABILITIES is
@@ -171,7 +166,11 @@ public class AccountManagementFragmentTest {
         TestThreadUtils.runOnUiThreadBlocking(mSettingsActivityTestRule.getFragment()::update);
         View view = mSettingsActivityTestRule.getFragment().getView();
         onViewWaiting(allOf(is(view), isDisplayed()));
-        onView(thatMatchesFirst(withText(accountInfo.getFullName()))).check(matches(isDisplayed()));
+        onView(
+                        allOf(
+                                isDescendantOfA(withId(android.R.id.list_container)),
+                                withText(accountInfo.getFullName())))
+                .check(matches(isDisplayed()));
         onView(withText(accountInfo.getEmail())).check(doesNotExist());
     }
 
@@ -180,15 +179,16 @@ public class AccountManagementFragmentTest {
     public void
             testAccountManagementViewForChildAccountWithNonDisplayableAccountEmailWithEmptyDisplayName()
                     throws Exception {
+        final SigninTestRule signinTestRule = mSyncTestRule.getSigninTestRule();
         CoreAccountInfo accountInfo =
-                mSigninTestRule.addAccount(
+                signinTestRule.addAccount(
                         CHILD_ACCOUNT_NAME,
                         "",
                         "",
                         null,
                         SigninTestRule.NON_DISPLAYABLE_EMAIL_ACCOUNT_CAPABILITIES);
-        mSigninTestRule.waitForSeeding();
-        mSigninTestRule.waitForSignin(accountInfo);
+        signinTestRule.waitForSeeding();
+        signinTestRule.waitForSignin(accountInfo);
         mSettingsActivityTestRule.startSettingsActivity();
         CriteriaHelper.pollUiThread(
                 () -> {
@@ -202,7 +202,10 @@ public class AccountManagementFragmentTest {
         View view = mSettingsActivityTestRule.getFragment().getView();
         onViewWaiting(allOf(is(view), isDisplayed()));
         onView(withText(accountInfo.getEmail())).check(doesNotExist());
-        onView(thatMatchesFirst(withText(R.string.default_google_account_username)))
+        onView(
+                        allOf(
+                                isDescendantOfA(withId(android.R.id.list_container)),
+                                withText(R.string.default_google_account_username)))
                 .check(matches(isDisplayed()));
     }
 
@@ -215,12 +218,13 @@ public class AccountManagementFragmentTest {
             boolean isMigrateAccountManagementSettingsToCapabilitiesFlagEnabled) throws Exception {
         final AccountCapabilitiesBuilder accountCapabilitiesBuilder =
                 new AccountCapabilitiesBuilder();
+        final SigninTestRule signinTestRule = mSyncTestRule.getSigninTestRule();
         CoreAccountInfo primarySupervisedAccount =
-                mSigninTestRule.addAccount(
+                signinTestRule.addAccount(
                         CHILD_ACCOUNT_NAME,
                         accountCapabilitiesBuilder.setIsSubjectToParentalControls(true).build());
-        mSigninTestRule.waitForSeeding();
-        mSigninTestRule.waitForSignin(primarySupervisedAccount);
+        signinTestRule.waitForSeeding();
+        signinTestRule.waitForSignin(primarySupervisedAccount);
 
         mSettingsActivityTestRule.startSettingsActivity();
         CriteriaHelper.pollUiThread(
@@ -246,13 +250,14 @@ public class AccountManagementFragmentTest {
             boolean isMigrateAccountManagementSettingsToCapabilitiesFlagEnabled) throws Exception {
         final AccountCapabilitiesBuilder accountCapabilitiesBuilder =
                 new AccountCapabilitiesBuilder();
+        final SigninTestRule signinTestRule = mSyncTestRule.getSigninTestRule();
         CoreAccountInfo primarySupervisedAccount =
-                mSigninTestRule.addAccount(
+                signinTestRule.addAccount(
                         CHILD_ACCOUNT_NAME,
                         accountCapabilitiesBuilder.setIsSubjectToParentalControls(true).build());
-        mSigninTestRule.addAccount("account@school.com");
-        mSigninTestRule.waitForSeeding();
-        mSigninTestRule.waitForSignin(primarySupervisedAccount);
+        signinTestRule.addAccount("account@school.com");
+        signinTestRule.waitForSeeding();
+        signinTestRule.waitForSignin(primarySupervisedAccount);
 
         mSettingsActivityTestRule.startSettingsActivity();
         CriteriaHelper.pollUiThread(
@@ -272,7 +277,7 @@ public class AccountManagementFragmentTest {
     @Test
     @SmallTest
     public void testSignOutUserWithoutShowingSignOutDialog() {
-        mSigninTestRule.addTestAccountThenSignin();
+        mSyncTestRule.setUpAccountAndSignInForTesting();
         mSettingsActivityTestRule.startSettingsActivity();
 
         onView(withText(R.string.sign_out)).perform(click());
@@ -281,14 +286,15 @@ public class AccountManagementFragmentTest {
                         Assert.assertFalse(
                                 "Account should be signed out!",
                                 IdentityServicesProvider.get()
-                                        .getIdentityManager(Profile.getLastUsedRegularProfile())
+                                        .getIdentityManager(
+                                                ProfileManager.getLastUsedRegularProfile())
                                         .hasPrimaryAccount(ConsentLevel.SIGNIN)));
     }
 
     @Test
     @SmallTest
     public void showSignOutDialogBeforeSigningUserOut() {
-        mSigninTestRule.addTestAccountThenSigninAndEnableSync();
+        mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         mSettingsActivityTestRule.startSettingsActivity();
 
         onView(withText(R.string.sign_out_and_turn_off_sync)).perform(click());
@@ -301,42 +307,43 @@ public class AccountManagementFragmentTest {
     @SmallTest
     @EnableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
     public void testIdentityErrorCardShownForSignedInUsers() {
-        FakeSyncServiceImpl fakeSyncService =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
-                        () -> {
-                            FakeSyncServiceImpl fakeSyncServiceImpl = new FakeSyncServiceImpl();
-                            SyncServiceFactory.setInstanceForTesting(fakeSyncServiceImpl);
-                            return fakeSyncServiceImpl;
-                        });
         // Fake an identity error.
-        fakeSyncService.setRequiresClientUpgrade(true);
+        overrideSyncService().setRequiresClientUpgrade(true);
+
+        HistogramWatcher watchIdentityErrorCardShownHistogram =
+                HistogramWatcher.newSingleRecordWatcher(
+                        "Sync.IdentityErrorCard.ClientOutOfDate",
+                        SyncSettingsUtils.ErrorUiAction.SHOWN);
+
         // Sign in and open settings.
-        mSigninTestRule.addTestAccountThenSignin();
+        mSyncTestRule.setUpAccountAndSignInForTesting();
         mSettingsActivityTestRule.startSettingsActivity();
 
         onViewWaiting(allOf(is(mSettingsActivityTestRule.getFragment().getView()), isDisplayed()));
         onView(withId(R.id.identity_error_card)).check(matches(isDisplayed()));
+        watchIdentityErrorCardShownHistogram.assertExpected();
     }
 
     @Test
     @SmallTest
     @DisableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
     public void testIdentityErrorCardNotShownIfFeatureDisabled() {
-        FakeSyncServiceImpl fakeSyncService =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
-                        () -> {
-                            FakeSyncServiceImpl fakeSyncServiceImpl = new FakeSyncServiceImpl();
-                            SyncServiceFactory.setInstanceForTesting(fakeSyncServiceImpl);
-                            return fakeSyncServiceImpl;
-                        });
         // Fake an identity error.
-        fakeSyncService.setRequiresClientUpgrade(true);
+        overrideSyncService().setRequiresClientUpgrade(true);
+
+        // Expect no records.
+        HistogramWatcher watchIdentityErrorCardShownHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectNoRecords("Sync.IdentityErrorCard.ClientOutOfDate")
+                        .build();
+
         // Sign in and open settings.
-        mSigninTestRule.addTestAccountThenSignin();
+        mSyncTestRule.setUpAccountAndSignInForTesting();
         mSettingsActivityTestRule.startSettingsActivity();
 
         onViewWaiting(allOf(is(mSettingsActivityTestRule.getFragment().getView()), isDisplayed()));
         onView(withId(R.id.identity_error_card)).check(doesNotExist());
+        watchIdentityErrorCardShownHistogram.assertExpected();
     }
 
     @Test
@@ -344,7 +351,7 @@ public class AccountManagementFragmentTest {
     @EnableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
     public void testIdentityErrorCardNotShownIfNoError() {
         // Sign in and open settings.
-        mSigninTestRule.addTestAccountThenSignin();
+        mSyncTestRule.setUpAccountAndSignInForTesting();
         mSettingsActivityTestRule.startSettingsActivity();
 
         onViewWaiting(allOf(is(mSettingsActivityTestRule.getFragment().getView()), isDisplayed()));
@@ -355,77 +362,100 @@ public class AccountManagementFragmentTest {
     @SmallTest
     @EnableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
     public void testIdentityErrorCardNotShownForSyncingUsers() {
-        FakeSyncServiceImpl fakeSyncService =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
-                        () -> {
-                            FakeSyncServiceImpl fakeSyncServiceImpl = new FakeSyncServiceImpl();
-                            SyncServiceFactory.setInstanceForTesting(fakeSyncServiceImpl);
-                            return fakeSyncServiceImpl;
-                        });
         // Fake an identity error.
-        fakeSyncService.setRequiresClientUpgrade(true);
+        overrideSyncService().setRequiresClientUpgrade(true);
+
+        // Expect no records.
+        HistogramWatcher watchIdentityErrorCardShownHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectNoRecords("Sync.IdentityErrorCard.ClientOutOfDate")
+                        .build();
+
         // Sign in, enable sync and open settings.
-        mSigninTestRule.addTestAccountThenSigninAndEnableSync();
+        mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         mSettingsActivityTestRule.startSettingsActivity();
 
         onViewWaiting(allOf(is(mSettingsActivityTestRule.getFragment().getView()), isDisplayed()));
         onView(withId(R.id.identity_error_card)).check(doesNotExist());
+        watchIdentityErrorCardShownHistogram.assertExpected();
     }
 
     @Test
     @SmallTest
     @EnableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
     public void testIdentityErrorCardDynamicallyShownOnError() {
-        FakeSyncServiceImpl fakeSyncService =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
-                        () -> {
-                            FakeSyncServiceImpl fakeSyncServiceImpl = new FakeSyncServiceImpl();
-                            SyncServiceFactory.setInstanceForTesting(fakeSyncServiceImpl);
-                            return fakeSyncServiceImpl;
-                        });
+        FakeSyncServiceImpl fakeSyncService = overrideSyncService();
+
+        // Expect no records initially.
+        HistogramWatcher watchIdentityErrorCardShownHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectNoRecords("Sync.IdentityErrorCard.ClientOutOfDate")
+                        .build();
 
         // Sign in and open settings.
-        mSigninTestRule.addTestAccountThenSignin();
+        mSyncTestRule.setUpAccountAndSignInForTesting();
         mSettingsActivityTestRule.startSettingsActivity();
 
         onViewWaiting(allOf(is(mSettingsActivityTestRule.getFragment().getView()), isDisplayed()));
         // No error card exists right now.
         onView(withId(R.id.identity_error_card)).check(doesNotExist());
+        watchIdentityErrorCardShownHistogram.assertExpected();
+
+        watchIdentityErrorCardShownHistogram =
+                HistogramWatcher.newSingleRecordWatcher(
+                        "Sync.IdentityErrorCard.ClientOutOfDate",
+                        SyncSettingsUtils.ErrorUiAction.SHOWN);
 
         // Fake an identity error.
         fakeSyncService.setRequiresClientUpgrade(true);
 
         // Error card is showing now.
         onViewWaiting(withId(R.id.identity_error_card)).check(matches(isDisplayed()));
+        watchIdentityErrorCardShownHistogram.assertExpected();
     }
 
     @Test
     @SmallTest
     @EnableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
     public void testIdentityErrorCardDynamicallyHidden() {
-        FakeSyncServiceImpl fakeSyncService =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
-                        () -> {
-                            FakeSyncServiceImpl fakeSyncServiceImpl = new FakeSyncServiceImpl();
-                            SyncServiceFactory.setInstanceForTesting(fakeSyncServiceImpl);
-                            return fakeSyncServiceImpl;
-                        });
-
+        FakeSyncServiceImpl fakeSyncService = overrideSyncService();
         // Fake an identity error.
         fakeSyncService.setRequiresClientUpgrade(true);
 
+        HistogramWatcher watchIdentityErrorCardShownHistogram =
+                HistogramWatcher.newSingleRecordWatcher(
+                        "Sync.IdentityErrorCard.ClientOutOfDate",
+                        SyncSettingsUtils.ErrorUiAction.SHOWN);
+
         // Sign in and open settings.
-        mSigninTestRule.addTestAccountThenSignin();
+        mSyncTestRule.setUpAccountAndSignInForTesting();
         mSettingsActivityTestRule.startSettingsActivity();
 
         onViewWaiting(allOf(is(mSettingsActivityTestRule.getFragment().getView()), isDisplayed()));
         // The error card exists right now.
         onView(withId(R.id.identity_error_card)).check(matches(isDisplayed()));
+        watchIdentityErrorCardShownHistogram.assertExpected();
+
+        // Expect no records now.
+        watchIdentityErrorCardShownHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectNoRecords("Sync.IdentityErrorCard.ClientOutOfDate")
+                        .build();
 
         // Clear the error.
         fakeSyncService.setRequiresClientUpgrade(false);
 
         // No error card exists anymore.
         onView(withId(R.id.identity_error_card)).check(doesNotExist());
+        watchIdentityErrorCardShownHistogram.assertExpected();
+    }
+
+    private FakeSyncServiceImpl overrideSyncService() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> {
+                    FakeSyncServiceImpl fakeSyncService = new FakeSyncServiceImpl();
+                    SyncServiceFactory.setInstanceForTesting(fakeSyncService);
+                    return fakeSyncService;
+                });
     }
 }

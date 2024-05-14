@@ -131,7 +131,7 @@ void FakeDisplayDelegate::GetDisplays(GetDisplaysCallback callback) {
 void FakeDisplayDelegate::Configure(
     const std::vector<display::DisplayConfigurationParams>& config_requests,
     ConfigureCallback callback,
-    uint32_t modeset_flag) {
+    display::ModesetFlags modeset_flags) {
   bool config_success = true;
   for (const auto& config : config_requests) {
     bool request_success = false;
@@ -218,6 +218,12 @@ void FakeDisplayDelegate::SetPrivacyScreen(int64_t display_id,
                                            bool enabled,
                                            SetPrivacyScreenCallback callback) {
   std::move(callback).Run(false);
+}
+
+void FakeDisplayDelegate::GetSeamlessRefreshRates(
+    int64_t display_id,
+    GetSeamlessRefreshRatesCallback callback) const {
+  std::move(callback).Run(std::nullopt);
 }
 
 void FakeDisplayDelegate::AddObserver(NativeDisplayObserver* observer) {

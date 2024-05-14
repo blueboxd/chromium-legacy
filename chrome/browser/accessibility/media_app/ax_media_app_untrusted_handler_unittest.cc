@@ -12,16 +12,16 @@
 #include "chrome/browser/accessibility/accessibility_state_utils.h"
 #include "chrome/browser/accessibility/media_app/ax_media_app.h"
 #include "chrome/browser/accessibility/media_app/test/fake_ax_media_app.h"
-#include "chrome/browser/accessibility/media_app/test/test_helpers.h"
+#include "chrome/browser/accessibility/media_app/test/test_ax_media_app_untrusted_handler.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/services/screen_ai/buildflags/buildflags.h"
-#include "components/services/screen_ai/public/test/fake_screen_ai_annotator.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/scoped_accessibility_mode_override.h"
 #include "mojo/public/cpp/test_support/fake_message_dispatch_context.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
+#include "services/screen_ai/buildflags/buildflags.h"
+#include "services/screen_ai/public/test/fake_screen_ai_annotator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_mode.h"
 
@@ -158,7 +158,10 @@ TEST_F(AXMediaAppUntrustedHandlerTest, PageMetadataNoDuplicatePageIds) {
   EXPECT_TRUE(bad_message_observer.got_bad_message());
 }
 
-TEST_F(AXMediaAppUntrustedHandlerTest, PageMetadataWithDeleteAndUndoDelete) {
+// TODO(b/319536234): Move this test to browser_tests and implement the "undo
+// delete" action part.
+TEST_F(AXMediaAppUntrustedHandlerTest,
+       DISABLED_PageMetadataWithDeleteAndUndoDelete) {
   const std::vector<std::string> kPageIds{"pageX", "pageY", "pageZ"};
   const size_t kTestNumPages = kPageIds.size();
   std::vector<PageMetadataPtr> fakeMetadata;

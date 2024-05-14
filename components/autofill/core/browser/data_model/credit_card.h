@@ -246,7 +246,9 @@ class CreditCard : public AutofillDataModel {
   Issuer card_issuer() const { return card_issuer_; }
   void set_card_issuer(Issuer card_issuer) { card_issuer_ = card_issuer; }
   const std::string& issuer_id() const { return issuer_id_; }
-  void set_issuer_id(const std::string& issuer_id) { issuer_id_ = issuer_id; }
+  void set_issuer_id(const std::string_view issuer_id) {
+    issuer_id_ = std::string(issuer_id);
+  }
 
   // If the card numbers for |this| and |imported_card| match, and merging the
   // two wouldn't result in unverified data overwriting verified data,
@@ -464,6 +466,12 @@ class CreditCard : public AutofillDataModel {
   // Returns true when the card has rich card art, excluding any static card art
   // image.
   bool HasRichCardArtImageFromMetadata() const;
+
+  // Returns whether the card is from an issuer eligible for benefits and the
+  // user is in a benefits Chrome experiment for the card's issuer.
+  // TODO(crbug.com/330908547): Move IsCardEligibleForBenefits to the
+  // PaymentsDataManager.
+  bool IsCardEligibleForBenefits() const;
 
   const std::u16string& product_description() const {
     return product_description_;

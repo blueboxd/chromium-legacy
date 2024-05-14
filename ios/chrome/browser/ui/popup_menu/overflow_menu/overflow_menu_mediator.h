@@ -9,11 +9,9 @@
 
 #import "ios/chrome/browser/follow/model/follow_action_state.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_consumer.h"
+#import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_action_provider.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_swift.h"
 
-namespace bookmarks {
-class BookmarkModel;
-}
 namespace feature_engagement {
 class Tracker;
 }
@@ -26,7 +24,6 @@ class SyncService;
 
 @protocol ActivityServiceCommands;
 @protocol ApplicationCommands;
-@protocol SettingsCommands;
 class AuthenticationService;
 @protocol BookmarksCommands;
 @protocol BrowserCoordinatorCommands;
@@ -34,6 +31,7 @@ class BrowserPolicyConnectorIOS;
 @protocol FindInPageCommands;
 class FollowBrowserAgent;
 @protocol HelpCommands;
+class LegacyBookmarkModel;
 @protocol OverflowMenuCustomizationCommands;
 @class OverflowMenuOrderer;
 class OverlayPresenter;
@@ -44,6 +42,7 @@ class PrefService;
 class PromosManager;
 class ReadingListBrowserAgent;
 class ReadingListModel;
+@protocol SettingsCommands;
 class TabBasedIPHBrowserAgent;
 @protocol TextZoomCommands;
 class WebNavigationBrowserAgent;
@@ -51,7 +50,8 @@ class WebStateList;
 
 // Mediator for the overflow menu. This object is in charge of creating and
 // updating the items of the overflow menu.
-@interface OverflowMenuMediator : NSObject <BrowserContainerConsumer>
+@interface OverflowMenuMediator
+    : NSObject <BrowserContainerConsumer, OverflowMenuActionProvider>
 
 // The data model for the overflow menu.
 @property(nonatomic, weak) OverflowMenuModel* model;
@@ -89,9 +89,8 @@ class WebStateList;
 @property(nonatomic, weak) UIViewController* baseViewController;
 
 // Bookmarks models to know if the page is bookmarked.
-@property(nonatomic, assign)
-    bookmarks::BookmarkModel* localOrSyncableBookmarkModel;
-@property(nonatomic, assign) bookmarks::BookmarkModel* accountBookmarkModel;
+@property(nonatomic, assign) LegacyBookmarkModel* localOrSyncableBookmarkModel;
+@property(nonatomic, assign) LegacyBookmarkModel* accountBookmarkModel;
 
 // Readinglist model to know if model has finished loading.
 @property(nonatomic, assign) ReadingListModel* readingListModel;

@@ -5,22 +5,17 @@
 import {
   assert,
   assertExists,
-  assertInstanceof,
 } from '../assert.js';
-import * as error from '../error.js';
 import * as expert from '../expert.js';
 import {Point} from '../geometry.js';
 import * as metrics from '../metrics.js';
-import {isLocalDev} from '../models/load_time_data.js';
 import {ChromeHelper} from '../mojo/chrome_helper.js';
-import {ScreenState} from '../mojo/type.js';
+import {LidState, ScreenState} from '../mojo/type.js';
 import * as nav from '../nav.js';
 import {PerfLogger} from '../perf.js';
 import * as state from '../state.js';
 import {
   AspectRatioSet,
-  ErrorLevel,
-  ErrorType,
   Facing,
   Mode,
   PerfEvent,
@@ -38,6 +33,7 @@ import {windowController} from '../window_controller.js';
 import {EventListener, OperationScheduler} from './camera_operation.js';
 import {VideoCaptureCandidate} from './capture_candidate.js';
 import {Preview} from './preview.js';
+import {PTZController} from './ptz_controller.js';
 import {
   CameraConfig,
   CameraInfo,
@@ -114,7 +110,7 @@ export class CameraManager implements EventListener {
   ) {
     this.preview = new Preview(async () => {
       await this.reconfigure();
-    });
+    }, () => this.useSquareResolution());
 
     this.scheduler = new OperationScheduler(
         this,
@@ -122,25 +118,6 @@ export class CameraManager implements EventListener {
         defaultFacing,
         modeConstraints,
     );
-
-    // Monitors the states to stop camera when locked/minimized.
-    // TODO(pihsun): The IdleDetector permission is auto-granted on CrOS. For
-    // local dev, we can request it by IdleDetector.requestPermission(), but
-    // that needs to be done in a user gesture and can't be done here.
-    if (!isLocalDev()) {
-      const idleDetector = new IdleDetector();
-      idleDetector.addEventListener('change', async () => {
-        this.locked = idleDetector.screenState === 'locked';
-        if (this.locked) {
-          await this.reconfigure();
-        }
-      });
-      idleDetector.start().catch((e) => {
-        error.reportError(
-            ErrorType.IDLE_DETECTOR_FAILURE, ErrorLevel.ERROR,
-            assertInstanceof(e, Error));
-      });
-    }
 
     document.addEventListener('visibilitychange', async () => {
       const recording = state.get(state.State.TAKING) && state.get(Mode.VIDEO);
@@ -266,6 +243,23 @@ export class CameraManager implements EventListener {
     }
     const isTablet = await helper.initTabletModeMonitor(setTablet);
     setTablet(isTablet);
+
+    function setLidClosed(lidState: LidState) {
+      state.set(state.State.LID_CLOSED, lidState === LidState.kClosed);
+    }
+
+    const lidState = await helper.initLidStateMonitor(setLidClosed);
+    setLidClosed(lidState);
+
+    const handleScreenLockedChange = async (isScreenLocked: boolean) => {
+      this.locked = isScreenLocked;
+      if (this.locked) {
+        await this.reconfigure();
+      }
+    };
+
+    this.locked =
+        await helper.initScreenLockedMonitor(handleScreenLockedChange);
 
     const handleScreenStateChange = async () => {
       if (this.screenOff) {
@@ -475,8 +469,26 @@ export class CameraManager implements EventListener {
     return this.preview.setPointOfInterest(point);
   }
 
+  getPTZController(): PTZController {
+    return this.preview.getPTZController();
+  }
+
   resetPTZ(): Promise<void> {
     return this.preview.resetPTZ();
+  }
+
+  /**
+   * Whether the photo taking should be done by using preview frame as photo.
+   * This is the workaround for b/184089334 to avoid mismatch between preview
+   * and photo results in some PTZ cameras.
+   */
+  shouldUsePreviewAsPhoto(): boolean {
+    const deviceId = this.getDeviceId();
+    if (deviceId === null) {
+      return false;
+    }
+    return state.get(state.State.ENABLE_PTZ) &&
+        this.getCameraInfo().hasBuiltinPTZSupport(deviceId);
   }
 
   /**

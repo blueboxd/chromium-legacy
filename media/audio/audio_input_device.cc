@@ -82,6 +82,8 @@ class AudioInputDevice::AudioThreadCallback
   // Called whenever we receive notifications about pending data.
   void Process(uint32_t pending_data) override;
 
+  void OnSocketError() override;
+
  private:
   const bool enable_uma_;
   base::ReadOnlySharedMemoryRegion shared_memory_region_;
@@ -483,8 +485,8 @@ void AudioInputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
   base::TimeDelta delay = now_time - capture_time;
   stats_reporter_.ReportCallback(delay, glitch_info);
 
-  capture_callback_->Capture(audio_bus, capture_time, buffer->params.volume,
-                             buffer->params.key_pressed);
+  capture_callback_->Capture(audio_bus, capture_time, glitch_info,
+                             buffer->params.volume, buffer->params.key_pressed);
 
   if (++current_segment_id_ >= total_segments_)
     current_segment_id_ = 0u;
@@ -493,6 +495,12 @@ void AudioInputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
       "audio", "AudioInputDevice::AudioThreadCallback::Process",
       "capture_time (ms)", (capture_time - base::TimeTicks()).InMillisecondsF(),
       "now_time (ms)", (now_time - base::TimeTicks()).InMillisecondsF());
+}
+
+void AudioInputDevice::AudioThreadCallback::OnSocketError() {
+  capture_callback_->OnCaptureError(
+      AudioCapturerSource::ErrorCode::kSocketError,
+      "Socket closed unexpectedly");
 }
 
 }  // namespace media

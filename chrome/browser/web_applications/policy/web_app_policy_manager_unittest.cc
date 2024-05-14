@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 
 #include <memory>
+#include <string_view>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -320,7 +321,7 @@ ExternalInstallOptions GetCustomAppIconInstallOptions(
   return options;
 }
 
-void SetWebAppSettingsListPref(Profile* profile, const base::StringPiece pref) {
+void SetWebAppSettingsListPref(Profile* profile, const std::string_view pref) {
   ASSERT_OK_AND_ASSIGN(
       auto result,
       base::JSONReader::ReadAndReturnValueWithError(
@@ -330,7 +331,7 @@ void SetWebAppSettingsListPref(Profile* profile, const base::StringPiece pref) {
 }
 
 void SetWebAppInstallForceListPref(Profile* profile,
-                                   const base::StringPiece pref) {
+                                   const std::string_view pref) {
   ASSERT_OK_AND_ASSIGN(
       auto result,
       base::JSONReader::ReadAndReturnValueWithError(
@@ -1688,12 +1689,8 @@ class WebAppPolicyForceUnregistrationTest : public WebAppTest {
 
   void SetUp() override {
     WebAppTest::SetUp();
-    scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{features::kOsIntegrationSubManagers,
-          {{"stage", "execute_and_write_config"}}},
-         {web_app::kDesktopPWAsForceUnregisterOSIntegration, {}}},
-        /*disabled_features=*/{});
-
+    scoped_feature_list_.InitAndEnableFeature(
+        web_app::kDesktopPWAsForceUnregisterOSIntegration);
     {
       base::ScopedAllowBlockingForTesting allow_blocking;
       test_override_ =

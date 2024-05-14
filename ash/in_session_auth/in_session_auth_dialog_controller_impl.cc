@@ -8,16 +8,32 @@
 #include "ash/in_session_auth/authentication_dialog.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "base/functional/bind.h"
+#include "base/memory/ptr_util.h"
+#include "base/notimplemented.h"
+#include "base/time/time.h"
 #include "chromeos/ash/components/auth_panel/impl/auth_factor_store.h"
 #include "chromeos/ash/components/auth_panel/impl/auth_panel.h"
 #include "chromeos/ash/components/auth_panel/impl/auth_panel_event_dispatcher.h"
 #include "chromeos/ash/components/auth_panel/impl/factor_auth_view_factory.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/ash/components/login/auth/auth_performer.h"
+#include "chromeos/ash/components/osauth/public/auth_hub.h"
 #include "chromeos/ash/components/osauth/public/common_types.h"
 
 namespace ash {
 namespace {
+
+AuthPurpose InSessionAuthReasonToAuthPurpose(
+    InSessionAuthDialogController::Reason reason) {
+  switch (reason) {
+    case InSessionAuthDialogController::Reason::kAccessPasswordManager:
+    case InSessionAuthDialogController::Reason::kAccessMultideviceSettings:
+      return AuthPurpose::kUserVerification;
+    case InSessionAuthDialogController::Reason::kAccessAuthenticationSettings:
+      return AuthPurpose::kAuthSettings;
+  }
+}
 
 std::unique_ptr<views::Widget> CreateAuthDialogWidget(
     std::unique_ptr<views::View> contents_view) {
@@ -31,7 +47,7 @@ std::unique_ptr<views::Widget> CreateAuthDialogWidget(
   params.name = "AuthDialogWidget";
 
   params.delegate->SetInitiallyFocusedView(contents_view.get());
-  params.delegate->SetModalType(ui::MODAL_TYPE_SYSTEM);
+  params.delegate->SetModalType(ui::MODAL_TYPE_NONE);
   params.delegate->SetOwnedByWidget(true);
 
   std::unique_ptr<views::Widget> widget = std::make_unique<views::Widget>();
@@ -59,27 +75,43 @@ InSessionAuthDialogControllerImpl::InSessionAuthDialogControllerImpl() =
 InSessionAuthDialogControllerImpl::~InSessionAuthDialogControllerImpl() =
     default;
 
+void InSessionAuthDialogControllerImpl::CreateAndShowAuthPanel(
+    auth_panel::AuthCompletionCallback on_auth_complete,
+    Reason reason,
+    const AccountId& account_id) {
+  state_ = State::kShowing;
+  on_auth_complete_ = std::move(on_auth_complete);
+
+  auto* auth_hub = AuthHub::Get();
+
+  auto continuation = base::BindOnce(
+      &AuthHub::StartAuthentication, base::Unretained(auth_hub), account_id,
+      InSessionAuthReasonToAuthPurpose(reason), this);
+
+  auth_hub->EnsureInitialized(std::move(continuation));
+}
+
 void InSessionAuthDialogControllerImpl::ShowAuthDialog(
     Reason reason,
     auth_panel::AuthCompletionCallback on_auth_complete) {
+  if (state_ != State::kNotShown) {
+    LOG(ERROR) << "Trying to show authentication dialog in session while "
+                  "another is currently active, returning";
+    std::move(on_auth_complete)
+        .Run(false, ash::AuthProofToken{}, base::TimeDelta{});
+    return;
+  }
+
   auto account_id = Shell::Get()->session_controller()->GetActiveAccountId();
   DCHECK(account_id.is_valid());
   DCHECK_NE(auth_token_provider_, nullptr);
 
   if (reason == Reason::kAccessPasswordManager &&
       features::IsUseAuthPanelInPasswordManagerEnabled()) {
-    auto auth_panel = std::make_unique<AuthPanel>(
-        std::make_unique<FactorAuthViewFactory>(),
-        std::make_unique<AuthFactorStoreFactory>(),
-        std::make_unique<AuthPanelEventDispatcherFactory>(),
-        std::move(on_auth_complete));
-    auth_panel->InitializeUi(AuthFactorsSet{AshAuthFactor::kGaiaPassword},
-                             nullptr);
-
-    dialog_ = CreateAuthDialogWidget(std::move(auth_panel));
-
-    CenterWidgetOnPrimaryDisplay(dialog_.get());
-    dialog_->Show();
+    CreateAndShowAuthPanel(std::move(on_auth_complete), reason, account_id);
+  } else if (reason == Reason::kAccessAuthenticationSettings &&
+             features::IsUseAuthPanelInSettingsEnabled()) {
+    CreateAndShowAuthPanel(std::move(on_auth_complete), reason, account_id);
   } else {
     // We don't manage the lifetime of `AuthenticationDialog` here.
     // `AuthenticatonDialog` is-a View and it is instead owned by it's widget,
@@ -95,6 +127,54 @@ void InSessionAuthDialogControllerImpl::ShowAuthDialog(
 void InSessionAuthDialogControllerImpl::SetTokenProvider(
     InSessionAuthTokenProvider* auth_token_provider) {
   auth_token_provider_ = auth_token_provider;
+}
+
+void InSessionAuthDialogControllerImpl::OnUserAuthAttemptRejected() {
+  NOTIMPLEMENTED();
+}
+
+void InSessionAuthDialogControllerImpl::OnUserAuthAttemptConfirmed(
+    AuthHubConnector* connector,
+    raw_ptr<AuthFactorStatusConsumer>& out_consumer) {
+  CHECK_EQ(state_, State::kShowing);
+
+  auto auth_panel = std::make_unique<AuthPanel>(
+      std::make_unique<FactorAuthViewFactory>(),
+      std::make_unique<AuthFactorStoreFactory>(),
+      std::make_unique<AuthPanelEventDispatcherFactory>(),
+      std::move(on_auth_complete_),
+      base::BindRepeating(
+          &InSessionAuthDialogControllerImpl::OnAuthPanelPreferredSizeChanged,
+          weak_factory_.GetWeakPtr()),
+      nullptr);
+
+  out_consumer = auth_panel.get();
+  dialog_ = CreateAuthDialogWidget(std::move(auth_panel));
+  dialog_->Show();
+  state_ = State::kShown;
+}
+
+void InSessionAuthDialogControllerImpl::OnAuthPanelPreferredSizeChanged() {
+  CenterWidgetOnPrimaryDisplay(dialog_.get());
+}
+
+void InSessionAuthDialogControllerImpl::OnAccountNotFound() {
+  NOTIMPLEMENTED();
+}
+
+void InSessionAuthDialogControllerImpl::OnUserAuthAttemptCancelled() {
+  NOTIMPLEMENTED();
+}
+
+void InSessionAuthDialogControllerImpl::OnFactorAttemptFailed(
+    AshAuthFactor factor) {
+  NOTIMPLEMENTED();
+}
+
+void InSessionAuthDialogControllerImpl::OnUserAuthSuccess(
+    AshAuthFactor factor,
+    const AuthProofToken& token) {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace ash

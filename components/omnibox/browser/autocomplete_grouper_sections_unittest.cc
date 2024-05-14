@@ -1381,6 +1381,30 @@ TEST(AutocompleteGrouperSectionsTest, DesktopSecondaryNTPZpsSection) {
           CreateMatch(98, omnibox::GROUP_PERSONALIZED_ZERO_SUGGEST)},
          {});
   }
+  // Test groups and limits when RealboxContextualAndTrendingSuggestions feature
+  // is disabled.
+  scoped_config.Reset();
+  scoped_config.Get().enabled = false;
+  {
+    SCOPED_TRACE(
+        "Matches should be added up to their group limit. "
+        "(RealboxContextualAndTrendingSuggestions feature disabled)");
+    test({CreateMatch(100, omnibox::GROUP_PREVIOUS_SEARCH_RELATED_ENTITY_CHIPS),
+          CreateMatch(99, omnibox::GROUP_PREVIOUS_SEARCH_RELATED_ENTITY_CHIPS),
+          CreateMatch(98, omnibox::GROUP_PREVIOUS_SEARCH_RELATED_ENTITY_CHIPS),
+          CreateMatch(97, omnibox::GROUP_PREVIOUS_SEARCH_RELATED_ENTITY_CHIPS)},
+         {100, 99, 98});
+  }
+  {
+    SCOPED_TRACE(
+        "Given no matches that can be added to this section because of their "
+        "Group limit, should return no matches. "
+        "(RealboxContextualAndTrendingSuggestions feature disabled)");
+    test({CreateMatch(100, omnibox::GROUP_PREVIOUS_SEARCH_RELATED),
+          CreateMatch(99, omnibox::GROUP_PREVIOUS_SEARCH_RELATED),
+          CreateMatch(98, omnibox::GROUP_TRENDS)},
+         {});
+  }
 }
 
 // Tests the behavior when DesktopNTPZpsSection and
@@ -1466,4 +1490,108 @@ TEST(AutocompleteGrouperSectionsTest,
         },
         {200, 199, 198, 197, 100, 99, 98, 97, 92, 91, 90});
   }
+  // Test groups and limits when RealboxContextualAndTrendingSuggestions feature
+  // is disabled.
+  scoped_config.Reset();
+  scoped_config.Get().enabled = false;
+  {
+    SCOPED_TRACE(
+        "Given 8 psuggest matches, and trending matches with a secondary side "
+        "type, but RealboxContextualAndTrendingSuggestions"
+        "feature disabled, do not show trending on the RHS.");
+    test(
+        {
+            CreateMatch(100, omnibox::GROUP_PERSONALIZED_ZERO_SUGGEST),
+            CreateMatch(99, omnibox::GROUP_PERSONALIZED_ZERO_SUGGEST),
+            CreateMatch(98, omnibox::GROUP_PERSONALIZED_ZERO_SUGGEST),
+            CreateMatch(97, omnibox::GROUP_PERSONALIZED_ZERO_SUGGEST),
+            CreateMatch(96, omnibox::GROUP_PERSONALIZED_ZERO_SUGGEST),
+            CreateMatch(95, omnibox::GROUP_PERSONALIZED_ZERO_SUGGEST),
+            CreateMatch(94, omnibox::GROUP_PERSONALIZED_ZERO_SUGGEST),
+            CreateMatch(93, omnibox::GROUP_PERSONALIZED_ZERO_SUGGEST),
+            CreateMatch(92, omnibox::GROUP_TRENDS),
+            CreateMatch(91, omnibox::GROUP_TRENDS),
+            CreateMatch(90, omnibox::GROUP_TRENDS),
+            CreateMatch(89, omnibox::GROUP_TRENDS),
+        },
+        {100, 99, 98, 97, 96, 95, 94, 93}, false);
+  }
 }
+
+// Test that (on Android) sections are grouped by Search vs URL.
+#if BUILDFLAG(IS_ANDROID)
+TEST(AutocompleteGrouperSectionsTest,
+     AndroidNonZPSSection_groupsBySearchVsUrl) {
+  auto test = [](ACMatches matches, std::vector<int> expected_relevances) {
+    PSections sections;
+    omnibox::GroupConfigMap group_configs;
+    sections.push_back(std::make_unique<AndroidNonZPSSection>(group_configs));
+    auto out_matches = Section::GroupMatches(std::move(sections), matches);
+    VerifyMatches(out_matches, expected_relevances);
+  };
+
+  auto make_search = [](int score) {
+    auto match = CreateMatch(score, omnibox::GROUP_SEARCH);
+    match.type = AutocompleteMatchType::SEARCH_HISTORY;
+    return match;
+  };
+
+  auto make_url = [](int score) {
+    auto match = CreateMatch(score, omnibox::GROUP_OTHER_NAVS);
+    match.type = AutocompleteMatchType::NAVSUGGEST;
+    return match;
+  };
+
+  {
+    SCOPED_TRACE("No matches = no crashes.");
+    test({}, {});
+  }
+  {
+    SCOPED_TRACE("Grouping top section only.");
+    test({make_search(100)}, {100});
+  }
+  {
+    SCOPED_TRACE("Grouping top two sections.");
+    test(
+        {
+            make_url(20),
+            make_url(19),
+            make_url(18),
+            make_search(10),
+            make_search(9),
+        },
+        // 20     -- default match.
+        // 10, 9  -- top searches.
+        // 19, 18 -- top URLs.
+        {20, 10, 9, 19, 18});
+  }
+  {
+    SCOPED_TRACE("Grouping all sections.");
+    test(
+        {
+            make_url(20),
+            // top adaptive group
+            make_url(19),
+            make_url(18),
+            make_search(10),
+            make_search(9),
+            make_url(17),
+            // bottom adaptive group
+            make_url(16),
+            make_search(8),
+            make_search(7),
+            make_url(15),
+            make_url(14),
+            make_search(6),
+            make_search(5),
+            make_url(13),
+            make_url(12),
+        },
+        {
+            20,                             // the default match
+            10, 9, 19, 18, 17,              // the top adaptive group
+            8, 7, 6, 5, 16, 15, 14, 13, 12  // the bottom adaptive group.
+        });
+  }
+}
+#endif

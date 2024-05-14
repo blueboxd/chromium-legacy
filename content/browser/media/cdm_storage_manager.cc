@@ -88,6 +88,22 @@ void CdmStorageManager::Open(const std::string& file_name,
                            std::move(callback)));
 }
 
+void CdmStorageManager::GetUsagePerAllStorageKeys(
+    base::OnceCallback<void(const CdmStorageKeyUsageSize&)> callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  db_.AsyncCall(&CdmStorageDatabase::GetUsagePerAllStorageKeys)
+      .Then(std::move(callback));
+}
+
+void CdmStorageManager::DeleteDataForStorageKey(
+    const blink::StorageKey& storage_key,
+    base::OnceCallback<void(bool)> callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DeleteDataForStorageKey(storage_key, base::Time::Min(), base::Time::Max(),
+                          std::move(callback));
+}
+
 void CdmStorageManager::OpenCdmStorage(
     const CdmStorageBindingContext& binding_context,
     mojo::PendingReceiver<media::mojom::CdmStorage> receiver) {
@@ -265,7 +281,7 @@ void CdmStorageManager::DidWriteFile(base::OnceCallback<void(bool)> callback,
 
 void CdmStorageManager::DidGetSize(base::OnceCallback<void(uint64_t)> callback,
                                    const std::string& operation,
-                                   absl::optional<uint64_t> size) {
+                                   std::optional<uint64_t> size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::UmaHistogramBoolean(GetHistogramName(operation), !size.has_value());

@@ -10,6 +10,7 @@
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/trace_event/typed_macros.h"
 #include "base/types/optional_util.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -205,8 +206,7 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
     mojom::URLLoaderFactoryParamsPtr params,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
     mojo::PendingReceiver<mojom::URLLoaderFactory> receiver,
-    const OriginAccessList* origin_access_list,
-    NetworkServiceResourceBlockList* resource_block_list)
+    const OriginAccessList* origin_access_list)
     : context_(context),
       is_trusted_(params->is_trusted),
       disable_web_security_(params->disable_web_security),
@@ -231,8 +231,9 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
           std::move(params->shared_dictionary_observer)),
       require_cross_site_request_for_cookies_(
           params->require_cross_site_request_for_cookies),
-      origin_access_list_(origin_access_list),
-      resource_block_list_(resource_block_list) {
+      origin_access_list_(origin_access_list) {
+  TRACE_EVENT("loading", "CorsURLLoaderFactory::CorsURLLoaderFactory",
+              perfetto::Flow::FromPointer(this));
   DCHECK(context_);
   DCHECK(origin_access_list_);
   DCHECK_NE(mojom::kInvalidProcessId, process_id_);
@@ -318,18 +319,6 @@ void CorsURLLoaderFactory::DestroyCorsURLLoader(CorsURLLoader* loader) {
   DestroyLoader(loader, cors_url_loaders_);
 }
 
-bool CorsURLLoaderFactory::ShouldBlockRequestForAfpExperiment(
-    const ResourceRequest& resource_request) {
-  if (context_ && context_->AfpBlockListExperimentEnabled() &&
-      resource_block_list_) {
-    return resource_block_list_->Matches(
-        resource_request.url,
-        URLLoader::GetIsolationInfo(isolation_info_, false, resource_request));
-  }
-
-  return false;
-}
-
 void CorsURLLoaderFactory::CreateLoaderAndStart(
     mojo::PendingReceiver<mojom::URLLoader> receiver,
     int32_t request_id,
@@ -337,6 +326,8 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
     const ResourceRequest& resource_request,
     mojo::PendingRemote<mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+  TRACE_EVENT("loading", "CorsURLLoaderFactory::CreateLoaderAndStart",
+              perfetto::Flow::FromPointer(this));
 #if BUILDFLAG(IS_ANDROID)
   // Use pseudo flag to investigate histogram issue.
   // See https://crbug.com/1439721.
@@ -353,15 +344,6 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
   if (!IsValidRequest(resource_request, options)) {
     mojo::Remote<mojom::URLLoaderClient>(std::move(client))
         ->OnComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
-    return;
-  }
-
-  if (ShouldBlockRequestForAfpExperiment(resource_request)) {
-    VLOG(1)
-        << "CorsURLLoaderFactory: blocking request for resource_request.url: "
-        << resource_request.url;
-    mojo::Remote<mojom::URLLoaderClient>(std::move(client))
-        ->OnComplete(URLLoaderCompletionStatus(net::ERR_BLOCKED_BY_CLIENT));
     return;
   }
 
@@ -391,17 +373,30 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
       factory_override_ ? factory_override_->get()
                         : network_loader_factory_.get();
   DCHECK(inner_url_loader_factory);
+
+  const net::IsolationInfo* isolation_info_ptr = &isolation_info_;
+  auto isolation_info = URLLoader::GetIsolationInfo(
+      isolation_info_, automatically_assign_isolation_info_, resource_request);
+  if (isolation_info.has_value()) {
+    isolation_info_ptr = &isolation_info.value();
+  }
+
+  // Check if the initiator's network access has been revoked.
+  // This check is only relevant if there is a partition nonce in the
+  // isolation info. (All requests originating from a fenced frame have a
+  // nonce specified.)
+  if (isolation_info.has_value() && isolation_info->nonce().has_value() &&
+      !context_->IsNetworkForNonceAndUrlAllowed(*isolation_info->nonce(),
+                                                resource_request.url)) {
+    mojo::Remote<mojom::URLLoaderClient>(std::move(client))
+        ->OnComplete(
+            URLLoaderCompletionStatus(net::ERR_NETWORK_ACCESS_REVOKED));
+    return;
+  }
+
   if (!disable_web_security_) {
     mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer =
         GetDevToolsObserver(resource_request);
-
-    const net::IsolationInfo* isolation_info_ptr = &isolation_info_;
-    auto isolation_info = URLLoader::GetIsolationInfo(
-        isolation_info_, automatically_assign_isolation_info_,
-        resource_request);
-    if (isolation_info) {
-      isolation_info_ptr = &isolation_info.value();
-    }
 
     scoped_refptr<SharedDictionaryStorage> shared_dictionary_storage =
         shared_dictionary_storage_;
@@ -561,7 +556,7 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
   // overridden for renderer navigations, however.
   std::optional<url::Origin> origin_to_validate = request.request_initiator;
 
-  // Ensure that renderer requests are covered either by CORS or CORB.
+  // Ensure that renderer requests are covered either by CORS or ORB.
   if (process_id_ != mojom::kBrowserProcessId) {
     switch (request.mode) {
       case mojom::RequestMode::kNavigate:
@@ -613,7 +608,7 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
         break;
 
       case mojom::RequestMode::kNoCors:
-        // SOP enforced by CORB.
+        // SOP enforced by ORB.
         break;
     }
   }
@@ -779,6 +774,7 @@ bool CorsURLLoaderFactory::GetAllowAnyCorsExemptHeaderForBrowser() const {
 mojo::PendingRemote<mojom::DevToolsObserver>
 CorsURLLoaderFactory::GetDevToolsObserver(
     const ResourceRequest& resource_request) const {
+  TRACE_EVENT("loading", "CorsURLLoaderFactory::GetDevToolsObserver");
   mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer;
   if (resource_request.trusted_params &&
       resource_request.trusted_params->devtools_observer) {

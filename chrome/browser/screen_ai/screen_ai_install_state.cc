@@ -8,6 +8,7 @@
 
 #include "base/check_is_test.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -18,8 +19,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/screen_ai/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/services/screen_ai/public/cpp/utilities.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/screen_ai/public/cpp/utilities.h"
 #include "ui/accessibility/accessibility_features.h"
 
 #if BUILDFLAG(IS_LINUX)
@@ -40,22 +41,6 @@ bool IsDeviceCompatible() {
   }
 #endif
   return true;
-}
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class LibraryVerificationResult {
-  kOk = 0,
-  kVersionInvalid = 1,
-  kVersionLow = 2,
-  kPathUnexpected = 3,
-  kDeprecatedLoadFailed = 4,
-  kMaxValue = kDeprecatedLoadFailed,
-};
-
-void RecordLibraryVerificationResult(LibraryVerificationResult result) {
-  base::UmaHistogramEnumeration(
-      "Accessibility.ScreenAI.LibraryVerificationResult", result);
 }
 
 }  // namespace
@@ -84,36 +69,29 @@ bool ScreenAIInstallState::VerifyLibraryVersion(const base::Version& version) {
 
   if (!version.IsValid()) {
     VLOG(0) << "Cannot verify library version.";
-    RecordLibraryVerificationResult(LibraryVerificationResult::kVersionInvalid);
     return false;
   }
 
   if (version < min_version) {
     VLOG(0) << "Version is expected to be at least " << kMinExpectedVersion
             << ", but it is: " << version;
-    RecordLibraryVerificationResult(LibraryVerificationResult::kVersionLow);
     return false;
   }
 
   return true;
 }
 
+// TODO(b/41489907): Remove this function once it's known why the binary is
+// sometimes not available.
 // static
 bool ScreenAIInstallState::VerifyLibraryAvailablity(
     const base::FilePath& install_dir) {
-  // Check the file iterator heuristic to find the library in the sandbox
-  // returns the same directory as `install_dir`.
-  // TODO(b/41489907): Convert path unexpected case to DumpWithoutCrash to
-  // investigate paths and update the UMA description.
-  base::FilePath binary_path = screen_ai::GetLatestComponentBinaryPath();
-  if (binary_path.DirName() != install_dir) {
-    RecordLibraryVerificationResult(LibraryVerificationResult::kPathUnexpected);
-    VLOG(0) << "Library is installed in an unexpected folder.";
-    return false;
-  }
-
-  RecordLibraryVerificationResult(LibraryVerificationResult::kOk);
-  return true;
+    // TODO(b/41489907): Try adding a browser test for this case.
+    bool binary_available =
+        base::PathExists(install_dir.Append(GetComponentBinaryFileName()));
+    base::UmaHistogramBoolean(
+        "Accessibility.ScreenAI.Component.BinaryAvailable", binary_available);
+    return binary_available;
 }
 
 ScreenAIInstallState::ScreenAIInstallState() {

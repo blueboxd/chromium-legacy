@@ -218,6 +218,11 @@ void ReadingListManagerImpl::Delete(const GURL& url) {
   reading_list_model_->RemoveEntryByURL(url);
 }
 
+void ReadingListManagerImpl::DeleteAll() {
+  DCHECK(reading_list_model_->loaded());
+  reading_list_model_->DeleteAllEntries();
+}
+
 const BookmarkNode* ReadingListManagerImpl::GetRoot() const {
   DCHECK(reading_list_model_->loaded());
   return root_.get();
@@ -283,10 +288,6 @@ bool ReadingListManagerImpl::GetReadStatus(
 
 bool ReadingListManagerImpl::IsLoaded() const {
   return loaded_;
-}
-
-void ReadingListManagerImpl::SetIsLoadedForTests(bool is_loaded) {
-  loaded_ = is_loaded;
 }
 
 BookmarkNode* ReadingListManagerImpl::FindBookmarkByURL(const GURL& url) const {

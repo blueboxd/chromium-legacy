@@ -203,15 +203,14 @@ class StorageHandler
       base::Time source_time,
       std::optional<uint64_t> cleared_debug_key,
       attribution_reporting::mojom::StoreSourceResult) override;
-  void OnTriggerHandled(const AttributionTrigger&,
-                        std::optional<uint64_t> cleared_debug_key,
+  void OnTriggerHandled(std::optional<uint64_t> cleared_debug_key,
                         const CreateReportResult&) override;
 
   void NotifySharedStorageAccessed(
       const base::Time& access_time,
       SharedStorageWorkletHostManager::SharedStorageObserverInterface::
           AccessType type,
-      const std::string& main_frame_id,
+      int main_frame_id,
       const std::string& owner_origin,
       const SharedStorageEventParams& params);
 
@@ -232,6 +231,11 @@ class StorageHandler
 
   void ResetAttributionReporting();
 
+  // This doesn't update `interest_group_auction_tracking_enabled_` and does not
+  // have to work on `storage_partition_`, unlike the public version.
+  Response SetInterestGroupTrackingInternal(StoragePartition* storage_partition,
+                                            bool enable);
+
   std::unique_ptr<Storage::Frontend> frontend_;
   StoragePartition* storage_partition_{nullptr};
   RenderFrameHostImpl* frame_host_ = nullptr;
@@ -244,6 +248,7 @@ class StorageHandler
   std::unique_ptr<storage::QuotaOverrideHandle> quota_override_handle_;
   bool client_is_trusted_;
 
+  bool interest_group_tracking_enabled_ = false;
   bool interest_group_auction_tracking_enabled_ = false;
 
   base::ScopedObservation<AttributionManager, AttributionObserver>

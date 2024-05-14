@@ -4,11 +4,9 @@
 
 #include "chrome/browser/ash/arc/input_overlay/ui/action_label.h"
 
-#include <string.h>
 #include <set>
 
 #include "ash/style/style_util.h"
-#include "base/memory/raw_ptr.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
 #include "chrome/browser/ash/arc/input_overlay/constants.h"
@@ -30,6 +28,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/view_utils.h"
 
 namespace arc::input_overlay {
 namespace {
@@ -397,7 +396,7 @@ void ActionLabel::OnSiblingUpdateFocus(bool sibling_focused) {
 }
 
 ActionView* ActionLabel::GetParent() {
-  auto* view = static_cast<ActionView*>(parent());
+  auto* view = views::AsViewClass<ActionView>(parent());
   DCHECK(view);
   return view;
 }

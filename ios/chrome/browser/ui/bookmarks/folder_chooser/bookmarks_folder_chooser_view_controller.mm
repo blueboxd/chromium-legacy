@@ -13,10 +13,11 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
-#import "components/bookmarks/browser/bookmark_model.h"
+#import "components/bookmarks/browser/bookmark_node.h"
 #import "components/bookmarks/common/bookmark_features.h"
 #import "components/sync/base/features.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_model_bridge_observer.h"
+#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
 #import "ios/chrome/browser/shared/ui/symbols/chrome_icon.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
@@ -148,7 +149,8 @@ using bookmarks::BookmarkNode;
         // If `parent` (selected folder) is `nullptr`, set the root folder of
         // the corresponding section to be the parent folder.
         parentNode =
-            (sectionID == SectionIdentifierAccountBookmarks)
+            (sectionID == SectionIdentifierAccountBookmarks &&
+             [_dataSource.accountDataSource mobileFolderNode] != nullptr)
                 ? [_dataSource.accountDataSource mobileFolderNode]
                 : [_dataSource.localOrSyncableDataSource mobileFolderNode];
       }
@@ -259,10 +261,6 @@ using bookmarks::BookmarkNode;
       (sectionID == SectionIdentifierAccountBookmarks)
           ? _accountFolderNodes
           : _localOrSyncableFolderNodes;
-  const BookmarkNode* rootFolderNode =
-      (sectionID == SectionIdentifierAccountBookmarks)
-          ? [_dataSource.accountDataSource rootFolderNode]
-          : [_dataSource.localOrSyncableDataSource rootFolderNode];
   for (const BookmarkNode* folderNode : folders) {
     TableViewBookmarksFolderItem* folderItem =
         [[TableViewBookmarksFolderItem alloc]
@@ -277,7 +275,7 @@ using bookmarks::BookmarkNode;
 
     // Indentation level.
     NSInteger level = 0;
-    while (folderNode && folderNode != rootFolderNode) {
+    while (folderNode && !folderNode->is_root()) {
       ++level;
       folderNode = folderNode->parent();
     }

@@ -2744,8 +2744,14 @@ INSTANTIATE_TEST_SUITE_P(AutofillInteractiveTest,
                                            FrameType::kIFrame));
 
 // TODO(https://crbug.com/1175735): Check back if flakiness is fixed now.
+// TODO(crbug.com/41495558): Flaky on MSan.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_SimpleCrossSiteFill DISABLED_SimpleCrossSiteFill
+#else
+#define MAYBE_SimpleCrossSiteFill SimpleCrossSiteFill
+#endif
 IN_PROC_BROWSER_TEST_P(AutofillInteractiveFencedFrameTest,
-                       SimpleCrossSiteFill) {
+                       MAYBE_SimpleCrossSiteFill) {
   test_delegate()->SetIgnoreBackToBackMessages(
       ObservedUiEvents::kPreviewFormData, true);
   CreateTestProfile();
@@ -2802,8 +2808,14 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveFencedFrameTest,
 // Tests that deleting the subframe that has opened the Autofill popup closes
 // the popup.
 // TODO(https://crbug.com/1175735): Check back if flakiness is fixed now.
+// TODO(crbug.com/41495632): Flaky on MSan.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_DeletingFrameClosesPopup DISABLED_DeletingFrameClosesPopup
+#else
+#define MAYBE_DeletingFrameClosesPopup DeletingFrameClosesPopup
+#endif
 IN_PROC_BROWSER_TEST_P(AutofillInteractiveFencedFrameTest,
-                       DeletingFrameClosesPopup) {
+                       MAYBE_DeletingFrameClosesPopup) {
   CreateTestProfile();
 
   // Main frame is on a.com, fenced frame is on b.com.
@@ -2876,7 +2888,7 @@ class AutofillInteractiveTestDynamicForm : public AutofillInteractiveTest {
   void SetUpOnMainThread() override {
     AutofillInteractiveTest::SetUpOnMainThread();
     test_api(*GetBrowserAutofillManager())
-        .set_limit_before_refill(base::Minutes(1));
+        .set_limit_before_refill(base::Hours(1));
   }
 
   ValueWaiter ListenForRefill(
@@ -3604,8 +3616,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
   expect_count("Autofill.NumberOfEditedAutofilledFieldsAtSubmission", 0, 1);
   expect_count("Autofill.PerfectFilling.CreditCards", 1, 1);
   // Bucket 0 = edited, 1 = accepted; 3 samples for 3 fields.
-  expect_count("Autofill.EditedAutofilledFieldAtSubmission.Aggregate", 0, 0);
-  expect_count("Autofill.EditedAutofilledFieldAtSubmission.Aggregate", 1, 3);
+  expect_count("Autofill.EditedAutofilledFieldAtSubmission2.Aggregate", 0, 0);
+  expect_count("Autofill.EditedAutofilledFieldAtSubmission2.Aggregate", 1, 3);
 }
 
 // Shadow DOM tests consist of two cases:
@@ -3779,8 +3791,8 @@ class MAYBE_AutofillInteractiveFormSubmissionTest
  public:
   class MockAutofillManager : public BrowserAutofillManager {
    public:
-    MockAutofillManager(ContentAutofillDriver* driver, AutofillClient* client)
-        : BrowserAutofillManager(driver, client, "en-US") {}
+    explicit MockAutofillManager(ContentAutofillDriver* driver)
+        : BrowserAutofillManager(driver, "en-US") {}
     MOCK_METHOD(void,
                 OnFormSubmittedImpl,
                 (const FormData&, bool, mojom::SubmissionSource),
@@ -3957,6 +3969,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AutofillInteractiveFormSubmissionTest,
       // Hide form, which is the trigger for the submission event.
       document.getElementById('shipping').style.display = 'none';
       )");
+  // This forces layout update.
+  RunUntilInputProcessed(GetRenderViewHost()->GetWidget());
   run_loop.Run();
 }
 
@@ -3987,13 +4001,16 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AutofillInteractiveFormSubmissionTest,
       xhr.open('GET', '/xhr', true);
       xhr.send(null);
       )");
+  // This forces layout update.
+  RunUntilInputProcessed(GetRenderViewHost()->GetWidget());
   run_loop.Run();
 }
 
 // Tests that an XHR request can indicate a form submission - even if the form
 // is deleted from the DOM.
+// TODO(crbug.com/41493168): Flaky on multiple platforms.
 IN_PROC_BROWSER_TEST_F(MAYBE_AutofillInteractiveFormSubmissionTest,
-                       XhrSucceededAndDeleteForm) {
+                       DISABLED_XhrSucceededAndDeleteForm) {
   EnterValues();
 
   base::RunLoop run_loop;
@@ -4019,6 +4036,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AutofillInteractiveFormSubmissionTest,
       xhr.open('GET', '/xhr', true);
       xhr.send(null);
       )");
+  // This forces layout update.
+  RunUntilInputProcessed(GetRenderViewHost()->GetWidget());
   run_loop.Run();
 }
 
@@ -4050,6 +4069,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AutofillInteractiveFormSubmissionTest,
       }
       xhr.send(null);
       )");
+  // This forces layout update.
+  RunUntilInputProcessed(GetRenderViewHost()->GetWidget());
   run_loop.Run();
 }
 
@@ -4207,12 +4228,6 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AutofillInteractiveFormSubmissionClearFormTest,
 class MAYBE_AutofillInteractiveFormlessFormSubmissionTest
     : public MAYBE_AutofillInteractiveFormSubmissionTest {
  public:
-  MAYBE_AutofillInteractiveFormlessFormSubmissionTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::
-            kAutofillDontCheckForDisappearingFormlessElementsForSubmission);
-  }
-
   void SetUpOnMainThread() override {
     AutofillInteractiveTestBase::SetUpOnMainThread();
 

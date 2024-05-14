@@ -17,14 +17,14 @@
 namespace {
 
 // Constants related to icon sizing.
-constexpr CGFloat kIconSize = 36;
 constexpr CGFloat kMagicStackIconSize = 30;
 constexpr CGFloat kCompactIconSize = 26;
 constexpr CGFloat kSymbolPointSize = 18;
-constexpr CGFloat kSparkleSize = 72;
-constexpr CGFloat kSparkleOffset = (kSparkleSize - kIconSize) / 2;
-constexpr CGFloat kMagicStackSparkleOffset =
-    (kSparkleSize - kMagicStackIconSize) / 2;
+constexpr CGFloat kSparkleSize = 60;
+constexpr CGFloat kCompactSparkleSize = 52;
+constexpr CGFloat kSparkleOffset = (kSparkleSize - kMagicStackIconSize) / 2;
+constexpr CGFloat kCompactSparkleOffset =
+    (kCompactSparkleSize - kCompactIconSize) / 2;
 constexpr CGFloat kIconSquareContainerRadius = 7.0f;
 
 // The amount of rotation for the icons, during the animation.
@@ -39,7 +39,7 @@ CGFloat IconSize(BOOL compact_layout) {
   if (compact_layout) {
     return kCompactIconSize;
   }
-  return IsMagicStackEnabled() ? kMagicStackIconSize : kIconSize;
+  return kMagicStackIconSize;
 }
 
 // Returns a UIImageView for the given SF Symbol, and with a color named
@@ -303,10 +303,9 @@ UIView* IconInSquare(NSString* symbol,
   // This image view does not initially have an image. The animation frames
   // are loaded on demand.
   UIImageView* imageView = [[UIImageView alloc] initWithImage:nil];
-  CGFloat sparkleOffset =
-      IsMagicStackEnabled() ? kMagicStackSparkleOffset : kSparkleOffset;
-  imageView.frame =
-      CGRectMake(-sparkleOffset, -sparkleOffset, kSparkleSize, kSparkleSize);
+  CGFloat offset = _compactLayout ? kCompactSparkleOffset : kSparkleOffset;
+  CGFloat size = _compactLayout ? kCompactSparkleSize : kSparkleSize;
+  imageView.frame = CGRectMake(-offset, -offset, size, size);
   return imageView;
 }
 

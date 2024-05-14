@@ -7,7 +7,6 @@
 #include <set>
 #include <utility>
 
-#include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
@@ -202,8 +201,8 @@ std::optional<ModelError> FakeModelTypeSyncBridge::MergeFullSyncData(
     EXPECT_NE(SupportsGetStorageKey(), storage_key.empty());
     if (storage_key.empty()) {
       if (type_ == PREFERENCES &&
-          base::Contains(values_to_ignore_,
-                         change->data().specifics.preference().value())) {
+          values_to_ignore_.contains(
+              change->data().specifics.preference().value())) {
         change_processor()->UntrackEntityForClientTagHash(
             change->data().client_tag_hash);
         continue;
@@ -330,6 +329,8 @@ std::string FakeModelTypeSyncBridge::GetStorageKeyInternal(
     case USER_EVENTS:
       return base::NumberToString(
           entity_data.specifics.user_event().event_time_usec());
+    case SHARED_TAB_GROUP_DATA:
+      return entity_data.specifics.shared_tab_group_data().guid();
     default:
       // If you need support for more types, add them here.
       NOTREACHED();

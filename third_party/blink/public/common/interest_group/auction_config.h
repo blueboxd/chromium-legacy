@@ -289,6 +289,10 @@ struct BLINK_COMMON_EXPORT AuctionConfig {
     // the buyer's generateBid() functions.
     MaybePromiseBuyerTimeouts buyer_cumulative_timeouts;
 
+    // The value restricts the runtime of the seller's reportResult() script and
+    // the buyer's reportWin() script.
+    std::optional<base::TimeDelta> reporting_timeout;
+
     // Expectation of currency seller worklet in this auction will provide when
     // modified bids or converting them for reporting.
     std::optional<AdCurrency> seller_currency;
@@ -368,6 +372,15 @@ struct BLINK_COMMON_EXPORT AuctionConfig {
     // Nested auctions whose results will also be fed to `seller`. Only the top
     // level auction config can have component auctions.
     std::vector<AuctionConfig> component_auctions;
+
+    // Opaque map object, representing the replacements for ad creative urls.
+    MaybePromiseDeprecatedRenderURLReplacements
+        deprecated_render_url_replacements;
+
+    // The maximum length limit for the trusted scoring signal fetch URL. Can
+    // only be set as either 0 or a positive number. A value of 0 indicates that
+    // there is no limit.
+    int32_t max_trusted_scoring_signals_url_length = 0;
   };
 
   AuctionConfig();
@@ -393,9 +406,6 @@ struct BLINK_COMMON_EXPORT AuctionConfig {
       const std::optional<blink::DirectFromSellerSignals>&
           direct_from_seller_signals) const;
 
-  // Serializes the configuration in a manner suitable for sending to devtools.
-  base::Value::Dict SerializeForDevtools() const;
-
   // Seller running the auction.
   url::Origin seller;
 
@@ -404,15 +414,6 @@ struct BLINK_COMMON_EXPORT AuctionConfig {
   // Both URLS, if present, must be same-origin to `seller`.
   std::optional<GURL> decision_logic_url;
   std::optional<GURL> trusted_scoring_signals_url;
-
-  // Opaque map object, representing the replacements for ad creative urls.
-  MaybePromiseDeprecatedRenderURLReplacements
-      deprecated_render_url_replacements;
-
-  // The maximum length limit for the trusted scoring signal fetch URL. Can
-  // only be set as either 0 or a positive number. A value of 0 indicates that
-  // there is no limit.
-  int32_t max_trusted_scoring_signals_url_length = 0;
 
   // Other parameters are grouped in a struct that is passed to SellerWorklets.
   NonSharedParams non_shared_params;
@@ -447,23 +448,25 @@ struct BLINK_COMMON_EXPORT AuctionConfig {
   // Origin for the Coordinator to be used for Private Aggregation.
   std::optional<url::Origin> aggregation_coordinator_origin;
 
-  static_assert(__LINE__ == 450, R"(
+  static_assert(__LINE__ == 451, R"(
 If modifying AuctionConfig fields, please make sure to also modify:
 
 * third_party/blink/public/mojom/interest_group/interest_group_types.mojom
 * Mojo serialization in:
     third_party/blink/public/common/interest_group/auction_config_mojom_traits.h
     third_party/blink/common/interest_group/auction_config_mojom_traits.cc
+* Fuzzer test in:
+    content/test/data/fuzzer_corpus/ad_auction_service_mojolpm_fuzzer/basic_auction.textproto
 * NumPromises() if it's a Promise.
-* SerializeForDevtools()
+* SerializeAuctionConfigForDevtools() (in devtools_serialization.cc)
 * Add some non-trivial values for the type into CreateFullAuctionConfig() in
     third_party/blink/common/interest_group/auction_config_test_util.cc
 * Update devtools serialization expectations in
-    third_party/blink/common/interest_group/auction_config_unittest.cc
+    third_party/blink/common/interest_group/devtools_serialization_unittest.cc
 * If the value has special validation logic, add a test to
     third_party/blink/common/interest_group/auction_config_mojom_traits_test.cc
   (If it's just passing along some values, adding to CreateFullAuctionConfig()
-   will provide some coverage automatically).
+  will provide some coverage automatically).
 )");
 };
 

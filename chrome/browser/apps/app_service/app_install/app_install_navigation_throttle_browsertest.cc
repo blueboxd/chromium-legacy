@@ -3,32 +3,31 @@
 // found in the LICENSE file.
 
 #include "base/strings/strcat.h"
+#include "base/strings/stringprintf.h"
+#include "base/test/repeating_test_future.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_install/app_install.pb.h"
 #include "chrome/browser/apps/app_service/app_install/app_install_navigation_throttle.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/chromeos/crosapi/test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/web_applications/web_app_dialogs.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_process.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/crosapi/mojom/test_controller.mojom-test-utils.h"
 #include "components/services/app_service/public/cpp/package_id.h"
 #include "components/webapps/common/web_app_id.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/apps/almanac_api_client/almanac_api_util.h"
-#else
-#include "chromeos/crosapi/mojom/test_controller.mojom.h"
-#include "chromeos/lacros/lacros_service.h"
-#include "chromeos/startup/browser_params_proxy.h"
-#endif
 
 namespace apps {
 
@@ -37,28 +36,18 @@ class AppInstallNavigationThottleBrowserTest : public InProcessBrowserTest {
   AppInstallNavigationThottleBrowserTest() = default;
 
   void SetUpOnMainThread() override {
+    if (!crosapi::AshSupportsCapabilities({"b/304680258"})) {
+      GTEST_SKIP() << "Unsupported Ash version.";
+    }
+
     embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         &AppInstallNavigationThottleBrowserTest::HandleRequest,
         base::Unretained(this)));
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    // Override Almanac server URL.
-    std::string test_endpoint = embedded_test_server()->GetURL("/").spec();
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    apps::SetAlmanacEndpointUrlForTesting(std::move(test_endpoint));
-#else
-    const std::optional<std::vector<std::string>>& capabilities =
-        chromeos::BrowserParamsProxy::Get()->AshCapabilities();
-    if (!capabilities || !base::Contains(*capabilities, "b/304680258")) {
-      GTEST_SKIP() << "Unsupported Ash version.";
-    }
-    base::RunLoop run_loop;
-    chromeos::LacrosService::Get()
-        ->GetRemote<crosapi::mojom::TestController>()
-        ->SetAlmanacEndpointUrlForTesting(test_endpoint,
-                                          run_loop.QuitClosure());
-    run_loop.Run();
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+    crosapi::mojom::TestControllerAsyncWaiter(crosapi::GetTestController())
+        .SetAlmanacEndpointUrlForTesting(
+            embedded_test_server()->GetURL("/").spec());
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
@@ -104,12 +93,12 @@ IN_PROC_BROWSER_TEST_F(AppInstallNavigationThottleBrowserTest,
   // Make install prompts auto accept.
   web_app::SetAutoAcceptPWAInstallConfirmationForTesting(/*auto_accept=*/true);
 
-  // Open GIOC URI.
-  NavigateParams params(browser(),
-                        GURL(base::StrCat({"almanac://install-app?package_id=",
-                                           package_id.ToString()})),
-                        ui::PAGE_TRANSITION_LINK);
-  ui_test_utils::NavigateToURL(&params);
+  // Open install-app URI.
+  EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
+  EXPECT_TRUE(content::ExecJs(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      base::StringPrintf("window.open('almanac://install-app?package_id=%s');",
+                         package_id.ToString().c_str())));
 
   // This should trigger the sequence:
   // - AppInstallNavigationThrottle
@@ -119,6 +108,33 @@ IN_PROC_BROWSER_TEST_F(AppInstallNavigationThottleBrowserTest,
   // Await install to complete.
   web_app::WebAppTestInstallObserver(browser()->profile())
       .BeginListeningAndWait({app_id});
+
+  // Check that window.open() didn't leave an extra about:blank tab lying
+  // around, there should only be the original about:blank tab and the install
+  // page tab.
+  EXPECT_EQ(browser()->tab_strip_model()->count(), 2);
+
+  // Test whether already installed apps launch instead of going through the
+  // install flow again.
+  if (crosapi::AshSupportsCapabilities({"b/326167458"})) {
+    // Disable install prompt auto accept.
+    web_app::SetAutoAcceptPWAInstallConfirmationForTesting(
+        /*auto_accept=*/false);
+
+    base::test::RepeatingTestFuture<apps::AppLaunchParams> future;
+    web_app::WebAppLaunchProcess::SetOpenApplicationCallbackForTesting(
+        future.GetCallback());
+
+    // Open install-app URI again.
+    EXPECT_TRUE(content::ExecJs(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        base::StringPrintf(
+            "window.open('almanac://install-app?package_id=%s');",
+            package_id.ToString().c_str())));
+
+    // This should launch the app instead of triggering installation.
+    EXPECT_EQ(future.Take().app_id, app_id);
+  }
 }
 
 }  // namespace apps

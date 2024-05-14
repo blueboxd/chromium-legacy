@@ -6,6 +6,7 @@
 #include <cmath>
 #include <type_traits>
 
+#include "base/containers/fixed_flat_set.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
@@ -15,6 +16,7 @@
 #include "build/build_config.h"
 #include "components/ml/webnn/features.mojom-features.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/webnn/buildflags.h"
 #include "services/webnn/public/mojom/webnn_context_provider.mojom.h"
 #include "services/webnn/public/mojom/webnn_graph.mojom.h"
 #include "services/webnn/webnn_context_impl.h"
@@ -38,7 +40,6 @@
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_MAC)
-#include "base/containers/fixed_flat_set.h"
 #include "base/mac/mac_util.h"
 #endif  // BUILDFLAG(IS_MAC)
 
@@ -61,7 +62,7 @@ void BuildAndCompute(
   mojo::Remote<mojom::WebNNContext> webnn_context_remote;
   mojo::Remote<mojom::WebNNGraph> webnn_graph_remote;
 
-  WebNNContextProviderImpl::Create(
+  WebNNContextProviderImpl::CreateForTesting(
       webnn_provider_remote.BindNewPipeAndPassReceiver());
 
   // Create the ContextImpl through context provider.
@@ -74,6 +75,8 @@ void BuildAndCompute(
     webnn_context_remote.Bind(
         std::move(create_context_result->get_context_remote()));
   }
+  EXPECT_FALSE(create_context_result->is_error())
+      << create_context_result->get_error()->message;
   EXPECT_TRUE(webnn_context_remote.is_bound());
 
   // The GraphImpl should be built successfully.
@@ -95,6 +98,8 @@ void BuildAndCompute(
     base::RunLoop().RunUntilIdle();
     return;
   }
+  EXPECT_FALSE(create_graph_result->is_error())
+      << create_graph_result->get_error()->message;
   EXPECT_TRUE(webnn_graph_remote.is_bound());
 
   // The GraphImpl should compute successfully.
@@ -210,6 +215,10 @@ void VerifyIsEqual(mojo_base::BigBuffer actual,
 #if BUILDFLAG(IS_WIN)
 class WebNNGraphImplBackendTest : public dml::TestBase {
  public:
+  WebNNGraphImplBackendTest()
+      : scoped_feature_list_(
+            webnn::mojom::features::kWebMachineLearningNeuralNetwork) {}
+
   void SetUp() override;
 
  protected:
@@ -220,10 +229,7 @@ class WebNNGraphImplBackendTest : public dml::TestBase {
 
 void WebNNGraphImplBackendTest::SetUp() {
   SKIP_TEST_IF(!dml::UseGPUInTests());
-  scoped_feature_list_.InitAndEnableFeature(
-      webnn::mojom::features::kWebMachineLearningNeuralNetwork);
 
-  ASSERT_TRUE(InitializeGLDisplay());
   dml::Adapter::EnableDebugLayerForTesting();
   auto adapter_creation_result = dml::Adapter::GetInstanceForTesting();
   ASSERT_TRUE(adapter_creation_result.has_value());
@@ -298,29 +304,62 @@ void WebNNGraphImplBackendTest::SetUp() {
 #if BUILDFLAG(IS_MAC)
 class WebNNGraphImplBackendTest : public testing::Test {
  public:
-  void SetUp() override {
-    if (base::mac::MacOSVersion() < 13'00'00) {
-      GTEST_SKIP() << "Skipping test because WebNN is not supported on Mac OS "
-                   << base::mac::MacOSVersion();
-    }
-    const std::string_view current_test_name =
-        ::testing::UnitTest::GetInstance()->current_test_info()->name();
-    static auto kSupportedTests = base::MakeFixedFlatSet<std::string_view>({
-        "BuildAndComputeSingleOperatorElementWiseBinary",
-    });
-    if (!kSupportedTests.contains(current_test_name)) {
-      GTEST_SKIP()
-          << "Skipping test because the operator is not yet supported.";
-    }
-    scoped_feature_list_.InitAndEnableFeature(
-        webnn::mojom::features::kWebMachineLearningNeuralNetwork);
-  }
+  WebNNGraphImplBackendTest()
+      : scoped_feature_list_(
+            webnn::mojom::features::kWebMachineLearningNeuralNetwork) {}
+
+  void SetUp() override;
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
   base::test::TaskEnvironment task_environment_;
 };
+
+void WebNNGraphImplBackendTest::SetUp() {
+  if (base::mac::MacOSVersion() < 13'00'00) {
+    GTEST_SKIP() << "Skipping test because WebNN is not supported on Mac OS "
+                  << base::mac::MacOSVersion();
+  }
+  const std::string_view current_test_name =
+      ::testing::UnitTest::GetInstance()->current_test_info()->name();
+  static auto kSupportedTests = base::MakeFixedFlatSet<std::string_view>({
+      "BuildAndComputeSingleOperatorElementWiseBinary",
+  });
+  if (!kSupportedTests.contains(current_test_name)) {
+    GTEST_SKIP()
+        << "Skipping test because the operator is not yet supported.";
+  }
+}
 #endif  // BUILDFLAG(IS_MAC)
+
+#if BUILDFLAG(WEBNN_USE_TFLITE)
+class WebNNGraphImplBackendTest : public testing::Test {
+ public:
+  WebNNGraphImplBackendTest()
+      : scoped_feature_list_(
+            webnn::mojom::features::kWebMachineLearningNeuralNetwork) {}
+
+  void SetUp() override;
+
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::TaskEnvironment task_environment_;
+};
+
+void WebNNGraphImplBackendTest::SetUp() {
+  const std::string_view current_test_name =
+      ::testing::UnitTest::GetInstance()->current_test_info()->name();
+  static auto kSupportedTests = base::MakeFixedFlatSet<std::string_view>({
+      "BuildAndComputeSingleOperatorElementWiseBinary",
+      "BuildAndComputeSingleOperatorElementWiseUnary",
+      "BuildAndComputeSingleOperatorConcat",
+      "BuildAndComputeConcatWithConstants",
+  });
+  if (!kSupportedTests.contains(current_test_name)) {
+    GTEST_SKIP() << "Skipping test because the operator is not yet supported.";
+  }
+}
+#endif  // BUILDFLAG(WEBNN_USE_TFLITE)
 
 template <typename T>
 struct ArgMinMaxTester {
@@ -865,7 +904,7 @@ TEST_F(WebNNGraphImplBackendTest, BuildSingleOperatorBatchNormalization) {
 
 template <typename T>
 struct Conv2dTester {
-  mojom::Conv2d_Type type;
+  mojom::Conv2d::Kind type;
   OperandInfo<T> input;
   OperandInfo<T> filter;
   struct Conv2dAttributes {
@@ -923,7 +962,7 @@ TEST_F(WebNNGraphImplBackendTest, BuildAndComputeSingleOperatorConv2d) {
   // fusing with bias.
   {
     Conv2dTester<float>{
-        .type = mojom::Conv2d_Type::kDirect,
+        .type = mojom::Conv2d::Kind::kDirect,
         .input = {.type = mojom::Operand::DataType::kFloat32,
                   .dimensions = {1, 1, 5, 5},
                   .values = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
@@ -948,7 +987,7 @@ TEST_F(WebNNGraphImplBackendTest, BuildAndComputeSingleOperatorConv2d) {
   // fusing with bias.
   {
     Conv2dTester<float16>{
-        .type = mojom::Conv2d_Type::kDirect,
+        .type = mojom::Conv2d::Kind::kDirect,
         .input = {.type = mojom::Operand::DataType::kFloat16,
                   .dimensions = {1, 1, 5, 5},
                   .values = Float16FromFloat32(
@@ -974,7 +1013,7 @@ TEST_F(WebNNGraphImplBackendTest, BuildAndComputeSingleOperatorConv2d) {
   // without bias.
   {
     Conv2dTester<float>{
-        .type = mojom::Conv2d_Type::kDirect,
+        .type = mojom::Conv2d::Kind::kDirect,
         .input = {.type = mojom::Operand::DataType::kFloat32,
                   .dimensions = {1, 1, 5, 5},
                   .values = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
@@ -994,7 +1033,7 @@ TEST_F(WebNNGraphImplBackendTest, BuildAndComputeSingleOperatorConv2d) {
   // without bias.
   {
     Conv2dTester<float>{
-        .type = mojom::Conv2d_Type::kDirect,
+        .type = mojom::Conv2d::Kind::kDirect,
         .input = {.type = mojom::Operand::DataType::kFloat32,
                   .dimensions = {1, 5, 5, 1},
                   .values = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
@@ -1016,7 +1055,7 @@ TEST_F(WebNNGraphImplBackendTest, BuildAndComputeSingleOperatorConv2d) {
   // without bias.
   {
     Conv2dTester<float16>{
-        .type = mojom::Conv2d_Type::kDirect,
+        .type = mojom::Conv2d::Kind::kDirect,
         .input = {.type = mojom::Operand::DataType::kFloat16,
                   .dimensions = {1, 5, 5, 1},
                   .values = Float16FromFloat32(
@@ -1089,7 +1128,7 @@ TEST_F(WebNNGraphImplBackendTest, BuildAndComputeSingleOperatorConv2d) {
   // linear activation.
   {
     Conv2dTester<float>{
-        .type = mojom::Conv2d_Type::kDirect,
+        .type = mojom::Conv2d::Kind::kDirect,
         .input = {.type = mojom::Operand::DataType::kFloat32,
                   .dimensions = {1, 1, 5, 5},
                   .values = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
@@ -1119,7 +1158,7 @@ TEST_F(WebNNGraphImplBackendTest, BuildAndComputeSingleOperatorConv2d) {
   // activation.
   {
     Conv2dTester<float>{
-        .type = mojom::Conv2d_Type::kDirect,
+        .type = mojom::Conv2d::Kind::kDirect,
         .input = {.type = mojom::Operand::DataType::kFloat32,
                   .dimensions = {1, 5, 5, 1},
                   .values = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
@@ -1146,7 +1185,7 @@ TEST_F(WebNNGraphImplBackendTest, BuildAndComputeSingleOperatorConv2d) {
   // activation.
   {
     Conv2dTester<float16>{
-        .type = mojom::Conv2d_Type::kDirect,
+        .type = mojom::Conv2d::Kind::kDirect,
         .input = {.type = mojom::Operand::DataType::kFloat16,
                   .dimensions = {1, 5, 5, 1},
                   .values = Float16FromFloat32(
@@ -1173,7 +1212,7 @@ TEST_F(WebNNGraphImplBackendTest, BuildAndComputeSingleOperatorConv2d) {
   // Test conv2d with NCHW layout, fusing with hardSigmoid activation.
   {
     Conv2dTester<float>{
-        .type = mojom::Conv2d_Type::kDirect,
+        .type = mojom::Conv2d::Kind::kDirect,
         .input = {.type = mojom::Operand::DataType::kFloat32,
                   .dimensions = {1, 1, 5, 5},
                   .values = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
@@ -1318,7 +1357,7 @@ TEST_F(WebNNGraphImplBackendTest,
   // Test convTranspose2d with default attributes.
   {
     Conv2dTester<float>{
-        .type = mojom::Conv2d_Type::kTransposed,
+        .type = mojom::Conv2d::Kind::kTransposed,
         .input = {.type = mojom::Operand::DataType::kFloat32,
                   .dimensions = {1, 1, 3, 3},
                   .values = {0, 1, 2, 3, 4, 5, 6, 7, 8}},
@@ -1337,7 +1376,7 @@ TEST_F(WebNNGraphImplBackendTest,
   // Test convTranspose2d with NHWC input layout.
   {
     Conv2dTester<float>{
-        .type = mojom::Conv2d_Type::kTransposed,
+        .type = mojom::Conv2d::Kind::kTransposed,
         .input = {.type = mojom::Operand::DataType::kFloat32,
                   .dimensions = {1, 3, 3, 1},
                   .values = {0, 1, 2, 3, 4, 5, 6, 7, 8}},
@@ -1357,7 +1396,7 @@ TEST_F(WebNNGraphImplBackendTest,
   }
   // Test convTranspose2d with padding = {1, 1, 1, 1}.
   {
-    Conv2dTester<float>{.type = mojom::Conv2d_Type::kTransposed,
+    Conv2dTester<float>{.type = mojom::Conv2d::Kind::kTransposed,
                         .input = {.type = mojom::Operand::DataType::kFloat32,
                                   .dimensions = {1, 1, 2, 2},
                                   .values = {0, 1, 2, 3}},
@@ -1373,7 +1412,7 @@ TEST_F(WebNNGraphImplBackendTest,
   // Test convTranspose2d with groups = 2.
   {
     Conv2dTester<float>{
-        .type = mojom::Conv2d_Type::kTransposed,
+        .type = mojom::Conv2d::Kind::kTransposed,
         .input = {.type = mojom::Operand::DataType::kFloat32,
                   .dimensions = {1, 2, 2, 2},
                   .values = {2, 4, 0, 1, 2, 4, 0, 1}},
@@ -1390,7 +1429,7 @@ TEST_F(WebNNGraphImplBackendTest,
   // Test convTranspose2d with strides = {3, 2}.
   {
     Conv2dTester<float>{
-        .type = mojom::Conv2d_Type::kTransposed,
+        .type = mojom::Conv2d::Kind::kTransposed,
         .input = {.type = mojom::Operand::DataType::kFloat32,
                   .dimensions = {1, 1, 3, 3},
                   .values = {0, 1, 2, 3, 4, 5, 6, 7, 8}},
@@ -1419,7 +1458,7 @@ TEST_F(WebNNGraphImplBackendTest,
   // be {10, 8}, which is equivalent to setting outputPadding = {1, 1}.
   {
     Conv2dTester<float>{
-        .type = mojom::Conv2d_Type::kTransposed,
+        .type = mojom::Conv2d::Kind::kTransposed,
         .input = {.type = mojom::Operand::DataType::kFloat32,
                   .dimensions = {1, 1, 3, 3},
                   .values = {0, 1, 2, 3, 4, 5, 6, 7, 8}},
@@ -1449,7 +1488,7 @@ TEST_F(WebNNGraphImplBackendTest,
   // Test convTranspose2d fusing with bias.
   {
     Conv2dTester<float>{
-        .type = mojom::Conv2d_Type::kTransposed,
+        .type = mojom::Conv2d::Kind::kTransposed,
         .input = {.type = mojom::Operand::DataType::kFloat32,
                   .dimensions = {1, 1, 2, 2},
                   .values = {0, 1, 2, 3}},
@@ -1470,7 +1509,7 @@ TEST_F(WebNNGraphImplBackendTest,
   // activation.
   {
     Conv2dTester<float16>{
-        .type = mojom::Conv2d_Type::kTransposed,
+        .type = mojom::Conv2d::Kind::kTransposed,
         .input = {.type = mojom::Operand::DataType::kFloat16,
                   .dimensions = {1, 1, 2, 2},
                   .values = Float16FromFloat32({0, 1, 2, 3})},
@@ -1528,9 +1567,6 @@ struct ElementWiseBinaryTester {
 // binary.
 TEST_F(WebNNGraphImplBackendTest,
        BuildAndComputeSingleOperatorElementWiseBinary) {
-  // TODO(https://crbug.com/1522285): Re-enable the test on Mac, after adding
-  // support for 0-D scalars.
-#if !BUILDFLAG(IS_MAC)
   // Test building and computing a graph with single operator add for 0-D
   // scalars.
   {
@@ -1547,7 +1583,6 @@ TEST_F(WebNNGraphImplBackendTest,
                    .values = {7}}}
         .Test();
   }
-#endif
   // Test building and computing a graph with single operator add.
   {
     ElementWiseBinaryTester<float>{
@@ -1563,9 +1598,6 @@ TEST_F(WebNNGraphImplBackendTest,
                    .values = {7, 7, 7, 7, 7, 7}}}
         .Test();
   }
-  // TODO(https://issues.chromium.org/41481333): Enable these tests on Mac,
-  // after adding support for other binary operators.
-#if !BUILDFLAG(IS_MAC)
   // Test building and computing a graph with single operator add using
   // broadcasting from 0-D scalar.
   {
@@ -1784,6 +1816,12 @@ TEST_F(WebNNGraphImplBackendTest,
                    .values = {-1, 0, 1, 2, 3, 4}}}
         .Test();
   }
+  // TODO(https://issues.chromium.org/41481333): Enable these tests on Mac,
+  // after adding support for other binary operators.
+#if !BUILDFLAG(IS_MAC)
+  // TODO(https://crbug.com/326356909): Enable these tests when using TFLite,
+  // after adding support for other binary operators.
+#if !BUILDFLAG(WEBNN_USE_TFLITE)
   // Test building and computing a graph with single operator equal.
   {
     ElementWiseBinaryTester<float, uint8_t>{
@@ -1949,6 +1987,7 @@ TEST_F(WebNNGraphImplBackendTest,
                    .values = {1, 1, 1, 1, 0, 0}}}
         .Test();
   }
+#endif  // !BUILDFLAG(WEBNN_USE_TFLITE)
 #endif  // !BUILDFLAG(IS_MAC)
 }
 
@@ -2002,6 +2041,10 @@ TEST_F(WebNNGraphImplBackendTest,
       .type = mojom::Operand::DataType::kUint8,
       .dimensions = {1, 2, 3, 1},
       .values = {0, 2, 0, 4, 5, 120}};
+
+  // TODO(https://crbug.com/326356909): Enable these tests when using TFLite,
+  // after adding support for other unary operators.
+#if !BUILDFLAG(WEBNN_USE_TFLITE)
   {
     ElementWiseUnaryTester<uint8_t>{
         .input = {.type = mojom::Operand::DataType::kUint8,
@@ -2055,6 +2098,8 @@ TEST_F(WebNNGraphImplBackendTest,
         .output = test_operand_info_uint8}
         .Test();
   }
+#endif  // !BUILDFLAG(WEBNN_USE_TFLITE)
+
   {
     // Test Sqrt with 0-D scalar input.
     ElementWiseUnaryTester<float>{
@@ -2078,6 +2123,10 @@ TEST_F(WebNNGraphImplBackendTest,
                    .values = {0, 2, 5, 4, 8, 7}}}
         .Test();
   }
+
+  // TODO(https://crbug.com/326356909): Enable these tests when using TFLite,
+  // after adding support for float16 and other unary operators.
+#if !BUILDFLAG(WEBNN_USE_TFLITE)
   {
     ElementWiseUnaryTester<float16>{
         .input = {.type = mojom::Operand::DataType::kFloat16,
@@ -2136,6 +2185,8 @@ TEST_F(WebNNGraphImplBackendTest,
                         std::numeric_limits<float>::infinity()})}}
         .Test();
   }
+#endif  // !BUILDFLAG(WEBNN_USE_TFLITE)
+
   {
     ElementWiseUnaryTester<float>{
         .input = {.type = mojom::Operand::DataType::kFloat32,
@@ -2180,6 +2231,10 @@ TEST_F(WebNNGraphImplBackendTest,
                    .values = {exp(1.f), exp(-2.f), exp(3.f), exp(-4.f)}}}
         .Test();
   }
+
+  // TODO(https://crbug.com/326356909): Enable these tests when using TFLite,
+  // after adding support for other unary operators.
+#if !BUILDFLAG(WEBNN_USE_TFLITE)
   {
     ElementWiseUnaryTester<float16>{
         .input = {.type = mojom::Operand::DataType::kFloat16,
@@ -2191,6 +2246,8 @@ TEST_F(WebNNGraphImplBackendTest,
                    .values = Float16FromFloat32({-2, 0, 1, -3, 0, 2})}}
         .Test();
   }
+#endif  // !BUILDFLAG(WEBNN_USE_TFLITE)
+
   {
     ElementWiseUnaryTester<float>{
         .input = {.type = mojom::Operand::DataType::kFloat32,
@@ -2224,6 +2281,10 @@ TEST_F(WebNNGraphImplBackendTest,
                    .values = {sin(1.f), sin(-2.f), sin(3.f), sin(-4.f)}}}
         .Test();
   }
+
+  // TODO(https://crbug.com/326356909): Enable these tests when using TFLite,
+  // after adding support for other unary operators.
+#if !BUILDFLAG(WEBNN_USE_TFLITE)
   {
     ElementWiseUnaryTester<float>{
         .input = {.type = mojom::Operand::DataType::kFloat32,
@@ -2235,6 +2296,7 @@ TEST_F(WebNNGraphImplBackendTest,
                    .values = {tan(1.f), tan(-2.f), tan(3.f), tan(-4.f)}}}
         .Test();
   }
+#endif  // !BUILDFLAG(WEBNN_USE_TFLITE)
 }
 
 template <typename T>
@@ -2831,23 +2893,44 @@ TEST_F(WebNNGraphImplBackendTest, BuildAndComputeSingleOperatorL2Pool2d) {
 // Test building and computing a graph with single operator max pool2d
 // with nchw layout.
 TEST_F(WebNNGraphImplBackendTest, BuildAndComputeSingleOperatorMaxPool2d) {
-  // Test max pool2d with nchw layout, strides=1, padding=0, and floor
-  // rounding.
-  Pool2dTester<float>{
-      .input = {.type = mojom::Operand::DataType::kFloat32,
-                .dimensions = {1, 2, 3, 3},
-                .values = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-                           16, 17, 18}},
-      .attributes = {.window_dimensions = {2, 2},
-                     .padding = {0, 0, 0, 0},
-                     .strides = {1, 1},
-                     .dilations = {1, 1},
-                     .layout = mojom::InputOperandLayout::kChannelsFirst},
-      .kind = mojom::Pool2d::Kind::kMaxPool2d,
-      .output = {.type = mojom::Operand::DataType::kFloat32,
-                 .dimensions = {1, 2, 2, 2},
-                 .values = {5, 6, 8, 9, 14, 15, 17, 18}}}
-      .Test();
+  {
+    // Test max pool2d with nchw layout, strides=1, padding=0, dilations={1,1}
+    // and floor rounding.
+    Pool2dTester<float>{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 2, 3, 3},
+                  .values = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+                             16, 17, 18}},
+        .attributes = {.window_dimensions = {2, 2},
+                       .padding = {0, 0, 0, 0},
+                       .strides = {1, 1},
+                       .dilations = {1, 1},
+                       .layout = mojom::InputOperandLayout::kChannelsFirst},
+        .kind = mojom::Pool2d::Kind::kMaxPool2d,
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 2, 2, 2},
+                   .values = {5, 6, 8, 9, 14, 15, 17, 18}}}
+        .Test();
+  }
+  {
+    // Test max pool2d with nchw layout, strides=1, padding=0, dilations={2,2}
+    // and floor rounding.
+    Pool2dTester<float>{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 4, 4},
+                  .values = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+                             16}},
+        .attributes = {.window_dimensions = {2, 2},
+                       .padding = {0, 0, 0, 0},
+                       .strides = {1, 1},
+                       .dilations = {2, 2},
+                       .layout = mojom::InputOperandLayout::kChannelsFirst},
+        .kind = mojom::Pool2d::Kind::kMaxPool2d,
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 2, 2},
+                   .values = {11, 12, 15, 16}}}
+        .Test();
+  }
 }
 
 template <typename T>
@@ -4783,7 +4866,7 @@ TEST_F(WebNNGraphImplBackendTest, BuildOneGraphToComputeMultipleTimes) {
   mojo::Remote<mojom::WebNNContextProvider> webnn_provider_remote;
   mojo::Remote<mojom::WebNNContext> webnn_context_remote;
   mojo::Remote<mojom::WebNNGraph> webnn_graph_remote;
-  WebNNContextProviderImpl::Create(
+  WebNNContextProviderImpl::CreateForTesting(
       webnn_provider_remote.BindNewPipeAndPassReceiver());
 
   // Create the ContextImpl through context provider.

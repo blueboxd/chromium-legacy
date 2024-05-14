@@ -26,6 +26,7 @@
 #include "components/autofill/content/browser/test_autofill_driver_injector.h"
 #include "components/autofill/content/browser/test_autofill_manager_injector.h"
 #include "components/autofill/content/browser/test_content_autofill_client.h"
+#include "components/autofill/core/browser/autofill_form_test_utils.h"
 #include "components/autofill/core/browser/test_autofill_manager_waiter.h"
 #include "components/autofill/core/common/autofill_test_utils.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -123,9 +124,8 @@ FormData CreateTestLoginForm() {
 
 class TestAndroidAutofillManager : public AndroidAutofillManager {
  public:
-  explicit TestAndroidAutofillManager(ContentAutofillDriver* driver,
-                                      ContentAutofillClient* client)
-      : AndroidAutofillManager(driver, client) {}
+  explicit TestAndroidAutofillManager(ContentAutofillDriver* driver)
+      : AndroidAutofillManager(driver) {}
 
   void OnFormsSeen(const std::vector<FormData>& updated_forms,
                    const std::vector<FormGlobalId>& removed_forms) override {
@@ -201,6 +201,7 @@ class MockAutofillProviderAndroidBridge : public AutofillProviderAndroidBridge {
   MOCK_METHOD(void, OnTextFieldDidScroll, (const FieldInfo&), (override));
   MOCK_METHOD(void, OnFormSubmitted, (mojom::SubmissionSource), (override));
   MOCK_METHOD(void, OnDidFillAutofillFormData, (), (override));
+  MOCK_METHOD(void, CancelSession, (), (override));
   MOCK_METHOD(void, Reset, (), (override));
 };
 
@@ -285,6 +286,8 @@ class AutofillProviderAndroidTest : public content::RenderViewHostTestHarness {
   TestAutofillManagerInjector<TestAndroidAutofillManager>
       autofill_manager_injector_;
   raw_ptr<MockAutofillProviderAndroidBridge> provider_bridge_ = nullptr;
+  base::test::ScopedFeatureList feature_list_{
+      features::kAndroidAutofillCancelSessionOnNavigation};
 };
 
 // Tests that AndroidAutofillManager keeps track of the predictions it is
@@ -783,6 +786,28 @@ TEST_F(AutofillProviderAndroidTest,
       changed_form, changed_form.fields.front());
 }
 
+// Tests that new document navigation (manager reset) cancels the ongoing
+// autofill session
+TEST_F(AutofillProviderAndroidTest, CancelSessionOnNavigation) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAndroidAutofillCancelSessionOnNavigation);
+
+  FormData form = CreateFormDataForFrame(
+      CreateTestPersonalInformationFormData(), main_frame_token());
+  android_autofill_manager().OnFormsSeen({form}, /*removed_forms=*/{});
+
+  EXPECT_CALL(
+      provider_bridge(),
+      StartAutofillSession(EqualsFormData(form), EqualsFieldInfo(/*index=*/0),
+                           /*has_server_predictions=*/false));
+  android_autofill_manager().SimulateOnAskForValuesToFill(form,
+                                                          form.fields.front());
+
+  EXPECT_CALL(provider_bridge(), CancelSession());
+  android_autofill_manager().Reset();
+}
+
 class AutofillProviderAndroidPrefillRequestTest
     : public AutofillProviderAndroidTest,
       public ::testing::WithParamInterface<bool> {
@@ -807,6 +832,34 @@ class AutofillProviderAndroidPrefillRequestTest
       features::kAndroidAutofillPrefillRequestsForLoginForms};
   base::test::ScopedFeatureList param_feature_list_;
 };
+
+// Tests that we can send another prefill request after navigation.
+TEST_P(AutofillProviderAndroidPrefillRequestTest,
+       MultiplePrefillRequestsOnNavigation) {
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SdkVersion::SDK_VERSION_U) {
+    GTEST_SKIP();
+  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAndroidAutofillCancelSessionOnNavigation);
+
+  FormData form = test::GetFormData(
+      {.fields = {{.autocomplete_attribute = "username"},
+                  {.autocomplete_attribute = "current-password",
+                   .form_control_type = FormControlType::kInputPassword}}});
+
+  EXPECT_CALL(provider_bridge(), SendPrefillRequest).Times(2);
+  android_autofill_manager().OnFormsSeen({form}, /*removed_forms=*/{});
+  android_autofill_manager().SimulatePropagateAutofillPredictions(
+      form.global_id());
+  android_autofill_manager().SimulateOnAskForValuesToFill(form,
+                                                          form.fields.front());
+  android_autofill_manager().Reset();
+  android_autofill_manager().OnFormsSeen({form}, /*removed_forms=*/{});
+  android_autofill_manager().SimulatePropagateAutofillPredictions(
+      form.global_id());
+}
 
 // Tests that a metric is emitted if prefill requests are supported and there
 // was not enough time to send a prefill request.

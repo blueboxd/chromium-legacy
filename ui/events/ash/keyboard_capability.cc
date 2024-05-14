@@ -32,6 +32,7 @@
 #include "device/udev_linux/scoped_udev.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/ash/event_rewriter_ash.h"
+#include "ui/events/ash/keyboard_info_metrics.h"
 #include "ui/events/ash/keyboard_layout_util.h"
 #include "ui/events/ash/mojom/modifier_key.mojom-shared.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -466,6 +467,8 @@ std::vector<TopRowActionKey> IdentifyTopRowActionKeys(
           std::begin(kLayoutWilcoDrallionTopRowActionKeys),
           std::end(kLayoutWilcoDrallionTopRowActionKeys));
     case KeyboardCapability::KeyboardTopRowLayout::kKbdTopRowLayoutCustom:
+    case KeyboardCapability::KeyboardTopRowLayout::
+        kKbdTopRowLayoutSplitModifiers:
       return IdentifyCustomTopRowActionKeys(scan_code_to_evdev_key_converter,
                                             keyboard, top_row_scan_codes);
   }
@@ -540,7 +543,7 @@ KeyboardCapability::CreateEventDeviceInfoFromInputDevice(
 // static
 std::optional<TopRowActionKey> KeyboardCapability::ConvertToTopRowActionKey(
     ui::KeyboardCode key_code) {
-  const auto* action_key = kVKeyToTopRowActionKeyMap.find(key_code);
+  const auto action_key = kVKeyToTopRowActionKeyMap.find(key_code);
   return (action_key != kVKeyToTopRowActionKeyMap.end())
              ? std::make_optional<TopRowActionKey>(action_key->second)
              : std::nullopt;
@@ -586,6 +589,7 @@ std::optional<KeyboardCode> KeyboardCapability::GetMappedFKeyIfExists(
       }
       break;
     case KeyboardTopRowLayout::kKbdTopRowLayoutCustom:
+    case KeyboardTopRowLayout::kKbdTopRowLayoutSplitModifiers:
       // TODO(zhangwenyu): Handle custom vivaldi layout.
       return std::nullopt;
   }
@@ -646,6 +650,7 @@ bool KeyboardCapability::HasLauncherButton(
     case KeyboardTopRowLayout::kKbdTopRowLayoutWilco:
     case KeyboardTopRowLayout::kKbdTopRowLayoutDrallion:
     case KeyboardTopRowLayout::kKbdTopRowLayoutCustom:
+    case KeyboardTopRowLayout::kKbdTopRowLayoutSplitModifiers:
       return true;
   }
 }
@@ -663,7 +668,7 @@ bool KeyboardCapability::HasLauncherButtonOnAnyKeyboard() const {
 // static
 bool KeyboardCapability::IsTopRowKey(const KeyboardCode& key_code) {
   // A set that includes all top row keys from different keyboards.
-  const auto* action = kVKeyToTopRowActionKeyMap.find(key_code);
+  const auto action = kVKeyToTopRowActionKeyMap.find(key_code);
   return action != kVKeyToTopRowActionKeyMap.end();
 }
 
@@ -714,6 +719,14 @@ std::vector<mojom::ModifierKey> KeyboardCapability::GetModifierKeys(
 
   if (HasAssistantKey(keyboard)) {
     modifier_keys.push_back(mojom::ModifierKey::kAssistant);
+  }
+
+  if (HasFunctionKey(keyboard)) {
+    modifier_keys.push_back(mojom::ModifierKey::kFunction);
+  }
+
+  if (HasRightAltKey(keyboard)) {
+    modifier_keys.push_back(mojom::ModifierKey::kRightAlt);
   }
 
   return modifier_keys;
@@ -782,11 +795,23 @@ const KeyboardCapability::KeyboardInfo* KeyboardCapability::GetKeyboardInfo(
       scan_code_to_evdev_key_converter_, keyboard, keyboard_info.device_type,
       keyboard_info.top_row_layout, keyboard_info.top_row_scan_codes);
 
+  if (ash::features::IsSplitKeyboardRefactorEnabled() &&
+      IsInternalKeyboard(keyboard)) {
+    keyboard_info.top_row_layout =
+        KeyboardTopRowLayout::kKbdTopRowLayoutSplitModifiers;
+  }
+
   // If we are unable to identify the device, erase the entry from the map.
   if (keyboard_info.device_type == DeviceType::kDeviceUnknown) {
     keyboard_info_map_.erase(keyboard.id);
     return nullptr;
   }
+
+  // This metrics recording will happen once per keyboard per connection, since
+  // GetKeyboardInfo is cached and isn't recomputed unless the keyboard
+  // disconnects and reconnects.
+  RecordKeyboardInfoMetrics(keyboard_info,
+                            /*has_assistant_key=*/HasAssistantKey(keyboard));
 
   return &keyboard_info;
 }
@@ -913,7 +938,8 @@ const std::vector<TopRowActionKey>* KeyboardCapability::GetTopRowActionKeys(
 bool KeyboardCapability::HasAssistantKey(const KeyboardDevice& keyboard) const {
   // Some external keyboards falsely claim to have assistant keys. However, this
   // can be trusted for internal + ChromeOS external keyboards.
-  return keyboard.has_assistant_key && IsChromeOSKeyboard(keyboard.id);
+  return keyboard.has_assistant_key && IsChromeOSKeyboard(keyboard.id) &&
+         !IsSplitModifierKeyboard(keyboard);
 }
 
 bool KeyboardCapability::HasAssistantKeyOnAnyKeyboard() const {
@@ -930,6 +956,25 @@ bool KeyboardCapability::HasCapsLockKey(const KeyboardDevice& keyboard) const {
   return !IsChromeOSKeyboard(keyboard.id) ||
          kChromeOSKeyboardsWithCapsLock.contains(
              {keyboard.vendor_id, keyboard.product_id});
+}
+
+bool KeyboardCapability::HasFunctionKey(const KeyboardDevice& keyboard) const {
+  return IsSplitModifierKeyboard(keyboard);
+}
+
+bool KeyboardCapability::HasRightAltKey(const KeyboardDevice& keyboard) const {
+  return IsSplitModifierKeyboard(keyboard);
+}
+
+bool KeyboardCapability::IsSplitModifierKeyboard(
+    const KeyboardDevice& keyboard) const {
+  const auto* keyboard_info = GetKeyboardInfo(keyboard);
+  if (!keyboard_info) {
+    return false;
+  }
+
+  return keyboard_info->top_row_layout ==
+         KeyboardTopRowLayout::kKbdTopRowLayoutSplitModifiers;
 }
 
 void KeyboardCapability::OnDeviceListsComplete() {

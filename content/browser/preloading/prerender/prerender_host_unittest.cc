@@ -14,6 +14,7 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/preloading/preloading.h"
 #include "content/browser/preloading/prerender/prerender_attributes.h"
+#include "content/browser/preloading/prerender/prerender_features.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/preloading/prerender/prerender_host.h"
 #include "content/browser/preloading/prerender/prerender_host_registry.h"
@@ -225,7 +226,8 @@ using ExpectedReadyForActivationState =
 void CommitPrerenderNavigation(
     PrerenderHost& host,
     ExpectedReadyForActivationState ready_for_activation =
-        ExpectedReadyForActivationState(true)) {
+        ExpectedReadyForActivationState(true),
+    scoped_refptr<net::HttpResponseHeaders> headers = nullptr) {
   // Normally we could use EmbeddedTestServer to provide a response, but these
   // tests use RenderViewHostImplTestHarness so the load goes through a
   // TestNavigationURLLoader which we don't have access to in order to
@@ -233,6 +235,7 @@ void CommitPrerenderNavigation(
   FrameTreeNode* ftn = FrameTreeNode::From(host.GetPrerenderedMainFrameHost());
   std::unique_ptr<NavigationSimulator> sim =
       NavigationSimulatorImpl::CreateFromPendingInFrame(ftn);
+  sim->SetResponseHeaders(headers);
   sim->Commit();
   EXPECT_EQ(host.is_ready_for_activation(), ready_for_activation.value());
 }
@@ -266,14 +269,13 @@ class PrerenderHostTest : public RenderViewHostImplTestHarness {
   }
 
   PrerenderAttributes GeneratePrerenderAttributes(const GURL& url) {
-    return GeneratePrerenderAttributesWithPredicate(
-        url, /*url_match_predicate=*/std::nullopt);
+    return GeneratePrerenderAttributesWithPredicate(url,
+                                                    /*url_match_predicate=*/{});
   }
 
   PrerenderAttributes GeneratePrerenderAttributesWithPredicate(
       const GURL& url,
-      std::optional<base::RepeatingCallback<bool(const GURL&)>>
-          url_match_predicate) {
+      base::RepeatingCallback<bool(const GURL&)> url_match_predicate) {
     RenderFrameHostImpl* rfh = contents()->GetPrimaryMainFrame();
     return PrerenderAttributes(
         url, PreloadingTriggerType::kSpeculationRule,
@@ -284,7 +286,7 @@ class PrerenderHostTest : public RenderViewHostImplTestHarness {
         contents()->GetWeakPtr(), rfh->GetFrameToken(),
         rfh->GetFrameTreeNodeId(), rfh->GetPageUkmSourceId(),
         ui::PAGE_TRANSITION_LINK, std::move(url_match_predicate),
-        /*prerender_navigation_handle_callback=*/std::nullopt);
+        /*prerender_navigation_handle_callback=*/{});
   }
 
   void ExpectFinalStatus(PrerenderFinalStatus status) {
@@ -323,6 +325,47 @@ class PrerenderHostTest : public RenderViewHostImplTestHarness {
   ukm::TestAutoSetUkmRecorder ukm_recorder_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
+
+class NoVarySearchHeaderPrerenderHostTest
+    : public PrerenderHostTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  NoVarySearchHeaderPrerenderHostTest() {
+    bool is_nvs_header_enabled = GetParam();
+    if (is_nvs_header_enabled) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kPrerender2NoVarySearch);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kPrerender2NoVarySearch);
+    }
+  }
+
+  ~NoVarySearchHeaderPrerenderHostTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_P(NoVarySearchHeaderPrerenderHostTest, IsNoVarySearchHeaderSet) {
+  bool is_nvs_header_enabled = GetParam();
+  // Start prerendering a page.
+  const GURL kPrerenderingUrl("https://example.com/next");
+  int prerender_frame_tree_node_id = contents()->AddPrerender(kPrerenderingUrl);
+  PrerenderHost* prerender_host =
+      registry().FindNonReservedHostById(prerender_frame_tree_node_id);
+  CommitPrerenderNavigation(
+      *prerender_host, ExpectedReadyForActivationState(true),
+      net::HttpResponseHeaders::Builder(net::HttpVersion(1, 1), "200 OK")
+          .AddHeader("No-Vary-Search", "params=(\"a\")")
+          .Build());
+  EXPECT_EQ(prerender_host->no_vary_search().has_value(),
+            is_nvs_header_enabled);
+}
+
+INSTANTIATE_TEST_SUITE_P(PrerenderHostTest,
+                         NoVarySearchHeaderPrerenderHostTest,
+                         ::testing::Bool());
 
 TEST_F(PrerenderHostTest, Activate) {
   // Start prerendering a page.

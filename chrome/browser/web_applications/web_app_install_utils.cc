@@ -11,6 +11,7 @@
 #include <ostream>
 #include <set>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -950,7 +951,7 @@ void RecordDownloadedIconsResultAndHttpStatusCodes(
 }
 
 void RecordDownloadedIconsHttpResultsCodeClass(
-    base::StringPiece histogram_name,
+    std::string_view histogram_name,
     IconsDownloadedResult result,
     const DownloadedIconsHttpResults& icons_http_results) {
   if (result != IconsDownloadedResult::kCompleted)
@@ -968,7 +969,7 @@ void RecordDownloadedIconsHttpResultsCodeClass(
 }
 
 void RecordDownloadedIconHttpStatusCodes(
-    base::StringPiece histogram_name,
+    std::string_view histogram_name,
     const DownloadedIconsHttpResults& icons_http_results) {
   if (icons_http_results.empty())
     return;
@@ -1108,72 +1109,6 @@ void CreateWebAppInstallTabHelpers(content::WebContents* web_contents) {
   webapps::PreRedirectionURLObserver::CreateForWebContents(web_contents);
 }
 
-// TODO(crbug.com/40251730): Delete and rewire callsites to directly call
-// Synchronize().
-void MaybeRegisterOsUninstall(const WebApp* web_app,
-                              WebAppManagementTypes sources_uninstalling,
-                              OsIntegrationManager& os_integration_manager,
-                              InstallOsHooksCallback callback) {
-  if (AreSubManagersExecuteEnabled()) {
-    std::move(callback).Run(OsHooksErrors());
-    return;
-  }
-#if BUILDFLAG(IS_WIN)
-  // |web_app| object will remove target |source_uninstalling| type.
-  // If the remaining source types and they happen to be user
-  // uninstallable, then it should register OsSettings.
-  WebAppManagementTypes sources = web_app->GetSources();
-  DCHECK(sources.HasAny(sources_uninstalling));
-  bool user_installable_before_uninstall = CanUserUninstallWebApp(sources);
-  sources.RemoveAll(sources_uninstalling);
-  bool user_installable_after_uninstall = CanUserUninstallWebApp(sources);
-
-  if (!user_installable_before_uninstall && user_installable_after_uninstall) {
-    InstallOsHooksOptions options;
-    options.os_hooks[OsHookType::kUninstallationViaOsSettings] = true;
-    auto os_hooks_barrier =
-        OsIntegrationManager::GetBarrierForSynchronize(std::move(callback));
-    // TODO(crbug.com/1401125): Remove InstallOsHooks() once OS integration
-    // sub managers have been implemented.
-    os_integration_manager.InstallOsHooks(web_app->app_id(), os_hooks_barrier,
-                                          nullptr, options);
-    os_integration_manager.Synchronize(
-        web_app->app_id(), base::BindOnce(os_hooks_barrier, OsHooksErrors()));
-    return;
-  }
-#endif
-  std::move(callback).Run(OsHooksErrors());
-}
-
-// TODO(crbug.com/40251730): Delete and rewire callsites to directly call
-// Synchronize().
-void MaybeUnregisterOsUninstall(const WebApp* web_app,
-                                WebAppManagement::Type source_installing,
-                                OsIntegrationManager& os_integration_manager) {
-  if (AreSubManagersExecuteEnabled()) {
-    return;
-  }
-#if BUILDFLAG(IS_WIN)
-  // |web_app| object will add target |source_installing| type.
-  // If the old source types are user installable, but new type is not, then
-  // it should unregister OsSettings.
-  WebAppManagementTypes sources = web_app->GetSources();
-  bool user_installable_before_install = CanUserUninstallWebApp(sources);
-  sources.Put(source_installing);
-  bool user_installable_after_install = CanUserUninstallWebApp(sources);
-
-  if (user_installable_before_install && !user_installable_after_install) {
-    OsHooksOptions options;
-    options[OsHookType::kUninstallationViaOsSettings] = true;
-    // TODO(crbug.com/1401125): Remove UninstallOsHooks() once OS integration
-    // sub managers have been implemented.
-    os_integration_manager.UninstallOsHooks(web_app->app_id(), options,
-                                            base::DoNothing());
-    os_integration_manager.Synchronize(web_app->app_id(), base::DoNothing());
-  }
-#endif
-}
-
 void SetWebAppManifestFields(const WebAppInstallInfo& web_app_info,
                              WebApp& web_app,
                              bool skip_icons_on_download_failure) {
@@ -1256,6 +1191,8 @@ void SetWebAppManifestFields(const WebAppInstallInfo& web_app_info,
     web_app.SetValidatedScopeExtensions(
         web_app_info.validated_scope_extensions.value());
   }
+
+  web_app.SetIsDiyApp(web_app_info.is_diy_app);
 }
 
 void SetWebAppProductIconFields(const WebAppInstallInfo& web_app_info,

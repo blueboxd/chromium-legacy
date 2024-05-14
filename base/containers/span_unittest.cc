@@ -86,6 +86,9 @@ namespace {
     int kArray[] = {1, 2, 3};
     static_assert(std::is_same_v<decltype(span(kArray)), span<int, 3>>);
   }
+  // We also deduce an rvalue array to make a fixed-span over const values,
+  // which matches the span<const T> constructor from an array.
+  static_assert(std::is_same_v<decltype(span({1, 2, 3})), span<const int, 3>>);
 
   static_assert(
       std::is_same_v<decltype(span(std::declval<std::array<const bool, 3>&>())),
@@ -359,26 +362,38 @@ TEST(SpanTest, ConstructFromConstexprArray) {
 TEST(SpanTest, ConstructFromArray) {
   int array[] = {5, 4, 3, 2, 1};
 
-  span<const int> const_span(array);
+  span<const int> const_span = array;
   EXPECT_EQ(array, const_span.data());
   EXPECT_EQ(std::size(array), const_span.size());
   for (size_t i = 0; i < const_span.size(); ++i) {
     EXPECT_EQ(array[i], const_span[i]);
   }
 
-  span<int> dynamic_span(array);
+  span<int> dynamic_span = array;
   EXPECT_EQ(array, dynamic_span.data());
   EXPECT_EQ(std::size(array), dynamic_span.size());
   for (size_t i = 0; i < dynamic_span.size(); ++i) {
     EXPECT_EQ(array[i], dynamic_span[i]);
   }
 
-  span<int, std::size(array)> static_span(array);
+  span<int, std::size(array)> static_span = array;
   EXPECT_EQ(array, static_span.data());
   EXPECT_EQ(std::size(array), static_span.size());
   for (size_t i = 0; i < static_span.size(); ++i) {
     EXPECT_EQ(array[i], static_span[i]);
   }
+
+  [](span<const int> dynamic_span) {
+    EXPECT_EQ(dynamic_span.size(), 5u);
+    EXPECT_EQ(dynamic_span[0u], 5);
+    EXPECT_EQ(dynamic_span[4u], 1);
+  }({{5, 4, 3, 2, 1}});
+
+  [](span<const int, 5u> static_span) {
+    EXPECT_EQ(static_span.size(), 5u);
+    EXPECT_EQ(static_span[0u], 5);
+    EXPECT_EQ(static_span[4u], 1);
+  }({{5, 4, 3, 2, 1}});
 }
 
 TEST(SpanTest, ConstructFromVolatileArray) {
@@ -570,6 +585,46 @@ TEST(SpanTest, FromRefOfConstStackVariable) {
   static_assert(std::is_same_v<decltype(b), span<const uint8_t, sizeof(int)>>);
   EXPECT_EQ(reinterpret_cast<const uint8_t*>(&x), b.data());
   EXPECT_EQ(sizeof(int), b.size());
+}
+
+TEST(SpanTest, FromCString) {
+  // No terminating null, size known at compile time.
+  {
+    auto s = base::span_from_cstring("hello");
+    static_assert(std::same_as<decltype(s), span<const char, 5u>>);
+    EXPECT_EQ(s[0u], 'h');
+    EXPECT_EQ(s[1u], 'e');
+    EXPECT_EQ(s[4u], 'o');
+  }
+  // No terminating null, size not known at compile time. string_view loses
+  // the size.
+  {
+    auto s = base::span(std::string_view("hello"));
+    static_assert(std::same_as<decltype(s), span<const char>>);
+    EXPECT_EQ(s[0u], 'h');
+    EXPECT_EQ(s[1u], 'e');
+    EXPECT_EQ(s[4u], 'o');
+    EXPECT_EQ(s.size(), 5u);
+  }
+  // Includes the terminating null, size known at compile time.
+  {
+    auto s = base::span("hello");
+    static_assert(std::same_as<decltype(s), span<const char, 6u>>);
+    EXPECT_EQ(s[0u], 'h');
+    EXPECT_EQ(s[1u], 'e');
+    EXPECT_EQ(s[4u], 'o');
+    EXPECT_EQ(s[5u], '\0');
+  }
+
+  // No terminating null, size known at compile time. Converted to a span of
+  // uint8_t bytes.
+  {
+    auto s = base::byte_span_from_cstring("hello");
+    static_assert(std::same_as<decltype(s), span<const uint8_t, 5u>>);
+    EXPECT_EQ(s[0u], 'h');
+    EXPECT_EQ(s[1u], 'e');
+    EXPECT_EQ(s[4u], 'o');
+  }
 }
 
 TEST(SpanTest, ConvertNonConstIntegralToConst) {
@@ -1405,6 +1460,16 @@ TEST(SpanTest, AsByteSpan) {
               reinterpret_cast<const uint8_t*>(kMutVec.data()));
     EXPECT_EQ(byte_span.size(), kMutVec.size() * sizeof(int));
   }
+  // Rvalue input.
+  {
+    [](auto byte_span) {
+      static_assert(std::is_same_v<decltype(byte_span),
+                                   span<const uint8_t, 6u * sizeof(int)>>);
+      EXPECT_EQ(byte_span.size(), 6u * sizeof(int));
+      // Little endian puts the low bits in the first byte.
+      EXPECT_EQ(byte_span[0u], 2);
+    }(as_byte_span({2, 3, 5, 7, 11, 13}));
+  }
 }
 
 TEST(SpanTest, AsWritableByteSpan) {
@@ -1422,6 +1487,47 @@ TEST(SpanTest, AsWritableByteSpan) {
     static_assert(std::is_same_v<decltype(byte_span), span<uint8_t>>);
     EXPECT_EQ(byte_span.data(), reinterpret_cast<uint8_t*>(kMutVec.data()));
     EXPECT_EQ(byte_span.size(), kMutVec.size() * sizeof(int));
+  }
+  // Rvalue input.
+  {
+    [](auto byte_span) {
+      static_assert(
+          std::is_same_v<decltype(byte_span), span<uint8_t, 6u * sizeof(int)>>);
+      EXPECT_EQ(byte_span.size(), 6u * sizeof(int));
+      // Little endian puts the low bits in the first byte.
+      EXPECT_EQ(byte_span[0u], 2);
+    }(as_writable_byte_span({2, 3, 5, 7, 11, 13}));
+  }
+}
+
+TEST(SpanTest, AsStringView) {
+  {
+    constexpr uint8_t kArray[] = {'h', 'e', 'l', 'l', 'o'};
+    // Fixed size span.
+    auto s = as_string_view(kArray);
+    static_assert(std::is_same_v<decltype(s), std::string_view>);
+    EXPECT_EQ(s.data(), reinterpret_cast<const char*>(&kArray[0u]));
+    EXPECT_EQ(s.size(), std::size(kArray));
+
+    // Dynamic size span.
+    auto s2 = as_string_view(base::span<const uint8_t>(kArray));
+    static_assert(std::is_same_v<decltype(s2), std::string_view>);
+    EXPECT_EQ(s2.data(), reinterpret_cast<const char*>(&kArray[0u]));
+    EXPECT_EQ(s2.size(), std::size(kArray));
+  }
+  {
+    constexpr char kArray[] = {'h', 'e', 'l', 'l', 'o'};
+    // Fixed size span.
+    auto s = as_string_view(kArray);
+    static_assert(std::is_same_v<decltype(s), std::string_view>);
+    EXPECT_EQ(s.data(), &kArray[0u]);
+    EXPECT_EQ(s.size(), std::size(kArray));
+
+    // Dynamic size span.
+    auto s2 = as_string_view(base::span<const char>(kArray));
+    static_assert(std::is_same_v<decltype(s2), std::string_view>);
+    EXPECT_EQ(s2.data(), &kArray[0u]);
+    EXPECT_EQ(s2.size(), std::size(kArray));
   }
 }
 
@@ -1980,6 +2086,197 @@ TEST(SpanTest, SplitAt) {
   }
   // Invalid fixed-size split from dynamic will fail at runtime.
   EXPECT_CHECK_DEATH({ dynamic_span.split_at<4u>(); });
+}
+
+TEST(SpanTest, Compare) {
+  static_assert(std::equality_comparable<int>);
+  int32_t arr2[] = {1, 2};
+  int32_t arr3[] = {1, 2, 3};
+  int32_t rra3[] = {3, 2, 1};
+  constexpr const int32_t arr2_c[] = {1, 2};
+  constexpr const int32_t arr3_c[] = {1, 2, 3};
+  constexpr const int32_t rra3_c[] = {3, 2, 1};
+
+  // Comparing empty spans that are fixed and dynamic size.
+  EXPECT_TRUE((span<int32_t>() == span<int32_t>()));
+  EXPECT_TRUE((span<int32_t, 0u>() == span<int32_t>()));
+  EXPECT_TRUE((span<int32_t>() == span<int32_t, 0u>()));
+  EXPECT_TRUE((span<int32_t, 0u>() == span<int32_t, 0u>()));
+  // Non-null data pointer, but both are empty.
+  EXPECT_TRUE(span(arr2).first(0u) == span(arr2).last(0u));
+  EXPECT_TRUE(span(arr2).first<0u>() == span(arr2).last<0u>());
+
+  // Spans of different dynamic sizes.
+  EXPECT_TRUE(span(arr2).first(2u) != span(arr3).first(3u));
+  // Spans of same dynamic size and same values.
+  EXPECT_TRUE(span(arr2).first(2u) == span(arr3).first(2u));
+  // Spans of same dynamic size but different values.
+  EXPECT_TRUE(span(arr2).first(2u) != span(rra3).first(2u));
+
+  // Spans of different sizes (one dynamic one fixed).
+  EXPECT_TRUE(span(arr2).first<2u>() != span(arr3).first(3u));
+  EXPECT_TRUE(span(arr2).first(2u) != span(arr3).first<3u>());
+  // Spans of same size and same values.
+  EXPECT_TRUE(span(arr2).first<2u>() == span(arr3).first(2u));
+  EXPECT_TRUE(span(arr2).first(2u) == span(arr3).first<2u>());
+  // Spans of same size but different values.
+  EXPECT_TRUE(span(arr2).first<2u>() != span(rra3).first(2u));
+  EXPECT_TRUE(span(arr2).first(2u) != span(rra3).first<2u>());
+
+  // Spans of different fixed sizes do not compile (as in Rust)
+  // https://godbolt.org/z/MrnbPeozr and are covered in nocompile tests.
+
+  // Comparing const and non-const. Same tests as above otherwise.
+
+  EXPECT_TRUE((span<const int32_t>() == span<int32_t>()));
+  EXPECT_TRUE((span<const int32_t, 0u>() == span<int32_t>()));
+  EXPECT_TRUE((span<const int32_t>() == span<int32_t, 0u>()));
+  EXPECT_TRUE((span<const int32_t, 0u>() == span<int32_t, 0u>()));
+
+  EXPECT_TRUE((span<int32_t>() == span<const int32_t>()));
+  EXPECT_TRUE((span<int32_t, 0u>() == span<const int32_t>()));
+  EXPECT_TRUE((span<int32_t>() == span<const int32_t, 0u>()));
+  EXPECT_TRUE((span<int32_t, 0u>() == span<const int32_t, 0u>()));
+
+  EXPECT_TRUE(span(arr2_c).first(0u) == span(arr2).last(0u));
+  EXPECT_TRUE(span(arr2_c).first<0u>() == span(arr2).last<0u>());
+
+  EXPECT_TRUE(span(arr2).first(0u) == span(arr2_c).last(0u));
+  EXPECT_TRUE(span(arr2).first<0u>() == span(arr2_c).last<0u>());
+
+  EXPECT_TRUE(span(arr2_c).first(2u) != span(arr3).first(3u));
+  EXPECT_TRUE(span(arr2_c).first(2u) == span(arr3).first(2u));
+  EXPECT_TRUE(span(arr2_c).first(2u) != span(rra3).first(2u));
+
+  EXPECT_TRUE(span(arr2).first(2u) != span(arr3_c).first(3u));
+  EXPECT_TRUE(span(arr2).first(2u) == span(arr3_c).first(2u));
+  EXPECT_TRUE(span(arr2).first(2u) != span(rra3_c).first(2u));
+
+  EXPECT_TRUE(span(arr2_c).first<2u>() != span(arr3).first(3u));
+  EXPECT_TRUE(span(arr2_c).first(2u) != span(arr3).first<3u>());
+  EXPECT_TRUE(span(arr2_c).first<2u>() == span(arr3).first(2u));
+  EXPECT_TRUE(span(arr2_c).first(2u) == span(arr3).first<2u>());
+  EXPECT_TRUE(span(arr2_c).first<2u>() != span(rra3).first(2u));
+  EXPECT_TRUE(span(arr2_c).first(2u) != span(rra3).first<2u>());
+
+  EXPECT_TRUE(span(arr2).first<2u>() != span(arr3_c).first(3u));
+  EXPECT_TRUE(span(arr2).first(2u) != span(arr3_c).first<3u>());
+  EXPECT_TRUE(span(arr2).first<2u>() == span(arr3_c).first(2u));
+  EXPECT_TRUE(span(arr2).first(2u) == span(arr3_c).first<2u>());
+  EXPECT_TRUE(span(arr2).first<2u>() != span(rra3_c).first(2u));
+  EXPECT_TRUE(span(arr2).first(2u) != span(rra3_c).first<2u>());
+
+  // Comparing different types which are comparable. Same tests as above
+  // otherwise.
+
+  static_assert(std::equality_comparable_with<int32_t, int64_t>);
+  int64_t arr2_l[] = {1, 2};
+  int64_t arr3_l[] = {1, 2, 3};
+  int64_t rra3_l[] = {3, 2, 1};
+
+  EXPECT_TRUE((span<int32_t>() == span<int64_t>()));
+  EXPECT_TRUE((span<int32_t, 0u>() == span<int64_t>()));
+  EXPECT_TRUE((span<int32_t>() == span<int64_t, 0u>()));
+  EXPECT_TRUE((span<int32_t, 0u>() == span<int64_t, 0u>()));
+
+  EXPECT_TRUE((span<int32_t>() == span<int64_t>()));
+  EXPECT_TRUE((span<int32_t, 0u>() == span<int64_t>()));
+  EXPECT_TRUE((span<int32_t>() == span<int64_t, 0u>()));
+  EXPECT_TRUE((span<int32_t, 0u>() == span<int64_t, 0u>()));
+
+  EXPECT_TRUE(span(arr2_l).first(0u) == span(arr2).last(0u));
+  EXPECT_TRUE(span(arr2_l).first<0u>() == span(arr2).last<0u>());
+
+  EXPECT_TRUE(span(arr2).first(0u) == span(arr2_l).last(0u));
+  EXPECT_TRUE(span(arr2).first<0u>() == span(arr2_l).last<0u>());
+
+  EXPECT_TRUE(span(arr2_l).first(2u) != span(arr3).first(3u));
+  EXPECT_TRUE(span(arr2_l).first(2u) == span(arr3).first(2u));
+  EXPECT_TRUE(span(arr2_l).first(2u) != span(rra3).first(2u));
+
+  EXPECT_TRUE(span(arr2).first(2u) != span(arr3_l).first(3u));
+  EXPECT_TRUE(span(arr2).first(2u) == span(arr3_l).first(2u));
+  EXPECT_TRUE(span(arr2).first(2u) != span(rra3_l).first(2u));
+
+  EXPECT_TRUE(span(arr2_l).first<2u>() != span(arr3).first(3u));
+  EXPECT_TRUE(span(arr2_l).first(2u) != span(arr3).first<3u>());
+  EXPECT_TRUE(span(arr2_l).first<2u>() == span(arr3).first(2u));
+  EXPECT_TRUE(span(arr2_l).first(2u) == span(arr3).first<2u>());
+  EXPECT_TRUE(span(arr2_l).first<2u>() != span(rra3).first(2u));
+  EXPECT_TRUE(span(arr2_l).first(2u) != span(rra3).first<2u>());
+
+  EXPECT_TRUE(span(arr2).first<2u>() != span(arr3_l).first(3u));
+  EXPECT_TRUE(span(arr2).first(2u) != span(arr3_l).first<3u>());
+  EXPECT_TRUE(span(arr2).first<2u>() == span(arr3_l).first(2u));
+  EXPECT_TRUE(span(arr2).first(2u) == span(arr3_l).first<2u>());
+  EXPECT_TRUE(span(arr2).first<2u>() != span(rra3_l).first(2u));
+  EXPECT_TRUE(span(arr2).first(2u) != span(rra3_l).first<2u>());
+
+  // Comparing different types and different const-ness at the same time.
+
+  constexpr const int64_t arr2_lc[] = {1, 2};
+  constexpr const int64_t arr3_lc[] = {1, 2, 3};
+  constexpr const int64_t rra3_lc[] = {3, 2, 1};
+
+  EXPECT_TRUE((span<const int32_t>() == span<int64_t>()));
+  EXPECT_TRUE((span<const int32_t, 0u>() == span<int64_t>()));
+  EXPECT_TRUE((span<const int32_t>() == span<int64_t, 0u>()));
+  EXPECT_TRUE((span<const int32_t, 0u>() == span<int64_t, 0u>()));
+
+  EXPECT_TRUE((span<int32_t>() == span<const int64_t>()));
+  EXPECT_TRUE((span<int32_t, 0u>() == span<const int64_t>()));
+  EXPECT_TRUE((span<int32_t>() == span<const int64_t, 0u>()));
+  EXPECT_TRUE((span<int32_t, 0u>() == span<const int64_t, 0u>()));
+
+  EXPECT_TRUE(span(arr2_lc).first(0u) == span(arr2).last(0u));
+  EXPECT_TRUE(span(arr2_lc).first<0u>() == span(arr2).last<0u>());
+
+  EXPECT_TRUE(span(arr2).first(0u) == span(arr2_lc).last(0u));
+  EXPECT_TRUE(span(arr2).first<0u>() == span(arr2_lc).last<0u>());
+
+  EXPECT_TRUE(span(arr2_lc).first(2u) != span(arr3).first(3u));
+  EXPECT_TRUE(span(arr2_lc).first(2u) == span(arr3).first(2u));
+  EXPECT_TRUE(span(arr2_lc).first(2u) != span(rra3).first(2u));
+
+  EXPECT_TRUE(span(arr2).first(2u) != span(arr3_lc).first(3u));
+  EXPECT_TRUE(span(arr2).first(2u) == span(arr3_lc).first(2u));
+  EXPECT_TRUE(span(arr2).first(2u) != span(rra3_lc).first(2u));
+
+  EXPECT_TRUE(span(arr2_lc).first<2u>() != span(arr3).first(3u));
+  EXPECT_TRUE(span(arr2_lc).first(2u) != span(arr3).first<3u>());
+  EXPECT_TRUE(span(arr2_lc).first<2u>() == span(arr3).first(2u));
+  EXPECT_TRUE(span(arr2_lc).first(2u) == span(arr3).first<2u>());
+  EXPECT_TRUE(span(arr2_lc).first<2u>() != span(rra3).first(2u));
+  EXPECT_TRUE(span(arr2_lc).first(2u) != span(rra3).first<2u>());
+
+  EXPECT_TRUE(span(arr2).first<2u>() != span(arr3_lc).first(3u));
+  EXPECT_TRUE(span(arr2).first(2u) != span(arr3_lc).first<3u>());
+  EXPECT_TRUE(span(arr2).first<2u>() == span(arr3_lc).first(2u));
+  EXPECT_TRUE(span(arr2).first(2u) == span(arr3_lc).first<2u>());
+  EXPECT_TRUE(span(arr2).first<2u>() != span(rra3_lc).first(2u));
+  EXPECT_TRUE(span(arr2).first(2u) != span(rra3_lc).first<2u>());
+
+  // Comparing with an implicit conversion to span. This only works if the span
+  // types actually match (i.e. not for any comparable types) since otherwise
+  // the type can not be deduced. Implicit conversion from mutable to const
+  // can be inferred though.
+
+  EXPECT_TRUE(arr2 != span(arr3).first(3u));
+  EXPECT_TRUE(arr2 == span(arr3).first(2u));
+  EXPECT_TRUE(arr2 != span(rra3).first(2u));
+
+  EXPECT_TRUE(arr2 != span(arr3_c).first(3u));
+  EXPECT_TRUE(arr2 == span(arr3_c).first(2u));
+  EXPECT_TRUE(arr2 != span(rra3_c).first(2u));
+
+  EXPECT_TRUE(arr2_c != span(arr3).first(3u));
+  EXPECT_TRUE(arr2_c == span(arr3).first(2u));
+  EXPECT_TRUE(arr2_c != span(rra3).first(2u));
+
+  // Constexpr comparison.
+  static_assert(span<int>() == span<int, 0u>());
+  static_assert(span(arr2_c) == span(arr3_c).first(2u));
+  static_assert(span(arr2_c) == span(arr3_lc).first(2u));
 }
 
 }  // namespace base

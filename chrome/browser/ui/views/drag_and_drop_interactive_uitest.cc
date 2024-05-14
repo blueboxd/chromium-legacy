@@ -408,17 +408,17 @@ class DragStartWaiter : public aura::client::DragDropClient {
       message_loop_runner_->Quit();
 
       source_origin_ = data->GetRendererTaintedOrigin();
-      std::u16string text;
-      if (data->GetString(&text)) {
-        text_ = base::UTF16ToUTF8(text);
+      std::optional<std::u16string> text = data->GetString();
+      if (text) {
+        text_ = base::UTF16ToUTF8(*text);
       } else {
         text_ = "<no text>";
       }
 
-      GURL base_url;
-      std::u16string html;
-      if (data->GetHtml(&html, &base_url)) {
-        html_ = base::UTF16ToUTF8(html);
+      std::optional<ui::OSExchangeData::HtmlInfo> html_content =
+          data->GetHtml();
+      if (html_content.has_value()) {
+        html_ = base::UTF16ToUTF8(html_content->html);
       } else {
         html_ = "<no html>";
       }

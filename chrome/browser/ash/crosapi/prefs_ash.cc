@@ -5,13 +5,13 @@
 #include "chrome/browser/ash/crosapi/prefs_ash.h"
 
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "ash/constants/ash_pref_names.h"
 #include "base/check.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/functional/bind.h"
-#include "base/strings/string_piece.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/lifetime/termination_notification.h"
@@ -33,9 +33,9 @@ namespace {
 
 // List of all mojom::PrefPaths associated with profile prefs, and their
 // corresponding paths in the prefstore.
-base::StringPiece GetProfilePrefNameForPref(mojom::PrefPath path) {
+std::string_view GetProfilePrefNameForPref(mojom::PrefPath path) {
   static constexpr auto kProfilePrefPathToName =
-      base::MakeFixedFlatMap<mojom::PrefPath, base::StringPiece>({
+      base::MakeFixedFlatMap<mojom::PrefPath, std::string_view>({
           {mojom::PrefPath::kAccessibilitySpokenFeedbackEnabled,
            ash::prefs::kAccessibilitySpokenFeedbackEnabled},
           {mojom::PrefPath::kAccessibilityPdfOcrAlwaysActive,
@@ -74,16 +74,16 @@ base::StringPiece GetProfilePrefNameForPref(mojom::PrefPath path) {
           {mojom::PrefPath::kIsolatedWebAppsEnabled,
            ash::prefs::kIsolatedWebAppsEnabled},
       });
-  auto* pref_name = kProfilePrefPathToName.find(path);
+  auto pref_name = kProfilePrefPathToName.find(path);
   DCHECK(pref_name != kProfilePrefPathToName.end());
   return pref_name->second;
 }
 
 // List of all mojom::PrefPaths associated with extension controlled prefs,
 // and their corresponding paths in the prefstore.
-base::StringPiece GetExtensionPrefNameForPref(mojom::PrefPath path) {
+std::string_view GetExtensionPrefNameForPref(mojom::PrefPath path) {
   static constexpr auto kExtensionPrefPathToName =
-      base::MakeFixedFlatMap<mojom::PrefPath, base::StringPiece>(
+      base::MakeFixedFlatMap<mojom::PrefPath, std::string_view>(
           {{mojom::PrefPath::kDockedMagnifierEnabled,
             ash::prefs::kDockedMagnifierEnabled},
            {mojom::PrefPath::kAccessibilityAutoclickEnabled,
@@ -115,7 +115,7 @@ base::StringPiece GetExtensionPrefNameForPref(mojom::PrefPath path) {
            {mojom::PrefPath::kAccessibilityVirtualKeyboardEnabled,
             ash::prefs::kAccessibilityVirtualKeyboardEnabled},
            {mojom::PrefPath::kProxy, ash::prefs::kProxy}});
-  auto* pref_name = kExtensionPrefPathToName.find(path);
+  auto pref_name = kExtensionPrefPathToName.find(path);
   DCHECK(pref_name != kExtensionPrefPathToName.end());
   return pref_name->second;
 }
@@ -271,6 +271,9 @@ std::optional<PrefsAsh::State> PrefsAsh::GetState(mojom::PrefPath path) {
   switch (path) {
     case mojom::PrefPath::kUnknown:
     case mojom::PrefPath::kProtectedContentDefaultDeprecated:
+    case mojom::PrefPath::kDnsOverHttpsTemplates:
+    case mojom::PrefPath::kDnsOverHttpsTemplatesWithIdentifiers:
+    case mojom::PrefPath::kDnsOverHttpsSalt:
       LOG(WARNING) << "Unknown pref path: " << path;
       return std::nullopt;
     case mojom::PrefPath::kMetricsReportingEnabled:
@@ -321,16 +324,10 @@ std::optional<PrefsAsh::State> PrefsAsh::GetState(mojom::PrefPath path) {
     case mojom::PrefPath::kDnsOverHttpsMode:
       return State{local_state_, &local_state_registrar_,
                    AshPrefSource::kNormal, prefs::kDnsOverHttpsMode};
-    case mojom::PrefPath::kDnsOverHttpsSalt:
-      return State{local_state_, &local_state_registrar_,
-                   AshPrefSource::kNormal, prefs::kDnsOverHttpsSalt};
-    case mojom::PrefPath::kDnsOverHttpsTemplates:
-      return State{local_state_, &local_state_registrar_,
-                   AshPrefSource::kNormal, prefs::kDnsOverHttpsTemplates};
-    case mojom::PrefPath::kDnsOverHttpsTemplatesWithIdentifiers:
+    case mojom::PrefPath::kDnsOverHttpsEffectiveTemplatesChromeOS:
       return State{local_state_, &local_state_registrar_,
                    AshPrefSource::kNormal,
-                   prefs::kDnsOverHttpsTemplatesWithIdentifiers};
+                   prefs::kDnsOverHttpsEffectiveTemplatesChromeOS};
     case mojom::PrefPath::kDockedMagnifierEnabled:
     case mojom::PrefPath::kAccessibilityAutoclickEnabled:
     case mojom::PrefPath::kAccessibilityCaretHighlightEnabled:

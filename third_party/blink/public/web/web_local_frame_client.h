@@ -140,6 +140,7 @@ class URLLoader;
 class WebURLRequest;
 class WebURLResponse;
 class WebView;
+class WebLinkPreviewTriggerer;
 struct FramePolicy;
 struct Impression;
 struct JavaScriptFrameworkDetectionResult;
@@ -465,7 +466,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidOpenDocumentInputStream(const WebURL&) {}
 
   // Called when a frame's page lifecycle state gets updated.
-  virtual void DidSetPageLifecycleState() {}
+  virtual void DidSetPageLifecycleState(bool restoring_from_bfcache) {}
 
   // Immediately notifies the browser of a change in the current HistoryItem.
   // Prefer DidUpdateCurrentHistoryItem().
@@ -862,6 +863,11 @@ class BLINK_EXPORT WebLocalFrameClient {
       const WebURL& base_url) {
     return nullptr;
   }
+
+  virtual std::unique_ptr<WebLinkPreviewTriggerer> CreateLinkPreviewTriggerer();
+
+  virtual void SetLinkPreviewTriggererForTesting(
+      std::unique_ptr<WebLinkPreviewTriggerer> trigger);
 };
 
 }  // namespace blink

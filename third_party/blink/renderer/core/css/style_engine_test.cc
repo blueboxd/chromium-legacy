@@ -102,17 +102,13 @@ class StyleEngineTest : public PageTestBase {
     return GetStyleEngine().style_recalc_root_.GetRootNode();
   }
 
-  LayoutObject* GetParentForDetachedSubtree() {
-    return GetStyleEngine().parent_for_detached_subtree_.Get();
-  }
-
   const CSSValue* ComputedValue(Element* element, String property_name) {
     CSSPropertyRef ref(property_name, GetDocument());
     DCHECK(ref.IsValid());
     return ref.GetProperty().CSSValueFromComputedStyle(
         element->ComputedStyleRef(),
         /* layout_object */ nullptr,
-        /* allow_visited_style */ false);
+        /* allow_visited_style */ false, CSSValuePhase::kResolvedValue);
   }
 
   void InjectSheet(String key, WebCssOrigin origin, String text) {
@@ -174,7 +170,7 @@ void StyleEngineTest::ApplyRuleSetInvalidation(TreeScope& tree_scope,
           : *tree_scope.GetDocument().documentElement());
   GetStyleEngine().ApplyRuleSetInvalidationForTreeScope(
       tree_scope, tree_scope.RootNode(), selector_filter, style_scope_frame,
-      rule_sets);
+      rule_sets, /*changed_rule_flags=*/0);
 }
 
 TEST_F(StyleEngineTest, DocumentDirtyAfterInject) {
@@ -911,7 +907,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHost) {
   ASSERT_TRUE(host);
 
   ShadowRoot& shadow_root =
-      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootMode::kOpen);
 
   shadow_root.setInnerHTML("<div></div><div></div><div></div>");
   UpdateAllLifecyclePhases();
@@ -962,7 +958,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
   ASSERT_TRUE(host);
 
   ShadowRoot& shadow_root =
-      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootMode::kOpen);
 
   shadow_root.setInnerHTML("<slot name=other></slot><slot></slot>");
   UpdateAllLifecyclePhases();
@@ -987,7 +983,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
   ASSERT_TRUE(host);
 
   ShadowRoot& shadow_root =
-      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootMode::kOpen);
 
   shadow_root.setInnerHTML("<div></div><div class=a></div><div></div>");
   UpdateAllLifecyclePhases();
@@ -1296,7 +1292,7 @@ TEST_F(StyleEngineTest, StyleSheetsForStyleSheetList_ShadowRoot) {
 
   UpdateAllLifecyclePhases();
   ShadowRoot& shadow_root =
-      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootMode::kOpen);
 
   shadow_root.setInnerHTML("<style>span { color: green }</style>");
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
@@ -2570,7 +2566,7 @@ TEST_F(StyleEngineTest, ShadowRootStyleRecalcCrash) {
   ASSERT_TRUE(host);
 
   ShadowRoot& shadow_root =
-      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootMode::kOpen);
 
   shadow_root.setInnerHTML(R"HTML(
     <span id=span></span>
@@ -2600,7 +2596,7 @@ TEST_F(StyleEngineTest, GetComputedStyleOutsideFlatTreeCrash) {
 
   GetDocument()
       .getElementById(AtomicString("host"))
-      ->AttachShadowRootForTesting(ShadowRootType::kOpen);
+      ->AttachShadowRootForTesting(ShadowRootMode::kOpen);
   UpdateAllLifecyclePhases();
   GetDocument().body()->EnsureComputedStyle();
   GetDocument()
@@ -3097,7 +3093,7 @@ TEST_F(StyleEngineTest, GetComputedStyleOutsideFlatTree) {
   auto* inner = GetDocument().getElementById(AtomicString("inner"));
   auto* innermost = GetDocument().getElementById(AtomicString("innermost"));
 
-  host->AttachShadowRootForTesting(ShadowRootType::kOpen);
+  host->AttachShadowRootForTesting(ShadowRootMode::kOpen);
   UpdateAllLifecyclePhases();
 
   EXPECT_TRUE(host->GetComputedStyle());
@@ -3166,9 +3162,9 @@ TEST_F(StyleEngineTest, MoveSlottedOutsideFlatTree) {
   auto* span = host1->firstChild();
 
   ShadowRoot& shadow_root =
-      host1->AttachShadowRootForTesting(ShadowRootType::kOpen);
+      host1->AttachShadowRootForTesting(ShadowRootMode::kOpen);
   shadow_root.setInnerHTML("<slot></slot>");
-  host2->AttachShadowRootForTesting(ShadowRootType::kOpen);
+  host2->AttachShadowRootForTesting(ShadowRootMode::kOpen);
 
   UpdateAllLifecyclePhases();
 
@@ -3185,7 +3181,7 @@ TEST_F(StyleEngineTest, StyleRecalcRootInShadowTree) {
   )HTML");
   Element* host = GetDocument().getElementById(AtomicString("host"));
   ShadowRoot& shadow_root =
-      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootMode::kOpen);
   shadow_root.setInnerHTML("<div><span></span></div>");
   UpdateAllLifecyclePhases();
 
@@ -3207,7 +3203,7 @@ TEST_F(StyleEngineTest, StyleRecalcRootOutsideFlatTree) {
   auto* ensured = GetDocument().getElementById(AtomicString("ensured"));
   auto* span = To<Element>(ensured->firstChild());
 
-  host->AttachShadowRootForTesting(ShadowRootType::kOpen);
+  host->AttachShadowRootForTesting(ShadowRootMode::kOpen);
 
   UpdateAllLifecyclePhases();
 
@@ -3236,7 +3232,7 @@ TEST_F(StyleEngineTest, RemoveStyleRecalcRootFromFlatTree) {
   auto* span = To<Element>(host->firstChild());
 
   ShadowRoot& shadow_root =
-      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootMode::kOpen);
   shadow_root.setInnerHTML("<div><slot></slot></div>");
 
   UpdateAllLifecyclePhases();
@@ -3270,7 +3266,7 @@ TEST_F(StyleEngineTest, SlottedWithEnsuredStyleOutsideFlatTree) {
   auto* span = To<Element>(host->firstChild());
 
   ShadowRoot& shadow_root =
-      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootMode::kOpen);
   shadow_root.setInnerHTML(R"HTML(
     <div><slot name="default"></slot></div>
   )HTML");
@@ -3305,7 +3301,7 @@ TEST_F(StyleEngineTest, ForceReattachRecalcRootAttachShadow) {
 
   // Attaching the shadow root will call FlatTreePositionChanged() on the span
   // child of the host. The style recalc root should still be #reattach.
-  host->AttachShadowRootForTesting(ShadowRootType::kOpen);
+  host->AttachShadowRootForTesting(ShadowRootMode::kOpen);
   EXPECT_EQ(reattach, GetStyleRecalcRoot());
 }
 
@@ -4560,6 +4556,142 @@ TEST_F(StyleEngineContainerQueryTest,
   EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdateForNode(*a));
 }
 
+TEST_F(StyleEngineTest, UpdateStyleAndLayoutTreeWithAnchorQuery) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style>
+      #anchored {
+        position: absolute;
+        left: anchor(--a left, 42px);
+      }
+      #anchored.toggle {
+        left: anchor(--a left, 84px);
+      }
+
+      #inner { left: inherit; }
+    </style>
+    <main id=anchored>
+      <div id=inner></div>
+    </main>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetDocument().View()->NeedsLayout());
+
+  Element* anchored = GetDocument().getElementById(AtomicString("anchored"));
+  ASSERT_TRUE(anchored);
+  anchored->classList().Add(AtomicString("toggle"));
+
+  GetDocument().UpdateStyleAndLayoutTree();
+  EXPECT_FALSE(GetDocument().View()->NeedsLayout())
+      << "Layout should happen as part of UpdateStyleAndLayoutTree";
+
+  Element* inner = GetDocument().getElementById(AtomicString("inner"));
+  ASSERT_TRUE(inner);
+  EXPECT_EQ("84px", ComputedValue(inner, "left")->CssText());
+}
+
+TEST_F(StyleEngineTest, UpdateStyleAndLayoutTreeForElementWithAnchorQuery) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style>
+      #anchored {
+        position: absolute;
+        left: anchor(--a left, 42px);
+      }
+      #anchored.toggle {
+        left: anchor(--a left, 84px);
+      }
+
+      #inner { left: inherit; }
+    </style>
+    <main id=anchored>
+      <div id=inner></div>
+    </main>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetDocument().View()->NeedsLayout());
+
+  Element* anchored = GetDocument().getElementById(AtomicString("anchored"));
+  ASSERT_TRUE(anchored);
+  anchored->classList().Add(AtomicString("toggle"));
+
+  Element* inner = GetDocument().getElementById(AtomicString("inner"));
+  ASSERT_TRUE(inner);
+
+  GetDocument().UpdateStyleAndLayoutTreeForElement(inner,
+                                                   DocumentUpdateReason::kTest);
+  EXPECT_FALSE(GetDocument().View()->NeedsLayout())
+      << "Layout should happen as part of UpdateStyleAndLayoutTreeForElement";
+
+  EXPECT_EQ("84px", ComputedValue(inner, "left")->CssText());
+}
+
+TEST_F(StyleEngineTest, AnchorQueryComputed) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style>
+      #anchor {
+        anchor-name: --a;
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        left: 200px;
+        top: 300px;
+      }
+      #anchored {
+        position: absolute;
+        width: anchor-size(--a width);
+        height: anchor-size(--unknown height, 42px);
+        left: anchor(--a right);
+        top: anchor(--a bottom);
+      }
+    </style>
+    <div id=anchor>Anchor</div>
+    <div id=anchored>Anchored</div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* anchored = GetDocument().getElementById(AtomicString("anchored"));
+  ASSERT_TRUE(anchored);
+
+  EXPECT_EQ("300px", ComputedValue(anchored, "left")->CssText());
+  EXPECT_EQ("400px", ComputedValue(anchored, "top")->CssText());
+  EXPECT_EQ("100px", ComputedValue(anchored, "width")->CssText());
+  EXPECT_EQ("42px", ComputedValue(anchored, "height")->CssText());
+}
+
+TEST_F(StyleEngineTest, AnchorQueryComputedChild) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style>
+      #anchor {
+        anchor-name: --a;
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        left: 200px;
+        top: 300px;
+      }
+      #anchored {
+        position: absolute;
+        width: anchor-size(--a width);
+        height: width: anchor-size(--a height);
+      }
+      #child {
+        width: anchor-size(--a width, 42px);
+        height: inherit;
+      }
+    </style>
+    <div id=anchor>Anchor</div>
+    <div id=anchored>
+      <div id=child>Child</div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* child = GetDocument().getElementById(AtomicString("child"));
+  ASSERT_TRUE(child);
+
+  // Non-absolutely positioned child may not evaluate queries.
+  EXPECT_EQ("42px", ComputedValue(child, "width")->CssText());
+}
+
 TEST_F(StyleEngineTest, VideoControlsReject) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <video controls></video>
@@ -4603,7 +4735,7 @@ TEST_F(StyleEngineTest, FastRejectForHostChild) {
   Element* host = GetDocument().getElementById(AtomicString("host"));
   ASSERT_TRUE(host);
   ShadowRoot& shadow_root =
-      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootMode::kOpen);
   shadow_root.setInnerHTML(R"HTML(
     <slot></slot>
   )HTML");
@@ -4638,7 +4770,7 @@ TEST_F(StyleEngineTest, RejectSlottedSelector) {
   Element* host = GetDocument().getElementById(AtomicString("host"));
   ASSERT_TRUE(host);
   ShadowRoot& shadow_root =
-      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootMode::kOpen);
   shadow_root.setInnerHTML(R"HTML(
     <style>
       .notfound ::slotted(span) {
@@ -4866,7 +4998,7 @@ TEST_F(StyleEngineTest, NonDirtyStyleRecalcRoot) {
   auto* slotted = GetDocument().getElementById(AtomicString("slotted"));
 
   ShadowRoot& shadow_root =
-      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootMode::kOpen);
   shadow_root.setInnerHTML("<slot></slot>");
   UpdateAllLifecyclePhases();
 
@@ -5313,7 +5445,7 @@ TEST_F(StyleEngineTest, NonSlottedStyleDirty) {
   GetDocument().body()->setInnerHTML("<div id=host></div>");
   auto* host = GetDocument().getElementById(AtomicString("host"));
   ASSERT_TRUE(host);
-  host->AttachShadowRootForTesting(ShadowRootType::kOpen);
+  host->AttachShadowRootForTesting(ShadowRootMode::kOpen);
   UpdateAllLifecyclePhases();
 
   // Add a child element to a shadow host with no slots. The inserted element is
@@ -5651,17 +5783,6 @@ TEST_F(StyleEngineTest, CascadeLayerActiveStyleSheetVectorNullRuleSetCrash) {
 
   // Should not crash
   UpdateAllLifecyclePhases();
-}
-
-TEST_F(StyleEngineTest, ChangeRenderingForHTMLSelect_DetachParent) {
-  GetDocument().body()->setInnerHTML(R"HTML(
-    <select id="select"></select>
-  )HTML");
-  UpdateAllLifecyclePhases();
-  EXPECT_FALSE(GetParentForDetachedSubtree());
-  GetStyleEngine().ChangeRenderingForHTMLSelect(To<HTMLSelectElement>(
-      *GetDocument().getElementById(AtomicString("select"))));
-  EXPECT_FALSE(GetParentForDetachedSubtree());
 }
 
 TEST_F(StyleEngineTest, EmptyDetachParent) {
@@ -6826,7 +6947,7 @@ TEST_F(StyleEngineTest, UseCountCSSAnchorPositioning) {
   EXPECT_TRUE(IsUseCounted(WebFeature::kCSSAnchorPositioning));
 
   ClearUseCounter(WebFeature::kCSSAnchorPositioning);
-  SetBodyInnerHTML("<style>@position-fallback --pf {}</style>");
+  SetBodyInnerHTML("<style>@position-try --pf {}</style>");
   EXPECT_TRUE(IsUseCounted(WebFeature::kCSSAnchorPositioning));
 }
 

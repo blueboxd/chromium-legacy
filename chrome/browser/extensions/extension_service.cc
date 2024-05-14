@@ -236,6 +236,14 @@ void ExtensionService::BlocklistExtensionForTest(
   OnBlocklistStateAdded(extension_id);
 }
 
+void ExtensionService::GreylistExtensionForTest(
+    const std::string& extension_id,
+    const BitMapBlocklistState& state) {
+  blocklist_prefs::SetSafeBrowsingExtensionBlocklistState(extension_id, state,
+                                                          extension_prefs_);
+  OnGreylistStateAdded(extension_id, state);
+}
+
 bool ExtensionService::OnExternalExtensionUpdateUrlFound(
     const ExternalInstallInfoUpdateUrl& info,
     bool force_update) {
@@ -1318,8 +1326,8 @@ void ExtensionService::CheckManagementPolicy() {
     // related disable reasons.
     bool is_supervised = false;
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-    is_supervised =
-        profile() && supervised_user::IsChildAccount(*profile()->GetPrefs());
+    is_supervised = profile() && supervised_user::IsSubjectToParentalControls(
+                                     *profile()->GetPrefs());
 #endif
     if (!is_supervised) {
       disable_reasons &= (~disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);

@@ -5,6 +5,7 @@
 <translation id="1036348656032585052">Isključi</translation>
 <translation id="1044891598689252897">Web-lokacije će normalno raditi</translation>
 <translation id="1073417869336441572">Recite nam zašto ste dopustili kolačiće trećih strana i pomognite nam da poboljšamo Chrome. <ph name="BEGIN_LINK" />Pošaljite svoje dojmove<ph name="END_LINK" /></translation>
+<translation id="1113435009358629918">Sakrij karticu o sniženju cijene</translation>
 <translation id="1178581264944972037">Pauziraj</translation>
 <translation id="1181037720776840403">Ukloni</translation>
 <translation id="1192844206376121885">Izbrisat će se svi podaci i kolačići koje je spremila web-lokacija <ph name="ORIGIN" />.</translation>
@@ -21,7 +22,6 @@
 <translation id="1383876407941801731">Traži</translation>
 <translation id="1384959399684842514">Preuzimanje je pauzirano</translation>
 <translation id="1415402041810619267">URL je skraćen</translation>
-<translation id="1434873037477293673">kartica o sniženju cijene</translation>
 <translation id="1448064542941920355">Smanjite zumiranje</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{<ph name="SITE_COUNT" /> web-lokacija}one{<ph name="SITE_COUNT" /> web-lokacija}few{<ph name="SITE_COUNT" /> web-lokacije}other{<ph name="SITE_COUNT" /> web-lokacija}}</translation>
 <translation id="1510341833810331442">Web-lokacije ne smiju spremati podatke na vaš uređaj</translation>
@@ -93,12 +93,14 @@
 <translation id="2498359688066513246">Pomoć i povratne informacije</translation>
 <translation id="2501278716633472235">Natrag</translation>
 <translation id="2546283357679194313">Kolačići i podaci o web-lokacijama</translation>
+<translation id="2550801787432930915">Kartica o sniženju cijene</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Blokiran je jedan kolačić}one{Blokiran je # kolačić}few{Blokirana su # kolačića}other{Blokirano je # kolačića}}</translation>
 <translation id="2570922361219980984">Pristup lokaciji isključen je i za ovaj uređaj. Uključite ga u <ph name="BEGIN_LINK" />postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Prošireno – kliknite za sažimanje.</translation>
 <translation id="2586657967955657006">Međuspremnik</translation>
 <translation id="2597457036804169544">Ne primjenjuj tamnu temu na web-lokacije</translation>
 <translation id="2606760465469169465">Automatska potvrda</translation>
+<translation id="2613007545732217283"><ph name="HOST_NAME" /> <ph name="SEPARATOR" /> <ph name="RECENCY" /></translation>
 <translation id="2621115761605608342">Dopuštanje JavaScripta za određenu web-lokaciju.</translation>
 <translation id="2653659639078652383">Pošalji</translation>
 <translation id="2677748264148917807">Napusti</translation>
@@ -121,7 +123,6 @@
 <translation id="2979365474350987274">Kolačići treće strane su ograničeni</translation>
 <translation id="3008272652534848354">Poništi dopuštenja</translation>
 <translation id="301521992641321250">Automatski blokirano</translation>
-<translation id="3025010840409371499"><ph name="RECENCY" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="3069226013421428034">Dopusti prijavu treće strane za određenu web-lokaciju.</translation>
 <translation id="3082992102194421695">{COUNT,plural, =1{Istječe sutra}one{Istječe za # dan}few{Istječe za # dana}other{Istječe za # dana}}</translation>
 <translation id="310297983047869047">Prethodni slajd</translation>
@@ -188,7 +189,6 @@
 <translation id="4149994727733219643">Pojednostavljeni prikaz za web-stranice</translation>
 <translation id="4151930093518524179">Zadano zumiranje</translation>
 <translation id="4165986682804962316">Postavke web-lokacije</translation>
-<translation id="4169019654293892025">Sakrij modul <ph name="TITLE_OF_MODULE" /></translation>
 <translation id="4169549551965910670">Povezano s USB uređajem</translation>
 <translation id="4194328954146351878">Pitaj prije omogućavanja web-lokacijama da vide i mijenjaju podatke na NFC uređajima (preporučeno)</translation>
 <translation id="4200726100658658164">Otvori postavke lokacije</translation>
@@ -213,6 +213,7 @@
 <translation id="4566417217121906555">Isključi mikrofon</translation>
 <translation id="4570913071927164677">Pojedinosti</translation>
 <translation id="4598549027014564149">Dok ste u anonimnom načinu, web-lokacije ne mogu upotrebljavati vaše kolačiće za uvid u vašu aktivnost pregledavanja na web-lokacijama, čak ni na povezanim web-lokacijama. Vaša aktivnost pregledavanja ne koristi se za stvari kao što je personaliziranje oglasa. Značajke na nekim web-lokacijama možda neće funkcionirati.</translation>
+<translation id="4619615317237390068">Kartice s drugih uređaja</translation>
 <translation id="4644713492825682049">Izbriši i poništi</translation>
 <translation id="4645575059429386691">Upravlja tvoj roditelj</translation>
 <translation id="4670064810192446073">Virtualna stvarnost</translation>
@@ -344,6 +345,7 @@
 <translation id="6612358246767739896">Zaštićeni sadržaj</translation>
 <translation id="662080504995468778">Ostani</translation>
 <translation id="6653342741369270081">Pritisnite gumb za natrag da biste zatvorili prikaz na cijelom zaslonu.</translation>
+<translation id="6670377348676659110">{TILE_COUNT,plural, =1{Sakrij Nastavi s ovom karticom}one{Sakrij Nastavi s ovim karticama}few{Sakrij Nastavi s ovim karticama}other{Sakrij Nastavi s ovim karticama}}</translation>
 <translation id="6689172468748959065">Fotografije profila</translation>
 <translation id="6697925417670533197">Aktivna preuzimanja</translation>
 <translation id="6722828510648505498">Blokiraj upite za prijavu s usluga za provjeru identiteta.</translation>
@@ -366,6 +368,7 @@
 <translation id="702275896380648118">Ova web-lokacija određuje što vam se sviđa, a zatim predlaže oglase na drugim web-lokacijama. Ova web-lokacija također prima podatke o temama vaših oglasa iz Chromea kako bi vam prikazivala relevantnije oglase.</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 odabrana stavka}one{# odabrana stavka}few{# odabrane stavke}other{# odabranih stavki}}</translation>
+<translation id="708014373017851679">Aplikacija <ph name="APP_NAME" /> je zastarjela. Ažurirajte aplikaciju.</translation>
 <translation id="7087918508125750058">Odabrano: <ph name="ITEM_COUNT" />. Opcije su dostupne pri vrhu zaslona</translation>
 <translation id="7141896414559753902">Web-lokacijama nije dopušteno prikazivanje skočnih prozora i preusmjeravanja (preporučeno)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>

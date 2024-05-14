@@ -9,19 +9,30 @@
 
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
+#include "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
 
 class ChromeBrowserState;
+class LegacyBookmarkModel;
 
 namespace bookmarks {
 class BookmarkModel;
-}
+}  // namespace bookmarks
 
 namespace ios {
+
 // Owns BookmarkModels associated with the primary account.
 class AccountBookmarkModelFactory : public BrowserStateKeyedServiceFactory {
  public:
-  static bookmarks::BookmarkModel* GetForBrowserState(
+  static LegacyBookmarkModel* GetForBrowserState(
       ChromeBrowserState* browser_state);
+
+  // Returns a dedicated BookmarkModel instance for `browser_state` that is
+  // guaranteed to not be shared with other factories. Callers must ensure that
+  // `syncer::kEnableBookmarkFoldersForAccountStorage` is disabled.
+  static bookmarks::BookmarkModel*
+  GetDedicatedUnderlyingModelForBrowserStateIfUnificationDisabledOrDie(
+      ChromeBrowserState* browser_state);
+
   static AccountBookmarkModelFactory* GetInstance();
   // Returns the default factory, useful in tests where it's null by default.
   static TestingFactory GetDefaultFactory();

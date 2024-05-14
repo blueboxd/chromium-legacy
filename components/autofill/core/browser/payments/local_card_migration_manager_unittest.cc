@@ -69,13 +69,14 @@ class LocalCardMigrationManagerTest : public testing::Test {
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
     personal_data().SetPrefService(autofill_client_.GetPrefs());
     personal_data().SetSyncServiceForTest(&sync_service_);
-    autofill_driver_ = std::make_unique<TestAutofillDriver>();
+    autofill_driver_ = std::make_unique<TestAutofillDriver>(&autofill_client_);
     payments_network_interface_ = new payments::TestPaymentsNetworkInterface(
         autofill_client_.GetURLLoaderFactory(),
         autofill_client_.GetIdentityManager(), &personal_data());
-    autofill_client_.set_test_payments_network_interface(
-        std::unique_ptr<payments::TestPaymentsNetworkInterface>(
-            payments_network_interface_));
+    autofill_client_.GetPaymentsAutofillClient()
+        ->set_test_payments_network_interface(
+            std::unique_ptr<payments::TestPaymentsNetworkInterface>(
+                payments_network_interface_));
     credit_card_save_manager_ = new TestCreditCardSaveManager(
         autofill_driver_.get(), &autofill_client_, &personal_data());
     credit_card_save_manager_->SetCreditCardUploadEnabled(true);
@@ -94,8 +95,9 @@ class LocalCardMigrationManagerTest : public testing::Test {
                 local_card_migration_manager_));
     autofill_client_.set_test_form_data_importer(
         std::unique_ptr<TestFormDataImporter>(test_form_data_importer));
-    browser_autofill_manager_ = std::make_unique<TestBrowserAutofillManager>(
-        autofill_driver_.get(), &autofill_client_);
+
+    browser_autofill_manager_ =
+        std::make_unique<TestBrowserAutofillManager>(autofill_driver_.get());
     browser_autofill_manager_->SetExpectedObservedSubmission(true);
   }
 
@@ -106,7 +108,7 @@ class LocalCardMigrationManagerTest : public testing::Test {
     autofill_driver_.reset();
 
     personal_data().SetPrefService(nullptr);
-    personal_data().ClearCreditCards();
+    personal_data().test_payments_data_manager().ClearCreditCards();
   }
 
   void FormsSeen(const std::vector<FormData>& updated_forms) {
@@ -317,8 +319,7 @@ class LocalCardMigrationManagerTest : public testing::Test {
   }
 
   payments::TestPaymentsAutofillClient& payments_autofill_client() {
-    return static_cast<payments::TestPaymentsAutofillClient&>(
-        *autofill_client_.GetPaymentsAutofillClient());
+    return *autofill_client_.GetPaymentsAutofillClient();
   }
 
   base::test::TaskEnvironment task_environment_;

@@ -9,7 +9,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
-#include "ui/views/layout/box_layout_view.h"
+#include "ui/views/layout/flex_layout_view.h"
 
 namespace ui {
 class Event;
@@ -17,20 +17,16 @@ class Event;
 
 namespace ash {
 
+class IconButton;
+class MahiQuestionAnswerView;
+class SummaryOutlinesSection;
+
 // The code for Mahi main panel view. This view is placed within
 // `MahiPanelWidget`.
-class ASH_EXPORT MahiPanelView : public views::BoxLayoutView {
-  METADATA_HEADER(MahiPanelView, views::BoxLayoutView)
+class ASH_EXPORT MahiPanelView : public views::FlexLayoutView {
+  METADATA_HEADER(MahiPanelView, views::FlexLayoutView)
 
  public:
-  enum ViewId {
-    kCloseButton = 1,
-    kSummaryLabel,
-    kThumbsUpButton,
-    kThumbsDownButton,
-    kLearnMoreLink,
-  };
-
   MahiPanelView();
   MahiPanelView(const MahiPanelView&) = delete;
   MahiPanelView& operator=(const MahiPanelView&) = delete;
@@ -38,10 +34,15 @@ class ASH_EXPORT MahiPanelView : public views::BoxLayoutView {
 
  private:
   // Callbacks for buttons and link.
-  void OnThumbsUpButtonPressed(const ui::Event& event);
-  void OnThumbsDownButtonPressed(const ui::Event& event);
   void OnCloseButtonPressed(const ui::Event& event);
   void OnLearnMoreLinkClicked();
+  void OnBackButtonPressed();
+  void OnSendButtonPressed();
+
+  // Owned by the views hierarchy.
+  raw_ptr<IconButton> back_button_;
+  raw_ptr<MahiQuestionAnswerView> question_answer_view_;
+  raw_ptr<SummaryOutlinesSection> summary_outlines_section_;
 
   base::WeakPtrFactory<MahiPanelView> weak_ptr_factory_{this};
 };

@@ -59,13 +59,14 @@ void BrowserDownloadService::OnDownloadCreated(
   if ((task->GetMimeType() == kPkPassMimeType ||
        task->GetMimeType() == kPkBundledPassMimeType) &&
       !base::FeatureList::IsEnabled(kPassKitKillSwitch)) {
-    PassKitTabHelper* tab_helper = PassKitTabHelper::FromWebState(web_state);
+    PassKitTabHelper* tab_helper =
+        PassKitTabHelper::GetOrCreateForWebState(web_state);
     if (tab_helper)
       tab_helper->Download(std::move(task));
   } else if (IsUsdzFileFormat(task->GetMimeType(), task->GenerateFileName()) &&
              !base::FeatureList::IsEnabled(kARKillSwitch)) {
     ARQuickLookTabHelper* tab_helper =
-        ARQuickLookTabHelper::FromWebState(web_state);
+        ARQuickLookTabHelper::GetOrCreateForWebState(web_state);
     if (tab_helper)
       tab_helper->Download(std::move(task));
 

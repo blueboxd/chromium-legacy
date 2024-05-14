@@ -532,10 +532,12 @@ gfx::Size BrowserNonClientFrameViewChromeOS::GetMinimumSize() const {
     min_height = 2 * border_size.height();
   }
 
-  if (chromeos::features::IsRoundedWindowsEnabled()) {
+  const int window_corner_radius = frame()->GetNativeWindow()->GetProperty(
+      aura::client::kWindowCornerRadiusKey);
+  if (chromeos::features::IsRoundedWindowsEnabled() &&
+      window_corner_radius > 0) {
     // Include bottom rounded corners region.
-    min_height =
-        min_height + chromeos::GetFrameCornerRadius(frame()->GetNativeWindow());
+    min_height = min_height + window_corner_radius;
   }
 
   return gfx::Size(min_width, min_height);
@@ -630,9 +632,9 @@ void BrowserNonClientFrameViewChromeOS::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
   // When the display is rotated, the frame header may have invalid snap icons.
-  // For example, when |features::kVerticalSnapState| is enabled, rotating from
-  // landscape display to portrait display layout should update snap icons from
-  // left/right arrows to upward/downward arrows for top and bottom snaps.
+  // For example, rotating from landscape display to portrait display layout
+  // should update snap icons from left/right arrows to upward/downward arrows
+  // for top and bottom snaps.
   if ((changed_metrics & DISPLAY_METRIC_ROTATION) && frame_header_)
     frame_header_->InvalidateLayout();
 }
@@ -706,6 +708,7 @@ void BrowserNonClientFrameViewChromeOS::OnWindowDestroying(
     aura::Window* window) {
   DCHECK(window_observation_.IsObserving());
   window_observation_.Reset();
+  display_observer_.reset();
 }
 
 void BrowserNonClientFrameViewChromeOS::OnWindowPropertyChanged(

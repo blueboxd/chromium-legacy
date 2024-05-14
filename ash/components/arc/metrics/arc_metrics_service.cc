@@ -591,11 +591,6 @@ void ArcMetricsService::ReportDnsQueryResult(mojom::ArcDnsQuery query,
   base::UmaHistogramBoolean(metric_name, success);
 }
 
-void ArcMetricsService::ReportImageCopyPasteCompatActionDeprecated(
-    mojom::ArcImageCopyPasteCompatAction action_type) {
-  // Intentionally no-op. This metric was deprecated.
-}
-
 void ArcMetricsService::NotifyLowMemoryKill() {
   for (auto& obs : app_kill_observers_)
     obs.OnArcLowMemoryKill();
@@ -676,12 +671,6 @@ void ArcMetricsService::ReportArcSystemHealthUpgrade(base::TimeDelta duration,
 
   base::UmaHistogramBoolean("Arc.SystemHealth.Upgrade.PackagesDeleted",
                             packages_deleted);
-}
-
-void ArcMetricsService::ReportClipboardDragDropEvent(
-    mojom::ArcClipboardDragDropEvent event_type) {
-  // This method is deprecated.
-  // TODO(yhanada): Remove this once all callers are removed.
 }
 
 void ArcMetricsService::ReportAnr(mojom::AnrPtr anr) {
@@ -850,6 +839,12 @@ void ArcMetricsService::ReportDragResizeLatency(
                                   /*minimum=*/base::Milliseconds(1),
                                   /*maximum=*/base::Seconds(3), 100);
   }
+}
+
+void ArcMetricsService::ReportAppErrorDialogType(
+    mojom::AppErrorDialogType type) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  base::UmaHistogramEnumeration("Arc.WM.AppErrorDialog.Type", type);
 }
 
 void ArcMetricsService::OnWindowActivated(

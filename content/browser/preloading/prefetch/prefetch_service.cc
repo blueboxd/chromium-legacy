@@ -7,10 +7,10 @@
 #include <memory>
 #include <optional>
 #include <utility>
+#include <vector>
 
 #include "base/auto_reset.h"
 #include "base/barrier_closure.h"
-#include "base/containers/cxx20_erase_vector.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/feature_list.h"
 #include "base/location.h"
@@ -333,6 +333,12 @@ PrefetchService::PrefetchService(BrowserContext* browser_context)
 
 PrefetchService::~PrefetchService() = default;
 
+void PrefetchService::SetPrefetchServiceDelegateForTesting(
+    std::unique_ptr<PrefetchServiceDelegate> delegate) {
+  DCHECK(!delegate_);
+  delegate_ = std::move(delegate);
+}
+
 PrefetchOriginProber* PrefetchService::GetPrefetchOriginProber() const {
   return origin_prober_.get();
 }
@@ -406,9 +412,7 @@ void PrefetchService::PrefetchUrl(
            delegate_->IsExtendedPreloadingEnabled());
       if (!allow_all_domains &&
           !delegate_->IsDomainInPrefetchAllowList(
-              RenderFrameHost::FromID(
-                  prefetch_container->GetReferringRenderFrameHostId())
-                  ->GetLastCommittedURL())) {
+              prefetch_container->GetReferringOrigin().GetURL())) {
         DVLOG(1) << *prefetch_container
                  << ": not prefetched (not in allow list)";
         return;
@@ -612,6 +616,7 @@ void PrefetchService::OnGotServiceWorkerResult(
         .Run(std::move(prefetch_container), PreloadingEligibility::kEligible);
     return;
   }
+
   StoragePartition* default_storage_partition =
       browser_context_->GetDefaultStoragePartition();
   CHECK(default_storage_partition);
@@ -640,6 +645,21 @@ void PrefetchService::OnGotCookiesForEligibilityCheck(
     std::move(result_callback)
         .Run(prefetch_container, PreloadingEligibility::kUserHasCookies);
     return;
+  }
+
+  if (base::FeatureList::IsEnabled(
+          features::kPrefetchStateContaminationMitigation)) {
+    // The cookie eligibility check just happened, and we might proceed anyway.
+    // We might therefore need to delay further processing to the extent
+    // required to obscure the outcome of this check from the current site.
+    auto* initiator_rfh = RenderFrameHost::FromID(
+        prefetch_container->GetReferringRenderFrameHostId());
+    const bool is_contamination_exempt =
+        delegate_ && initiator_rfh &&
+        delegate_->IsContaminationExempt(initiator_rfh->GetLastCommittedURL());
+    if (!is_contamination_exempt) {
+      prefetch_container->MarkCrossSiteContaminated();
+    }
   }
 
   // Cookies are tricky because cookies for different paths or a higher level
@@ -1211,6 +1231,10 @@ PrefetchService::OnPrefetchResponseStarted(
     return PrefetchErrorOnResponseReceived::kFailedInvalidHead;
   }
 
+  if (prefetch_container && prefetch_container->IsCrossSiteContaminated()) {
+    head->is_prefetch_with_cross_site_contamination = true;
+  }
+
   const auto& devtools_observer = prefetch_container->GetDevToolsObserver();
   if (devtools_observer) {
     devtools_observer->OnPrefetchResponseReceived(
@@ -1402,7 +1426,7 @@ std::vector<PrefetchContainer*> PrefetchService::FindPrefetchContainerToServe(
     prefetch_container->UpdateServingPageMetrics();
   }
 
-  base::EraseIf(matches, [](const auto* prefetch_container) {
+  std::erase_if(matches, [](const auto* prefetch_container) {
     if (prefetch_container->HasPrefetchBeenConsideredToServe()) {
       DVLOG(1) << "PrefetchService::FindPrefetchContainerToServe: skipped "
                << "because already considered to serve: "
@@ -1509,8 +1533,8 @@ PrefetchService::HandlePrefetchContainerToServe(
           weak_method_factory_.GetWeakPtr(), key,
           prefetch_match_resolver.GetWeakPtr(), prefetch_container.GetURL(),
           prefetch_container.GetWeakPtr()));
-      base::TimeDelta block_until_head_timeout = PrefetchBlockUntilHeadTimeout(
-          prefetch_container.GetPrefetchType().GetEagerness());
+      base::TimeDelta block_until_head_timeout =
+          PrefetchBlockUntilHeadTimeout(prefetch_container.GetPrefetchType());
       if (block_until_head_timeout.is_positive()) {
         std::unique_ptr<base::OneShotTimer> block_until_head_timer =
             std::make_unique<base::OneShotTimer>();

@@ -8,9 +8,6 @@ source_set("metrics") {
     "feed_metrics_recorder.h",
     "feed_metrics_recorder.mm",
     "feed_refresh_state_tracker.h",
-    "feed_session_recorder+testing.h",
-    "feed_session_recorder.h",
-    "feed_session_recorder.mm",
     "new_tab_page_metrics_recorder.h",
     "new_tab_page_metrics_recorder.mm",
   ]
@@ -25,6 +22,7 @@ source_set("metrics") {
     "//components/ntp_tiles",
     "//components/prefs",
     "//ios/chrome/browser/discover_feed/model:constants",
+    "//ios/chrome/browser/discover_feed/model:discover_feed_refresher",
     "//ios/chrome/browser/metrics/model:constants",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/public/features",
@@ -65,10 +63,7 @@ source_set("home_metrics") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "feed_metrics_recorder_unittest.mm",
-    "feed_session_recorder_unittest.mm",
-  ]
+  sources = [ "feed_metrics_recorder_unittest.mm" ]
   deps = [
     ":constants",
     ":metrics",

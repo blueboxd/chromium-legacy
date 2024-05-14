@@ -120,7 +120,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="API.StorageAccess.RequestOutcome"
-    enum="StorageAccessAPIRequestOutcome" expires_after="2024-06-30">
+    enum="StorageAccessAPIRequestOutcome" expires_after="2024-09-01">
   <owner>cfredric@chromium.org</owner>
   <owner>brandm@microsoft.com</owner>
   <summary>
@@ -131,7 +131,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="API.StorageAccess.RequestStorageAccess2"
-    enum="RequestStorageResult" expires_after="2024-06-30">
+    enum="RequestStorageResult" expires_after="2024-09-01">
   <owner>mkwst@chromium.org</owner>
   <owner>cfredric@chromium.org</owner>
   <owner>brandm@microsoft.com</owner>
@@ -169,7 +169,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Clipboard.Read" enum="ClipboardFormatRead"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>huangdarwin@chromium.org</owner>
   <owner>src/ui/base/clipboard/OWNERS</owner>
   <summary>
@@ -196,7 +196,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Clipboard.Write" enum="ClipboardFormatWrite"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>huangdarwin@chromium.org</owner>
   <owner>src/ui/base/clipboard/OWNERS</owner>
   <summary>
@@ -204,6 +204,21 @@ chromium-metrics-reviews@google.com.
     These writes all imply that an application had this format available, and
     therefore wrote this format.
   </summary>
+</histogram>
+
+<histogram name="IndexedDB.QuotaCheckTime.{QuotaCheckResult}" units="ms"
+    expires_after="2024-09-07">
+  <owner>estade@chromium.org</owner>
+  <owner>chrome-owp-storage@google.com</owner>
+  <summary>
+    Logs the result of quota checks made by the IndexedDB component on commit of
+    readwrite txns.
+  </summary>
+  <token key="QuotaCheckResult">
+    <variant name="DroppedRequest"/>
+    <variant name="QuotaError"/>
+    <variant name="Success"/>
+  </token>
 </histogram>
 
 <histogram name="LevelDBEnv.DeleteTableBackupFile" enum="BooleanSuccess"
@@ -253,11 +268,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sql.Recovery.Result" enum="SqlRecoveryResult"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>asully@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
-    Outcome of attempting to recover a database with sql::BuiltInRecovery.
+    Outcome of attempting to recover a database with sql::Recovery.
   </summary>
 </histogram>
 
@@ -267,21 +282,21 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
     Outcome of attempting to recover the {DatabaseTag} database with
-    sql::BuiltInRecovery.
+    sql::Recovery.
   </summary>
   <token key="DatabaseTag" variants="DatabaseTag"/>
 </histogram>
 
 <histogram name="Sql.Recovery.ResultCode" enum="SqliteLoggedResultCode"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>asully@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
-    SQLite result code from attempting to recover a database with
-    sql::BuiltInRecovery. Note that kNoError does not necessarily indicate that
-    recovery succeeded (see Sql.Recovery.Result for that information), since not
-    all recoveries fail due to SQLite errors (e.g. if a version number could not
-    be read from the meta table).
+    SQLite result code from attempting to recover a database with sql::Recovery.
+    Note that kNoError does not necessarily indicate that recovery succeeded
+    (see Sql.Recovery.Result for that information), since not all recoveries
+    fail due to SQLite errors (e.g. if a version number could not be read from
+    the meta table).
   </summary>
 </histogram>
 
@@ -291,10 +306,10 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
     SQLite result code from attempting to recover the {DatabaseTag} database
-    with sql::BuiltInRecovery. Note that kNoError does not necessarily indicate
-    that recovery succeeded (see Sql.Recovery.Result for that information),
-    since not all recoveries fail due to SQLite errors (e.g. if a version number
-    could not be read from the meta table).
+    with sql::Recovery. Note that kNoError does not necessarily indicate that
+    recovery succeeded (see Sql.Recovery.Result for that information), since not
+    all recoveries fail due to SQLite errors (e.g. if a version number could not
+    be read from the meta table).
   </summary>
   <token key="DatabaseTag" variants="DatabaseTag"/>
 </histogram>
@@ -333,35 +348,6 @@ chromium-metrics-reviews@google.com.
     site to the user that the user then chose to exclude from clearing. This
     histogram has expired between M95-M106.
   </summary>
-</histogram>
-
-<histogram name="Storage.Blob.RegisterURLTimeWithoutPartitioningSupport"
-    units="ms" expires_after="2024-02-20">
-  <owner>awillia@chromium.org</owner>
-  <owner>chrome-owp-storage@chromium.org</owner>
-  <summary>
-    Recorded when the PublicURLManager::RegisterURL method calls the per-process
-    BlobURLStore::Register mojo interface method. The value recorded is the time
-    taken for the call to complete. This histogram is only logged when the
-    SupportPartitionedBlobUrl feature is disabled.
-  </summary>
-</histogram>
-
-<histogram name="Storage.Blob.RegisterURLTimeWithPartitioningSupport.{Type}"
-    units="ms" expires_after="2024-06-30">
-  <owner>awillia@chromium.org</owner>
-  <owner>chrome-owp-storage@chromium.org</owner>
-  <summary>
-    Recorded when the PublicURLManager::RegisterURL method calls the
-    BlobURLStore::Register mojo interface method. The value recorded is the time
-    taken for the call to complete. This variation of the histogram records
-    results from {Type}. This histogram is only logged when the
-    SupportPartitionedBlobUrl feature is enabled.
-  </summary>
-  <token key="Type">
-    <variant name="Frame" summary="frame execution contexts"/>
-    <variant name="Worker" summary="worker execution contexts"/>
-  </token>
 </histogram>
 
 <histogram name="Storage.Buckets.BucketCount" units="buckets"
@@ -424,7 +410,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Storage.FileSystemAccess.RestorePermissionPromptOutcome"
     enum="FileSystemAccessRestorePermissionPromptOutcome"
-    expires_after="2024-05-01">
+    expires_after="2024-09-01">
   <owner>christinesm@chromium.org</owner>
   <owner>src/content/browser/file_system_access/OWNERS</owner>
   <summary>
@@ -433,9 +419,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Storage.FileSystemAccess.ToggleExtendedPermissionOutcome"
+    enum="Boolean" expires_after="2024-09-01">
+  <owner>christinesm@chromium.org</owner>
+  <owner>src/content/browser/file_system_access/OWNERS</owner>
+  <summary>
+    The result of a user interaction with the File System Access Persistent
+    Permissions Page Info UI checkbox toggle option to enable or disable
+    Extended Permissions for a given origin.
+  </summary>
+</histogram>
+
 <histogram
     name="Storage.FileSystemAccess.{OpType}PermissionRequestOutcome.{EntryType}"
-    enum="FileSystemAccessPermissionRequestOutcome" expires_after="2024-06-30">
+    enum="FileSystemAccessPermissionRequestOutcome" expires_after="2024-09-01">
   <owner>asully@chromium.org</owner>
   <owner>src/content/browser/file_system_access/OWNERS</owner>
   <summary>
@@ -571,7 +568,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.InterestGroup.DBMaintenanceTime" units="microseconds"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -584,7 +581,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.InterestGroup.DBSize" units="KB"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -594,7 +591,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.InterestGroup.PerSiteCount" units="groups"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -977,6 +974,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Storage.SharedStorage.Document.Timing.Get" units="ms"
+    expires_after="2024-07-31">
+  <owner>cammie@chromium.org</owner>
+  <owner>yaoxia@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Measures the time from start of the call to `blink::SharedStorage::get()` to
+    when the callback has successfully completed. Does not measure the timing of
+    calls that end in an error. Recorded in the OnceCallback executed after the
+    get operation completes.
+  </summary>
+</histogram>
+
 <histogram name="Storage.SharedStorage.Document.Timing.Run" units="ms"
     expires_after="2024-07-31">
   <owner>cammie@chromium.org</owner>
@@ -1046,6 +1056,17 @@ chromium-metrics-reviews@google.com.
     calls that end in an error. Recorded in
     `blink::SharedStorage::OnVoidOperationFinished()` via
     `LogTimingHistogramForVoidOperation()`.
+  </summary>
+</histogram>
+
+<histogram name="Storage.SharedStorage.DocumentServiceBind.IsSecureFrame"
+    enum="BooleanSecure" expires_after="2024-08-26">
+  <owner>cammie@chromium.org</owner>
+  <owner>yaoxia@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Records whether the frame is secure when the shared storage document mojom
+    service is initialized.
   </summary>
 </histogram>
 
@@ -1362,7 +1383,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.StoragePressure.Bubble"
-    enum="StoragePressureBubbleUserAction" expires_after="2024-06-30">
+    enum="StoragePressureBubbleUserAction" expires_after="2024-09-01">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>

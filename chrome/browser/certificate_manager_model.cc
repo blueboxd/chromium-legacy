@@ -39,12 +39,18 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS)
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/certificate_provider/certificate_provider.h"
 #include "chrome/browser/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/chromeos/kcer/kcer_factory.h"
 #include "chrome/browser/policy/networking/user_network_configuration_updater.h"
 #include "chrome/browser/policy/networking/user_network_configuration_updater_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/components/network/policy_certificate_provider.h"
+#include "chromeos/components/kcer/kcer.h"
+#include "chromeos/components/kcer/kcer_histograms.h"
+#include "chromeos/constants/chromeos_features.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -258,17 +264,12 @@ class CertsSourcePlatformNSS : public CertificateManagerModel::CertsSource,
   void RefreshSlotsUnlocked() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DVLOG(1) << "refresh listing certs...";
-    cert_db_->ListCertsInfo(
-        base::BindOnce(&CertsSourcePlatformNSS::DidGetCerts,
-                       weak_ptr_factory_.GetWeakPtr()),
-#if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
-        SystemNetworkContextManager::IsUsingChromeRootStore()
-            ? net::NSSCertDatabase::NSSRootsHandling::kExclude
-            : net::NSSCertDatabase::NSSRootsHandling::kInclude
-#elif BUILDFLAG(CHROME_ROOT_STORE_ONLY)
-        net::NSSCertDatabase::NSSRootsHandling::kExclude
+    cert_db_->ListCertsInfo(base::BindOnce(&CertsSourcePlatformNSS::DidGetCerts,
+                                           weak_ptr_factory_.GetWeakPtr()),
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+                            net::NSSCertDatabase::NSSRootsHandling::kExclude
 #else
-        net::NSSCertDatabase::NSSRootsHandling::kInclude
+                            net::NSSCertDatabase::NSSRootsHandling::kInclude
 #endif
     );
   }
@@ -493,6 +494,27 @@ class CertsSourceExtensions : public CertificateManagerModel::CertsSource {
 
   base::WeakPtrFactory<CertsSourceExtensions> weak_ptr_factory_{this};
 };
+
+void RecordImportFromPKCS12KcerResult(
+    int nss_import_result,
+    base::OnceCallback<void(int nss_import_result)> callback,
+    base::expected<void, kcer::Error> kcer_import_result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (kcer_import_result.has_value()) {
+    kcer::RecordPkcs12MigrationUmaEvent(
+        kcer::Pkcs12MigrationUmaEvent::kPkcs12ImportKcerSuccess);
+  } else {
+    kcer::RecordPkcs12MigrationUmaEvent(
+        kcer::Pkcs12MigrationUmaEvent::kPkcs12ImportKcerFailed);
+    kcer::RecordKcerError(kcer_import_result.error());
+  }
+
+  // Just return the nss_import_result. Kcer will attempt to import only if NSS
+  // succeeds and even if Kcer fails, the cert should be usable.
+  return std::move(callback).Run(nss_import_result);
+}
+
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace
@@ -550,6 +572,9 @@ void CertificateManagerModel::Create(
           browser_context);
   params->extension_certificate_provider =
       certificate_provider_service->CreateCertificateProvider();
+
+  params->kcer =
+      kcer::KcerFactory::GetKcer(Profile::FromBrowserContext(browser_context));
 #endif
 
   content::GetIOThreadTaskRunner({})->PostTask(
@@ -584,6 +609,7 @@ CertificateManagerModel::CertificateManagerModel(
         certs_source_updated_callback, params->policy_certs_provider,
         CertsSourcePolicy::Mode::kPolicyCertsWithWebTrust));
   }
+  kcer_ = params->kcer;
 #endif
 
   // Add the main NSS DB based CertsSource.
@@ -663,12 +689,47 @@ void CertificateManagerModel::FilterAndBuildOrgGroupingMap(
   }
 }
 
-int CertificateManagerModel::ImportFromPKCS12(PK11SlotInfo* slot_info,
-                                              const std::string& data,
-                                              const std::u16string& password,
-                                              bool is_extractable) {
-  return cert_db_->ImportFromPKCS12(slot_info, data, password, is_extractable,
-                                    nullptr);
+void CertificateManagerModel::ImportFromPKCS12(
+    PK11SlotInfo* slot_info,
+    const std::string& data,
+    const std::u16string& password,
+    bool is_extractable,
+    base::OnceCallback<void(int nss_import_result)> callback) {
+  int nss_import_result = cert_db_->ImportFromPKCS12(slot_info, data, password,
+                                                     is_extractable, nullptr);
+
+#if BUILDFLAG(IS_CHROMEOS)
+  if (nss_import_result == net::OK) {
+    kcer::RecordPkcs12MigrationUmaEvent(
+        kcer::Pkcs12MigrationUmaEvent::kPkcs12ImportNssSuccess);
+  } else {
+    kcer::RecordPkcs12MigrationUmaEvent(
+        kcer::Pkcs12MigrationUmaEvent::kPkcs12ImportNssFailed);
+  }
+
+  // `is_extractable` == true indicates that the cert came from the "Import"
+  // button. By default it's imported into the software NSS database (aka public
+  // slot). With the experiment enabled it should also be imported into Chaps.
+  // `is_extractable` == false means that the cert came from the "Import and
+  // Bind" button and it's import into Chaps by default.
+  if ((nss_import_result == net::OK) && is_extractable &&
+      chromeos::features::IsPkcs12ToChapsDualWriteEnabled()) {
+    // Record the dual-write event. Even if the import fails, it's theoretically
+    // possible that some related objects are still created and would need to be
+    // deleted in case of a rollback.
+    kcer::KcerFactory::RecordPkcs12CertDualWritten();
+    std::string u8_password = base::UTF16ToUTF8(password);
+    return kcer_->ImportPkcs12Cert(
+        kcer::Token::kUser,
+        kcer::Pkcs12Blob(std::vector<uint8_t>(data.begin(), data.end())),
+        std::move(u8_password),
+        /*hardware_backed=*/!is_extractable, /*mark_as_migrated=*/true,
+        base::BindOnce(&RecordImportFromPKCS12KcerResult, nss_import_result,
+                       std::move(callback)));
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
+  return std::move(callback).Run(nss_import_result);
 }
 
 int CertificateManagerModel::ImportUserCert(const std::string& data) {

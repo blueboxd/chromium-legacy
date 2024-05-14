@@ -5,6 +5,11 @@
 #ifndef CHROMEOS_ASH_COMPONENTS_HEATMAP_HEATMAP_PALM_DETECTOR_IMPL_H_
 #define CHROMEOS_ASH_COMPONENTS_HEATMAP_HEATMAP_PALM_DETECTOR_IMPL_H_
 
+#include <queue>
+#include <unordered_set>
+
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chromeos/services/machine_learning/public/mojom/heatmap_palm_rejection.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -24,8 +29,11 @@ class HeatmapPalmDetectorImpl
 
   // ui::HeatmapPalmDetector:
   void Start(ModelId model_id, std::string_view hidraw_path) override;
-  DetectionResult GetDetectionResult() const override;
+  bool IsPalm(int tracking_id) const override;
   bool IsReady() const override;
+  void AddTouchRecord(base::Time timestamp,
+                      const std::vector<int>& tracking_ids) override;
+  void RemoveTouch(int tracking_id) override;
 
   // chromeos::machine_learning::mojom::HeatmapPalmRejectionClient
   void OnHeatmapProcessedEvent(
@@ -38,8 +46,15 @@ class HeatmapPalmDetectorImpl
 
   void OnConnectionError();
 
-  bool is_palm_ = false;
   bool is_ready_ = false;
+
+  ModelId model_id_;
+  std::string hidraw_path_;
+
+  std::queue<TouchRecord> touch_records_;
+  std::unordered_set<int> palm_tracking_ids_;
+  base::TimeDelta reconnect_delay_;
+  base::OneShotTimer delay_timer_;
 
   mojo::Remote<chromeos::machine_learning::mojom::MachineLearningService>
       ml_service_;

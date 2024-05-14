@@ -8,6 +8,7 @@
 #include <optional>
 
 #include "ash/constants/ash_features.h"
+#include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/logging.h"
@@ -57,6 +58,13 @@ const double kInsufficientBatteryPercent = 50;
 constexpr base::TimeDelta kUmaMinUpdateTime = base::Milliseconds(1);
 constexpr base::TimeDelta kUmaMaxUpdateTime = base::Hours(2);
 constexpr int kUmaUpdateTimeBuckets = 50;
+
+// Passing "--quick-start-test-consumer-update" on the command line will
+// simulate the "Consumer Update" flow. This is for testing only and will not
+// install an actual update. If this switch is present, the Chromebook reboots
+// and attempts to automatically resume the Quick Start connection after reboot.
+constexpr char kQuickStartTestConsumerUpdateSwitch[] =
+    "quick-start-test-consumer-update";
 
 void RecordUpdateTime(base::TimeDelta update_time, bool is_mandatory) {
   if (is_mandatory) {
@@ -229,6 +237,12 @@ void ConsumerUpdateScreen::DelayExitNoUpdate() {
 }
 
 void ConsumerUpdateScreen::FinishExitUpdate(VersionUpdater::Result result) {
+  if (did_prepare_quick_start_for_update_) {
+    WizardController::default_controller()
+        ->quick_start_controller()
+        ->ResumeSessionAfterCancelledUpdate();
+  }
+
   switch (result) {
     case VersionUpdater::Result::UPDATE_NOT_REQUIRED:
       RecordOobeConsumerUpdateScreenSkippedReasonHistogram(
@@ -390,7 +404,7 @@ void ConsumerUpdateScreen::OnErrorScreenHidden() {
 
 void ConsumerUpdateScreen::UpdateInfoChanged(
     const VersionUpdater::UpdateInfo& update_info) {
-  if (!view_) {
+  if (!view_ || is_hidden()) {
     return;
   }
   const update_engine::StatusResult& status = update_info.status;
@@ -399,6 +413,29 @@ void ConsumerUpdateScreen::UpdateInfoChanged(
         ConsumerUpdateScreenView::UIState::kCellularPermission);
     return;
   }
+
+  // For testing resuming Quick Start after an update with the
+  // kQuickStartTestConsumerUpdateSwitch only.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kQuickStartTestConsumerUpdateSwitch) &&
+      context()->quick_start_setup_ongoing) {
+    // Remove switch to avoid update loop.
+    base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+        kQuickStartTestConsumerUpdateSwitch);
+    WizardController::default_controller()
+        ->quick_start_controller()
+        ->PrepareForUpdate();
+    did_prepare_quick_start_for_update_ = true;
+    view_->SetUpdateState(ConsumerUpdateScreenView::UIState::kUpdateInProgress);
+    // Set consumer update complete for next reboot.
+    g_browser_process->local_state()->SetBoolean(
+        prefs::kOobeConsumerUpdateCompleted, true);
+    wait_reboot_timer_.Start(FROM_HERE, wait_before_reboot_time_,
+                             version_updater_.get(),
+                             &VersionUpdater::RebootAfterUpdate);
+    return;
+  }
+
   switch (status.current_operation()) {
     case update_engine::Operation::CHECKING_FOR_UPDATE:
       view_->SetUpdateState(
@@ -416,6 +453,14 @@ void ConsumerUpdateScreen::UpdateInfoChanged(
       update_available = true;
       break;
     case update_engine::Operation::DOWNLOADING:
+      if (context()->quick_start_setup_ongoing &&
+          !did_prepare_quick_start_for_update_) {
+        WizardController::default_controller()
+            ->quick_start_controller()
+            ->PrepareForUpdate();
+        did_prepare_quick_start_for_update_ = true;
+      }
+      [[fallthrough]];
     case update_engine::Operation::VERIFYING:
     case update_engine::Operation::FINALIZING:
       view_->SetUpdateState(
@@ -429,17 +474,6 @@ void ConsumerUpdateScreen::UpdateInfoChanged(
     case update_engine::Operation::UPDATED_NEED_REBOOT: {
       g_browser_process->local_state()->SetBoolean(
           prefs::kOobeConsumerUpdateCompleted, true);
-
-      if (context()->quick_start_setup_ongoing) {
-        // Wait to prepare Quick Start for an update until the reboot is ready,
-        // because the user may be able to cancel the update during download
-        // process. Allow more time to exchange message with source device
-        // before reboot.
-        WizardController::default_controller()
-            ->quick_start_controller()
-            ->PrepareForUpdate();
-        wait_before_reboot_time_ += base::Seconds(2);
-      }
 
       base::TimeDelta update_time = base::TimeTicks::Now() - screen_shown_time_;
       RecordUpdateTime(update_time, is_mandatory_update_.value_or(true));

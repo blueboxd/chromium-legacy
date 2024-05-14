@@ -35,6 +35,10 @@ class ChromeCameraAppUIDelegate;
 namespace app_list::federated {
 class FederatedMetricsManager;
 }  // namespace app_list::federated
+
+namespace ash::input_method {
+class AutocorrectManager;
+}  // namespace ash::input_method
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace domain_reliability {
@@ -174,10 +178,17 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class CampaignsManagerClientImpl;
   friend class tpcd::experiment::ExperimentManagerImpl;
   friend class readaloud::SyntheticTrial;
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+  friend class DefaultBrowserPromptManager;
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   friend class ChromeCameraAppUIDelegate;
+
+  // The following classes are friended because they check UMA consent status
+  // for the purpose of federated metrics collection.
   friend class app_list::federated::FederatedMetricsManager;
+  friend class ash::input_method::AutocorrectManager;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

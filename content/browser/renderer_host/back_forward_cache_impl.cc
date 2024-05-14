@@ -189,7 +189,6 @@ WebSchedulerTrackedFeatures GetDisallowedWebSchedulerTrackedFeatures() {
           WebSchedulerTrackedFeature::kLiveMediaStreamTrack,
           WebSchedulerTrackedFeature::kPaymentManager,
           WebSchedulerTrackedFeature::kPictureInPicture,
-          WebSchedulerTrackedFeature::kPortal,
           WebSchedulerTrackedFeature::kPrinting,
           WebSchedulerTrackedFeature::kRequestedAudioCapturePermission,
           WebSchedulerTrackedFeature::kRequestedBackForwardCacheBlockedSensors,
@@ -199,7 +198,6 @@ WebSchedulerTrackedFeatures GetDisallowedWebSchedulerTrackedFeatures() {
           WebSchedulerTrackedFeature::kSmartCard,
           WebSchedulerTrackedFeature::kSharedWorker,
           WebSchedulerTrackedFeature::kSpeechRecognizer,
-          WebSchedulerTrackedFeature::kSpeechSynthesis,
           WebSchedulerTrackedFeature::kUnloadHandler,
           WebSchedulerTrackedFeature::kWebDatabase,
           WebSchedulerTrackedFeature::kWebHID,
@@ -209,7 +207,8 @@ WebSchedulerTrackedFeatures GetDisallowedWebSchedulerTrackedFeatures() {
           WebSchedulerTrackedFeature::kWebShare,
           WebSchedulerTrackedFeature::kWebSocket,
           WebSchedulerTrackedFeature::kWebTransport,
-          WebSchedulerTrackedFeature::kWebXR};
+          WebSchedulerTrackedFeature::kWebXR,
+          WebSchedulerTrackedFeature::kParserAborted};
 }
 WebSchedulerTrackedFeatures GetInjectionWebSchedulerTrackedFeatures() {
   return {WebSchedulerTrackedFeature::kInjectedJavascript,
@@ -246,7 +245,6 @@ WebSchedulerTrackedFeatures GetAllowedWebSchedulerTrackedFeatures() {
       WebSchedulerTrackedFeature::kSubresourceHasCacheControlNoStore,
       // TODO(crbug.com/1357482): Figure out if this should be allowed.
       WebSchedulerTrackedFeature::kWebNfc,
-      WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet,
   };
 }
 
@@ -451,9 +449,8 @@ void MarkNoWithMultipleFeatures(BackForwardCacheCanStoreDocumentResult* result,
   BackForwardCacheCanStoreDocumentResult::BlockingDetailsMap map;
   WebSchedulerTrackedFeatures features_added;
   for (const auto& details : rfh->GetBackForwardCacheBlockingDetails()) {
-    CHECK(details->feature.has_value());
     auto feature = static_cast<blink::scheduler::WebSchedulerTrackedFeature>(
-        details->feature.value());
+        details->feature);
     // Some features might be recorded but not banned. Do not save the details
     // in this case.
     if (!features.Has(feature)) {
@@ -914,15 +911,6 @@ void BackForwardCacheImpl::PopulateReasonsForMainDocument(
   // Only store documents that were fetched via HTTP GET method.
   if (rfh->last_http_method() != net::HttpRequestHeaders::kGetMethod)
     result.No(BackForwardCacheMetrics::NotRestoredReason::kHTTPMethodNotGET);
-
-  // Only store documents that have a valid network::mojom::URLResponseHead.
-  // We actually don't know the actual case this reason is solely set without
-  // kHTTPStatusNotOK and kSchemeNotHTTPOrHTTPS, but crash reports imply it
-  // happens.
-  // TODO(https://crbug.com/1216997): Understand the case and remove
-  // DebugScenario::kDebugNoResponseHeadForHTTPOrHTTPS.
-  if (!rfh->last_response_head())
-    result.No(BackForwardCacheMetrics::NotRestoredReason::kNoResponseHead);
 
   // Do not store main document with non HTTP/HTTPS URL scheme. Among other
   // things, this excludes the new tab page and all WebUI pages.
@@ -1785,7 +1773,7 @@ BackForwardCacheCanStoreTreeResult::GetWebExposedNotRestoredReasonsInternal(
     // document.
     not_restored_reasons->same_origin_details =
         blink::mojom::SameOriginBfcacheNotRestoredDetails::New();
-    not_restored_reasons->same_origin_details->url = url_.spec();
+    not_restored_reasons->same_origin_details->url = url_;
     // Populate the reasons for same-origin frames.
     for (auto& name : GetDocumentResult().GetStringReasons()) {
       blink::mojom::BFCacheBlockingDetailedReasonPtr reason =

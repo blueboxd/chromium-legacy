@@ -679,7 +679,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   // The maximum supported size of an ArrayBuffer is the maximum size that can
   // be allocated in JavaScript. This maximum is defined by the maximum size
-  // partition alloc can allocate.
+  // PartitionAlloc can allocate.
   // We limit the maximum size of ArrayBuffers we support to avoid integer
   // overflows in the WebGL implementation. WebGL stores the data size as
   // uint32_t, so if sizes just below uint32_t::max() were passed in, integer
@@ -1079,9 +1079,10 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     }
 
    private:
-    // `extension_field_` is not a `raw_ref` because `Member<T>` denotes
-    // a type managed by Oilpan, i.e. memory that is not managed by
+    // RAW_PTR_EXCLUSION: `Member<T>` denotes a type managed by Oilpan, and is
+    // contained in a type managed by Oilpan, i.e. not managed by
     // PartitionAlloc.
+    // TODO(crbug/325359457): Make it non-reference.
     RAW_PTR_EXCLUSION Member<T>& extension_field_;
     // ExtensionTracker holds it's own reference to the extension to ensure
     // that it is not deleted before this object's destructor is called
@@ -1207,6 +1208,17 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Convert texture internal format.
   GLenum ConvertTexInternalFormat(GLenum internalformat, GLenum type);
 
+  enum TexImageSourceType {
+    kSourceArrayBufferView,
+    kSourceImageData,
+    kSourceHTMLImageElement,
+    kSourceHTMLCanvasElement,
+    kSourceHTMLVideoElement,
+    kSourceImageBitmap,
+    kSourceUnpackBuffer,
+    kSourceVideoFrame,
+  };
+
   enum TexImageFunctionType {
     kTexImage,
     kTexSubImage,
@@ -1226,6 +1238,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   // Parameters for all TexImage functions.
   struct TexImageParams {
+    TexImageSourceType source_type = kSourceArrayBufferView;
     TexImageFunctionID function_id = kTexImage2D;
     GLenum target = 0;
     GLint level = 0;
@@ -1276,6 +1289,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     // interpret the 2D source as 3D by treating it as vertical sequence of
     // images with this height.
     GLint unpack_image_height = 0;
+
+    // If true, then the source should be converted to the unpack color space.
+    bool unpack_colorspace_conversion = true;
   };
 
   // Populate the unpack state based on the context's current state. This is
@@ -1496,17 +1512,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                    const char* param_name,
                                    int64_t value);
 
-  enum TexFuncValidationSourceType {
-    kSourceArrayBufferView,
-    kSourceImageData,
-    kSourceHTMLImageElement,
-    kSourceHTMLCanvasElement,
-    kSourceHTMLVideoElement,
-    kSourceImageBitmap,
-    kSourceUnpackBuffer,
-    kSourceVideoFrame,
-  };
-
   // Helper function for tex{Sub}Image{2|3}D to check if the input params'
   // format/type/level/target/width/height/depth/border/xoffset/yoffset/zoffset
   // are valid.  Otherwise, it would return quickly without doing other work.
@@ -1514,7 +1519,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // params.width and params.height with those values before performing
   // validation.
   bool ValidateTexFunc(TexImageParams params,
-                       TexFuncValidationSourceType,
                        std::optional<GLsizei> source_width,
                        std::optional<GLsizei> source_height);
 
@@ -1532,8 +1536,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Helper function to check input parameters for functions
   // {copy}Tex{Sub}Image.  Generates GL error and returns false if parameters
   // are invalid.
-  bool ValidateTexFuncParameters(const TexImageParams& params,
-                                 TexFuncValidationSourceType);
+  bool ValidateTexFuncParameters(const TexImageParams& params);
 
   enum NullDisposition { kNullAllowed, kNullNotAllowed, kNullNotReachable };
 

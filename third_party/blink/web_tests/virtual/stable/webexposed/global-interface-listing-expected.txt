@@ -520,6 +520,7 @@ interface CSSKeyframeRule : CSSRule
 interface CSSKeyframesRule : CSSRule
     attribute @@toStringTag
     getter cssRules
+    getter length
     getter name
     method @@iterator
     method appendRule
@@ -1421,6 +1422,7 @@ interface DeviceOrientationEvent : Event
     getter gamma
     method constructor
 interface Document : Node
+    static method parseHTMLUnsafe
     attribute @@toStringTag
     attribute @@unscopables
     getter URL
@@ -2009,6 +2011,7 @@ interface Element : Node
     method setAttributeNS
     method setAttributeNode
     method setAttributeNodeNS
+    method setHTMLUnsafe
     method setPointerCapture
     method toggleAttribute
     method webkitMatchesSelector
@@ -3249,6 +3252,7 @@ interface HTMLElement : Element
     getter title
     getter translate
     getter virtualKeyboardPolicy
+    getter writingSuggestions
     method attachInternals
     method blur
     method click
@@ -3381,6 +3385,7 @@ interface HTMLElement : Element
     setter title
     setter translate
     setter virtualKeyboardPolicy
+    setter writingSuggestions
 interface HTMLEmbedElement : HTMLElement
     attribute @@toStringTag
     getter align
@@ -3581,6 +3586,7 @@ interface HTMLIFrameElement : HTMLElement
     getter referrerPolicy
     getter sandbox
     getter scrolling
+    getter sharedStorageWritable
     getter src
     getter srcdoc
     getter width
@@ -3604,6 +3610,7 @@ interface HTMLIFrameElement : HTMLElement
     setter referrerPolicy
     setter sandbox
     setter scrolling
+    setter sharedStorageWritable
     setter src
     setter srcdoc
     setter width
@@ -3627,6 +3634,7 @@ interface HTMLImageElement : HTMLElement
     getter naturalHeight
     getter naturalWidth
     getter referrerPolicy
+    getter sharedStorageWritable
     getter sizes
     getter src
     getter srcset
@@ -3651,6 +3659,7 @@ interface HTMLImageElement : HTMLElement
     setter lowsrc
     setter name
     setter referrerPolicy
+    setter sharedStorageWritable
     setter sizes
     setter src
     setter srcset
@@ -4354,9 +4363,11 @@ interface HTMLTableSectionElement : HTMLElement
 interface HTMLTemplateElement : HTMLElement
     attribute @@toStringTag
     getter content
+    getter shadowRootClonable
     getter shadowRootDelegatesFocus
     getter shadowRootMode
     method constructor
+    setter shadowRootClonable
     setter shadowRootDelegatesFocus
     setter shadowRootMode
 interface HTMLTextAreaElement : HTMLElement
@@ -4731,6 +4742,7 @@ interface Image
     getter naturalHeight
     getter naturalWidth
     getter referrerPolicy
+    getter sharedStorageWritable
     getter sizes
     getter src
     getter srcset
@@ -4755,6 +4767,7 @@ interface Image
     setter lowsrc
     setter name
     setter referrerPolicy
+    setter sharedStorageWritable
     setter sizes
     setter src
     setter srcset
@@ -6054,6 +6067,10 @@ interface OverconstrainedError : DOMException
 interface PageRevealEvent : Event
     attribute @@toStringTag
     method constructor
+interface PageSwapEvent : Event
+    attribute @@toStringTag
+    getter activation
+    method constructor
 interface PageTransitionEvent : Event
     attribute @@toStringTag
     getter persisted
@@ -6638,10 +6655,12 @@ interface RTCIceCandidate
     getter protocol
     getter relatedAddress
     getter relatedPort
+    getter relayProtocol
     getter sdpMLineIndex
     getter sdpMid
     getter tcpType
     getter type
+    getter url
     getter usernameFragment
     method constructor
     method toJSON
@@ -6738,6 +6757,7 @@ interface RTCPeerConnectionIceEvent : Event
 interface RTCRtpReceiver
     static method getCapabilities
     attribute @@toStringTag
+    getter jitterBufferTarget
     getter playoutDelayHint
     getter rtcpTransport
     getter track
@@ -6748,6 +6768,7 @@ interface RTCRtpReceiver
     method getParameters
     method getStats
     method getSynchronizationSources
+    setter jitterBufferTarget
     setter playoutDelayHint
 interface RTCRtpSender
     static method getCapabilities
@@ -6863,12 +6884,14 @@ interface ReadableByteStreamController
 interface ReadableStream
     attribute @@toStringTag
     getter locked
+    method @@asyncIterator
     method cancel
     method constructor
     method getReader
     method pipeThrough
     method pipeTo
     method tee
+    method values
 interface ReadableStreamBYOBReader
     attribute @@toStringTag
     getter closed
@@ -6935,6 +6958,7 @@ interface Request
     getter referrer
     getter referrerPolicy
     getter signal
+    getter targetAddressSpace
     getter url
     method arrayBuffer
     method blob
@@ -8332,6 +8356,7 @@ interface ShadowRoot : DocumentFragment
     attribute @@toStringTag
     getter activeElement
     getter adoptedStyleSheets
+    getter clonable
     getter delegatesFocus
     getter fullscreenElement
     getter host
@@ -8348,6 +8373,7 @@ interface ShadowRoot : DocumentFragment
     method getAnimations
     method getInnerHTML
     method getSelection
+    method setHTMLUnsafe
     setter adoptedStyleSheets
     setter fullscreenElement
     setter innerHTML
@@ -10548,6 +10574,18 @@ interface WebSocket : EventTarget
     setter onerror
     setter onmessage
     setter onopen
+interface WebSocketError : DOMException
+    attribute @@toStringTag
+    getter closeCode
+    getter reason
+    method constructor
+interface WebSocketStream
+    attribute @@toStringTag
+    getter closed
+    getter opened
+    getter url
+    method close
+    method constructor
 interface WebTransport
     attribute @@toStringTag
     getter closed
@@ -11410,6 +11448,7 @@ namespace console
     getter onpagehide
     getter onpagereveal
     getter onpageshow
+    getter onpageswap
     getter onpause
     getter onplay
     getter onplaying
@@ -11626,6 +11665,7 @@ namespace console
     setter onpagehide
     setter onpagereveal
     setter onpageshow
+    setter onpageswap
     setter onpause
     setter onplay
     setter onplaying

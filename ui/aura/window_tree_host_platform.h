@@ -57,6 +57,20 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
     return platform_window_.get();
   }
 
+  // Returns `PlatformWindow` for the platform. If
+  // `PlatformWindowFactoryDelegateForTesting` is set, it uses the delegate.
+  std::unique_ptr<ui::PlatformWindow> CreatePlatformWindow(
+      ui::PlatformWindowInitProperties properties);
+
+  class PlatformWindowFactoryDelegateForTesting {
+   public:
+    virtual ~PlatformWindowFactoryDelegateForTesting() = default;
+    virtual std::unique_ptr<ui::PlatformWindow> Create(
+        WindowTreeHostPlatform*) = 0;
+  };
+  static void SetPlatformWindowFactoryDelegateForTesting(
+      PlatformWindowFactoryDelegateForTesting* delegate);
+
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   std::string GetUniqueId() const override;
 #endif
@@ -91,6 +105,7 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
   int64_t OnStateUpdate(const PlatformWindowDelegate::State& old,
                         const PlatformWindowDelegate::State& latest) override;
   void SetFrameRateThrottleEnabled(bool enabled) override;
+  void DisableNativeWindowOcclusion() override;
 
   // Overridden from aura::WindowTreeHost:
   gfx::Point GetLocationOnScreenInPixels() const override;

@@ -6,10 +6,10 @@
 #define CC_LAYERS_TEXTURE_LAYER_IMPL_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
-#include <optional>
 #include "base/containers/flat_map.h"
 #include "base/functional/callback.h"
 #include "base/memory/ptr_util.h"
@@ -93,7 +93,6 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   bool nearest_neighbor_ = false;
   gfx::PointF uv_top_left_ = gfx::PointF();
   gfx::PointF uv_bottom_right_ = gfx::PointF(1.f, 1.f);
-  gfx::HDRMetadata hdr_metadata_;
 
   // True while the |transferable_resource_| is owned by this layer, and
   // becomes false once it is passed to another layer or to the

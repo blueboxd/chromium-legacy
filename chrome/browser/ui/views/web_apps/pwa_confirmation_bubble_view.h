@@ -13,6 +13,8 @@
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/interaction/element_tracker.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/widget/widget.h"
 
 class PageActionIconView;
@@ -27,6 +29,7 @@ class Tracker;
 
 namespace views {
 class Checkbox;
+class BubbleDialogDelegateView;
 }  // namespace views
 
 namespace webapps {
@@ -38,12 +41,9 @@ class MlInstallOperationTracker;
 // icon in the omnibox.
 class PWAConfirmationBubbleView : public LocationBarBubbleDelegateView {
  public:
-  static bool IsShowing();
-  static PWAConfirmationBubbleView* GetBubble();
-
   PWAConfirmationBubbleView(
       views::View* anchor_view,
-      content::WebContents* web_contents,
+      base::WeakPtr<content::WebContents> web_contents,
       PageActionIconView* highlight_icon_button,
       std::unique_ptr<web_app::WebAppInstallInfo> web_app_info,
       std::unique_ptr<webapps::MlInstallOperationTracker> install_tracker,
@@ -51,7 +51,8 @@ class PWAConfirmationBubbleView : public LocationBarBubbleDelegateView {
       web_app::PwaInProductHelpState iph_state,
       PrefService* prefs,
       feature_engagement::Tracker* tracker);
-
+  METADATA_HEADER(PWAConfirmationBubbleView, views::BubbleDialogDelegateView)
+ public:
   PWAConfirmationBubbleView(const PWAConfirmationBubbleView&) = delete;
   PWAConfirmationBubbleView& operator=(const PWAConfirmationBubbleView&) =
       delete;
@@ -70,14 +71,12 @@ class PWAConfirmationBubbleView : public LocationBarBubbleDelegateView {
   void WindowClosing() override;
   bool Accept() override;
 
-  static base::AutoReset<bool> SetDontCloseOnDeactivateForTesting();
-
  protected:
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* widget) const override;
 
  private:
-  raw_ptr<PageActionIconView> highlight_icon_button_ = nullptr;
+  base::WeakPtr<content::WebContents> web_contents_;
   std::unique_ptr<web_app::WebAppInstallInfo> web_app_info_;
   std::unique_ptr<webapps::MlInstallOperationTracker> install_tracker_;
   web_app::AppInstallationAcceptanceCallback callback_;

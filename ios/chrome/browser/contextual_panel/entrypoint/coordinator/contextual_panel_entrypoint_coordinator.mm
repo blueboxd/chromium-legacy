@@ -8,16 +8,16 @@
 #import "ios/chrome/browser/contextual_panel/entrypoint/coordinator/contextual_panel_entrypoint_mediator.h"
 #import "ios/chrome/browser/contextual_panel/entrypoint/coordinator/contextual_panel_entrypoint_mediator_delegate.h"
 #import "ios/chrome/browser/contextual_panel/entrypoint/ui/contextual_panel_entrypoint_view_controller.h"
+#import "ios/chrome/browser/contextual_panel/model/contextual_panel_browser_agent.h"
+#import "ios/chrome/browser/shared/model/browser/browser.h"
+#import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/commands/contextual_panel_commands.h"
 
 @interface ContextualPanelEntrypointCoordinator () <
     ContextualPanelEntrypointMediatorDelegate>
 
 // The mediator for this coordinator.
 @property(nonatomic, strong) ContextualPanelEntrypointMediator* mediator;
-
-// The view controller for this coordinator.
-@property(nonatomic, strong)
-    ContextualPanelEntrypointViewController* viewController;
 
 @end
 
@@ -27,11 +27,17 @@
   [super start];
   _viewController = [[ContextualPanelEntrypointViewController alloc] init];
 
-  _mediator = [[ContextualPanelEntrypointMediator alloc] init];
+  _mediator = [[ContextualPanelEntrypointMediator alloc]
+      initWithBrowserAgent:ContextualPanelBrowserAgent::FromBrowser(
+                               self.browser)];
   _mediator.delegate = self;
 
   _mediator.consumer = _viewController;
   _viewController.mutator = _mediator;
+
+  CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
+  [dispatcher startDispatchingToTarget:_mediator
+                           forProtocol:@protocol(ContextualPanelCommands)];
 }
 
 - (void)stop {
@@ -40,9 +46,14 @@
 
   [super stop];
 
+  CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
+  [dispatcher stopDispatchingToTarget:_mediator];
+
+  [_mediator disconnect];
   _mediator.consumer = nil;
   _mediator.delegate = nil;
   _mediator = nil;
+
   _viewController.mutator = nil;
   _viewController = nil;
 }

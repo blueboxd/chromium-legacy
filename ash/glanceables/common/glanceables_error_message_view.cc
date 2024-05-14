@@ -28,26 +28,31 @@
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 
+namespace ash {
 namespace {
 
-constexpr int kErrorMessageRoundedCornerRadius = 13;
 constexpr int kErrorMessageViewSize = 34;
-constexpr int kErrorMessageHorizontalMargin = 4;
-constexpr int kErrorMessageBottomMargin = 4;
+constexpr int kErrorMessageRoundedCornerRadius = kErrorMessageViewSize / 2;
 constexpr gfx::Insets kButtonInsets = gfx::Insets::TLBR(8, 4, 8, 10);
 constexpr gfx::Insets kLabelInsets = gfx::Insets::TLBR(0, 16, 0, 0);
 
-}  // namespace
-
-namespace ash {
-
-class DismissErrorLabelButton : public views::LabelButton {
-  METADATA_HEADER(DismissErrorLabelButton, views::LabelButton)
+class ActionLabelButton : public views::LabelButton {
+  METADATA_HEADER(ActionLabelButton, views::LabelButton)
 
  public:
-  explicit DismissErrorLabelButton(PressedCallback callback)
+  ActionLabelButton(PressedCallback callback,
+                    GlanceablesErrorMessageView::ButtonActionType type)
       : views::LabelButton(std::move(callback)) {
-    SetText(l10n_util::GetStringUTF16(IDS_GLANCEABLES_ERROR_DISMISS));
+    int string_id;
+    switch (type) {
+      case GlanceablesErrorMessageView::ButtonActionType::kDismiss:
+        string_id = IDS_GLANCEABLES_ERROR_DISMISS;
+        break;
+      case GlanceablesErrorMessageView::ButtonActionType::kReload:
+        string_id = IDS_GLANCEABLES_ERROR_RELOAD;
+        break;
+    }
+    SetText(l10n_util::GetStringUTF16(string_id));
     SetID(
         base::to_underlying(GlanceablesViewId::kGlanceablesErrorMessageButton));
     SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_RIGHT);
@@ -57,23 +62,26 @@ class DismissErrorLabelButton : public views::LabelButton {
                                           *label());
     label()->SetAutoColorReadabilityEnabled(false);
   }
-  ~DismissErrorLabelButton() override = default;
+  ~ActionLabelButton() override = default;
 };
 
-BEGIN_METADATA(DismissErrorLabelButton)
+BEGIN_METADATA(ActionLabelButton)
 END_METADATA
+
+}  // namespace
 
 GlanceablesErrorMessageView::GlanceablesErrorMessageView(
     views::Button::PressedCallback callback,
-    const std::u16string& error_message) {
+    const std::u16string& error_message,
+    ButtonActionType type) {
   SetPaintToLayer();
   layer()->SetRoundedCornerRadius(
       gfx::RoundedCornersF(kErrorMessageRoundedCornerRadius));
-  SetBackground(
-      views::CreateThemedSolidBackground(cros_tokens::kCrosSysSystemBase));
+  SetBackground(views::CreateThemedSolidBackground(
+      cros_tokens::kCrosSysSystemOnBaseOpaque));
+  SetID(base::to_underlying(GlanceablesViewId::kGlanceablesErrorMessageView));
 
   const auto* const typography_provider = TypographyProvider::Get();
-
   error_message_label_ = AddChildView(
       views::Builder<views::Label>()
           .SetID(base::to_underlying(
@@ -93,8 +101,8 @@ GlanceablesErrorMessageView::GlanceablesErrorMessageView(
           .Build());
   error_message_label_->SetAutoColorReadabilityEnabled(false);
 
-  dismiss_button_ = AddChildView(
-      std::make_unique<DismissErrorLabelButton>(std::move(callback)));
+  action_button_ = AddChildView(
+      std::make_unique<ActionLabelButton>(std::move(callback), type));
 }
 
 void GlanceablesErrorMessageView::UpdateBoundsToContainer(
@@ -102,12 +110,13 @@ void GlanceablesErrorMessageView::UpdateBoundsToContainer(
   gfx::Rect preferred_bounds(container_bounds);
 
   preferred_bounds.Inset(gfx::Insets::TLBR(
-      preferred_bounds.height() - kErrorMessageViewSize -
-          kErrorMessageBottomMargin,
-      kErrorMessageHorizontalMargin, kErrorMessageBottomMargin,
-      kErrorMessageHorizontalMargin));
+      preferred_bounds.height() - kErrorMessageViewSize, 0, 0, 0));
 
   SetBoundsRect(preferred_bounds);
+}
+
+std::u16string GlanceablesErrorMessageView::GetMessageForTest() const {
+  return error_message_label_->GetText();
 }
 
 BEGIN_METADATA(GlanceablesErrorMessageView)

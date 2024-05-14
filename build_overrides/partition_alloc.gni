@@ -23,7 +23,6 @@
 #
 # {variable}_default works as the default value of {variable}.
 
-import("//build/config/cast.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 if (is_ios) {
   import("//ios/features.gni")
@@ -52,7 +51,7 @@ if (is_ios) {
 #     against the debug CRT with "is_nacl=false".
 # Under Fuchsia, the allocator shim is only required for PA-E.
 # For all other platforms & configurations, the shim is required, to replace
-#     the default system allocators, e.g. with Partition Alloc.
+#     the default system allocators, e.g. with PartitionAlloc.
 if ((is_linux || is_chromeos || is_android || is_apple ||
      (is_fuchsia && !_disable_partition_alloc_everywhere) ||
      (is_win && !is_component_build && !is_debug)) && !_is_using_sanitizers) {
@@ -78,9 +77,13 @@ enable_backup_ref_ptr_support_default = _is_brp_supported
 
 enable_backup_ref_ptr_slow_checks_default = false
 enable_dangling_raw_ptr_checks_default =
-    enable_backup_ref_ptr_support_default && is_linux && !is_official_build &&
-    (is_debug || dcheck_always_on)
+    enable_backup_ref_ptr_support_default && (is_linux || is_win) &&
+    !is_official_build && (is_debug || dcheck_always_on)
 
 raw_ptr_zero_on_construct_default = true
 raw_ptr_zero_on_move_default = true
 raw_ptr_zero_on_destruct_default = false
+
+# Allow embedders to opt-out of C++20 build which is set as default.
+# Kindly notify PartitionAlloc owners of change to false.
+assert_cpp20_default = true

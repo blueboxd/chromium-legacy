@@ -77,6 +77,9 @@ safe_browsing::EventResult GetEventResultFromThreatType(
   if (threat_type == "ENTERPRISE_BLOCKED_SEEN") {
     return safe_browsing::EventResult::BLOCKED;
   }
+  if (threat_type.empty()) {
+    return safe_browsing::EventResult::ALLOWED;
+  }
   NOTREACHED();
   return safe_browsing::EventResult::UNKNOWN;
 }
@@ -106,13 +109,17 @@ void AddAnalysisConnectorVerdictToEvent(
 
 std::string ActionFromVerdictType(
     safe_browsing::RTLookupResponse::ThreatInfo::VerdictType verdict_type) {
-  if (verdict_type == safe_browsing::RTLookupResponse::ThreatInfo::DANGEROUS) {
-    return "BLOCK";
+  switch (verdict_type) {
+    case safe_browsing::RTLookupResponse::ThreatInfo::DANGEROUS:
+      return "BLOCK";
+    case safe_browsing::RTLookupResponse::ThreatInfo::WARN:
+      return "WARN";
+    case safe_browsing::RTLookupResponse::ThreatInfo::SAFE:
+      return "REPORT_ONLY";
+    case safe_browsing::RTLookupResponse::ThreatInfo::SUSPICIOUS:
+    case safe_browsing::RTLookupResponse::ThreatInfo::VERDICT_TYPE_UNSPECIFIED:
+      return "ACTION_UNKNOWN";
   }
-  if (verdict_type == safe_browsing::RTLookupResponse::ThreatInfo::WARN) {
-    return "WARN";
-  }
-  return "ACTION_UNKNOWN";
 }
 
 void AddTriggeredRuleInfoToUrlFilteringInterstitialEvent(
@@ -134,6 +141,12 @@ void AddTriggeredRuleInfoToUrlFilteringInterstitialEvent(
         threat_info.matched_url_navigation_rule().matched_url_category());
     triggered_rule.Set(extensions::SafeBrowsingPrivateEventRouter::kKeyAction,
                        ActionFromVerdictType(threat_info.verdict_type()));
+
+    if (threat_info.matched_url_navigation_rule().has_watermark_message()) {
+      triggered_rule.Set(
+          extensions::SafeBrowsingPrivateEventRouter::kKeyHasWatermarking,
+          true);
+    }
 
     triggered_rule_info.Append(std::move(triggered_rule));
   }
@@ -578,7 +591,7 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDeepScanningResult(
     const std::string& evidence_locker_filepath,
     const std::string& scan_id,
     const std::string& content_transfer_method) {
-  absl::optional<enterprise_connectors::ReportingSettings> settings =
+  std::optional<enterprise_connectors::ReportingSettings> settings =
       reporting_client_->GetReportingSettings();
   if (!settings.has_value() ||
       settings->enabled_event_names.count(kKeyDangerousDownloadEvent) == 0) {
@@ -1001,7 +1014,9 @@ void SafeBrowsingPrivateEventRouter::OnUrlFilteringInterstitial(
       GetEventResultFromThreatType(threat_type);
   event.Set(kKeyClickedThrough,
             event_result == safe_browsing::EventResult::BYPASSED);
-  event.Set(kKeyThreatType, threat_type);
+  if (!threat_type.empty()) {
+    event.Set(kKeyThreatType, threat_type);
+  }
   AddTriggeredRuleInfoToUrlFilteringInterstitialEvent(response, event);
   event.Set(kKeyEventResult, safe_browsing::EventResultToString(event_result));
 

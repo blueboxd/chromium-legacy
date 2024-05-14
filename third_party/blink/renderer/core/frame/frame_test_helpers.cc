@@ -49,6 +49,7 @@
 #include "third_party/blink/public/common/frame/fenced_frame_sandbox_flags.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/page/browsing_context_group_info.h"
+#include "third_party/blink/public/common/page/color_provider_color_maps.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_replication_state.mojom-blink.h"
@@ -735,7 +736,8 @@ void WebViewHelper::InitializeWebView(
                       *agent_group_scheduler_,
                       /*session_storage_namespace_id=*/std::string(),
                       /*page_base_background_color=*/std::nullopt,
-                      std::move(browsing_context_group_info)));
+                      std::move(browsing_context_group_info),
+                      /*color_provider_colors=*/nullptr));
   // This property must be set at initialization time, it is not supported to be
   // changed afterward, and does nothing.
   web_view_->GetSettings()->SetViewportEnabled(viewport_enabled_);
@@ -777,7 +779,8 @@ WebViewImpl* WebViewHelper::CreateWebView(WebViewClient* web_view_client,
                       *agent_group_scheduler_,
                       /*session_storage_namespace_id=*/std::string(),
                       /*page_base_background_color=*/std::nullopt,
-                      BrowsingContextGroupInfo::CreateUnique()));
+                      BrowsingContextGroupInfo::CreateUnique(),
+                      /*color_provider_colors=*/nullptr));
 }
 
 int TestWebFrameClient::loads_in_progress_ = 0;
@@ -1009,7 +1012,14 @@ void TestWebFrameWidget::BindWidgetChannels(
   widget_host_ = CreateWidgetHost();
   widget_host_->BindWidgetHost(std::move(receiver), std::move(frame_receiver));
   mojo::Remote<mojom::blink::WidgetInputHandler> input_handler;
-  widget_remote->GetWidgetInputHandler(
+
+  mojo::PendingRemote<mojom::blink::RenderInputRouterClient> rir_client_remote;
+  // Setup RenderInputRouter mojo connections.
+  widget_remote->SetupRenderInputRouterConnections(
+      rir_client_remote.InitWithNewPipeAndPassReceiver());
+  widget_host_->BindRenderInputRouterInterfaces(std::move(rir_client_remote));
+
+  widget_host_->GetWidgetInputHandler(
       input_handler.BindNewPipeAndPassReceiver(),
       GetInputHandlerHost()->BindNewRemote());
 }
@@ -1098,6 +1108,18 @@ void TestWebFrameWidgetHost::BindWidgetHost(
         frame_receiver) {
   receiver_.Bind(std::move(receiver));
   frame_receiver_.Bind(std::move(frame_receiver));
+}
+
+void TestWebFrameWidgetHost::BindRenderInputRouterInterfaces(
+    mojo::PendingRemote<mojom::blink::RenderInputRouterClient> remote) {
+  client_remote_.reset();
+  client_remote_.Bind(std::move(remote));
+}
+
+void TestWebFrameWidgetHost::GetWidgetInputHandler(
+    mojo::PendingReceiver<mojom::blink::WidgetInputHandler> request,
+    mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> host) {
+  client_remote_->GetWidgetInputHandler(std::move(request), std::move(host));
 }
 
 mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost>

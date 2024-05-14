@@ -32,6 +32,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/network/cross_origin_opener_policy_reporter.h"
+#include "content/browser/preloading/prefetch/prefetch_features.h"
 #include "content/browser/process_lock.h"
 #include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/back_forward_cache_metrics.h"
@@ -1602,7 +1603,7 @@ RenderFrameHostManager::GetFrameHostForNavigation(
     // https://crbug.com/926820 and https://crbug.com/927705.
     if (current_frame_host()->IsInactiveAndDisallowActivation(
             DisallowActivationReasonId::kNavigatingInInactiveFrame)) {
-      NOTREACHED() << "Navigation in an inactive frame";
+      DUMP_WILL_BE_NOTREACHED_NORETURN() << "Navigation in an inactive frame";
       DEBUG_ALIAS_FOR_GURL(url, request->common_params().url);
       base::debug::DumpWithoutCrashing();
     }
@@ -1861,38 +1862,48 @@ RenderFrameHostManager::GetFrameHostForNavigation(
       navigation_rfh->GetSiteInstance()->GetIsolationContext();
   request->AddOriginAgentClusterStateIfNecessary(isolation_context);
 
-  // If this function picked an incompatible process for the URL, except for
-  // allowed cases such as navigating to an error page reusing the current
-  // process, capture a crash dump to diagnose why it is occurring.
+  // If this function picked an incompatible process for the origin that's about
+  // to commit, except for allowed cases such as navigating to an error page
+  // reusing the current process, capture a crash dump to diagnose why it is
+  // occurring.
   // TODO(creis): Remove this check after we've gathered enough information to
   // debug issues with browser-side security checks. https://crbug.com/931895.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   const auto process_lock = navigation_rfh->GetProcess()->GetProcessLock();
   if (!process_lock.is_error_page() &&
       request->common_params().url.IsStandard() &&
-      // TODO(https://crbug.com/888079): Replace `common_params().url` with
-      // the origin to commit calculated on the browser side.
-      !policy->CanAccessDataForOrigin(
-          navigation_rfh->GetProcess()->GetID(),
-          url::Origin::Create(request->common_params().url)) &&
       !request->IsForMhtmlSubframe() &&
       request->ComputeErrorPageProcess() !=
           NavigationRequest::ErrorPageProcess::kCurrentProcess) {
-    SCOPED_CRASH_KEY_STRING256("GetFrameHostForNav", "lock_url",
-                               process_lock.ToString());
-    SCOPED_CRASH_KEY_STRING64(
-        "GetFrameHostForNav", "commit_origin",
-        request->common_params().url.DeprecatedGetOriginAsURL().spec());
-    SCOPED_CRASH_KEY_BOOL("GetFrameHostForNav", "is_main_frame",
-                          frame_tree_node_->IsMainFrame());
-    SCOPED_CRASH_KEY_BOOL("GetFrameHostForNav", "use_current_rfh",
-                          use_current_rfh);
-    NOTREACHED() << "Picked an incompatible process for URL: "
-                 << process_lock.ToString() << " lock vs "
-                 << request->common_params().url.DeprecatedGetOriginAsURL()
-                 << ", request_is_sandboxed = "
-                 << request->GetUrlInfo().is_sandboxed;
-    base::debug::DumpWithoutCrashing();
+    // Note that GetOriginToCommit() could return nullopt if the response is
+    // received but does not need to be rendered, for example for a download.
+    // However, that case should never need to pick a RenderFrameHost via
+    // GetFrameHostForNavigation(), so getting here should imply that
+    // GetOriginToCommit() always has a value.
+    const url::Origin origin_to_commit =
+        request->state() >= NavigationRequest::WILL_PROCESS_RESPONSE
+            ? request->GetOriginToCommit().value()
+            : request->GetTentativeOriginAtRequestTime();
+    if (!policy->CanAccessDataForOrigin(navigation_rfh->GetProcess()->GetID(),
+                                        origin_to_commit)) {
+      SCOPED_CRASH_KEY_STRING256("GetFrameHostForNav", "lock_url",
+                                 process_lock.ToString());
+      SCOPED_CRASH_KEY_STRING64(
+          "GetFrameHostForNav", "commit_url_origin",
+          request->common_params().url.DeprecatedGetOriginAsURL().spec());
+      SCOPED_CRASH_KEY_STRING64("GetFrameHostForNav", "commit_origin",
+                                origin_to_commit.GetDebugString());
+      SCOPED_CRASH_KEY_BOOL("GetFrameHostForNav", "is_main_frame",
+                            frame_tree_node_->IsMainFrame());
+      SCOPED_CRASH_KEY_BOOL("GetFrameHostForNav", "use_current_rfh",
+                            use_current_rfh);
+      NOTREACHED() << "Picked an incompatible process for origin: "
+                   << process_lock.ToString() << " lock vs "
+                   << origin_to_commit.GetDebugString()
+                   << ", request_is_sandboxed = "
+                   << request->GetUrlInfo().is_sandboxed;
+      base::debug::DumpWithoutCrashing();
+    }
   }
 
   return navigation_rfh;
@@ -2037,16 +2048,6 @@ RenderFrameHostManager::UnsetSpeculativeRenderFrameHost(
               "RenderFrameHostManager::UnsetSpeculativeRenderFrameHost",
               ChromeTrackEvent::kFrameTreeNodeInfo, *frame_tree_node_);
 
-  if (ShouldQueueNavigationsWhenPendingCommitRFHExists() &&
-      speculative_render_frame_host_
-          ->HasPendingCommitForCrossDocumentNavigation()) {
-    // With navigation queueing, pending commit navigations in speculative
-    // RenderFrameHosts shouldn't get deleted, unless the FrameTreeNode or
-    // renderer process is gone/will be gone soon.
-    CHECK(reason == NavigationDiscardReason::kRenderProcessGone ||
-          reason == NavigationDiscardReason::kWillRemoveFrame);
-  }
-
   speculative_render_frame_host_->GetProcess()->RemovePendingView();
   if (speculative_render_frame_host_->lifecycle_state() ==
       LifecycleStateImpl::kSpeculative) {
@@ -2056,8 +2057,10 @@ RenderFrameHostManager::UnsetSpeculativeRenderFrameHost(
             : mojom::FrameDeleteIntention::
                   kSpeculativeMainFrameForNavigationCancelled);
   } else {
+    // TODO(dcheng): Upgrade this to a CHECK()?
     DCHECK_EQ(speculative_render_frame_host_->lifecycle_state(),
               LifecycleStateImpl::kPendingCommit);
+
     if (!ShouldQueueNavigationsWhenPendingCommitRFHExists()) {
       // The browser process already asked the renderer to commit the
       // navigation. The renderer is guaranteed to commit the navigation and
@@ -2084,8 +2087,64 @@ RenderFrameHostManager::UnsetSpeculativeRenderFrameHost(
       speculative_render_frame_host_->UndoCommitNavigation(
           *proxy, frame_tree_node_->IsLoading());
     } else {
-      speculative_render_frame_host_->SetLifecycleState(
-          LifecycleStateImpl::kReadyToBeDeleted);
+      // A reasonable person might wonder: shouldn't a RenderFrameHostImpl in
+      // kPendingCommit always have a... pending commit?
+      //
+      // The surprising answer is no! When the browser process handles the
+      // renderer's commit navigation ack:
+      // - the NavigationRequest is unconditionally removed from
+      //   `RenderFrameHostImpl::navigation_requests_`.
+      // - but if the IPC fails validation, the browser process reports a bad
+      //   message (which kills the renderer process) and returns immediately.
+      //
+      // However, the kill is async and observing process termination (which is
+      // what cleans up the speculative RenderFrameHostImpl) is also async.
+      // Between reporting the bad message and the actual cleanup, the user can
+      // begin a new navigation, which will discard any speculative RFHs rather
+      // than blocking (since `HasPendingCommitForCrossDocumentNavigation()` now
+      // returns `false`!) for a reason other than `kRenderProcessGone` or
+      // `kWillRemoveFrame`.
+      //
+      // TODO(dcheng): it might help make state easier to reason about if the
+      // speculative RFH is proactively discarded rather than just leaving it
+      // around to be asynchronously cleaned up.
+      if (speculative_render_frame_host_
+              ->HasPendingCommitForCrossDocumentNavigation()) {
+        // With navigation queueing, pending commit navigations in speculative
+        // RenderFrameHosts shouldn't get deleted, unless the FrameTreeNode or
+        // renderer process is gone/will be gone soon.
+        CHECK(reason == NavigationDiscardReason::kRenderProcessGone ||
+              reason == NavigationDiscardReason::kWillRemoveFrame);
+      }
+
+      // TODO(dcheng): `CHECK(render_frame_host_->IsPendingDeletion())` would be
+      // a nice precondition to enforce here. However, this turns out to be
+      // Hard: `StartPendingDeletionOnSubtree()` performs its work in two
+      // phases: it resets all navigation requests first (which might delete
+      // speculative RFHs—even ones in pending commit), before doing a complex
+      // dance to invoke `DeleteRenderFrame()` a minimal number of times. In the
+      // future, it would be nice to refactor the code so this precondition can
+      // be enforced.
+
+      // A pending commit RFH is assumed/expected to have committed already in
+      // the renderer process. If the FrameTreeNode is going away, explicitly
+      // tear down the RenderFrame in the renderer process to keep the frame
+      // tree in sync.
+      if (frame_tree_node_->parent()) {
+        speculative_render_frame_host_->DeleteRenderFrame(
+            mojom::FrameDeleteIntention::kNotMainFrame);
+      } else {
+        // But for main frames, just advance the lifecycle state instead. In
+        // Blink, a live WebView must always have a live main frame; violating
+        // this invariant by destroying the already-committed (from the
+        // perspective of the renderer process) frame with `DeleteRenderFrame()`
+        // results in bugs like crbug.com/40091257.
+        //
+        // The main RenderFrame will be implicitly torn down later when the
+        // corresponding RenderViewHost/WebView are torn down.
+        speculative_render_frame_host_->SetLifecycleState(
+            LifecycleStateImpl::kReadyToBeDeleted);
+      }
     }
   }
 
@@ -2411,6 +2470,23 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   if (DoesNavigationChangeStoragePartition(current_instance,
                                            destination_url_info)) {
     return BrowsingContextGroupSwap::CreateSecuritySwap();
+  }
+
+  // If the destination might have been a prefetch based on cross-site state, we
+  // want to swap to make it more difficult to observe that the navigation
+  // completes faster than normal.
+  // https://crbug.com/1439246
+  if (destination_url_info.is_prefetch_with_cross_site_contamination) {
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "Preloading.PrefetchBCGSwap.RelatedActiveContents",
+        base::saturated_cast<base::HistogramBase::Sample>(
+            current_instance->GetRelatedActiveContentsCount()),
+        51);
+    if (base::FeatureList::IsEnabled(
+            features::kPrefetchStateContaminationMitigation) &&
+        features::kPrefetchStateContaminationSwapsBrowsingContextGroup.Get()) {
+      return BrowsingContextGroupSwap::CreateSecuritySwap();
+    }
   }
 
   // We've checked that we didn't need to do a hard BrowsingInstance swap. If
@@ -4455,23 +4531,26 @@ void RenderFrameHostManager::CommitPending(
   //    order to receive the IPC.
   DCHECK(pending_rfh->IsRenderFrameLive());
   if (RenderWidgetHostImpl* rwh = pending_rfh->GetLocalRenderWidgetHost()) {
-    // The navigation commits in a new local root RenderFrameHost. Log the time
-    // between the creation of its compositor frame sink to swapping in the new
-    // RenderFrameHost.
-    if (rwh->create_frame_sink_timestamp() == base::TimeTicks()) {
-      // The compositor frame sink hasn't been requested yet.
-      UMA_HISTOGRAM_BOOLEAN("Navigation.CompositorRequestedBeforeSwapRFH",
-                            false);
-    } else {
-      UMA_HISTOGRAM_BOOLEAN("Navigation.CompositorRequestedBeforeSwapRFH",
-                            true);
-      base::TimeDelta time =
-          base::TimeTicks::Now() - rwh->create_frame_sink_timestamp();
-      UMA_HISTOGRAM_CUSTOM_TIMES("Navigation.CompositorCreationToSwapRFH", time,
-                                 base::Milliseconds(1), base::Minutes(3), 50);
+    if (rwh->compositor_metric_recorder()) {
+      if (pending_rfh->lifecycle_state() == LifecycleStateImpl::kSpeculative ||
+          pending_rfh->lifecycle_state() ==
+              LifecycleStateImpl::kPendingCommit) {
+        // The navigation swaps in a new RenderFrameHost with a new
+        // RenderWidgetHost. Log the time when the RFH swap happens to record
+        // compositor-related metrics.
+        rwh->compositor_metric_recorder()->DidSwap();
+      } else {
+        // We're restoring a BFCached RenderFrameHost. Make sure that it won't
+        // record compositor-related metrics, since it's intended to be recorded
+        // only for navigations with a new RenderFrameHost. Note that this can't
+        // be a prerendered RFH because we don't create recorders for
+        // prerendered pages.
+        CHECK_EQ(pending_rfh->lifecycle_state(),
+                 LifecycleStateImpl::kInBackForwardCache);
+        rwh->DisableCompositorMetricRecording();
+      }
     }
   }
-
 #if BUILDFLAG(IS_MAC)
   // The old RenderWidgetHostView will be hidden before the new
   // RenderWidgetHostView takes its contents. Ensure that Cocoa sees this as

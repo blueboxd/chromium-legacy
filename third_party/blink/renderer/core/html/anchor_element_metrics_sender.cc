@@ -97,7 +97,7 @@ AnchorElementMetricsSender* AnchorElementMetricsSender::GetForFrame(
 
 void AnchorElementMetricsSender::
     MaybeReportAnchorElementPointerDataOnHoverTimerFired(
-        uint32_t anchor_id,
+        AnchorId anchor_id,
         mojom::blink::AnchorElementPointerDataPtr pointer_data) {
   DCHECK(base::FeatureList::IsEnabled(features::kNavigationPredictor));
   if (!AssociateInterface()) {
@@ -137,8 +137,33 @@ void AnchorElementMetricsSender::AddAnchorElement(HTMLAnchorElement& element) {
 
   // Add this element to the set of elements that we will try to report after
   // the next layout.
+  // The anchor may already be in `removed_anchors_to_report_`. We don't remove
+  // it from there because it may be reinserted and then removed again. We need
+  // to be able to tell the difference from an anchor that was removed before
+  // being reported.
   anchor_elements_to_report_.insert(&element);
   RegisterForLifecycleNotifications();
+}
+
+void AnchorElementMetricsSender::RemoveAnchorElement(
+    HTMLAnchorElement& element) {
+  DCHECK(base::FeatureList::IsEnabled(features::kNavigationPredictor));
+
+  auto it = anchor_elements_to_report_.find(&element);
+  if (it != anchor_elements_to_report_.end()) {
+    // The element was going to be reported, but was removed from the document
+    // before the next layout. We'll treat it as if it were never inserted. We
+    // don't include it in `removed_anchors_to_report_` because the element
+    // might get reinserted. We don't want to exclude from consideration
+    // elements that are moved around before layout.
+    anchor_elements_to_report_.erase(it);
+  } else {
+    // The element wasn't recently added, so we may have already informed the
+    // browser about it. So we'll inform the browser of its removal with the
+    // next batch of new elements, so it can prune its memory usage for old
+    // elements.
+    removed_anchors_to_report_.push_back(AnchorElementId(element));
+  }
 }
 
 void AnchorElementMetricsSender::Trace(Visitor* visitor) const {
@@ -402,23 +427,12 @@ void AnchorElementMetricsSender::DidFinishLifecycleUpdate(
 
   for (const auto& member_element : anchor_elements_to_report_) {
     HTMLAnchorElement& anchor_element = *member_element;
-    if (!anchor_element.Href().ProtocolIsInHTTPFamily()) {
-      continue;
-    }
 
-    // If the anchor doesn't have a valid frame/root document, skip it.
-    if (!anchor_element.GetDocument().GetFrame() ||
-        !GetTopDocument(anchor_element)) {
-      continue;
-    }
-
-    // Only anchors with width/height should be evaluated.
-    if (!anchor_element.GetLayoutObject() ||
-        anchor_element.GetLayoutObject()->AbsoluteBoundingBoxRect().IsEmpty()) {
-      continue;
-    }
     mojom::blink::AnchorElementMetricsPtr anchor_element_metrics =
         CreateAnchorElementMetrics(anchor_element);
+    if (!anchor_element_metrics) {
+      continue;
+    }
 
     int random = base::RandInt(1, random_anchor_sampling_period_);
     if (random == 1) {
@@ -438,6 +452,23 @@ void AnchorElementMetricsSender::DidFinishLifecycleUpdate(
   // during the next layout will never be reported, unless they are re-inserted
   // into the DOM later or if they enter the viewport.
   anchor_elements_to_report_.clear();
+
+  metrics_removed_anchors_.AppendVector(removed_anchors_to_report_);
+  removed_anchors_to_report_.clear();
+
+  if (!metrics_.empty() || !metrics_removed_anchors_.empty()) {
+    // Note that if an element removal happens between the population of
+    // `metrics_` and sending the update to the browser, we may have a scenario
+    // where an update would report the same element as being added and removed.
+    // We record information to disambiguate when flushing the metrics.
+    std::pair<wtf_size_t, wtf_size_t> metrics_partition =
+        std::make_pair(metrics_.size(), metrics_removed_anchors_.size());
+    if (metrics_partitions_.empty() ||
+        metrics_partitions_.back() != metrics_partition) {
+      metrics_partitions_.push_back(metrics_partition);
+    }
+  }
+
   MaybeUpdateMetrics();
 
   DCHECK_EQ(&local_frame_view, GetSupplementable()->View());
@@ -459,8 +490,8 @@ void AnchorElementMetricsSender::MaybeUpdateMetrics() {
 void AnchorElementMetricsSender::UpdateMetrics(TimerBase* /*timer*/) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (metrics_.empty() && entered_viewport_messages_.empty() &&
-      left_viewport_messages_.empty()) {
+  if (metrics_.empty() && metrics_removed_anchors_.empty() &&
+      entered_viewport_messages_.empty() && left_viewport_messages_.empty()) {
     return;
   }
 
@@ -468,9 +499,88 @@ void AnchorElementMetricsSender::UpdateMetrics(TimerBase* /*timer*/) {
     return;
   }
 
-  if (!metrics_.empty()) {
-    metrics_host_->ReportNewAnchorElements(std::move(metrics_));
+  if (!metrics_.empty() || !metrics_removed_anchors_.empty()) {
+    // TODO(https://crbug.com/331043758): Dump to investigate crash in the
+    // EraseIf predicates below.
+    DUMP_WILL_BE_CHECK(!metrics_partitions_.empty());
+    if (!metrics_partitions_.empty()) {
+      DUMP_WILL_BE_CHECK(
+          metrics_partitions_.back() ==
+          std::make_pair(metrics_.size(), metrics_removed_anchors_.size()))
+          << "(" << metrics_partitions_.back().first << ", "
+          << metrics_partitions_.back().second << ") != (" << metrics_.size()
+          << ", " << metrics_removed_anchors_.size() << "), partitions "
+          << metrics_partitions_.size();
+    }
+
+    // Multiple lifecycle updates, during which we buffer metrics updates, may
+    // have happened before we send the buffered metrics updates here. Between
+    // lifecycle updates, the anchors whose metrics are buffered may have
+    // changed, so we now remove any stale updates which no longer accurately
+    // represent the state of the page on the most recent lifecycle update. The
+    // metrics from a more recent lifecycle update reflect the current state.
+    // Within the changes of a single lifecycle update, if the same anchor is
+    // both removed and added then it must have been removed first. So to
+    // reconstruct the correct state, we do a pass over the buffered updates
+    // where we process the removals of the first lifecycle update, then the
+    // additions of the first lifecycle update, then the removals of the second
+    // lifecycle update, then the additions of the second lifecycle update, and
+    // so on.
+    WTF::HashMap<AnchorId, bool> present;
+    WTF::HashMap<AnchorId, bool> newly_removed;
+    wtf_size_t insert_idx = 0;
+    wtf_size_t remove_idx = 0;
+    for (const auto& [insert_end, remove_end] : metrics_partitions_) {
+      // For each partition, removals are processed before insertions.
+      const auto removals = base::make_span(metrics_removed_anchors_)
+                                .subspan(remove_idx, (remove_end - remove_idx));
+      for (AnchorId removed_id : removals) {
+        auto result = present.Set(removed_id, false);
+        newly_removed.insert(removed_id, result.is_new_entry);
+      }
+      const auto insertions = base::make_span(metrics_).subspan(
+          insert_idx, (insert_end - insert_idx));
+      for (const auto& insertion : insertions) {
+        present.Set(insertion->anchor_id, true);
+      }
+      insert_idx = insert_end;
+      remove_idx = remove_end;
+    }
+    WTF::EraseIf(
+        metrics_,
+        [&present](const mojom::blink::AnchorElementMetricsPtr& metric) {
+          // TODO(https://crbug.com/331043758): Dump to investigate crash.
+          // Once resolved, this can just use `HashMap::at`.
+          const auto present_it = present.find(metric->anchor_id);
+          DUMP_WILL_BE_CHECK(present_it != present.end()) << present.size();
+          if (present_it == present.end()) {
+            return false;
+          }
+          return !present_it->value;
+        });
+    WTF::EraseIf(
+        metrics_removed_anchors_, [&present, &newly_removed](AnchorId id) {
+          // TODO(https://crbug.com/331043758): Dump to investigate
+          // crash. Once resolved, these can just use `HashMap::at`.
+          const auto newly_removed_it = newly_removed.find(id);
+          DUMP_WILL_BE_CHECK(newly_removed_it != newly_removed.end())
+              << newly_removed.size();
+          if (newly_removed_it == newly_removed.end()) {
+            return false;
+          }
+          const auto present_it = present.find(id);
+          DUMP_WILL_BE_CHECK(present_it != present.end()) << present.size();
+          if (present_it == present.end()) {
+            return false;
+          }
+          return !newly_removed_it->value || present_it->value;
+        });
+
+    metrics_host_->ReportNewAnchorElements(std::move(metrics_),
+                                           std::move(metrics_removed_anchors_));
     metrics_.clear();
+    metrics_removed_anchors_.clear();
+    metrics_partitions_.clear();
   }
   if (!entered_viewport_messages_.empty()) {
     metrics_host_->ReportAnchorElementsEnteredViewport(

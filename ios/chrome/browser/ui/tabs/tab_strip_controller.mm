@@ -18,10 +18,10 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/numerics/safe_conversions.h"
 #import "base/strings/sys_string_conversions.h"
-#import "components/bookmarks/browser/bookmark_model.h"
 #import "components/favicon/ios/web_favicon_driver.h"
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/tracker.h"
+#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/drag_and_drop/model/drag_item_util.h"
 #import "ios/chrome/browser/drag_and_drop/model/url_drag_drop_handler.h"
@@ -1180,9 +1180,13 @@ const CGFloat kSymbolSize = 18;
       // The activation is handled after this switch statement.
       break;
     case WebStateListChange::Type::kDetach: {
+      const WebStateListChangeDetach& detachChange =
+          change.As<WebStateListChangeDetach>();
+
       // Keep the actual view around while it is animating out.  Once the
       // animation is done, remove the view.
-      NSUInteger index = [self indexForWebStateListIndex:status.index];
+      NSUInteger index =
+          [self indexForWebStateListIndex:detachChange.detached_from_index()];
       TabView* view = [_tabArray objectAtIndex:index];
       [_closingTabs addObject:view];
       _targetFrames.RemoveFrame(view);
@@ -1224,7 +1228,7 @@ const CGFloat kSymbolSize = 18;
           [self indexForWebStateListIndex:moveChange.moved_from_index()];
       TabView* view = [_tabArray objectAtIndex:arrayIndex];
       [_tabArray removeObject:view];
-      [_tabArray insertObject:view atIndex:status.index];
+      [_tabArray insertObject:view atIndex:moveChange.moved_to_index()];
       [self setNeedsLayoutWithAnimation];
       break;
     }
@@ -1242,13 +1246,15 @@ const CGFloat kSymbolSize = 18;
       TabView* view =
           [self createTabViewForWebState:insertChange.inserted_web_state()
                               isSelected:status.active_web_state_change()];
-      [_tabArray insertObject:view
-                      atIndex:[self indexForWebStateListIndex:status.index]];
+      [_tabArray
+          insertObject:view
+               atIndex:[self indexForWebStateListIndex:insertChange.index()]];
       [[self tabStripView] addSubview:view];
 
       [self updateContentSizeAndRepositionViews];
       [self setNeedsLayoutWithAnimation];
-      [self updateContentOffsetForWebStateIndex:status.index isNewWebState:YES];
+      [self updateContentOffsetForWebStateIndex:insertChange.index()
+                                  isNewWebState:YES];
       break;
     }
   }

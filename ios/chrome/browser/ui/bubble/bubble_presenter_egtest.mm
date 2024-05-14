@@ -8,7 +8,7 @@
 #import "base/test/ios/wait_util.h"
 #import "components/feature_engagement/public/feature_constants.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
-#import "ios/chrome/browser/ui/bubble/gesture_iph/gesture_in_product_help_constants.h"
+#import "ios/chrome/browser/ui/bubble/gesture_iph/gesture_in_product_help_view_egtest_utils.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -22,24 +22,8 @@
 #import "url/gurl.h"
 
 namespace {
-
 using ::chrome_test_util::BackButton;
 using ::chrome_test_util::ForwardButton;
-
-// Performs the assertion that the gesture IPH appears and return the result.
-// NOTE: Do not directly pass the method as a parameter of assertion methods.
-BOOL HasGestureIPHAppeared() {
-  // Disable scoped synchronization to perform checks with animation running.
-  ScopedSynchronizationDisabler sync_disabler;
-  return
-      [ChromeEarlGrey
-          testUIElementAppearanceWithMatcher:
-              grey_accessibilityID(kGestureInProductHelpViewBackgroundAXId)] &&
-      [ChromeEarlGrey
-          testUIElementAppearanceWithMatcher:
-              grey_accessibilityID(kGestureInProductHelpViewBubbleAXId)];
-}
-
 }  // namespace
 
 @interface BubblePresenterTestCase : ChromeTestCase
@@ -122,7 +106,16 @@ BOOL HasGestureIPHAppeared() {
 
 // Tests that the pull-to-refresh IPH is atttempted when user taps the omnibox
 // to reload the same page, and disappears after the user navigates away.
-- (void)testPullToRefreshIPHAfterReloadFromOmniboxAndDisappearsAfterNavigation {
+// TODO(crbug.com/329078389): This test is flaky on simulator.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testPullToRefreshIPHAfterReloadFromOmniboxAndDisappearsAfterNavigation \
+  FLAKY_testPullToRefreshIPHAfterReloadFromOmniboxAndDisappearsAfterNavigation
+#else
+#define MAYBE_testPullToRefreshIPHAfterReloadFromOmniboxAndDisappearsAfterNavigation \
+  testPullToRefreshIPHAfterReloadFromOmniboxAndDisappearsAfterNavigation
+#endif
+- (void)
+    MAYBE_testPullToRefreshIPHAfterReloadFromOmniboxAndDisappearsAfterNavigation {
   [self relaunchWithIPHFeatureForSafariSwitcher:@"IPH_iOSPullToRefreshFeature"];
   [BaseEarlGreyTestCaseAppInterface disableFastAnimation];
 
@@ -202,22 +195,10 @@ BOOL HasGestureIPHAppeared() {
         @"Pull to refresh IPH did not appear after reloading from omnibox.");
     [ChromeEarlGreyUI openTabGrid];
   }
-  // Use a separate condition block for verification instead of
-  // `HasGestureIPHAppeared()` in case the IPH does not have sufficient time to
-  // disappear before the verification.
-  ConditionBlock condition = ^{
-    NSError* error = nil;
-    [[EarlGrey
-        selectElementWithMatcher:grey_accessibilityID(
-                                     kGestureInProductHelpViewBackgroundAXId)]
-        assertWithMatcher:grey_nil()
-                    error:&error];
-    return error == nil;
-  };
-  bool iphHidden =
-      base::test::ios::WaitUntilConditionOrTimeout(base::Seconds(1), condition);
-  GREYAssertTrue(iphHidden,
-                 @"Pull to refresh IPH still visible after going to tab grid.");
+  appearance = HasGestureIPHAppeared();
+  GREYAssertFalse(
+      appearance,
+      @"Pull to refresh IPH still visible after going to tab grid.");
   [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(0)]
       performAction:grey_tap()];
   appearance = HasGestureIPHAppeared();
@@ -245,7 +226,15 @@ BOOL HasGestureIPHAppeared() {
 
 // Tests that the swipe back/forward IPH is attempted on navigation, and
 // disappears when user leaves the page.
-- (void)testSwipeBackForwardIPHShowsOnNavigationAndHidesOnNavigation {
+// TODO(crbug.com/328732643): This test is flaky on simulator.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testSwipeBackForwardIPHShowsOnNavigationAndHidesOnNavigation \
+  FLAKY_testSwipeBackForwardIPHShowsOnNavigationAndHidesOnNavigation
+#else
+#define MAYBE_testSwipeBackForwardIPHShowsOnNavigationAndHidesOnNavigation \
+  testSwipeBackForwardIPHShowsOnNavigationAndHidesOnNavigation
+#endif
+- (void)MAYBE_testSwipeBackForwardIPHShowsOnNavigationAndHidesOnNavigation {
   [self relaunchWithIPHFeatureForSafariSwitcher:@"IPH_iOSSwipeBackForward"];
   [BaseEarlGreyTestCaseAppInterface disableFastAnimation];
 
@@ -278,8 +267,9 @@ BOOL HasGestureIPHAppeared() {
 // timeout.
 - (void)testSwipeBackForwardIPHDirections {
   // Single direction swipe IPH takes 9s, while bi-direction swipe IPH takes
-  // 12s; use a fixed wait time of 10s to distinguish between the two.
-  const base::TimeDelta waitTime = base::Seconds(10);
+  // 12s; use a fixed wait time between the two to distinguish between the two
+  // kinds of swipe IPHs.
+  const base::TimeDelta waitTime = base::Seconds(11.5);
   [self relaunchWithIPHFeatureForSafariSwitcher:@"IPH_iOSSwipeBackForward"];
   [BaseEarlGreyTestCaseAppInterface disableFastAnimation];
 

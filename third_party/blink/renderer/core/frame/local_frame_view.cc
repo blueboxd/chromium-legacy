@@ -1384,6 +1384,9 @@ void LocalFrameView::ComputePostLayoutIntersections(
 
   if (auto* controller =
           GetFrame().GetDocument()->GetIntersectionObserverController()) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Blink.IntersectionObservation.PostLayoutUpdateIsScrollOnly",
+        intersection_observation_state_ <= kScrollAndVisibilityOnly);
     controller->ComputeIntersections(
         flags, GetUkmAggregator(), monotonic_time,
         accumulated_scroll_delta_since_last_intersection_update_);
@@ -2083,7 +2086,7 @@ bool LocalFrameView::UpdateLifecyclePhases(
   // Prevent reentrance.
   // TODO(vmpstr): Should we just have a DCHECK instead here?
   if (UNLIKELY(IsUpdatingLifecycle())) {
-    NOTREACHED()
+    DUMP_WILL_BE_NOTREACHED_NORETURN()
         << "LocalFrameView::updateLifecyclePhasesInternal() reentrance";
     return false;
   }
@@ -2645,18 +2648,6 @@ void LocalFrameView::RunPaintLifecyclePhase(PaintBenchmarkMode benchmark_mode) {
   ForAllNonThrottledLocalFrameViews(
       [this, needed_update,
        &total_animations_count](LocalFrameView& frame_view) {
-        if (needed_update && paint_artifact_compositor_ &&
-            frame_view.UserScrollableAreas()) {
-          for (auto& scrollable_area : *frame_view.UserScrollableAreas()) {
-            const auto* properties = scrollable_area->GetLayoutBox()
-                                         ->FirstFragment()
-                                         .PaintProperties();
-            scrollable_area->SetShouldScrollOnMainThread(
-                !properties || !properties->Scroll() ||
-                paint_artifact_compositor_->GetMainThreadScrollingReasons(
-                    *properties->Scroll()));
-          }
-        }
         if (auto* scrollable_area = frame_view.GetScrollableArea())
           scrollable_area->UpdateCompositorScrollAnimations();
         if (const auto* animating_scrollable_areas =
@@ -3581,9 +3572,9 @@ void LocalFrameView::AddUserScrollableArea(
 
 void LocalFrameView::RemoveUserScrollableArea(
     PaintLayerScrollableArea* scrollable_area) {
-  if (!user_scrollable_areas_)
-    return;
-  user_scrollable_areas_->erase(scrollable_area);
+  if (user_scrollable_areas_) {
+    user_scrollable_areas_->erase(scrollable_area);
+  }
 }
 
 void LocalFrameView::AttachToLayout() {
@@ -4177,6 +4168,9 @@ bool LocalFrameView::UpdateViewportIntersectionsForSubtree(
     // Notify javascript IntersectionObservers
     if (IntersectionObserverController* controller =
             GetFrame().GetDocument()->GetIntersectionObserverController()) {
+      UMA_HISTOGRAM_BOOLEAN(
+          "Blink.IntersectionObservation.PostLifecycleUpdateIsScrollOnly",
+          intersection_observation_state_ <= kScrollAndVisibilityOnly);
       needs_occlusion_tracking = controller->ComputeIntersections(
           flags, GetUkmAggregator(), monotonic_time,
           accumulated_scroll_delta_since_last_intersection_update_);

@@ -48,7 +48,9 @@ Service::Service(Profile* profile,
       registry_(new Registry(profile)) {
   extension_registry_->AddObserver(this);
   if (chromeos::features::IsFileSystemProviderContentCacheEnabled()) {
-    content_cache_ = std::make_unique<ContentCache>();
+    DCHECK(profile);
+    cache_manager_ = std::make_unique<CacheManager>(profile->GetPath(),
+                                                    /*in_memory_only=*/true);
   }
 }
 
@@ -79,6 +81,10 @@ void Service::Shutdown() {
   }
 
   DCHECK_EQ(0u, file_system_map_.size());
+
+  for (auto& observer : observers_) {
+    observer.OnShutDown();
+  }
 }
 
 void Service::AddObserver(Observer* observer) {
@@ -188,7 +194,7 @@ base::File::Error Service::MountFileSystemInternal(
 
   std::unique_ptr<ProvidedFileSystemInterface> file_system =
       provider->CreateProvidedFileSystem(profile_, file_system_info,
-                                         content_cache_.get());
+                                         cache_manager_.get());
   DCHECK(file_system);
   ProvidedFileSystemInterface* file_system_ptr = file_system.get();
   file_system_map_[FileSystemKey(

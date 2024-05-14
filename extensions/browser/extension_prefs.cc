@@ -10,10 +10,10 @@
 #include <iterator>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 #include "base/check_op.h"
 #include "base/containers/contains.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/json/values_util.h"
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
@@ -121,6 +121,12 @@ constexpr const char kExtensionsBlocklistUpdate[] =
 // value is a legacy artifact for when delayed installs only pertained to
 // updates that were waiting for idle.
 constexpr const char kDelayedInstallInfo[] = "idle_install_info";
+
+// Path for pref keys marked for deletion in extension prefs while populating
+// the delayed install info. These keys are deleted from extension prefs when
+// the prefs inside delayed install info are applied to the extension.
+constexpr const char kDelayedInstallInfoDeletedPrefKeys[] =
+    "delay_install_info_deleted_pref_keys";
 
 // Reason why the extension's install was delayed.
 constexpr const char kDelayedInstallReason[] = "delay_install_reason";
@@ -1375,9 +1381,15 @@ void ExtensionPrefs::OnExtensionInstalled(
   ScopedExtensionPrefUpdate update(prefs_, extension->id());
   auto extension_dict = update.Get();
   const base::Time install_time = clock_->Now();
-  PopulateExtensionInfoPrefs(extension, install_time, initial_state,
-                             install_flags, install_parameter,
-                             ruleset_install_prefs, extension_dict.get());
+
+  base::Value::List prefs_to_remove;
+  PopulateExtensionInfoPrefs(
+      extension, install_time, initial_state, install_flags, install_parameter,
+      ruleset_install_prefs, extension_dict.get(), prefs_to_remove);
+
+  for (const auto& pref_to_remove : prefs_to_remove) {
+    extension_dict->Remove(pref_to_remove.GetString());
+  }
 
   FinishExtensionInfoPrefs(extension->id(), install_time,
                            AppDisplayInfo::RequiresSortOrdinal(*extension),
@@ -1577,13 +1589,16 @@ void ExtensionPrefs::SetDelayedInstallInfo(
     const declarative_net_request::RulesetInstallPrefs& ruleset_install_prefs) {
   ScopedDictionaryUpdate update(this, extension->id(), kDelayedInstallInfo);
   auto extension_dict = update.Create();
-  PopulateExtensionInfoPrefs(extension, clock_->Now(), initial_state,
-                             install_flags, install_parameter,
-                             ruleset_install_prefs, extension_dict.get());
+  base::Value::List prefs_to_remove;
+  PopulateExtensionInfoPrefs(
+      extension, clock_->Now(), initial_state, install_flags, install_parameter,
+      ruleset_install_prefs, extension_dict.get(), prefs_to_remove);
 
   // Add transient data that is needed by FinishDelayedInstallInfo(), but
   // should not be in the final extension prefs. All entries here should have
   // a corresponding Remove() call in FinishDelayedInstallInfo().
+  extension_dict->Set(kDelayedInstallInfoDeletedPrefKeys,
+                      base::Value(std::move(prefs_to_remove)));
   if (AppDisplayInfo::RequiresSortOrdinal(*extension)) {
     extension_dict->SetString(kPrefSuggestedPageOrdinal,
                               page_ordinal.IsValid()
@@ -1637,6 +1652,16 @@ bool ExtensionPrefs::FinishDelayedInstallInfo(const ExtensionId& extension_id) {
     pending_install_dict->SetString(kPrefFirstInstallTime, install_time_str);
   else
     pending_install_dict->Remove(kPrefFirstInstallTime);
+
+  base::Value::List* prefs_to_remove = nullptr;
+  if (pending_install_dict->GetListWithoutPathExpansion(
+          kDelayedInstallInfoDeletedPrefKeys, &prefs_to_remove)) {
+    for (const auto& pref_to_remove : *prefs_to_remove) {
+      extension_dict->Remove(pref_to_remove.GetString());
+    }
+
+    pending_install_dict->Remove(kDelayedInstallInfoDeletedPrefKeys);
+  }
 
   // Commit the delayed install data.
   for (const auto [key, value] : *pending_install_dict->AsConstDict()) {
@@ -1955,7 +1980,7 @@ void ExtensionPrefs::InitPrefStore() {
       return !Manifest::ShouldAlwaysLoadExtension(info.extension_location,
                                                   is_theme);
     };
-    base::EraseIf(extensions_info, predicate);
+    std::erase_if(extensions_info, predicate);
   }
 
   InitExtensionControlledPrefs(extensions_info);
@@ -2263,6 +2288,8 @@ void ExtensionPrefs::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(
       prefs::kSupervisedUserApprovedExtensions,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kSupervisedUserLocallyParentApprovedExtensions);
 #endif  // #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 #if !BUILDFLAG(IS_MAC)
@@ -2316,7 +2343,8 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
     int install_flags,
     const std::string& install_parameter,
     const declarative_net_request::RulesetInstallPrefs& ruleset_install_prefs,
-    prefs::DictionaryValueUpdate* extension_dict) {
+    prefs::DictionaryValueUpdate* extension_dict,
+    base::Value::List& removed_prefs) {
   extension_dict->SetInteger(kPrefState, initial_state);
   extension_dict->SetInteger(kPrefLocation,
                              static_cast<int>(extension->location()));
@@ -2347,7 +2375,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   // the previous install are cleared up in case of an update. Else just set the
   // entry (which will overwrite any existing value).
   if (ruleset_install_prefs.empty()) {
-    extension_dict->Remove(kDNRStaticRulesetPref);
+    removed_prefs.Append(kDNRStaticRulesetPref);
   } else {
     base::Value::Dict ruleset_prefs;
     for (const declarative_net_request::RulesetInstallPref& install_pref :
@@ -2370,7 +2398,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
 
   // Clear the list of enabled static rulesets for the extension since it
   // shouldn't persist across extension updates.
-  extension_dict->Remove(kDNREnabledStaticRulesetIDs);
+  removed_prefs.Append(kDNREnabledStaticRulesetIDs);
 
   if (util::CanWithholdPermissionsFromExtension(*extension)) {
     // If the withhold permission creation flag is present it takes precedence
@@ -2401,7 +2429,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   if (install_flags & kInstallFlagDoNotSync)
     extension_dict->SetBoolean(kPrefDoNotSync, true);
   else
-    extension_dict->Remove(kPrefDoNotSync);
+    removed_prefs.Append(kPrefDoNotSync);
 }
 
 void ExtensionPrefs::InitExtensionControlledPrefs(

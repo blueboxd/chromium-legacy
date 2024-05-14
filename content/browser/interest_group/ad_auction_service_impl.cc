@@ -5,6 +5,7 @@
 #include "content/browser/interest_group/ad_auction_service_impl.h"
 
 #include <map>
+#include <memory>
 #include <optional>
 #include <set>
 #include <string>
@@ -368,8 +369,15 @@ void AdAuctionServiceImpl::CreateAuctionNonce(
         "CreateAuctionNonce with FledgeNegativeTargeting off");
     return;
   }
+  if (base::FeatureList::IsEnabled(
+          blink::features::kFledgeCreateAuctionNonceSynchronousResolution)) {
+    ReportBadMessageAndDeleteThis(
+        "CreateAuctionNonce with FledgeCreateAuctionNonceSynchronousResolution "
+        "on");
+    return;
+  }
   std::move(callback).Run(
-      static_cast<base::Uuid>(auction_nonce_manager_.CreateAuctionNonce()));
+      static_cast<base::Uuid>(auction_nonce_manager_->CreateAuctionNonce()));
 }
 
 void AdAuctionServiceImpl::RunAdAuction(
@@ -439,14 +447,15 @@ void AdAuctionServiceImpl::RunAdAuction(
     return;
   }
 
-  AdAuctionPageData* ad_auction_page_data =
-      PageUserData<AdAuctionPageData>::GetOrCreateForPage(
-          render_frame_host().GetPage());
+  // Using Unretained here since `this` owns the AuctionRunner.
+  AuctionRunner::AdAuctionPageDataCallback ad_auction_page_data_callback =
+      base::BindRepeating(&AdAuctionServiceImpl::GetAdAuctionPageData,
+                          base::Unretained(this));
 
   std::unique_ptr<AuctionRunner> auction = AuctionRunner::CreateAndStart(
-      &auction_worklet_manager_, &auction_nonce_manager_,
+      &auction_worklet_manager_, auction_nonce_manager_.get(),
       &GetInterestGroupManager(), render_frame_host().GetBrowserContext(),
-      private_aggregation_manager_, ad_auction_page_data,
+      private_aggregation_manager_, std::move(ad_auction_page_data_callback),
       // Unlike other callbacks, this needs to be safe to call after destruction
       // of the AdAuctionServiceImpl, so that the reporter can outlive it.
       base::BindRepeating(
@@ -570,7 +579,7 @@ void AdAuctionServiceImpl::GetInterestGroupAdAuctionData(
   // If the interest group API is not allowed for this origin do nothing.
   if (!IsInterestGroupAPIAllowed(
           ContentBrowserClient::InterestGroupApiOperation::kSell, seller)) {
-    std::move(callback).Run({}, {}, "Attestation Failed");
+    std::move(callback).Run({}, {}, "API not allowed for this origin");
     return;
   }
 
@@ -726,7 +735,7 @@ AdAuctionServiceImpl::AdAuctionServiceImpl(
           GetTopWindowOrigin(),
           origin(),
           this),
-      auction_nonce_manager_(GetFrame()),
+      auction_nonce_manager_(CreateAuctionNonceManager(GetFrame())),
       private_aggregation_manager_(PrivateAggregationManager::GetManager(
           *render_frame_host.GetBrowserContext())) {
   // Throughout the auction, the `PageImpl` of the frame which initiates the
@@ -1109,9 +1118,12 @@ void AdAuctionServiceImpl::OnGotAuctionDataAndKey(base::Uuid request_id) {
               .GetIsolationInfoForSubresources()
               .network_anonymization_key());
 
-  AdAuctionPageData* ad_auction_page_data =
-      PageUserData<AdAuctionPageData>::GetOrCreateForPage(
-          render_frame_host().GetPage());
+  AdAuctionPageData* ad_auction_page_data = GetAdAuctionPageData();
+  if (!ad_auction_page_data) {
+    ReturnEmptyGetInterestGroupAdAuctionDataCallback(
+        "Page destruction in progress");
+    return;
+  }
 
   AdAuctionRequestContext context(
       state.seller, std::move(state.data->group_names),
@@ -1165,6 +1177,22 @@ url::Origin AdAuctionServiceImpl::GetTopWindowOrigin() const {
     return origin();
   }
   return render_frame_host().GetMainFrame()->GetLastCommittedOrigin();
+}
+
+AdAuctionPageData* AdAuctionServiceImpl::GetAdAuctionPageData() {
+  // The `PageImpl` recorded at the construction of the AdAuctionServiceImpl has
+  // been invalidated or the current frame's `PageImpl` has changed to a
+  // different one, signal that state is no longer available.
+  // See crbug.com/1422301.
+  if (base::FeatureList::IsEnabled(features::kDetectInconsistentPageImpl) &&
+      (!GetFrame()->auction_initiator_page() ||
+       GetFrame()->auction_initiator_page().get() !=
+           &(GetFrame()->GetPage()))) {
+    return nullptr;
+  }
+
+  return PageUserData<AdAuctionPageData>::GetOrCreateForPage(
+      render_frame_host().GetPage());
 }
 
 }  // namespace content

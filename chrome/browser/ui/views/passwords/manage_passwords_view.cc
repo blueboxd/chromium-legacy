@@ -147,6 +147,7 @@ ManagePasswordsView::CreatePasswordListView() {
                 password_manager::ManagePasswordsReferrer::
                     kManagePasswordsBubble);
             view->CloseBubble();
+            // TODO(b/329572483): move this logging to the controller.
             password_manager::metrics_util::
                 LogUserInteractionsInPasswordManagementBubble(
                     PasswordManagementBubbleInteractions::
@@ -182,6 +183,19 @@ ManagePasswordsView::CreatePasswordDetailsView() {
             view->SetButtonEnabled(ui::DialogButton::DIALOG_BUTTON_OK,
                                    !is_invalid);
           },
+          base::Unretained(this)),
+      base::BindRepeating(
+          [](ManagePasswordsView* view) {
+            view->controller_.OnManagePasswordClicked(
+                password_manager::ManagePasswordsReferrer::
+                    kManagePasswordDetailsBubble);
+            view->CloseBubble();
+            // TODO(b/329572483): move this logging to the controller.
+            password_manager::metrics_util::
+                LogUserInteractionsInPasswordManagementBubble(
+                    PasswordManagementBubbleInteractions::
+                        kManagePasswordButtonClicked);
+          },
           base::Unretained(this)));
 }
 
@@ -189,6 +203,7 @@ std::unique_ptr<views::View> ManagePasswordsView::CreateFooterView() {
   base::RepeatingClosure open_password_manager_closure = base::BindRepeating(
       [](ManagePasswordsView* dialog) {
         dialog->controller_.OnGooglePasswordManagerLinkClicked();
+        // TODO(b/329572483): move this logging to the controller.
         password_manager::metrics_util::
             LogUserInteractionsInPasswordManagementBubble(
                 PasswordManagementBubbleInteractions::
@@ -279,11 +294,6 @@ void ManagePasswordsView::RecreateLayout() {
         CreatePasswordDetailsView();
     password_details_view_ = details_view.get();
     page_container_->SwitchToPage(std::move(details_view));
-    page_container_->SetProperty(
-        views::kMarginsKey,
-        gfx::Insets().set_bottom(ChromeLayoutProvider::Get()
-                                     ->GetInsetsMetric(views::INSETS_DIALOG)
-                                     .bottom()));
     if (controller_.IsOptedInForAccountStorage() &&
         !controller_.get_currently_selected_password()
              .value()

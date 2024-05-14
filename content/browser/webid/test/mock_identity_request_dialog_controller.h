@@ -6,8 +6,8 @@
 #define CONTENT_BROWSER_WEBID_TEST_MOCK_IDENTITY_REQUEST_DIALOG_CONTROLLER_H_
 
 #include "content/public/browser/identity_request_dialog_controller.h"
-
 #include "testing/gmock/include/gmock/gmock.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -54,8 +54,19 @@ class MockIdentityRequestDialogController
                     const std::optional<IdentityCredentialTokenError>&,
                     DismissCallback,
                     MoreDetailsCallback));
+  MOCK_METHOD5(ShowLoadingDialog,
+               void(const std::string&,
+                    const std::string&,
+                    blink::mojom::RpContext rp_context,
+                    blink::mojom::RpMode rp_mode,
+                    DismissCallback));
   MOCK_METHOD2(ShowModalDialog, WebContents*(const GURL&, DismissCallback));
   MOCK_METHOD0(CloseModalDialog, void());
+
+  // Request the IdP Registration permission.
+  MOCK_METHOD2(RequestIdPRegistrationPermision,
+               void(const url::Origin&,
+                    base::OnceCallback<void(bool accepted)>));
 };
 
 }  // namespace content

@@ -46,16 +46,12 @@ build_webui("build") {
     "images/privacy_guide/horizon_graphic.svg",
     "images/privacy_guide/msbb_graphic_dark_v2.svg",
     "images/privacy_guide/msbb_graphic_v2.svg",
-    "images/privacy_guide/preload_graphic.svg",
-    "images/privacy_guide/preload_graphic_dark.svg",
     "images/privacy_guide/privacy_sandbox_graphic_dark.svg",
     "images/privacy_guide/privacy_sandbox_graphic.svg",
     "images/privacy_guide/promo_banner_dark.svg",
     "images/privacy_guide/promo_banner.svg",
     "images/privacy_guide/safe_browsing_graphic_dark_v2.svg",
     "images/privacy_guide/safe_browsing_graphic_v2.svg",
-    "images/privacy_guide/search_suggestions_graphic.svg",
-    "images/privacy_guide/search_suggestions_graphic_dark.svg",
     "images/privacy_guide/waa_graphic_dark.svg",
     "images/privacy_guide/waa_graphic.svg",
     "images/privacy_guide/welcome_banner_dark.svg",
@@ -108,7 +104,6 @@ build_webui("build") {
     "performance_page/battery_page.ts",
     "performance_page/performance_page.ts",
     "performance_page/speed_page.ts",
-    "performance_page/tab_discard/exception_add_dialog.ts",
     "performance_page/tab_discard/exception_add_input.ts",
     "performance_page/tab_discard/exception_current_sites_list.ts",
     "performance_page/tab_discard/exception_edit_dialog.ts",
@@ -126,6 +121,7 @@ build_webui("build") {
     "privacy_page/anti_abuse_page.ts",
     "privacy_page/collapse_radio_button.ts",
     "privacy_page/cookies_page.ts",
+    "privacy_page/fingerprint_progress_arc.ts",
     "privacy_page/do_not_track_toggle.ts",
     "privacy_page/personalization_options.ts",
     "privacy_page/privacy_guide/privacy_guide_completion_fragment.ts",
@@ -137,9 +133,7 @@ build_webui("build") {
     "privacy_page/privacy_guide/privacy_guide_msbb_fragment.ts",
     "privacy_page/privacy_guide/privacy_guide_page.ts",
     "privacy_page/privacy_guide/privacy_guide_promo.ts",
-    "privacy_page/privacy_guide/privacy_guide_preload_fragment.ts",
     "privacy_page/privacy_guide/privacy_guide_safe_browsing_fragment.ts",
-    "privacy_page/privacy_guide/privacy_guide_search_suggestions_fragment.ts",
     "privacy_page/privacy_guide/privacy_guide_welcome_fragment.ts",
     "privacy_page/privacy_guide/step_indicator.ts",
     "privacy_page/privacy_page.ts",
@@ -364,6 +358,7 @@ build_webui("build") {
 
   icons_html_files = [
     "icons.html",
+    "privacy_page/fingerprint_icons.html",
     "privacy_sandbox/privacy_sandbox_icons.html",
     "site_settings/all_sites_icons.html",
   ]
@@ -379,6 +374,7 @@ build_webui("build") {
     "settings_vars.css",
 
     # subfolder files
+    "autofill_page/screen_reader_only.css",
     "autofill_page/passwords_shared.css",
     "privacy_page/privacy_guide/privacy_guide_fragment_shared.css",
     "search_engines_page/search_engine_entry.css",
@@ -389,6 +385,7 @@ build_webui("build") {
   ts_composite = true
   ts_definitions = [
     "//tools/typescript/definitions/autofill_private.d.ts",
+    "//tools/typescript/definitions/chrome_event.d.ts",
     "//tools/typescript/definitions/chrome_send.d.ts",
     "//tools/typescript/definitions/language_settings_private.d.ts",
     "//tools/typescript/definitions/management.d.ts",
@@ -442,9 +439,9 @@ build_webui("build") {
     ts_extra_deps = [ "//ash/webui/common/resources:generate_definitions" ]
   }
 
+  webui_host = "settings"
   optimize = optimize_webui
   if (optimize) {
-    optimize_webui_host = "settings"
     optimize_webui_in_files = [
       "settings.js",
       "lazy_load.js",

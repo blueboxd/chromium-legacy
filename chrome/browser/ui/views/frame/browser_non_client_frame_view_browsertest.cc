@@ -22,6 +22,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/test_autofill_manager_injector.h"
+#include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/form_data_importer_test_api.h"
 #include "components/autofill/core/browser/payments/credit_card_save_manager.h"
@@ -40,9 +41,8 @@ namespace {
 
 class TestAutofillManager : public autofill::BrowserAutofillManager {
  public:
-  TestAutofillManager(autofill::ContentAutofillDriver* driver,
-                      autofill::AutofillClient* client)
-      : BrowserAutofillManager(driver, client, "en-US") {}
+  explicit TestAutofillManager(autofill::ContentAutofillDriver* driver)
+      : BrowserAutofillManager(driver, "en-US") {}
 
   [[nodiscard]] testing::AssertionResult WaitForFormsSeen(
       int min_num_awaited_calls) {

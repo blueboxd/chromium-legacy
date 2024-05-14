@@ -38,6 +38,7 @@ class ChromeCaptureModeDelegate : public ash::CaptureModeDelegate {
   // ash::CaptureModeDelegate:
   base::FilePath GetUserDefaultDownloadsFolder() const override;
   void ShowScreenCaptureItemInFolder(const base::FilePath& file_path) override;
+  void OpenScreenCaptureItem(const base::FilePath& file_path) override;
   void OpenScreenshotInImageEditor(const base::FilePath& file_path) override;
   bool Uses24HourFormat() const override;
   void CheckCaptureModeInitRestrictionByDlp(
@@ -65,6 +66,8 @@ class ChromeCaptureModeDelegate : public ash::CaptureModeDelegate {
   bool GetDriveFsMountPointPath(base::FilePath* path) const override;
   base::FilePath GetAndroidFilesPath() const override;
   base::FilePath GetLinuxFilesPath() const override;
+  base::FilePath GetOneDriveMountPointPath() const override;
+  PolicyCapturePath GetPolicyCapturePath() const override;
   std::unique_ptr<ash::RecordingOverlayView> CreateRecordingOverlayView()
       const override;
   void ConnectToVideoSourceProvider(

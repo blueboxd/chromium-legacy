@@ -27,6 +27,8 @@ import org.chromium.chrome.browser.share.ShareContentTypeHelper;
 import org.chromium.chrome.browser.share.ShareContentTypeHelper.ContentType;
 import org.chromium.chrome.browser.share.link_to_text.LinkToTextCoordinator;
 import org.chromium.chrome.browser.share.long_screenshots.LongScreenshotsCoordinator;
+import org.chromium.chrome.browser.share.page_info_sheet.PageInfoSharingController;
+import org.chromium.chrome.browser.share.page_info_sheet.PageInfoSharingControllerImpl;
 import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetLinkToggleCoordinator.LinkToggleState;
 import org.chromium.chrome.browser.tab.Tab;
@@ -52,10 +54,18 @@ class AndroidCustomActionProvider extends ChromeProvidedSharingOptionsProviderBa
             "SharingHubAndroid.LongScreenshotSelected.NoEditor";
     private static final String USER_ACTION_SHARE_COPY_IMAGE_WITH_LINK_SELECTED =
             "SharingHubAndroid.CopyImageWithLinkSelected";
+
+    private static final String USER_ACTION_PAGE_INFO_SELECTED =
+            "SharingHubAndroid.PageInfoSelected";
+
+    private static final String USER_ACTION_REMOVE_PAGE_INFO_SELECTED =
+            "SharingHubAndroid.RemovePageInfoSelected";
     private static final Integer MAX_ACTION_SUPPORTED = 5;
 
     private final ChromeShareExtras mChromeShareExtras;
     @Nullable private final LinkToTextCoordinator mLinkToTextCoordinator;
+    private final PageInfoSharingController mPageInfoSharingController;
+
     private final List<ChromeCustomShareAction> mCustomActions = new ArrayList<>();
 
     /**
@@ -109,6 +119,7 @@ class AndroidCustomActionProvider extends ChromeProvidedSharingOptionsProviderBa
                 deviceLockActivityLauncher);
         mChromeShareExtras = chromeShareExtras;
         mLinkToTextCoordinator = linkToTextCoordinator;
+        mPageInfoSharingController = PageInfoSharingControllerImpl.getInstance();
 
         initializeFirstPartyOptionsInOrder();
         initCustomActions(shareParams, chromeShareExtras, isMultiWindow);
@@ -241,6 +252,43 @@ class AndroidCustomActionProvider extends ChromeProvidedSharingOptionsProviderBa
                             }
                         })
                 .build();
+    }
+
+    @Override
+    protected FirstPartyOption createPageInfoFirstPartyOption() {
+        if (!mTabProvider.hasValue()) {
+            return null;
+        }
+
+        if (mChromeShareExtras != null
+                && mChromeShareExtras.getDetailedContentType() == DetailedContentType.PAGE_INFO) {
+            return new FirstPartyOptionBuilder(ContentType.LINK_AND_TEXT)
+                    .setIcon(R.drawable.ic_remove, R.string.remove)
+                    .setFeatureNameForMetrics(USER_ACTION_REMOVE_PAGE_INFO_SELECTED)
+                    .setOnClickCallback(
+                            (view) -> {
+                                mPageInfoSharingController.shareWithoutPageInfo(
+                                        mChromeOptionShareCallback, mTabProvider.get());
+                            })
+                    .build();
+        }
+
+        if (mPageInfoSharingController.isAvailableForTab(mTabProvider.get())) {
+            return new FirstPartyOptionBuilder(ContentType.LINK_PAGE_VISIBLE)
+                    .setIcon(R.drawable.ic_content_copy_black, R.string.share)
+                    .setFeatureNameForMetrics(USER_ACTION_PAGE_INFO_SELECTED)
+                    .setOnClickCallback(
+                            (view) -> {
+                                mPageInfoSharingController.sharePageInfo(
+                                        mActivity,
+                                        mBottomSheetController,
+                                        mChromeOptionShareCallback,
+                                        mTabProvider.get());
+                            })
+                    .build();
+        }
+
+        return null;
     }
 
     private ChromeCustomShareAction shareActionFromFirstPartyOption(FirstPartyOption option) {

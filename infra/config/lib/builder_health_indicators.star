@@ -63,7 +63,7 @@ _blank_unhealthy_thresholds = struct(
     ),
 )
 
-_blank_low_value_thresholds = struct(
+blank_low_value_thresholds = struct(
     fail_rate = struct(
         average = None,
     ),
@@ -101,7 +101,7 @@ def low_value_thresholds(
     thresholds = {"fail_rate": fail_rate}
     fail_if_any_none_val(thresholds)
 
-    return structs.evolve(_blank_low_value_thresholds, **thresholds)
+    return structs.evolve(blank_low_value_thresholds, **thresholds)
 
 def fail_if_any_none_val(vals):
     for k, v in vals.items():
@@ -198,9 +198,6 @@ _exempted_from_contact_builders = {
         "ASan Release (32-bit x86 with V8-ARM)",
         "ASan Release Media (32-bit x86 with V8-ARM)",
         "Blink Unexpected Pass Finder",
-        "Cast Linux ARM64",
-        "Cast Linux Debug",
-        "Cast Linux",
         "Centipede Upload Linux ASan",
         "ChromiumOS ASAN Release",
         "Comparison Android (reclient) (reproxy cache)",
@@ -385,11 +382,11 @@ _exempted_from_contact_builders = {
         "ios-simulator-noncq",
         "ios-webkit-tot",
         "ios-wpt-fyi-rel",
-        "ios16-beta-simulator",
-        "ios16-sdk-simulator",
         "ios17-beta-simulator",
         "ios17-sdk-device",
         "ios17-sdk-simulator",
+        "ios18-beta-simulator",
+        "ios18-sdk-simulator",
         "lacros-amd64-generic-binary-size-rel",
         "lacros-amd64-generic-rel",
         "lacros-amd64-generic-rel-fyi",
@@ -641,6 +638,7 @@ _exempted_from_contact_builders = {
         "fuchsia-fyi-arm64-dbg",
         "fuchsia-fyi-x64-dbg",
         "fuchsia-x64-accessibility-rel",
+        "fuchsia-x64-cast-receiver-dbg-compile",
         "fuchsia-x64-cast-receiver-rel",
         "fuchsia-x64-cast-receiver-rel-compilator",
         "gpu-fyi-cq-android-arm64",
@@ -703,10 +701,10 @@ _exempted_from_contact_builders = {
         "ios-simulator-multi-window",
         "ios-simulator-noncq",
         "ios-wpt-fyi-rel",
-        "ios16-beta-simulator",
-        "ios16-sdk-simulator",
         "ios17-beta-simulator",
         "ios17-sdk-simulator",
+        "ios18-beta-simulator",
+        "ios18-sdk-simulator",
         "lacros-amd64-generic-rel",
         "lacros-amd64-generic-rel-skylab",
         "lacros-amd64-generic-rel-skylab-fyi",
@@ -717,7 +715,6 @@ _exempted_from_contact_builders = {
         "linux-afl-asan-rel",
         "linux-angle-chromium-try",
         "linux-annotator-rel",
-        "linux-arm64-castos",
         "linux-arm64-rel-cft",
         "linux-asan-dbg",
         "linux-asan-rel",
@@ -792,9 +789,6 @@ _exempted_from_contact_builders = {
         "linux-webkit-msan-rel",
         "linux-wpt-content-shell-fyi-rel",
         "linux-wpt-content-shell-leak-detection",
-        "linux-x64-castos",
-        "linux-x64-castos-audio",
-        "linux-x64-castos-dbg",
         "linux_chromium_archive_rel_ng",
         "linux_chromium_asan_rel_ng",
         "linux_chromium_asan_rel_ng-compilator",
@@ -914,7 +908,6 @@ _exempted_from_contact_builders = {
         "win11-arm64-blink-rel",
         "win11-blink-rel",
         "win11-wpt-content-shell-fyi-rel",
-        "win11-x64-fyi-rel",
         "win32-clobber-rel",
         "win32-official",
         "win_chromium_compile_dbg_ng",

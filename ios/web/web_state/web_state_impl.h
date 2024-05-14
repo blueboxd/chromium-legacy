@@ -6,7 +6,6 @@
 #define IOS_WEB_WEB_STATE_WEB_STATE_IMPL_H_
 
 #import <Foundation/Foundation.h>
-
 #include <stddef.h>
 #include <stdint.h>
 
@@ -287,6 +286,8 @@ class WebStateImpl final : public WebState {
 
   // WebState:
   void SerializeToProto(proto::WebStateStorage& storage) const final;
+  void SerializeMetadataToProto(
+      proto::WebStateMetadataStorage& storage) const final;
   WebStateDelegate* GetDelegate() final;
   void SetDelegate(WebStateDelegate* delegate) final;
   std::unique_ptr<WebState> Clone() const final;

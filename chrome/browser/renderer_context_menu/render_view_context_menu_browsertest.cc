@@ -132,6 +132,7 @@
 #include "third_party/blink/public/common/page_state/page_state_serialization.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/libwebp/src/src/webp/decode.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -152,7 +153,6 @@
 #include "components/supervised_user/core/browser/supervised_user_preferences.h"
 #include "components/supervised_user/core/browser/supervised_user_service.h"
 #include "components/supervised_user/core/browser/supervised_user_url_filter.h"
-#include "components/supervised_user/core/common/features.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
 #endif
 
@@ -171,6 +171,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
+#include "base/test/run_until.h"
+#include "chrome/browser/ui/lens/lens_overlay_controller.h"
 #include "chrome/browser/ui/lens/lens_side_panel_helper.h"
 #include "ui/events/test/event_generator.h"
 #endif
@@ -703,152 +705,8 @@ class ContextMenuForSupervisedUsersBrowserTest
       }};
 };
 
-class ContextMenuWithoutFilteringForSupervisedUsersBrowserTest
-    : public ContextMenuForSupervisedUsersBrowserTest {
- public:
-  ContextMenuWithoutFilteringForSupervisedUsersBrowserTest() {
-    scoped_feature_list_.InitAndDisableFeature(
-        supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(ContextMenuWithoutFilteringForSupervisedUsersBrowserTest,
+IN_PROC_BROWSER_TEST_F(ContextMenuForSupervisedUsersBrowserTest,
                        SaveLinkAsEntryIsDisabledForUrlsNotAccessibleForChild) {
-  // Block access to http://www.google.com/ in the URL filter.
-  std::map<std::string, bool> hosts;
-  hosts["www.google.com"] = false;
-  GetSupervisedUserService()->GetURLFilter()->SetManualHosts(std::move(hosts));
-
-  base::RunLoop().RunUntilIdle();
-
-  std::unique_ptr<TestRenderViewContextMenu> menu =
-      CreateContextMenuMediaTypeNone(GURL("http://www.google.com/"),
-                                     GURL("http://www.google.com/"));
-
-  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_SAVELINKAS));
-
-  // The entry is only disabled for platforms on which URL filtering is enabled.
-  if (supervised_user::IsUrlFilteringEnabled(
-          *browser()->profile()->GetPrefs())) {
-    EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_SAVELINKAS));
-  } else {
-    EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_SAVELINKAS));
-  }
-}
-
-IN_PROC_BROWSER_TEST_F(
-    ContextMenuWithoutFilteringForSupervisedUsersBrowserTest,
-    SaveLinkAsEntryIsDisabledForUrlsBlockedByAsyncCheckerForChild) {
-  ContextMenuWaiter menu_observer;
-
-  base::RunLoop().RunUntilIdle();
-
-  if (supervised_user::IsUrlFilteringEnabled(
-          *browser()->profile()->GetPrefs())) {
-    kids_management_api_mock().RestrictSubsequentClassifyUrl();
-    EXPECT_CALL(kids_management_api_mock().classify_url_mock(), ClassifyUrl)
-        .Times(1);
-  }
-
-  ASSERT_TRUE(embedded_test_server()->Started());
-  GURL url(embedded_test_server()->GetURL("/download-anchor-same-origin.html"));
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
-
-  // Open a context menu.
-  blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::Type::kMouseDown,
-      blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::GetStaticTimeStampForTests());
-  mouse_event.button = blink::WebMouseEvent::Button::kRight;
-  mouse_event.SetPositionInWidget(15, 15);
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  tab->GetPrimaryMainFrame()
-      ->GetRenderViewHost()
-      ->GetWidget()
-      ->ForwardMouseEvent(mouse_event);
-  mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
-  tab->GetPrimaryMainFrame()
-      ->GetRenderViewHost()
-      ->GetWidget()
-      ->ForwardMouseEvent(mouse_event);
-
-  // Wait for context menu to be visible.
-  menu_observer.WaitForMenuOpenAndClose();
-
-  std::u16string suggested_filename = menu_observer.params().suggested_filename;
-  // The save link as action is only blocked for platforms on which URL
-  // filtering is enabled.
-  if (supervised_user::IsUrlFilteringEnabled(
-          *browser()->profile()->GetPrefs())) {
-    const std::string kSuggestedFilename("");
-    ASSERT_EQ(kSuggestedFilename,
-              base::UTF16ToUTF8(suggested_filename).c_str());
-  } else {
-    const std::string kSuggestedFilename("test_filename.png");
-    ASSERT_EQ(kSuggestedFilename,
-              base::UTF16ToUTF8(suggested_filename).c_str());
-  }
-}
-
-IN_PROC_BROWSER_TEST_F(
-    ContextMenuWithoutFilteringForSupervisedUsersBrowserTest,
-    SaveLinkAsEntryIsEnabledForUrlsAllowedByAsyncCheckerForChild) {
-  ContextMenuWaiter menu_observer;
-
-  if (supervised_user::IsUrlFilteringEnabled(
-          *browser()->profile()->GetPrefs())) {
-    kids_management_api_mock().AllowSubsequentClassifyUrl();
-    EXPECT_CALL(kids_management_api_mock().classify_url_mock(), ClassifyUrl)
-        .Times(1);
-  }
-
-  base::RunLoop().RunUntilIdle();
-
-  ASSERT_TRUE(embedded_test_server()->Started());
-  GURL url(embedded_test_server()->GetURL("/download-anchor-same-origin.html"));
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
-
-  // Open a context menu.
-  blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::Type::kMouseDown,
-      blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::GetStaticTimeStampForTests());
-  mouse_event.button = blink::WebMouseEvent::Button::kRight;
-  mouse_event.SetPositionInWidget(15, 15);
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  tab->GetPrimaryMainFrame()
-      ->GetRenderViewHost()
-      ->GetWidget()
-      ->ForwardMouseEvent(mouse_event);
-  mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
-  tab->GetPrimaryMainFrame()
-      ->GetRenderViewHost()
-      ->GetWidget()
-      ->ForwardMouseEvent(mouse_event);
-
-  // Wait for context menu to be visible.
-  menu_observer.WaitForMenuOpenAndClose();
-
-  const std::string kSuggestedFilename("test_filename.png");
-  std::u16string suggested_filename = menu_observer.params().suggested_filename;
-  ASSERT_EQ(kSuggestedFilename, base::UTF16ToUTF8(suggested_filename).c_str());
-}
-
-class ContextMenuWithFilteringForSupervisedUsersBrowserTest
-    : public ContextMenuForSupervisedUsersBrowserTest {
- private:
-  base::test::ScopedFeatureList scoped_feature_list_{
-      supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS};
-};
-
-IN_PROC_BROWSER_TEST_F(
-    ContextMenuWithFilteringForSupervisedUsersBrowserTest,
-    SaveLinkAsEntryIsDisabledForUrlsNotAccessibleForChildWithFiltering) {
   // Set up child user profile.
   Profile* profile = browser()->profile();
 
@@ -872,7 +730,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(
-    ContextMenuWithFilteringForSupervisedUsersBrowserTest,
+    ContextMenuForSupervisedUsersBrowserTest,
     SaveLinkAsEntryIsDisabledForUrlsBlockedByAsyncCheckerForChild) {
   ContextMenuWaiter menu_observer;
 
@@ -913,7 +771,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(
-    ContextMenuWithFilteringForSupervisedUsersBrowserTest,
+    ContextMenuForSupervisedUsersBrowserTest,
     SaveLinkAsEntryIsEnabledForUrlsAllowedByAsyncCheckerForChild) {
   ContextMenuWaiter menu_observer;
 
@@ -1219,8 +1077,8 @@ IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest,
 // Executing the emoji panel item with no associated browser should not crash.
 IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest,
                        ContextMenuForEmojiPanel_NullBrowserCrash) {
-  ui::SetShowEmojiKeyboardCallback(
-      base::BindRepeating(ui::ShowTabletModeEmojiPanel));
+  ui::SetShowEmojiKeyboardCallback(base::BindLambdaForTesting(
+      [](ui::EmojiPickerCategory unused) { ui::ShowTabletModeEmojiPanel(); }));
   std::unique_ptr<content::WebContents> detached_web_contents =
       content::WebContents::Create(
           content::WebContents::CreateParams(browser()->profile()));
@@ -1248,7 +1106,8 @@ IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest,
 IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest,
                        ContextMenuForEmojiPanel_NoCallback) {
   // Reset the emoji callback.
-  ui::SetShowEmojiKeyboardCallback(base::RepeatingClosure());
+  ui::SetShowEmojiKeyboardCallback(
+      base::RepeatingCallback<void(ui::EmojiPickerCategory)>());
 
   content::ContextMenuParams params;
   params.is_editable = true;
@@ -1931,9 +1790,19 @@ IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest, OpenLinkInProfileEntryPresent) {
   }
 
   // Open new window for the additional profile. This profile becomes active.
+  ui_test_utils::BrowserChangeObserver new_browser_observer(
+      nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
   profiles::FindOrCreateNewWindowForProfile(
       profile, chrome::startup::IsProcessStartup::kNo,
       chrome::startup::IsFirstRun::kNo, false);
+
+  // ProfileManager will switch active profile upon observing
+  // BrowserListObserver::OnBrowserSetLastActive(). Wait until the event
+  // is observed if the active profile has not switched to `profile` yet.
+  bool wait_for_set_last_active_observed =
+      ProfileManager::GetLastUsedProfileIfLoaded() != profile;
+  ui_test_utils::WaitForBrowserSetLastActive(new_browser_observer.Wait(),
+                                             wait_for_set_last_active_observed);
 
   // On Lacros SessionStartupPref::ShouldRestoreLastSession() returns true for
   // the new profile. The session is then restored before the browser is shown
@@ -2775,6 +2644,61 @@ IN_PROC_BROWSER_TEST_F(
   std::string new_tab_content = new_tab->GetLastCommittedURL().GetContent();
   std::string expected_content = GetNonGoogleRegionSearchURL().GetContent();
   EXPECT_EQ(new_tab_content, expected_content);
+}
+
+class LensOverlayBrowserTest : public SearchByRegionBrowserBaseTest {
+ protected:
+  void SetUp() override {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures({lens::features::kLensOverlay}, {});
+
+    // This does not use SearchByRegionBrowserBaseTest::SetUp because that
+    // function does its own conflicting initialization of a FeatureList.
+    InProcessBrowserTest::SetUp();
+  }
+
+  void OpenContextMenuAndClickRegionSearchEntrypoint(
+      ContextMenuNotificationObserver::MenuShownCallback callback) {
+    // |menu_observer_| will cause the search lens for image menu item to be
+    // clicked.
+    menu_observer_ = std::make_unique<ContextMenuNotificationObserver>(
+        IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH, ui::EF_MOUSE_BUTTON,
+        std::move(callback));
+    RightClickToOpenContextMenu();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(LensOverlayBrowserTest,
+                       RegionSearchContextMenuOpensLensOverlay) {
+  // State should start in off.
+  auto* controller =
+      browser()->tab_strip_model()->GetActiveTab()->lens_overlay_controller();
+  ASSERT_EQ(controller->state(), LensOverlayController::State::kOff);
+
+  OpenContextMenuAndClickRegionSearchEntrypoint(base::NullCallback());
+
+  // Clicking the region search entrypoint should eventually result in overlay
+  // state.
+  ASSERT_TRUE(base::test::RunUntil([&]() {
+    return controller->state() == LensOverlayController::State::kOverlay;
+  }));
+}
+
+IN_PROC_BROWSER_TEST_F(LensOverlayBrowserTest,
+                       RegionSearchContextMenuDoesNotOpenRegionSearch) {
+  bool run = false;
+  OpenContextMenuAndClickRegionSearchEntrypoint(
+      // Callback that will be called after the context menu item is clicked.
+      base::BindLambdaForTesting([&](RenderViewContextMenu* menu) {
+        // Verify the normal region search flow does not activate
+        lens::LensRegionSearchController* controller =
+            menu->GetLensRegionSearchControllerForTesting();
+        ASSERT_EQ(controller, nullptr);
+        run = true;
+      }));
+
+  // Verify the callback above finished running before finishing the test.
+  ASSERT_TRUE(base::test::RunUntil([&]() { return run == true; }));
 }
 
 #endif  // BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)

@@ -43,7 +43,7 @@
 <translation id="134645005685694099">لا تتوفّر مساحة تخزين كافية على جهازك لتظل مزامنة الملفات مفعّلة. ولن تتم مزامنة الملفات الجديدة تلقائيًا.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
 <translation id="1358735829858566124">الملف أو الدليل غير قابل للاستخدام.</translation>
-<translation id="1363028406613469049">مقطع صوتي</translation>
+<translation id="1363028406613469049">تتبّع</translation>
 <translation id="1378727793141957596">‏مرحبًا بك في Google Drive!</translation>
 <translation id="1379911846207762492">يمكنك إتاحة الوصول إلى الملفات بلا إنترنت عند عدم توفّر اتصال بالإنترنت.</translation>
 <translation id="1383876407941801731">البحث</translation>
@@ -852,6 +852,7 @@
 <translation id="7589661784326793847">انتظر قليلاً</translation>
 <translation id="7600126690270271294">الصربية</translation>
 <translation id="7603724359189955920">شبكات</translation>
+<translation id="7624010287655004652">تم القفل بواسطة مقدِّم آخر لخدمات شبكة الجوّال</translation>
 <translation id="7627790789328695202">عذرًا، <ph name="FILE_NAME" /> موجود من قبل. يمكنك إعادة تسميته وإعادة المحاولة.</translation>
 <translation id="7628656427739290098">اكتملت العملية بنسبة <ph name="PERCENT" />%.</translation>
 <translation id="7649070708921625228">مساعدة</translation>
@@ -1018,7 +1019,6 @@
 <translation id="8698877009525468705">هذا الملف سرّي ويخضع للقيود المفروضة بموجب سياسة المشرف.</translation>
 <translation id="8712637175834984815">حسنًا</translation>
 <translation id="8713112442029511308">المالطية</translation>
-<translation id="8714138378966541668">مُقفَل من خلال مشغّل الشبكة</translation>
 <translation id="8714406895390098252">دراجة</translation>
 <translation id="8719721339511222681">تم اختيار <ph name="ENTRY_NAME" />.</translation>
 <translation id="872537912056138402">الكرواتية</translation>

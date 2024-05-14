@@ -4,8 +4,8 @@
 
 import 'chrome://resources/ash/common/cr_elements/cr_input/cr_input.js';
 
+import type {CrButtonElement} from 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
-import {CrButtonElement} from 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
 import {assert} from 'chrome://resources/js/assert.js';
 
 import type {VolumeInfo} from '../../background/js/volume_info.js';
@@ -13,9 +13,10 @@ import type {VolumeManager} from '../../background/js/volume_manager.js';
 import {getDlpRestrictionDetails, getHoldingSpaceState, startIOTask} from '../../common/js/api.js';
 import {isModal} from '../../common/js/dialog_type.js';
 import {getFocusedTreeItem, isDirectoryTree, isDirectoryTreeItem} from '../../common/js/dom_utils.js';
-import {entriesToURLs, getTreeItemEntry, isDirectoryEntry, isFakeEntry, isGrandRootEntryInDrives, isNonModifiable, isRecentRootType, isTeamDriveRoot, isTeamDrivesGrandRoot, isTrashEntry, isTrashRoot, unwrapEntry} from '../../common/js/entry_utils.js';
+import {entriesToURLs, getTreeItemEntry, isDirectoryEntry, isFakeEntry, isGrandRootEntryInDrive, isNonModifiable, isRecentRootType, isTeamDriveRoot, isTeamDrivesGrandRoot, isTrashEntry, isTrashRoot, unwrapEntry} from '../../common/js/entry_utils.js';
 import {getExtension, getType, isEncrypted} from '../../common/js/file_type.js';
-import {EntryList, FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../common/js/files_app_entry_types.js';
+import type {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../common/js/files_app_entry_types.js';
+import {EntryList} from '../../common/js/files_app_entry_types.js';
 import {isDlpEnabled, isDriveFsBulkPinningEnabled, isMirrorSyncEnabled, isNewDirectoryTreeEnabled, isSinglePartitionFormatEnabled} from '../../common/js/flags.js';
 import {recordEnum, recordUserAction} from '../../common/js/metrics.js';
 import {getFileErrorString, str, strf} from '../../common/js/translations.js';
@@ -37,7 +38,8 @@ import {canExecuteVisibleOnDriveInNormalAppModeOnly, containsNonInteractiveEntry
 import type {PasteWithDestDirectoryEvent} from './file_transfer_controller.js';
 import {getAllowedVolumeTypes, maybeStoreTimeOfFirstPin} from './holding_space_util.js';
 import {PathComponent} from './path_component.js';
-import {type CanExecuteEvent, Command, type CommandEvent} from './ui/command.js';
+import type {Command} from './ui/command.js';
+import {type CanExecuteEvent, type CommandEvent} from './ui/command.js';
 import type {DirectoryItem, DirectoryTree} from './ui/directory_tree.js';
 import type {FilesConfirmDialog} from './ui/files_confirm_dialog.js';
 
@@ -259,8 +261,7 @@ export class EraseDeviceCommand extends FilesCommand {
     const root = getEventEntry(event, fileManager);
 
     if (root && root instanceof EntryList) {
-      /** @type {FilesFormatDialog} */ (fileManager.ui.formatDialog)
-          .showEraseModal(root);
+      fileManager.ui.formatDialog.showEraseModal(root);
     }
   }
 
@@ -342,15 +343,16 @@ export class NewFolderCommand extends FilesCommand {
                 if (executedFromDirectoryTree) {
                   const directoryTree = fileManager.ui.directoryTree;
                   if (isXfTree(directoryTree)) {
+                    const parentFileKey = directoryEntry.toURL();
                     // After new directory is created on parent directory, we
                     // need to expand it otherwise the new child item won't
                     // show, and also trigger a re-scan for the parent
                     // directory.
                     getStore().dispatch(updateFileData({
-                      key: directoryEntry.toURL(),
+                      key: parentFileKey,
                       partialFileData: {expanded: true},
                     }));
-                    getStore().dispatch(readSubDirectories(directoryEntry));
+                    getStore().dispatch(readSubDirectories(parentFileKey));
                     fileManager.ui.directoryTreeContainer
                         ?.renameItemWithKeyWhenRendered(newDirectory.toURL());
                   } else {
@@ -1228,7 +1230,7 @@ export class RenameCommand extends FilesCommand {
     // ARC doesn't support rename for now. http://b/232152680
     const recentArcEntry = isRecentArcEntry(unwrapEntry(entries[0]!) as Entry);
     // Drive grand roots do not support rename.
-    const isDriveGrandRoot = isGrandRootEntryInDrives(entries[0]!);
+    const isDriveGrandRoot = isGrandRootEntryInDrive(entries[0]!);
 
     event.canExecute = entries.length === 1 && volumeIsNotReadOnly &&
         !recentArcEntry && !isDriveGrandRoot &&
@@ -1358,14 +1360,9 @@ export class InvokeSharesheetCommand extends FilesCommand {
     const dlpSourceUrls =
         fileManager.metadataModel.getCache(entries, ['sourceUrl'])
             .map(m => m.sourceUrl || '');
-    chrome.fileManagerPrivate.invokeSharesheet(
-        entries.map(e => unwrapEntry(e)) as Entry[], launchSource,
-        dlpSourceUrls, () => {
-          if (chrome.runtime.lastError) {
-            console.warn(chrome.runtime.lastError.message);
-            return;
-          }
-        });
+    chrome.fileManagerPrivate
+        .invokeSharesheet(entriesToURLs(entries), launchSource, dlpSourceUrls)
+        .catch(console.warn);
   }
 
   override canExecute(event: CanExecuteEvent, fileManager: CommandHandlerDeps) {
@@ -1393,16 +1390,13 @@ export class InvokeSharesheetCommand extends FilesCommand {
     event.command.disabled =
         !fileManager.ui.actionbar.contains(event.target as Node);
 
-    chrome.fileManagerPrivate.sharesheetHasTargets(
-        entries.map(e => unwrapEntry(e)) as Entry[], (hasTargets: boolean) => {
-          if (chrome.runtime.lastError) {
-            console.warn(chrome.runtime.lastError.message);
-            return;
-          }
+    chrome.fileManagerPrivate.sharesheetHasTargets(entriesToURLs(entries))
+        .then((hasTargets: boolean) => {
           event.command.setHidden(!hasTargets);
           event.canExecute = hasTargets;
           event.command.disabled = !hasTargets;
-        });
+        })
+        .catch(console.warn);
   }
 }
 
@@ -2055,6 +2049,7 @@ export class GuestOsShareCommand extends FilesCommand {
     // Must be single directory not already shared.
     const entries = getCommandEntries(fileManager, event.target);
     event.canExecute = entries.length === 1 && entries[0]!.isDirectory &&
+        !isFakeEntry(entries[0]!) &&
         !fileManager.crostini.isPathShared(this.vmName_, entries[0]!) &&
         fileManager.crostini.canSharePath(
             this.vmName_, entries[0]!, true /* persist */);

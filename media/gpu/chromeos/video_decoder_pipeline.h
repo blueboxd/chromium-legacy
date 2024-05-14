@@ -23,6 +23,7 @@
 #include "media/base/video_decoder_config.h"
 #include "media/gpu/chromeos/chromeos_status.h"
 #include "media/gpu/chromeos/fourcc.h"
+#include "media/gpu/chromeos/frame_resource.h"
 #include "media/gpu/chromeos/image_processor_with_pool.h"
 #include "media/gpu/chromeos/mailbox_video_frame_converter.h"
 #include "media/gpu/media_gpu_export.h"
@@ -48,6 +49,11 @@ class MediaLog;
 // destroyed on |decoder_task_runner_|.
 class MEDIA_GPU_EXPORT VideoDecoderMixin : public VideoDecoder {
  public:
+  // Used by decoders to send FrameResource objects to the decoder pipeline for
+  // conversion, image processing, etc.
+  using PipelineOutputCB =
+      base::RepeatingCallback<void(scoped_refptr<FrameResource>)>;
+
   // Client interface of VideoDecoderMixin.
   class MEDIA_GPU_EXPORT Client {
    public:
@@ -64,6 +70,10 @@ class MEDIA_GPU_EXPORT VideoDecoderMixin : public VideoDecoder {
     // VideoDecoderMixin::ApplyResolutionChange() when all pending frames are
     // flushed.
     virtual void PrepareChangeResolution() = 0;
+
+    // Notify of the estimated maximum possible number of DecodeRequests. This
+    // method can be called from any thread and as many times as desired.
+    virtual void NotifyEstimatedMaxDecodeRequests(int num) = 0;
 
     // Negotiates the output format and size of the decoder: if not scaling
     // (i.e., the size of |decoder_visible_rect| is equal to |output_size|), it
@@ -136,6 +146,25 @@ class MEDIA_GPU_EXPORT VideoDecoderMixin : public VideoDecoder {
   // on the size of the frame pool that the decoder writes into. The default
   // implementation indicates no limit.
   virtual size_t GetMaxOutputFramePoolSize() const;
+
+  // Implementers should override the other Initialize(). The decoder
+  // pipeline wants a FrameResource, not a VideoFrame.
+  void Initialize(const VideoDecoderConfig& config,
+                  bool low_delay,
+                  CdmContext* cdm_context,
+                  InitCB init_cb,
+                  const OutputCB& output_cb,
+                  const WaitingCB& waiting_cb) final;
+
+  // VideoDecoderMixins should implement the following Initialize instead of
+  // VideoFrame::Initialize. This lets the decoder use FrameResource instead
+  // of VideoFrame as an output type.
+  virtual void Initialize(const VideoDecoderConfig& config,
+                          bool low_delay,
+                          CdmContext* cdm_context,
+                          InitCB init_cb,
+                          const PipelineOutputCB& output_cb,
+                          const WaitingCB& waiting_cb) = 0;
 
  protected:
   const std::unique_ptr<MediaLog> media_log_;
@@ -223,6 +252,7 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   // VideoDecoderMixin::Client implementation.
   DmabufVideoFramePool* GetVideoFramePool() const override;
   void PrepareChangeResolution() override;
+  void NotifyEstimatedMaxDecodeRequests(int num) override;
   CroStatus::Or<ImageProcessor::PixelLayoutCandidate> PickDecoderOutputFormat(
       const std::vector<ImageProcessor::PixelLayoutCandidate>& candidates,
       const gfx::Rect& decoder_visible_rect,
@@ -269,11 +299,11 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   void OnError(const std::string& msg);
 
   // Called when |decoder_| finishes decoding a frame.
-  void OnFrameDecoded(scoped_refptr<VideoFrame> frame);
+  void OnFrameDecoded(scoped_refptr<FrameResource> frame);
   // Called when |image_processor_| finishes processing a frame.
-  void OnFrameProcessed(scoped_refptr<VideoFrame> frame);
+  void OnFrameProcessed(scoped_refptr<FrameResource> frame);
   // Called when |frame_converter_| finishes converting a frame.
-  void OnFrameConverted(scoped_refptr<VideoFrame> frame);
+  void OnFrameConverted(scoped_refptr<FrameResource> frame);
   // Called when |decoder_| invokes the waiting callback.
   void OnDecoderWaiting(WaitingReason reason);
 
@@ -375,6 +405,9 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   // successfully done.
   std::unique_ptr<VideoDecoderMixin> decoder_
       GUARDED_BY_CONTEXT(decoder_sequence_checker_);
+
+  static constexpr int kDefaultMaxDecodeRequests = 8;
+  std::atomic_int decoder_max_decode_requests_ = kDefaultMaxDecodeRequests;
 
   // Only used after initialization on |decoder_task_runner_|.
   CreateDecoderFunctionCB create_decoder_function_cb_

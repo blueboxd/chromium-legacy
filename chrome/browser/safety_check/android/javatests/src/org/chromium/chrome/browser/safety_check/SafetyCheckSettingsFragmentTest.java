@@ -173,11 +173,14 @@ public class SafetyCheckSettingsFragmentTest {
         configurePasswordManagerUtilBridge(usesSplitStores);
         createFragmentAndModel();
         // Binds the account model.
-        SafetyCheckCoordinator.createPasswordCheckPreferenceModelAndBind(
-                mFragment,
-                mSafetyCheckModel,
-                SafetyCheckViewBinder.PASSWORDS_KEY_ACCOUNT,
-                "Passwords for test account");
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    SafetyCheckCoordinator.createPasswordCheckPreferenceModelAndBind(
+                            mFragment,
+                            mSafetyCheckModel,
+                            SafetyCheckViewBinder.PASSWORDS_KEY_ACCOUNT,
+                            "Passwords for test account");
+                });
 
         Preference passwordsLocal = mFragment.findPreference(PASSWORDS_LOCAL);
         Preference passwordsAccount = mFragment.findPreference(PASSWORDS_ACCOUNT);
@@ -229,7 +232,7 @@ public class SafetyCheckSettingsFragmentTest {
 
         assertEquals(
                 passwordsLocal.getTitle(),
-                mFragment.getString(R.string.safety_check_passwords_title));
+                mFragment.getString(R.string.safety_check_passwords_local_title));
         assertEquals(
                 passwordsAccount.getTitle(),
                 mFragment.getString(

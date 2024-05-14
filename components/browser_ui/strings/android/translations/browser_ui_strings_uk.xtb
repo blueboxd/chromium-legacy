@@ -5,6 +5,7 @@
 <translation id="1036348656032585052">Вимкнути</translation>
 <translation id="1044891598689252897">Сайти працюватимуть у звичному режимі</translation>
 <translation id="1073417869336441572">Поясніть, чому ви дозволили сторонні файли cookie, щоб допомогти нам покращити Chrome. <ph name="BEGIN_LINK" />Надіслати відгук<ph name="END_LINK" /></translation>
+<translation id="1113435009358629918">Сховати картку "Зниження ціни"</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Видалити</translation>
 <translation id="1192844206376121885">Усі дані й файли cookie сайту <ph name="ORIGIN" /> буде видалено.</translation>
@@ -21,7 +22,6 @@
 <translation id="1383876407941801731">Пошук</translation>
 <translation id="1384959399684842514">Завантаження призупинено</translation>
 <translation id="1415402041810619267">URL-адресу скорочено</translation>
-<translation id="1434873037477293673">картка "Зниження ціни"</translation>
 <translation id="1448064542941920355">Зменшити масштаб</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{<ph name="SITE_COUNT" /> сайт}one{<ph name="SITE_COUNT" /> сайт}few{<ph name="SITE_COUNT" /> сайти}many{<ph name="SITE_COUNT" /> сайтів}other{<ph name="SITE_COUNT" /> сайту}}</translation>
 <translation id="1510341833810331442">Сайтам заборонено зберігати дані на вашому пристрої</translation>
@@ -93,12 +93,14 @@
 <translation id="2498359688066513246">Довідка й відгуки</translation>
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2546283357679194313">Файли cookie й дані сайтів</translation>
+<translation id="2550801787432930915">Картка "Зниження ціни"</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 файл cookie заблоковано}one{# файл cookie заблоковано}few{# файли cookie заблоковано}many{# файлів cookie заблоковано}other{# файлу cookie заблоковано}}</translation>
 <translation id="2570922361219980984">На цьому пристрої також вимкнено доступ до геоданих. Увімкніть його в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Розгорнуто – натисніть, щоб згорнути.</translation>
 <translation id="2586657967955657006">Буфер обміну</translation>
 <translation id="2597457036804169544">Не використовувати темну тему для сайтів</translation>
 <translation id="2606760465469169465">Автоматичне підтвердження</translation>
+<translation id="2613007545732217283"><ph name="HOST_NAME" /> <ph name="SEPARATOR" /> <ph name="RECENCY" /></translation>
 <translation id="2621115761605608342">Увімкнути JavaScript на певному сайті.</translation>
 <translation id="2653659639078652383">Надіслати</translation>
 <translation id="2677748264148917807">Вийти</translation>
@@ -121,7 +123,6 @@
 <translation id="2979365474350987274">Сторонні файли cookie обмежено</translation>
 <translation id="3008272652534848354">Скинути дозволи</translation>
 <translation id="301521992641321250">Блокується автоматично</translation>
-<translation id="3025010840409371499"><ph name="RECENCY" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="3069226013421428034">Дозволити вхід через сторонні сервіси для певного сайту.</translation>
 <translation id="3082992102194421695">{COUNT,plural, =1{Строк дії закінчується завтра}one{Строк дії закінчується через # день}few{Строк дії закінчується через # дні}many{Строк дії закінчується через # днів}other{Строк дії закінчується через # дня}}</translation>
 <translation id="310297983047869047">Попередній слайд</translation>
@@ -188,7 +189,6 @@
 <translation id="4149994727733219643">Спрощений перегляд веб-сторінок</translation>
 <translation id="4151930093518524179">Масштаб за умовчанням</translation>
 <translation id="4165986682804962316">Налаштування сайтів</translation>
-<translation id="4169019654293892025">Сховати модуль "<ph name="TITLE_OF_MODULE" />"</translation>
 <translation id="4169549551965910670">Підключено до пристрою USB</translation>
 <translation id="4194328954146351878">Запитувати, перш ніж дозволяти сайтам переглядати й змінювати інформацію на пристроях NFC (рекомендовано)</translation>
 <translation id="4200726100658658164">Відкрити налаштування доступу до моїх геоданих</translation>
@@ -213,6 +213,7 @@
 <translation id="4566417217121906555">Вимкнути мікрофон</translation>
 <translation id="4570913071927164677">Деталі</translation>
 <translation id="4598549027014564149">В анонімному режимі сайти не можуть використовувати файли cookie для перегляду ваших дій у веб-переглядачі, навіть на пов’язаних сайтах. Дані про дії у веб-переглядачі не використовуються для персоналізації реклами. Функції на деяких сайтах можуть не працювати.</translation>
+<translation id="4619615317237390068">Вкладки з інших пристроїв</translation>
 <translation id="4644713492825682049">Видалити й скинути</translation>
 <translation id="4645575059429386691">Керується одним із батьків</translation>
 <translation id="4670064810192446073">Віртуальна реальність</translation>
@@ -344,6 +345,7 @@
 <translation id="6612358246767739896">Захищений контент</translation>
 <translation id="662080504995468778">Залишитися</translation>
 <translation id="6653342741369270081">Щоб вийти з повноекранного режиму, натисніть кнопку "Назад".</translation>
+<translation id="6670377348676659110">{TILE_COUNT,plural, =1{Сховати опцію "Продовжити на цій вкладці"}one{Сховати опцію "Продовжити із цими вкладками"}few{Сховати опцію "Продовжити із цими вкладками"}many{Сховати опцію "Продовжити із цими вкладками"}other{Сховати опцію "Продовжити із цими вкладками"}}</translation>
 <translation id="6689172468748959065">Фотографії профілів</translation>
 <translation id="6697925417670533197">Активні завантаження</translation>
 <translation id="6722828510648505498">Блокувати підказки щодо входу від сервісів ідентифікації</translation>
@@ -366,6 +368,7 @@
 <translation id="702275896380648118">Цей сайт визначає теми, які вас цікавлять, а потім пропонує свою рекламу на інших сайтах. Він також використовує ваші теми оголошень із Chrome, щоб показувати вам релевантнішу рекламу.</translation>
 <translation id="7053983685419859001">Блокувати</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Вибрано 1}one{Вибрано #}few{Вибрано #}many{Вибрано #}other{Вибрано #}}</translation>
+<translation id="708014373017851679">Додаток <ph name="APP_NAME" /> застарілий. Оновіть додаток.</translation>
 <translation id="7087918508125750058">Вибрано <ph name="ITEM_COUNT" />. Панель інструментів розташовано вгорі екрана</translation>
 <translation id="7141896414559753902">Блокувати спливаючі вікна та переадресацію на сайтах (рекомендовано)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
@@ -402,6 +405,7 @@
 <translation id="7667547420449112975">Чарівник країни Оз</translation>
 <translation id="7684642910516280563">Заборонити сайту використовувати сторонні файли cookie</translation>
 <translation id="7719367874908701697">Масштабування сторінки</translation>
+<translation id="7759147511335618829">Керування пристроями MIDI</translation>
 <translation id="7781829728241885113">Учора</translation>
 <translation id="7791543448312431591">Додати</translation>
 <translation id="7801888679188438140">{TILE_COUNT,plural, =1{Продовжити на цій вкладці}one{Продовжити із цими вкладками}few{Продовжити із цими вкладками}many{Продовжити із цими вкладками}other{Продовжити із цими вкладками}}</translation>

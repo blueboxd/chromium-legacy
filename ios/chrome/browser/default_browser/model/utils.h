@@ -128,10 +128,6 @@ void LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoType type);
 // Logs to the FET that a default browser promo has been shown.
 void LogToFETDefaultBrowserPromoShown(feature_engagement::Tracker* tracker);
 
-// Logs to the FET that the user has pasted a URL into the omnibox if certain
-// conditions are met.
-void LogToFETUserPastedURLIntoOmnibox(feature_engagement::Tracker* tracker);
-
 // Returns true if the passed default browser badge `feature` should be shown.
 // Also makes the necessary calls to the FET for keeping track of usage, as well
 // as checking that the correct preconditions are met.
@@ -192,6 +188,10 @@ bool HasUserInteractedWithTailoredFullscreenPromoBefore();
 // non-modal promo before.
 NSInteger UserInteractionWithNonModalPromoCount();
 
+// Returns the number of times a fullscreen default browser promo has been
+// displayed.
+NSInteger DisplayedFullscreenPromoCount();
+
 // Logs that one of the fullscreen default browser promos was displayed.
 void LogFullscreenDefaultBrowserPromoDisplayed();
 
@@ -201,26 +201,28 @@ void LogUserInteractionWithFullscreenPromo();
 // Logs that the user has interacted with a Tailored Fullscreen Promo.
 void LogUserInteractionWithTailoredFullscreenPromo();
 
-// Logs that the user has interacted with a Non-Modals Promo.
-void LogUserInteractionWithNonModalPromo();
+// Logs that the user has interacted with a non-modal promo. The expected
+// parameters are the current counts, because they will be incremented by 1 and
+// then saved to NSUserDefaults. If kNonModalDefaultBrowserPromoCooldownRefactor
+// is disabled, kDisplayedFullscreenPromoCount will also be incremented by 1.
+void LogUserInteractionWithNonModalPromo(
+    NSInteger currentNonModalPromoInteractionsCount,
+    NSInteger currentFullscreenPromoInteractionsCount);
 
 // Logs that the user has interacted with the first run promo.
 void LogUserInteractionWithFirstRunPromo(BOOL openedSettings);
 
 // Logs in NSUserDefaults that user copy-pasted in the omnibox.
-void LogCopyPasteInOmniboxForDefaultBrowserPromo();
+void LogCopyPasteInOmniboxForCriteriaExperiment();
 
 // Logs in NSUserDefaults that user used bookmarks or bookmark manager.
-void LogBookmarkUseForDefaultBrowserPromo();
+void LogBookmarkUseForCriteriaExperiment();
 
 // Logs in NSUserDefaults that user used autofill suggestions
 void LogAutofillUseForCriteriaExperiment();
 
 // Logs that the user has used remote tabs.
-void LogRemoteTabsUsedForDefaultBrowserPromo();
-
-// Logs that the user has used pinned tabs.
-void LogPinnedTabsUsedForDefaultBrowserPromo();
+void LogRemoteTabsUseForCriteriaExperiment();
 
 // Returns YES if the user has opened the app through first-party intent 2
 // times in the last 7 days, but across 2 user sessions (default 6 hours). Also
@@ -255,18 +257,6 @@ bool IsChromeLikelyDefaultBrowser7Days();
 bool IsChromePotentiallyNoLongerDefaultBrowser(int likelyDefaultInterval,
                                                int likelyNotDefaultInterval);
 
-// Returns true if Chrome was likely the default browser in the last 21 days but
-// not in the last 7 days.
-bool IsChromePotentiallyNoLongerDefaultBrowser21To7();
-
-// Returns true if Chrome was likely the default browser in the last 28 days but
-// not in the last 14 days.
-bool IsChromePotentiallyNoLongerDefaultBrowser28To14();
-
-// Returns true if Chrome was likely the default browser in the last 35 days but
-// not in the last 14 days.
-bool IsChromePotentiallyNoLongerDefaultBrowser35To14();
-
 // Returns true if the past behavior of the user indicates that the user fits
 // the categorization that would likely benefit from having Chrome set as their
 // default browser for the passed `type`. Returns false otherwise.
@@ -294,8 +284,7 @@ int GetNonModalDefaultBrowserPromoImpressionLimit();
 
 // Return true if the default browser promo should be registered with the promo
 // manager to display a default browser promo.
-bool ShouldRegisterPromoWithPromoManager(bool is_signed_in,
-                                         bool is_omnibox_copy_paste);
+bool ShouldRegisterPromoWithPromoManager(bool is_signed_in);
 
 // Returns true if it was determined that the user is eligible for a
 // tailored promo.

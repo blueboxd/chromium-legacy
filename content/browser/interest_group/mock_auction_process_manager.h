@@ -107,6 +107,7 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet,
       uint8_t browser_signal_recency,
       const url::Origin& browser_signal_seller_origin,
       const std::optional<url::Origin>& browser_signal_top_level_seller_origin,
+      const std::optional<base::TimeDelta> browser_signal_reporting_timeout,
       std::optional<uint32_t> bidding_signals_data_version,
       uint64_t trace_id,
       ReportWinCallback report_win_callback) override;
@@ -147,8 +148,10 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet,
       std::optional<double> bid,
       const std::optional<blink::AdCurrency>& bid_currency = std::nullopt,
       const blink::AdDescriptor& ad_descriptor = blink::AdDescriptor(),
-      auction_worklet::mojom::BidderWorkletKAnonEnforcedBidPtr mojo_kanon_bid =
-          auction_worklet::mojom::BidderWorkletKAnonEnforcedBidPtr(),
+      auction_worklet::mojom::BidRole bid_role =
+          auction_worklet::mojom::BidRole::kUnenforcedKAnon,
+      std::vector<auction_worklet::mojom::BidderWorkletBidPtr> further_bids =
+          std::vector<auction_worklet::mojom::BidderWorkletBidPtr>(),
       std::optional<std::vector<blink::AdDescriptor>> ad_component_descriptors =
           std::nullopt,
       base::TimeDelta duration = base::TimeDelta(),

@@ -19,6 +19,7 @@ import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.SEARC
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.SEARCH_WIDGET_SEARCH_ENGINE_SHORTNAME;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.SEARCH_WIDGET_SEARCH_ENGINE_URL;
 
+import androidx.test.annotation.UiThreadTest;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -31,11 +32,11 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityPreferencesManager.SearchActivityPreferences;
 import org.chromium.components.search_engines.TemplateUrl;
@@ -70,7 +71,7 @@ public class SearchActivityPreferencesManagerTest {
         NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
         TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlServiceMock);
         LibraryLoader.setLibraryLoaderForTesting(mLibraryLoaderMock);
-        Profile.setLastUsedProfileForTesting(mProfile);
+        ProfileManager.setLastUsedProfileForTesting(mProfile);
 
         doAnswer(
                         invocation -> {

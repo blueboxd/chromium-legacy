@@ -12,10 +12,7 @@ assert(!is_android)
 grd_prefix = "new_tab_page"
 
 build_webui("build") {
-  icons_html_files = [
-    "modules/v2/icons.html",
-    "modules/v2/tab_resumption/icons.html",
-  ]
+  icons_html_files = [ "modules/v2/icons.html" ]
 
   static_files = [
     "new_tab_page.html",
@@ -112,9 +109,9 @@ build_webui("build") {
     "//ui/webui/resources/mojo:build_ts",
   ]
 
+  webui_host = "new-tab-page"
   optimize = optimize_webui
   if (optimize) {
-    optimize_webui_host = "new-tab-page"
     optimize_webui_in_files = [
       "new_tab_page.js",
       "lazy_load.js",

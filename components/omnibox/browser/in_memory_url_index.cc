@@ -49,9 +49,7 @@ void InitializeSchemeAllowlist(SchemeSet* allowlist,
 InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
     RebuildPrivateDataFromHistoryDBTask(InMemoryURLIndex* index,
                                         const SchemeSet& scheme_allowlist)
-    : index_(index),
-      scheme_allowlist_(scheme_allowlist),
-      task_creation_time_(base::TimeTicks::Now()) {}
+    : index_(index), scheme_allowlist_(scheme_allowlist) {}
 
 bool InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::RunOnDBThread(
     history::HistoryBackend* backend,
@@ -66,8 +64,6 @@ bool InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::RunOnDBThread(
 void InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
     DoneRunOnMainThread() {
   index_->DoneRebuildingPrivateDataFromHistoryDB(succeeded_, data_);
-  UMA_HISTOGRAM_TIMES("History.InMemoryURLIndexingTime.RoundTripTime",
-                      base::TimeTicks::Now() - task_creation_time_);
 }
 
 InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
@@ -75,7 +71,7 @@ InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
 
 // InMemoryURLIndex ------------------------------------------------------------
 
-InMemoryURLIndex::InMemoryURLIndex(bookmarks::BookmarkModel* bookmark_model,
+InMemoryURLIndex::InMemoryURLIndex(bookmarks::CoreBookmarkModel* bookmark_model,
                                    history::HistoryService* history_service,
                                    TemplateURLService* template_url_service,
                                    const base::FilePath& history_dir,

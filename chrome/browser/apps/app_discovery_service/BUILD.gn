@@ -20,8 +20,6 @@ source_set("app_discovery_service") {
     "app_fetcher_manager.h",
     "game_extras.cc",
     "game_extras.h",
-    "game_fetcher.cc",
-    "game_fetcher.h",
     "launcher_app_almanac_connector.cc",
     "launcher_app_almanac_connector.h",
     "play_extras.cc",
@@ -39,7 +37,6 @@ source_set("app_discovery_service") {
     "//chrome/browser/apps/almanac_api_client",
     "//chrome/browser/apps/app_discovery_service/almanac_api:proto",
     "//chrome/browser/apps/app_discovery_service/recommended_arc_apps",
-    "//chrome/browser/apps/app_provisioning_service",
     "//chrome/browser/profiles:profile",
     "//chromeos/constants",
     "//components/country_codes",
@@ -63,7 +60,6 @@ source_set("unit_tests") {
   sources = [
     "almanac_fetcher_unittest.cc",
     "app_discovery_service_unittest.cc",
-    "game_fetcher_unittest.cc",
     "launcher_app_almanac_connector_unittest.cc",
     "recommended_arc_app_fetcher_unittest.cc",
   ]
@@ -77,7 +73,6 @@ source_set("unit_tests") {
     "//chrome/browser/apps/app_discovery_service/almanac_api:launcher_app_descriptor",
     "//chrome/browser/apps/app_discovery_service/almanac_api:proto",
     "//chrome/browser/apps/app_discovery_service/recommended_arc_apps:unit_tests",
-    "//chrome/browser/apps/app_provisioning_service/proto",
     "//chrome/browser/profiles:profile",
     "//chrome/browser/web_applications:web_applications_test_support",
     "//chrome/common:constants",

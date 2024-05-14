@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/animation/interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/svg_path_seg_interpolation_functions.h"
 #include "third_party/blink/renderer/core/css/css_path_value.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/svg/svg_path.h"
 #include "third_party/blink/renderer/core/svg/svg_path_byte_stream_builder.h"
 #include "third_party/blink/renderer/core/svg/svg_path_byte_stream_source.h"
@@ -106,17 +107,17 @@ class UnderlyingPathSegTypesChecker final
  public:
   ~UnderlyingPathSegTypesChecker() final = default;
 
-  static std::unique_ptr<UnderlyingPathSegTypesChecker> Create(
+  static UnderlyingPathSegTypesChecker* Create(
       const InterpolationValue& underlying) {
-    return base::WrapUnique(new UnderlyingPathSegTypesChecker(
-        GetPathSegTypes(underlying), GetWindRule(underlying)));
+    return MakeGarbageCollected<UnderlyingPathSegTypesChecker>(
+        GetPathSegTypes(underlying), GetWindRule(underlying));
   }
 
- private:
   UnderlyingPathSegTypesChecker(const Vector<SVGPathSegType>& path_seg_types,
                                 WindRule wind_rule)
       : path_seg_types_(path_seg_types), wind_rule_(wind_rule) {}
 
+ private:
   static const Vector<SVGPathSegType>& GetPathSegTypes(
       const InterpolationValue& underlying) {
     return To<SVGPathNonInterpolableValue>(*underlying.non_interpolable_value)
@@ -206,8 +207,9 @@ void PathInterpolationFunctions::Composite(
     const InterpolationType& type,
     const InterpolationValue& value) {
   const auto& list = To<InterpolableList>(*value.interpolable_value);
-  double neutral_component =
-      To<InterpolableNumber>(list.Get(kPathNeutralIndex))->Value();
+  // TODO(crbug.com/325821290): Avoid InterpolableNumber here.
+  double neutral_component = To<InterpolableNumber>(list.Get(kPathNeutralIndex))
+                                 ->Value(CSSToLengthConversionData());
 
   if (neutral_component == 0) {
     underlying_value_owner.Set(type, value);

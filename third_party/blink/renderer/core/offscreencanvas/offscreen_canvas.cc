@@ -182,7 +182,8 @@ void OffscreenCanvas::SetSize(gfx::Size size) {
   if (context_) {
     if (context_->IsWebGL() || IsWebGPU()) {
       context_->Reshape(Size().width(), Size().height());
-    } else if (context_->IsRenderingContext2D()) {
+    } else if (context_->IsRenderingContext2D() ||
+               context_->IsImageBitmapRenderingContext()) {
       context_->Reset();
       origin_clean_ = true;
     }
@@ -285,7 +286,7 @@ gfx::Size OffscreenCanvas::BitmapSourceSize() const {
   return Size();
 }
 
-ScriptPromise OffscreenCanvas::CreateImageBitmap(
+ScriptPromiseTyped<ImageBitmap> OffscreenCanvas::CreateImageBitmap(
     ScriptState* script_state,
     std::optional<gfx::Rect> crop_rect,
     const ImageBitmapOptions* options,
@@ -294,7 +295,7 @@ ScriptPromise OffscreenCanvas::CreateImageBitmap(
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "`createImageBitmap()` cannot be called with open layers.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<ImageBitmap>();
   }
   if (context_) {
     context_->FinalizeFrame(FlushReason::kCreateImageBitmap);
@@ -527,6 +528,7 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
       (HasPlaceholderCanvas() && SharedGpuContext::IsGpuCompositingEnabled());
   const bool use_scanout =
       use_shared_image && HasPlaceholderCanvas() &&
+      SharedGpuContext::MaySupportImageChromium() &&
       (IsWebGPU() ||
        (IsWebGL() && RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) ||
        (IsRenderingContext2D() &&

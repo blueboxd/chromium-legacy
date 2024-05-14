@@ -35,6 +35,8 @@ namespace {
 #define DRM_FORMAT_YVU420 FOURCC('Y', 'V', '1', '2')
 #define DRM_FORMAT_NV12 FOURCC('N', 'V', '1', '2')
 #define DRM_FORMAT_P010 FOURCC('P', '0', '1', '0')
+/* Reserve 0 for the invalid format specifier */
+#define DRM_FORMAT_INVALID 0
 
 EGLint FourCC(gfx::BufferFormat format) {
   switch (format) {
@@ -70,44 +72,11 @@ EGLint FourCC(gfx::BufferFormat format) {
       return DRM_FORMAT_ABGR16161616F;
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::YUVA_420_TRIPLANAR:
-      return 0;
+      return DRM_FORMAT_INVALID;
   }
 
   NOTREACHED();
-  return 0;
-}
-
-// Map buffer format to GL type. Return GL_NONE if no sensible mapping.
-unsigned BufferFormatToGLDataType(gfx::BufferFormat format) {
-  switch (format) {
-    case gfx::BufferFormat::R_8:
-    case gfx::BufferFormat::RG_88:
-    case gfx::BufferFormat::RGBX_8888:
-    case gfx::BufferFormat::BGRX_8888:
-    case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::BGRA_8888:
-      return GL_UNSIGNED_BYTE;
-    case gfx::BufferFormat::R_16:
-    case gfx::BufferFormat::RG_1616:
-      return GL_UNSIGNED_SHORT;
-    case gfx::BufferFormat::BGR_565:
-      return GL_UNSIGNED_SHORT_5_6_5;
-    case gfx::BufferFormat::RGBA_4444:
-      return GL_UNSIGNED_SHORT_4_4_4_4;
-    case gfx::BufferFormat::RGBA_1010102:
-    case gfx::BufferFormat::BGRA_1010102:
-      return GL_UNSIGNED_INT_2_10_10_10_REV;
-    case gfx::BufferFormat::RGBA_F16:
-      return GL_HALF_FLOAT_OES;
-    case gfx::BufferFormat::YVU_420:
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-    case gfx::BufferFormat::YUVA_420_TRIPLANAR:
-    case gfx::BufferFormat::P010:
-      return GL_NONE;
-  }
-
-  NOTREACHED();
-  return GL_NONE;
+  return DRM_FORMAT_INVALID;
 }
 
 }  // namespace
@@ -149,7 +118,7 @@ bool NativePixmapEGLBinding::InitializeFromNativePixmap(
     GLenum target,
     GLuint texture_id) {
   DCHECK(!pixmap_);
-  if (GetInternalFormat() == GL_NONE) {
+  if (FourCC(format_) == DRM_FORMAT_INVALID) {
     LOG(ERROR) << "Unsupported format: " << gfx::BufferFormatToString(format_);
     return false;
   }
@@ -292,19 +261,6 @@ bool NativePixmapEGLBinding::InitializeFromNativePixmap(
   glEGLImageTargetTexture2DOES(target, egl_image_.get());
 
   return true;
-}
-
-GLuint NativePixmapEGLBinding::GetInternalFormat() {
-  if (format_ == gfx::BufferFormat::RGBA_4444) {
-    return GL_RGB_YCBCR_P010_CHROMIUM;
-  }
-
-  return NativePixmapGLBinding::BufferFormatToGLInternalFormatDefaultMapping(
-      format_);
-}
-
-GLenum NativePixmapEGLBinding::GetDataType() {
-  return BufferFormatToGLDataType(format_);
 }
 
 }  // namespace ui

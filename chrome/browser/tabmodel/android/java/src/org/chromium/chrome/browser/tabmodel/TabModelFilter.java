@@ -123,13 +123,17 @@ public abstract class TabModelFilter implements TabModelObserver, TabList {
         return Collections.unmodifiableList(relatedTabIds);
     }
 
+    // TODO(crbug.com/41496693): This method sort of breaks the encapsulation of TabGroups being a
+    // concept of TabGroupModelFilter and TabModelFilter being generic. We could call it something
+    // like hasRelationship, but at this point there is only one valid implementation of
+    // TabModelFilter and we should fold TabGroupModelFilter into TabModel eventually so breaking
+    // encapsulation to be more clear when adding that groups of size one seems like a reasonable
+    // tradeoff.
     /**
-     * Any of the concrete class that defined a relationship between tabs should override this
-     * method. By default, the given {@link Tab} has no related tabs, other than itself.
-     * @param tab A {@link Tab}.
-     * @return Whether the given {@link Tab} has other related tabs that is not itself.
+     * @param tab A {@link Tab} to check group membership of.
+     * @return Whether the given {@link Tab} is part of a tab group.
      */
-    public boolean hasOtherRelatedTabs(Tab tab) {
+    public boolean isTabInTabGroup(Tab tab) {
         return false;
     }
 

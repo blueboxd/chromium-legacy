@@ -160,7 +160,6 @@ static_library("test_support") {
     "test_waitable_event.h",
     "thread_test_helper.cc",
     "thread_test_helper.h",
-    "to_vector.h",
     "values_test_util.cc",
     "values_test_util.h",
     "with_feature_override.cc",
@@ -262,7 +261,6 @@ static_library("test_support") {
       ":base_unittests_jni_headers",
       ":test_support_jni_headers",
     ]
-    public_deps += [ ":test_support_java" ]
   }
 
   if (is_ios) {
@@ -278,6 +276,7 @@ static_library("test_support") {
     deps += [
       ":google_test_runner_shared_headers",
       "//build:blink_buildflags",
+      "//build:ios_buildflags",
     ]
 
     # With blink, we use the standard unit_test_launcher.cc.
@@ -461,7 +460,6 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/base/MainReturnCodeResult.java",
       "android/java/src/org/chromium/base/MultiprocessTestClientLauncher.java",
-      "android/javatests/src/org/chromium/base/test/ReachedCodeProfiler.java",
       "android/javatests/src/org/chromium/base/test/task/ThreadPoolTestHelpers.java",
       "android/javatests/src/org/chromium/base/test/util/UrlUtils.java",
     ]
@@ -648,10 +646,12 @@ if (is_android) {
       "android/javatests/src/org/chromium/base/test/transit/ConditionChecker.java",
       "android/javatests/src/org/chromium/base/test/transit/ConditionWaiter.java",
       "android/javatests/src/org/chromium/base/test/transit/ConditionalState.java",
+      "android/javatests/src/org/chromium/base/test/transit/ElementInState.java",
       "android/javatests/src/org/chromium/base/test/transit/Elements.java",
       "android/javatests/src/org/chromium/base/test/transit/FacilityCheckIn.java",
       "android/javatests/src/org/chromium/base/test/transit/FacilityCheckOut.java",
       "android/javatests/src/org/chromium/base/test/transit/InstrumentationThreadCondition.java",
+      "android/javatests/src/org/chromium/base/test/transit/LogicalElement.java",
       "android/javatests/src/org/chromium/base/test/transit/PublicTransitConfig.java",
       "android/javatests/src/org/chromium/base/test/transit/StationFacility.java",
       "android/javatests/src/org/chromium/base/test/transit/TrafficControl.java",
@@ -663,6 +663,7 @@ if (is_android) {
       "android/javatests/src/org/chromium/base/test/transit/UiThreadCondition.java",
       "android/javatests/src/org/chromium/base/test/transit/ViewConditions.java",
       "android/javatests/src/org/chromium/base/test/transit/ViewElement.java",
+      "android/javatests/src/org/chromium/base/test/transit/ViewElementInState.java",
     ]
   }
 }

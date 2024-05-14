@@ -38,6 +38,7 @@
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/web/web_link_preview_triggerer.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -540,16 +541,17 @@ bool EventHandler::ShouldShowResizeForNode(const LayoutObject& layout_object,
 
 bool EventHandler::IsSelectingLink(const HitTestResult& result) {
   // If a drag may be starting or we're capturing mouse events for a particular
-  // node, don't treat this as a selection. Note calling
-  // ComputeVisibleSelectionInDOMTreeDeprecated may update layout.
+  // node, don't treat this as a selection.
+  // TODO(editing-dev): The use of UpdateStyleAndLayout needs to be audited. See
+  // http://crbug.com/590369 for more details.
+  frame_->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kSelection);
+
   const bool mouse_selection =
       !capturing_mouse_events_element_ &&
       mouse_event_manager_->MousePressed() &&
       GetSelectionController().MouseDownMayStartSelect() &&
       !mouse_event_manager_->MouseDownMayStartDrag() &&
-      !frame_->Selection()
-           .ComputeVisibleSelectionInDOMTreeDeprecated()
-           .IsNone();
+      !frame_->Selection().ComputeVisibleSelectionInDOMTree().IsNone();
   return mouse_selection && result.IsOverLink();
 }
 
@@ -1058,6 +1060,13 @@ void EventHandler::HandleMouseLeaveEvent(const WebMouseEvent& event) {
   Page* page = frame_->GetPage();
   if (page)
     page->GetChromeClient().ClearToolTip(*frame_);
+
+  WebLinkPreviewTriggerer* triggerer =
+      frame_->GetOrCreateLinkPreviewTriggerer();
+  if (triggerer) {
+    triggerer->MaybeChangedKeyEventModifier(WebInputEvent::kNoModifiers);
+  }
+
   HandleMouseMoveOrLeaveEvent(event, Vector<WebMouseEvent>(),
                               Vector<WebMouseEvent>());
   pointer_event_manager_->RemoveLastMousePosition();

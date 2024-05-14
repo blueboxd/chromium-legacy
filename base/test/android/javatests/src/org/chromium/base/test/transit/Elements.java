@@ -4,18 +4,6 @@
 
 package org.chromium.base.test.transit;
 
-import android.view.View;
-
-import androidx.annotation.Nullable;
-
-import org.hamcrest.Matcher;
-
-import org.chromium.base.test.transit.ViewConditions.DisplayedCondition;
-import org.chromium.base.test.transit.ViewConditions.GatedDisplayedCondition;
-import org.chromium.base.test.transit.ViewConditions.MatchedViewProvider;
-import org.chromium.base.test.transit.ViewConditions.NotDisplayedAnymoreCondition;
-import org.chromium.base.test.transit.ViewElement.Scope;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,9 +19,12 @@ import java.util.List;
  */
 public class Elements {
 
+    /** If passed as |id|, the description is considered the id. */
+    public static final String DESCRIPTION_AS_ID = "__DESCRIPTION_AS_ID";
+
     static final Elements EMPTY = new Elements();
 
-    private ArrayList<ViewElementInState> mViewElements = new ArrayList<>();
+    private ArrayList<ElementInState> mElementsInState = new ArrayList<>();
     private ArrayList<Condition> mOtherEnterConditions = new ArrayList<>();
     private ArrayList<Condition> mOtherExitConditions = new ArrayList<>();
 
@@ -44,8 +35,8 @@ public class Elements {
         return new Builder(new Elements());
     }
 
-    List<ViewElementInState> getViewElements() {
-        return mViewElements;
+    List<ElementInState> getElementsInState() {
+        return mElementsInState;
     }
 
     List<Condition> getOtherEnterConditions() {
@@ -72,9 +63,10 @@ public class Elements {
         }
 
         /** Declare as an element a View that matches |viewMatcher|. */
-        public Builder declareView(ViewElement viewElement) {
-            mElements.mViewElements.add(new ViewElementInState(viewElement, /* gate= */ null));
-            return this;
+        public ViewElementInState declareView(ViewElement viewElement) {
+            ViewElementInState inState = new ViewElementInState(viewElement, /* gate= */ null);
+            mElements.mElementsInState.add(inState);
+            return inState;
         }
 
         /**
@@ -82,28 +74,60 @@ public class Elements {
          *
          * <p>The element is only expected if |gate| returns true.
          */
-        public Builder declareViewIf(ViewElement viewElement, Condition gate) {
-            mElements.mViewElements.add(new ViewElementInState(viewElement, gate));
-            return this;
+        public ViewElementInState declareViewIf(ViewElement viewElement, Condition gate) {
+            ViewElementInState inState = new ViewElementInState(viewElement, gate);
+            mElements.mElementsInState.add(inState);
+            return inState;
         }
 
         /**
-         * Declare as an element a generic enter Condition. It must remain true as long as the
-         * ConditionalState is ACTIVE.
+         * Declare as an element a logical check that must return true when and as long as the
+         * Station is ACTIVE.
+         *
+         * <p>Differs from {@link #declareEnterCondition(Condition)} in that shared-scope
+         * LogicalElements do not generate exit Conditions when going to another ConditionalState
+         * with the same LogicalElement.
          */
-        public Builder declareEnterCondition(Condition condition) {
-            mElements.mOtherEnterConditions.add(condition);
-            return this;
+        public LogicalElement declareLogicalElement(LogicalElement logicalElement) {
+            mElements.mElementsInState.add(logicalElement);
+            return logicalElement;
         }
 
-        /** Declare as an element a generic exit Condition. */
-        public Builder declareExitCondition(Condition condition) {
+        /**
+         * Declare as an element a generic enter Condition. It must be true for a transition into
+         * this ConditionalState to be complete.
+         *
+         * <p>No promises are made that the Condition is true as long as the ConditionalState is
+         * ACTIVE. For these cases, use {@link LogicalElement}.
+         *
+         * <p>Further, no promises are made that the Condition is false after exiting the State. Use
+         * a scoped {@link LogicalElement} in this case.
+         */
+        public Condition declareEnterCondition(Condition condition) {
+            mElements.mOtherEnterConditions.add(condition);
+            return condition;
+        }
+
+        /**
+         * Declare as an element a generic exit Condition. It must be true for a transition out of
+         * this ConditionalState to be complete.
+         *
+         * <p>No promises are made that the Condition is false as long as the ConditionalState is
+         * ACTIVE. For these cases, use a scoped {@link LogicalElement}.
+         */
+        public Condition declareExitCondition(Condition condition) {
             mElements.mOtherExitConditions.add(condition);
-            return this;
+            return condition;
+        }
+
+        /** Declare a custom element, already rendered to an ElementInState. */
+        public <T extends ElementInState> T declareElementInState(T elementInState) {
+            mElements.mElementsInState.add(elementInState);
+            return elementInState;
         }
 
         void addAll(Elements otherElements) {
-            mElements.mViewElements.addAll(otherElements.mViewElements);
+            mElements.mElementsInState.addAll(otherElements.mElementsInState);
             mElements.mOtherEnterConditions.addAll(otherElements.mOtherEnterConditions);
             mElements.mOtherExitConditions.addAll(otherElements.mOtherExitConditions);
         }
@@ -116,66 +140,6 @@ public class Elements {
             Elements elements = mElements;
             mElements = null;
             return elements;
-        }
-    }
-
-    /**
-     * Represents a ViewElement added to a ConditionState.
-     *
-     * <p>ViewElements should be declared as constants, while ViewElementInStates are created by
-     * calling {@link Elements.Builder#declareView(ViewElement)} or {@link
-     * Elements.Builder#declareViewIf(ViewElement, Condition)}.
-     */
-    static class ViewElementInState {
-        private final ViewElement mViewElement;
-        private final @Nullable Condition mGate;
-
-        private final Condition mEnterCondition;
-        private final @Nullable Condition mExitCondition;
-
-        ViewElementInState(ViewElement viewElement, @Nullable Condition gate) {
-            mViewElement = viewElement;
-            mGate = gate;
-
-            Matcher<View> viewMatcher = mViewElement.getViewMatcher();
-            MatchedViewProvider matchedViewProvider;
-            if (mGate != null) {
-                GatedDisplayedCondition gatedDisplayedCondition =
-                        new GatedDisplayedCondition(mViewElement.getViewMatcher(), mGate);
-                mEnterCondition = gatedDisplayedCondition;
-                matchedViewProvider = gatedDisplayedCondition;
-            } else {
-                DisplayedCondition displayedCondition = new DisplayedCondition(viewMatcher);
-                mEnterCondition = displayedCondition;
-                matchedViewProvider = displayedCondition;
-            }
-
-            switch (mViewElement.getScope()) {
-                case Scope.CONDITIONAL_STATE_SCOPED:
-                case Scope.SHARED:
-                    mExitCondition =
-                            new NotDisplayedAnymoreCondition(viewMatcher, matchedViewProvider);
-                    break;
-                case Scope.UNSCOPED:
-                    mExitCondition = null;
-                    break;
-                default:
-                    mExitCondition = null;
-                    assert false;
-            }
-        }
-
-        ViewElement getViewElement() {
-            return mViewElement;
-        }
-
-        Condition getEnterCondition() {
-            return mEnterCondition;
-        }
-
-        @Nullable
-        Condition getExitCondition() {
-            return mExitCondition;
         }
     }
 }

@@ -9,9 +9,9 @@
 
 #include <algorithm>
 #include <memory>
+#include <optional>
 #include <vector>
 
-#include <optional>
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
@@ -522,7 +522,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
 #if !BUILDFLAG(IS_ANDROID)
   // A set of raw pointers to currently living AbstractTextures
   // which allow us to properly signal to them when we are destroyed.
-  base::flat_set<AbstractTexture*> abstract_textures_;
+  base::flat_set<raw_ptr<AbstractTexture, CtnExperimental>> abstract_textures_;
 #endif
 
   int commands_to_process_;

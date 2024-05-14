@@ -234,6 +234,7 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="'Writing essentials' collection page"/>
   <int value="3" label="'Workflow and Planning' category page"/>
   <int value="4" label="'Shopping' category page"/>
+  <int value="5" label="Home page"/>
 </enum>
 
 <enum name="NTPCollectionId">
@@ -279,6 +280,7 @@ chromium-metrics-reviews@google.com.
   <int value="0" label="Customize Chrome button clicked."/>
   <int value="1" label="Customize module clicked."/>
   <int value="2" label="NTP URL has customize chrome parameters."/>
+  <int value="3" label="Wallpaper search button clicked."/>
 </enum>
 
 <enum name="NTPCustomizeChromeSidePanelAction">
@@ -298,6 +300,13 @@ chromium-metrics-reviews@google.com.
   <int value="13" label="Wallpaper search mood value changed."/>
   <int value="14" label="Wallpaper search color value changed."/>
   <int value="15" label="Wallpaper search inspiration theme selected."/>
+  <int value="16" label="Set classic Chrome theme clicked"/>
+  <int value="17" label="Show shortcuts toggle clicked"/>
+  <int value="18" label="Show cards toggle clicked"/>
+  <int value="19" label="Wallpaper search opened from Appearance page."/>
+  <int value="20" label="Default color clicked"/>
+  <int value="21" label="Chrome color clicked"/>
+  <int value="22" label="Custom color clicked"/>
 </enum>
 
 <enum name="NTPCustomizedFeatures">
@@ -341,6 +350,7 @@ chromium-metrics-reviews@google.com.
   <int value="8" label="Obsolete: Customize Dialog / Button"/>
   <int value="9" label="Customize Chrome Button"/>
   <int value="10" label="Customize Chrome Dialog"/>
+  <int value="11" label="Wallpaper Search Button"/>
 </enum>
 
 <enum name="NTPHistoryClustersDismissReason">
@@ -473,6 +483,13 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Generic error"/>
   <int value="2" label="Request throttled"/>
   <int value="3" label="Offline"/>
+  <int value="4" label="Signed out user"/>
+</enum>
+
+<enum name="NtpWallpaperSearchThemeType">
+  <int value="0" label="Result"/>
+  <int value="1" label="Inspiration"/>
+  <int value="2" label="History"/>
 </enum>
 
 <enum name="PhotosModuleRequestResult">

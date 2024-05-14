@@ -25,6 +25,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "components/attribution_reporting/aggregation_keys.h"
+#include "components/attribution_reporting/os_registration.h"
 #include "components/attribution_reporting/parsing_utils.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/suitable_origin.h"
@@ -44,6 +45,7 @@
 #include "content/browser/attribution_reporting/send_result.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/attribution_reporting/stored_source.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
@@ -74,8 +76,9 @@ attribution_internals::mojom::WebUISourcePtr WebUISource(
     Attributability attributability) {
   const CommonSourceInfo& common_info = source.common_info();
   return attribution_internals::mojom::WebUISource::New(
-      source.source_event_id(), common_info.source_origin(),
-      source.destination_sites(), common_info.reporting_origin(),
+      *source.source_id(), source.source_event_id(),
+      common_info.source_origin(), source.destination_sites(),
+      common_info.reporting_origin(),
       source.source_time().InMillisecondsFSinceUnixEpoch(),
       source.expiry_time().InMillisecondsFSinceUnixEpoch(),
       SerializeAttributionJson(source.trigger_specs().ToJson(),
@@ -262,8 +265,9 @@ void AttributionInternalsHandlerImpl::IsAttributionReportingEnabled(
   bool debug_mode = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAttributionReportingDebugMode);
 
-  std::move(callback).Run(attribution_reporting_enabled, debug_mode,
-                          AttributionManager::GetAttributionSupport(contents));
+  std::move(callback).Run(
+      attribution_reporting_enabled, debug_mode,
+      static_cast<WebContentsImpl*>(contents)->GetAttributionSupport());
 }
 
 void AttributionInternalsHandlerImpl::GetActiveSources(
@@ -289,12 +293,12 @@ void AttributionInternalsHandlerImpl::GetReports(
   }
 }
 
-void AttributionInternalsHandlerImpl::SendReports(
-    const std::vector<AttributionReport::Id>& ids,
-    attribution_internals::mojom::Handler::SendReportsCallback callback) {
+void AttributionInternalsHandlerImpl::SendReport(
+    AttributionReport::Id id,
+    attribution_internals::mojom::Handler::SendReportCallback callback) {
   if (AttributionManager* manager =
           AttributionManager::FromWebContents(web_ui_->GetWebContents())) {
-    manager->SendReportsForWebUI(ids, std::move(callback));
+    manager->SendReportForWebUI(id, std::move(callback));
   } else {
     std::move(callback).Run();
   }
@@ -410,27 +414,29 @@ void AttributionInternalsHandlerImpl::OnDebugReportSent(
 
 void AttributionInternalsHandlerImpl::OnOsRegistration(
     base::Time time,
-    const OsRegistration& registration,
+    const attribution_reporting::OsRegistrationItem& registration,
+    const url::Origin& top_level_origin,
+    attribution_reporting::mojom::RegistrationType type,
     bool is_debug_key_allowed,
     attribution_reporting::mojom::OsRegistrationResult result) {
   auto web_ui_os_registration =
       attribution_internals::mojom::WebUIOsRegistration::New();
   web_ui_os_registration->time =
       time.InMillisecondsFSinceUnixEpochIgnoringNull();
-  web_ui_os_registration->registration_url = registration.registration_url;
-  web_ui_os_registration->top_level_origin = registration.top_level_origin;
+  web_ui_os_registration->registration_url = registration.url;
+  web_ui_os_registration->top_level_origin = top_level_origin;
   web_ui_os_registration->is_debug_key_allowed = is_debug_key_allowed;
   web_ui_os_registration->debug_reporting = registration.debug_reporting;
-  web_ui_os_registration->type = registration.GetType();
+  web_ui_os_registration->type = type;
   web_ui_os_registration->result = result;
 
   observer_->OnOsRegistration(std::move(web_ui_os_registration));
 }
 
 void AttributionInternalsHandlerImpl::OnTriggerHandled(
-    const AttributionTrigger& trigger,
     const std::optional<uint64_t> cleared_debug_key,
     const CreateReportResult& result) {
+  const AttributionTrigger& trigger = result.trigger();
   const attribution_reporting::TriggerRegistration& registration =
       trigger.registration();
 

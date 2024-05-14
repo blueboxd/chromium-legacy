@@ -6,11 +6,13 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_registry_cache_waiter.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/service_worker_apitest.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -137,8 +139,8 @@ const content::EvalJsResult RemoveAllContextMenuItems(
 }
 
 const content::EvalJsResult SetBackgroundColorToWhite(
-    content::WebContents* app_contents) {
-  return content::EvalJs(app_contents, R"(
+    extensions::WebViewGuest* guest) {
+  return content::EvalJs(guest->GetGuestMainFrame(), R"(
     (function() {
       document.body.style.backgroundColor = 'white';
       return 'SUCCESS';
@@ -183,8 +185,8 @@ const content::EvalJsResult ExecuteScriptRedBackgroundFile(
 }
 
 const content::EvalJsResult VerifyBackgroundColorIsRed(
-    content::WebContents* app_contents) {
-  return content::EvalJs(app_contents, R"(
+    extensions::WebViewGuest* guest) {
+  return content::EvalJs(guest->GetGuestMainFrame(), R"(
     (function() {
       if (document.body.style.backgroundColor === 'red') {
         return 'SUCCESS';
@@ -269,13 +271,17 @@ class ControlledFrameApiTest
 
   extensions::WebViewGuest* GetWebViewGuest(
       content::WebContents* embedder_web_contents) {
-    auto inner_web_contents = embedder_web_contents->GetInnerWebContents();
-    if (inner_web_contents.size() == 0) {
-      return nullptr;
-    }
-    content::WebContents* guest_web_contents = inner_web_contents[0];
-    auto* web_view_guest = extensions::WebViewGuest::FromRenderFrameHost(
-        guest_web_contents->GetPrimaryMainFrame());
+    extensions::WebViewGuest* web_view_guest = nullptr;
+    embedder_web_contents->GetPrimaryMainFrame()
+        ->ForEachRenderFrameHostWithAction(
+            [&web_view_guest](content::RenderFrameHost* rfh) {
+              if (auto* web_view =
+                      extensions::WebViewGuest::FromRenderFrameHost(rfh)) {
+                web_view_guest = web_view;
+                return content::RenderFrameHost::FrameIterationAction::kStop;
+              }
+              return content::RenderFrameHost::FrameIterationAction::kContinue;
+            });
     return web_view_guest;
   }
 
@@ -477,7 +483,7 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameApiTest, URLLoaderIsProxied) {
     EXPECT_EQ(net::Error::ERR_BLOCKED_BY_CLIENT,
               navigation_observer.last_net_error_code());
     EXPECT_EQ(kOriginalControlledFrameUrl,
-              guest_web_contents->GetLastCommittedURL());
+              web_view_guest->GetGuestMainFrame()->GetLastCommittedURL());
     EXPECT_FALSE(navigation_observer.last_navigation_succeeded());
   }
 
@@ -492,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameApiTest, URLLoaderIsProxied) {
     navigation_observer.WaitForNavigationFinished();
     EXPECT_EQ(isolated_web_app_dev_server().GetURL(
                   "/controlled_frame_redirect_target.html"),
-              guest_web_contents->GetLastCommittedURL());
+              web_view_guest->GetGuestMainFrame()->GetLastCommittedURL());
     EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
   }
 
@@ -506,7 +512,7 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameApiTest, URLLoaderIsProxied) {
                                   /*force_navigation=*/false);
     navigation_observer.WaitForNavigationFinished();
     EXPECT_EQ(kControlledFrameSuccessUrl,
-              guest_web_contents->GetLastCommittedURL());
+              web_view_guest->GetGuestMainFrame()->GetLastCommittedURL());
     EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
   }
 }
@@ -561,7 +567,8 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameApiTest, AuthRequestIsProxied) {
     web_view_guest->NavigateGuest(kAuthBasicUrl.spec(),
                                   /*force_navigation=*/false);
     navigation_observer.WaitForNavigationFinished();
-    EXPECT_EQ(kAuthBasicUrl, guest_web_contents->GetLastCommittedURL());
+    EXPECT_EQ(kAuthBasicUrl,
+              web_view_guest->GetGuestMainFrame()->GetLastCommittedURL());
     EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
   }
 
@@ -576,7 +583,8 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameApiTest, AuthRequestIsProxied) {
     web_view_guest->NavigateGuest(kAuthBasicUrl.spec(),
                                   /*force_navigation=*/false);
     navigation_observer.WaitForNavigationFinished();
-    EXPECT_EQ(kAuthBasicUrl, guest_web_contents->GetLastCommittedURL());
+    EXPECT_EQ(kAuthBasicUrl,
+              web_view_guest->GetGuestMainFrame()->GetLastCommittedURL());
     // The auth request fails but keeps retrying until this error is produced.
     // TODO(https://crbug.com/1502580): The error produced here should be
     // authentication related.
@@ -646,7 +654,7 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameWebSocketApiTest, WebSocketIsProxied) {
                                   /*force_navigation=*/false);
     navigation_observer.WaitForNavigationFinished();
     EXPECT_EQ(kWebSocketConnectCheckUrl,
-              guest_web_contents->GetLastCommittedURL());
+              web_view_guest->GetGuestMainFrame()->GetLastCommittedURL());
     EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
     EXPECT_EQ(u"PASS", title_watcher.WaitAndGetTitle());
   }
@@ -659,7 +667,7 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameWebSocketApiTest, WebSocketIsProxied) {
                                   /*force_navigation=*/false);
     navigation_observer.WaitForNavigationFinished();
     EXPECT_EQ(kOriginalControlledFrameUrl,
-              guest_web_contents->GetLastCommittedURL());
+              web_view_guest->GetGuestMainFrame()->GetLastCommittedURL());
     EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
   }
 
@@ -690,7 +698,7 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameWebSocketApiTest, WebSocketIsProxied) {
                                   /*force_navigation=*/false);
     navigation_observer.WaitForNavigationFinished();
     EXPECT_EQ(kWebSocketConnectCheckUrl,
-              guest_web_contents->GetLastCommittedURL());
+              web_view_guest->GetGuestMainFrame()->GetLastCommittedURL());
     EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
     EXPECT_EQ(u"FAIL", title_watcher.WaitAndGetTitle());
   }
@@ -732,9 +740,8 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameWebTransportApiTest,
   // Use WebTransport before installing a WebRequest event listener to verify
   // that it works inside of the Controlled Frame.
   auto* web_view_guest = GetWebViewGuest(app_contents());
-  content::WebContents* guest_web_contents = web_view_guest->web_contents();
   EXPECT_EQ(true, content::EvalJs(
-                      guest_web_contents,
+                      web_view_guest->GetGuestMainFrame(),
                       content::JsReplace(
                           R"(
     (async function() {
@@ -772,7 +779,7 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameWebTransportApiTest,
                     browser_context(), kWebRequestOnBeforeRequestEventName));
 
   EXPECT_EQ(false, content::EvalJs(
-                       guest_web_contents,
+                       web_view_guest->GetGuestMainFrame(),
                        content::JsReplace(
                            R"(
     (async function() {
@@ -870,7 +877,7 @@ class ControlledFramePermissionsPolicyTest : public ControlledFrameApiTest {
       bool expect_audio_permission_allowed,
       bool expect_video_permission_allowed) {
     extensions::WebViewGuest* web_view_guest = GetWebViewGuest(app_contents());
-    EXPECT_EQ("SUCCESS", content::EvalJs(web_view_guest->web_contents(),
+    EXPECT_EQ("SUCCESS", content::EvalJs(web_view_guest->GetGuestMainFrame(),
                                          content::JsReplace(
                                              R"(
     (async function() {
@@ -1264,17 +1271,16 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameApiTest, ExecuteScript) {
       CreateControlledFrame(app_contents(), kOriginalControlledFrameUrl));
 
   auto* web_view_guest = GetWebViewGuest(app_contents());
-  content::WebContents* guest_web_contents = web_view_guest->web_contents();
 
   // Verify that executeScript() using JS code can change the background color.
-  EXPECT_EQ(kEvalSuccessStr, SetBackgroundColorToWhite(guest_web_contents));
+  EXPECT_EQ(kEvalSuccessStr, SetBackgroundColorToWhite(web_view_guest));
   EXPECT_EQ(kEvalSuccessStr, ExecuteScriptRedBackgroundCode(app_contents()));
-  EXPECT_EQ(kEvalSuccessStr, VerifyBackgroundColorIsRed(guest_web_contents));
+  EXPECT_EQ(kEvalSuccessStr, VerifyBackgroundColorIsRed(web_view_guest));
 
   // Verify that executeScript() using a JS file changes the background color.
-  EXPECT_EQ(kEvalSuccessStr, SetBackgroundColorToWhite(guest_web_contents));
+  EXPECT_EQ(kEvalSuccessStr, SetBackgroundColorToWhite(web_view_guest));
   EXPECT_EQ(kEvalSuccessStr, ExecuteScriptRedBackgroundFile(app_contents()));
-  EXPECT_EQ(kEvalSuccessStr, VerifyBackgroundColorIsRed(guest_web_contents));
+  EXPECT_EQ(kEvalSuccessStr, VerifyBackgroundColorIsRed(web_view_guest));
 }
 
 class ControlledFrameAvailableChannelTest

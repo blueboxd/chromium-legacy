@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/webui/resources/cr_components/commerce/shopping_service.mojom.h"
 
 class PrefService;
@@ -33,7 +34,6 @@ namespace commerce {
 
 class ShoppingService;
 struct PriceInsightsInfo;
-struct ProductInfo;
 
 class ShoppingServiceHandler :
         public shopping_service::mojom::ShoppingServiceHandler,
@@ -60,6 +60,8 @@ class ShoppingServiceHandler :
     virtual void ShowBookmarkEditorForCurrentUrl() = 0;
 
     virtual void ShowFeedback() = 0;
+
+    virtual ukm::SourceId GetCurrentTabUkmSourceId() = 0;
   };
 
   ShoppingServiceHandler(
@@ -85,8 +87,13 @@ class ShoppingServiceHandler :
   void UntrackPriceForBookmark(int64_t bookmark_id) override;
   void GetProductInfoForCurrentUrl(
       GetProductInfoForCurrentUrlCallback callback) override;
+  void GetProductInfoForUrl(const GURL& url,
+                            GetProductInfoForUrlCallback callback) override;
   void GetPriceInsightsInfoForCurrentUrl(
       GetPriceInsightsInfoForCurrentUrlCallback callback) override;
+  void GetProductSpecificationsForUrls(
+      const std::vector<::GURL>& urls,
+      GetProductSpecificationsForUrlsCallback callback) override;
   void ShowInsightsSidePanelUI() override;
   void IsShoppingListEligible(IsShoppingListEligibleCallback callback) override;
   void GetShoppingCollectionBookmarkFolderId(
@@ -108,8 +115,7 @@ class ShoppingServiceHandler :
 
   // bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
-  void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
-                         const bookmarks::BookmarkNode* old_parent,
+  void BookmarkNodeMoved(const bookmarks::BookmarkNode* old_parent,
                          size_t old_index,
                          const bookmarks::BookmarkNode* new_parent,
                          size_t new_index) override;
@@ -132,11 +138,6 @@ class ShoppingServiceHandler :
 
   void HandleSubscriptionChange(const CommerceSubscription& sub,
                                 bool is_tracking);
-
-  void OnFetchProductInfoForCurrentUrl(
-      GetProductInfoForCurrentUrlCallback callback,
-      const GURL& url,
-      const std::optional<const ProductInfo>& info);
 
   void OnFetchPriceInsightsInfoForCurrentUrl(
       GetPriceInsightsInfoForCurrentUrlCallback callback,

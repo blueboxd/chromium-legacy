@@ -30,6 +30,7 @@
 #include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/messaging_layer/upload/record_upload_request_builder.h"
+#include "chrome/browser/policy/messaging_layer/util/upload_response_parser.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
@@ -55,8 +56,7 @@ bool IsIrrecoverableError(int response_code) {
 }
 
 // Generates new backoff entry.
-std::unique_ptr<::net::BackoffEntry> GetBackoffEntry(
-    ::reporting::Priority priority) {
+std::unique_ptr<::net::BackoffEntry> GetBackoffEntry(Priority priority) {
   // Retry policy for SECURITY queue.
   static const ::net::BackoffEntry::Policy kSecurityUploadBackoffPolicy = {
       // Number of initial errors to ignore before applying
@@ -107,8 +107,8 @@ std::unique_ptr<::net::BackoffEntry> GetBackoffEntry(
   // events to be backed off only slightly: max delay is set to 1 minute.
   // For all other priorities max delay is set to 24 hours.
   auto backoff_entry = std::make_unique<::net::BackoffEntry>(
-      priority == ::reporting::SECURITY ? &kSecurityUploadBackoffPolicy
-                                        : &kDefaultUploadBackoffPolicy);
+      priority == Priority::SECURITY ? &kSecurityUploadBackoffPolicy
+                                     : &kDefaultUploadBackoffPolicy);
   return backoff_entry;
 }
 
@@ -117,10 +117,18 @@ std::unique_ptr<::net::BackoffEntry> GetBackoffEntry(
 // EncryptedReportingJobConfiguration actions are called on the sequenced task
 // runner.
 struct UploadState {
+  // Keyed by priority+generation_id with explicit hash.
+  using Key = std::pair<Priority, int64_t /*generation_id*/>;
+  struct Hash {
+    std::size_t operator()(const Key& key) const noexcept {
+      const std::size_t h1 = std::hash<Priority>{}(key.first);
+      const std::size_t h2 = std::hash<int64_t>{}(key.second);
+      return h1 ^ (h2 << 1);  // hash_combine
+    }
+  };
+
   // Highest sequence id that has been posted for upload.
   int64_t last_sequence_id;
-  // Generation id that has been posted for upload.
-  int64_t last_generation_id;
 
   // Time when the next request will be allowed.
   // This is essentially the cache value of the backoff->GetReleaseTime().
@@ -131,28 +139,28 @@ struct UploadState {
   // Current backoff entry for this priority.
   std::unique_ptr<::net::BackoffEntry> backoff_entry;
 };
-// Map of all the queues states.
-using UploadStateMap = base::flat_map<::reporting::Priority, UploadState>;
+// Unordered map of all the queues states.
+using UploadStateMap =
+    std::unordered_map<UploadState::Key, UploadState, UploadState::Hash>;
 
 UploadStateMap* state_map() {
   static base::NoDestructor<UploadStateMap> map;
   return map.get();
 }
 
-UploadState* GetState(::reporting::Priority priority,
+UploadState* GetState(Priority priority,
                       int64_t generation_id,
                       int64_t sequence_id) {
-  auto state_it = state_map()->find(priority);
-  if (state_it == state_map()->end() ||
-      state_it->second.last_generation_id != generation_id) {
-    // This priority pops up for the first time or (rare case) generation has
-    // changed. Record new state and allow upload.
+  auto key = std::make_pair(priority, generation_id);
+  auto state_it = state_map()->find(key);
+  if (state_it == state_map()->end()) {
+    // This priority+generation_id pop up for the first time.
+    // Record new state and allow upload.
     state_it = state_map()
-                   ->insert_or_assign(
-                       priority,
+                   ->emplace(std::make_pair(
+                       std::move(key),
                        UploadState{.last_sequence_id = sequence_id,
-                                   .last_generation_id = generation_id,
-                                   .backoff_entry = GetBackoffEntry(priority)})
+                                   .backoff_entry = GetBackoffEntry(priority)}))
                    .first;
     state_it->second.earliest_retry_timestamp =
         state_it->second.backoff_entry->GetReleaseTime();
@@ -161,7 +169,8 @@ UploadState* GetState(::reporting::Priority priority,
 }
 
 // Builds uploading payload.
-// Returns dictionary (null in case of failure) and matching memory reservation.
+// Returns dictionary (null in case of failure) and matching memory
+// reservation.
 void BuildPayload(
     bool is_generation_guid_required,
     bool need_encryption_key,
@@ -222,8 +231,8 @@ class PayloadSizeUmaReporter {
   static constexpr base::TimeDelta kMinReportTimeDelta = base::Hours(1);
 
   // Last time UMA report was done. This is accessed from |Report| and
-  // |ShouldReport|, both of which of all instances of this class should only be
-  // called in the same sequence.
+  // |ShouldReport|, both of which of all instances of this class should only
+  // be called in the same sequence.
   static base::Time last_reported_time_;
 
   // Response payload size. Negative means not set yet.
@@ -234,8 +243,8 @@ class PayloadSizeUmaReporter {
 base::Time PayloadSizeUmaReporter::last_reported_time_{base::Time::UnixEpoch()};
 
 // Limits the rate at which payload sizes are computed for UMA reporting
-// purposes. Since computing payload size is expensive, this is for limiting how
-// frequently they are computed.
+// purposes. Since computing payload size is expensive, this is for limiting
+// how frequently they are computed.
 
 class PayloadSizeComputationRateLimiterForUma {
  public:
@@ -311,6 +320,15 @@ bool EncryptedReportingClient::GenerationGuidIsRequired() {
 #endif
 }
 
+void EncryptedReportingClient::PresetUploads(base::Value::Dict context,
+                                             std::string dm_token,
+                                             std::string client_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  context_ = std::move(context);
+  dm_token_ = std::move(dm_token);
+  client_id_ = std::move(client_id);
+}
+
 // static
 std::unique_ptr<EncryptedReportingClient> EncryptedReportingClient::Create(
     std::unique_ptr<Delegate> delegate) {
@@ -330,8 +348,6 @@ void EncryptedReportingClient::UploadReport(
     int config_file_version,
     std::vector<EncryptedRecord> records,
     ScopedReservation scoped_reservation,
-    std::optional<base::Value::Dict> context,
-    policy::CloudPolicyClient* cloud_policy_client,
     ResponseCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -345,6 +361,18 @@ void EncryptedReportingClient::UploadReport(
   // Accept upload.
   AccountForAllowedJob(records);
 
+  // Perform upload.
+  // TODO(b/327243582): Move the latter to actual upload from UploadState cache.
+  PerformUpload(need_encryption_key, config_file_version, std::move(records),
+                std::move(scoped_reservation), std::move(callback));
+}
+
+void EncryptedReportingClient::PerformUpload(
+    bool need_encryption_key,
+    int config_file_version,
+    std::vector<EncryptedRecord> records,
+    ScopedReservation scoped_reservation,
+    ResponseCallback callback) {
   // Construct payload on thread pool, then resume action on the current thread.
   // Perform Build on a thread pool, and upload result on UI.
   Priority priority = Priority::UNDEFINED_PRIORITY;
@@ -358,7 +386,7 @@ void EncryptedReportingClient::UploadReport(
   }
   auto create_job_cb = base::BindPostTaskToCurrentDefault(base::BindOnce(
       &EncryptedReportingClient::CreateUploadJob,
-      weak_ptr_factory_.GetWeakPtr(), std::move(context), cloud_policy_client,
+      weak_ptr_factory_.GetWeakPtr(),
       base::BindOnce(&EncryptedReportingClient::AccountForUploadResponse,
                      priority, last_generation_id, last_sequence_id),
       std::move(callback)));
@@ -371,8 +399,6 @@ void EncryptedReportingClient::UploadReport(
 }
 
 void EncryptedReportingClient::CreateUploadJob(
-    std::optional<base::Value::Dict> context,
-    policy::CloudPolicyClient* cloud_policy_client,
     policy::EncryptedReportingJobConfiguration::UploadResponseCallback
         response_cb,
     ResponseCallback callback,
@@ -394,29 +420,22 @@ void EncryptedReportingClient::CreateUploadJob(
     return;
   }
 
-  // This is the case for uploading managed user events from an
-  // unmanaged device. The server will authenticate by looking at the user dm
-  // tokens inside the records instead of a single request-level device dm
-  // token.
-  policy::DMAuth auth_data = policy::DMAuth::NoAuth();
-
-  if (cloud_policy_client) {
-    // The device cloud policy client only exists on managed devices and is the
-    // source of the DM token. So if the device is managed, we use the device dm
-    // token as authentication.
-    auth_data = policy::DMAuth::FromDMToken(cloud_policy_client->dm_token());
-  }
-
   std::optional<int> request_payload_size;
   if (PayloadSizeComputationRateLimiterForUma::Get().ShouldDo()) {
     request_payload_size = GetPayloadSize(payload_result.value());
   }
 
+  if (context_.empty()) {
+    std::move(callback).Run(base::unexpected(
+        Status(error::FAILED_PRECONDITION, "Upload context not preset")));
+    return;
+  }
+
   auto config = std::make_unique<policy::EncryptedReportingJobConfiguration>(
-      g_browser_process->shared_url_loader_factory(), std::move(auth_data),
+      g_browser_process->shared_url_loader_factory(),
       device_management_service->configuration()
           ->GetEncryptedReportingServerUrl(),
-      std::move(payload_result.value()), cloud_policy_client,
+      std::move(payload_result.value()), dm_token_, client_id_,
       std::move(response_cb),
       base::BindOnce(&EncryptedReportingClient::OnReportUploadCompleted,
                      weak_ptr_factory_.GetWeakPtr(),
@@ -424,11 +443,9 @@ void EncryptedReportingClient::CreateUploadJob(
                      payload_size_per_hour_uma_reporter_.GetWeakPtr(),
                      std::move(callback)));
 
-  if (context.has_value()) {
-    config->UpdateContext(std::move(context.value()));
-  }
-  std::unique_ptr<policy::DeviceManagementService::Job> job =
-      device_management_service->CreateJob(std::move(config));
+  config->UpdateContext(context_.Clone());
+
+  auto job = device_management_service->CreateJob(std::move(config));
   request_jobs_.emplace(std::move(job));
 }
 
@@ -489,7 +506,10 @@ void EncryptedReportingClient::OnReportUploadCompleted(
     }
   }
 
-  std::move(callback).Run(std::move(response.value()));
+  UploadResponseParser response_parser(
+      EncryptedReportingClient::GenerationGuidIsRequired(),
+      std::move(response.value()));
+  std::move(callback).Run(std::move(response_parser));
 }
 
 // static

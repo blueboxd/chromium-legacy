@@ -522,6 +522,9 @@ void NavigationSimulatorImpl::Redirect(const GURL& new_url) {
     redirect_headers_ = nullptr;
   }
 
+  if (response_postprocess_hook_) {
+    response_postprocess_hook_.Run(*response);
+  }
   url_loader->CallOnRequestRedirected(redirect_info, std::move(response));
 
   MaybeWaitForThrottleChecksComplete(base::BindOnce(
@@ -571,7 +574,7 @@ void NavigationSimulatorImpl::ReadyToCommit() {
       // For prerendered page activation, CommitDeferringConditions
       // asynchronously run before the navigation starts. Wait here until all
       // the conditions run.
-      if (request_->is_potentially_prerendered_page_activation_for_testing()) {
+      if (request_->is_running_potential_prerender_activation_checks()) {
         base::RunLoop run_loop;
         did_start_navigation_closure_ = run_loop.QuitClosure();
         run_loop.Run();
@@ -620,6 +623,9 @@ void NavigationSimulatorImpl::ReadyToCommit() {
     response->ssl_info = ssl_info_;
     response->headers = response_headers_;
     response->dns_aliases = response_dns_aliases_;
+    if (response_postprocess_hook_) {
+      response_postprocess_hook_.Run(*response);
+    }
     static_cast<TestRenderFrameHost*>(frame_tree_node_->current_frame_host())
         ->PrepareForCommitDeprecatedForNavigationSimulator(
             std::move(response), std::move(response_body_));
@@ -983,6 +989,11 @@ void NavigationSimulatorImpl::SetNavigationInputStart(
   navigation_input_start_ = navigation_input_start;
 }
 
+void NavigationSimulatorImpl::SetNavigationStart(
+    base::TimeTicks navigation_start) {
+  navigation_start_ = navigation_start;
+}
+
 void NavigationSimulatorImpl::SetReloadType(ReloadType reload_type) {
   CHECK_EQ(INITIALIZATION, state_) << "The reload_type parameter cannot "
                                       "be set after the navigation has started";
@@ -1312,7 +1323,7 @@ bool NavigationSimulatorImpl::SimulateBrowserInitiatedStart() {
   // Prerendered page activation can be deferred by CommitDeferringConditions in
   // BeginNavigation(), and `request_` may not have been set by
   // DidStartNavigation() yet. In that case, we set the `request_` here.
-  if (request->is_potentially_prerendered_page_activation_for_testing()) {
+  if (request->is_running_potential_prerender_activation_checks()) {
     DCHECK(!request_);
     request_ = request;
   }
@@ -1353,7 +1364,8 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
           false /* is_container_initiated */,
           false /* is_fullscreen_requested */, false /* has_storage_access */);
   auto common_params = blink::CreateCommonNavigationParams();
-  common_params->navigation_start = base::TimeTicks::Now();
+  common_params->navigation_start =
+      navigation_start_.is_null() ? base::TimeTicks::Now() : navigation_start_;
   common_params->input_start = navigation_input_start_;
   common_params->url = navigation_url_;
   common_params->initiator_origin = initiator_origin_.value();
@@ -1394,7 +1406,7 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
   // 2) Fenced frame navigation can be deferred on pending URL mapping.
   //
   // In these cases, we set the `request_` here.
-  if (request->is_potentially_prerendered_page_activation_for_testing() ||
+  if (request->is_running_potential_prerender_activation_checks() ||
       request->is_deferred_on_fenced_frame_url_mapping_for_testing()) {
     DCHECK(!request_);
     request_ = request;
@@ -1673,7 +1685,7 @@ bool NavigationSimulatorImpl::NeedsThrottleChecks() const {
   // NavigationThrottles since they were already run when the page was first
   // loaded.
   DCHECK(request_);
-  if (request_->is_potentially_prerendered_page_activation_for_testing() ||
+  if (request_->is_running_potential_prerender_activation_checks() ||
       request_->IsPageActivation()) {
     return false;
   }

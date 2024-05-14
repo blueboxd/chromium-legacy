@@ -156,6 +156,49 @@ TEST(AttributionInteropParserTest, ValidTriggerParses) {
   EXPECT_TRUE(result.front().debug_permission);
 }
 
+TEST(AttributionInteropParserTest, ValidInfoParses) {
+  constexpr char kJson[] = R"json({"registrations": [
+    {
+      "timestamp": "1643235573123",
+      "registration_request": {
+        "source_type": "navigation",
+        "attribution_src_url": "https://a.r.test",
+        "context_origin": "https://a.s.test"
+      },
+      "responses": [{
+        "url": "https://a.r.test",
+        "response": {
+          "Attribution-Reporting-Register-Source": 123,
+          "Attribution-Reporting-Info": "foo"
+        }
+      }]
+    },
+    {
+      "timestamp": "1643235575123",
+      "registration_request": {
+        "attribution_src_url": "https://a.r.test",
+        "context_origin": " https://b.d.test",
+      },
+      "responses": [{
+        "url": "https://a.r.test",
+        "response": {
+          "Attribution-Reporting-Register-Trigger": 789,
+          "Attribution-Reporting-Info": "bar"
+        }
+      }]
+    }
+  ]})json";
+
+  base::Value::Dict value = base::test::ParseJsonDict(kJson);
+
+  ASSERT_OK_AND_ASSIGN(
+      auto result, ParseAttributionInteropInput(std::move(value), kOffsetTime));
+  ASSERT_EQ(result.size(), 2u);
+
+  EXPECT_EQ(result.front().info_header, "foo");
+  EXPECT_EQ(result.back().info_header, "bar");
+}
+
 struct ParseErrorTestCase {
   const char* expected_failure_substr;
   const char* json;
@@ -432,9 +475,27 @@ const ParseErrorTestCase kParseErrorTestCases[] = {
           },
         ]})json",
     },
+    {
+        R"(["registrations"][0]["responses"][0]["response"]["Attribution-Reporting-Info"]: must be a string)",
+        R"json({"registrations": [{
+          "timestamp": "1643235574000",
+          "registration_request": {
+            "source_type": "navigation",
+            "attribution_src_url": "https://a.r.test",
+            "context_origin": "https://a.s.test"
+          },
+          "responses": [{
+            "url": "https://a.r.test",
+            "response": {
+              "Attribution-Reporting-Register-Source": {},
+              "Attribution-Reporting-Info": {}
+            }
+          }]
+        }]})json",
+    },
 };
 
-INSTANTIATE_TEST_SUITE_P(AttributionInteropParserInvalidInputs,
+INSTANTIATE_TEST_SUITE_P(,
                          AttributionInteropParserInputErrorTest,
                          ::testing::ValuesIn(kParseErrorTestCases));
 
@@ -494,7 +555,7 @@ TEST(AttributionInteropParserTest, ValidConfig) {
        [](AttributionConfig& c) {
          c.rate_limit.origins_per_site_window = base::Days(2);
        }},
-      {R"json({"randomized_response_epsilon":"inf"})json", false,
+      {R"json({"max_settable_event_level_epsilon":"inf"})json", false,
        [](AttributionInteropConfig& c) {
          c.max_event_level_epsilon = std::numeric_limits<double>::infinity();
        }},
@@ -534,7 +595,7 @@ TEST(AttributionInteropParserTest, ValidConfig) {
         "rate_limit_max_attributions":"10",
         "rate_limit_max_reporting_origins_per_source_reporting_site":"5",
         "rate_limit_origins_per_site_window_in_days":"5",
-        "randomized_response_epsilon":"0.2",
+        "max_settable_event_level_epsilon":"0.2",
         "max_event_level_reports_per_destination":"10",
         "max_navigation_info_gain":"5.5",
         "max_event_info_gain":"0.5",
@@ -676,35 +737,29 @@ TEST(AttributionInteropParserTest, InvalidConfigNonNegativeIntegers) {
   }
 }
 
-TEST(AttributionInteropParserTest, InvalidConfigRandomizedResponseEpsilon) {
+TEST(AttributionInteropParserTest, InvalidConfigMaxSettableEpsilon) {
   {
     auto result = ParseAttributionInteropConfig(base::Value::Dict());
-    EXPECT_THAT(result,
-                base::test::ErrorIs(HasSubstr(
-                    "[\"randomized_response_epsilon\"]: must be \"inf\" or a "
-                    "non-negative double formated as a base-10 string")));
+    EXPECT_THAT(
+        result,
+        base::test::ErrorIs(HasSubstr(
+            "[\"max_settable_event_level_epsilon\"]: must be \"inf\" or a "
+            "non-negative double formated as a base-10 string")));
   }
   {
     AttributionInteropConfig config;
     base::Value::Dict dict;
-    dict.Set("randomized_response_epsilon", "-1.5");
+    dict.Set("max_settable_event_level_epsilon", "-1.5");
     std::string error = MergeAttributionInteropConfig(dict, config);
     EXPECT_THAT(
         error,
-        HasSubstr("[\"randomized_response_epsilon\"]: must be \"inf\" or a "
-                  "non-negative double formated as a base-10 string"));
+        HasSubstr(
+            "[\"max_settable_event_level_epsilon\"]: must be \"inf\" or a "
+            "non-negative double formated as a base-10 string"));
   }
 }
 
 TEST(AttributionInteropParserTest, InvalidConfigMaxInfGain) {
-  {
-    auto result = ParseAttributionInteropConfig(base::Value::Dict());
-    ASSERT_FALSE(result.has_value());
-    EXPECT_THAT(
-        result.error(),
-        HasSubstr("[\"randomized_response_epsilon\"]: must be \"inf\" or a "
-                  "non-negative double formated as a base-10 string"));
-  }
   {
     AttributionInteropConfig config;
     base::Value::Dict dict;

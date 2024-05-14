@@ -77,14 +77,12 @@ class AutofillAblationStudy;
 class AutofillComposeDelegate;
 class AutofillCrowdsourcingManager;
 class AutofillDriver;
-struct AutofillErrorDialogContext;
 class AutofillMlPredictionModelHandler;
 class AutofillOfferData;
 class AutofillOfferManager;
 class AutofillOptimizationGuide;
 class AutofillPopupDelegate;
 class AutofillProfile;
-enum class AutofillProgressDialogType;
 struct CardUnmaskChallengeOption;
 class CardUnmaskDelegate;
 struct CardUnmaskPromptOptions;
@@ -115,7 +113,6 @@ enum class WebauthnDialogState;
 namespace payments {
 class MandatoryReauthManager;
 class PaymentsAutofillClient;
-class PaymentsNetworkInterface;
 class PaymentsWindowManager;
 }
 
@@ -203,7 +200,7 @@ class AutofillClient {
     kFido = 2,
   };
 
-  enum class SaveAddressProfileOfferUserDecision {
+  enum class AddressPromptUserDecision {
     kUndefined,
     // No prompt is shown and no decision is needed to proceed with the process.
     kUserNotAsked,
@@ -307,7 +304,8 @@ class AutofillClient {
     PopupOpenArgs(const gfx::RectF& element_bounds,
                   base::i18n::TextDirection text_direction,
                   std::vector<Suggestion> suggestions,
-                  AutofillSuggestionTriggerSource trigger_source);
+                  AutofillSuggestionTriggerSource trigger_source,
+                  int32_t form_control_ax_id);
     PopupOpenArgs(const PopupOpenArgs&);
     PopupOpenArgs(PopupOpenArgs&&);
     PopupOpenArgs& operator=(const PopupOpenArgs&);
@@ -318,8 +316,9 @@ class AutofillClient {
     base::i18n::TextDirection text_direction =
         base::i18n::TextDirection::UNKNOWN_DIRECTION;
     std::vector<Suggestion> suggestions;
-    AutofillSuggestionTriggerSource trigger_source{
-        AutofillSuggestionTriggerSource::kUnspecified};
+    AutofillSuggestionTriggerSource trigger_source =
+        AutofillSuggestionTriggerSource::kUnspecified;
+    int32_t form_control_ax_id = 0;
   };
 
   // Describes the position of the Autofill popup on the screen.
@@ -374,7 +373,7 @@ class AutofillClient {
   // edited version of the profile should be passed as the second parameter. No
   // Autofill profile is passed otherwise.
   using AddressProfileSavePromptCallback =
-      base::OnceCallback<void(SaveAddressProfileOfferUserDecision,
+      base::OnceCallback<void(AddressPromptUserDecision,
                               base::optional_ref<const AutofillProfile>)>;
 
   // The callback accepts the boolean parameter indicating whether the user has
@@ -391,7 +390,7 @@ class AutofillClient {
   virtual version_info::Channel GetChannel() const;
 
   // Returns whether the user is currently operating in an incognito context.
-  virtual bool IsOffTheRecord() = 0;
+  virtual bool IsOffTheRecord() const = 0;
 
   // Returns the URL loader factory associated with this driver.
   virtual scoped_refptr<network::SharedURLLoaderFactory>
@@ -463,9 +462,6 @@ class AutofillClient {
 
   // Gets the payments::PaymentsAutofillClient instance owned by the client.
   virtual payments::PaymentsAutofillClient* GetPaymentsAutofillClient();
-
-  // Gets the payments::PaymentsNetworkInterface instance owned by the client.
-  virtual payments::PaymentsNetworkInterface* GetPaymentsNetworkInterface() = 0;
 
   // Gets the payments::PaymentsWindowManager owned by the client.
   virtual payments::PaymentsWindowManager* GetPaymentsWindowManager();
@@ -750,19 +746,6 @@ class AutofillClient {
   // |UpdatePopup| to update the open popup in-place.
   virtual void PinPopupView() = 0;
 
-  // The returned arguments allow to reopen the dropdown with
-  // `ShowAutofillPopup()` even if the controller is destroyed temporarily.
-  // This function ensures that the element's bounds are transformed back to the
-  // screen space-independent bounds.
-  // The suggestion trigger source of the existing popup is not reused, but
-  // replaced with `trigger_source`. This is because it should indicate the
-  // reason for reopening the popup. Reusing the existing trigger source can
-  // have unwanted implications such as re-auto-selecting the first suggestion
-  // in the `AutofillSuggestionTriggerSource::kTextFieldDidReceiveKeyDown` case.
-  // Note that the password manager doesn't distinguish between trigger sources.
-  virtual PopupOpenArgs GetReopenPopupArgs(
-      AutofillSuggestionTriggerSource trigger_source) const = 0;
-
   // Returns the information of the popup on the screen, if there is one that is
   // showing. Note that this implemented only on Desktop.
   virtual std::optional<PopupScreenLocation> GetPopupScreenLocation() const;
@@ -796,24 +779,6 @@ class AutofillClient {
   // necessary information in `options` to show the manual fallback bubble.
   virtual void OnVirtualCardDataAvailable(
       const VirtualCardManualFallbackBubbleOptions& options);
-
-  // Shows an error dialog when card retrieval errors happen. The type of error
-  // dialog that is shown will match the `type` in `context`. If the
-  // `server_returned_title` and `server_returned_description` in `context` are
-  // both set, the error dialog that is displayed will have these fields
-  // displayed for the title and description, respectively.
-  virtual void ShowAutofillErrorDialog(
-      const AutofillErrorDialogContext& context);
-
-  // Show/dismiss the progress dialog which contains a throbber and a text
-  // message indicating that something is in progress.
-  virtual void ShowAutofillProgressDialog(
-      AutofillProgressDialogType autofill_progress_dialog_type,
-      base::OnceClosure cancel_callback);
-  virtual void CloseAutofillProgressDialog(
-      bool show_confirmation_before_closing,
-      base::OnceClosure no_interactive_authentication_callback =
-          base::OnceClosure());
 
   // Maybe triggers a hats survey that measures the user's perception of
   // Autofill. When triggering happens, the survey dialog will be displayed with
@@ -855,6 +820,10 @@ class AutofillClient {
   // AutofillAgent::queryAutofillForForm() was called. See crbug.com/1097015.
   virtual bool IsLastQueriedField(FieldGlobalId field_id) = 0;
 #endif
+
+  // Whether we can add more information to the contents of suggestions text due
+  // to the use of a large keyboard accessory view. See b/40942168.
+  virtual bool ShouldFormatForLargeKeyboardAccessory() const;
 
   // Navigates to |url| in a new tab. |url| links to the promo code offer
   // details page for the offers in a promo code suggestions popup. Every offer

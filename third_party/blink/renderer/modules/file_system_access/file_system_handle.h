@@ -25,6 +25,7 @@ class FileSystemCloudIdentifier;
 class FileSystemHandlePermissionDescriptor;
 class FileSystemRemoveOptions;
 class FileSystemDirectoryHandle;
+class V8PermissionState;
 
 class FileSystemHandle : public ScriptWrappable, public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
@@ -44,30 +45,33 @@ class FileSystemHandle : public ScriptWrappable, public ExecutionContextClient {
   }
   const String& name() const { return name_; }
 
-  ScriptPromise queryPermission(ScriptState*,
-                                const FileSystemHandlePermissionDescriptor*);
-  ScriptPromise requestPermission(ScriptState*,
-                                  const FileSystemHandlePermissionDescriptor*,
-                                  ExceptionState&);
+  ScriptPromiseTyped<V8PermissionState> queryPermission(
+      ScriptState*,
+      const FileSystemHandlePermissionDescriptor*);
+  ScriptPromiseTyped<V8PermissionState> requestPermission(
+      ScriptState*,
+      const FileSystemHandlePermissionDescriptor*,
+      ExceptionState&);
 
-  ScriptPromise move(ScriptState*,
-                     const String& new_entry_name,
-                     ExceptionState&);
-  ScriptPromise move(ScriptState*,
-                     FileSystemDirectoryHandle* destination_directory,
-                     ExceptionState&);
-  ScriptPromise move(ScriptState*,
-                     FileSystemDirectoryHandle* destination_directory,
-                     const String& new_entry_name,
-                     ExceptionState&);
-  ScriptPromise remove(ScriptState*,
-                       const FileSystemRemoveOptions* options,
-                       ExceptionState&);
+  ScriptPromiseTyped<IDLUndefined> move(ScriptState*,
+                                        const String& new_entry_name,
+                                        ExceptionState&);
+  ScriptPromiseTyped<IDLUndefined> move(
+      ScriptState*,
+      FileSystemDirectoryHandle* destination_directory,
+      ExceptionState&);
+  ScriptPromiseTyped<IDLUndefined> move(
+      ScriptState*,
+      FileSystemDirectoryHandle* destination_directory,
+      const String& new_entry_name,
+      ExceptionState&);
+  ScriptPromiseTyped<IDLUndefined>
+  remove(ScriptState*, const FileSystemRemoveOptions* options, ExceptionState&);
 
-  ScriptPromise isSameEntry(ScriptState*,
-                            FileSystemHandle* other,
-                            ExceptionState&);
-  ScriptPromise getUniqueId(ScriptState*, ExceptionState&);
+  ScriptPromiseTyped<IDLBoolean> isSameEntry(ScriptState*,
+                                             FileSystemHandle* other,
+                                             ExceptionState&);
+  ScriptPromiseTyped<IDLUSVString> getUniqueId(ScriptState*, ExceptionState&);
   ScriptPromiseTyped<IDLSequence<FileSystemCloudIdentifier>>
   getCloudIdentifiers(ScriptState*, ExceptionState&);
 

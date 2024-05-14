@@ -29,8 +29,8 @@ reviewer.
 
 <variants name="DIPSDatabaseOperation">
   <variant name="ClearTimestamps" summary="ClearTimestamps"/>
-  <variant name="FilterSitesWithInteractionOrWaa"
-      summary="FilterSitesWithInteractionOrWaa"/>
+  <variant name="FilterSitesWithProtectiveEvent"
+      summary="FilterSitesWithProtectiveEvent"/>
   <variant name="GetSitesThatBounced" summary="GetSitesThatBounced"/>
   <variant name="GetSitesThatBouncedWithState"
       summary="GetSitesThatBouncedWithState"/>
@@ -51,7 +51,7 @@ reviewer.
 </variants>
 
 <histogram name="Privacy.3PCD.AdsHeuristicAddedToOverrides"
-    enum="AdsHeuristicCookieOverride" expires_after="2024-07-01">
+    enum="AdsHeuristicCookieOverride" expires_after="2024-09-01">
   <owner>johnidel@chromium.org</owner>
   <owner>src/chrome/browser/tpcd/OWNERS</owner>
   <summary>
@@ -79,7 +79,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.3pcd.ProfileEligibilityMismatch"
-    enum="ProfileEligibilityMismatch" expires_after="2024-07-01">
+    enum="ProfileEligibilityMismatch" expires_after="2024-09-01">
   <owner>trishalfonso@google.com</owner>
   <owner>src/chrome/browser/tpcd/OWNERS</owner>
   <summary>
@@ -97,7 +97,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.3PCD.SecCookieDeprecationHeaderStatus"
-    enum="SecCookieDeprecationHeaderStatus" expires_after="2024-07-01">
+    enum="SecCookieDeprecationHeaderStatus" expires_after="2024-09-01">
   <owner>anthonygarant@chromium.org</owner>
   <owner>src/chrome/browser/tpcd/OWNERS</owner>
   <summary>
@@ -224,17 +224,6 @@ reviewer.
   </token>
 </histogram>
 
-<histogram name="Privacy.CookiesInUseDialog.Action"
-    enum="CookiesInUseDialogActions" expires_after="2024-02-20">
-  <owner>alimariam@google.com</owner>
-  <owner>olesiamarukhno@google.com</owner>
-  <owner>sauski@google.com</owner>
-  <summary>
-    Logging actions done by the user while interacting with the &quot;Cookies in
-    use&quot; dialog.
-  </summary>
-</histogram>
-
 <histogram name="Privacy.DeleteBrowsingData.Action"
     enum="DeleteBrowsingDataAction" expires_after="never">
 <!-- expires-never: tracked as an important privacy metric. -->
@@ -250,7 +239,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.BounceCategory{DIPSRedirectType}{DIPSCookieMode}"
-    enum="DIPSRedirectCategory" expires_after="2024-06-30">
+    enum="DIPSRedirectCategory" expires_after="2024-09-01">
   <owner>rtarpine@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -267,7 +256,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.ClearedSitesCount{DIPSCookieMode}" units="sites"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>wanderview@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -306,7 +295,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.DatabaseEntryCount" units="entries"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>wanderview@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -320,7 +309,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.DatabaseErrors" enum="SqliteLoggedResultCode"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>wanderview@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -329,7 +318,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.DatabaseHealthMetricsTime" units="ms"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>wanderview@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -344,7 +333,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.DatabaseInit" units="attempts"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>wanderview@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -354,7 +343,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.DatabaseSize" units="KB"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>wanderview@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -383,7 +372,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.Deletion{DIPSCookieMode}"
-    enum="DIPSDeletionAction" expires_after="2024-06-30">
+    enum="DIPSDeletionAction" expires_after="2024-09-01">
   <owner>njeunje@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -397,7 +386,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.DIPSErrorCodes" enum="DIPSErrorCode"
-    expires_after="2024-05-19">
+    expires_after="2024-08-25">
   <owner>wanderview@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -442,7 +431,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.QuickDelete" enum="QuickDeleteAction"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>fsenra@google.com</owner>
   <owner>zalmashni@chromium.org</owner>
   <summary>
@@ -499,7 +488,7 @@ reviewer.
 
 <histogram name="PrivacySandbox.AggregationService.KeyFetcher.Status2"
     enum="PrivacySandboxAggregationServiceKeyFetcherStatus"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -682,7 +671,7 @@ reviewer.
 
 <histogram name="PrivacySandbox.AggregationService.Storage.Sql.InitStatus"
     enum="PrivacySandboxAggregationServiceStorageSqlInitStatus"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -798,7 +787,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.Attestations.EstimateMemoryUsage.AttestationsMap"
-    units="KB" expires_after="2024-06-30">
+    units="KB" expires_after="2024-09-01">
   <owner>shivanisha@chromium.org</owner>
   <owner>xiaochenzh@chromium.org</owner>
   <summary>
@@ -846,7 +835,7 @@ reviewer.
 </histogram>
 
 <histogram name="PrivacySandbox.Attestations.InitializationDuration.Parsing"
-    units="ms" expires_after="2024-06-30">
+    units="ms" expires_after="2024-09-01">
   <owner>shivanisha@chromium.org</owner>
   <owner>xiaochenzh@chromium.org</owner>
   <summary>
@@ -859,7 +848,7 @@ reviewer.
 </histogram>
 
 <histogram name="PrivacySandbox.Attestations.IsSiteAttested"
-    enum="PrivacySandboxApiAllowed" expires_after="2024-06-30">
+    enum="PrivacySandboxApiAllowed" expires_after="2024-09-01">
   <owner>shivanisha@chromium.org</owner>
   <owner>xiaochenzh@chromium.org</owner>
   <summary>
@@ -867,6 +856,18 @@ reviewer.
     Privacy Sandbox API attestation check takes place, the status is recorded.
     The status can be allowed, or denied with reasons. This is an aggregate
     metric across all Privacy Sandbox APIs that require attestations.
+  </summary>
+</histogram>
+
+<histogram name="PrivacySandbox.Attestations.IsSiteAttested.FirstCheckTime"
+    units="ms" expires_after="2024-09-01">
+  <owner>shivanisha@chromium.org</owner>
+  <owner>xiaochenzh@chromium.org</owner>
+  <summary>
+    Records the duration from Chrome startup to the first Privacy Sandbox API
+    attestation check. This metric should be recorded at most once per Chrome
+    session. Here the measurement is taken from the time Chrome application
+    starts.
   </summary>
 </histogram>
 
@@ -882,7 +883,7 @@ reviewer.
 </histogram>
 
 <histogram name="PrivacySandbox.Attestations.Parsing.Status"
-    enum="PrivacySandboxAttestationParsingStatus" expires_after="2024-06-30">
+    enum="PrivacySandboxAttestationParsingStatus" expires_after="2024-09-01">
   <owner>shivanisha@chromium.org</owner>
   <owner>xiaochenzh@chromium.org</owner>
   <summary>
@@ -953,7 +954,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.PrivateAggregation.Budgeter.NumReportingOriginsStoredPerSite"
-    units="counts" expires_after="2024-06-30">
+    units="counts" expires_after="2024-09-01">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <owner>measurement-api-dev+metrics@google.com</owner>
@@ -1100,7 +1101,7 @@ reviewer.
 </histogram>
 
 <histogram name="PrivacySandbox.ProtectedAudience.JoiningTopFrameDisplayed"
-    enum="BooleanShown" expires_after="2024-06-30">
+    enum="BooleanShown" expires_after="2024-09-01">
   <owner>sauski@google.com</owner>
   <owner>behamilton@chromium.org</owner>
   <summary>

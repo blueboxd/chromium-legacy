@@ -581,28 +581,32 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   bool ScrollStartIsDefault() const;
   virtual bool IsApplyingScrollStart() const { return false; }
 
-  virtual const cc::SnappedTargetData* GetSnappedTargetData() const {
-    return nullptr;
-  }
-  virtual void SetSnappedTargetData(std::optional<cc::SnappedTargetData>) {}
+  virtual void SetSnapchangedTargetIds(
+      std::optional<cc::TargetSnapAreaElementIds>) {}
   virtual void UpdateSnappedTargetsAndEnqueueSnapChanged() {}
 
   bool ScrollOffsetIsNoop(const ScrollOffset& offset) const;
 
   void EnqueueSnapChangingEvent() const;
-  virtual const cc::SnappedTargetData* GetSnapChangingTargetData() const {
-    return nullptr;
+  virtual std::optional<cc::TargetSnapAreaElementIds> GetSnapchangingTargetIds()
+      const {
+    return std::nullopt;
   }
-  virtual void SetSnapChangingTargetData(std::optional<cc::SnappedTargetData>) {
-  }
+  virtual void SetSnapchangingTargetIds(
+      std::optional<cc::TargetSnapAreaElementIds>) {}
   virtual void UpdateSnapChangingTargetsAndEnqueueSnapChanging(
-      const gfx::PointF&) {}
+      const cc::TargetSnapAreaElementIds& ids) {}
   virtual const cc::SnapSelectionStrategy* GetImplSnapStrategy() const {
     return nullptr;
   }
   virtual void SetImplSnapStrategy(std::unique_ptr<cc::SnapSelectionStrategy>) {
   }
   virtual void EnqueueSnapChangingEventFromImplIfNeeded() {}
+
+  virtual std::optional<cc::ElementId> GetTargetedSnapAreaId() {
+    return std::nullopt;
+  }
+  virtual void SetTargetedSnapAreaId(const std::optional<cc::ElementId>&) {}
 
  protected:
   // Deduces the mojom::blink::ScrollBehavior based on the
@@ -645,9 +649,13 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   ScrollOffset ResolveScrollDelta(ui::ScrollGranularity,
                                   const ScrollOffset& delta);
 
-  void MainThreadScrollingDidChange();
   virtual void StopApplyingScrollStart() {}
   const ScrollStartTargetCandidates* GetScrollStartTargets() const;
+
+  virtual Node* GetSnapEventTargetAlongAxis(const AtomicString& type,
+                                            cc::SnapAxis) const {
+    return nullptr;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ScrollableAreaTest,
@@ -692,9 +700,6 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   void ScrollToScrollStartTarget(const LayoutBox*, cc::SnapAxis);
   void ScrollToScrollStartTargets(const ScrollStartTargetCandidates*);
-
-  HeapVector<Member<Node>> PrepareSnapEventTargets(
-      const cc::SnappedTargetData* target_data) const;
 
   // This animator is used to handle painting animations for MacOS scrollbars
   // using AppKit-specific code (Cocoa APIs). It requires input from

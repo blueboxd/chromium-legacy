@@ -60,17 +60,23 @@ class InteractiveFeaturePromoTestApi
                            user_education::FeaturePromoSpecification spec);
 
   // Ensures that the feature engagement tracker is initialized and ready.
-  // Not compatible with `UseMockTracker`.
+  //
+  // Usage notes:
+  //  - Not compatible with `UseMockTracker`.
+  //  - Only waits for the browser in the current context.
+  //  - Unnecessary in the primary browser when using
+  //    `TrackerInitializationMode::kWaitForMainBrowser`.
   [[nodiscard]] MultiStep WaitForFeatureEngagementReady();
 
   // Returns a test step that advances time.
-  // Fails if not in `ClockMode::kUseTestClock`.
+  // Fails if not in `ClockMode::kUseTestClock` or if `time` is null.
   [[nodiscard]] StepBuilder AdvanceTime(NewTime time);
 
-  // Returns a test step that updates the idle session state based on the given
-  // parameters. If `time` is relative, the new value is based on the current
-  // time (either default or test clock).
-  [[nodiscard]] StepBuilder UpdateIdleState(NewTime time, bool screen_locked);
+  // Returns a test step that updates the last active time reported by the idle
+  // observer based on the given parameters. If `time` is relative, the new
+  // value is based on the current time (either default or test clock). If
+  // `time` is null, there is no current active time.
+  [[nodiscard]] StepBuilder SetLastActive(NewTime time);
 
   // --------------------------------------------------------------------------
   // IMPORTANT NOTE: the following methods only work for Views help bubbles.
@@ -126,7 +132,7 @@ class InteractiveFeaturePromoTestT : public T,
       InitialSessionState initial_session_state =
           InitialSessionState::kOutsideGracePeriod)
       : T(),
-        InteractiveFeaturePromoTestApi(tracker_mode,
+        InteractiveFeaturePromoTestApi(std::move(tracker_mode),
                                        clock_mode,
                                        initial_session_state) {}
 
@@ -136,7 +142,7 @@ class InteractiveFeaturePromoTestT : public T,
                                InitialSessionState initial_session_state,
                                Args&&... args)
       : T(std::forward<Args>(args)...),
-        InteractiveFeaturePromoTestApi(tracker_mode,
+        InteractiveFeaturePromoTestApi(std::move(tracker_mode),
                                        clock_mode,
                                        initial_session_state) {}
   ~InteractiveFeaturePromoTestT() override = default;
@@ -148,6 +154,9 @@ class InteractiveFeaturePromoTestT : public T,
     if (Browser* browser = T::browser()) {
       SetContextWidget(
           BrowserView::GetBrowserViewForBrowser(browser)->GetWidget());
+      static_cast<internal::InteractiveFeaturePromoTestPrivate&>(
+          private_test_impl())
+          .MaybeWaitForTrackerInitialization(browser);
     }
   }
 

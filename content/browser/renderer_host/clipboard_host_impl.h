@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/clipboard_types.h"
 #include "content/public/browser/document_service.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -85,17 +86,22 @@ class CONTENT_EXPORT ClipboardHostImpl
     IsPasteAllowedRequest();
     ~IsPasteAllowedRequest();
 
-    // Adds |callback| to be notified when the request completes.  If the
-    // request is already completed |callback| is invoked immediately.  Returns
-    // true if a request should be started after adding this callback.
+    // Adds `callback` to be notified when the request completes. Returns true
+    // if this is the first callback added and a request should be started,
+    // returns false otherwise.
     bool AddCallback(IsClipboardPasteAllowedCallback callback);
+
+    // Merge `data` into the existing internal `data_` member so that the
+    // currently pending request will have the appropriate fields for all added
+    // callbacks, not just the initial one that created the request.
+    void AddData(ClipboardPasteData data);
 
     // Mark this request as completed with the specified result.
     // Invoke all callbacks now.
     void Complete(IsClipboardPasteAllowedCallbackArgType data);
 
     // Returns true if the request has completed.
-    bool is_complete() const { return data_.has_value(); }
+    bool is_complete() const { return data_allowed_.has_value(); }
 
     // Returns true if this request is obsolete.  An obsolete request
     // is one that is completed, all registered callbacks have been
@@ -117,9 +123,11 @@ class CONTENT_EXPORT ClipboardHostImpl
     // value is undefined.
     base::Time completed_time_;
 
-    // The data argument to pass to the IsClipboardPasteAllowedCallback.
     // This member is null until Complete() is called.
-    std::optional<IsClipboardPasteAllowedCallbackArgType> data_;
+    std::optional<bool> data_allowed_;
+
+    // The data argument to pass to the IsClipboardPasteAllowedCallback.
+    ClipboardPasteData data_;
     std::vector<IsClipboardPasteAllowedCallback> callbacks_;
   };
 
@@ -235,10 +243,10 @@ class CONTENT_EXPORT ClipboardHostImpl
   // the corresponding text/markup data to the clipboard. If it is not, instead
   // write the replacement string to the clipboard as plaintext. This can be
   // called asynchronously.
-  void OnCopyTextAllowedResult(const std::u16string& text,
+  void OnCopyTextAllowedResult(const ClipboardPasteData& data,
                                std::optional<std::u16string> replacement_data);
   void OnCopyHtmlAllowedResult(const GURL& url,
-                               const std::u16string& markup,
+                               const ClipboardPasteData& data,
                                std::optional<std::u16string> replacement_data);
 
   using CopyAllowedCallback = base::OnceCallback<void()>;

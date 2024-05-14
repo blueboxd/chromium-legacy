@@ -17,6 +17,8 @@
 #include "chrome/browser/compose/proto/compose_optimization_guide.pb.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/common/compose/compose.mojom.h"
+#include "components/autofill/content/browser/scoped_autofill_managers_observation.h"
+#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/compose/core/browser/compose_client.h"
 #include "components/compose/core/browser/compose_dialog_controller.h"
@@ -43,7 +45,8 @@ class ChromeComposeClient
     : public compose::ComposeClient,
       public content::WebContentsObserver,
       public content::WebContentsUserData<ChromeComposeClient>,
-      public compose::mojom::ComposeClientPageHandler,
+      public autofill::AutofillManager::Observer,
+      public compose::mojom::ComposeClientUntrustedPageHandler,
       public InnerTextProvider {
  public:
   using EntryPoint = autofill::AutofillComposeDelegate::UiEntryPoint;
@@ -61,10 +64,19 @@ class ChromeComposeClient
       ComposeCallback callback) override;
   bool HasSession(const autofill::FieldGlobalId& trigger_field_id) override;
   bool ShouldTriggerPopup(
-      const autofill::FormFieldData& trigger_field) override;
+      const autofill::FormFieldData& trigger_field,
+      autofill::AutofillSuggestionTriggerSource trigger_source) override;
   compose::PageUkmTracker* getPageUkmTracker() override;
 
-  // ComposeClientPageHandler
+  // autofill::AutofillManager::Observer:
+  // Used to observe field focus changes so that the saved state notification
+  // is only shown when an autofill suggestion will not be shown on another
+  // field.
+  void OnAfterFocusOnFormField(autofill::AutofillManager& manager,
+                               autofill::FormGlobalId form,
+                               autofill::FieldGlobalId field) override;
+
+  // ComposeClientUntrustedPageHandler
   // Shows the compose dialog.
   void ShowUI() override;
   // Closes the compose dialog. `reason` describes the user action that
@@ -78,7 +90,7 @@ class ChromeComposeClient
 
   // InnerTextProvider
   void GetInnerText(content::RenderFrameHost& host,
-                    absl::optional<int> node_id,
+                    std::optional<int> node_id,
                     content_extraction::InnerTextCallback callback) override;
 
   bool GetMSBBStateFromPrefs();
@@ -89,10 +101,11 @@ class ChromeComposeClient
                                         content::ContextMenuParams& params);
 
   void BindComposeDialog(
-      mojo::PendingReceiver<compose::mojom::ComposeClientPageHandler>
+      mojo::PendingReceiver<compose::mojom::ComposeClientUntrustedPageHandler>
           client_handler,
-      mojo::PendingReceiver<compose::mojom::ComposeSessionPageHandler> handler,
-      mojo::PendingRemote<compose::mojom::ComposeDialog> dialog);
+      mojo::PendingReceiver<compose::mojom::ComposeSessionUntrustedPageHandler>
+          handler,
+      mojo::PendingRemote<compose::mojom::ComposeUntrustedDialog> dialog);
 
   void SetModelQualityLogsUploaderForTest(
       optimization_guide::ModelQualityLogsUploader* model_quality_uploader);
@@ -117,10 +130,6 @@ class ChromeComposeClient
   // Called when there has been direct user interaction with the WebContents.
   // Used to close the dialog when the user scrolls.
   void DidGetUserInteraction(const blink::WebInputEvent& event) override;
-
-  // content::WebContentsObserver implementation.
-  // Invoked every time the WebContents changes visibility.
-  void OnVisibilityChanged(content::Visibility visibility) override;
 
   void SetOptimizationGuideForTest(
       optimization_guide::OptimizationGuideDecider* opt_guide);
@@ -187,6 +196,10 @@ class ChromeComposeClient
   // `active_compose_form_id_`.
   void RemoveAllSessions();
 
+  // Shows the saved state notification for `field_id` as long as any newly
+  // focused field will not show autofill suggestions.
+  void ShowSavedStateNotification(autofill::FieldGlobalId field_id);
+
   // Returns nullptr if no such session exists.
   ComposeSession* GetSessionForActiveComposeField();
 
@@ -221,7 +234,7 @@ class ChromeComposeClient
   // next bind call. With mojo, there is no need to immediately reset the
   // binding when the pipe disconnects. Any callbacks in receiver methods can be
   // safely called even when the pipe is disconnected.
-  mojo::Receiver<compose::mojom::ComposeClientPageHandler>
+  mojo::Receiver<compose::mojom::ComposeClientUntrustedPageHandler>
       client_page_receiver_;
 
   // Time that the last call to show the dialog was started.
@@ -240,6 +253,12 @@ class ChromeComposeClient
   // OpenComposeSettings function, and gets set back to false when the current
   // page is refocused using OnWebContentsFocused.
   bool open_settings_requested_ = false;
+
+  // Observer for autofill field focus changes. This is used to prevent showing
+  // the saved state notification on a previous focused field when an autofill
+  // suggestion will be shown in a newly focused field.
+  autofill::ScopedAutofillManagersObservation autofill_managers_observation_{
+      this};
 
   base::WeakPtrFactory<ChromeComposeClient> weak_ptr_factory_{this};
 

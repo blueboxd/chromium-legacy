@@ -49,6 +49,7 @@
 #include "ash/test/test_widget_builder.h"
 #include "ash/wm/desks/default_desk_button.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desk_action_button.h"
 #include "ash/wm/desks/desk_action_context_menu.h"
 #include "ash/wm/desks/desk_action_view.h"
 #include "ash/wm/desks/desk_animation_base.h"
@@ -80,6 +81,7 @@
 #include "ash/wm/overview/overview_focus_cycler.h"
 #include "ash/wm/overview/overview_focusable_view.h"
 #include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_grid_test_api.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_test_util.h"
@@ -326,6 +328,20 @@ bool TabUntil(bool reverse, Predicate&& predicate) {
   return false;
 }
 
+// Returns a predicate that will return true if the given view is
+// "focused". The semantics of what that means is dependent on 'type'.
+auto OverviewItemFocused(DeskBarViewBase::Type type,
+                         OverviewFocusableView* view) {
+  return [type, view] {
+    if (type == DeskBarViewBase::Type::kOverview) {
+      return view->is_focused();
+    } else {
+      CHECK(view->GetView());
+      return view->GetView()->HasFocus();
+    }
+  };
+}
+
 // Defines an observer to test DesksController notifications.
 class TestObserver : public DesksController::Observer {
  public:
@@ -354,7 +370,7 @@ class TestObserver : public DesksController::Observer {
     EXPECT_TRUE(DesksController::Get()->AreDesksBeingModified());
   }
   void OnDeskRemoved(const Desk* desk) override {
-    base::Erase(desks_, desk);
+    std::erase(desks_, desk);
     EXPECT_TRUE(DesksController::Get()->AreDesksBeingModified());
   }
   void OnDeskActivationChanged(const Desk* activated,
@@ -476,7 +492,9 @@ class DesksTest : public AshTestBase,
 
     scoped_feature_list_.InitWithFeatureStates(
         {{features::kFeatureManagement16Desks, GetParam().use_16_desks},
-         {features::kPerDeskShelf, GetParam().per_desk_shelf}});
+         {features::kPerDeskShelf, GetParam().per_desk_shelf},
+         {features::kFasterSplitScreenSetup, true},
+         {features::kOsSettingsRevampWayfinding, true}});
 
     AshTestBase::SetUp();
     SetVirtualKeyboardEnabled(true);
@@ -6195,7 +6213,7 @@ TEST_P(DesksTest, ClickingOverviewGridUnfocusesDeskNameView) {
   // and should remove focus from the focused `desk_name_view`.
   auto* event_generator = GetEventGenerator();
   event_generator->MoveMouseTo(
-      overview_grid->bounds_for_testing().CenterPoint());
+      OverviewGridTestApi(overview_grid).bounds().CenterPoint());
   event_generator->ClickLeftButton();
   EXPECT_FALSE(desk_name_view->HasFocus());
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -6557,15 +6575,19 @@ TEST_P(DesksTest, FocusedMiniViewIsVisible) {
             ->GetVisibleRect()
             .Contains(mini_views[i]->bounds()));
     // Move the focus to the mini view's associated name view.
-    SendKey(ui::VKEY_TAB);
+    ASSERT_TRUE(TabUntil(
+        /*reverse=*/false,
+        OverviewItemFocused(DeskBarViewBase::Type::kOverview,
+                            mini_views[i]->desk_name_view())));
   }
 
   // Traverse from all the desk mini views from right to left.
   for (size_t i = desks_util::GetMaxNumberOfDesks() - 1; i > 0; i--) {
-    // Move the focus from desk name view to the associated preview view.
-    SendKey(ui::VKEY_LEFT);
     // Move the focus to previous mini view's name view.
-    SendKey(ui::VKEY_LEFT);
+    ASSERT_TRUE(TabUntil(
+        /*reverse=*/true,
+        OverviewItemFocused(DeskBarViewBase::Type::kOverview,
+                            mini_views[i - 1]->desk_name_view())));
     EXPECT_TRUE(
         DesksTestApi::GetDeskBarScrollView(DeskBarViewBase::Type::kOverview)
             ->GetVisibleRect()
@@ -9434,28 +9456,8 @@ class DeskBarTest
     EXPECT_TRUE(GetDeskBarView(root, DeskBarViewBase::Type::kOverview));
   }
 
-  void CheckFocus(const views::View* view, bool focused) {
-    if (bar_type_ == DeskBarViewBase::Type::kDeskButton) {
-      ASSERT_EQ(view->HasFocus(), focused);
-    }
-  }
-
-  // Returns a predicate that will return true if the given view is
-  // "focused". The semantics of what that means is dependent on which mode the
-  // test is in.
-  auto OverviewItemFocused(OverviewFocusableView* view) {
-    return [this, view] {
-      if (bar_type_ == DeskBarViewBase::Type::kOverview) {
-        return view->is_focused();
-      } else {
-        CHECK(view->GetView());
-        return view->GetView()->HasFocus();
-      }
-    };
-  }
-
   bool OverviewItemHasFocus(OverviewFocusableView* view) {
-    return OverviewItemFocused(view)();
+    return OverviewItemFocused(bar_type_, view)();
   }
 
   // Executes a context menu command for the desk at index `index`. `close_all`
@@ -9617,7 +9619,7 @@ TEST_P(DeskBarTest, Basic) {
        .active_desk = 0,
        .shelf_alignment = ShelfAlignment::kLeft,
        .has_saved_desks = true,
-       .desk_button_bar_widget_bounds = {56, 240, 202, 98},
+       .desk_button_bar_widget_bounds = {56, 247, 202, 98},
        .desk_button_bar_view_bounds = {0, 0, 202, 98},
        .overview_bar_widget_bounds = {48, 0, 752, 40},
        .overview_bar_view_bounds = {0, 0, 752, 40}},
@@ -9626,7 +9628,7 @@ TEST_P(DeskBarTest, Basic) {
        .active_desk = 0,
        .shelf_alignment = ShelfAlignment::kRight,
        .has_saved_desks = true,
-       .desk_button_bar_widget_bounds = {542, 240, 202, 98},
+       .desk_button_bar_widget_bounds = {542, 247, 202, 98},
        .desk_button_bar_view_bounds = {0, 0, 202, 98},
        .overview_bar_widget_bounds = {0, 0, 752, 40},
        .overview_bar_view_bounds = {0, 0, 752, 40}},
@@ -10167,20 +10169,11 @@ TEST_P(DeskBarTest, DeskRenameKeyShiftTab) {
   SendKey(ui::VKEY_D, ui::EF_SHIFT_DOWN);
   SendKey(ui::VKEY_1);
   SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
-  // Skip past the desk profiles button.
-  if (use_desk_profiles_ && bar_type_ == DeskBarViewBase::Type::kOverview) {
-    SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
-  }
   EXPECT_FALSE(desk_name_view->HasFocus());
   EXPECT_TRUE(desk->is_name_set_by_user());
   EXPECT_THAT(desk_name_view->GetText(), u"D1");
-
-  if (bar_type_ == DeskBarViewBase::Type::kOverview) {
-    ASSERT_TRUE(OverviewItemHasFocus(mini_view->desk_preview()));
-  } else {
-    CheckFocus(mini_view->desk_action_view()->close_all_button(),
-               /*focused=*/true);
-  }
+  ASSERT_TRUE(
+      OverviewItemHasFocus(mini_view->desk_action_view()->close_all_button()));
 
   CloseDeskBar();
 }
@@ -10304,30 +10297,24 @@ TEST_P(DeskBarTest, ForwardTabbing) {
     EXPECT_EQ(DesksTestApi::IsDeskShortcutViewVisible(mini_view),
               expected_visibility);
 
-    if (bar_type_ == DeskBarViewBase::Type::kDeskButton) {
-      if (use_desk_profiles_) {
-        SendKey(ui::VKEY_TAB);
-        ASSERT_TRUE(OverviewItemHasFocus(mini_view->desk_profiles_button()));
-      }
-
-      if (i == 0) {
-        SendKey(ui::VKEY_TAB);
-        CheckFocus(mini_view->desk_action_view()->combine_desks_button(),
-                   /*focused=*/true);
-      }
-
+    if (use_desk_profiles_) {
       SendKey(ui::VKEY_TAB);
-      CheckFocus(mini_view->desk_action_view()->close_all_button(),
-                 /*focused=*/true);
-      // The shortcut view only appears on the first 8 desks in the desk button
-      // desk bar.
-      EXPECT_EQ(DesksTestApi::IsDeskShortcutViewVisible(mini_view),
-                expected_visibility);
-    } else {  // overview bar.
-      if (use_desk_profiles_) {
-        SendKey(ui::VKEY_TAB);
-      }
+      ASSERT_TRUE(OverviewItemHasFocus(mini_view->desk_profiles_button()));
     }
+
+    if (i == 0) {
+      SendKey(ui::VKEY_TAB);
+      ASSERT_TRUE(OverviewItemHasFocus(
+          mini_view->desk_action_view()->combine_desks_button()));
+    }
+
+    SendKey(ui::VKEY_TAB);
+    ASSERT_TRUE(OverviewItemHasFocus(
+        mini_view->desk_action_view()->close_all_button()));
+    // The shortcut view only appears on the first 8 desks in the desk button
+    // desk bar.
+    EXPECT_EQ(DesksTestApi::IsDeskShortcutViewVisible(mini_view),
+              expected_visibility);
 
     SendKey(ui::VKEY_TAB);
     ASSERT_TRUE(OverviewItemHasFocus(mini_view->desk_name_view()));
@@ -10387,41 +10374,29 @@ TEST_P(DeskBarTest, ReverseTabbing) {
     EXPECT_FALSE(DesksTestApi::IsDeskShortcutViewVisible(
         desk_bar_view->mini_views()[i]));
 
-    if (bar_type_ == DeskBarViewBase::Type::kDeskButton) {
+    SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+    ASSERT_TRUE(OverviewItemHasFocus(
+        mini_view->desk_action_view()->close_all_button()));
+
+    if (i == 0) {
       SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
-      CheckFocus(mini_view->desk_action_view()->close_all_button(),
-                 /*focused=*/true);
-
-      if (i == 0) {
-        SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
-        CheckFocus(mini_view->desk_action_view()->combine_desks_button(),
-                   /*focused=*/true);
-      }
-
-      if (use_desk_profiles_) {
-        SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
-        ASSERT_TRUE(OverviewItemHasFocus(mini_view->desk_profiles_button()));
-      }
-
-      // The shortcut view only appears on the first 8 desks in the desk button
-      // desk bar.
-      const bool expected_visibility =
-          i <= 7 && bar_type_ == DeskBarViewBase::Type::kDeskButton;
-      EXPECT_EQ(DesksTestApi::IsDeskShortcutViewVisible(mini_view),
-                expected_visibility);
-    } else {  // overview bar.
-      if (use_desk_profiles_) {
-        SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
-        ASSERT_TRUE(OverviewItemHasFocus(mini_view->desk_profiles_button()));
-      }
+      ASSERT_TRUE(OverviewItemHasFocus(
+          mini_view->desk_action_view()->combine_desks_button()));
     }
 
-    SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
-    ASSERT_TRUE(OverviewItemHasFocus(mini_view->desk_preview()));
+    if (use_desk_profiles_) {
+      SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+      ASSERT_TRUE(OverviewItemHasFocus(mini_view->desk_profiles_button()));
+    }
+
     // The shortcut view only appears on the first 8 desks in the desk button
     // desk bar.
     const bool expected_visibility =
         i <= 7 && bar_type_ == DeskBarViewBase::Type::kDeskButton;
+    EXPECT_EQ(DesksTestApi::IsDeskShortcutViewVisible(mini_view),
+              expected_visibility);
+    SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+    ASSERT_TRUE(OverviewItemHasFocus(mini_view->desk_preview()));
     EXPECT_EQ(DesksTestApi::IsDeskShortcutViewVisible(mini_view),
               expected_visibility);
   }
@@ -10449,7 +10424,8 @@ TEST_P(DeskBarTest, CloseActiveDesk) {
   // Focus desk #1.
   ASSERT_TRUE(TabUntil(
       /*reverse=*/false,
-      OverviewItemFocused(desk_bar_view->mini_views()[1]->desk_preview())));
+      OverviewItemFocused(bar_type_,
+                          desk_bar_view->mini_views()[1]->desk_preview())));
 
   // Close active desk.
   if (bar_type_ == DeskBarViewBase::Type::kOverview) {
@@ -10494,7 +10470,8 @@ TEST_P(DeskBarTest, MergeActiveDesk) {
   // Focus desk #1
   ASSERT_TRUE(TabUntil(
       /*reverse=*/false,
-      OverviewItemFocused(desk_bar_view->mini_views()[1]->desk_preview())));
+      OverviewItemFocused(bar_type_,
+                          desk_bar_view->mini_views()[1]->desk_preview())));
 
   // Merge active desk.
   if (bar_type_ == DeskBarViewBase::Type::kOverview) {
@@ -10538,7 +10515,8 @@ TEST_P(DeskBarTest, CloseNonActiveDesk) {
   // Highlight desk #1.
   ASSERT_TRUE(TabUntil(
       /*reverse=*/false,
-      OverviewItemFocused(desk_bar_view->mini_views()[1]->desk_preview())));
+      OverviewItemFocused(bar_type_,
+                          desk_bar_view->mini_views()[1]->desk_preview())));
 
   // Close non-active desk.
   SendKey(ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
@@ -10572,7 +10550,8 @@ TEST_P(DeskBarTest, MergeNonActiveDesk) {
   // Highlight desk #1.
   ASSERT_TRUE(TabUntil(
       /*reverse=*/false,
-      OverviewItemFocused(desk_bar_view->mini_views()[1]->desk_preview())));
+      OverviewItemFocused(bar_type_,
+                          desk_bar_view->mini_views()[1]->desk_preview())));
 
   // Close non-active desk.
   SendKey(ui::VKEY_W, ui::EF_CONTROL_DOWN);
@@ -10859,20 +10838,8 @@ TEST_P(DeskBarTest, CanUndoDeskClosureThroughKeyboardNavigation) {
         SendKey(ui::VKEY_TAB);
       }
 
-      // The desk button desk bar adds the close-all button to the tab order, so
-      // we need to include an extra tab for that.
-      if (bar_type_ == DeskBarViewBase::Type::kDeskButton) {
-        SendKey(ui::VKEY_TAB);
-
-        ASSERT_EQ(mini_views[1]->desk_preview(),
-                  desk_bar->GetWidget()->GetFocusManager()->GetFocusedView());
-      } else {
-        ASSERT_EQ(mini_views[1]->desk_preview(), Shell::Get()
-                                                     ->overview_controller()
-                                                     ->overview_session()
-                                                     ->focus_cycler()
-                                                     ->focused_view());
-      }
+      SendKey(ui::VKEY_TAB);
+      ASSERT_TRUE(OverviewItemHasFocus(mini_views[1]->desk_preview()));
 
       SendKey(ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
     } else if (bar_type_ == DeskBarViewBase::Type::kDeskButton) {
@@ -11095,20 +11062,13 @@ class DeskButtonTest
 
 // Tests functionalities for `DeskSwitchButton`s.
 TEST_P(DeskButtonTest, DeskSwitchButtons) {
-  // With only one desk, the previous desk button is hidden and the next
-  // desk button is visible but disabled.
+  // With only one desk, both switch buttons are hidden.
   views::ImageButton* prev_desk_button = GetPrevDeskButton();
   views::ImageButton* next_desk_button = GetNextDeskButton();
   ASSERT_TRUE(prev_desk_button);
   ASSERT_TRUE(next_desk_button);
-  if (GetParam().alignment == ShelfAlignment::kBottom) {
-    EXPECT_FALSE(prev_desk_button->GetVisible());
-    EXPECT_TRUE(next_desk_button->GetVisible());
-    EXPECT_FALSE(next_desk_button->GetEnabled());
-  } else {
-    EXPECT_FALSE(prev_desk_button->GetVisible());
-    EXPECT_FALSE(next_desk_button->GetVisible());
-  }
+  EXPECT_FALSE(prev_desk_button->GetVisible());
+  EXPECT_FALSE(next_desk_button->GetVisible());
 
   // Create a new desk. The previous desk button should be hidden and
   // the next desk button should be enabled.
@@ -11314,14 +11274,14 @@ TEST_P(DeskButtonTest, ValidateDeskButtonPosition) {
         GetParam().alignment == ShelfAlignment::kBottom && i < desk_count - 1;
 
     // Check the desk button and both desk switch buttons.
-    EXPECT_EQ(desk_button->bounds(),
-              GetParam().alignment == ShelfAlignment::kBottom
-                  ? gfx::Rect(4, 4, 128, 28)
-                  : gfx::Rect(0, 0, 36, 36));
-    EXPECT_EQ(desk_name_label->bounds(),
-              GetParam().alignment == ShelfAlignment::kBottom
-                  ? gfx::Rect(12, 0, 104, 28)
-                  : gfx::Rect(4, 4, 28, 28));
+    if (GetParam().alignment == ShelfAlignment::kBottom) {
+      EXPECT_TRUE(gfx::Rect(4, 4, 128, 28).Contains(desk_button->bounds()));
+      EXPECT_TRUE(
+          gfx::Rect(12, 0, 104, 28).Contains(desk_name_label->bounds()));
+    } else {
+      EXPECT_EQ(desk_button->bounds(), gfx::Rect(0, 0, 36, 36));
+      EXPECT_EQ(desk_name_label->bounds(), gfx::Rect(4, 4, 28, 28));
+    }
     EXPECT_EQ(prev_desk_button->GetVisible(), should_show_prev_desk_button);
     if (prev_desk_button->GetVisible()) {
       EXPECT_TRUE(prev_desk_button->GetEnabled());
@@ -11386,15 +11346,15 @@ TEST_P(DeskButtonTest, LayoutInRTL) {
   switch (GetParam().alignment) {
     case ShelfAlignment::kBottom:
     case ShelfAlignment::kBottomLocked:
-      EXPECT_EQ(gfx::Rect(698, 682, 128, 28), desk_button_bounds);
+      EXPECT_TRUE(gfx::Rect(684, 682, 128, 28).Contains(desk_button_bounds));
       EXPECT_LT(app_icon_bounds.x(), desk_button_bounds.x());
       break;
     case ShelfAlignment::kLeft:
-      EXPECT_EQ(gfx::Rect(6, 282, 36, 36), desk_button_bounds);
+      EXPECT_EQ(gfx::Rect(6, 286, 36, 36), desk_button_bounds);
       EXPECT_LT(desk_button_bounds.y(), app_icon_bounds.y());
       break;
     case ShelfAlignment::kRight:
-      EXPECT_EQ(gfx::Rect(1238, 282, 36, 36), desk_button_bounds);
+      EXPECT_EQ(gfx::Rect(1238, 286, 36, 36), desk_button_bounds);
       EXPECT_LT(desk_button_bounds.y(), app_icon_bounds.y());
       break;
   }

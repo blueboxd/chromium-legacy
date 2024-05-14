@@ -100,6 +100,19 @@ of interesting buckets, such as "internal + external".
                kCommandLine and kUnpacked)"/>
 </variants>
 
+<variants name="VerifiedFileType">
+  <variant name=".BackgroundPage" summary="Extension background page"/>
+  <variant name=".BackgroundScript" summary="Extension background script"/>
+  <variant name=".ContentScript" summary="Content script"/>
+  <variant name=".MiscFile" summary="Any other verified file"/>
+  <variant name=".MiscHtmlFile"
+      summary="Miscellaneous html file (e.g. loaded in a tab)"/>
+  <variant name=".MiscJsFile"
+      summary="Miscellaneous js file (e.g. loaded in a tab)"/>
+  <variant name=".ServiceWorkerScript"
+      summary="Extension service worker script"/>
+</variants>
+
 <histogram name="ExtensionBlacklist.BlacklistInstalled"
     enum="ExtensionLocation" expires_after="2024-10-23">
   <owner>anunoy@chromium.org</owner>
@@ -172,7 +185,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.ActiveScriptController.PermittedExtensions"
-    units="Extension Count" expires_after="2024-06-23">
+    units="Extension Count" expires_after="2024-08-25">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -182,7 +195,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.AppLaunch" enum="AppLaunch"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>benwells@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <owner>tapted@chromium.org</owner>
@@ -336,7 +349,7 @@ of interesting buckets, such as "internal + external".
 
 <histogram
     name="Extensions.ContentSettings.PrimaryPatternUniqueSecondaryPatternDifferent"
-    enum="PermissionType" expires_after="2024-07-07">
+    enum="ContentType" expires_after="2024-07-07">
   <owner>erikchen@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -350,7 +363,7 @@ of interesting buckets, such as "internal + external".
 
 <histogram
     name="Extensions.ContentSettings.PrimaryPatternUniqueSecondaryPatternIdentical"
-    enum="PermissionType" expires_after="2024-07-07">
+    enum="ContentType" expires_after="2024-07-07">
   <owner>erikchen@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -365,7 +378,7 @@ of interesting buckets, such as "internal + external".
 
 <histogram
     name="Extensions.ContentSettings.PrimaryPatternUniqueSecondaryPatternWildcard"
-    enum="PermissionType" expires_after="2024-07-07">
+    enum="ContentType" expires_after="2024-07-07">
   <owner>erikchen@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -379,7 +392,7 @@ of interesting buckets, such as "internal + external".
 
 <histogram
     name="Extensions.ContentSettings.PrimaryPatternWildcardSecondaryPatternUnique"
-    enum="PermissionType" expires_after="2024-07-07">
+    enum="ContentType" expires_after="2024-07-07">
   <owner>erikchen@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -393,7 +406,7 @@ of interesting buckets, such as "internal + external".
 
 <histogram
     name="Extensions.ContentSettings.PrimaryPatternWildcardSecondaryPatternWildcard"
-    enum="PermissionType" expires_after="2024-07-07">
+    enum="ContentType" expires_after="2024-07-07">
   <owner>erikchen@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -464,6 +477,56 @@ of interesting buckets, such as "internal + external".
 
     Warning: this histogram was expired from 2022-02-01 to 2022-09-22; data may
     be missing.
+  </summary>
+</histogram>
+
+<histogram
+    name="Extensions.ContentVerification.VerifyFailedOnFileMV2{VerifiedFileType}"
+    enum="CorruptExtensionDisabledReason" expires_after="2024-12-01">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <summary>
+    The content verification failure reason for why a {VerifiedFileType} failed.
+    Emmitted when content verification fails for a {VerifiedFileType} in a
+    manifest V2 extension.
+  </summary>
+  <token key="VerifiedFileType" variants="VerifiedFileType">
+    <variant name=""/>
+  </token>
+</histogram>
+
+<histogram
+    name="Extensions.ContentVerification.VerifyFailedOnFileMV3{VerifiedFileType}"
+    enum="CorruptExtensionDisabledReason" expires_after="2024-12-01">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <summary>
+    The content verification failure reason for why a {VerifiedFileType} failed.
+    Emmitted when content verification fails for a {VerifiedFileType} in a
+    manifest V3 extension.
+  </summary>
+  <token key="VerifiedFileType" variants="VerifiedFileType">
+    <variant name=""/>
+  </token>
+</histogram>
+
+<histogram name="Extensions.ContentVerification.VerifyFailedOnFileTypeMV2"
+    enum="VerifiedFileType" expires_after="2024-12-01">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <summary>
+    The type of file content verification failed to verify in an MV2 extension.
+    Emmitted at the time content verification fails, once per file that failed.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ContentVerification.VerifyFailedOnFileTypeMV3"
+    enum="VerifiedFileType" expires_after="2024-12-01">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <summary>
+    The type of file content verification failed to verify in an MV3 extension.
+    Emmitted at the time content verification fails, once per file that failed.
   </summary>
 </histogram>
 
@@ -699,14 +762,27 @@ of interesting buckets, such as "internal + external".
 
 <histogram
     name="Extensions.DeclarativeNetRequest.EvaluateBeforeRequestTime.SingleExtension2"
+    units="microseconds" expires_after="2024-09-01">
+  <owner>kelvinjiang@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
+  <summary>
+    Time taken to evaluate the action for a network request for a single
+    extension ruleset for rules matched before the request is sent. Emitted for
+    each network request that is visible to the extension. This is only emitted
+    for users with high resolution clocks.
+  </summary>
+</histogram>
+
+<histogram
+    name="Extensions.DeclarativeNetRequest.EvaluateHeadersReceivedTime.SingleExtension2"
     units="microseconds" expires_after="2024-06-30">
   <owner>kelvinjiang@chromium.org</owner>
   <owner>src/extensions/OWNERS</owner>
   <summary>
-    Time taken to evaluate the before-request action for a network request for a
-    single extension ruleset. Emitted for each network request that is visible
-    to the extension. This is only emitted for users with high resolution
-    clocks.
+    Time taken to evaluate the action for a network request for a single
+    extension ruleset for rules matched after a request's response headers have
+    been received. Emitted for each network request that is visible to the
+    extension. This is only emitted for users with high resolution clocks.
   </summary>
 </histogram>
 
@@ -1203,7 +1279,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.DisableReason2" enum="ExtensionDisableReason"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -2215,7 +2291,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.Functions.ExtensionMV3Calls"
-    enum="ExtensionFunctions" expires_after="2024-06-30">
+    enum="ExtensionFunctions" expires_after="2024-09-01">
   <owner>tjudkins@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
@@ -3416,7 +3492,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.LoadType2" enum="ExtensionType"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -3647,7 +3723,7 @@ of interesting buckets, such as "internal + external".
   </summary>
 </histogram>
 
-<histogram name="Extensions.NetworkDelay" units="ms" expires_after="2024-06-30">
+<histogram name="Extensions.NetworkDelay" units="ms" expires_after="2024-09-01">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>kelvinjiang@chromium.org</owner>
   <owner>src/extensions/OWNERS</owner>
@@ -3721,7 +3797,7 @@ of interesting buckets, such as "internal + external".
 
 <histogram
     name="Extensions.NonWebstoreLocationWithDeveloperModeOff{ExtensionState}"
-    enum="ExtensionLocation" expires_after="2024-06-30">
+    enum="ExtensionLocation" expires_after="2024-09-01">
   <owner>richche@google.com</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -3946,7 +4022,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.ProcessManagerStartupHostsTime2" units="ms"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -4124,7 +4200,7 @@ of interesting buckets, such as "internal + external".
 
 <histogram
     name="Extensions.ServiceWorkerBackground.FinishedExternalRequest_Result_PostReturn"
-    enum="ServiceWorkerExternalRequestResult" expires_after="2024-06-23">
+    enum="ServiceWorkerExternalRequestResult" expires_after="2024-08-25">
   <owner>jlulejian@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -4136,6 +4212,36 @@ of interesting buckets, such as "internal + external".
     return early for either a stopped worker or the starting of the external
     request failing.
   </summary>
+</histogram>
+
+<histogram name="Extensions.ServiceWorkerBackground.MultiWorkerVersionIdMatch"
+    enum="Boolean" expires_after="2024-08-15">
+  <owner>jlulejian@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <summary>
+    When Extensions.ServiceWorkerBackground.WorkerCountAfterAdd == 2, this emits
+    whether the previous and new worker added to WorkerIdSet had the same
+    service worker version id.
+  </summary>
+</histogram>
+
+<histogram
+    name="Extensions.ServiceWorkerBackground.MultiWorkerVersionStatus.{WorkerType}"
+    enum="ServiceWorkerVersionStatus" expires_after="2024-08-15">
+  <owner>jlulejian@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <summary>
+    The content::ServiceWorkerRunningInfo::ServiceWorkerVersionStatus for the
+    {WorkerType} WorkerIdSet. Only emitted when
+    Extensions.ServiceWorkerBackground.WorkerCountAfterAdd == 2. This ensures
+    there will be a new and previous worker to emit for.
+  </summary>
+  <token key="WorkerType">
+    <variant name="NewWorker" summary="new worker that we've just added to"/>
+    <variant name="PreviousWorker"
+        summary="previous worker that was recorded before we added a new
+                 worker to"/>
+  </token>
 </histogram>
 
 <histogram
@@ -4279,7 +4385,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.ServiceWorkerBackground.StartWorkerStatus"
-    enum="Boolean" expires_after="2024-06-30">
+    enum="Boolean" expires_after="2024-09-01">
   <owner>jlulejian@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -4289,7 +4395,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.ServiceWorkerBackground.StartWorkerTime" units="ms"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>jlulejian@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -4300,7 +4406,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.ServiceWorkerBackground.StartWorkerTime_Fail"
-    units="ms" expires_after="2024-06-30">
+    units="ms" expires_after="2024-09-01">
   <owner>jlulejian@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -4452,7 +4558,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.Toolbar.InvocationSource"
-    enum="ExtensionActionInvocationSource" expires_after="2024-06-30">
+    enum="ExtensionActionInvocationSource" expires_after="2024-09-01">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -4525,7 +4631,7 @@ of interesting buckets, such as "internal + external".
 
 <histogram
     name="Extensions.WebRequest.BeforeRequestDeclarativeNetRequestEvaluationTimeInMicroseconds"
-    units="microseconds" expires_after="2024-06-30">
+    units="microseconds" expires_after="2024-09-01">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>src/extensions/OWNERS</owner>
   <summary>
@@ -4884,7 +4990,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.{ExtensionSource}ForceInstalledFailureReason3"
-    enum="ExtensionInstallationFailureReason" expires_after="2024-06-30">
+    enum="ExtensionInstallationFailureReason" expires_after="2024-09-01">
   <owner>vkovalova@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -4970,6 +5076,17 @@ of interesting buckets, such as "internal + external".
     Measured once per &quot;user&quot; profile (profiles where people can
     install extensions, specifically profiles that can have non-component
     extensions installed) open.
+  </summary>
+</histogram>
+
+<histogram name="GuestView.GuestViewCreated" enum="GuestViewType"
+    expires_after="2025-01-10">
+  <owner>mcnee@chromium.org</owner>
+  <owner>wjmaclean@chromium.org</owner>
+  <owner>src/components/guest_view/OWNERS</owner>
+  <summary>
+    Indicates the type of guest view created. Emitted once per guest view
+    object.
   </summary>
 </histogram>
 

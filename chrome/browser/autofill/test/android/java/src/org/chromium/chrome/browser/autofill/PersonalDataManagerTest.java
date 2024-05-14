@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.autofill.AutofillTestHelper.createLocalCreditCard;
@@ -35,9 +36,11 @@ import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.autofill.PersonalDataManager.Iban;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.components.autofill.AutofillProfile;
+import org.chromium.components.autofill.IbanRecordType;
 import org.chromium.components.autofill.VerificationStatus;
 import org.chromium.components.image_fetcher.test.TestImageFetcher;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -45,6 +48,7 @@ import org.chromium.url.GURL;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 /** Tests for Chrome on Android's usage of the PersonalDataManager API. */
@@ -65,7 +69,7 @@ public class PersonalDataManagerTest {
         mHelper = new AutofillTestHelper();
         TestThreadUtils.runOnUiThreadBlocking(
                 () ->
-                        PersonalDataManager.getInstance()
+                        AutofillTestHelper.getPersonalDataManagerForLastUsedProfile()
                                 .setImageFetcherForTesting(
                                         new TestImageFetcher(TEST_CARD_ART_IMAGE)));
     }
@@ -285,7 +289,8 @@ public class PersonalDataManagerTest {
                                                             ChromeFeatureList
                                                                     .AUTOFILL_ENABLE_NEW_CARD_ART_AND_NETWORK_IMAGES))
                                     .sameAs(
-                                            PersonalDataManager.getInstance()
+                                            AutofillTestHelper
+                                                    .getPersonalDataManagerForLastUsedProfile()
                                                     .getCustomImageForAutofillSuggestionIfAvailable(
                                                             cardArtUrl, cardIconSpecsLarge)
                                                     .get()));
@@ -298,7 +303,8 @@ public class PersonalDataManagerTest {
                                                             ChromeFeatureList
                                                                     .AUTOFILL_ENABLE_NEW_CARD_ART_AND_NETWORK_IMAGES))
                                     .sameAs(
-                                            PersonalDataManager.getInstance()
+                                            AutofillTestHelper
+                                                    .getPersonalDataManagerForLastUsedProfile()
                                                     .getCustomImageForAutofillSuggestionIfAvailable(
                                                             cardArtUrl, cardIconSpecsSmall)
                                                     .get()));
@@ -1171,7 +1177,7 @@ public class PersonalDataManagerTest {
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    PersonalDataManager.getInstance()
+                    AutofillTestHelper.getPersonalDataManagerForLastUsedProfile()
                             .getCustomImageForAutofillSuggestionIfAvailable(
                                     cardArtUrl, cardIconSpecs);
                     expectedHistogram.assertExpected();
@@ -1194,12 +1200,104 @@ public class PersonalDataManagerTest {
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    PersonalDataManager.getInstance()
+                    AutofillTestHelper.getPersonalDataManagerForLastUsedProfile()
                             .setImageFetcherForTesting(new TestImageFetcher(null));
-                    PersonalDataManager.getInstance()
+                    AutofillTestHelper.getPersonalDataManagerForLastUsedProfile()
                             .getCustomImageForAutofillSuggestionIfAvailable(
                                     cardArtUrl, cardIconSpecs);
                     expectedHistogram.assertExpected();
                 });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Autofill"})
+    public void testAddIban() throws TimeoutException {
+        Iban iban =
+                new Iban.Builder()
+                        .setGuid("")
+                        .setLabel("")
+                        .setNickname("My IBAN")
+                        .setRecordType(IbanRecordType.UNKNOWN)
+                        .setValue("FR76 3000 6000 0112 3456 7890 189")
+                        .build();
+        String ibanGuid = mHelper.addOrUpdateLocalIban(iban);
+
+        Iban storedLocalIban = mHelper.getIban(ibanGuid);
+        Assert.assertEquals("My IBAN", storedLocalIban.getNickname());
+        Assert.assertEquals("FR7630006000011234567890189", storedLocalIban.getValue());
+        Assert.assertEquals(IbanRecordType.LOCAL_IBAN, storedLocalIban.getRecordType());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Autofill"})
+    public void testAddAndEditIban() throws TimeoutException {
+        // Test "add IBAN" workflow.
+        Iban iban =
+                new Iban.Builder()
+                        .setGuid("")
+                        .setLabel("")
+                        .setNickname("My IBAN")
+                        .setRecordType(IbanRecordType.UNKNOWN)
+                        .setValue("FR76 3000 6000 0112 3456 7890 189")
+                        .build();
+        String ibanGuid = mHelper.addOrUpdateLocalIban(iban);
+
+        Iban storedLocalIban = mHelper.getIban(ibanGuid);
+        Assert.assertEquals("My IBAN", storedLocalIban.getNickname());
+        Assert.assertEquals("FR7630006000011234567890189", storedLocalIban.getValue());
+        Assert.assertEquals(IbanRecordType.LOCAL_IBAN, storedLocalIban.getRecordType());
+
+        // Test "edit IBAN" workflow.
+        storedLocalIban.updateNickname("My alternative IBAN");
+        storedLocalIban.updateValue("DE91 1000 0000 0123 4567 89");
+        mHelper.addOrUpdateLocalIban(storedLocalIban);
+
+        Iban updatedLocalIban = mHelper.getIban(ibanGuid);
+        Assert.assertEquals("My alternative IBAN", updatedLocalIban.getNickname());
+        Assert.assertEquals("DE91100000000123456789", updatedLocalIban.getValue());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Autofill"})
+    public void testAddingServerIbanThrowsException() throws TimeoutException {
+        String guid = UUID.randomUUID().toString();
+        Iban.Builder ibanBuilder =
+                new Iban.Builder()
+                        .setGuid(guid)
+                        .setLabel("")
+                        .setNickname("My IBAN")
+                        .setRecordType(IbanRecordType.SERVER_IBAN)
+                        .setValue("FR76 3000 6000 0112 3456 7890 189");
+
+        UnsupportedOperationException e =
+                assertThrows(UnsupportedOperationException.class, () -> ibanBuilder.build());
+
+        assertThat(e).hasMessageThat().isEqualTo("Server IBANs are not supported yet.");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Autofill"})
+    public void testGetIbanLabelReturnsObfuscatedIbanValue() throws TimeoutException {
+        Iban iban =
+                new Iban.Builder()
+                        .setGuid("")
+                        .setLabel("")
+                        .setNickname("My IBAN")
+                        .setRecordType(IbanRecordType.UNKNOWN)
+                        .setValue("CH56 0483 5012 3456 7800 9")
+                        .build();
+        String ibanGuid = mHelper.addOrUpdateLocalIban(iban);
+
+        Iban storedLocalIban = mHelper.getIban(ibanGuid);
+        // \u2022 is Bullet and \u2006 is SIX-PER-EM SPACE (small space between bullets). The
+        // expected string is 'CH56 •••• •••• •••• •800 9'.
+        Assert.assertEquals(
+                "CH56\u2006\u2022\u2022\u2022\u2022\u2006\u2022\u2022\u2022\u2022"
+                        + "\u2006\u2022\u2022\u2022\u2022\u2006\u2022800\u20069",
+                storedLocalIban.getLabel());
     }
 }

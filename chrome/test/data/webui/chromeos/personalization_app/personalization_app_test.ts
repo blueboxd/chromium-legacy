@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {DynamicColorElement, getThemeProvider, GooglePhotosAlbumsElement, GooglePhotosCollectionElement, GooglePhotosSharedAlbumDialogElement, PersonalizationRouterElement, PersonalizationThemeElement, WallpaperCollectionsElement, WallpaperGridItemElement, WallpaperImagesElement} from 'chrome://personalization/js/personalization_app.js';
+import {DynamicColorElement, getThemeProvider, GooglePhotosAlbumsElement, GooglePhotosCollectionElement, GooglePhotosSharedAlbumDialogElement, PersonalizationRouterElement, PersonalizationThemeElement, SeaPenImagesElement, SeaPenPaths, SeaPenRecentWallpapersElement, SeaPenRouterElement, SeaPenTemplateQueryElement, setTransitionsEnabled, WallpaperCollectionsElement, WallpaperGridItemElement, WallpaperImagesElement} from 'chrome://personalization/js/personalization_app.js';
+import {CrButtonElement} from 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
+import {CrDialogElement} from 'chrome://resources/ash/common/cr_elements/cr_dialog/cr_dialog.js';
+import {CrIconButtonElement} from 'chrome://resources/ash/common/cr_elements/cr_icon_button/cr_icon_button.js';
 import {assertInstanceof} from 'chrome://resources/js/assert.js';
 import {SkColor} from 'chrome://resources/mojo/skia/public/mojom/skcolor.mojom-webui.js';
 import {IronSelectorElement} from 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
-import {assertDeepEquals, assertEquals, assertFalse, assertGT, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertDeepEquals, assertEquals, assertFalse, assertGT, assertLE, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 /**
  * @fileoverview E2E test suite for chrome://personalization.
@@ -74,6 +77,11 @@ function getBodyColorChannels() {
 }
 
 suite('main page', () => {
+  setup(() => {
+    // Disables transition animation for tests.
+    setTransitionsEnabled(false);
+  });
+
   // Tests that chrome://personalization loads the page and various contents
   // without javascript errors or a 404 or crash. Displays user preview,
   // wallpaper preview, ambient preview, and dynamic color controls.
@@ -154,6 +162,11 @@ suite('main page', () => {
 
 
 suite('ambient mode allowed', () => {
+  setup(() => {
+    // Disables transition animation for tests.
+    setTransitionsEnabled(false);
+  });
+
   test('shows ambient preview', () => {
     const preview = getRouter()
                         .shadowRoot?.querySelector('personalization-main')
@@ -173,6 +186,11 @@ suite('ambient mode allowed', () => {
 
 
 suite('ambient mode disallowed', () => {
+  setup(() => {
+    // Disables transition animation for tests.
+    setTransitionsEnabled(false);
+  });
+
   test('shows ambient preview', () => {
     const preview = getRouter()
                         .shadowRoot?.querySelector('personalization-main')
@@ -203,7 +221,6 @@ suite('ambient mode disallowed', () => {
         helpLink.includes('support.google.com'), 'help link content matches');
   });
 });
-
 
 suite('wallpaper subpage', () => {
   function clickWallpaperPreviewLink() {
@@ -244,6 +261,10 @@ suite('wallpaper subpage', () => {
   setup(async () => {
     // Reset to default state before each test to reduce order dependencies.
     await window.personalizationTestApi.reset();
+
+    // Disables transition animation for tests.
+    setTransitionsEnabled(false);
+
     clickWallpaperPreviewLink();
   });
 
@@ -275,6 +296,11 @@ suite('wallpaper subpage', () => {
   });
 
   suite('backdrop', function() {
+    setup(() => {
+      // Disables transition animation for tests.
+      setTransitionsEnabled(false);
+    });
+
     test('selects wallpaper', async () => {
       const wallpaperSelected = getWallpaperSelected();
       const textContainer =
@@ -345,6 +371,11 @@ suite('wallpaper subpage', () => {
   });
 
   suite('google photos', () => {
+    setup(() => {
+      // Disables transition animation for tests.
+      setTransitionsEnabled(false);
+    });
+
     async function openGooglePhotos(): Promise<GooglePhotosCollectionElement> {
       const subpage = getWallpaperSubpage();
 
@@ -462,6 +493,319 @@ suite('wallpaper subpage', () => {
   });
 });
 
+
+suite('sea pen', () => {
+  function clickWallpaperPreviewLink() {
+    assertEquals(
+        ROOT_PAGE, window.location.href,
+        'wallpaper preview link only present on root page');
+    getRouter()
+        .shadowRoot?.querySelector('personalization-main')
+        ?.shadowRoot?.querySelector('wallpaper-preview')
+        ?.shadowRoot?.querySelector('cr-icon-button')
+        ?.click();
+    assertEquals(
+        ROOT_PAGE + 'wallpaper', window.location.href,
+        'should have navigated to wallpaper');
+  }
+
+  function getWallpaperSubpage() {
+    const router = getRouter();
+    assertTrue(!!router, 'personalization-router should be top level element');
+
+    const wallpaperSubpage =
+        router.shadowRoot?.querySelector('wallpaper-subpage');
+    assertTrue(
+        !!wallpaperSubpage,
+        'wallpaper-subpage should be found under personalization-router');
+
+    return wallpaperSubpage;
+  }
+
+  async function getSeaPenRouter(): Promise<SeaPenRouterElement> {
+    const subpage = getWallpaperSubpage();
+    const seaPenTile = await waitUntil(
+        () => subpage.shadowRoot?.querySelector('wallpaper-collections')
+                  ?.shadowRoot?.querySelector<WallpaperGridItemElement>(
+                      `wallpaper-grid-item[aria-disabled='false']` +
+                      `[data-sea-pen]`),
+        'waiting for sea-pen-tile');
+    seaPenTile.click();
+    const seaPenRouter = await waitUntil(
+        () => getRouter().shadowRoot?.querySelector<SeaPenRouterElement>(
+            'sea-pen-router')!,
+        'waiting for sea-pen-router');
+    return seaPenRouter;
+  }
+
+  async function getSeaPenTemplateQuery(templateIndex: number):
+      Promise<SeaPenTemplateQueryElement> {
+    const seaPenRouter = SeaPenRouterElement.instance();
+    const templates = await waitUntil(
+        () => seaPenRouter.shadowRoot?.querySelector('sea-pen-templates')
+                  ?.shadowRoot?.querySelectorAll<WallpaperGridItemElement>(
+                      `wallpaper-grid-item[data-sea-pen-image]`),
+        'waiting for sea-pen-tile');
+    templates[templateIndex]!.click();
+
+    return await waitUntil(
+        () =>
+            seaPenRouter.shadowRoot?.querySelector<SeaPenTemplateQueryElement>(
+                'sea-pen-template-query')!,
+        'waiting for sea-pen-template-query');
+  }
+
+  setup(async () => {
+    // Disables transition animation for tests.
+    setTransitionsEnabled(false);
+
+    // Reset to default state before each test to reduce order dependencies.
+    await window.personalizationTestApi.reset();
+
+    clickWallpaperPreviewLink();
+  });
+
+  test('has selected wallpaper on root page', async () => {
+    await getSeaPenRouter();
+
+    const wallpaperSelected = await waitUntil(
+        () => getRouter().shadowRoot?.getElementById('wallpaperSelected')!,
+        'waiting for sea-pen-router wallpaper-selected', /*intervalMs=*/ 500,
+        /*timeoutMs=*/ 3001);
+    assertTrue(!!wallpaperSelected, 'wallpaper-selected should exist');
+  });
+
+  test('hides selected wallpaper on non root page', async () => {
+    await getSeaPenRouter();
+
+    let wallpaperSelected =
+        getRouter().shadowRoot?.getElementById('wallpaperSelected')!;
+    assertTrue(!!wallpaperSelected, 'wallpaper-selected should exist');
+    assertNotEquals(getComputedStyle(wallpaperSelected).display, 'none');
+
+    const seaPenTemplateQuery = await getSeaPenTemplateQuery(0);
+    assertTrue(!!seaPenTemplateQuery, 'sea-pen-template-query should exist');
+
+    wallpaperSelected =
+        getRouter().shadowRoot?.getElementById('wallpaperSelected')!;
+    assertFalse(!!wallpaperSelected, 'wallpaper-selected should not exist');
+  });
+
+  test('show more option chips', async () => {
+    const seaPenRouter = await getSeaPenRouter();
+
+    const acceptTermsButton = await waitUntil(
+        () => seaPenRouter.shadowRoot
+                  ?.querySelector('sea-pen-terms-of-service-dialog')
+                  ?.shadowRoot?.querySelector<HTMLElement>('#accept'),
+        'wait for accept button to load');
+    acceptTermsButton.click();
+
+    const seaPenTemplateQuery = await getSeaPenTemplateQuery(6);
+    assertTrue(!!seaPenTemplateQuery, 'Characters template should show up');
+
+    const seaPenChips = await waitUntil(
+        () => seaPenTemplateQuery.shadowRoot?.querySelectorAll<HTMLDivElement>(
+            '#template > .chip-container > .chip-text'),
+        'waiting for chips');
+    assertEquals(
+        3, seaPenChips.length,
+        'there should be 3 chips in the Characters template');
+    seaPenChips[1]!.click();
+
+    const seaPenOptions = await waitUntil(
+        () => seaPenTemplateQuery.shadowRoot?.querySelector('sea-pen-options'),
+        'waiting for sea-pen-options to load');
+
+    let options = await waitUntil(
+        () => seaPenOptions.shadowRoot?.querySelectorAll<CrButtonElement>(
+            '.option'),
+        'waiting for options to load');
+    const numOptionsInitiallyShown = options.length;
+    assertTrue(numOptionsInitiallyShown > 0, 'some options are shown');
+
+    const expandButton = await waitUntil(
+        () => seaPenOptions.shadowRoot?.querySelector<CrButtonElement>(
+            '#expandButton'),
+        'wait for expand button');
+    assertTrue(!!expandButton, 'expand button should show up');
+
+    expandButton.click();
+    options = await waitUntil(
+        () => seaPenOptions.shadowRoot?.querySelectorAll<CrButtonElement>(
+            '.option'),
+        'waiting for options to load');
+    assertLE(
+        numOptionsInitiallyShown, options.length,
+        'more options should show up after clicking expand button');
+  });
+
+  [false, true].forEach((useInspire, i) => {
+    test(`creates images with inspire ${useInspire}`, async () => {
+      const seaPenRouter = await getSeaPenRouter();
+      const seaPenTemplateQuery = await getSeaPenTemplateQuery(6);
+      {
+        // Creates images.
+        assertTrue(!!seaPenTemplateQuery, 'Characters template should show up');
+        if (useInspire) {
+          seaPenTemplateQuery.shadowRoot?.getElementById('inspire')!.click();
+        } else {
+          seaPenTemplateQuery.shadowRoot?.getElementById(
+                                            'searchButton')!.click();
+        }
+      }
+
+      {
+        // Selects an image.
+        const seaPenImages = await waitUntil(
+            () => seaPenRouter.shadowRoot?.querySelector<SeaPenImagesElement>(
+                'sea-pen-images'),
+            'waiting for sea-pen-images');
+
+        const thumbnailsToClick = await waitUntil(
+            () => Array.from(seaPenImages!.shadowRoot!.querySelectorAll<
+                             WallpaperGridItemElement>(
+                `wallpaper-grid-item[aria-disabled='false'][data-sea-pen-image]`)),
+            'waiting for thumbnails load');
+        assertTrue(!!thumbnailsToClick, 'thumbnails should show up');
+
+        thumbnailsToClick[i]!.click();
+        assertTrue(
+            thumbnailsToClick[i]?.getAttribute('aria-selected') === 'true',
+            'thumbnail should be selected');
+      }
+
+      const expectedWallpaperTitle =
+          seaPenTemplateQuery.shadowRoot?.getElementById('template')
+              ?.innerText?.replace(/\n/gmi, ' ')
+              .trim();
+
+      // Goes back to sea pen root page.
+      seaPenRouter.goToRoute(SeaPenPaths.ROOT);
+
+      {
+        // Verifies the image is set properly.
+        const wallpaperSelected = await waitUntil(
+            () => getRouter().shadowRoot?.getElementById('wallpaperSelected')!,
+            'waiting for sea-pen-router wallpaper-selected');
+        assertTrue(!!wallpaperSelected, 'wallpaper-selected should exist');
+        const textContainer = await waitUntil(
+            () => wallpaperSelected.shadowRoot?.getElementById('textContainer'),
+            'waiting for wallpaper text container', /*intervalMs=*/ 500,
+            /*timeoutMs=*/ 3001);
+        assertTrue(!!textContainer, 'wallpaper text container exists');
+        assertEquals(
+            expectedWallpaperTitle,
+            textContainer?.querySelector('#imageTitle')?.textContent?.trim(),
+            'image title is correct');
+      }
+
+      {
+        // Verifies the image is visible in recent images.
+        const recentImages = await waitUntil(
+            () => seaPenRouter.shadowRoot
+                      ?.querySelector<SeaPenRecentWallpapersElement>(
+                          'sea-pen-recent-wallpapers'),
+            'waiting for sea-pen-recent-wallpapers');
+        assertTrue(!!recentImages, 'recent images should exist');
+
+        const menuButton = recentImages.shadowRoot?.querySelector<
+            CrIconButtonElement>(
+            `wallpaper-grid-item[aria-selected=true] + .menu-icon-container cr-icon-button`);
+        assertTrue(!!menuButton, 'menu button exists');
+        menuButton!.click();
+
+        const aboutButton = await waitUntil(
+            () => recentImages.shadowRoot?.querySelector<HTMLButtonElement>(
+                `wallpaper-grid-item[aria-selected=true] ~ cr-action-menu .wallpaper-info-option`),
+            'waiting for about wallpaper button');
+        assertTrue(!!aboutButton, 'about wallpaper button exists');
+        aboutButton!.click();
+
+        const dialog = await waitUntil(
+            () => recentImages.shadowRoot?.querySelector<CrDialogElement>(
+                'cr-dialog'),
+            'waiting for about wallpaper dialog');
+        assertTrue(!!dialog, 'about wallpaper dialog exists');
+
+        const promptInfo =
+            recentImages.shadowRoot?.querySelector<HTMLParagraphElement>(
+                'p.about-prompt-info');
+        assertTrue(
+            !!promptInfo?.textContent?.trim().includes(expectedWallpaperTitle!),
+            `prompt info should include ${expectedWallpaperTitle}`);
+      }
+    });
+  });
+
+  test('selects recent image', async () => {
+    const seaPenRouter = await getSeaPenRouter();
+    const recentImages = await waitUntil(
+        () => seaPenRouter.shadowRoot
+                  ?.querySelector<SeaPenRecentWallpapersElement>(
+                      'sea-pen-recent-wallpapers'),
+        'waiting for sea-pen-recent-wallpapers');
+    assertTrue(!!recentImages, 'recent images should exist');
+
+    {
+      // Selects first non-selected image.
+      const image =
+          recentImages.shadowRoot?.querySelector<WallpaperGridItemElement>(
+              `wallpaper-grid-item[aria-selected=false]`);
+      assertTrue(!!image, 'image exists');
+      image!.click();
+      assertTrue(
+          image?.getAttribute('aria-selected') === 'true',
+          'image should be selected');
+    }
+
+    {
+      // Verifies the image is set properly.
+      const menuButton = recentImages.shadowRoot?.querySelector<
+          CrIconButtonElement>(
+          `wallpaper-grid-item[aria-selected=true] + .menu-icon-container cr-icon-button`);
+      menuButton!.click();
+
+      const aboutButton = await waitUntil(
+          () => recentImages.shadowRoot?.querySelector<HTMLButtonElement>(
+              `wallpaper-grid-item[aria-selected=true] ~ cr-action-menu .wallpaper-info-option`),
+          'waiting for about wallpaper button');
+      assertTrue(!!aboutButton, 'about wallpaper button exists');
+      aboutButton!.click();
+
+      const dialog = await waitUntil(
+          () => recentImages.shadowRoot?.querySelector<CrDialogElement>(
+              'cr-dialog'),
+          'waiting for about wallpaper dialog');
+      assertTrue(!!dialog, 'about wallpaper dialog exists');
+
+      const promptInfo =
+          recentImages.shadowRoot?.querySelector<HTMLParagraphElement>(
+              'p.about-prompt-info');
+      const promptText = promptInfo?.textContent?.trim();
+
+      // Verifies the image is set properly.
+      const wallpaperSelected = await waitUntil(
+          () => getRouter().shadowRoot?.getElementById('wallpaperSelected')!,
+          'waiting for sea-pen-router wallpaper-selected');
+      assertTrue(!!wallpaperSelected, 'wallpaper-selected should exist');
+      const textContainer = await waitUntil(
+          () => wallpaperSelected.shadowRoot?.getElementById('textContainer'),
+          'waiting for wallpaper text container', /*intervalMs=*/ 500,
+          /*timeoutMs=*/ 3001);
+      assertTrue(!!textContainer, 'wallpaper text container exists');
+      await waitUntil(
+          () => promptText?.includes(
+              textContainer.querySelector('#imageTitle')?.textContent?.trim()!),
+          () => `failed waiting for expected image title ` +
+              `after selecting wallpaper. ` +
+              `html:\n${textContainer.outerHTML}`,
+          /*intervalMs=*/ 500,
+          /*timeoutMs=*/ 3001);
+    }
+  });
+});
+
 suite('dynamic color', () => {
   const themeProvider = getThemeProvider();
 
@@ -511,6 +855,9 @@ suite('dynamic color', () => {
   setup(async () => {
     // Reset to default state before each test to reduce dependencies.
     await window.personalizationTestApi.reset();
+
+    // Disables transition animation for tests.
+    setTransitionsEnabled(false);
   });
 
   test('shows dynamic color options', () => {

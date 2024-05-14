@@ -35,10 +35,16 @@
 #ifndef ABSL_CONTAINER_NODE_HASH_SET_H_
 #define ABSL_CONTAINER_NODE_HASH_SET_H_
 
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <string>
 #include <type_traits>
 
 #include "absl/algorithm/container.h"
+#include "absl/base/config.h"
 #include "absl/base/macros.h"
+#include "absl/container/internal/container_memory.h"
 #include "absl/container/internal/hash_function_defaults.h"  // IWYU pragma: export
 #include "absl/container/internal/node_slot_policy.h"
 #include "absl/container/internal/raw_hash_set.h"  // IWYU pragma: export
@@ -62,7 +68,7 @@ struct NodeHashSetPolicy;
 //
 // * Supports heterogeneous lookup, through `find()`, `operator[]()` and
 //   `insert()`, provided that the set is provided a compatible heterogeneous
-//   hashing function and equality operator.
+//   hashing function and equality operator. See below for details.
 // * Contains a `capacity()` member function indicating the number of element
 //   slots (open, deleted, and empty) within the hash set.
 // * Returns `void` from the `erase(iterator)` overload.
@@ -77,6 +83,19 @@ struct NodeHashSetPolicy;
 // Using `absl::node_hash_set` at interface boundaries in dynamically loaded
 // libraries (e.g. .dll, .so) is unsupported due to way `absl::Hash` values may
 // be randomized across dynamically loaded libraries.
+//
+// To achieve heterogeneous lookup for custom types either `Hash` and `Eq` type
+// parameters can be used or `T` should have public inner types
+// `absl_container_hash` and (optionally) `absl_container_eq`. In either case,
+// `typename Hash::is_transparent` and `typename Eq::is_transparent` should be
+// well-formed. Both types are basically functors:
+// * `Hash` should support `size_t operator()(U val) const` that returns a hash
+// for the given `val`.
+// * `Eq` should support `bool operator()(U lhs, V rhs) const` that returns true
+// if `lhs` is equal to `rhs`.
+//
+// In most cases `T` needs only to provide the `absl_container_hash`. In this
+// case `std::equal_to<void>` will be used instead of `eq` part.
 //
 // Example:
 //
@@ -487,6 +506,11 @@ struct NodeHashSetPolicy
   }
 
   static size_t element_space_used(const T*) { return sizeof(T); }
+
+  template <class Hash>
+  static constexpr HashSlotFn get_hash_slot_fn() {
+    return &TypeErasedDerefAndApplyToSlotFn<Hash, T>;
+  }
 };
 }  // namespace container_internal
 
@@ -498,6 +522,32 @@ struct IsUnorderedContainer<absl::node_hash_set<Key, Hash, KeyEqual, Allocator>>
     : std::true_type {};
 
 }  // namespace container_algorithm_internal
+
+// Explicit template instantiations for common set types in order to decrease
+// linker input size. Note that explicitly instantiating node_hash_set itself
+// doesn't help because it has no non-alias members. If we need to decrease
+// linker input size more, we could potentially (a) add more key types, e.g.
+// string_view/Cord, (b) instantiate some template member functions, e.g.
+// find/insert/emplace.
+#define ABSL_INTERNAL_TEMPLATE_NODE_HASH_SET(TEMPLATE, KEY) \
+  TEMPLATE class absl::container_internal::raw_hash_set<    \
+      absl::container_internal::NodeHashSetPolicy<KEY>,     \
+      absl::container_internal::hash_default_hash<KEY>,     \
+      absl::container_internal::hash_default_eq<KEY>, std::allocator<KEY>>
+
+// We use exact-width integer types rather than `int`/`long`/`long long` because
+// these are the types recommended in the Google C++ style guide and which are
+// commonly used in Google code.
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_SET(extern template, int8_t);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_SET(extern template, int16_t);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_SET(extern template, int32_t);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_SET(extern template, int64_t);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_SET(extern template, uint8_t);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_SET(extern template, uint16_t);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_SET(extern template, uint32_t);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_SET(extern template, uint64_t);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_SET(extern template, std::string);
+
 ABSL_NAMESPACE_END
 }  // namespace absl
 

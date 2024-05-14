@@ -30,6 +30,7 @@
 #include "components/unexportable_keys/unexportable_key_task_manager.h"
 #include "components/variations/scoped_variations_ids_provider.h"
 #include "crypto/scoped_mock_unexportable_key_provider.h"
+#include "crypto/unexportable_key.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/http/http_status_code.h"
@@ -52,6 +53,7 @@ using unexportable_keys::UnexportableKeyService;
 
 constexpr char kSessionId[] = "session_id";
 constexpr char kChallenge[] = "aGVsbG8_d29ybGQ";
+constexpr net::Error kConnectionNetError = net::ERR_UNEXPECTED;
 
 UnexportableKeyId GenerateNewKey(
     UnexportableKeyService& unexportable_key_service) {
@@ -185,6 +187,15 @@ class BoundSessionRefreshCookieFetcherImplTest : public ::testing::Test {
         "Signin.BoundSessionCredentials."
         "CookieRotationGenerateAssertionDuration",
         expect_assertion_was_generated_count);
+
+    std::vector<base::Bucket> expected_net_error_buckets;
+    if (expected_result == Result::kConnectionError) {
+      expected_net_error_buckets.emplace_back(-kConnectionNetError,
+                                              /*count=*/1);
+    }
+    EXPECT_THAT(histogram_tester_.GetAllSamples(
+                    "Signin.BoundSessionCredentials.CookieRotationNetError"),
+                testing::ElementsAreArray(expected_net_error_buckets));
   }
 
   base::test::TaskEnvironment task_environment_{
@@ -192,7 +203,8 @@ class BoundSessionRefreshCookieFetcherImplTest : public ::testing::Test {
   variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
       variations::VariationsIdsProvider::Mode::kUseSignedInState};
   crypto::ScopedMockUnexportableKeyProvider scoped_key_provider_;
-  unexportable_keys::UnexportableKeyTaskManager unexportable_key_task_manager_;
+  unexportable_keys::UnexportableKeyTaskManager unexportable_key_task_manager_{
+      crypto::UnexportableKeyProvider::Config()};
   unexportable_keys::UnexportableKeyServiceImpl unexportable_key_service_;
   UnexportableKeyId binding_key_id_;
   std::unique_ptr<SessionBindingHelper> session_binding_helper_;
@@ -356,7 +368,7 @@ TEST_F(BoundSessionRefreshCookieFetcherImplTest, FailureNetError) {
   network::TestURLLoaderFactory::PendingRequest* pending_request =
       test_url_loader_factory_.GetPendingRequest(0);
 
-  network::URLLoaderCompletionStatus status(net::ERR_UNEXPECTED);
+  network::URLLoaderCompletionStatus status(kConnectionNetError);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
       pending_request->request.url, status,
       network::mojom::URLResponseHead::New(), std::string());

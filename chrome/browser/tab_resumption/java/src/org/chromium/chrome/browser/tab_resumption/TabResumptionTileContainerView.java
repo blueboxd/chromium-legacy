@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.tab_resumption.TabResumptionModuleUtils.Sugge
 
 /** The view containing suggestion tiles on the tab resumption module. */
 public class TabResumptionTileContainerView extends LinearLayout {
-
     public TabResumptionTileContainerView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
@@ -41,14 +40,20 @@ public class TabResumptionTileContainerView extends LinearLayout {
         removeAllViews();
     }
 
-    /** Adds all new {@link TabResumptionTileView} instances, after removing existing ones. */
-    public void renderAllTiles(
+    /**
+     * Adds all new {@link TabResumptionTileView} instances, after removing existing ones and
+     * returns the text of all instances.
+     */
+    public String renderAllTiles(
             SuggestionBundle bundle,
             UrlImageProvider urlImageProvider,
             SuggestionClickCallback suggestionClickCallback) {
         removeAllViews();
 
-        boolean isSingle = bundle.entries.size() == 1;
+        String allTilesTexts = "";
+        int entryCount = bundle.entries.size();
+        boolean isSingle = entryCount == 1;
+        int entryIndex = 0;
         for (SuggestionEntry entry : bundle.entries) {
             // Add divider if some tile already exists.
             if (getChildCount() > 0) {
@@ -68,15 +73,19 @@ public class TabResumptionTileContainerView extends LinearLayout {
             TabResumptionTileView tileView =
                     (TabResumptionTileView)
                             LayoutInflater.from(getContext()).inflate(layoutId, this, false);
-            loadTileTexts(entry, bundle.referenceTimeMs, isSingle, tileView);
+            allTilesTexts +=
+                    loadTileTexts(entry, bundle.referenceTimeMs, isSingle, tileView) + ". ";
             loadTileUrlImage(entry, urlImageProvider, tileView);
-            tileView.bindSuggestionClickCallback(suggestionClickCallback, entry.url);
+            tileView.bindSuggestionClickCallback(
+                    suggestionClickCallback, entry.url, entryCount, entryIndex);
             addView(tileView);
+            ++entryIndex;
         }
+        return allTilesTexts;
     }
 
-    /** Renders the texts of a {@link TabResumptionTileView}. */
-    private void loadTileTexts(
+    /** Renders and returns the texts of a {@link TabResumptionTileView}. */
+    private String loadTileTexts(
             SuggestionEntry entry,
             long referenceTimeMs,
             boolean isSingle,
@@ -92,8 +101,9 @@ public class TabResumptionTileContainerView extends LinearLayout {
                     res.getString(
                             R.string.tab_resumption_module_single_post_info,
                             recencyString,
-                            entry.url.getHost());
+                            TabResumptionModuleUtils.getDomainUrl(entry.url));
             tileView.setSuggestionTextsSingle(preInfoText, entry.title, postInfoText);
+            return preInfoText + ", " + entry.title + ", " + postInfoText;
         } else {
             String infoText =
                     res.getString(
@@ -101,6 +111,7 @@ public class TabResumptionTileContainerView extends LinearLayout {
                             recencyString,
                             entry.sourceName);
             tileView.setSuggestionTextsMulti(entry.title, infoText);
+            return entry.title + ", " + infoText;
         }
     }
 

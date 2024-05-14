@@ -13,8 +13,14 @@ namespace autofill {
 TestAddressDataManager::TestAddressDataManager(
     base::RepeatingClosure notify_pdm_observers)
     : AddressDataManager(/*webdata_service=*/nullptr,
+                         /*pref_service=*/nullptr,
+                         /*strike_database=*/nullptr,
                          notify_pdm_observers,
-                         "en-US") {}
+                         "en-US") {
+  // Not initialized through the base class constructor call, since
+  // `inmemory_strike_database_` is not initialized at this point.
+  SetStrikeDatabase(&inmemory_strike_database_);
+}
 
 TestAddressDataManager::~TestAddressDataManager() = default;
 
@@ -40,6 +46,7 @@ void TestAddressDataManager::RemoveProfile(const std::string& guid) {
       GetProfileStorage(profile->source());
   profiles.erase(base::ranges::find(profiles, profile,
                                     &std::unique_ptr<AutofillProfile>::get));
+  notify_pdm_observers_.Run();
 }
 
 void TestAddressDataManager::LoadProfiles() {
@@ -54,6 +61,15 @@ void TestAddressDataManager::RecordUseOf(const AutofillProfile& profile) {
   if (AutofillProfile* adm_profile = GetProfileByGUID(profile.guid())) {
     adm_profile->RecordAndLogUse();
   }
+}
+
+bool TestAddressDataManager::IsAutofillProfileEnabled() const {
+  // Return the value of autofill_profile_enabled_ if it has been set,
+  // otherwise fall back to the normal behavior of checking the pref_service.
+  if (autofill_profile_enabled_.has_value()) {
+    return autofill_profile_enabled_.value();
+  }
+  return AddressDataManager::IsAutofillProfileEnabled();
 }
 
 void TestAddressDataManager::ClearProfiles() {

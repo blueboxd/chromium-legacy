@@ -13,6 +13,7 @@
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/policy_container.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/remote_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "ui/base/ime/mojom/virtual_keyboard_types.mojom-blink.h"
 
@@ -188,6 +189,9 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
       bool cross_origin_exposed) override;
   void DisableUntrustedNetworkInFencedFrame(
       DisableUntrustedNetworkInFencedFrameCallback callback) override;
+  void ExemptUrlFromNetworkRevocationForTesting(
+      const blink::KURL& exempted_url,
+      ExemptUrlFromNetworkRevocationForTestingCallback callback) override;
   void SendLegacyTechEvent(
       const WTF::String& type,
       mojom::blink::LegacyTechEventCodeLocationPtr code_location) override;
@@ -201,6 +205,8 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
           remote_frame_interfaces,
       const RemoteFrameToken& frame_token,
       const base::UnguessableToken& devtools_frame_token) override;
+  void ForwardFencedFrameEventToEmbedder(
+      const WTF::String& event_type) override;
   void OnViewTransitionOptInChanged(
       mojom::blink::ViewTransitionSameOriginOptIn) override {}
   void StartDragging(const blink::WebDragData& drag_data,
@@ -209,6 +215,9 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
                      const gfx::Vector2d& cursor_offset_in_dip,
                      const gfx::Rect& drag_obj_rect_in_dip,
                      mojom::blink::DragEventSourceInfoPtr event_info) override;
+  void IssueKeepAliveHandle(
+      mojo::PendingReceiver<mojom::blink::NavigationStateKeepAliveHandle>
+          receiver) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

@@ -355,6 +355,9 @@ std::u16string DownloadUIModel::GetWarningText(const std::u16string& filename,
                                         offset);
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_LOCAL_PASSWORD_SCANNING:
       // TODO(crbug.com/1491184): Implement UX for this danger type.
+      return u"";
+    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_SCAN_FAILED:
+      // TODO(b/327392327): Implement UX for this danger type.
       NOTREACHED();
       break;
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
@@ -766,6 +769,10 @@ DownloadUIModel::TailoredWarningType DownloadUIModel::GetTailoredWarningType()
   return TailoredWarningType::kNoTailoredWarning;
 }
 
+DownloadUIModel::DangerUiPattern DownloadUIModel::GetDangerUiPattern() const {
+  return DangerUiPattern::kNormal;
+}
+
 bool DownloadUIModel::ShouldShowInBubble() const {
   return ShouldShowInShelf();
 }
@@ -999,6 +1006,10 @@ DownloadUIModel::BubbleStatusTextBuilder::GetBubbleWarningStatusText() const {
             l10n_util::GetStringUTF16(
                 IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNED_FAILED_UPDATED),
             l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_STATUS_SUSPICIOUS));
+    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_SCAN_FAILED:
+      // TODO(b/327392327): Implement message for this danger type.
+      NOTREACHED();
+      break;
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:

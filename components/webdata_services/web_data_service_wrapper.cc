@@ -28,6 +28,8 @@
 #include "components/autofill/core/browser/webdata/payments/payments_autofill_table.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/plus_addresses/webdata/plus_address_table.h"
+#include "components/plus_addresses/webdata/plus_address_webdata_service.h"
 #include "components/search_engines/keyword_table.h"
 #include "components/search_engines/keyword_web_data_service.h"
 #include "components/signin/public/webdata/token_service_table.h"
@@ -134,6 +136,8 @@ WebDataServiceWrapper::WebDataServiceWrapper(
   profile_database_->AddTable(
       std::make_unique<payments::WebAppManifestSectionTable>());
 #endif
+  profile_database_->AddTable(
+      std::make_unique<plus_addresses::PlusAddressTable>());
   profile_database_->LoadDatabase();
 
   profile_autofill_web_data_ =
@@ -146,6 +150,12 @@ WebDataServiceWrapper::WebDataServiceWrapper(
       profile_database_, ui_task_runner);
   keyword_web_data_->Init(
       base::BindOnce(show_error_callback, ERROR_LOADING_KEYWORD));
+
+  plus_address_web_data_ =
+      base::MakeRefCounted<plus_addresses::PlusAddressWebDataService>(
+          profile_database_, ui_task_runner, db_task_runner);
+  plus_address_web_data_->Init(
+      base::BindOnce(show_error_callback, ERROR_LOADING_PLUS_ADDRESS));
 
   token_web_data_ = base::MakeRefCounted<TokenWebData>(
       profile_database_, ui_task_runner, db_task_runner);
@@ -237,26 +247,31 @@ void WebDataServiceWrapper::Shutdown() {
 
 scoped_refptr<autofill::AutofillWebDataService>
 WebDataServiceWrapper::GetProfileAutofillWebData() {
-  return profile_autofill_web_data_.get();
+  return profile_autofill_web_data_;
 }
 
 scoped_refptr<autofill::AutofillWebDataService>
 WebDataServiceWrapper::GetAccountAutofillWebData() {
-  return account_autofill_web_data_.get();
+  return account_autofill_web_data_;
 }
 
 scoped_refptr<KeywordWebDataService>
 WebDataServiceWrapper::GetKeywordWebData() {
-  return keyword_web_data_.get();
+  return keyword_web_data_;
+}
+
+scoped_refptr<plus_addresses::PlusAddressWebDataService>
+WebDataServiceWrapper::GetPlusAddressWebData() {
+  return plus_address_web_data_;
 }
 
 scoped_refptr<TokenWebData> WebDataServiceWrapper::GetTokenWebData() {
-  return token_web_data_.get();
+  return token_web_data_;
 }
 
 #if BUILDFLAG(USE_BLINK)
 scoped_refptr<payments::PaymentManifestWebDataService>
 WebDataServiceWrapper::GetPaymentManifestWebData() {
-  return payment_manifest_web_data_.get();
+  return payment_manifest_web_data_;
 }
 #endif

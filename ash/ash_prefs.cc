@@ -14,6 +14,7 @@
 #include "ash/app_list/views/app_list_nudge_controller.h"
 #include "ash/app_list/views/search_notifier_controller.h"
 #include "ash/assistant/assistant_controller_impl.h"
+#include "ash/birch/birch_model.h"
 #include "ash/calendar/calendar_controller.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_education_controller.h"
@@ -33,6 +34,7 @@
 #include "ash/metrics/feature_discovery_duration_reporter_impl.h"
 #include "ash/projector/projector_controller_impl.h"
 #include "ash/public/cpp/holding_space/holding_space_prefs.h"
+#include "ash/quick_pair/feature_status_tracker/scanning_enabled_provider.h"
 #include "ash/quick_pair/keyed_service/quick_pair_mediator.h"
 #include "ash/session/fullscreen_controller.h"
 #include "ash/session/session_controller_impl.h"
@@ -107,6 +109,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry,
   AutozoomControllerImpl::RegisterProfilePrefs(registry);
   AutozoomNudgeController::RegisterProfilePrefs(registry);
   AmbientController::RegisterProfilePrefs(registry);
+  BirchModel::RegisterProfilePrefs(registry);
   CalendarController::RegisterProfilePrefs(registry);
   camera_app_prefs::RegisterProfilePrefs(registry);
   CameraEffectsController::RegisterProfilePrefs(registry);
@@ -188,6 +191,9 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry,
     registry->RegisterIntegerPref(prefs::kKeyEventRemappedToSixPackHome, 0);
     registry->RegisterIntegerPref(prefs::kKeyEventRemappedToSixPackPageUp, 0);
     registry->RegisterIntegerPref(prefs::kKeyEventRemappedToSixPackPageDown, 0);
+    registry->RegisterBooleanPref(prefs::kShouldShowPineOnboarding, false);
+    registry->RegisterIntegerPref(prefs::kPineNudgeShownCount, 0);
+    registry->RegisterTimePref(prefs::kPineNudgeLastShown, base::Time());
   }
 }
 
@@ -208,6 +214,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry, bool for_test) {
   KeyboardBacklightColorController::RegisterPrefs(registry);
   BatterySaverController::RegisterLocalStatePrefs(registry);
   PowerSoundsController::RegisterLocalStatePrefs(registry);
+  quick_pair::ScanningEnabledProvider::RegisterLocalStatePrefs(registry);
 
   if (for_test) {
     registry->RegisterBooleanPref(prefs::kOwnerPrimaryMouseButtonRight, false);

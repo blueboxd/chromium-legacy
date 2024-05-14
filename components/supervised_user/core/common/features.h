@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
+#include "extensions/buildflags/buildflags.h"
 
 namespace supervised_user {
 
@@ -16,12 +17,6 @@ BASE_DECLARE_FEATURE(kKidFriendlyContentFeed);
 extern const base::FeatureParam<std::string> kKidFriendlyContentFeedEndpoint;
 
 BASE_DECLARE_FEATURE(kLocalWebApprovals);
-
-// Flags related to supervision features on Desktop and iOS platforms.
-BASE_DECLARE_FEATURE(kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
-BASE_DECLARE_FEATURE(kSupervisedPrefsControlledBySupervisedStore);
-BASE_DECLARE_FEATURE(kEnableManagedByParentUi);
-extern const base::FeatureParam<std::string> kManagedByParentUiMoreInfoUrl;
 
 // Applies the updated extension approval flow, which can skip parent-approvals
 // on extension installations.
@@ -32,9 +27,15 @@ BASE_DECLARE_FEATURE(
 BASE_DECLARE_FEATURE(kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
 #endif
 
-// Returns whether banner can be displayed to the user after website filtering
-// is enabled
-bool CanDisplayFirstTimeInterstitialBanner();
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+// Returns whether the new mode for extension approval management is enabled.
+// Under this mode, supervised users may request parent approval on each
+// extension installation or the parent allows and approves by default all
+// extension installations.
+// On Win/Linux/Mac enabling the new mode requires that the feature
+// `kEnableExtensionsPermissionsForSupervisedUsersOnDesktop` is also enabled.
+bool IsSupervisedUserSkipParentApprovalToInstallExtensionsEnabled();
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 // Request priority experiment for ClassifyUrl (for critical path of rendering).
 BASE_DECLARE_FEATURE(kHighestRequestPriorityForClassifyUrl);
@@ -53,27 +54,21 @@ BASE_DECLARE_FEATURE(kCustomWebSignInInterceptForSupervisedUsers);
 // latencies.
 BASE_DECLARE_FEATURE(kShadowKidsApiWithSafeSites);
 
-// Forces Safe Search for supervised users.
-BASE_DECLARE_FEATURE(kForceGoogleSafeSearchForSupervisedUsers);
-
 // Updates usages of Profile.isChild() in Profile.java to use the account
 // capability to determine if account is supervised.
 #if BUILDFLAG(IS_ANDROID)
 BASE_DECLARE_FEATURE(kMigrateAccountManagementSettingsToCapabilities);
 #endif
 
+// Sets kForceYouTubeRestrict to be applied according to parental controls set
+// on Family Link
+BASE_DECLARE_FEATURE(kRemoveForceAppliedYoutubeRestrictPolicy);
+
 // Returns whether local parent approvals on Family Link user's device are
 // enabled.
 // Local web approvals are only available when refreshed version of web
 // filter interstitial is enabled.
 bool IsLocalWebApprovalsEnabled();
-
-// Returns true if child account supervision features should be enabled for this
-// client.
-//
-// This method does not take into account whether the user is actually a child;
-// that must be handled by calling code.
-bool IsChildAccountSupervisionEnabled();
 
 // Returns whether the experiment to display a kid-friendly content stream on
 // the New Tab page has been enabled.

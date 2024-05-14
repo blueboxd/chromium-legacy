@@ -4,64 +4,103 @@
 
 #include "content/browser/indexed_db/indexed_db_bucket_context.h"
 
+#include <inttypes.h>
+#include <stddef.h>
+#include <atomic>
+#include <compare>
 #include <list>
+#include <ostream>
+#include <set>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
-#include "base/command_line.h"
+#include "base/check.h"
+#include "base/check_op.h"
+#include "base/compiler_specific.h"
 #include "base/containers/contains.h"
-#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/location.h"
+#include "base/logging.h"
+#include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
+#include "base/numerics/checked_math.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/system/sys_info.h"
+#include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/task_runner.h"
+#include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/timer/elapsed_timer.h"
-#include "base/trace_event/base_tracing.h"
+#include "base/trace_event/common/trace_event_common.h"
+#include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/uuid.h"
 #include "build/build_config.h"
-#include "components/services/storage/indexed_db/leveldb/leveldb_factory.h"
+#include "components/services/storage/indexed_db/leveldb/leveldb_state.h"
+#include "components/services/storage/indexed_db/locks/partitioned_lock_manager.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_factory.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_transaction.h"
 #include "components/services/storage/privileged/mojom/indexed_db_client_state_checker.mojom.h"
-#include "components/services/storage/privileged/mojom/indexed_db_control.mojom.h"
+#include "components/services/storage/privileged/mojom/indexed_db_internals_types.mojom-shared.h"
+#include "components/services/storage/privileged/mojom/indexed_db_internals_types.mojom.h"
+#include "components/services/storage/public/mojom/blob_storage_context.mojom-shared.h"
 #include "components/services/storage/public/mojom/blob_storage_context.mojom.h"
+#include "content/browser/indexed_db/features.h"
 #include "content/browser/indexed_db/file_path_util.h"
 #include "content/browser/indexed_db/file_stream_reader_to_data_pipe.h"
 #include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
-#include "content/browser/indexed_db/indexed_db_bucket_context.h"
 #include "content/browser/indexed_db/indexed_db_bucket_context_handle.h"
-#include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_compaction_task.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
-#include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_data_format_version.h"
+#include "content/browser/indexed_db/indexed_db_data_loss_info.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
+#include "content/browser/indexed_db/indexed_db_external_object.h"
 #include "content/browser/indexed_db/indexed_db_factory_client.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/indexed_db_pre_close_task_queue.h"
 #include "content/browser/indexed_db/indexed_db_reporting.h"
-#include "content/browser/indexed_db/indexed_db_task_helper.h"
 #include "content/browser/indexed_db/indexed_db_tombstone_sweeper.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
+#include "content/browser/indexed_db/list_set.h"
+#include "content/browser/indexed_db/mock_browsertest_indexed_db_class_factory.h"
+#include "env_chromium.h"
+#include "mojo/public/cpp/base/big_buffer.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/struct_ptr.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/file_system/file_stream_reader.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/mojom/file_system_access/file_system_access_transfer_token.mojom.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 
 namespace content {
 namespace {
@@ -134,10 +173,176 @@ base::Time GenerateNextGlobalCompactionTime(base::Time now) {
   return now + base::Milliseconds(rand_millis);
 }
 
+// This struct facilitates requesting bucket space usage from the quota manager.
+// There have been reports of the callback being passed to the quota manager
+// never being invoked. This struct will make sure to invoke the wrapped
+// callback when it goes out of scope. The struct itself is in turn intended to
+// be wrapped in a callback passed to the quota manager.
+//
+// There are three main tasks for this struct.
+// * It makes sure the passed callback is run by doing so on destruction.
+// * It logs UMA.
+// * It times out the request if the quota manager is taking too long.
+struct GetBucketSpaceRequestWrapper {
+  static constexpr base::TimeDelta kTimeoutDuration = base::Seconds(45);
+
+  explicit GetBucketSpaceRequestWrapper(
+      base::OnceCallback<void(storage::QuotaErrorOr<int64_t>)> callback)
+      : wrapped_callback(std::move(callback)) {
+    StartTimer();
+  }
+
+  GetBucketSpaceRequestWrapper(GetBucketSpaceRequestWrapper&& other) {
+    wrapped_callback = std::move(other.wrapped_callback);
+    start_time = other.start_time;
+    StartTimer();
+  }
+
+  ~GetBucketSpaceRequestWrapper() { InvokeCallback(); }
+
+  void StartTimer() {
+    timeout.Start(FROM_HERE,
+                  kTimeoutDuration - (base::TimeTicks::Now() - start_time),
+                  base::BindOnce(&GetBucketSpaceRequestWrapper::InvokeCallback,
+                                 base::Unretained(this)));
+  }
+
+  void InvokeCallback() {
+    if (!wrapped_callback) {
+      return;
+    }
+
+    static const char kDroppedRequest[] =
+        "IndexedDB.QuotaCheckTime.DroppedRequest";
+    static const char kSuccess[] = "IndexedDB.QuotaCheckTime.Success";
+    static const char kQuotaError[] = "IndexedDB.QuotaCheckTime.QuotaError";
+    const char* histogram =
+        result_value ? result_value->has_value() ? kSuccess : kQuotaError
+                     : kDroppedRequest;
+    base::UmaHistogramCustomTimes(
+        histogram, base::TimeTicks::Now() - start_time, base::Milliseconds(1),
+        kTimeoutDuration, /*buckets=*/50U);
+
+    std::move(wrapped_callback)
+        .Run(result_value.value_or(
+            base::unexpected(storage::QuotaError::kUnknownError)));
+  }
+
+  base::OneShotTimer timeout;
+  base::OnceCallback<void(storage::QuotaErrorOr<int64_t>)> wrapped_callback;
+  std::optional<storage::QuotaErrorOr<int64_t>> result_value;
+  base::TimeTicks start_time = base::TimeTicks::Now();
+};
+
 IndexedDBDatabaseError CreateDefaultError() {
   return IndexedDBDatabaseError(
       blink::mojom::IDBException::kUnknownError,
       u"Internal error opening backing store for indexedDB.open.");
+}
+
+// Returns some configuration that is shared across leveldb DB instances. The
+// configuration is further tweaked in `CreateLevelDBState()`.
+leveldb_env::Options GetLevelDBOptions() {
+  leveldb_env::Options options;
+  options.paranoid_checks = true;
+  options.compression = leveldb::kSnappyCompression;
+  // For info about the troubles we've run into with this parameter, see:
+  // https://crbug.com/227313#c11
+  options.max_open_files = 80;
+
+  // Thread-safe: static local construction, and `LDBComparator` contains no
+  // state.
+  options.comparator = indexed_db::GetDefaultLevelDBComparator();
+
+  // Thread-safe: static local construction, and `leveldb::Cache` implements
+  // internal synchronization.
+  options.block_cache = leveldb_chrome::GetSharedWebBlockCache();
+
+  // Thread-safe: calls base histogram `FactoryGet()` methods, which are
+  // thread-safe.
+  options.on_get_error = base::BindRepeating(
+      indexed_db::ReportLevelDBError, "WebCore.IndexedDB.LevelDBReadErrors");
+  options.on_write_error = base::BindRepeating(
+      indexed_db::ReportLevelDBError, "WebCore.IndexedDB.LevelDBWriteErrors");
+
+  // Thread-safe: static local construction, and `BloomFilterPolicy` state is
+  // read-only after construction.
+  static const leveldb::FilterPolicy* g_filter_policy =
+      leveldb::NewBloomFilterPolicy(10);
+  options.filter_policy = g_filter_policy;
+
+  // Thread-safe: static local construction, and `ChromiumEnv` implements
+  // internal synchronization.
+  static base::NoDestructor<leveldb_env::ChromiumEnv> g_leveldb_env;
+  options.env = g_leveldb_env.get();
+
+  return options;
+}
+
+std::tuple<scoped_refptr<LevelDBState>,
+           leveldb::Status,
+           /* is_disk_full= */ bool>
+CreateLevelDBState(const leveldb_env::Options& base_options,
+                   const base::FilePath& file_name,
+                   bool create_if_missing,
+                   const std::string& in_memory_name) {
+  if (file_name.empty()) {
+    if (!create_if_missing) {
+      return {nullptr, leveldb::Status::NotFound("", ""), false};
+    }
+
+    std::unique_ptr<leveldb::Env> in_memory_env =
+        leveldb_chrome::NewMemEnv(in_memory_name, base_options.env);
+    leveldb_env::Options in_memory_options = base_options;
+    in_memory_options.env = in_memory_env.get();
+    in_memory_options.paranoid_checks = false;
+    in_memory_options.create_if_missing = true;
+    in_memory_options.write_buffer_size = 4 * 1024 * 1024;
+    std::unique_ptr<leveldb::DB> db;
+    leveldb::Status status =
+        leveldb_env::OpenDB(in_memory_options, std::string(), &db);
+
+    if (UNLIKELY(!status.ok())) {
+      LOG(ERROR) << "Failed to open in-memory LevelDB database: "
+                 << status.ToString();
+      return {nullptr, status, false};
+    }
+
+    return {LevelDBState::CreateForInMemoryDB(
+                std::move(in_memory_env), base_options.comparator,
+                std::move(db), "in-memory-database"),
+            status, false};
+  }
+
+  leveldb_env::Options options = base_options;
+  options.write_buffer_size = leveldb_env::WriteBufferSize(
+      base::SysInfo::AmountOfTotalDiskSpace(file_name));
+  options.create_if_missing = create_if_missing;
+  std::unique_ptr<leveldb::DB> db;
+  leveldb::Status status =
+      leveldb_env::OpenDB(options, file_name.AsUTF8Unsafe(), &db);
+  if (UNLIKELY(!status.ok())) {
+    if (!create_if_missing && status.IsInvalidArgument()) {
+      return {nullptr, leveldb::Status::NotFound("", ""), false};
+    }
+    constexpr int64_t kBytesInOneKilobyte = 1024;
+    int64_t free_disk_space_bytes =
+        base::SysInfo::AmountOfFreeDiskSpace(file_name);
+    bool below_100kb = free_disk_space_bytes != -1 &&
+                       free_disk_space_bytes < 100 * kBytesInOneKilobyte;
+
+    // Disks with <100k of free space almost never succeed in opening a
+    // leveldb database.
+    bool is_disk_full = below_100kb || leveldb_env::IndicatesDiskFull(status);
+
+    LOG(ERROR) << "Failed to open LevelDB database from "
+               << file_name.AsUTF8Unsafe() << "," << status.ToString();
+    return {nullptr, status, is_disk_full};
+  }
+
+  return {LevelDBState::CreateForDiskDB(base_options.comparator, std::move(db),
+                                        std::move(file_name)),
+          status, false};
 }
 
 // Creates the leveldb and blob storage directories for IndexedDB.
@@ -215,28 +420,20 @@ std::tuple<bool, leveldb::Status> AreSchemasKnown(
 // BlobDataItemReader implementation providing a BlobDataItem -> file adapter.
 class IndexedDBDataItemReader : public storage::mojom::BlobDataItemReader {
  public:
-  IndexedDBDataItemReader(
-      const base::FilePath& file_path,
-      base::Time expected_modification_time,
-      base::OnceClosure release_callback,
-      base::OnceCallback<void(const base::FilePath&)>
-          on_last_receiver_disconnected,
-      scoped_refptr<base::TaskRunner> file_task_runner,
-      scoped_refptr<base::TaskRunner> io_task_runner,
-      mojo::PendingReceiver<storage::mojom::BlobDataItemReader>
-          initial_receiver)
+  IndexedDBDataItemReader(const base::FilePath& file_path,
+                          base::Time expected_modification_time,
+                          base::OnceCallback<void(const base::FilePath&)>
+                              on_last_receiver_disconnected,
+                          scoped_refptr<base::TaskRunner> file_task_runner,
+                          scoped_refptr<base::TaskRunner> io_task_runner)
       : file_path_(file_path),
         expected_modification_time_(std::move(expected_modification_time)),
-        release_callback_(std::move(release_callback)),
         on_last_receiver_disconnected_(
             std::move(on_last_receiver_disconnected)),
         file_task_runner_(std::move(file_task_runner)),
         io_task_runner_(std::move(io_task_runner)) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(file_task_runner_);
     DCHECK(io_task_runner_);
-
-    AddReader(std::move(initial_receiver));
 
     // The `BlobStorageContext` will disconnect when the blob is no longer
     // referenced.
@@ -248,10 +445,7 @@ class IndexedDBDataItemReader : public storage::mojom::BlobDataItemReader {
   IndexedDBDataItemReader(const IndexedDBDataItemReader&) = delete;
   IndexedDBDataItemReader& operator=(const IndexedDBDataItemReader&) = delete;
 
-  ~IndexedDBDataItemReader() override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    std::move(release_callback_).Run();
-  }
+  ~IndexedDBDataItemReader() override = default;
 
   void AddReader(mojo::PendingReceiver<BlobDataItemReader> receiver) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -266,38 +460,26 @@ class IndexedDBDataItemReader : public storage::mojom::BlobDataItemReader {
             ReadCallback callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    auto reader = storage::FileStreamReader::CreateForLocalFile(
-        file_task_runner_.get(), file_path_, offset,
-        expected_modification_time_);
     auto adapter = std::make_unique<FileStreamReaderToDataPipe>(
-        std::move(reader), std::move(pipe));
+        storage::FileStreamReader::CreateForLocalFile(
+            file_task_runner_, file_path_, offset, expected_modification_time_),
+        std::move(pipe));
     auto* raw_adapter = adapter.get();
 
-    // Have the adapter (owning the reader) be owned by the result callback.
-    auto current_task_runner = base::SequencedTaskRunner::GetCurrentDefault();
-    auto result_callback = base::BindOnce(
-        [](std::unique_ptr<FileStreamReaderToDataPipe> reader,
-           scoped_refptr<base::SequencedTaskRunner> task_runner,
-           ReadCallback callback, int result) {
-          // |callback| is expected to be run on the original sequence
-          // that called this Read function, so post it back.
-          task_runner->PostTask(FROM_HERE,
-                                base::BindOnce(std::move(callback), result));
-        },
-        std::move(adapter), std::move(current_task_runner),
-        std::move(callback));
+    ReadCallback result_callback = base::BindPostTask(
+        base::SequencedTaskRunner::GetCurrentDefault(), std::move(callback));
+    // Let the adapter be owned by the result callback. The adapter must be
+    // destroyed on `io_task_runner_`, hence the order of wrapping callbacks.
+    ReadCallback callback_owning_adapter = base::BindOnce(
+        base::IgnoreArgs<std::unique_ptr<FileStreamReaderToDataPipe>>(
+            std::move(result_callback)),
+        std::move(adapter));
 
-    // On Windows, all async file IO needs to be done on the io thread.
-    // Do this on all platforms for consistency, even if not necessary on posix.
+    // See note above `io_task_runner_`.
     io_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            [](FileStreamReaderToDataPipe* adapter, uint64_t length,
-               base::OnceCallback<void(int)> result_callback) {
-              adapter->Start(std::move(result_callback), length);
-            },
-            // |raw_adapter| is owned by |result_callback|.
-            base::Unretained(raw_adapter), length, std::move(result_callback)));
+        FROM_HERE, base::BindOnce(&FileStreamReaderToDataPipe::Start,
+                                  base::Unretained(raw_adapter),
+                                  std::move(callback_owning_adapter), length));
   }
 
   void ReadSideData(ReadSideDataCallback callback) override {
@@ -322,10 +504,6 @@ class IndexedDBDataItemReader : public storage::mojom::BlobDataItemReader {
   base::FilePath file_path_;
   base::Time expected_modification_time_;
 
-  // Called on destruction. TODO(estade): can this be combined with
-  // `on_last_receiver_disconnected_`?
-  base::OnceClosure release_callback_;
-
   // Called when the last receiver is disconnected. Will destroy `this`.
   base::OnceCallback<void(const base::FilePath&)>
       on_last_receiver_disconnected_;
@@ -338,7 +516,6 @@ class IndexedDBDataItemReader : public storage::mojom::BlobDataItemReader {
   // * net::FileStream (used by LocalFileStreamReader) needs to be run
   //   on an IO thread for asynchronous file operations (on Windows), which
   //   is done by passing in an |io_task_runner| to do this.
-  // TODO(estade): can these be simplified?
   scoped_refptr<base::TaskRunner> file_task_runner_;
   scoped_refptr<base::TaskRunner> io_task_runner_;
 
@@ -357,6 +534,7 @@ constexpr const base::TimeDelta
 
 IndexedDBBucketContext::Delegate::Delegate()
     : on_ready_for_destruction(base::DoNothing()),
+      on_receiver_bounced(base::DoNothing()),
       on_content_changed(base::DoNothing()),
       on_files_written(base::DoNothing()),
       for_each_bucket_context(base::DoNothing()) {}
@@ -377,6 +555,7 @@ IndexedDBBucketContext::IndexedDBBucketContext(
     InstanceClosure initialize_closure)
     : bucket_info_(std::move(bucket_info)),
       data_path_(data_path),
+      leveldb_options_(GetLevelDBOptions()),
       quota_manager_proxy_(std::move(quota_manager_proxy)),
       file_task_runner_(base::ThreadPool::CreateTaskRunner(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
@@ -384,7 +563,6 @@ IndexedDBBucketContext::IndexedDBBucketContext(
       blob_storage_context_(std::move(blob_storage_context)),
       file_system_access_context_(std::move(file_system_access_context)),
       delegate_(std::move(delegate)) {
-  // TODO(estade): is `SequencedTaskRunner::GetCurrentDefault()` actually safe?
   base::trace_event::MemoryDumpManager::GetInstance()
       ->RegisterDumpProviderWithSequencedTaskRunner(
           this, "IndexedDBBucketContext",
@@ -410,16 +588,12 @@ IndexedDBBucketContext::~IndexedDBBucketContext() {
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
 
-  delegate_.on_ready_for_destruction = base::DoNothing();
+  delegate_.on_ready_for_destruction.Reset();
   ResetBackingStore();
 }
 
 void IndexedDBBucketContext::ForceClose(bool doom) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!backing_store_) {
-    return;
-  }
 
   is_doomed_ = doom;
 
@@ -454,7 +628,7 @@ void IndexedDBBucketContext::ForceClose(bool doom) {
 }
 
 int64_t IndexedDBBucketContext::GetInMemorySize() {
-  return backing_store_->GetInMemorySize();
+  return backing_store_ ? backing_store_->GetInMemorySize() : 0;
 }
 
 void IndexedDBBucketContext::ReportOutstandingBlobs(bool blobs_outstanding) {
@@ -484,10 +658,18 @@ void IndexedDBBucketContext::CheckCanUseDiskSpace(
   bucket_space_check_callbacks_.emplace(space_requested,
                                         std::move(bucket_space_check_callback));
   if (!check_pending) {
+    auto callback_with_logging = base::BindOnce(
+        [](GetBucketSpaceRequestWrapper request_wrapper,
+           storage::QuotaErrorOr<int64_t> result) {
+          request_wrapper.result_value = result;
+        },
+        GetBucketSpaceRequestWrapper(
+            base::BindOnce(&IndexedDBBucketContext::OnGotBucketSpaceRemaining,
+                           weak_factory_.GetWeakPtr())));
+
     quota_manager()->GetBucketSpaceRemaining(
         bucket_locator(), base::SequencedTaskRunner::GetCurrentDefault(),
-        base::BindOnce(&IndexedDBBucketContext::OnGotBucketSpaceRemaining,
-                       weak_factory_.GetWeakPtr()));
+        std::move(callback_with_logging));
   }
 }
 
@@ -642,9 +824,19 @@ void IndexedDBBucketContext::AddReceiver(
         client_state_checker_remote,
     base::UnguessableToken client_token,
     mojo::PendingReceiver<blink::mojom::IDBFactory> pending_receiver) {
-  receivers_.Add(
-      this, std::move(pending_receiver),
-      ReceiverContext(std::move(client_state_checker_remote), client_token));
+  // When `on_ready_for_destruction` is non-null, `this` hasn't requested its
+  // own destruction. When it is null, this is to be torn down and has to bounce
+  // the AddReceiver request back to the delegate.
+  if (delegate().on_ready_for_destruction) {
+    receivers_.Add(
+        this, std::move(pending_receiver),
+        ReceiverContext(std::move(client_state_checker_remote), client_token));
+  } else {
+    CHECK(base::FeatureList::IsEnabled(features::kIndexedDBShardBackingStores));
+    delegate().on_receiver_bounced.Run(std::move(client_state_checker_remote),
+                                       client_token,
+                                       std::move(pending_receiver));
+  }
 }
 
 void IndexedDBBucketContext::GetDatabaseInfo(GetDatabaseInfoCallback callback) {
@@ -828,6 +1020,10 @@ void IndexedDBBucketContext::FillInMetadata(
   // TODO(jsbell): Sort by name?
   std::vector<storage::mojom::IdbDatabaseMetadataPtr> database_list;
 
+  if (backing_store_ && backing_store_->in_memory()) {
+    info->size = GetInMemorySize();
+  }
+
   for (const auto& [name, db] : databases_) {
     storage::mojom::IdbDatabaseMetadataPtr db_info =
         storage::mojom::IdbDatabaseMetadata::New();
@@ -905,6 +1101,11 @@ void IndexedDBBucketContext::FillInMetadata(
   std::move(result).Run(std::move(info));
 }
 
+IndexedDBBucketContext* IndexedDBBucketContext::GetReferenceForTesting() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return this;
+}
+
 void IndexedDBBucketContext::CompactBackingStoreForTesting() {
   // Compact the first db's backing store since all the db's are in the same
   // backing store.
@@ -920,14 +1121,20 @@ void IndexedDBBucketContext::CompactBackingStoreForTesting() {
 
 void IndexedDBBucketContext::WriteToIndexedDBForTesting(
     const std::string& key,
-    const std::string& value,
-    base::OnceClosure callback) {
+    const std::string& value) {
   TransactionalLevelDBDatabase* db = backing_store_->db();
   std::string value_copy = value;
   leveldb::Status s = db->Put(key, &value_copy);
   CHECK(s.ok()) << s.ToString();
   ForceClose(true);
-  std::move(callback).Run();
+}
+
+void IndexedDBBucketContext::BindMockFailureSingletonForTesting(
+    mojo::PendingReceiver<storage::mojom::MockFailureInjector> receiver) {
+  CHECK(!backing_store_);
+  transactional_leveldb_factory_ =
+      std::make_unique<MockBrowserTestIndexedDBClassFactory>(
+          std::move(receiver));
 }
 
 // static
@@ -991,9 +1198,7 @@ void IndexedDBBucketContext::StartClosing() {
   DCHECK(CanClose());
   DCHECK(!IsClosing());
 
-  if (skip_closing_sequence_ ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kIDBCloseImmediatelySwitch)) {
+  if (skip_closing_sequence_) {
     CloseNow();
     return;
   }
@@ -1093,9 +1298,8 @@ bool IndexedDBBucketContext::ShouldRunTombstoneSweeper() {
       &IndexedDBBucketContext::SetInternalState, earliest_global_sweep_time_,
       earliest_global_compaction_time_));
   std::unique_ptr<LevelDBDirectTransaction> txn =
-      IndexedDBClassFactory::Get()
-          ->transactional_leveldb_factory()
-          .CreateLevelDBDirectTransaction(backing_store_->db());
+      transactional_leveldb_factory_->CreateLevelDBDirectTransaction(
+          backing_store_->db());
   s = indexed_db::SetEarliestSweepTime(txn.get(),
                                        GenerateNextBucketSweepTime(now));
   // TODO(dmurph): Log this or report to UMA.
@@ -1142,9 +1346,8 @@ bool IndexedDBBucketContext::ShouldRunCompaction() {
       &IndexedDBBucketContext::SetInternalState, earliest_global_sweep_time_,
       earliest_global_compaction_time_));
   std::unique_ptr<LevelDBDirectTransaction> txn =
-      IndexedDBClassFactory::Get()
-          ->transactional_leveldb_factory()
-          .CreateLevelDBDirectTransaction(backing_store_->db());
+      transactional_leveldb_factory_->CreateLevelDBDirectTransaction(
+          backing_store_->db());
   s = indexed_db::SetEarliestCompactionTime(
       txn.get(), GenerateNextBucketCompactionTime(now));
   // TODO(dmurph): Log this or report to UMA.
@@ -1170,17 +1373,20 @@ void IndexedDBBucketContext::BindFileReader(
   DCHECK(file_task_runner_);
 
   auto itr = file_reader_map_.find(path);
-  if (itr != file_reader_map_.end()) {
-    itr->second->AddReader(std::move(receiver));
-    return;
+  if (itr == file_reader_map_.end()) {
+    auto reader = std::make_unique<IndexedDBDataItemReader>(
+        path, expected_modification_time,
+        base::BindOnce(&IndexedDBBucketContext::RemoveBoundReaders,
+                       weak_factory_.GetWeakPtr()),
+        file_task_runner_, io_task_runner_);
+    itr = file_reader_map_
+              .insert({path, std::make_tuple(std::move(reader),
+                                             base::ScopedClosureRunner(
+                                                 std::move(release_callback)))})
+              .first;
   }
 
-  auto reader = std::make_unique<IndexedDBDataItemReader>(
-      path, expected_modification_time, std::move(release_callback),
-      base::BindOnce(&IndexedDBBucketContext::RemoveBoundReaders,
-                     weak_factory_.GetWeakPtr()),
-      file_task_runner_, io_task_runner_, std::move(receiver));
-  file_reader_map_.insert({path, std::move(reader)});
+  std::get<0>(itr->second)->AddReader(std::move(receiver));
 }
 
 void IndexedDBBucketContext::RemoveBoundReaders(const base::FilePath& path) {
@@ -1199,17 +1405,20 @@ void IndexedDBBucketContext::HandleBackingStoreCorruption(
                                      data_path_.AsUTF8Unsafe(), "...");
   IndexedDBBackingStore::RecordCorruptionInfo(data_path_, bucket_locator(),
                                               sanitized_message);
-  // Note: DestroyLevelDB only deletes LevelDB files, leaving all others,
+
+  const base::FilePath file_path =
+      data_path_.Append(indexed_db::GetLevelDBFileName(bucket_locator()));
+  ForceClose(/*doom=*/false);
+
+  // NB: `this` will be synchronously deleted here while
+  // kIndexedDBShardBackingStores is false.
+
+  // Note: DestroyDB only deletes LevelDB files, leaving all others,
   //       so our corruption info file will remain.
   //       The blob directory will be deleted when the database is recreated
   //       the next time it is opened.
-  const base::FilePath file_path =
-      data_path_.Append(indexed_db::GetLevelDBFileName(bucket_locator()));
-  ForceClose(/*will_be_deleted=*/false);
-  // `this` may be deleted.
-
   leveldb::Status s =
-      IndexedDBClassFactory::Get()->leveldb_factory().DestroyLevelDB(file_path);
+      leveldb::DestroyDB(file_path.AsUTF8Unsafe(), GetLevelDBOptions());
   DLOG_IF(ERROR, !s.ok()) << "Unable to delete backing store: " << s.ToString();
 }
 
@@ -1233,6 +1442,12 @@ void IndexedDBBucketContext::OnDatabaseError(leveldb::Status status,
 bool IndexedDBBucketContext::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!backing_store_) {
+    // Nothing to report when no databases have been loaded.
+    return true;
+  }
+
   base::CheckedNumeric<uint64_t> total_memory_in_flight = 0;
   for (const auto& [name, database] : databases_) {
     for (IndexedDBConnection* connection : database->connections()) {
@@ -1295,8 +1510,8 @@ IndexedDBBucketContext::OpenAndVerifyIndexedDBBackingStore(
           {"IndexedDB (database was corrupt): ", corruption_message});
       // This is a special case where we want to make sure the database is
       // deleted, so we try to delete again.
-      status = IndexedDBClassFactory::Get()->leveldb_factory().DestroyLevelDB(
-          database_path);
+      status =
+          leveldb::DestroyDB(database_path.AsUTF8Unsafe(), leveldb_options_);
 
       if (UNLIKELY(!status.ok())) {
         LOG(ERROR) << "Unable to delete backing store: " << status.ToString();
@@ -1311,11 +1526,10 @@ IndexedDBBucketContext::OpenAndVerifyIndexedDBBackingStore(
   {
     TRACE_EVENT0("IndexedDB", "IndexedDBBucketContext::OpenLevelDB");
     base::TimeTicks begin_time = base::TimeTicks::Now();
-    size_t write_buffer_size = leveldb_env::WriteBufferSize(
-        base::SysInfo::AmountOfTotalDiskSpace(database_path));
-    std::tie(database_state, status, is_disk_full) =
-        IndexedDBClassFactory::Get()->leveldb_factory().OpenLevelDBState(
-            database_path, create_if_missing, write_buffer_size);
+    std::tie(database_state, status, is_disk_full) = CreateLevelDBState(
+        leveldb_options_, database_path, create_if_missing,
+        base::StringPrintf("indexedDB-bucket-%" PRId64,
+                           bucket_info().id.GetUnsafeValue()));
     if (UNLIKELY(!status.ok())) {
       if (!status.IsNotFound()) {
         indexed_db::ReportLevelDBError("WebCore.IndexedDB.LevelDBOpenErrors",
@@ -1351,12 +1565,10 @@ IndexedDBBucketContext::OpenAndVerifyIndexedDBBackingStore(
 
   // Create the TransactionalLevelDBDatabase wrapper.
   std::unique_ptr<TransactionalLevelDBDatabase> database =
-      IndexedDBClassFactory::Get()
-          ->transactional_leveldb_factory()
-          .CreateLevelDBDatabase(std::move(database_state), std::move(scopes),
-                                 base::SequencedTaskRunner::GetCurrentDefault(),
-                                 TransactionalLevelDBDatabase::
-                                     kDefaultMaxOpenIteratorsPerDatabase);
+      transactional_leveldb_factory_->CreateLevelDBDatabase(
+          std::move(database_state), std::move(scopes),
+          base::SequencedTaskRunner::GetCurrentDefault(),
+          TransactionalLevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
 
   bool are_schemas_known = false;
   std::tie(are_schemas_known, status) = AreSchemasKnown(database.get());
@@ -1384,7 +1596,8 @@ IndexedDBBucketContext::OpenAndVerifyIndexedDBBackingStore(
                 : IndexedDBBackingStore::Mode::kOnDisk;
 
   auto backing_store = std::make_unique<IndexedDBBackingStore>(
-      backing_store_mode, bucket_locator(), blob_path, std::move(database),
+      backing_store_mode, bucket_locator(), blob_path,
+      *transactional_leveldb_factory_, std::move(database),
       base::BindRepeating(delegate_.on_files_written,
                           /*flushed=*/true),
       base::BindRepeating(&IndexedDBBucketContext::ReportOutstandingBlobs,
@@ -1421,6 +1634,11 @@ IndexedDBBucketContext::InitBackingStoreIfNeeded(bool create_if_missing) {
     if (!status.ok()) {
       return {status, CreateDefaultError(), IndexedDBDataLossInfo()};
     }
+  }
+
+  if (!transactional_leveldb_factory_) {
+    transactional_leveldb_factory_ =
+        std::make_unique<DefaultTransactionalLevelDBFactory>();
   }
 
   auto lock_manager = std::make_unique<PartitionedLockManager>();
@@ -1533,14 +1751,15 @@ void IndexedDBBucketContext::ResetBackingStore() {
   skip_closing_sequence_ = false;
   running_tasks_ = false;
 
-  if (receivers_.empty()) {
-    delegate().on_ready_for_destruction.Run();
+  if (receivers_.empty() && delegate().on_ready_for_destruction) {
+    std::move(delegate().on_ready_for_destruction).Run();
   }
 }
 
 void IndexedDBBucketContext::OnReceiverDisconnected() {
-  if (receivers_.empty() && !backing_store_) {
-    delegate().on_ready_for_destruction.Run();
+  if (receivers_.empty() && !backing_store_ &&
+      delegate().on_ready_for_destruction) {
+    std::move(delegate().on_ready_for_destruction).Run();
   }
 }
 

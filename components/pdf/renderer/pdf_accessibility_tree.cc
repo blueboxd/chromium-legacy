@@ -7,8 +7,9 @@
 #include <algorithm>
 #include <iterator>
 #include <utility>
+#include <vector>
 
-#include "base/containers/cxx20_erase.h"
+#include "base/check_is_test.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/i18n/break_iterator.h"
@@ -31,7 +32,12 @@
 #include "pdf/pdf_accessibility_image_fetcher.h"
 #include "pdf/pdf_features.h"
 #include "third_party/blink/public/strings/grit/blink_accessibility_strings.h"
+#include "third_party/blink/public/web/web_ax_object.h"
+#include "third_party/blink/public/web/web_element.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_plugin_container.h"
 #include "ui/accessibility/accessibility_features.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_node_id_forward.h"
@@ -344,8 +350,7 @@ class LineHelper {
     }
   }
 
-  const raw_ref<const std::vector<chrome_pdf::AccessibilityTextRunInfo>,
-                ExperimentalRenderer>
+  const raw_ref<const std::vector<chrome_pdf::AccessibilityTextRunInfo>>
       text_runs_;
   size_t start_index_;
   float accumulated_weight_top_;
@@ -600,14 +605,17 @@ std::unique_ptr<ui::AXNodeData> CreateStatusNodeStaticText(
 
 std::unique_ptr<ui::AXNodeData> CreateStatusNode(
     content::RenderAccessibility* render_accessibility,
-    ui::AXNodeData* parent_node) {
+    ui::AXNodeData* parent_node,
+    bool currently_in_foreground) {
   // Create a status node that conveys a notification message and place the
   // message inside an appropriate ARIA landmark for easy navigation.
   std::unique_ptr<ui::AXNodeData> node =
       CreateNode(ax::mojom::Role::kStatus, ax::mojom::Restriction::kReadOnly,
                  render_accessibility);
   node->relative_bounds = parent_node->relative_bounds;
-  UpdateStatusNodeLiveRegionAttributes(node.get(), AttributeUpdateType::kAdd);
+  if (currently_in_foreground) {
+    UpdateStatusNodeLiveRegionAttributes(node.get(), AttributeUpdateType::kAdd);
+  }
 
   // The status node will be added as the first node to its parent node as the
   // parent node will contain only this status node.
@@ -1507,54 +1515,39 @@ class PdfAccessibilityTreeBuilder {
 
   base::WeakPtr<PdfAccessibilityTree> pdf_accessibility_tree_;
   std::vector<uint32_t> text_run_start_indices_;
-  const raw_ref<const std::vector<chrome_pdf::AccessibilityTextRunInfo>,
-                ExperimentalRenderer>
+  const raw_ref<const std::vector<chrome_pdf::AccessibilityTextRunInfo>>
       text_runs_;
-  const raw_ref<const std::vector<chrome_pdf::AccessibilityCharInfo>,
-                ExperimentalRenderer>
-      chars_;
-  const raw_ref<const std::vector<chrome_pdf::AccessibilityLinkInfo>,
-                ExperimentalRenderer>
-      links_;
+  const raw_ref<const std::vector<chrome_pdf::AccessibilityCharInfo>> chars_;
+  const raw_ref<const std::vector<chrome_pdf::AccessibilityLinkInfo>> links_;
   uint32_t current_link_index_ = 0;
-  const raw_ref<const std::vector<chrome_pdf::AccessibilityImageInfo>,
-                ExperimentalRenderer>
-      images_;
+  const raw_ref<const std::vector<chrome_pdf::AccessibilityImageInfo>> images_;
   uint32_t current_image_index_ = 0;
-  const raw_ref<const std::vector<chrome_pdf::AccessibilityHighlightInfo>,
-                ExperimentalRenderer>
+  const raw_ref<const std::vector<chrome_pdf::AccessibilityHighlightInfo>>
       highlights_;
   uint32_t current_highlight_index_ = 0;
-  const raw_ref<const std::vector<chrome_pdf::AccessibilityTextFieldInfo>,
-                ExperimentalRenderer>
+  const raw_ref<const std::vector<chrome_pdf::AccessibilityTextFieldInfo>>
       text_fields_;
   uint32_t current_text_field_index_ = 0;
-  const raw_ref<const std::vector<chrome_pdf::AccessibilityButtonInfo>,
-                ExperimentalRenderer>
+  const raw_ref<const std::vector<chrome_pdf::AccessibilityButtonInfo>>
       buttons_;
   uint32_t current_button_index_ = 0;
-  const raw_ref<const std::vector<chrome_pdf::AccessibilityChoiceFieldInfo>,
-                ExperimentalRenderer>
+  const raw_ref<const std::vector<chrome_pdf::AccessibilityChoiceFieldInfo>>
       choice_fields_;
   uint32_t current_choice_field_index_ = 0;
   uint32_t page_index_;
-  raw_ptr<ui::AXNodeData, ExperimentalRenderer> root_node_;
-  raw_ptr<ui::AXNodeData, ExperimentalRenderer> page_node_;
-  raw_ptr<content::RenderAccessibility, ExperimentalRenderer>
-      render_accessibility_;
-  raw_ptr<std::vector<std::unique_ptr<ui::AXNodeData>>, ExperimentalRenderer>
-      nodes_;
-  raw_ptr<std::map<int32_t, chrome_pdf::PageCharacterIndex>,
-          ExperimentalRenderer>
+  raw_ptr<ui::AXNodeData> root_node_;
+  raw_ptr<ui::AXNodeData> page_node_;
+  raw_ptr<content::RenderAccessibility> render_accessibility_;
+  raw_ptr<std::vector<std::unique_ptr<ui::AXNodeData>>> nodes_;
+  raw_ptr<std::map<int32_t, chrome_pdf::PageCharacterIndex>>
       node_id_to_page_char_index_;
-  raw_ptr<std::map<int32_t, PdfAccessibilityTree::AnnotationInfo>,
-          ExperimentalRenderer>
+  raw_ptr<std::map<int32_t, PdfAccessibilityTree::AnnotationInfo>>
       node_id_to_annotation_info_;
   float heading_font_size_threshold_ = 0;
   float paragraph_spacing_threshold_ = 0;
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  raw_ptr<PdfOcrService, ExperimentalRenderer> ocr_service_ = nullptr;
+  raw_ptr<PdfOcrService> ocr_service_ = nullptr;
   const bool has_accessible_text_;
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 };
@@ -1564,11 +1557,13 @@ class PdfAccessibilityTreeBuilder {
 PdfAccessibilityTree::PdfAccessibilityTree(
     content::RenderFrame* render_frame,
     chrome_pdf::PdfAccessibilityActionHandler* action_handler,
-    chrome_pdf::PdfAccessibilityImageFetcher* image_fetcher)
+    chrome_pdf::PdfAccessibilityImageFetcher* image_fetcher,
+    blink::WebPluginContainer* plugin_container)
     : content::RenderFrameObserver(render_frame),
       render_frame_(render_frame),
       action_handler_(action_handler),
-      image_fetcher_(image_fetcher) {
+      image_fetcher_(image_fetcher),
+      plugin_container_(plugin_container) {
   DCHECK(render_frame);
   DCHECK(action_handler_);
   DCHECK(image_fetcher_);
@@ -1759,7 +1754,7 @@ void PdfAccessibilityTree::DoSetAccessibilityViewportInfo(
     root_data.relative_bounds.transform = MakeTransformFromViewInfo();
     root->SetData(root_data);
     UpdateAXTreeDataFromSelection();
-    render_accessibility->OnPluginRootNodeUpdated();
+    MarkPluginContainerDirty();
   }
 }
 
@@ -1801,7 +1796,8 @@ void PdfAccessibilityTree::DoSetAccessibilityDocInfo(
   // accessibility tree so that the user will reach out to this node first when
   // navigating the PDF accessibility tree.
   banner_node_ = CreateBannerNode(render_accessibility, doc_node_.get());
-  status_node_ = CreateStatusNode(render_accessibility, banner_node_.get());
+  status_node_ = CreateStatusNode(render_accessibility, banner_node_.get(),
+                                  currently_in_foreground_);
   status_node_text_ =
       CreateStatusNodeStaticText(render_accessibility, status_node_.get());
 
@@ -1829,7 +1825,7 @@ void PdfAccessibilityTree::DoSetAccessibilityDocInfo(
   }
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
-  render_accessibility->SetPluginTreeSource(this);
+  MarkPluginContainerDirty();
 }
 
 void PdfAccessibilityTree::SetAccessibilityPageInfo(
@@ -1962,14 +1958,18 @@ void PdfAccessibilityTree::UnserializeNodes() {
   update.nodes.push_back(*doc_node_);
   update.nodes.push_back(*status_node_);
   update.nodes.push_back(*status_node_text_);
-  for (const auto& node : nodes_)
+  for (const auto& node : nodes_) {
+    render_accessibility->MarkPluginDescendantDirty(node->id);
     update.nodes.push_back(std::move(*node));
+  }
 
   if (!tree_.Unserialize(update))
     LOG(FATAL) << tree_.error();
 
   UpdateAXTreeDataFromSelection();
-  render_accessibility->SetPluginTreeSource(this);
+
+  MarkPluginContainerDirty();
+
   nodes_.clear();
 
   if (!sent_metrics_once_) {
@@ -2017,7 +2017,7 @@ void PdfAccessibilityTree::AddPostamblePageIfNeeded(
     const ui::AXNodeData& page = postamble_page_tree_update_->nodes[1];
     const ui::AXNodeID& page_id = page.id;
     CHECK_NE(ui::kInvalidAXNodeID, page_id);
-    int num_erased = base::EraseIf(doc_node_->child_ids,
+    int num_erased = std::erase_if(doc_node_->child_ids,
                                    [&page_id](const ui::AXNodeID child_id) {
                                      return child_id == page_id;
                                    });
@@ -2130,7 +2130,7 @@ void PdfAccessibilityTree::SetOcrCompleteStatus() {
   if (!tree_.Unserialize(update)) {
     LOG(FATAL) << tree_.error();
   }
-  render_accessibility->SetPluginTreeSource(this);
+  MarkPluginContainerDirty();
 }
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
@@ -2141,6 +2141,10 @@ void PdfAccessibilityTree::SetStatusMessage(int message_id) {
   VLOG(2) << "Setting the status node with message: " << message;
   status_node_->SetNameChecked(message);
   status_node_text_->SetNameChecked(message);
+
+  content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
+  CHECK(render_accessibility);
+  render_accessibility->MarkPluginDescendantDirty(banner_node_->id);
 }
 
 void PdfAccessibilityTree::ResetStatusNodeAttributes() {
@@ -2153,7 +2157,9 @@ void PdfAccessibilityTree::ResetStatusNodeAttributes() {
   CHECK(status_node_);
   CHECK(status_node_text_);
   // Clear out its live region and name attributes as it is no longer necessary
-  // to keep the status node in this case.
+  // to keep the status node in this case. The node may not have live region
+  // attributes. However, it is okay to try removing them from the node as
+  // removing will be performed only when the node has those attributes.
   UpdateStatusNodeLiveRegionAttributes(status_node_.get(),
                                        AttributeUpdateType::kRemove);
   status_node_->RemoveStringAttribute(ax::mojom::StringAttribute::kName);
@@ -2168,7 +2174,7 @@ void PdfAccessibilityTree::ResetStatusNodeAttributes() {
   if (!tree_.Unserialize(update)) {
     LOG(FATAL) << tree_.error();
   }
-  render_accessibility->SetPluginTreeSource(this);
+  MarkPluginContainerDirty();
 }
 
 void PdfAccessibilityTree::UpdateAXTreeDataFromSelection() {
@@ -2307,6 +2313,11 @@ PdfAccessibilityTree::AnnotationInfo::~AnnotationInfo() = default;
 //
 
 bool PdfAccessibilityTree::GetTreeData(ui::AXTreeData* tree_data) const {
+  // This tree may not yet be fully constructed.
+  if (!tree_.root()) {
+    return false;
+  }
+
   tree_data->tree_id = tree_data_.tree_id;
   tree_data->focus_id = tree_data_.focus_id;
   tree_data->sel_is_backward = tree_data_.sel_is_backward;
@@ -2365,7 +2376,19 @@ std::unique_ptr<ui::AXActionTarget> PdfAccessibilityTree::CreateActionTarget(
   return std::make_unique<PdfAXActionTarget>(target_node, this);
 }
 
+blink::WebPluginContainer* PdfAccessibilityTree::GetPluginContainer() {
+  return plugin_container_;
+}
+
 void PdfAccessibilityTree::AccessibilityModeChanged(const ui::AXMode& mode) {
+  auto* render_accessibility = GetRenderAccessibility();
+  if (mode.is_mode_off()) {
+    if (render_accessibility) {
+      render_accessibility->SetPluginTreeSource(nullptr);
+    }
+    return;
+  }
+
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   if (!mode.has_mode(ui::AXMode::kPDFOcr)) {
     if (ocr_service_) {
@@ -2390,6 +2413,14 @@ void PdfAccessibilityTree::OnDestruct() {
   render_frame_ = nullptr;
 }
 
+void PdfAccessibilityTree::WasHidden() {
+  currently_in_foreground_ = false;
+}
+
+void PdfAccessibilityTree::WasShown() {
+  currently_in_foreground_ = true;
+}
+
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 void PdfAccessibilityTree::OnOcrDataReceived(
     std::vector<PdfOcrRequest> ocr_requests,
@@ -2411,6 +2442,7 @@ void PdfAccessibilityTree::OnOcrDataReceived(
   CHECK(doc_node_);
   CHECK_GT(ocr_requests.size(), 0u);
   CHECK_EQ(ocr_requests.size(), tree_updates.size());
+  render_accessibility->MarkPluginDescendantDirty(doc_node_->id);
   for (uint32_t i = 0; i < ocr_requests.size(); ++i) {
     const PdfOcrRequest& ocr_request = ocr_requests[i];
     ui::AXTreeUpdate& tree_update = tree_updates[i];
@@ -2501,7 +2533,7 @@ void PdfAccessibilityTree::OnOcrDataReceived(
                         [](const ui::AXNodeData& node) {
                           return std::make_unique<ui::AXNodeData>(node);
                         });
-      int num_erased = base::EraseIf(
+      int num_erased = std::erase_if(
           nodes_, [&ocr_request](const std::unique_ptr<ui::AXNodeData>& node) {
             return node->id == ocr_request.image_node_id;
           });
@@ -2512,8 +2544,8 @@ void PdfAccessibilityTree::OnOcrDataReceived(
             return node->id == ocr_request.parent_node_id;
           });
       CHECK(parent_node_iter != ranges::end(nodes_));
-      num_erased = base::Erase((*parent_node_iter)->child_ids,
-                               ocr_request.image_node_id);
+      num_erased =
+          std::erase((*parent_node_iter)->child_ids, ocr_request.image_node_id);
       CHECK_EQ(num_erased, 1);
       (*parent_node_iter)->child_ids.push_back(extracted_text_root_node_id);
       // Need to keep iterating the rest of `tree_updates`.
@@ -2527,9 +2559,13 @@ void PdfAccessibilityTree::OnOcrDataReceived(
     CHECK(parent_node);
     ui::AXNodeData parent_node_data = parent_node->data();
     int num_erased =
-        base::Erase(parent_node_data.child_ids, ocr_request.image_node_id);
+        std::erase(parent_node_data.child_ids, ocr_request.image_node_id);
     CHECK_EQ(num_erased, 1);
     parent_node_data.child_ids.push_back(extracted_text_root_node_id);
+    // Because we now have OCR results, the parenting node can no longer be a
+    // paragraph as OCR's tree contains its own paragraph. A generic container
+    // is equivalent to a div.
+    parent_node_data.role = ax::mojom::Role::kGenericContainer;
     tree_update.root_id = doc_node_->id;
     tree_update.nodes.insert(tree_update.nodes.begin(),
                              std::move(parent_node_data));
@@ -2542,7 +2578,7 @@ void PdfAccessibilityTree::OnOcrDataReceived(
     // PDF accessibility tree is available now, so it may be necessary to add a
     // postamble page after the last OCRed page.
     AddPostamblePageIfNeeded(ocr_requests.back().page_node_id);
-    render_accessibility->SetPluginTreeSource(this);
+    MarkPluginContainerDirty();
   } else {
     // PDF accessibility tree is not yet available. If all pages are OCRed
     // before PDF content is being loaded into the accessibility tree, update
@@ -2571,11 +2607,24 @@ void PdfAccessibilityTree::CreateOcrService() {
 bool PdfAccessibilityTree::ShowContextMenu() {
   content::RenderAccessibility* render_accessibility =
       GetRenderAccessibilityIfEnabled();
-  if (!render_accessibility)
+  if (!render_accessibility) {
     return false;
+  }
 
-  render_accessibility->ShowPluginContextMenu();
-  return true;
+  // Might be nullptr within tests.
+  if (!plugin_container_) {
+    CHECK_IS_TEST();
+    return false;
+  }
+
+  const blink::WebAXObject& obj =
+      blink::WebAXObject::FromWebNode(plugin_container_->GetElement());
+  if (obj.IsNull()) {
+    return false;
+  }
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kShowContextMenu;
+  return obj.PerformAction(action_data);
 }
 
 bool PdfAccessibilityTree::SetChildTree(const ui::AXNodeID& target_node_id,
@@ -2601,7 +2650,7 @@ bool PdfAccessibilityTree::SetChildTree(const ui::AXNodeID& target_node_id,
   tree_update.root_id = doc_node_->id;
   tree_update.nodes = {target_node_data};
   CHECK(tree_.Unserialize(tree_update)) << tree_.error();
-  render_accessibility->SetPluginTreeSource(this);
+  MarkPluginContainerDirty();
   return true;
 }
 
@@ -2623,6 +2672,9 @@ void PdfAccessibilityTree::MaybeHandleAccessibilityChange(
     bool always_load_or_reload_accessibility) {
   content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
   if (render_accessibility) {
+    // This call ensures RenderAccessibility always knows about us after it gets
+    // created for any reason e.g. mode changes, startup, etc.
+    render_accessibility->SetPluginTreeSource(this);
     if (always_load_or_reload_accessibility) {
       action_handler_->LoadOrReloadAccessibility();
     } else {
@@ -2643,6 +2695,24 @@ void PdfAccessibilityTree::MaybeHandleAccessibilityChange(
       action_handler_->EnableAccessibility();
     }
   }
+}
+
+void PdfAccessibilityTree::MarkPluginContainerDirty() {
+  // Might be nullptr within tests.
+  if (!plugin_container_) {
+    CHECK_IS_TEST();
+    return;
+  }
+
+  const blink::WebAXObject& obj =
+      blink::WebAXObject::FromWebNode(plugin_container_->GetElement());
+  if (obj.IsDetached()) {
+    return;
+  }
+
+  obj.AddDirtyObjectToSerializationQueue(ax::mojom::EventFrom::kNone,
+                                         ax::mojom::Action::kNone,
+                                         std::vector<ui::AXEventIntent>());
 }
 
 }  // namespace pdf

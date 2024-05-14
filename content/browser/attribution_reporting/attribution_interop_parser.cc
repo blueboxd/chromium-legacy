@@ -28,6 +28,7 @@
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/test_utils.h"
 #include "content/browser/attribution_reporting/attribution_config.h"
+#include "content/browser/attribution_reporting/attribution_constants.h"
 #include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
@@ -237,7 +238,7 @@ class AttributionInteropParser {
 
     ParseInt(dict, "max_event_level_reports_per_destination",
              config.event_level_limit.max_reports_per_destination, required);
-    ParseDouble(dict, "randomized_response_epsilon",
+    ParseDouble(dict, "max_settable_event_level_epsilon",
                 interop_config.max_event_level_epsilon, required);
     ParseInt(dict, "max_aggregatable_reports_per_destination",
              config.aggregate_limit.max_reports_per_destination, required);
@@ -365,10 +366,10 @@ class AttributionInteropParser {
             ParseDict(
                 response, kResponseKey, [&](base::Value::Dict response_dict) {
                   std::optional<base::Value> source = response_dict.Extract(
-                      "Attribution-Reporting-Register-Source");
+                      kAttributionReportingRegisterSourceHeader);
 
                   std::optional<base::Value> trigger = response_dict.Extract(
-                      "Attribution-Reporting-Register-Trigger");
+                      kAttributionReportingRegisterTriggerHeader);
 
                   if (source.has_value() == trigger.has_value()) {
                     *Error() << "must contain either source or trigger";
@@ -387,6 +388,20 @@ class AttributionInteropParser {
                     return;
                   }
 
+                  std::string info_header;
+                  std::optional<base::Value> info_value =
+                      response_dict.Extract(kAttributionReportingInfoHeader);
+                  if (info_value.has_value()) {
+                    if (std::string* info_str = info_value->GetIfString()) {
+                      info_header = std::move(*info_str);
+                    } else {
+                      auto infoContext =
+                          PushContext(kAttributionReportingInfoHeader);
+                      *Error() << "must be a string";
+                      return;
+                    }
+                  }
+
                   auto& event = events.emplace_back(
                       std::move(*reporting_origin), std::move(*context_origin));
                   event.source_type = source_type;
@@ -394,6 +409,7 @@ class AttributionInteropParser {
                                                           : std::move(*trigger);
                   event.time = time;
                   event.debug_permission = debug_permission;
+                  event.info_header = std::move(info_header);
                 });
           },
           /*expected_size=*/1);

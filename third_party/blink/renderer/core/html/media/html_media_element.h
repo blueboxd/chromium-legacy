@@ -239,7 +239,7 @@ class CORE_EXPORT HTMLMediaElement
   bool Autoplay() const;
   bool Loop() const;
   void SetLoop(bool);
-  ScriptPromise playForBindings(ScriptState*);
+  ScriptPromiseTyped<IDLUndefined> playForBindings(ScriptState*);
   std::optional<DOMExceptionCode> Play();
 
   // Called when the video should pause to let audio descriptions finish.
@@ -437,7 +437,6 @@ class CORE_EXPORT HTMLMediaElement
   void FinishParsingChildren() final;
   bool IsURLAttribute(const Attribute&) const override;
   void AttachLayoutTree(AttachContext&) override;
-  void ParserDidSetAttributes() override;
   void CloneNonAttributePropertiesFrom(const Element&,
                                        NodeCloningData&) override;
 
@@ -515,6 +514,7 @@ class CORE_EXPORT HTMLMediaElement
   void ContextDestroyed() override;
 
   virtual void OnPlay() {}
+  virtual void OnPause() {}
   virtual void OnLoadStarted() {}
   virtual void OnLoadFinished() {}
 

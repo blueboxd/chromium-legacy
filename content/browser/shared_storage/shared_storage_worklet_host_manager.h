@@ -46,6 +46,7 @@ class CONTENT_EXPORT SharedStorageWorkletHostManager {
       kDocumentAppend,
       kDocumentDelete,
       kDocumentClear,
+      kDocumentGet,
       kWorkletSet,
       kWorkletAppend,
       kWorkletDelete,
@@ -54,13 +55,17 @@ class CONTENT_EXPORT SharedStorageWorkletHostManager {
       kWorkletKeys,
       kWorkletEntries,
       kWorkletLength,
-      kWorkletRemainingBudget
+      kWorkletRemainingBudget,
+      kHeaderSet,
+      kHeaderAppend,
+      kHeaderDelete,
+      kHeaderClear,
     };
 
     virtual void OnSharedStorageAccessed(
         const base::Time& access_time,
         AccessType type,
-        const std::string& main_frame_id,
+        int main_frame_id,
         const std::string& owner_origin,
         const SharedStorageEventParams& params) = 0;
 
@@ -95,7 +100,7 @@ class CONTENT_EXPORT SharedStorageWorkletHostManager {
 
   void NotifySharedStorageAccessed(
       SharedStorageObserverInterface::AccessType type,
-      const std::string& main_frame_id,
+      int main_frame_id,
       const std::string& owner_origin,
       const SharedStorageEventParams& params);
 

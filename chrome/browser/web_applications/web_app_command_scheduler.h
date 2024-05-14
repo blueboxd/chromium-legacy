@@ -55,17 +55,20 @@ class ScopedProfileKeepAlive;
 
 namespace web_app {
 
+class IsolatedWebAppInstallSource;
 class IsolatedWebAppUrlInfo;
 class SignedWebBundleMetadata;
 class WebApp;
 class WebAppProvider;
 enum class ApiApprovalState;
+enum class FallbackBehavior;
 enum class IsolatedInstallabilityCheckResult;
 struct ComputedAppSize;
 struct IsolatedWebAppApplyUpdateCommandError;
 struct IsolationData;
 struct SynchronizeOsOptions;
 struct WebAppInstallInfo;
+struct WebAppIconDiagnosticResult;
 
 // The command scheduler is the main API to access the web app system. The
 // scheduler internally ensures:
@@ -85,6 +88,8 @@ class WebAppCommandScheduler {
   using InstallIsolatedWebAppCallback = base::OnceCallback<void(
       base::expected<InstallIsolatedWebAppCommandSuccess,
                      InstallIsolatedWebAppCommandError>)>;
+  using WebAppIconDiagnosticResultCallback =
+      base::OnceCallback<void(std::optional<WebAppIconDiagnosticResult>)>;
 
   explicit WebAppCommandScheduler(Profile& profile);
   virtual ~WebAppCommandScheduler();
@@ -98,7 +103,7 @@ class WebAppCommandScheduler {
                                base::WeakPtr<content::WebContents> contents,
                                WebAppInstallDialogCallback dialog_callback,
                                OnceInstallCallback callback,
-                               bool use_fallback,
+                               FallbackBehavior behavior,
                                const base::Location& location = FROM_HERE);
 
   void FetchInstallInfoFromInstallUrl(
@@ -111,11 +116,12 @@ class WebAppCommandScheduler {
   // manifest.
   // `InstallFromInfo` doesn't install OS hooks. `InstallFromInfoWithParams`
   // install OS hooks when they are set in `install_params`.
-  void InstallFromInfo(std::unique_ptr<WebAppInstallInfo> install_info,
-                       bool overwrite_existing_manifest_fields,
-                       webapps::WebappInstallSource install_surface,
-                       OnceInstallCallback install_callback,
-                       const base::Location& location = FROM_HERE);
+  void InstallFromInfoNoIntegrationForTesting(
+      std::unique_ptr<WebAppInstallInfo> install_info,
+      bool overwrite_existing_manifest_fields,
+      webapps::WebappInstallSource install_surface,
+      OnceInstallCallback install_callback,
+      const base::Location& location = FROM_HERE);
 
   void InstallFromInfoWithParams(
       std::unique_ptr<WebAppInstallInfo> install_info,
@@ -189,7 +195,7 @@ class WebAppCommandScheduler {
   // version does not match.
   virtual void InstallIsolatedWebApp(
       const IsolatedWebAppUrlInfo& url_info,
-      const IsolatedWebAppLocation& location,
+      const IsolatedWebAppInstallSource& install_source,
       const std::optional<base::Version>& expected_version,
       std::unique_ptr<ScopedKeepAlive> optional_keep_alive,
       std::unique_ptr<ScopedProfileKeepAlive> optional_profile_keep_alive,
@@ -458,6 +464,14 @@ class WebAppCommandScheduler {
       const webapps::AppId app_id,
       bool set_to_preferred,
       base::OnceClosure done,
+      const base::Location& location = FROM_HERE);
+
+  // Runs a series of icon health checks for |app_id|. Look into
+  // |WebAppIconDiagnosticResult| for more information on what icon diagnostics
+  // are returned by this command.
+  void RunIconDiagnosticsForApp(
+      const webapps::AppId& app_id,
+      WebAppIconDiagnosticResultCallback result_callback,
       const base::Location& location = FROM_HERE);
 
   base::WeakPtr<WebAppCommandScheduler> GetWeakPtr();

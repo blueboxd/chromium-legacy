@@ -12,7 +12,7 @@ import("//extensions/buildflags/buildflags.gni")
 import("//pdf/features.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//tools/grit/grit_rule.gni")
-import("//tools/typescript/ts_library.gni")
+import("//tools/typescript/webui_ts_library.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 import("//ui/webui/webui_features.gni")
 
@@ -22,6 +22,7 @@ source_set("browser_tests") {
   testonly = true
 
   sources = [
+    "about_sys/about_sys_browsertest.cc",
     "access_code_cast/access_code_cast_browsertest.cc",
     "bookmarks/bookmarks_browsertest.cc",
     "chrome_timeticks_browsertest.cc",
@@ -59,6 +60,7 @@ source_set("browser_tests") {
     "side_panel/customize_chrome/customize_chrome_browsertest.cc",
     "side_panel/performance_controls/performance_controls_browsertest.cc",
     "side_panel/read_anything/read_anything_browsertest.cc",
+    "side_panel/reading_list/reading_list_browsertest.cc",
     "side_panel/user_notes/user_notes_browsertest.cc",
     "sync_internals/sync_internals_browsertest.cc",
     "tab_search/tab_search_browsertest.cc",
@@ -99,6 +101,8 @@ source_set("browser_tests") {
       "chromeos/enterprise_reporting/enterprise_reporting_browsertest.cc",
       "chromeos/firmware_update/firmware_update_browsertest.cc",
       "chromeos/inline_login/inline_login_browsertest.cc",
+      "chromeos/oobe/security_token_pin_browsertest.cc",
+      "chromeos/parent_access/parent_access_browsertest.cc",
       "chromeos/personalization_app/personalization_app_browsertest.cc",
       "chromeos/personalization_app/personalization_app_sea_pen_browsertest.cc",
       "chromeos/print_preview_cros/print_preview_cros_browsertest.cc",
@@ -159,6 +163,7 @@ source_set("browser_tests") {
     "//components/history/core/common:common",
     "//components/history_clusters/core:core",
     "//components/history_clusters/history_clusters_internals/webui:constants",
+    "//components/history_embeddings",
     "//components/optimization_guide/core:core",
     "//components/optimization_guide/optimization_guide_internals/webui:url_constants",
     "//components/password_manager/content/browser:browser",
@@ -243,10 +248,7 @@ source_set("interactive_ui_tests") {
 if (is_chromeos_ash) {
   group("closure_compile") {
     testonly = true
-    deps = [
-      "chromeos:closure_compile",
-      "cr_components/chromeos:closure_compile",
-    ]
+    deps = [ "chromeos:closure_compile" ]
   }
 }
 
@@ -287,7 +289,7 @@ generate_grd("build_mocha_grdp") {
   input_files = [ "mocha.js" ]
 }
 
-ts_library("build_ts") {
+webui_ts_library("build_ts") {
   root_dir = "."
   out_dir = "$target_gen_dir/tsc"
   composite = true
@@ -323,6 +325,7 @@ ts_library("build_ts") {
     "//ui/webui/resources/js:build_ts",
   ]
   definitions = [
+    "//tools/typescript/definitions/chrome_event.d.ts",
     "//tools/typescript/definitions/chrome_send.d.ts",
     "//tools/typescript/definitions/chrome_timeticks.d.ts",
     "//tools/typescript/definitions/dom_automation_controller.d.ts",
@@ -341,6 +344,7 @@ generate_grd("build_grd") {
     ":build_chai_grdp",
     ":build_mocha_grdp",
     ":build_ts",
+    "about_sys:build_grdp",
     "access_code_cast:build_grdp",
     "bookmarks:build_grdp",
     "commerce_internals:build_grdp",
@@ -383,6 +387,7 @@ generate_grd("build_grd") {
   ]
 
   grdp_files = [
+    "$target_gen_dir/about_sys/resources.grdp",
     "$target_gen_dir/access_code_cast/resources.grdp",
     "$target_gen_dir/bookmarks/resources.grdp",
     "$target_gen_dir/chai_resources.grdp",
@@ -491,6 +496,7 @@ generate_grd("build_grd") {
       "chromeos/inline_login:build_grdp",
       "chromeos/manage_mirrorsync:build_grdp",
       "chromeos/office_fallback:build_grdp",
+      "chromeos/oobe:build_grdp",
       "chromeos/os_feedback_ui:build_grdp",
       "chromeos/parent_access:build_grdp",
       "chromeos/personalization_app:build_grdp",
@@ -518,6 +524,7 @@ generate_grd("build_grd") {
       "$target_gen_dir/chromeos/inline_login/resources.grdp",
       "$target_gen_dir/chromeos/manage_mirrorsync/resources.grdp",
       "$target_gen_dir/chromeos/office_fallback/resources.grdp",
+      "$target_gen_dir/chromeos/oobe/resources.grdp",
       "$target_gen_dir/chromeos/parent_access/resources.grdp",
       "$target_gen_dir/chromeos/personalization_app/resources.grdp",
       "$target_gen_dir/chromeos/print_management/resources.grdp",

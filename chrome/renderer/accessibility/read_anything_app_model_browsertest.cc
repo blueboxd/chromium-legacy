@@ -7,6 +7,7 @@
 #include "chrome/renderer/accessibility/read_anything_app_model.h"
 
 #include "chrome/test/base/chrome_render_view_test.h"
+#include "read_anything_app_model.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 
@@ -43,37 +44,8 @@ class ReadAnythingAppModelTest : public ChromeRenderViewTest {
     SetUpdateTreeID(&snapshot);
 
     AccessibilityEventReceived({snapshot});
-    SetActiveTreeId(tree_id_);
+    set_active_tree_id(tree_id_);
     Reset({});
-  }
-
-  ui::AXTreeID SetUpPdfTrees() {
-    SetIsPdf(GURL("http://www.google.com/foo/bar.pdf"));
-
-    // PDF set up required for formatting checks.
-    ui::AXTreeID pdf_iframe_tree_id = ui::AXTreeID::CreateNewAXTreeID();
-    ui::AXTreeID pdf_web_contents_tree_id = ui::AXTreeID::CreateNewAXTreeID();
-
-    // Send update for main web content with child tree (pdf web contents).
-    ui::AXTreeUpdate main_web_contents_update;
-    SetUpdateTreeID(&main_web_contents_update);
-    ui::AXNodeData node;
-    node.id = 1;
-    node.AddChildTreeId(pdf_web_contents_tree_id);
-    main_web_contents_update.nodes = {node};
-    AccessibilityEventReceived({main_web_contents_update});
-
-    // Send update for pdf web contents with child tree (iframe).
-    ui::AXTreeUpdate pdf_web_contents_update;
-    ui::AXNodeData pdf_node;
-    pdf_node.id = 1;
-    pdf_node.AddChildTreeId(pdf_iframe_tree_id);
-    pdf_web_contents_update.root_id = pdf_node.id;
-    pdf_web_contents_update.nodes = {pdf_node};
-    SetUpdateTreeID(&pdf_web_contents_update, pdf_web_contents_tree_id);
-    AccessibilityEventReceived({pdf_web_contents_update});
-
-    return pdf_iframe_tree_id;
   }
 
   void SetUpdateTreeID(ui::AXTreeUpdate* update) {
@@ -135,8 +107,8 @@ class ReadAnythingAppModelTest : public ChromeRenderViewTest {
     model_->AccessibilityEventReceived(tree_id, updates, {});
   }
 
-  void SetActiveTreeId(ui::AXTreeID tree_id) {
-    model_->SetActiveTreeId(tree_id);
+  void set_active_tree_id(ui::AXTreeID tree_id) {
+    model_->set_active_tree_id(tree_id);
   }
 
   void UnserializePendingUpdates(ui::AXTreeID tree_id) {
@@ -200,6 +172,8 @@ class ReadAnythingAppModelTest : public ChromeRenderViewTest {
     return base::Contains(model_->display_node_ids(), ax_node_id);
   }
 
+  bool DisplayNodeIdsIsEmpty() { return model_->display_node_ids().empty(); }
+
   bool SelectionNodeIdsContains(ui::AXNodeID ax_node_id) {
     return base::Contains(model_->selection_node_ids(), ax_node_id);
   }
@@ -243,18 +217,16 @@ class ReadAnythingAppModelTest : public ChromeRenderViewTest {
     return model_->GetSupportedFonts();
   }
 
-  bool IsPDFFormatted() { return model_->IsPDFFormatted(); }
-  void SetIsPdf(const GURL& url) { return model_->SetIsPdf(url); }
-  bool IsPdf() { return model_->is_pdf(); }
-  ui::AXTreeID GetPDFWebContents() { return model_->GetPDFWebContents(); }
+  void set_is_pdf(bool is_pdf) { return model_->set_is_pdf(is_pdf); }
 
   void InitAXPosition(const ui::AXNodeID id) {
     model_->InitAXPositionWithNode(id);
   }
 
   ui::AXNodePosition::AXPositionInstance GetNextNodePosition() {
-    return model_->GetNextValidPositionFromCurrentPosition(
-        ReadAnythingAppModel::ReadAloudCurrentGranularity());
+    ReadAnythingAppModel::ReadAloudCurrentGranularity granularity =
+        ReadAnythingAppModel::ReadAloudCurrentGranularity();
+    return model_->GetNextValidPositionFromCurrentPosition(granularity);
   }
 
   ui::AXNodePosition::AXPositionInstance GetNextNodePosition(
@@ -283,7 +255,7 @@ class ReadAnythingAppModelTest : public ChromeRenderViewTest {
  private:
   // ReadAnythingAppModel constructor and destructor are private so it's
   // not accessible by std::make_unique.
-  raw_ptr<ReadAnythingAppModel, ExperimentalRenderer> model_ = nullptr;
+  raw_ptr<ReadAnythingAppModel> model_ = nullptr;
 };
 
 TEST_F(ReadAnythingAppModelTest, Theme) {
@@ -356,12 +328,12 @@ TEST_F(ReadAnythingAppModelTest,
 
 TEST_F(ReadAnythingAppModelTest,
        IsNodeIgnoredForReadAnything_InaccessiblePDFPageNodes) {
-  ui::AXTreeID pdf_iframe_tree_id = SetUpPdfTrees();
+  set_is_pdf(true);
 
   // PDF OCR output contains kBanner and kContentInfo (each with a static text
   // node child) to mark page start/end.
   ui::AXTreeUpdate update;
-  SetUpdateTreeID(&update, pdf_iframe_tree_id);
+  SetUpdateTreeID(&update, tree_id_);
   ui::AXNodeData banner_node;
   banner_node.id = 2;
   banner_node.role = ax::mojom::Role::kBanner;
@@ -742,7 +714,7 @@ TEST_F(ReadAnythingAppModelTest, ChangeActiveTreeWithPendingUpdates_UnknownID) {
   EXPECT_EQ(2u, GetNumPendingUpdates(tree_id_));
 
   // Switch to a new active tree. Should not crash.
-  SetActiveTreeId(ui::AXTreeIDUnknown());
+  set_active_tree_id(ui::AXTreeIDUnknown());
 }
 
 TEST_F(ReadAnythingAppModelTest, DisplayNodeIdsContains_ContentNodes) {
@@ -787,6 +759,53 @@ TEST_F(ReadAnythingAppModelTest,
   EXPECT_TRUE(DisplayNodeIdsContains(2));
   EXPECT_FALSE(DisplayNodeIdsContains(3));
   EXPECT_FALSE(DisplayNodeIdsContains(4));
+}
+
+TEST_F(ReadAnythingAppModelTest,
+       DisplayNodeIdsEmpty_WhenContentNodesAreAllHeadings) {
+  ui::AXTreeUpdate update;
+  SetUpdateTreeID(&update);
+
+  // All content nodes are heading nodes.
+  update.nodes.resize(3);
+  update.nodes[0].id = 2;
+  update.nodes[0].role = ax::mojom::Role::kHeading;
+  update.nodes[1].id = 3;
+  update.nodes[1].role = ax::mojom::Role::kHeading;
+  update.nodes[2].id = 4;
+  update.nodes[2].role = ax::mojom::Role::kHeading;
+  AccessibilityEventReceived({update});
+  ProcessDisplayNodes({2, 3, 4});
+  EXPECT_TRUE(DisplayNodeIdsIsEmpty());
+
+  // Content node is static text node with heading parent.
+  update.nodes.resize(3);
+  update.nodes[0].id = 1;
+  update.nodes[0].child_ids = {2};
+  update.nodes[1].id = 2;
+  update.nodes[1].role = ax::mojom::Role::kHeading;
+  update.nodes[1].child_ids = {3};
+  update.nodes[2].id = 3;
+  update.nodes[2].role = ax::mojom::Role::kStaticText;
+  AccessibilityEventReceived({update});
+  ProcessDisplayNodes({3});
+  EXPECT_TRUE(DisplayNodeIdsIsEmpty());
+
+  // Content node is inline text box with heading grandparent.
+  update.nodes.resize(4);
+  update.nodes[0].id = 1;
+  update.nodes[0].child_ids = {2};
+  update.nodes[1].id = 2;
+  update.nodes[1].role = ax::mojom::Role::kHeading;
+  update.nodes[1].child_ids = {3};
+  update.nodes[2].id = 3;
+  update.nodes[2].role = ax::mojom::Role::kStaticText;
+  update.nodes[2].child_ids = {4};
+  update.nodes[3].id = 4;
+  update.nodes[3].role = ax::mojom::Role::kInlineTextBox;
+  AccessibilityEventReceived({update});
+  ProcessDisplayNodes({4});
+  EXPECT_TRUE(DisplayNodeIdsIsEmpty());
 }
 
 TEST_F(ReadAnythingAppModelTest,
@@ -991,6 +1010,23 @@ TEST_F(ReadAnythingAppModelTest, PostProcessSelectionFromAction_DoesNotDraw) {
   AccessibilityEventReceived({update});
   ProcessDisplayNodes({2, 3});
   SetSelectionFromAction(true);
+
+  ASSERT_FALSE(ProcessSelection());
+}
+
+TEST_F(ReadAnythingAppModelTest,
+       PostProcessSelectionFromAction_DoesNotDrawWithNoSelection) {
+  // Initial state.
+  ui::AXTreeUpdate update;
+  SetUpdateTreeID(&update);
+  update.tree_data.sel_anchor_object_id = ui::kInvalidAXNodeID;
+  update.tree_data.sel_focus_object_id = ui::kInvalidAXNodeID;
+  update.tree_data.sel_anchor_offset = 0;
+  update.tree_data.sel_focus_offset = 0;
+  update.tree_data.sel_is_backward = false;
+  AccessibilityEventReceived({update});
+  ProcessDisplayNodes({2, 3});
+  SetSelectionFromAction(false);
 
   ASSERT_FALSE(ProcessSelection());
 }
@@ -1342,86 +1378,8 @@ TEST_F(ReadAnythingAppModelTest,
   }
 }
 
-TEST_F(ReadAnythingAppModelTest, IsPdf) {
-  GURL webpage_url("http://images.google.com/foo.html");
-  SetIsPdf(webpage_url);
-  ASSERT_FALSE(IsPdf());
-
-  GURL pdf_url("http://www.google.com/foo/bar.pdf");
-  SetIsPdf(pdf_url);
-  ASSERT_TRUE(IsPdf());
-}
-
-TEST_F(ReadAnythingAppModelTest, ValidPDF) {
-  // Need to set is_pdf_ for DCHECK in GetPDFWebContents().
-  GURL pdf_url("http://www.google.com/foo/bar.pdf");
-  SetIsPdf(pdf_url);
-
-  ui::AXTreeID pdf_web_contents_tree_id = ui::AXTreeID::CreateNewAXTreeID();
-  ui::AXTreeID pdf_iframe_tree_id = ui::AXTreeID::CreateNewAXTreeID();
-
-  // Main web contents should have one child.
-  ui::AXTreeUpdate update;
-  ui::AXNodeData node;
-  node.id = 1;
-  node.AddChildTreeId(pdf_web_contents_tree_id);
-  update.nodes = {node};
-  SetUpdateTreeID(&update);
-  AccessibilityEventReceived({update});
-
-  // IsPDFFormatted() should return true if tree updates from the pdf web
-  // contents and/or the pdf iframe haven't been sent yet.
-  ASSERT_TRUE(IsPDFFormatted());
-
-  // Pdf web contents should have one child.
-  ui::AXNodeData root;
-  root.id = 1;
-  root.AddChildTreeId(pdf_iframe_tree_id);
-  update.root_id = root.id;
-  update.nodes = {root};
-  SetUpdateTreeID(&update, pdf_web_contents_tree_id);
-  AccessibilityEventReceived({update});
-
-  ASSERT_TRUE(IsPDFFormatted());
-
-  // Send pdf iframe tree to model.
-  ui::AXNodeData update_root;
-  update_root.id = 1;
-  update.root_id = update_root.id;
-  update.nodes = {update_root};
-  SetUpdateTreeID(&update, pdf_iframe_tree_id);
-  AccessibilityEventReceived({update});
-
-  ASSERT_TRUE(IsPDFFormatted());
-  EXPECT_EQ(pdf_web_contents_tree_id, GetPDFWebContents());
-}
-
-TEST_F(ReadAnythingAppModelTest, InvalidPDFFormat) {
-  // Main web contents should have one child, the pdf web contents.
-  ui::AXTreeID pdf_web_contents_tree_id = ui::AXTreeID::CreateNewAXTreeID();
-  ui::AXTreeUpdate update;
-  ui::AXNodeData node;
-  node.id = 1;
-  node.AddChildTreeId(pdf_web_contents_tree_id);
-  update.nodes = {node};
-  SetUpdateTreeID(&update);
-  AccessibilityEventReceived({update});
-
-  // This pdf web contents has no children, so this is an invalid PDF.
-  ui::AXTreeUpdate pdf_web_contents_update;
-  ui::AXNodeData empty_root;
-  empty_root.id = 1;
-  pdf_web_contents_update.root_id = empty_root.id;
-  pdf_web_contents_update.nodes = {empty_root};
-
-  SetUpdateTreeID(&pdf_web_contents_update, pdf_web_contents_tree_id);
-  AccessibilityEventReceived({pdf_web_contents_update});
-
-  ASSERT_FALSE(IsPDFFormatted());
-}
-
 TEST_F(ReadAnythingAppModelTest, PdfEvents_SetRequiresDistillation) {
-  SetIsPdf(GURL("http://www.google.com/foo/bar.pdf"));
+  set_is_pdf(true);
 
   ui::AXTreeUpdate initial_update;
   SetUpdateTreeID(&initial_update);
@@ -1473,7 +1431,7 @@ TEST_F(ReadAnythingAppModelTest, PdfEvents_SetRequiresDistillation) {
 }
 
 TEST_F(ReadAnythingAppModelTest, PdfEvents_DontSetRequiresDistillation) {
-  SetIsPdf(GURL("http://www.google.com/foo/bar.pdf"));
+  set_is_pdf(true);
 
   ui::AXTreeUpdate initial_update;
   SetUpdateTreeID(&initial_update);

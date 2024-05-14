@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "ios/chrome/browser/browser_state/model/constants.h"
 #include "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state_manager.h"
 
@@ -67,3 +66,5 @@ TestChromeBrowserStateManager::GetLoadedBrowserStates() {
   }
   return result;
 }
+
+void TestChromeBrowserStateManager::LoadBrowserStates() {}

@@ -103,6 +103,7 @@ class ImageDocumentParser : public RawDataDocumentParser {
 
   void Trace(Visitor* visitor) const override {
     visitor->Trace(image_resource_);
+    visitor->Trace(world_);
     RawDataDocumentParser::Trace(visitor);
   }
 
@@ -111,7 +112,7 @@ class ImageDocumentParser : public RawDataDocumentParser {
   void Finish() override;
 
   Member<ImageResource> image_resource_;
-  const scoped_refptr<const DOMWrapperWorld> world_;
+  const Member<const DOMWrapperWorld> world_;
 };
 
 // --------
@@ -137,10 +138,7 @@ void ImageDocumentParser::AppendBytes(const char* data, size_t length) {
     return;
 
   LocalFrame* frame = GetDocument()->GetFrame();
-  Settings* settings = frame->GetSettings();
-  bool allow_image_renderer = !settings || settings->GetImagesEnabled();
-  bool allow_image_content_setting = frame->GetContentSettings()->allow_image;
-  bool allow_image = allow_image_renderer && allow_image_content_setting;
+  bool allow_image = frame->ImagesEnabled();
   if (!allow_image) {
     auto* client = frame->GetContentSettingsClient();
     if (client) {

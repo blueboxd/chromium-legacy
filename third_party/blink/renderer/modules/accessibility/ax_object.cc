@@ -104,8 +104,8 @@
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_g_element.h"
 #include "third_party/blink/renderer/core/svg/svg_style_element.h"
+#include "third_party/blink/renderer/modules/accessibility/aria_notification.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_enums.h"
-#include "ui/accessibility/ax_tree_id.h"
 #if DCHECK_IS_ON()
 #include "third_party/blink/renderer/modules/accessibility/ax_debug_utils.h"
 #endif
@@ -132,6 +132,8 @@
 #include "ui/accessibility/ax_enums.mojom-blink-forward.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/accessibility/ax_tree_id.h"
+#include "ui/accessibility/ax_tree_source.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/geometry/transform.h"
@@ -425,15 +427,19 @@ const RoleEntry kAriaRoles[] = {
     {"treegrid", ax::mojom::blink::Role::kTreeGrid},
     {"treeitem", ax::mojom::blink::Role::kTreeItem}};
 
-// More friendly names for debugging. These are roles which don't map from
-// the ARIA role name to the internal role when building the tree, but when
-// debugging, we want to show the ARIA role name, since it is close in meaning.
+// More friendly names for debugging, and for WPT tests.
+// These are roles which map from the ARIA role name to the internal role when
+// building the tree, but in DevTools or testing, we want to show the ARIA
+// role name, since that is the publicly visible concept.
 const RoleEntry kReverseRoles[] = {
     {"banner", ax::mojom::blink::Role::kHeader},
+    {"generic", ax::mojom::blink::Role::kHeaderAsNonLandmark},
     {"button", ax::mojom::blink::Role::kToggleButton},
     {"button", ax::mojom::blink::Role::kPopUpButton},
     {"contentinfo", ax::mojom::blink::Role::kFooter},
-    {"menuitem", ax::mojom::blink::Role::kMenuListOption},
+    {"option", ax::mojom::blink::Role::kMenuListOption},
+    {"option", ax::mojom::blink::Role::kListBoxOption},
+    {"group", ax::mojom::blink::Role::kDetails},
     {"combobox", ax::mojom::blink::Role::kComboBoxMenuButton},
     {"combobox", ax::mojom::blink::Role::kComboBoxSelect},
     {"combobox", ax::mojom::blink::Role::kTextFieldWithComboBox}};
@@ -484,20 +490,24 @@ static constexpr uint32_t kMaxStringAttributeLength = 10000;
 // Length of War and Peace (http://www.gutenberg.org/files/2600/2600-0.txt).
 static constexpr uint32_t kMaxStaticTextLength = 3227574;
 
+std::string TruncateString(const String& str,
+                           uint32_t max_len = kMaxStringAttributeLength) {
+  auto str_utf8 = str.Utf8(kStrictUTF8Conversion);
+  if (str_utf8.size() > max_len) {
+    std::string truncated;
+    base::TruncateUTF8ToByteSize(str_utf8, max_len, &truncated);
+    return truncated;
+  }
+  return str_utf8;
+}
+
 void TruncateAndAddStringAttribute(
     ui::AXNodeData* dst,
     ax::mojom::blink::StringAttribute attribute,
     const String& value,
     uint32_t max_len = kMaxStringAttributeLength) {
-  if (value.empty())
-    return;
-  std::string value_utf8 = value.Utf8(kStrictUTF8Conversion);
-  if (value_utf8.size() > max_len) {
-    std::string truncated;
-    base::TruncateUTF8ToByteSize(value_utf8, max_len, &truncated);
-    dst->AddStringAttribute(attribute, truncated);
-  } else {
-    dst->AddStringAttribute(attribute, value_utf8);
+  if (!value.empty()) {
+    dst->AddStringAttribute(attribute, TruncateString(value, max_len));
   }
 }
 
@@ -1300,6 +1310,31 @@ AccessibleNode* AXObject::GetAccessibleNode() const {
   return element->ExistingAccessibleNode();
 }
 
+namespace {
+
+void SerializeAriaNotificationAttributes(const AriaNotification& notification,
+                                         ui::AXNodeData* node_data) {
+  DCHECK(node_data);
+
+  node_data->AddStringListAttribute(
+      ax::mojom::blink::StringListAttribute::kAriaNotificationAnnouncements,
+      {TruncateString(notification.Announcement())});
+
+  node_data->AddStringListAttribute(
+      ax::mojom::blink::StringListAttribute::kAriaNotificationIds,
+      {TruncateString(notification.NotificationId())});
+
+  node_data->AddIntListAttribute(
+      ax::mojom::blink::IntListAttribute::kAriaNotificationInterruptProperties,
+      {static_cast<int32_t>(notification.Interrupt())});
+
+  node_data->AddIntListAttribute(
+      ax::mojom::blink::IntListAttribute::kAriaNotificationPriorityProperties,
+      {static_cast<int32_t>(notification.Priority())});
+}
+
+}  // namespace
+
 void AXObject::Serialize(ui::AXNodeData* node_data,
                          ui::AXMode accessibility_mode) {
   // Reduce redundant ancestor chain walking for display lock computations.
@@ -1399,6 +1434,11 @@ void AXObject::Serialize(ui::AXNodeData* node_data,
 
   SerializeOtherScreenReaderAttributes(node_data);
 
+  for (const auto& notification :
+       AXObjectCache().RetrieveAriaNotifications(this)) {
+    SerializeAriaNotificationAttributes(notification, node_data);
+  }
+
   // Return early. The following attributes are unnecessary for ignored nodes.
   // Exception: focusable ignored nodes are fully serialized, so that reasonable
   // verbalizations can be made if they actually receive focus.
@@ -1472,13 +1512,14 @@ void AXObject::SerializeActionAttributes(ui::AXNodeData* node_data) {
 void AXObject::SerializeChildTreeID(ui::AXNodeData* node_data) {
   // If a child tree has explicitly been stitched at this object via the
   // `ax::mojom::blink::Action::kStitchChildTree`, then override any child trees
-  // coming from HTML. If this is an HTMLFrameOwnerElement (such as an iframe),
+  // coming from HTML.
   if (child_tree_id_) {
     node_data->AddChildTreeId(*child_tree_id_);
     return;
   }
 
-  // we may need to embed the ID of the child frame.
+  // If this is an HTMLFrameOwnerElement (such as an iframe), we may need to
+  // embed the ID of the child frame.
   if (!IsEmbeddingElement()) {
     // TODO(crbug.com/1342603) Determine why these are firing in the wild and,
     // once fixed, turn into a DCHECK.
@@ -1754,7 +1795,8 @@ void AXObject::SerializeScreenReaderAttributes(ui::AXNodeData* node_data) {
       display_style = CSSProperty::Get(CSSPropertyID::kDisplay)
                           .CSSValueFromComputedStyle(
                               *computed_style, /* layout_object */ nullptr,
-                              /* allow_visited_style */ false)
+                              /* allow_visited_style */ false,
+                              CSSValuePhase::kComputedValue)
                           ->CssText();
       if (!display_style.empty()) {
         TruncateAndAddStringAttribute(
@@ -2294,12 +2336,12 @@ void AXObject::SerializeUnignoredAttributes(ui::AXNodeData* node_data,
       // TODO(nektar): Remove kTextSelStart and kTextSelEnd from the renderer.
       const auto ax_selection =
           AXSelection::FromCurrentSelection(ToTextControl(*element));
-      int start = ax_selection.Base().IsTextPosition()
-                      ? ax_selection.Base().TextOffset()
-                      : ax_selection.Base().ChildIndex();
-      int end = ax_selection.Extent().IsTextPosition()
-                    ? ax_selection.Extent().TextOffset()
-                    : ax_selection.Extent().ChildIndex();
+      int start = ax_selection.Anchor().IsTextPosition()
+                      ? ax_selection.Anchor().TextOffset()
+                      : ax_selection.Anchor().ChildIndex();
+      int end = ax_selection.Focus().IsTextPosition()
+                    ? ax_selection.Focus().TextOffset()
+                    : ax_selection.Focus().ChildIndex();
       node_data->AddIntAttribute(ax::mojom::blink::IntAttribute::kTextSelStart,
                                  start);
       node_data->AddIntAttribute(ax::mojom::blink::IntAttribute::kTextSelEnd,
@@ -2329,6 +2371,9 @@ void AXObject::SerializeUnignoredAttributes(ui::AXNodeData* node_data,
       SerializeHTMLAttributes(node_data);
     }
   }
+
+  SerializeImageDataAttributes(node_data);
+  SerializeTextInsertionDeletionOffsetAttributes(node_data);
 }
 
 void AXObject::SerializeComputedDetailsRelation(
@@ -2444,8 +2489,7 @@ AXObject* AXObject::GetControlsListboxForTextfieldCombobox() {
     if (IsA<HTMLSelectElement>(listbox_candidate->GetNode()))
       return nullptr;
     // Require an ARIA role on the next sibling.
-    if (listbox_candidate->AriaRoleAttribute() !=
-        ax::mojom::blink::Role::kListBox) {
+    if (!ui::IsComboBoxContainer(listbox_candidate->AriaRoleAttribute())) {
       return nullptr;
     }
     // Naming a listbox within a composite combobox widget is not part of a
@@ -2456,7 +2500,7 @@ AXObject* AXObject::GetControlsListboxForTextfieldCombobox() {
   }
 
   if (!listbox_candidate ||
-      listbox_candidate->RoleValue() != ax::mojom::blink::Role::kListBox) {
+      !ui::IsComboBoxContainer(listbox_candidate->RoleValue())) {
     return nullptr;
   }
 
@@ -2487,6 +2531,68 @@ const AtomicString& AXObject::GetRoleAttributeStringForObjectAttribute(
 
 void AXObject::SerializeMarkerAttributes(ui::AXNodeData* node_data) const {
   // Implemented in subclasses.
+}
+
+void AXObject::SerializeImageDataAttributes(ui::AXNodeData* node_data) const {
+  if (AXObjectID() != AXObjectCache().image_data_node_id()) {
+    return;
+  }
+
+  // In general, string attributes should be truncated using
+  // TruncateAndAddStringAttribute, but ImageDataUrl contains a data url
+  // representing an image, so add it directly using AddStringAttribute.
+  node_data->AddStringAttribute(
+      ax::mojom::blink::StringAttribute::kImageDataUrl,
+      ImageDataUrl(AXObjectCache().max_image_data_size()).Utf8());
+}
+
+void AXObject::SerializeTextInsertionDeletionOffsetAttributes(
+    ui::AXNodeData* node_data) const {
+  if (!IsEditable()) {
+    return;
+  }
+
+  WTF::Vector<TextChangedOperation>* offsets =
+      AXObjectCache().GetFromTextOperationInNodeIdMap(AXObjectID());
+  if (!offsets) {
+    return;
+  }
+
+  std::vector<int> start_offsets;
+  std::vector<int> end_offsets;
+  std::vector<int> start_anchor_ids;
+  std::vector<int> end_anchor_ids;
+  std::vector<int> operations_ints;
+
+  start_offsets.reserve(offsets->size());
+  end_offsets.reserve(offsets->size());
+  start_anchor_ids.reserve(offsets->size());
+  end_anchor_ids.reserve(offsets->size());
+  operations_ints.reserve(offsets->size());
+
+  for (auto operation : *offsets) {
+    start_offsets.push_back(operation.start);
+    end_offsets.push_back(operation.end);
+    start_anchor_ids.push_back(operation.start_anchor_id);
+    end_anchor_ids.push_back(operation.end_anchor_id);
+    operations_ints.push_back(static_cast<int>(operation.op));
+  }
+
+  node_data->AddIntListAttribute(
+      ax::mojom::blink::IntListAttribute::kTextOperationStartOffsets,
+      start_offsets);
+  node_data->AddIntListAttribute(
+      ax::mojom::blink::IntListAttribute::kTextOperationEndOffsets,
+      end_offsets);
+  node_data->AddIntListAttribute(
+      ax::mojom::blink::IntListAttribute::kTextOperationStartAnchorIds,
+      start_anchor_ids);
+  node_data->AddIntListAttribute(
+      ax::mojom::blink::IntListAttribute::kTextOperationEndAnchorIds,
+      end_anchor_ids);
+  node_data->AddIntListAttribute(
+      ax::mojom::blink::IntListAttribute::kTextOperations, operations_ints);
+  AXObjectCache().ClearTextOperationInNodeIdMap();
 }
 
 bool AXObject::IsAXNodeObject() const {
@@ -3823,7 +3929,7 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
       return true;
     }
     // Necessary to calculate the accessible description of a ruby node.
-    if (IsA<HTMLRTElement>(parent_node)) {
+    if (parent_node->HasTagName(html_names::kRtTag)) {
       return true;
     }
   }
@@ -3988,8 +4094,9 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
   // browsers that do not support ruby. Hence, their contents should not be
   // included in the accessible description, unless another condition in this
   // method decides to keep them in the tree for some reason.
-  if (IsA<HTMLRTElement>(element))
+  if (element->HasTagName(html_names::kRtTag)) {
     return true;
+  }
 
   // Preserve SVG grouping elements.
   if (IsA<SVGGElement>(element))
@@ -4026,7 +4133,7 @@ const AXObject* AXObject::GetAtomicTextFieldAncestor(
 
 const AXObject* AXObject::DatetimeAncestor() const {
   ShadowRoot* shadow_root = GetNode()->ContainingShadowRoot();
-  if (!shadow_root || shadow_root->GetType() != ShadowRootType::kUserAgent) {
+  if (!shadow_root || shadow_root->GetMode() != ShadowRootMode::kUserAgent) {
     return nullptr;
   }
   auto* input = DynamicTo<HTMLInputElement>(&shadow_root->host());
@@ -4626,14 +4733,13 @@ String AXObject::AriaTextAlternative(
   }
 
   // Step 2A from: http://www.w3.org/TR/accname-aam-1.1
-  // If you change this logic, update AXNodeObject::nameFromLabelElement, too.
   if (IsHiddenForTextAlternativeCalculation(aria_label_or_description_root)) {
     *found_text_alternative = true;
     return String();
   }
 
   // Step 2B from: http://www.w3.org/TR/accname-aam-1.1
-  // If you change this logic, update AXNodeObject::nameFromLabelElement, too.
+  // If you change this logic, update AXObject::IsNameFromAriaAttributet, too.
   if (!aria_label_or_description_root && !already_visited) {
     name_from = ax::mojom::blink::NameFrom::kRelatedElement;
 
@@ -4685,7 +4791,7 @@ String AXObject::AriaTextAlternative(
   }
 
   // Step 2C from: http://www.w3.org/TR/accname-aam-1.1
-  // If you change this logic, update AXNodeObject::nameFromLabelElement, too.
+  // If you change this logic, update AXObject::IsNameFromAriaAttribute, too.
   name_from = ax::mojom::blink::NameFrom::kAttribute;
   if (name_sources) {
     name_sources->push_back(
@@ -4694,7 +4800,7 @@ String AXObject::AriaTextAlternative(
   }
   const AtomicString& aria_label =
       GetAOMPropertyOrARIAAttribute(AOMStringProperty::kLabel);
-  if (!aria_label.empty()) {
+  if (!aria_label.GetString().ContainsOnlyWhitespaceOrEmpty()) {
     text_alternative = aria_label;
 
     if (name_sources) {
@@ -4856,8 +4962,9 @@ bool AXObject::IsNameFromAriaAttribute(Element* element) {
 
   const AtomicString& aria_label = AccessibleNode::GetPropertyOrARIAAttribute(
       element, AOMStringProperty::kLabel);
-  if (!aria_label.empty())
+  if (!aria_label.GetString().ContainsOnlyWhitespaceOrEmpty()) {
     return true;
+  }
 
   return false;
 }
@@ -6294,22 +6401,23 @@ bool AXObject::IsScrollableContainer() const {
 }
 
 bool AXObject::IsUserScrollable() const {
-  // TODO(accessibility) Actually expose correct info on whether a doc is
-  // is scrollable or not. Unfortunately IsScrollableContainer() always returns
-  // true anyway. For now, just expose as scrollable unless overflow is hidden.
-  if (IsWebArea()) {
-    if (!GetScrollableAreaIfScrollable() || !GetLayoutObject())
-      return false;
-
-    const ComputedStyle* style = GetLayoutObject()->Style();
-    if (!style)
-      return false;
-
-    return style->ScrollsOverflowY() || style->ScrollsOverflowX();
+  Node* node = GetNode();
+  if (!node) {
+    return false;
   }
 
-  return GetLayoutObject() && GetLayoutObject()->IsBox() &&
-         To<LayoutBox>(GetLayoutObject())->IsUserScrollable();
+  // The element that scrolls the document is not the document itself.
+  if (node->IsDocumentNode()) {
+    Document& document = node->GetDocument();
+    return document.GetLayoutView()->IsUserScrollable();
+  }
+
+  LayoutBox* layout_box = DynamicTo<LayoutBox>(node->GetLayoutObject());
+  if (!layout_box) {
+    return false;
+  }
+
+  return layout_box->IsUserScrollable();
 }
 
 gfx::Point AXObject::GetScrollOffset() const {
@@ -7511,9 +7619,22 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
         return true;
       AXObject* ancestor = ParentObjectUnignored();
       while (ancestor) {
+        // If an ancestor has aria-activedescendant consider it focusable.
         if (ancestor->GetAOMPropertyOrARIAAttribute(
                 AOMRelationProperty::kActiveDescendant)) {
           return true;
+        }
+        // If in a grid/treegrid that's after a combobox textfield using
+        // aria-activedescendant, then consider the row focusable.
+        if (ancestor->RoleValue() == ax::mojom::blink::Role::kGrid ||
+            ancestor->RoleValue() == ax::mojom::blink::Role::kTreeGrid) {
+          if (AXObject* ax_prev = ancestor->PreviousSiblingIncludingIgnored()) {
+            if (ax_prev->GetControlsListboxForTextfieldCombobox() == ancestor &&
+                ax_prev->GetAOMPropertyOrARIAAttribute(
+                    AOMRelationProperty::kActiveDescendant)) {
+              return true;
+            }
+          }
         }
         if (ancestor->RoleValue() !=
                 ax::mojom::blink::Role::kGenericContainer &&
@@ -7543,9 +7664,7 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
     case ax::mojom::blink::Role::kContentDeletion:
     case ax::mojom::blink::Role::kContentInsertion:
     case ax::mojom::blink::Role::kDefinition:
-    case ax::mojom::blink::Role::kDescriptionListDetail:
     case ax::mojom::blink::Role::kDescriptionList:
-    case ax::mojom::blink::Role::kDescriptionListTerm:
     case ax::mojom::blink::Role::kDetails:
     case ax::mojom::blink::Role::kEmphasis:
     case ax::mojom::blink::Role::kFigcaption:
@@ -7625,7 +7744,9 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
     case ax::mojom::blink::Role::kCaret:
     case ax::mojom::blink::Role::kClient:
     case ax::mojom::blink::Role::kColumn:
+    case ax::mojom::blink::Role::kDescriptionListTermDeprecated:
     case ax::mojom::blink::Role::kDesktop:
+    case ax::mojom::blink::Role::kDescriptionListDetailDeprecated:
     case ax::mojom::blink::Role::kKeyboard:
     case ax::mojom::blink::Role::kImeCandidate:
     case ax::mojom::blink::Role::kListGrid:
@@ -7803,8 +7924,6 @@ String AXObject::ToString(bool verbose, bool cached_values_only) const {
     string_builder = string_builder + " axid#" + String::Number(AXObjectID());
     // Add useful HTML element info, like <div.myClass#myId>.
     if (GetNode()) {
-      string_builder =
-          string_builder + " node#" + String::Number(GetNode()->GetDomNodeId());
       string_builder = string_builder + " " + GetNodeString(GetNode());
       if (IsRoot()) {
         string_builder = string_builder + " isRoot";

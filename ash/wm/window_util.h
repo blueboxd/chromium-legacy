@@ -15,6 +15,7 @@
 #include "base/memory/raw_ptr.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/wm/core/window_util.h"
 
 class PrefRegistrySimple;
@@ -34,6 +35,18 @@ class View;
 }  // namespace views
 
 namespace ash::window_util {
+
+ASH_EXPORT int GetMiniWindowRoundedCornerRadius();
+
+// Returns the rounded corners for a mini window representation of
+// `source_window`. It takes into account if the `source_window`
+// belongs to a snap group or not.
+// If `include_header_rounding` is false, function returns the radii of only
+// bottom two corners of mini window.
+ASH_EXPORT gfx::RoundedCornersF GetMiniWindowRoundedCorners(
+    const aura::Window* source_window,
+    bool include_header_rounding,
+    std::optional<float> scale = std::nullopt);
 
 // See ui/wm/core/window_util.h for ActivateWindow(), DeactivateWindow(),
 // IsActiveWindow() and CanActivateWindow().
@@ -225,6 +238,9 @@ bool IsInFasterSplitScreenSetupSession(const aura::Window* window);
 // grid is in faster splitview. This is a specific mode during which we don't
 // show the desk bar or save desk buttons.
 bool IsInFasterSplitScreenSetupSession();
+
+// Returns the target bounds of `window` in screen coordinates.
+ASH_EXPORT gfx::Rect GetTargetScreenBounds(aura::Window* window);
 
 }  // namespace ash::window_util
 

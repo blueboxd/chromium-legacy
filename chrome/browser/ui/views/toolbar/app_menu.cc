@@ -134,11 +134,10 @@ const int kZoomLabelHorizontalPadding = 2;
 
 // Returns true if |command_id| identifies a bookmark menu item.
 bool IsBookmarkCommand(int command_id) {
-  return command_id == IDC_SHOW_BOOKMARK_SIDE_PANEL ||
-         (command_id >= IDC_FIRST_UNBOUNDED_MENU &&
-          ((command_id - IDC_FIRST_UNBOUNDED_MENU) %
-               AppMenuModel::kNumUnboundedMenuTypes ==
-           0));
+  return command_id >= IDC_FIRST_UNBOUNDED_MENU &&
+         ((command_id - IDC_FIRST_UNBOUNDED_MENU) %
+              AppMenuModel::kNumUnboundedMenuTypes ==
+          0);
 }
 
 // Returns true if |command_id| identifies a recent tabs menu item.
@@ -625,7 +624,7 @@ class AppMenu::CutCopyPasteView : public AppMenuView {
   }
 };
 
-BEGIN_METADATA(AppMenu, CutCopyPasteView, AppMenuView)
+BEGIN_METADATA(AppMenu, CutCopyPasteView)
 ADD_READONLY_PROPERTY_METADATA(int, MaxChildViewPreferredWidth)
 END_METADATA
 
@@ -679,7 +678,7 @@ class AppMenu::ZoomView : public AppMenuView {
 
     // An accessibility role of kAlert will ensure that any updates to the zoom
     // level can be picked up by screen readers.
-    zoom_label->GetViewAccessibility().OverrideRole(ax::mojom::Role::kAlert);
+    zoom_label->GetViewAccessibility().SetRole(ax::mojom::Role::kAlert);
 
     zoom_label_ = AddChildView(std::move(zoom_label));
 
@@ -859,7 +858,7 @@ class AppMenu::ZoomView : public AppMenuView {
   mutable std::optional<int> zoom_label_max_width_;
 };
 
-BEGIN_METADATA(AppMenu, ZoomView, AppMenuView)
+BEGIN_METADATA(AppMenu, ZoomView)
 ADD_READONLY_PROPERTY_METADATA(int, ZoomLabelMaxWidth)
 END_METADATA
 
@@ -1142,7 +1141,8 @@ bool AppMenu::IsCommandEnabled(int command_id) const {
     return false;  // The root item, a separator, or a title.
   }
 
-  if (IsBookmarkCommand(command_id)) {
+  if (IsBookmarkCommand(command_id) ||
+      command_id == IDC_SHOW_BOOKMARK_SIDE_PANEL) {
     return true;
   }
 
@@ -1201,7 +1201,8 @@ bool AppMenu::GetAccelerator(int command_id,
     return false;
   }
 
-  if (IsBookmarkCommand(command_id)) {
+  if (IsBookmarkCommand(command_id) ||
+      command_id == IDC_SHOW_BOOKMARK_SIDE_PANEL) {
     return false;
   }
 

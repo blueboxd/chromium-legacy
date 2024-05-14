@@ -341,8 +341,7 @@ IN_PROC_BROWSER_TEST_F(AuthFlowsLoginReauthTest,
   test::OnLoginScreen()->SelectUserPod(user.account_id);
 }
 
-IN_PROC_BROWSER_TEST_F(AuthFlowsLoginReauthTest,
-                       CancelLocalAuthenticationDialogRecovery) {
+IN_PROC_BROWSER_TEST_F(AuthFlowsLoginReauthTest, AuthenticateWithRecovery) {
   const auto& user = with_local_pw_recovery_;
 
   TriggerUserOnlineAuth(user, test::kGaiaPassword);
@@ -368,6 +367,50 @@ IN_PROC_BROWSER_TEST_F(AuthFlowsLoginRecoverUserTest,
   // Recovery password update confirmation.
   test::RecoveryPasswordUpdatedPageWaiter()->Wait();
   test::RecoveryPasswordUpdatedProceedAction();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthFlowsLoginRecoverUserTest,
+                       LocalPasswordWithoutRecoveryCancelLAD) {
+  const auto& user = with_local_pw_;
+  // Start recovery flow without recovery auth factor.
+  TriggerUserOnlineAuth(user, FakeGaiaMixin::kFakeUserPassword);
+
+  // Wait for local data loss warning.
+  test::LocalDataLossWarningPageWaiter()->Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthFlowsLoginRecoverUserTest,
+                       GaiaPasswordWithRecovery) {
+  const auto& user = with_gaia_pw_recovery_;
+
+  // Start recovery flow with recovery auth factor.
+  TriggerUserOnlineAuth(user, test::kNewPassword);
+
+  // Wait for password update dialog.
+  auto pw_updated = test::AwaitPasswordUpdatedUI();
+  pw_updated->ExpectPasswordUpdateState();
+  pw_updated->ConfirmPasswordUpdate();
+
+  login_mixin_.WaitForActiveSession();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthFlowsLoginRecoverUserTest,
+                       GaiaPasswordWithoutRecovery) {
+  const auto& user = with_gaia_pw_;
+
+  // Start recovery flow without recovery auth factor.
+  TriggerUserOnlineAuth(user, test::kWrongPassword);
+
+  auto pw_changed = test::AwaitPasswordChangedUI();
+  pw_changed->TypePreviousPassword(test::kGaiaPassword);
+  pw_changed->SubmitPreviousPassword();
+
+  // Wait for password update dialog.
+  auto pw_updated = test::AwaitPasswordUpdatedUI();
+  pw_updated->ExpectPasswordUpdateState();
+  pw_updated->ConfirmPasswordUpdate();
+
+  login_mixin_.WaitForActiveSession();
 }
 
 }  // namespace ash

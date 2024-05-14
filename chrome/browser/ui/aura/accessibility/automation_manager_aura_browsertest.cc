@@ -12,14 +12,15 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/views/accessibility_checker.h"
-#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/scoped_accessibility_mode_override.h"
 #include "extensions/browser/api/automation_internal/automation_event_router_interface.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/accessibility/ax_tree_source_views.h"
@@ -195,7 +196,7 @@ typedef InProcessBrowserTest AutomationManagerAuraBrowserTest;
 // This test makes sure that we don't hook up both simultaneously, leading
 // to the same web page appearing in the overall tree twice.
 IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, WebAppearsOnce) {
-  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+  content::ScopedAccessibilityModeOverride mode_override(ui::kAXModeComplete);
 
   AutomationManagerAura* manager = AutomationManagerAura::GetInstance();
   manager->Enable();
@@ -251,20 +252,23 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest,
   cache_ptr->set_focused_widget_for_testing(widget);
 
   views::View* view1 = new views::View();
-  view1->GetViewAccessibility().OverrideRole(ax::mojom::Role::kDialog);
-  view1->GetViewAccessibility().OverrideName("view1");
+  view1->GetViewAccessibility().SetRole(ax::mojom::Role::kDialog);
+  view1->GetViewAccessibility().SetName("view1",
+                                        ax::mojom::NameFrom::kAttribute);
   view1->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   widget->GetRootView()->AddChildView(view1);
   views::AXAuraObjWrapper* wrapper1 = cache_ptr->GetOrCreate(view1);
   views::View* view2 = new views::View();
   view2->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  view2->GetViewAccessibility().OverrideRole(ax::mojom::Role::kDialog);
-  view2->GetViewAccessibility().OverrideName("view2");
+  view2->GetViewAccessibility().SetRole(ax::mojom::Role::kDialog);
+  view2->GetViewAccessibility().SetName("view2",
+                                        ax::mojom::NameFrom::kAttribute);
   widget->GetRootView()->AddChildView(view2);
   views::AXAuraObjWrapper* wrapper2 = cache_ptr->GetOrCreate(view2);
   views::View* view3 = new views::View();
-  view3->GetViewAccessibility().OverrideRole(ax::mojom::Role::kDialog);
-  view3->GetViewAccessibility().OverrideName("view3");
+  view3->GetViewAccessibility().SetRole(ax::mojom::Role::kDialog);
+  view3->GetViewAccessibility().SetName("view3",
+                                        ax::mojom::NameFrom::kAttribute);
   view3->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   widget->GetRootView()->AddChildView(view3);
   views::AXAuraObjWrapper* wrapper3 = cache_ptr->GetOrCreate(view3);
@@ -526,14 +530,16 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, EventFromAction) {
   cache_ptr->set_focused_widget_for_testing(widget);
 
   views::View* view1 = new views::View();
-  view1->GetViewAccessibility().OverrideRole(ax::mojom::Role::kDialog);
-  view1->GetViewAccessibility().OverrideName("view1");
+  view1->GetViewAccessibility().SetRole(ax::mojom::Role::kDialog);
+  view1->GetViewAccessibility().SetName("view1",
+                                        ax::mojom::NameFrom::kAttribute);
   view1->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   widget->GetRootView()->AddChildView(view1);
   views::View* view2 = new views::View();
   view2->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  view2->GetViewAccessibility().OverrideRole(ax::mojom::Role::kDialog);
-  view2->GetViewAccessibility().OverrideName("view2");
+  view2->GetViewAccessibility().SetRole(ax::mojom::Role::kDialog);
+  view2->GetViewAccessibility().SetName("view2",
+                                        ax::mojom::NameFrom::kAttribute);
   widget->GetRootView()->AddChildView(view2);
   views::AXAuraObjWrapper* wrapper2 = cache_ptr->GetOrCreate(view2);
 

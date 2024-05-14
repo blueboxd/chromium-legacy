@@ -61,6 +61,7 @@ _CONFIG = [
             'absl::in_place',
             'absl::in_place_type',
             'absl::int128',
+            'absl::monostate',
             'absl::uint128',
             'absl::variant',
             'absl::visit',
@@ -456,6 +457,7 @@ _CONFIG = [
             'cc::SurfaceLayer',
 
             # cc::Layer helper data structs.
+            'cc::AnchorPositionScrollData',
             'cc::BrowserControlsParams',
             'cc::ElementId',
             'cc::LayerPositionConstraint',
@@ -531,10 +533,11 @@ _CONFIG = [
             'cc::TargetSnapAreaElementIds',
             'ui::ScrollGranularity',
 
-            # Document transitions
-            'cc::ViewTransitionRequest',
+            # View transitions
             'cc::ViewTransitionContentLayer',
-            'viz::NavigationID'
+            'cc::ViewTransitionRequest',
+            'viz::NavigationId',
+            'viz::TransitionId',
             'viz::ViewTransitionElementResourceId',
 
             # base/types/strong_alias.h
@@ -706,6 +709,9 @@ _CONFIG = [
             'ui::AXTreeUpdate',
             'ui::AXTreeID',
             'ui::AXTreeIDUnknown',
+            'ui::kInvalidAXNodeID',
+            'ui::kFirstGeneratedRendererNodeID',
+            'ui::kLastGeneratedRendererNodeID',
             'ui::kAXModeBasic',
             'ui::kAXModeComplete',
             'ui::ToString',
@@ -720,6 +726,7 @@ _CONFIG = [
             'ui::IsCellOrTableHeader',
             'ui::IsClickable',
             'ui::IsComboBox',
+            'ui::IsComboBoxContainer',
             'ui::IsContainerWithSelectableChildren',
             'ui::IsDialog',
             'ui::IsEmbeddingElement',
@@ -776,6 +783,11 @@ _CONFIG = [
         'paths':
         ['third_party/blink/renderer/bindings/core/v8/serialization/'],
         'allowed': ['base::BufferIterator'],
+    },
+    {
+        'paths':
+        ['third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h'],
+        'allowed': ['base::FastHash'],
     },
     {
         'paths':
@@ -919,6 +931,12 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/blink/renderer/core/css/properties/css_color_function_parser.cc'],
+        'allowed': [
+            'base::MakeFixedFlatMap',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/editing/ime'],
         'allowed': [
             'ui::ImeTextSpan',
@@ -965,6 +983,7 @@ _CONFIG = [
             'cc::InputHandlerScrollResult',
             'cc::SwapPromise',
             'viz::CompositorFrameMetadata',
+            'viz::FrameTimingDetails',
         ],
     },
     {
@@ -1046,6 +1065,27 @@ _CONFIG = [
         'allowed': [
             'touch_adjustment::.+',
             'viz::FrameSinkId',
+        ],
+    },
+    {
+        'paths': [
+            'third_party/blink/public/web/web_frame_widget.h',
+            'third_party/blink/renderer/core/frame/local_frame_client_impl.cc',
+            'third_party/blink/renderer/core/frame/web_frame_widget',
+            'third_party/blink/renderer/core/page/chrome_client.h',
+            'third_party/blink/renderer/core/paint/timing',
+            'third_party/blink/renderer/core/timing',
+        ],
+        'allowed': [
+            'viz::FrameTimingDetails',
+        ],
+    },
+    {
+        'paths': [
+            'third_party/blink/public/web/web_frame_widget.h',
+        ],
+        'allowed': [
+            'base::OnceCallback',
         ],
     },
     {
@@ -1322,16 +1362,21 @@ _CONFIG = [
             # TODO(https://crbug.com/787252): Remove most of the entries below,
             # once the directory is fully Onion soup'ed.
             'base::Bind.*',
-            'base::Unretained',
-            'base::NoDestructor',
-            'base::flat_map',
             'base::EraseIf',
+            'base::flat_map',
+            'base::flat_set',
+            'base::NoDestructor',
+            'base::RetainedRef',
             'base::ScopedPlatformFile',
+            'base::Unretained',
             'mojo::WrapCallbackWithDefaultInvokeIfNotRun',
 
             # TODO(https://crrev.com/787252): Consider allowlisting fidl::*
             # usage more broadly in Blink.
             'fidl::InterfaceHandle',
+        ],
+        'inclass_allowed': [
+            'base::SequencedTaskRunner::GetCurrentDefault'
         ]
     },
     {
@@ -1474,6 +1519,7 @@ _CONFIG = [
             'viz::RasterContextProvider',
             'viz::ReleaseCallback',
             'media::.+',
+            'libgav1::.+',
             'libyuv::.+',
         ]
     },
@@ -1827,16 +1873,11 @@ _CONFIG = [
     },
     {
         'paths': [
-            'third_party/blink/renderer/core/view_transition/view_transition_style_tracker.h'
-        ],
-        'allowed': ['viz::ViewTransitionElementResourceId'],
-    },
-    {
-        'paths': [
             'third_party/blink/renderer/core/view_transition/',
         ],
         'allowed': [
             'base::flat_map',
+            'cc::ScopedPauseRendering'
         ],
     },
     {

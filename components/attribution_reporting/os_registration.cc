@@ -9,23 +9,30 @@
 #include <vector>
 
 #include "base/check_op.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/types/expected.h"
+#include "components/attribution_reporting/os_registration_error.mojom-shared.h"
 #include "net/http/structured_headers.h"
 #include "url/gurl.h"
 
 namespace attribution_reporting {
 
-std::vector<OsRegistrationItem> ParseOsSourceOrTriggerHeader(
-    std::string_view header) {
+namespace {
+using ::attribution_reporting::mojom::OsRegistrationError;
+}  // namespace
+
+base::expected<std::vector<OsRegistrationItem>, OsRegistrationError>
+ParseOsSourceOrTriggerHeader(std::string_view header) {
   const auto list = net::structured_headers::ParseList(header);
   if (!list) {
-    return {};
+    return base::unexpected(OsRegistrationError::kInvalidList);
   }
 
   return ParseOsSourceOrTriggerHeader(*list);
 }
 
-std::vector<OsRegistrationItem> ParseOsSourceOrTriggerHeader(
-    const net::structured_headers::List& list) {
+base::expected<std::vector<OsRegistrationItem>, OsRegistrationError>
+ParseOsSourceOrTriggerHeader(const net::structured_headers::List& list) {
   std::vector<OsRegistrationItem> items;
   items.reserve(list.size());
 
@@ -60,6 +67,13 @@ std::vector<OsRegistrationItem> ParseOsSourceOrTriggerHeader(
         .url = std::move(url),
         .debug_reporting = debug_reporting,
     });
+  }
+
+  base::UmaHistogramCounts100("Conversions.OsRegistrationItemsPerHeader",
+                              items.size());
+
+  if (items.empty()) {
+    return base::unexpected(OsRegistrationError::kInvalidList);
   }
 
   return items;

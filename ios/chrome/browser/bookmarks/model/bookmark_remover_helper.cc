@@ -29,7 +29,6 @@ void BookmarkRemoverHelper::BookmarkModelChanged() {
 }
 
 void BookmarkRemoverHelper::BookmarkModelLoaded(
-    bookmarks::BookmarkModel* bookmark_model,
     bool) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!AreAllAvailableBookmarkModelsLoaded(browser_state_)) {
@@ -41,8 +40,7 @@ void BookmarkRemoverHelper::BookmarkModelLoaded(
   BookmarksRemoved(::RemoveAllUserBookmarksIOS(browser_state_));
 }
 
-void BookmarkRemoverHelper::BookmarkModelBeingDeleted(
-    bookmarks::BookmarkModel* bookmark_model) {
+void BookmarkRemoverHelper::BookmarkModelBeingDeleted() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bookmark_model_observations_.RemoveAllObservations();
   BookmarksRemoved(false);
@@ -58,12 +56,12 @@ void BookmarkRemoverHelper::RemoveAllUserBookmarksIOS(Callback completion) {
   }
 
   // Wait for BookmarkModels to finish loading before deleting entries.
-  bookmarks::BookmarkModel* local_or_syncable_bookmark_model =
+  LegacyBookmarkModel* local_or_syncable_bookmark_model =
       ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
           browser_state_);
   bookmark_model_observations_.AddObservation(local_or_syncable_bookmark_model);
 
-  bookmarks::BookmarkModel* account_bookmark_model =
+  LegacyBookmarkModel* account_bookmark_model =
       ios::AccountBookmarkModelFactory::GetForBrowserState(browser_state_);
   if (account_bookmark_model) {
     bookmark_model_observations_.AddObservation(account_bookmark_model);

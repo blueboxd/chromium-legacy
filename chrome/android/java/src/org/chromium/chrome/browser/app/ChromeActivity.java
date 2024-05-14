@@ -42,6 +42,7 @@ import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.InputHintChecker;
 import org.chromium.base.Log;
 import org.chromium.base.PowerMonitor;
 import org.chromium.base.StrictModeContext;
@@ -183,6 +184,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.ui.device_lock.MissingDeviceLockLauncher;
 import org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgeController;
+import org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgeUtils;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarManageable;
@@ -292,7 +294,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private final UnownedUserDataSupplier<TabCreatorManager> mTabCreatorManagerSupplier =
             new TabCreatorManagerSupplier();
 
-    private final ObservableSupplierImpl<EdgeToEdgeController> mEdgeToEdgeControllerSupplier =
+    protected final ObservableSupplierImpl<EdgeToEdgeController> mEdgeToEdgeControllerSupplier =
             new ObservableSupplierImpl<>();
 
     private final UnownedUserDataSupplier<ManualFillingComponent> mManualFillingComponentSupplier =
@@ -409,6 +411,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private @Nullable MissingDeviceLockLauncher mMissingDeviceLockLauncher;
     // Handling the dismissal of tab modal dialog.
     private TabModalLifetimeHandler mTabModalLifetimeHandler;
+    private ViewGroup mBaseChromeLayout;
 
     protected ChromeActivity() {
         mManualFillingComponentSupplier.set(ManualFillingComponentFactory.createComponent());
@@ -431,17 +434,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     protected void onPreCreate() {
+        // The startup metrics tracker should be created as early as possible in the Activity
+        // lifetime.
+        mActivityTabStartupMetricsTracker =
+                new ActivityTabStartupMetricsTracker(mActivityId, mTabModelSelectorSupplier);
         CachedFlagsSafeMode.getInstance().onStartOrResumeCheckpoint();
-        if (earlyInitializeStartupMetrics()) {
-            mActivityTabStartupMetricsTracker =
-                    new ActivityTabStartupMetricsTracker(mActivityId, mTabModelSelectorSupplier);
-        }
         super.onPreCreate();
         initializeBackPressHandling();
-    }
-
-    private boolean earlyInitializeStartupMetrics() {
-        return ChromeFeatureList.sEarlyInitializeStartupMetrics.isEnabled();
     }
 
     @Override
@@ -488,6 +487,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @Override
     public void performPreInflationStartup() {
         setupUnownedUserDataSuppliers();
+
+        if (BuildInfo.getInstance().isAutomotive
+                && ChromeFeatureList.sVerticalAutomotiveBackButtonToolbar.isEnabled()) {
+            mBaseChromeLayout = new FrameLayout(this);
+        }
 
         // Ensure that mConfig is initialized before tablet mode changes.
         mConfig = getResources().getConfiguration();
@@ -747,10 +751,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 ChromeActivitySessionTracker.getInstance();
         chromeActivitySessionTracker.registerTabModelSelectorSupplier(
                 this, mTabModelSelectorSupplier);
-        if (!earlyInitializeStartupMetrics()) {
-            mActivityTabStartupMetricsTracker =
-                    new ActivityTabStartupMetricsTracker(mActivityId, mTabModelSelectorSupplier);
-        }
     }
 
     public ActivityTabStartupMetricsTracker getActivityTabStartupMetricsTracker() {
@@ -811,14 +811,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             // https://crbug.com/639352.
             try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
                 TraceEvent.begin("setContentView(R.layout.main)");
-                if (BuildInfo.getInstance().isAutomotive
-                        && ChromeFeatureList.sVerticalAutomotiveBackButtonToolbar.isEnabled()) {
+                if (mBaseChromeLayout != null) {
                     // Automotive devices override ChromeBaseAppCompatActivity#setContentView to add
                     // the automotive back button toolbar. This doesn't work if the layout uses
                     // <merge> tags, so we need to wrap R.layout.main in a ViewGroup first.
-                    View mainView =
-                            getLayoutInflater().inflate(R.layout.main, new FrameLayout(this), true);
-                    setContentView(mainView);
+                    getLayoutInflater().inflate(R.layout.main, mBaseChromeLayout, true);
+                    setContentView(mBaseChromeLayout);
                 } else {
                     setContentView(R.layout.main);
                 }
@@ -877,7 +875,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // Add an inset observer that stores the insets to access later.
         // WebContents needs the insets to determine the portion of the screen obscured by
         // non-content displaying things such as the OSK.
-        mInsetObserverViewSupplier.set(new InsetObserver(rootView));
+        mInsetObserverViewSupplier.set(
+                new InsetObserver(rootView, EdgeToEdgeUtils.isInsetsManagementEnabled()));
 
         super.onInitialLayoutInflationComplete();
     }
@@ -986,7 +985,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 getTabModelSelector(),
                 getToolbarManager(),
                 getWindow().getDecorView(),
-                null,
                 null,
                 mBookmarkModelSupplier,
                 /* incognitoReauthControllerOneshotSupplier= */ null,
@@ -1205,10 +1203,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // Close the current UMA record and start a new UMA one.
         markSessionResume();
 
-        // Inform the actity lifecycle observers. Among other things, the observers record
-        // metrics pertaining to the "resumed" activity. This needs to happens after
-        // markSessionResume has closed the old UMA record, pertaining to the previous
-        // (backgrounded) activity, and opened a new one pertaining to the "resumed" activity.
+        // Inform the activity lifecycle observers. Among other things, the observers record metrics
+        // pertaining to the "resumed" activity. This needs to happen after markSessionResume has
+        // closed the old UMA record, pertaining to the previous (backgrounded) activity, and opened
+        // a new one pertaining to the "resumed" activity.
         super.onResumeWithNative();
 
         // Resume the ChromeActivity...
@@ -1226,8 +1224,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             if (webContents != null) webContents.notifyRendererPreferenceUpdate();
         }
 
-        ChromeSessionState.setIsInMultiWindowMode(
-                MultiWindowUtils.getInstance().isInMultiWindowMode(this));
+        boolean inMultiWindowMode = MultiWindowUtils.getInstance().isInMultiWindowMode(this);
+        ChromeSessionState.setIsInMultiWindowMode(inMultiWindowMode);
 
         boolean appIsInNightMode = getNightModeStateProvider().isInNightMode();
         boolean systemIsInNightMode = SystemNightModeMonitor.getInstance().isSystemNightModeOn();
@@ -1242,6 +1240,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         getManualFillingComponent().onResume();
         checkForDeviceLockOnAutomotive();
+        setViewForInputHint(inMultiWindowMode);
+    }
+
+    private void setViewForInputHint(boolean inMultiWindowMode) {
+        View view = inMultiWindowMode ? null : getWindow().getDecorView();
+        InputHintChecker.setView(view);
     }
 
     private void checkForDeviceLockOnAutomotive() {
@@ -1834,6 +1838,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         mRootUiCoordinator.getBottomSheetController(),
                         (ChromeKeyboardVisibilityDelegate) getWindowAndroid().getKeyboardDelegate(),
                         mBackPressManager,
+                        mEdgeToEdgeControllerSupplier,
                         findViewById(R.id.keyboard_accessory_sheet_stub),
                         findViewById(R.id.keyboard_accessory_stub));
 
@@ -1977,10 +1982,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
+     * TODO: remove this method after InfoBar is deprecated.
+     *
      * @return a supplier for the {@link EdgeToEdgeController} that supports drawing to the edge of
      *     the screen.
      */
-    protected final ObservableSupplierImpl<EdgeToEdgeController> getEdgeToEdgeSupplier() {
+    public final ObservableSupplier<EdgeToEdgeController> getEdgeToEdgeSupplier() {
         return mEdgeToEdgeControllerSupplier;
     }
 
@@ -2620,9 +2627,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             return false;
         }
 
-        if (id == R.id.bookmark_this_page_id
-                || id == R.id.add_bookmark_menu_id
-                || id == R.id.edit_bookmark_menu_id) {
+        if (id == R.id.bookmark_this_page_id) {
             mTabBookmarkerSupplier.get().addOrEditBookmark(currentTab);
             TrackerFactory.getTrackerForProfile(currentTab.getProfile())
                     .notifyEvent(EventConstants.APP_MENU_BOOKMARK_STAR_ICON_PRESSED);
@@ -3080,11 +3085,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         this,
                         currentTab.getWebContents(),
                         () -> {
-                            doAddToHomescreenOrInstallWebApp(
+                            doInstallThroughUniversalInstall(
                                     currentTab, AppMenuVerbiage.APP_MENU_OPTION_INSTALL);
                         },
                         () -> {
-                            doAddToHomescreenOrInstallWebApp(
+                            doInstallThroughUniversalInstall(
                                     currentTab, AppMenuVerbiage.APP_MENU_OPTION_ADD_TO_HOMESCREEN);
                         },
                         () -> {
@@ -3092,33 +3097,48 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         },
                         webAppInstalled,
                         controller,
-                        R.drawable.ic_forward_arrow_black_24dp);
-        if (!pwaUniversalInstallBottomSheetCoordinator.show()) {
-            // Fall back to install method for the PWA.
-            return doAddToHomescreenOrInstallWebApp(
-                    currentTab, AppMenuVerbiage.APP_MENU_OPTION_INSTALL);
-        }
-
+                        R.drawable.outline_chevron_right_24dp,
+                        R.drawable.down_arrow_on_circular_background,
+                        R.drawable.chrome_logo_on_circular_background);
+        pwaUniversalInstallBottomSheetCoordinator.showBottomSheetAsync();
         return true;
     }
 
     /**
      * Returns whether the Add to Home screen or Install Web App action was successfully started.
      */
+    private boolean doInstallThroughUniversalInstall(Tab currentTab, int menuItemType) {
+        return doAddToHomescreenOrInstallWebAppImpl(
+                currentTab, menuItemType, /* universalInstall= */ true);
+    }
+
+    /**
+     * Returns whether the Add to Home screen or Install Web App action was successfully started.
+     */
     private boolean doAddToHomescreenOrInstallWebApp(Tab currentTab, int menuItemType) {
-        PwaBottomSheetController controller =
-                PwaBottomSheetControllerProvider.from(getWindowAndroid());
-        if (controller != null
-                && controller.requestOrExpandBottomSheetInstaller(
-                        currentTab.getWebContents(), InstallTrigger.MENU)) {
-            return true;
+        return doAddToHomescreenOrInstallWebAppImpl(
+                currentTab, menuItemType, /* universalInstall= */ false);
+    }
+
+    private boolean doAddToHomescreenOrInstallWebAppImpl(
+            Tab currentTab, int menuItemType, boolean universalInstall) {
+        if (menuItemType == AppMenuVerbiage.APP_MENU_OPTION_INSTALL) {
+            PwaBottomSheetController controller =
+                    PwaBottomSheetControllerProvider.from(getWindowAndroid());
+            if (controller != null
+                    && controller.requestOrExpandBottomSheetInstaller(
+                            currentTab.getWebContents(), InstallTrigger.MENU)) {
+                return true;
+            }
         }
+
         AddToHomescreenCoordinator.showForAppMenu(
                 this,
                 getWindowAndroid(),
                 getModalDialogManager(),
                 currentTab.getWebContents(),
-                menuItemType);
+                menuItemType,
+                universalInstall);
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.ADD_TO_HOMESCREEN_IPH)) {
             Tracker tracker = TrackerFactory.getTrackerForProfile(currentTab.getProfile());
             tracker.notifyEvent(EventConstants.ADD_TO_HOMESCREEN_DIALOG_SHOWN);
@@ -3146,7 +3166,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         ReadAloudController readAloudController =
                 mRootUiCoordinator.getReadAloudControllerSupplier().get();
         if (readAloudController != null) {
-            readAloudController.playTab(currentTab);
+            readAloudController.playTab(currentTab, ReadAloudController.Entrypoint.OVERFLOW_MENU);
         }
     }
 
@@ -3175,5 +3195,15 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (!mTabModelProfileSupplier.hasValue()) return null;
         return SyncServiceFactory.getForProfile(
                 mTabModelProfileSupplier.get().getOriginalProfile());
+    }
+
+    /**
+     * Returns the base view hosting Chrome that certain views (e.g. the omnibox suggestion list)
+     * will position themselves relative to. If null, the content view can be used.
+     *
+     * @return The base {@link View} hosting Chrome.
+     */
+    protected @Nullable View getBaseChromeLayout() {
+        return mBaseChromeLayout;
     }
 }

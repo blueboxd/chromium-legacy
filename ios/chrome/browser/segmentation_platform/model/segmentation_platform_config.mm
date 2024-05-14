@@ -6,7 +6,6 @@
 
 #import <memory>
 
-#import "base/containers/cxx20_erase_vector.h"
 #import "base/feature_list.h"
 #import "base/metrics/field_trial_params.h"
 #import "base/time/time.h"
@@ -51,7 +50,7 @@ std::vector<std::unique_ptr<Config>> GetSegmentationPlatformConfig() {
   configs.emplace_back(MostVisitedTilesUser::GetConfig());
 
   // Add new configs here.
-  base::EraseIf(configs, [](const auto& config) { return !config.get(); });
+  std::erase_if(configs, [](const auto& config) { return !config.get(); });
   return configs;
 }
 

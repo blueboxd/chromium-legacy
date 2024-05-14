@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/accessibility/read_anything_app_controller.h"
 
+#include <climits>
 #include <memory>
 #include <queue>
 #include <string>
@@ -14,6 +15,7 @@
 #include "base/metrics/metrics_hashes.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
+#include "base/strings/to_string.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/renderer/accessibility/ax_tree_distiller.h"
 #include "components/language/core/common/locale_util.h"
@@ -30,6 +32,7 @@
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/accessibility/accessibility_features.h"
+#include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_selection.h"
@@ -39,6 +42,9 @@
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/accessibility/ax_tree_update.h"
+#include "ui/accessibility/mojom/ax_event.mojom.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/url_util.h"
 #include "v8/include/v8-context.h"
 #include "v8/include/v8-microtask-queue.h"
@@ -47,6 +53,8 @@ using read_anything::mojom::ReadAnythingTheme;
 using read_anything::mojom::ReadAnythingThemePtr;
 
 namespace {
+
+constexpr char kUndeterminedLocale[] = "und";
 
 // The following methods convert v8::Value types to an AXTreeUpdate. This is not
 // a complete conversion (thus way gin::Converter<ui::AXTreeUpdate> is not used
@@ -397,6 +405,7 @@ ReadAnythingAppController* ReadAnythingAppController::Install(
 ReadAnythingAppController::ReadAnythingAppController(
     content::RenderFrame* render_frame)
     : frame_token_(render_frame->GetWebFrame()->GetLocalFrameToken()) {
+  renderer_load_triggered_time_ms_ = base::TimeTicks::Now();
   distiller_ = std::make_unique<AXTreeDistiller>(
       base::BindRepeating(&ReadAnythingAppController::OnAXTreeDistilled,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -412,29 +421,18 @@ void ReadAnythingAppController::AccessibilityEventReceived(
   // the `requires_distillation()` state below.
   model_.AccessibilityEventReceived(tree_id, updates, events);
 
-  if (model_.is_pdf()) {
-    // Asumptions made about how the PDF contents are stored are incorrect.
-    // Display "RM can't show this page" screen.
-    if (!model_.IsPDFFormatted()) {
-      model_.SetActiveTreeSelectable(false);
-      ExecuteJavaScript("chrome.readingMode.showEmpty();");
-      return;
-    }
-    // PDFs are stored in a different web content than the main web contents.
-    // Enable a11y on it to get tree information from the PDF.
-    ui::AXTreeID pdf_web_contents = model_.GetPDFWebContents();
-    if (pdf_web_contents != ui::AXTreeIDUnknown() &&
-        !model_.ContainsTree(pdf_web_contents)) {
-      page_handler_->EnablePDFContentAccessibility(pdf_web_contents);
-    }
-  }
-
-  if (tree_id != model_.GetActiveTreeId()) {
+  if (tree_id != model_.active_tree_id()) {
     return;
   }
 
   if (model_.requires_distillation()) {
     Distill();
+  }
+
+  if (model_.image_to_update_node_id() != ui::kInvalidAXNodeID) {
+    ExecuteJavaScript("chrome.readingMode.updateImage(" +
+                      base::ToString(model_.image_to_update_node_id()) + ");");
+    model_.reset_image_to_update_node_id();
   }
 
   // TODO(accessibility): it isn't clear this handles the pending updates path
@@ -458,14 +456,14 @@ void ReadAnythingAppController::OnActiveAXTreeIDChanged(
     const ui::AXTreeID& tree_id,
     ukm::SourceId ukm_source_id,
     const GURL& url,
-    bool force_update_state) {
-  if (tree_id == model_.GetActiveTreeId() && !force_update_state) {
+    bool is_pdf) {
+  if (tree_id == model_.active_tree_id() && !is_pdf) {
     return;
   }
-  model_.SetActiveTreeId(tree_id);
+  model_.set_active_tree_id(tree_id);
   model_.SetActiveUkmSourceId(ukm_source_id);
   model_.SetActiveTreeSelectable(GetSelectable(url));
-  model_.SetIsPdf(url);
+  model_.set_is_pdf(is_pdf);
   model_.set_is_google_docs(GetIsGoogleDocs(url));
   // Delete all pending updates on the formerly active AXTree.
   // TODO(crbug.com/1266555): If distillation is in progress, cancel the
@@ -478,8 +476,8 @@ void ReadAnythingAppController::OnActiveAXTreeIDChanged(
   // When the UI first constructs, this function may be called before tree_id
   // has been added to the tree list in AccessibilityEventReceived. In that
   // case, do not distill.
-  if (model_.GetActiveTreeId() != ui::AXTreeIDUnknown() &&
-      model_.ContainsTree(model_.GetActiveTreeId())) {
+  if (model_.active_tree_id() != ui::AXTreeIDUnknown() &&
+      model_.ContainsTree(model_.active_tree_id())) {
     Distill();
   }
 }
@@ -508,7 +506,7 @@ void ReadAnythingAppController::Distill() {
 
   model_.set_requires_distillation(false);
 
-  ui::AXSerializableTree* tree = model_.GetTreeFromId(model_.GetActiveTreeId());
+  ui::AXSerializableTree* tree = model_.GetTreeFromId(model_.active_tree_id());
   std::unique_ptr<ui::AXTreeSource<const ui::AXNode*>> tree_source(
       tree->CreateTreeSource());
   ui::AXTreeSerializer<const ui::AXNode*, std::vector<const ui::AXNode*>>
@@ -532,15 +530,15 @@ void ReadAnythingAppController::OnAXTreeDistilled(
 
   // Return early if any of the following scenarios occurred while waiting for
   // distillation to complete:
-  // 1. tree_id != model_.GetActiveTreeId(): The active tree was changed.
-  // 2. model_.GetActiveTreeId()== ui::AXTreeIDUnknown(): The active tree was
+  // 1. tree_id != model_.active_tree_id(): The active tree was changed.
+  // 2. model_.active_tree_id()== ui::AXTreeIDUnknown(): The active tree was
   // change to
   //    an unknown tree id.
   // 3. !model_.ContainsTree(tree_id): The distilled tree was destroyed.
   // 4. tree_id == ui::AXTreeIDUnknown(): The distiller sent back an unknown
   //    tree id which occurs when there was an error.
-  if (tree_id != model_.GetActiveTreeId() ||
-      model_.GetActiveTreeId() == ui::AXTreeIDUnknown() ||
+  if (tree_id != model_.active_tree_id() ||
+      model_.active_tree_id() == ui::AXTreeIDUnknown() ||
       !model_.ContainsTree(tree_id) || tree_id == ui::AXTreeIDUnknown()) {
     return;
   }
@@ -550,9 +548,12 @@ void ReadAnythingAppController::OnAXTreeDistilled(
     model_.ComputeDisplayNodeIdsForDistilledTree();
   }
 
-  // Draw the selection in the side panel (if one exists in the main panel) and
-  // the content if the selection is not in the distilled content.
-  PostProcessSelection();
+  // Draw the selection in the side panel (if one exists in the main panel).
+  if (!PostProcessSelection()) {
+    // If a draw did not occur, make sure to draw. This will happen if there is
+    // no main content selection when the tree is distilled.
+    Draw();
+  }
 
   if (model_.is_empty()) {
     ExecuteJavaScript("chrome.readingMode.showEmpty();");
@@ -565,7 +566,7 @@ void ReadAnythingAppController::OnAXTreeDistilled(
   // AXNode's language code is BCP 47. Only the base language is needed to
   // record the metric.
   std::string language =
-      model_.GetTreeFromId(model_.GetActiveTreeId())->root()->GetLanguage();
+      model_.GetTreeFromId(model_.active_tree_id())->root()->GetLanguage();
   if (!language.empty()) {
     base::UmaHistogramSparse(
         string_constants::kLanguageHistogramName,
@@ -581,8 +582,13 @@ void ReadAnythingAppController::OnAXTreeDistilled(
   }
 }
 
-void ReadAnythingAppController::PostProcessSelection() {
+bool ReadAnythingAppController::PostProcessSelection() {
+  bool did_draw = false;
   if (model_.PostProcessSelection()) {
+    did_draw = true;
+    // TODO(b/40927698): When Read Aloud is playing and content is selected
+    // in the main panel, don't re-draw with the updated selection until
+    // Read Aloud is paused.
     Draw();
   }
   // Skip drawing the selection in the side panel if the selection originally
@@ -591,6 +597,7 @@ void ReadAnythingAppController::PostProcessSelection() {
     DrawSelection();
   }
   model_.set_selection_from_action(false);
+  return did_draw;
 }
 
 void ReadAnythingAppController::Draw() {
@@ -613,7 +620,7 @@ void ReadAnythingAppController::OnThemeChanged(ReadAnythingThemePtr new_theme) {
 
   // Only redraw if there is an active tree.
   if (needs_redraw_for_links &&
-      model_.GetActiveTreeId() != ui::AXTreeIDUnknown()) {
+      model_.active_tree_id() != ui::AXTreeIDUnknown()) {
     ExecuteJavaScript("chrome.readingMode.updateLinks();");
   }
 }
@@ -635,7 +642,7 @@ void ReadAnythingAppController::OnSettingsRestoredFromPrefs(
   ExecuteJavaScript("chrome.readingMode.restoreSettingsFromPrefs();");
   // Only redraw if there is an active tree.
   if (needs_redraw_for_links &&
-      model_.GetActiveTreeId() != ui::AXTreeIDUnknown()) {
+      model_.active_tree_id() != ui::AXTreeIDUnknown()) {
     ExecuteJavaScript("chrome.readingMode.updateLinks();");
   }
 }
@@ -699,6 +706,7 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
       .SetMethod("getLanguage", &ReadAnythingAppController::GetLanguage)
       .SetMethod("getTextContent", &ReadAnythingAppController::GetTextContent)
       .SetMethod("getUrl", &ReadAnythingAppController::GetUrl)
+      .SetMethod("getAltText", &ReadAnythingAppController::GetAltText)
       .SetMethod("shouldBold", &ReadAnythingAppController::ShouldBold)
       .SetMethod("isOverline", &ReadAnythingAppController::IsOverline)
       .SetMethod("isLeafNode", &ReadAnythingAppController::IsLeafNode)
@@ -754,24 +762,29 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
                  &ReadAnythingAppController::SetThemeForTesting)
       .SetMethod("setLanguageForTesting",
                  &ReadAnythingAppController::SetLanguageForTesting)
-      .SetMethod("initAXPositionWithNode",
+      .SetMethod("initAxPositionWithNode",
                  &ReadAnythingAppController::InitAXPositionWithNode)
       .SetMethod("getCurrentTextStartIndex",
                  &ReadAnythingAppController::GetCurrentTextStartIndex)
       .SetMethod("getCurrentTextEndIndex",
                  &ReadAnythingAppController::GetCurrentTextEndIndex)
       .SetMethod("getCurrentText", &ReadAnythingAppController::GetCurrentText)
-      .SetMethod("shouldShowUI", &ReadAnythingAppController::ShouldShowUI)
+      .SetMethod("shouldShowUi", &ReadAnythingAppController::ShouldShowUI)
       .SetMethod("getAccessibleBoundary",
                  &ReadAnythingAppController::GetAccessibleBoundary)
       .SetMethod("movePositionToNextGranularity",
                  &ReadAnythingAppController::MovePositionToNextGranularity)
       .SetMethod("movePositionToPreviousGranularity",
-                 &ReadAnythingAppController::MovePositionToPreviousGranularity);
+                 &ReadAnythingAppController::MovePositionToPreviousGranularity)
+      .SetMethod("requestImageDataUrl",
+                 &ReadAnythingAppController::RequestImageDataUrl)
+      .SetMethod("getImageDataUrl", &ReadAnythingAppController::GetImageDataUrl)
+      .SetMethod("getDisplayNameForLocale",
+                 &ReadAnythingAppController::GetDisplayNameForLocale);
 }
 
 ui::AXNodeID ReadAnythingAppController::RootId() const {
-  ui::AXSerializableTree* tree = model_.GetTreeFromId(model_.GetActiveTreeId());
+  ui::AXSerializableTree* tree = model_.GetTreeFromId(model_.active_tree_id());
   DCHECK(tree->root());
   return tree->root()->id();
 }
@@ -1005,6 +1018,11 @@ std::string ReadAnythingAppController::GetUrl(ui::AXNodeID ax_node_id) const {
   return "";
 }
 
+std::string ReadAnythingAppController::GetAltText(
+    ui::AXNodeID ax_node_id) const {
+  return model_.GetAltText(ax_node_id);
+}
+
 bool ReadAnythingAppController::ShouldBold(ui::AXNodeID ax_node_id) const {
   ui::AXNode* ax_node = model_.GetAXNode(ax_node_id);
   DCHECK(ax_node);
@@ -1046,6 +1064,45 @@ std::vector<std::string> ReadAnythingAppController::GetSupportedFonts() const {
   return model_.GetSupportedFonts();
 }
 
+void ReadAnythingAppController::RequestImageDataUrl(
+    ui::AXNodeID node_id) const {
+  if (features::IsReadAnythingImagesViaAlgorithmEnabled()) {
+    auto target_tree_id = model_.active_tree_id();
+    CHECK_NE(target_tree_id, ui::AXTreeIDUnknown());
+    page_handler_->OnImageDataRequested(target_tree_id, node_id);
+  }
+}
+
+std::string ReadAnythingAppController::GetImageDataUrl(
+    ui::AXNodeID node_id) const {
+  return model_.GetImageDataUrl(node_id);
+}
+
+const std::string ReadAnythingAppController::GetDisplayNameForLocale(
+    const std::string& locale,
+    const std::string& display_locale) const {
+  bool found_valid_result = false;
+  std::string locale_result;
+  if (l10n_util::IsValidLocaleSyntax(locale) &&
+      l10n_util::IsValidLocaleSyntax(display_locale)) {
+    locale_result = base::UTF16ToUTF8(l10n_util::GetDisplayNameForLocale(
+        locale, display_locale, /*is_for_ui=*/true));
+    // Check for valid locales before getting the display name.
+    // The ICU Locale class returns "und" for undetermined locales, and
+    // returns the locale string directly if it has no translation.
+    // Treat these cases as invalid results.
+    found_valid_result =
+        locale_result != kUndeterminedLocale && locale_result != locale;
+  }
+
+  // Return an empty string to communicate there's no display name.
+  if (!found_valid_result) {
+    locale_result = std::string();
+  }
+
+  return locale_result;
+}
+
 const std::string& ReadAnythingAppController::GetLanguageCodeForSpeech() const {
   // TODO(crbug.com/1474951): Instead of returning the default browser language
   // we should use the page language.
@@ -1053,6 +1110,10 @@ const std::string& ReadAnythingAppController::GetLanguageCodeForSpeech() const {
 }
 
 void ReadAnythingAppController::OnConnected() {
+  web_ui_connected_time_ms_ = base::TimeTicks::Now();
+  base::UmaHistogramLongTimes(
+      "Accessibility.ReadAnything.TimeFromEntryTriggeredToWebUIConnected",
+      base::TimeTicks::Now() - renderer_load_triggered_time_ms_);
   mojo::PendingReceiver<read_anything::mojom::UntrustedPageHandlerFactory>
       page_handler_factory_receiver =
           page_handler_factory_.BindNewPipeAndPassReceiver();
@@ -1096,7 +1157,7 @@ void ReadAnythingAppController::OnScroll(bool on_selection) const {
 }
 
 void ReadAnythingAppController::OnLinkClicked(ui::AXNodeID ax_node_id) const {
-  DCHECK_NE(model_.GetActiveTreeId(), ui::AXTreeIDUnknown());
+  DCHECK_NE(model_.active_tree_id(), ui::AXTreeIDUnknown());
   // Prevent link clicks while distillation is in progress, as it means that the
   // tree may have changed in an unexpected way.
   // TODO(crbug.com/1266555): Consider how to show this in a more user-friendly
@@ -1104,7 +1165,7 @@ void ReadAnythingAppController::OnLinkClicked(ui::AXNodeID ax_node_id) const {
   if (model_.distillation_in_progress()) {
     return;
   }
-  page_handler_->OnLinkClicked(model_.GetActiveTreeId(), ax_node_id);
+  page_handler_->OnLinkClicked(model_.active_tree_id(), ax_node_id);
 }
 
 void ReadAnythingAppController::OnStandardLineSpacing() {
@@ -1206,7 +1267,7 @@ void ReadAnythingAppController::OnSelectionChange(ui::AXNodeID anchor_node_id,
                                                   int anchor_offset,
                                                   ui::AXNodeID focus_node_id,
                                                   int focus_offset) const {
-  DCHECK_NE(model_.GetActiveTreeId(), ui::AXTreeIDUnknown());
+  DCHECK_NE(model_.active_tree_id(), ui::AXTreeIDUnknown());
   // Prevent link clicks while distillation is in progress, as it means that the
   // tree may have changed in an unexpected way.
   // TODO(crbug.com/1266555): Consider how to show this in a more user-friendly
@@ -1255,7 +1316,7 @@ void ReadAnythingAppController::OnSelectionChange(ui::AXNodeID anchor_node_id,
     return;
   }
 
-  page_handler_->OnSelectionChange(model_.GetActiveTreeId(), anchor_node_id,
+  page_handler_->OnSelectionChange(model_.active_tree_id(), anchor_node_id,
                                    anchor_offset, focus_node_id, focus_offset);
 }
 
@@ -1351,6 +1412,12 @@ content::RenderFrame* ReadAnythingAppController::GetRenderFrame() {
 }
 
 void ReadAnythingAppController::ShouldShowUI() {
+  base::UmaHistogramLongTimes(
+      "Accessibility.ReadAnything.TimeFromEntryTriggeredToContentLoaded",
+      base::TimeTicks::Now() - renderer_load_triggered_time_ms_);
+  base::UmaHistogramLongTimes(
+      "Accessibility.ReadAnything.TimeFromWebUIConnectToContentLoaded",
+      base::TimeTicks::Now() - web_ui_connected_time_ms_);
   page_handler_factory_->ShouldShowUI();
 }
 

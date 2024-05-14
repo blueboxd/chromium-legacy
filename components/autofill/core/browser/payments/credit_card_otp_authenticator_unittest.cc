@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/metrics/payments/card_unmask_authentication_metrics.h"
 #include "components/autofill/core/browser/payments/autofill_error_dialog_context.h"
 #include "components/autofill/core/browser/payments/test_authentication_requester.h"
+#include "components/autofill/core/browser/payments/test_payments_autofill_client.h"
 #include "components/autofill/core/browser/payments/test_payments_network_interface.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
@@ -38,16 +39,6 @@ class CreditCardOtpAuthenticatorTestBase : public testing::Test {
 
   void SetUp() override {
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
-    personal_data_manager_.Init(/*profile_database=*/nullptr,
-                                /*account_database=*/nullptr,
-                                /*pref_service=*/autofill_client_.GetPrefs(),
-                                /*local_state=*/autofill_client_.GetPrefs(),
-                                /*identity_manager=*/nullptr,
-                                /*history_service=*/nullptr,
-                                /*sync_service=*/nullptr,
-                                /*strike_database=*/nullptr,
-                                /*image_fetcher=*/nullptr,
-                                /*shared_storage_handler=*/nullptr);
     personal_data_manager_.SetPrefService(autofill_client_.GetPrefs());
 
     requester_ = std::make_unique<TestAuthenticationRequester>();
@@ -55,9 +46,10 @@ class CreditCardOtpAuthenticatorTestBase : public testing::Test {
     payments_network_interface_ = new payments::TestPaymentsNetworkInterface(
         autofill_client_.GetURLLoaderFactory(),
         autofill_client_.GetIdentityManager(), &personal_data_manager_);
-    autofill_client_.set_test_payments_network_interface(
-        std::unique_ptr<payments::TestPaymentsNetworkInterface>(
-            payments_network_interface_));
+    autofill_client_.GetPaymentsAutofillClient()
+        ->set_test_payments_network_interface(
+            std::unique_ptr<payments::TestPaymentsNetworkInterface>(
+                payments_network_interface_));
     authenticator_ =
         std::make_unique<CreditCardOtpAuthenticator>(&autofill_client_);
 
@@ -233,7 +225,8 @@ TEST_P(CreditCardOtpAuthenticatorTest, SelectChallengeOptionFailsWithVcnError) {
       /*context_token=*/"context_token_from_previous_unmask_response",
       kTestBillingCustomerNumber);
   // Verify error dialog is shown.
-  EXPECT_TRUE(autofill_client_.autofill_error_dialog_shown());
+  EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                  ->autofill_error_dialog_shown());
   // Ensure the OTP authenticator is reset.
   EXPECT_TRUE(OtpAuthenticatorContextToken().empty());
   ASSERT_TRUE(requester_->did_succeed().has_value());
@@ -273,7 +266,8 @@ TEST_P(CreditCardOtpAuthenticatorTest,
       /*context_token=*/"context_token_from_previous_unmask_response",
       kTestBillingCustomerNumber);
   // Verify error dialog is shown.
-  EXPECT_TRUE(autofill_client_.autofill_error_dialog_shown());
+  EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                  ->autofill_error_dialog_shown());
   // Ensure the OTP authenticator is reset.
   EXPECT_TRUE(OtpAuthenticatorContextToken().empty());
   ASSERT_TRUE(requester_->did_succeed().has_value());
@@ -318,10 +312,12 @@ TEST_P(CreditCardOtpAuthenticatorTest, OtpAuthServerVcnError) {
         AutofillClient::PaymentsRpcResult::kVcnRetrievalTryAgainFailure,
         /*real_pan=*/"", server_returned_decline_details);
     // Verify error dialog is shown.
-    EXPECT_TRUE(autofill_client_.autofill_error_dialog_shown());
+    EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                    ->autofill_error_dialog_shown());
     if (server_returned_decline_details) {
       AutofillErrorDialogContext context =
-          autofill_client_.autofill_error_dialog_context();
+          autofill_client_.GetPaymentsAutofillClient()
+              ->autofill_error_dialog_context();
       EXPECT_EQ(context.type,
                 AutofillErrorDialogType::kVirtualCardTemporaryError);
       EXPECT_EQ(*context.server_returned_title, "test_server_returned_title");
@@ -375,7 +371,8 @@ TEST_P(CreditCardOtpAuthenticatorTest, OtpAuthServerNonVcnError) {
   OnDidGetRealPan(AutofillClient::PaymentsRpcResult::kTryAgainFailure,
                   /*real_pan=*/"");
   // Verify error dialog is shown.
-  EXPECT_TRUE(autofill_client_.autofill_error_dialog_shown());
+  EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                  ->autofill_error_dialog_shown());
   // Ensure the OTP authenticator is reset.
   EXPECT_TRUE(OtpAuthenticatorContextToken().empty());
   ASSERT_TRUE(requester_->did_succeed().has_value());

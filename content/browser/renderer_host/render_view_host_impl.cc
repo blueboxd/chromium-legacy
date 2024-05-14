@@ -18,6 +18,7 @@
 #include "base/hash/hash.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -178,7 +179,8 @@ class PerProcessRenderViewHostSet : public base::SupportsUserData::Data {
 
   static const int kUserDataKey = 0;
 
-  std::unordered_set<const RenderViewHostImpl*> render_view_host_instances_;
+  std::unordered_set<raw_ptr<const RenderViewHostImpl, CtnExperimental>>
+      render_view_host_instances_;
 };
 
 const int PerProcessRenderViewHostSet::kUserDataKey;
@@ -840,14 +842,14 @@ RenderViewHostImpl::GetAssociatedPageBroadcast() {
 void RenderViewHostImpl::RenderWidgetDidForwardMouseEvent(
     const blink::WebMouseEvent& mouse_event) {
   if (mouse_event.GetType() == WebInputEvent::Type::kMouseWheel &&
-      GetWidget()->IsIgnoringInputEvents()) {
+      GetWidget()->IsIgnoringWebInputEvents(mouse_event)) {
     delegate_->OnIgnoredUIEvent();
   }
 }
 
 bool RenderViewHostImpl::MayRenderWidgetForwardKeyboardEvent(
     const NativeWebKeyboardEvent& key_event) {
-  if (GetWidget()->IsIgnoringInputEvents()) {
+  if (GetWidget()->IsIgnoringWebInputEvents(key_event)) {
     if (key_event.GetType() == WebInputEvent::Type::kRawKeyDown)
       delegate_->OnIgnoredUIEvent();
     return false;

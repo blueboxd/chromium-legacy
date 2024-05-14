@@ -8,8 +8,8 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
-#include "base/containers/cxx20_erase.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
@@ -364,6 +364,13 @@ void KeyframeEffect::ActivateKeyframeModels() {
   for (auto& keyframe_model : keyframe_models()) {
     auto* cc_keyframe_model =
         KeyframeModel::ToCcKeyframeModel(keyframe_model.get());
+
+    if (replaced_group_ == cc_keyframe_model->group() &&
+        !cc_keyframe_model->affects_pending_elements()) {
+      CHECK_NE(cc_keyframe_model->group(), KeyframeModel::kInvalidGroup);
+      cc_keyframe_model->ungroup();
+    }
+
     if (cc_keyframe_model->affects_active_elements() !=
         cc_keyframe_model->affects_pending_elements()) {
       keyframe_model_activated = true;
@@ -374,6 +381,8 @@ void KeyframeEffect::ActivateKeyframeModels() {
 
   if (keyframe_model_activated)
     element_animations_->UpdateClientAnimationState();
+
+  replaced_group_.reset();
 
   scroll_offset_animation_was_interrupted_ = false;
 }
@@ -619,7 +628,7 @@ void KeyframeEffect::MarkAbortedKeyframeModelsForDeletion(
 }
 
 void KeyframeEffect::PurgeKeyframeModelsMarkedForDeletion(bool impl_only) {
-  base::EraseIf(keyframe_models(), [impl_only](const auto& keyframe_model) {
+  std::erase_if(keyframe_models(), [impl_only](const auto& keyframe_model) {
     return keyframe_model->run_state() ==
                gfx::KeyframeModel::WAITING_FOR_DELETION &&
            (!impl_only || KeyframeModel::ToCcKeyframeModel(keyframe_model.get())
@@ -628,7 +637,7 @@ void KeyframeEffect::PurgeKeyframeModelsMarkedForDeletion(bool impl_only) {
 }
 
 void KeyframeEffect::PurgeDeletedKeyframeModels() {
-  base::EraseIf(keyframe_models(), [](const auto& keyframe_model) {
+  std::erase_if(keyframe_models(), [](const auto& keyframe_model) {
     return keyframe_model->run_state() ==
                gfx::KeyframeModel::WAITING_FOR_DELETION &&
            !KeyframeModel::ToCcKeyframeModel(keyframe_model.get())
@@ -1096,8 +1105,11 @@ void KeyframeEffect::GenerateEvent(AnimationEvents* events,
                                    const KeyframeModel& keyframe_model,
                                    AnimationEvent::Type type,
                                    base::TimeTicks monotonic_time) {
-  if (!events)
+  // An ungrouped model has been replaced by another model so avoid dispatching
+  // any events from it.
+  if (!events || keyframe_model.group() == KeyframeModel::kInvalidGroup) {
     return;
+  }
 
   AnimationEvent event(type,
                        {animation_->animation_timeline()->id(),

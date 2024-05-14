@@ -7,7 +7,7 @@
 #include "base/base64.h"
 #include "base/i18n/case_conversion.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
+#include "components/affiliations/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -21,6 +21,8 @@
 namespace password_manager {
 
 namespace {
+
+using affiliations::FacetURI;
 
 constexpr char16_t kPasswordReplacementChar = 0x2022;
 
@@ -141,14 +143,11 @@ void MaybeAppendManagePasswordsEntry(
       },
       &autofill::Suggestion::popup_item_id);
 
-#if !BUILDFLAG(IS_ANDROID)
   // Add a separator before the manage option unless there are no suggestions
   // yet.
-  // TODO(crbug.com/1274134): Clean up once improvements are launched.
   if (!suggestions->empty()) {
     suggestions->emplace_back(autofill::PopupItemId::kSeparator);
   }
-#endif
 
   autofill::Suggestion suggestion(l10n_util::GetStringUTF16(
       has_webauthn_credential
@@ -242,11 +241,14 @@ void AddPasswordUsernameChildSuggestion(const std::u16string& username,
       username, autofill::PopupItemId::kPasswordFieldByFieldFilling));
 }
 
-void AddFillPasswordChildSuggestion(autofill::Suggestion& suggestion) {
-  suggestion.children.push_back(autofill::Suggestion(
+void AddFillPasswordChildSuggestion(autofill::Suggestion& suggestion,
+                                    const std::u16string& password) {
+  autofill::Suggestion fill_password(
       l10n_util::GetStringUTF16(
           IDS_PASSWORD_MANAGER_MANUAL_FALLBACK_FILL_PASSWORD_ENTRY),
-      autofill::PopupItemId::kFillPassword));
+      autofill::PopupItemId::kFillPassword);
+  fill_password.payload = autofill::Suggestion::ValueToFill(password);
+  suggestion.children.push_back(fill_password);
 }
 
 void AddViewPasswordDetailsChildSuggestion(autofill::Suggestion& suggestion) {
@@ -272,7 +274,7 @@ autofill::Suggestion GetManualFallbackSuggestion(
   if (!replaced) {
     AddPasswordUsernameChildSuggestion(maybe_username, suggestion);
   }
-  AddFillPasswordChildSuggestion(suggestion);
+  AddFillPasswordChildSuggestion(suggestion, credential.password);
   suggestion.children.push_back(
       autofill::Suggestion(autofill::PopupItemId::kSeparator));
   AddViewPasswordDetailsChildSuggestion(suggestion);

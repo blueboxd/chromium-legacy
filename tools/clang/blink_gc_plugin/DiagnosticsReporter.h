@@ -93,6 +93,12 @@ class DiagnosticsReporter {
   void OptionalNewExprUsedWithGC(const clang::Expr* expr,
                                  const clang::CXXRecordDecl* optional,
                                  const clang::CXXRecordDecl* gc_type);
+  void RawPtrFieldUsedWithGC(const clang::FieldDecl* decl,
+                             const clang::CXXRecordDecl* optional,
+                             const clang::CXXRecordDecl* gc_type);
+  void RawPtrNewExprUsedWithGC(const clang::Expr* expr,
+                               const clang::CXXRecordDecl* optional,
+                               const clang::CXXRecordDecl* gc_type);
   void VariantUsedWithGC(const clang::Expr* expr,
                          const clang::CXXRecordDecl* variant,
                          const clang::CXXRecordDecl* gc_type);
@@ -155,8 +161,11 @@ class DiagnosticsReporter {
   unsigned diag_raw_ptr_to_gc_managed_class_note_;
   unsigned diag_ref_ptr_to_gc_managed_class_note_;
   unsigned diag_reference_ptr_to_gc_managed_class_note_;
-  unsigned diag_own_ptr_to_gc_managed_class_note_;
   unsigned diag_unique_ptr_to_gc_managed_class_note_;
+  unsigned diag_raw_ptr_to_traceable_class_note_;
+  unsigned diag_ref_ptr_to_traceable_class_note_;
+  unsigned diag_reference_ptr_to_traceable_class_note_;
+  unsigned diag_unique_ptr_to_traceable_class_note_;
   unsigned diag_member_to_gc_unmanaged_class_note_;
   unsigned diag_stack_allocated_field_note_;
   unsigned diag_member_in_unmanaged_class_note_;
@@ -185,6 +194,8 @@ class DiagnosticsReporter {
   unsigned diag_unique_ptr_used_with_gc_;
   unsigned diag_optional_field_used_with_gc_;
   unsigned diag_optional_new_expr_used_with_gc_;
+  unsigned diag_raw_ptr_field_used_with_gc_;
+  unsigned diag_raw_ptr_new_expr_used_with_gc_;
   unsigned diag_variant_used_with_gc_;
   unsigned diag_collection_of_gced_;
   unsigned diag_collection_of_members_;

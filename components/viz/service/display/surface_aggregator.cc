@@ -46,7 +46,6 @@
 #include "components/viz/service/surfaces/surface_allocation_group.h"
 #include "components/viz/service/surfaces/surface_client.h"
 #include "components/viz/service/surfaces/surface_manager.h"
-#include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -709,11 +708,12 @@ ResolvedFrameData* SurfaceAggregator::GetResolvedFrame(
       auto prev_resolved_frame_iter =
           resolved_frames_.find(surface->previous_frame_surface_id());
       if (prev_resolved_frame_iter != resolved_frames_.end()) {
-        prev_frame_index =
-            prev_resolved_frame_iter->second.previous_frame_index();
-        prev_root_pass_id =
-            prev_resolved_frame_iter->second.GetRootRenderPassData()
-                .remapped_id();
+        auto& prev_resolved_frame = prev_resolved_frame_iter->second;
+        if (prev_resolved_frame.is_valid()) {
+          prev_frame_index = prev_resolved_frame.previous_frame_index();
+          prev_root_pass_id =
+              prev_resolved_frame.GetRootRenderPassData().remapped_id();
+        }
       }
     }
 
@@ -1631,13 +1631,6 @@ void SurfaceAggregator::CopyPasses(ResolvedFrameData& resolved_frame) {
 
   bool apply_surface_transform_to_root_pass = true;
   for (auto& resolved_pass : resolved_frame.GetResolvedPasses()) {
-    if (!resolved_pass.aggregation().will_draw &&
-        !resolved_pass.aggregation().in_copy_request_pass) {
-      // If the render pass isn't contributing pixels to the framebuffer or
-      // a CopyOutputRequest we should be able to skip it.
-      stats_->orphaned_render_pass++;
-    }
-
     const auto& source = resolved_pass.render_pass();
 
     size_t sqs_size = source.shared_quad_state_list.size();
@@ -2216,7 +2209,8 @@ void SurfaceAggregator::MarkAndPropagateCopyRequestPasses(
     return;
 
   resolved_pass.aggregation().in_copy_request_pass = true;
-  for (auto* child_pass : resolved_pass.aggregation().embedded_passes) {
+  for (ResolvedPassData* child_pass :
+       resolved_pass.aggregation().embedded_passes) {
     MarkAndPropagateCopyRequestPasses(*child_pass);
   }
 }
@@ -2411,9 +2405,6 @@ void SurfaceAggregator::RecordStatHistograms() {
   UMA_HISTOGRAM_BOOLEAN(
       "Compositing.SurfaceAggregator.HasUnembeddedRenderPassesPerFrame",
       stats_->has_unembedded_pass);
-  UMA_HISTOGRAM_COUNTS_100(
-      "Compositing.SurfaceAggregator.OrphanedRenderPassCount",
-      stats_->orphaned_render_pass);
 
   stats_.reset();
 }

@@ -26,14 +26,6 @@ void RecordInitializationStatus(bool successful) {
 
 }  // namespace
 
-// When enabled, prefer to use the new recovery module to recover the
-// `BrowsingTopicsSiteDataStorage` database. See https://crbug.com/1385500 for
-// details. This is a kill switch and is not intended to be used in a field
-// trial.
-BASE_FEATURE(kBrowsingTopicsSiteDataStorageUseBuiltInRecoveryIfSupported,
-             "BrowsingTopicsSiteDataStorageUseBuiltInRecoveryIfSupported",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BrowsingTopicsSiteDataStorage::BrowsingTopicsSiteDataStorage(
     const base::FilePath& path_to_database)
     : path_to_database_(path_to_database) {
@@ -351,10 +343,9 @@ void BrowsingTopicsSiteDataStorage::DatabaseErrorCallback(
     sql::Statement* stmt) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Attempt to recover a corrupt database, if it is eligible to be recovered.
-  if (sql::BuiltInRecovery::RecoverIfPossible(
+  if (sql::Recovery::RecoverIfPossible(
           db_.get(), extended_error,
-          sql::BuiltInRecovery::Strategy::kRecoverWithMetaVersionOrRaze,
-          &kBrowsingTopicsSiteDataStorageUseBuiltInRecoveryIfSupported)) {
+          sql::Recovery::Strategy::kRecoverWithMetaVersionOrRaze)) {
     // Recovery was attempted. The database handle has been poisoned and the
     // error callback has been reset.
 

@@ -58,16 +58,16 @@ void DigitalIdentityProviderAndroid::Request(WebContents* web_contents,
       j_request);
 }
 
-void DigitalIdentityProviderAndroid::OnReceive(JNIEnv* env, jstring j_dc) {
-  std::string vc = ConvertJavaStringToUTF8(env, j_dc);
+void DigitalIdentityProviderAndroid::OnReceive(JNIEnv* env,
+                                               jstring j_digital_identity,
+                                               jint status_for_metrics) {
   if (callback_) {
-    std::move(callback_).Run(vc);
-  }
-}
-
-void DigitalIdentityProviderAndroid::OnError(JNIEnv* env) {
-  if (callback_) {
-    std::move(callback_).Run("");
+    std::string digital_identity =
+        ConvertJavaStringToUTF8(env, j_digital_identity);
+    std::move(callback_).Run(
+        digital_identity,
+        static_cast<DigitalIdentityProvider::RequestStatusForMetrics>(
+            status_for_metrics));
   }
 }
 

@@ -124,6 +124,15 @@ class OptimizationGuideService
     return optimization_guide_logger_.get();
   }
 
+  // Adds hints for a URL with provided metadata to the optimization guide. For
+  // testing purposes only. This will flush any callbacks for `url` that were
+  // registered via `CanApplyOptimization`. If no applicable callbacks were
+  // registered, this will just add the hint for later use.
+  void AddHintForTesting(
+      const GURL& url,
+      optimization_guide::proto::OptimizationType optimization_type,
+      const std::optional<optimization_guide::OptimizationMetadata>& metadata);
+
  private:
   friend class OptimizationGuideServiceTest;
   friend class OptimizationGuideTabHelper;
@@ -149,7 +158,7 @@ class OptimizationGuideService
       optimization_guide::proto::RequestContext request_context,
       optimization_guide::OnDemandOptimizationGuideDecisionRepeatingCallback
           callback,
-      optimization_guide::proto::RequestContextMetadata*
+      std::optional<optimization_guide::proto::RequestContextMetadata>
           request_context_metadata) override;
 
   // The store of hints.

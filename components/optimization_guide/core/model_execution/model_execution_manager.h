@@ -41,11 +41,14 @@ class ModelExecutionManager : public OptimizationTargetModelObserver {
  public:
   ModelExecutionManager(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefService* local_state,
       signin::IdentityManager* identity_manager,
       scoped_refptr<OnDeviceModelServiceController>
           on_device_model_service_controller,
       OptimizationGuideModelProvider* model_provider,
-      OptimizationGuideLogger* optimization_guide_logger);
+      OptimizationGuideLogger* optimization_guide_logger,
+      base::WeakPtr<ModelQualityLogsUploaderService>
+          model_quality_uploader_service);
 
   ~ModelExecutionManager() override;
 
@@ -65,11 +68,14 @@ class ModelExecutionManager : public OptimizationTargetModelObserver {
 
   // Starts a new session for `feature`.
   std::unique_ptr<OptimizationGuideModelExecutor::Session> StartSession(
-      proto::ModelExecutionFeature feature);
+      proto::ModelExecutionFeature feature,
+      const std::optional<SessionConfigParams>& config_params);
 
   // OptimizationTargetModelObserver:
   void OnModelUpdated(proto::OptimizationTarget target,
                       base::optional_ref<const ModelInfo> model_info) override;
+
+  void Shutdown();
 
  private:
   // Called from SessionImpl (via ExecuteRemoteFn) when model execution happens
@@ -87,6 +93,12 @@ class ModelExecutionManager : public OptimizationTargetModelObserver {
       OptimizationGuideModelExecutionResultCallback callback,
       base::expected<const proto::ExecuteResponse,
                      OptimizationGuideModelExecutionError> execute_response);
+
+  // Owned by OptimizationGuideKeyedService and outlives `this`. This is to be
+  // passed through the ModelQualityLogEntry to invoke upload during log
+  // destruction.
+  base::WeakPtr<ModelQualityLogsUploaderService>
+      model_quality_uploader_service_;
 
   // Owned by OptimizationGuideKeyedService and outlives `this`.
   raw_ptr<OptimizationGuideLogger> optimization_guide_logger_;

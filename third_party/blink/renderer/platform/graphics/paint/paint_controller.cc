@@ -275,7 +275,7 @@ bool PaintController::UseCachedSubsequenceIfPossible(
     // created multiple subsequences. If DCHECK_IS_ON(), then we should have
     // encountered the DCHECK at the end of EndSubsequence() during the previous
     // paint.
-    NOTREACHED();
+    DUMP_WILL_BE_NOTREACHED_NORETURN();
     return false;
   }
 
@@ -329,7 +329,7 @@ PaintController::GetSubsequenceMarkers(DisplayItemClientId client_id) const {
 wtf_size_t PaintController::BeginSubsequence(const DisplayItemClient& client) {
   RecordDebugInfo(client);
   // Force new paint chunk which is required for subsequence caching.
-  SetWillForceNewChunk(true);
+  paint_chunker_.SetWillForceNewChunk();
   new_subsequences_.tree.push_back(
       SubsequenceMarkers{client.Id(), NumNewChunks()});
   return new_subsequences_.tree.size() - 1;
@@ -354,7 +354,7 @@ void PaintController::EndSubsequence(wtf_size_t subsequence_index) {
   }
 
   // Force new paint chunk which is required for subsequence caching.
-  SetWillForceNewChunk(true);
+  paint_chunker_.SetWillForceNewChunk();
 
 #if DCHECK_IS_ON()
   DCHECK(!new_subsequences_.map.Contains(markers.client_id))
@@ -464,10 +464,11 @@ void PaintController::CheckNewChunkId(const PaintChunk::Id& id) {
   auto it = new_paint_chunk_id_index_map_.find(id.AsHashKey());
   if (it != new_paint_chunk_id_index_map_.end()) {
     ShowDebugData();
-    NOTREACHED() << "New paint chunk id " << id.ToString(*new_paint_artifact_)
-                 << " is already used by a previous chuck "
-                 << new_paint_artifact_->PaintChunks()[it->value].ToString(
-                        *new_paint_artifact_);
+    DUMP_WILL_BE_NOTREACHED_NORETURN()
+        << "New paint chunk id " << id.ToString(*new_paint_artifact_)
+        << " is already used by a previous chuck "
+        << new_paint_artifact_->PaintChunks()[it->value].ToString(
+               *new_paint_artifact_);
   }
 #endif
 }

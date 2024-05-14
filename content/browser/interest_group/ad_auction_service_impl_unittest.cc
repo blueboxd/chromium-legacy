@@ -55,6 +55,7 @@
 #include "content/browser/private_aggregation/private_aggregation_test_utils.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/common/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/privacy_sandbox_invoking_api.h"
@@ -1033,27 +1034,6 @@ class AdAuctionServiceImplTest : public RenderViewHostTestHarness {
         rfh, interest_service.BindNewPipeAndPassReceiver());
 
     interest_service->UpdateAdInterestGroups();
-  }
-
-  // Creates a new and unique auction nonce.
-  //
-  // If `rfh` is nullptr, uses the main frame.
-  base::Uuid CreateAuctionNonceAndFlush(RenderFrameHost* rfh = nullptr) {
-    mojo::Remote<blink::mojom::AdAuctionService> ad_auction_service;
-    AdAuctionServiceImpl::CreateMojoService(
-        rfh ? rfh : main_rfh(),
-        ad_auction_service.BindNewPipeAndPassReceiver());
-
-    base::RunLoop run_loop;
-    base::Uuid auction_nonce;
-    ad_auction_service->CreateAuctionNonce(base::BindLambdaForTesting(
-        [&run_loop, &auction_nonce](const base::Uuid& nonce) {
-          auction_nonce = nonce;
-          run_loop.Quit();
-        }));
-    run_loop.Run();
-
-    return auction_nonce;
   }
 
   // Runs an ad auction using the config specified in `auction_config` in the
@@ -5826,26 +5806,59 @@ TEST_F(AdAuctionServiceImplTest, CancelsLongstandingUpdatesComplex) {
 }
 
 TEST_F(AdAuctionServiceImplTest, CreateAuctionNonce) {
-  base::Uuid auction_nonce = CreateAuctionNonceAndFlush();
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {blink::features::kFledgeNegativeTargeting},
+      {blink::features::kFledgeCreateAuctionNonceSynchronousResolution});
+
+  mojo::Remote<blink::mojom::AdAuctionService> ad_auction_service;
+  AdAuctionServiceImpl::CreateMojoService(
+      main_rfh(), ad_auction_service.BindNewPipeAndPassReceiver());
+
+  base::RunLoop run_loop;
+  base::Uuid auction_nonce;
+  ad_auction_service->CreateAuctionNonce(base::BindLambdaForTesting(
+      [&run_loop, &auction_nonce](const base::Uuid& nonce) {
+        auction_nonce = nonce;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
   EXPECT_NE(auction_nonce.AsLowercaseString(), "");
 }
 
-class AdAuctionServiceImplNoNegativeTargetingTest
-    : public AdAuctionServiceImplTest {
- public:
-  AdAuctionServiceImplNoNegativeTargetingTest() {
-    feature_list_.InitAndDisableFeature(
-        blink::features::kFledgeNegativeTargeting);
-  }
-
- protected:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // Calling CreateAuctionNonce() with `kFledgeNegativeTargeting` feature
 // disabled should not be possible.
-TEST_F(AdAuctionServiceImplNoNegativeTargetingTest,
-       CreateAuctionNonceDisabled) {
+TEST_F(AdAuctionServiceImplTest,
+       CreateAuctionNonceDisabledBecauseNegativeTargetingDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {}, {blink::features::kFledgeNegativeTargeting,
+           blink::features::kFledgeCreateAuctionNonceSynchronousResolution});
+
+  mojo::Remote<blink::mojom::AdAuctionService> ad_auction_service;
+  AdAuctionServiceImpl::CreateMojoService(
+      main_rfh(), ad_auction_service.BindNewPipeAndPassReceiver());
+
+  base::RunLoop run_loop;
+  ad_auction_service.set_disconnect_handler(run_loop.QuitClosure());
+  ad_auction_service->CreateAuctionNonce(
+      base::BindOnce([](const base::Uuid& nonce) {
+        ADD_FAILURE() << "Callback unexpectedly invoked.";
+      }));
+  run_loop.Run();
+}
+
+// CreateAuctionNonce() should not be called when the
+// `FledgeCreateAuctionNonceSynchronousResolution` feature is enabled.
+TEST_F(AdAuctionServiceImplTest,
+       CreateAuctionNonceDisabledBecauseOfSynchronousResolution) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {blink::features::kFledgeNegativeTargeting,
+       blink::features::kFledgeCreateAuctionNonceSynchronousResolution},
+      {});
+
   mojo::Remote<blink::mojom::AdAuctionService> ad_auction_service;
   AdAuctionServiceImpl::CreateMojoService(
       main_rfh(), ad_auction_service.BindNewPipeAndPassReceiver());
@@ -5861,7 +5874,10 @@ TEST_F(AdAuctionServiceImplNoNegativeTargetingTest,
 
 // Passing in a config with `auction_nonce` set while
 // `kFledgeNegativeTargeting` feature is disabled should not be possible.
-TEST_F(AdAuctionServiceImplNoNegativeTargetingTest, RunAdAuctionNonceDisabled) {
+TEST_F(AdAuctionServiceImplTest, RunAdAuctionNonceDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(blink::features::kFledgeNegativeTargeting);
+
   mojo::Remote<blink::mojom::AdAuctionService> ad_auction_service;
   AdAuctionServiceImpl::CreateMojoService(
       main_rfh(), ad_auction_service.BindNewPipeAndPassReceiver());
@@ -5889,8 +5905,10 @@ TEST_F(AdAuctionServiceImplNoNegativeTargetingTest, RunAdAuctionNonceDisabled) {
 
 // Passing in a config with `auction_nonce` set while
 // `kFledgeNegativeTargeting` feature is disabled should not be possible.
-TEST_F(AdAuctionServiceImplNoNegativeTargetingTest,
-       RunAdAuctionNonceOnComponentDisabled) {
+TEST_F(AdAuctionServiceImplTest, RunAdAuctionNonceOnComponentDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(blink::features::kFledgeNegativeTargeting);
+
   mojo::Remote<blink::mojom::AdAuctionService> ad_auction_service;
   AdAuctionServiceImpl::CreateMojoService(
       main_rfh(), ad_auction_service.BindNewPipeAndPassReceiver());
@@ -8778,6 +8796,11 @@ TEST_F(AdAuctionServiceImplTest, PageImplChangedBeforeAuction) {
 // TODO(crbug.com/936696): Once RenderDocument is launched, remove this test.
 TEST_F(AdAuctionServiceImplTest,
        ResetAuctionInitiatorPageOnCrossDocumentNavigation) {
+  if (ShouldCreateNewRenderFrameHostOnSameSiteNavigation(
+          /*is_main_frame=*/false,
+          /*is_local_root=*/AreAllSitesIsolatedForTesting())) {
+    GTEST_SKIP() << "RenderDocument is enabled.";
+  }
   content::RenderFrameHostTester* rfh_tester =
       content::RenderFrameHostTester::For(main_rfh());
   content::RenderFrameHost* subframe = rfh_tester->AppendChild("subframe");
@@ -11091,7 +11114,7 @@ TEST_F(AdAuctionServiceImplBAndATest, OriginNotAllowed) {
       GetAdAuctionDataAndFlushForFrame(test_origin);
   EXPECT_TRUE(result.has_value());
   EXPECT_EQ("", result.value().request);
-  EXPECT_EQ("Attestation Failed", result.value().error_message);
+  EXPECT_EQ("API not allowed for this origin", result.value().error_message);
 
   hist.ExpectTotalCount("Ads.InterestGroup.BaDataSize", 0);
   hist.ExpectTotalCount("Ads.InterestGroup.BaDataConstructionTime", 0);
@@ -12652,7 +12675,7 @@ TEST_F(AdAuctionServiceImplBAndATest, GetInterestGroupAdAuctionDataNoKeys) {
   manager_->JoinInterestGroup(
       blink::TestInterestGroupBuilder(test_origin, "cars")
           .SetAds(
-              {{{GURL("https://c.test/ad1.html"), /*metadata=*/absl::nullopt}}})
+              {{{GURL("https://c.test/ad1.html"), /*metadata=*/std::nullopt}}})
           .Build(),
       GURL("https://a.test/example.html"));
 
@@ -12699,7 +12722,7 @@ TEST_F(AdAuctionServiceImplBAndATest,
   manager_->JoinInterestGroup(
       blink::TestInterestGroupBuilder(test_origin, "cars")
           .SetAds(
-              {{{GURL("https://c.test/ad1.html"), /*metadata=*/absl::nullopt}}})
+              {{{GURL("https://c.test/ad1.html"), /*metadata=*/std::nullopt}}})
           .Build(),
       GURL("https://a.test/example.html"));
 
@@ -12719,7 +12742,7 @@ TEST_F(AdAuctionServiceImplBAndATest,
   manager_->JoinInterestGroup(
       blink::TestInterestGroupBuilder(test_origin, "cars")
           .SetAds(
-              {{{GURL("https://c.test/ad1.html"), /*metadata=*/absl::nullopt}}})
+              {{{GURL("https://c.test/ad1.html"), /*metadata=*/std::nullopt}}})
           .Build(),
       GURL("https://a.test/example.html"));
 
@@ -12763,13 +12786,13 @@ TEST_F(AdAuctionServiceImplBAndATest,
   manager_->JoinInterestGroup(
       blink::TestInterestGroupBuilder(test_origin, "cars")
           .SetAds(
-              {{{GURL("https://c.test/ad1.html"), /*metadata=*/absl::nullopt}}})
+              {{{GURL("https://c.test/ad1.html"), /*metadata=*/std::nullopt}}})
           .Build(),
       GURL("https://a.test/example.html"));
   manager_->JoinInterestGroup(
       blink::TestInterestGroupBuilder(test_origin, "boats")
           .SetAds(
-              {{{GURL("https://c.test/ad2.html"), /*metadata=*/absl::nullopt}}})
+              {{{GURL("https://c.test/ad2.html"), /*metadata=*/std::nullopt}}})
           .Build(),
       GURL("https://a.test/example.html"));
 

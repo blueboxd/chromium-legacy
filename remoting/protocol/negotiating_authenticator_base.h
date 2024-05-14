@@ -68,6 +68,8 @@ class NegotiatingAuthenticatorBase : public Authenticator {
   ~NegotiatingAuthenticatorBase() override;
 
   // Authenticator interface.
+  CredentialsType credentials_type() const override;
+  const Authenticator& implementing_authenticator() const override;
   State state() const override;
   bool started() const override;
   RejectionReason rejection_reason() const override;
@@ -93,6 +95,8 @@ class NegotiatingAuthenticatorBase : public Authenticator {
   static const jingle_xmpp::StaticQName kClientIdAttribute;
 
   explicit NegotiatingAuthenticatorBase(Authenticator::State initial_state);
+
+  void NotifyStateChangeAfterAccepted() override;
 
   void AddMethod(HostAuthenticationConfig::Method method);
 

@@ -73,6 +73,7 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
       {"tabSearchTabName", IDS_TAB_SEARCH_TAB_NAME},
       // Tab organization UI strings
       {"createGroup", IDS_TAB_ORGANIZATION_CREATE_GROUP},
+      {"createGroups", IDS_TAB_ORGANIZATION_CREATE_GROUPS},
       {"dismiss", IDS_TAB_ORGANIZATION_DISMISS},
       {"failureBodyGenericPreLink",
        IDS_TAB_ORGANIZATION_FAILURE_BODY_GENERIC_PRE_LINK},
@@ -124,9 +125,10 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
        IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_UNSYNCED_HISTORY_ARIA_LABEL},
       {"notStartedTitle", IDS_TAB_ORGANIZATION_NOT_STARTED_TITLE},
       {"notStartedTitleFRE", IDS_TAB_ORGANIZATION_NOT_STARTED_TITLE_FRE},
-      {"rejectSuggestion", IDS_TAB_ORGANIZATION_REJECT_SUGGESTION},
-      {"rejectFinalSuggestion", IDS_TAB_ORGANIZATION_REJECT_FINAL_SUGGESTION},
+      {"clearSuggestions", IDS_TAB_ORGANIZATION_CLEAR_SUGGESTIONS},
       {"successTitle", IDS_TAB_ORGANIZATION_SUCCESS_TITLE},
+      {"successTitleSingle", IDS_TAB_ORGANIZATION_SUCCESS_TITLE_SINGLE},
+      {"successTitleMulti", IDS_TAB_ORGANIZATION_SUCCESS_TITLE_MULTI},
       {"tabOrganizationCloseTabAriaLabel",
        IDS_TAB_ORGANIZATION_CLOSE_TAB_ARIA_LABEL},
       {"tabOrganizationCloseTabTooltip",
@@ -146,10 +148,6 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
   // Add the configuration parameters for fuzzy search.
   source->AddBoolean("useFuzzySearch", base::FeatureList::IsEnabled(
                                            features::kTabSearchFuzzySearch));
-
-  source->AddBoolean(
-      "useMetricsReporter",
-      base::FeatureList::IsEnabled(features::kTabSearchUseMetricsReporter));
 
   source->AddBoolean("searchIgnoreLocation",
                      features::kTabSearchSearchIgnoreLocation.Get());
@@ -186,9 +184,6 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
   source->AddBoolean(
       "multiTabOrganizationEnabled",
       base::FeatureList::IsEnabled(features::kMultiTabOrganization));
-  source->AddBoolean(
-      "tabOrganizationRefreshButtonEnabled",
-      base::FeatureList::IsEnabled(features::kTabOrganizationRefreshButton));
 
   source->AddInteger("tabIndex", TabIndex());
   source->AddBoolean("showTabOrganizationFRE", ShowTabOrganizationFRE());

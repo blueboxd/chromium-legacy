@@ -10,12 +10,13 @@ import {ODFS_EXTENSION_ID} from '../../foreground/js/constants.js';
 import type {DirectoryItem} from '../../foreground/js/ui/directory_tree.js';
 import type {TreeItem} from '../../foreground/js/ui/tree.js';
 import {driveRootEntryListKey, myFilesEntryListKey, recentRootKey, trashRootKey} from '../../state/ducks/volumes.js';
-import {type CurrentDirectory, EntryType, type FileData} from '../../state/state.js';
-import {getEntry, getStore} from '../../state/store.js';
+import {type CurrentDirectory, EntryType, type FileData, type State, type Volume} from '../../state/state.js';
+import {getEntry, getStore, getVolume} from '../../state/store.js';
 import type {XfTreeItem} from '../../widgets/xf_tree_item.js';
 
 import {createDOMError} from './dom_utils.js';
-import {EntryList, FakeEntryImpl, VolumeEntry} from './files_app_entry_types.js';
+import type {VolumeEntry} from './files_app_entry_types.js';
+import {EntryList, FakeEntryImpl} from './files_app_entry_types.js';
 import {isArcVmEnabled, isNewDirectoryTreeEnabled, isPluginVmEnabled} from './flags.js';
 import {collator, getEntryLabel} from './translations.js';
 import type {TrashEntry} from './trash.js';
@@ -60,6 +61,10 @@ export function isVolumeEntry(entry: Entry|
   return 'volumeInfo' in entry;
 }
 
+export function isVolumeFileData(fileData: FileData): boolean {
+  return fileData.type === EntryType.VOLUME_ROOT;
+}
+
 /**
  * Check if the entry is MyFiles or not.
  * Note: if the return value is true, the input entry is guaranteed to be
@@ -80,6 +85,22 @@ export function isMyFilesEntry(entry: Entry|FilesAppEntry|
   return false;
 }
 
+export function isMyFilesFileData(
+    state: State, fileData: FileData|null): boolean {
+  if (!fileData) {
+    return false;
+  }
+  if (fileData.key === myFilesEntryListKey) {
+    return true;
+  }
+  if (fileData.type === EntryType.VOLUME_ROOT) {
+    const volume = getVolume(state, fileData);
+    return volume?.volumeType === VolumeType.DOWNLOADS;
+  }
+
+  return false;
+}
+
 /**
  * Check if the entry is the drive root entry list ("Google Drive" wrapper).
  * Note: if the return value is true, the input entry is guaranteed to be
@@ -94,12 +115,11 @@ export function isDriveRootEntryList(entry: Entry|FilesAppEntry|
 }
 
 /**
- * Given an entry, check if it's a grand root ("Shared drives" and
- * "Computers") inside Drive.
- * Note: if the return value is true, the input entry is guaranteed to be
- * DirectoryEntry type.
+ * Given an entry, check if it's a grand root ("Shared drives" and  "Computers")
+ * inside Drive. Note: if the return value is true, the input entry is
+ * guaranteed to be DirectoryEntry type.
  */
-export function isGrandRootEntryInDrives(entry: Entry|FilesAppEntry):
+export function isGrandRootEntryInDrive(entry: Entry|FilesAppEntry):
     entry is DirectoryEntry {
   const {fullPath} = entry;
   return fullPath === SHARED_DRIVES_DIRECTORY_PATH ||
@@ -110,8 +130,8 @@ export function isGrandRootEntryInDrives(entry: Entry|FilesAppEntry):
  * Given an entry, check if it's a fake entry ("Shared with me" and "Offline")
  * inside Drive.
  */
-export function isFakeEntryInDrives(entry: Entry|
-                                    FilesAppEntry): entry is FakeEntry {
+export function isFakeEntryInDrive(entry: Entry|
+                                   FilesAppEntry): entry is FakeEntry {
   if (!(entry instanceof FakeEntryImpl)) {
     return false;
   }
@@ -142,8 +162,7 @@ export function isEntryInsideComputers(fileData: FileData): boolean {
 /**
  * Returns true if fileData's entry is inside any part of Drive.
  */
-export function isEntryInsideDrive(fileData: FileData|
-                                   CurrentDirectory): boolean {
+export function isInsideDrive(fileData: FileData|CurrentDirectory): boolean {
   const {rootType} = fileData;
   return isDriveRootType(rootType);
 }
@@ -205,7 +224,7 @@ export function getRootType(entry: Entry|FilesAppEntry|DirectoryEntry|
  * Obtains whether an entry is fake or not.
  */
 export function isFakeEntry(entry: Entry|FilesAppEntry): entry is FakeEntry {
-  if (entry.getParent === undefined) {
+  if (entry?.getParent === undefined) {
     return true;
   }
   return 'isNativeType' in entry ? !entry.isNativeType : false;
@@ -279,6 +298,14 @@ export function isRecentRoot(entry: Entry|FilesAppEntry) {
 }
 
 /**
+ * Whether the `fileData` the is RECENT root.
+ * NOTE: Drive shared with me and offline are marked as RECENT.
+ */
+export function isRecentFileData(fileData: FileData): boolean {
+  return fileData.type === EntryType.RECENT;
+}
+
+/**
  * Obtains whether an entry is the root directory of a Computer.
  */
 export function isComputersRoot(entry: Entry|FilesAppEntry) {
@@ -324,6 +351,9 @@ export function isTrashEntry(entry: Entry|FilesAppEntry): entry is TrashEntry {
   return isTrashRootType(getRootType(entry));
 }
 
+export function isTrashFileData(fileData: FileData): boolean {
+  return fileData.fullPath === '/' && fileData.type === EntryType.TRASH;
+}
 
 /**
  * Compares two entries.
@@ -873,7 +903,7 @@ export function isInteractiveVolume(volumeInfo: VolumeInfo) {
 export const isOneDriveId = (providerId: string|null|undefined) =>
     providerId === ODFS_EXTENSION_ID;
 
-export function isOneDrive(volumeInfo: VolumeInfo) {
+export function isOneDrive(volumeInfo: VolumeInfo|Volume) {
   return isOneDriveId(volumeInfo?.providerId);
 }
 
@@ -897,9 +927,10 @@ export function isGuestOs(type: VolumeType) {
  * native Entry type.
  */
 export function shouldSupportDriveSpecificIcons(fileData: FileData): boolean {
-  return (isEntryInsideMyDrive(fileData) && !isVolumeEntry(fileData.entry)) ||
-      (isEntryInsideComputers(fileData) &&
-       !isGrandRootEntryInDrives(fileData.entry));
+  return (isEntryInsideMyDrive(fileData) && !!fileData.entry &&
+          !isVolumeEntry(fileData.entry)) ||
+      (isEntryInsideComputers(fileData) && !!fileData.entry &&
+       !isGrandRootEntryInDrive(fileData.entry));
 }
 
 /**
@@ -912,14 +943,17 @@ export function getTreeItemEntry(treeItem: DirectoryItem|XfTreeItem|TreeItem|
     return null;
   }
 
+  if ('entry' in treeItem && treeItem.entry) {
+    return treeItem.entry;
+  }
+
   if (isNewDirectoryTreeEnabled()) {
     const item = treeItem as XfTreeItem;
     const state = getStore().getState();
     return getEntry(state, item.dataset['navigationKey']!);
   }
 
-  const item = treeItem as DirectoryItem;
-  return item.entry;
+  return null;
 }
 
 /**
@@ -930,8 +964,13 @@ export function isEntrySupportUiChildren(entry: FilesAppEntry|Entry):
   return 'getUiChildren' in entry;
 }
 
+export function supportsUiChildren(fileData: FileData): boolean {
+  return fileData.type === EntryType.ENTRY_LIST ||
+      fileData.type === EntryType.VOLUME_ROOT;
+}
+
 /**
- * A generator version of `entry.readEntries`.
+ * A generator version of `entry.readEntries()`.
  *
  * Example usage:
  * ```
@@ -963,9 +1002,10 @@ export async function*
 }
 
 /**
- * Check if the given entry is scannable or not, e.g. can we call `readEntries`
- * on it. If the return value is true, its type is guaranteed to be a Directory
- * like entry.
+ * Check if the given entry is scannable or not, e.g. can we call
+ * `readEntries()` on it.
+ * If the return value is true, its type is guaranteed to be a Directory like
+ * entry.
  */
 export function isEntryScannable(entry: Entry|FilesAppEntry|null):
     entry is DirectoryEntry|FilesAppDirEntry {
@@ -985,5 +1025,31 @@ export function isEntryScannable(entry: Entry|FilesAppEntry|null):
   if (entryKeysWithoutChildren.has(entry.toURL())) {
     return false;
   }
+  return true;
+}
+
+/**
+ * Check if the given fileData can display sub-directories.
+ */
+export function canHaveSubDirectories(fileData: FileData|null) {
+  if (!fileData) {
+    return false;
+  }
+  if (!fileData.isDirectory) {
+    return false;
+  }
+  if (fileData.disabled) {
+    return false;
+  }
+
+  const entryKeysWithoutChildren = new Set([
+    recentRootKey,
+    trashRootKey,
+  ]);
+
+  if (entryKeysWithoutChildren.has(fileData.key)) {
+    return false;
+  }
+
   return true;
 }

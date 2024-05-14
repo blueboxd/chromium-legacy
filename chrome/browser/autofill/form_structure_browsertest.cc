@@ -178,8 +178,8 @@ class FormStructureBrowserTest
  private:
   class TestAutofillManager : public BrowserAutofillManager {
    public:
-    TestAutofillManager(ContentAutofillDriver* driver, AutofillClient* client)
-        : BrowserAutofillManager(driver, client, "en-US") {}
+    explicit TestAutofillManager(ContentAutofillDriver* driver)
+        : BrowserAutofillManager(driver, "en-US") {}
 
     TestAutofillManagerWaiter& waiter() { return waiter_; }
 
@@ -219,10 +219,15 @@ FormStructureBrowserTest::FormStructureBrowserTest()
           features::kAutofillParseVcnCardOnFileStandaloneCvcFields,
           // TODO(crbug.com/1311937): Remove once launched.
           features::kAutofillEnableSupportForPhoneNumberTrunkTypes,
+          features::kAutofillInferCountryCallingCode,
           // TODO(crbug.com/1441057): Remove once launched.
           features::kAutofillEnableExpirationDateImprovements,
           // TODO(crbug.com/1474308): Clean up when launched.
           features::kAutofillDefaultToCityAndNumber,
+          // TODO(b/40204601): Clean up when launched.
+          blink::features::kAutofillIncludeFormElementsInShadowDom,
+          blink::features::
+              kAutofillIncludeShadowDomInUnassociatedListedElements,
       },
       // Disabled
       {// TODO(crbug.com/1311937): Remove once launched.
@@ -290,8 +295,8 @@ std::unique_ptr<HttpResponse> FormStructureBrowserTest::HandleRequest(
   return std::move(response);
 }
 
-// TODO(crbug.com/1459409): Re-enable this test
-#if BUILDFLAG(IS_CHROMEOS) && defined(MEMORY_SANITIZER)
+// TODO(https://crbug.com/41493195): Re-enable this test
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN)
 #define MAYBE_DataDrivenHeuristics DISABLED_DataDrivenHeuristics
 #else
 #define MAYBE_DataDrivenHeuristics DataDrivenHeuristics

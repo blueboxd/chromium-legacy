@@ -59,6 +59,25 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Suggestion Deleted"/>
 </enum>
 
+<enum name="AutocompleteSuppressionByPlusAddress">
+  <int value="0"
+      label="Autocomplete suggestions would not have been suppressed."/>
+  <int value="1"
+      label="Autocomplete suggestions would have been suppressed and would
+             have contained email addresses."/>
+  <int value="2"
+      label="Autocomplete suggestions would have been suppressed and would
+             not have contained email addresses."/>
+</enum>
+
+<enum name="AutofillAddNewAddressPromptOutcome">
+  <summary>
+    Describes the user's decision on the 'And new address' prompt.
+  </summary>
+  <int value="0" label="Accepted and saved a new address."/>
+  <int value="1" label="Canceled explicitly or ignored"/>
+</enum>
+
 <enum name="AutofillAddressProfileImportCountrySpecificFieldRequirement">
   <int value="0" label="All required fields present"/>
   <int value="1" label="Missing: ZIP"/>
@@ -456,6 +475,12 @@ Called by update_autofill_enums.py.-->
   <int value="1841" label="ADDRESS_HOME_ADDRESS_WITH_NAME: accepted"/>
   <int value="1856" label="ADDRESS_HOME_FLOOR: edited"/>
   <int value="1857" label="ADDRESS_HOME_FLOOR: accepted"/>
+  <int value="1888" label="BIRTHDATE_DAY: edited"/>
+  <int value="1889" label="BIRTHDATE_DAY: accepted"/>
+  <int value="1904" label="BIRTHDATE_MONTH: edited"/>
+  <int value="1905" label="BIRTHDATE_MONTH: accepted"/>
+  <int value="1920" label="BIRTHDATE_4_DIGIT_YEAR: edited"/>
+  <int value="1921" label="BIRTHDATE_4_DIGIT_YEAR: accepted"/>
   <int value="1936" label="PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX: edited"/>
   <int value="1937" label="PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX: accepted"/>
   <int value="1952"
@@ -940,6 +965,16 @@ Called by update_autofill_enums.py.-->
   <int value="8199" label="UNKNOWN_TYPE: False Positive (Empty)"/>
   <int value="8200" label="UNKNOWN_TYPE: False Negative (Mismatch)"/>
   <int value="8201" label="UNKNOWN_TYPE: False Negative (Unknown)"/>
+  <int value="8448" label="BIRTHDATE: True Positive"/>
+  <int value="8449" label="BIRTHDATE: True Negative (Ambiguous)"/>
+  <int value="8450" label="BIRTHDATE: True Negative (Unknown)"/>
+  <int value="8451" label="BIRTHDATE: True Negative (Empty)"/>
+  <int value="8452" label="BIRTHDATE: False Positive (Mismatch)"/>
+  <int value="8453" label="BIRTHDATE: False Positive (Ambiguous)"/>
+  <int value="8454" label="BIRTHDATE: False Positive (Unknown)"/>
+  <int value="8455" label="BIRTHDATE: False Positive (Empty)"/>
+  <int value="8456" label="BIRTHDATE: False Negative (Mismatch)"/>
+  <int value="8457" label="BIRTHDATE: False Negative (Unknown)"/>
   <int value="8704" label="IBAN: True Positive"/>
   <int value="8705" label="IBAN: True Negative (Ambiguous)"/>
   <int value="8706" label="IBAN: True Negative (Unknown)"/>
@@ -1333,6 +1368,62 @@ Called by update_autofill_enums.py.-->
              (once)"/>
   <int value="87" label="Masked server card suggestion selected"/>
   <int value="88" label="Masked server card suggestion selected (once)"/>
+  <int value="89"
+      label="Suggestions containing cards with a benefit available were shown"/>
+  <int value="90"
+      label="Suggestions were shown, and no card had a benefit available"/>
+  <int value="91"
+      label="Suggestions containing cards with a benefit available were shown
+             (once)"/>
+  <int value="92"
+      label="Suggestions were shown, and no card had a benefit available
+             (once)"/>
+  <int value="93"
+      label="Suggestion for a masked server card with a benefit available was
+             selected"/>
+  <int value="94"
+      label="Suggestion for a masked server card with no benefit available
+             was selected"/>
+  <int value="95"
+      label="Suggestion for a masked server card with a benefit available was
+             selected (once)"/>
+  <int value="96"
+      label="Suggestion for a masked server card with no benefit available
+             was selected (once)"/>
+  <int value="97"
+      label="Suggestion for a masked server card with a benefit available was
+             filled"/>
+  <int value="98"
+      label="Suggestion for a masked server card with no benefit available
+             was filled"/>
+  <int value="99"
+      label="Suggestion for a masked server card with a benefit available was
+             filled (once)"/>
+  <int value="100"
+      label="Suggestion for a masked server card with no benefit available
+             was filled (once)"/>
+  <int value="101"
+      label="Form was about to be submitted after a suggestion for a masked
+             server card with a benefit available was filled (once)"/>
+  <int value="102"
+      label="Form was about to be submitted after a suggestion for masked
+             server card with no benefit available was filled (once)"/>
+  <int value="103"
+      label="Form was submitted after a suggestion for a masked server card
+             with a benefit available was filled (once)"/>
+  <int value="104"
+      label="Form was submitted after a suggestion for a masked server card
+             with no benefit available was filled (once)"/>
+  <int value="105"
+      label="Suggestion for a masked server card was selected after
+             suggestions containing cards with a benefit available were shown
+             (once)"/>
+  <int value="106"
+      label="Suggestion for a masked server card was filled after suggestions
+             containing cards with a benefit available were shown (once)"/>
+  <int value="107"
+      label="Form was submitted after suggestions containing cards with a
+             benefit available were shown (once)"/>
 </enum>
 
 <enum name="AutofillFormSubmittedState">
@@ -1408,17 +1499,21 @@ Called by update_autofill_enums.py.-->
   <int value="2" label="Manage cards button pressed"/>
 </enum>
 
+<enum name="AutofillManuallyAddedAddressSurface">
+  <summary>
+    Describes the surface used by the user for adding a new address.
+  </summary>
+  <int value="0"
+      label="Context menu, after trigger manual fallback and having no
+             addresses stored."/>
+  <int value="1" label="Settings page."/>
+</enum>
+
 <enum name="AutofillOfferNotificationBubbleResult">
   <int value="0" label="User closed bubble via OK button"/>
   <int value="1" label="User closed bubble via corner X"/>
   <int value="2" label="User did not interact with the bubble"/>
   <int value="3" label="Bubble lost focus and was deactivated"/>
-</enum>
-
-<enum name="AutofillOfferNotificationInfoBarResult">
-  <int value="0" label="User closed infobar via OK button"/>
-  <int value="1" label="User closed infobar via corner X"/>
-  <int value="2" label="User did not interact with the infobar"/>
 </enum>
 
 <enum name="AutofillOptionsReferrer">
@@ -1522,6 +1617,9 @@ Called by update_autofill_enums.py.-->
   <int value="25"
       label="The user edited the field. Currently applied only to Compose
              suggestions."/>
+  <int value="26"
+      label="The popup has faded due to an expired timer. Currently applied
+             only to Compose suggestions."/>
 </enum>
 
 <enum name="AutofillPredictionsComparisonResult">
@@ -2600,6 +2698,51 @@ Called by update_autofill_enums.py.-->
   <int value="702"
       label="ADDRESS_HOME_FLOOR - Predictions different - Value agrees with
              both predictions"/>
+  <int value="709" label="BIRTHDATE_DAY - Predictions equal - Value agrees"/>
+  <int value="710" label="BIRTHDATE_DAY - Predictions equal - Value disagrees"/>
+  <int value="711"
+      label="BIRTHDATE_DAY - Predictions different - Value agrees with old
+             prediction"/>
+  <int value="712"
+      label="BIRTHDATE_DAY - Predictions different - Value agrees with new
+             prediction"/>
+  <int value="713"
+      label="BIRTHDATE_DAY - Predictions different - Value agrees with
+             neither prediction"/>
+  <int value="714"
+      label="BIRTHDATE_DAY - Predictions different - Value agrees with both
+             predictions"/>
+  <int value="715" label="BIRTHDATE_MONTH - Predictions equal - Value agrees"/>
+  <int value="716"
+      label="BIRTHDATE_MONTH - Predictions equal - Value disagrees"/>
+  <int value="717"
+      label="BIRTHDATE_MONTH - Predictions different - Value agrees with old
+             prediction"/>
+  <int value="718"
+      label="BIRTHDATE_MONTH - Predictions different - Value agrees with new
+             prediction"/>
+  <int value="719"
+      label="BIRTHDATE_MONTH - Predictions different - Value agrees with
+             neither prediction"/>
+  <int value="720"
+      label="BIRTHDATE_MONTH - Predictions different - Value agrees with both
+             predictions"/>
+  <int value="721"
+      label="BIRTHDATE_4_DIGIT_YEAR - Predictions equal - Value agrees"/>
+  <int value="722"
+      label="BIRTHDATE_4_DIGIT_YEAR - Predictions equal - Value disagrees"/>
+  <int value="723"
+      label="BIRTHDATE_4_DIGIT_YEAR - Predictions different - Value agrees
+             with old prediction"/>
+  <int value="724"
+      label="BIRTHDATE_4_DIGIT_YEAR - Predictions different - Value agrees
+             with new prediction"/>
+  <int value="725"
+      label="BIRTHDATE_4_DIGIT_YEAR - Predictions different - Value agrees
+             with neither prediction"/>
+  <int value="726"
+      label="BIRTHDATE_4_DIGIT_YEAR - Predictions different - Value agrees
+             with both predictions"/>
   <int value="727"
       label="PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX - Predictions equal -
              Value agrees"/>
@@ -4095,7 +4238,7 @@ Called by update_autofill_enums.py.-->
   <int value="1" label="Confirmed"/>
 </enum>
 
-<enum name="BooleanAutofillExtendedMenuEditAddress">
+<enum name="BooleanAutofillEditAddress">
   <int value="0" label="Canceled"/>
   <int value="1" label="Saved"/>
 </enum>
@@ -4244,6 +4387,19 @@ Called by update_autofill_enums.py.-->
   <int value="10" label="Failure: Unsuported country."/>
 </enum>
 
+<enum name="FieldClassificationType">
+  <int value="0" label="Classified with recognized autocomplete."/>
+  <int value="1" label="Classified with unrecognized autocomplete."/>
+  <int value="2" label="Unclassified."/>
+</enum>
+
+<enum name="FieldFillingStat">
+  <int value="0" label="Accepted"/>
+  <int value="1" label="Corrected"/>
+  <int value="2" label="Manually Filled"/>
+  <int value="3" label="LeftEmpty"/>
+</enum>
+
 <enum name="IbanSuggestionBlockListStatus">
   <int value="0" label="Allowed"/>
   <int value="1" label="Blocked"/>
@@ -4364,6 +4520,27 @@ Called by update_autofill_enums.py.-->
   <int value="0" label="Different AndroidAutofillManager was passed"/>
   <int value="1"
       label="Form passed is different from the one that initiated the session"/>
+</enum>
+
+<enum name="PhoneNumberGrammarUsage2">
+  <int value="0"
+      label="Country code: [cc] Area Code: [ac] Prefix: [phone] Suffix:
+             [suffix]"/>
+  <int value="1" label="Country code: [cc] Area Code: [ac] Phone: [phone]"/>
+  <int value="2" label="Phone: [cc] [ac]:3 - [phone]:3 - [suffix]:4"/>
+  <int value="3" label="Phone: [cc]:3 [ac]:3 [phone]:3 [suffix]:4"/>
+  <int value="4" label="Area Code: [ac] Phone: [phone] - [suffix]"/>
+  <int value="5" label="Area Code: [ac] Phone: [phone] Suffix [suffix]"/>
+  <int value="6" label="Area Code: [ac] Phone: [phone]"/>
+  <int value="7" label="Phone: [ac] [phone]:3 [suffix]:4"/>
+  <int value="8"
+      label="Area code: [ac]:3 Prefix: [prefix]:3 Suffix: [suffix]:4"/>
+  <int value="9" label="Phone: [ac] Prefix: [phone] Suffix: [suffix]"/>
+  <int value="10" label="Phone: [ac] - [phone]:3 - [suffix]:4"/>
+  <int value="11" label="Phone: [cc] - [ac] - [phone]"/>
+  <int value="12" label="Phone: [cc]:3 - [phone]"/>
+  <int value="13" label="Phone: [ac] - [phone]"/>
+  <int value="14" label="Phone: [phone]"/>
 </enum>
 
 <enum name="PlusAddressModalEvent">

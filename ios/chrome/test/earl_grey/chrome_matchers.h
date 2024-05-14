@@ -111,9 +111,6 @@ id<GREYMatcher> CancelButton();
 // Returns the matcher for an enabled cancel button in a navigation bar.
 id<GREYMatcher> NavigationBarCancelButton();
 
-// Returns a matcher for a close button.
-id<GREYMatcher> CloseButton();
-
 // Returns a matcher for close tab menu button.
 id<GREYMatcher> CloseTabMenuButton();
 
@@ -722,13 +719,13 @@ id<GREYMatcher> ManualFallbackCreditCardIconMatcher();
 // Returns a matcher for the credit card table view in manual fallback.
 id<GREYMatcher> ManualFallbackCreditCardTableViewMatcher();
 
-// Returns a matcher for the button to open password settings in manual
+// Returns a matcher for the button to open payment method settings in manual
 // fallback.
-id<GREYMatcher> ManualFallbackManageCreditCardsMatcher();
+id<GREYMatcher> ManualFallbackManagePaymentMethodsMatcher();
 
-// Returns a matcher for the button to add credit cards settings in manual
+// Returns a matcher for the button to add a payment method in manual
 // fallback.
-id<GREYMatcher> ManualFallbackAddCreditCardsMatcher();
+id<GREYMatcher> ManualFallbackAddPaymentMethodMatcher();
 
 // Returns a matcher for the CreditCardTableView window.
 id<GREYMatcher> ManualFallbackCreditCardTableViewWindowMatcher();

@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 
 namespace base {
+class OneShotTimer;
 class RepeatingTimer;
 }  // namespace base
 
@@ -19,6 +20,7 @@ class EventGenerator;
 }  // namespace ui::test
 
 namespace views {
+class BoxLayoutView;
 class Button;
 class Label;
 class LabelButton;
@@ -31,6 +33,8 @@ namespace ash {
 class AnchoredNudge;
 class FeatureTile;
 class GameDashboardButton;
+class GameDashboardButtonRevealController;
+class GameDashboardMainMenuCursorHandler;
 class GameDashboardMainMenuView;
 class GameDashboardToolbarView;
 class IconButton;
@@ -50,11 +54,15 @@ class GameDashboardContextTestApi {
   GameDashboardContext* context() { return context_; }
   const base::RepeatingTimer& GetRecordingTimer() const;
   const std::u16string& GetRecordingDuration() const;
+  const GameDashboardMainMenuCursorHandler* GetMainMenuCursorHandler() const;
 
   // Returns the Game Dashboard button widget, button, and title view.
   views::Widget* GetGameDashboardButtonWidget() const;
   GameDashboardButton* GetGameDashboardButton() const;
   views::Label* GetGameDashboardButtonTitle() const;
+  GameDashboardButtonRevealController* GetGameDashboardButtonRevealController()
+      const;
+  base::OneShotTimer& GetRevealControllerTopEdgeHoverTimer() const;
 
   // Returns the main menu widget and all its views.
   views::Widget* GetMainMenuWidget();
@@ -70,6 +78,10 @@ class GameDashboardContextTestApi {
   views::LabelButton* GetMainMenuFeedbackButton();
   IconButton* GetMainMenuHelpButton();
   IconButton* GetMainMenuSettingsButton();
+  views::BoxLayoutView* GetMainMenuContainer();
+  views::BoxLayoutView* GetSettingsContainer();
+  IconButton* GetSettingsViewBackButton();
+  Switch* GetSettingsViewWelcomeDialogSwitch();
 
   // Returns the Game Controls setup nudge.
   AnchoredNudge* GetGameControlsSetupNudge();
@@ -113,6 +125,23 @@ class GameDashboardContextTestApi {
   // widget are not null. After closing the toolbar, verifies the toolbar widget
   // is null.
   void CloseTheToolbar();
+
+  // Opens the settings view within the main menu view.
+  // Before opening the settings view, verifies the main menu widget and main
+  // menu container are not null. After opening the settings view, verifies it
+  // is open.
+  void OpenMainMenuSettings();
+
+  // Closes the settings view and re-opens the main menu within the main menu
+  // view. Before closing the settings view, verifies the main menu widget and
+  // settings container are not null. After closing the settings view, verifies
+  // the settings view is hidden and the main menu is visible.
+  void CloseTheSettings();
+
+  // Toggles the Welcome Dialog switch in the settings view.
+  // Before toggling the switch, verifies the settings view view is visible.
+  // After toggling the switch, verifies the switch state has changed.
+  void ToggleWelcomeDialogSettingsSwitch();
 
  private:
   // Returns a view from the `GameDashboardMainMenuView` for the given

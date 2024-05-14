@@ -43,6 +43,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/history/core/common/pref_names.h"
@@ -72,6 +73,12 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/origin.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/app_list/search/essential_search/essential_search_manager.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
+#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/autocomplete/keyword_extensions_delegate_impl.h"
@@ -183,15 +190,9 @@ ChromeAutocompleteProviderClient::GetTopSites() {
   return TopSitesFactory::GetForProfile(profile_);
 }
 
-bookmarks::BookmarkModel*
-ChromeAutocompleteProviderClient::GetLocalOrSyncableBookmarkModel() {
+bookmarks::CoreBookmarkModel*
+ChromeAutocompleteProviderClient::GetBookmarkModel() {
   return BookmarkModelFactory::GetForBrowserContext(profile_);
-}
-
-bookmarks::BookmarkModel*
-ChromeAutocompleteProviderClient::GetAccountBookmarkModel() {
-  // TODO(crbug.com/1446620): Plumb factory when available.
-  return nullptr;
 }
 
 history::URLDatabase* ChromeAutocompleteProviderClient::GetInMemoryDatabase() {
@@ -364,7 +365,16 @@ bool ChromeAutocompleteProviderClient::IsGuestSession() const {
 }
 
 bool ChromeAutocompleteProviderClient::SearchSuggestEnabled() const {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  return profile_->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled) &&
+         (!g_browser_process->platform_part() ||
+          !g_browser_process->platform_part()->essential_search_manager() ||
+          !g_browser_process->platform_part()
+               ->essential_search_manager()
+               ->ShouldDisableSearchSuggest());
+#else
   return profile_->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled);
+#endif
 }
 
 bool ChromeAutocompleteProviderClient::AllowDeletingBrowserHistory() const {

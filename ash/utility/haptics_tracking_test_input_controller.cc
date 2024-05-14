@@ -58,7 +58,8 @@ void HapticsTrackingTestInputController::GetAutoRepeatRate(
     base::TimeDelta* interval) {}
 
 void HapticsTrackingTestInputController::SetCurrentLayoutByName(
-    const std::string& layout_name) {}
+    const std::string& layout_name,
+    base::OnceCallback<void(bool)> callback) {}
 
 void HapticsTrackingTestInputController::SetKeyboardKeyBitsMapping(
     base::flat_map<int, std::vector<uint64_t>> key_bits_mapping) {}
@@ -225,6 +226,15 @@ bool HapticsTrackingTestInputController::AreAnyKeysPressed() {
 
 void HapticsTrackingTestInputController::BlockModifiersOnDevices(
     std::vector<int> device_ids) {}
+
+std::unique_ptr<ui::ScopedDisableInputDevices>
+HapticsTrackingTestInputController::DisableInputDevices() {
+  return nullptr;
+}
+
+bool HapticsTrackingTestInputController::AreInputDevicesEnabled() const {
+  return true;
+}
 
 int HapticsTrackingTestInputController::GetSentHapticCount(
     ui::HapticTouchpadEffect effect,

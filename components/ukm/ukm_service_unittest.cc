@@ -13,6 +13,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/containers/to_vector.h"
 #include "base/functional/bind.h"
 #include "base/hash/hash.h"
 #include "base/memory/raw_ptr.h"
@@ -26,7 +27,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/test/to_vector.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "components/metrics/cloned_install_detector.h"
@@ -409,6 +409,7 @@ TEST_F(UkmServiceTest, PurgeExtensionDataFromUnsentLogStore) {
   report.set_client_id(1);
   report.set_session_id(1);
   report.set_report_id(1);
+  report.mutable_system_profile()->set_app_version(client_.GetVersionString());
 
   std::string non_extension_url = "https://www.google.ca";
   std::string extension_url =
@@ -424,13 +425,12 @@ TEST_F(UkmServiceTest, PurgeExtensionDataFromUnsentLogStore) {
   proto_source_2->set_id(source_id_2);
   proto_source_2->add_urls()->set_url(extension_url);
 
-  // Add some entries for both sources.
   Entry* entry_1 = report.add_entries();
   entry_1->set_source_id(source_id_2);
   Entry* entry_2 = report.add_entries();
   entry_2->set_source_id(source_id_1);
   Entry* entry_3 = report.add_entries();
-  entry_3->set_source_id(source_id_2);
+  entry_3->set_source_id(source_id_1);
 
   // Save the Report to the store.
   std::string serialized_log;
@@ -454,14 +454,90 @@ TEST_F(UkmServiceTest, PurgeExtensionDataFromUnsentLogStore) {
   ASSERT_TRUE(
       metrics::DecodeLogDataToProto(compressed_log_data, &filtered_report));
 
+  // The logs app version and the client_ version string should be the same,
+  // so the log_written_by_app_version shouldn't be set.
+  ASSERT_FALSE(
+      filtered_report.system_profile().has_log_written_by_app_version());
   // Only proto_source_1 with non-extension URL is kept.
   EXPECT_EQ(1, filtered_report.sources_size());
   EXPECT_EQ(source_id_1, filtered_report.sources(0).id());
   EXPECT_EQ(non_extension_url, filtered_report.sources(0).urls(0).url());
 
-  // Only entry_2 from the non-extension source is kept.
-  EXPECT_EQ(1, filtered_report.entries_size());
+  // Only entry_2 and entry_3 from the non-extension source is kept.
+  EXPECT_EQ(2, filtered_report.entries_size());
   EXPECT_EQ(source_id_1, filtered_report.entries(0).source_id());
+  EXPECT_EQ(source_id_1, filtered_report.entries(1).source_id());
+}
+
+TEST_F(UkmServiceTest, PurgeExtensionDataFromUnsentLogStoreWithVersionChange) {
+  UkmService service(&prefs_, &client_,
+                     std::make_unique<MockDemographicMetricsProvider>());
+  auto* unsent_log_store = service.reporting_service_.ukm_log_store();
+
+  // Initialize a Report to be saved to the log store.
+  Report report;
+  report.set_client_id(1);
+  report.set_session_id(1);
+  report.set_report_id(1);
+  report.mutable_system_profile()->set_app_version("0.0.0.0");
+
+  std::string non_extension_url = "https://www.google.ca";
+  std::string extension_url =
+      "chrome-extension://bmnlcjabgnpnenekpadlanbbkooimhnj/manifest.json";
+
+  // Add both extension- and non-extension-related sources to the Report.
+  Source* proto_source_1 = report.add_sources();
+  SourceId source_id_1 = ConvertToSourceId(1, SourceIdType::NAVIGATION_ID);
+  proto_source_1->set_id(source_id_1);
+  proto_source_1->add_urls()->set_url(non_extension_url);
+  Source* proto_source_2 = report.add_sources();
+  SourceId source_id_2 = ConvertToSourceId(2, SourceIdType::NAVIGATION_ID);
+  proto_source_2->set_id(source_id_2);
+  proto_source_2->add_urls()->set_url(extension_url);
+
+  Entry* entry_1 = report.add_entries();
+  entry_1->set_source_id(source_id_2);
+  Entry* entry_2 = report.add_entries();
+  entry_2->set_source_id(source_id_1);
+  Entry* entry_3 = report.add_entries();
+  entry_3->set_source_id(source_id_1);
+
+  // Save the Report to the store.
+  std::string serialized_log;
+  report.SerializeToString(&serialized_log);
+  // Makes sure that the serialized ukm report can be parsed.
+  ASSERT_TRUE(UkmService::LogCanBeParsed(serialized_log));
+  metrics::LogMetadata log_metadata;
+  unsent_log_store->StoreLog(
+      serialized_log, log_metadata,
+      metrics::MetricsLogsEventManager::CreateReason::kUnknown);
+
+  // Do extension purging.
+  service.PurgeExtensionsData();
+
+  // Get the Report in the log store and verify extension-related data have been
+  // filtered.
+  unsent_log_store->StageNextLog();
+  const std::string& compressed_log_data = unsent_log_store->staged_log();
+
+  Report filtered_report;
+  ASSERT_TRUE(
+      metrics::DecodeLogDataToProto(compressed_log_data, &filtered_report));
+
+  // The logs app version and the client_ version string should be different,
+  // so the log_written_by_app_version should be set to the current client_
+  // version.
+  ASSERT_EQ(filtered_report.system_profile().log_written_by_app_version(),
+            client_.GetVersionString());
+  // Only proto_source_1 with non-extension URL is kept.
+  EXPECT_EQ(1, filtered_report.sources_size());
+  EXPECT_EQ(source_id_1, filtered_report.sources(0).id());
+  EXPECT_EQ(non_extension_url, filtered_report.sources(0).urls(0).url());
+
+  // Only entry_2 and entry_3 from the non-extension source is kept.
+  EXPECT_EQ(2, filtered_report.entries_size());
+  EXPECT_EQ(source_id_1, filtered_report.entries(0).source_id());
+  EXPECT_EQ(source_id_1, filtered_report.entries(1).source_id());
 }
 
 TEST_F(UkmServiceTest, PurgeAppDataFromUnsentLogStore) {
@@ -1798,7 +1874,7 @@ TEST_F(UkmServiceTest, FilterRejectsEvent) {
         return true;
       }
 
-      filtered_metric_hashes->replace(base::test::ToVector(
+      filtered_metric_hashes->replace(base::ToVector(
           entry->metrics, &decltype(entry->metrics)::value_type::first));
 
       // Note that the event still contains metrics.

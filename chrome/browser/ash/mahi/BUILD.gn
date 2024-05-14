@@ -6,14 +6,12 @@ import("//build/config/chromeos/ui_mode.gni")
 
 assert(is_chromeos_ash)
 
-source_set("mahi") {
+source_set("mahi_ash") {
   sources = [
     "mahi_browser_client_wrapper.cc",
     "mahi_browser_client_wrapper.h",
     "mahi_browser_delegate_ash.cc",
     "mahi_browser_delegate_ash.h",
-    "mahi_manager_impl.cc",
-    "mahi_manager_impl.h",
   ]
   deps = [
     "//ash",
@@ -25,13 +23,25 @@ source_set("mahi") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "mahi_browser_delegate_ash_unittest.cc" ]
+  sources = [
+    "mahi_browser_delegate_ash_unittest.cc",
+    "mahi_cache_manager_unittest.cc",
+    "mahi_manager_impl_unittest.cc",
+  ]
   deps = [
-    ":mahi",
+    ":mahi_ash",
+    "//ash:test_support",
     "//base",
     "//base/test:test_support",
+    "//chrome/browser/ash",
+    "//chrome/browser/ash/crosapi:test_support",
     "//chromeos/crosapi/mojom",
+    "//components/signin/public/identity_manager:test_support",
+    "//content/test:test_support",
+    "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/aura:aura",
+    "//ui/views:views",
   ]
 }

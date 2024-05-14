@@ -6,12 +6,14 @@
 
 #include <optional>
 #include <utility>
+#include <vector>
 
 #include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/enterprise/client_certificates/core/certificate_store.h"
 #include "components/enterprise/client_certificates/core/constants.h"
 #include "components/enterprise/client_certificates/core/key_upload_client.h"
@@ -23,6 +25,19 @@
 #include "net/cert/x509_certificate.h"
 
 namespace client_certificates {
+
+namespace {
+
+constexpr int kDaysBeforeExpiration = 7;
+
+// Returns true if `certificate` expires within the next `kDaysBeforeExpiration`
+// days.
+bool IsCertExpiringSoon(const net::X509Certificate& certificate) {
+  return (base::Time::Now() + base::Days(kDaysBeforeExpiration)) >
+         certificate.valid_expiry();
+}
+
+}  // namespace
 
 CertificateProvisioningService::Status::Status(bool is_provisioning)
     : is_provisioning(is_provisioning) {}
@@ -45,7 +60,7 @@ class CertificateProvisioningServiceImpl
   ~CertificateProvisioningServiceImpl() override;
 
   // CertificateProvisioningService:
-  std::optional<ClientIdentity> GetManagedIdentity() const override;
+  void GetManagedIdentity(GetManagedIdentityCallback callback) override;
   Status GetCurrentStatus() const override;
 
  private:
@@ -62,16 +77,18 @@ class CertificateProvisioningServiceImpl
   void OnCertificateCreatedResponse(
       bool is_permanent_identity,
       scoped_refptr<PrivateKey> private_key,
-      int upload_code,
+      HttpCodeOrClientError upload_code,
       scoped_refptr<net::X509Certificate> certificate);
 
-  void OnKeyUploadResponse(int upload_code);
+  void OnKeyUploadResponse(HttpCodeOrClientError upload_code);
 
   void OnCertificateCommitted(scoped_refptr<PrivateKey> private_key,
                               scoped_refptr<net::X509Certificate> certificate,
                               std::optional<StoreError> commit_error);
 
   void OnProvisioningError();
+
+  void OnFinishedProvisioning();
 
   PrefChangeRegistrar pref_observer_;
   raw_ptr<PrefService> profile_prefs_;
@@ -80,8 +97,11 @@ class CertificateProvisioningServiceImpl
 
   bool is_provisioning_{false};
 
+  // Callbacks waiting for an identity to be available.
+  std::vector<GetManagedIdentityCallback> pending_callbacks_;
+
   std::optional<ClientIdentity> cached_identity_ = std::nullopt;
-  std::optional<int> last_upload_code_;
+  std::optional<HttpCodeOrClientError> last_upload_code_;
 
   base::WeakPtrFactory<CertificateProvisioningServiceImpl> weak_factory_{this};
 };
@@ -120,20 +140,32 @@ CertificateProvisioningServiceImpl::CertificateProvisioningServiceImpl(
 CertificateProvisioningServiceImpl::~CertificateProvisioningServiceImpl() =
     default;
 
-std::optional<ClientIdentity>
-CertificateProvisioningServiceImpl::GetManagedIdentity() const {
-  // Only return the valid cached identity if the policy is enabled.
-  if (IsPolicyEnabled() && !is_provisioning_ && cached_identity_ &&
-      cached_identity_->is_valid()) {
-    return cached_identity_;
+void CertificateProvisioningServiceImpl::GetManagedIdentity(
+    GetManagedIdentityCallback callback) {
+  if (!IsPolicyEnabled()) {
+    std::move(callback).Run(std::nullopt);
+    return;
   }
-  return std::nullopt;
+
+  if (!is_provisioning_ && cached_identity_ && cached_identity_->is_valid() &&
+      !IsCertExpiringSoon(*cached_identity_->certificate)) {
+    // A valid identity is already cached, just return it.
+    std::move(callback).Run(cached_identity_);
+    return;
+  }
+
+  pending_callbacks_.push_back(std::move(callback));
+
+  if (!is_provisioning_) {
+    OnPolicyUpdated();
+  }
 }
 
 CertificateProvisioningService::Status
 CertificateProvisioningServiceImpl::GetCurrentStatus() const {
   Status status(is_provisioning_);
 
+  status.is_policy_enabled = IsPolicyEnabled();
   status.identity = cached_identity_;
   status.last_upload_code = last_upload_code_;
   return status;
@@ -148,7 +180,7 @@ bool CertificateProvisioningServiceImpl::IsPolicyEnabled() const {
 
 void CertificateProvisioningServiceImpl::OnPolicyUpdated() {
   if (IsPolicyEnabled() && !is_provisioning_) {
-    // Start by trying to load the current identity
+    // Start by trying to load the current identity.
     is_provisioning_ = true;
     certificate_store_->GetIdentity(
         kManagedProfileIdentityName,
@@ -169,17 +201,21 @@ void CertificateProvisioningServiceImpl::OnPermanentIdentityLoaded(
   std::optional<ClientIdentity>& permanent_identity_optional =
       expected_permanent_identity.value();
   if (permanent_identity_optional.has_value()) {
-    // TODO(b:319626746): Check for certificate expiry date.
     if (permanent_identity_optional->is_valid()) {
-      // Already have a full identity, cache it and sync the key.
-      cached_identity_ = std::move(permanent_identity_optional.value());
-      is_provisioning_ = false;
-      upload_client_->SyncKey(
-          cached_identity_->private_key,
-          base::BindOnce(
-              &CertificateProvisioningServiceImpl::OnKeyUploadResponse,
-              weak_factory_.GetWeakPtr()));
-      return;
+      // Already have a full identity, so cache it.
+      cached_identity_ = permanent_identity_optional.value();
+
+      // If the certificate has expired (or is close to), then update it before
+      // responding to pending callbacks.
+      if (!IsCertExpiringSoon(*permanent_identity_optional->certificate)) {
+        OnFinishedProvisioning();
+        upload_client_->SyncKey(
+            cached_identity_->private_key,
+            base::BindOnce(
+                &CertificateProvisioningServiceImpl::OnKeyUploadResponse,
+                weak_factory_.GetWeakPtr()));
+        return;
+      }
     }
 
     if (permanent_identity_optional->private_key) {
@@ -228,9 +264,9 @@ void CertificateProvisioningServiceImpl::OnPrivateKeyCreated(
 void CertificateProvisioningServiceImpl::OnCertificateCreatedResponse(
     bool is_permanent_identity,
     scoped_refptr<PrivateKey> private_key,
-    int upload_code,
+    HttpCodeOrClientError upload_code,
     scoped_refptr<net::X509Certificate> certificate) {
-  OnKeyUploadResponse(upload_code);
+  last_upload_code_ = upload_code;
 
   if (!certificate) {
     OnProvisioningError();
@@ -258,7 +294,8 @@ void CertificateProvisioningServiceImpl::OnCertificateCreatedResponse(
   }
 }
 
-void CertificateProvisioningServiceImpl::OnKeyUploadResponse(int upload_code) {
+void CertificateProvisioningServiceImpl::OnKeyUploadResponse(
+    HttpCodeOrClientError upload_code) {
   last_upload_code_ = upload_code;
 }
 
@@ -273,12 +310,24 @@ void CertificateProvisioningServiceImpl::OnCertificateCommitted(
 
   cached_identity_.emplace(kManagedProfileIdentityName, std::move(private_key),
                            std::move(certificate));
-  is_provisioning_ = false;
+  OnFinishedProvisioning();
 }
 
 void CertificateProvisioningServiceImpl::OnProvisioningError() {
   // TODO(b:322837073): Record failure histogram.
+  OnFinishedProvisioning();
+}
+
+void CertificateProvisioningServiceImpl::OnFinishedProvisioning() {
   is_provisioning_ = false;
+
+  std::optional<ClientIdentity> identity =
+      cached_identity_ && cached_identity_->is_valid() ? cached_identity_
+                                                       : std::nullopt;
+  for (auto& pending_callback : pending_callbacks_) {
+    std::move(pending_callback).Run(identity);
+  }
+  pending_callbacks_.clear();
 }
 
 }  // namespace client_certificates

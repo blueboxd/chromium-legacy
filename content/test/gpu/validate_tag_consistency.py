@@ -49,6 +49,7 @@ TAG_SPECIALIZATIONS = {
             'bigsur',
             'monterey',
             'ventura',
+            'sonoma',
         ],
         'win': [
             'win8',
@@ -102,6 +103,7 @@ TAG_SPECIALIZATIONS = {
             'intel-0xa011',
             'intel-0x3e92',
             'intel-0x3e9b',
+            'intel-0x4680',
             'intel-0x5912',
             'intel-0x9bc5',
         ],
@@ -200,8 +202,7 @@ TAG_HEADER = """\
 #         angle-swiftshader
 #         angle-vulkan ]
 # Skia Renderer
-# tags: [ renderer-skia-dawn
-#         renderer-skia-gl
+# tags: [ renderer-skia-gl
 #         renderer-skia-vulkan
 #         renderer-software ]
 # Driver

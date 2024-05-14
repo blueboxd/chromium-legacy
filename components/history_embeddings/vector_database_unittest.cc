@@ -31,7 +31,7 @@ Embedding RandomEmbedding() {
 }  // namespace
 
 TEST(HistoryEmbeddingsVectorDatabaseTest, Constructs) {
-  std::make_unique<VectorDatabase>();
+  std::make_unique<VectorDatabaseInMemory>();
 }
 
 TEST(HistoryEmbeddingsVectorDatabaseTest, EmbeddingOperations) {
@@ -48,17 +48,17 @@ TEST(HistoryEmbeddingsVectorDatabaseTest, EmbeddingOperations) {
 
 // Note: Disabled by default so as to not burden the bots. Enable when needed.
 TEST(HistoryEmbeddingsVectorDatabaseTest, DISABLED_ManyVectorsAreFastEnough) {
-  VectorDatabase database;
+  VectorDatabaseInMemory database;
   size_t count = 0;
   // 95th percentile for URL count
   for (size_t i = 0; i < 15000; i++) {
-    UrlEmbeddings url_embeddings;
+    UrlEmbeddings url_embeddings(i + 1, i + 1, base::Time::Now());
     // Times 3 embeddings each, on average
     for (size_t j = 0; j < 3; j++) {
       url_embeddings.embeddings.push_back(RandomEmbedding());
       count++;
     }
-    database.Add(std::move(url_embeddings));
+    database.AddUrlEmbeddings(std::move(url_embeddings));
   }
   Embedding query = RandomEmbedding();
   base::ElapsedTimer timer;

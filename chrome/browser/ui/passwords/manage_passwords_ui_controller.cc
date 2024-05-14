@@ -308,8 +308,7 @@ void ManagePasswordsUIController::OnAutomaticPasswordSave(
 }
 
 void ManagePasswordsUIController::OnPasswordAutofilled(
-    const std::vector<raw_ptr<const password_manager::PasswordForm,
-                              VectorExperimental>>& password_forms,
+    base::span<const password_manager::PasswordForm> password_forms,
     const url::Origin& origin,
     const std::vector<raw_ptr<const password_manager::PasswordForm,
                               VectorExperimental>>* federated_matches) {
@@ -456,7 +455,9 @@ void ManagePasswordsUIController::ShowBiometricActivationConfirmation() {
 
 void ManagePasswordsUIController::ShowMovePasswordBubble(
     const password_manager::PasswordForm& form) {
-  CHECK_EQ(GetState(), password_manager::ui::MANAGE_STATE);
+  CHECK(GetState() == password_manager::ui::MANAGE_STATE ||
+        GetState() == password_manager::ui::SAVE_CONFIRMATION_STATE ||
+        GetState() == password_manager::ui::UPDATE_CONFIRMATION_STATE);
   // Existing dialog shouldn't be closed.
   if (dialog_controller_) {
     return;
@@ -852,8 +853,9 @@ void ManagePasswordsUIController::BlockMovingPasswordToAccountStore() {
 }
 
 void ManagePasswordsUIController::PromptSaveBubbleAfterDefaultStoreChanged() {
-  CHECK_EQ(GetState(),
-           password_manager::ui::PASSWORD_STORE_CHANGED_BUBBLE_STATE)
+  CHECK(GetState() ==
+            password_manager::ui::PASSWORD_STORE_CHANGED_BUBBLE_STATE ||
+        GetState() == password_manager::ui::PENDING_PASSWORD_STATE)
       << GetState();
   passwords_data_.TransitionToState(
       password_manager::ui::PENDING_PASSWORD_STATE);
@@ -881,6 +883,14 @@ void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage(
     password_manager::ManagePasswordsReferrer referrer) {
   NavigateToManagePasswordsPage(chrome::FindBrowserWithTab(web_contents()),
                                 referrer);
+}
+
+void ManagePasswordsUIController::
+    NavigateToPasswordDetailsPageInPasswordManager(
+        const std::string& password_domain_name,
+        password_manager::ManagePasswordsReferrer referrer) {
+  NavigateToPasswordDetailsPage(chrome::FindBrowserWithTab(web_contents()),
+                                password_domain_name, referrer);
 }
 
 void ManagePasswordsUIController::

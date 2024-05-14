@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/platform/bindings/active_script_wrappable_manager.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
+#include "third_party/blink/renderer/platform/bindings/script_regexp.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -49,6 +50,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
+namespace blink::scheduler {
+class TaskAttributionTracker;
+}  // namespace blink::scheduler
+
 namespace blink {
 
 class DOMWrapperWorld;
@@ -57,6 +62,7 @@ class StringCache;
 class ThreadDebugger;
 class V8PrivateProperty;
 struct WrapperTypeInfo;
+class ScriptRegexp;
 
 // Used to hold data that is associated with a single v8::Isolate object, and
 // has a 1:1 relationship with v8::Isolate.
@@ -196,6 +202,9 @@ class PLATFORM_EXPORT V8PerIsolateData final {
   void SetCanvasResourceTracker(V8PerIsolateData::GarbageCollectedData*);
   V8PerIsolateData::GarbageCollectedData* CanvasResourceTracker();
 
+  void SetPasswordRegexp(ScriptRegexp*);
+  ScriptRegexp* GetPasswordRegexp();
+
   ActiveScriptWrappableManager* GetActiveScriptWrappableManager() const {
     return active_script_wrappable_manager_;
   }
@@ -212,6 +221,21 @@ class PLATFORM_EXPORT V8PerIsolateData final {
   void EnterGC() { gc_callback_depth_++; }
 
   void LeaveGC() { gc_callback_depth_--; }
+
+  // Set the factory function used to initialize task attribution for the
+  // isolate upon creating main thread `V8PerIsolateData`. This should be set
+  // once per process before creating any isolates.
+  using TaskAttributionTrackerFactoryPtr =
+      std::unique_ptr<scheduler::TaskAttributionTracker> (*)(v8::Isolate*);
+  static void SetTaskAttributionTrackerFactory(
+      TaskAttributionTrackerFactoryPtr factory);
+
+  // Returns the `scheduler::TaskAttributionTracker` associated with the
+  // associated `v8::Isolate`. Returns null if the
+  // TaskAttributionInfrastructureDisabledForTesting feature is enabled.
+  scheduler::TaskAttributionTracker* GetTaskAttributionTracker() {
+    return task_attribution_tracker_.get();
+  }
 
  private:
   V8PerIsolateData(scoped_refptr<base::SingleThreadTaskRunner>,
@@ -276,6 +300,7 @@ class PLATFORM_EXPORT V8PerIsolateData final {
   std::unique_ptr<ThreadDebugger> thread_debugger_;
   Persistent<GarbageCollectedData> profiler_group_;
   Persistent<GarbageCollectedData> canvas_resource_tracker_;
+  Persistent<ScriptRegexp> password_regexp_;
 
   Persistent<ActiveScriptWrappableManager> active_script_wrappable_manager_;
 
@@ -285,7 +310,9 @@ class PLATFORM_EXPORT V8PerIsolateData final {
   v8::Isolate::GCCallback epilogue_callback_;
   size_t gc_callback_depth_ = 0;
 
-  scoped_refptr<DOMWrapperWorld> main_world_;
+  Persistent<DOMWrapperWorld> main_world_;
+
+  std::unique_ptr<scheduler::TaskAttributionTracker> task_attribution_tracker_;
 };
 
 // Creates a histogram for V8. The returned value is a base::Histogram, but

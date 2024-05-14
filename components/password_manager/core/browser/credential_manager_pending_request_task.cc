@@ -10,15 +10,15 @@
 #include <memory>
 #include <tuple>
 #include <utility>
+#include <vector>
 
-#include "base/containers/cxx20_erase.h"
 #include "base/containers/flat_set.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/user_metrics.h"
 #include "base/ranges/algorithm.h"
-#include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
+#include "components/affiliations/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/credential_manager_utils.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
@@ -95,7 +95,7 @@ void FilterIrrelevantForms(std::vector<std::unique_ptr<PasswordForm>>& forms,
                            bool include_passwords,
                            const std::set<std::string>& federations) {
   // Get rid of the irrelevant credentials.
-  base::EraseIf(forms, [include_passwords, &federations](
+  std::erase_if(forms, [include_passwords, &federations](
                            const std::unique_ptr<PasswordForm>& form) {
     // Remove empty usernames from the list.
     if (form->username_value.empty()) {
@@ -119,7 +119,7 @@ bool IsFormValidForAutoSignIn(const PasswordForm* form) {
   // sign in.
   if (match_type == GetLoginMatchType::kExact ||
       (match_type == GetLoginMatchType::kAffiliated &&
-       IsValidAndroidFacetURI(form->signon_realm))) {
+       affiliations::IsValidAndroidFacetURI(form->signon_realm))) {
     return true;
   }
   return false;
@@ -168,13 +168,14 @@ void CredentialManagerPendingRequestTask::OnFetchCompleted() {
   FilterDuplicatesInFederatedCredentials(all_matches);
   base::ranges::transform(form_fetcher_->GetBestMatches(),
                           std::back_inserter(all_matches),
-                          [](const PasswordForm* form) {
-                            return std::make_unique<PasswordForm>(*form);
+                          [](const PasswordForm& form) {
+                            return std::make_unique<PasswordForm>(form);
                           });
   FilterIrrelevantForms(all_matches, include_passwords_, federations_);
   ProcessForms(std::move(all_matches));
 }
 
+// TODO (b/327343301): Refactor `results` to be a span.
 void CredentialManagerPendingRequestTask::ProcessForms(
     std::vector<std::unique_ptr<PasswordForm>> results) {
   using metrics_util::LogCredentialManagerGetResult;
@@ -222,15 +223,14 @@ void CredentialManagerPendingRequestTask::ProcessForms(
     }
 
     if (!results.empty()) {
-      std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-          non_federated_matches;
+      std::vector<PasswordForm> non_federated_matches;
       std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
           federated_matches;
       for (const auto& result : results) {
         if (result->IsFederatedCredential()) {
           federated_matches.emplace_back(result.get());
         } else {
-          non_federated_matches.emplace_back(result.get());
+          non_federated_matches.emplace_back(*result.get());
         }
       }
       delegate_->client()->PasswordWasAutofilled(

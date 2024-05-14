@@ -15,7 +15,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_util.h"
-#include "chrome/browser/apps/app_service/app_install/app_install_service_ash.h"
+#include "chrome/browser/apps/app_service/app_install/app_install_service.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_registry.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
 #include "chrome/browser/apps/app_service/instance_registry_updater.h"
@@ -210,8 +210,7 @@ void AppServiceProxyAsh::Initialize() {
   if (chromeos::features::IsCrosWebAppShortcutUiUpdateEnabled()) {
     shortcut_registry_cache_ = std::make_unique<apps::ShortcutRegistryCache>();
   }
-  app_install_service_ =
-      std::make_unique<apps::AppInstallServiceAsh>(*profile_);
+  app_install_service_ = AppInstallService::Create(*profile_);
 }
 
 apps::InstanceRegistry& AppServiceProxyAsh::InstanceRegistry() {
@@ -280,12 +279,6 @@ void AppServiceProxyAsh::SetPublisherUnavailable(AppType app_type) {
   // launch requests, icon spinners will be removed too in OnAppUpdate when apps
   // are removed.
   OnApps(std::vector<AppPtr>{}, app_type, /*should_notify_initialized=*/true);
-}
-
-void AppServiceProxyAsh::Uninstall(const std::string& app_id,
-                                   UninstallSource uninstall_source,
-                                   gfx::NativeWindow parent_window) {
-  UninstallImpl(app_id, uninstall_source, parent_window, base::DoNothing());
 }
 
 void AppServiceProxyAsh::OnApps(std::vector<AppPtr> deltas,
@@ -368,6 +361,12 @@ void AppServiceProxyAsh::OnApps(std::vector<AppPtr> deltas,
   if (should_notify_initialized) {
     LaunchFromPendingRequests(app_type);
   }
+}
+
+void AppServiceProxyAsh::Uninstall(const std::string& app_id,
+                                   UninstallSource uninstall_source,
+                                   gfx::NativeWindow parent_window) {
+  UninstallImpl(app_id, uninstall_source, parent_window, base::DoNothing());
 }
 
 void AppServiceProxyAsh::PauseApps(

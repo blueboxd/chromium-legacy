@@ -18,7 +18,6 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.util.AtomicFile;
 
 import org.chromium.base.Callback;
-import org.chromium.base.CallbackController;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.StreamUtil;
@@ -172,7 +171,8 @@ public class TabPersistentStore {
                         }
                         if (tab.isClosing()) {
                             PersistedTabData.onTabClose(tab);
-                            TabStateFileManager.cancelMigration(tab.getId(), tab.isIncognito());
+                            TabStateFileManager.cancelMigrationIfExists(
+                                    tab.getId(), tab.isIncognito());
                             removeTabFromQueues(tab);
                         }
                     }
@@ -706,10 +706,9 @@ public class TabPersistentStore {
             @TabRestoreMethod int tabRestoreMethod = TabRestoreMethod.TAB_STATE;
             RecordHistogram.recordEnumeratedHistogram(
                     "Tabs.TabRestoreMethod", tabRestoreMethod, TabRestoreMethod.NUM_ENTRIES);
-            Tab tab =
-                    mTabCreatorManager
-                            .getTabCreator(isIncognito)
-                            .createFrozenTab(tabState, tabToRestore.id, restoredIndex);
+            mTabCreatorManager
+                    .getTabCreator(isIncognito)
+                    .createFrozenTab(tabState, tabToRestore.id, restoredIndex);
         } else {
             if (!mSkipSavingNonActiveNtps
                     && UrlUtilities.isNtpUrl(tabToRestore.url)
@@ -1027,6 +1026,17 @@ public class TabPersistentStore {
         int activeIndex = tabModel.index();
         for (int i = 0; i < tabModel.getCount(); i++) {
             Tab tab = tabModel.getTabAt(i);
+            // This tab has likely just been deleted, and it's possible we're being notified before
+            // hand because undo is not allowed. This shouldn't be persisted.
+            if (tab.isClosing()) {
+                // Select the previous tab if there is one. 0 should be fine even if there are no
+                // tabs left.
+                if (i == activeIndex) {
+                    modelInfo.index = Math.max(0, modelInfo.ids.size() - 1);
+                }
+                continue;
+            }
+
             if (skipNonActiveNtps) {
                 if (i == activeIndex) {
                     // If any non-active NTPs have been skipped, the serialized tab model index
@@ -1485,7 +1495,7 @@ public class TabPersistentStore {
                                 saveTabListAsynchronously();
                             }
                         });
-                for (String mergedFileName : new HashSet<String>(mMergedFileNames)) {
+                for (String mergedFileName : new HashSet<>(mMergedFileNames)) {
                     deleteFileAsync(mergedFileName, true);
                 }
                 for (TabPersistentStoreObserver observer : mObservers) observer.onStateMerged();
@@ -1519,7 +1529,6 @@ public class TabPersistentStore {
     private class TabLoader {
         public final TabRestoreDetails mTabToRestore;
         private LoadTabTask mLoadTabTask;
-        private CallbackController mCallbackController = new CallbackController();
 
         /**
          * @param tabToRestore details of {@link Tab} which will be read from storage
@@ -1538,7 +1547,6 @@ public class TabPersistentStore {
             if (mLoadTabTask != null) {
                 mLoadTabTask.cancel(mayInterruptIfRunning);
             }
-            mCallbackController.destroy();
         }
     }
 

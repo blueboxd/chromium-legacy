@@ -12,26 +12,24 @@ import '../../components/common_styles/oobe_common_styles.css.js';
 import '../../components/common_styles/oobe_dialog_host_styles.css.js';
 import '../../components/dialogs/oobe_adaptive_dialog.js';
 
-
 import {PolymerElementProperties} from '//resources/polymer/v3_0/polymer/interfaces.js';
 import {mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.js';
 import {OobeDialogHostBehavior, OobeDialogHostBehaviorInterface} from '../../components/behaviors/oobe_dialog_host_behavior.js';
-import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.js';
-import {OOBE_UI_STATE} from '../../components/display_manager_types.js';
+import {OobeI18nMixin, OobeI18nMixinInterface} from '../../components/mixins/oobe_i18n_mixin.js';
+import {OobeUiState} from '../../components/display_manager_types.js';
 
 import {getTemplate} from './local_data_loss_warning.html.js';
 
 
 const LocalDataLossWarningBase = mixinBehaviors(
       [
-        OobeI18nBehavior,
         OobeDialogHostBehavior,
         LoginScreenBehavior,
       ],
-      PolymerElement) as {
-new (): PolymerElement & OobeI18nBehaviorInterface &
+      OobeI18nMixin(PolymerElement)) as {
+new (): PolymerElement & OobeI18nMixinInterface &
 LoginScreenBehaviorInterface & OobeDialogHostBehaviorInterface,
 };
 
@@ -92,8 +90,8 @@ export class LocalDataLossWarning extends LocalDataLossWarningBase {
 
   /** Initial UI State for screen */
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  override getOobeUIInitialState(): OOBE_UI_STATE  {
-    return OOBE_UI_STATE.PASSWORD_CHANGED;
+  override getOobeUIInitialState(): OobeUiState {
+    return OobeUiState.PASSWORD_CHANGED;
   }
 
   /**
@@ -112,7 +110,7 @@ export class LocalDataLossWarning extends LocalDataLossWarningBase {
    * @return The translated subtitle message.
    */
   private getDataLossWarningSubtitleMessage(locale: string, email: string):
-      string {
+      TrustedHTML {
     return this.i18nAdvancedDynamic(
         locale, 'dataLossWarningSubtitle', {substitutions: [email]});
   }

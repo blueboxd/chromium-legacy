@@ -17,10 +17,10 @@
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_app_interface.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_constants.h"
 #import "ios/chrome/browser/ui/passwords/bottom_sheet/password_suggestion_bottom_sheet_app_interface.h"
+#import "ios/chrome/common/ui/elements/form_input_accessory_view.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/web_http_server_chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
@@ -63,10 +63,9 @@ constexpr char kFormZip[] = "form_zip";
   // about the account storage notice, so suppress it by marking it as shown.
   [PasswordManagerAppInterface setAccountStorageNoticeShown:YES];
   // Manually clear sync passwords pref before testShowAccountStorageNotice*.
-  [ChromeEarlGreyAppInterface
-      clearUserPrefWithName:base::SysUTF8ToNSString(
-                                syncer::SyncPrefs::GetPrefNameForTypeForTesting(
-                                    syncer::UserSelectableType::kPasswords))];
+  [ChromeEarlGrey
+      clearUserPrefWithName:syncer::SyncPrefs::GetPrefNameForTypeForTesting(
+                                syncer::UserSelectableType::kPasswords)];
   // Make sure a credit card suggestion is available.
   [AutofillAppInterface clearCreditCardStore];
   [AutofillAppInterface saveLocalCreditCard];
@@ -382,8 +381,12 @@ id<GREYMatcher> PaymentsBottomSheetUseKeyboardButton() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormPassword)];
 
-  id<GREYMatcher> manual_fill_button = grey_accessibilityLabel(
-      l10n_util::GetNSString(IDS_IOS_AUTOFILL_ACCNAME_AUTOFILL_DATA));
+  id<GREYMatcher> manual_fill_button = grey_allOf(
+      grey_accessibilityLabel(
+          l10n_util::GetNSString(IDS_IOS_AUTOFILL_PASSWORD_AUTOFILL_DATA)),
+      grey_ancestor(
+          grey_accessibilityID(kFormInputAccessoryViewAccessibilityID)),
+      nil);
 
   [ChromeEarlGrey waitForUIElementToAppearWithMatcher:manual_fill_button];
 

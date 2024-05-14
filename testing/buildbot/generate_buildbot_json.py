@@ -856,9 +856,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     if not self.should_run_on_tester(waterfall, tester_name, test_config):
       return None
     result = copy.deepcopy(test_config)
-    # Use test_name here instead of test['name'] because test['name'] will be
-    # modified with the variant identifier in a matrix compound suite
-    result['test'] = test_name
+    result.setdefault('test', test_name)
     self.initialize_args_for_test(result, tester_config)
     result = self.update_and_cleanup_test(result, test_name, tester_name,
                                           tester_config, waterfall)
@@ -1623,7 +1621,8 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     # waterfalls defined in internal configs.
     return [
         'chrome', 'chrome.pgo', 'chrome.gpu.fyi', 'internal.chrome.fyi',
-        'internal.chromeos.fyi', 'internal.optimization_guide', 'internal.soda'
+        'internal.chromeos.fyi', 'internal.optimization_guide', 'internal.soda',
+        'chromeos.preuprev'
     ]
 
   def check_input_file_consistency(self, verbose=False):

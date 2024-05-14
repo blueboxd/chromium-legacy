@@ -177,11 +177,11 @@ class ContextRecyclerTest : public testing::Test {
       ig_params2->priority_vector.emplace();
       ig_params2->priority_vector->insert(
           std::pair<std::string, double>("a", 42.0));
-      ig_params2->ads = {{{GURL("https://ad.test/1"), absl::nullopt},
+      ig_params2->ads = {{{GURL("https://ad.test/1"), std::nullopt},
                           {GURL("https://ad.test/2"), {"\"metadata 1\""}}}};
       ig_params2->ad_components = {
           {{GURL("https://ad-component.test/1"), {"\"metadata 2\""}},
-           {GURL("https://ad-component.test/2"), absl::nullopt}}};
+           {GURL("https://ad-component.test/2"), std::nullopt}}};
 
       mojom::BiddingBrowserSignalsPtr bs_params2 =
           mojom::BiddingBrowserSignals::New();
@@ -468,6 +468,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
         /*per_buyer_currency=*/std::nullopt,
+        /*multi_bid_limit=*/5,
         /*is_ad_excluded=*/ignore_arg_return_false,
         /*is_component_ad_excluded=*/ignore_arg_return_false);
 
@@ -482,12 +483,12 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         gin::ConvertToV8(helper_->isolate(), bid_dict));
 
     EXPECT_THAT(error_msgs, ElementsAre());
-    ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bid());
-    mojom::BidderWorkletBidPtr bid =
-        context_recycler.set_bid_bindings()->TakeBid();
-    EXPECT_EQ("https://example2.test/ad1", bid->ad_descriptor.url);
-    EXPECT_EQ(10.0, bid->bid);
-    EXPECT_EQ(base::Milliseconds(500), bid->bid_duration);
+    ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bids());
+    auto bids = context_recycler.set_bid_bindings()->TakeBids();
+    ASSERT_EQ(1u, bids.size());
+    EXPECT_EQ("https://example2.test/ad1", bids[0].bid->ad_descriptor.url);
+    EXPECT_EQ(10.0, bids[0].bid->bid);
+    EXPECT_EQ(base::Milliseconds(500), bids[0].bid->bid_duration);
     EXPECT_EQ(mojom::RejectReason::kNotAvailable,
               context_recycler.set_bid_bindings()->reject_reason());
   }
@@ -505,6 +506,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
         /*per_buyer_currency=*/std::nullopt,
+        /*multi_bid_limit=*/5,
         /*is_ad_excluded=*/ignore_arg_return_false,
         /*is_component_ad_excluded=*/ignore_arg_return_false);
 
@@ -523,7 +525,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         ElementsAre("https://example.test/script.js:3 Uncaught TypeError: "
                     "bid render URL 'https://example2.test/ad1' isn't one of "
                     "the registered creative URLs."));
-    EXPECT_FALSE(context_recycler.set_bid_bindings()->has_bid());
+    EXPECT_FALSE(context_recycler.set_bid_bindings()->has_bids());
     EXPECT_EQ(mojom::RejectReason::kNotAvailable,
               context_recycler.set_bid_bindings()->reject_reason());
   }
@@ -546,6 +548,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/true, params.get(),
         /*per_buyer_currency=*/std::nullopt,
+        /*multi_bid_limit=*/5,
         /*is_ad_excluded=*/ignore_arg_return_false,
         /*is_component_ad_excluded=*/ignore_arg_return_false);
 
@@ -564,7 +567,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
             "https://example.test/script.js:3 Uncaught TypeError: bid does not "
             "have allowComponentAuction set to true. Bid dropped from "
             "component auction."));
-    EXPECT_FALSE(context_recycler.set_bid_bindings()->has_bid());
+    EXPECT_FALSE(context_recycler.set_bid_bindings()->has_bids());
   }
 
   {
@@ -587,6 +590,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/true, params.get(),
         /*per_buyer_currency=*/std::nullopt,
+        /*multi_bid_limit=*/5,
         /*is_ad_excluded=*/ignore_arg_return_false,
         /*is_component_ad_excluded=*/ignore_arg_return_false);
 
@@ -608,15 +612,15 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         gin::ConvertToV8(helper_->isolate(), bid_dict));
 
     EXPECT_THAT(error_msgs, ElementsAre());
-    ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bid());
-    mojom::BidderWorkletBidPtr bid =
-        context_recycler.set_bid_bindings()->TakeBid();
-    EXPECT_EQ("https://example2.test/ad5", bid->ad_descriptor.url);
-    EXPECT_EQ(15.0, bid->bid);
-    EXPECT_EQ(base::Milliseconds(200), bid->bid_duration);
-    ASSERT_TRUE(bid->ad_component_descriptors.has_value());
+    ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bids());
+    auto bids = context_recycler.set_bid_bindings()->TakeBids();
+    ASSERT_EQ(1u, bids.size());
+    EXPECT_EQ("https://example2.test/ad5", bids[0].bid->ad_descriptor.url);
+    EXPECT_EQ(15.0, bids[0].bid->bid);
+    EXPECT_EQ(base::Milliseconds(200), bids[0].bid->bid_duration);
+    ASSERT_TRUE(bids[0].bid->ad_component_descriptors.has_value());
     EXPECT_THAT(
-        bid->ad_component_descriptors.value(),
+        bids[0].bid->ad_component_descriptors.value(),
         ElementsAre(
             blink::AdDescriptor(GURL("https://example2.test/portion3")),
             blink::AdDescriptor(GURL("https://example2.test/portion5"))));
@@ -642,6 +646,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
         /*per_buyer_currency=*/std::nullopt,
+        /*multi_bid_limit=*/5,
         /*is_ad_excluded=*/ignore_arg_return_false,
         /*is_component_ad_excluded=*/ignore_arg_return_false);
 
@@ -668,7 +673,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
             "adComponents "
             "URL 'https://example2.test/portion3' isn't one of the registered "
             "creative URLs."));
-    EXPECT_FALSE(context_recycler.set_bid_bindings()->has_bid());
+    EXPECT_FALSE(context_recycler.set_bid_bindings()->has_bids());
   }
 
   {
@@ -684,6 +689,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
         /*per_buyer_currency=*/std::nullopt,
+        /*multi_bid_limit=*/5,
         /*is_ad_excluded=*/matches_ad1,
         /*is_component_ad_excluded=*/matches_ad1);
 
@@ -701,7 +707,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
                                         "Uncaught TypeError: bid render URL "
                                         "'https://example2.test/ad1' isn't one "
                                         "of the registered creative URLs."));
-    EXPECT_FALSE(context_recycler.set_bid_bindings()->has_bid());
+    EXPECT_FALSE(context_recycler.set_bid_bindings()->has_bids());
   }
 
   {
@@ -717,6 +723,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
         /*per_buyer_currency=*/std::nullopt,
+        /*multi_bid_limit=*/5,
         /*is_ad_excluded=*/matches_ad1,
         /*is_component_ad_excluded=*/matches_ad1);
 
@@ -731,12 +738,12 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         gin::ConvertToV8(helper_->isolate(), bid_dict));
 
     EXPECT_THAT(error_msgs, ElementsAre());
-    ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bid());
-    mojom::BidderWorkletBidPtr bid =
-        context_recycler.set_bid_bindings()->TakeBid();
-    EXPECT_EQ("https://example2.test/ad2", bid->ad_descriptor.url);
-    EXPECT_EQ(10.0, bid->bid);
-    EXPECT_EQ(base::Milliseconds(500), bid->bid_duration);
+    ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bids());
+    auto bids = context_recycler.set_bid_bindings()->TakeBids();
+    ASSERT_EQ(1u, bids.size());
+    EXPECT_EQ("https://example2.test/ad2", bids[0].bid->ad_descriptor.url);
+    EXPECT_EQ(10.0, bids[0].bid->bid);
+    EXPECT_EQ(base::Milliseconds(500), bids[0].bid->bid_duration);
   }
 
   {
@@ -752,6 +759,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
         blink::AdCurrency::From("USD"),
+        /*multi_bid_limit=*/5,
         /*is_ad_excluded=*/matches_ad1,
         /*is_component_ad_excluded=*/matches_ad1);
 
@@ -765,13 +773,13 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         gin::ConvertToV8(helper_->isolate(), bid_dict));
 
     EXPECT_THAT(error_msgs, ElementsAre());
-    ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bid());
-    mojom::BidderWorkletBidPtr bid =
-        context_recycler.set_bid_bindings()->TakeBid();
-    EXPECT_EQ("https://example2.test/ad2", bid->ad_descriptor.url);
-    EXPECT_EQ(10.0, bid->bid);
-    ASSERT_TRUE(bid->bid_currency.has_value());
-    EXPECT_EQ("USD", bid->bid_currency->currency_code());
+    ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bids());
+    auto bids = context_recycler.set_bid_bindings()->TakeBids();
+    ASSERT_EQ(1u, bids.size());
+    EXPECT_EQ("https://example2.test/ad2", bids[0].bid->ad_descriptor.url);
+    EXPECT_EQ(10.0, bids[0].bid->bid);
+    ASSERT_TRUE(bids[0].bid->bid_currency.has_value());
+    EXPECT_EQ("USD", bids[0].bid->bid_currency->currency_code());
     EXPECT_EQ(mojom::RejectReason::kNotAvailable,
               context_recycler.set_bid_bindings()->reject_reason());
   }
@@ -789,6 +797,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
         blink::AdCurrency::From("CAD"),
+        /*multi_bid_limit=*/5,
         /*is_ad_excluded=*/matches_ad1,
         /*is_component_ad_excluded=*/matches_ad1);
 
@@ -806,7 +815,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         ElementsAre(
             "https://example.test/script.js:3 Uncaught TypeError: bidCurrency "
             "mismatch; returned 'USD', expected 'CAD'."));
-    EXPECT_FALSE(context_recycler.set_bid_bindings()->has_bid());
+    EXPECT_FALSE(context_recycler.set_bid_bindings()->has_bids());
     EXPECT_EQ(mojom::RejectReason::kWrongGenerateBidCurrency,
               context_recycler.set_bid_bindings()->reject_reason());
   }
@@ -824,6 +833,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
         blink::AdCurrency::From("CAD"),
+        /*multi_bid_limit=*/5,
         /*is_ad_excluded=*/matches_ad1,
         /*is_component_ad_excluded=*/matches_ad1);
 
@@ -837,13 +847,13 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         gin::ConvertToV8(helper_->isolate(), bid_dict));
 
     EXPECT_THAT(error_msgs, ElementsAre());
-    ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bid());
-    mojom::BidderWorkletBidPtr bid =
-        context_recycler.set_bid_bindings()->TakeBid();
-    EXPECT_EQ("https://example2.test/ad2", bid->ad_descriptor.url);
-    EXPECT_EQ(10.0, bid->bid);
-    ASSERT_TRUE(bid->bid_currency.has_value());
-    EXPECT_EQ("CAD", bid->bid_currency->currency_code());
+    ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bids());
+    auto bids = context_recycler.set_bid_bindings()->TakeBids();
+    ASSERT_EQ(1u, bids.size());
+    EXPECT_EQ("https://example2.test/ad2", bids[0].bid->ad_descriptor.url);
+    EXPECT_EQ(10.0, bids[0].bid->bid);
+    ASSERT_TRUE(bids[0].bid->bid_currency.has_value());
+    EXPECT_EQ("CAD", bids[0].bid->bid_currency->currency_code());
     EXPECT_EQ(mojom::RejectReason::kNotAvailable,
               context_recycler.set_bid_bindings()->reject_reason());
   }
@@ -864,6 +874,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
         /*per_buyer_currency=*/std::nullopt,
+        /*multi_bid_limit=*/5,
         /*is_ad_excluded=*/ignore_arg_return_false,
         /*is_component_ad_excluded=*/ignore_arg_return_false);
 
@@ -882,12 +893,61 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     std::vector<std::string> error_msgs;
     Run(scope, script, "test", error_msgs, gin::ConvertToV8(isolate, bids));
     EXPECT_THAT(error_msgs, ElementsAre());
-    auto mojo_bids = context_recycler.set_bid_bindings()->TakeBids();
-    ASSERT_EQ(2u, mojo_bids.size());
-    EXPECT_EQ("https://example1.test/ad1", mojo_bids[0]->ad_descriptor.url);
-    EXPECT_EQ(10.0, mojo_bids[0]->bid);
-    EXPECT_EQ("https://example2.test/ad2", mojo_bids[1]->ad_descriptor.url);
-    EXPECT_EQ(9.5, mojo_bids[1]->bid);
+    auto bid_info = context_recycler.set_bid_bindings()->TakeBids();
+    ASSERT_EQ(2u, bid_info.size());
+    EXPECT_EQ("https://example1.test/ad1", bid_info[0].bid->ad_descriptor.url);
+    EXPECT_EQ(10.0, bid_info[0].bid->bid);
+    EXPECT_EQ("https://example2.test/ad2", bid_info[1].bid->ad_descriptor.url);
+    EXPECT_EQ(9.5, bid_info[1].bid->bid);
+  }
+
+  {
+    // More bids than permitted by config.
+    v8::Isolate* isolate = helper_->isolate();
+    mojom::BidderWorkletNonSharedParamsPtr params =
+        mojom::BidderWorkletNonSharedParams::New();
+    ContextRecyclerScope scope(context_recycler);
+    params->ads.emplace();
+    params->ads.value().emplace_back(GURL("https://example1.test/ad1"),
+                                     std::nullopt);
+    params->ads.value().emplace_back(GURL("https://example2.test/ad2"),
+                                     std::nullopt);
+    params->ads.value().emplace_back(GURL("https://example3.test/ad3"),
+                                     std::nullopt);
+
+    context_recycler.set_bid_bindings()->ReInitialize(
+        base::TimeTicks::Now(),
+        /*has_top_level_seller_origin=*/false, params.get(),
+        /*per_buyer_currency=*/std::nullopt,
+        /*multi_bid_limit=*/2,
+        /*is_ad_excluded=*/ignore_arg_return_false,
+        /*is_component_ad_excluded=*/ignore_arg_return_false);
+
+    v8::LocalVector<v8::Value> bids(isolate);
+
+    gin::Dictionary bid0 = gin::Dictionary::CreateEmpty(isolate);
+    bid0.Set("render", std::string("https://example1.test/ad1"));
+    bid0.Set("bid", 10.0);
+    bids.push_back(gin::ConvertToV8(isolate, bid0));
+
+    gin::Dictionary bid1 = gin::Dictionary::CreateEmpty(isolate);
+    bid1.Set("render", std::string("https://example2.test/ad2"));
+    bid1.Set("bid", 9.5);
+    bids.push_back(gin::ConvertToV8(isolate, bid1));
+
+    gin::Dictionary bid2 = gin::Dictionary::CreateEmpty(isolate);
+    bid2.Set("render", std::string("https://example3.test/ad3"));
+    bid2.Set("bid", 9.0);
+    bids.push_back(gin::ConvertToV8(isolate, bid2));
+
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "test", error_msgs, gin::ConvertToV8(isolate, bids));
+    EXPECT_THAT(error_msgs,
+                ElementsAre("https://example.test/script.js:3 Uncaught "
+                            "TypeError: more bids provided than permitted by "
+                            "auction configuration."));
+    auto bid_info = context_recycler.set_bid_bindings()->TakeBids();
+    EXPECT_EQ(0u, bid_info.size());
   }
 
   {
@@ -906,6 +966,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
         /*per_buyer_currency=*/std::nullopt,
+        /*multi_bid_limit=*/5,
         /*is_ad_excluded=*/ignore_arg_return_false,
         /*is_component_ad_excluded=*/ignore_arg_return_false);
 
@@ -929,12 +990,12 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     std::vector<std::string> error_msgs;
     Run(scope, script, "test", error_msgs, gin::ConvertToV8(isolate, bids));
     EXPECT_THAT(error_msgs, ElementsAre());
-    auto mojo_bids = context_recycler.set_bid_bindings()->TakeBids();
-    ASSERT_EQ(2u, mojo_bids.size());
-    EXPECT_EQ("https://example1.test/ad1", mojo_bids[0]->ad_descriptor.url);
-    EXPECT_EQ(10.0, mojo_bids[0]->bid);
-    EXPECT_EQ("https://example2.test/ad2", mojo_bids[1]->ad_descriptor.url);
-    EXPECT_EQ(9.5, mojo_bids[1]->bid);
+    auto bid_info = context_recycler.set_bid_bindings()->TakeBids();
+    ASSERT_EQ(2u, bid_info.size());
+    EXPECT_EQ("https://example1.test/ad1", bid_info[0].bid->ad_descriptor.url);
+    EXPECT_EQ(10.0, bid_info[0].bid->bid);
+    EXPECT_EQ("https://example2.test/ad2", bid_info[1].bid->ad_descriptor.url);
+    EXPECT_EQ(9.5, bid_info[1].bid->bid);
   }
 
   {
@@ -953,6 +1014,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
         /*per_buyer_currency=*/std::nullopt,
+        /*multi_bid_limit=*/5,
         /*is_ad_excluded=*/ignore_arg_return_false,
         /*is_component_ad_excluded=*/ignore_arg_return_false);
 
@@ -977,11 +1039,33 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     Run(scope, script, "test", error_msgs, gin::ConvertToV8(isolate, bids));
     EXPECT_THAT(error_msgs,
                 ElementsAre("https://example.test/script.js:3 Uncaught "
-                            "TypeError: generateBid() bids sequence entry: bid "
-                            "render URL 'https://example3.test/ad3' isn't one "
-                            "of the registered creative URLs."));
-    auto mojo_bids = context_recycler.set_bid_bindings()->TakeBids();
-    EXPECT_EQ(0u, mojo_bids.size());
+                            "TypeError: bids sequence entry: bid render URL "
+                            "'https://example3.test/ad3' isn't one of the "
+                            "registered creative URLs."));
+    auto bid_info = context_recycler.set_bid_bindings()->TakeBids();
+    EXPECT_EQ(0u, bid_info.size());
+  }
+  {
+    // Empty array is no bids.
+    v8::Isolate* isolate = helper_->isolate();
+    mojom::BidderWorkletNonSharedParamsPtr params =
+        mojom::BidderWorkletNonSharedParams::New();
+    ContextRecyclerScope scope(context_recycler);
+    params->ads.emplace();
+    context_recycler.set_bid_bindings()->ReInitialize(
+        base::TimeTicks::Now(),
+        /*has_top_level_seller_origin=*/false, params.get(),
+        /*per_buyer_currency=*/std::nullopt,
+        /*multi_bid_limit=*/5,
+        /*is_ad_excluded=*/ignore_arg_return_false,
+        /*is_component_ad_excluded=*/ignore_arg_return_false);
+
+    v8::LocalVector<v8::Value> bids(isolate);
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "test", error_msgs, gin::ConvertToV8(isolate, bids));
+    EXPECT_THAT(error_msgs, ElementsAre());
+    auto bid_info = context_recycler.set_bid_bindings()->TakeBids();
+    EXPECT_EQ(0u, bid_info.size());
   }
 }
 
@@ -1065,7 +1149,7 @@ TEST_F(ContextRecyclerTest, BidderLazyFiller) {
   ig_params->enable_bidding_signals_prioritization = true;
   ig_params->ads = {{{GURL("https://ad2.test/"), {"\"metadata 3\""}}}};
   ig_params->ad_components = {
-      {{GURL("https://ad-component2.test/"), absl::nullopt}}};
+      {{GURL("https://ad-component2.test/"), std::nullopt}}};
 
   mojom::BiddingBrowserSignalsPtr bs_params =
       mojom::BiddingBrowserSignals::New();
@@ -1194,7 +1278,10 @@ TEST_F(ContextRecyclerTest, SharedStorageMethods) {
 
   const std::string kInvalidValue(
       static_cast<size_t>(
-          blink::features::kMaxSharedStorageStringLength.Get()) +
+          // Divide the byte limit by two to get the character limit for a key
+          // or value.
+          blink::features::kMaxSharedStorageBytesPerOrigin.Get()) /
+              2 +
           1,
       '*');
 

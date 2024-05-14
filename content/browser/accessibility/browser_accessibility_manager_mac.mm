@@ -13,13 +13,13 @@
 #include "base/time/time.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #import "content/browser/accessibility/browser_accessibility_mac.h"
-#include "content/browser/accessibility/web_ax_platform_tree_manager_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/accessibility/platform/ax_platform_tree_manager_delegate.h"
 #include "ui/accessibility/platform/ax_private_webkit_constants_mac.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"
 
@@ -35,13 +35,13 @@ namespace content {
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
-    WebAXPlatformTreeManagerDelegate* delegate) {
+    ui::AXPlatformTreeManagerDelegate* delegate) {
   return new BrowserAccessibilityManagerMac(initial_tree, delegate);
 }
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-    WebAXPlatformTreeManagerDelegate* delegate) {
+    ui::AXPlatformTreeManagerDelegate* delegate) {
   return new BrowserAccessibilityManagerMac(
       BrowserAccessibilityManagerMac::GetEmptyDocument(), delegate);
 }
@@ -53,7 +53,7 @@ BrowserAccessibilityManager::ToBrowserAccessibilityManagerMac() {
 
 BrowserAccessibilityManagerMac::BrowserAccessibilityManagerMac(
     const ui::AXTreeUpdate& initial_tree,
-    WebAXPlatformTreeManagerDelegate* delegate)
+    ui::AXPlatformTreeManagerDelegate* delegate)
     : BrowserAccessibilityManager(delegate) {
   Initialize(initial_tree);
 }
@@ -63,7 +63,7 @@ BrowserAccessibilityManagerMac::~BrowserAccessibilityManagerMac() = default;
 // static
 ui::AXTreeUpdate BrowserAccessibilityManagerMac::GetEmptyDocument() {
   ui::AXNodeData empty_document;
-  empty_document.id = 1;
+  empty_document.id = ui::kInitialEmptyDocumentRootNodeID;
   empty_document.role = ax::mojom::Role::kRootWebArea;
   ui::AXTreeUpdate update;
   update.root_id = empty_document.id;
@@ -378,6 +378,7 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
     // Currently unused events on this platform.
     case ui::AXEventGenerator::Event::NONE:
     case ui::AXEventGenerator::Event::ACCESS_KEY_CHANGED:
+    case ui::AXEventGenerator::Event::ARIA_NOTIFICATIONS_POSTED:
     case ui::AXEventGenerator::Event::ATK_TEXT_OBJECT_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::ATOMIC_CHANGED:
     case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
@@ -386,7 +387,6 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::CHECKED_STATE_DESCRIPTION_CHANGED:
     case ui::AXEventGenerator::Event::CHILDREN_CHANGED:
     case ui::AXEventGenerator::Event::CONTROLS_CHANGED:
-    case ui::AXEventGenerator::Event::CLASS_NAME_CHANGED:
     case ui::AXEventGenerator::Event::DETAILS_CHANGED:
     case ui::AXEventGenerator::Event::DESCRIBED_BY_CHANGED:
     case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
@@ -413,7 +413,6 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::MULTISELECTABLE_STATE_CHANGED:
     case ui::AXEventGenerator::Event::OBJECT_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::ORIENTATION_CHANGED:
-    case ui::AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::PARENT_CHANGED:
     case ui::AXEventGenerator::Event::PLACEHOLDER_CHANGED:
     case ui::AXEventGenerator::Event::PORTAL_ACTIVATED:
@@ -593,19 +592,6 @@ id BrowserAccessibilityManagerMac::GetWindow() {
   return delegate()->AccessibilityGetNativeViewAccessibleForWindow();
 }
 
-bool BrowserAccessibilityManagerMac::IsChromeNewTabPage() {
-  if (!delegate() || !IsRootFrameManager())
-    return false;
-  content::WebContents* web_contents = WebContents::FromRenderFrameHost(
-      delegate()->AccessibilityRenderFrameHost());
-  if (!web_contents)
-    return false;
-  const GURL& url = web_contents->GetVisibleURL();
-  return url == GURL("chrome://newtab/") ||
-         url == GURL("chrome://new-tab-page") ||
-         url == GURL("chrome-search://local-ntp/local-ntp.html");
-}
-
 bool BrowserAccessibilityManagerMac::ShouldFireLoadCompleteNotification() {
   // If it's not the top-level document, we shouldn't fire AXLoadComplete.
   if (!IsRootFrameManager()) {
@@ -625,7 +611,7 @@ bool BrowserAccessibilityManagerMac::ShouldFireLoadCompleteNotification() {
   // AXLoadComplete event. On Chrome's new tab page, focus should stay
   // in the omnibox, so we purposefully do not fire the AXLoadComplete
   // event in this case.
-  if (IsChromeNewTabPage()) {
+  if (delegate()->ShouldSuppressAXLoadComplete()) {
     return false;
   }
 

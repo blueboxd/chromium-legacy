@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//components/services/screen_ai/buildflags/features.gni")
 import("//pdf/features.gni")
 import("//ui/webui/resources/tools/build_webui.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
@@ -68,6 +67,7 @@ build_webui("build") {
     "pdf_print_wrapper.ts",
     "pdf_scripting_api.ts",
     "pdf_viewer_base.ts",
+    "pdf_viewer_private_proxy.ts",
     "pdf_viewer_utils.ts",
     "pdf_viewer_wrapper.ts",
     "pdf_internal_plugin_wrapper.ts",
@@ -87,10 +87,6 @@ build_webui("build") {
       "ink/ink_api.ts",
       "ink_controller.ts",
     ]
-  }
-
-  if (enable_screen_ai_service) {
-    non_web_component_files += [ "pdf_viewer_private_proxy.ts" ]
   }
 
   css_files = [
@@ -135,9 +131,9 @@ build_webui("build") {
   grd_resource_path_prefix = "pdf"
 
   # Optimization parameters
+  webui_host = "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai"
   optimize = optimize_webui
   if (optimize) {
-    optimize_webui_host = "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai"
     optimize_webui_in_files = [
       "pdf_viewer_wrapper.js",
       "pdf_print_wrapper.js",

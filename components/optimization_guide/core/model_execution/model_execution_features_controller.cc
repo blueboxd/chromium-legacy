@@ -69,8 +69,11 @@ enum class FeatureCurrentlyEnabledResult {
   // Returned result as not enabled because model execution capability was
   // disabled for the user account.
   kNotEnabledModelExecutionCapability = 5,
+  // Returned result as enabled because the feature has graduated from
+  // experimental AI settings.
+  kEnabledByGraduation = 6,
   // Updates should match with FeatureCurrentlyEnabledResult enum in enums.xml.
-  kMaxValue = kNotEnabledModelExecutionCapability
+  kMaxValue = kEnabledByGraduation
 };
 
 // Util class for recording the construction and validation of Settings
@@ -165,7 +168,36 @@ bool ModelExecutionFeaturesController::ShouldFeatureBeCurrentlyEnabledForUser(
     proto::ModelExecutionFeature feature) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  if (!ShouldCheckSettingForFeature(feature)) {
+    return false;
+  }
+
   ScopedFeatureCurrentlyEnabledHistogramRecorder metrics_recorder;
+
+  if (features::internal::IsGraduatedFeature(feature)) {
+    UserValidityResult user_validity = GetCurrentUserValidityResult(feature);
+    // TODO(b/328523679): also report the FeatureCurrentlyEnabledResult values
+    // below for non-graduated features.
+    FeatureCurrentlyEnabledResult fcer;
+    switch (user_validity) {
+      case UserValidityResult::kValid:
+        fcer = FeatureCurrentlyEnabledResult::kEnabledByGraduation;
+        break;
+      case UserValidityResult::kInvalidUnsignedUser:
+        fcer = FeatureCurrentlyEnabledResult::kNotEnabledUnsignedUser;
+        break;
+      case UserValidityResult::kInvalidEnterprisePolicy:
+        fcer = FeatureCurrentlyEnabledResult::kNotEnabledEnterprisePolicy;
+        break;
+      case UserValidityResult::kInvalidModelExecutionCapability:
+        fcer =
+            FeatureCurrentlyEnabledResult::kNotEnabledModelExecutionCapability;
+        break;
+    };
+    metrics_recorder.SetResult(feature, fcer);
+    return user_validity == UserValidityResult::kValid;
+  }
+
   bool is_enabled = GetPrefState(feature) == prefs::FeatureOptInState::kEnabled;
   metrics_recorder.SetResult(
       feature, is_enabled
@@ -190,7 +222,6 @@ prefs::FeatureOptInState ModelExecutionFeaturesController::GetPrefState(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!ShouldCheckSettingForFeature(feature)) {
-    NOTREACHED();
     return prefs::FeatureOptInState::kNotInitialized;
   }
 
@@ -217,6 +248,10 @@ ModelExecutionFeaturesController::GetCurrentUserValidityResult(
     return ModelExecutionFeaturesController::UserValidityResult::
         kInvalidModelExecutionCapability;
   }
+
+  DCHECK(!is_signed_in_ || can_use_model_execution_features_)
+      << "At this point, the user must be either signed out or allowed to use "
+         "MES";
 
   if (GetEnterprisePolicyValue(feature) ==
       model_execution::prefs::ModelExecutionEnterprisePolicyValue::kDisable) {
@@ -252,6 +287,13 @@ bool ModelExecutionFeaturesController::IsSettingVisible(
       return false;
     case ModelExecutionFeaturesController::UserValidityResult::kValid:
       break;
+  }
+
+  // Graduated feature should never be visible in settings.
+  if (features::internal::IsGraduatedFeature(feature)) {
+    metrics_recorder.SetResult(
+        feature, SettingsVisibilityResult::kNotVisibleGraduatedFeature);
+    return false;
   }
 
   // If the setting is currently enabled by user, then we should show the
@@ -461,23 +503,14 @@ void ModelExecutionFeaturesController::OnMainToggleSettingStatePrefChanged() {
     if (!ShouldCheckSettingForFeature(feature)) {
       continue;
     }
-
-    // If the main toggle has been switched from on to off, disable all the
-    // features.
-    if (feature_optin_state == prefs::FeatureOptInState::kDisabled) {
-      browser_context_profile_service_->SetInteger(
-          prefs::GetSettingEnabledPrefName(feature),
-          static_cast<int>(feature_optin_state));
+    // Do not change the pref for invisible features.
+    if (!IsSettingVisible(feature)) {
       continue;
     }
-    // If the main toggle has been switched from off to on, then turn on
-    // only the features that are actually visible to the user.
-    if (IsSettingVisible(feature)) {
-      browser_context_profile_service_->SetInteger(
-          prefs::GetSettingEnabledPrefName(feature),
-          static_cast<int>(feature_optin_state));
-      continue;
-    }
+    // Set the feature pref the same state as the main toggle.
+    browser_context_profile_service_->SetInteger(
+        prefs::GetSettingEnabledPrefName(feature),
+        static_cast<int>(feature_optin_state));
   }
 }
 

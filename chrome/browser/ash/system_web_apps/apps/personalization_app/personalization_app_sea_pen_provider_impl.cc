@@ -5,21 +5,16 @@
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_sea_pen_provider_impl.h"
 
 #include <memory>
-#include <string>
 #include <string_view>
 
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/image_util.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller.h"
-#include "ash/wallpaper/wallpaper_utils/sea_pen_metadata_utils.h"
+#include "ash/wallpaper/sea_pen_wallpaper_manager.h"
 #include "ash/webui/common/mojom/sea_pen.mojom.h"
-#include "base/path_service.h"
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_sea_pen_provider_base.h"
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_utils.h"
-#include "chrome/browser/ash/wallpaper/wallpaper_enumerator.h"
 #include "chrome/browser/ash/wallpaper_handlers/wallpaper_fetcher_delegate.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_paths.h"
 #include "components/manta/features.h"
 #include "content/public/browser/web_ui.h"
 
@@ -46,45 +41,45 @@ void PersonalizationAppSeaPenProviderImpl::BindInterface(
 }
 
 void PersonalizationAppSeaPenProviderImpl::SelectRecentSeaPenImageInternal(
-    const base::FilePath& path,
+    const uint32_t id,
     SelectRecentSeaPenImageCallback callback) {
   ash::WallpaperController* wallpaper_controller = WallpaperController::Get();
   DCHECK(wallpaper_controller);
-  wallpaper_controller->SetSeaPenWallpaperFromFile(GetAccountId(profile_), path,
+  wallpaper_controller->SetSeaPenWallpaperFromFile(GetAccountId(profile_), id,
                                                    std::move(callback));
 }
 
 void PersonalizationAppSeaPenProviderImpl::GetRecentSeaPenImagesInternal(
     GetRecentSeaPenImagesCallback callback) {
-  base::FilePath wallpaper_dir;
-  CHECK(
-      base::PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
-  const base::FilePath sea_pen_wallpaper_dir =
-      wallpaper_dir.Append("sea_pen/")
-          .Append(GetAccountId(profile_).GetAccountIdKey());
-  ash::EnumerateJpegFilesFromDir(profile_, sea_pen_wallpaper_dir,
-                                 std::move(callback));
+  auto* sea_pen_wallpaper_manager = SeaPenWallpaperManager::GetInstance();
+  DCHECK(sea_pen_wallpaper_manager);
+  sea_pen_wallpaper_manager->GetImageIds(GetAccountId(profile_),
+                                         std::move(callback));
 }
 
 void PersonalizationAppSeaPenProviderImpl::
-    GetRecentSeaPenImageThumbnailInternal(const base::FilePath& path,
-                                          DecodeImageCallback callback) {
-  image_util::DecodeImageFile(std::move(callback), path);
+    GetRecentSeaPenImageThumbnailInternal(
+        const uint32_t id,
+        SeaPenWallpaperManager::GetImageAndMetadataCallback callback) {
+  auto* sea_pen_wallpaper_manager = SeaPenWallpaperManager::GetInstance();
+  DCHECK(sea_pen_wallpaper_manager);
+  sea_pen_wallpaper_manager->GetImageAndMetadata(GetAccountId(profile_), id,
+                                                 std::move(callback));
 }
 
 void PersonalizationAppSeaPenProviderImpl::DeleteRecentSeaPenImage(
-    const base::FilePath& path,
+    const uint32_t id,
     DeleteRecentSeaPenImageCallback callback) {
-  if (recent_sea_pen_images_.count(path) == 0) {
-    sea_pen_receiver_.ReportBadMessage("Invalid Sea Pen image received");
+  if (recent_sea_pen_image_ids_.count(id) == 0) {
+    sea_pen_receiver_.ReportBadMessage("Invalid recent Sea Pen image received");
     return;
   }
 
-  auto* wallpaper_controller = ash::WallpaperController::Get();
-  DCHECK(wallpaper_controller);
+  auto* sea_pen_wallpaper_manager = SeaPenWallpaperManager::GetInstance();
+  DCHECK(sea_pen_wallpaper_manager);
 
-  wallpaper_controller->DeleteRecentSeaPenImage(GetAccountId(profile_), path,
-                                                std::move(callback));
+  sea_pen_wallpaper_manager->DeleteSeaPenImage(GetAccountId(profile_), id,
+                                               std::move(callback));
 }
 
 void PersonalizationAppSeaPenProviderImpl::OnFetchWallpaperDoneInternal(

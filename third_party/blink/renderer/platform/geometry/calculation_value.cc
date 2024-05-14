@@ -53,6 +53,10 @@ float CalculationValue::Evaluate(float max_value,
 }
 
 bool CalculationValue::operator==(const CalculationValue& other) const {
+  if (IsNonNegative() != other.IsNonNegative()) {
+    return false;
+  }
+
   if (IsExpression())
     return other.IsExpression() && *data_.expression == *other.data_.expression;
   return !other.IsExpression() && Pixels() == other.Pixels() &&
@@ -140,12 +144,23 @@ scoped_refptr<const CalculationValue> CalculationValue::Zoom(
   return CreateSimplified(data_.expression->Zoom(factor), GetValueRange());
 }
 
-bool CalculationValue::HasAnchorQueries() const {
-  return IsExpression() && data_.expression->HasAnchorQueries();
+bool CalculationValue::HasAuto() const {
+  return IsExpression() && data_.expression->HasAuto();
 }
 
 bool CalculationValue::HasContentOrIntrinsicSize() const {
   return IsExpression() && data_.expression->HasContentOrIntrinsicSize();
+}
+
+bool CalculationValue::HasAutoOrContentOrIntrinsicSize() const {
+  return IsExpression() && data_.expression->HasAutoOrContentOrIntrinsicSize();
+}
+
+bool CalculationValue::HasPercent() const {
+  if (!IsExpression()) {
+    return HasExplicitPercent();
+  }
+  return data_.expression->HasPercent();
 }
 
 }  // namespace blink

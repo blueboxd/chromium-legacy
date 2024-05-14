@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.toolbar.top;
 
+import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.view.View;
@@ -16,13 +17,13 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneShotCallback;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.hub.HubFieldTrial;
 import org.chromium.chrome.browser.layouts.LayoutManager;
@@ -32,12 +33,14 @@ import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObscuringHandler;
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
+import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider.IncognitoStateObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.theme.ThemeColorProvider;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
+import org.chromium.chrome.browser.toolbar.ToolbarFeatures;
 import org.chromium.chrome.browser.toolbar.ToolbarProgressBar;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarButtonVariant;
@@ -49,7 +52,7 @@ import org.chromium.chrome.browser.toolbar.top.ToolbarTablet.OfflineDownloader;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
-import org.chromium.chrome.features.start_surface.StartSurfaceState;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.util.TokenHolder;
@@ -95,8 +98,6 @@ public class TopToolbarCoordinator implements Toolbar {
 
     private final ToolbarLayout mToolbarLayout;
 
-    private final boolean mIsStartSurfaceRefactorEnabled;
-
     /**
      * The coordinator for the tab switcher mode toolbar (phones only). This will be lazily created
      * after ToolbarLayout is inflated.
@@ -128,6 +129,9 @@ public class TopToolbarCoordinator implements Toolbar {
      * components and send the rendering toolbar color to the ToolbarColorObserver.
      */
     private ToolbarColorObserverManager mToolbarColorObserverManager;
+
+    private IncognitoStateProvider mIncognitoStateProvider;
+    private IncognitoStateObserver mIncognitoStateObserver;
 
     private TabObscuringHandler mTabObscuringHandler;
 
@@ -169,7 +173,6 @@ public class TopToolbarCoordinator implements Toolbar {
      *     on Start surface. On NTP, the logo is in the new tab page layout instead of the toolbar
      *     and the logo click events are processed in NewTabPageLayout. So this callback will only
      *     be called on Start surface.
-     * @param isStartSurfaceRefactorEnabled Whether Start surface refactoring is enabled.
      * @param constraintsSupplier Supplier for browser controls constraints.
      * @param compositorInMotionSupplier Whether there is an ongoing touch or gesture.
      * @param browserStateBrowserControlsVisibilityDelegate Used to keep controls locked when
@@ -206,7 +209,6 @@ public class TopToolbarCoordinator implements Toolbar {
             OfflineDownloader offlineDownloader,
             boolean initializeWithIncognitoColors,
             Callback<LoadUrlParams> startSurfaceLogoClickedCallback,
-            boolean isStartSurfaceRefactorEnabled,
             ObservableSupplier<Integer> constraintsSupplier,
             ObservableSupplier<Boolean> compositorInMotionSupplier,
             BrowserStateBrowserControlsVisibilityDelegate
@@ -225,8 +227,7 @@ public class TopToolbarCoordinator implements Toolbar {
                         () -> toolbarDataProvider.getTab());
         mResourceManagerSupplier = resourceManagerSupplier;
         mTabModelSelectorSupplier = tabModelSelectorSupplier;
-        mIsStartSurfaceRefactorEnabled = isStartSurfaceRefactorEnabled;
-        mToolbarColorObserverManager = new ToolbarColorObserverManager(mToolbarLayout.getContext());
+        mToolbarColorObserverManager = new ToolbarColorObserverManager();
         mToolbarLayout.setToolbarColorObserver(mToolbarColorObserverManager);
         mTabObscuringHandler = tabObscuringHandler;
 
@@ -242,7 +243,6 @@ public class TopToolbarCoordinator implements Toolbar {
                             isTabToGtsAnimationEnabled,
                             isIncognitoModeEnabledSupplier,
                             startSurfaceLogoClickedCallback,
-                            mIsStartSurfaceRefactorEnabled,
                             shouldCreateLogoInStartToolbar,
                             this::onStartSurfaceToolbarTransitionFinished,
                             mToolbarColorObserverManager);
@@ -376,7 +376,7 @@ public class TopToolbarCoordinator implements Toolbar {
         }
 
         int tabStripHeightResource = mToolbarLayout.getTabStripHeightFromResource();
-        if (ChromeFeatureList.sDynamicTopChrome.isEnabled() && tabStripHeightResource > 0) {
+        if (ToolbarFeatures.isDynamicTopChromeEnabled() && tabStripHeightResource > 0) {
             mTabStripTransitionCoordinator =
                     new TabStripTransitionCoordinator(
                             browserControlsVisibilityManager,
@@ -478,6 +478,7 @@ public class TopToolbarCoordinator implements Toolbar {
             mTabStripTransitionCoordinator.destroy();
             mTabStripTransitionCoordinator = null;
         }
+        cleanUpIncognitoStateObserver();
     }
 
     @Override
@@ -660,8 +661,7 @@ public class TopToolbarCoordinator implements Toolbar {
 
     @Override
     public int getTabStripHeight() {
-        if (ChromeFeatureList.sDynamicTopChrome.isEnabled()
-                && mTabStripTransitionCoordinator != null) {
+        if (ToolbarFeatures.isDynamicTopChromeEnabled() && mTabStripTransitionCoordinator != null) {
             return mTabStripTransitionCoordinator.getTabStripHeight();
         }
         return mToolbarLayout.getTabStripHeightFromResource();
@@ -712,22 +712,35 @@ public class TopToolbarCoordinator implements Toolbar {
 
     /**
      * @param provider The provider used to determine incognito state.
-     * @param overviewIncognitoSupplier Optional override for whether the overview is showing
-     *     incognito UI.
+     * @param overviewColorSupplier Optional override for toolbar color, otherwise it is derived
+     *     from incognito state.
      */
     public void setIncognitoStateProvider(
-            IncognitoStateProvider provider, @Nullable BooleanSupplier overviewIncognitoSupplier) {
+            IncognitoStateProvider provider,
+            @Nullable ObservableSupplier<Integer> overviewColorSupplier) {
         if (mTabSwitcherModeCoordinator != null) {
             mTabSwitcherModeCoordinator.setIncognitoStateProvider(provider);
         } else if (mStartSurfaceToolbarCoordinator != null) {
             mStartSurfaceToolbarCoordinator.setIncognitoStateProvider(provider);
         }
 
-        BooleanSupplier nonNullSupplier =
-                overviewIncognitoSupplier == null
-                        ? provider::isIncognitoSelected
-                        : overviewIncognitoSupplier;
-        mToolbarColorObserverManager.setIncognitoStateProvider(nonNullSupplier);
+        if (overviewColorSupplier == null) {
+            assert mToolbarLayout != null;
+            cleanUpIncognitoStateObserver();
+            ObservableSupplierImpl<Integer> supplierImpl = new ObservableSupplierImpl<>();
+            Context context = mToolbarLayout.getContext();
+            mIncognitoStateObserver =
+                    (boolean isIncognito) -> {
+                        @ColorInt
+                        int color = ChromeColors.getPrimaryBackgroundColor(context, isIncognito);
+                        supplierImpl.set(color);
+                    };
+            mIncognitoStateProvider = provider;
+            provider.addIncognitoStateObserverAndTrigger(mIncognitoStateObserver);
+            mToolbarColorObserverManager.setOverviewColorSupplier(supplierImpl);
+        } else {
+            mToolbarColorObserverManager.setOverviewColorSupplier(overviewColorSupplier);
+        }
     }
 
     /**
@@ -789,21 +802,17 @@ public class TopToolbarCoordinator implements Toolbar {
 
     /**
      * Update the start surface toolbar state.
-     * @param newState New Start Surface State.
+     *
      * @param requestToShow Whether or not request showing the start surface toolbar.
      */
     public void updateStartSurfaceToolbarState(
-            @Nullable @StartSurfaceState Integer newState,
-            boolean requestToShow,
-            @Nullable @LayoutType Integer newLayoutType) {
+            boolean requestToShow, @Nullable @LayoutType Integer newLayoutType) {
         if (mStartSurfaceToolbarCoordinator == null
                 || mToolbarLayout.getToolbarDataProvider() == null) {
             return;
         }
-        assert (mIsStartSurfaceRefactorEnabled && newLayoutType != null)
-                || (!mIsStartSurfaceRefactorEnabled && newState != null);
-        mStartSurfaceToolbarCoordinator.onStartSurfaceStateChanged(
-                newState, requestToShow, newLayoutType);
+        assert newLayoutType != null;
+        mStartSurfaceToolbarCoordinator.onStartSurfaceStateChanged(requestToShow, newLayoutType);
         updateToolbarLayoutVisibility();
         updateButtonVisibility();
     }
@@ -841,6 +850,14 @@ public class TopToolbarCoordinator implements Toolbar {
     private void onStartSurfaceToolbarTransitionFinished(boolean nowShowing) {
         mStartSurfaceToolbarVisible = nowShowing;
         updateToolbarLayoutVisibility();
+    }
+
+    private void cleanUpIncognitoStateObserver() {
+        if (mIncognitoStateProvider != null && mIncognitoStateObserver != null) {
+            mIncognitoStateProvider.removeObserver(mIncognitoStateObserver);
+            mIncognitoStateProvider = null;
+            mIncognitoStateObserver = null;
+        }
     }
 
     @Override

@@ -5,6 +5,7 @@
 <translation id="1036348656032585052">停用</translation>
 <translation id="1044891598689252897">網站將正常運作</translation>
 <translation id="1073417869336441572">請說明你允許使用第三方 Cookie 的原因，協助我們改善 Chrome。<ph name="BEGIN_LINK" />傳送意見<ph name="END_LINK" /></translation>
+<translation id="1113435009358629918">隱藏價格下跌資訊卡</translation>
 <translation id="1178581264944972037">暫停</translation>
 <translation id="1181037720776840403">移除</translation>
 <translation id="1192844206376121885">這會刪除 <ph name="ORIGIN" /> 儲存的所有資料和 Cookie。</translation>
@@ -21,7 +22,6 @@
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="1384959399684842514">已暫停下載</translation>
 <translation id="1415402041810619267">縮短咗網址</translation>
-<translation id="1434873037477293673">價格下跌資訊卡</translation>
 <translation id="1448064542941920355">縮小</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{<ph name="SITE_COUNT" /> 個網站}other{<ph name="SITE_COUNT" /> 個網站}}</translation>
 <translation id="1510341833810331442">不允許網站在裝置上儲存資料</translation>
@@ -93,12 +93,14 @@
 <translation id="2498359688066513246">說明和意見反映</translation>
 <translation id="2501278716633472235">返回</translation>
 <translation id="2546283357679194313">Cookie 和網站數據</translation>
+<translation id="2550801787432930915">價格下跌資訊卡</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{已封鎖 1 個 Cookie}other{已封鎖 # 個 Cookie}}</translation>
 <translation id="2570922361219980984">此裝置的位置資訊存取權亦已關閉，請在「<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />」中開啟。</translation>
 <translation id="257931822824936280">已展開 - 點擊即可收合。</translation>
 <translation id="2586657967955657006">剪貼簿</translation>
 <translation id="2597457036804169544">不要為網站套用深色主題背景</translation>
 <translation id="2606760465469169465">自動驗證</translation>
+<translation id="2613007545732217283"><ph name="HOST_NAME" /> <ph name="SEPARATOR" /> <ph name="RECENCY" /></translation>
 <translation id="2621115761605608342">允許特定網站執行 JavaScript。</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2677748264148917807">離開</translation>
@@ -121,7 +123,6 @@
 <translation id="2979365474350987274">限制使用第三方 Cookie</translation>
 <translation id="3008272652534848354">重設權限</translation>
 <translation id="301521992641321250">已自動封鎖</translation>
-<translation id="3025010840409371499"><ph name="RECENCY" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="3069226013421428034">允許特定網站使用第三方登入功能。</translation>
 <translation id="3082992102194421695">{COUNT,plural, =1{明天到期}other{# 天後到期}}</translation>
 <translation id="310297983047869047">上一張投影片</translation>
@@ -188,7 +189,6 @@
 <translation id="4149994727733219643">使用簡化檢視模式查看網頁</translation>
 <translation id="4151930093518524179">預設縮放</translation>
 <translation id="4165986682804962316">網站設定</translation>
-<translation id="4169019654293892025">隱藏<ph name="TITLE_OF_MODULE" /></translation>
 <translation id="4169549551965910670">已連線至 USB 裝置</translation>
 <translation id="4194328954146351878">在允許網站查看和變更 NFC 裝置上的資料前先詢問您 (建議)</translation>
 <translation id="4200726100658658164">開啟位置設定</translation>
@@ -213,6 +213,7 @@
 <translation id="4566417217121906555">將麥克風設定為靜音</translation>
 <translation id="4570913071927164677">詳細資料</translation>
 <translation id="4598549027014564149">在無痕模式下，網站無法使用 Cookie 瞭解您的跨網站瀏覽活動 (即使是相關網站)，因此無法根據瀏覽活動提供個人化廣告等服務。部分網站的功能可能會無法正常運作。</translation>
+<translation id="4619615317237390068">在其他裝置上開啟的分頁</translation>
 <translation id="4644713492825682049">刪除並重設</translation>
 <translation id="4645575059429386691">由您的家長管理</translation>
 <translation id="4670064810192446073">虛擬實境</translation>
@@ -344,6 +345,7 @@
 <translation id="6612358246767739896">受保護內容</translation>
 <translation id="662080504995468778">不離開</translation>
 <translation id="6653342741369270081">按下返回按鈕即可退出全螢幕。</translation>
+<translation id="6670377348676659110">{TILE_COUNT,plural, =1{隱藏「繼續使用此分頁」}other{隱藏「繼續使用這些分頁」}}</translation>
 <translation id="6689172468748959065">個人檔案相片</translation>
 <translation id="6697925417670533197">正在下載的項目</translation>
 <translation id="6722828510648505498">封鎖來自身分服務的登入提示。</translation>
@@ -366,6 +368,7 @@
 <translation id="702275896380648118">此網站會判斷您喜歡的內容，以便向其他網站建議廣告。此網站亦會從 Chrome 取得您的廣告主題，以便為您顯示更相關的廣告。</translation>
 <translation id="7053983685419859001">封鎖</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{已選取 1 個項目}other{已選取 # 個項目}}</translation>
+<translation id="708014373017851679">「<ph name="APP_NAME" />」版本已過期。請更新應用程式。</translation>
 <translation id="7087918508125750058">揀咗 <ph name="ITEM_COUNT" /> 個。選項喺螢幕頂部</translation>
 <translation id="7141896414559753902">禁止網站顯示彈出式視窗和重新導向 (建議)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -402,7 +405,7 @@
 <translation id="7667547420449112975">《綠野仙蹤》</translation>
 <translation id="7684642910516280563">不允許網站使用第三方 Cookie</translation>
 <translation id="7719367874908701697">頁面縮放</translation>
-<translation id="7759147511335618829">控制 MIDI 裝置及重設程式</translation>
+<translation id="7759147511335618829">MIDI 裝置控制和重新編程</translation>
 <translation id="7781829728241885113">昨天</translation>
 <translation id="7791543448312431591">新增</translation>
 <translation id="7801888679188438140">{TILE_COUNT,plural, =1{繼續使用此分頁}other{繼續使用這些分頁}}</translation>

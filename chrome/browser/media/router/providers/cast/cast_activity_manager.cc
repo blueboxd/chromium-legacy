@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/containers/contains.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -1053,7 +1052,8 @@ std::string CastActivityManager::ChooseAppId(
     if (sink_capabilities.HasAll(info.required_capabilities))
       return info.app_id;
   }
-  NOTREACHED() << "Can't determine app ID from capabilities.";
+  DUMP_WILL_BE_NOTREACHED_NORETURN()
+      << "Can't determine app ID from capabilities.";
   return source.app_infos()[0].app_id;
 }
 

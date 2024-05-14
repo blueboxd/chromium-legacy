@@ -27,7 +27,7 @@
 #include "chrome/browser/ui/views/permissions/chip_controller.h"
 #include "components/permissions/permission_prompt.h"
 #include "components/security_state/core/security_state.h"
-#include "services/device/public/cpp/geolocation/geolocation_manager.h"
+#include "services/device/public/cpp/geolocation/geolocation_system_permission_manager.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -37,6 +37,10 @@
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/drag_controller.h"
+
+#if BUILDFLAG(IS_MAC)
+#include "components/webapps/common/web_app_id.h"
+#endif
 
 class CommandUpdater;
 class ContentSettingBubbleModelDelegate;
@@ -64,18 +68,19 @@ class Label;
 //   of the URL bar strip and contains its content.
 //
 /////////////////////////////////////////////////////////////////////////////
-class LocationBarView : public LocationBar,
-                        public LocationBarTesting,
-                        public views::View,
-                        public views::DragController,
-                        public views::AnimationDelegateViews,
-                        public IconLabelBubbleView::Delegate,
-                        public LocationIconView::Delegate,
-                        public ContentSettingImageView::Delegate,
+class LocationBarView
+    : public LocationBar,
+      public LocationBarTesting,
+      public views::View,
+      public views::DragController,
+      public views::AnimationDelegateViews,
+      public IconLabelBubbleView::Delegate,
+      public LocationIconView::Delegate,
+      public ContentSettingImageView::Delegate,
 #if BUILDFLAG(IS_MAC)
-                        public device::GeolocationManager::PermissionObserver,
+      public device::GeolocationSystemPermissionManager::PermissionObserver,
 #endif
-                        public PageActionIconView::Delegate {
+      public PageActionIconView::Delegate {
   METADATA_HEADER(LocationBarView, views::View)
 
  public:
@@ -209,7 +214,7 @@ class LocationBarView : public LocationBar,
       override;
 
 #if BUILDFLAG(IS_MAC)
-  // GeolocationManager::PermissionObserver:
+  // GeolocationSystemPermissionManager::PermissionObserver:
   void OnSystemPermissionUpdated(
       device::LocationSystemPermissionStatus new_status) override;
 #endif
@@ -265,14 +270,6 @@ class LocationBarView : public LocationBar,
                            IMEInlineAutocompletePosition);
   using ContentSettingViews =
       std::vector<raw_ptr<ContentSettingImageView, VectorExperimental>>;
-
-#if BUILDFLAG(IS_MAC)
-  // Manage a subscription to GeolocationManager, which may
-  // outlive this object.
-  base::ScopedObservation<device::GeolocationManager,
-                          device::GeolocationManager::PermissionObserver>
-      geolocation_permission_observation_{this};
-#endif
 
   // Returns the amount of space required to the left of the omnibox text.
   int GetMinimumLeadingWidth() const;
@@ -391,6 +388,22 @@ class LocationBarView : public LocationBar,
       const ui::MouseEvent& event) const;
 
   bool GetPopupMode() const;
+
+#if BUILDFLAG(IS_MAC)
+  // Called when app shims change.
+  void OnAppShimChanged(const webapps::AppId& app_id);
+
+  // Manage a subscription to GeolocationSystemPermissionManager, which may
+  // outlive this object.
+  base::ScopedObservation<
+      device::GeolocationSystemPermissionManager,
+      device::GeolocationSystemPermissionManager::PermissionObserver>
+      geolocation_permission_observation_{this};
+
+  // Manage a subscription to AppShimRegistry; used to monitor for changes
+  // to system level notification permissions.
+  base::CallbackListSubscription app_shim_observation_;
+#endif
 
   // The Browser this LocationBarView is in.  Note that at least
   // ash::SimpleWebViewDialog uses a LocationBarView outside any browser

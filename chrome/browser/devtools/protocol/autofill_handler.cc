@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/content/browser/scoped_autofill_managers_observation.h"
 #include "components/autofill/core/browser/autofill_address_util.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -163,9 +164,11 @@ protocol::Response AutofillHandler::Trigger(
 
   static_cast<autofill::BrowserAutofillManager&>(
       autofill_driver->GetAutofillManager())
-      .FillCreditCardForm(field_data->first, field_data->second,
-                          tmp_autofill_card, base::UTF8ToUTF16(card->GetCvc()),
-                          {.trigger_source = AutofillTriggerSource::kPopup});
+      .FillOrPreviewCreditCardForm(
+          autofill::mojom::ActionPersistence::kFill, field_data->first,
+          field_data->second, tmp_autofill_card,
+          base::UTF8ToUTF16(card->GetCvc()),
+          {.trigger_source = AutofillTriggerSource::kPopup});
 
   return Response::Success();
 }
@@ -375,6 +378,29 @@ void AutofillHandler::OnFillOrPreviewDataModelForm(
           .Build());
 }
 
+void AutofillHandler::OnAutofillManagerDestroyed(
+    autofill::AutofillManager& manager) {
+  autofill_manager_observation_.Reset();
+}
+
+void AutofillHandler::OnContentAutofillDriverFactoryDestroyed(
+    autofill::ContentAutofillDriverFactory& factory) {
+  autofill_manager_observation_.Reset();
+}
+
+void AutofillHandler::OnContentAutofillDriverCreated(
+    autofill::ContentAutofillDriverFactory&,
+    autofill::ContentAutofillDriver& new_driver) {
+  // If the outermost frame driver (returned by `GetAutofillDriver()`) was
+  // recreated (e.g. happens after certain navigations) we need to resubscribe
+  // to the autofill manager, which is also recreated, to keep getting observer
+  // callbacks like `OnFillOrPreviewDataModelForm`.
+  if (enabled_ && &new_driver == GetAutofillDriver()) {
+    autofill_manager_observation_.Reset();
+    autofill_manager_observation_.Observe(&new_driver.GetAutofillManager());
+  }
+}
+
 autofill::ContentAutofillDriver* AutofillHandler::GetAutofillDriver() {
   auto host = content::DevToolsAgentHost::GetForId(target_id_);
   CHECK(host);
@@ -399,6 +425,9 @@ Response AutofillHandler::Enable() {
 
     autofill::ContentAutofillDriver* driver = GetAutofillDriver();
     if (driver && host->GetType() == content::DevToolsAgentHost::kTypePage) {
+      factory_observation_.Observe(
+          autofill::ContentAutofillDriverFactory::FromWebContents(
+              host->GetWebContents()));
       autofill_manager_observation_.Observe(&driver->GetAutofillManager());
     }
   }

@@ -4,7 +4,8 @@
 
 import type {VolumeInfo} from '../../background/js/volume_info.js';
 import {isOneDriveId, isSameEntry, sortEntries} from '../../common/js/entry_utils.js';
-import {EntryList, FilesAppEntry, VolumeEntry} from '../../common/js/files_app_entry_types.js';
+import type {FilesAppEntry} from '../../common/js/files_app_entry_types.js';
+import {EntryList, VolumeEntry} from '../../common/js/files_app_entry_types.js';
 import {isGuestOsEnabled, isSinglePartitionFormatEnabled} from '../../common/js/flags.js';
 import {str} from '../../common/js/translations.js';
 import type {GetActionFactoryPayload} from '../../common/js/util.js';
@@ -143,14 +144,14 @@ function addVolumeReducer(currentState: State, payload: {
   // volume manager.
   volume.isDisabled = !!newVolumeEntry.disabled;
 
-  // Handles volumes nested inside MyFiles.
+  // Handles volumes nested inside MyFiles, if local user files are allowed.
   // It creates a placeholder for MyFiles if MyFiles volume isn't mounted yet.
   const myFilesNestedVolumeTypes = getVolumeTypesNestedInMyFiles();
   const {myFilesEntry} = getMyFiles(currentState);
   // For volumes which are supposed to be nested inside MyFiles (e.g. Android,
   // Crostini, GuestOS), we need to nest them into MyFiles and remove the
   // placeholder fake entry if existed.
-  if (myFilesNestedVolumeTypes.has(volume.volumeType)) {
+  if (myFilesEntry && myFilesNestedVolumeTypes.has(volume.volumeType)) {
     volume.prefixKey = myFilesEntry.toURL();
 
     const myFilesEntryKey = myFilesEntry.toURL();
@@ -250,17 +251,23 @@ function addVolumeReducer(currentState: State, payload: {
       currentState.uiEntries =
           [...currentState.uiEntries, driveFakeRoot.toURL()];
     }
-    const driveRootFileDataChildren: FileKey[] = [];
-
-    appendChildIfNotExisted(driveFakeRoot, newVolumeEntry);
-    driveRootFileDataChildren.push(volumeRootKey);
-
     // We want the order to be
     // - My Drive
     // - Shared Drives (if the user has any)
     // - Computers (if the user has any)
     // - Shared with me
     // - Offline
+    //
+    // Clear all existing UI children to make sure we can maintain the append
+    // order. For example: when Drive is disconnected and then reconnected, if
+    // we don't clear current children, all other children are still there and
+    // only "My Drive" will be re-added at the end.
+    driveFakeRoot.removeAllChildren();
+    const driveRootFileDataChildren: FileKey[] = [];
+
+    driveFakeRoot.addEntry(newVolumeEntry);
+    driveRootFileDataChildren.push(volumeRootKey);
+
     const {sharedDriveDisplayRoot, computersDisplayRoot, fakeEntries} =
         volumeInfo;
     // Add "Shared drives" (team drives) grand root into Drive. It's guaranteed
@@ -345,7 +352,7 @@ function addVolumeReducer(currentState: State, payload: {
               )
           .forEach(v => {
             const fileData = getFileData(currentState, v.rootKey!);
-            if (!fileData) {
+            if (!fileData || !fileData?.entry) {
               return;
             }
             // Volume with `prefixKey` has already been processed, however,

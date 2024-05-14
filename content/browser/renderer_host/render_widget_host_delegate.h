@@ -117,6 +117,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
                                     const blink::WebInputEvent& event) {}
 
   // Asks whether the page is in a state of ignoring input events.
+  virtual bool ShouldIgnoreWebInputEvents(const blink::WebInputEvent& event);
   virtual bool ShouldIgnoreInputEvents();
 
   // Callback to give the browser a chance to handle the specified gesture
@@ -330,6 +331,10 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // keyboard or 0 if the virtual keyboard is hidden or in a mode that doesn't
   // resize the view.
   virtual int GetVirtualKeyboardResizeHeight();
+
+  // Returns false if it's a private window, and text entered into this page
+  // shouldn't be used to improve typing suggestions for the user.
+  virtual bool ShouldDoLearning();
 
  protected:
   virtual ~RenderWidgetHostDelegate() {}

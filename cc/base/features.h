@@ -116,6 +116,8 @@ CC_BASE_EXPORT BASE_DECLARE_FEATURE(kReclaimResourcesFlushInBackground);
 
 // When LayerTreeHostImpl::ReclaimResources() is called in background, trigger a
 // additional delayed flush to reclaim resources.
+//
+// Enabled 03/2024, kept to run a holdback experiment.
 CC_BASE_EXPORT BASE_DECLARE_FEATURE(kReclaimResourcesDelayedFlushInBackground);
 
 // Try to play a longer list of ops before giving up in solid color analysis for
@@ -168,6 +170,16 @@ CC_BASE_EXPORT BASE_DECLARE_FEATURE(kAdjustFastMainThreadThreshold);
 // When a LayerTreeHostImpl is not visible, clear its transferable resources
 // that haven't been imported into viz.
 CC_BASE_EXPORT BASE_DECLARE_FEATURE(kClearCanvasResourcesInBackground);
+
+// Re-enables legacy cc/metrics V1 termination path, to validate if some shifts
+// in V3 metrics were from the interactions of these paths.
+CC_BASE_EXPORT BASE_DECLARE_FEATURE(kUseV1MetricsTermination);
+
+// Currently CC Metrics does a lot of calculations for UMA and Tracing. While
+// Traces themselves won't run when we are not tracing, some of the calculation
+// work is done regardless. When enabled this feature reduces extra calculation
+// to when tracing is enabled.
+CC_BASE_EXPORT BASE_DECLARE_FEATURE(kMetricsTracingCalculationReduction);
 
 }  // namespace features
 

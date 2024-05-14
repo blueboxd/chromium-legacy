@@ -71,8 +71,8 @@ constexpr char kUserActionConfirmOrUploadToGoogleDrive[] =
 constexpr char kUserActionConfirmOrUploadToOneDrive[] =
     "confirm-or-upload-onedrive";
 
-// Options for which sub-page/flow we want to show.
-enum class DialogPage {
+// Options for which setup or move confirmation sub-page/flow we want to show.
+enum class SetupOrMoveDialogPage {
   // The user can choose between apps for handling office files.
   kFileHandlerDialog,
   // Set up OneDrive (multi-page).
@@ -81,9 +81,6 @@ enum class DialogPage {
   kMoveConfirmationOneDrive,
   // Confirm that the user wants to move the file to Google Drive.
   kMoveConfirmationGoogleDrive,
-
-  // A separate dialog when we're only connecting OneDrive by itself.
-  kConnectToOneDrive,
 };
 
 class CloudUploadDialog;
@@ -106,6 +103,7 @@ class CloudOpenTask : public BrowserListObserver,
   // in the closures used for async steps.
   static bool Execute(Profile* profile,
                       const std::vector<storage::FileSystemURL>& file_urls,
+                      const ::file_manager::file_tasks::TaskDescriptor& task,
                       const CloudProvider cloud_provider,
                       std::unique_ptr<CloudOpenMetrics> cloud_open_metrics);
 
@@ -117,15 +115,18 @@ class CloudOpenTask : public BrowserListObserver,
       const std::vector<::file_manager::file_tasks::TaskDescriptor>& tasks);
 
   // BrowserListObserver implementation.
-  // This is called when we are waiting for a new Files app window to be
-  // launched, to be used as the modal parent. This is triggered by
+  // Use this to check if a new Files app window has been launched when there
+  // wasn't already one to be used as the modal parent. This is triggered by
   // ShowDialog().
   void OnBrowserAdded(Browser* browser) override;
+  // Use this to check if the Files app window the dialog is modal to has
+  // closed.
+  void OnBrowserClosing(Browser* browser) override;
 
   FRIEND_TEST_ALL_PREFIXES(FileHandlerDialogBrowserTest,
-                           OnDialogCompleteOpensFileTasks);
+                           OnSetupDialogCompleteOpensFileTasks);
   FRIEND_TEST_ALL_PREFIXES(FileHandlerDialogBrowserTest,
-                           OnDialogCompleteNoCrash);
+                           OnSetupDialogCompleteNoCrash);
   FRIEND_TEST_ALL_PREFIXES(FixUpFlowBrowserTest,
                            OneDriveSetUpChangesDefaultTaskWhenSetUpIncomplete);
   FRIEND_TEST_ALL_PREFIXES(
@@ -161,6 +162,7 @@ class CloudOpenTask : public BrowserListObserver,
 
   CloudOpenTask(Profile* profile,
                 std::vector<storage::FileSystemURL> file_urls,
+                const ::file_manager::file_tasks::TaskDescriptor& task,
                 const CloudProvider cloud_provider,
                 std::unique_ptr<CloudOpenMetrics> cloud_open_metrics);
 
@@ -176,17 +178,17 @@ class CloudOpenTask : public BrowserListObserver,
   void OpenUploadedDriveUrl(const GURL& url,
                             const OfficeTaskResult task_result);
   void OpenODFSUrls(const OfficeTaskResult task_result_uma);
-  void OpenAndroidOneDriveUrlsIfAccountMatchedODFS(
-      base::OnceCallback<void(OfficeOneDriveOpenErrors)> callback);
-  void CheckEmailAndOpenURLs(
-      const std::string& android_onedrive_email,
-      base::OnceCallback<void(OfficeOneDriveOpenErrors)> callback,
+  void CheckEmailAndOpenAndroidOneDriveURLs(
       base::expected<cloud_upload::ODFSMetadata, base::File::Error>
           metadata_or_error);
+  void OpenAndroidOneDriveUrl(
+      const storage::FileSystemURL& android_onedrive_url);
 
   bool ShouldShowConfirmationDialog();
   void ConfirmMoveOrStartUpload();
   void StartUpload();
+  void StartNextGoogleDriveUpload();
+  void StartNextOneDriveUpload();
 
   // Callbacks from `DriveUploadHandler` and `OneDriveUploadHandler`. URL passed
   // to these callbacks will be `std::nullopt` and size will be 0 if upload
@@ -204,16 +206,18 @@ class CloudOpenTask : public BrowserListObserver,
   void LogOneDriveOpenResultUMA(OfficeTaskResult success_task_result,
                                 OfficeOneDriveOpenErrors open_result);
 
-  bool InitAndShowDialog(DialogPage dialog_page);
-  mojom::DialogArgsPtr CreateDialogArgs(DialogPage dialog_page);
-  void ShowDialog(mojom::DialogArgsPtr args,
+  bool InitAndShowSetupOrMoveDialog(SetupOrMoveDialogPage dialog_page);
+  mojom::DialogArgsPtr CreateDialogArgs(SetupOrMoveDialogPage dialog_page);
+  void ShowDialog(SetupOrMoveDialogPage dialog_page,
+                  mojom::DialogArgsPtr args,
                   std::unique_ptr<::file_manager::file_tasks::ResultingTasks>
                       resulting_tasks);
   void SetTaskArgs(mojom::DialogArgsPtr& args,
                    std::unique_ptr<::file_manager::file_tasks::ResultingTasks>
                        resulting_tasks);
 
-  void OnDialogComplete(const std::string& user_response);
+  void OnSetupDialogComplete(const std::string& user_response);
+  void OnMoveConfirmationComplete(const std::string& user_response);
   void LaunchLocalFileTask(const std::string& string_task_position);
 
   void LocalTaskExecuted(
@@ -235,16 +239,22 @@ class CloudOpenTask : public BrowserListObserver,
 
   raw_ptr<Profile, DanglingUntriaged> profile_;
   std::vector<storage::FileSystemURL> file_urls_;
+  // File being currently uploaded.
+  size_t file_urls_idx_ = 0;
+  const ::file_manager::file_tasks::TaskDescriptor task_;
   CloudProvider cloud_provider_;
   std::unique_ptr<CloudOpenMetrics> cloud_open_metrics_;
   std::vector<::file_manager::file_tasks::TaskDescriptor> local_tasks_;
-  size_t pending_uploads_ = 0;
   raw_ptr<CloudUploadDialog> pending_dialog_ = nullptr;
   base::ElapsedTimer upload_timer_;
   int64_t upload_total_size_ = 0;
+  // True when there is at least one upload error.
   bool has_upload_errors_ = false;
   OfficeFilesTransferRequired transfer_required_ =
       OfficeFilesTransferRequired::kNotRequired;
+  bool need_new_files_app_ = false;
+  raw_ptr<Browser> files_app_browser_;
+  bool files_app_closed_ = false;
 };
 
 // Returns True if OneDrive is the selected `cloud_provider` but either ODFS
@@ -258,14 +268,6 @@ bool UrlIsOnAndroidOneDrive(Profile* profile, const FileSystemURL& url);
 // DocumentsProvider.
 std::optional<std::string> GetEmailFromAndroidOneDriveRootDoc(
     const std::string& root_document_id);
-
-// If the Microsoft account logged into the Android OneDrive matches the account
-// logged into ODFS, open office files from ODFS that were originally selected
-// from Android OneDrive. Open the files in the MS 365 PWA. Fails if the Android
-// OneDrive URLS cannot be converted to valid ODFS file paths.
-void OpenAndroidOneDriveUrlsIfAccountMatchedODFS(
-    Profile* profile,
-    const std::vector<storage::FileSystemURL>& android_onedrive_urls);
 
 // Converts the |android_onedrive_file_url| for a file in OneDrive to the
 // equivalent ODFS file path which is then parsed to detect the corresponding
@@ -320,9 +322,6 @@ class CloudUploadDialog : public SystemWebDialogDelegate {
   mojom::DialogArgsPtr dialog_args_;
   UploadRequestCallback callback_;
   bool office_move_confirmation_shown_;
-
-  // Only relevant for `mojom::DialogPage::kFileHandlerDialog`.
-  bool is_microsoft_office_or_google_workspace_disabled_by_policy_ = false;
 };
 
 }  // namespace ash::cloud_upload

@@ -46,21 +46,14 @@ if (generate_linker_map) {
 declare_args() {
   if (llvm_android_mainline) {  # https://crbug.com/1481060
     clang_version = "17"
-  } else if (llvm_force_head_revision) {
-    clang_version = "19"
   } else {
-    # TODO(crbug.com/1517549): Remove in the next Clang roll.
-    clang_version = "18"
+    clang_version = "19"
   }
 }
 
 # Extension for shared library files (including leading dot).
 if (is_apple) {
   shlib_extension = ".dylib"
-} else if (is_android && is_component_build) {
-  # By appending .cr, we prevent name collisions with libraries already
-  # loaded by the Android zygote.
-  shlib_extension = ".cr.so"
 } else if (is_posix || is_fuchsia) {
   shlib_extension = ".so"
 } else if (is_win) {

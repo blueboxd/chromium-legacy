@@ -26,6 +26,12 @@ chromium-metrics-reviews@google.com.
 
 <enums>
 
+<enum name="ActivityIndicatorState">
+  <int value="0" label="In use"/>
+  <int value="1" label="Blocked on the site level"/>
+  <int value="2" label="Blocked on the system level"/>
+</enum>
+
 <enum name="AutoDSEPermissionRevertTransition">
   <int value="0" label="NO_DECISION_ASK"/>
   <int value="1" label="PRESERVE_ALLOW"/>
@@ -58,6 +64,11 @@ chromium-metrics-reviews@google.com.
 <enum name="CrowdDenySafeBrowsingVerdict">
   <int value="0" label="Acceptable"/>
   <int value="1" label="Unsolicited notification prompts"/>
+</enum>
+
+<enum name="DismissedReason">
+  <int value="0" label="DISMISSED_X_BUTTON"/>
+  <int value="1" label="DISMISSED_SCRIM"/>
 </enum>
 
 <enum name="HandleStateType">

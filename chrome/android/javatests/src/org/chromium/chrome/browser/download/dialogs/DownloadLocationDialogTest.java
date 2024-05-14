@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.download.dialogs;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.ViewMatchers.Visibility.GONE;
 import static androidx.test.espresso.matcher.ViewMatchers.Visibility.VISIBLE;
 import static androidx.test.espresso.matcher.ViewMatchers.isChecked;
@@ -102,7 +103,6 @@ public class DownloadLocationDialogTest extends BlankUiTestActivityTestCase {
                         });
         Map<String, Boolean> features = new HashMap<>();
         features.put(ChromeFeatureList.SMART_SUGGESTION_FOR_LARGE_DOWNLOADS, false);
-        features.put(ChromeFeatureList.INCOGNITO_DOWNLOADS_WARNING, true);
         FeatureList.setTestFeatures(features);
 
         setDownloadPromptStatus(DownloadPromptStatus.SHOW_INITIAL);
@@ -160,11 +160,13 @@ public class DownloadLocationDialogTest extends BlankUiTestActivityTestCase {
     }
 
     private void assertTitle(@StringRes int titleId) {
-        onView(withText(getActivity().getString(titleId))).check(matches(isDisplayed()));
+        onView(withText(getActivity().getString(titleId)))
+                .inRoot(isDialog())
+                .check(matches(isDisplayed()));
     }
 
     private void assertSubtitle(String subtitle) {
-        onView(withText(subtitle)).check(matches(isDisplayed()));
+        onView(withText(subtitle)).inRoot(isDialog()).check(matches(isDisplayed()));
     }
 
     /**

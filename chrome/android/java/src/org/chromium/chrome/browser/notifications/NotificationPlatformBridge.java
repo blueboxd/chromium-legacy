@@ -16,6 +16,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -42,6 +43,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
@@ -232,6 +234,7 @@ public class NotificationPlatformBridge {
             }
         }
         recordJobStartDelayUMA(intent);
+        recordJobNativeStartupDuration(intent);
 
         NotificationIdentifyingAttributes attributes =
                 new NotificationIdentifyingAttributes(
@@ -300,6 +303,25 @@ public class NotificationPlatformBridge {
             if (duration < 0) return; // Possible if device rebooted before job started.
             RecordHistogram.recordMediumTimesHistogram(
                     "Notifications.Android.JobStartDelay", duration);
+            if (NotificationConstants.ACTION_PRE_UNSUBSCRIBE.equals(intent.getAction())) {
+                RecordHistogram.recordMediumTimesHistogram(
+                        "Notifications.Android.JobStartDelay.PreUnsubscribe", duration);
+            }
+        }
+    }
+
+    private static void recordJobNativeStartupDuration(Intent intent) {
+        if (intent.hasExtra(NotificationConstants.EXTRA_JOB_STARTED_TIME_MS)) {
+            long duration =
+                    SystemClock.elapsedRealtime()
+                            - intent.getLongExtra(
+                                    NotificationConstants.EXTRA_JOB_STARTED_TIME_MS, -1);
+            RecordHistogram.recordMediumTimesHistogram(
+                    "Notifications.Android.JobNativeStartupDuration", duration);
+            if (NotificationConstants.ACTION_PRE_UNSUBSCRIBE.equals(intent.getAction())) {
+                RecordHistogram.recordMediumTimesHistogram(
+                        "Notifications.Android.JobNativeStartupDuration.PreUnsubscribe", duration);
+            }
         }
     }
 
@@ -592,7 +614,7 @@ public class NotificationPlatformBridge {
             final boolean silent,
             final ActionInfo[] actions) {
         final boolean vibrateEnabled =
-                UserPrefs.get(Profile.getLastUsedRegularProfile())
+                UserPrefs.get(ProfileManager.getLastUsedRegularProfile())
                         .getBoolean(NOTIFICATIONS_VIBRATE_ENABLED);
         final boolean incognito = profile.isOffTheRecord();
         // TODO(peter): by-pass this check for non-Web Notification types.
@@ -1137,6 +1159,16 @@ public class NotificationPlatformBridge {
             // isn't being shown, we just call that as well to ensure notifications are cleared.
         }
 
+        // The "provisionally unsubscribed" service notification re-uses the tag of the organic
+        // notification it has replaced. Do not let this service notification be canceled. The
+        // organic notification is at this point already deleted from the NotificationDatabase in
+        // response to it being closed by the developer. If the user clicks `UNDO_UNSUBSCRIBE`, we
+        // will not restore the cancelled notification.
+        String origin = getOriginFromNotificationTag(notificationId);
+        if (origin != null && mOriginsWithProvisionallyRevokedPermissions.contains(origin)) {
+            return;
+        }
+
         mNotificationManager.cancel(notificationId, PLATFORM_ID);
     }
 
@@ -1153,6 +1185,18 @@ public class NotificationPlatformBridge {
             NotificationIdentifyingAttributes identifyingAttributes,
             int actionIndex,
             @Nullable String reply) {
+        // After the user taps the `PRE_UNSUBSCRIBE` action on a notification, we need to complete
+        // native startup before we can replace the tapped notification with the "provisionally
+        // unsubscribed" service notification. In this time window, the user might have tapped the
+        // content or a developer-provided action button. Given the strong indication the user may
+        // want to stop getting these notifications, resolve this conflict by silently discarding
+        // the action.
+        if (identifyingAttributes.origin != null
+                && mOriginsWithProvisionallyRevokedPermissions.contains(
+                        identifyingAttributes.origin)) {
+            return;
+        }
+
         mLastNotificationClickMs = System.currentTimeMillis();
         NotificationPlatformBridgeJni.get()
                 .onNotificationClicked(
@@ -1201,9 +1245,20 @@ public class NotificationPlatformBridge {
      */
     private void onNotificationPreUnsubcribe(
             NotificationIdentifyingAttributes identifyingAttributes) {
+        // The user might tap on the PRE_UNSUBSCRIBE action multiple times in case we need to do a
+        // native startup and it takes long. Record how often this happens and ignore duplicate
+        // unsubscribe actions.
+        boolean duplicatePreUnsubscribe =
+                mOriginsWithProvisionallyRevokedPermissions.contains(identifyingAttributes.origin);
+        NotificationUmaTracker.getInstance()
+                .recordIsDuplicatePreUnsubscribe(duplicatePreUnsubscribe);
+        if (duplicatePreUnsubscribe) {
+            return;
+        }
+
         // TODO(crbug.com/1521432): Verify if we can/need to use the correct profile here.
         NotificationSuspender suspender =
-                new NotificationSuspender(Profile.getLastUsedRegularProfile());
+                new NotificationSuspender(ProfileManager.getLastUsedRegularProfile());
         List<String> notificationIdsToCancel =
                 suspender.storeNotificationResourcesFromOrigins(
                         Collections.singletonList(Uri.parse(identifyingAttributes.origin)));
@@ -1236,7 +1291,7 @@ public class NotificationPlatformBridge {
 
         // TODO(crbug.com/1521432): Verify if we can/need to use the correct profile here.
         NotificationSuspender suspender =
-                new NotificationSuspender(Profile.getLastUsedRegularProfile());
+                new NotificationSuspender(ProfileManager.getLastUsedRegularProfile());
         suspender.unsuspendNotificationsFromOrigins(
                 Collections.singletonList(Uri.parse(identifyingAttributes.origin)));
     }

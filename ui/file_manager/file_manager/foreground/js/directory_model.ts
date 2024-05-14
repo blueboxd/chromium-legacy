@@ -9,12 +9,11 @@ import type {VolumeInfo} from '../../background/js/volume_info.js';
 import type {VolumeManager} from '../../background/js/volume_manager.js';
 import type {SpliceEvent} from '../../common/js/array_data_model.js';
 import {Aggregator, AsyncQueue} from '../../common/js/async_util.js';
-import {isModal} from '../../common/js/dialog_type.js';
 import {convertURLsToEntries, entriesToURLs, getRootType, isFakeEntry, isGuestOs, isNativeEntry, isOneDriveId, isRecentRootType, isSameEntry, urlToEntry} from '../../common/js/entry_utils.js';
 import type {FakeEntry, FilesAppDirEntry, FilesAppEntry, GuestOsPlaceholder} from '../../common/js/files_app_entry_types.js';
 import {type CustomEventMap, FilesEventTarget} from '../../common/js/files_event_target.js';
 import {isDlpEnabled, isDriveFsBulkPinningEnabled} from '../../common/js/flags.js';
-import {recordMediumCount, recordUserAction} from '../../common/js/metrics.js';
+import {recordMediumCount} from '../../common/js/metrics.js';
 import {getEntryLabel} from '../../common/js/translations.js';
 import {testSendMessage} from '../../common/js/util.js';
 import {FileSystemType, getVolumeTypeFromRootType, isNative, RootType, Source, VolumeType} from '../../common/js/volume_manager_types.js';
@@ -26,7 +25,8 @@ import {PropStatus, SearchLocation, type SearchOptions, type State, type Volume,
 import {getFileData, getStore, getVolume, type Store} from '../../state/store.js';
 
 import {CROSTINI_CONNECT_ERR, DLP_METADATA_PREFETCH_PROPERTY_NAMES, LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES} from './constants.js';
-import {ContentScanner, CrostiniMounter, DirectoryContents, DirectoryContentScanner, DriveMetadataSearchContentScanner, EmptyContentScanner, FileFilter, FileListContext, GuestOsMounter, MediaViewContentScanner, RecentContentScanner, SearchV2ContentScanner, TrashContentScanner} from './directory_contents.js';
+import type {ContentScanner, FileFilter} from './directory_contents.js';
+import {CrostiniMounter, DirectoryContents, DirectoryContentScanner, DriveMetadataSearchContentScanner, EmptyContentScanner, FileListContext, GuestOsMounter, MediaViewContentScanner, RecentContentScanner, SearchV2ContentScanner, TrashContentScanner} from './directory_contents.js';
 import {FileListModel} from './file_list_model.js';
 import {FileWatcher, type WatcherDirectoryChangedEvent} from './file_watcher.js';
 import type {MetadataKey} from './metadata/metadata_item.js';
@@ -260,11 +260,6 @@ export class DirectoryModel extends FilesEventTarget<DirectoryModelEventMap> {
     }
     if (!lastSearch || (lastSearch as SearchData).query !== search.query ||
         (lastSearch as SearchData).options !== search.options) {
-      const dialogType = state.launchParams.dialogType;
-      if (dialogType) {
-        recordUserAction(
-            `Search.${isModal(dialogType) ? 'Picker' : 'Standalone'}.Open`);
-      }
       this.search_(
           search.query || '', search.options || getDefaultSearchOptions());
     }
@@ -563,6 +558,14 @@ export class DirectoryModel extends FilesEventTarget<DirectoryModelEventMap> {
           isOneDriveId(getVolume(state, currentDirectoryFileData)?.providerId);
       if (currentDirectoryOnOdfs) {
         const {myFilesEntry} = getMyFiles(state);
+        if (!myFilesEntry) {
+          // This can only happen if local user files are disabled.
+          console.warn(
+              'ODFS disabled, but local user files disabled by policy.');
+          // TODO(b/328030489): Navigate to default display root.
+          this.store_.dispatch(changeDirectory({toKey: ''}));
+          return;
+        }
         const myFilesRootKey = myFilesEntry.toURL();
         this.store_.dispatch(changeDirectory({toKey: myFilesRootKey}));
       }
@@ -1172,7 +1175,7 @@ export class DirectoryModel extends FilesEventTarget<DirectoryModelEventMap> {
   /**
    * Gets the current MyFilesEntry.
    */
-  getMyFiles(): FilesAppDirEntry {
+  getMyFiles(): null|FilesAppDirEntry {
     const {myFilesEntry} = getMyFiles(getStore().getState());
     return myFilesEntry;
   }
@@ -1204,7 +1207,7 @@ export class DirectoryModel extends FilesEventTarget<DirectoryModelEventMap> {
     const locationInfo = this.volumeManager_.getLocationInfo(dirEntry);
     if (locationInfo && locationInfo.rootType === RootType.DOWNLOADS &&
         locationInfo.isRootEntry) {
-      dirEntry = this.getMyFiles();
+      dirEntry = this.getMyFiles()!;
     }
 
     // If there is on-going scan, cancel it.

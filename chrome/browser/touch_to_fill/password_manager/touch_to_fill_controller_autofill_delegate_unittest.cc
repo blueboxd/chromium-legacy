@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/android/build_info.h"
 #include "base/base64.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -79,6 +78,10 @@ class MockPasswordManagerClient
               (password_manager::PasswordManagerDriver*),
               (override));
   MOCK_METHOD(void, MarkSharedCredentialsAsNotified, (const GURL&), (override));
+  MOCK_METHOD(bool,
+              CanUseBiometricAuthForFilling,
+              (device_reauth::DeviceAuthenticator*),
+              (override));
 };
 
 struct MockTouchToFillView : TouchToFillView {
@@ -141,7 +144,7 @@ class TouchToFillControllerAutofillTest
         OverrideManagePasswordWhenPasskeysPresentForTesting(false);
 
     // By default, disable biometric authentication.
-    ON_CALL(*authenticator(), CanAuthenticateWithBiometrics)
+    ON_CALL(client(), CanUseBiometricAuthForFilling)
         .WillByDefault(Return(false));
 
     scoped_feature_list_.InitAndEnableFeature(
@@ -221,14 +224,8 @@ class TouchToFillControllerAutofillTest
     visibility_controller_ = std::make_unique<
         password_manager::MockKeyboardReplacingSurfaceVisibilityController>();
     touch_to_fill_controller_ = std::make_unique<TouchToFillController>(
-        visibility_controller_->AsWeakPtr());
+        profile(), visibility_controller_->AsWeakPtr());
     touch_to_fill_controller().set_view(std::move(mock_view));
-  }
-
-  void ExpectAndSimulateAuthenticationSuccess(
-      device_reauth::MockDeviceAuthenticator* authenticator_ptr) {
-    EXPECT_CALL(*authenticator_ptr, AuthenticateWithMessage)
-        .WillOnce(RunOnceCallback<1>(true));
   }
 
  private:
@@ -254,11 +251,6 @@ class TouchToFillControllerAutofillTest
 };
 
 TEST_F(TouchToFillControllerAutofillTest, Show_Fill_And_Submit) {
-  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
-    auto* authenticator_ptr = authenticator();
-    ExpectAndSimulateAuthenticationSuccess(authenticator_ptr);
-  }
-
   auto filler_to_pass = CreateMockFiller();
   UiCredential credentials[] = {
       MakeUiCredential({.username = "alice", .password = "p4ssw0rd"})};
@@ -287,11 +279,6 @@ TEST_F(TouchToFillControllerAutofillTest, Show_Fill_And_Submit) {
 }
 
 TEST_F(TouchToFillControllerAutofillTest, Show_Fill_And_Dont_Submit) {
-  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
-    auto* authenticator_ptr = authenticator();
-    ExpectAndSimulateAuthenticationSuccess(authenticator_ptr);
-  }
-
   auto filler_to_pass = CreateMockFiller();
   UiCredential credentials[] = {
       MakeUiCredential({.username = "alice", .password = "p4ssw0rd"})};
@@ -321,11 +308,6 @@ TEST_F(TouchToFillControllerAutofillTest, Show_Fill_And_Dont_Submit) {
 
 TEST_F(TouchToFillControllerAutofillTest,
        ShowFillAndShowPasswordMigrationWarning) {
-  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
-    auto* authenticator_ptr = authenticator();
-    ExpectAndSimulateAuthenticationSuccess(authenticator_ptr);
-  }
-
   scoped_feature_list().Reset();
   scoped_feature_list().InitWithFeatures(
       {password_manager::features::
@@ -361,11 +343,6 @@ TEST_F(TouchToFillControllerAutofillTest,
 }
 
 TEST_F(TouchToFillControllerAutofillTest, Dont_Submit_With_Empty_Username) {
-  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
-    auto* authenticator_ptr = authenticator();
-    ExpectAndSimulateAuthenticationSuccess(authenticator_ptr);
-  }
-
   UiCredential credentials[] = {
       MakeUiCredential({.username = "", .password = "p4ssw0rd"}),
       MakeUiCredential({.username = "username", .password = "p4ssw0rd"})};
@@ -403,11 +380,6 @@ TEST_F(TouchToFillControllerAutofillTest, Dont_Submit_With_Empty_Username) {
 
 TEST_F(TouchToFillControllerAutofillTest,
        Single_Credential_With_Empty_Username) {
-  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
-    auto* authenticator_ptr = authenticator();
-    ExpectAndSimulateAuthenticationSuccess(authenticator_ptr);
-  }
-
   auto filler_to_pass = CreateMockFiller();
   UiCredential credentials[] = {
       MakeUiCredential({.username = "", .password = "p4ssw0rd"})};
@@ -438,14 +410,8 @@ TEST_F(TouchToFillControllerAutofillTest,
 }
 
 TEST_F(TouchToFillControllerAutofillTest, Show_And_Fill_No_Auth_Available) {
-  // Auth is required to fill passwords in Android automotive.
-  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
-    GTEST_SKIP();
-  }
-
   UiCredential credentials[] = {
       MakeUiCredential({.username = "alice", .password = "p4ssw0rd"})};
-  auto* authenticator_ptr = authenticator();
 
   EXPECT_CALL(view(), Show(Eq(GURL(kExampleCom)), IsOriginSecure(true),
                            ElementsAreArray(credentials),
@@ -463,8 +429,7 @@ TEST_F(TouchToFillControllerAutofillTest, Show_And_Fill_No_Auth_Available) {
   EXPECT_CALL(*last_mock_filler(),
               FillUsernameAndPassword(std::u16string(u"alice"),
                                       std::u16string(u"p4ssw0rd")));
-  ON_CALL(*authenticator_ptr, CanAuthenticateWithBiometrics)
-      .WillByDefault(Return(false));
+  ON_CALL(client(), CanUseBiometricAuthForFilling).WillByDefault(Return(false));
 
   touch_to_fill_controller().OnCredentialSelected(credentials[0]);
 
@@ -503,9 +468,9 @@ TEST_F(TouchToFillControllerAutofillTest,
               FillUsernameAndPassword(std::u16string(u"alice"),
                                       std::u16string(u"p4ssw0rd")));
 
-  ON_CALL(*authenticator_ptr, CanAuthenticateWithBiometrics)
-      .WillByDefault(Return(true));
-  ExpectAndSimulateAuthenticationSuccess(authenticator_ptr);
+  ON_CALL(client(), CanUseBiometricAuthForFilling).WillByDefault(Return(true));
+  EXPECT_CALL(*authenticator_ptr, AuthenticateWithMessage)
+      .WillOnce(RunOnceCallback<1>(true));
   EXPECT_CALL(client(), StartSubmissionTrackingAfterTouchToFill(Eq(u"alice")));
 
   touch_to_fill_controller().OnCredentialSelected(credentials[0]);
@@ -531,8 +496,7 @@ TEST_F(TouchToFillControllerAutofillTest,
 
   EXPECT_CALL(*last_mock_filler(), FillUsernameAndPassword(_, _)).Times(0);
 
-  ON_CALL(*authenticator_ptr, CanAuthenticateWithBiometrics)
-      .WillByDefault(Return(true));
+  ON_CALL(client(), CanUseBiometricAuthForFilling).WillByDefault(Return(true));
   EXPECT_CALL(*authenticator_ptr, AuthenticateWithMessage)
       .WillOnce(RunOnceCallback<1>(false));
   touch_to_fill_controller().OnCredentialSelected(credentials[0]);
@@ -577,11 +541,6 @@ TEST_F(TouchToFillControllerAutofillTest, Show_Insecure_Origin) {
 }
 
 TEST_F(TouchToFillControllerAutofillTest, Show_And_Fill_Android_Credential) {
-  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
-    auto* authenticator_ptr = authenticator();
-    ExpectAndSimulateAuthenticationSuccess(authenticator_ptr);
-  }
-
   // Test multiple credentials with one of them being an Android credential.
   UiCredential credentials[] = {
       MakeUiCredential({
@@ -597,7 +556,6 @@ TEST_F(TouchToFillControllerAutofillTest, Show_And_Fill_Android_Credential) {
           .time_since_last_use = base::Minutes(3),
       }),
   };
-  auto* authenticator_ptr = authenticator();
 
   EXPECT_CALL(view(), Show(Eq(GURL(kExampleCom)), IsOriginSecure(true),
                            ElementsAreArray(credentials),
@@ -615,8 +573,7 @@ TEST_F(TouchToFillControllerAutofillTest, Show_And_Fill_Android_Credential) {
   EXPECT_CALL(*last_mock_filler(),
               FillUsernameAndPassword(std::u16string(u"bob"),
                                       std::u16string(u"s3cr3t")));
-  ON_CALL(*authenticator_ptr, CanAuthenticateWithBiometrics)
-      .WillByDefault(Return(false));
+  ON_CALL(client(), CanUseBiometricAuthForFilling).WillByDefault(Return(false));
   touch_to_fill_controller().OnCredentialSelected(credentials[1]);
 
   auto entries = test_recorder().GetEntriesByName(UkmBuilder::kEntryName);
@@ -755,8 +712,7 @@ TEST_F(TouchToFillControllerAutofillTest, DestroyedWhileAuthRunning) {
           TouchToFillControllerAutofillDelegate::ShowHybridOption(false)),
       /*cred_man_delegate=*/nullptr, /*frame_driver=*/nullptr);
 
-  ON_CALL(*authenticator_ptr, CanAuthenticateWithBiometrics)
-      .WillByDefault(Return(true));
+  ON_CALL(client(), CanUseBiometricAuthForFilling).WillByDefault(Return(true));
   EXPECT_CALL(*authenticator_ptr, AuthenticateWithMessage);
   touch_to_fill_controller().OnCredentialSelected(credentials[0]);
 

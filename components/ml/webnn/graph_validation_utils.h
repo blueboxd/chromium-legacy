@@ -97,11 +97,6 @@ enum class Conv2dFilterOperandLayout { kOihw, kHwio, kOhwi, kIhwo };
 // / groups, H is height and W is the width of filter.
 enum class ConvTranspose2dFilterOperandLayout { kIohw, kHwoi, kOhwi };
 
-// Represents the `MLAutoPad`. `Explicit` means that the values in the padding
-// array should be used for calculating input padding, the `SameUpper` and
-// `SameLower` options mean the padding values are automatically computed.
-enum class AutoPad { kExplicit, kSameUpper, kSameLower };
-
 // Represents the `MLRoundingType` that is used to compute the output shape.
 enum class RoundingType { kFloor, kCeil };
 
@@ -177,8 +172,6 @@ struct Conv2dAttributesBase {
   Size2d<uint32_t> strides;
   // The dilation factor for each spatial dimension of input.
   Size2d<uint32_t> dilations;
-  // The automatic input padding options.
-  AutoPad auto_pad = AutoPad::kExplicit;
   // The number of groups that input channels and output channels are divided
   // into.
   uint32_t groups = 1;
@@ -237,8 +230,6 @@ struct Pool2dAttributes {
   Size2d<uint32_t> strides;
   // The dilation factor for each spatial dimension of input.
   Size2d<uint32_t> dilations;
-  // The automatic input padding options.
-  AutoPad auto_pad = AutoPad::kExplicit;
   // The layout format of the input.
   InputOperandLayout layout = InputOperandLayout::kNchw;
   // The rounding function used to compute the output shape.
@@ -268,6 +259,31 @@ struct GemmAttributes {
   bool a_transpose = false;
   // True is to transpose the second tensor matrix multiplication.
   bool b_transpose = false;
+};
+
+// Contains the attributes of gru operator.
+struct GruAttributes {
+  GruAttributes();
+  ~GruAttributes();
+
+  GruAttributes(GruAttributes&& other);
+  GruAttributes& operator=(GruAttributes&& other);
+
+  GruAttributes(const GruAttributes&) = delete;
+  GruAttributes& operator=(const GruAttributes&) = delete;
+
+  // The bias operand.
+  std::optional<Operand> bias;
+  // The recurrent bias operand.
+  std::optional<Operand> recurrent_bias;
+  // The initial hidden state operand.
+  std::optional<Operand> initial_hidden_state;
+  // Indicates whether to return the outputs of the entire sequence.
+  bool return_sequence;
+  // Specifies the processing direction of the input sequence.
+  RecurrentNetworkDirection direction;
+  // The number of activations.
+  uint32_t activation_count;
 };
 
 // Contains the attributes of instanceNormalization operator.
@@ -331,7 +347,7 @@ struct LstmAttributes {
   // The initial cell state operand.
   std::optional<Operand> initial_cell_state;
   // The number of activations.
-  std::optional<uint32_t> activation_count;
+  size_t activation_count;
   // Indicates whether to return the outputs of the entire sequence.
   bool return_sequence;
   // The processing direction of the input sequence.
@@ -452,6 +468,16 @@ base::expected<Operand, std::string> ValidateGemmAndInferOutput(
     const Operand& b,
     const GemmAttributes& attributes);
 
+// Validate and infer output information of gru operator defined in WebIDL here
+// https://www.w3.org/TR/webnn/#api-mlgraphbuilder-gru.
+base::expected<std::vector<Operand>, std::string> ValidateGruAndInferOutput(
+    const Operand& input,
+    const Operand& weight,
+    const Operand& recurrent_weight,
+    uint32_t steps,
+    uint32_t hidden_size,
+    const GruAttributes& attributes);
+
 // Validate and infer output information of instanceNormalization operator
 // defined in WebIDL here
 // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-instancenorm.
@@ -509,6 +535,11 @@ base::expected<Operand, std::string> ValidateReduceAndInferOutput(
     base::span<const uint32_t> axes,
     bool keepDimensions = false);
 
+// Validate triangular operator defined in WebIDL here
+// https://www.w3.org/TR/webnn/#api-mlgraphbuilder-triangular.
+base::expected<Operand, std::string> ValidateTriangularAndInferOutput(
+    Operand input);
+
 // TODO(crbug.com/1273291): Add the link of the where operator definition in
 // WebIDL.
 // Validate where operator.
@@ -538,37 +569,6 @@ std::optional<std::vector<uint32_t>> BroadcastShapes(
     base::span<const uint32_t> dims_rhs,
     bool bidirectional = true);
 
-// TODO(crbug.com/1273291): Don't export PaddingSizes when moving the validation
-// of ConvTransposed2d to the shared library.
-struct PaddingSizes {
-  uint32_t begin;
-  uint32_t end;
-};
-
-// Calculate the effective padding for conv2d based on WebNN auto padding
-// rules.
-//
-// TODO(crbug.com/1273291): Add the link to WebNN spec's algorithm once it is
-// defined, tracked by: https://github.com/webmachinelearning/webnn/issues/326
-std::optional<PaddingSizes> CalculateConv2dPadding(AutoPad auto_pad,
-                                                   const uint32_t input_size,
-                                                   const uint32_t filter_size,
-                                                   const uint32_t stride,
-                                                   const uint32_t dilation);
-
-// Calculate the effective padding for convTranspose2d based on WebNN auto
-// padding rules.
-//
-// TODO(crbug.com/1273291): Add the link to WebNN spec's algorithm once it is
-// defined, tracked by: https://github.com/webmachinelearning/webnn/issues/326
-std::optional<PaddingSizes> CalculateConvTranspose2dPadding(
-    AutoPad auto_pad,
-    const uint32_t input_size,
-    const uint32_t filter_size,
-    const uint32_t stride,
-    const uint32_t dilation,
-    const uint32_t output_padding);
-
 // Calculate the output size for convTranspose2d based on WebNN spec:
 // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-convtranspose2d
 // Return the calculated output size if no error.
@@ -582,6 +582,13 @@ base::expected<uint32_t, std::string> CalculateConvTranspose2dOutputSize(
     const uint32_t output_padding);
 
 bool IsFloatingPointType(Operand::DataType data_type);
+
+// A depthwise conv2d operation is a variant of grouped convolution where the
+// options.groups == input_channels == output_channels according to WebNN conv2d
+// spec: https://www.w3.org/TR/webnn/#api-mlgraphbuilder-conv2d.
+bool IsDepthwiseConv2d(uint32_t input_channels,
+                       uint32_t output_channels,
+                       uint32_t groups);
 
 }  // namespace webnn
 

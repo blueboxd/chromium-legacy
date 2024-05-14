@@ -528,11 +528,25 @@ void Compositor::SetBackgroundColor(SkColor color) {
 }
 
 void Compositor::SetVisible(bool visible) {
+  const bool changed = visible != IsVisible();
+  if (changed) {
+    for (auto& observer : observer_list_) {
+      observer.OnCompositorVisibilityChanging(this, visible);
+    }
+  }
+
   host_->SetVisible(visible);
   // Visibility is reset when the output surface is lost, so this must also be
-  // updated then.
+  // updated then. We need to call this even if the visibility hasn't changed,
+  // for the same reason.
   if (display_private_)
     display_private_->SetDisplayVisible(visible);
+
+  if (changed) {
+    for (auto& observer : observer_list_) {
+      observer.OnCompositorVisibilityChanged(this, visible);
+    }
+  }
 }
 
 bool Compositor::IsVisible() {
@@ -568,7 +582,7 @@ void Compositor::SetDisplayVSyncParameters(base::TimeTicks timebase,
   }
   DCHECK_GT(interval.InMillisecondsF(), 0);
 
-  // This is called at high frequenty on macOS, so early-out of redundant
+  // This is called at high frequency on macOS, so early-out of redundant
   // updates here.
   if (vsync_timebase_ == timebase && vsync_interval_ == interval)
     return;
@@ -807,12 +821,14 @@ void Compositor::DidReceiveCompositorFrameAck() {
 
 void Compositor::DidPresentCompositorFrame(
     uint32_t frame_token,
-    const gfx::PresentationFeedback& feedback) {
-  TRACE_EVENT_MARK_WITH_TIMESTAMP1("cc,benchmark", "FramePresented",
-                                   feedback.timestamp, "environment",
-                                   "browser");
+    const viz::FrameTimingDetails& frame_timing_details) {
+  TRACE_EVENT_MARK_WITH_TIMESTAMP1(
+      "cc,benchmark", "FramePresented",
+      frame_timing_details.presentation_feedback.timestamp, "environment",
+      "browser");
   for (auto& observer : observer_list_)
-    observer.OnDidPresentCompositorFrame(frame_token, feedback);
+    observer.OnDidPresentCompositorFrame(
+        frame_token, frame_timing_details.presentation_feedback);
 }
 
 void Compositor::DidSubmitCompositorFrame() {
@@ -860,7 +876,7 @@ void Compositor::StartThroughputTracker(
   animation_host_->StartThroughputTracking(tracker_id);
 }
 
-bool Compositor::StopThroughtputTracker(TrackerId tracker_id) {
+bool Compositor::StopThroughputTracker(TrackerId tracker_id) {
   auto it = throughput_tracker_map_.find(tracker_id);
   DCHECK(it != throughput_tracker_map_.end());
 
@@ -876,7 +892,7 @@ bool Compositor::StopThroughtputTracker(TrackerId tracker_id) {
   return true;
 }
 
-void Compositor::CancelThroughtputTracker(TrackerId tracker_id) {
+void Compositor::CancelThroughputTracker(TrackerId tracker_id) {
   auto it = throughput_tracker_map_.find(tracker_id);
   DCHECK(it != throughput_tracker_map_.end());
 

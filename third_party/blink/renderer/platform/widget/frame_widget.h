@@ -42,6 +42,10 @@ namespace ui {
 class Cursor;
 }  // namespace ui
 
+namespace viz {
+struct FrameTimingDetails;
+}  // namespace viz
+
 namespace blink {
 
 class LocalFrame;
@@ -83,7 +87,8 @@ class PLATFORM_EXPORT FrameWidget {
   // passed to the callback is the presentation timestamp; otherwise, it would
   // be timestamp of when the failure is detected.
   virtual void NotifyPresentationTimeInBlink(
-      base::OnceCallback<void(base::TimeTicks)> presentation_callback) = 0;
+      base::OnceCallback<void(const viz::FrameTimingDetails&)>
+          presentation_callback) = 0;
 
   // Enable or disable BeginMainFrameNotExpected signals from the compositor,
   // which are consumed by the blink scheduler.
@@ -122,8 +127,8 @@ class PLATFORM_EXPORT FrameWidget {
   // Returns the CanResize value of the widget.
   virtual bool Resizable() const = 0;
 
-  // Returns the window segments for the widget.
-  virtual const WebVector<gfx::Rect>& WindowSegments() const = 0;
+  // Returns the viewport segments for the widget.
+  virtual const WebVector<gfx::Rect>& ViewportSegments() const = 0;
 
   // Sets the ink metadata on the layer tree host
   virtual void SetDelegatedInkMetadata(

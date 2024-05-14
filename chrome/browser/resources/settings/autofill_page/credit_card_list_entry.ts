@@ -8,17 +8,18 @@
  */
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import 'chrome://resources/cr_elements/cr_screen_reader_only.css.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import '../i18n_setup.js';
 import '../settings_shared.css.js';
 import './passwords_shared.css.js';
+import './screen_reader_only.css.js';
 
 import {I18nMixin} from '//resources/cr_elements/i18n_mixin.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
+import {CardBenefitsUserAction, MetricsBrowserProxyImpl} from '../metrics_browser_proxy.js';
 
 import {getTemplate} from './credit_card_list_entry.html.js';
 
@@ -83,6 +84,12 @@ export class SettingsCreditCardListEntryElement extends
     }));
   }
 
+  private onSummarySublabelTermsLinkClick_() {
+    // Log the metric for user clicking on the card benefits terms hyperlink.
+    MetricsBrowserProxyImpl.getInstance().recordAction(
+        CardBenefitsUserAction.CARD_BENEFITS_TERMS_LINK_CLICKED);
+  }
+
   private getCardNumberDescription_(
       creditCard: chrome.autofillPrivate.CreditCardEntry): string|undefined {
     const cardNumber = creditCard.cardNumber;
@@ -111,12 +118,11 @@ export class SettingsCreditCardListEntryElement extends
 
   /**
    * The 3-dot menu should be shown if the card is not a masked server card or
-   * if the card is eligble for virtual card enrollment.
+   * if the card is eligible for virtual card enrollment.
    */
   private showDots_(): boolean {
     return !!(
         this.creditCard.metadata!.isLocal ||
-        this.creditCard.metadata!.isCached ||
         this.isVirtualCardEnrollmentEligible_());
   }
 
@@ -227,21 +233,13 @@ export class SettingsCreditCardListEntryElement extends
     return !this.creditCard.metadata!.isLocal;
   }
 
-  private getPaymentsLabel_(): string {
-    if (this.creditCard.metadata!.isCached) {
-      return this.i18n('googlePaymentsCached');
-    }
-    return this.i18n('googlePayments');
-  }
-
   private isCardCvcAvailable_(): boolean {
     return loadTimeData.getBoolean('cvcStorageAvailable') &&
         !!this.creditCard.cvc;
   }
 
   private isCardBenefitsProductUrlAvailable_(): boolean {
-    return loadTimeData.getBoolean('autofillCardBenefitsAvailable') &&
-        !!this.creditCard.productTermsUrl;
+    return !!this.creditCard.productTermsUrl;
   }
 
   private getCardBenefitsProductUrl_(): string {

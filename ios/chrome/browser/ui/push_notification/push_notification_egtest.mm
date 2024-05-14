@@ -16,7 +16,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -65,18 +64,23 @@ void TapMenuItem(int labelId) {
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
   config.features_enabled.push_back(kIOSTipsNotifications);
-  config.features_enabled.push_back(kMagicStack);
   return config;
 }
 
 + (void)setUpForTestCase {
   [super setUpForTestCase];
 
-  [ChromeEarlGreyAppInterface writeFirstRunSentinel];
-  [ChromeEarlGreyAppInterface clearDefaultBrowserPromoData];
+  [ChromeEarlGrey writeFirstRunSentinel];
+  [ChromeEarlGrey clearDefaultBrowserPromoData];
   [ChromeEarlGrey resetDataForLocalStatePref:
                       prefs::kIosCredentialProviderPromoLastActionTaken];
   [NewTabPageAppInterface resetSetUpListPrefs];
+}
+
+- (void)tearDown {
+  [ChromeEarlGrey
+      resetDataForLocalStatePref:prefs::kAppLevelPushNotificationPermissions];
+  [super tearDown];
 }
 
 // Tests that the settings page is dismissed by swiping down from the top.

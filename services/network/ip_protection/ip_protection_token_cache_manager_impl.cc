@@ -5,6 +5,7 @@
 #include "services/network/ip_protection/ip_protection_token_cache_manager_impl.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/rand_util.h"
 #include "base/strings/strcat.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -15,9 +16,10 @@ namespace network {
 
 namespace {
 
-// Additional time beyond which the token must be valid to be considered
-// not "expired" by `RemoveExpiredTokens`.
-const base::TimeDelta kFreshnessConstant = base::Seconds(5);
+// Minimum time before actual expiration that a token is considered
+// "expired" and removed. The maximum time is given by the
+// `IpPrivacyExpirationFuzz` feature param.
+constexpr base::TimeDelta kMinimumFuzzInterval = base::Seconds(5);
 
 // Interval between measurements of the token rates.
 const base::TimeDelta kTokenRateMeasurementInterval = base::Minutes(5);
@@ -82,8 +84,10 @@ void IpProtectionTokenCacheManagerImpl::MaybeRefillCache() {
     VLOG(2) << "IPPATC::MaybeRefillCache calling TryGetAuthTokens";
     config_getter_->get()->TryGetAuthTokens(
         batch_size_, proxy_layer_,
-        base::BindOnce(&IpProtectionTokenCacheManagerImpl::OnGotAuthTokens,
-                       weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(
+            &IpProtectionTokenCacheManagerImpl::OnGotAuthTokens,
+            weak_ptr_factory_.GetWeakPtr(),
+            /*attempt_start_time_for_metrics=*/base::TimeTicks::Now()));
   }
 
   ScheduleMaybeRefillCache();
@@ -117,7 +121,7 @@ void IpProtectionTokenCacheManagerImpl::ScheduleMaybeRefillCache() {
     }
   } else {
     // Call when the next token expires.
-    delay = cache_[0]->expiration - kFreshnessConstant - now;
+    delay = cache_[0]->expiration - now;
   }
 
   if (delay.is_negative()) {
@@ -131,6 +135,7 @@ void IpProtectionTokenCacheManagerImpl::ScheduleMaybeRefillCache() {
 }
 
 void IpProtectionTokenCacheManagerImpl::OnGotAuthTokens(
+    const base::TimeTicks attempt_start_time_for_metrics,
     std::optional<std::vector<network::mojom::BlindSignedAuthTokenPtr>> tokens,
     std::optional<base::Time> try_again_after) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -138,6 +143,19 @@ void IpProtectionTokenCacheManagerImpl::OnGotAuthTokens(
   if (tokens.has_value()) {
     VLOG(2) << "IPPATC::OnGotAuthTokens got " << tokens->size() << " tokens";
     try_get_auth_tokens_after_ = base::Time();
+
+    // Randomize the expiration time of the tokens, applying the same "fuzz" to
+    // all tokens in the batch.
+    if (enable_token_expiration_fuzzing_for_testing_) {
+      base::TimeDelta fuzz_limit =
+          net::features::kIpPrivacyExpirationFuzz.Get();
+      base::TimeDelta fuzz =
+          base::RandTimeDelta(kMinimumFuzzInterval, fuzz_limit);
+      for (auto& token : *tokens) {
+        token->expiration -= fuzz;
+      }
+    }
+
     cache_.insert(cache_.end(), std::make_move_iterator(tokens->begin()),
                   std::make_move_iterator(tokens->end()));
     std::sort(cache_.begin(), cache_.end(),
@@ -145,6 +163,10 @@ void IpProtectionTokenCacheManagerImpl::OnGotAuthTokens(
                  network::mojom::BlindSignedAuthTokenPtr& b) {
                 return a->expiration < b->expiration;
               });
+
+    base::UmaHistogramMediumTimes(
+        "NetworkService.IpProtection.TokenBatchGenerationTime",
+        base::TimeTicks::Now() - attempt_start_time_for_metrics);
   } else {
     VLOG(2) << "IPPATC::OnGotAuthTokens back off until " << *try_again_after;
     try_get_auth_tokens_after_ = *try_again_after;
@@ -178,7 +200,7 @@ IpProtectionTokenCacheManagerImpl::GetAuthToken() {
 }
 
 void IpProtectionTokenCacheManagerImpl::RemoveExpiredTokens() {
-  base::Time fresh_after = base::Time::Now() + kFreshnessConstant;
+  base::Time fresh_after = base::Time::Now();
   // Tokens are sorted, so only the first (soonest to expire) is important.
   while (cache_.size() > 0 && cache_[0]->expiration <= fresh_after) {
     cache_.pop_front();
@@ -238,6 +260,11 @@ void IpProtectionTokenCacheManagerImpl::DisableCacheManagementForTesting(
   std::move(on_cache_management_disabled).Run();
 }
 
+void IpProtectionTokenCacheManagerImpl::EnableTokenExpirationFuzzingForTesting(
+    bool enable) {
+  enable_token_expiration_fuzzing_for_testing_ = enable;
+}
+
 // Call `TryGetAuthTokens()`, which will call
 // `on_try_get_auth_tokens_completed_for_testing_` when complete.
 void IpProtectionTokenCacheManagerImpl::CallTryGetAuthTokensForTesting() {
@@ -246,8 +273,10 @@ void IpProtectionTokenCacheManagerImpl::CallTryGetAuthTokensForTesting() {
   CHECK(on_try_get_auth_tokens_completed_for_testing_);
   config_getter_->get()->TryGetAuthTokens(
       batch_size_, proxy_layer_,
-      base::BindOnce(&IpProtectionTokenCacheManagerImpl::OnGotAuthTokens,
-                     weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(
+          &IpProtectionTokenCacheManagerImpl::OnGotAuthTokens,
+          weak_ptr_factory_.GetWeakPtr(),
+          /*attempt_start_time_for_metrics=*/base::TimeTicks::Now()));
 }
 
 }  // namespace network

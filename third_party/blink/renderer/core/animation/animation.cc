@@ -670,11 +670,9 @@ bool Animation::PreCommit(
       }
 
       compositor_property_animations_have_no_effect_ =
-          failure_reasons &
-          CompositorAnimations::kCompositorPropertyAnimationsHaveNoEffect;
+          failure_reasons & CompositorAnimations::kAnimationHasNoVisibleChange;
       animation_has_no_effect_ =
-          failure_reasons ==
-          CompositorAnimations::kCompositorPropertyAnimationsHaveNoEffect;
+          failure_reasons == CompositorAnimations::kAnimationHasNoVisibleChange;
 
       DCHECK_EQ(kRunning, CalculateAnimationPlayState());
       TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
@@ -2189,9 +2187,8 @@ Animation::CheckCanStartAnimationOnCompositorInternal() const {
   // TODO(crbug.com/476553): Once all ScrollNodes including uncomposited ones
   // are in the compositor, the animation should be composited.
   if (timeline_ && timeline_->IsScrollSnapshotTimeline() &&
-      (!RuntimeEnabledFeatures::ScrollTimelineOnCompositorEnabled() ||
-       !CompositorAnimations::CheckUsesCompositedScrolling(
-           To<ScrollSnapshotTimeline>(*timeline_).ResolvedSource()))) {
+      !CompositorAnimations::CanStartScrollTimelineOnCompositor(
+          To<ScrollSnapshotTimeline>(*timeline_).ResolvedSource())) {
     reasons |= CompositorAnimations::kTimelineSourceHasInvalidCompositingState;
   }
 
@@ -3248,15 +3245,12 @@ void Animation::commitStyles(ExceptionState& exception_state) {
 
   AnimationUtils::ForEachInterpolatedPropertyValue(
       target, animation_properties, interpolations_map,
-      WTF::BindRepeating(
-          [](CSSStyleDeclaration* inline_style, Element* target,
-             PropertyHandle property, const CSSValue* value) {
-            inline_style->setProperty(
-                target->GetExecutionContext(),
-                property.GetCSSPropertyName().ToAtomicString(),
-                value->CssText(), "", ASSERT_NO_EXCEPTION);
-          },
-          WrapWeakPersistent(inline_style), WrapWeakPersistent(target)));
+      [inline_style, target](PropertyHandle property, const CSSValue* value) {
+        inline_style->setProperty(
+            target->GetExecutionContext(),
+            property.GetCSSPropertyName().ToAtomicString(), value->CssText(),
+            "", ASSERT_NO_EXCEPTION);
+      });
 }
 
 bool Animation::IsInDisplayLockedSubtree() {

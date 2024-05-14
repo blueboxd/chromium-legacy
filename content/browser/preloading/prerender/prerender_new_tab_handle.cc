@@ -28,7 +28,7 @@ PrerenderNewTabHandle::PrerenderNewTabHandle(
 
   // Create a new WebContents for prerendering in a new tab.
   // TODO(crbug.com/1350676): Pass the same creation parameters as
-  // WebContentsImpl::CreateNewWindow(). Also, set SessionStorageNamespace.
+  // WebContentsImpl::CreateNewWindow().
   web_contents_create_params_.opener_render_process_id =
       initiator_render_frame_host->GetProcess()->GetID();
   web_contents_create_params_.opener_render_frame_id =
@@ -82,6 +82,11 @@ int PrerenderNewTabHandle::StartPrerendering(
       static_cast<PreloadingAttemptImpl*>(preloading_data->AddPreloadingAttempt(
           preloading_predictor, PreloadingType::kPrerender,
           std::move(same_url_matcher), triggered_primary_page_source_id));
+  preloading_data->AddPreloadingPrediction(
+      preloading_predictor,
+      /*confidence=*/100,
+      PreloadingData::GetSameURLMatcher(attributes_.prerendering_url),
+      triggered_primary_page_source_id);
   CHECK(attributes_.eagerness.has_value());
   preloading_attempt->SetSpeculationEagerness(attributes_.eagerness.value());
 

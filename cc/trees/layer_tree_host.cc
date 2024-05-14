@@ -855,15 +855,15 @@ void LayerTreeHost::DidPresentCompositorFrame(
     uint32_t frame_token,
     std::vector<PresentationTimeCallbackBuffer::Callback>
         presentation_callbacks,
-    std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback>
+    std::vector<PresentationTimeCallbackBuffer::SuccessfulCallbackWithDetails>
         successful_presentation_callbacks,
-    const gfx::PresentationFeedback& feedback) {
+    const viz::FrameTimingDetails& frame_timing_details) {
   DCHECK(IsMainThread());
   for (auto& callback : presentation_callbacks)
-    std::move(callback).Run(feedback);
+    std::move(callback).Run(frame_timing_details.presentation_feedback);
   for (auto& callback : successful_presentation_callbacks)
-    std::move(callback).Run(feedback.timestamp);
-  client_->DidPresentCompositorFrame(frame_token, feedback);
+    std::move(callback).Run(frame_timing_details);
+  client_->DidPresentCompositorFrame(frame_token, frame_timing_details);
 }
 
 void LayerTreeHost::DidCompletePageScaleAnimation() {
@@ -1079,9 +1079,9 @@ void LayerTreeHost::UpdateScrollOffsetFromImpl(
         // is already updated (see LayerTreeImpl::DidUpdateScrollOffset) and we
         // are now "catching up" to it on main, so we don't need a commit.
         //
-        // But if the scroll was NOT realized on the compositor, we need a
+        // But if the scroll should be realized on the main thread, we need a
         // commit to push the transform change.
-        if (!scroll_tree.CanRealizeScrollsOnCompositor(*scroll_node)) {
+        if (scroll_tree.ShouldRealizeScrollsOnMain(*scroll_node)) {
           SetNeedsCommit();
         }
       }
@@ -1266,7 +1266,7 @@ void LayerTreeHost::RequestPresentationTimeForNextFrame(
 }
 
 void LayerTreeHost::RequestSuccessfulPresentationTimeForNextFrame(
-    PresentationTimeCallbackBuffer::SuccessfulCallback callback) {
+    PresentationTimeCallbackBuffer::SuccessfulCallbackWithDetails callback) {
   pending_commit_state()->pending_successful_presentation_callbacks.push_back(
       std::move(callback));
 }

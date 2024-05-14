@@ -357,7 +357,8 @@ void ClipboardIOS::WritePortableAndPlatformRepresentations(
     ClipboardBuffer buffer,
     const ObjectMap& objects,
     std::vector<Clipboard::PlatformRepresentation> platform_representations,
-    std::unique_ptr<DataTransferEndpoint> data_src) {
+    std::unique_ptr<DataTransferEndpoint> data_src,
+    uint32_t privacy_types) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
 
@@ -380,10 +381,13 @@ void ClipboardIOS::WriteText(base::StringPiece text) {
 void ClipboardIOS::WriteHTML(
     base::StringPiece markup,
     std::optional<base::StringPiece> /* source_url */) {
-  NSDictionary<NSString*, id>* html_item = @{
-    ClipboardFormatType::HtmlType().ToNSString() :
-        base::SysUTF8ToNSString(markup)
-  };
+  // We need to mark it as utf-8. (see crbug.com/40759159)
+  std::string html_fragment_str("<meta charset='utf-8'>");
+  html_fragment_str += markup;
+  NSString* html = base::SysUTF8ToNSString(html_fragment_str);
+
+  NSDictionary<NSString*, id>* html_item =
+      @{ClipboardFormatType::HtmlType().ToNSString() : html};
   [GetPasteboard() addItems:@[ html_item ]];
 }
 
@@ -460,6 +464,18 @@ void ClipboardIOS::WriteData(const ClipboardFormatType& format,
     format.ToNSString() : [NSData dataWithBytes:data.data() length:data.size()]
   };
   [GetPasteboard() addItems:@[ data_item ]];
+}
+
+void ClipboardIOS::WriteClipboardHistory() {
+  // TODO(crbug.com/40945200): Add support for this.
+}
+
+void ClipboardIOS::WriteUploadCloudClipboard() {
+  // TODO(crbug.com/40945200): Add support for this.
+}
+
+void ClipboardIOS::WriteConfidentialDataForPassword() {
+  // TODO(crbug.com/40945200): Add support for this.
 }
 
 std::vector<uint8_t> ClipboardIOS::ReadPngInternal(

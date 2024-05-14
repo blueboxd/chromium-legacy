@@ -29,14 +29,16 @@
 namespace ash {
 namespace {
 
-constexpr base::TimeDelta kMaxLastModifiedOrViewedTime = base::Days(8);
-
 constexpr char kBaseHistogramName[] = "Ash.Search.FileSuggestions.DriveRecents";
 
-drivefs::mojom::QueryParametersPtr CreateRecentlyModifiedQuery() {
+drivefs::mojom::QueryParametersPtr CreateRecentlyModifiedQuery(
+    base::TimeDelta max_recency) {
   auto query = drivefs::mojom::QueryParameters::New();
-  query->modified_time = base::Time::Now() - kMaxLastModifiedOrViewedTime;
+  query->modified_time = base::Time::Now() - max_recency;
   query->modified_time_operator =
+      drivefs::mojom::QueryParameters::DateComparisonOperator::kGreaterThan;
+  query->viewed_time = base::Time::Now() - max_recency;
+  query->viewed_time_operator =
       drivefs::mojom::QueryParameters::DateComparisonOperator::kGreaterThan;
   query->page_size = 15;
   query->query_source =
@@ -47,7 +49,8 @@ drivefs::mojom::QueryParametersPtr CreateRecentlyModifiedQuery() {
   return query;
 }
 
-drivefs::mojom::QueryParametersPtr CreateRecentlyViewedQuery() {
+drivefs::mojom::QueryParametersPtr CreateRecentlyViewedQuery(
+    base::TimeDelta max_recency) {
   auto query = drivefs::mojom::QueryParameters::New();
   query->page_size = 15;
   query->query_source =
@@ -56,7 +59,7 @@ drivefs::mojom::QueryParametersPtr CreateRecentlyViewedQuery() {
       drivefs::mojom::QueryParameters::SortDirection::kDescending;
   query->sort_field =
       drivefs::mojom::QueryParameters::SortField::kLastViewedByMe;
-  query->viewed_time = base::Time::Now() - kMaxLastModifiedOrViewedTime;
+  query->viewed_time = base::Time::Now() - max_recency;
   query->viewed_time_operator =
       drivefs::mojom::QueryParameters::DateComparisonOperator::kGreaterThan;
   return query;
@@ -76,13 +79,13 @@ drivefs::mojom::QueryParametersPtr CreateSharedWithMeQuery() {
 
 FileSuggestData CreateFileSuggestionWithJustification(
     const base::FilePath& path,
-    app_list::JustificationType justification_type,
+    FileSuggestionJustificationType justification_type,
     const base::Time& timestamp,
     const drivefs::mojom::UserInfo* user_info) {
   // Use secondary timestamp for files suggested because they were shared with
   // the user, so they are ordered after suggestions for viewed/modified files.
   const bool shared_with_me_suggestion =
-      justification_type == app_list::JustificationType::kShared;
+      justification_type == FileSuggestionJustificationType::kShared;
   std::optional<base::Time> primary_timestamp;
   std::optional<base::Time> secondary_timestamp;
   if (shared_with_me_suggestion) {
@@ -92,7 +95,7 @@ FileSuggestData CreateFileSuggestionWithJustification(
   }
 
   return FileSuggestData(
-      FileSuggestionType::kDriveFile, path,
+      FileSuggestionType::kDriveFile, path, justification_type,
       app_list::GetJustificationString(
           justification_type, timestamp,
           user_info ? user_info->display_name : std::string()),
@@ -101,22 +104,22 @@ FileSuggestData CreateFileSuggestionWithJustification(
 
 std::optional<FileSuggestData> CreateFileSuggestion(
     const base::FilePath& path,
-    const drivefs::mojom::FileMetadata& file_metadata) {
+    const drivefs::mojom::FileMetadata& file_metadata,
+    base::TimeDelta max_recency) {
   const base::Time& modified_time = file_metadata.modification_time;
   const base::Time& viewed_time = file_metadata.last_viewed_by_me_time;
 
   // If the file was shared with user, but not yet viewed by the user, surface
   // it as a shared file.
-  if (const absl::optional<base::Time>& shared_time =
+  if (const std::optional<base::Time>& shared_time =
           file_metadata.shared_with_me_time;
       shared_time && !shared_time->is_null() && viewed_time.is_null()) {
-    if ((base::Time::Now() - *shared_time).magnitude() >
-        kMaxLastModifiedOrViewedTime) {
+    if ((base::Time::Now() - *shared_time).magnitude() > max_recency) {
       return std::nullopt;
     }
 
     return CreateFileSuggestionWithJustification(
-        path, app_list::JustificationType::kShared, *shared_time,
+        path, FileSuggestionJustificationType::kShared, *shared_time,
         features::IsShowSharingUserInLauncherContinueSectionEnabled()
             ? file_metadata.sharing_user.get()
             : nullptr);
@@ -124,9 +127,16 @@ std::optional<FileSuggestData> CreateFileSuggestion(
 
   // Viewed by the user more recently than the last modification.
   if (viewed_time > modified_time) {
+    if ((base::Time::Now() - viewed_time).magnitude() > max_recency) {
+      return std::nullopt;
+    }
     return CreateFileSuggestionWithJustification(
-        path, app_list::JustificationType::kViewed, viewed_time,
+        path, FileSuggestionJustificationType::kViewed, viewed_time,
         /*user_info=*/nullptr);
+  }
+
+  if ((base::Time::Now() - modified_time).magnitude() > max_recency) {
+    return std::nullopt;
   }
 
   base::UmaHistogramBoolean(
@@ -139,14 +149,14 @@ std::optional<FileSuggestData> CreateFileSuggestion(
       !file_metadata.modified_by_me_time->is_null() &&
       file_metadata.modified_by_me_time >= modified_time) {
     return CreateFileSuggestionWithJustification(
-        path, app_list::JustificationType::kModifiedByCurrentUser,
+        path, FileSuggestionJustificationType::kModifiedByCurrentUser,
         *file_metadata.modified_by_me_time, /*user_info=*/nullptr);
   }
 
   // Last modification was by either by another user, or the last modifying user
   // information is not available.
   return CreateFileSuggestionWithJustification(
-      path, app_list::JustificationType::kModified, modified_time,
+      path, FileSuggestionJustificationType::kModified, modified_time,
       file_metadata.last_modifying_user.get());
 }
 
@@ -155,7 +165,20 @@ std::optional<FileSuggestData> CreateFileSuggestion(
 DriveRecentFileSuggestionProvider::DriveRecentFileSuggestionProvider(
     Profile* profile,
     base::RepeatingCallback<void(FileSuggestionType)> notify_update_callback)
-    : FileSuggestionProvider(notify_update_callback), profile_(profile) {}
+    : FileSuggestionProvider(notify_update_callback),
+      profile_(profile),
+      max_recency_(GetMaxFileSuggestionRecency()) {
+  auto* drive_integration_service =
+      drive::DriveIntegrationServiceFactory::GetForProfile(profile);
+  if (drive_integration_service) {
+    drive::DriveIntegrationService::Observer::Observe(
+        drive_integration_service);
+    auto* drive_fs_host = drive_integration_service->GetDriveFsHost();
+    if (drive_fs_host) {
+      drivefs::DriveFsHost::Observer::Observe(drive_fs_host);
+    }
+  }
+}
 
 DriveRecentFileSuggestionProvider::~DriveRecentFileSuggestionProvider() =
     default;
@@ -165,12 +188,11 @@ void DriveRecentFileSuggestionProvider::GetSuggestFileData(
   const bool has_active_request =
       !on_drive_results_ready_callback_list_.empty();
 
-  // Add `callback` to the waiting list.
-  on_drive_results_ready_callback_list_.AddUnsafe(std::move(callback));
-
   // Return early if there is an active search request. `callback` will run when
   // the active search completes.
   if (has_active_request) {
+    // Add `callback` to the waiting list, and return.
+    on_drive_results_ready_callback_list_.AddUnsafe(std::move(callback));
     return;
   }
 
@@ -179,21 +201,34 @@ void DriveRecentFileSuggestionProvider::GetSuggestFileData(
 
   // If there is not any available drive service, return early.
   if (!drive_service || !drive_service->IsMounted()) {
-    on_drive_results_ready_callback_list_.Notify(
-        /*suggest_results=*/std::nullopt);
+    std::move(callback).Run(/*suggest_results=*/std::nullopt);
     return;
   }
 
+  if (can_use_cache_) {
+    std::move(callback).Run(GetSuggestionsFromLatestQueryResults());
+    return;
+  }
+
+  on_drive_results_ready_callback_list_.AddUnsafe(std::move(callback));
+
   search_start_time_ = base::Time::Now();
+  query_result_files_by_path_.clear();
+
+  // Allow using cached results for requests that come in after the current one
+  // finishes.
+  can_use_cache_ = true;
 
   base::RepeatingClosure search_callback = base::BarrierClosure(
       3, base::BindOnce(
              &DriveRecentFileSuggestionProvider::OnRecentFilesSearchesCompleted,
              weak_factory_.GetWeakPtr()));
-  PerformSearch(SearchType::kLastModified, CreateRecentlyModifiedQuery(),
-                drive_service, search_callback);
-  PerformSearch(SearchType::kLastViewed, CreateRecentlyViewedQuery(),
-                drive_service, search_callback);
+  PerformSearch(SearchType::kLastModified,
+                CreateRecentlyModifiedQuery(max_recency_), drive_service,
+                search_callback);
+  PerformSearch(SearchType::kLastViewed,
+                CreateRecentlyViewedQuery(max_recency_), drive_service,
+                search_callback);
   PerformSearch(SearchType::kSharedWithUser, CreateSharedWithMeQuery(),
                 drive_service, search_callback);
 }
@@ -208,6 +243,51 @@ std::string DriveRecentFileSuggestionProvider::GetHistogramSuffix(
       return "Modified";
     case SearchType::kSharedWithUser:
       return "Shared";
+  }
+}
+
+void DriveRecentFileSuggestionProvider::OnDriveIntegrationServiceDestroyed() {
+  drive::DriveIntegrationService::Observer::Reset();
+  drivefs::DriveFsHost::Observer::Reset();
+
+  can_use_cache_ = false;
+  query_result_files_by_path_.clear();
+  on_drive_results_ready_callback_list_.Notify(
+      /*suggest_results=*/std::nullopt);
+}
+
+void DriveRecentFileSuggestionProvider::OnFileSystemMounted() {
+  if (!drivefs::DriveFsHost::Observer::GetHost()) {
+    auto* drive_fs_host = drive::DriveIntegrationService::Observer::GetService()
+                              ->GetDriveFsHost();
+    if (drive_fs_host) {
+      drivefs::DriveFsHost::Observer::Observe(drive_fs_host);
+    }
+  }
+  NotifySuggestionUpdate(FileSuggestionType::kDriveFile);
+}
+
+void DriveRecentFileSuggestionProvider::OnHostDestroyed() {
+  drivefs::DriveFsHost::Observer::Reset();
+}
+
+void DriveRecentFileSuggestionProvider::OnUnmounted() {
+  can_use_cache_ = false;
+  query_result_files_by_path_.clear();
+  on_drive_results_ready_callback_list_.Notify(
+      /*suggest_results=*/std::nullopt);
+
+  NotifySuggestionUpdate(FileSuggestionType::kDriveFile);
+}
+
+void DriveRecentFileSuggestionProvider::OnFilesChanged(
+    const std::vector<drivefs::mojom::FileChange>& changes) {
+  can_use_cache_ = false;
+
+  for (const auto& change : changes) {
+    if (change.type == drivefs::mojom::FileChange::Type::kDelete) {
+      query_result_files_by_path_.erase(change.path);
+    }
   }
 }
 
@@ -241,7 +321,15 @@ void DriveRecentFileSuggestionProvider::OnSearchRequestComplete(
           "."),
       std::abs(error));
 
-  if (error == drive::FileError::FILE_ERROR_OK && items) {
+  if (error != drive::FileError::FILE_ERROR_OK &&
+      error != drive::FileError::FILE_ERROR_INVALID_OPERATION &&
+      error != drive::FileError::FILE_ERROR_OK_WITH_MORE_RESULTS) {
+    can_use_cache_ = false;
+  }
+
+  if ((error == drive::FileError::FILE_ERROR_OK ||
+       error == drive::FileError::FILE_ERROR_OK_WITH_MORE_RESULTS) &&
+      items) {
     base::UmaHistogramTimes(
         base::JoinString({kBaseHistogramName, "DurationOnSuccess",
                           GetHistogramSuffix(search_type)},
@@ -279,17 +367,13 @@ void DriveRecentFileSuggestionProvider::OnSearchRequestComplete(
   callback.Run();
 }
 
-void DriveRecentFileSuggestionProvider::OnRecentFilesSearchesCompleted() {
-  std::vector<FileSuggestData> results;
-
+std::vector<FileSuggestData>
+DriveRecentFileSuggestionProvider::GetSuggestionsFromLatestQueryResults() {
   drive::DriveIntegrationService* const drive_service =
       drive::DriveIntegrationServiceFactory::FindForProfile(profile_);
-  if (!drive_service || !drive_service->IsMounted()) {
-    query_result_files_by_path_.clear();
-    on_drive_results_ready_callback_list_.Notify(results);
-    return;
-  }
+  CHECK(drive_service);
 
+  std::vector<FileSuggestData> results;
   for (const auto& item : query_result_files_by_path_) {
     base::FilePath root("/");
     base::FilePath path = drive_service->GetMountPointPath();
@@ -298,13 +382,11 @@ void DriveRecentFileSuggestionProvider::OnRecentFilesSearchesCompleted() {
     }
 
     std::optional<FileSuggestData> suggestion =
-        CreateFileSuggestion(path, *item.second);
+        CreateFileSuggestion(path, *item.second, max_recency_);
     if (suggestion) {
       results.push_back(*suggestion);
     }
   }
-
-  query_result_files_by_path_.clear();
 
   base::ranges::sort(results, [](const auto& lhs, const auto& rhs) {
     if (lhs.timestamp == rhs.timestamp) {
@@ -314,6 +396,23 @@ void DriveRecentFileSuggestionProvider::OnRecentFilesSearchesCompleted() {
     return lhs.timestamp.value_or(base::Time()) >
            rhs.timestamp.value_or(base::Time());
   });
+
+  return results;
+}
+
+void DriveRecentFileSuggestionProvider::OnRecentFilesSearchesCompleted() {
+  drive::DriveIntegrationService* const drive_service =
+      drive::DriveIntegrationServiceFactory::FindForProfile(profile_);
+  if (!drive_service || !drive_service->IsMounted()) {
+    can_use_cache_ = false;
+    query_result_files_by_path_.clear();
+    on_drive_results_ready_callback_list_.Notify(
+        std::vector<FileSuggestData>());
+    NotifySuggestionUpdate(FileSuggestionType::kDriveFile);
+    return;
+  }
+
+  std::vector<FileSuggestData> results = GetSuggestionsFromLatestQueryResults();
 
   base::UmaHistogramTimes(
       base::JoinString({kBaseHistogramName, "DurationOnSuccess.Total"}, "."),
@@ -333,6 +432,9 @@ void DriveRecentFileSuggestionProvider::OnRecentFilesSearchesCompleted() {
   }
 
   on_drive_results_ready_callback_list_.Notify(results);
+  if (can_use_cache_) {
+    NotifySuggestionUpdate(FileSuggestionType::kDriveFile);
+  }
 }
 
 }  // namespace ash

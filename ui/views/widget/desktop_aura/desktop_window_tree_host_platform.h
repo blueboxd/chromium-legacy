@@ -147,6 +147,12 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   gfx::Rect CalculateRootWindowBounds() const override;
   gfx::Rect GetBoundsInDIP() const override;
 
+  // CompositorObserver:
+  void OnCompositorVisibilityChanging(ui::Compositor* compositor,
+                                      bool visible) override;
+  void OnCompositorVisibilityChanged(ui::Compositor* compositor,
+                                     bool visible) override;
+
   // PlatformWindowDelegate:
   void OnClosed() override;
   void OnWindowStateChanged(ui::PlatformWindowState old_state,

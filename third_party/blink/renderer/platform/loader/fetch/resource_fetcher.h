@@ -223,7 +223,6 @@ class PLATFORM_EXPORT ResourceFetcher
   bool StartLoad(Resource*);
 
   void SetAutoLoadImages(bool);
-  void SetImagesEnabled(bool);
 
   FetchContext& Context() const;
   void ClearContext();
@@ -353,7 +352,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   void SetEarlyHintsPreloadedResources(
       HashMap<KURL, EarlyHintsPreloadEntry> resources) {
-    early_hints_preloaded_resources_ = std::move(resources);
+    unused_early_hints_preloaded_resources_ = std::move(resources);
   }
 
   // Access the UKMRecorder.
@@ -366,6 +365,10 @@ class PLATFORM_EXPORT ResourceFetcher
       base::MemoryPressureListener::MemoryPressureLevel) override;
 
   void RecordLCPPSubresourceMetrics();
+
+  // For every image resource that was deferred, check to see if state has
+  // changed such that the load should no longer be deferred.
+  void ReloadImagesIfNotDeferred();
 
  private:
   friend class ResourceCacheValidationSuppressor;
@@ -441,6 +444,11 @@ class PLATFORM_EXPORT ResourceFetcher
 
   void MaybeSaveResourceToStrongReference(Resource* resource);
 
+  void MarkEarlyHintConsumedAndOverrideInitiatorTypeIfNeeded(
+      const KURL& resource_inital_url,
+      Resource* resource,
+      AtomicString* origin_initiator_type);
+
   enum class RevalidationPolicy {
     kUse,
     kRevalidate,
@@ -505,8 +513,6 @@ class PLATFORM_EXPORT ResourceFetcher
   static bool ResourceAlreadyLoadStarted(Resource*, RevalidationPolicy);
 
   void ResourceTimingReportTimerFired(TimerBase*);
-
-  void ReloadImagesIfNotDeferred();
 
   static RevalidationPolicyForMetrics MapToPolicyForMetrics(RevalidationPolicy,
                                                             Resource*,
@@ -605,7 +611,7 @@ class PLATFORM_EXPORT ResourceFetcher
   HeapHashSet<Member<ResourceLoader>> loaders_;
   HeapHashSet<Member<ResourceLoader>> non_blocking_loaders_;
 
-  HashMap<KURL, EarlyHintsPreloadEntry> early_hints_preloaded_resources_;
+  HashMap<KURL, EarlyHintsPreloadEntry> unused_early_hints_preloaded_resources_;
 
   std::unique_ptr<HashSet<String>> preloaded_urls_for_test_;
 
@@ -616,10 +622,6 @@ class PLATFORM_EXPORT ResourceFetcher
   TaskHandle keepalive_loaders_task_handle_;
 
   uint32_t inflight_keepalive_bytes_ = 0;
-
-  // Records when this fetcher is detached from its context.
-  // Used to evaluate how long the keepalive requests outlive the context.
-  base::TimeTicks detached_time_;
 
   HeapMojoRemote<mojom::blink::BlobRegistry> blob_registry_remote_;
 
@@ -633,9 +635,8 @@ class PLATFORM_EXPORT ResourceFetcher
   // This is not in the bit field below because we want to use AutoReset.
   bool is_in_request_resource_ = false;
 
-  // 27 bits left
+  // 28 bits left
   bool auto_load_images_ : 1;
-  bool images_enabled_ : 1;
   bool allow_stale_resources_ : 1;
   bool image_fetched_ : 1;
   bool stale_while_revalidate_enabled_ : 1;

@@ -4,12 +4,12 @@
 
 #include "content/browser/accessibility/browser_accessibility_manager_fuchsia.h"
 
-#include <lib/sys/inspect/cpp/component.h>
+#include <lib/inspect/component/cpp/component.h>
 
 #include "base/fuchsia/fuchsia_logging.h"
 #include "content/browser/accessibility/browser_accessibility_fuchsia.h"
-#include "content/browser/accessibility/web_ax_platform_tree_manager_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/accessibility/platform/ax_platform_tree_manager_delegate.h"
 #include "ui/accessibility/platform/fuchsia/accessibility_bridge_fuchsia_registry.h"
 
 namespace content {
@@ -17,20 +17,20 @@ namespace content {
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
-    WebAXPlatformTreeManagerDelegate* delegate) {
+    ui::AXPlatformTreeManagerDelegate* delegate) {
   return new BrowserAccessibilityManagerFuchsia(initial_tree, delegate);
 }
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-    WebAXPlatformTreeManagerDelegate* delegate) {
+    ui::AXPlatformTreeManagerDelegate* delegate) {
   return new BrowserAccessibilityManagerFuchsia(
       BrowserAccessibilityManagerFuchsia::GetEmptyDocument(), delegate);
 }
 
 BrowserAccessibilityManagerFuchsia::BrowserAccessibilityManagerFuchsia(
     const ui::AXTreeUpdate& initial_tree,
-    WebAXPlatformTreeManagerDelegate* delegate)
+    ui::AXPlatformTreeManagerDelegate* delegate)
     : BrowserAccessibilityManager(delegate) {
   Initialize(initial_tree);
 
@@ -107,7 +107,7 @@ void BrowserAccessibilityManagerFuchsia::FireFocusEvent(ui::AXNode* node) {
 // static
 ui::AXTreeUpdate BrowserAccessibilityManagerFuchsia::GetEmptyDocument() {
   ui::AXNodeData empty_document;
-  empty_document.id = 1;
+  empty_document.id = ui::kInitialEmptyDocumentRootNodeID;
   empty_document.role = ax::mojom::Role::kRootWebArea;
   empty_document.AddBoolAttribute(ax::mojom::BoolAttribute::kBusy, true);
   ui::AXTreeUpdate update;

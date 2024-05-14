@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/scheduler/dom_task.h"
 
+#include <optional>
 #include <utility>
 
 #include "base/check_op.h"
@@ -26,7 +27,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/task_attribution_tracker.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_priority.h"
 #include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_task_queue.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -80,7 +80,7 @@ void AbortPostTaskCallbackTraceEventData(perfetto::TracedValue trace_context,
 
 }  // namespace
 
-DOMTask::DOMTask(ScriptPromiseResolver* resolver,
+DOMTask::DOMTask(ScriptPromiseResolverTyped<IDLAny>* resolver,
                  V8SchedulerPostTaskCallback* callback,
                  AbortSignal* abort_source,
                  DOMTaskSignal* priority_source,
@@ -110,9 +110,9 @@ DOMTask::DOMTask(ScriptPromiseResolver* resolver,
   DCHECK(script_state && script_state->ContextIsValid());
 
   if (script_state->World().IsMainWorld()) {
-    if (auto* tracker =
-            ThreadScheduler::Current()->GetTaskAttributionTracker()) {
-      parent_task_ = tracker->RunningTask(script_state->GetIsolate());
+    if (auto* tracker = scheduler::TaskAttributionTracker::From(
+            script_state->GetIsolate())) {
+      parent_task_ = tracker->RunningTask();
     }
   }
 
@@ -185,12 +185,13 @@ void DOMTask::InvokeInternal(ScriptState* script_state) {
       delay_.InMillisecondsF());
   probe::AsyncTask async_task(context, &async_task_context_);
 
-  std::unique_ptr<scheduler::TaskAttributionTracker::TaskScope>
+  std::optional<scheduler::TaskAttributionTracker::TaskScope>
       task_attribution_scope;
   // For the main thread (tracker exists), create the task scope with the signal
   // to set up propagation. On workers, set the current context here since there
   // is no tracker.
-  if (auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker()) {
+  if (auto* tracker =
+          scheduler::TaskAttributionTracker::From(script_state->GetIsolate())) {
     task_attribution_scope = tracker->CreateTaskScope(
         script_state, parent_task_,
         scheduler::TaskAttributionTracker::TaskScopeType::kSchedulerPostTask,
@@ -205,7 +206,7 @@ void DOMTask::InvokeInternal(ScriptState* script_state) {
 
   ScriptValue result;
   if (callback_->Invoke(nullptr).To(&result)) {
-    resolver_->Resolve(result.V8Value());
+    resolver_->Resolve(result);
   } else if (try_catch.HasCaught()) {
     resolver_->Reject(try_catch.Exception());
   }

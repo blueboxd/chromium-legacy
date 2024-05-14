@@ -15,15 +15,18 @@ namespace device {
 
 CoreLocationProvider::CoreLocationProvider(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    GeolocationManager* geolocation_manager)
-    : geolocation_manager_(geolocation_manager),
-      permission_observers_(geolocation_manager->GetObserverList()),
-      position_observers_(geolocation_manager->GetPositionObserverList()) {
+    GeolocationSystemPermissionManager* geolocation_system_permission_manager)
+    : geolocation_system_permission_manager_(
+          geolocation_system_permission_manager),
+      permission_observers_(
+          geolocation_system_permission_manager->GetObserverList()),
+      system_geolocation_source_(
+          geolocation_system_permission_manager->GetSystemGeolocationSource()) {
   permission_observers_->AddObserver(this);
   main_task_runner->PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::BindOnce(&GeolocationManager::GetSystemPermission,
-                     base::Unretained(geolocation_manager_)),
+      base::BindOnce(&GeolocationSystemPermissionManager::GetSystemPermission,
+                     base::Unretained(geolocation_system_permission_manager_)),
       base::BindOnce(&CoreLocationProvider::OnSystemPermissionUpdated,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -70,14 +73,14 @@ void CoreLocationProvider::StartProvider(bool high_accuracy) {
 }
 
 void CoreLocationProvider::StartWatching() {
-  position_observers_->AddObserver(this);
-  geolocation_manager_->StartWatchingPosition(high_accuracy_);
+  system_geolocation_source_->AddPositionUpdateObserver(this);
+  system_geolocation_source_->StartWatchingPosition(high_accuracy_);
 }
 
 void CoreLocationProvider::StopProvider() {
   is_started_ = false;
-  position_observers_->RemoveObserver(this);
-  geolocation_manager_->StopWatchingPosition();
+  system_geolocation_source_->RemovePositionUpdateObserver(this);
+  system_geolocation_source_->StopWatchingPosition();
 }
 
 const mojom::GeopositionResult* CoreLocationProvider::GetPosition() {
@@ -111,13 +114,13 @@ void CoreLocationProvider::OnPositionError(
 
 std::unique_ptr<LocationProvider> NewSystemLocationProvider(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    GeolocationManager* geolocation_manager) {
+    GeolocationSystemPermissionManager* geolocation_system_permission_manager) {
   if (!base::FeatureList::IsEnabled(features::kMacCoreLocationBackend)) {
     return nullptr;
   }
 
-  return std::make_unique<CoreLocationProvider>(std::move(main_task_runner),
-                                                geolocation_manager);
+  return std::make_unique<CoreLocationProvider>(
+      std::move(main_task_runner), geolocation_system_permission_manager);
 }
 
 }  // namespace device

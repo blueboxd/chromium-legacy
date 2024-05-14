@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
+
 class AudioCaptureSettings;
 class LocalFrame;
 class MediaStreamAudioSource;
@@ -292,13 +293,15 @@ class MODULES_EXPORT UserMediaProcessor
       const blink::VideoCaptureSettings& settings);
   void SelectVideoContentSettings();
 
-  std::optional<base::UnguessableToken> DetermineExistingAudioSessionId();
+  std::optional<base::UnguessableToken> DetermineExistingAudioSessionId(
+      const blink::AudioCaptureSettings& settings);
+
+  WTF::HashMap<String, base::UnguessableToken>
+  DetermineExistingAudioSessionIds();
 
   void GenerateStreamForCurrentRequestInfo(
-      std::optional<base::UnguessableToken> requested_audio_capture_session_id =
-          std::nullopt,
-      blink::mojom::StreamSelectionStrategy strategy =
-          blink::mojom::StreamSelectionStrategy::SEARCH_BY_DEVICE_ID);
+      WTF::HashMap<String, base::UnguessableToken>
+          requested_audio_capture_session_ids = {});
 
   WebMediaStreamDeviceObserver* GetMediaStreamDeviceObserver();
 

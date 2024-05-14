@@ -32,7 +32,7 @@ export interface RealboxDropdownElement {
 }
 
 // A dropdown element that contains autocomplete matches. Provides an API for
-// the embedder (i.e., <ntp-realbox>) to change the selection.
+// the embedder (i.e., <cr-realbox>) to change the selection.
 export class RealboxDropdownElement extends PolymerElement {
   static get is() {
     return 'cr-realbox-dropdown';
@@ -302,11 +302,11 @@ export class RealboxDropdownElement extends PolymerElement {
   // Helpers
   //============================================================================
 
-  private classForSideType_(side: SideType): string {
+  private sideTypeClass_(side: SideType): string {
     return sideTypeToClass(side);
   }
 
-  private classForGroupRenderType_(groupId: number) {
+  private renderTypeClassForGroup_(groupId: number): string {
     return renderTypeToClass(
         this.result?.suggestionGroupsMap[groupId]?.renderType ??
         RenderType.kDefaultVertical);
@@ -458,7 +458,7 @@ export class RealboxDropdownElement extends PolymerElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'ntp-realbox-dropdown': RealboxDropdownElement;
+    'cr-realbox-dropdown': RealboxDropdownElement;
   }
 }
 

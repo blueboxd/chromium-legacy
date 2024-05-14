@@ -117,6 +117,10 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy
       this.categoryList_.push(ContentSettingsTypes.WEB_PRINTING);
     }
 
+    if (loadTimeData.getBoolean('enableAutomaticFullscreenContentSetting')) {
+      this.categoryList_.push(ContentSettingsTypes.AUTOMATIC_FULLSCREEN);
+    }
+
     this.prefs_ = createSiteSettingsPrefs([], [], []);
   }
 
@@ -597,10 +601,10 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy
   }
 
   /** @override */
-  getDefaultCaptureDevices() {}
+  initializeCaptureDevices() {}
 
   /** @override */
-  setDefaultCaptureDevice() {}
+  setPreferredCaptureDevice() {}
 
   /** @override */
   setProtocolHandlerDefault(value: boolean) {

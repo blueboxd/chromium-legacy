@@ -55,6 +55,13 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Managed"/>
 </enum>
 
+<enum name="CAPPORTQueryResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Request failed"/>
+  <int value="2" label="Response failed"/>
+  <int value="3" label="Invalid response"/>
+</enum>
+
 <enum name="CaptivePortalNetworkState">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="ONLINE"/>
@@ -108,6 +115,10 @@ chromium-metrics-reviews@google.com.
 <enum name="CellularCarrierLockFcmNotification">
   <int value="0" label="UpdateProfile"/>
   <int value="1" label="UnlockDevice"/>
+  <int value="2" label="UpdateProfileBeforeInit"/>
+  <int value="3" label="UnlockDeviceBeforeInit"/>
+  <int value="4" label="UpdateProfileWhileBusy"/>
+  <int value="5" label="UnlockDeviceWhileBusy"/>
 </enum>
 
 <enum name="CellularCarrierLockFcmResult">
@@ -582,6 +593,12 @@ chromium-metrics-reviews@google.com.
   <int value="0" label="Unknown"/>
   <int value="1" label="Ineligible"/>
   <int value="2" label="Eligible"/>
+</enum>
+
+<enum name="IpProtectionGetProxyListResult">
+  <int value="0" label="Failed to acquire a list"/>
+  <int value="1" label="Got a list without any valid entries"/>
+  <int value="2" label="Got a list with at least one valid entry"/>
 </enum>
 
 <enum name="IpProtectionProxyChainId">
@@ -1235,16 +1252,6 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="PolicySuppressed"/>
 </enum>
 
-<enum name="OncRecommendedFieldsWorkaroundAction">
-  <int value="0"
-      label="Enabled by feature, ONC NetworkConfiguration not affected"/>
-  <int value="1" label="Enabled by feature, ONC NetworkConfiguration affected"/>
-  <int value="2"
-      label="Disabled by feature, ONC NetworkConfiguration not affected"/>
-  <int value="3"
-      label="Disabled by feature, ONC NetworkConfiguration affected"/>
-</enum>
-
 <enum name="PasspointMatch">
   <int value="0" label="No match"/>
   <int value="1" label="Service not found"/>
@@ -1327,14 +1334,23 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Suppress"/>
 </enum>
 
+<enum name="PortalDetectorAggregateCAPPORTResult">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Captive"/>
+  <int value="2" label="Open, no verified Internet"/>
+  <int value="3" label="Open, with verified Internet"/>
+</enum>
+
 <enum name="PortalDetectorAggregateResult">
   <int value="0" label="Unknown"/>
   <int value="1" label="No Connectivity"/>
   <int value="2" label="Partial Connectivity"/>
-  <int value="3" label="Redirect"/>
+  <int value="3" label="Portal-Redirect (302, 307)"/>
   <int value="4" label="Internet After Partial Connectivity"/>
-  <int value="5" label="Internet After Redirect"/>
+  <int value="5" label="Internet After Portal-Redirect"/>
   <int value="6" label="Internet"/>
+  <int value="7" label="Portal-Suspected (200)"/>
+  <int value="8" label="Internet After Portal-Suspected"/>
 </enum>
 
 <enum name="PortalDetectorResult">
@@ -2411,6 +2427,33 @@ chromium-metrics-reviews@google.com.
   <int value="0" label="Adapter is not in the allowlist"/>
   <int value="1" label="Adapter in AVL"/>
   <int value="2" label="Adapter in allowlist but not in AVL"/>
+</enum>
+
+<enum name="WiFiANQPAddressTypeAvailabilitySupport">
+  <int value="0" label="Does not support Address Type Availability"/>
+  <int value="1" label="Supports Address Type Availability"/>
+</enum>
+
+<enum name="WiFiANQPNetworkAuthTypeSupport">
+  <int value="0" label="Does not support Network Authentication Type"/>
+  <int value="1" label="Supports Network Authentication Type"/>
+</enum>
+
+<enum name="WiFiANQPQueryResult">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Failure"/>
+  <int value="3" label="Invalid frame"/>
+</enum>
+
+<enum name="WiFiANQPVenueNameSupport">
+  <int value="0" label="Does not support Venue Name"/>
+  <int value="1" label="Supports Venue Name"/>
+</enum>
+
+<enum name="WiFiANQPVenueURLSupport">
+  <int value="0" label="Does not support Venue URL"/>
+  <int value="1" label="Supports Venue URL"/>
 </enum>
 
 <enum name="WiFiAp80211kSupport">

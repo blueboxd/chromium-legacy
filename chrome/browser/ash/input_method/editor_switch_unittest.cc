@@ -37,6 +37,12 @@ const char kDeniedTestCountry[] = "br";
 
 const char kAllowedTestUrl[] = "https://allowed.testurl.com/allowed/path";
 
+class FakeEditorSwitchDelegate : public EditorSwitch::Delegate {
+ public:
+  // EditorSwitch::Delegate overrides
+  void OnEditorModeChanged(const EditorMode& mode) override {}
+};
+
 struct EditorSwitchAvailabilityTestCase {
   std::string test_name;
 
@@ -95,39 +101,42 @@ std::unique_ptr<TestingProfile> CreateTestingProfile(std::string email) {
   return profile;
 }
 
+// TODO: b:329215512: Remove the OrcaUseAccountCapabilities from the disable
+// lists of all test cases.
 INSTANTIATE_TEST_SUITE_P(
     EditorSwitchAvailabilityTests,
     EditorSwitchAvailabilityTest,
     testing::ValuesIn<EditorSwitchAvailabilityTestCase>({
         {.test_name = "FeatureNotAvailableForUseWithoutReceivingOrcaFlag",
          .enabled_flags = {},
-         .disabled_flags = {},
+         .disabled_flags = {ash::features::kOrcaUseAccountCapabilities},
          .country_code = kAllowedTestCountry,
          .is_managed = false,
          .expected_availability = false},
         {.test_name = "FeatureNotAvailableForManagedAccountOnNonDogfoodDevices",
          .enabled_flags = {chromeos::features::kOrca,
                            chromeos::features::kFeatureManagementOrca},
-         .disabled_flags = {},
+         .disabled_flags = {ash::features::kOrcaUseAccountCapabilities},
          .country_code = kAllowedTestCountry,
          .is_managed = true,
          .expected_availability = false},
         {.test_name = "FeatureNotAvailableInACountryNotApprovedYet",
          .enabled_flags = {chromeos::features::kOrca,
                            chromeos::features::kFeatureManagementOrca},
-         .disabled_flags = {},
+         .disabled_flags = {ash::features::kOrcaUseAccountCapabilities},
          .country_code = kDeniedTestCountry,
          .is_managed = false,
          .expected_availability = false},
         {.test_name = "FeatureNotAvailableWithoutFeatureManagementFlag",
          .enabled_flags = {chromeos::features::kOrca},
-         .disabled_flags = {chromeos::features::kFeatureManagementOrca},
+         .disabled_flags = {chromeos::features::kFeatureManagementOrca,
+                            ash::features::kOrcaUseAccountCapabilities},
          .country_code = kAllowedTestCountry,
          .is_managed = false,
          .expected_availability = false},
         {.test_name = "FeatureAvailableWhenReceivingDogfoodFlag",
          .enabled_flags = {chromeos::features::kOrcaDogfood},
-         .disabled_flags = {},
+         .disabled_flags = {ash::features::kOrcaUseAccountCapabilities},
          .country_code = kAllowedTestCountry,
          .is_managed = true,
          .expected_availability = true},
@@ -135,7 +144,7 @@ INSTANTIATE_TEST_SUITE_P(
                       "atureManagementFlag",
          .enabled_flags = {chromeos::features::kOrca,
                            chromeos::features::kFeatureManagementOrca},
-         .disabled_flags = {},
+         .disabled_flags = {ash::features::kOrcaUseAccountCapabilities},
          .country_code = kAllowedTestCountry,
          .is_managed = false,
          .expected_availability = true},
@@ -153,7 +162,9 @@ TEST_P(EditorSwitchAvailabilityTest, TestEditorAvailability) {
   TestingProfile profile_;
   profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(
       test_case.is_managed);
-  EditorSwitch editor_switch(/*profile=*/&profile_,
+  FakeEditorSwitchDelegate delegate;
+  EditorSwitch editor_switch(/*delegate=*/&delegate,
+                             /*profile=*/&profile_,
                              /*country_code=*/test_case.country_code);
 
   EXPECT_EQ(editor_switch.IsAllowedForUse(), test_case.expected_availability);
@@ -400,12 +411,16 @@ TEST_P(EditorSwitchTriggerTest, TestEditorMode) {
   base_enabled_features.insert(base_enabled_features.end(),
                                test_case.additional_enabled_flags.begin(),
                                test_case.additional_enabled_flags.end());
+  // TODO: b:329215512: Remove the OrcaUseAccountCapabilities from the disable
+  // list.
   feature_list.InitWithFeatures(
       /*enabled_features=*/base_enabled_features,
-      /*disabled_features=*/{});
+      /*disabled_features=*/{ash::features::kOrcaUseAccountCapabilities});
   std::unique_ptr<TestingProfile> profile =
       CreateTestingProfile(test_case.email);
-  EditorSwitch editor_switch(/*profile=*/profile.get(),
+  FakeEditorSwitchDelegate delegate;
+  EditorSwitch editor_switch(/*delegate=*/&delegate,
+                             /*profile=*/profile.get(),
                              /*country_code=*/kAllowedTestCountry);
 
   auto mock_notifier = net::test::MockNetworkChangeNotifier::Create();

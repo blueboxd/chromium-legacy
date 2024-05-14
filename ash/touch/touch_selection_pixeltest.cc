@@ -7,6 +7,8 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/pixel/ash_pixel_differ.h"
 #include "ash/test/pixel/ash_pixel_test_init_params.h"
+#include "base/test/scoped_feature_list.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -31,13 +33,19 @@ gfx::Rect GetCursorBoundsInScreen(views::Textfield* textfield, int cursor_pos) {
 
 class TouchSelectionPixelTest : public AshTestBase {
  public:
-  TouchSelectionPixelTest() = default;
+  TouchSelectionPixelTest() {
+    scoped_features_.InitWithFeatures({::features::kChromeRefresh2023,
+                                       ::features::kChromeRefreshSecondary2023,
+                                       ::features::kChromeRefresh2023NTB},
+                                      {});
+  }
+
   TouchSelectionPixelTest(const TouchSelectionPixelTest&) = delete;
   TouchSelectionPixelTest& operator=(const TouchSelectionPixelTest&) = delete;
   ~TouchSelectionPixelTest() override = default;
 
   // AshTestBase:
-  absl::optional<pixel_test::InitParams> CreatePixelTestInitParams()
+  std::optional<pixel_test::InitParams> CreatePixelTestInitParams()
       const override {
     return pixel_test::InitParams();
   }
@@ -55,6 +63,8 @@ class TouchSelectionPixelTest : public AshTestBase {
   // triggered.
   ui::ScopedAnimationDurationScaleMode disable_animations_{
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION};
+
+  base::test::ScopedFeatureList scoped_features_;
 };
 
 TEST_F(TouchSelectionPixelTest, MagnifierOnTextfield) {

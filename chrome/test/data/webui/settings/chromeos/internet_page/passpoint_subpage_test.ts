@@ -104,7 +104,6 @@ suite('PasspointSubpage', () => {
 
   suiteSetup(() => {
     loadTimeData.overrideValues({
-      isPasspointEnabled: true,
       isPasspointSettingsEnabled: true,
     });
     networkConfigApi_ = new FakeNetworkConfig();
@@ -190,6 +189,7 @@ suite('PasspointSubpage', () => {
       friendlyName: 'Passpoint Example Ltd.',
       provisioningSource: 'app.passpoint.example.com',
       expirationEpochMs: 0n,
+      trustedCa: null,
     };
     await init(sub);
 
@@ -236,6 +236,7 @@ suite('PasspointSubpage', () => {
       friendlyName: 'Passpoint Example Ltd.',
       provisioningSource: 'app.passpoint.example.com',
       expirationEpochMs: 0n,
+      trustedCa: null,
     };
     await init(sub);
 

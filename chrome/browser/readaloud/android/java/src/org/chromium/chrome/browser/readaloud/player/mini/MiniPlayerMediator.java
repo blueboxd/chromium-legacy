@@ -35,9 +35,10 @@ import org.chromium.ui.modelutil.PropertyModel;
 public class MiniPlayerMediator {
     private final PropertyModel mModel;
     private final BrowserControlsSizer mBrowserControlsSizer;
+    private MiniPlayerCoordinator mCoordinator;
     // Height of MiniPlayerLayout's background (without shadow).
     private int mLayoutHeightPx;
-    private static boolean sIsAnimationStarted;
+    private boolean mIsAnimationStarted;
     private final BrowserControlsStateProvider.Observer mBrowserControlsStateObserver =
             new BrowserControlsStateProvider.Observer() {
                 @Override
@@ -47,8 +48,8 @@ public class MiniPlayerMediator {
                         int bottomOffset,
                         int bottomControlsMinHeightOffset,
                         boolean needsAnimate) {
-                    if (!sIsAnimationStarted) {
-                        sIsAnimationStarted = true;
+                    if (!mIsAnimationStarted) {
+                        mIsAnimationStarted = true;
                     }
                     if (getVisibility() == VisibilityState.HIDING
                             && bottomControlsMinHeightOffset == 0) {
@@ -73,7 +74,7 @@ public class MiniPlayerMediator {
                                 TaskTraits.UI_DEFAULT,
                                 () -> {
                                     if (getVisibility() == VisibilityState.SHOWING
-                                            && !sIsAnimationStarted
+                                            && !mIsAnimationStarted
                                             && mBrowserControlsSizer.getBottomControlsHeight()
                                                     > 0) {
                                         onBottomControlsGrown();
@@ -94,6 +95,10 @@ public class MiniPlayerMediator {
                         .build();
         mBrowserControlsSizer = browserControlsSizer;
         mBrowserControlsSizer.addObserver(mBrowserControlsStateObserver);
+    }
+
+    void setCoordinator(MiniPlayerCoordinator coordinator) {
+        mCoordinator = coordinator;
     }
 
     void destroy() {
@@ -123,10 +128,6 @@ public class MiniPlayerMediator {
         mModel.set(Properties.VISIBILITY, VisibilityState.SHOWING);
         mModel.set(Properties.ANIMATE_VISIBILITY_CHANGES, animate);
         mModel.set(Properties.COMPOSITED_VIEW_VISIBLE, true);
-        if (mLayoutHeightPx != 0) {
-            // Grow immediately if height is already known.
-            growBottomControls();
-        }
         // Set player visibility from GONE to VISIBLE so that it has a height.
         mModel.set(Properties.ANDROID_VIEW_VISIBILITY, View.VISIBLE);
     }
@@ -138,7 +139,7 @@ public class MiniPlayerMediator {
      */
     void onHeightKnown(int heightPx) {
         // (1.5) Grow bottom controls once player height has been measured.
-        if (getVisibility() == VisibilityState.SHOWING && heightPx > 0 && mLayoutHeightPx == 0) {
+        if (heightPx > 0 && heightPx != mLayoutHeightPx) {
             mLayoutHeightPx = heightPx;
             mModel.set(Properties.HEIGHT, heightPx);
             growBottomControls();
@@ -155,6 +156,7 @@ public class MiniPlayerMediator {
     void onFullOpacityReached() {
         // show() is finished!
         onTransitionFinished(VisibilityState.VISIBLE);
+        mCoordinator.onShown();
     }
 
     /// Dismiss
@@ -177,6 +179,7 @@ public class MiniPlayerMediator {
     void onZeroOpacityReached() {
         mModel.set(Properties.ANDROID_VIEW_VISIBILITY, View.GONE);
         shrinkBottomControls();
+        mLayoutHeightPx = 0;
     }
 
     // (3) Done.
@@ -212,9 +215,14 @@ public class MiniPlayerMediator {
     }
 
     private void setBottomControlsHeight(int height, int minHeight) {
-        sIsAnimationStarted = false;
-        mBrowserControlsSizer.setAnimateBrowserControlsHeightChanges(
-                mModel.get(Properties.ANIMATE_VISIBILITY_CHANGES));
+        mIsAnimationStarted = false;
+        boolean animate = mModel.get(Properties.ANIMATE_VISIBILITY_CHANGES);
+        if (animate) {
+            mBrowserControlsSizer.setAnimateBrowserControlsHeightChanges(true);
+        }
         mBrowserControlsSizer.setBottomControlsHeight(height, minHeight);
+        if (animate) {
+            mBrowserControlsSizer.setAnimateBrowserControlsHeightChanges(false);
+        }
     }
 }

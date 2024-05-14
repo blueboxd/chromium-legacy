@@ -13,7 +13,7 @@
  * regenerate.
  */
 
-import {ChromeEvent} from '../../../../../../tools/typescript/definitions/chrome_event';
+import {ChromeEvent} from '../../../../../../tools/typescript/definitions/chrome_event.js';
 
 declare global {
   export namespace chrome {
@@ -444,10 +444,6 @@ declare global {
 
       export const onAccessibilityGesture:
           ChromeEvent<(gesture: Gesture, x: number, y: number) => void>;
-
-      export const onTwoFingerTouchStart: ChromeEvent<() => void>;
-
-      export const onTwoFingerTouchStop: ChromeEvent<() => void>;
 
       export const onSelectToSpeakContextMenuClicked: ChromeEvent<() => void>;
 

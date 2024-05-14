@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/compose/core/browser/compose_manager_impl.h"
+
 #include <memory>
 #include <optional>
 #include <utility>
@@ -14,7 +16,6 @@
 #include "components/autofill/core/common/autofill_test_utils.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/compose/core/browser/compose_client.h"
-#include "components/compose/core/browser/compose_manager_impl.h"
 #include "components/compose/core/browser/compose_metrics.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -45,13 +46,15 @@ class MockComposeClient : public compose::ComposeClient {
               (override));
   MOCK_METHOD(bool,
               ShouldTriggerPopup,
-              (const autofill::FormFieldData& trigger_field),
+              (const autofill::FormFieldData& trigger_field,
+               autofill::AutofillSuggestionTriggerSource trigger_source),
               (override));
   MOCK_METHOD(compose::PageUkmTracker*, getPageUkmTracker, (), (override));
 };
 
 class MockAutofillDriver : public autofill::TestAutofillDriver {
  public:
+  using autofill::TestAutofillDriver::TestAutofillDriver;
   MOCK_METHOD(void,
               ExtractForm,
               (autofill::FormGlobalId form,
@@ -73,7 +76,7 @@ class ComposeManagerImplTest : public testing::Test {
     std::unique_ptr<testing::NiceMock<autofill::MockAutofillManager>>
         mock_autofill_manager =
             std::make_unique<testing::NiceMock<autofill::MockAutofillManager>>(
-                &mock_autofill_driver_, &test_autofill_client_);
+                &mock_autofill_driver_);
     mock_autofill_driver_.set_autofill_manager(
         std::move(mock_autofill_manager));
 
@@ -133,7 +136,8 @@ class ComposeManagerImplTest : public testing::Test {
   testing::NiceMock<MockComposeClient> mock_compose_client_;
   autofill::TestAutofillClient test_autofill_client_;
   autofill::FormFieldData last_form_field_to_client_;
-  testing::NiceMock<MockAutofillDriver> mock_autofill_driver_;
+  testing::NiceMock<MockAutofillDriver> mock_autofill_driver_{
+      &test_autofill_client_};
   std::unique_ptr<compose::PageUkmTracker> page_ukm_tracker_;
   base::HistogramTester histogram_tester_;
   std::unique_ptr<compose::ComposeManagerImpl> compose_manager_impl_;

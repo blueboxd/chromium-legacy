@@ -7,6 +7,7 @@
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
+#include "net/base/network_change_notifier.h"
 #include "third_party/blink/public/common/features.h"
 
 namespace predictors {
@@ -546,6 +547,9 @@ ConvertLcppDataToLCPCriticalPathPredictorNavigationTimeHint(
 }
 
 std::vector<GURL> PredictFetchedFontUrls(const LcppData& data) {
+  if (!base::FeatureList::IsEnabled(blink::features::kLCPPFontURLPredictor)) {
+    return std::vector<GURL>();
+  }
   std::vector<std::pair<double, std::string>> font_urls_with_frequency =
       ConvertToFrequencyStringPair(data.lcpp_stat().fetched_font_url_stat());
 
@@ -574,6 +578,32 @@ std::vector<GURL> PredictFetchedFontUrls(const LcppData& data) {
       break;
     }
   }
+  if (font_urls.empty()) {
+    return font_urls;
+  }
+
+  // No need to record metrics for pages without web fonts to be prefetched
+  // or preloaded.
+  double max_bandwidth_mbps;
+  net::NetworkChangeNotifier::ConnectionType connection_type;
+  net::NetworkChangeNotifier::GetMaxBandwidthAndConnectionType(
+      &max_bandwidth_mbps, &connection_type);
+  if (blink::features::kLCPPFontURLPredictorThresholdInMbps.Get() > 0 &&
+      (connection_type ==
+           net::NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN ||
+       max_bandwidth_mbps <
+           blink::features::kLCPPFontURLPredictorThresholdInMbps.Get())) {
+    base::UmaHistogramEnumeration(
+        "Blink.LCPP.FontFetch.Disabled.ConnectionType", connection_type,
+        net::NetworkChangeNotifier::ConnectionType::CONNECTION_LAST);
+    return std::vector<GURL>();
+  }
+  // Workaround: we cannot use UmaHistogramEnumeration because
+  // connection_type is defined with old C enum, and setting kValue causes
+  // namespace conflict.
+  base::UmaHistogramEnumeration(
+      "Blink.LCPP.FontFetch.Enabled.ConnectionType", connection_type,
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_LAST);
   return font_urls;
 }
 

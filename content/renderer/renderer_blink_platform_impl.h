@@ -126,7 +126,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebAudioSinkDescriptor& sink_descriptor,
       unsigned number_of_output_channels,
       const blink::WebAudioLatencyHint& latency_hint,
-      std::optional<float> sample_rate,
       media::AudioRendererSink::RenderCallback* callback) override;
   bool DecodeAudioFileData(blink::WebAudioBus* destination_bus,
                            const char* audio_file_data,
@@ -261,8 +260,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   bool is_locked_to_site_;
 
   // NOT OWNED
-  raw_ptr<blink::scheduler::WebThreadScheduler, ExperimentalRenderer>
-      main_thread_scheduler_;
+  raw_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler_;
 
   // Event that signals `io_thread_id_` is set and ready to be read.
   mutable base::WaitableEvent io_thread_id_ready_event_;

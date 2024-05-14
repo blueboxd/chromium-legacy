@@ -5,6 +5,7 @@
 <translation id="1036348656032585052">Wyłącz</translation>
 <translation id="1044891598689252897">Strony będą działać normalnie</translation>
 <translation id="1073417869336441572">Pomóż nam ulepszyć Chrome, informując nas, dlaczego zezwalasz na pliki cookie innych firm. <ph name="BEGIN_LINK" />Prześlij opinię<ph name="END_LINK" /></translation>
+<translation id="1113435009358629918">Ukryj kartę obniżki ceny</translation>
 <translation id="1178581264944972037">Wstrzymaj</translation>
 <translation id="1181037720776840403">Usuń</translation>
 <translation id="1192844206376121885">Spowoduje to usunięcie wszystkich danych i plików cookie zapisanych przez stronę <ph name="ORIGIN" />.</translation>
@@ -21,7 +22,6 @@
 <translation id="1383876407941801731">Szukaj</translation>
 <translation id="1384959399684842514">Pobieranie wstrzymane</translation>
 <translation id="1415402041810619267">URL obcięty</translation>
-<translation id="1434873037477293673">karta obniżki ceny</translation>
 <translation id="1448064542941920355">Zmniejsz powiększenie</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{<ph name="SITE_COUNT" /> witryna}few{<ph name="SITE_COUNT" /> witryny}many{<ph name="SITE_COUNT" /> witryn}other{<ph name="SITE_COUNT" /> witryny}}</translation>
 <translation id="1510341833810331442">Witryny nie mogą zapisywać danych na Twoim urządzeniu</translation>
@@ -93,12 +93,14 @@
 <translation id="2498359688066513246">Pomoc i opinie</translation>
 <translation id="2501278716633472235">Wróć</translation>
 <translation id="2546283357679194313">Pliki cookie i dane witryn</translation>
+<translation id="2550801787432930915">Karta obniżki ceny</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Zablokowano 1 plik cookie}few{Zablokowano # pliki cookie}many{Zablokowano # plików cookie}other{Zablokowano # pliku cookie}}</translation>
 <translation id="2570922361219980984">Dostęp do lokalizacji jest wyłączony też na tym urządzeniu. Włącz go w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Rozwinięty – kliknij, by zwinąć.</translation>
 <translation id="2586657967955657006">Schowek</translation>
 <translation id="2597457036804169544">Nie stosuj ciemnego motywu witryn</translation>
 <translation id="2606760465469169465">Automatyczna weryfikacja</translation>
+<translation id="2613007545732217283"><ph name="HOST_NAME" /> <ph name="SEPARATOR" /> <ph name="RECENCY" /></translation>
 <translation id="2621115761605608342">Zezwól na użycie JavaScriptu w określonej witrynie.</translation>
 <translation id="2653659639078652383">Prześlij</translation>
 <translation id="2677748264148917807">Wyjdź</translation>
@@ -121,7 +123,6 @@
 <translation id="2979365474350987274">Pliki cookie innych firm są ograniczone</translation>
 <translation id="3008272652534848354">Zresetuj uprawnienia</translation>
 <translation id="301521992641321250">Automatycznie zablokowane</translation>
-<translation id="3025010840409371499"><ph name="RECENCY" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="3069226013421428034">Zezwalanie na logowanie przez usługę zewnętrzną w określonej witrynie.</translation>
 <translation id="3082992102194421695">{COUNT,plural, =1{Wygasa jutro}few{Wygasa za # dni}many{Wygasa za # dni}other{Wygasa za # dnia}}</translation>
 <translation id="310297983047869047">Poprzedni slajd</translation>
@@ -188,7 +189,6 @@
 <translation id="4149994727733219643">Uproszczony widok stron internetowych</translation>
 <translation id="4151930093518524179">Domyślne powiększenie</translation>
 <translation id="4165986682804962316">Ustawienia witryn</translation>
-<translation id="4169019654293892025">Ukryj: <ph name="TITLE_OF_MODULE" /></translation>
 <translation id="4169549551965910670">Połączona z urządzeniem USB</translation>
 <translation id="4194328954146351878">Pytaj, zanim zezwolisz stronom na odczytywanie i zmienianie informacji na urządzeniach z funkcją NFC (zalecane)</translation>
 <translation id="4200726100658658164">Otwórz ustawienia lokalizacji</translation>
@@ -213,6 +213,7 @@
 <translation id="4566417217121906555">Wycisz mikrofon</translation>
 <translation id="4570913071927164677">Szczegóły</translation>
 <translation id="4598549027014564149">W trybie incognito witryny nie mogą używać plików cookie do śledzenia Twojej aktywności związanej z przeglądaniem innych witryn, nawet powiązanych. Twoja aktywność związana z przeglądaniem nie służy do personalizowania reklam. Funkcje w niektórych witrynach mogą nie działać.</translation>
+<translation id="4619615317237390068">Karty z innych urządzeń</translation>
 <translation id="4644713492825682049">Usuń i zresetuj</translation>
 <translation id="4645575059429386691">Zarządzany przez Twojego rodzica</translation>
 <translation id="4670064810192446073">Rzeczywistość wirtualna</translation>
@@ -265,7 +266,7 @@
 <translation id="5459413148890178711">Gdy ta opcja jest włączona, strony internetowe mogą prosić o dostęp do Twojej lokalizacji. Gdy jest wyłączona, strony nie widzą Twojej lokalizacji.</translation>
 <translation id="5489227211564503167">Upłynęło: <ph name="ELAPSED_TIME" /> z <ph name="TOTAL_TIME" /></translation>
 <translation id="5502860503640766021">Dozwolone: <ph name="PERMISSION_1" />, zablokowane: <ph name="PERMISSION_2" /></translation>
-<translation id="5505264765875738116">Strony nie mogą prosić o zgodę na wysyłanie powiadomień</translation>
+<translation id="5505264765875738116">Witryny nie mogą prosić o zgodę na wysyłanie powiadomień</translation>
 <translation id="5516455585884385570">Otwórz ustawienia powiadomień</translation>
 <translation id="5527111080432883924">Pytaj, czy zezwolić stronom na odczytywanie tekstu i obrazów ze schowka (zalecane)</translation>
 <translation id="5545693483061321551">Witryny nie mogą używać plików cookie do śledzenia Twojej aktywności związanej z przeglądaniem różnych witryn, na przykład w celu personalizowania reklam. W niektórych witrynach mogą nie działać funkcje.</translation>
@@ -319,7 +320,7 @@
 <translation id="6231752747840485235">Odinstalować aplikację „<ph name="APP_NAME" />”?</translation>
 <translation id="6262191102408817757">Na podstawie ostatniej karty</translation>
 <translation id="6262279340360821358">Zablokowane: <ph name="PERMISSION_1" /> i <ph name="PERMISSION_2" /></translation>
-<translation id="6270391203985052864">Strony mogą prosić o zgodę na wysyłanie powiadomień</translation>
+<translation id="6270391203985052864">Witryny mogą prosić o zgodę na wysyłanie powiadomień</translation>
 <translation id="6295158916970320988">Wszystkie witryny</translation>
 <translation id="6304434827459067558">Witryna <ph name="SITE" /> nie może używać Twoich danych na</translation>
 <translation id="6320088164292336938">Wibracje</translation>
@@ -344,6 +345,7 @@
 <translation id="6612358246767739896">Treść chroniona</translation>
 <translation id="662080504995468778">Zostań</translation>
 <translation id="6653342741369270081">Naciśnij przycisk Wstecz, aby zamknąć pełny ekran.</translation>
+<translation id="6670377348676659110">{TILE_COUNT,plural, =1{Ukryj opcję Kontynuuj na tej karcie}few{Ukryj opcję Kontynuuj na tych kartach}many{Ukryj opcję Kontynuuj na tych kartach}other{Ukryj opcję Kontynuuj na tych kartach}}</translation>
 <translation id="6689172468748959065">Zdjęcia profilowe</translation>
 <translation id="6697925417670533197">W trakcie pobierania</translation>
 <translation id="6722828510648505498">Blokuj prośby o zalogowanie się pochodzące od usług tożsamości.</translation>
@@ -366,6 +368,7 @@
 <translation id="702275896380648118">Witryna określa Twoje zainteresowania, a potem sugeruje reklamy innym witrynom. Witryna wykorzystuje też gromadzone przez Chrome informacje o interesujących Cię tematach, aby wyświetlać trafniejsze reklamy.</translation>
 <translation id="7053983685419859001">Blokuj</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Wybrano 1}few{Wybrano #}many{Wybrano #}other{Wybrano #}}</translation>
+<translation id="708014373017851679">Aplikacja „<ph name="APP_NAME" />” jest nieaktualna. Zaktualizuj ją.</translation>
 <translation id="7087918508125750058">Wybrano <ph name="ITEM_COUNT" />. Opcje dostępne na górze ekranu</translation>
 <translation id="7141896414559753902">Blokuj wyskakujące okienka i przekierowania na stronach (zalecane)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>

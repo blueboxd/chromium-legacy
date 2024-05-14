@@ -15,14 +15,15 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
+#include "base/tracing/protos/chrome_track_event.pbzero.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
-#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_compositor_scheduler_state.pbzero.h"
 
 namespace viz {
 
@@ -99,7 +100,7 @@ void BeginFrameObserverBase::OnBeginFrame(const BeginFrameArgs& args) {
 
 void BeginFrameObserverBase::AsProtozeroInto(
     perfetto::EventContext& ctx,
-    perfetto::protos::pbzero::BeginFrameObserverState* state) const {
+    perfetto::protos::pbzero::BeginFrameObserverStateV2* state) const {
   state->set_dropped_begin_frame_args(dropped_begin_frame_args_);
 
   last_begin_frame_args_.AsProtozeroInto(ctx,
@@ -207,7 +208,7 @@ bool BeginFrameSource::RequestCallbackOnGpuAvailable() {
 
 void BeginFrameSource::AsProtozeroInto(
     perfetto::EventContext&,
-    perfetto::protos::pbzero::BeginFrameSourceState* state) const {
+    perfetto::protos::pbzero::BeginFrameSourceStateV2* state) const {
   // The lower 32 bits of source_id are the interesting piece of |source_id_|.
   state->set_source_id(static_cast<uint32_t>(source_id_));
 }
@@ -319,7 +320,8 @@ void BackToBackBeginFrameSource::OnTimerTick() {
   // This must happen after getting the LastTickTime() from the time source.
   time_source_->SetActive(false);
 
-  base::flat_set<BeginFrameObserver*> pending_observers;
+  base::flat_set<raw_ptr<BeginFrameObserver, CtnExperimental>>
+      pending_observers;
   pending_observers.swap(pending_begin_frame_observers_);
   DCHECK(!pending_observers.empty());
   for (BeginFrameObserver* obs : pending_observers)
@@ -446,9 +448,11 @@ void DelayBasedBeginFrameSource::OnTimerTick() {
   if (max_vrr_interval_.has_value()) {
     vrr_tick_count_++;
   }
-  base::flat_set<BeginFrameObserver*> observers(observers_);
-  for (auto* obs : observers)
+  base::flat_set<raw_ptr<BeginFrameObserver, CtnExperimental>> observers(
+      observers_);
+  for (BeginFrameObserver* obs : observers) {
     IssueBeginFrameToObserver(obs, last_begin_frame_args_);
+  }
 }
 
 void DelayBasedBeginFrameSource::IssueBeginFrameToObserver(
@@ -488,7 +492,7 @@ ExternalBeginFrameSource::~ExternalBeginFrameSource() {
 
 void ExternalBeginFrameSource::AsProtozeroInto(
     perfetto::EventContext& ctx,
-    perfetto::protos::pbzero::BeginFrameSourceState* state) const {
+    perfetto::protos::pbzero::BeginFrameSourceStateV2* state) const {
   BeginFrameSource::AsProtozeroInto(ctx, state);
 
   state->set_paused(paused_);
@@ -535,9 +539,11 @@ void ExternalBeginFrameSource::OnSetBeginFrameSourcePaused(bool paused) {
   if (paused_ == paused)
     return;
   paused_ = paused;
-  base::flat_set<BeginFrameObserver*> observers(observers_);
-  for (auto* obs : observers)
+  base::flat_set<raw_ptr<BeginFrameObserver, CtnExperimental>> observers(
+      observers_);
+  for (BeginFrameObserver* obs : observers) {
     obs->OnBeginFrameSourcePausedChanged(paused_);
+  }
 }
 
 void ExternalBeginFrameSource::OnBeginFrame(const BeginFrameArgs& args) {
@@ -560,12 +566,13 @@ void ExternalBeginFrameSource::OnBeginFrame(const BeginFrameArgs& args) {
                args.interval.InMicroseconds());
 
   last_begin_frame_args_ = args;
-  base::flat_set<BeginFrameObserver*> observers(observers_);
+  base::flat_set<raw_ptr<BeginFrameObserver, CtnExperimental>> observers(
+      observers_);
 
   // Process non-root observers.
   // TODO(ericrk): Remove root/non-root handling once a better workaround
   // exists. https://crbug.com/947717
-  for (auto* obs : observers) {
+  for (BeginFrameObserver* obs : observers) {
     if (obs->IsRoot())
       continue;
     if (!CheckBeginFrameContinuity(obs, args))
@@ -573,7 +580,7 @@ void ExternalBeginFrameSource::OnBeginFrame(const BeginFrameArgs& args) {
     FilterAndIssueBeginFrame(obs, args);
   }
   // Process root observers.
-  for (auto* obs : observers) {
+  for (BeginFrameObserver* obs : observers) {
     if (!obs->IsRoot())
       continue;
     if (!CheckBeginFrameContinuity(obs, args))

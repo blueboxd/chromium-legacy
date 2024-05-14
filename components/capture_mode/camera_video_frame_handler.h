@@ -87,10 +87,14 @@ class CAPTURE_MODE_EXPORT CameraVideoFrameHandler
   // Creates an instance of this class which will subscribe to the given
   // `camera_video_source` requesting to receive video frames of its feed with
   // the given `capture_format`.
+  // `device_id` represents the id of the camera providing the video / frames.
+  // It is a default parameter, because it is only needed on Mac to decide if we
+  // can use kGpuMemoryBuffer.
   CameraVideoFrameHandler(
       ui::ContextFactory* context_factory,
       mojo::Remote<video_capture::mojom::VideoSource> camera_video_source,
-      const media::VideoCaptureFormat& capture_format);
+      const media::VideoCaptureFormat& capture_format,
+      const std::string& device_id = std::string());
   CameraVideoFrameHandler(const CameraVideoFrameHandler&) = delete;
   CameraVideoFrameHandler& operator=(const CameraVideoFrameHandler&) = delete;
   ~CameraVideoFrameHandler() override;
@@ -143,7 +147,15 @@ class CAPTURE_MODE_EXPORT CameraVideoFrameHandler
   // linux-chromeos for unit testing purposes.
   static void SetForceUseGpuMemoryBufferForTest(bool value);
 
+  const std::optional<media::VideoCaptureParams>& GetActualParams() const {
+    return actual_params_;
+  }
+
  private:
+  void OnSubscriptionCreationResult(
+      video_capture::mojom::CreatePushSubscriptionResultCodePtr result_code,
+      const media::VideoCaptureParams& actual_params);
+
   // Called when a video frame is destroyed, which was backed by a buffer whose
   // ID is the given `buffer_id`. This lets us inform the video capture
   // service's `VideoFrameAccessHandler` that we're done consuming this buffer
@@ -193,6 +205,9 @@ class CAPTURE_MODE_EXPORT CameraVideoFrameHandler
   // called.
   base::flat_map</*buffer_id=*/int, std::unique_ptr<BufferHandleHolder>>
       buffer_map_;
+
+  // Represents the actual params that the source was opened with.
+  std::optional<media::VideoCaptureParams> actual_params_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

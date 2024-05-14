@@ -85,6 +85,12 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   bool DoesManage(autofill::FormRendererId form_renderer_id,
                   const PasswordManagerDriver* driver) const;
 
+  // Returns whether the form managed by this password form manager contains
+  // a field identified by the `field_renderer_id`. `driver` is used to check
+  // is this password form manager corresponds to the queried web frame.
+  bool DoesManage(autofill::FieldRendererId field_renderer_id,
+                  const PasswordManagerDriver* driver) const;
+
   // Check that |submitted_form_| is equal to |form| from the user point of
   // view. It is used for detecting that a form is reappeared after navigation
   // for success detection.
@@ -156,8 +162,7 @@ class PasswordFormManager : public PasswordFormManagerForUI,
 
   // PasswordFormManagerForUI:
   const GURL& GetURL() const override;
-  const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
-  GetBestMatches() const override;
+  base::span<const PasswordForm> GetBestMatches() const override;
   std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
   GetFederatedMatches() const override;
   const PasswordForm& GetPendingCredentials() const override;
@@ -171,6 +176,7 @@ class PasswordFormManager : public PasswordFormManagerForUI,
 
   void Save() override;
   void Update(const PasswordForm& credentials_to_update) override;
+  bool IsUpdateAffectingPasswordsStoredInTheGoogleAccount() const override;
   void OnUpdateUsernameFromPrompt(const std::u16string& new_username) override;
   void OnUpdatePasswordFromPrompt(const std::u16string& new_password) override;
 

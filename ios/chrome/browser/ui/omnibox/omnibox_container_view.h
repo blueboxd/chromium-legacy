@@ -7,18 +7,35 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/omnibox/omnibox_additional_text_consumer.h"
 #import "ios/chrome/browser/ui/omnibox/text_field_view_containing.h"
 
 @class LayoutGuideCenter;
 @class OmniboxTextFieldIOS;
 
-// The omnibox container view is the view that is shown in the location bar's
-// edit state. It contains the omnibox textfield and the buttons on the left and
-// right of it.
-@interface OmniboxContainerView : UIView <TextFieldViewContaining>
+/// The omnibox container view is the view that is shown in the location bar's
+/// edit state. It contains the omnibox textfield and the buttons on the left
+/// and right of it.
+@interface OmniboxContainerView
+    : UIView <OmniboxAdditionalTextConsumer, TextFieldViewContaining>
 
-// Initialize the container view with the given frame, text color, and tint
-// color for omnibox.
+/// The contained omnibox textfield.
+/// Depending on kIOSNewOmniboxImplementation flag, it's either a legacy or a
+/// new implementation.
+@property(nonatomic, strong, readonly) OmniboxTextFieldIOS* textField;
+
+/// The contained clear button. Hide with `setClearButtonHidden`.
+@property(nonatomic, strong, readonly) UIButton* clearButton;
+
+/// Incognito status of the location bar changes the appearance, such as text
+/// and icon colors.
+@property(nonatomic, assign) BOOL incognito;
+
+/// The layout guide center to use to refer to the omnibox leading image.
+@property(nonatomic, strong) LayoutGuideCenter* layoutGuideCenter;
+
+/// Initialize the container view with the given frame, text color, and tint
+/// color for omnibox.
 - (instancetype)initWithFrame:(CGRect)frame
                     textColor:(UIColor*)textColor
                 textFieldTint:(UIColor*)textFieldTint
@@ -27,24 +44,16 @@
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
-// The containted omnibox textfield.
-// Depending on kIOSNewOmniboxImplementation flag, it's either a legacy or a new
-// implementation.
-@property(nonatomic, strong, readonly) OmniboxTextFieldIOS* textField;
-
-// Incognito status of the location bar changes the appearance, such as text
-// and icon colors.
-@property(nonatomic, assign) BOOL incognito;
-
-// The layout guide center to use to refer to the omnibox leading image.
-@property(nonatomic, strong) LayoutGuideCenter* layoutGuideCenter;
-
-// Sets the leading button's image and sets its accessibility identifier.
+/// Sets the leading button's image and sets its accessibility identifier.
 - (void)setLeadingImage:(UIImage*)image
     withAccessibilityIdentifier:(NSString*)accessibilityIdentifier;
 
-// Sets the scale of the leading image view.
+/// Sets the scale of the leading image view.
 - (void)setLeadingImageScale:(CGFloat)scaleValue;
+
+/// Hides or shows the clear button. TODO(b/325035406): cleanup with
+/// kRichAutocompletion.
+- (void)setClearButtonHidden:(BOOL)isHidden;
 
 @end
 

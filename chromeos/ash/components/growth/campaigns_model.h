@@ -10,6 +10,7 @@
 
 #include "base/component_export.h"
 #include "base/values.h"
+#include "chromeos/ash/components/growth/action_performer.h"
 
 namespace base {
 class Time;
@@ -23,8 +24,15 @@ namespace growth {
 enum class Slot {
   kDemoModeApp = 0,
   kDemoModeFreePlayApps = 1,
+  kNudge = 2,
+  kMaxValue = kNudge
+};
 
-  kMaxValue = kDemoModeFreePlayApps
+// Supported window anchor element.
+// These values are deserialized from Growth Campaign, so entries should not
+// be renumbered and numeric values should never be reused.
+enum class WindowAnchorType {
+  kCaptionButtonContainer = 0,
 };
 
 // Dictionary of supported targetings. For example:
@@ -99,8 +107,7 @@ const Payload* GetPayloadBySlot(const Campaign* campaign, Slot slot);
 
 class TargetingBase {
  public:
-  explicit TargetingBase(const Targeting* targeting_dict,
-                         const char* targeting_path);
+  TargetingBase(const Targeting* targeting_dict, const char* targeting_path);
   TargetingBase(const TargetingBase&) = delete;
   TargetingBase& operator=(const TargetingBase) = delete;
   ~TargetingBase();
@@ -170,6 +177,7 @@ class DeviceTargeting : public TargetingBase {
   const base::Value::List* GetLocales() const;
   const std::optional<int> GetMinMilestone() const;
   const std::optional<int> GetMaxMilestone() const;
+  const std::optional<bool> GetFeatureAwareDevice() const;
 };
 
 // Wrapper around scheduling targeting dictionary.
@@ -183,7 +191,7 @@ class DeviceTargeting : public TargetingBase {
 // Start and end are the number of seconds since epoch in UTC.
 class SchedulingTargeting {
  public:
-  explicit SchedulingTargeting(const base::Value::Dict* scheduling);
+  explicit SchedulingTargeting(const base::Value::Dict* scheduling_dict);
   SchedulingTargeting(const SchedulingTargeting&) = delete;
   SchedulingTargeting& operator=(const SchedulingTargeting) = delete;
   ~SchedulingTargeting();
@@ -193,6 +201,25 @@ class SchedulingTargeting {
 
  private:
   raw_ptr<const base::Value::Dict> scheduling_dict_;
+};
+
+// Wrapper around app targeting dictionary.
+//
+// The structure looks like:
+// {
+//   "appId": "app_id",
+// }
+class AppTargeting {
+ public:
+  explicit AppTargeting(const base::Value::Dict* app);
+  AppTargeting(const AppTargeting&) = delete;
+  AppTargeting& operator=(const AppTargeting) = delete;
+  ~AppTargeting();
+
+  const std::string* GetAppId() const;
+
+ private:
+  raw_ptr<const base::Value::Dict> app_dict_;
 };
 
 // Wrapper around scheduling targeting dictionary.
@@ -210,6 +237,56 @@ class SessionTargeting : public TargetingBase {
 
   const std::vector<std::unique_ptr<SchedulingTargeting>> GetSchedulings()
       const;
+  const base::Value::List* GetExperimentTags() const;
+  // Returns a list of apps to be matched against the current opened app.
+  const std::vector<std::unique_ptr<AppTargeting>> GetAppsOpened() const;
+};
+
+// Wrapper around the action dictionary for performing an action, including
+// action type and action params.
+// For example:
+// {
+//   "action": {
+//     "type": 3,
+//     "params": {
+//       "url": "https://www.google.com",
+//       "disposition": 0
+//     }
+//   }
+// }
+class Action {
+ public:
+  explicit Action(const base::Value::Dict* action_dict);
+  Action(const Action&) = delete;
+  Action& operator=(const Action) = delete;
+  ~Action();
+
+  std::optional<growth::ActionType> GetActionType() const;
+  const base::Value::Dict* GetParams() const;
+
+  raw_ptr<const base::Value::Dict> action_dict_;
+};
+
+// Wrapper around anchor.
+//
+// The structure looks like:
+// {
+//   "activeAppWindowAnchorType": 0  // CAPTION_BUTTON_CONTAINER
+// }
+// TODO(b/329698643): Consider moving to nudge controller if Anchor is not used
+// by other surfaces.
+class Anchor {
+ public:
+  explicit Anchor(const base::Value::Dict* anchor_dict);
+  Anchor(const Anchor&) = delete;
+  Anchor& operator=(const Anchor) = delete;
+  ~Anchor();
+
+  const std::optional<WindowAnchorType> GetActiveAppWindowAnchorType() const;
+  const std::string* GetShelfAppButtonId() const;
+
+ private:
+  raw_ptr<const base::Value::Dict> anchor_dict_;
 };
 
 }  // namespace growth

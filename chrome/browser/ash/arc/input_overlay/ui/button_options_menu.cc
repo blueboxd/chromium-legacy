@@ -12,6 +12,7 @@
 #include "ash/style/icon_button.h"
 #include "ash/style/style_util.h"
 #include "ash/style/typography.h"
+#include "base/scoped_observation.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
@@ -38,6 +39,7 @@
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_types.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/widget/widget.h"
 
 namespace arc::input_overlay {
 
@@ -59,7 +61,8 @@ constexpr int kHeaderLeftMarginSpacing = 6;
 // ----------------------------
 // | |Name tag|        |keys| |
 // ----------------------------
-class ButtonOptionsActionEdit : public ActionEditView {
+class ButtonOptionsActionEdit : public ActionEditView,
+                                public views::WidgetObserver {
   METADATA_HEADER(ButtonOptionsActionEdit, ActionEditView)
 
  public:
@@ -88,6 +91,22 @@ class ButtonOptionsActionEdit : public ActionEditView {
 
   // ActionEditView:
   void ClickCallback() override { labels_view_->FocusLabel(); }
+
+  // views::View:
+  void AddedToWidget() override { observation_.Observe(GetWidget()); }
+
+  void RemovedFromWidget() override { observation_.Reset(); }
+
+  // views::WidgetObserver:
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override {
+    if (active) {
+      DCHECK(!for_editing_list_);
+      labels_view_->FocusLabel();
+    }
+  }
+
+  base::ScopedObservation<views::Widget, views::WidgetObserver> observation_{
+      this};
 };
 
 BEGIN_METADATA(ButtonOptionsActionEdit)
@@ -106,8 +125,8 @@ class DoneButton : public views::LabelButton {
       : LabelButton(std::move(pressed_callback),
                     l10n_util::GetStringUTF16(
                         IDS_INPUT_OVERLAY_EDITING_DONE_BUTTON_LABEL)) {
-    // TODO(b/279117180): Replace with proper accessible name.
-    SetAccessibleName(u"done");
+    SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_EDITING_DONE_BUTTON_LABEL));
 
     SetBackground(views::CreateThemedRoundedRectBackground(
         cros_tokens::kCrosSysSystemOnBase,
@@ -124,29 +143,20 @@ class DoneButton : public views::LabelButton {
     views::HighlightPathGenerator::Install(
         this, std::make_unique<views::RoundRectHighlightPathGenerator>(
                   gfx::Insets(), /*corner_radius=*/kDoneButtonCornerRadius));
+
+    // Set up highlight and focus ring for `DoneButton`.
+    ash::StyleUtil::SetUpInkDropForButton(this, gfx::Insets(),
+                                          /*highlight_on_hover=*/false,
+                                          /*highlight_on_focus=*/false);
+    auto* focus_ring = views::FocusRing::Get(this);
+    focus_ring->SetHaloInset(kDoneButtonHaloInset);
+    focus_ring->SetHaloThickness(kDoneButtonHaloThickness);
   }
 
   DoneButton(const DoneButton&) = delete;
   DoneButton& operator=(const DoneButton&) = delete;
 
   ~DoneButton() override = default;
-
- private:
-  void OnThemeChanged() override {
-    views::LabelButton::OnThemeChanged();
-
-    // Set up highlight and focus ring for `DoneButton`.
-    ash::StyleUtil::SetUpInkDropForButton(this, gfx::Insets(),
-                                          /*highlight_on_hover=*/true,
-                                          /*highlight_on_focus=*/false);
-
-    // `StyleUtil::SetUpInkDropForButton()` reinstalls the focus ring, so it
-    // needs to set the focus ring size after calling
-    // `StyleUtil::SetUpInkDropForButton()`.
-    auto* focus_ring = views::FocusRing::Get(this);
-    focus_ring->SetHaloInset(kDoneButtonHaloInset);
-    focus_ring->SetHaloThickness(kDoneButtonHaloThickness);
-  }
 };
 
 BEGIN_METADATA(DoneButton)

@@ -5,17 +5,23 @@
 #include "content/browser/webid/digital_credentials/digital_identity_request_impl.h"
 
 #include "base/functional/callback.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/values.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "content/browser/webid/digital_credentials/digital_identity_provider.h"
+#include "content/browser/webid/digital_credentials/digital_identity_provider_utils.h"
 #include "content/browser/webid/flags.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/digital_identity_provider.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "third_party/blink/public/mojom/webid/federated_auth_request.mojom.h"
 
 using base::Value;
 using blink::mojom::RequestDigitalIdentityStatus;
+using RequestStatusForMetrics =
+    content::DigitalIdentityProvider::RequestStatusForMetrics;
 
 namespace content {
 
@@ -36,19 +42,27 @@ DigitalIdentityRequestImpl::DigitalIdentityRequestImpl(
 
 DigitalIdentityRequestImpl::~DigitalIdentityRequestImpl() = default;
 
-void DigitalIdentityRequestImpl::CompleteRequest(const std::string& response) {
-  if (!provider_) {
-    std::move(callback_).Run(RequestDigitalIdentityStatus::kError,
-                             absl::nullopt);
-    return;
-  }
+void DigitalIdentityRequestImpl::CompleteRequest(
+    const std::string& response,
+    RequestStatusForMetrics status_for_metrics) {
+  CompleteRequestWithStatus(
+      (status_for_metrics == RequestStatusForMetrics::kSuccess)
+          ? RequestDigitalIdentityStatus::kSuccess
+          : RequestDigitalIdentityStatus::kError,
+      response, status_for_metrics);
+}
 
-  if (!response.empty()) {
-    std::move(callback_).Run(RequestDigitalIdentityStatus::kSuccess, response);
-  } else {
-    std::move(callback_).Run(RequestDigitalIdentityStatus::kError,
-                             absl::nullopt);
-  }
+void DigitalIdentityRequestImpl::CompleteRequestWithStatus(
+    RequestDigitalIdentityStatus status,
+    const std::string& response,
+    RequestStatusForMetrics status_for_metrics) {
+  // Invalidate pending requests in case that the request gets aborted.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
+  base::UmaHistogramEnumeration("Blink.DigitalIdentityRequest.Status",
+                                status_for_metrics);
+
+  std::move(callback_).Run(status, response);
 }
 
 base::Value::Dict BuildRequest(
@@ -111,8 +125,7 @@ void DigitalIdentityRequestImpl::Request(
     blink::mojom::DigitalCredentialProviderPtr digital_credential_provider,
     RequestCallback callback) {
   if (!IsWebIdentityDigitalCredentialsEnabled()) {
-    std::move(callback).Run(RequestDigitalIdentityStatus::kError,
-                            absl::nullopt);
+    std::move(callback).Run(RequestDigitalIdentityStatus::kError, std::nullopt);
     return;
   }
 
@@ -126,19 +139,31 @@ void DigitalIdentityRequestImpl::Request(
   if (callback_) {
     // Only allow one in-flight wallet request.
     std::move(callback).Run(RequestDigitalIdentityStatus::kErrorTooManyRequests,
-                            absl::nullopt);
+                            std::nullopt);
     return;
   }
 
   callback_ = std::move(callback);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseFakeUIForDigitalIdentity)) {
+    // Post delayed task to enable testing abort.
+    GetUIThreadTaskRunner()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&DigitalIdentityRequestImpl::CompleteRequest,
+                       weak_ptr_factory_.GetWeakPtr(), "fake_test_token",
+                       RequestStatusForMetrics::kSuccess),
+        base::Milliseconds(1));
+    return;
+  }
+
   // provider_ is not destroyed after a successful wallet request so we need to
   // have the nullcheck to avoid duplicated creation.
   if (!provider_) {
     provider_ = CreateProvider();
   }
   if (!provider_) {
-    std::move(callback_).Run(RequestDigitalIdentityStatus::kError,
-                             absl::nullopt);
+    CompleteRequest("", RequestStatusForMetrics::kErrorOther);
     return;
   }
 
@@ -151,7 +176,8 @@ void DigitalIdentityRequestImpl::Request(
 }
 
 void DigitalIdentityRequestImpl::Abort() {
-  // TODO(https://crbug.com/1416939): Implement.
+  CompleteRequestWithStatus(RequestDigitalIdentityStatus::kErrorCanceled, "",
+                            RequestStatusForMetrics::kErrorAborted);
 }
 
 std::unique_ptr<DigitalIdentityProvider>
@@ -161,7 +187,7 @@ DigitalIdentityRequestImpl::CreateProvider() {
       GetContentClient()->browser()->CreateDigitalIdentityProvider();
 
   if (!provider) {
-    return DigitalIdentityProvider::Create();
+    return CreateDigitalIdentityProvider();
   }
   return provider;
 }

@@ -5,7 +5,7 @@
 #         chromeos
 #         fuchsia
 #         linux ubuntu
-#         mac highsierra mojave catalina bigsur monterey ventura
+#         mac highsierra mojave catalina bigsur monterey ventura sonoma
 #         win win8 win10 win11 ]
 # Devices
 # tags: [ android-nexus-5x android-pixel-2 android-pixel-4
@@ -35,7 +35,7 @@
 #         arm
 #         google google-0xffff google-0xc0de
 #         intel intel-gen-9 intel-gen-12 intel-0xa2e intel-0xd26 intel-0xa011
-#             intel-0x3e92 intel-0x3e9b intel-0x5912 intel-0x9bc5
+#             intel-0x3e92 intel-0x3e9b intel-0x4680 intel-0x5912 intel-0x9bc5
 #         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
 #         qualcomm qualcomm-0x41333430 ]
 # Architecture
@@ -52,8 +52,7 @@
 #         angle-swiftshader
 #         angle-vulkan ]
 # Skia Renderer
-# tags: [ renderer-skia-dawn
-#         renderer-skia-gl
+# tags: [ renderer-skia-gl
 #         renderer-skia-vulkan
 #         renderer-software ]
 # Driver
@@ -387,6 +386,10 @@ crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] 
 crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough angle-opengles ] WebglExtension_WEBGL_render_shared_exponent [ Skip ]
 crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] WebglExtension_WEBGL_blend_func_extended [ Skip ]
 
+# Can cause subsequent tests to fail.
+crbug.com/329130354 [ mac amd-0x679e ] conformance2/textures/canvas_sub_rectangle/tex-3d-rgba4-rgba-unsigned_short_4_4_4_4.html [ Skip ]
+crbug.com/329130354 [ mac amd-0x679e ] deqp/functional/gles3/fborender/resize_03.html [ Skip ]
+
 ###############################
 # Permanent Slow Expectations #
 ###############################
@@ -442,7 +445,7 @@ crbug.com/angleproject/6358 [ no-passthrough ] conformance/programs/program-test
 ####################
 
 crbug.com/angleproject/4417 [ win angle-d3d11 ] conformance2/rendering/framebuffer-render-to-layer-angle-issue.html [ Failure ]
-crbug.com/angleproject/7109 [ win angle-d3d11 ] conformance2/renderbuffers/invalidate-framebuffer.html [ Failure ]
+crbug.com/angleproject/7109 [ angle-d3d11 win10 ] conformance2/renderbuffers/invalidate-framebuffer.html [ Failure ]
 crbug.com/angleproject/1465 [ win angle-d3d11 ] conformance2/glsl3/tricky-loop-conditions.html [ Failure ]
 
 ## Win / NVIDIA ##
@@ -481,7 +484,6 @@ crbug.com/1159539 [ win amd-0x7340 angle-d3d11 passthrough ] deqp/functional/gle
 
 ## Win / Intel ##
 
-crbug.com/1509927 [ win intel-0x9bc5 angle-d3d11 ] deqp/functional/gles3/* [ RetryOnFailure ]
 
 ## Win / Adreno 690 / D3D11
 crbug.com/1523062 [ win11 qualcomm-0x41333430 angle-d3d11 ] conformance/rendering/bind-framebuffer-flush-bug.html [ Failure ]
@@ -513,6 +515,8 @@ crbug.com/1523401 [ win11 qualcomm-0x41333430 angle-d3d11 ] deqp/functional/gles
 crbug.com/1523401 [ win11 qualcomm-0x41333430 angle-d3d11 ] deqp/functional/gles3/shaderindexing/varying.html [ Failure ]
 crbug.com/1523401 [ win11 qualcomm-0x41333430 angle-d3d11 ] deqp/functional/gles3/shadertexturefunction/texelfetchoffset.html [ Failure ]
 crbug.com/41496352 [ win11 qualcomm-0x41333430 angle-d3d11 ] deqp/functional/gles3/shaderprecision_float.html [ RetryOnFailure ]
+crbug.com/329211596 [ win11 qualcomm-0x41333430 angle-d3d11 ] deqp/functional/gles3/shaderprecision_int.html [ RetryOnFailure ]
+crbug.com/329211596 [ win11 qualcomm-0x41333430 angle-d3d11 ] deqp/functional/gles3/shaderprecision_uint.html [ RetryOnFailure ]
 crbug.com/323824490 [ win11 qualcomm-0x41333430 angle-d3d11 ] conformance/ogles/GL/ceil/ceil_001_to_006.html [ RetryOnFailure ]
 
 ######################
@@ -523,6 +527,9 @@ crbug.com/323824490 [ win11 qualcomm-0x41333430 angle-d3d11 ] conformance/ogles/
 # Common to all GPU types (both AMD and Intel, at least)
 
 crbug.com/angleproject/7079 [ angle-metal intel-0x3e9b mac-x86_64 passthrough ventura ] deqp/functional/gles3/fboinvalidate/whole.html [ Failure ]
+
+## SkiaGraphite on AMD/Intel ##
+
 
 ## Metal AMD ##
 
@@ -552,13 +559,12 @@ crbug.com/1316389 [ amd-0x67ef angle-metal passthrough ventura ] deqp/functional
 crbug.com/1316389 [ amd-0x67ef angle-metal passthrough ventura ] deqp/functional/gles3/transformfeedback/point_size.html [ Failure ]
 crbug.com/1316389 [ amd-0x67ef angle-metal passthrough ventura ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
 crbug.com/1316389 [ amd-0x67ef angle-metal passthrough ventura ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
-crbug.com/1421437 [ mac amd-0x67ef angle-metal ] conformance2/extensions/webgl-shader-pixel-local-storage.html [ Failure ]
 crbug.com/1487266 [ amd-0x679e angle-metal monterey passthrough release ] deqp/functional/gles3/texturefiltering/2d_array_combinations_05.html [ Failure ]
 
-crbug.com/1513193 [ amd-0x67ef angle-metal passthrough ventura graphite-enabled ] conformance2/textures/webgl_canvas/tex-3d-* [ RetryOnFailure ]
+crbug.com/328100306 [ angle-metal graphite-enabled intel-0x3e9b sonoma ] conformance/glsl/bugs/sampler-array-using-loop-index.html [ Failure ]
 
-# NOTE: When removing this line, the suppression for the same test above
-# should have `graphite-disabled` removed.
+## SkiaGraphite on Metal AMD ##
+
 crbug.com/1511051 [ mac angle-metal graphite-enabled amd ] conformance/textures/misc/texture-active-bind-2.html [ Failure ]
 
 ## Metal Intel ##
@@ -574,6 +580,18 @@ crbug.com/1316389 [ angle-metal intel passthrough ventura ] deqp/functional/gles
 crbug.com/1316389 [ angle-metal intel passthrough ventura ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
 crbug.com/1316389 [ angle-metal intel passthrough ventura ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
 
+crbug.com/327017906 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/fboinvalidate/default.html [ Failure ]
+crbug.com/327017906 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/fboinvalidate/whole.html [ Failure ]
+crbug.com/327026290 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_points.html [ Failure ]
+crbug.com/327026290 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/transformfeedback/basic_types_separate_points.html [ Failure ]
+crbug.com/327026290 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/transformfeedback/interpolation_centroid.html [ Failure ]
+crbug.com/327026290 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/transformfeedback/interpolation_flat.html [ Failure ]
+crbug.com/327026290 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/transformfeedback/interpolation_smooth.html [ Failure ]
+crbug.com/327026290 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/transformfeedback/point_size.html [ Failure ]
+crbug.com/327026290 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
+crbug.com/327026290 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
+crbug.com/327026292 [ angle-metal intel passthrough sonoma graphite-enabled ] conformance2/glsl3/float-parsing.html [ Failure ]
+
 ## Metal Apple Silicon ##
 
 crbug.com/1298619 [ mac passthrough angle-metal apple ] deqp/functional/gles3/occlusionquery_strict.html [ Failure ]
@@ -587,6 +605,13 @@ crbug.com/1465035 [ mac passthrough angle-metal apple ] deqp/functional/gles3/tr
 crbug.com/1465035 [ mac passthrough angle-metal apple ] deqp/functional/gles3/transformfeedback/point_size.html [ Failure ]
 crbug.com/1465035 [ mac passthrough angle-metal apple ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
 crbug.com/1465035 [ mac passthrough angle-metal apple ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
+
+crbug.com/327026292 [ angle-metal apple passthrough sonoma graphite-enabled ] conformance2/glsl3/float-parsing.html [ Failure ]
+
+## Metal Graphite ##
+
+crbug.com/329285449 [ mac angle-metal graphite-enabled apple ] conformance/textures/misc/texture-active-bind.html [ RetryOnFailure ]
+crbug.com/329285449 [ mac angle-metal graphite-enabled intel-0x3e9b ] conformance/textures/misc/texture-active-bind.html [ RetryOnFailure ]
 
 ######################################################################
 # Mac failures (mainly OpenGL; some need to be reevaluated on Metal) #
@@ -607,6 +632,8 @@ crbug.com/630800 [ nvidia mac ] conformance2/rendering/framebuffer-completeness-
 crbug.com/630800 [ angle-opengl intel mac ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
 crbug.com/630800 [ nvidia mac ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
 crbug.com/1289803 [ angle-opengl mac mac-x86_64 oop-c ] conformance2/extensions/webgl-multi-draw-instanced-base-vertex-base-instance.html [ Failure ]
+
+crbug.com/328102507 [ mac angle-opengl graphite-disabled ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ Failure ]
 
 ## Mac Retina NVIDIA ##
 
@@ -641,12 +668,12 @@ crbug.com/1230781 [ mac amd-0x67ef angle-opengl ] conformance/canvas/to-data-url
 
 crbug.com/642822 [ mac amd ] conformance2/rendering/clipping-wide-points.html [ Failure ]
 
-crbug.com/1278935 [ ventura amd renderer-skia-gl angle-opengl ] deqp/functional/gles3/texturespecification/teximage3d_pbo_2d_array_00.html [ Failure ]
-crbug.com/1278935 [ ventura amd renderer-skia-gl angle-opengl ] deqp/functional/gles3/texturespecification/teximage3d_pbo_2d_array_01.html [ Failure ]
-crbug.com/1278935 [ ventura amd renderer-skia-gl angle-opengl ] deqp/functional/gles3/texturespecification/teximage3d_pbo_3d_00.html [ Failure ]
-crbug.com/1278935 [ ventura amd renderer-skia-gl angle-opengl ] deqp/functional/gles3/texturespecification/teximage3d_pbo_3d_01.html [ Failure ]
-crbug.com/1278935 [ ventura amd renderer-skia-gl angle-opengl ] deqp/functional/gles3/texturespecification/texsubimage3d_pbo_3d_00.html [ Failure ]
-crbug.com/1278935 [ ventura amd renderer-skia-gl angle-opengl ] deqp/functional/gles3/texturespecification/texsubimage3d_pbo_3d_01.html [ Failure ]
+crbug.com/1278935 [ mac amd renderer-skia-gl angle-opengl ] deqp/functional/gles3/texturespecification/teximage3d_pbo_2d_array_00.html [ Failure ]
+crbug.com/1278935 [ mac amd renderer-skia-gl angle-opengl ] deqp/functional/gles3/texturespecification/teximage3d_pbo_2d_array_01.html [ Failure ]
+crbug.com/1278935 [ mac amd renderer-skia-gl angle-opengl ] deqp/functional/gles3/texturespecification/teximage3d_pbo_3d_00.html [ Failure ]
+crbug.com/1278935 [ mac amd renderer-skia-gl angle-opengl ] deqp/functional/gles3/texturespecification/teximage3d_pbo_3d_01.html [ Failure ]
+crbug.com/1278935 [ mac amd renderer-skia-gl angle-opengl ] deqp/functional/gles3/texturespecification/texsubimage3d_pbo_3d_00.html [ Failure ]
+crbug.com/1278935 [ mac amd renderer-skia-gl angle-opengl ] deqp/functional/gles3/texturespecification/texsubimage3d_pbo_3d_01.html [ Failure ]
 
 
 crbug.com/angleproject/5224 [ mac passthrough angle-opengl amd ] conformance2/rendering/instanced-arrays.html [ Failure ]
@@ -668,8 +695,6 @@ crbug.com/1422032 [ mac amd-0x67ef angle-opengl ] deqp/functional/gles3/transfor
 crbug.com/1422032 [ mac amd-0x67ef angle-opengl ] deqp/functional/gles3/transformfeedback/random_interleaved_lines.html [ Failure ]
 crbug.com/1422032 [ mac amd-0x67ef angle-opengl ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
 crbug.com/1422032 [ mac amd-0x67ef angle-opengl ] deqp/functional/gles3/transformfeedback/random_interleaved_triangles.html [ Failure ]
-
-crbug.com/325298015 [ mac amd-0x67ef angle-opengl passthrough release graphite-disabled ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ RetryOnFailure ]
 
 ## Mac Intel ##
 
@@ -740,7 +765,7 @@ crbug.com/982292 [ mac nvidia angle-opengl passthrough ] deqp/functional/gles3/i
 ## Mesa issues ##
 
 # Driver tag doesn't work on the passthrough command decoder because the detected driver version is ANGLE's version.
-crbug.com/1081978 [ linux intel angle-opengl passthrough ] conformance2/textures/misc/tex-3d-size-limit.html [ Failure ]
+crbug.com/1081978 [ angle-opengl intel-0x9bc5 linux passthrough ] conformance2/textures/misc/tex-3d-size-limit.html [ Failure ]
 
 ## Linux NVIDIA ##
 
@@ -750,6 +775,10 @@ crbug.com/1502174 [ linux nvidia-0x2184 angle-opengl passthrough ] conformance2/
 ## Linux AMD RX 5500 XT ##
 
 crbug.com/1152588 [ linux amd-0x7340 angle-opengl passthrough ] conformance2/rendering/multisampling-fragment-evaluation.html [ Failure ]
+
+## Linux Intel UHD 770 **
+
+crbug.com/329698340 [ linux intel-0x4680 angle-opengl passthrough ] conformance2/rendering/blitframebuffer-filter-outofbounds.html [ Failure ]
 
 ####################
 # Android failures #
@@ -799,9 +828,8 @@ crbug.com/1175232 [ android android-pixel-4 angle-opengles passthrough ] conform
 
 crbug.com/angleproject/3684 [ android angle-opengles ] conformance2/renderbuffers/multisample-with-full-sample-counts.html [ Failure ]
 
-crbug.com/1521117 [ android android-pixel-4 ] deqp/functional/gles3/multisample/fbo_4_samples.html [ RetryOnFailure ]
-crbug.com/1521117 [ android android-pixel-4 ] deqp/functional/gles3/multisample/fbo_8_samples.html [ RetryOnFailure ]
-crbug.com/1521117 [ android android-pixel-4 ] deqp/functional/gles3/multisample/fbo_max_samples.html [ RetryOnFailure ]
+crbug.com/1521117 [ android android-pixel-4 angle-opengles passthrough ] deqp/functional/gles3/multisample/fbo_4_samples.html [ RetryOnFailure ]
+crbug.com/1521117 [ android android-pixel-4 angle-opengles passthrough ] deqp/functional/gles3/multisample/fbo_max_samples.html [ RetryOnFailure ]
 
 
 #####################
@@ -835,6 +863,7 @@ crbug.com/1215698 [ chromeos chromeos-board-amd64-generic ] deqp/functional/gles
 crbug.com/1221362 [ chromeos chromeos-board-amd64-generic ] conformance2/rendering/blitframebuffer-filter-outofbounds.html [ Failure ]
 crbug.com/1223542 [ chromeos chromeos-board-amd64-generic ] deqp/functional/gles3/framebufferblit/rect_03.html [ Failure ]
 crbug.com/1223542 [ chromeos chromeos-board-amd64-generic ] deqp/functional/gles3/framebufferblit/rect_04.html [ Failure ]
+crbug.com/326755442 [ chromeos intel mesa_ge_21.0 passthrough ] conformance2/extensions/ext-render-snorm.html [ Failure ]
 
 # Suspected i915 image uprev
 crbug.com/1498990 [ chromeos chromeos-board-octopus ] conformance2/rendering/blitframebuffer-filter-outofbounds.html [ Failure ]
@@ -911,7 +940,10 @@ crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] 
 crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance2/reading/read-pixels-pack-parameters.html [ Failure ]
 crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance2/transform_feedback/transform_feedback.html [ Failure ]
 
-crbug.com/1464417 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance2/extensions/webgl-shader-pixel-local-storage.html [ Failure ]
+crbug.com/326490772 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance2/extensions/webgl-shader-pixel-local-storage.html [ Failure ]
+crbug.com/326490772 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance2/glsl3/texture-bias.html [ Failure ]
+crbug.com/326490772 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance/rendering/clear-default-framebuffer-with-scissor-test.html [ Failure ]
+crbug.com/326490772 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance2/extensions/oes-sample-variables.html [ Failure ]
 
 ##############################
 # Lacros-like Linux Failures #

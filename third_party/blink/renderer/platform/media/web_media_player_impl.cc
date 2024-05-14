@@ -114,6 +114,22 @@ enum SplitHistogramTypes {
   kEncrypted = 0x1 << 2,
 };
 
+constexpr const char* GetHistogramName(SplitHistogramName type) {
+  switch (type) {
+    case SplitHistogramName::kTimeToMetadata:
+      return "Media.TimeToMetadata";
+    case SplitHistogramName::kTimeToPlayReady:
+      return "Media.TimeToPlayReady";
+    case SplitHistogramName::kUnderflowDuration2:
+      return "Media.UnderflowDuration2";
+    case SplitHistogramName::kVideoHeightInitial:
+      return "Media.VideoHeight.Initial";
+    case SplitHistogramName::kTimeToFirstFrame:
+      return "Media.TimeToFirstFrame";
+  }
+  NOTREACHED_NORETURN();
+}
+
 namespace learning = ::media::learning;
 using ::media::Demuxer;
 using ::media::MediaLogEvent;
@@ -1937,7 +1953,7 @@ void WebMediaPlayerImpl::OnMetadata(const media::PipelineMetadata& metadata) {
   time_to_metadata_ = base::TimeTicks::Now() - load_start_time_;
   media_metrics_provider_->SetTimeToMetadata(time_to_metadata_);
   WriteSplitHistogram<kPlaybackType | kEncrypted>(
-      &base::UmaHistogramMediumTimes, "Media.TimeToMetadata",
+      &base::UmaHistogramMediumTimes, SplitHistogramName::kTimeToMetadata,
       time_to_metadata_);
 
   MaybeSetContainerNameForMetrics();
@@ -2186,7 +2202,8 @@ void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
       const base::TimeDelta elapsed = base::TimeTicks::Now() - load_start_time_;
       media_metrics_provider_->SetTimeToPlayReady(elapsed);
       WriteSplitHistogram<kPlaybackType | kEncrypted>(
-          &base::UmaHistogramMediumTimes, "Media.TimeToPlayReady", elapsed);
+          &base::UmaHistogramMediumTimes, SplitHistogramName::kTimeToPlayReady,
+          elapsed);
     }
 
     // Warning: This call may be re-entrant.
@@ -3561,27 +3578,38 @@ bool WebMediaPlayerImpl::ShouldPausePlaybackWhenHidden() const {
 bool WebMediaPlayerImpl::ShouldDisableVideoWhenHidden() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  if (!is_background_video_track_optimization_supported_)
+  if (!is_background_video_track_optimization_supported_) {
     return false;
+  }
 
   // Only disable the video track on audio + video playbacks, otherwise they
   // should be paused or left alone.
-  if (!HasVideo() || !HasAudio())
+  if (!HasVideo() || !HasAudio()) {
     return false;
+  }
 
   // Disabling tracks causes seeks which can cause problematic network delays
   // on streaming resources.
-  if (IsStreaming())
+  if (IsStreaming()) {
     return false;
+  }
 
   // In these cases something external needs the frames.
-  if (IsInPictureInPicture() || IsVideoBeingCaptured() || is_flinging_)
+  if (IsInPictureInPicture() || IsVideoBeingCaptured() || is_flinging_) {
     return false;
+  }
+
+  // Media Foundation does not currently support smoothly disabling &
+  // re-enabling video tracks.
+  if (renderer_type_ == media::RendererType::kMediaFoundation) {
+    return false;
+  }
 
   // Videos shorter than the maximum allowed keyframe distance can be optimized.
   base::TimeDelta duration = GetPipelineMediaDuration();
-  if (duration < kMaxKeyframeDistanceToDisableBackgroundVideo)
+  if (duration < kMaxKeyframeDistanceToDisableBackgroundVideo) {
     return true;
+  }
 
   // Otherwise, only optimize videos with shorter average keyframe distance.
   auto stats = GetPipelineStatistics();
@@ -3736,9 +3764,9 @@ void WebMediaPlayerImpl::SwitchToLocalRenderer(
 template <uint32_t Flags, typename... T>
 void WebMediaPlayerImpl::WriteSplitHistogram(
     void (*UmaFunction)(const std::string&, T...),
-    const std::string& key,
+    SplitHistogramName key,
     const T&... values) {
-  std::string strkey = std::string(key);
+  std::string strkey = std::string(GetHistogramName(key));
 
   if constexpr (Flags & kEncrypted) {
     if (is_encrypted_)
@@ -3756,8 +3784,11 @@ void WebMediaPlayerImpl::WriteSplitHistogram(
       case media::DemuxerType::kChunkDemuxer:
         UmaFunction(strkey + ".MSE", values...);
         break;
+      case media::DemuxerType::kManifestDemuxer:
+      case media::DemuxerType::kMediaUrlDemuxer:
+        UmaFunction(strkey + ".HLS", values...);
+        break;
       default:
-        // TODO (crbug/1377053): Add additional cases for HLS, eventually.
         UmaFunction(strkey + ".SRC", values...);
         break;
     }
@@ -3769,7 +3800,8 @@ void WebMediaPlayerImpl::RecordUnderflowDuration(base::TimeDelta duration) {
          GetDemuxerType() == media::DemuxerType::kChunkDemuxer ||
          GetDemuxerType() == media::DemuxerType::kManifestDemuxer);
   WriteSplitHistogram<kPlaybackType | kEncrypted>(
-      &base::UmaHistogramTimes, "Media.UnderflowDuration2", duration);
+      &base::UmaHistogramTimes, SplitHistogramName::kUnderflowDuration2,
+      duration);
 }
 
 void WebMediaPlayerImpl::RecordVideoNaturalSize(const gfx::Size& natural_size) {
@@ -3785,8 +3817,8 @@ void WebMediaPlayerImpl::RecordVideoNaturalSize(const gfx::Size& natural_size) {
   int height = natural_size.height();
 
   WriteSplitHistogram<kPlaybackType | kEncrypted | kTotal>(
-      &base::UmaHistogramCustomCounts, "Media.VideoHeight.Initial", height, 100,
-      10000, size_t{50});
+      &base::UmaHistogramCustomCounts, SplitHistogramName::kVideoHeightInitial,
+      height, 100, 10000, size_t{50});
 
   if (playback_events_recorder_)
     playback_events_recorder_->OnNaturalSizeChanged(natural_size);
@@ -3810,7 +3842,8 @@ void WebMediaPlayerImpl::OnFirstFrame(base::TimeTicks frame_time,
   const base::TimeDelta elapsed = frame_time - load_start_time_;
   media_metrics_provider_->SetTimeToFirstFrame(elapsed);
   WriteSplitHistogram<kPlaybackType | kEncrypted>(
-      &base::UmaHistogramMediumTimes, "Media.TimeToFirstFrame", elapsed);
+      &base::UmaHistogramMediumTimes, SplitHistogramName::kTimeToFirstFrame,
+      elapsed);
 
   media::PipelineStatistics ps = GetPipelineStatistics();
   if (client_) {

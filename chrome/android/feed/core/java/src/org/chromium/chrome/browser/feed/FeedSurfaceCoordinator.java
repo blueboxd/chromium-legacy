@@ -37,8 +37,6 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.feature_guide.notifications.FeatureNotificationUtils;
-import org.chromium.chrome.browser.feature_guide.notifications.FeatureType;
 import org.chromium.chrome.browser.feed.componentinterfaces.SurfaceCoordinator;
 import org.chromium.chrome.browser.feed.sections.SectionHeaderListProperties;
 import org.chromium.chrome.browser.feed.sections.SectionHeaderView;
@@ -51,6 +49,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.toolbar.ToolbarFeatures;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.native_page.TouchEnabledDelegate;
@@ -427,7 +426,7 @@ public class FeedSurfaceCoordinator
 
         mRootView = new RootView(mActivity);
         mRootView.setPadding(0, mTabStripHeightSupplier.get(), 0, 0);
-        if (ChromeFeatureList.sDynamicTopChrome.isEnabled()) {
+        if (ToolbarFeatures.isDynamicTopChromeEnabled()) {
             mTabStripHeightChangeCallback =
                     newHeight ->
                             mRootView.setPadding(
@@ -554,23 +553,11 @@ public class FeedSurfaceCoordinator
         }
     }
 
-    private void showDiscoverIph() {
-        mHandler.postDelayed(
-                () -> {
-                    // The feed header may not be visible for smaller screens or landscape mode.
-                    // Scroll to show the header before showing the IPH.
-                    mMediator.scrollToViewIfNecessary(getSectionHeaderPosition());
-                    UserEducationHelper helper = new UserEducationHelper(mActivity, mHandler);
-                    mSectionHeaderView.showHeaderIph(helper);
-                },
-                DELAY_FEED_HEADER_IPH_MS);
-    }
-
     public void maybeShowWebFeedAwarenessIph() {
         if (mWebFeedHasContent
                 && FeedFeatures.shouldUseWebFeedAwarenessIPH()
                 && !FeedFeatures.isFeedFollowUiUpdateEnabled()) {
-            UserEducationHelper helper = new UserEducationHelper(mActivity, mHandler);
+            UserEducationHelper helper = new UserEducationHelper(mActivity, mProfile, mHandler);
             mSectionHeaderView.showWebFeedAwarenessIph(
                     helper, StreamTabId.FOLLOWING, new Scroller());
         }
@@ -741,8 +728,6 @@ public class FeedSurfaceCoordinator
             observer.surfaceOpened();
         }
         mMediator.onSurfaceOpened();
-        FeatureNotificationUtils.registerIPHCallback(
-                FeatureType.NTP_SUGGESTION_CARD, this::showDiscoverIph);
     }
 
     /** Hides the feed. */
@@ -751,7 +736,6 @@ public class FeedSurfaceCoordinator
         if (!FeedSurfaceTracker.getInstance().isStartupCalled()) return;
         mIsActive = false;
         mMediator.onSurfaceClosed();
-        FeatureNotificationUtils.unregisterIPHCallback(FeatureType.NTP_SUGGESTION_CARD);
     }
 
     /** Returns a string usable for restoring the UI to current state. */
@@ -1070,7 +1054,7 @@ public class FeedSurfaceCoordinator
                         mScrollableContainerDelegate,
                         () -> {
                             UserEducationHelper helper =
-                                    new UserEducationHelper(mActivity, mHandler);
+                                    new UserEducationHelper(mActivity, mProfile, mHandler);
                             mSectionHeaderView.showMenuIph(helper);
                         });
         mScrollableContainerDelegate.addScrollListener(mHeaderIphScrollListener);
@@ -1083,7 +1067,7 @@ public class FeedSurfaceCoordinator
                         mScrollableContainerDelegate,
                         () -> {
                             UserEducationHelper helper =
-                                    new UserEducationHelper(mActivity, mHandler);
+                                    new UserEducationHelper(mActivity, mProfile, mHandler);
                             mSwipeRefreshLayout.showIPH(helper);
                         });
         mScrollableContainerDelegate.addScrollListener(mRefreshIphScrollListener);

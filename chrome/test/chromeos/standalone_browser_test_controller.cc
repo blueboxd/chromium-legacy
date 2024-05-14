@@ -8,6 +8,7 @@
 
 #include "base/check_is_test.h"
 #include "base/functional/bind.h"
+#include "base/functional/overloaded.h"
 #include "base/json/json_reader.h"
 #include "base/memory/raw_ptr.h"
 #include "base/types/expected_macros.h"
@@ -15,11 +16,13 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_keeplist_chromeos.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/speech/tts_crosapi_util.h"
-#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_source.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_source.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -82,7 +85,7 @@ void IsolatedWebAppInstallationDone(
 }
 
 void OnIsolatedWebAppUrlInfoCreated(
-    const web_app::IsolatedWebAppLocation& iwa_location,
+    const web_app::IsolatedWebAppInstallSource& install_source,
     StandaloneBrowserTestController::InstallIsolatedWebAppCallback callback,
     base::expected<web_app::IsolatedWebAppUrlInfo, std::string>
         iwa_url_info_expected) {
@@ -95,7 +98,7 @@ void OnIsolatedWebAppUrlInfoCreated(
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   auto* provider = web_app::WebAppProvider::GetForWebApps(profile);
   provider->scheduler().InstallIsolatedWebApp(
-      iwa_url_info, iwa_location, /*expected_version=*/std::nullopt,
+      iwa_url_info, install_source, /*expected_version=*/std::nullopt,
       /*optional_keep_alive=*/nullptr, /*optional_profile_keep_alive=*/nullptr,
       base::BindOnce(&IsolatedWebAppInstallationDone, iwa_url_info.app_id(),
                      std::move(callback)));
@@ -165,7 +168,7 @@ void StandaloneBrowserTestController::InstallWebApp(
   info->user_display_mode = WindowModeToUserDisplayMode(window_mode);
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   auto* provider = web_app::WebAppProvider::GetForWebApps(profile);
-  provider->scheduler().InstallFromInfo(
+  provider->scheduler().InstallFromInfoNoIntegrationForTesting(
       std::move(info),
       /*overwrite_existing_manifest_fields=*/false,
       webapps::WebappInstallSource::SYNC,
@@ -215,6 +218,18 @@ void StandaloneBrowserTestController::OnDomMessageQueueReady() {
   dom_message_queue_->SetOnMessageAvailableCallback(
       base::BindOnce(&StandaloneBrowserTestController::OnDomMessageQueueReady,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void StandaloneBrowserTestController::InstallComponentExtension(
+    const std::string& path,
+    const std::string& extension_id,
+    InstallComponentExtensionCallback callback) {
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  extensions::ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  service->component_loader()->AddComponentFromDirWithManifestFilename(
+      base::FilePath(path), extension_id, extensions::kManifestFilename,
+      extensions::kManifestFilename, std::move(callback));
 }
 
 void StandaloneBrowserTestController::RemoveComponentExtension(
@@ -291,7 +306,7 @@ void StandaloneBrowserTestController::InstallSubApp(
 
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   auto* provider = web_app::WebAppProvider::GetForWebApps(profile);
-  provider->scheduler().InstallFromInfo(
+  provider->scheduler().InstallFromInfoNoIntegrationForTesting(
       std::move(info),
       /*overwrite_existing_manifest_fields=*/false,
       webapps::WebappInstallSource::SUB_APP,
@@ -303,23 +318,29 @@ void StandaloneBrowserTestController::InstallIsolatedWebApp(
     crosapi::mojom::IsolatedWebAppLocationPtr location,
     bool dev_mode,
     InstallIsolatedWebAppCallback callback) {
-  web_app::IsolatedWebAppLocation iwa_location_location;
-  if (dev_mode) {
-    if (location->is_bundle_path()) {
-      iwa_location_location = web_app::DevModeBundle{
-          .path = base::FilePath(location->get_bundle_path())};
+  web_app::IsolatedWebAppInstallSource install_source = ([&]() {
+    if (dev_mode) {
+      if (location->is_bundle_path()) {
+        return web_app::IsolatedWebAppInstallSource::FromDevUi(
+            web_app::IwaSourceBundleDevModeWithFileOp(
+                base::FilePath(location->get_bundle_path()),
+                web_app::IwaSourceBundleDevFileOp::kCopy));
+      } else {
+        return web_app::IsolatedWebAppInstallSource::FromDevUi(
+            web_app::IwaSourceProxy(
+                url::Origin::Create(location->get_proxy_origin())));
+      }
     } else {
-      iwa_location_location = web_app::DevModeProxy{
-          .proxy_url = url::Origin::Create(location->get_proxy_origin())};
+      return web_app::IsolatedWebAppInstallSource::FromGraphicalInstaller(
+          web_app::IwaSourceBundleProdModeWithFileOp(
+              base::FilePath(location->get_bundle_path()),
+              web_app::IwaSourceBundleProdFileOp::kCopy));
     }
-  } else {
-    iwa_location_location = web_app::InstalledBundle{
-        .path = base::FilePath(location->get_bundle_path())};
-  }
+  })();
 
-  web_app::IsolatedWebAppUrlInfo::CreateFromIsolatedWebAppLocation(
-      iwa_location_location,
-      base::BindOnce(&OnIsolatedWebAppUrlInfoCreated, iwa_location_location,
+  web_app::IsolatedWebAppUrlInfo::CreateFromIsolatedWebAppSource(
+      install_source.source(),
+      base::BindOnce(&OnIsolatedWebAppUrlInfoCreated, install_source,
                      std::move(callback)));
 }
 

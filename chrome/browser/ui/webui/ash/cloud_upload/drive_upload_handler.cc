@@ -95,7 +95,6 @@ DriveUploadHandler::DriveUploadHandler(
       notification_manager_(
           base::MakeRefCounted<CloudUploadNotificationManager>(
               profile,
-              source_url.path().BaseName().value(),
               l10n_util::GetStringUTF8(IDS_OFFICE_CLOUD_PROVIDER_GOOGLE_DRIVE),
               GetTargetAppName(source_url.path()),
               // TODO(b/242685536) Update when support for multi-files is added.
@@ -563,14 +562,26 @@ void DriveUploadHandler::OnGetDriveMetadata(
   // host.
   if (hosted_url.host() != "docs.google.com") {
     if (timed_out) {
-      LOG(ERROR) << "Unexpected alternate URL - Drive editing unavailable: "
-                 << hosted_url.host();
-      // TODO(b/323452926): Remove DumpWithoutCrashing() once root cause
-      // discovered.
-      SCOPED_CRASH_KEY_STRING64("OfficeUpload", "UnexpectedHost",
-                                hosted_url.host());
-      base::debug::DumpWithoutCrashing();
-      OnEndCopy(OfficeFilesUploadResult::kUnexpectedAlternateUrlHost);
+      if (hosted_url.host() == "drive.google.com" &&
+          !file_manager::file_tasks::IsOfficeFileMimeType(
+              metadata->content_mime_type)) {
+        // The drive.google.com will appear if an uploaded file has an Office
+        // extension but is not actually an Office file. For example, the user
+        // just renamed their .mp4 to a .doc.
+        LOG(ERROR) << "Non-Office file cannot be opened with Google Docs";
+        OnEndCopy(OfficeFilesUploadResult::kFileNotAnOfficeFile,
+                  base::unexpected(GetNotAValidDocumentErrorMessage()));
+      } else {
+        LOG(ERROR) << "Unexpected alternate URL - Drive editing unavailable: "
+                   << hosted_url.host();
+        // TODO(b/323452926): Remove DumpWithoutCrashing() once sure the
+        // introduction of kFileNotAnOfficeFile fixed the only cause of
+        // kUnexpectedAlternateUrlHost.
+        SCOPED_CRASH_KEY_STRING64("OfficeUpload", "UnexpectedHost",
+                                  hosted_url.host());
+        base::debug::DumpWithoutCrashing();
+        OnEndCopy(OfficeFilesUploadResult::kUnexpectedAlternateUrlHost);
+      }
     } else {
       alternate_url_poll_timer_.Start(
           FROM_HERE, base::Milliseconds(kAlternateUrlPollInterval),

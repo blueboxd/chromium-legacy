@@ -15,6 +15,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/signin/internal/identity_manager/account_fetcher_service.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
+#include "components/signin/internal/identity_manager/fake_profile_oauth2_token_service.h"
 #include "components/signin/internal/identity_manager/gaia_cookie_manager_service.h"
 #include "components/signin/internal/identity_manager/primary_account_manager.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
@@ -261,6 +262,17 @@ CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
                                   .Build(email));
 }
 
+void SetAutomaticIssueOfAccessTokens(IdentityManager* identity_manager,
+                                     bool grant) {
+  // Assumes that the given identity manager uses an underlying token service
+  // of type FakeProfileOAuth2TokenService.
+  CHECK(identity_manager->GetTokenService()
+            ->IsFakeProfileOAuth2TokenServiceForTesting());
+  static_cast<FakeProfileOAuth2TokenService*>(
+      identity_manager->GetTokenService())
+      ->set_auto_post_fetch_response_on_message_loop(grant);
+}
+
 void SetRefreshTokenForPrimaryAccount(IdentityManager* identity_manager,
                                       const std::string& token_value) {
   DCHECK(identity_manager->HasPrimaryAccount(ConsentLevel::kSignin));
@@ -322,8 +334,7 @@ void RevokeSyncConsent(IdentityManager* identity_manager) {
       },
       &run_loop));
   identity_manager->GetPrimaryAccountMutator()->RevokeSyncConsent(
-      signin_metrics::ProfileSignout::kTest,
-      signin_metrics::SignoutDelete::kIgnoreMetric);
+      signin_metrics::ProfileSignout::kTest);
   run_loop.Run();
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -350,8 +361,7 @@ void ClearPrimaryAccount(IdentityManager* identity_manager) {
       },
       &run_loop));
   identity_manager->GetPrimaryAccountMutator()->ClearPrimaryAccount(
-      signin_metrics::ProfileSignout::kTest,
-      signin_metrics::SignoutDelete::kIgnoreMetric);
+      signin_metrics::ProfileSignout::kTest);
 
   run_loop.Run();
 #endif

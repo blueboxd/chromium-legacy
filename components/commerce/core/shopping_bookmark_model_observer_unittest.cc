@@ -30,7 +30,10 @@ namespace {
 class ShoppingBookmarkModelObserverTest : public testing::Test {
  protected:
   void SetUp() override {
-    bookmark_model_ = bookmarks::TestBookmarkClient::CreateModel();
+    auto client = std::make_unique<bookmarks::TestBookmarkClient>();
+    client->SetIsSyncFeatureEnabledIncludingBookmarks(true);
+    bookmark_model_ =
+        bookmarks::TestBookmarkClient::CreateModelWithClient(std::move(client));
     shopping_service_ = std::make_unique<MockShoppingService>();
     subscriptions_manager_ = std::make_unique<MockSubscriptionsManager>();
 
@@ -214,6 +217,8 @@ TEST_F(ShoppingBookmarkModelObserverTest,
 
 // Ensure a subscription is automatically tracked if that flag is enabled.
 TEST_F(ShoppingBookmarkModelObserverTest, TestAutomaticTrackingOnAdd) {
+  test_features_.InitAndEnableFeature(kTrackByDefaultOnMobile);
+
   uint64_t cluster_id = 12345L;
   ProductInfo info;
   info.product_cluster_id.emplace(cluster_id);

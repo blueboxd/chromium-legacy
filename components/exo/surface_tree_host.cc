@@ -58,7 +58,7 @@ namespace exo {
 
 BASE_FEATURE(kExoDisableBeginFrameAcks,
              "ExoDisableBeginFrameAcks",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 namespace {
 
@@ -496,7 +496,8 @@ void SurfaceTreeHost::UpdateHostLayerOpacity() {
   const gfx::Rect& bounds = root_surface_->surface_hierarchy_content_bounds();
 
   const bool fills_bounds_opaquely =
-      gfx::SizeF(bounds.size()) == root_surface_->content_size() &&
+      bounds ==
+          gfx::ToEnclosingRectIgnoringError(root_surface_->visual_rect()) &&
       root_surface_->FillsBoundsOpaquely();
 
   if (commit_target_layer == host_window_->layer()) {
@@ -629,7 +630,10 @@ const ui::Layer* SurfaceTreeHost::GetCommitTargetLayer() const {
   return host_window_->layer();
 }
 
-void SurfaceTreeHost::OnLayerRecreated(ui::Layer* old_layer) {}
+void SurfaceTreeHost::OnLayerRecreated(ui::Layer* old_layer) {
+  // TODO(b/319939913): Remove this log when the issue is fixed.
+  old_layer->SetName(old_layer->name() + "-host");
+}
 
 viz::CompositorFrame SurfaceTreeHost::PrepareToSubmitCompositorFrame() {
   DCHECK(root_surface_);
@@ -794,7 +798,6 @@ void SurfaceTreeHost::ApplyAndPropagateRoundedCornersToSurfaceTree(
     Surface* surface,
     const gfx::RRectF& rounded_corners_bounds) {
   surface->SetRoundedCorners(rounded_corners_bounds,
-                             /*is_root_coordinates=*/false,
                              /*commit_override=*/true);
   for (auto& sub_surface_entry : surface->sub_surfaces()) {
     // Convert the rounded corners bounds to sub_surface local coordinates by

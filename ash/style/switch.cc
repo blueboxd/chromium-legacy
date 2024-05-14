@@ -33,6 +33,8 @@ constexpr int kFocusPadding = 2;
 Switch::Switch(PressedCallback callback)
     : views::ToggleButton(std::move(callback), /*has_thumb_shadow=*/false) {
   SetBorder(views::CreateEmptyBorder(gfx::Insets(kSwitchInnerPadding)));
+  // Disable the inset outline.
+  SetInnerBorderEnabled(false);
   auto* focus_ring = views::FocusRing::Get(this);
   focus_ring->SetOutsetFocusRingDisabled(true);
   focus_ring->SetColorId(ui::kColorAshFocusRing);
@@ -57,7 +59,10 @@ SkPath Switch::GetFocusRingPath() const {
 }
 
 gfx::Rect Switch::GetTrackBounds() const {
-  return GetContentsBounds();
+  gfx::Rect track_bounds(GetContentsBounds());
+  // Clamp to preferred track size if the preferred size is not used.
+  track_bounds.ClampToCenteredSize(GetPreferredSize() - GetInsets().size());
+  return track_bounds;
 }
 
 gfx::Rect Switch::GetThumbBounds() const {

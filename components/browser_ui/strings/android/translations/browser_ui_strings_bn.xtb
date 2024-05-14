@@ -5,6 +5,7 @@
 <translation id="1036348656032585052">বন্ধ করুন</translation>
 <translation id="1044891598689252897">সাইট স্বাভাবিকভাবেই কাজ করবে</translation>
 <translation id="1073417869336441572">আপনি কেন থার্ড-পার্টি কুকিতে অনুমতি দিয়েছেন তা আমাদের জানিয়ে Chrome উন্নত করতে সাহায্য করুন। <ph name="BEGIN_LINK" />মতামত জানান<ph name="END_LINK" /></translation>
+<translation id="1113435009358629918">দাম কমা সংক্রান্ত কার্ড লুকান</translation>
 <translation id="1178581264944972037">বিরতি</translation>
 <translation id="1181037720776840403">সরান</translation>
 <translation id="1192844206376121885">এটি আপনার <ph name="ORIGIN" />-এর মাধ্যমে সেভ হওয়া সব ডেটা এবং কুকি মুছে দেবে।</translation>
@@ -21,7 +22,6 @@
 <translation id="1383876407941801731">Search</translation>
 <translation id="1384959399684842514">ডাউনলোড পজ করা আছে</translation>
 <translation id="1415402041810619267">ইউআরএল ছোট করা হয়েছে</translation>
-<translation id="1434873037477293673">দাম কমা সংক্রান্ত কার্ড</translation>
 <translation id="1448064542941920355">জুম কমান</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{<ph name="SITE_COUNT" />টি সাইট}one{<ph name="SITE_COUNT" />টি সাইট}other{<ph name="SITE_COUNT" />টি সাইট}}</translation>
 <translation id="1510341833810331442">কোনও সাইটকে আপনার ডিভাইসে ডেটা সেভ করার অনুমতি দিন</translation>
@@ -93,12 +93,14 @@
 <translation id="2498359688066513246">সহায়তা ও প্রতিবার্তা</translation>
 <translation id="2501278716633472235">ফিরে যান</translation>
 <translation id="2546283357679194313">কুকিজ ও সাইট ডেটা</translation>
+<translation id="2550801787432930915">দাম কমা সংক্রান্ত কার্ড</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{১টি কুকি ব্লক করা হয়েছে}one{#টি কুকি ব্লক করা হয়েছে}other{#টি কুকি ব্লক করা হয়েছে}}</translation>
 <translation id="2570922361219980984">এই ডিভাইসেও লোকেশন অ্যাক্সেস বন্ধ আছে। চালু করতে <ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> যান।</translation>
 <translation id="257931822824936280">প্রসারিত - সঙ্কুচিত করতে ক্লিক করুন৷</translation>
 <translation id="2586657967955657006">ক্লিপবোর্ড</translation>
 <translation id="2597457036804169544">সাইটে ডার্ক থিম প্রয়োগ করবেন না</translation>
 <translation id="2606760465469169465">অটোমেটিক যাচাই</translation>
+<translation id="2613007545732217283"><ph name="HOST_NAME" /> <ph name="SEPARATOR" /> <ph name="RECENCY" /></translation>
 <translation id="2621115761605608342">একটি নির্দিষ্ট সাইটের জন্য জাভাস্ক্রিপ্ট মঞ্জুর করুন।</translation>
 <translation id="2653659639078652383">জমা দিন</translation>
 <translation id="2677748264148917807">ছেড়ে চলে যান</translation>
@@ -121,7 +123,6 @@
 <translation id="2979365474350987274">থার্ড-পার্টি কুকি সীমিত করা হয়েছে</translation>
 <translation id="3008272652534848354">অনুমতি রিসেট করুন</translation>
 <translation id="301521992641321250">স্বয়ংক্রিয়ভাবে ব্লক করা হয়েছে</translation>
-<translation id="3025010840409371499"><ph name="RECENCY" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="3069226013421428034">কোনও নির্দিষ্ট সাইটের জন্য থার্ড-পার্টি সাইন-ইনের অনুমতি দিন।</translation>
 <translation id="3082992102194421695">{COUNT,plural, =1{আগামীকাল মেয়াদ শেষ}one{# দিনে মেয়াদ শেষ হবে}other{# দিনে মেয়াদ শেষ হবে}}</translation>
 <translation id="310297983047869047">আগের স্লাইড</translation>
@@ -188,7 +189,6 @@
 <translation id="4149994727733219643">ওয়েব পৃষ্ঠার জন্য সরলীকৃত ভিউ</translation>
 <translation id="4151930093518524179">ডিফল্ট জুম</translation>
 <translation id="4165986682804962316">সাইটের সেটিংস</translation>
-<translation id="4169019654293892025"><ph name="TITLE_OF_MODULE" /> লুকান</translation>
 <translation id="4169549551965910670">একটি ইউএসবি ডিভাইসে কানেক্ট করা হয়েছে</translation>
 <translation id="4194328954146351878">সাইটগুলিকে NFC ডিভাইসে তথ্য দেখতে এবং পরিবর্তন করার অনুমতি দেওয়ার আগে জিজ্ঞাসা করে নিন (প্রস্তাবিত)</translation>
 <translation id="4200726100658658164">লোকেশন সেটিংস খুলুন</translation>
@@ -213,6 +213,7 @@
 <translation id="4566417217121906555">মাইক্রোফোন মিউট করুন</translation>
 <translation id="4570913071927164677">বিবরণ</translation>
 <translation id="4598549027014564149">ছদ্মবেশী মোড চালু থাকলে, সম্পর্কিত সাইট সহ বিভিন্ন ওয়েবসাইট জুড়ে আপনার ব্রাউজিং অ্যাক্টিভিটি দেখার জন্য আপনার কুকি ব্যবহার করতে পারবে না। আপনার ব্রাউজিং অ্যাক্টিভিটি পছন্দমতো বিজ্ঞাপনের মতো জিনিসগুলির জন্য ব্যবহার করা হয় না। কিছু সাইটের ফিচার কাজ নাও করতে পারে।</translation>
+<translation id="4619615317237390068">অন্যান্য ডিভাইসগুলি থেকে ট্যাব</translation>
 <translation id="4644713492825682049">মুছুন ও রিসেট করুন</translation>
 <translation id="4645575059429386691">আপনার পিতামাতার দ্বারা পরিচালিত</translation>
 <translation id="4670064810192446073">ভার্চুয়াল রিয়ালিটি</translation>
@@ -344,6 +345,7 @@
 <translation id="6612358246767739896">সুরক্ষিত কন্টেন্ট</translation>
 <translation id="662080504995468778">থাকুন</translation>
 <translation id="6653342741369270081">'ফুল-স্ক্রিন' মোড থেকে বেরিয়ে আসতে ফিরে যাওয়ার বোতামটি প্রেস করুন।</translation>
+<translation id="6670377348676659110">{TILE_COUNT,plural, =1{এই ট্যাবের সাথে চালিয়ে যান মডিউল লুকান}one{এইসব ট্যাবের সাথে চালিয়ে যান মডিউল লুকান}other{এইসব ট্যাবের সাথে চালিয়ে যান মডিউল লুকান}}</translation>
 <translation id="6689172468748959065">প্রোফাইল ফটো</translation>
 <translation id="6697925417670533197">ডাউনলোড করা হচ্ছে</translation>
 <translation id="6722828510648505498">পরিচয় পরিষেবা প্রদানকারী থেকে সাইন-ইন প্রম্পট ব্লক করুন।</translation>
@@ -366,6 +368,7 @@
 <translation id="702275896380648118">এই সাইটটি আপনার পছন্দের জিনিসগুলি নির্ধারণ করে এবং তারপরে অন্যান্য সাইটে বিজ্ঞাপন সাজেস্ট করে। এই সাইটটি আপনাকে আরও প্রাসঙ্গিক বিজ্ঞাপন দেখানোর জন্য Chrome থেকে আপনার বিজ্ঞাপনের বিষয় নেয়।</translation>
 <translation id="7053983685419859001">ব্লক করুন</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{১টি বেছে নেওয়া হয়েছে}one{#টি বেছে নেওয়া হয়েছে}other{#টি বেছে নেওয়া হয়েছে}}</translation>
+<translation id="708014373017851679">'<ph name="APP_NAME" />'-এর ভার্সন আপডেট করতে হবে। অ্যাপটি আপডেট করুন।</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> বেছে নেওয়া হয়েছে।  স্ক্রিনের উপরে বিকল্পগুলি পাওয়া যাবে</translation>
 <translation id="7141896414559753902">সাইটগুলিকে পপ-আপ দেখাতে এবং রিডাইরেক্ট করা থেকে বাধা দিন (প্রস্তাবিত)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> কেবি</translation>
@@ -402,6 +405,7 @@
 <translation id="7667547420449112975">দি ওয়ান্ডারফুল উইজার্ড অফ ওজ</translation>
 <translation id="7684642910516280563">কোনও সাইটকে থার্ড-পার্টি কুকি ব্যবহার করার অনুমতি দেবেন না</translation>
 <translation id="7719367874908701697">পৃষ্ঠা জুম</translation>
+<translation id="7759147511335618829">MIDI ডিভাইস কন্ট্রোল ও রিপ্রোগ্রাম</translation>
 <translation id="7781829728241885113">গতকাল</translation>
 <translation id="7791543448312431591">জুড়ুন</translation>
 <translation id="7801888679188438140">{TILE_COUNT,plural, =1{এই ট্যাবের মাধ্যমে চালিয়ে যান}one{এইসব ট্যাবের মাধ্যমে চালিয়ে যান}other{এইসব ট্যাবের মাধ্যমে চালিয়ে যান}}</translation>

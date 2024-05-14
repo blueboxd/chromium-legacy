@@ -34,6 +34,12 @@ ASH_EXPORT ArcGameControlsFlag UpdateFlag(ArcGameControlsFlag flags,
                                           ArcGameControlsFlag flag,
                                           bool enable_flag);
 
+// Returns true if the system is not in the overview mode and not in the tablet
+// mode. This is only for Game Dashboard (GD) features availability. Call it
+// when the feature availability is aligned with GD entry availability, since
+// GD features availability dependency may change.
+ASH_EXPORT bool ShouldEnableFeatures();
+
 // Returns flags value if `window` is an ARC game window. Otherwise, it returns
 // nullopt.
 std::optional<ArcGameControlsFlag> GetGameControlsFlag(aura::Window* window);
@@ -48,6 +54,25 @@ void UpdateGameControlsHintButton(views::Button* button,
 // Returns true if `window` is not ARC game window, or Game Controls state is
 // known and not in edit mode.
 bool ShouldEnableGameDashboardButton(aura::Window* window);
+
+// Checks whether the welcome dialog should be displayed when the game window
+// opens.
+bool ShouldShowWelcomeDialog();
+
+// Updates the `PrefService` preference for showing the welcome dialog with
+// the new value specified in `show_dialog`.
+void SetShowWelcomeDialog(bool show_dialog);
+
+// Checks whether the toolbar should be displayed.
+bool ShouldShowToolbar();
+
+// Updates the `PrefService` preference for showing the toolbar with the new
+// value specified in `show_toolbar`.
+void SetShowToolbar(bool show_toolbar);
+
+// Calculates the height of the `window`'s frame header. Returns 0 if the frame
+// header is not found or when the header is invisible.
+ASH_EXPORT int GetFrameHeaderHeight(aura::Window* window);
 
 }  // namespace ash::game_dashboard_utils
 

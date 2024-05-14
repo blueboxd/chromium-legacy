@@ -59,6 +59,8 @@ class ImageTransportSurfaceOverlayMacEGL : public gl::Presenter {
 
   void SetCALayerErrorCode(gfx::CALayerResult ca_layer_error_code) override;
 
+  void SetMaxPendingSwaps(int max_pending_swaps) override;
+
 #if BUILDFLAG(IS_MAC)
   // GLSurface override
   void SetVSyncDisplayID(int64_t display_id) override;
@@ -125,6 +127,8 @@ class ImageTransportSurfaceOverlayMacEGL : public gl::Presenter {
   // number is increased in Present() and decreased in
   // PopulateCALayerParameters();
   int num_committed_ca_layer_trees_ = 0;
+
+  int cap_max_pending_swaps_ = 1;
 
   base::WeakPtrFactory<ImageTransportSurfaceOverlayMacEGL> weak_ptr_factory_;
 };

@@ -203,6 +203,7 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoViewTransitionNew:
     case CSSSelector::kPseudoViewTransitionOld:
     case CSSSelector::kPseudoActiveViewTransition:
+    case CSSSelector::kPseudoActiveViewTransitionType:
       return true;
     case CSSSelector::kPseudoUnknown:
     case CSSSelector::kPseudoLeftPage:
@@ -752,6 +753,7 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
       case CSSSelector::kPseudoModal:
       case CSSSelector::kPseudoSelectorFragmentAnchor:
       case CSSSelector::kPseudoActiveViewTransition:
+      case CSSSelector::kPseudoActiveViewTransitionType:
         return &EnsurePseudoInvalidationSet(selector.GetPseudoType(), type,
                                             position);
       case CSSSelector::kPseudoFirstOfType:
@@ -779,7 +781,7 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
 // given @scope). See UpdateInvalidationSetsForComplex() for details.
 void RuleFeatureSet::UpdateInvalidationSets(const CSSSelector& selector,
                                             const StyleScope* style_scope) {
-  InvalidationSetFeatures features;
+  STACK_UNINITIALIZED InvalidationSetFeatures features;
   FeatureInvalidationType feature_invalidation_type =
       UpdateInvalidationSetsForComplex(selector, /*in_nth_child=*/false,
                                        style_scope, features, kSubject,

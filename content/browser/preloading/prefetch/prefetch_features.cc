@@ -22,13 +22,9 @@ BASE_FEATURE(kPrefetchNIKScope,
              "PrefetchNIKScope",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kPrefetchDocumentManagerEarlyCookieCopySkipped,
-             "PrefetchDocumentManagerEarlyCookieCopySkipped",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kPrefetchUsesHTTPCache,
-             "PrefetchUsesHTTPCache",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kPrefetchBrowserInitiatedTriggers,
+             "PrefetchBrowserInitiatedTriggers",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kPrefetchClientHints,
              "PrefetchClientHints",
@@ -45,6 +41,14 @@ const base::FeatureParam<PrefetchClientHintsCrossSiteBehavior>
         &kPrefetchClientHints, "cross_site_behavior",
         PrefetchClientHintsCrossSiteBehavior::kLowEntropy,
         &kPrefetchClientHintsCrossSiteBehaviorOptions};
+
+BASE_FEATURE(kPrefetchStateContaminationMitigation,
+             "PrefetchStateContaminationMitigation",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+const base::FeatureParam<bool>
+    kPrefetchStateContaminationSwapsBrowsingContextGroup{
+        &kPrefetchStateContaminationMitigation, "swaps_bcg", false};
 
 BASE_FEATURE(kPrefetchProxy, "PrefetchProxy", base::FEATURE_ENABLED_BY_DEFAULT);
 

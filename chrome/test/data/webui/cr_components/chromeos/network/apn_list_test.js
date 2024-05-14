@@ -8,7 +8,7 @@ import 'chrome://resources/ash/common/network/apn_list.js';
 import {ApnDetailDialogMode} from '//resources/ash/common/network/cellular_utils.js';
 import {ApnList} from 'chrome://resources/ash/common/network/apn_list.js';
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
-import {ApnProperties, ApnState, ApnType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
+import {ApnProperties, ApnSource, ApnState, ApnType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
 import {PortalState} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
@@ -386,6 +386,53 @@ suite('ApnListTest', function() {
         .shadowRoot.querySelector('#apnDetailCancelBtn')
         .click();
   });
+
+  test(
+      'Calling openApnSelectionDialog() opens APN selection dialog',
+      async function() {
+        const getApnSelectionDialog = () =>
+            apnList.shadowRoot.querySelector('apn-selection-dialog');
+        apnList.guid = 'fake-guid';
+        assertFalse(!!getApnSelectionDialog());
+        apnList.openApnSelectionDialog();
+        await flushTasks();
+        assertTrue(!!getApnSelectionDialog());
+        assertEquals(apnList.guid, getApnSelectionDialog().guid);
+        assertEquals(0, getApnSelectionDialog().apnList.length);
+
+        apnList.managedCellularProperties = {};
+        assertEquals(0, getApnSelectionDialog().apnList.length);
+
+        const modbApn = {
+          accessPointName: 'Access Point 1',
+          source: ApnSource.kModb,
+        };
+        const modemApn = {
+          accessPointName: 'Access Point 2',
+          source: ApnSource.kModem,
+        };
+        apnList.managedCellularProperties = {
+          apnList: {
+            activeValue: [
+              modbApn,
+              modemApn,
+            ],
+          },
+        };
+
+        // Only APNs with source kModb should be present.
+        assertEquals(1, getApnSelectionDialog().apnList.length);
+        assertTrue(
+            OncMojo.apnMatch(modbApn, getApnSelectionDialog().apnList[0]));
+
+        const cancelButton =
+            getApnSelectionDialog().shadowRoot.querySelector('.cancel-button');
+        assertTrue(!!cancelButton);
+        cancelButton.click();
+        await flushTasks();
+
+        assertFalse(!!getApnSelectionDialog());
+      });
 
   test('Show disable/remove/enable warning', async function() {
     apnList.managedCellularProperties = {

@@ -7,6 +7,9 @@
 #include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/notreached.h"
+#include "base/task/thread_pool.h"
+#include "base/trace_event/trace_event.h"
+#include "media/gpu/chromeos/video_frame_resource.h"
 #include "media/gpu/macros.h"
 
 namespace {
@@ -18,6 +21,40 @@ constexpr size_t kInputBufferMaxSizeFor1080p = 1024 * 1024;
 constexpr size_t kInputBufferMaxSizeFor4k = 4 * kInputBufferMaxSizeFor1080p;
 // The number of planes for a compressed buffer is always 1.
 constexpr uint32_t kNumberInputPlanes = 1;
+
+constexpr char kTracingCategory[] = "media,gpu";
+constexpr char kV4L2OutputQueue[] = "V4L2 Output Buffer Queued Duration";
+constexpr char kV4L2InputQueue[] = "V4L2 Input Buffer Queued Duration";
+constexpr char kCompressedBufferIndex[] = "compressed buffer index";
+constexpr char kDecodedBufferIndex[] = "decoded buffer index";
+
+void BlockOnDequeueOfBuffer(scoped_refptr<media::StatelessDevice> device,
+                            media::BufferType buffer_type,
+                            media::MemoryType memory_type,
+                            uint32_t num_planes,
+                            media::DequeueCB dequeue_cb) {
+  while (true) {
+    DVLOGF(4) << "Blocking on dequeue of " << BufferTypeString(buffer_type)
+              << " buffer.";
+    auto buffer = device->DequeueBuffer(buffer_type, memory_type, num_planes);
+    if (buffer) {
+      DVLOGF(4) << BufferTypeString(buffer_type) << " (" << buffer->GetIndex()
+                << " buffer dequeued.";
+
+      if (buffer_type == media::BufferType::kCompressedData) {
+        TRACE_EVENT_NESTABLE_ASYNC_END0(kTracingCategory, kV4L2InputQueue,
+                                        TRACE_ID_LOCAL(buffer->GetIndex()));
+      } else {
+        TRACE_EVENT_NESTABLE_ASYNC_END0(kTracingCategory, kV4L2OutputQueue,
+                                        TRACE_ID_LOCAL(buffer->GetIndex()));
+      }
+      dequeue_cb.Run(std::move(*buffer));
+    } else {
+      break;
+    }
+  }
+}
+
 }  // namespace
 
 namespace media {
@@ -27,7 +64,18 @@ BaseQueue::BaseQueue(scoped_refptr<StatelessDevice> device,
                      MemoryType memory_type)
     : device_(std::move(device)),
       buffer_type_(buffer_type),
-      memory_type_(memory_type) {}
+      memory_type_(memory_type),
+      num_planes_(1) {
+  // |input_queue_task_runner_| and |output_queue_task_runner_| block on
+  // dequeuing a kernel ioctl call (VIDIOC_DQBUF). These don't need to be true
+  // task runners as there is never anything posted to those runners. They wait
+  // for an event and then post messages to the main task runner. Using task
+  // runners requires having a dedicated thread to prevent other runners that
+  // are put on the same thread from being blocked unintentionally.
+  queue_task_runner_ = base::ThreadPool::CreateSingleThreadTaskRunner(
+      {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::SingleThreadTaskRunnerThreadMode::DEDICATED);
+}
 
 BaseQueue::~BaseQueue() {
   DVLOGF(3);
@@ -85,6 +133,12 @@ bool BaseQueue::AllocateBuffers(uint32_t num_planes, size_t num_buffers) {
 
 void BaseQueue::DeallocateBuffers() {
   DVLOGF(3);
+
+  if (MemoryType::kMemoryMapped == memory_type_) {
+    for (auto& buffer : buffers_) {
+      device_->MunmapBuffer(buffer);
+    }
+  }
   buffers_.clear();
 
   const auto count = device_->RequestBuffers(buffer_type_, memory_type_, 0);
@@ -117,6 +171,12 @@ std::optional<uint32_t> BaseQueue::GetFreeBufferIndex() {
             << Description();
 
   return index;
+}
+
+void BaseQueue::ArmBufferMonitor(DequeueCB cb) {
+  queue_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&BlockOnDequeueOfBuffer, device_, buffer_type_,
+                                memory_type_, num_planes_, std::move(cb)));
 }
 
 // static
@@ -211,6 +271,10 @@ bool InputQueue::SubmitCompressedFrameData(void* ctrls,
     LOG(ERROR) << "Unable to copy compressed buffer into driver.";
   }
 
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(kTracingCategory, kV4L2InputQueue,
+                                    TRACE_ID_LOCAL(buffer.GetIndex()),
+                                    kCompressedBufferIndex, buffer.GetIndex());
+
   // This shouldn't happen. A buffer has been allocated and filled, there
   // should be nothing preventing it from getting queued.
   if (!device_->QueueBuffer(buffer, request_fd)) {
@@ -251,10 +315,10 @@ std::unique_ptr<OutputQueue> OutputQueue::Create(
 }
 
 OutputQueue::OutputQueue(scoped_refptr<StatelessDevice> device)
-    : BaseQueue(device, BufferType::kRawFrames, MemoryType::kMemoryMapped),
+    : BaseQueue(device, BufferType::kDecodedFrame, MemoryType::kMemoryMapped),
       buffer_format_(BufferFormat(Fourcc(Fourcc::UNDEFINED),
                                   gfx::Size(0, 0),
-                                  BufferType::kRawFrames)) {}
+                                  BufferType::kDecodedFrame)) {}
 
 OutputQueue::~OutputQueue() {}
 
@@ -271,38 +335,41 @@ bool OutputQueue::NegotiateFormat() {
     return false;
   }
 
+  BufferFormat desired_format = *initial_format;
+
   if (!base::Contains(kPreferredFormats, initial_format->fourcc)) {
     for (const auto& preferred_fourcc : kPreferredFormats) {
-      BufferFormat try_format = *initial_format;
-      try_format.fourcc = preferred_fourcc;
-      if (device_->TryOutputFormat(try_format)) {
-        auto chosen_format = device_->SetOutputFormat(try_format);
-        if (chosen_format) {
-          DVLOGF(3) << "Preferred format " << chosen_format->ToString()
-                    << " chosen for output queue through negotiation. "
-                    << "Initial format was " << initial_format->ToString()
-                    << ".";
-          buffer_format_ = *chosen_format;
-          return true;
-        } else {
-          return false;
-        }
+      // Only change the fourcc between tries.
+      desired_format.fourcc = preferred_fourcc;
+      if (device_->TryOutputFormat(desired_format)) {
+        break;
       }
-    }
-  } else {
-    DVLOGF(3) << "Initial format " << initial_format->ToString()
-              << " chosen for output queue.";
-    auto chosen_format = device_->SetOutputFormat(*initial_format);
-    if (chosen_format) {
-      buffer_format_ = *chosen_format;
-      return true;
     }
   }
 
+  // If |initial_format| is not in the list of formats, and all of the formats
+  // tried with |TryOutputFormat| fail, the last format tried will be used
+  // for |SetOutputFormat|. In that case |SetOutputFormat| will fail.
+  std::optional<BufferFormat> chosen_format =
+      device_->SetOutputFormat(desired_format);
+
+  if (chosen_format) {
+    DVLOGF(3) << "Format " << chosen_format->ToString()
+              << " chosen for output queue through negotiation. "
+              << "Initial format was " << initial_format->ToString() << ".";
+    buffer_format_ = *chosen_format;
+    num_planes_ = buffer_format_.NumPlanes();
+    return true;
+  }
+
+  LOG(ERROR) << "Unable to negotiate a format for the output queue with an "
+                "initial format of "
+             << initial_format->ToString() << " and desired format of "
+             << desired_format.ToString();
   return false;
 }
 
-scoped_refptr<VideoFrame> OutputQueue::CreateVideoFrame(const Buffer& buffer) {
+scoped_refptr<FrameResource> OutputQueue::CreateFrame(const Buffer& buffer) {
   const VideoPixelFormat video_format =
       buffer_format_.fourcc.ToVideoPixelFormat();
   const size_t num_color_planes = VideoFrame::NumPlanes(video_format);
@@ -363,9 +430,11 @@ scoped_refptr<VideoFrame> OutputQueue::CreateVideoFrame(const Buffer& buffer) {
     return nullptr;
   }
 
-  return VideoFrame::WrapExternalDmabufs(
+  // TODO(nhebert): Migrate to NativePixmap-backed FrameResource when it is
+  // ready.
+  return VideoFrameResource::Create(VideoFrame::WrapExternalDmabufs(
       *layout, gfx::Rect(buffer_format_.resolution), buffer_format_.resolution,
-      std::move(dmabuf_fds), base::TimeDelta());
+      std::move(dmabuf_fds), base::TimeDelta()));
 }
 
 bool OutputQueue::PrepareBuffers(size_t num_buffers) {
@@ -375,17 +444,19 @@ bool OutputQueue::PrepareBuffers(size_t num_buffers) {
     return false;
   }
 
-  // Create a video frame for each buffer
-  video_frames_.reserve(buffers_.size());
+  // Create a FrameResource for each buffer
+  frames_.reserve(buffers_.size());
 
-  // VideoFrames are used to display the decoded buffers. They wrap the
-  // underlying DMABUF by referencing the index of the V4L2 buffers;
+  // FrameResource objects are by VideoDecoderPipeline to encapsulate decoded
+  // buffers. They wrap the underlying DMABUF of elements of |buffers_|. The
+  // the index of the encapsulating FrameResource in |frames_| is aligned to the
+  // corresponding buffer's index in |buffers_|.
   for (const auto& buffer : buffers_) {
-    auto video_frame = CreateVideoFrame(buffer);
-    if (!video_frame) {
+    auto frame = CreateFrame(buffer);
+    if (!frame) {
       return false;
     }
-    video_frames_.push_back(std::move(video_frame));
+    frames_.push_back(std::move(frame));
   }
 
   // Queue all buffers after allocation in anticipation of being used.
@@ -395,6 +466,12 @@ bool OutputQueue::PrepareBuffers(size_t num_buffers) {
       LOG(ERROR) << "Failed to queue buffer # " << *index;
       return false;
     }
+
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+        kTracingCategory, kV4L2OutputQueue,
+        TRACE_ID_LOCAL(buffers_[*index].GetIndex()), kDecodedBufferIndex,
+        buffers_[*index].GetIndex());
+
     free_buffer_indices_.erase(index++);
   }
 
@@ -424,7 +501,7 @@ void OutputQueue::RegisterDequeuedBuffer(Buffer& buffer) {
   CHECK(result.second) << "Buffer already in map";
 }
 
-scoped_refptr<VideoFrame> OutputQueue::GetVideoFrame(uint64_t frame_id) {
+scoped_refptr<FrameResource> OutputQueue::GetFrame(uint64_t frame_id) {
   DVLOGF(5) << "Attempting to use frame with id : " << frame_id;
   // The frame_id is copied from the input buffer to the output buffer. This is
   // the only way to know which output buffer contains the decoded picture for
@@ -434,7 +511,7 @@ scoped_refptr<VideoFrame> OutputQueue::GetVideoFrame(uint64_t frame_id) {
     const uint32_t index = it->second;
     DVLOGF(4) << "Found match (" << index << ") for frame id of (" << frame_id
               << ").";
-    return video_frames_[index];
+    return frames_[index];
   }
 
   // The corresponding frame may not have been dequeued when this function has
@@ -459,6 +536,9 @@ bool OutputQueue::QueueBufferByFrameID(uint64_t frame_id) {
       NOTREACHED() << "Failed to queue buffer.";
       return false;
     }
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(kTracingCategory, kV4L2OutputQueue,
+                                      TRACE_ID_LOCAL(buffer.GetIndex()),
+                                      kDecodedBufferIndex, buffer.GetIndex());
 
     return true;
   }

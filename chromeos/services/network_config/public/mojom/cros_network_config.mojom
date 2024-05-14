@@ -223,6 +223,7 @@ struct CellularStateProperties {
   bool has_nick_name = false;
   // String representing the network operator.
   string network_operator;
+  PaymentPortalProperties? payment_portal;
 };
 
 struct EthernetStateProperties {
@@ -396,6 +397,13 @@ enum ApnType {
   kTether,
 };
 
+// Sources for APNs.
+enum ApnSource {
+  kModem,
+  kModb,
+  kUi,
+};
+
 struct ApnProperties {
   string access_point_name;
   // This id will only be set for custom APNs.
@@ -419,6 +427,7 @@ struct ApnProperties {
   ApnState state;
   ApnIpType ip_type;
   array<ApnType> apn_types;
+  ApnSource source;
 };
 
 struct RoamingProperties {
@@ -1330,16 +1339,21 @@ interface CrosNetworkConfig {
   // Resets traffic counters for a service with ID |guid|.
   ResetTrafficCounters(string guid);
 
-  // Sets whether traffic counters should be automatically reset and the day of
-  // the month on which traffic counters are automatically reset. In order for
-  // |day| to be valid, it must be within the limit 1 <= |day| <= 31.
-  SetTrafficCountersAutoReset(string guid, bool auto_reset, UInt32Value? day) =>
-    (bool success);
+  // Sets the traffic counters reset day. In order for |day| to be valid, it
+  // must be within the limit 1 <= |day| <= 31.
+  SetTrafficCountersResetDay(string guid, UInt32Value? day) => (bool success);
 
   // Creates a new APN for the cellular network with ID |network_guid|, and
   // appends it to |custom_apn_list|. Should only be called when the APN
   // Revamp feature flag is enabled.
   CreateCustomApn(string network_guid, ApnProperties apn) =>
+    (bool success);
+
+  // Creates a new APN for the cellular network with ID |network_guid|,
+  // appends it to |custom_apn_list| in the enabled state, and disables
+  // all other existing custom APNs. Should only be called when the APN
+  // Revamp feature flag is enabled.
+  CreateExclusivelyEnabledCustomApn(string network_guid, ApnProperties apn) =>
     (bool success);
 
   // Removes the APN with ID |apn_id| from |custom_apn_list| for the cellular

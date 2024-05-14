@@ -39,6 +39,7 @@
 #include <stdlib.h>
 
 #include <ostream>
+#include <string_view>
 
 #include "base/check_op.h"
 #include "url/url_parse_internal.h"
@@ -292,19 +293,21 @@ void ParsePath(const CHAR* spec,
   }
 }
 
-template <typename CHAR>
-bool DoExtractScheme(const CHAR* url, int url_len, Component* scheme) {
+template <typename CharT>
+bool DoExtractScheme(std::basic_string_view<CharT> url, Component* scheme) {
   // Skip leading whitespace and control characters.
-  int begin = 0;
-  while (begin < url_len && ShouldTrimFromURL(url[begin]))
+  size_t begin = 0;
+  while (begin < url.size() && ShouldTrimFromURL(url[begin])) {
     begin++;
-  if (begin == url_len)
+  }
+  if (begin == url.size()) {
     return false;  // Input is empty or all whitespace.
+  }
 
   // Find the first colon character.
-  for (int i = begin; i < url_len; i++) {
+  for (size_t i = begin; i < url.size(); i++) {
     if (url[i] == ':') {
-      *scheme = MakeRange(begin, i);
+      *scheme = MakeRange(begin, base::checked_cast<int>(i));
       return true;
     }
   }
@@ -368,7 +371,8 @@ void DoParseStandardURL(const CHAR* spec, int spec_len, Parsed* parsed) {
   TrimURL(spec, &begin, &spec_len);
 
   int after_scheme;
-  if (DoExtractScheme(spec, spec_len, &parsed->scheme)) {
+  if (DoExtractScheme(std::basic_string_view<CHAR>(spec, spec_len),
+                      &parsed->scheme)) {
     after_scheme = parsed->scheme.end() + 1;  // Skip past the colon.
   } else {
     // Say there's no scheme when there is no colon. We could also say that
@@ -479,7 +483,8 @@ void DoParseNonSpecialURL(const CHAR* spec,
   TrimURL(spec, &begin, &spec_len, trim_path_end);
 
   int after_scheme;
-  if (DoExtractScheme(spec, spec_len, &parsed->scheme)) {
+  if (DoExtractScheme(std::basic_string_view<CHAR>(spec, spec_len),
+                      &parsed->scheme)) {
     after_scheme = parsed->scheme.end() + 1;  // Skip past the colon.
   } else {
     // Say there's no scheme when there is no colon. We could also say that
@@ -519,7 +524,9 @@ void DoParseFileSystemURL(const CHAR* spec, int spec_len, Parsed* parsed) {
   int inner_start = -1;
 
   // Extract the scheme.  We also handle the case where there is no scheme.
-  if (DoExtractScheme(&spec[begin], spec_len - begin, &parsed->scheme)) {
+  if (DoExtractScheme(
+          std::basic_string_view<CHAR>(&spec[begin], spec_len - begin),
+          &parsed->scheme)) {
     // Offset the results since we gave ExtractScheme a substring.
     parsed->scheme.begin += begin;
 
@@ -537,7 +544,8 @@ void DoParseFileSystemURL(const CHAR* spec, int spec_len, Parsed* parsed) {
   const CHAR* inner_spec = &spec[inner_start];
   int inner_spec_len = spec_len - inner_start;
 
-  if (DoExtractScheme(inner_spec, inner_spec_len, &inner_scheme)) {
+  if (DoExtractScheme(std::basic_string_view<CHAR>(inner_spec, inner_spec_len),
+                      &inner_scheme)) {
     // Offset the results since we gave ExtractScheme a substring.
     inner_scheme.begin += inner_start;
 
@@ -806,8 +814,8 @@ void DoExtractFileName(const CHAR* spec,
   return;
 }
 
-template <typename CHAR>
-bool DoExtractQueryKeyValue(const CHAR* spec,
+template <typename CharT>
+bool DoExtractQueryKeyValue(std::basic_string_view<CharT> spec,
                             Component* query,
                             Component* key,
                             Component* value) {
@@ -970,12 +978,20 @@ Component Parsed::GetContent() const {
   return len ? Component(begin, len) : Component();
 }
 
+bool ExtractScheme(std::string_view url, Component* scheme) {
+  return DoExtractScheme(url, scheme);
+}
+
+bool ExtractScheme(std::u16string_view url, Component* scheme) {
+  return DoExtractScheme(url, scheme);
+}
+
 bool ExtractScheme(const char* url, int url_len, Component* scheme) {
-  return DoExtractScheme(url, url_len, scheme);
+  return DoExtractScheme(std::string_view(url, url_len), scheme);
 }
 
 bool ExtractScheme(const char16_t* url, int url_len, Component* scheme) {
-  return DoExtractScheme(url, url_len, scheme);
+  return DoExtractScheme(std::u16string_view(url, url_len), scheme);
 }
 
 // This handles everything that may be an authority terminator.
@@ -1004,14 +1020,14 @@ void ExtractFileName(const char16_t* url,
   DoExtractFileName(url, path, file_name);
 }
 
-bool ExtractQueryKeyValue(const char* url,
+bool ExtractQueryKeyValue(std::string_view url,
                           Component* query,
                           Component* key,
                           Component* value) {
   return DoExtractQueryKeyValue(url, query, key, value);
 }
 
-bool ExtractQueryKeyValue(const char16_t* url,
+bool ExtractQueryKeyValue(std::u16string_view url,
                           Component* query,
                           Component* key,
                           Component* value) {
@@ -1156,6 +1172,20 @@ void ParseAfterSpecialScheme(const char16_t* spec,
                              int after_scheme,
                              Parsed* parsed) {
   DoParseAfterSpecialScheme(spec, spec_len, after_scheme, parsed);
+}
+
+void ParseAfterNonSpecialScheme(const char* spec,
+                                int spec_len,
+                                int after_scheme,
+                                Parsed* parsed) {
+  DoParseAfterNonSpecialScheme(spec, spec_len, after_scheme, parsed);
+}
+
+void ParseAfterNonSpecialScheme(const char16_t* spec,
+                                int spec_len,
+                                int after_scheme,
+                                Parsed* parsed) {
+  DoParseAfterNonSpecialScheme(spec, spec_len, after_scheme, parsed);
 }
 
 }  // namespace url

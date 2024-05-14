@@ -32,6 +32,11 @@ bool RenderWidgetHostDelegate::HandleKeyboardEvent(
   return false;
 }
 
+bool RenderWidgetHostDelegate::ShouldIgnoreWebInputEvents(
+    const blink::WebInputEvent& event) {
+  return false;
+}
+
 bool RenderWidgetHostDelegate::ShouldIgnoreInputEvents() {
   return false;
 }
@@ -158,6 +163,10 @@ bool RenderWidgetHostDelegate::IsPortal() {
 
 int RenderWidgetHostDelegate::GetVirtualKeyboardResizeHeight() {
   return 0;
+}
+
+bool RenderWidgetHostDelegate::ShouldDoLearning() {
+  return true;
 }
 
 }  // namespace content

@@ -16,12 +16,10 @@ std::unique_ptr<ui::AXTreeFormatter> AXInspectFactory::CreateBlinkFormatter() {
   return CreateFormatter(ui::AXApiType::kBlink);
 }
 
-#if !BUILDFLAG(HAS_PLATFORM_ACCESSIBILITY_SUPPORT)
-
 // static
 std::unique_ptr<ui::AXTreeFormatter>
 AXInspectFactory::CreatePlatformFormatter() {
-  return AXInspectFactory::CreateFormatter(ui::AXApiType::kBlink);
+  return AXInspectFactory::CreateFormatter(DefaultPlatformFormatterType());
 }
 
 // static
@@ -29,7 +27,19 @@ std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreatePlatformRecorder(
     BrowserAccessibilityManager* manager,
     base::ProcessId pid,
     const ui::AXTreeSelector& selector) {
-  return AXInspectFactory::CreateRecorder(ui::AXApiType::kBlink);
+  return AXInspectFactory::CreateRecorder(DefaultPlatformRecorderType());
+}
+
+#if !BUILDFLAG(HAS_PLATFORM_ACCESSIBILITY_SUPPORT)
+
+// static
+ui::AXApiType::Type AXInspectFactory::DefaultPlatformFormatterType() {
+  return ui::AXApiType::kBlink;
+}
+
+// static
+ui::AXApiType::Type AXInspectFactory::DefaultPlatformRecorderType() {
+  return ui::AXApiType::kBlink;
 }
 
 // static
@@ -60,7 +70,8 @@ std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreateRecorder(
   // using an inspection tool, e.g. chrome://accessibility.
   BrowserAccessibilityManager::AlwaysFailFast();
 
-  NOTREACHED() << "Unsupported API type " << static_cast<std::string>(type);
+  DUMP_WILL_BE_NOTREACHED_NORETURN()
+      << "Unsupported API type " << static_cast<std::string>(type);
   return nullptr;
 }
 

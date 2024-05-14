@@ -218,7 +218,7 @@ class NewTabPageTest : public InProcessBrowserTest,
 // TODO(crbug.com/1377330): NewTabPageTest.LandingPagePixelTest is failing on
 // Win11 Tests x64.
 // TODO(crbug.com/1416880): It's also found flaky on Linux Tests, Linux Tests
-// (Wayland), linux-lacros-tester-rel, Mac12 Tests. Disabling on all platforms.
+// (Wayland), linux-lacros-tester-rel, Mac12 Tests.
 IN_PROC_BROWSER_TEST_F(NewTabPageTest, DISABLED_LandingPagePixelTest) {
   WaitForLazyLoad();
   // By default WaitForNetworkLoad waits for all resources that have started

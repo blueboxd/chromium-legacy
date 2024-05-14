@@ -6,6 +6,8 @@ module bluetooth.mojom;
 
 import "device/bluetooth/public/mojom/device.mojom";
 import "device/bluetooth/public/mojom/uuid.mojom";
+import "device/bluetooth/public/mojom/gatt_characteristic_permissions.mojom";
+import "device/bluetooth/public/mojom/gatt_characteristic_properties.mojom";
 
 // Possible errors sent as a response by Adapter.ConnectToDevice on a Device
 // connection request.
@@ -137,6 +139,27 @@ interface ServerSocket {
   Disconnect() => ();
 };
 
+// Representation of a BLE GATT service.
+// TODO(b/311430390): Implement additional methods that will create and update a
+// GATT characteristic, and delete the GATT service.
+interface GattService {
+  // Creates a characteristic and adds it to the GATT service under the given
+  // characteristic uuid, using the service UUID tied to the `GattService`.
+  // This method will fail if the characteristic already exists at
+  // `characteristic_uuid`; it is expected that callers will only call
+  // when they want to create a characteristic that does not already exist.
+  [Sync]
+  CreateCharacteristic(UUID characteristic_uuid,
+    GattCharacteristicPermissions permissions,
+    GattCharacteristicProperties properties) => (bool success);
+};
+
+// Listener on `GattService` events.
+// TODO(b/311430390): Implement additional methods that communicate read/write
+// requests on GATT characteristics.
+interface GattServiceObserver {
+};
+
 // Handles requests to either query Bluetooth adapter capabilities or state, or
 // find or connect to remote devices. Backed by //device/bluetooth.
 // Note: Methods which are declared [Sync] are for use by
@@ -168,7 +191,9 @@ interface Adapter {
   // registered successfully.
   //
   // When |use_scan_response| is true, the |service_data| is added to the scan
-  // response instead of the initial advertisement. A few assumptions are made:
+  // response instead of the initial advertisement. When |connectable| is true,
+  // the advertisement is created as type PERIPHERAL; else it is type BROADCAST.
+  // A few assumptions are made:
   //
   // 1) The |service_id| provided is a valid 16-bit UUID in 128-bit format.
   //    The identifying 16-bits will be extracted for the short service id used
@@ -177,9 +202,6 @@ interface Adapter {
   //    the Platform right now.
   //
   // Important notes:
-  // * This method registers a "non-connectable" advertisement. Any future
-  //   effort to allow this API to support "connectable" advertisements would
-  //   also require the addition of an API to support hosting a GATT server.
   // * Bluetooth chips generally can only broadcast a few advertisements,
   //   sometimes even only one, simultaneously. This can be mitigated by
   //   operating systems "rotating" advertisements in the higher software layer,
@@ -187,7 +209,8 @@ interface Adapter {
   //   understanding their host OS's and/or hardware's limitations.
   [Sync]
   RegisterAdvertisement(UUID service_id, array<uint8> service_data,
-      bool use_scan_response) => (pending_remote<Advertisement>? advertisement);
+      bool use_scan_response, bool connectable)
+      => (pending_remote<Advertisement>? advertisement);
 
   // Requests the local device to make itself discoverable to nearby remote
   // devices.
@@ -229,6 +252,14 @@ interface Adapter {
   [Sync]
   CreateRfcommServiceInsecurely(string service_name, UUID service_uuid)
       => (pending_remote<ServerSocket>? server_socket);
+
+  // Creates a local GATT service corresponding to |service_id|, and
+  // communicates events to the |observer|. This call is only expected to be
+  // used to create a local GATT service that does not exist at |service_id|.
+  [Sync]
+  CreateLocalGattService(UUID service_id,
+       pending_remote<GattServiceObserver> observer)
+      => (pending_remote<GattService> gatt_service);
 };
 
 // Listener on Bluetooth events. Register as an observer via AddObserver().

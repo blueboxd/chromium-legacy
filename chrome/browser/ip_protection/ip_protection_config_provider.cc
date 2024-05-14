@@ -12,12 +12,13 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
-#include "chrome/browser/ip_protection/get_proxy_config.pb.h"
 #include "chrome/browser/ip_protection/ip_protection_config_http.h"
 #include "chrome/browser/ip_protection/ip_protection_switches.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/channel_info.h"
 #include "components/prefs/pref_service.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
+#include "components/privacy_sandbox/tracking_protection_prefs.h"
 #include "components/privacy_sandbox/tracking_protection_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -34,6 +35,17 @@
 #include "net/third_party/quiche/src/quiche/blind_sign_auth/proto/blind_sign_auth_options.pb.h"
 #include "net/third_party/quiche/src/quiche/blind_sign_auth/proto/spend_token_data.pb.h"
 
+namespace {
+// TODO(https://crbug.com/1299886): Once `google_apis::GetAPIKey()` handles this
+// logic we can remove this helper.
+std::string GetAPIKey() {
+  return chrome::GetChannel() == version_info::Channel::STABLE
+             ? google_apis::GetAPIKey()
+             : google_apis::GetNonStableAPIKey();
+}
+constexpr char kChromeIpBlinding[] = "chromeipblinding";
+}  // namespace
+
 IpProtectionConfigProvider::IpProtectionConfigProvider(
     signin::IdentityManager* identity_manager,
     privacy_sandbox::TrackingProtectionSettings* tracking_protection_settings,
@@ -46,6 +58,7 @@ IpProtectionConfigProvider::IpProtectionConfigProvider(
   CHECK(identity_manager);
   identity_manager_->AddObserver(this);
   CHECK(tracking_protection_settings);
+  CHECK(pref_service_);
   tracking_protection_settings_->AddObserver(this);
 }
 
@@ -58,6 +71,11 @@ void IpProtectionConfigProvider::SetUp() {
     }
     ip_protection_config_http_ =
         std::make_unique<IpProtectionConfigHttp>(url_loader_factory_.get());
+  }
+  if (!ip_protection_proxy_config_retriever_) {
+    ip_protection_proxy_config_retriever_ =
+        std::make_unique<IpProtectionProxyConfigRetriever>(
+            url_loader_factory_.get(), kChromeIpBlinding, GetAPIKey());
   }
   if (!bsa_) {
     if (!blind_sign_auth_) {
@@ -72,11 +90,16 @@ void IpProtectionConfigProvider::SetUp() {
 }
 
 void IpProtectionConfigProvider::SetUpForTesting(
+    std::unique_ptr<IpProtectionProxyConfigRetriever>
+        ip_protection_proxy_config_retriever,
     std::unique_ptr<IpProtectionConfigHttp> ip_protection_config_http,
     quiche::BlindSignAuthInterface* bsa) {
   // Carefully destroy any existing values in the correct order.
+  ip_protection_proxy_config_retriever_ = nullptr;
   ip_protection_config_http_ = nullptr;
   url_loader_factory_ = nullptr;
+  ip_protection_proxy_config_retriever_ =
+      std::move(ip_protection_proxy_config_retriever);
   ip_protection_config_http_ = std::move(ip_protection_config_http);
 
   bsa_ = nullptr;
@@ -265,7 +288,7 @@ void IpProtectionConfigProvider::OnRequestOAuthTokenCompletedForGetProxyConfig(
 void IpProtectionConfigProvider::CallGetProxyConfig(
     GetProxyListCallback callback,
     std::optional<std::string> oauth_token) {
-  ip_protection_config_http_->GetProxyConfig(
+  ip_protection_proxy_config_retriever_->GetProxyConfig(
       oauth_token,
       base::BindOnce(&IpProtectionConfigProvider::OnGetProxyConfigCompleted,
                      base::Unretained(this), std::move(callback)));
@@ -273,9 +296,10 @@ void IpProtectionConfigProvider::CallGetProxyConfig(
 
 void IpProtectionConfigProvider::OnGetProxyConfigCompleted(
     GetProxyListCallback callback,
-    absl::StatusOr<ip_protection::GetProxyConfigResponse> response) {
-  if (!response.ok()) {
-    VLOG(2) << "IPATP::GetProxyList failed: " << response.status();
+    base::expected<ip_protection::GetProxyConfigResponse, std::string>
+        response) {
+  if (!response.has_value()) {
+    VLOG(2) << "IPATP::GetProxyList failed: " << response.error();
     std::move(callback).Run(std::nullopt);
     return;
   }
@@ -664,6 +688,17 @@ bool IpProtectionConfigProvider::CanIpProtectionBeEnabled() {
 }
 
 bool IpProtectionConfigProvider::IsIpProtectionEnabled() {
+  if (is_shutting_down_) {
+    return false;
+  }
+
+  // If the user's enterprise has a policy for IP, use this regardless of user
+  // UX feature status. Enterprises should have the ability to enable or disable
+  // IPP even when users do not have UX access to the feature.
+  if (pref_service_->IsManagedPreference(prefs::kIpProtectionEnabled)) {
+    return pref_service_->GetBoolean(prefs::kIpProtectionEnabled);
+  }
+
   // TODO(https://crbug.com/1521138): We should ultimately use
   // `tracking_protection_settings_->IsIpProtectionEnabled()` but we can't yet
   // because it would prevent us from being able to do experiments via Finch
@@ -673,10 +708,7 @@ bool IpProtectionConfigProvider::IsIpProtectionEnabled() {
     // via other means like via Finch experiment.
     return true;
   }
-  if (!pref_service_) {
-    return false;
-  }
-  return pref_service_->GetBoolean(prefs::kIpProtectionEnabled);
+  return tracking_protection_settings_->IsIpProtectionEnabled();
 }
 
 void IpProtectionConfigProvider::OnIpProtectionEnabledChanged() {

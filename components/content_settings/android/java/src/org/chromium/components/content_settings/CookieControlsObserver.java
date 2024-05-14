@@ -9,13 +9,15 @@ public interface CookieControlsObserver {
     /**
      * Called when the cookie blocking status for the current site changes.
      *
-     * @param status An enum indicating the cookie blocking status.
+     * @param controlsVisible Whether the cookie controls should be visible.
+     * @param protectionsOn Whether cookie blocking is enabled.
      * @param enforcement An enum indicating enforcement of cookie policies.
      * @param expiration Expiration of the cookie blocking exception.
      * @param blockingStatus An enum indicating the cookie blocking status for 3PCD.
      */
     default void onStatusChanged(
-            @CookieControlsStatus int status,
+            boolean controlsVisible,
+            boolean protectionsOn,
             @CookieControlsEnforcement int enforcement,
             @CookieBlocking3pcdStatus int blockingStatus,
             long expiration) {}
@@ -27,10 +29,6 @@ public interface CookieControlsObserver {
      */
     default void onSitesCountChanged(int allowedSites, int blockedSites) {}
 
-    /**
-     * Called when the breakage confidence level for the current site changes.
-     * @param level An enum indicating the confidence level.
-     */
-    default void onBreakageConfidenceLevelChanged(
-            @CookieControlsBreakageConfidenceLevel int level) {}
+    /** Called when we should surface a visual indicator due to potential site breakage. */
+    default void onHighlightCookieControl(boolean shouldHighlight) {}
 }

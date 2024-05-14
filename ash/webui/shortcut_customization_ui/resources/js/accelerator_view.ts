@@ -52,7 +52,6 @@ const kEscapeKey: number = 27;  // Keycode for VKEY_ESCAPE
  * @fileoverview
  * 'accelerator-view' is wrapper component for an accelerator. It maintains both
  * the read-only and editable state of an accelerator.
- * TODO(jimmyxgong): Implement the edit mode.
  */
 const AcceleratorViewElementBase = I18nMixin(PolymerElement);
 
@@ -294,8 +293,9 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
   }
 
   private handleKeyDown(e: CustomEvent): void {
-    // Announce the key pressed.
-    this.makeA11yAnnouncement(e.detail.keyEvent.keyDisplay);
+    // Announce the icon label or key pressed.
+    const keyOrIcon = e.detail.keyEvent.keyDisplay;
+    this.makeA11yAnnouncement(getKeyDisplay(keyOrIcon));
     const rewrittenKeyEvent = e.detail.keyEvent;
     const pendingAccelerator = keyEventToAccelerator(rewrittenKeyEvent);
     if (this.hasError) {
@@ -447,7 +447,6 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
         this.makeA11yAnnouncement(this.statusMessage);
         return;
       }
-      // TODO(b/286268215): Localize this string.
       case AcceleratorConfigResult.kNonStandardWithSearch: {
         this.statusMessage = this.i18n(
             'nonStandardNotAllowedWithSearchMessage',

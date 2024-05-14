@@ -112,18 +112,17 @@ bool Animation::ShouldRenderRichAnimation() {
          RichAnimationRenderMode::FORCE_ENABLED;
 }
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_IOS) || \
-    BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS) || BUILDFLAG(IS_FUCHSIA)
 // static
 bool Animation::ShouldRenderRichAnimationImpl() {
   return true;
-  // Defined in platform specific file for Windows and OSX and Linux.
+  // Defined in platform specific file for Windows, OSX, ChromeOS and Linux.
 }
 
 // static
 bool Animation::ScrollAnimationsEnabledBySystem() {
   return true;
-  // Defined in platform specific files for Windows and OSX and Linux.
+  // Defined in platform specific file for Windows, OSX, ChromeOS and Linux.
 }
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -137,16 +136,17 @@ void Animation::UpdatePrefersReducedMotion() {
   prefers_reduced_motion_ = false;
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
-#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) ||
-        // BUILDFLAG(IS_IOS) || BUILDFLAG(IS_FUCHSIA)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS) || BUILDFLAG(IS_FUCHSIA)
 
 // static
 bool Animation::PrefersReducedMotion() {
-  // --force-prefers-reduced-motion must always override
-  // |prefers_reduced_motion_|, so check it first.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForcePrefersReducedMotion)) {
+  // --force-prefers-reduced-motion and --force-prefers-no-reduced-motion
+  // must always override |prefers_reduced_motion_|, so check them first.
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kForcePrefersReducedMotion)) {
     return true;
+  } else if (command_line->HasSwitch(switches::kForcePrefersNoReducedMotion)) {
+    return false;
   }
 
   if (!prefers_reduced_motion_.has_value())

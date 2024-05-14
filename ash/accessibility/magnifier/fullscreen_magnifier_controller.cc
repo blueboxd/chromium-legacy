@@ -16,6 +16,7 @@
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/public/cpp/accessibility_controller_enums.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -306,12 +307,14 @@ void FullscreenMagnifierController::OnWindowBoundsChanged(
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
     ui::PropertyChangeReason reason) {
-  // TODO(yoshiki): implement here. crbug.com/230979
 }
 
 void FullscreenMagnifierController::OnMouseEvent(ui::MouseEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   aura::Window* current_root = target->GetRootWindow();
+  gfx::PointF root_location_f = event->root_location_f();
+
+  // Used for screen bounds checking.
   gfx::Point root_location = event->root_location();
 
   if (event->type() == ui::ET_MOUSE_DRAGGED) {
@@ -326,6 +329,7 @@ void FullscreenMagnifierController::OnMouseEvent(ui::MouseEvent* event) {
         window ? window->GetRootWindow() : Shell::GetPrimaryRootWindow();
     root_location = cursor_screen_location;
     wm::ConvertPointFromScreen(current_root, &root_location);
+    root_location_f = gfx::PointF(root_location);
   }
 
   if (current_root->bounds().Contains(root_location)) {
@@ -342,7 +346,7 @@ void FullscreenMagnifierController::OnMouseEvent(ui::MouseEvent* event) {
                                   event->type() == ui::ET_MOUSE_DRAGGED;
     if (IsMagnified() && dragged_or_moved &&
         event->pointer_details().pointer_type != ui::EventPointerType::kPen) {
-      OnMouseMove(root_location);
+      OnMouseMove(root_location_f);
     }
   }
 }
@@ -641,10 +645,11 @@ void FullscreenMagnifierController::RedrawKeepingMousePosition(
 }
 
 void FullscreenMagnifierController::OnMouseMove(
-    const gfx::Point& location_in_dip) {
+    const gfx::PointF& location_in_dip) {
   DCHECK(root_window_);
 
-  gfx::Point center_point_in_dip(location_in_dip);
+  gfx::Point center_point_in_dip(std::round(location_in_dip.x()),
+                                 std::round(location_in_dip.y()));
   int margin = kCursorPanningMargin / scale_;  // No need to consider DPI.
 
   // Edge mouse following mode.
@@ -686,9 +691,9 @@ void FullscreenMagnifierController::OnMouseMove(
     // top/left and greater in the bottom right to account for the cursor not
     // being able to access the bottom corner.
     const float height =
-        host_size_in_dip.height() / scale_ + 4 * y / host_size_in_dip.height();
+        host_size_in_dip.height() / scale_ + 5 * y / host_size_in_dip.height();
     const float width =
-        host_size_in_dip.width() / scale_ + 4 * x / host_size_in_dip.width();
+        host_size_in_dip.width() / scale_ + 5 * x / host_size_in_dip.width();
 
     // The viewport center point is the mouse center point, minus the scaled
     // mouse center point to get to the viewport left/top edge, plus half
@@ -884,12 +889,12 @@ void FullscreenMagnifierController::MoveMagnifierWindowFollowPoint(
                          0,  // No animation on panning.
                          kDefaultAnimationTweenType);
 
-    if (ret) {
+    if (ret &&
+        mouse_following_mode_ != MagnifierMouseFollowingMode::kContinuous) {
       // If the magnified region is moved, hides the mouse cursor and moves it,
       // unless we're in continuous mode (in which case mouse position is
       // good already).
-      if ((x_diff != 0 || y_diff != 0) &&
-          mouse_following_mode_ != MagnifierMouseFollowingMode::kContinuous) {
+      if ((x_diff != 0 || y_diff != 0)) {
         MoveCursorTo(point);
       }
     }
@@ -959,8 +964,7 @@ void FullscreenMagnifierController::MoveMagnifierWindowFollowRect(
       root_window_->layer()->GetAnimator()->StopAnimating();
       is_on_animation_ = false;
     }
-    RedrawDIP(gfx::PointF(x, y), scale_,
-              0,  // No animation on panning.
+    RedrawDIP(gfx::PointF(x, y), scale_, kDefaultAnimationDurationInMs,
               kDefaultAnimationTweenType);
   }
 }

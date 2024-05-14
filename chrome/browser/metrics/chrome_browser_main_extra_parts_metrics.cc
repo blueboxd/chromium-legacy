@@ -54,6 +54,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "crypto/unexportable_key.h"
 #include "crypto/unexportable_key_metrics.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/browser_metrics.h"
 #include "ui/base/pointer/pointer_device.h"
@@ -118,16 +119,26 @@
 #include "components/power_metrics/system_power_monitor.h"
 #endif
 
+#if BUILDFLAG(IS_MAC)
+#include "chrome/common/chrome_version.h"
+#endif  // BUILDFLAG(IS_MAC)
+
 namespace {
 
 // The number of restarts to wait until removing the enable-benchmarking flag.
 constexpr int kEnableBenchmarkingCountdownDefault = 3;
 constexpr char kEnableBenchmarkingPrefId[] = "enable_benchmarking_countdown";
 
+#if BUILDFLAG(IS_MAC)
+constexpr char kUnexportableKeysKeychainAccessGroup[] =
+    MAC_TEAM_IDENTIFIER_STRING "." MAC_BUNDLE_IDENTIFIER_STRING
+                               ".unexportable-keys";
+#endif  // BUILDFLAG(IS_MAC)
+
 void RecordMemoryMetrics();
 
-// Gets the delay for logging memory related metrics for testing.
-std::optional<base::TimeDelta> GetDelayForNextMemoryLogTest() {
+// Gets the delay for logging memory related metrics. Minimum is 1 second.
+base::TimeDelta GetDelayForNextMemoryLogTest() {
   int test_delay_in_minutes;
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -135,17 +146,19 @@ std::optional<base::TimeDelta> GetDelayForNextMemoryLogTest() {
       base::StringToInt(command_line->GetSwitchValueASCII(
                             switches::kTestMemoryLogDelayInMinutes),
                         &test_delay_in_minutes)) {
-    return base::Minutes(test_delay_in_minutes);
+    // Setting --test-memory-log-delay-in-minutes=0 is useful for testing the
+    // feature, but zero delay tends to overwhelm the system.
+    return test_delay_in_minutes <= 0 ? base::Seconds(1)
+                                      : base::Minutes(test_delay_in_minutes);
   }
-  return std::nullopt;
+  return memory_instrumentation::GetDelayForNextMemoryLog();
 }
 
 // Records memory metrics after a delay.
 void RecordMemoryMetricsAfterDelay() {
   content::GetUIThreadTaskRunner({})->PostDelayedTask(
       FROM_HERE, base::BindOnce(&RecordMemoryMetrics),
-      GetDelayForNextMemoryLogTest().value_or(
-          memory_instrumentation::GetDelayForNextMemoryLog()));
+      GetDelayForNextMemoryLogTest());
 }
 
 // Records memory metrics, and then triggers memory colleciton after a delay.
@@ -823,6 +836,8 @@ void RecordStartupMetrics() {
 
   base::UmaHistogramBoolean("Windows.HasHighResolutionTimeTicks",
                             base::TimeTicks::IsHighResolution());
+  base::UmaHistogramBoolean("Windows.HasThreadTicks",
+                            base::ThreadTicks::IsSupported());
 
   // Determine whether parallel DLL loading is enabled for the browser process
   // executable. This is disabled by default on fresh Windows installations, but
@@ -832,9 +847,16 @@ void RecordStartupMetrics() {
   base::UmaHistogramBoolean("Windows.ParallelDllLoadingEnabled",
                             IsParallelDllLoadingEnabled());
   RecordAppCompatMetrics();
-  crypto::MaybeMeasureTpmOperations();
   key_credential_manager_support::ReportKeyCredentialManagerSupport();
 #endif  // BUILDFLAG(IS_WIN)
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  crypto::UnexportableKeyProvider::Config config;
+#if BUILDFLAG(IS_MAC)
+  config.keychain_access_group = kUnexportableKeysKeychainAccessGroup;
+#endif  // BUILDFLAG(IS_MAC)
+  crypto::MaybeMeasureTpmOperations(std::move(config));
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
   // Record whether Chrome is the default browser or not.
   // Disabled on Linux due to hanging browser tests, see crbug.com/1216328.

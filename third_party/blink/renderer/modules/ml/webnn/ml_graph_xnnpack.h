@@ -9,6 +9,7 @@
 
 #include "base/containers/heap_array.h"
 #include "base/task/sequenced_task_runner.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/modules/ml/ml_trace.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph_utils.h"
@@ -18,8 +19,6 @@
 #include "third_party/xnnpack/src/include/xnnpack.h"
 
 namespace blink {
-
-class ScriptPromiseResolver;
 
 namespace {
 class SharedXnnpackContext;
@@ -49,21 +48,14 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
   // Create and build an MLGraphXnnpack object. Resolve the promise with
   // this concrete object if the underlying XNNPACK subgraph builds
   // successfully.
-  static void ValidateAndBuildAsync(ScopedMLTrace scoped_trace,
-                                    MLContext* context,
-                                    const MLNamedOperands& named_outputs,
-                                    ScriptPromiseResolver* resolver);
+  // The caller must call `Promise()` on `resolver` before calling this method.
+  static void ValidateAndBuild(ScopedMLTrace scoped_trace,
+                               MLContext* context,
+                               const MLNamedOperands& named_outputs,
+                               ScriptPromiseResolverTyped<MLGraph>* resolver);
 
-  // Create and build a MLGraphXnnpack object synchronously in the caller's
-  // thread. Return this concrete object if the underlying XNNPACK subgraph
-  // builds successfully.
-  static MLGraph* ValidateAndBuildSync(ScriptState* script_state,
-                                       MLContext* context,
-                                       const MLNamedOperands& named_outputs,
-                                       ExceptionState& exception_state);
-
-  // The constructor shouldn't be called directly. The callers should use
-  // ValidateAndBuildAsync() or ValidateAndBuildSync() method instead.
+  // The constructor shouldn't be called directly. The callers should use the
+  // `ValidateAndBuild()` method instead.
   explicit MLGraphXnnpack(MLContext* context);
 
   ~MLGraphXnnpack() override;
@@ -90,7 +82,7 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
   //
   // The sequence of above steps can be illustrated as the following diagram:
   //       Calling thread                    background thread
-  //     `BuildAsyncImpl()`
+  //        `BuildImpl()`
   //              |
   //          post task ------->  `GetSharedXnnpackContextOnBackgroundThread()`
   //                                                  |
@@ -99,22 +91,22 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
   //          post task ------------> `CreateXnnRuntimeOnBackgroundThread()`
   //                                                  |
   //   `OnDidCreateXnnRuntime()  <-----------------post task
-  void BuildAsyncImpl(ScopedMLTrace scoped_trace,
-                      const MLNamedOperands& named_outputs,
-                      ScriptPromiseResolver* resolver) override;
+  void BuildImpl(ScopedMLTrace scoped_trace,
+                 const MLNamedOperands& named_outputs,
+                 ScriptPromiseResolverTyped<MLGraph>* resolver) override;
 
   static void GetSharedXnnpackContextOnBackgroundThread(
       ScopedMLTrace scoped_trace,
       CrossThreadHandle<MLGraphXnnpack> graph,
       CrossThreadHandle<MLNamedOperands> named_outputs,
-      CrossThreadHandle<ScriptPromiseResolver> resolver,
+      CrossThreadHandle<ScriptPromiseResolverTyped<MLGraph>> resolver,
       scoped_refptr<base::SequencedTaskRunner> resolver_task_runner);
 
   void OnDidGetSharedXnnpackContext(
       ScopedMLTrace scoped_trace,
       scoped_refptr<SharedXnnpackContext> xnn_context,
       MLNamedOperands* named_outputs,
-      ScriptPromiseResolver* resolver,
+      ScriptPromiseResolverTyped<MLGraph>* resolver,
       String error_message = String());
 
   static void CreateXnnRuntimeOnBackgroundThread(
@@ -124,22 +116,14 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
       Vector<DataBuffer> static_data_buffers,
       CrossThreadHandle<MLGraphXnnpack> graph,
       uint32_t num_threads,
-      CrossThreadHandle<ScriptPromiseResolver> resolver,
+      CrossThreadHandle<ScriptPromiseResolverTyped<MLGraph>> resolver,
       scoped_refptr<base::SequencedTaskRunner> resolver_task_runner);
 
   void OnDidCreateXnnRuntime(
       ScopedMLTrace scoped_trace,
       scoped_refptr<XnnRuntimeWrapper> xnn_runtime_wrapper,
-      ScriptPromiseResolver* resolver,
+      ScriptPromiseResolverTyped<MLGraph>* resolver,
       String error_message = String());
-
-  // Build the XNNPACK Subgraph and Runtime synchronously in the caller's
-  // thread. If the XNNPACK Subgraph and Runtime build successfully, it should
-  // return this `MLGraphXnnpack` object. Otherwise, it returns a nullptr and
-  // throw a DOMException accordingly.
-  MLGraph* BuildSyncImpl(ScriptState* script_state,
-                         const MLNamedOperands& named_outputs,
-                         ExceptionState& exception_state) override;
 
   // Post the XNNPACK Runtime object invocation to a background thread. The
   // input and output `MLNamedArrayBufferViews` will be transferred to the
@@ -148,11 +132,11 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
   // `ArrayBufferView` while the background thread is accessing them. And it
   // would also avoid accessing the heap-allocated `ArrayBufferView` in the
   // background thread.
-  void ComputeAsyncImpl(ScopedMLTrace scoped_trace,
-                        const MLNamedArrayBufferViews& inputs,
-                        const MLNamedArrayBufferViews& outputs,
-                        ScriptPromiseResolver* resolver,
-                        ExceptionState& exception_state) override;
+  void ComputeImpl(ScopedMLTrace scoped_trace,
+                   const MLNamedArrayBufferViews& inputs,
+                   const MLNamedArrayBufferViews& outputs,
+                   ScriptPromiseResolverTyped<MLComputeResult>* resolver,
+                   ExceptionState& exception_state) override;
 
   // Invoking an XNNPACK Runtime object can be time-consuming. Calling this
   // method in a background thread avoids blocking the main thread. The
@@ -170,7 +154,7 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
       NamedArrayBufferViewsInfoPtr inputs_info,
       NamedArrayBufferViewsInfoPtr outputs_info,
       CrossThreadHandle<MLGraphXnnpack> graph,
-      CrossThreadHandle<ScriptPromiseResolver> resolver,
+      CrossThreadHandle<ScriptPromiseResolverTyped<MLComputeResult>> resolver,
       scoped_refptr<base::SequencedTaskRunner> resolver_task_runner);
 
   // Resolve the promise with an `MLComputeResult` on the thread owning this
@@ -183,13 +167,8 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
                     xnn_status status,
                     NamedArrayBufferViewsInfoPtr inputs_info,
                     NamedArrayBufferViewsInfoPtr outputs_info,
-                    ScriptPromiseResolver* resolver,
+                    ScriptPromiseResolverTyped<MLComputeResult>* resolver,
                     String error_message = String());
-
-  // Invoke the XNNPACK Runtime object in the caller's thread.
-  void ComputeSyncImpl(const MLNamedArrayBufferViews& inputs,
-                       const MLNamedArrayBufferViews& outputs,
-                       ExceptionState& exception_state) override;
 
   // XNNPACK Subgraph is an abstract representation of a neural network model.
   // This method first sorts the MLOperators by searching from `named_outputs`

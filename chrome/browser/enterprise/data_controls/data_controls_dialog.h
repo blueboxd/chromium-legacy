@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ENTERPRISE_DATA_CONTROLS_DATA_CONTROLS_DIALOG_H_
 #define CHROME_BROWSER_ENTERPRISE_DATA_CONTROLS_DATA_CONTROLS_DIALOG_H_
 
+#include <vector>
+
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "components/enterprise/data_controls/rule.h"
@@ -47,9 +49,9 @@ class DataControlsDialog : public views::DialogDelegate {
   // available buttons, etc.
   enum class Type {
     kClipboardPasteBlock,
-    // kClipboardPasteWarn,
+    kClipboardPasteWarn,
     kClipboardCopyBlock,
-    // kClipboardCopyWarn,
+    kClipboardCopyWarn,
   };
 
   // Test observer to validate the dialog was shown/closed at appropriate
@@ -93,18 +95,26 @@ class DataControlsDialog : public views::DialogDelegate {
 
  private:
   DataControlsDialog(Type type,
+                     content::WebContents* web_contents,
                      base::OnceCallback<void(bool bypassed)> callback);
+
+  // Calls `callbacks_` with the value in `bypasses`. "true" represents the user
+  // ignoring a warning and proceeding with the action, "false" corresponds to
+  // the user cancelling their action after seeing a warning. This should not be
+  // called for blocking dialogs.
+  void OnDialogButtonClicked(bool bypassed);
 
   // Helpers to create sub-views of the dialog.
   std::unique_ptr<views::View> CreateEnterpriseIcon() const;
   std::unique_ptr<views::Label> CreateMessage() const;
 
   Type type_;
+  raw_ptr<content::WebContents> web_contents_ = nullptr;
   raw_ptr<views::BoxLayoutView> contents_view_ = nullptr;
 
   // Called when the dialog closes, with `true` in the case of a bypassed
   // warning.
-  base::OnceCallback<void(bool bypassed)> callback_;
+  std::vector<base::OnceCallback<void(bool bypassed)>> callbacks_;
 };
 
 }  // namespace data_controls

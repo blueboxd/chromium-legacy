@@ -6,10 +6,10 @@
 
 #import "base/test/metrics/user_action_tester.h"
 #import "base/test/scoped_feature_list.h"
-#import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/common/bookmark_features.h"
 #import "components/sync/base/features.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_ios_unit_test_support.h"
+#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
@@ -116,7 +116,8 @@ TEST_F(BookmarksHomeViewControllerTest,
     controller.snackbarCommandsHandler = mockSnackbarCommandHandler;
 
     const bookmarks::BookmarkNode* rootNode =
-        local_or_syncable_bookmark_model_->root_node();
+        local_or_syncable_bookmark_model_
+            ->subtle_root_node_with_unspecified_children();
     const bookmarks::BookmarkNode* mobileNode =
         local_or_syncable_bookmark_model_->mobile_node();
     AddBookmark(mobileNode, u"foo");  // Ensure there are bookmarks

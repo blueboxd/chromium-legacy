@@ -64,6 +64,16 @@ void TopLevelStorageAccessPermissionContext::DecidePermission(
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
       request_data.id.global_render_frame_host_id());
   CHECK(rfh);
+  if (!rfh->IsInPrimaryMainFrame()) {
+    rfh->AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kError,
+                             "requestStorageAccessFor: Only supported in "
+                             "primary top-level browsing contexts.");
+    RecordOutcomeSample(
+        TopLevelStorageAccessRequestOutcome::kDeniedByPrerequisites);
+    std::move(callback).Run(CONTENT_SETTING_BLOCK);
+    return;
+  }
+
   if (!request_data.user_gesture ||
       !request_data.requesting_origin.is_valid() ||
       !request_data.embedding_origin.is_valid()) {
@@ -218,7 +228,7 @@ void TopLevelStorageAccessPermissionContext::NotifyPermissionSetInternal(
   constraints.set_lifetime(
       permissions::kStorageAccessAPIRelatedWebsiteSetsLifetime);
   constraints.set_session_model(
-      content_settings::SessionModel::NonRestorableUserSession);
+      content_settings::mojom::SessionModel::NON_RESTORABLE_USER_SESSION);
 
   settings_map->SetContentSettingCustomScope(
       ContentSettingsPattern::FromURLNoWildcard(requesting_origin),

@@ -611,20 +611,6 @@ V4L2WritableBufferRef& V4L2WritableBufferRef::operator=(
   return *this;
 }
 
-scoped_refptr<VideoFrame> V4L2WritableBufferRef::GetVideoFrame() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(buffer_data_);
-
-  const scoped_refptr<FrameResource>& frame = buffer_data_->GetFrameResource();
-  if (!frame) {
-    return nullptr;
-  }
-  LOG_ASSERT(!!frame->AsVideoFrameResource())
-      << "V4L2WritableBufferRef::GetVideoFrame() is only called when the "
-         "|frame_| is a VideoFrameResource";
-  return frame->AsVideoFrameResource()->GetMutableVideoFrame();
-}
-
 scoped_refptr<FrameResource> V4L2WritableBufferRef::GetFrameResource() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(buffer_data_);
@@ -722,15 +708,6 @@ bool V4L2WritableBufferRef::QueueDMABuf(const std::vector<base::ScopedFD>& fds,
   }
 
   return std::move(self).DoQueue(request_ref, nullptr);
-}
-
-bool V4L2WritableBufferRef::QueueDMABuf(scoped_refptr<VideoFrame> video_frame,
-                                        V4L2RequestRef* request_ref) && {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(buffer_data_);
-
-  return std::move(*this).QueueDMABuf(
-      VideoFrameResource::Create(std::move(video_frame)), request_ref);
 }
 
 bool V4L2WritableBufferRef::QueueDMABuf(scoped_refptr<FrameResource> frame,
@@ -947,24 +924,6 @@ V4L2ReadableBuffer::V4L2ReadableBuffer(const struct v4l2_buffer& v4l2_buffer,
           std::make_unique<V4L2BufferRefBase>(v4l2_buffer, std::move(queue))),
       frame_(std::move(frame)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-scoped_refptr<VideoFrame> V4L2ReadableBuffer::GetVideoFrame() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(buffer_data_);
-
-  const scoped_refptr<FrameResource>& frame =
-      (buffer_data_->v4l2_buffer_.memory == V4L2_MEMORY_DMABUF && frame_)
-          ? frame_
-          : buffer_data_->GetFrameResource();
-
-  if (!frame) {
-    return nullptr;
-  }
-  LOG_ASSERT(!!frame->AsVideoFrameResource())
-      << "V4L2ReadableBuffer::GetVideoFrame() is only called when the |frame_| "
-         "is a VideoFrameResource";
-  return frame->AsVideoFrameResource()->GetMutableVideoFrame();
 }
 
 scoped_refptr<FrameResource> V4L2ReadableBuffer::GetFrameResource() {
@@ -1492,7 +1451,6 @@ std::pair<bool, V4L2ReadableBufferRef> V4L2Queue::DequeueBuffer() {
   v4l2_buffer.length = planes_count_;
   int ret = ioctl_cb_.Run(VIDIOC_DQBUF, &v4l2_buffer);
   if (ret) {
-    RecordVidiocIoctlErrorUMA(VidiocIoctlRequests::kVidiocDqbuf);
     // TODO(acourbot): we should not have to check for EPIPE as codec clients
     // should not call this method after the last buffer is dequeued.
     switch (errno) {
@@ -1503,6 +1461,7 @@ std::pair<bool, V4L2ReadableBufferRef> V4L2Queue::DequeueBuffer() {
         schedule_poll_cb_.Run();
         return std::make_pair(true, nullptr);
       default:
+        RecordVidiocIoctlErrorUMA(VidiocIoctlRequests::kVidiocDqbuf);
         VPQLOGF(1) << "VIDIOC_DQBUF failed";
         return std::make_pair(false, nullptr);
     }

@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/policy/webhid_device_policy_handler.h"
 #include "chrome/browser/policy/webusb_allow_devices_for_urls_policy_handler.h"
 #include "chrome/browser/prefetch/pref_names.h"
+#include "chrome/browser/privacy_sandbox/tracking_protection_policy_handler.h"
 #include "chrome/browser/profiles/force_safe_search_policy_handler.h"
 #include "chrome/browser/profiles/force_youtube_safety_mode_policy_handler.h"
 #include "chrome/browser/profiles/guest_mode_policy_handler.h"
@@ -55,9 +57,8 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/autofill/core/browser/autofill_address_policy_handler.h"
-#include "components/autofill/core/browser/autofill_credit_card_policy_handler.h"
 #include "components/autofill/core/browser/autofill_policy_handler.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/blocked_content/pref_names.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmarks_policy_handler.h"
@@ -89,6 +90,7 @@
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/optimization_guide/core/model_execution/model_execution_prefs.h"
+#include "components/optimization_guide/core/optimization_guide_prefs.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/performance_manager/public/user_tuning/prefs.h"
@@ -104,6 +106,7 @@
 #include "components/policy/core/common/schema.h"
 #include "components/policy/policy_constants.h"
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
+#include "components/privacy_sandbox/tracking_protection_prefs.h"
 #include "components/proxy_config/proxy_policy_handler.h"
 #include "components/safe_browsing/content/common/file_type_policies_prefs.h"
 #include "components/safe_browsing/core/common/safe_browsing_policy_handler.h"
@@ -113,6 +116,7 @@
 #include "components/security_interstitials/core/https_only_mode_policy_handler.h"
 #include "components/security_interstitials/core/pref_names.h"
 #include "components/services/storage/public/cpp/storage_prefs.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/sync/base/pref_names.h"
@@ -142,6 +146,7 @@
 #include "chrome/browser/enterprise/connectors/enterprise_connectors_policy_handler.h"
 #include "chrome/browser/enterprise/reporting/extension_request/extension_request_policy_handler.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
+#include "chrome/browser/policy/devtools_gen_ai_policy_handler.h"
 #include "chrome/browser/policy/local_sync_policy_handler.h"
 #include "chrome/browser/policy/managed_account_policy_handler.h"
 #include "chrome/browser/web_applications/policy/web_app_settings_policy_handler.h"
@@ -168,7 +173,7 @@
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_prefs.h"
 #include "chrome/browser/ash/accessibility/magnifier_type.h"
-#include "chrome/browser/ash/app_mode/device_weekly_scheduled_suspend_policy_handler.h"
+#include "chrome/browser/ash/app_mode/auto_sleep/device_weekly_scheduled_suspend_policy_handler.h"
 #include "chrome/browser/ash/app_restore/full_restore_prefs.h"
 #include "chrome/browser/ash/arc/policy/arc_policy_handler.h"
 #include "chrome/browser/ash/borealis/borealis_prefs.h"
@@ -348,9 +353,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAllowWebAuthnWithBrokenTlsCerts,
     webauthn::pref_names::kAllowWithBrokenCerts,
     base::Value::Type::BOOLEAN },
-  { key::kThrottleNonVisibleCrossOriginIframesAllowed,
-    prefs::kThrottleNonVisibleCrossOriginIframesAllowed,
-    base::Value::Type::BOOLEAN },
   { key::kBlockTruncatedCookies,
     prefs::kBlockTruncatedCookies,
     base::Value::Type::BOOLEAN },
@@ -360,6 +362,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kHttpAllowlist,
     prefs::kHttpAllowlist,
     base::Value::Type::LIST },
+  { key::kPrivacySandboxFingerprintingProtectionEnabled,
+    prefs::kFingerprintingProtectionEnabled,
+    base::Value::Type::BOOLEAN },
   { key::kHttpsUpgradesEnabled,
     prefs::kHttpsUpgradesEnabled,
     base::Value::Type::BOOLEAN },
@@ -369,9 +374,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kThirdPartyStoragePartitioningBlockedForOrigins,
     prefs::kManagedThirdPartyStoragePartitioningBlockedForOrigins,
     base::Value::Type::LIST },
-  { key::kInsecureHashesInTLSHandshakesEnabled,
-    prefs::kInsecureHashesInTLSHandshakesEnabled,
-    base::Value::Type::BOOLEAN },
   { key::kDataUrlInSvgUseEnabled,
     prefs::kDataUrlInSvgUseEnabled,
     base::Value::Type::BOOLEAN },
@@ -381,6 +383,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kZstdContentEncodingEnabled,
     prefs::kZstdContentEncodingEnabled,
     base::Value::Type::BOOLEAN},
+  { key::kPrefixedVideoFullscreenApiAvailability,
+    prefs::kPrefixedVideoFullscreenApiAvailability,
+    base::Value::Type::STRING },
 // Policies for all platforms - End
 #if BUILDFLAG(IS_ANDROID)
   { key::kAccessibilityPerformanceFilteringAllowed,
@@ -390,7 +395,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kAuthAndroidNegotiateAccountType,
     base::Value::Type::STRING },
   { key::kBackForwardCacheEnabled,
-    prefs::kMixedFormsWarningsEnabled,
+    policy_prefs::kBackForwardCacheEnabled,
     base::Value::Type::BOOLEAN },
   { key::kIsolateOriginsAndroid,
     prefs::kIsolateOrigins,
@@ -529,6 +534,15 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDefaultWebHidGuardSetting,
     prefs::kManagedDefaultWebHidGuardSetting,
     base::Value::Type::INTEGER },
+  { key::kDefaultDirectSocketsSetting,
+    prefs::kManagedDefaultDirectSocketsSetting,
+    base::Value::Type::INTEGER },
+  { key::kDirectSocketsAllowedForUrls,
+    prefs::kManagedDirectSocketsAllowedForUrls,
+    base::Value::Type::LIST },
+  { key::kDirectSocketsBlockedForUrls,
+    prefs::kManagedDirectSocketsBlockedForUrls,
+    base::Value::Type::LIST },
   { key::kDisable3DAPIs,
     prefs::kDisable3DAPIs,
     base::Value::Type::BOOLEAN },
@@ -870,6 +884,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
 #endif  // #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
         // || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_FUCHSIA)
+  { key::kAutomaticFullscreenAllowedForUrls,
+    prefs::kManagedAutomaticFullscreenAllowedForUrls,
+    base::Value::Type::LIST },
+  { key::kAutomaticFullscreenBlockedForUrls,
+    prefs::kManagedAutomaticFullscreenBlockedForUrls,
+    base::Value::Type::LIST },
   { key::kAuthSchemes,
     prefs::kAuthSchemes,
     base::Value::Type::STRING },
@@ -906,9 +926,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kPostQuantumKeyAgreementEnabled,
     prefs::kPostQuantumKeyAgreementEnabled,
-    base::Value::Type::BOOLEAN },
-  { key::kRSAKeyUsageForLocalAnchorsEnabled,
-    prefs::kRSAKeyUsageForLocalAnchorsEnabled,
     base::Value::Type::BOOLEAN },
   { key::kSSLErrorOverrideAllowed,
     prefs::kSSLErrorOverrideAllowed,
@@ -1011,6 +1028,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kWebPrintingBlockedForUrls,
     prefs::kManagedWebPrintingBlockedForUrls,
     base::Value::Type::LIST },
+  { key::kFloatingWorkspaceEnabled,
+    policy_prefs::kFloatingWorkspaceEnabled,
+    base::Value::Type::BOOLEAN
+  },
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1125,6 +1146,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kVirtualKeyboardFeatures,
     ash::prefs::kAccessibilityVirtualKeyboardFeatures,
     base::Value::Type::DICT },
+  { key::kOrcaEnabled,
+    ash::prefs::kManagedOrcaEnabled,
+    base::Value::Type::BOOLEAN },
   { key::kPhysicalKeyboardAutocorrect,
     ash::prefs::kManagedPhysicalKeyboardAutocorrectAllowed,
     base::Value::Type::BOOLEAN },
@@ -1531,9 +1555,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kProjectorDogfoodForFamilyLinkEnabled,
     ash::prefs::kProjectorDogfoodForFamilyLinkEnabled,
     base::Value::Type::BOOLEAN },
-  { key::kFloatingWorkspaceEnabled,
-    ash::prefs::kFloatingWorkspaceEnabled,
-    base::Value::Type::BOOLEAN },
   { key::kFloatingWorkspaceV2Enabled,
     ash::prefs::kFloatingWorkspaceV2Enabled,
     base::Value::Type::BOOLEAN },
@@ -1652,6 +1673,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kRendererAppContainerEnabled,
     prefs::kRendererAppContainerEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kBoundSessionCredentialsEnabled,
+    prefs::kBoundSessionCredentialsEnabled,
+    base::Value::Type::BOOLEAN },
   { key::kBrowserLegacyExtensionPointsBlocked,
     prefs::kBlockBrowserLegacyExtensionPoints,
     base::Value::Type::BOOLEAN },
@@ -1719,6 +1743,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kProfileSeparationDomainExceptionList,
     prefs::kProfileSeparationDomainExceptionList,
     base::Value::Type::LIST },
+  { key::kCustomProfileLabel,
+    prefs::kCustomProfileLabel,
+    base::Value::Type::STRING },
 #endif // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) \
     || BUILDFLAG(IS_FUCHSIA)
@@ -1933,14 +1960,14 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
 #endif // BUILDFLAG(IS_CHROMEOS)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // TODO(crbug.com/1454054): replace the
   // kGetDisplayMediaSetSelectAllScreensAllowedForUrls policy by a policy that
   // matches the name of the new `getAllScreensMedia` API.
   { key::kGetDisplayMediaSetSelectAllScreensAllowedForUrls,
     capture_policy::kManagedAccessToGetAllScreensMediaAllowedForUrls,
     base::Value::Type::LIST },
-#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
   { key::kAuthNegotiateDelegateByKdcPolicy,
@@ -2009,9 +2036,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     ash::prefs::kLoginScreenWebUILazyLoading,
     base::Value::Type::BOOLEAN },
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-  { key::kWebSQLAccess,
-    storage::kWebSQLAccess,
-    base::Value::Type::BOOLEAN },
 #if BUILDFLAG(IS_MAC)
   { key::kWarnBeforeQuittingEnabled,
     prefs::kConfirmToQuitEnabled,
@@ -2072,6 +2096,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAllowBackForwardCacheForCacheControlNoStorePageEnabled,
     policy_prefs::kAllowBackForwardCacheForCacheControlNoStorePageEnabled,
     base::Value::Type::BOOLEAN},
+  { key::kMutationEventsEnabled,
+    policy_prefs::kMutationEventsEnabled,
+    base::Value::Type::BOOLEAN},
   { key::kBeforeunloadEventCancelByPreventDefaultEnabled,
     policy_prefs::kBeforeunloadEventCancelByPreventDefaultEnabled,
     base::Value::Type::BOOLEAN},
@@ -2112,6 +2139,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #if BUILDFLAG(CHROME_CERTIFICATE_POLICIES_SUPPORTED)
   { key::kCACertificates,
     prefs::kCACertificates,
+    base::Value::Type::LIST },
+  { key::kCACertificatesWithConstraints,
+    prefs::kCACertificatesWithConstraints,
     base::Value::Type::LIST },
   { key::kCADistrustedCertificates,
     prefs::kCADistrustedCertificates,
@@ -2186,10 +2216,11 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   }
 
   // Policies for all platforms - Start
-  handlers->AddHandler(
-      std::make_unique<autofill::AutofillAddressPolicyHandler>());
-  handlers->AddHandler(
-      std::make_unique<autofill::AutofillCreditCardPolicyHandler>());
+  handlers->AddHandler(std::make_unique<BooleanDisablingPolicyHandler>(
+      key::kAutofillAddressEnabled, autofill::prefs::kAutofillProfileEnabled));
+  handlers->AddHandler(std::make_unique<BooleanDisablingPolicyHandler>(
+      key::kAutofillCreditCardEnabled,
+      autofill::prefs::kAutofillCreditCardEnabled));
   handlers->AddHandler(std::make_unique<autofill::AutofillPolicyHandler>());
   handlers->AddHandler(
       std::make_unique<enterprise_reporting::CloudReportingPolicyHandler>());
@@ -2215,7 +2246,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
           base::Value::Type::BOOLEAN),
       std::make_unique<BooleanDisablingPolicyHandler>(
-          policy::key::kUrlKeyedMetricsAllowed,
+          key::kUrlKeyedMetricsAllowed,
           unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled)));
   // Policies for all platforms - End
 
@@ -2231,6 +2262,18 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
     BUILDFLAG(IS_CHROMEOS)
   handlers->AddHandler(
       std::make_unique<SiteSearchPolicyHandler>(chrome_schema));
+
+  handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
+      key::kGenAILocalFoundationalModelSettings,
+      optimization_guide::prefs::localstate::
+          kGenAILocalFoundationalModelEnterprisePolicySettings,
+      static_cast<int>(
+          optimization_guide::prefs::
+              GenAILocalFoundationalModelEnterprisePolicySettings::kAllowed),
+      static_cast<int>(
+          optimization_guide::prefs::
+              GenAILocalFoundationalModelEnterprisePolicySettings::kMaxValue),
+      false));
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS)
 
@@ -2421,6 +2464,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           key::kWindowManagementBlockedForUrls,
           prefs::kManagedWindowManagementBlockedForUrls,
           base::Value::Type::LIST)));
+  handlers->AddHandler(std::make_unique<DevtoolsGenAiPolicyHandler>());
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
@@ -2513,11 +2557,24 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       false));
   handlers->AddHandler(
       std::make_unique<policy::SimpleSchemaValidatingPolicyHandler>(
-          policy::key::kToolbarAvatarLabelSettings,
-          prefs::kToolbarAvatarLabelSettings, chrome_schema,
-          policy::SchemaOnErrorStrategy::SCHEMA_STRICT,
+          key::kToolbarAvatarLabelSettings, prefs::kToolbarAvatarLabelSettings,
+          chrome_schema, policy::SchemaOnErrorStrategy::SCHEMA_STRICT,
           policy::SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
           policy::SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
+  handlers->AddHandler(std::make_unique<URLPolicyHandler>(
+      key::kEnterpriseLogoUrl, prefs::kEnterpriseLogoUrl));
+
+  handlers->AddHandler(std::make_unique<PolicyWithDependencyHandler>(
+      key::kCustomProfileLabel,
+      PolicyWithDependencyHandler::DependencyRequirement::
+          kPolicyUnsetOrSetWithvalue,
+      base::Value(""),
+      std::make_unique<SimpleSchemaValidatingPolicyHandler>(
+          key::kProfileLabel, prefs::kProfileLabelPreset, chrome_schema,
+          SchemaOnErrorStrategy::SCHEMA_STRICT,
+          SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
+          SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED)));
+
 #elif BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
   handlers->AddHandler(
       std::make_unique<ManagedAccountRestrictionsPolicyHandler>(chrome_schema));
@@ -2538,6 +2595,9 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       chrome_schema, SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
+  handlers->AddHandler(std::make_unique<extensions::ExtensionListPolicyHandler>(
+      key::kDocumentScanAPITrustedExtensions,
+      prefs::kDocumentScanAPITrustedExtensions, /*allow_wildcards=*/false));
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kIsolatedWebAppInstallForceList,
       prefs::kIsolatedWebAppInstallForceList, chrome_schema,
@@ -2735,8 +2795,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<ExternalDataPolicyHandler>(
       key::kDeviceExternalPrintServers));
   handlers->AddHandler(std::make_unique<ExternalDataPolicyHandler>(
-      key::kDeviceWilcoDtcConfiguration));
-  handlers->AddHandler(std::make_unique<ExternalDataPolicyHandler>(
       key::kCrostiniAnsiblePlaybook));
   handlers->AddHandler(
       std::make_unique<AppLaunchAutomationPolicyHandler>(chrome_schema));
@@ -2766,7 +2824,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<ArcServicePolicyHandler>(
       key::kArcBackupRestoreServiceEnabled,
       arc::prefs::kArcBackupRestoreEnabled));
-  handlers->AddHandler(std::make_unique<ArcServicePolicyHandler>(
+  handlers->AddHandler(std::make_unique<ArcLocationServicePolicyHandler>(
       key::kArcGoogleLocationServicesEnabled,
       arc::prefs::kArcLocationServiceEnabled));
   handlers->AddHandler(
@@ -2916,7 +2974,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<SpellcheckLanguagePolicyHandler>());
   handlers->AddHandler(
       std::make_unique<SpellcheckLanguageBlocklistPolicyHandler>(
-          policy::key::kSpellcheckLanguageBlocklist));
+          key::kSpellcheckLanguageBlocklist));
 #endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
@@ -2933,16 +2991,18 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
       /*legacy_policy_handler=*/std::make_unique<
           first_party_sets::FirstPartySetsOverridesPolicyHandler>(
-          policy::key::kFirstPartySetsOverrides, chrome_schema),
+          key::kFirstPartySetsOverrides, chrome_schema),
       /*new_policy_handler=*/std::make_unique<
           first_party_sets::FirstPartySetsOverridesPolicyHandler>(
-          policy::key::kRelatedWebsiteSetsOverrides, chrome_schema)));
+          key::kRelatedWebsiteSetsOverrides, chrome_schema)));
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_ANDROID)
   handlers->AddHandler(std::make_unique<PrivacySandboxPolicyHandler>());
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA) ||
         // BUILDFLAG(IS_ANDROID)
+
+  handlers->AddHandler(std::make_unique<TrackingProtectionPolicyHandler>());
 
 #if BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
   handlers->AddHandler(

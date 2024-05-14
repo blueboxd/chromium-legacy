@@ -31,12 +31,12 @@ class CardUnmaskAuthenticationSelectionDialogBrowserTestBase
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
 
-    card_unmask_authentication_selection_dialog_controller_ = std::make_unique<
-        CardUnmaskAuthenticationSelectionDialogControllerImpl>();
+    card_unmask_authentication_selection_dialog_controller_ =
+        std::make_unique<CardUnmaskAuthenticationSelectionDialogControllerImpl>(
+            challenge_options_,
+            /*confirm_unmasking_method_callback=*/base::DoNothing(),
+            /*cancel_unmasking_closure=*/base::DoNothing());
     controller()->ShowDialog(
-        challenge_options_,
-        /*confirm_unmasking_method_callback=*/base::DoNothing(),
-        /*cancel_unmasking_closure=*/base::DoNothing(),
         base::BindOnce(&CreateAndShowCardUnmaskAuthenticationSelectionDialog,
                        base::Unretained(web_contents)));
   }
@@ -147,7 +147,8 @@ INSTANTIATE_TEST_SUITE_P(
             CardUnmaskChallengeOptionType::kSmsOtp},
         std::vector<CardUnmaskChallengeOptionType>{
             CardUnmaskChallengeOptionType::kSmsOtp,
-            CardUnmaskChallengeOptionType::kCvc}));
+            CardUnmaskChallengeOptionType::kCvc,
+            CardUnmaskChallengeOptionType::kThreeDomainSecure}));
 
 // Ensures the UI can be shown.
 IN_PROC_BROWSER_TEST_P(

@@ -139,8 +139,10 @@ using autofill::autofill_metrics::MandatoryReauthOptInOrOutSource;
 #pragma mark - properties
 
 - (ReauthenticationModule*)reauthenticationModule {
-  if (ScopedAutofillPaymentReauthModuleOverride::instance) {
-    return ScopedAutofillPaymentReauthModuleOverride::instance->module;
+  id<ReauthenticationProtocol> overrideModule =
+      ScopedAutofillPaymentReauthModuleOverride::Get();
+  if (overrideModule) {
+    return overrideModule;
   }
 
   if (!_reauthenticationModule) {
@@ -513,7 +515,6 @@ using autofill::autofill_metrics::MandatoryReauthOptInOrOutSource;
     // Get the original value.
     BOOL mandatoryReauthEnabled =
         _personalDataManager->IsPaymentMethodsMandatoryReauthEnabled();
-    CHECK_NE(mandatoryReauthEnabled, switchView.isOn);
     LogMandatoryReauthOptInOrOutUpdateEvent(
         MandatoryReauthOptInOrOutSource::kSettingsPage,
         /*opt_in=*/!mandatoryReauthEnabled,

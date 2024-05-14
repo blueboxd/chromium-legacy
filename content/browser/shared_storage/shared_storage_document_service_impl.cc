@@ -47,6 +47,9 @@ bool IsSecureFrame(RenderFrameHost* frame) {
 using AccessType =
     SharedStorageWorkletHostManager::SharedStorageObserverInterface::AccessType;
 
+using OperationResult = storage::SharedStorageManager::OperationResult;
+using GetResult = storage::SharedStorageManager::GetResult;
+
 }  // namespace
 
 const char kSharedStorageDisabledMessage[] = "sharedStorage is disabled";
@@ -91,15 +94,15 @@ void SharedStorageDocumentServiceImpl::Bind(
     return;
   }
 
-  if (!IsSecureFrame(&render_frame_host())) {
+  bool is_secure_frame = IsSecureFrame(&render_frame_host());
+
+  base::UmaHistogramBoolean(
+      "Storage.SharedStorage.DocumentServiceBind.IsSecureFrame",
+      is_secure_frame);
+
+  if (!is_secure_frame) {
     // TODO(https://crbug.com/1470628): Invoke mojo::ReportBadMessage here when
     // we can be sure honest renderers won't hit this path.
-    SCOPED_CRASH_KEY_STRING1024("", "top_frame_url",
-                                render_frame_host()
-                                    .GetOutermostMainFrame()
-                                    ->GetLastCommittedURL()
-                                    .spec());
-    base::debug::DumpWithoutCrashing();
     return;
   }
 
@@ -113,9 +116,9 @@ void SharedStorageDocumentServiceImpl::CreateWorklet(
     mojo::PendingAssociatedReceiver<blink::mojom::SharedStorageWorkletHost>
         worklet_host,
     CreateWorkletCallback callback) {
-  // A document can only create multiple worklets with `kSharedStorageAPIM123`
+  // A document can only create multiple worklets with `kSharedStorageAPIM124`
   // enabled.
-  if (!base::FeatureList::IsEnabled(blink::features::kSharedStorageAPIM123)) {
+  if (!base::FeatureList::IsEnabled(blink::features::kSharedStorageAPIM124)) {
     if (create_worklet_called_) {
       // This could indicate a compromised renderer, so let's terminate it.
       receiver_.ReportBadMessage("Attempted to create multiple worklets.");
@@ -127,7 +130,10 @@ void SharedStorageDocumentServiceImpl::CreateWorklet(
 
   create_worklet_called_ = true;
 
-  if (!render_frame_host().GetLastCommittedOrigin().IsSameOriginWith(
+  // A document can only create cross-origin worklets with
+  // `kSharedStorageAPIM124` enabled.
+  if (!base::FeatureList::IsEnabled(blink::features::kSharedStorageAPIM124) &&
+      !render_frame_host().GetLastCommittedOrigin().IsSameOriginWith(
           script_source_url)) {
     // This could indicate a compromised renderer, so let's terminate it.
     receiver_.ReportBadMessage(
@@ -150,6 +156,70 @@ void SharedStorageDocumentServiceImpl::CreateWorklet(
       this, render_frame_host().GetLastCommittedOrigin(), script_source_url,
       credentials_mode, origin_trial_features, std::move(worklet_host),
       std::move(callback));
+}
+
+void SharedStorageDocumentServiceImpl::SharedStorageGet(
+    const std::u16string& key,
+    SharedStorageGetCallback callback) {
+  if (!render_frame_host().IsNestedWithinFencedFrame()) {
+    mojo::ReportBadMessage(
+        "Attempted to call get() outside of a fenced frame.");
+    return;
+  }
+
+  std::string debug_message;
+  if (!IsSharedStorageAllowed(&debug_message)) {
+    std::move(callback).Run(blink::mojom::SharedStorageGetStatus::kError,
+                            /*error_message=*/
+                            GetSharedStorageErrorMessage(
+                                debug_message, kSharedStorageDisabledMessage),
+                            /*value=*/{});
+    return;
+  }
+
+  if (!(static_cast<RenderFrameHostImpl&>(render_frame_host())
+            .CanReadFromSharedStorage())) {
+    std::move(callback).Run(
+        blink::mojom::SharedStorageGetStatus::kError,
+        /*error_message=*/
+        "sharedStorage.get() is not allowed in a fenced frame until network "
+        "access for it and all descendent frames has been revoked with "
+        "window.fence.disableUntrustedNetwork()",
+        /*value=*/{});
+    return;
+  }
+
+  GetSharedStorageWorkletHostManager()->NotifySharedStorageAccessed(
+      AccessType::kDocumentGet, main_frame_id(), SerializeLastCommittedOrigin(),
+      SharedStorageEventParams::CreateForGetOrDelete(base::UTF16ToUTF8(key)));
+
+  auto operation_completed_callback = base::BindOnce(
+      [](SharedStorageGetCallback callback, GetResult result) {
+        // If the key is not found but there is no other error, the worklet will
+        // resolve the promise to undefined.
+        if (result.result == OperationResult::kNotFound ||
+            result.result == OperationResult::kExpired) {
+          std::move(callback).Run(
+              blink::mojom::SharedStorageGetStatus::kNotFound,
+              /*error_message=*/"sharedStorage.get() could not find key",
+              /*value=*/{});
+          return;
+        }
+
+        if (result.result != OperationResult::kSuccess) {
+          std::move(callback).Run(
+              blink::mojom::SharedStorageGetStatus::kError,
+              /*error_message=*/"sharedStorage.get() failed", /*value=*/{});
+          return;
+        }
+
+        std::move(callback).Run(blink::mojom::SharedStorageGetStatus::kSuccess,
+                                /*error_message=*/{}, /*value=*/result.data);
+      },
+      std::move(callback));
+
+  GetSharedStorageManager()->Get(render_frame_host().GetLastCommittedOrigin(),
+                                 key, std::move(operation_completed_callback));
 }
 
 void SharedStorageDocumentServiceImpl::SharedStorageSet(
@@ -261,8 +331,7 @@ SharedStorageDocumentServiceImpl::SharedStorageDocumentServiceImpl(
           rfh->GetOutermostMainFrame()->GetLastCommittedOrigin()),
       main_frame_id_(
           static_cast<RenderFrameHostImpl*>(rfh->GetOutermostMainFrame())
-              ->devtools_frame_token()
-              .ToString()) {}
+              ->GetFrameTreeNodeId()) {}
 
 storage::SharedStorageManager*
 SharedStorageDocumentServiceImpl::GetSharedStorageManager() {

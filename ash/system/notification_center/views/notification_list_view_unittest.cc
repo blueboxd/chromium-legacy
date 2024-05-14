@@ -5,6 +5,7 @@
 #include "ash/system/notification_center/views/notification_list_view.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/system_notification_builder.h"
 #include "ash/system/notification_center/message_center_constants.h"
 #include "ash/system/notification_center/message_center_utils.h"
 #include "ash/system/notification_center/notification_center_test_api.h"
@@ -124,6 +125,19 @@ class TestNotificationListView : public NotificationListView {
       stacked_notifications_;
   std::vector<std::string> notification_id_list_;
 };
+
+// Returns true if the provided `corner_radius` has a value that is used for
+// notification views on the edges of `NotificationListView`, or for
+// notifications that are sliding out.
+bool IsEdge(int corner_radius) {
+  return corner_radius == kMessageCenterScrollViewCornerRadius;
+}
+
+// Returns true if the provided `corner_radius` has a value that is
+// used for inner borders of `NotificationListView` child views.
+bool IsInner(int corner_radius) {
+  return corner_radius == kMessageCenterNotificationInnerCornerRadius;
+}
 
 }  // namespace
 
@@ -784,6 +798,45 @@ TEST_P(NotificationListViewTest, OnChildNotificationViewUpdated) {
             child_view->GetTitleRowLabelForTest()->GetDisplayTextForTesting());
 }
 
+// Tests that the view animates when notification contents are updated.
+TEST_P(NotificationListViewTest, AnimatesOnNotificationUpdated) {
+  // Skip the test when `NotificationCenterController` is enabled since the
+  // controller is not created in this test.
+  if (IsNotificationCenterControllerEnabled()) {
+    GTEST_SKIP();
+  }
+
+  const std::string id = "id";
+  // Create and add a notification without a `message` to the `MessageCenter`.
+  auto notification =
+      ash::SystemNotificationBuilder()
+          .SetId(id)
+          .SetCatalogName(NotificationCatalogName::kTestCatalogName)
+          .SetTitle(u"Title")
+          .BuildPtr(
+              /*keep_timestamp=*/false);
+  MessageCenter::Get()->AddNotification(std::move(notification));
+
+  // Ensure the notification list does not animate when being created.
+  CreateMessageListView();
+  EXPECT_FALSE(IsAnimating());
+
+  // Update the notification by attempting to create a new notification with the
+  // same id, but it now has a non-empty `message`.
+  auto updated_notification =
+      ash::SystemNotificationBuilder()
+          .SetId(id)
+          .SetCatalogName(NotificationCatalogName::kTestCatalogName)
+          .SetTitle(u"Title")
+          .SetMessage(u"Message")
+          .BuildPtr(
+              /*keep_timestamp=*/false);
+  MessageCenter::Get()->AddNotification(std::move(updated_notification));
+
+  // Ensure the notification list animated to fit the new contents.
+  EXPECT_TRUE(IsAnimating());
+}
+
 // Tests that preferred size changes upon toggle of expand/collapse.
 TEST_P(NotificationListViewTest, PreferredSizeChangesOnToggle) {
   AddNotification(/*pinned=*/false, /*expandable=*/true);
@@ -1037,103 +1090,92 @@ TEST_P(NotificationListViewTest, SlideNotification) {
   auto id3 = AddNotification();
   CreateMessageListView();
 
-  // At first, there should be no fully rounded corners for the middle
-  // notification.
-  EXPECT_EQ(kMessageCenterNotificationInnerCornerRadius,
-            GetMessageViewAt(2)->top_radius());
-  EXPECT_EQ(kMessageCenterNotificationInnerCornerRadius,
-            GetMessageViewAt(2)->bottom_radius());
+  // Ensure corners of all notifications are rounded properly.
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(0)->top_radius()));
+  EXPECT_TRUE(IsInner(GetMessageViewAt(0)->bottom_radius()));
+  for (int i = 1; i <= 2; i++) {
+    EXPECT_TRUE(IsInner(GetMessageViewAt(i)->top_radius()));
+    EXPECT_TRUE(IsInner(GetMessageViewAt(i)->bottom_radius()));
+  }
+  EXPECT_TRUE(IsInner(GetMessageViewAt(3)->top_radius()));
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(3)->bottom_radius()));
 
-  // Start sliding notification 2 away.
+  // Start sliding a middle notification away. The top bottom and radius of the
+  // sliding notification should be rounded like an edge.
   StartSliding(2);
-  // The top bottom radius should be the same as the
-  // `kMessageCenterScrollViewCornerRadius`.
-  EXPECT_EQ(kMessageCenterScrollViewCornerRadius,
-            GetMessageViewAt(2)->bottom_radius());
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(2)->top_radius()));
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(2)->bottom_radius()));
 
-  // Notification 1's bottom corner and notification 3's top corner should also
-  // be rounded.
-  EXPECT_EQ(kMessageCenterNotificationInnerCornerRadius,
-            GetMessageViewAt(1)->top_radius());
-  EXPECT_EQ(kMessageCenterScrollViewCornerRadius,
-            GetMessageViewAt(1)->bottom_radius());
-  EXPECT_EQ(kMessageCenterScrollViewCornerRadius,
-            GetMessageViewAt(3)->top_radius());
-  EXPECT_EQ(kMessageCenterNotificationInnerCornerRadius,
-            GetMessageViewAt(3)->bottom_radius());
+  // The adjacent notification corners should also be rounded like an edge.
+  EXPECT_TRUE(IsInner(GetMessageViewAt(1)->top_radius()));
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(1)->bottom_radius()));
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(3)->top_radius()));
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(3)->bottom_radius()));
 
-  // Notification 0 should not change.
-  EXPECT_EQ(kMessageCenterScrollViewCornerRadius,
-            GetMessageViewAt(0)->top_radius());
-  EXPECT_EQ(kMessageCenterNotificationInnerCornerRadius,
-            GetMessageViewAt(0)->bottom_radius());
+  // The non-adjacent notification should not change.
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(0)->top_radius()));
+  EXPECT_TRUE(IsInner(GetMessageViewAt(0)->bottom_radius()));
 
-  // Slide out notification 2, the 3 notifications left should have no rounded
-  // corner after slide out done.
+  // Slide out the middle notification.
   RemoveNotification(id2);
   FinishSlideOutAnimation();
   AnimateUntilIdle();
 
-  EXPECT_EQ(kMessageCenterNotificationInnerCornerRadius,
-            GetMessageViewAt(0)->bottom_radius());
-  EXPECT_EQ(kMessageCenterNotificationInnerCornerRadius,
-            GetMessageViewAt(1)->top_radius());
+  // The adjacent notification corners should not be rounded like an edge after
+  // the notification fully slid out.
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(0)->top_radius()));
+  EXPECT_TRUE(IsInner(GetMessageViewAt(0)->bottom_radius()));
+  EXPECT_TRUE(IsInner(GetMessageViewAt(1)->top_radius()));
+  EXPECT_TRUE(IsInner(GetMessageViewAt(1)->bottom_radius()));
+  EXPECT_TRUE(IsInner(GetMessageViewAt(2)->top_radius()));
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(2)->bottom_radius()));
 
-  // Test with notification 1. Same behavior should happen.
+  // Test with the next middle notification. Same behavior should happen.
   StartSliding(1);
-  EXPECT_EQ(kMessageCenterScrollViewCornerRadius,
-            GetMessageViewAt(1)->top_radius());
-  EXPECT_EQ(kMessageCenterScrollViewCornerRadius,
-            GetMessageViewAt(1)->bottom_radius());
-  EXPECT_EQ(kMessageCenterNotificationInnerCornerRadius,
-            GetMessageViewAt(0)->top_radius());
-  EXPECT_EQ(kMessageCenterScrollViewCornerRadius,
-            GetMessageViewAt(0)->bottom_radius());
-  EXPECT_EQ(kMessageCenterScrollViewCornerRadius,
-            GetMessageViewAt(2)->top_radius());
-  EXPECT_EQ(kMessageCenterNotificationInnerCornerRadius,
-            GetMessageViewAt(2)->bottom_radius());
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(0)->top_radius()));
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(0)->bottom_radius()));
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(1)->top_radius()));
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(1)->bottom_radius()));
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(2)->top_radius()));
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(2)->bottom_radius()));
 
   // Cancel the slide. Everything goes back to normal.
   GetMessageViewAt(1)->OnSlideChanged(/*in_progress=*/false);
-  for (int i = 0; i <= 2; i++) {
-    EXPECT_EQ(kMessageCenterNotificationInnerCornerRadius,
-              GetMessageViewAt(i)->top_radius());
-    EXPECT_EQ(kMessageCenterNotificationInnerCornerRadius,
-              GetMessageViewAt(i)->bottom_radius());
-  }
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(0)->top_radius()));
+  EXPECT_TRUE(IsInner(GetMessageViewAt(0)->bottom_radius()));
+  EXPECT_TRUE(IsInner(GetMessageViewAt(1)->top_radius()));
+  EXPECT_TRUE(IsInner(GetMessageViewAt(1)->bottom_radius()));
+  EXPECT_TRUE(IsInner(GetMessageViewAt(2)->top_radius()));
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(2)->bottom_radius()));
 
-  // Test with the top notification.
+  // Slide the top notification.
   StartSliding(0);
-  EXPECT_EQ(kMessageCenterScrollViewCornerRadius,
-            GetMessageViewAt(0)->top_radius());
-  EXPECT_EQ(kMessageCenterScrollViewCornerRadius,
-            GetMessageViewAt(0)->bottom_radius());
-  EXPECT_EQ(kMessageCenterScrollViewCornerRadius,
-            GetMessageViewAt(1)->top_radius());
-  EXPECT_EQ(kMessageCenterNotificationInnerCornerRadius,
-            GetMessageViewAt(1)->bottom_radius());
-  EXPECT_EQ(kMessageCenterNotificationInnerCornerRadius,
-            GetMessageViewAt(2)->top_radius());
-  EXPECT_EQ(kMessageCenterNotificationInnerCornerRadius,
-            GetMessageViewAt(2)->bottom_radius());
-  GetMessageViewAt(0)->OnSlideChanged(/*in_progress=*/false);
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(0)->top_radius()));
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(0)->bottom_radius()));
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(1)->top_radius()));
+  EXPECT_TRUE(IsInner(GetMessageViewAt(1)->bottom_radius()));
+  EXPECT_TRUE(IsInner(GetMessageViewAt(2)->top_radius()));
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(2)->bottom_radius()));
 
-  // Test with the bottom notification.
-  StartSliding(2);
-  EXPECT_EQ(kMessageCenterNotificationInnerCornerRadius,
-            GetMessageViewAt(0)->top_radius());
-  EXPECT_EQ(kMessageCenterNotificationInnerCornerRadius,
-            GetMessageViewAt(0)->bottom_radius());
-  EXPECT_EQ(kMessageCenterNotificationInnerCornerRadius,
-            GetMessageViewAt(1)->top_radius());
-  EXPECT_EQ(kMessageCenterScrollViewCornerRadius,
-            GetMessageViewAt(1)->bottom_radius());
-  EXPECT_EQ(kMessageCenterScrollViewCornerRadius,
-            GetMessageViewAt(2)->top_radius());
-  EXPECT_EQ(kMessageCenterScrollViewCornerRadius,
-            GetMessageViewAt(2)->bottom_radius());
-  GetMessageViewAt(2)->OnSlideChanged(/*in_progress=*/false);
+  // Remove the top notification.
+  RemoveNotification(id0);
+  FinishSlideOutAnimation();
+  AnimateUntilIdle();
+
+  // Ensure corners are properly rounded for remaining notifications.
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(0)->top_radius()));
+  EXPECT_TRUE(IsInner(GetMessageViewAt(0)->bottom_radius()));
+  EXPECT_TRUE(IsInner(GetMessageViewAt(1)->top_radius()));
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(1)->bottom_radius()));
+
+  // Remove previous to last notification.
+  RemoveNotification(id1);
+  FinishSlideOutAnimation();
+  AnimateUntilIdle();
+
+  // All corners of the remaining notification should be edge-rounded.
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(0)->top_radius()));
+  EXPECT_TRUE(IsEdge(GetMessageViewAt(0)->bottom_radius()));
 }
 
 }  // namespace ash

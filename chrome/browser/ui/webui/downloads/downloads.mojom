@@ -28,6 +28,7 @@ enum DangerType {
   kDeepScannedSafe,
   kDeepScannedOpenedDangerous,
   kBlockedUnsupportedFileType,
+  kBlockedScanFailed,
 };
 
 // Represents the state of a download in the UI.
@@ -145,6 +146,7 @@ interface PageHandler {
   Cancel(string id);
   ClearAll();
   OpenDownloadsFolderRequiringGesture();
+  OpenEsbSettings();
 
   // Opens this download with the given |id| while it is being scanned by Safe
   // Browsing. This completes the scan early. This requires a user gesture on
@@ -162,6 +164,9 @@ interface PageHandler {
   // Bypass deep scan for download with the given |id|. This requires a user
   // gesture on the WebUI.
   BypassDeepScanRequiringGesture(string id);
+
+  // Checks whether an ESB Promotion can be shown on this profile.
+  IsEligibleForEsbPromo() => (bool result);
 };
 
 interface Page {

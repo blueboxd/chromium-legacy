@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/safety_hub/safety_hub_constants.h"
 #include "chrome/browser/ui/safety_hub/safety_hub_service.h"
 #include "chrome/grit/generated_resources.h"
+#include "extensions/browser/blocklist_extension_prefs.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_registry.h"
@@ -66,6 +67,24 @@ bool ShouldExtensionBeReviewed(
         break;
     }
   }
+
+  // If an extension appears on the blocklist, that extension will be
+  // marked for review. Currently, only malware and policy violation blocklist
+  // states are marked for review.
+  extensions::BitMapBlocklistState blocklist_state =
+      extensions::blocklist_prefs::GetExtensionBlocklistState(extension.id(),
+                                                              extension_prefs);
+  switch (blocklist_state) {
+    case extensions::BitMapBlocklistState::BLOCKLISTED_MALWARE:
+    case extensions::BitMapBlocklistState::BLOCKLISTED_CWS_POLICY_VIOLATION:
+      return true;
+    case extensions::BitMapBlocklistState::BLOCKLISTED_POTENTIALLY_UNWANTED:
+    case extensions::BitMapBlocklistState::BLOCKLISTED_SECURITY_VULNERABILITY:
+    case extensions::BitMapBlocklistState::NOT_BLOCKLISTED:
+      // no-op.
+      break;
+  }
+
   return false;
 }
 }  // namespace
@@ -75,17 +94,6 @@ SafetyHubExtensionsResult::SafetyHubExtensionsResult(
     bool is_unpublished_extensions_only)
     : triggering_extensions_(triggering_extensions),
       is_unpublished_extensions_only_(is_unpublished_extensions_only) {}
-
-SafetyHubExtensionsResult::SafetyHubExtensionsResult(
-    const base::Value::Dict& dict) {
-  for (const base::Value& extension_id :
-       *dict.FindList(safety_hub::kSafetyHubTriggeringExtensionIdsKey)) {
-    triggering_extensions_.insert(extension_id.GetString());
-  }
-  // Only results that contain unpublished extensions should be created with
-  // this constructor.
-  is_unpublished_extensions_only_ = true;
-}
 
 SafetyHubExtensionsResult::SafetyHubExtensionsResult(
     const SafetyHubExtensionsResult&) = default;
@@ -155,16 +163,18 @@ unsigned int SafetyHubExtensionsResult::GetNumTriggeringExtensions() const {
 }
 
 bool SafetyHubExtensionsResult::WarrantsNewMenuNotification(
-    const Result& previousResult) const {
-  const auto& previous =
-      static_cast<const SafetyHubExtensionsResult&>(previousResult);
+    const base::Value::Dict& previous_result_dict) const {
+  std::set<extensions::ExtensionId> previous_triggering_extensions;
+  for (const base::Value& extension_id : *previous_result_dict.FindList(
+           safety_hub::kSafetyHubTriggeringExtensionIdsKey)) {
+    previous_triggering_extensions.insert(extension_id.GetString());
+  }
   // Only results that are for unpublished extensions can result in a menu
   // notification.
-  if (!is_unpublished_extensions_only_ ||
-      !previous.is_unpublished_extensions_only_) {
+  if (!is_unpublished_extensions_only_) {
     return false;
   }
-  return !base::ranges::includes(previous.triggering_extensions_,
+  return !base::ranges::includes(previous_triggering_extensions,
                                  triggering_extensions_);
 }
 

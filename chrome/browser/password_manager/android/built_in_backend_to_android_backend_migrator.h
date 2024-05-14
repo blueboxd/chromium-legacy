@@ -51,6 +51,14 @@ class BuiltInBackendToAndroidBackendMigrator {
     kReenrollmentAttempt,
   };
 
+  // The type of operation triggered on backend during the migration. Used for
+  // the metrics reporting.
+  enum class BackendOperationForMigration {
+    kAddLogin,
+    kUpdateLogin,
+    kRemoveLogin,
+  };
+
   // |built_in_backend| and |android_backend| must not be null and must outlive
   // the migrator.
   BuiltInBackendToAndroidBackendMigrator(PasswordStoreBackend* built_in_backend,
@@ -67,7 +75,11 @@ class BuiltInBackendToAndroidBackendMigrator {
       BuiltInBackendToAndroidBackendMigrator&&) = delete;
   ~BuiltInBackendToAndroidBackendMigrator();
 
-  void StartMigrationIfNecessary(bool should_attempt_upm_reenrollment);
+  void StartAccountMigrationIfNecessary(MigrationType type);
+
+  // Starts migration from |built_in_backend| to |android_backend| if time from
+  // last attempt is enough.
+  void StartMigrationOfLocalPasswords();
 
   void OnSyncServiceInitialized(syncer::SyncService* sync_service);
 
@@ -82,9 +94,6 @@ class BuiltInBackendToAndroidBackendMigrator {
 
   using PasswordFormPtrFlatSet =
       base::flat_set<const PasswordForm*, IsPasswordLess>;
-
-  // Saves current migration version in |prefs_|.
-  void UpdateMigrationVersionInPref();
 
   // Returns the type of migration that should happen next.
   MigrationType GetMigrationType(bool should_attempt_upm_reenrollment) const;
@@ -105,24 +114,18 @@ class BuiltInBackendToAndroidBackendMigrator {
   // to perform initial & rolling migration for local users.
   void RunMigrationForLocalUsers();
 
-  // Migrates password between |built_in_backend_| and |android_backend_|.
-  // |result| consists of passwords from the |built_in_backend_| let's call them
-  // |A| and passwords from the |android_backend_| - |B|. If initial migration
-  // needed this function will update both backends with |A|U|B| otherwise it
-  // will replace passwords from the |built_in_backend_| with |B|.
-  void MigratePasswordsBetweenAndroidAndBuiltInBackends(
+  // Migrates password from the profile store |built_in_backend_| to the Gms
+  // core local store |android_backend_|. |result| consists of passwords from
+  // the |built_in_backend_| let's call them |A|. If the password from |A| is
+  // already present in |android_backend_|, then the latest version of the
+  // credential is adopted by |android_backend_|.
+  void MigrateLocalPasswordsBetweenAndroidAndBuiltInBackends(
       std::vector<BackendAndLoginsResults> result);
 
   // Updates both |built_in_backend_| and |android_backend_| such that both
   // contain the same set of passwords without deleting any password. In
   // addition, it marks the initial migration as completed.
-  void MergeAndroidBackendAndBuiltInBackend(
-      PasswordFormPtrFlatSet built_in_backend_logins,
-      PasswordFormPtrFlatSet android_logins);
-
-  // Updates |built_in_backend_| such that it contains the same set of passwords
-  // as in |android_backend_|.
-  void MirrorAndroidBackendToBuiltInBackend(
+  void MergeBuiltInBackendIntoAndroidBackend(
       PasswordFormPtrFlatSet built_in_backend_logins,
       PasswordFormPtrFlatSet android_logins);
 
@@ -142,8 +145,10 @@ class BuiltInBackendToAndroidBackendMigrator {
   // If |changelist| is an empty changelist, migration is aborted by calling
   // MigrationFinished() indicating the migration is *not* successful.
   // Otherwise, |callback| is invoked.
-  void RunCallbackOrAbortMigration(base::OnceClosure callback,
-                                   PasswordChangesOrError changelist);
+  void RunCallbackOrAbortMigration(
+      base::OnceClosure callback,
+      BackendOperationForMigration backend_operation,
+      PasswordChangesOrError changelist);
 
   // Reports metrics and deletes |metrics_reporter_|
   void MigrationFinished(bool is_success);
@@ -153,7 +158,7 @@ class BuiltInBackendToAndroidBackendMigrator {
   // |result_callback| is called with the |LoginsResult| containing valid forms
   // only or |PasswordStoreBackendError| if it contained in |logins_or_error|.
   // |logins_or_error| is modified in place.
-  void RemoveBlacklistedFormsWithValues(PasswordStoreBackend* backend,
+  void RemoveBlocklistedFormsWithValues(PasswordStoreBackend* backend,
                                         LoginsOrErrorReply result_callback,
                                         LoginsResultOrError logins_or_error);
 

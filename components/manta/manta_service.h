@@ -21,7 +21,13 @@ class SharedURLLoaderFactory;
 }  // namespace network
 
 namespace manta {
+enum class FeatureSupportStatus {
+  kUnknown = -1,
+  kUnsupported = 0,
+  kSupported = 1
+};
 
+class MahiProvider;
 class OrcaProvider;
 class SnapperProvider;
 
@@ -45,8 +51,12 @@ class COMPONENT_EXPORT(MANTA) MantaService : public KeyedService {
   // Returns a unique pointer to an instance of the Providers for the
   // profile associated with the MantaService instance from which this method
   // is called.
+  std::unique_ptr<MahiProvider> CreateMahiProvider();
   std::unique_ptr<OrcaProvider> CreateOrcaProvider();
   virtual std::unique_ptr<SnapperProvider> CreateSnapperProvider();
+
+  // Determines whether the profile for this KeyedService support Orca feature.
+  FeatureSupportStatus SupportsOrca();
 
   // KeyedService:
   void Shutdown() override;

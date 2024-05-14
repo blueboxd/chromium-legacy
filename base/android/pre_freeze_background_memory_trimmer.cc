@@ -4,6 +4,9 @@
 
 #include "base/android/pre_freeze_background_memory_trimmer.h"
 
+#include <optional>
+#include <string>
+
 #include "base/android/build_info.h"
 #include "base/android/pmf_utils.h"
 #include "base/check.h"
@@ -17,9 +20,6 @@
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/time/time.h"
-
-#include <optional>
-#include <string>
 
 namespace base::android {
 namespace {
@@ -154,6 +154,7 @@ void PreFreezeBackgroundMemoryTrimmer::PostDelayedBackgroundTaskInternal(
   // Preserve previous behaviour on versions before Android U.
   if (!IsRespectingModernTrim()) {
     task_runner->PostDelayedTask(from_here, std::move(task), delay);
+    return;
   }
 
   {
@@ -189,9 +190,21 @@ void PreFreezeBackgroundMemoryTrimmer::PostDelayedBackgroundTaskModern(
   }
 
   base::AutoLock locker(lock_);
+  PostDelayedBackgroundTaskModernHelper(std::move(task_runner), from_here,
+                                        std::move(task), delay);
+}
+
+PreFreezeBackgroundMemoryTrimmer::BackgroundTask*
+PreFreezeBackgroundMemoryTrimmer::PostDelayedBackgroundTaskModernHelper(
+    scoped_refptr<SequencedTaskRunner> task_runner,
+    const Location& from_here,
+    OnceClosure task,
+    TimeDelta delay) {
   std::unique_ptr<BackgroundTask> background_task =
       BackgroundTask::Create(task_runner, from_here, std::move(task), delay);
+  auto* ptr = background_task.get();
   background_tasks_.push_back(std::move(background_task));
+  return ptr;
 }
 
 // static
@@ -224,8 +237,8 @@ void PreFreezeBackgroundMemoryTrimmer::OnPreFreezeInternal() {
 
 // static
 void PreFreezeBackgroundMemoryTrimmer::UnregisterBackgroundTask(
-    BackgroundTask* timer) {
-  return Instance().UnregisterBackgroundTaskInternal(timer);
+    BackgroundTask* task) {
+  return Instance().UnregisterBackgroundTaskInternal(task);
 }
 
 void PreFreezeBackgroundMemoryTrimmer::UnregisterBackgroundTaskInternal(
@@ -237,6 +250,12 @@ void PreFreezeBackgroundMemoryTrimmer::UnregisterBackgroundTaskInternal(
 // static
 bool PreFreezeBackgroundMemoryTrimmer::IsRespectingModernTrim() {
   return Instance().is_respecting_modern_trim_;
+}
+
+// static
+bool PreFreezeBackgroundMemoryTrimmer::ShouldUseModernTrim() {
+  return IsRespectingModernTrim() &&
+         base::FeatureList::IsEnabled(kOnPreFreezeMemoryTrim);
 }
 
 // static
@@ -291,6 +310,13 @@ void PreFreezeBackgroundMemoryTrimmer::BackgroundTask::RunNow(
   std::move(background_task->task_).Run();
 }
 
+void PreFreezeBackgroundMemoryTrimmer::BackgroundTask::CancelTask() {
+  if (task_handle_.IsValid()) {
+    task_handle_.CancelTask();
+    PreFreezeBackgroundMemoryTrimmer::UnregisterBackgroundTask(this);
+  }
+}
+
 void PreFreezeBackgroundMemoryTrimmer::BackgroundTask::Start(
     const base::Location& from_here,
     base::TimeDelta delay,
@@ -307,6 +333,102 @@ void PreFreezeBackgroundMemoryTrimmer::BackgroundTask::Start(
           },
           this),
       delay);
+}
+
+class OneShotDelayedBackgroundTimer::TimerImpl final
+    : public OneShotDelayedBackgroundTimer::OneShotDelayedBackgroundTimerImpl {
+ public:
+  ~TimerImpl() override = default;
+  void Start(const Location& from_here,
+             TimeDelta delay,
+             OnceClosure task) override {
+    timer_.Start(from_here, delay, std::move(task));
+  }
+  void Stop() override { timer_.Stop(); }
+  bool IsRunning() const override { return timer_.IsRunning(); }
+  void SetTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner) override {
+    timer_.SetTaskRunner(std::move(task_runner));
+  }
+
+ private:
+  OneShotTimer timer_;
+};
+
+class OneShotDelayedBackgroundTimer::TaskImpl final
+    : public OneShotDelayedBackgroundTimer::OneShotDelayedBackgroundTimerImpl {
+ public:
+  ~TaskImpl() override = default;
+  void Start(const Location& from_here,
+             TimeDelta delay,
+             OnceClosure task) override {
+    DCHECK(!IsRunning());
+    DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
+    base::AutoLock locker(PreFreezeBackgroundMemoryTrimmer::Instance().lock_);
+    task_ = PreFreezeBackgroundMemoryTrimmer::Instance()
+                .PostDelayedBackgroundTaskModernHelper(
+                    GetTaskRunner(), from_here,
+                    BindOnce(
+                        [](TaskImpl* timer, OnceClosure task) {
+                          std::move(task).Run();
+                          timer->task_ = nullptr;
+                        },
+                        // Unretained is fine here, since (1) this is always
+                        // called on the same thread we destroy |this| on, and
+                        // (2) destroying this will cancel the task.
+                        base::Unretained(this), std::move(task)),
+                    delay);
+  }
+  void Stop() override {
+    if (IsRunning()) {
+      task_->CancelTask();
+      task_ = nullptr;
+    }
+  }
+  bool IsRunning() const override { return task_ != nullptr; }
+  void SetTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner) override {
+    task_runner_ = task_runner;
+  }
+
+ private:
+  scoped_refptr<SequencedTaskRunner> GetTaskRunner() {
+    // This matches the semantics of |OneShotTimer::GetTaskRunner()|.
+    return task_runner_ ? task_runner_
+                        : SequencedTaskRunner::GetCurrentDefault();
+  }
+
+  raw_ptr<PreFreezeBackgroundMemoryTrimmer::BackgroundTask> task_ = nullptr;
+  scoped_refptr<SequencedTaskRunner> task_runner_ = nullptr;
+};
+
+OneShotDelayedBackgroundTimer::OneShotDelayedBackgroundTimer() {
+  if (PreFreezeBackgroundMemoryTrimmer::ShouldUseModernTrim()) {
+    impl_ = std::make_unique<TaskImpl>();
+  } else {
+    impl_ = std::make_unique<TimerImpl>();
+  }
+}
+
+OneShotDelayedBackgroundTimer::~OneShotDelayedBackgroundTimer() {
+  Stop();
+}
+
+void OneShotDelayedBackgroundTimer::Stop() {
+  impl_->Stop();
+}
+
+bool OneShotDelayedBackgroundTimer::IsRunning() const {
+  return impl_->IsRunning();
+}
+
+void OneShotDelayedBackgroundTimer::SetTaskRunner(
+    scoped_refptr<SequencedTaskRunner> task_runner) {
+  impl_->SetTaskRunner(std::move(task_runner));
+}
+
+void OneShotDelayedBackgroundTimer::Start(const Location& from_here,
+                                          TimeDelta delay,
+                                          OnceClosure task) {
+  impl_->Start(from_here, delay, std::move(task));
 }
 
 }  // namespace base::android

@@ -280,6 +280,14 @@ MojoResult MojoSerializeMessageIpcz(
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
+MojoResult MojoReserveMessageCapacityIpcz(MojoMessageHandle message,
+                                          uint32_t payload_buffer_size,
+                                          uint32_t* buffer_size) {
+  // TODO(crbug.com/329911837): implement for IPCz to support predictive
+  // allocation outside of ChromeOS.
+  return MOJO_RESULT_UNIMPLEMENTED;
+}
+
 MojoResult MojoAppendMessageDataIpcz(
     MojoMessageHandle message,
     uint32_t additional_payload_size,
@@ -894,7 +902,8 @@ MojoSystemThunks2 g_mojo_ipcz_thunks = {
     MojoSetQuotaIpcz,
     MojoQueryQuotaIpcz,
     MojoShutdownIpcz,
-    MojoSetDefaultProcessErrorHandlerIpcz};
+    MojoSetDefaultProcessErrorHandlerIpcz,
+    MojoReserveMessageCapacityIpcz};
 
 }  // namespace
 

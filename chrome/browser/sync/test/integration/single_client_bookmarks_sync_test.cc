@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -31,6 +32,7 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/url_and_title.h"
 #include "components/bookmarks/common/bookmark_metrics.h"
+#include "components/browser_sync/browser_sync_switches.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/base/client_tag_hash.h"
@@ -1701,7 +1703,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   ExcludeDataTypesFromCheckForDataTypeFailures({syncer::BOOKMARKS});
 }
 
-// Android doesn't currently support PRE_ tests, see crbug.com/1117345.
+// Android doesn't currently support PRE_ tests, see crbug.com/40200835 or
+// crbug.com/40145099.
 #if !BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(
     SingleClientBookmarksSyncTestWithDisabledReuploadBookmarks,
@@ -2388,6 +2391,92 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksWithAccountStorageSyncTest,
               ElementsAre(IsFolderWithTitle(kInitiallyAccountTitle)));
 }
 
+// Regression test for crbug.com/329278277: turning sync-the-feature on, then
+// off, and later signing in with account bookmarks enabled should lead to all
+// bookmarks being duplicated (local bookmarks and account bookmarks). The user
+// needs to take explicit action (e.g. exercise batch upload flow) to clean up
+// these duplicates (but this part is not covered in the test).
+IN_PROC_BROWSER_TEST_F(
+    SingleClientBookmarksWithAccountStorageSyncTest,
+    ShouldExposeDuplicatedBookmarksAfterTurningSyncOffAndSignIn) {
+  const std::string kTitle1 = "Title 1";
+  const std::string kTitle2 = "Title 2";
+
+  ASSERT_TRUE(SetupClients());
+
+  BookmarkModel* model = GetBookmarkModel(kSingleProfileIndex);
+
+  // Create two local folders while the user is signed out and sync is off.
+  AddFolder(kSingleProfileIndex, /*parent=*/model->bookmark_bar_node(),
+            /*index=*/0, kTitle1);
+  AddFolder(kSingleProfileIndex, /*parent=*/model->bookmark_bar_node(),
+            /*index=*/1, kTitle2);
+
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(bookmarks_helper::ServerBookmarksEqualityChecker(
+                  {{kTitle1, /*url=*/GURL()}, {kTitle2, /*url=*/GURL()}},
+                  /*cryptographer=*/nullptr)
+                  .Wait());
+  ASSERT_THAT(model->account_bookmark_bar_node(), IsNull());
+
+  // Turn Sync off by removing the primary account.
+  GetClient(0)->SignOutPrimaryAccount();
+
+  ASSERT_THAT(
+      model->bookmark_bar_node()->children(),
+      ElementsAre(IsFolderWithTitle(kTitle1), IsFolderWithTitle(kTitle2)));
+
+  // Sign in again, but don't actually enable Sync-the-feature (so that Sync
+  // will start in transport mode).
+  ASSERT_TRUE(GetClient(kSingleProfileIndex)->SignInPrimaryAccount());
+  // Note: Depending on the state of feature flags (specifically
+  // kReplaceSyncPromosWithSignInPromos), Bookmarks may or may not be considered
+  // selected by default.
+  GetSyncService(kSingleProfileIndex)
+      ->GetUserSettings()
+      ->SetSelectedType(syncer::UserSelectableType::kBookmarks, true);
+  ASSERT_TRUE(GetClient(kSingleProfileIndex)->AwaitSyncTransportActive());
+  ASSERT_FALSE(GetSyncService(kSingleProfileIndex)->IsSyncFeatureEnabled());
+  ASSERT_TRUE(GetSyncService(kSingleProfileIndex)
+                  ->GetUserSettings()
+                  ->GetSelectedTypes()
+                  .Has(syncer::UserSelectableType::kBookmarks));
+  ASSERT_TRUE(GetSyncService(kSingleProfileIndex)
+                  ->GetActiveDataTypes()
+                  .Has(syncer::BOOKMARKS));
+  ASSERT_THAT(model->account_bookmark_bar_node(), NotNull());
+
+  // The folders should now be duplicated in local and account bookmarks.
+  EXPECT_THAT(
+      model->bookmark_bar_node()->children(),
+      ElementsAre(IsFolderWithTitle(kTitle1), IsFolderWithTitle(kTitle2)));
+  EXPECT_THAT(
+      model->account_bookmark_bar_node()->children(),
+      ElementsAre(IsFolderWithTitle(kTitle1), IsFolderWithTitle(kTitle2)));
+
+  // Move one folder individually from local to account, involving a UUID
+  // collision.
+  ASSERT_EQ(2u, model->bookmark_bar_node()->children().size());
+  ASSERT_EQ(model->bookmark_bar_node()->children()[0]->uuid(),
+            model->account_bookmark_bar_node()->children()[0]->uuid());
+  model->Move(model->bookmark_bar_node()->children()[0].get(),
+              /*new_parent=*/model->account_bookmark_bar_node(),
+              /*index=*/model->account_bookmark_bar_node()->children().size());
+  EXPECT_THAT(
+      model->account_bookmark_bar_node()->children(),
+      ElementsAre(IsFolderWithTitle(kTitle1), IsFolderWithTitle(kTitle2),
+                  IsFolderWithTitle(kTitle1)));
+
+  // Move one folder individually from account to local, involving a UUID
+  // collision.
+  ASSERT_EQ(1u, model->bookmark_bar_node()->children().size());
+  ASSERT_EQ(model->bookmark_bar_node()->children()[0]->uuid(),
+            model->account_bookmark_bar_node()->children()[1]->uuid());
+  model->Move(model->account_bookmark_bar_node()->children()[1].get(),
+              /*new_parent=*/model->bookmark_bar_node(),
+              /*index=*/model->bookmark_bar_node()->children().size());
+}
+
 // Android doesn't currently support PRE_ tests, see crbug.com/1117345.
 #if !BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(SingleClientBookmarksWithAccountStorageSyncTest,
@@ -2461,6 +2550,79 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksWithAccountStorageSyncTest,
   ASSERT_THAT(model->account_bookmark_bar_node(), NotNull());
   EXPECT_THAT(model->account_bookmark_bar_node()->children(),
               ElementsAre(IsFolderWithTitle(kInitiallyAccountTitle)));
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
+
+// Android doesn't currently support PRE_ tests, see crbug.com/40200835 or
+// crbug.com/40145099.
+#if !BUILDFLAG(IS_ANDROID)
+class SingleClientBookmarksSyncTestWithEnabledMigrateSyncingUserToSignedIn
+    : public SingleClientBookmarksWithAccountStorageSyncTest {
+ protected:
+  SingleClientBookmarksSyncTestWithEnabledMigrateSyncingUserToSignedIn() {
+    if (content::IsPreTest()) {
+      features_override_.InitAndDisableFeature(
+          switches::kMigrateSyncingUserToSignedIn);
+    } else {
+      features_override_.InitWithFeatures(
+          /*enabled_features=*/{syncer::kReplaceSyncPromosWithSignInPromos,
+                                switches::kMigrateSyncingUserToSignedIn},
+          /*disabled_features=*/{});
+    }
+  }
+
+  const std::string kTestTitle = "Test Title";
+
+ private:
+  base::test::ScopedFeatureList features_override_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientBookmarksSyncTestWithEnabledMigrateSyncingUserToSignedIn,
+    PRE_SyncToSigninMigration) {
+  ASSERT_TRUE(SetupClients());
+  AddFolder(kSingleProfileIndex, kTestTitle);
+
+  // Setup sync, wait for its completion, and make sure changes were synced.
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(BookmarkModelMatchesFakeServerChecker(
+                  kSingleProfileIndex, GetSyncService(kSingleProfileIndex),
+                  GetFakeServer())
+                  .Wait());
+
+  BookmarkModel* model = GetBookmarkModel(kSingleProfileIndex);
+
+  ASSERT_THAT(model->bookmark_bar_node()->children(),
+              ElementsAre(IsFolderWithTitle(kTestTitle)));
+
+  // Sync-the-feature is on, so account bookmarks should not exist.
+  ASSERT_THAT(model->account_bookmark_bar_node(), IsNull());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientBookmarksSyncTestWithEnabledMigrateSyncingUserToSignedIn,
+    SyncToSigninMigration) {
+  // Mimic the user being offline to verify that account bookmarks are loaded
+  // from disk instead of being redownloaded.
+  fake_server::FakeServerHttpPostProvider::DisableNetwork();
+
+  ASSERT_TRUE(SetupClients());
+  ASSERT_TRUE(GetClient(kSingleProfileIndex)->AwaitEngineInitialization());
+  ASSERT_FALSE(GetSyncService(kSingleProfileIndex)->IsSyncFeatureEnabled());
+  ASSERT_TRUE(GetSyncService(kSingleProfileIndex)
+                  ->GetUserSettings()
+                  ->GetSelectedTypes()
+                  .Has(syncer::UserSelectableType::kBookmarks));
+
+  BookmarkModel* model = GetBookmarkModel(kSingleProfileIndex);
+
+  // Local bookmarks should be empty.
+  ASSERT_THAT(model->bookmark_bar_node()->children(), IsEmpty());
+
+  // Account bookmarks should continue existing even while offline.
+  ASSERT_THAT(model->account_bookmark_bar_node(), NotNull());
+  EXPECT_THAT(model->account_bookmark_bar_node()->children(),
+              ElementsAre(IsFolderWithTitle(kTestTitle)));
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 

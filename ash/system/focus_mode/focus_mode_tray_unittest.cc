@@ -29,6 +29,7 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/controls/button/image_button.h"
+#include "url/gurl.h"
 
 namespace ash {
 
@@ -189,10 +190,11 @@ TEST_F(FocusModeTrayTest, MarkTaskAsCompleted) {
   controller->SetSelectedTask(
       std::make_unique<api::Task>(
           /*id=*/base::NumberToString(0), "make a travel plan",
-          /*due=*/absl::nullopt, /*completed=*/false, /*has_subtasks=*/false,
+          /*due=*/std::nullopt, /*completed=*/false, /*has_subtasks=*/false,
           /*has_email_link=*/false,
           /*has_notes=*/false,
-          /*updated=*/base::Time::Now())
+          /*updated=*/base::Time::Now(),
+          /*web_view_link=*/GURL())
           .get());
 
   //  Start focus mode and click the tray to activate the button.
@@ -296,11 +298,12 @@ TEST_F(FocusModeTrayTest, BubbleTabbingAndAccessibility) {
   controller->SetInactiveSessionDuration(session_duration);
   controller->SetSelectedTask(std::make_unique<api::Task>(
                                   /*id=*/base::NumberToString(1), task_name,
-                                  /*due=*/absl::nullopt, /*completed=*/false,
+                                  /*due=*/std::nullopt, /*completed=*/false,
                                   /*has_subtasks=*/false,
                                   /*has_email_link=*/false,
                                   /*has_notes=*/false,
-                                  /*updated=*/base::Time::Now())
+                                  /*updated=*/base::Time::Now(),
+                                  /*web_view_link=*/GURL())
                                   .get());
   controller->ToggleFocusMode();
 
@@ -369,7 +372,7 @@ TEST_F(FocusModeTrayTest, EndingMomentPersists) {
   EXPECT_TRUE(controller->in_ending_moment());
   EXPECT_TRUE(focus_mode_tray_->GetVisible());
 
-  // Open the tray bubble and wait foran arbitrarily long time. Verify that
+  // Open the tray bubble and wait for an arbitrarily long time. Verify that
   // the bubble is not closed automatically.
   LeftClickOn(focus_mode_tray_);
   EXPECT_TRUE(focus_mode_tray_->is_active());
@@ -481,6 +484,58 @@ TEST_F(FocusModeTrayTest, EndingMomentUpdateSessionDuration) {
   EXPECT_FALSE(button->GetEnabled());
   EXPECT_EQ(focus_mode_util::kMaximumDuration,
             controller->current_session()->session_duration());
+}
+
+// Tests that the ending moment functions correctly on multiple displays and
+// does not terminate unexpectedly.
+// Regression test for b/323982290.
+TEST_F(FocusModeTrayTest, EndingMomentMultiDisplay) {
+  UpdateDisplay("800x600,800x600");
+  FocusModeTray* first_tray = focus_mode_tray_;
+  FocusModeTray* second_tray =
+      StatusAreaWidgetTestHelper::GetSecondaryStatusAreaWidget()
+          ->focus_mode_tray();
+
+  // Start a focus session and verify both trays are visible.
+  FocusModeController* controller = FocusModeController::Get();
+  controller->ToggleFocusMode();
+  EXPECT_TRUE(controller->in_focus_session());
+  EXPECT_TRUE(first_tray->GetVisible());
+  EXPECT_TRUE(second_tray->GetVisible());
+
+  // Trigger the ending moment.
+  AdvanceClock(controller->GetSessionDuration());
+  EXPECT_FALSE(controller->in_focus_session());
+  EXPECT_TRUE(controller->in_ending_moment());
+  EXPECT_TRUE(first_tray->GetVisible());
+  EXPECT_TRUE(second_tray->GetVisible());
+
+  // Click on the tray on the first display to open the associated tray bubble.
+  LeftClickOn(first_tray);
+  EXPECT_TRUE(first_tray->is_active());
+  EXPECT_TRUE(first_tray->GetBubbleView());
+  EXPECT_FALSE(second_tray->is_active());
+  EXPECT_FALSE(second_tray->GetBubbleView());
+
+  // Click on the tray on the second display. The ending moment should persist.
+  // This should also close the bubble on the first display and show the bubble
+  // on the second display.
+  LeftClickOn(second_tray);
+  EXPECT_TRUE(controller->in_ending_moment());
+  EXPECT_TRUE(first_tray->GetVisible());
+  EXPECT_FALSE(first_tray->is_active());
+  EXPECT_FALSE(first_tray->GetBubbleView());
+  EXPECT_TRUE(second_tray->GetVisible());
+  EXPECT_TRUE(second_tray->is_active());
+  EXPECT_TRUE(second_tray->GetBubbleView());
+
+  // Clicking the same (second) tray again should close the bubble and terminate
+  // the ending moment as well.
+  LeftClickOn(second_tray);
+  EXPECT_FALSE(controller->in_ending_moment());
+  EXPECT_FALSE(first_tray->GetVisible());
+  EXPECT_FALSE(second_tray->GetVisible());
+  EXPECT_FALSE(second_tray->GetBubbleView());
 }
 
 }  // namespace ash

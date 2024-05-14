@@ -1,5 +1,6 @@
 <style include="wallpaper common sea-pen">
   :host {
+    display: block;
     overflow: hidden;
   }
 
@@ -40,7 +41,6 @@
   .menu-icon-container-inner {
     align-items: flex-end;
     background-color: var(--cros-bg-color);
-    border-bottom-right-radius: var(--personalization-app-grid-item-border-radius);
     border-top-left-radius: 50%;
     bottom: 0;
     display: flex;
@@ -86,16 +86,52 @@
   }
 
   .dropdown-item > iron-icon {
-    margin-inline-end: 8px;
+    --iron-icon-fill-color: var(--cros-sys-on_surface);
+    --iron-icon-height: 20px;
+    --iron-icon-width: 20px;
+    margin-inline-end: 16px;
   }
 
-  .more-like-this-option,
-  .wallpaper-info-option {
+  .more-like-this-option {
     display: none;
+  }
+
+  cr-dialog::part(dialog) {
+    border-radius: 20px;
+  }
+
+  @media (max-width: 671px) {
+    cr-dialog::part(dialog) {
+      width: 440px;
+    }
+  }
+
+  #wallpaperInfoBody {
+    padding: 0 32px;
+  }
+
+  #wallpaperInfoBody h2{
+    color: var(--cros-sys-on_surface);
+    font: var(--cros-display-7-font);
+    margin: 0 0 16px;
+  }
+
+  #wallpaperInfoBody p {
+    color: var(--cros-sys-on_surface_variant);
+    font: var(--cros-body-1-font);
+    margin: 0 0 16px;
+  }
+
+  #wallpaperInfoButtonContainer {
+    padding: 16px 32px 28px;
+  }
+
+  #wallpaperInfoCloseButton {
+    border-radius: 16px;
   }
 </style>
 <template is="dom-if" if="[[shouldShowRecentlyUsedWallpapers_(recentImages_)]]">
-  <h2 class="wallpaper-collections-heading">[[i18n('seaPenRecentWallpapersHeading')]]</h2>
+  <h2 class="wallpaper-collections-heading">[[getRecentPoweredByGoogleMessage_()]]</h2>
   <iron-list id="grid"
       items="[[recentImagesToDisplay_]]"
       as="image"
@@ -118,7 +154,7 @@
         <div class="menu-icon-container">
           <div class="menu-icon-container-inner">
             <cr-icon-button class="menu-icon-button" data-id$="[[index]]" iron-icon="cr:more-vert"
-              role="button" on-click="onClickMenuIcon_">
+              role="button" on-click="onClickMenuIcon_" tabindex$="[[tabIndex]]">
             </cr-icon-button>
           </div>
           <div class="menu-icon-container-shadow-left"></div>
@@ -135,24 +171,26 @@
             <iron-icon icon="sea-pen:delete"></iron-icon>
             [[i18n('seaPenDeleteWallpaper')]]
           </button>
-          <button data-id$="[[index]]" class="dropdown-item wallpaper-info-option"
-              on-click="onClickWallpaperInfo_">
-            <iron-icon icon="cr:info-outline"></iron-icon>
-            [[i18n('seaPenAbout')]]
-          </button>
+          <template is="dom-if" if="[[shouldShowWallpaperInfoButton_(image, recentImageData_, recentImageDataLoading_)]]">
+            <button data-id$="[[index]]" class="dropdown-item wallpaper-info-option"
+                on-click="onClickWallpaperInfo_">
+              <iron-icon icon="cr:info-outline"></iron-icon>
+              [[i18n('seaPenAbout')]]
+            </button>
+          </template>
         </cr-action-menu>
         <template is="dom-if" if="[[shouldShowWallpaperInfoDialog_(index, currentShowWallpaperInfoDialog_)]]" restamp>
           <cr-dialog id="wallpaperInfoDialog" data-id$="[[index]]" on-close="onCloseDialog_" show-on-attach>
-            <div slot="body">
+            <div id="wallpaperInfoBody" slot="body">
               <h2>[[i18n('seaPenAboutDialogTitle')]]</h2>
-              <p>
+              <p class="about-prompt-info">
                 [[getWallpaperInfoPromptMessage_(image, recentImageData_, recentImageDataLoading_)]]
               </p>
-              <p>
+              <p class="about-date-info">
                 [[getWallpaperInfoDateMessage_(image, recentImageData_, recentImageDataLoading_)]]
               </p>
             </div>
-            <div slot="button-container">
+            <div id="wallpaperInfoButtonContainer" slot="button-container">
               <cr-button id="wallpaperInfoCloseButton" class="action-button primary" on-click="onCloseDialog_">
                 [[i18n('seaPenAboutDialogClose')]]
               </cr-button>

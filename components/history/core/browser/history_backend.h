@@ -620,6 +620,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   bool GetVisitsForURL(URLID id, VisitVector* visits);
 
+  std::map<GURL, VisitRow> GetMostRecentVisitForEachURL(
+      const std::vector<GURL>& urls);
+
   bool GetMostRecentVisitForURL(URLID id, VisitRow* visit_row) override;
 
   // Fetches up to `max_visits` most recent visits for the passed URL.
@@ -719,7 +722,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Calls ExpireHistoryBackend::ExpireHistoryBetween and commits the change.
   void ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
-                            absl::optional<std::string> restrict_app_id,
+                            std::optional<std::string> restrict_app_id,
                             base::Time begin_time,
                             base::Time end_time,
                             bool user_initiated);

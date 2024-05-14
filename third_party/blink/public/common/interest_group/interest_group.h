@@ -58,7 +58,9 @@ struct BLINK_COMMON_EXPORT InterestGroup {
     // Must use https. This string must have been the result of GURL().spec().
     // DO NOT set this to a value that has never passed through GURL.
     explicit Ad(base::PassKey<content::InterestGroupStorage>,
-                std::string render_url);
+                std::string&& render_url);
+    explicit Ad(base::PassKey<content::InterestGroupStorage>,
+                const std::string& render_url);
     Ad(GURL render_gurl,
        std::optional<std::string> metadata,
        std::optional<std::string> size_group = std::nullopt,
@@ -105,6 +107,11 @@ struct BLINK_COMMON_EXPORT InterestGroup {
 
   InterestGroup();
   ~InterestGroup();
+
+  InterestGroup(InterestGroup&& other);
+  InterestGroup& operator=(InterestGroup&& other);
+  InterestGroup(const InterestGroup& other);
+  InterestGroup& operator=(const InterestGroup&);
 
   // Checks for validity. Performs same checks as ValidateBlinkInterestGroup().
   // Automatically checked when passing InterestGroups over Mojo.
@@ -169,10 +176,12 @@ struct BLINK_COMMON_EXPORT InterestGroup {
   std::optional<AdditionalBidKey> additional_bid_key;
   std::optional<url::Origin> aggregation_coordinator_origin;
 
-  static_assert(__LINE__ == 172, R"(
+  static_assert(__LINE__ == 179, R"(
 If modifying InterestGroup fields, make sure to also modify:
 
 * IsValid(), EstimateSize(), and IsEqualForTesting() in this class
+* SerializeInterestGroupForDevtools()
+    (in devtools_serialization.cc; test in devtools_serialization_unittest.cc)
 * auction_ad_interest_group.idl
 * navigator_auction.cc
 * interest_group_types.mojom

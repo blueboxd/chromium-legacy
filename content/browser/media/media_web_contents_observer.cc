@@ -7,7 +7,6 @@
 #include <memory>
 #include <tuple>
 
-#include "base/containers/cxx20_erase.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/functional/bind.h"
@@ -570,6 +569,12 @@ void MediaWebContentsObserver::OnRemotePlaybackMetadataChange(
     media_session::mojom::RemotePlaybackMetadataPtr remote_playback_metadata) {
   session_controllers_manager_->OnRemotePlaybackMetadataChange(
       player_id, std::move(remote_playback_metadata));
+}
+
+void MediaWebContentsObserver::MediaPlayerObserverHostImpl::
+    OnVideoVisibilityChanged(bool meets_visibility_threshold) {
+  media_web_contents_observer_->session_controllers_manager()
+      ->OnVideoVisibilityChanged(media_player_id_, meets_visibility_threshold);
 }
 
 bool MediaWebContentsObserver::IsMediaPlayerRemoteAvailable(

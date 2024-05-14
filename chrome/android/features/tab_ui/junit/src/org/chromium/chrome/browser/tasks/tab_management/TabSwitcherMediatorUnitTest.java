@@ -52,7 +52,6 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.UserDataHost;
-import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.supplier.LazyOneshotSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplierImpl;
@@ -162,7 +161,6 @@ public class TabSwitcherMediatorUnitTest {
 
     @Before
     public void setUp() {
-        UmaRecorderHolder.resetForTesting();
 
         MockitoAnnotations.initMocks(this);
 
@@ -231,7 +229,6 @@ public class TabSwitcherMediatorUnitTest {
                         mTabModelSelector,
                         mBrowserControlsStateProvider,
                         mCompositorViewHolder,
-                        null,
                         mHandler,
                         TabListCoordinator.TabListMode.GRID,
                         mIncognitoReauthControllerSupplier,
@@ -627,11 +624,26 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
+    public void openDialogButton_SingleTab_IsTabGroup() {
+        // Mock that tab 1 is a single tab.
+        List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1));
+        doReturn(tabs).when(mTabModelFilter).getRelatedTabList(TAB1_ID);
+        doReturn(true).when(mTabModelFilter).isTabInTabGroup(mTab1);
+
+        TabListMediator.TabActionListener listener = mMediator.openTabGridDialog(mTab1);
+        assertThat(listener, notNullValue());
+
+        listener.run(TAB1_ID);
+        verify(mTabGridDialogController).resetWithListOfTabs(eq(tabs));
+    }
+
+    @Test
     public void openDialogButton_TabGroup_NotEmpty() {
         // Set up a tab group.
         Tab newTab = prepareTab(TAB4_ID, TAB4_TITLE);
         List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1, newTab));
         doReturn(tabs).when(mTabModelFilter).getRelatedTabList(TAB1_ID);
+        doReturn(true).when(mTabModelFilter).isTabInTabGroup(mTab1);
 
         TabListMediator.TabActionListener listener = mMediator.openTabGridDialog(mTab1);
         assertThat(listener, notNullValue());
@@ -642,8 +654,10 @@ public class TabSwitcherMediatorUnitTest {
 
     @Test
     public void openDialogButton_TabGroup_Empty() {
-        // Assume that due to tab model change, current group becomes empty in current model.
+        // Assume that due to tab model change, current group becomes empty in current model, but
+        // was already open.
         doReturn(new ArrayList<>()).when(mTabModelFilter).getRelatedTabList(TAB1_ID);
+        doReturn(true).when(mTabModelFilter).isTabInTabGroup(mTab1);
 
         TabListMediator.TabActionListener listener = mMediator.openTabGridDialog(mTab1);
         assertThat(listener, notNullValue());
@@ -823,39 +837,6 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
-    @EnableFeatures(ChromeFeatureList.START_SURFACE_ANDROID)
-    // When Start surface refactoring is enabled, the top control properties are no longer handled
-    // separately, and it is covered by test updatesPropertiesWithTopControlsChanges().
-    @DisableFeatures({
-        ChromeFeatureList.START_SURFACE_REFACTOR,
-        ChromeFeatureList.SHOW_NTP_AT_STARTUP_ANDROID
-    })
-    public void updatesPropertiesWithTopControlsChanges_StartSurface() {
-        assertEquals(0, mModel.get(TabListContainerProperties.TOP_MARGIN));
-        assertEquals(0, mModel.get(TabListContainerProperties.SHADOW_TOP_OFFSET));
-
-        mBrowserControlsStateProviderObserverCaptor
-                .getValue()
-                .onTopControlsHeightChanged(CONTROL_HEIGHT_INCREASED, 0);
-        doReturn(CONTROL_HEIGHT_INCREASED).when(mBrowserControlsStateProvider).getContentOffset();
-        mBrowserControlsStateProviderObserverCaptor
-                .getValue()
-                .onControlsOffsetChanged(0, 0, 0, 0, false);
-        assertEquals(0, mModel.get(TabListContainerProperties.TOP_MARGIN));
-        assertEquals(0, mModel.get(TabListContainerProperties.SHADOW_TOP_OFFSET));
-
-        mBrowserControlsStateProviderObserverCaptor
-                .getValue()
-                .onTopControlsHeightChanged(CONTROL_HEIGHT_DEFAULT, 0);
-        doReturn(CONTROL_HEIGHT_DEFAULT).when(mBrowserControlsStateProvider).getContentOffset();
-        mBrowserControlsStateProviderObserverCaptor
-                .getValue()
-                .onControlsOffsetChanged(0, 0, 0, 0, false);
-        assertEquals(0, mModel.get(TabListContainerProperties.TOP_MARGIN));
-        assertEquals(0, mModel.get(TabListContainerProperties.SHADOW_TOP_OFFSET));
-    }
-
-    @Test
     public void updatesBottomPaddingOnlyInGridMode() {
         doReturn(16f).when(mResources).getDimension(R.dimen.tab_grid_bottom_padding);
 
@@ -867,7 +848,6 @@ public class TabSwitcherMediatorUnitTest {
                 mTabModelSelector,
                 mBrowserControlsStateProvider,
                 mCompositorViewHolder,
-                null,
                 mHandler,
                 TabListCoordinator.TabListMode.GRID,
                 mIncognitoReauthControllerSupplier,
@@ -885,7 +865,6 @@ public class TabSwitcherMediatorUnitTest {
                 mTabModelSelector,
                 mBrowserControlsStateProvider,
                 mCompositorViewHolder,
-                null,
                 mHandler,
                 TabListCoordinator.TabListMode.STRIP,
                 mIncognitoReauthControllerSupplier,

@@ -163,7 +163,10 @@ bool ProcessExternalDump(
     const std::string& source_name,
     base::span<const uint8_t> dump_data,
     const std::map<std::string, std::string>& override_annotations = {});
-#endif
+
+// "platform", used to determine device_model, can be overridden.
+void OverridePlatformValue(const std::string& platform_value);
+#endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 // Logs message and immediately crashes the current process without triggering a
@@ -193,7 +196,7 @@ base::FilePath::StringType::const_pointer GetCrashpadDatabasePathImpl();
 // The implementation function for ClearReportsBetween.
 void ClearReportsBetweenImpl(time_t begin, time_t end);
 
-#if BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_DEVICE)
 // Called late in shutdown to remove the file that tells ChromeOS's
 // crash_reporter "This browser process has crashpad initialized; you don't
 // need to handle the crash reports coming from the kernel".

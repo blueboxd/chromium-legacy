@@ -7,6 +7,7 @@
 #import "base/apple/foundation_util.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
+#import "ios/chrome/browser/commerce/model/push_notification/push_notification_feature.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_switch_cell.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_switch_item.h"
@@ -32,10 +33,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 // All the items for the price notifications section received by mediator.
 @property(nonatomic, strong) TableViewItem* priceTrackingItem;
 // All the items for the content notifications section received by mediator.
-@property(nonatomic, strong) TableViewSwitchItem* contentNotificationsItem;
-// Content Notifications footer item received by the mediator.
-@property(nonatomic, strong)
-    TableViewHeaderFooterItem* contentNotificationsFooterItem;
+@property(nonatomic, strong) TableViewItem* contentNotificationsItem;
 // All the items for the tips notifications section received by mediator.
 @property(nonatomic, strong) TableViewSwitchItem* tipsNotificationsItem;
 // Tips Notifications footer item received by the mediator.
@@ -72,14 +70,14 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 
   TableViewModel* model = self.tableViewModel;
   [model addSectionWithIdentifier:SectionIdentifierNotificationsPriceTracking];
-  [model addItem:self.priceTrackingItem
-      toSectionWithIdentifier:SectionIdentifierNotificationsPriceTracking];
+  if (IsPriceNotificationsEnabled()) {
+    [model addItem:self.priceTrackingItem
+        toSectionWithIdentifier:SectionIdentifierNotificationsPriceTracking];
+  }
   if (IsContentPushNotificationsEnabled()) {
     [model addSectionWithIdentifier:SectionIdentifierNotificationsContent];
     [model addItem:self.contentNotificationsItem
         toSectionWithIdentifier:SectionIdentifierNotificationsContent];
-    [model setFooter:self.contentNotificationsFooterItem
-        forSectionWithIdentifier:SectionIdentifierNotificationsContent];
   }
   if (IsIOSTipsNotificationsEnabled()) {
     [model addSectionWithIdentifier:SectionIdentifierNotificationsTips];

@@ -1141,7 +1141,7 @@ TEST_F(TrustSafetySentimentServiceTest, V2_BrowsingData_NotInterested) {
       *mock_hats_service(),
       LaunchSurvey(kHatsSurveyTriggerTrustSafetyV2BrowsingData, _, _, _, _))
       .Times(0);
-  service()->ClearedBrowsingData(browsing_data::BrowsingDataType::COOKIES);
+  service()->ClearedBrowsingData(browsing_data::BrowsingDataType::SITE_DATA);
   service()->OpenedNewTabPage();
   CheckHistograms({}, {});
   CheckCallTriggerOccurredHistogram({});
@@ -1311,7 +1311,7 @@ TEST_F(TrustSafetySentimentServiceTest, V2_SafeBrowsingInterstitial) {
       LaunchSurvey(kHatsSurveyTriggerTrustSafetyV2SafeBrowsingInterstitial, _,
                    _, _, _));
   service()->InteractedWithSafeBrowsingInterstitial(
-      true, safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
+      true, safe_browsing::SBThreatType::SB_THREAT_TYPE_URL_PHISHING);
   service()->OpenedNewTabPage();
   CheckHistograms(
       {TrustSafetySentimentService::FeatureArea::kSafeBrowsingInterstitial},

@@ -10,12 +10,12 @@
 
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/to_vector.h"
 #include "base/functional/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_future.h"
-#include "base/test/to_vector.h"
 #include "chrome/browser/web_applications/commands/internal/callback_command.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/locks/app_lock.h"
@@ -193,14 +193,14 @@ class ExternalAppResolutionCommandTest : public WebAppTest {
 
   std::vector<SquareSizePx> GetIconSizesForApp(const webapps::AppId& app_id) {
     DCHECK(base::Contains(app_to_icons_data_, app_id));
-    return base::test::ToVector(
+    return base::ToVector(
         app_to_icons_data_[app_id],
         [](const auto& icon_data) { return icon_data.first; });
   }
 
   std::vector<SkColor> GetIconColorsForApp(const webapps::AppId& app_id) {
     DCHECK(base::Contains(app_to_icons_data_, app_id));
-    return base::test::ToVector(
+    return base::ToVector(
         app_to_icons_data_[app_id],
         [](const auto& icon_data) { return icon_data.second.getColor(0, 0); });
   }
@@ -209,17 +209,17 @@ class ExternalAppResolutionCommandTest : public WebAppTest {
                     const PageStateOptions& mock_options = {}) {
     FakeWebContentsManager::FakePageState& state =
         fake_web_contents_manager().GetOrCreatePageState(options.install_url);
-    state.opt_manifest = blink::mojom::Manifest::New();
-    state.opt_manifest->start_url = options.install_url;
+    state.manifest_before_default_processing = blink::mojom::Manifest::New();
+    state.manifest_before_default_processing->start_url = options.install_url;
 
     if (mock_options.manifest_id.has_value()) {
-      state.opt_manifest->id = *mock_options.manifest_id;
+      state.manifest_before_default_processing->id = *mock_options.manifest_id;
     } else {
-      state.opt_manifest->id =
+      state.manifest_before_default_processing->id =
           GenerateManifestIdFromStartUrlOnly(options.install_url);
     }
 
-    state.opt_manifest->name = u"Manifest Name";
+    state.manifest_before_default_processing->name = u"Manifest Name";
     state.return_null_info = mock_options.empty_web_app_info;
 
     state.error_code = webapps::InstallableStatusCode::NO_ERROR_DETECTED;
@@ -1303,16 +1303,29 @@ TEST_F(ExternalAppResolutionCommandTest, SuccessWithUninstallAndReplace) {
   EXPECT_FALSE(options->add_to_desktop);
   EXPECT_TRUE(options->add_to_quick_launch_bar);
   EXPECT_TRUE(options->os_hooks[OsHookType::kRunOnOsLogin]);
-  if (AreOsIntegrationSubManagersEnabled()) {
-    std::optional<proto::WebAppOsIntegrationState> os_state =
-        registrar().GetAppCurrentOsIntegrationState(*result.app_id);
-    ASSERT_TRUE(os_state.has_value());
-    EXPECT_TRUE(os_state->has_shortcut());
-    EXPECT_EQ(os_state->run_on_os_login().run_on_os_login_mode(),
-              proto::RunOnOsLoginMode::WINDOWED);
-  }
+  std::optional<proto::WebAppOsIntegrationState> os_state =
+      registrar().GetAppCurrentOsIntegrationState(*result.app_id);
+  ASSERT_TRUE(os_state.has_value());
+  EXPECT_TRUE(os_state->has_shortcut());
+  EXPECT_EQ(os_state->run_on_os_login().run_on_os_login_mode(),
+            proto::RunOnOsLoginMode::WINDOWED);
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
+
+TEST_F(ExternalAppResolutionCommandTest, WriteDataToDiskFailed) {
+  ExternalInstallOptions install_options(
+      kWebAppUrl, mojom::UserDisplayMode::kBrowser,
+      ExternalInstallSource::kExternalDefault);
+
+  SetPageState(install_options);
+  // Induce an error: Simulate "Disk Full" for writing icon files.
+  file_utils().SetRemainingDiskSpaceSize(1024);
+
+  // Expect app installation to fail and not lead to a crash.
+  auto result = InstallAndWait(install_options);
+  EXPECT_EQ(result.code, webapps::InstallResultCode::kWriteDataFailed);
+  ASSERT_FALSE(result.app_id.has_value());
+}
 
 }  // namespace
 }  // namespace web_app

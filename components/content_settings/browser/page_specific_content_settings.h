@@ -276,6 +276,10 @@ class PageSpecificContentSettings
                             bool blocked_by_policy,
                             privacy_sandbox::CanonicalTopic topic);
 
+  // Called when notifications are accessed on `rfh`.
+  static void NotificationsAccessed(content::RenderFrameHost* rfh,
+                                    bool blocked);
+
   static content::WebContentsObserver* GetWebContentsObserverForTest(
       content::WebContents* web_contents);
 
@@ -324,6 +328,15 @@ class PageSpecificContentSettings
 
   bool geolocation_was_just_granted_on_site_level() {
     return geolocation_was_just_granted_on_site_level_;
+  }
+
+  // Called when notifications permission was auto-denied because the system
+  // level permission for a PWA was previously denied. This is currently only
+  // possible/used on macOS.
+  void SetNotificationsWasDeniedBecauseOfSystemPermission();
+
+  bool notifications_was_denied_because_of_system_permission() {
+    return notifications_was_denied_because_of_system_permission_;
   }
 
   // Returns the state of the camera and microphone usage.
@@ -449,6 +462,17 @@ class PageSpecificContentSettings
   // indicators.
   void OnPermissionIndicatorHidden(ContentSettingsType type);
 
+  // If permission requests need to be cleaned up due to a page refresh, PSCS
+  // should be temporarily frozen to prevent unnecessary update of activity
+  // indicators.
+  void OnPermissionRequestCleanupStart() { freeze_indicators_ = true; }
+  void OnPermissionRequestCleanupEnd() { freeze_indicators_ = false; }
+
+  // This method resets a media blocked state for `type`. If `update_indicators`
+  // is true, then it will try to update activity indicators in the location
+  // bar.
+  void ResetMediaBlockedState(ContentSettingsType type, bool update_indicators);
+
   void set_media_stream_access_origin_for_testing(const GURL& url) {
     media_stream_access_origin_ = url;
   }
@@ -461,6 +485,11 @@ class PageSpecificContentSettings
   std::map<ContentSettingsType, base::OneShotTimer>&
   get_media_blocked_indicator_timer_for_testing() {
     return media_blocked_indicator_timer_;
+  }
+
+  std::map<ContentSettingsType, base::OneShotTimer>&
+  get_indicators_hiding_delay_timer_for_testing() {
+    return indicators_hiding_delay_timer_;
   }
 
  private:
@@ -481,11 +510,9 @@ class PageSpecificContentSettings
   void OnCapturingStateChangedInternal(ContentSettingsType type,
                                        bool is_capturing);
 
-  // This methods is called when a camera and/or mic blocked indicator is
+  // This method is called when a camera and/or mic blocked indicator is
   // displayed.
   void StartBlockedIndicatorTimer(ContentSettingsType type);
-
-  void HideMediaBlockedIndicator(ContentSettingsType type);
 
   // content_settings::Observer implementation.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
@@ -549,6 +576,12 @@ class PageSpecificContentSettings
   // picture-in-picture case.
   bool is_updating_synced_pscs_ = false;
 
+  // If `false` PSCS is allowed to save a new blocked state for an activity
+  // indicator. If `true` PSCS is frozen and a new blocked state will be
+  // ignored. This variable is controlled by PermissionRequestManager to prevent
+  // showing indicators after requests were cleaned up due to a new navigation.
+  bool freeze_indicators_ = false;
+
   raw_ptr<Delegate> delegate_;
 
   struct ContentSettingsStatus {
@@ -601,6 +634,8 @@ class PageSpecificContentSettings
   bool camera_was_just_granted_on_site_level_ = false;
   bool mic_was_just_granted_on_site_level_ = false;
   bool geolocation_was_just_granted_on_site_level_ = false;
+
+  bool notifications_was_denied_because_of_system_permission_ = false;
 
   // The time when the media indicator was displayed.
   base::TimeTicks media_indicator_time_;

@@ -10,6 +10,7 @@
 #include "base/test/bind.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/common/base_telemetry_extension_browser_test.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/routines/fake_diagnostic_routines_service.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/crosapi/mojom/telemetry_diagnostic_routine_service.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_extension_exception.mojom.h"
@@ -88,9 +89,8 @@ class TelemetryExtensionDiagnosticsApiV2BrowserTest
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 };
 
-IN_PROC_BROWSER_TEST_F(
-    TelemetryExtensionDiagnosticsApiV2BrowserTest,
-    CreateMemoryRoutineWithFeatureFlagCompanionUiNotOpenError) {
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
+                       CreateMemoryRoutineCompanionUiNotOpenError) {
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
       async function createMemoryRoutineFail() {
@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
-                       CreateMemoryRoutineWithFeatureFlagResetConnection) {
+                       CreateRoutineResetConnectionResultsInException) {
   fake_service().SetOnCreateRoutineCalled(base::BindLambdaForTesting([this]() {
     auto* control = fake_service().GetCreatedRoutineControlForRoutineType(
         crosapi::TelemetryDiagnosticRoutineArgument::Tag::kMemory);
@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
-                       FinishedRoutineIsRemovedWithFeatureFlagSuccess) {
+                       FinishedRoutineIsRemovedSuccess) {
   fake_service().SetOnCreateRoutineCalled(base::BindLambdaForTesting([this]() {
     auto* control = fake_service().GetCreatedRoutineControlForRoutineType(
         crosapi::TelemetryDiagnosticRoutineArgument::Tag::kMemory);
@@ -256,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
-                       CreateMemoryRoutineWithFeatureFlagSuccess) {
+                       CreateMemoryRoutineSuccess) {
   fake_service().SetOnCreateRoutineCalled(base::BindLambdaForTesting([this]() {
     auto* control = fake_service().GetCreatedRoutineControlForRoutineType(
         crosapi::TelemetryDiagnosticRoutineArgument::Tag::kMemory);
@@ -332,9 +332,8 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
   )");
 }
 
-IN_PROC_BROWSER_TEST_F(
-    TelemetryExtensionDiagnosticsApiV2BrowserTest,
-    CreateMemoryRoutineNoOptionalConfigWithFeatureFlagSuccess) {
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
+                       CreateMemoryRoutineNoOptionalConfigSuccess) {
   fake_service().SetOnCreateRoutineCalled(base::BindLambdaForTesting([this]() {
     auto* control = fake_service().GetCreatedRoutineControlForRoutineType(
         crosapi::TelemetryDiagnosticRoutineArgument::Tag::kMemory);
@@ -409,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
-                       StartRoutineWithFeatureFlagUnknownUuidError) {
+                       StartRoutineUnknownUuidError) {
   OpenAppUiAndMakeItSecure();
 
   CreateExtensionAndRunServiceWorker(R"(
@@ -429,7 +428,7 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
-                       StartRoutineWithFeatureFlagSuccess) {
+                       StartRoutineSuccess) {
   OpenAppUiAndMakeItSecure();
 
   CreateExtensionAndRunServiceWorker(R"(
@@ -472,7 +471,7 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
-                       CancelRoutineWithFeatureFlagSuccess) {
+                       CancelRoutineSuccess) {
   OpenAppUiAndMakeItSecure();
 
   CreateExtensionAndRunServiceWorker(R"(
@@ -503,9 +502,8 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
   )");
 }
 
-IN_PROC_BROWSER_TEST_F(
-    TelemetryExtensionDiagnosticsApiV2BrowserTest,
-    IsMemoryRoutineArgSupportedWithFeatureFlagApiInternalError) {
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
+                       IsMemoryRoutineArgSupportedApiInternalError) {
   fake_service().SetIsRoutineArgumentSupportedResponse(
       crosapi::TelemetryExtensionSupportStatus::NewUnmappedUnionField(0));
   OpenAppUiAndMakeItSecure();
@@ -527,7 +525,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
-                       IsMemoryRoutineArgSupportedWithFeatureFlagException) {
+                       IsMemoryRoutineArgSupportedException) {
   auto exception = crosapi::TelemetryExtensionException::New();
   exception->debug_message = "TEST_MESSAGE";
   fake_service().SetIsRoutineArgumentSupportedResponse(
@@ -552,7 +550,7 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
-                       IsMemoryRoutineArgSupportedWithFeatureFlagSuccess) {
+                       IsMemoryRoutineArgSupportedSuccess) {
   fake_service().SetIsRoutineArgumentSupportedResponse(
       crosapi::TelemetryExtensionSupportStatus::NewSupported(
           crosapi::TelemetryExtensionSupported::New()));
@@ -574,9 +572,8 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
   )");
 }
 
-IN_PROC_BROWSER_TEST_F(
-    TelemetryExtensionDiagnosticsApiV2BrowserTest,
-    IsVolumeButtonRoutineArgSupportedWithFeatureFlagApiInternalError) {
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
+                       IsVolumeButtonRoutineArgSupportedApiInternalError) {
   fake_service().SetIsRoutineArgumentSupportedResponse(
       crosapi::TelemetryExtensionSupportStatus::NewUnmappedUnionField(0));
   OpenAppUiAndMakeItSecure();
@@ -598,9 +595,8 @@ IN_PROC_BROWSER_TEST_F(
   )");
 }
 
-IN_PROC_BROWSER_TEST_F(
-    TelemetryExtensionDiagnosticsApiV2BrowserTest,
-    IsVolumeButtonRoutineArgSupportedWithFeatureFlagException) {
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
+                       IsVolumeButtonRoutineArgSupportedException) {
   auto exception = crosapi::TelemetryExtensionException::New();
   exception->debug_message = "TEST_MESSAGE";
   fake_service().SetIsRoutineArgumentSupportedResponse(
@@ -625,9 +621,8 @@ IN_PROC_BROWSER_TEST_F(
   )");
 }
 
-IN_PROC_BROWSER_TEST_F(
-    TelemetryExtensionDiagnosticsApiV2BrowserTest,
-    IsVolumeButtonRoutineArgSupportedWithFeatureFlagSuccess) {
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
+                       IsVolumeButtonRoutineArgSupportedSuccess) {
   fake_service().SetIsRoutineArgumentSupportedResponse(
       crosapi::TelemetryExtensionSupportStatus::NewSupported(
           crosapi::TelemetryExtensionSupported::New()));
@@ -650,9 +645,8 @@ IN_PROC_BROWSER_TEST_F(
   )");
 }
 
-IN_PROC_BROWSER_TEST_F(
-    TelemetryExtensionDiagnosticsApiV2BrowserTest,
-    CreateVolumeButtonRoutineWithFeatureFlagCompanionUiNotOpenError) {
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
+                       CreateVolumeButtonRoutineCompanionUiNotOpenError) {
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
       async function createVolumeButtonRoutineFail() {
@@ -670,54 +664,8 @@ IN_PROC_BROWSER_TEST_F(
     )");
 }
 
-IN_PROC_BROWSER_TEST_F(
-    TelemetryExtensionDiagnosticsApiV2BrowserTest,
-    CreateVolumeButtonRoutineWithFeatureFlagResetConnection) {
-  fake_service().SetOnCreateRoutineCalled(base::BindLambdaForTesting([this]() {
-    auto* control = fake_service().GetCreatedRoutineControlForRoutineType(
-        crosapi::TelemetryDiagnosticRoutineArgument::Tag::kVolumeButton);
-    ASSERT_TRUE(control);
-
-    control->receiver().ResetWithReason(
-        static_cast<uint32_t>(
-            crosapi::TelemetryExtensionException::Reason::kUnsupported),
-        "test message");
-  }));
-
-  OpenAppUiAndMakeItSecure();
-
-  CreateExtensionAndRunServiceWorker(R"(
-    chrome.test.runTests([
-      async function createVolumeButtonRoutineResetConnection() {
-        let resolver;
-        // Set later once the routine was created.
-        var uuid = new Promise((resolve) => {
-          resolver = resolve;
-        });
-
-        chrome.os.diagnostics.onRoutineException.addListener(async (status) => {
-          chrome.test.assertEq(status, {
-            "uuid": await uuid,
-            "reason": "unsupported",
-            "debugMessage": "test message"
-          });
-
-          chrome.test.succeed();
-        });
-
-        const response = await chrome.os.diagnostics.createVolumeButtonRoutine({
-          button_type: "volume_up",
-          timeout_seconds: 10,
-        });
-        chrome.test.assertTrue(response !== undefined);
-        resolver(response.uuid);
-      }
-    ]);
-    )");
-}
-
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
-                       CreateVolumeButtonRoutineWithFeatureFlagSuccess) {
+                       CreateVolumeButtonRoutineSuccess) {
   fake_service().SetOnCreateRoutineCalled(base::BindLambdaForTesting([this]() {
     auto* control = fake_service().GetCreatedRoutineControlForRoutineType(
         crosapi::TelemetryDiagnosticRoutineArgument::Tag::kVolumeButton);
@@ -782,9 +730,8 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
   )");
 }
 
-IN_PROC_BROWSER_TEST_F(
-    TelemetryExtensionDiagnosticsApiV2BrowserTest,
-    IsFanRoutineArgSupportedWithFeatureFlagApiInternalError) {
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
+                       IsFanRoutineArgSupportedApiInternalError) {
   fake_service().SetIsRoutineArgumentSupportedResponse(
       crosapi::TelemetryExtensionSupportStatus::NewUnmappedUnionField(0));
   OpenAppUiAndMakeItSecure();
@@ -805,7 +752,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
-                       IsFanRoutineArgSupportedWithFeatureFlagException) {
+                       IsFanRoutineArgSupportedException) {
   auto exception = crosapi::TelemetryExtensionException::New();
   exception->debug_message = "TEST_MESSAGE";
   fake_service().SetIsRoutineArgumentSupportedResponse(
@@ -829,7 +776,7 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
-                       IsFanRoutineArgSupportedWithFeatureFlagSuccess) {
+                       IsFanRoutineArgSupportedSuccess) {
   fake_service().SetIsRoutineArgumentSupportedResponse(
       crosapi::TelemetryExtensionSupportStatus::NewSupported(
           crosapi::TelemetryExtensionSupported::New()));
@@ -851,7 +798,7 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
-                       CreateFanRoutineWithFeatureFlagCompanionUiNotOpenError) {
+                       CreateFanRoutineCompanionUiNotOpenError) {
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
       async function createFanRoutineFail() {
@@ -868,50 +815,7 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
-                       CreateFanRoutineWithFeatureFlagResetConnection) {
-  fake_service().SetOnCreateRoutineCalled(base::BindLambdaForTesting([this]() {
-    auto* control = fake_service().GetCreatedRoutineControlForRoutineType(
-        crosapi::TelemetryDiagnosticRoutineArgument::Tag::kFan);
-    ASSERT_TRUE(control);
-
-    control->receiver().ResetWithReason(
-        static_cast<uint32_t>(
-            crosapi::TelemetryExtensionException::Reason::kUnsupported),
-        "test message");
-  }));
-
-  OpenAppUiAndMakeItSecure();
-
-  CreateExtensionAndRunServiceWorker(R"(
-    chrome.test.runTests([
-      async function createFanRoutineResetConnection() {
-        let resolver;
-        // Set later once the routine was created.
-        var uuid = new Promise((resolve) => {
-          resolver = resolve;
-        });
-
-        chrome.os.diagnostics.onRoutineException.addListener(async (status) => {
-          chrome.test.assertEq(status, {
-            "uuid": await uuid,
-            "reason": "unsupported",
-            "debugMessage": "test message"
-          });
-
-          chrome.test.succeed();
-        });
-
-        const response = await chrome.os.diagnostics.createFanRoutine({
-        });
-        chrome.test.assertTrue(response !== undefined);
-        resolver(response.uuid);
-      }
-    ]);
-    )");
-}
-
-IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
-                       CreateFanRoutineWithFeatureFlagSuccess) {
+                       CreateFanRoutineSuccess) {
   fake_service().SetOnCreateRoutineCalled(base::BindLambdaForTesting([this]() {
     auto* control = fake_service().GetCreatedRoutineControlForRoutineType(
         crosapi::TelemetryDiagnosticRoutineArgument::Tag::kFan);

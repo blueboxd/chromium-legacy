@@ -56,7 +56,7 @@ SidePanelToolbarContainer::PinnedSidePanelToolbarButton::
       id_(id) {
   SetTooltipText(name);
   SetAccessibleName(accessible_name);
-  GetViewAccessibility().OverrideDescription(
+  GetViewAccessibility().SetDescription(
       std::u16string(), ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty);
 
   SetVectorIcon(icon);
@@ -112,9 +112,7 @@ SidePanelToolbarContainer::PinnedSidePanelToolbarButton::CreateMenuModel() {
       dialog_model.Build());
 }
 
-BEGIN_METADATA(SidePanelToolbarContainer,
-               PinnedSidePanelToolbarButton,
-               ToolbarButton)
+BEGIN_METADATA(SidePanelToolbarContainer, PinnedSidePanelToolbarButton)
 END_METADATA
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -153,8 +151,12 @@ SidePanelToolbarContainer::SidePanelToolbarContainer(BrowserView* browser_view)
   // pin state group (i.e. from the default being false to the default being
   // true) we want to make sure their pin state changes if they have not
   // explicitly changed it themselves.
-  if (PrefService* pref_service = browser_view_->GetProfile()->GetPrefs()) {
-    companion::UpdateCompanionDefaultPinnedToToolbarState(pref_service);
+  if (SearchCompanionSidePanelCoordinator::IsSupported(
+          browser_view_->GetProfile(),
+          /*include_runtime_checks=*/false) &&
+      browser_view_->GetProfile()->GetPrefs()) {
+    companion::UpdateCompanionDefaultPinnedToToolbarState(
+        browser_view_->GetProfile());
   }
   CreatePinnedEntryButtons();
 }

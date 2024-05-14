@@ -10,6 +10,7 @@
 #include "third_party/blink/public/mojom/hid/hid.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_hid_report_item.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
@@ -26,10 +27,9 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
-
+class DOMDataView;
 class ExecutionContext;
 class HIDCollectionInfo;
-class ScriptPromiseResolver;
 class ScriptState;
 
 class MODULES_EXPORT HIDDevice
@@ -74,17 +74,19 @@ class MODULES_EXPORT HIDDevice
   String productName() const;
   const HeapVector<Member<HIDCollectionInfo>>& collections() const;
 
-  ScriptPromise open(ScriptState* script_state,
-                     ExceptionState& exception_state);
-  ScriptPromise close(ScriptState*);
-  ScriptPromise forget(ScriptState*, ExceptionState& exception_state);
-  ScriptPromise sendReport(ScriptState*,
-                           uint8_t report_id,
-                           const DOMArrayPiece& data);
-  ScriptPromise sendFeatureReport(ScriptState*,
-                                  uint8_t report_id,
-                                  const DOMArrayPiece& data);
-  ScriptPromise receiveFeatureReport(ScriptState*, uint8_t report_id);
+  ScriptPromiseTyped<IDLUndefined> open(ScriptState* script_state,
+                                        ExceptionState& exception_state);
+  ScriptPromiseTyped<IDLUndefined> close(ScriptState*);
+  ScriptPromiseTyped<IDLUndefined> forget(ScriptState*,
+                                          ExceptionState& exception_state);
+  ScriptPromiseTyped<IDLUndefined> sendReport(ScriptState*,
+                                              uint8_t report_id,
+                                              const DOMArrayPiece& data);
+  ScriptPromiseTyped<IDLUndefined> sendFeatureReport(ScriptState*,
+                                                     uint8_t report_id,
+                                                     const DOMArrayPiece& data);
+  ScriptPromiseTyped<DOMDataView> receiveFeatureReport(ScriptState*,
+                                                       uint8_t report_id);
 
   // ExecutionContextLifecycleObserver:
   void ContextDestroyed() override;
@@ -106,16 +108,14 @@ class MODULES_EXPORT HIDDevice
 
   void OnServiceConnectionError();
 
-  void FinishOpen(ScriptPromiseResolver*,
+  void FinishOpen(ScriptPromiseResolverTyped<IDLUndefined>*,
                   mojo::PendingRemote<device::mojom::blink::HidConnection>);
-  void FinishForget(ScriptPromiseResolver*);
-  void FinishSendReport(ScriptPromiseResolver*, bool success);
-  void FinishReceiveReport(ScriptPromiseResolver*,
-                           bool success,
-                           uint8_t report_id,
-                           const std::optional<Vector<uint8_t>>&);
-  void FinishSendFeatureReport(ScriptPromiseResolver*, bool success);
-  void FinishReceiveFeatureReport(ScriptPromiseResolver*,
+  void FinishForget(ScriptPromiseResolverTyped<IDLUndefined>*);
+  void FinishSendReport(ScriptPromiseResolverTyped<IDLUndefined>*,
+                        bool success);
+  void FinishSendFeatureReport(ScriptPromiseResolverTyped<IDLUndefined>*,
+                               bool success);
+  void FinishReceiveFeatureReport(ScriptPromiseResolverTyped<DOMDataView>*,
                                   bool success,
                                   const std::optional<Vector<uint8_t>>&);
 

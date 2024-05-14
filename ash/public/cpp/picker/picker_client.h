@@ -13,34 +13,21 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/ash_web_view.h"
+#include "ash/public/cpp/picker/picker_category.h"
 #include "ash/public/cpp/picker/picker_search_result.h"
 #include "base/functional/callback_forward.h"
+#include "base/memory/scoped_refptr.h"
 #include "url/gurl.h"
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace ash {
-
-class ASH_PUBLIC_EXPORT ValidGifUrl {
- public:
-  static std::optional<ValidGifUrl> Create(const GURL& url);
-
-  // Creates an instance bypassing the validation checks.
-  static ValidGifUrl CreateForTesting(const GURL& url);
-
-  ~ValidGifUrl();
-
-  GURL ToGURL() const;
-
- private:
-  explicit ValidGifUrl(GURL url);
-
-  GURL url_;
-};
 
 // Lets PickerController in Ash to communicate with the browser.
 class ASH_PUBLIC_EXPORT PickerClient {
  public:
-  using DownloadGifToStringCallback =
-      base::OnceCallback<void(const std::string& gif_data)>;
   using FetchGifsCallback =
       base::OnceCallback<void(std::vector<PickerSearchResult> results)>;
   using CrosSearchResultsCallback =
@@ -50,19 +37,23 @@ class ASH_PUBLIC_EXPORT PickerClient {
   virtual std::unique_ptr<ash::AshWebView> CreateWebView(
       const ash::AshWebView::InitParams& params) = 0;
 
-  // Downloads a gif from `url`. If the download is successful, the gif is
-  // passed to `callback` as a string of encoded bytes in gif format. Otherwise,
-  // `callback` is run with an empty string.
-  virtual void DownloadGifToString(const ValidGifUrl& url,
-                                   DownloadGifToStringCallback callback) = 0;
+  // Gets the SharedURLLoaderFactory to use for Picker network requests, e.g. to
+  // fetch assets.
+  virtual scoped_refptr<network::SharedURLLoaderFactory>
+  GetSharedURLLoaderFactory() = 0;
 
   // Fetches a list of gifs from the Tenor API.
   virtual void FetchGifSearch(const std::string& query,
                               FetchGifsCallback callback) = 0;
 
+  // Stops the current `FetchGifSearch` network request. Any callbacks will not
+  // be called.
+  virtual void StopGifSearch() = 0;
+
   // Starts a search using the CrOS Search API
   // (`app_list::SearchEngine::StartSearch`).
   virtual void StartCrosSearch(const std::u16string& query,
+                               std::optional<PickerCategory> category,
                                CrosSearchResultsCallback callback) = 0;
   // Stops a search using the CrOS Search API
   // (`app_list::SearchEngine::StopQuery`).

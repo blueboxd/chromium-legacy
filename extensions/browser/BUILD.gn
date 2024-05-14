@@ -5,6 +5,7 @@
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import("//extensions/buildflags/buildflags.gni")
+import("//pdf/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
 assert(enable_extensions)
@@ -85,8 +86,6 @@ source_set("browser_sources") {
 
     # TODO(https://crbug.com/883570): Anything under api/ should be moved out of
     # this target.
-    "api/activity_log/web_request_constants.cc",
-    "api/activity_log/web_request_constants.h",
     "api/api_resource.cc",
     "api/api_resource.h",
     "api/api_resource_manager.h",
@@ -278,19 +277,19 @@ source_set("browser_sources") {
     "content_hash_reader.h",
     "content_hash_tree.cc",
     "content_hash_tree.h",
-    "content_verifier.cc",
-    "content_verifier.h",
     "content_verifier/content_hash.cc",
     "content_verifier/content_hash.h",
+    "content_verifier/content_verifier.cc",
+    "content_verifier/content_verifier.h",
+    "content_verifier/content_verifier_delegate.h",
+    "content_verifier/content_verifier_io_data.cc",
+    "content_verifier/content_verifier_io_data.h",
     "content_verifier/content_verifier_key.h",
     "content_verifier/content_verifier_utils.cc",
     "content_verifier/content_verifier_utils.h",
+    "content_verifier/content_verify_job.cc",
+    "content_verifier/content_verify_job.h",
     "content_verifier/scoped_uma_recorder.h",
-    "content_verifier_delegate.h",
-    "content_verifier_io_data.cc",
-    "content_verifier_io_data.h",
-    "content_verify_job.cc",
-    "content_verify_job.h",
     "crx_file_info.cc",
     "crx_file_info.h",
     "deferred_start_render_host.h",
@@ -539,16 +538,16 @@ source_set("browser_sources") {
     "service_worker/service_worker_host.h",
     "service_worker/service_worker_keepalive.cc",
     "service_worker/service_worker_keepalive.h",
+    "service_worker/service_worker_task_queue.cc",
+    "service_worker/service_worker_task_queue.h",
+    "service_worker/service_worker_task_queue_factory.cc",
+    "service_worker/service_worker_task_queue_factory.h",
     "service_worker/worker_id.cc",
     "service_worker/worker_id.h",
     "service_worker/worker_id_set.cc",
     "service_worker/worker_id_set.h",
     "service_worker_manager.cc",
     "service_worker_manager.h",
-    "service_worker_task_queue.cc",
-    "service_worker_task_queue.h",
-    "service_worker_task_queue_factory.cc",
-    "service_worker_task_queue_factory.h",
     "state_store.cc",
     "state_store.h",
     "state_store_test_observer.cc",
@@ -600,6 +599,7 @@ source_set("browser_sources") {
     "//components/keyed_service/content",
     "//components/keyed_service/content:content",
     "//components/keyed_service/core",
+    "//components/pdf/common:constants",
     "//components/permissions",
     "//components/pref_registry",
     "//components/prefs",
@@ -634,6 +634,7 @@ source_set("browser_sources") {
     "//google_apis",
     "//net",
     "//pdf:buildflags",
+    "//pdf:features",
     "//ppapi/buildflags",
     "//services/data_decoder/public/cpp:cpp",
     "//services/device/public/cpp/hid",
@@ -702,6 +703,10 @@ source_set("browser_sources") {
     ]
   }
 
+  if (enable_pdf) {
+    deps += [ "//components/resources:components_resources_grit" ]
+  }
+
   configs += [
     "//build/config:precompiled_headers",
     "//build/config/compiler:wexit_time_destructors",
@@ -751,7 +756,6 @@ source_set("browser_tests") {
     "//build:chromeos_buildflags",
     "//components/guest_view/browser:test_support",
     "//components/storage_monitor:test_support",
-    "//content/test:test_support",
     "//device/bluetooth:mocks",
     "//extensions:test_support",
     "//extensions/browser:test_support",
@@ -766,6 +770,8 @@ source_set("browser_tests") {
     "//services/service_manager/public/cpp",
     "//ui/display:test_support",
   ]
+
+  public_deps = [ "//content/test:test_support" ]
 
   if (is_chromeos_ash) {
     sources += [
@@ -912,8 +918,8 @@ source_set("unit_tests") {
     "content_hash_fetcher_unittest.cc",
     "content_hash_tree_unittest.cc",
     "content_verifier/content_hash_unittest.cc",
-    "content_verifier_unittest.cc",
-    "content_verify_job_unittest.cc",
+    "content_verifier/content_verifier_unittest.cc",
+    "content_verifier/content_verify_job_unittest.cc",
     "error_map_unittest.cc",
     "event_listener_map_unittest.cc",
     "event_router_unittest.cc",
@@ -1009,7 +1015,10 @@ source_set("unit_tests") {
   ]
 
   if (is_chromeos) {
-    deps += [ "//chromeos/constants" ]
+    deps += [
+      "//chromeos/constants",
+      "//chromeos/crosapi/mojom",
+    ]
   }
 
   if (is_chromeos_ash) {
@@ -1055,6 +1064,10 @@ source_set("unit_tests") {
       "//components/user_manager:test_support",
       "//extensions/shell:app_shell_lib",
     ]
+  }
+
+  if (is_chromeos_lacros) {
+    deps += [ "//chromeos/startup" ]
   }
 
   data = [

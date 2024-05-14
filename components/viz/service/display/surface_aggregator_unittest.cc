@@ -475,7 +475,7 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
     quad->SetNew(shared_state, output_rect, output_rect, false,
                  output_rect.size(), gfx::Rect(output_rect.size()),
                  gfx::Size(1, 1), ResourceId(1), ResourceId(2), ResourceId(3),
-                 kInvalidResourceId, gfx::ColorSpace::CreateREC709(), 0, 1.0, 8,
+                 kInvalidResourceId, gfx::ColorSpace::CreateREC709(), 8,
                  gfx::ProtectedVideoType::kClear, std::nullopt);
     if (per_quad_damage_output) {
       quad->damage_rect = output_rect;
@@ -706,13 +706,15 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SimpleFrame) {
 
 // Tests that SharedElement quads are skipped during aggregation.
 TEST_F(SurfaceAggregatorValidSurfaceTest, SharedElementQuad) {
+  auto transition_id = base::UnguessableToken::Create();
+  ViewTransitionElementResourceId vt_resource_id(transition_id, 1);
+
   CompositorFrame frame =
       CompositorFrameBuilder()
-          .AddRenderPass(RenderPassBuilder(kSurfaceSize)
-                             .AddSolidColorQuad(gfx::Rect(5, 5), SkColors::kRed)
-                             .AddSharedElementQuad(
-                                 gfx::Rect(5, 5),
-                                 ViewTransitionElementResourceId::Generate()))
+          .AddRenderPass(
+              RenderPassBuilder(kSurfaceSize)
+                  .AddSolidColorQuad(gfx::Rect(5, 5), SkColors::kRed)
+                  .AddSharedElementQuad(gfx::Rect(5, 5), vt_resource_id))
           .Build();
 
   root_sink_->SubmitCompositorFrame(root_surface_id_.local_surface_id(),

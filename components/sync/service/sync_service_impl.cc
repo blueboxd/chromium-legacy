@@ -214,15 +214,6 @@ void LogWaitingForUpdatesReasonIfNeeded(
   }
 }
 
-bool ShouldForceImmediateStartIfTransportDataMissing() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  return true;
-#else
-  return base::FeatureList::IsEnabled(
-      kSyncAlwaysForceImmediateStartIfTransportDataMissing);
-#endif
-}
-
 }  // namespace
 
 SyncServiceImpl::InitParams::InitParams() = default;
@@ -258,6 +249,11 @@ SyncServiceImpl::SyncServiceImpl(InitParams init_params)
   // If Sync is disabled via command line flag, then SyncServiceImpl
   // shouldn't be instantiated.
   DCHECK(IsSyncAllowedByFlag());
+
+  sync_prefs_.SetPasswordSyncAllowed(sync_client_->IsPasswordSyncAllowed());
+  // base::Unretained() is safe, `this` outlives `sync_client_`.
+  sync_client_->SetPasswordSyncAllowedChangeCb(base::BindRepeating(
+      &SyncServiceImpl::OnPasswordSyncAllowedChanged, base::Unretained(this)));
 
   sync_stopped_reporter_ = std::make_unique<SyncStoppedReporter>(
       sync_service_url_, MakeUserAgentForSync(channel_), url_loader_factory_);
@@ -397,13 +393,8 @@ void SyncServiceImpl::Initialize() {
   }
 
   if (IsEngineAllowedToRun()) {
-    const bool force_immediate_start =
-        !sync_client_->GetSyncApiComponentFactory()
-             ->HasTransportDataIncludingFirstSync() &&
-        (IsLocalSyncEnabled() ||
-         ShouldForceImmediateStartIfTransportDataMissing());
-
-    if (force_immediate_start) {
+    if (!sync_client_->GetSyncApiComponentFactory()
+             ->HasTransportDataIncludingFirstSync()) {
       // Sync never initialized before on this profile, so let's try immediately
       // the very first time. This is particularly useful for Chrome Ash (where
       // the user is signed in to begin with) and local sync (where sign-in
@@ -1137,15 +1128,13 @@ void SyncServiceImpl::OnActionableProtocolError(
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
         // On mobile, fully sign out the user.
         account_mutator->ClearPrimaryAccount(
-            signin_metrics::ProfileSignout::kServerForcedDisable,
-            signin_metrics::SignoutDelete::kIgnoreMetric);
+            signin_metrics::ProfileSignout::kServerForcedDisable);
 #else
         // Note: On some platforms, revoking the sync consent will also clear
         // the primary account as transitioning from ConsentLevel::kSync to
         // ConsentLevel::kSignin is not supported.
         account_mutator->RevokeSyncConsent(
-            signin_metrics::ProfileSignout::kServerForcedDisable,
-            signin_metrics::SignoutDelete::kIgnoreMetric);
+            signin_metrics::ProfileSignout::kServerForcedDisable);
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
       }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1251,7 +1240,9 @@ void SyncServiceImpl::CryptoRequiredUserActionChanged() {
 
 void SyncServiceImpl::MaybeRecordTrustedVaultHistograms() {
   if (should_record_trusted_vault_error_shown_on_startup_ &&
-      crypto_.IsTrustedVaultKeyRequiredStateKnown() && IsSyncFeatureEnabled()) {
+      crypto_.IsTrustedVaultKeyRequiredStateKnown() &&
+      user_settings_->IsEncryptedDatatypeEnabled()) {
+    // If the key-required state is known, the engine must exist.
     DCHECK(engine_);
 
     should_record_trusted_vault_error_shown_on_startup_ = false;
@@ -1433,8 +1424,7 @@ base::Time SyncServiceImpl::GetLastSyncedTimeForDebugging() const {
   return engine_->GetLastSyncedTimeForDebugging();
 }
 
-void SyncServiceImpl::OnSelectedTypesPrefChange(
-    bool payments_integration_enabled_changed) {
+void SyncServiceImpl::OnSelectedTypesPrefChange() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (data_type_manager_) {
@@ -1442,12 +1432,6 @@ void SyncServiceImpl::OnSelectedTypesPrefChange(
   }
 
   ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
-
-  if (payments_integration_enabled_changed) {
-    for (SyncServiceObserver& observer : *observers_) {
-      observer.OnSyncPaymentsIntegrationEnabledChanged(this);
-    }
-  }
 }
 
 SyncClient* SyncServiceImpl::GetSyncClientForTest() {
@@ -1575,7 +1559,9 @@ void SyncServiceImpl::ConfigureDataTypeManager(ConfigureReason reason) {
   data_type_manager_->Configure(GetPreferredDataTypes(), configure_context);
 
   // Record in UMA whether we're configuring the full Sync feature or only the
-  // transport.
+  // transport. These values are persisted to logs. Entries should not be
+  // renumbered and numeric values should never be reused. Keep in sync with
+  // SyncFeatureOrTransport in tools/metrics/histograms/metadata/sync/enums.xml.
   enum class ConfigureDataTypeManagerOption {
     kFeature = 0,
     kTransport = 1,
@@ -2145,6 +2131,10 @@ SyncService::ModelTypeDownloadStatus SyncServiceImpl::GetDownloadStatusForImpl(
   }
 
   return ModelTypeDownloadStatus::kUpToDate;
+}
+
+void SyncServiceImpl::OnPasswordSyncAllowedChanged() {
+  sync_prefs_.SetPasswordSyncAllowed(sync_client_->IsPasswordSyncAllowed());
 }
 
 CoreAccountInfo SyncServiceImpl::GetAccountInfo() const {

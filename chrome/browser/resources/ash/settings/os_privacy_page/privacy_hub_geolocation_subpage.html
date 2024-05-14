@@ -3,6 +3,12 @@
     border-bottom: var(--cr-separator-line);
   }
 
+  #geolocationModeDescriptionDiv {
+    padding-inline-start: var(--cr-section-padding);
+    padding-inline-end: var(--cr-section-padding);
+    padding-bottom: var(--cr-section-vertical-padding);
+  }
+
   h2 {
     padding-inline-start: var(--cr-section-padding);
   }
@@ -30,13 +36,28 @@
 <div
     id="geolocationDropdownDiv"
     class="settings-box first">
+  <template is="dom-if" if="[[isSecondaryUser_]]">
+    <cr-tooltip-icon
+        class="secondary-accounts-disabled-tooltip"
+        icon-class="cr:group"
+        tooltip-text="[[settingControlledByPrimaryUserText_()]]"
+        icon-aria-label="[[settingControlledByPrimaryUserText_()]]">
+    </cr-tooltip-icon>
+  </template>
   <settings-dropdown-menu
       id="geolocationDropdown"
       label="Label here"
+      disabled="[[isSecondaryUser_]]"
       menu-options="[[geolocationMapTargets_]]"
       on-settings-control-change="recordMetric_"
       pref="{{prefs.ash.user.geolocation_access_level}}">
   </settings-dropdown-menu>
+</div>
+
+<div id="geolocationModeDescriptionDiv" class="cr-secondary-text">
+    <localized-link localized-string="[[geolocationModeDescriptionText_]]"
+        link-url="$i18n{systemGeolocationDialogLearnMoreUrl}">
+    </localized-link>
 </div>
 
 <div class="hr"></div>
@@ -44,7 +65,8 @@
   <h2 id="appsSectionTitle">$i18n{privacyHubAppsSectionTitle}</h2>
   <template is="dom-if" if="[[isGeolocationAllowedForApps_]]" restamp>
     <div class="list-frame">
-      <template id="appList" is="dom-repeat" items="[[appList_]]" as="app">
+      <template id="appList" is="dom-repeat" items="[[appList_]]" as="app"
+          sort="alphabeticalSort_">
         <settings-privacy-hub-app-permission-row
             class="list-item"
             app="[[app]]"
@@ -115,3 +137,11 @@
       </settings-privacy-hub-system-service-row>
   </div>
 </div>
+
+<cr-link-row
+    id="geolocationAdvancedAreaLinkRow"
+    on-click="onGeolocationAdvancedAreaClick_"
+    deep-link-focus-id$="[[Setting.kGeolocationAdvanced]]"
+    using-slotted-label>
+  <div slot="label">$i18n{geolocationAdvancedAreaTitle}</div>
+</cr-link-row>

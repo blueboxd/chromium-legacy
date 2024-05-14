@@ -4,6 +4,8 @@
 
 #include "content/browser/preloading/prerenderer_impl.h"
 
+#include <vector>
+
 #include "content/browser/preloading/preloading.h"
 #include "content/browser/preloading/preloading_attempt_impl.h"
 #include "content/browser/preloading/preloading_trigger_type_impl.h"
@@ -38,6 +40,10 @@ PrerendererImpl::PrerendererImpl(RenderFrameHost& render_frame_host)
     observation_.Observe(registry_.get());
   }
   ResetReceivedPrerendersCountForMetrics();
+  if (base::FeatureList::IsEnabled(
+          blink::features::kLCPTimingPredictorPrerender2)) {
+    blocked_ = true;
+  }
 }
 
 PrerendererImpl::~PrerendererImpl() {
@@ -175,7 +181,7 @@ void PrerendererImpl::ProcessCandidatesForPrerender(
     // requests rejected by PrerenderHostRegistry can be filtered out. But
     // ideally PrerenderHostRegistry should implement the history management
     // mechanism by itself.
-    base::EraseIf(started_prerenders_, [&](const PrerenderInfo& x) {
+    std::erase_if(started_prerenders_, [&](const PrerenderInfo& x) {
       return base::Contains(removed_prerender_rules_set, x.prerender_host_id);
     });
   }
@@ -189,9 +195,20 @@ void PrerendererImpl::ProcessCandidatesForPrerender(
   }
 }
 
+void PrerendererImpl::OnLCPPredicted() {
+  blocked_ = false;
+  for (auto& candidate : std::move(blocked_candidates_)) {
+    MaybePrerender(candidate);
+  }
+}
+
 bool PrerendererImpl::MaybePrerender(
     const blink::mojom::SpeculationCandidatePtr& candidate) {
   CHECK_EQ(candidate->action, blink::mojom::SpeculationAction::kPrerender);
+  if (blocked_) {
+    blocked_candidates_.push_back(candidate->Clone());
+    return false;
+  }
 
   // Prerendering frames should not trigger any prerender request.
   CHECK(!render_frame_host_->IsInLifecycleState(
@@ -244,8 +261,8 @@ bool PrerendererImpl::MaybePrerender(
       rfhi.GetProcess()->GetID(), web_contents->GetWeakPtr(),
       rfhi.GetFrameToken(), rfhi.GetFrameTreeNodeId(),
       rfhi.GetPageUkmSourceId(), ui::PAGE_TRANSITION_LINK,
-      /*url_match_predicate=*/std::nullopt,
-      /*prerender_navigation_handle_callback=*/std::nullopt,
+      /*url_match_predicate=*/{},
+      /*prerender_navigation_handle_callback=*/{},
       rfhi.GetDevToolsNavigationToken());
 
   PreloadingTriggerType trigger_type =

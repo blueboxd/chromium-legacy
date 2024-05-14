@@ -97,8 +97,8 @@ InlineItem::InlineItem(const InlineItem& other,
                        const ShapeResult* shape_result)
     : start_offset_(start),
       end_offset_(end),
-      shape_result_(shape_result),
       // Use atomic construction to allow for concurrently marking InlineItem.
+      shape_result_(shape_result, Member<ShapeResult>::AtomicInitializerTag{}),
       layout_object_(other.layout_object_,
                      Member<LayoutObject>::AtomicInitializerTag{}),
       type_(other.type_),
@@ -173,6 +173,10 @@ const char* InlineItem::InlineItemTypeToString(InlineItemType val) const {
       return "ListMarker";
     case kBidiControl:
       return "BidiControl";
+    case kOpenRubyColumn:
+      return "OpenRubyColumn";
+    case kCloseRubyColumn:
+      return "CloseRubyColumn";
   }
   NOTREACHED_NORETURN();
 }
@@ -238,7 +242,7 @@ String InlineItem::ToString() const {
   String object_info;
   if (const auto* layout_text = DynamicTo<LayoutText>(GetLayoutObject())) {
     object_info = layout_text->TransformedText().EncodeForDebugging();
-  } else {
+  } else if (GetLayoutObject()) {
     object_info = GetLayoutObject()->ToString();
   }
   return String::Format("InlineItem %s. %s", InlineItemTypeToString(Type()),

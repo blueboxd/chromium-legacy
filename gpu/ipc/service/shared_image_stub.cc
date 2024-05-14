@@ -327,23 +327,27 @@ void SharedImageStub::SetGpuExtraInfo(const gfx::GpuExtraInfo& gpu_extra_info) {
 void SharedImageStub::OnCreateSharedImage(
     mojom::CreateSharedImageParamsPtr params) {
   TRACE_EVENT2("gpu", "SharedImageStub::OnCreateSharedImage", "width",
-               params->size.width(), "height", params->size.height());
+               params->si_info->meta.size.width(), "height",
+               params->si_info->meta.size.height());
   if (!params->mailbox.IsSharedImage()) {
     LOG(ERROR) << kInvalidMailboxOnCreateError;
     OnError();
     return;
   }
 
-  bool needs_gl = HasGLES2ReadOrWriteUsage(params->usage);
+  bool needs_gl = HasGLES2ReadOrWriteUsage(params->si_info->meta.usage);
   if (!MakeContextCurrent(needs_gl)) {
     OnError();
     return;
   }
 
   if (!factory_->CreateSharedImage(
-          params->mailbox, params->format, params->size, params->color_space,
-          params->surface_origin, params->alpha_type, gpu::kNullSurfaceHandle,
-          params->usage, GetLabel(params->debug_label))) {
+          params->mailbox, params->si_info->meta.format,
+          params->si_info->meta.size, params->si_info->meta.color_space,
+          params->si_info->meta.surface_origin,
+          params->si_info->meta.alpha_type, gpu::kNullSurfaceHandle,
+          params->si_info->meta.usage,
+          GetLabel(params->si_info->debug_label))) {
     LOG(ERROR) << kSICreationFailureError;
     OnError();
     return;
@@ -355,14 +359,15 @@ void SharedImageStub::OnCreateSharedImage(
 void SharedImageStub::OnCreateSharedImageWithData(
     mojom::CreateSharedImageWithDataParamsPtr params) {
   TRACE_EVENT2("gpu", "SharedImageStub::OnCreateSharedImageWithData", "width",
-               params->size.width(), "height", params->size.height());
+               params->si_info->meta.size.width(), "height",
+               params->si_info->meta.size.height());
   if (!params->mailbox.IsSharedImage()) {
     LOG(ERROR) << kInvalidMailboxOnCreateError;
     OnError();
     return;
   }
 
-  bool needs_gl = HasGLES2ReadOrWriteUsage(params->usage);
+  bool needs_gl = HasGLES2ReadOrWriteUsage(params->si_info->meta.usage);
   if (!MakeContextCurrent(needs_gl)) {
     OnError();
     return;
@@ -390,9 +395,11 @@ void SharedImageStub::OnCreateSharedImageWithData(
       memory.subspan(params->pixel_data_offset, params->pixel_data_size);
 
   if (!factory_->CreateSharedImage(
-          params->mailbox, params->format, params->size, params->color_space,
-          params->surface_origin, params->alpha_type, params->usage,
-          GetLabel(params->debug_label), subspan)) {
+          params->mailbox, params->si_info->meta.format,
+          params->si_info->meta.size, params->si_info->meta.color_space,
+          params->si_info->meta.surface_origin,
+          params->si_info->meta.alpha_type, params->si_info->meta.usage,
+          GetLabel(params->si_info->debug_label), subspan)) {
     LOG(ERROR) << kSICreationFailureError;
     OnError();
     return;
@@ -410,11 +417,15 @@ void SharedImageStub::OnCreateSharedImageWithData(
 void SharedImageStub::OnCreateSharedImageWithBuffer(
     mojom::CreateSharedImageWithBufferParamsPtr params) {
   TRACE_EVENT2("gpu", "SharedImageStub::OnCreateSharedImageWithBuffer", "width",
-               params->size.width(), "height", params->size.height());
-  if (!CreateSharedImage(params->mailbox, std::move(params->buffer_handle),
-                         params->format, params->size, params->color_space,
-                         params->surface_origin, params->alpha_type,
-                         params->usage, GetLabel(params->debug_label))) {
+               params->si_info->meta.size.width(), "height",
+               params->si_info->meta.size.height());
+  if (!CreateSharedImage(
+          params->mailbox, std::move(params->buffer_handle),
+          params->si_info->meta.format, params->si_info->meta.size,
+          params->si_info->meta.color_space,
+          params->si_info->meta.surface_origin,
+          params->si_info->meta.alpha_type, params->si_info->meta.usage,
+          GetLabel(params->si_info->debug_label))) {
     return;
   }
 
@@ -425,11 +436,12 @@ void SharedImageStub::OnCreateGMBSharedImage(
     mojom::CreateGMBSharedImageParamsPtr params) {
   TRACE_EVENT2("gpu", "SharedImageStub::OnCreateGMBSharedImage", "width",
                params->size.width(), "height", params->size.height());
-  if (!CreateSharedImage(params->mailbox, std::move(params->buffer_handle),
-                         params->format, params->plane, params->size,
-                         params->color_space, params->surface_origin,
-                         params->alpha_type, params->usage,
-                         GetLabel(params->debug_label))) {
+  if (!CreateSharedImage(
+          params->mailbox, std::move(params->buffer_handle), params->format,
+          params->plane, params->size, params->si_info->meta.color_space,
+          params->si_info->meta.surface_origin,
+          params->si_info->meta.alpha_type, params->si_info->meta.usage,
+          GetLabel(params->si_info->debug_label))) {
     return;
   }
 
@@ -497,6 +509,7 @@ void SharedImageStub::OnDestroySharedImage(const Mailbox& mailbox) {
 #if BUILDFLAG(IS_WIN)
 void SharedImageStub::OnCopyToGpuMemoryBuffer(const Mailbox& mailbox,
                                               uint32_t release_id) {
+  TRACE_EVENT0("gpu", "SharedImageStub::OnCopyToGpuMemoryBuffer");
   if (!mailbox.IsSharedImage()) {
     DLOG(ERROR) << "SharedImageStub: Trying to access a SharedImage with a "
                    "non-SharedImage mailbox.";
@@ -572,6 +585,7 @@ void SharedImageStub::OnPresentSwapChain(const Mailbox& mailbox,
 void SharedImageStub::OnRegisterDxgiFence(const Mailbox& mailbox,
                                           gfx::DXGIHandleToken dxgi_token,
                                           gfx::GpuFenceHandle fence_handle) {
+  TRACE_EVENT0("gpu", "SharedImageStub::OnRegisterDxgiFence");
   if (!mailbox.IsSharedImage()) {
     LOG(ERROR)
         << "SharedImageStub: Trying to register a fence handle in SharedImage "
@@ -604,6 +618,7 @@ void SharedImageStub::OnRegisterDxgiFence(const Mailbox& mailbox,
 void SharedImageStub::OnUpdateDxgiFence(const Mailbox& mailbox,
                                         gfx::DXGIHandleToken dxgi_token,
                                         uint64_t fence_value) {
+  TRACE_EVENT0("gpu", "SharedImageStub::OnUpdateDxgiFence");
   if (!mailbox.IsSharedImage()) {
     LOG(ERROR)
         << "SharedImageStub: Trying to register a fence handle in SharedImage "
@@ -645,6 +660,7 @@ void SharedImageStub::OnUpdateDxgiFence(const Mailbox& mailbox,
 
 void SharedImageStub::OnUnregisterDxgiFence(const Mailbox& mailbox,
                                             gfx::DXGIHandleToken dxgi_token) {
+  TRACE_EVENT0("gpu", "SharedImageStub::OnUnregisterDxgiFence");
   auto mailbox_fences_it = registered_dxgi_fences_.find(mailbox);
   if (mailbox_fences_it == registered_dxgi_fences_.end()) {
     LOG(ERROR) << "Trying to unregister a fence on shared image with no "

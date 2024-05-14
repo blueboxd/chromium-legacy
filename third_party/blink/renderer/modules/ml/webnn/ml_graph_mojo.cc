@@ -53,7 +53,7 @@ base::expected<blink_mojom::GraphInfoPtr, String> BuildWebNNGraphInfo(
         continue;
       }
       switch (operand->Kind()) {
-        case MLOperand::OperandKind::kInput: {
+        case webnn::mojom::blink::Operand::Kind::kInput: {
           // Create `mojo::Operand` for the input MLOperand.
           operand_id++;
           graph_info->id_to_operand_map.insert(
@@ -64,7 +64,7 @@ base::expected<blink_mojom::GraphInfoPtr, String> BuildWebNNGraphInfo(
           operand_to_id_map.insert(operand, operand_id);
           break;
         }
-        case MLOperand::OperandKind::kConstant: {
+        case webnn::mojom::blink::Operand::Kind::kConstant: {
           // Convert `mojo::Operand` for constant operand.
           operand_id++;
           graph_info->id_to_operand_map.insert(
@@ -81,7 +81,7 @@ base::expected<blink_mojom::GraphInfoPtr, String> BuildWebNNGraphInfo(
           operand_to_id_map.insert(operand, operand_id);
           break;
         }
-        case MLOperand::OperandKind::kOutput:
+        case webnn::mojom::blink::Operand::Kind::kOutput:
           // Because the operators are visited in topological order, if this
           // operand is an intermediate operand, it should already be defined as
           // an output operand of the dependent operator.
@@ -119,41 +119,33 @@ base::expected<blink_mojom::GraphInfoPtr, String> BuildWebNNGraphInfo(
 }  // namespace
 
 // static
-void MLGraphMojo::ValidateAndBuildAsync(ScopedMLTrace scoped_trace,
-                                        MLContextMojo* context,
-                                        const MLNamedOperands& named_outputs,
-                                        ScriptPromiseResolver* resolver) {
+void MLGraphMojo::ValidateAndBuild(
+    ScopedMLTrace scoped_trace,
+    MLContext* context,
+    const MLNamedOperands& named_outputs,
+    ScriptPromiseResolverTyped<MLGraph>* resolver) {
   auto* graph =
       MakeGarbageCollected<MLGraphMojo>(resolver->GetScriptState(), context);
-  scoped_trace.AddStep("MLGraphMojo::ValidateAndBuildAsync");
-  graph->BuildAsync(std::move(scoped_trace), named_outputs, resolver);
+  scoped_trace.AddStep("MLGraphMojo::ValidateAndBuild");
+  graph->Build(std::move(scoped_trace), named_outputs, resolver);
 }
 
-// static
-MLGraph* MLGraphMojo::ValidateAndBuildSync(ScriptState* script_state,
-                                           MLContextMojo* context,
-                                           const MLNamedOperands& named_outputs,
-                                           ExceptionState& exception_state) {
-  auto* graph = MakeGarbageCollected<MLGraphMojo>(script_state, context);
-  return graph->BuildSync(script_state, named_outputs, exception_state);
-}
-
-MLGraphMojo::MLGraphMojo(ScriptState* script_state, MLContextMojo* context)
+MLGraphMojo::MLGraphMojo(ScriptState* script_state, MLContext* context)
     : MLGraph(context),
-      ml_context_mojo_(context),
+      ml_context_(context),
       remote_graph_(ExecutionContext::From(script_state)) {}
 
 MLGraphMojo::~MLGraphMojo() = default;
 
 void MLGraphMojo::Trace(Visitor* visitor) const {
   visitor->Trace(remote_graph_);
-  visitor->Trace(ml_context_mojo_);
+  visitor->Trace(ml_context_);
   MLGraph::Trace(visitor);
 }
 
-void MLGraphMojo::BuildAsyncImpl(ScopedMLTrace scoped_trace,
-                                 const MLNamedOperands& outputs,
-                                 ScriptPromiseResolver* resolver) {
+void MLGraphMojo::BuildImpl(ScopedMLTrace scoped_trace,
+                            const MLNamedOperands& outputs,
+                            ScriptPromiseResolverTyped<MLGraph>* resolver) {
   auto graph_info = BuildWebNNGraphInfo(outputs);
   if (!graph_info.has_value()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -161,52 +153,18 @@ void MLGraphMojo::BuildAsyncImpl(ScopedMLTrace scoped_trace,
         "Failed to build graph: " + graph_info.error()));
     return;
   }
-  // Create `WebNNGraph` message pipe with `WebNNContext` mojo interface.
-  ml_context_mojo_->CreateWebNNGraph(
+  ml_context_->CreateWebNNGraph(
       std::move(graph_info.value()),
       WTF::BindOnce(&MLGraphMojo::OnCreateWebNNGraph, WrapPersistent(this),
                     std::move(scoped_trace), WrapPersistent(resolver)));
 }
 
-MLGraph* MLGraphMojo::BuildSyncImpl(ScriptState* script_state,
-                                    const MLNamedOperands& outputs,
-                                    ExceptionState& exception_state) {
-  // Ensures that this sync method is only called from worker threads.
-  CHECK(!IsMainThread());
-  auto graph_info = BuildWebNNGraphInfo(outputs);
-  if (!graph_info.has_value()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kDataError,
-        "Failed to build graph: " + graph_info.error());
-    return nullptr;
-  }
-
-  blink_mojom::CreateGraphResultPtr result;
-  if (!ml_context_mojo_->CreateWebNNGraphSync(std::move(graph_info.value()),
-                                              &result)) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
-                                      "Failed to build graph.");
-  }
-  if (result->is_error()) {
-    const auto& create_graph_error = result->get_error();
-    exception_state.ThrowDOMException(
-        ConvertWebNNErrorCodeToDOMExceptionCode(create_graph_error->code),
-        create_graph_error->message);
-    return nullptr;
-  }
-
-  auto* execution_context = ExecutionContext::From(script_state);
-  remote_graph_.Bind(
-      std::move(result->get_graph_remote()),
-      execution_context->GetTaskRunner(TaskType::kInternalDefault));
-  return this;
-}
-
-void MLGraphMojo::ComputeAsyncImpl(ScopedMLTrace scoped_trace,
-                                   const MLNamedArrayBufferViews& inputs,
-                                   const MLNamedArrayBufferViews& outputs,
-                                   ScriptPromiseResolver* resolver,
-                                   ExceptionState& exception_state) {
+void MLGraphMojo::ComputeImpl(
+    ScopedMLTrace scoped_trace,
+    const MLNamedArrayBufferViews& inputs,
+    const MLNamedArrayBufferViews& outputs,
+    ScriptPromiseResolverTyped<MLComputeResult>* resolver,
+    ExceptionState& exception_state) {
   // TransferNamedArrayBufferViews deteches input and output array buffers, so
   // JavaScript can't modify them during Compute().
   auto inputs_info = TransferNamedArrayBufferViews(
@@ -244,7 +202,7 @@ void MLGraphMojo::ComputeAsyncImpl(ScopedMLTrace scoped_trace,
 
 void MLGraphMojo::OnDidCompute(
     ScopedMLTrace scoped_trace,
-    ScriptPromiseResolver* resolver,
+    ScriptPromiseResolverTyped<MLComputeResult>* resolver,
     std::unique_ptr<Vector<std::pair<String, ArrayBufferViewInfo>>> inputs_info,
     std::unique_ptr<Vector<std::pair<String, ArrayBufferViewInfo>>>
         outputs_info,
@@ -287,66 +245,17 @@ void MLGraphMojo::OnDidCompute(
   resolver->Resolve(result);
 }
 
-void MLGraphMojo::ComputeSyncImpl(const MLNamedArrayBufferViews& inputs,
-                                  const MLNamedArrayBufferViews& outputs,
-                                  ExceptionState& exception_state) {
-  CHECK(!IsMainThread());
-  HashMap<String, mojo_base::BigBuffer> input_name_to_buffer_map;
-  // Since the JavaScrip calling thread will be blocked, we don't need to detach
-  // the input and output arrays.
-  for (const auto& [name, array_buffer_view] : inputs) {
-    input_name_to_buffer_map.insert(
-        name, base::make_span(
-                  static_cast<const uint8_t*>(array_buffer_view->BaseAddress()),
-                  array_buffer_view->byteLength()));
-  }
-  blink_mojom::ComputeResultPtr mojo_result;
-  bool call_result =
-      remote_graph_->Compute(std::move(input_name_to_buffer_map), &mojo_result);
-  if (!call_result) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kOperationError,
-        "Failed to obtain the computation result.");
+// TODO: crbug.com/325612086 - Once all backends use mojo, consider refactoring
+// MLGraph creation such that this logic can live in MLContext.
+void MLGraphMojo::OnCreateWebNNGraph(
+    ScopedMLTrace scoped_trace,
+    ScriptPromiseResolverTyped<MLGraph>* resolver,
+    blink_mojom::CreateGraphResultPtr result) {
+  ScriptState* script_state = resolver->GetScriptState();
+  if (!script_state) {
     return;
   }
 
-  if (mojo_result->is_error()) {
-    const auto& compute_error = mojo_result->get_error();
-    exception_state.ThrowDOMException(
-        ConvertWebNNErrorCodeToDOMExceptionCode(compute_error->code),
-        compute_error->message);
-    return;
-  }
-
-  const auto& mojo_outputs = mojo_result->get_named_outputs();
-  for (const auto& [output_name, output_buffer_view] : outputs) {
-    // The verification before computing ensures the `ml_outputs` match graph's
-    // expectation, so we only need to verify the result `mojo_outputs` from
-    // WebNN Service here.
-    auto output_buffer_iter = mojo_outputs.find(output_name);
-    if (output_buffer_iter == mojo_outputs.end()) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kOperationError,
-          "There is an unknown output tensor in the computation result: " +
-              output_name);
-      return;
-    }
-    const auto output_byte_length = output_buffer_view->byteLength();
-    if (output_buffer_iter->value.size() != output_byte_length) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kUnknownError,
-          "The output tensor size does not match graph's expectation: " +
-              output_name);
-      return;
-    }
-    memcpy(output_buffer_view->BaseAddress(), output_buffer_iter->value.data(),
-           output_byte_length);
-  }
-}
-
-void MLGraphMojo::OnCreateWebNNGraph(ScopedMLTrace scoped_trace,
-                                     ScriptPromiseResolver* resolver,
-                                     blink_mojom::CreateGraphResultPtr result) {
   // Handle error message and throw exception.
   if (result->is_error()) {
     const auto& create_graph_error = result->get_error();
@@ -356,7 +265,6 @@ void MLGraphMojo::OnCreateWebNNGraph(ScopedMLTrace scoped_trace,
     return;
   }
 
-  auto* script_state = resolver->GetScriptState();
   auto* execution_context = ExecutionContext::From(script_state);
   // Bind the end point of `WebNNGraph` mojo interface in the blink side.
   remote_graph_.Bind(

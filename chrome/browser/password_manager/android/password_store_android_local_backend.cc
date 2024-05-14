@@ -62,7 +62,7 @@ void PasswordStoreAndroidLocalBackend::Shutdown(
 }
 
 bool PasswordStoreAndroidLocalBackend::IsAbleToSavePasswords() {
-  return true;
+  return !should_disable_saving_due_to_error_;
 }
 
 void PasswordStoreAndroidLocalBackend::GetAllLoginsAsync(
@@ -153,6 +153,18 @@ PasswordStoreAndroidLocalBackend::CreateSyncControllerDelegate() {
 void PasswordStoreAndroidLocalBackend::OnSyncServiceInitialized(
     syncer::SyncService* sync_service) {}
 
+void PasswordStoreAndroidLocalBackend::RecordAddLoginAsyncCalledFromTheStore() {
+  base::UmaHistogramBoolean(
+      "PasswordManager.PasswordStore.LocalBackend.AddLoginCalledOnStore", true);
+}
+
+void PasswordStoreAndroidLocalBackend::
+    RecordUpdateLoginAsyncCalledFromTheStore() {
+  base::UmaHistogramBoolean(
+      "PasswordManager.PasswordStore.LocalBackend.UpdateLoginCalledOnStore",
+      true);
+}
+
 SmartBubbleStatsStore*
 PasswordStoreAndroidLocalBackend::GetSmartBubbleStatsStore() {
   return nullptr;
@@ -166,12 +178,13 @@ PasswordStoreAndroidLocalBackend::AsWeakPtr() {
 PasswordStoreBackendErrorRecoveryType
 PasswordStoreAndroidLocalBackend::RecoverOnErrorAndReturnResult(
     AndroidBackendAPIErrorCode error) {
-  // TODO(b/319422508): Disable password saving for local storage.
+  should_disable_saving_due_to_error_ = true;
   return PasswordStoreBackendErrorRecoveryType::kRecoverable;
 }
 
 void PasswordStoreAndroidLocalBackend::OnCallToGMSCoreSucceeded() {
-  // TODO(b/319422508): Enable password saving for local storage.
+  // Since the API call has succeeded, it's safe to reenable saving.
+  should_disable_saving_due_to_error_ = false;
 }
 
 std::string PasswordStoreAndroidLocalBackend::GetAccountToRetryOperation() {
@@ -179,7 +192,7 @@ std::string PasswordStoreAndroidLocalBackend::GetAccountToRetryOperation() {
 }
 
 PasswordStoreBackendMetricsRecorder::PasswordStoreAndroidBackendType
-PasswordStoreAndroidLocalBackend::GetStoreType() {
+PasswordStoreAndroidLocalBackend::GetStorageType() {
   return PasswordStoreBackendMetricsRecorder::PasswordStoreAndroidBackendType::
       kLocal;
 }

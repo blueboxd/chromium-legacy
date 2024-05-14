@@ -145,12 +145,24 @@ class MockPersonalDataManager : public TestPersonalDataManager {
               (override));
 };
 
+class MockPaymentsAutofillClient : public payments::TestPaymentsAutofillClient {
+ public:
+  MOCK_METHOD(void, CreditCardUploadCompleted, (bool card_saved), (override));
+  MOCK_METHOD(bool, IsSaveCardPromptVisible, (), (const override));
+  MOCK_METHOD(void, HideSaveCardPromptPrompt, (), (override));
+};
+
 class MockAutofillClient : public TestAutofillClient {
  public:
   explicit MockAutofillClient(
-      std::unique_ptr<TestPersonalDataManager> pdm = nullptr) {
+      std::unique_ptr<TestPersonalDataManager> pdm = nullptr,
+      std::unique_ptr<payments::TestPaymentsAutofillClient> payments_client =
+          nullptr) {
     set_personal_data_manager(
         pdm ? std::move(pdm) : std::make_unique<TestPersonalDataManager>());
+    if (payments_client) {
+      set_payments_autofill_client(std::move(payments_client));
+    }
   }
   ~MockAutofillClient() override = default;
   MOCK_METHOD(VirtualCardEnrollmentManager*,
@@ -187,31 +199,29 @@ class MockVirtualCardEnrollmentManager
 
 class CreditCardSaveManagerTest : public testing::Test {
  public:
+  explicit CreditCardSaveManagerTest(
+      base::test::TaskEnvironment::TimeSource time_source =
+          base::test::TaskEnvironment::TimeSource::DEFAULT)
+      : task_environment_(time_source) {}
   void SetUp() override {
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
     autofill_client_.set_test_strike_database(
         std::make_unique<TestStrikeDatabase>());
     personal_data().set_auto_accept_address_imports_for_testing(true);
-    personal_data().Init(/*profile_database=*/database_,
-                         /*account_database=*/nullptr,
-                         /*pref_service=*/autofill_client_.GetPrefs(),
-                         /*local_state=*/autofill_client_.GetPrefs(),
-                         /*identity_manager=*/nullptr,
-                         /*history_service=*/nullptr, &sync_service_,
-                         /*strike_database=*/nullptr,
-                         /*image_fetcher=*/nullptr,
-                         /*shared_storage_handler=*/nullptr);
-    autofill_driver_ = std::make_unique<TestAutofillDriver>();
-    autofill_client_.set_test_payments_network_interface(
-        std::make_unique<payments::TestPaymentsNetworkInterface>(
-            autofill_client_.GetURLLoaderFactory(),
-            autofill_client_.GetIdentityManager(), &personal_data()));
+    personal_data().SetPrefService(autofill_client_.GetPrefs());
+    personal_data().SetSyncServiceForTest(&sync_service_);
+    autofill_driver_ = std::make_unique<TestAutofillDriver>(&autofill_client_);
+    autofill_client_.GetPaymentsAutofillClient()
+        ->set_test_payments_network_interface(
+            std::make_unique<payments::TestPaymentsNetworkInterface>(
+                autofill_client_.GetURLLoaderFactory(),
+                autofill_client_.GetIdentityManager(), &personal_data()));
     virtual_card_enrollment_manager_ =
         std::make_unique<MockVirtualCardEnrollmentManager>(
             autofill_client_.GetPersonalDataManager(),
             &payments_network_interface(), &autofill_client_);
     ON_CALL(autofill_client_, GetVirtualCardEnrollmentManager())
-        .WillByDefault(testing::Return(virtual_card_enrollment_manager_.get()));
+        .WillByDefault(Return(virtual_card_enrollment_manager_.get()));
     credit_card_save_manager_ = new TestCreditCardSaveManager(
         autofill_driver_.get(), &autofill_client_, &personal_data());
     credit_card_save_manager_->SetCreditCardUploadEnabled(true);
@@ -221,8 +231,8 @@ class CreditCardSaveManagerTest : public testing::Test {
             std::unique_ptr<CreditCardSaveManager>(credit_card_save_manager_),
             /*iban_save_manager=*/nullptr, &personal_data(), "en-US"));
     autofill_client_.GetStrikeDatabase();
-    browser_autofill_manager_ = std::make_unique<TestBrowserAutofillManager>(
-        autofill_driver_.get(), &autofill_client_);
+    browser_autofill_manager_ =
+        std::make_unique<TestBrowserAutofillManager>(autofill_driver_.get());
     browser_autofill_manager_->SetExpectedObservedSubmission(true);
   }
 
@@ -233,7 +243,7 @@ class CreditCardSaveManagerTest : public testing::Test {
     autofill_driver_.reset();
 
     personal_data().SetPrefService(nullptr);
-    personal_data().ClearCreditCards();
+    personal_data().test_payments_data_manager().ClearCreditCards();
   }
 
   void FormsSeen(const std::vector<FormData>& forms) {
@@ -409,23 +419,26 @@ class CreditCardSaveManagerTest : public testing::Test {
     return static_cast<MockPersonalDataManager&>(
         *autofill_client_.GetPersonalDataManager());
   }
+  MockPaymentsAutofillClient& payments_client() {
+    return static_cast<MockPaymentsAutofillClient&>(
+        *autofill_client_.GetPaymentsAutofillClient());
+  }
   payments::TestPaymentsNetworkInterface& payments_network_interface() {
-    return static_cast<payments::TestPaymentsNetworkInterface&>(
-        *autofill_client_.GetPaymentsNetworkInterface());
+    return *autofill_client_.GetPaymentsAutofillClient()
+                ->GetPaymentsNetworkInterface();
   }
   TestStrikeDatabase& strike_database() {
-    return static_cast<TestStrikeDatabase&>(
-        *autofill_client_.GetStrikeDatabase());
+    return *autofill_client_.GetStrikeDatabase();
   }
 
   base::test::TaskEnvironment task_environment_;
   test::AutofillUnitTestEnvironment autofill_test_environment_;
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
   std::unique_ptr<TestBrowserAutofillManager> browser_autofill_manager_;
-  scoped_refptr<AutofillWebDataService> database_;
   syncer::TestSyncService sync_service_;
   MockAutofillClient autofill_client_{
-      std::make_unique<MockPersonalDataManager>()};
+      std::make_unique<MockPersonalDataManager>(),
+      std::make_unique<MockPaymentsAutofillClient>()};
   std::unique_ptr<MockVirtualCardEnrollmentManager>
       virtual_card_enrollment_manager_;
   // TODO(crbug.com/1291003): Refactor to use the real CreditCardSaveManager.
@@ -1160,7 +1173,7 @@ INSTANTIATE_TEST_SUITE_P(
                     CreditCard::RecordType::kMaskedServerCard));
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NotSavedLocally) {
-  personal_data().ClearCreditCards();
+  personal_data().test_payments_data_manager().ClearCreditCards();
   personal_data().ClearProfiles();
 
   credit_card_save_manager_->SetCreditCardUploadEnabled(true);
@@ -1766,68 +1779,6 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoNameAvailable) {
 }
 #endif
 
-#if !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
-TEST_F(CreditCardSaveManagerTest,
-       AttemptToOfferCardUploadSave_AutofillEnableNewSaveCardBubbleUiEnabled) {
-  // Setting the flag to enable the new bubble for Save Card UI.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kAutofillEnableNewSaveCardBubbleUi);
-
-  // Set up our credit card form data.
-  FormData credit_card_form = CreateTestCreditCardFormData();
-  FormsSeen(std::vector<FormData>(1, credit_card_form));
-
-  // Edit the data, and submit.
-  credit_card_form.fields[0].value = u"Jane Doe";
-  credit_card_form.fields[1].value = u"4111111111111111";
-  credit_card_form.fields[2].value = ASCIIToUTF16(test::NextMonth());
-  credit_card_form.fields[3].value = ASCIIToUTF16(test::NextYear());
-  credit_card_form.fields[4].value = u"123";
-  FormSubmitted(credit_card_form);
-
-  EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
-  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-
-  // Confirm that client_behavior_signals vector does contain the
-  // FasterAndProtected signal.
-  std::vector<ClientBehaviorConstants> client_behavior_signals_in_request =
-      payments_network_interface().client_behavior_signals_in_request();
-  EXPECT_THAT(
-      client_behavior_signals_in_request,
-      testing::Contains(ClientBehaviorConstants::kUsingFasterAndProtectedUi));
-}
-
-TEST_F(CreditCardSaveManagerTest,
-       AttemptToOfferCardUploadSave_AutofillEnableNewSaveCardBubbleUiDisabled) {
-  // Setting the flag to disable the new bubble for Save Card UI.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kAutofillEnableNewSaveCardBubbleUi);
-
-  FormData credit_card_form = CreateTestCreditCardFormData();
-  FormsSeen(std::vector<FormData>(1, credit_card_form));
-
-  credit_card_form.fields[0].value = u"Jane Doe";
-  credit_card_form.fields[1].value = u"4111111111111111";
-  credit_card_form.fields[2].value = ASCIIToUTF16(test::NextMonth());
-  credit_card_form.fields[3].value = ASCIIToUTF16(test::NextYear());
-  credit_card_form.fields[4].value = u"123";
-  FormSubmitted(credit_card_form);
-
-  EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
-  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-
-  // Confirm that client_behavior_signals vector not contain the
-  // kShowAccountEmailInLegalMessage signal.
-  std::vector<ClientBehaviorConstants> client_behavior_signals_in_request =
-      payments_network_interface().client_behavior_signals_in_request();
-  EXPECT_THAT(client_behavior_signals_in_request,
-              testing::Not(testing::Contains(
-                  ClientBehaviorConstants::kUsingFasterAndProtectedUi)));
-}
-#endif  // !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
-
 #if BUILDFLAG(IS_ANDROID)
 TEST_F(CreditCardSaveManagerTest,
        AttemptToOfferCardUploadSave_AutofillEnableBottomSheetAccountEmail) {
@@ -1896,11 +1847,10 @@ TEST_F(CreditCardSaveManagerTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       /*enabled_features=*/
-      {features::kAutofillEnableCvcStorageAndFilling,
-       features::kAutofillEnableNewSaveCardBubbleUi},
+      {features::kAutofillEnableCvcStorageAndFilling},
 #if BUILDFLAG(IS_ANDROID)
       /*disabled_features=*/
-      {  features::kAutofillEnablePaymentsAndroidBottomSheetAccountEmail }
+      { features::kAutofillEnablePaymentsAndroidBottomSheetAccountEmail }
 #else
       /*disabled_features=*/{}
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -1965,8 +1915,7 @@ TEST_F(CreditCardSaveManagerTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       /*enabled_features=*/
-      {features::kAutofillEnableCvcStorageAndFilling,
-       features::kAutofillEnableNewSaveCardBubbleUi},
+      {features::kAutofillEnableCvcStorageAndFilling},
       /*disabled_features=*/{});
 
   // Set up our credit card form data.
@@ -1996,43 +1945,8 @@ TEST_F(
   // Set up the flags to disable the Tos for Save Card CVC UI.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      /*enabled_features=*/{features::kAutofillEnableNewSaveCardBubbleUi},
+      /*enabled_features=*/{},
       /*disabled_features=*/{features::kAutofillEnableCvcStorageAndFilling});
-
-  // Set up our credit card form data.
-  FormData credit_card_form = CreateTestCreditCardFormData();
-  FormsSeen(std::vector<FormData>(1, credit_card_form));
-
-  // Edit the data, and submit.
-  credit_card_form.fields[0].value = u"Jane Doe";
-  credit_card_form.fields[1].value = u"4111111111111111";
-  credit_card_form.fields[2].value = ASCIIToUTF16(test::NextMonth());
-  credit_card_form.fields[3].value = ASCIIToUTF16(test::NextYear());
-  credit_card_form.fields[4].value = u"123";
-  FormSubmitted(credit_card_form);
-
-  // Confirm that client_behavior_signals vector does not contain the
-  // OfferingToSaveCvc signal.
-  std::vector<ClientBehaviorConstants> client_behavior_signals_in_request =
-      payments_network_interface().client_behavior_signals_in_request();
-  EXPECT_THAT(client_behavior_signals_in_request,
-              testing::Not(testing::Contains(
-                  ClientBehaviorConstants::kOfferingToSaveCvc)));
-}
-
-TEST_F(
-    CreditCardSaveManagerTest,
-    AttemptToOfferCardUploadSave_DoNotSendSaveCvcSignalIfNewSaveCardBubbleUiDisabled) {
-  // Set up the flags to disable the new bubble for Save Card UI.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      /*enabled_features=*/{features::kAutofillEnableCvcStorageAndFilling},
-      /*disabled_features=*/{
-          features::kAutofillEnableNewSaveCardBubbleUi,
-#if BUILDFLAG(IS_ANDROID)
-          features::kAutofillEnablePaymentsAndroidBottomSheetAccountEmail,
-#endif
-      });
 
   // Set up our credit card form data.
   FormData credit_card_form = CreateTestCreditCardFormData();
@@ -2061,8 +1975,7 @@ TEST_F(CreditCardSaveManagerTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       /*enabled_features=*/
-      {features::kAutofillEnableCvcStorageAndFilling,
-       features::kAutofillEnableNewSaveCardBubbleUi},
+      {features::kAutofillEnableCvcStorageAndFilling},
       /*disabled_features=*/{});
 
   // Disable the CVC storage pref, implying that the user has opted-out of the
@@ -2920,7 +2833,7 @@ TEST_F(
 
   // Run through the form submit in exactly the same way (but now Chrome knows
   // that the user is a Google Payments customer).
-  personal_data().ClearCreditCards();
+  personal_data().test_payments_data_manager().ClearCreditCards();
   personal_data().ClearProfiles();
   FormSubmitted(credit_card_form);
 
@@ -5676,147 +5589,15 @@ TEST_F(CreditCardSaveManagerTest,
       upload_card_response_details_without_instrument_id);
 }
 
-// Tests that the fields in the card are set correctly and virtual card
-// enrollment is offered when a card becomes eligible after upload.
-TEST_F(CreditCardSaveManagerTest, OnDidUploadCard_VirtualCardEnrollment) {
-  for (CreditCard::VirtualCardEnrollmentState enrollment_state :
-       {CreditCard::VirtualCardEnrollmentState::kUnenrolled,
-        CreditCard::VirtualCardEnrollmentState::kUnenrolledAndEligible,
-        CreditCard::VirtualCardEnrollmentState::kEnrolled}) {
-    for (bool is_update_virtual_card_enrollment_enabled : {true, false}) {
-      base::test::ScopedFeatureList feature_list;
-      if (is_update_virtual_card_enrollment_enabled) {
-#if BUILDFLAG(IS_IOS)
-        feature_list.InitAndEnableFeature(
-            features::kAutofillEnableVirtualCards);
-#else
-        feature_list.InitAndEnableFeature(
-            features::kAutofillEnableUpdateVirtualCardEnrollment);
-#endif
-      } else {
-#if BUILDFLAG(IS_IOS)
-        feature_list.InitAndDisableFeature(
-            features::kAutofillEnableVirtualCards);
-#else
-        feature_list.InitAndDisableFeature(
-            features::kAutofillEnableUpdateVirtualCardEnrollment);
-#endif
-      }
-      payments::PaymentsNetworkInterface::UploadCardResponseDetails
-          upload_card_response_details;
-      upload_card_response_details.card_art_url =
-          GURL("https://www.example.com/");
-      upload_card_response_details.instrument_id = 9223372036854775807;
-      upload_card_response_details.virtual_card_enrollment_state =
-          enrollment_state;
-
-      CreditCard arg_credit_card;
-      VirtualCardEnrollmentSource arg_virtual_card_enrollment_source;
-      if (is_update_virtual_card_enrollment_enabled &&
-          enrollment_state ==
-              CreditCard::VirtualCardEnrollmentState::kUnenrolledAndEligible) {
-        EXPECT_CALL(autofill_client_, GetVirtualCardEnrollmentManager).Times(1);
-        EXPECT_CALL(*virtual_card_enrollment_manager_,
-                    InitVirtualCardEnroll(_, _, _, _, _, _))
-            .WillOnce(DoAll(SaveArg<0>(&arg_credit_card),
-                            SaveArg<1>(&arg_virtual_card_enrollment_source)));
-      }
-
-      credit_card_save_manager_->set_upload_request_card(test::GetCreditCard());
-      credit_card_save_manager_->OnDidUploadCard(
-          AutofillClient::PaymentsRpcResult::kSuccess,
-          upload_card_response_details);
-
-      // The condition inside of this if-statement is true if virtual card
-      // enrollment should be offered.
-      if (is_update_virtual_card_enrollment_enabled &&
-          enrollment_state ==
-              CreditCard::VirtualCardEnrollmentState::kUnenrolledAndEligible) {
-        EXPECT_EQ(arg_credit_card.card_art_url(),
-                  upload_card_response_details.card_art_url);
-        EXPECT_EQ(arg_credit_card.instrument_id(),
-                  upload_card_response_details.instrument_id);
-        EXPECT_EQ(arg_credit_card.virtual_card_enrollment_state(),
-                  upload_card_response_details.virtual_card_enrollment_state);
-        EXPECT_EQ(arg_virtual_card_enrollment_source,
-                  VirtualCardEnrollmentSource::kUpstream);
-      } else {
-        EXPECT_TRUE(arg_credit_card.card_art_url().is_empty());
-        EXPECT_EQ(arg_credit_card.instrument_id(), 0);
-        EXPECT_EQ(arg_credit_card.virtual_card_enrollment_state(),
-                  CreditCard::VirtualCardEnrollmentState::kUnspecified);
-      }
-    }
-  }
-}
-
-TEST_F(
-    CreditCardSaveManagerTest,
-    OnDidUploadCard_VirtualCardEnrollment_GetDetailsForEnrollmentResponseDetailsReturned) {
-  base::test::ScopedFeatureList feature_list;
-#if BUILDFLAG(IS_IOS)
-  feature_list.InitAndEnableFeature(features::kAutofillEnableVirtualCards);
-#else
-  feature_list.InitAndEnableFeature(
-      features::kAutofillEnableUpdateVirtualCardEnrollment);
-#endif
-  payments::PaymentsNetworkInterface::UploadCardResponseDetails
-      upload_card_response_details;
-  upload_card_response_details.card_art_url = GURL("https://example.com/");
-  upload_card_response_details.instrument_id = 9223372036854775807;
-  upload_card_response_details.virtual_card_enrollment_state =
-      CreditCard::VirtualCardEnrollmentState::kUnenrolledAndEligible;
-
-  payments::PaymentsNetworkInterface::GetDetailsForEnrollmentResponseDetails
-      get_details_for_enrollment_response_details;
-  get_details_for_enrollment_response_details.vcn_context_token =
-      "test_context_token";
-  get_details_for_enrollment_response_details.google_legal_message = {
-      TestLegalMessageLine("test_google_legal_message")};
-  get_details_for_enrollment_response_details.issuer_legal_message = {
-      TestLegalMessageLine("test_issuer_legal_message")};
-  upload_card_response_details.get_details_for_enrollment_response_details =
-      get_details_for_enrollment_response_details;
-  credit_card_save_manager_->set_upload_request_card(test::GetCreditCard());
-
-  CreditCard arg_credit_card;
-  VirtualCardEnrollmentSource arg_virtual_card_enrollment_source;
-  std::optional<payments::PaymentsNetworkInterface::
-                    GetDetailsForEnrollmentResponseDetails>
-      arg_get_details_for_enrollment_response_details;
-  EXPECT_CALL(autofill_client_, GetVirtualCardEnrollmentManager).Times(1);
-  EXPECT_CALL(*virtual_card_enrollment_manager_,
-              InitVirtualCardEnroll(_, _, _, _, _, _))
-      .WillOnce(
-          DoAll(SaveArg<0>(&arg_credit_card),
-                SaveArg<1>(&arg_virtual_card_enrollment_source),
-                SaveArg<2>(&arg_get_details_for_enrollment_response_details)));
-
-  credit_card_save_manager_->OnDidUploadCard(
-      AutofillClient::PaymentsRpcResult::kSuccess,
-      upload_card_response_details);
-
-  EXPECT_EQ(arg_credit_card.card_art_url(),
-            upload_card_response_details.card_art_url);
-  EXPECT_EQ(arg_credit_card.instrument_id(),
-            upload_card_response_details.instrument_id);
-  EXPECT_EQ(arg_credit_card.virtual_card_enrollment_state(),
-            upload_card_response_details.virtual_card_enrollment_state);
-  EXPECT_EQ(arg_virtual_card_enrollment_source,
-            VirtualCardEnrollmentSource::kUpstream);
-  EXPECT_EQ(
-      arg_get_details_for_enrollment_response_details.value().vcn_context_token,
-      get_details_for_enrollment_response_details.vcn_context_token);
-  EXPECT_TRUE(arg_get_details_for_enrollment_response_details.value()
-                  .google_legal_message[0]
-                  .text() == get_details_for_enrollment_response_details
-                                 .google_legal_message[0]
-                                 .text());
-  EXPECT_TRUE(arg_get_details_for_enrollment_response_details.value()
-                  .issuer_legal_message[0]
-                  .text() == get_details_for_enrollment_response_details
-                                 .issuer_legal_message[0]
-                                 .text());
+// Tests that `InitVirtualCardEnroll()` is called after hiding the save card
+// prompt.
+TEST_F(CreditCardSaveManagerTest, InitVirtualCardEnroll) {
+  EXPECT_CALL(payments_client(), HideSaveCardPromptPrompt);
+  EXPECT_CALL(autofill_client_, GetVirtualCardEnrollmentManager);
+  EXPECT_CALL(*virtual_card_enrollment_manager_, InitVirtualCardEnroll);
+  credit_card_save_manager_->InitVirtualCardEnroll(
+      test::GetCreditCard(), payments::PaymentsNetworkInterface::
+                                 GetDetailsForEnrollmentResponseDetails());
 }
 
 class CreditCardSaveManagerWithLocalSaveFallbackTest
@@ -5857,5 +5638,245 @@ TEST_F(CreditCardSaveManagerWithLocalSaveFallbackTest,
       AutofillClient::PaymentsRpcResult::kPermanentFailure,
       payments::PaymentsNetworkInterface::UploadCardResponseDetails());
 }
+
+// Tests that the `RanLocalSaveFallback` metric records that a new local card
+// was saved when a new local card is added during the local card save fallback
+// for a server upload failure.
+TEST_F(CreditCardSaveManagerWithLocalSaveFallbackTest,
+       Metrics_OnDidUploadCard_FallbackToLocalSave_CardAdded) {
+  base::HistogramTester histogram_tester;
+
+  ON_CALL(personal_data(), SaveCardLocallyIfNew).WillByDefault(Return(true));
+
+  credit_card_save_manager_->set_upload_request_card(test::GetCreditCard());
+  credit_card_save_manager_->OnDidUploadCard(
+      AutofillClient::PaymentsRpcResult::kPermanentFailure,
+      payments::PaymentsNetworkInterface::UploadCardResponseDetails());
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.CreditCardUpload.RanLocalSaveFallback", true, 1);
+}
+
+// Tests that the `RanLocalSaveFallback` metric records that a new local card
+// was not saved when the local card already exists during the local card save
+// fallback for a server upload failure.
+TEST_F(CreditCardSaveManagerWithLocalSaveFallbackTest,
+       Metrics_OnDidUploadCard_FallbackToLocalSave_CardExists) {
+  base::HistogramTester histogram_tester;
+
+  ON_CALL(personal_data(), SaveCardLocallyIfNew).WillByDefault(Return(false));
+
+  credit_card_save_manager_->set_upload_request_card(test::GetCreditCard());
+  credit_card_save_manager_->OnDidUploadCard(
+      AutofillClient::PaymentsRpcResult::kPermanentFailure,
+      payments::PaymentsNetworkInterface::UploadCardResponseDetails());
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.CreditCardUpload.RanLocalSaveFallback", false, 1);
+}
+
+class CreditCardSaveManagerWithDelayedVirtualCardEnrollTest
+    : public CreditCardSaveManagerTest {
+ public:
+  CreditCardSaveManagerWithDelayedVirtualCardEnrollTest()
+      : CreditCardSaveManagerTest(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+};
+
+TEST_F(
+    CreditCardSaveManagerWithDelayedVirtualCardEnrollTest,
+    OnDidUploadCard_VirtualCardEnrollment_GetDetailsForEnrollmentResponseDetailsReturned) {
+  ON_CALL(payments_client(), IsSaveCardPromptVisible())
+      .WillByDefault(Return(true));
+#if BUILDFLAG(IS_IOS)
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kAutofillEnableVirtualCards);
+#endif
+  payments::PaymentsNetworkInterface::UploadCardResponseDetails
+      upload_card_response_details;
+  upload_card_response_details.card_art_url = GURL("https://example.com/");
+  upload_card_response_details.instrument_id = 9223372036854775807;
+  upload_card_response_details.virtual_card_enrollment_state =
+      CreditCard::VirtualCardEnrollmentState::kUnenrolledAndEligible;
+
+  payments::PaymentsNetworkInterface::GetDetailsForEnrollmentResponseDetails
+      get_details_for_enrollment_response_details;
+  get_details_for_enrollment_response_details.vcn_context_token =
+      "test_context_token";
+  get_details_for_enrollment_response_details.google_legal_message = {
+      TestLegalMessageLine("test_google_legal_message")};
+  get_details_for_enrollment_response_details.issuer_legal_message = {
+      TestLegalMessageLine("test_issuer_legal_message")};
+  upload_card_response_details.get_details_for_enrollment_response_details =
+      get_details_for_enrollment_response_details;
+  credit_card_save_manager_->set_upload_request_card(test::GetCreditCard());
+
+  CreditCard arg_credit_card;
+  VirtualCardEnrollmentSource arg_virtual_card_enrollment_source;
+  std::optional<payments::PaymentsNetworkInterface::
+                    GetDetailsForEnrollmentResponseDetails>
+      arg_get_details_for_enrollment_response_details;
+  EXPECT_CALL(payments_client(), CreditCardUploadCompleted(true));
+  EXPECT_CALL(autofill_client_, GetVirtualCardEnrollmentManager);
+  EXPECT_CALL(*virtual_card_enrollment_manager_, InitVirtualCardEnroll)
+      .WillOnce(
+          DoAll(SaveArg<0>(&arg_credit_card),
+                SaveArg<1>(&arg_virtual_card_enrollment_source),
+                SaveArg<2>(&arg_get_details_for_enrollment_response_details)));
+
+  credit_card_save_manager_->OnDidUploadCard(
+      AutofillClient::PaymentsRpcResult::kSuccess,
+      upload_card_response_details);
+  // Virtual card enrollment waits for 3 sec before initializing if credit
+  // card upload confirmation is still showing. Advancing the mock clock here by
+  // 'kVirtualCardEnrollDelaySec` i.e 3 sec for `InitVirtualCardEnroll` to be
+  // called.
+  task_environment_.FastForwardBy(kVirtualCardEnrollDelaySec);
+
+  EXPECT_EQ(arg_credit_card.card_art_url(),
+            upload_card_response_details.card_art_url);
+  EXPECT_EQ(arg_credit_card.instrument_id(),
+            upload_card_response_details.instrument_id);
+  EXPECT_EQ(arg_credit_card.virtual_card_enrollment_state(),
+            upload_card_response_details.virtual_card_enrollment_state);
+  EXPECT_EQ(arg_virtual_card_enrollment_source,
+            VirtualCardEnrollmentSource::kUpstream);
+  EXPECT_EQ(
+      arg_get_details_for_enrollment_response_details.value().vcn_context_token,
+      get_details_for_enrollment_response_details.vcn_context_token);
+  EXPECT_TRUE(arg_get_details_for_enrollment_response_details.value()
+                  .google_legal_message[0]
+                  .text() == get_details_for_enrollment_response_details
+                                 .google_legal_message[0]
+                                 .text());
+  EXPECT_TRUE(arg_get_details_for_enrollment_response_details.value()
+                  .issuer_legal_message[0]
+                  .text() == get_details_for_enrollment_response_details
+                                 .issuer_legal_message[0]
+                                 .text());
+}
+
+// Tests that virtual card enrollment is initiated without 3 sec delay if
+// credit card confirmation prompt has already been closed and is not visible.
+TEST_F(CreditCardSaveManagerWithDelayedVirtualCardEnrollTest,
+       OnCreditCardConfirmationPromptNotVisible_InitVirtualCardEnrollment) {
+  ON_CALL(payments_client(), IsSaveCardPromptVisible())
+      .WillByDefault(Return(false));
+#if BUILDFLAG(IS_IOS)
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kAutofillEnableVirtualCards);
+#endif
+  payments::PaymentsNetworkInterface::UploadCardResponseDetails
+      upload_card_response_details;
+  upload_card_response_details.instrument_id = 9223372036854775807;
+  upload_card_response_details.virtual_card_enrollment_state =
+      CreditCard::VirtualCardEnrollmentState::kUnenrolledAndEligible;
+
+  EXPECT_CALL(payments_client(), CreditCardUploadCompleted(true));
+  EXPECT_CALL(autofill_client_, GetVirtualCardEnrollmentManager);
+  EXPECT_CALL(*virtual_card_enrollment_manager_, InitVirtualCardEnroll);
+
+  credit_card_save_manager_->OnDidUploadCard(
+      AutofillClient::PaymentsRpcResult::kSuccess,
+      upload_card_response_details);
+  task_environment_.RunUntilIdle();
+}
+
+class CreditCardSaveManagerWithDelayedVirtualCardEnrollTestParameterized
+    : public CreditCardSaveManagerTest,
+      public testing::WithParamInterface<
+          std::tuple<CreditCard::VirtualCardEnrollmentState, bool>> {
+ public:
+  CreditCardSaveManagerWithDelayedVirtualCardEnrollTestParameterized()
+      : CreditCardSaveManagerTest(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+
+  CreditCard::VirtualCardEnrollmentState GetEnrollmentState() const {
+    return std::get<0>(GetParam());
+  }
+
+  bool IsVirtualCardEnrollmentEnabled() const {
+    return std::get<1>(GetParam());
+  }
+};
+
+// Tests that the fields in the card to be enrolled as virtual card are set
+// correctly and virtual card enrollment is offered when a card becomes eligible
+// after upload.
+TEST_P(CreditCardSaveManagerWithDelayedVirtualCardEnrollTestParameterized,
+       OnDidUploadCard_VirtualCardEnrollment) {
+  ON_CALL(payments_client(), IsSaveCardPromptVisible())
+      .WillByDefault(Return(true));
+#if BUILDFLAG(IS_IOS)
+  base::test::ScopedFeatureList feature_list;
+  if (IsVirtualCardEnrollmentEnabled()) {
+    feature_list.InitWithFeatureState(features::kAutofillEnableVirtualCards,
+                                      IsVirtualCardEnrollmentEnabled());
+  }
+#else
+  if (!IsVirtualCardEnrollmentEnabled()) {
+    GTEST_SKIP() << "Virtual card enrollment is always enabled on non-iOS "
+                    "platforms.";
+  }
+#endif
+  payments::PaymentsNetworkInterface::UploadCardResponseDetails
+      upload_card_response_details;
+  upload_card_response_details.card_art_url = GURL("https://www.example.com/");
+  upload_card_response_details.instrument_id = 9223372036854775807;
+  upload_card_response_details.virtual_card_enrollment_state =
+      GetEnrollmentState();
+
+  CreditCard arg_credit_card;
+  VirtualCardEnrollmentSource arg_virtual_card_enrollment_source;
+  EXPECT_CALL(payments_client(), CreditCardUploadCompleted(true));
+  if (IsVirtualCardEnrollmentEnabled() &&
+      GetEnrollmentState() ==
+          CreditCard::VirtualCardEnrollmentState::kUnenrolledAndEligible) {
+    EXPECT_CALL(autofill_client_, GetVirtualCardEnrollmentManager);
+    EXPECT_CALL(*virtual_card_enrollment_manager_, InitVirtualCardEnroll)
+        .WillOnce(DoAll(SaveArg<0>(&arg_credit_card),
+                        SaveArg<1>(&arg_virtual_card_enrollment_source)));
+  }
+
+  credit_card_save_manager_->set_upload_request_card(test::GetCreditCard());
+  credit_card_save_manager_->OnDidUploadCard(
+      AutofillClient::PaymentsRpcResult::kSuccess,
+      upload_card_response_details);
+  // Virtual card enrollment waits for 3 sec before initializing if credit
+  // card upload confirmation is still showing. Advancing the mock clock
+  // here by `kVirtualCardEnrollDelaySec` i.e 3 sec for
+  // `InitVirtualCardEnroll` to be called.
+  task_environment_.FastForwardBy(kVirtualCardEnrollDelaySec);
+
+  // The condition inside of this if-statement is true if virtual card
+  // enrollment should be offered.
+  if (IsVirtualCardEnrollmentEnabled() &&
+      GetEnrollmentState() ==
+          CreditCard::VirtualCardEnrollmentState::kUnenrolledAndEligible) {
+    EXPECT_EQ(arg_credit_card.card_art_url(),
+              upload_card_response_details.card_art_url);
+    EXPECT_EQ(arg_credit_card.instrument_id(),
+              upload_card_response_details.instrument_id);
+    EXPECT_EQ(arg_credit_card.virtual_card_enrollment_state(),
+              upload_card_response_details.virtual_card_enrollment_state);
+    EXPECT_EQ(arg_virtual_card_enrollment_source,
+              VirtualCardEnrollmentSource::kUpstream);
+  } else {
+    EXPECT_TRUE(arg_credit_card.card_art_url().is_empty());
+    EXPECT_EQ(arg_credit_card.instrument_id(), 0);
+    EXPECT_EQ(arg_credit_card.virtual_card_enrollment_state(),
+              CreditCard::VirtualCardEnrollmentState::kUnspecified);
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    CreditCardSaveManagerTest,
+    CreditCardSaveManagerWithDelayedVirtualCardEnrollTestParameterized,
+    testing::Combine(
+        /*enrollment_state*/ testing::Values(
+            CreditCard::VirtualCardEnrollmentState::kUnenrolled,
+            CreditCard::VirtualCardEnrollmentState::kUnenrolledAndEligible,
+            CreditCard::VirtualCardEnrollmentState::kEnrolled),
+        /*is_virtual_card_enrollment_enabled*/ testing::Bool()));
 
 }  // namespace autofill

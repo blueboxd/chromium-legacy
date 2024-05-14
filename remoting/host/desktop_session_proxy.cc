@@ -39,65 +39,12 @@
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/capability_names.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor.h"
-#include "third_party/webrtc/modules/desktop_capture/shared_memory.h"
-
-#if BUILDFLAG(IS_WIN)
-#include "base/win/scoped_handle.h"
-#endif  // BUILDFLAG(IS_WIN)
 
 namespace remoting {
 
 using SetUpUrlForwarderResponse =
     protocol::UrlForwarderControl::SetUpUrlForwarderResponse;
-
-class DesktopSessionProxy::IpcSharedBufferCore
-    : public base::RefCountedThreadSafe<IpcSharedBufferCore> {
- public:
-  IpcSharedBufferCore(int id, base::ReadOnlySharedMemoryRegion region)
-      : id_(id) {
-    mapping_ = region.Map();
-    if (!mapping_.IsValid()) {
-      LOG(ERROR) << "Failed to map a shared buffer: id=" << id
-                 << ", size=" << region.GetSize();
-    }
-    // After being mapped, |region| is no longer needed and can be discarded.
-  }
-
-  IpcSharedBufferCore(const IpcSharedBufferCore&) = delete;
-  IpcSharedBufferCore& operator=(const IpcSharedBufferCore&) = delete;
-
-  int id() const { return id_; }
-  size_t size() const { return mapping_.size(); }
-  const void* memory() const { return mapping_.memory(); }
-
- private:
-  virtual ~IpcSharedBufferCore() = default;
-  friend class base::RefCountedThreadSafe<IpcSharedBufferCore>;
-
-  int id_;
-  base::ReadOnlySharedMemoryMapping mapping_;
-};
-
-class DesktopSessionProxy::IpcSharedBuffer : public webrtc::SharedMemory {
- public:
-  // Note that the webrtc::SharedMemory class is used for both read-only and
-  // writable shared memory, necessitating the ugly const_cast here.
-  IpcSharedBuffer(scoped_refptr<IpcSharedBufferCore> core)
-      : SharedMemory(const_cast<void*>(core->memory()),
-                     core->size(),
-                     0,
-                     core->id()),
-        core_(core) {}
-
-  IpcSharedBuffer(const IpcSharedBuffer&) = delete;
-  IpcSharedBuffer& operator=(const IpcSharedBuffer&) = delete;
-
- private:
-  scoped_refptr<IpcSharedBufferCore> core_;
-};
 
 DesktopSessionProxy::DesktopSessionProxy(
     scoped_refptr<base::SingleThreadTaskRunner> audio_capture_task_runner,
@@ -114,7 +61,6 @@ DesktopSessionProxy::DesktopSessionProxy(
       client_session_events_(client_session_events),
       desktop_session_connector_(desktop_session_connector),
       ipc_file_operations_factory_(this),
-      pending_capture_frame_requests_(0),
       is_desktop_session_connected_(false),
       options_(options) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
@@ -144,12 +90,24 @@ std::unique_ptr<ScreenControls> DesktopSessionProxy::CreateScreenControls() {
   return std::make_unique<IpcScreenControls>(this);
 }
 
-std::unique_ptr<DesktopCapturer> DesktopSessionProxy::CreateVideoCapturer() {
+std::unique_ptr<DesktopCapturer> DesktopSessionProxy::CreateVideoCapturer(
+    webrtc::ScreenId id) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   // Cursor compositing is done by the desktop process if necessary so just
   // return a non-composing frame capturer.
-  return std::make_unique<IpcVideoFrameCapturer>(this);
+  auto video_capturer = std::make_unique<IpcVideoFrameCapturer>();
+
+  DCHECK(!video_capturer_) << "Multi-stream is not supported.";
+  video_capturer_ = video_capturer->GetWeakPtr();
+  if (desktop_session_control_) {
+    video_capturer->SetDesktopSessionControl(desktop_session_control_.get());
+  }
+
+  // `id` can be ignored for single-stream mode - it will always be
+  // kFullDesktopScreenId, which is what the Desktop process will use by
+  // default.
+  return video_capturer;
 }
 
 std::unique_ptr<webrtc::MouseCursorMonitor>
@@ -323,6 +281,10 @@ bool DesktopSessionProxy::AttachToDesktop(
 void DesktopSessionProxy::DetachFromDesktop() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
+  if (video_capturer_) {
+    video_capturer_->SetDesktopSessionControl(nullptr);
+  }
+
   desktop_channel_.reset();
   desktop_session_agent_.reset();
   desktop_session_control_.reset();
@@ -334,16 +296,8 @@ void DesktopSessionProxy::DetachFromDesktop() {
   // We don't reset |is_url_forwarder_set_up_callback_| here since the request
   // can come in before the DetachFromDesktop-AttachToDesktop sequence.
 
-  shared_buffers_.clear();
-
   // Notify interested folks that the IPC has been disconnected.
   disconnect_handlers_.Notify();
-
-  // Generate fake responses to keep the video capturer in sync.
-  while (pending_capture_frame_requests_) {
-    OnCaptureResult(mojom::CaptureResult::NewCaptureError(
-        webrtc::DesktopCapturer::Result::ERROR_TEMPORARY));
-  }
 
   if (client_session_events_) {
     client_session_events_->OnDesktopDetached();
@@ -357,8 +311,14 @@ void DesktopSessionProxy::OnDesktopSessionAgentStarted(
   // process. This is needed as the desktop may crash and the daemon process
   // will restart it however the remote will still be bound to the previous
   // process since DetachFromDesktop() will not be called.
+  if (video_capturer_) {
+    video_capturer_->SetDesktopSessionControl(nullptr);
+  }
   desktop_session_control_.reset();
   desktop_session_control_.Bind(std::move(pending_remote));
+  if (video_capturer_) {
+    video_capturer_->SetDesktopSessionControl(desktop_session_control_.get());
+  }
 
   if (client_session_events_) {
     client_session_events_->OnDesktopAttached(desktop_session_id_);
@@ -370,33 +330,6 @@ void DesktopSessionProxy::SetAudioCapturer(
   DCHECK(audio_capture_task_runner_->BelongsToCurrentThread());
 
   audio_capturer_ = audio_capturer;
-}
-
-void DesktopSessionProxy::CaptureFrame() {
-  DCHECK(caller_task_runner_->BelongsToCurrentThread());
-
-  if (desktop_session_control_) {
-    ++pending_capture_frame_requests_;
-    desktop_session_control_->CaptureFrame();
-  } else {
-    video_capturer_->OnCaptureResult(
-        webrtc::DesktopCapturer::Result::ERROR_TEMPORARY, nullptr);
-  }
-}
-
-bool DesktopSessionProxy::SelectSource(webrtc::DesktopCapturer::SourceId id) {
-  DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  if (desktop_session_control_) {
-    desktop_session_control_->SelectSource(id);
-  }
-  return true;
-}
-
-void DesktopSessionProxy::SetVideoCapturer(
-    const base::WeakPtr<IpcVideoFrameCapturer> video_capturer) {
-  DCHECK(caller_task_runner_->BelongsToCurrentThread());
-
-  video_capturer_ = video_capturer;
 }
 
 void DesktopSessionProxy::SetMouseCursorMonitor(
@@ -649,21 +582,13 @@ void DesktopSessionProxy::OnUrlForwarderStateChange(
 DesktopSessionProxy::~DesktopSessionProxy() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
+  // Avoid dangling pointer in the video-capturer.
+  if (video_capturer_) {
+    video_capturer_->SetDesktopSessionControl(nullptr);
+  }
+
   if (desktop_session_connector_.get() && is_desktop_session_connected_) {
     desktop_session_connector_->DisconnectTerminal(this);
-  }
-}
-
-scoped_refptr<DesktopSessionProxy::IpcSharedBufferCore>
-DesktopSessionProxy::GetSharedBufferCore(int id) {
-  DCHECK(caller_task_runner_->BelongsToCurrentThread());
-
-  SharedBuffers::const_iterator i = shared_buffers_.find(id);
-  if (i != shared_buffers_.end()) {
-    return i->second;
-  } else {
-    LOG(ERROR) << "Failed to find the shared buffer " << id;
-    return nullptr;
   }
 }
 
@@ -683,20 +608,17 @@ void DesktopSessionProxy::OnSharedMemoryRegionCreated(
     uint32_t size) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  scoped_refptr<IpcSharedBufferCore> shared_buffer =
-      new IpcSharedBufferCore(id, std::move(region));
-
-  if (shared_buffer->memory() != nullptr &&
-      !shared_buffers_.insert(std::make_pair(id, shared_buffer)).second) {
-    LOG(ERROR) << "Duplicate shared buffer id " << id << " encountered";
+  if (video_capturer_) {
+    video_capturer_->OnSharedMemoryRegionCreated(id, std::move(region), size);
   }
 }
 
 void DesktopSessionProxy::OnSharedMemoryRegionReleased(int id) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  // Drop the cached reference to the buffer.
-  shared_buffers_.erase(id);
+  if (video_capturer_) {
+    video_capturer_->OnSharedMemoryRegionReleased(id);
+  }
 }
 
 void DesktopSessionProxy::OnDesktopDisplayChanged(
@@ -720,38 +642,9 @@ void DesktopSessionProxy::OnDesktopDisplayChanged(
 void DesktopSessionProxy::OnCaptureResult(mojom::CaptureResultPtr result) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  --pending_capture_frame_requests_;
-
-  if (!video_capturer_) {
-    return;
+  if (video_capturer_) {
+    video_capturer_->OnCaptureResult(std::move(result));
   }
-
-  if (result->is_capture_error()) {
-    video_capturer_->OnCaptureResult(result->get_capture_error(), nullptr);
-    return;
-  }
-
-  // Assume that |desktop_frame| is well-formed because it was received from a
-  // more privileged process.
-  mojom::DesktopFramePtr& desktop_frame = result->get_desktop_frame();
-  scoped_refptr<IpcSharedBufferCore> shared_buffer_core =
-      GetSharedBufferCore(desktop_frame->shared_buffer_id);
-  CHECK(shared_buffer_core.get());
-
-  std::unique_ptr<webrtc::DesktopFrame> frame =
-      std::make_unique<webrtc::SharedMemoryDesktopFrame>(
-          desktop_frame->size, desktop_frame->stride,
-          new IpcSharedBuffer(shared_buffer_core));
-  frame->set_capture_time_ms(desktop_frame->capture_time_ms);
-  frame->set_dpi(desktop_frame->dpi);
-  frame->set_capturer_id(desktop_frame->capturer_id);
-
-  for (const auto& rect : desktop_frame->dirty_region) {
-    frame->mutable_updated_region()->AddRect(rect);
-  }
-
-  video_capturer_->OnCaptureResult(webrtc::DesktopCapturer::Result::SUCCESS,
-                                   std::move(frame));
 }
 
 void DesktopSessionProxy::OnBeginFileReadResult(

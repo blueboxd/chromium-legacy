@@ -4,18 +4,19 @@
 
 #include "chrome/browser/ui/webui/top_chrome/webui_contents_wrapper.h"
 
+#include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
+#include "chrome/browser/ui/webui/top_chrome/webui_contents_preload_manager.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/input/native_web_keyboard_event.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
-#include "ui/views/widget/widget.h"
-
-#include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
 
 namespace {
+
+using MakeContentsResult = WebUIContentsPreloadManager::MakeContentsResult;
 
 bool IsEscapeEvent(const content::NativeWebKeyboardEvent& event) {
   return event.GetType() ==
@@ -23,15 +24,25 @@ bool IsEscapeEvent(const content::NativeWebKeyboardEvent& event) {
          event.windows_key_code == ui::VKEY_ESCAPE;
 }
 
-content::WebContents::CreateParams GetWebContentsCreateParams(
-    content::BrowserContext* browser_context,
-    const GURL& webui_url) {
+MakeContentsResult MakeContents(const GURL& webui_url,
+                                content::BrowserContext* browser_context) {
+  // Currently we will always use the preload manager because it is always
+  // available, but we make a fallback just in case this assumption no longer
+  // holds.
+  if (auto* preload_manager = WebUIContentsPreloadManager::GetInstance()) {
+    return preload_manager->MakeContents(webui_url, browser_context);
+  }
+
+  // Fallback when the preloaded manager is not available.
   content::WebContents::CreateParams create_params(browser_context);
   create_params.initially_hidden = true;
   create_params.site_instance =
       content::SiteInstance::CreateForURL(browser_context, webui_url);
 
-  return create_params;
+  MakeContentsResult result;
+  result.web_contents = content::WebContents::Create(create_params),
+  result.is_ready_to_show = false;
+  return result;
 }
 
 }  // namespace
@@ -62,10 +73,11 @@ WebUIContentsWrapper::WebUIContentsWrapper(
     bool webui_resizes_host,
     bool esc_closes_ui,
     const std::string& webui_name)
-    : webui_resizes_host_(webui_resizes_host),
-      esc_closes_ui_(esc_closes_ui),
-      web_contents_(content::WebContents::Create(
-          GetWebContentsCreateParams(browser_context, webui_url))) {
+    : webui_resizes_host_(webui_resizes_host), esc_closes_ui_(esc_closes_ui) {
+  MakeContentsResult make_contents_result =
+      MakeContents(webui_url, browser_context);
+  web_contents_ = std::move(make_contents_result.web_contents);
+
   web_contents_->SetDelegate(this);
   WebContentsObserver::Observe(web_contents_.get());
 

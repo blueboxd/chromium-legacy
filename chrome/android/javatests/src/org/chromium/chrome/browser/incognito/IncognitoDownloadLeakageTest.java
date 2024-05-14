@@ -4,8 +4,13 @@
 
 package org.chromium.chrome.browser.incognito;
 
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
 import android.os.Environment;
 import android.view.View;
@@ -26,20 +31,20 @@ import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.chrome.browser.customtabs.IncognitoCustomTabActivityTestRule;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadPromptStatus;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileKey;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
@@ -63,11 +68,9 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
-// TODO(crbug.com/1360906) remove INCOGNITO_DOWNLOADS_WARNING from the disabled features and fix
-// the test accordingly
-@DisableFeatures(ChromeFeatureList.INCOGNITO_DOWNLOADS_WARNING)
 @CommandLineFlags.Add({
     ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+    ChromeSwitches.DISABLE_ALL_IPH
 })
 public class IncognitoDownloadLeakageTest {
     private String mDownloadTestPage;
@@ -156,7 +159,7 @@ public class IncognitoDownloadLeakageTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     // This skips the download prompt dialog for tests.
-                    UserPrefs.get(Profile.getLastUsedRegularProfile())
+                    UserPrefs.get(ProfileManager.getLastUsedRegularProfile())
                             .setInteger(
                                     Pref.PROMPT_FOR_DOWNLOAD_ANDROID,
                                     DownloadPromptStatus.DONT_SHOW);
@@ -194,6 +197,7 @@ public class IncognitoDownloadLeakageTest {
 
     private void waitForDownloadToFinish() throws TimeoutException {
         int currentCallCount = mHttpDownloadFinishedCallback.getCallCount();
+        onViewWaiting(withId(R.id.message_primary_button)).perform(click());
         mHttpDownloadFinishedCallback.waitForCallback(
                 currentCallCount, currentCallCount + 1, 5, TimeUnit.SECONDS);
     }

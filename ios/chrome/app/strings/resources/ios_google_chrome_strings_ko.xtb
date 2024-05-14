@@ -13,6 +13,7 @@
 <translation id="1180362651362502943">Google 계정의 Chrome 데이터를 계속 사용하세요.</translation>
 <translation id="1200396280085622191">언제든지 메시지와 기타 앱에서 링크를 탭하여 Chrome을 사용합니다.</translation>
 <translation id="1229222343402087523">Chrome에서 ${searchPhrase} 검색</translation>
+<translation id="124228879633599436">Chrome이 최신 버전이 아닙니다. 안전하게 사용하려면 업데이트하세요.</translation>
 <translation id="1282031177488366470">Chrome의 기능 및 성능 개선에 참여</translation>
 <translation id="1320619893013575407">Chrome 로그인을 사용 중지했습니다.</translation>
 <translation id="1333745675627230582">Chrome 공룡 게임 플레이</translation>
@@ -21,6 +22,7 @@
 <translation id="1436059927646026729">Chrome에서 최신 내 탭 열기</translation>
 <translation id="1449241544691504574">Chrome에 북마크 추가</translation>
 <translation id="1462727070346936664">로그인하여 Chrome의 모든 기능을 이용하세요</translation>
+<translation id="1462833127986525564">Chrome 및 기타 Google 서비스가 서로의 데이터를 사용하여 내 환경을 맞춤설정하도록 하려면 이러한 서비스를 연결하세요</translation>
 <translation id="1491435845014430217">'Chrome 종료 시 시크릿 탭 잠금'을 사용 설정합니다.</translation>
 <translation id="1493827051843127077">Chrome을 모든 기기에서 탭, 비밀번호, 결제 정보를 동기화할 기본 브라우저로 설정하세요.</translation>
 <translation id="1504372625950710826">Chrome에서 업데이트를 확인할 수 없습니다. 인터넷 연결 상태를 확인해 보세요.</translation>
@@ -141,7 +143,8 @@
 <translation id="4834499902900503484">Chrome에 로그인하면 저장한 비밀번호가 내 Google 계정에 저장됩니다. 이 기능을 사용 중지하려면 <ph name="BEGIN_LINK" />설정으로 이동하세요<ph name="END_LINK" />.</translation>
 <translation id="484033449593719797">Chrome 베타에서는 지원되지 않습니다.</translation>
 <translation id="4840404732697892756">Google 계정으로 로그인하면 Google 비밀번호 관리자에서 비밀번호를 확인할 수 있습니다.</translation>
-<translation id="4860330141789125848">{COUNT,plural, =1{Chrome의 새 탭 페이지를 통해 이 택배를 추적할 수 있습니다}other{Chrome의 새 탭 페이지를 통해 이 택배를 추적할 수 있습니다}}</translation>
+<translation id="4856636171409137183">최적의 맞춤 환경을 이용하려면 <ph name="FEATURE_NAME_1" /> 및 <ph name="FEATURE_NAME_2" />에 Chrome을 포함하세요</translation>
+<translation id="4860330141789125848">{COUNT,plural, =1{Chrome의 새 탭 페이지를 통해 이 택배를 추적할 수 있습니다.}other{Chrome의 새 탭 페이지를 통해 이 택배를 추적할 수 있습니다.}}</translation>
 <translation id="4903674399067644695">이 카드는 Chrome을 최대한 활용하는 방법에 관한 추천을 보여줍니다.</translation>
 <translation id="49200511069271369">내가 로그인한 계정과 Chrome이 사용될 수 있는 방식은 <ph name="DOMAIN" /> 조직에서 관리합니다. 관리자는 특정 기능을 설정하거나 제한할 수 있습니다</translation>
 <translation id="498985224078955265">이 탭을 다른 기기로 보내려면 두 기기 모두에서 Chrome에 로그인하세요.</translation>
@@ -195,10 +198,8 @@
 <translation id="6484712497741564393"><ph name="EMAIL" /> 계정으로 로그인되었습니다.
 
 데이터가 암호로 암호화되어 있습니다. Google 계정에서 Chrome 데이터를 사용하고 저장하려면 암호를 입력하세요.</translation>
-<translation id="6497850081273517953">Chrome이 최신 버전이 아닙니다. 보안을 유지하려면 최신 버전으로 업데이트하세요.</translation>
 <translation id="6540120577248033958">사이트를 방문한 다음 Chrome 메뉴에서 '팔로우'를 클릭하세요.</translation>
 <translation id="6545449117344801102">Chrome에서는 주소를 감지하고 Google 지도를 사용하여 경로 및 지역 정보를 제공합니다.</translation>
-<translation id="6600954340915313787">Chrome에 복사됨</translation>
 <translation id="6634107063912726160">로그아웃하면 Chrome에서 더 이상 새로운 데이터를 내 Google 계정에 동기화하지 않습니다. 이전에 동기화된 데이터는 계정에 그대로 유지됩니다.</translation>
 <translation id="6646696210740573446">IP 주소를 숨기는 개인 정보 보호 서버를 통해 URL의 난독화된 부분을 Google로 전송합니다. 사이트에서 사용자의 비밀번호를 도용하려고 하거나 사용자가 유해한 파일을 다운로드하는 경우, Chrome에서 페이지 콘텐츠 일부를 비롯한 URL을 Google에 보낼 수 있습니다.</translation>
 <translation id="6648150602980899529"><ph name="DOMAIN" />에서 관리하는 계정으로 로그인합니다. 계정 관리자가 내 Chrome 데이터를 관리하게 되며 데이터는 이 계정에 영구적으로 연결됩니다. Chrome에서 로그아웃하면 데이터가 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
@@ -294,6 +295,7 @@ Chrome 환경을 개선하는 데 데이터를 사용하는 설정을 더 보려
 <translation id="8788269841521769222">이 비밀번호를 기억하지 않아도 됩니다. <ph name="EMAIL" />의 Google 비밀번호 관리자에 비밀번호가 저장됩니다.</translation>
 <translation id="878917453316810648">Chrome 도움말: Chrome을 기본 브라우저로 사용하기</translation>
 <translation id="8808828119384186784">Chrome 설정</translation>
+<translation id="8850736900032787670">내 관심분야를 바탕으로 맞춤설정된 콘텐츠를 받으려면 Chrome에 로그인하세요.</translation>
 <translation id="8855781063981781621">Chrome에서 잠금 모드를 사용 중지하려면 iPad에서 사용 중지하세요</translation>
 <translation id="8856877214925961642">결제 수단 및 주소는 암호로 암호화되지 않습니다.
 

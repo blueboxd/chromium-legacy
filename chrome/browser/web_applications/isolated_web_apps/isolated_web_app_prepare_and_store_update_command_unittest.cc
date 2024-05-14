@@ -17,7 +17,8 @@
 #include "base/test/test_future.h"
 #include "base/types/expected.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
-#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_source.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/test/test_signed_web_bundle_builder.h"
@@ -125,7 +126,10 @@ class IsolatedWebAppUpdatePrepareAndStoreCommandTest : public WebAppTest {
         future;
     provider()->scheduler().PrepareAndStoreIsolatedWebAppUpdate(
         IsolatedWebAppUpdatePrepareAndStoreCommand::UpdateInfo(
-            InstalledBundle({.path = update_bundle_path_}), expected_version),
+            IwaSourceBundleWithModeAndFileOp(
+                update_bundle_path_,
+                IwaSourceBundleModeAndFileOp::kProdModeMove),
+            expected_version),
         url_info_, /*optional_keep_alive=*/nullptr,
         /*optional_profile_keep_alive=*/nullptr, future.GetCallback());
 
@@ -153,7 +157,7 @@ class IsolatedWebAppUpdatePrepareAndStoreCommandTest : public WebAppTest {
     page_state.manifest_url =
         url_info_.origin().GetURL().Resolve("manifest.webmanifest");
     page_state.valid_manifest_for_web_app = true;
-    page_state.opt_manifest =
+    page_state.manifest_before_default_processing =
         CreateDefaultManifest(url_info_.origin().GetURL(), update_version_);
 
     return page_state;
@@ -196,8 +200,8 @@ class IsolatedWebAppUpdatePrepareAndStoreCommandTest : public WebAppTest {
   IsolatedWebAppUrlInfo url_info_ =
       IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(web_bundle_id_);
 
-  IsolatedWebAppLocation installed_location_ =
-      InstalledBundle{.path = base::FilePath(FILE_PATH_LITERAL("a"))};
+  IsolatedWebAppStorageLocation installed_location_ =
+      IwaStorageOwnedBundle{"a", /*dev_mode=*/false};
   base::Version installed_version_ = base::Version("1.0.0");
 
   base::FilePath update_bundle_path_;
@@ -219,8 +223,7 @@ TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest, Succeeds) {
       Field("update_version",
             &IsolatedWebAppUpdatePrepareAndStoreCommandSuccess::update_version,
             Eq(update_version_)));
-
-  IsolatedWebAppLocation pending_location = result.location;
+  IsolatedWebAppStorageLocation pending_location = result.location;
 
   const WebApp* web_app =
       provider()->registrar_unsafe().GetAppById(url_info_.app_id());
@@ -350,8 +353,8 @@ TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest,
 
 TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest,
        FailsIfInstalledAppHasOtherIwaLocationType) {
-  installed_location_ = DevModeProxy{
-      .proxy_url = url::Origin::Create(GURL("https://example.com"))};
+  installed_location_ =
+      IwaStorageProxy{url::Origin::Create(GURL("https://example.com"))};
   InstallIwa();
   const base::flat_set<base::FilePath> existing_dirs = GetIwaDirContent();
 
@@ -359,9 +362,9 @@ TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest,
   CreateDefaultPageState();
 
   auto result = PrepareAndStoreUpdateInfo(update_version_);
-  EXPECT_THAT(result,
-              IsErrorWithMessage(HasSubstr("Unable to update between different "
-                                           "IsolatedWebAppLocation types")));
+  EXPECT_THAT(result, IsErrorWithMessage(
+                          HasSubstr("Unable to update between dev-mode and "
+                                    "non-dev-mode storage location types")));
 
   const WebApp* web_app =
       provider()->registrar_unsafe().GetAppById(url_info_.app_id());
@@ -453,7 +456,8 @@ TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest,
 
   WriteUpdateBundleToDisk();
   auto& page_state = CreateDefaultPageState();
-  page_state.opt_manifest->scope = GURL("https://example.com/foo");
+  page_state.manifest_before_default_processing->scope =
+      GURL("https://example.com/foo/");
 
   auto result = PrepareAndStoreUpdateInfo(update_version_);
   EXPECT_THAT(result, IsErrorWithMessage(

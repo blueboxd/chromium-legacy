@@ -53,12 +53,10 @@ bool IsValidRestrictedDeclarationValue(CSSParserTokenRange range,
   bool has_top_level_brace = false;
 
   while (!range.AtEnd()) {
-    if (RuntimeEnabledFeatures::CSSNestingIdentEnabled()) {
-      if (block_stack_size == 0 && range.Peek().GetType() != kWhitespaceToken) {
-        ++top_level_component_values;
-        if (range.Peek().GetType() == kLeftBraceToken) {
-          has_top_level_brace = true;
-        }
+    if (block_stack_size == 0 && range.Peek().GetType() != kWhitespaceToken) {
+      ++top_level_component_values;
+      if (range.Peek().GetType() == kLeftBraceToken) {
+        has_top_level_brace = true;
       }
     }
 
@@ -70,6 +68,15 @@ bool IsValidRestrictedDeclarationValue(CSSParserTokenRange range,
       // A block may have both var and env references. They can also be nested
       // and used as fallbacks.
       switch (token.FunctionId()) {
+        case CSSValueID::kInvalid:
+          // Not a built-in function, but it might be a user-defined
+          // CSS function (e.g. --foo()).
+          if (RuntimeEnabledFeatures::CSSFunctionsEnabled() &&
+              token.GetType() == kFunctionToken &&
+              CSSVariableParser::IsValidVariableName(token.Value())) {
+            has_references = true;
+          }
+          break;
         case CSSValueID::kVar:
           if (!IsValidVariableReference(range.ConsumeBlock())) {
             return false;  // Invalid reference.
@@ -117,10 +124,8 @@ bool IsValidRestrictedDeclarationValue(CSSParserTokenRange range,
     }
   }
 
-  if (RuntimeEnabledFeatures::CSSNestingIdentEnabled()) {
-    has_positioned_braces =
-        has_top_level_brace && (top_level_component_values > 1);
-  }
+  has_positioned_braces =
+      has_top_level_brace && (top_level_component_values > 1);
 
   return true;
 }

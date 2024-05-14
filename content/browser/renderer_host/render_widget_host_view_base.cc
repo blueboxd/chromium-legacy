@@ -30,6 +30,7 @@
 #include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
+#include "content/browser/renderer_host/scoped_view_transition_resources.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/renderer_host/visible_time_request_trigger.h"
 #include "content/common/content_switches_internal.h"
@@ -469,6 +470,12 @@ bool RenderWidgetHostViewBase::HasFallbackSurface() const {
   return false;
 }
 
+viz::SurfaceId RenderWidgetHostViewBase::GetFallbackSurfaceIdForTesting()
+    const {
+  NOTREACHED();
+  return viz::SurfaceId();
+}
+
 void RenderWidgetHostViewBase::SetWidgetType(WidgetType widget_type) {
   widget_type_ = widget_type;
 }
@@ -503,7 +510,7 @@ bool RenderWidgetHostViewBase::RequestRepaintForTesting() {
 void RenderWidgetHostViewBase::ProcessAckedTouchEvent(
     const TouchEventWithLatencyInfo& touch,
     blink::mojom::InputEventResultState ack_result) {
-  NOTREACHED();
+  DUMP_WILL_BE_NOTREACHED_NORETURN();
 }
 
 // Send system cursor size to the renderer via UpdateScreenInfo().
@@ -1135,6 +1142,11 @@ void RenderWidgetHostViewBase::UpdateFrameSinkIdRegistration() {
     // register until ownership has been transferred.
     router->RemoveFrameSinkIdOwner(GetFrameSinkId());
   }
+}
+
+void RenderWidgetHostViewBase::SetViewTransitionResources(
+    std::unique_ptr<ScopedViewTransitionResources> resources) {
+  view_transition_resources_ = std::move(resources);
 }
 
 }  // namespace content

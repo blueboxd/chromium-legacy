@@ -7,14 +7,14 @@
 
 #include <map>
 #include <memory>
-#include <string>
 
 #include "ash/public/cpp/wallpaper/sea_pen_image.h"
+#include "ash/wallpaper/sea_pen_wallpaper_manager.h"
 #include "ash/webui/common/mojom/sea_pen.mojom-forward.h"
 #include "ash/webui/common/sea_pen_provider.h"
-#include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "components/manta/manta_status.h"
 #include "components/manta/proto/manta.pb.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -33,7 +33,6 @@ class Profile;
 
 namespace ash::personalization_app {
 
-using DecodeImageCallback = base::OnceCallback<void(const gfx::ImageSkia&)>;
 
 // Base class for PersonalizationApp and VcBackground SeaPen providers.
 // The public functions are the interface required for both PersonalizationApp
@@ -66,13 +65,13 @@ class PersonalizationAppSeaPenProviderBase
                              SelectSeaPenThumbnailCallback callback) override;
 
   void SelectRecentSeaPenImage(
-      const base::FilePath& path,
+      uint32_t id,
       SelectRecentSeaPenImageCallback callback) override;
 
   void GetRecentSeaPenImages(GetRecentSeaPenImagesCallback callback) override;
 
   void GetRecentSeaPenImageThumbnail(
-      const base::FilePath& path,
+      uint32_t id,
       GetRecentSeaPenImageThumbnailCallback callback) override;
 
   void OpenFeedbackDialog(mojom::SeaPenFeedbackMetadataPtr metadata) override;
@@ -84,15 +83,15 @@ class PersonalizationAppSeaPenProviderBase
 
  protected:
   virtual void SelectRecentSeaPenImageInternal(
-      const base::FilePath& path,
+      uint32_t id,
       SelectRecentSeaPenImageCallback callback) = 0;
 
   virtual void GetRecentSeaPenImagesInternal(
       GetRecentSeaPenImagesCallback callback) = 0;
 
   virtual void GetRecentSeaPenImageThumbnailInternal(
-      const base::FilePath& path,
-      DecodeImageCallback callback) = 0;
+      uint32_t id,
+      SeaPenWallpaperManager::GetImageAndMetadataCallback callback) = 0;
 
   virtual void OnFetchWallpaperDoneInternal(
       const SeaPenImage& sea_pen_image,
@@ -102,12 +101,13 @@ class PersonalizationAppSeaPenProviderBase
   manta::proto::FeatureName feature_name_;
 
   // Pointer to profile of user that opened personalization SWA. Not owned.
-  const raw_ptr<Profile> profile_;
+  const raw_ptr<Profile, DanglingUntriaged> profile_;
 
-  // When recent sea pen images are fetched, store the valid file paths in the
+  // When recent sea pen images are fetched, store the valid ids in the
   // set. This is checked when the SWA requests thumbnail data or sets an image
-  // as the user's background.
-  std::set<base::FilePath> recent_sea_pen_images_;
+  // as the user's background. These images are already stored to disk in a
+  // special SeaPen directory.
+  std::set<uint32_t> recent_sea_pen_image_ids_;
 
   mojo::Receiver<mojom::SeaPenProvider> sea_pen_receiver_{this};
 
@@ -124,18 +124,21 @@ class PersonalizationAppSeaPenProviderBase
   void OnRecentSeaPenImageSelected(bool success);
 
   void OnGetRecentSeaPenImages(GetRecentSeaPenImagesCallback callback,
-                               const std::vector<base::FilePath>& images);
+                               const std::vector<uint32_t>& ids);
 
   void OnGetRecentSeaPenImageThumbnail(
+      uint32_t id,
       GetRecentSeaPenImageThumbnailCallback callback,
-      const gfx::ImageSkia& image);
+      const gfx::ImageSkia& image,
+      mojom::RecentSeaPenImageInfoPtr image_info);
 
   SelectRecentSeaPenImageCallback pending_select_recent_sea_pen_image_callback_;
 
   const std::unique_ptr<wallpaper_handlers::WallpaperFetcherDelegate>
       wallpaper_fetcher_delegate_;
 
-  // A map of image id to image.
+  // A map of image id to image. These are not yet stored to disk. They are
+  // thumbnail sized and only stored in memory.
   std::map<uint32_t, const SeaPenImage> sea_pen_images_;
 
   // The last query made to the sea pen provider. This can be null when

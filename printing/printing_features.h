@@ -18,7 +18,8 @@ namespace features {
 // documented with descriptions of their behaviors in the .cc file.
 
 #if BUILDFLAG(IS_CHROMEOS)
-COMPONENT_EXPORT(PRINTING_BASE) BASE_DECLARE_FEATURE(kEnableBorderlessPrinting);
+COMPONENT_EXPORT(PRINTING_BASE)
+BASE_DECLARE_FEATURE(kAddPrinterViaPrintscanmgr);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_MAC)
@@ -47,6 +48,8 @@ bool ShouldPrintUsingXps(bool source_is_pdf);
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
 COMPONENT_EXPORT(PRINTING_BASE) BASE_DECLARE_FEATURE(kEnableOopPrintDrivers);
+COMPONENT_EXPORT(PRINTING_BASE)
+extern const base::FeatureParam<bool> kEnableOopPrintDriversEarlyStart;
 COMPONENT_EXPORT(PRINTING_BASE)
 extern const base::FeatureParam<bool> kEnableOopPrintDriversJobPrint;
 COMPONENT_EXPORT(PRINTING_BASE)

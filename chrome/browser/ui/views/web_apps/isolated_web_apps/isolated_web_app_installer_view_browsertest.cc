@@ -24,12 +24,14 @@
 #include "chrome/browser/ui/views/web_apps/isolated_web_apps/isolated_web_app_installer_model.h"
 #include "chrome/browser/ui/views/web_apps/isolated_web_apps/isolated_web_app_installer_view_controller.h"
 #include "chrome/browser/ui/views/web_apps/isolated_web_apps/test_isolated_web_app_installer_model_observer.h"
-#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_source.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/signed_web_bundle_metadata.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
@@ -90,7 +92,7 @@ SignedWebBundleMetadata CreateTestMetadata() {
   return SignedWebBundleMetadata::CreateForTesting(
       IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(
           web_package::SignedWebBundleId::CreateRandomForDevelopment()),
-      DevModeBundle(base::FilePath()), u"Test Isolated Web App",
+      IwaSourceBundleProdMode(base::FilePath()), u"Test Isolated Web App",
       base::Version("0.0.1"), icons);
 }
 
@@ -211,7 +213,11 @@ class IsolatedWebAppInstallerViewUiPixelTest
  public:
   IsolatedWebAppInstallerViewUiPixelTest()
       : NamedWidgetUiPixelTest(GetParam().use_dark_theme,
-                               GetParam().use_right_to_left_language) {}
+                               GetParam().use_right_to_left_language) {
+    feature_list_.InitWithFeatures(
+        {features::kIsolatedWebApps, features::kIsolatedWebAppUnmanagedInstall},
+        {});
+  }
 
   ~IsolatedWebAppInstallerViewUiPixelTest() override = default;
 
@@ -267,7 +273,7 @@ class IsolatedWebAppInstallerViewUiPixelTest
   }
 
  private:
-  base::test::ScopedFeatureList feature_list_{features::kIsolatedWebApps};
+  base::test::ScopedFeatureList feature_list_;
   base::test::TestFuture<void> on_complete_future;
   raw_ptr<views::Widget> widget_;
 };

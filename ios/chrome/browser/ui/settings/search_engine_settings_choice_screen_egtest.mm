@@ -150,7 +150,10 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       selectElementWithMatcher:chrome_test_util::SettingsSearchEngineButton()]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Yahoo! France")]
+  NSString* yahooSearchEngineName =
+      [SettingsAppInterface frYahooSearchEngineName];
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(yahooSearchEngineName)]
       performAction:grey_tap()];
 
   [[EarlGrey
@@ -216,11 +219,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[SearchEngineChoiceEarlGreyUI
       interactionForSettingsCustomSearchEngineWithName:kCustomSearchEngineName]
       performAction:grey_tap()];
-  // Scroll back up.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kSearchEngineTableViewControllerId)]
-      performAction:grey_scrollToContentEdgeWithStartPoint(kGREYContentEdgeTop,
-                                                           0.1f, 0.1f)];
   [[SearchEngineChoiceEarlGreyUI
       interactionForSettingsCustomSearchEngineWithName:kCustomSearchEngineName]
       performAction:grey_swipeSlowInDirectionWithStartPoint(kGREYDirectionLeft,

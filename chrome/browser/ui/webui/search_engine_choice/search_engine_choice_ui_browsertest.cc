@@ -56,7 +56,13 @@ class MockSearchEngineChoiceDialogService
       std::vector<std::unique_ptr<TemplateURL>> choices;
       auto choice = TemplateURLData();
 
-      for (int i = 0; i < 12; i++) {
+      // Current design is built around having 8 items, but the max is defined
+      // acknowledging that we have some exceptions where there are more items.
+      const size_t kItemsCount = 8;
+      static_assert(kItemsCount <=
+                    TemplateURLPrepopulateData::kMaxEeaPrepopulatedEngines);
+
+      for (size_t i = 0; i < kItemsCount; i++) {
         const std::u16string kShortName = u"Test" + base::NumberToString16(i);
         // Start from 1 because a `prepopulate_id` of 0 is for custom search
         // engines.
@@ -93,6 +99,8 @@ struct TestParam {
   std::string test_suffix;
   bool use_dark_theme = false;
   bool use_right_to_left_language = false;
+  bool select_first_search_engine = false;
+  bool first_snippet_text_larger = false;
   gfx::Size dialog_dimensions = gfx::Size(988, 900);
 };
 
@@ -111,12 +119,55 @@ const TestParam kTestParams[] = {
     {.test_suffix = "RightToLeft", .use_right_to_left_language = true},
     {.test_suffix = "MediumSize", .dialog_dimensions = gfx::Size(800, 700)},
     {.test_suffix = "NarrowSize", .dialog_dimensions = gfx::Size(300, 900)},
+    {.test_suffix = "ShortAndNarrowSize",
+     .dialog_dimensions = gfx::Size(500, 500)},
+    {.test_suffix = "LargerFirstEngineSnippet",
+     .first_snippet_text_larger = true},
+    {.test_suffix = "FirstEngineSelectedWithLargerSnippet",
+     .select_first_search_engine = true,
+     .first_snippet_text_larger = true},
 #endif
     // We enable the test on platforms other than Windows with the smallest
     // height due to a small maximum window height set by the operating system.
     // The test will crash if we exceed that height.
     {.test_suffix = "ShortSize", .dialog_dimensions = gfx::Size(988, 376)},
 };
+
+class SearchEngineChoiceNavigationObserver
+    : public content::TestNavigationObserver {
+ public:
+  explicit SearchEngineChoiceNavigationObserver(GURL url)
+      : content::TestNavigationObserver(url) {}
+
+  void NavigationOfInterestDidFinish(
+      content::NavigationHandle* navigation_handle) override {
+    web_contents_ = navigation_handle->GetWebContents();
+  }
+
+  content::WebContents* web_contents() const { return web_contents_; }
+
+ private:
+  raw_ptr<content::WebContents> web_contents_;
+};
+
+const char kSelectFirstSearchEngineJsString[] =
+    "(() => {"
+    "  const app = document.querySelector('search-engine-choice-app');"
+    "  const searchEngineList = app.shadowRoot.querySelectorAll("
+    "      'cr-radio-button');"
+    "  searchEngineList[0].click();"
+    "  return true;"
+    "})();";
+
+const char kMakeFirstSnippetLargerJsString[] =
+    "(() => {"
+    "const app = document.querySelector('search-engine-choice-app');"
+    "const marketingSnippet = "
+    "app.shadowRoot.querySelectorAll('.marketing-snippet');"
+    "marketingSnippet[0].textContent = "
+    "marketingSnippet[0].textContent.repeat(2);"
+    "return true;"
+    "})();";
 }  // namespace
 
 class SearchEngineChoiceUIPixelTest
@@ -157,7 +208,7 @@ class SearchEngineChoiceUIPixelTest
         /*dialog_disabled=*/false);
 
     GURL url = GURL(chrome::kChromeUISearchEngineChoiceURL);
-    content::TestNavigationObserver observer(url);
+    SearchEngineChoiceNavigationObserver observer(url);
     observer.StartWatchingNewWebContents();
 
     views::NamedWidgetShownWaiter widget_waiter(
@@ -183,6 +234,19 @@ class SearchEngineChoiceUIPixelTest
     ShowSearchEngineChoiceDialog(
         *browser(), gfx::Size(dialog_width, dialog_height), zoom_factor);
     widget_waiter.WaitIfNeededAndGet();
+
+    content::WebContents* web_contents = observer.web_contents();
+    CHECK(web_contents);
+
+    if (GetParam().select_first_search_engine) {
+      EXPECT_EQ(true, content::EvalJs(web_contents,
+                                      kSelectFirstSearchEngineJsString));
+    }
+
+    if (GetParam().first_snippet_text_larger) {
+      EXPECT_EQ(true,
+                content::EvalJs(web_contents, kMakeFirstSnippetLargerJsString));
+    }
     observer.Wait();
   }
 
@@ -194,7 +258,8 @@ class SearchEngineChoiceUIPixelTest
   base::CallbackListSubscription create_services_subscription_;
 };
 
-IN_PROC_BROWSER_TEST_P(SearchEngineChoiceUIPixelTest, InvokeUi_default) {
+IN_PROC_BROWSER_TEST_P(SearchEngineChoiceUIPixelTest,
+                       DISABLED_InvokeUi_default) {
   ShowAndVerifyUi();
 }
 

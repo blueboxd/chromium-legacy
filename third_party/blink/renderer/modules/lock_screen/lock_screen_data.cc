@@ -18,24 +18,16 @@ LockScreenData::LockScreenData(LocalDOMWindow& window)
 
 LockScreenData::~LockScreenData() = default;
 
-ScriptPromise LockScreenData::getLockScreenData(ScriptState* script_state,
-                                                LocalDOMWindow& window) {
+ScriptPromiseTyped<LockScreenData> LockScreenData::getLockScreenData(
+    ScriptState* script_state,
+    LocalDOMWindow& window) {
   LockScreenData* supplement =
       Supplement<LocalDOMWindow>::From<LockScreenData>(window);
   if (!supplement) {
     supplement = MakeGarbageCollected<LockScreenData>(window);
     ProvideTo(window, supplement);
   }
-  return supplement->GetLockScreenData(script_state);
-}
-
-ScriptPromise LockScreenData::GetLockScreenData(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver =
-      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
-  resolver->Resolve(this);
-  return promise;
+  return ToResolvedPromise<LockScreenData>(script_state, supplement);
 }
 
 ScriptPromiseTyped<IDLSequence<IDLString>> LockScreenData::getKeys(
@@ -55,17 +47,18 @@ ScriptPromiseTyped<IDLSequence<IDLString>> LockScreenData::getKeys(
   return promise;
 }
 
-ScriptPromise LockScreenData::getData(ScriptState* script_state,
-                                      const String& key) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
+ScriptPromiseTyped<IDLAny> LockScreenData::getData(ScriptState* script_state,
+                                                   const String& key) {
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<IDLAny>>(script_state);
+  auto promise = resolver->Promise();
 
   // TODO(crbug.com/1006642): This should call out to a mojo service instead.
   auto it = fake_data_store_.find(key);
   if (it == fake_data_store_.end()) {
     resolver->Resolve();
   } else {
-    resolver->Resolve(it->value);
+    resolver->Resolve(V8String(script_state->GetIsolate(), it->value));
   }
   return promise;
 }

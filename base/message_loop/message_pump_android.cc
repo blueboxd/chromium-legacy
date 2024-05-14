@@ -14,12 +14,14 @@
 #include <unistd.h>
 #include <utility>
 
+#include "base/android/input_hint_checker.h"
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/check_op.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -39,7 +41,7 @@ STACK_ALIGN int NonDelayedLooperCallback(int fd, int events, void* data) {
     return 0;
 
   DCHECK(events & ALOOPER_EVENT_INPUT);
-  MessagePumpForUI* pump = reinterpret_cast<MessagePumpForUI*>(data);
+  MessagePumpAndroid* pump = reinterpret_cast<MessagePumpAndroid*>(data);
   pump->OnNonDelayedLooperCallback();
   return 1;  // continue listening for events
 }
@@ -49,7 +51,7 @@ STACK_ALIGN int DelayedLooperCallback(int fd, int events, void* data) {
     return 0;
 
   DCHECK(events & ALOOPER_EVENT_INPUT);
-  MessagePumpForUI* pump = reinterpret_cast<MessagePumpForUI*>(data);
+  MessagePumpAndroid* pump = reinterpret_cast<MessagePumpAndroid*>(data);
   pump->OnDelayedLooperCallback();
   return 1;  // continue listening for events
 }
@@ -59,7 +61,7 @@ STACK_ALIGN int DelayedLooperCallback(int fd, int events, void* data) {
 constexpr uint64_t kTryNativeWorkBeforeIdleBit = uint64_t(1) << 32;
 }  // namespace
 
-MessagePumpForUI::MessagePumpForUI()
+MessagePumpAndroid::MessagePumpAndroid()
     : env_(base::android::AttachCurrentThread()) {
   // The Android native ALooper uses epoll to poll our file descriptors and wake
   // us up. We use a simple level-triggered eventfd to signal that non-delayed
@@ -83,7 +85,7 @@ MessagePumpForUI::MessagePumpForUI()
                 &DelayedLooperCallback, reinterpret_cast<void*>(this));
 }
 
-MessagePumpForUI::~MessagePumpForUI() {
+MessagePumpAndroid::~MessagePumpAndroid() {
   DCHECK_EQ(ALooper_forThread(), looper_);
   ALooper_removeFd(looper_, non_delayed_fd_);
   ALooper_removeFd(looper_, delayed_fd_);
@@ -94,7 +96,7 @@ MessagePumpForUI::~MessagePumpForUI() {
   close(delayed_fd_);
 }
 
-void MessagePumpForUI::OnDelayedLooperCallback() {
+void MessagePumpAndroid::OnDelayedLooperCallback() {
   // There may be non-Chromium callbacks on the same ALooper which may have left
   // a pending exception set, and ALooper does not check for this between
   // callbacks. Check here, and if there's already an exception, just skip this
@@ -125,7 +127,7 @@ void MessagePumpForUI::OnDelayedLooperCallback() {
   DoDelayedLooperWork();
 }
 
-void MessagePumpForUI::DoDelayedLooperWork() {
+void MessagePumpAndroid::DoDelayedLooperWork() {
   delayed_scheduled_time_.reset();
 
   Delegate::NextWorkInfo next_work_info = delegate_->DoWork();
@@ -143,7 +145,7 @@ void MessagePumpForUI::DoDelayedLooperWork() {
     ScheduleDelayedWork(next_work_info);
 }
 
-void MessagePumpForUI::OnNonDelayedLooperCallback() {
+void MessagePumpAndroid::OnNonDelayedLooperCallback() {
   // There may be non-Chromium callbacks on the same ALooper which may have left
   // a pending exception set, and ALooper does not check for this between
   // callbacks. Check here, and if there's already an exception, just skip this
@@ -172,7 +174,7 @@ void MessagePumpForUI::OnNonDelayedLooperCallback() {
   DoNonDelayedLooperWork(do_idle_work);
 }
 
-void MessagePumpForUI::DoNonDelayedLooperWork(bool do_idle_work) {
+void MessagePumpAndroid::DoNonDelayedLooperWork(bool do_idle_work) {
   // Note: We can't skip DoWork() even if |do_idle_work| is true here (i.e. no
   // additional ScheduleWork() since yielding to native) as delayed tasks might
   // have come in and we need to re-sample |next_work_info|.
@@ -184,11 +186,22 @@ void MessagePumpForUI::DoNonDelayedLooperWork(bool do_idle_work) {
       return;
 
     next_work_info = delegate_->DoWork();
+
     // If we are prioritizing native, and the next work would normally run
     // immediately, skip the next work and let the native work items have a
     // chance to run. This is useful when user input is waiting for native to
     // have a chance to run.
     if (next_work_info.is_immediate() && next_work_info.yield_to_native) {
+      ScheduleWork();
+      return;
+    }
+
+    // As an optimization, yield to the Looper when input events are waiting to
+    // be handled. In some cases input events can remain undetected. Such "input
+    // hint false negatives" happen, for example, during initialization, in
+    // multi-window cases, or when a previous value is cached to throttle
+    // polling the input channel.
+    if (is_type_ui_ && android::InputHintChecker::HasInput()) {
       ScheduleWork();
       return;
     }
@@ -234,7 +247,7 @@ void MessagePumpForUI::DoNonDelayedLooperWork(bool do_idle_work) {
   }
 }
 
-void MessagePumpForUI::DoIdleWork() {
+void MessagePumpAndroid::DoIdleWork() {
   if (delegate_->DoIdleWork()) {
     // If DoIdleWork() resulted in any work, we're not idle yet. We need to pump
     // the loop here because we may in fact be idle after doing idle work
@@ -243,11 +256,11 @@ void MessagePumpForUI::DoIdleWork() {
   }
 }
 
-void MessagePumpForUI::Run(Delegate* delegate) {
+void MessagePumpAndroid::Run(Delegate* delegate) {
   CHECK(false) << "Unexpected call to Run()";
 }
 
-void MessagePumpForUI::Attach(Delegate* delegate) {
+void MessagePumpAndroid::Attach(Delegate* delegate) {
   DCHECK(!quit_);
 
   // Since the Looper is controlled by the UI thread or JavaHandlerThread, we
@@ -263,7 +276,7 @@ void MessagePumpForUI::Attach(Delegate* delegate) {
     NOTREACHED();
 }
 
-void MessagePumpForUI::Quit() {
+void MessagePumpAndroid::Quit() {
   if (quit_)
     return;
 
@@ -284,11 +297,11 @@ void MessagePumpForUI::Quit() {
   }
 }
 
-void MessagePumpForUI::ScheduleWork() {
+void MessagePumpAndroid::ScheduleWork() {
   ScheduleWorkInternal(/*do_idle_work=*/false);
 }
 
-void MessagePumpForUI::ScheduleWorkInternal(bool do_idle_work) {
+void MessagePumpAndroid::ScheduleWorkInternal(bool do_idle_work) {
   // Write (add) |value| to the eventfd. This tells the Looper to wake up and
   // call our callback, allowing us to run tasks. This also allows us to detect,
   // when we clear the fd, whether additional work was scheduled after we
@@ -309,7 +322,7 @@ void MessagePumpForUI::ScheduleWorkInternal(bool do_idle_work) {
   DPCHECK(ret >= 0);
 }
 
-void MessagePumpForUI::ScheduleDelayedWork(
+void MessagePumpAndroid::ScheduleDelayedWork(
     const Delegate::NextWorkInfo& next_work_info) {
   if (ShouldQuit())
     return;
@@ -334,7 +347,7 @@ void MessagePumpForUI::ScheduleDelayedWork(
   DPCHECK(ret >= 0);
 }
 
-void MessagePumpForUI::QuitWhenIdle(base::OnceClosure callback) {
+void MessagePumpAndroid::QuitWhenIdle(base::OnceClosure callback) {
   DCHECK(!on_quit_callback_);
   DCHECK(run_loop_);
   on_quit_callback_ = std::move(callback);
@@ -343,11 +356,11 @@ void MessagePumpForUI::QuitWhenIdle(base::OnceClosure callback) {
   ScheduleWork();
 }
 
-MessagePump::Delegate* MessagePumpForUI::SetDelegate(Delegate* delegate) {
+MessagePump::Delegate* MessagePumpAndroid::SetDelegate(Delegate* delegate) {
   return std::exchange(delegate_, delegate);
 }
 
-bool MessagePumpForUI::SetQuit(bool quit) {
+bool MessagePumpAndroid::SetQuit(bool quit) {
   return std::exchange(quit_, quit);
 }
 

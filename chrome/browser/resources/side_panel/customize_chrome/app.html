@@ -2,14 +2,10 @@
   #container {
     box-sizing: border-box;
     color: var(--cr-primary-text-color);
-    height: 100%;
-    overflow: auto;
-    position: relative;
-  }
-
-  :host-context([chrome-refresh-2023]) #container {
     display: block;
+    height: 100%;
     padding: var(--sp-body-padding) 0;
+    position: relative;
   }
 
   .section {
@@ -20,33 +16,11 @@
     margin: 8px 16px;
   }
 
-  .sp-cards-separator {
-    background-color: var(--google-grey-300);
-    border: none;
-    height: 2px;
-    margin: 0;
-    width: 100%;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .sp-cards-separator {
-      background-color: var(--google-grey-700);
-    }
-  }
-
-  :host-context([chrome-refresh-2023]) .sp-cards-separator {
-    background: transparent;
-  }
-
-  :host-context([chrome-refresh-2023]) .sp-card {
+  .sp-card {
     font-size: 12px;
     font-weight: 500;
     line-height: 16px;
     max-width: calc(360px - 2 * var(--sp-body-padding));
-  }
-
-  customize-chrome-appearance {
-    margin-bottom: 16px;
   }
 
   customize-chrome-appearance,
@@ -61,7 +35,7 @@
     width: 100%;
   }
 
-  :host-context([chrome-refresh-2023]) customize-chrome-appearance {
+  customize-chrome-appearance {
     margin-bottom: 0;
   }
 
@@ -131,7 +105,7 @@
           <h2 slot="heading">Extensions</h2>
         </sp-heading>
         <div class="description">
-          Customize your browser even more with extensions from the <a href="#">Chrome Web Store</a>
+          $i18nRaw{customizeWithChromeWebstoreLabel}
         </div>
         <div id="buttonContainer">
           <cr-chip id="couponsButton" chip-role="link"

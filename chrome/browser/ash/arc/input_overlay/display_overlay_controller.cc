@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/frame/non_client_frame_view_ash.h"
+#include "ash/game_dashboard/game_dashboard_controller.h"
 #include "ash/public/cpp/arc_game_controls_flag.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
@@ -38,6 +39,7 @@
 #include "components/exo/shell_surface_base.h"
 #include "components/exo/shell_surface_util.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/view.h"
@@ -144,6 +146,7 @@ class DisplayOverlayController::FocusCycler {
     if (auto it = std::find(widget_list_.begin(), widget_list_.end(), widget);
         it == widget_list_.end()) {
       widget_list_.emplace_back(widget);
+      OnWidgetListUpdated();
     }
   }
 
@@ -151,6 +154,27 @@ class DisplayOverlayController::FocusCycler {
     if (auto it = std::find(widget_list_.begin(), widget_list_.end(), widget);
         it != widget_list_.end()) {
       widget_list_.erase(it);
+      OnWidgetListUpdated();
+    }
+  }
+
+  void OnWidgetListUpdated() {
+    const size_t widget_list_size = widget_list_.size();
+    if (widget_list_size <= 1u) {
+      return;
+    }
+
+    // Update the widget's accessibility tree.
+    for (size_t i = 0; i < widget_list_size; i++) {
+      auto* curr_view = widget_list_[i]->GetContentsView();
+      auto& curr_view_a11y = curr_view->GetViewAccessibility();
+      const size_t prev_index = (i + widget_list_size - 1u) % widget_list_size;
+      const size_t next_index = (i + 1u) % widget_list_size;
+
+      curr_view_a11y.SetPreviousFocus(widget_list_[prev_index]);
+      curr_view_a11y.SetNextFocus(widget_list_[next_index]);
+      curr_view->NotifyAccessibilityEvent(ax::mojom::Event::kTreeChanged,
+                                          /*send_native_event=*/true);
     }
   }
 
@@ -414,7 +438,7 @@ void DisplayOverlayController::AddInputMappingView(
   }
   // Set input mapping view visibility according to the saved status.
   DCHECK(touch_injector_);
-  SetInputMappingVisible(touch_injector_->input_mapping_visible());
+  SetInputMappingVisible(/*visible=*/touch_injector_->input_mapping_visible());
 }
 
 void DisplayOverlayController::RemoveInputMappingView() {
@@ -580,15 +604,13 @@ void DisplayOverlayController::SetDisplayMode(DisplayMode mode) {
       RemoveFocusCycler();
       if (GetActiveActionsSize() == 0u) {
         // If there is no active action in `kView` mode, it doesn't create
-        // `input_mapping_widget_` to save resources. When
-        // switching from `kEdit` mode, destroy `input_mapping_widget_` for no
-        // active actions.
+        // `input_mapping_widget_` to save resources. When switching from
+        // `kEdit` mode, destroy `input_mapping_widget_` for no active actions.
         RemoveInputMappingWidget();
       } else {
         AddInputMappingWidget();
-        if (touch_injector_->input_mapping_visible()) {
-          input_mapping_widget_->ShowInactive();
-        }
+        SetInputMappingVisible(
+            /*visible=*/touch_injector_->input_mapping_visible());
 
         if (auto* input_mapping = GetInputMapping()) {
           input_mapping->SetDisplayMode(mode);
@@ -611,7 +633,7 @@ void DisplayOverlayController::SetDisplayMode(DisplayMode mode) {
 
       // No matter if the mapping hint is hidden, `input_mapping_widget_` needs
       // to show up in `kEdit` mode.
-      input_mapping_widget_->ShowInactive();
+      SetInputMappingVisible(/*visible=*/true);
 
       // Since `focus_cycler_` was added in `kEdit` mode after
       // `input_mapping_widget_` in general. Refresh `input_mapping_widget_` to
@@ -708,8 +730,9 @@ void DisplayOverlayController::OnApplyMenuState() {
     return;
   }
 
-  SetInputMappingVisible(GetTouchInjectorEnable() &&
-                         GetInputMappingViewVisible());
+  SetInputMappingVisible(
+      /*visible=*/GetTouchInjectorEnable() && GetInputMappingViewVisible(),
+      /*store_visible_state=*/true);
 }
 
 InputOverlayWindowStateType DisplayOverlayController::GetWindowStateType()
@@ -1016,10 +1039,12 @@ void DisplayOverlayController::OnWindowPropertyChanged(aura::Window* window,
           IsFlagSet(flags, ash::ArcGameControlsFlag::kEnabled));
 
       // `input_mapping_widget_` is always visible in edit mode.
-      SetInputMappingVisible(
-          IsFlagSet(flags, ash::ArcGameControlsFlag::kEdit)
-              ? true
-              : IsFlagSet(flags, ash::ArcGameControlsFlag::kHint));
+      SetInputMappingVisible(/*visible=*/
+                             IsFlagSet(flags, ash::ArcGameControlsFlag::kEdit)
+                                 ? true
+                                 : IsFlagSet(flags,
+                                             ash::ArcGameControlsFlag::kHint),
+                             /*store_visible_state=*/true);
 
       // Save the menu states upon menu closing.
       if (IsFlagChanged(flags, old_flags, ash::ArcGameControlsFlag::kMenu) &&
@@ -1047,34 +1072,30 @@ bool DisplayOverlayController::HasMenuView() const {
   return input_menu_view_ != nullptr;
 }
 
-void DisplayOverlayController::SetInputMappingVisible(bool visible) {
-  if (IsBeta()) {
-    // There is no `input_mapping_widget_` if there is no active action or gio
-    // is disabled.
-    if (!input_mapping_widget_) {
-      return;
-    }
+void DisplayOverlayController::SetInputMappingVisible(
+    bool visible,
+    bool store_visible_state) {
+  // There is no `input_mapping_widget_` or `input_mapping_view_` if there is no
+  // active action or the feature is disabled.
+  if (IsBeta() && input_mapping_widget_) {
     if (visible) {
       input_mapping_widget_->ShowInactive();
+      // ash::GameDashboardController::Get() is empty for the unit test.
+      if (auto* gd_controller = ash::GameDashboardController::Get()) {
+        gd_controller->MaybeStackAboveWidget(touch_injector_->window(),
+                                             input_mapping_widget_.get());
+      }
     } else {
       input_mapping_widget_->Hide();
     }
-  } else {
-    if (!input_mapping_view_) {
-      return;
-    }
+  } else if (!IsBeta() && input_mapping_view_) {
     input_mapping_view_->SetVisible(visible);
   }
 
-  DCHECK(touch_injector_);
-  touch_injector_->store_input_mapping_visible(visible);
-}
-
-void DisplayOverlayController::SetInputMappingVisibleTemporary() {
-  if (!input_mapping_view_) {
-    return;
+  if (store_visible_state) {
+    CHECK(touch_injector_);
+    touch_injector_->store_input_mapping_visible(visible);
   }
-  input_mapping_view_->SetVisible(true);
 }
 
 bool DisplayOverlayController::GetInputMappingViewVisible() const {

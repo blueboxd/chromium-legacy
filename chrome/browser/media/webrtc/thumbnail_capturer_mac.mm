@@ -182,7 +182,7 @@ const base::FeatureParam<CaptureMode>::Option capture_mode_options[] = {
     {CaptureMode::kSCScreenshotManager, "sc_screenshot_manager"},
 };
 const base::FeatureParam<CaptureMode> kThumbnailCapturerMacCaptureMode{
-    &kThumbnailCapturerMac, "capture_mode", CaptureMode::kSCStream,
+    &kThumbnailCapturerMac, "capture_mode", CaptureMode::kSCScreenshotManager,
     &capture_mode_options};
 
 CaptureMode GetCaptureModeFeatureParam() {
@@ -974,7 +974,9 @@ void ThumbnailCapturerMac::OnCapturedFrame(
 }  // namespace
 
 bool ShouldUseThumbnailCapturerMac(DesktopMediaList::Type type) {
-  if (@available(macOS 14.0, *)) {
+  // There was a bug in ScreenCaptureKit that was fixed in 14.4,
+  // see b/40076027.
+  if (@available(macOS 14.4, *)) {
     switch (type) {
       case DesktopMediaList::Type::kWindow:
         return base::FeatureList::IsEnabled(

@@ -18,14 +18,15 @@ try_.defaults.set(
     builderless = True,
     os = os.MAC_DEFAULT,
     ssd = True,
-    compilator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     orchestrator_cores = 2,
+    orchestrator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
     siso_configs = ["builder"],
     siso_enable_cloud_profiler = True,
     siso_enable_cloud_trace = True,
+    siso_enabled = True,
     siso_project = siso.project.DEFAULT_UNTRUSTED,
 )
 
@@ -184,38 +185,6 @@ try_.compilator_builder(
     branch_selector = branches.selector.MAC_BRANCHES,
     cpu = cpu.ARM64,
     main_list_view = "try",
-)
-
-# TODO: crbug.com/1502025 - Reduce duplicated configs from the shadow builder.
-try_.orchestrator_builder(
-    name = "mac-siso-rel",
-    description_html = """\
-This builder shadows mac-rel builder to compare between Siso builds and Ninja builds.<br/>
-This builder should be removed after migrating mac-rel from Ninja to Siso. b/277863839
-""",
-    mirrors = builder_config.copy_from("try/mac-rel"),
-    gn_args = "try/mac-rel",
-    compilator = "mac-siso-rel-compilator",
-    contact_team_email = "chrome-build-team@google.com",
-    coverage_test_types = ["overall", "unit"],
-    experiments = {
-        # go/nplus1shardsproposal
-        "chromium.add_one_test_shard": 10,
-    },
-    main_list_view = "try",
-    siso_enabled = True,
-    tryjob = try_.job(
-        experiment_percentage = 5,
-    ),
-    use_clang_coverage = True,
-)
-
-try_.compilator_builder(
-    name = "mac-siso-rel-compilator",
-    cpu = cpu.ARM64,
-    contact_team_email = "chrome-build-team@google.com",
-    main_list_view = "try",
-    siso_enabled = True,
 )
 
 try_.builder(
@@ -451,7 +420,7 @@ try_.builder(
     mirrors = [
         "ci/Mac Builder (dbg)",
     ],
-    try_settings = builder_config.try_settings(
+    builder_config_settings = builder_config.try_settings(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
@@ -474,7 +443,7 @@ try_.builder(
     mirrors = [
         "ci/Mac Builder",
     ],
-    try_settings = builder_config.try_settings(
+    builder_config_settings = builder_config.try_settings(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
@@ -551,6 +520,7 @@ ios_builder(
     builderless = True,
     cpu = cpu.ARM64,
     execution_timeout = 4 * time.hour,
+    xcode = xcode.x15betabots,
 )
 
 ios_builder(
@@ -577,12 +547,14 @@ ios_builder(
     mirrors = ["ci/ios-fieldtrial-rel"],
     gn_args = "ci/ios-fieldtrial-rel",
     builderless = True,
+    cpu = cpu.ARM64,
 )
 
 ios_builder(
     name = "ios-m1-simulator",
     mirrors = ["ci/ios-m1-simulator"],
     gn_args = "ci/ios-m1-simulator",
+    os = os.MAC_BETA,
     cpu = cpu.ARM64,
 )
 
@@ -614,6 +586,7 @@ try_.orchestrator_builder(
     main_list_view = "try",
     tryjob = try_.job(),
     use_clang_coverage = True,
+    xcode = xcode.xcode_default,
 )
 
 try_.compilator_builder(
@@ -624,45 +597,6 @@ try_.compilator_builder(
     cpu = cpu.ARM64,
     ssd = None,
     main_list_view = "try",
-    xcode = xcode.xcode_default,
-)
-
-# TODO: crbug.com/1502025 - Reduce duplicated configs from the shadow builder.
-try_.orchestrator_builder(
-    name = "ios-simulator-siso",
-    description_html = """\
-This builder shadows ios-simulator builder to compare between Siso builds and Ninja builds.<br/>
-This builder should be removed after migrating ios-simulator from Ninja to Siso. b/277863839
-""",
-    mirrors = builder_config.copy_from("try/ios-simulator"),
-    try_settings = builder_config.try_settings(
-        is_compile_only = True,
-    ),
-    gn_args = "try/ios-simulator",
-    os = os.LINUX_DEFAULT,
-    compilator = "ios-simulator-siso-compilator",
-    contact_team_email = "chrome-build-team@google.com",
-    coverage_exclude_sources = "ios_test_files_and_test_utils",
-    coverage_test_types = ["overall", "unit"],
-    experiments = {
-        # go/nplus1shardsproposal
-        "chromium.add_one_test_shard": 10,
-    },
-    main_list_view = "try",
-    siso_enabled = True,
-    tryjob = try_.job(
-        experiment_percentage = 10,
-    ),
-    use_clang_coverage = True,
-)
-
-try_.compilator_builder(
-    name = "ios-simulator-siso-compilator",
-    cpu = cpu.ARM64,
-    contact_team_email = "chrome-build-team@google.com",
-    main_list_view = "try",
-    siso_enabled = True,
-    xcode = xcode.xcode_default,
 )
 
 ios_builder(
@@ -726,32 +660,9 @@ ios_builder(
 )
 
 ios_builder(
-    name = "ios16-beta-simulator",
-    mirrors = [
-        "ci/ios16-beta-simulator",
-    ],
-    gn_args = "ci/ios16-beta-simulator",
-    os = os.MAC_DEFAULT,
-    cpu = cpu.ARM64,
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
-)
-
-ios_builder(
-    name = "ios16-sdk-simulator",
-    mirrors = [
-        "ci/ios16-sdk-simulator",
-    ],
-    gn_args = "ci/ios16-sdk-simulator",
-    os = os.MAC_14,
-    cpu = cpu.ARM64,
-    xcode = xcode.x15betabots,
-)
-
-ios_builder(
     name = "ios17-beta-simulator",
     mirrors = ["ci/ios17-beta-simulator"],
     gn_args = "ci/ios17-beta-simulator",
-    os = os.MAC_DEFAULT,
     cpu = cpu.ARM64,
 )
 
@@ -759,6 +670,27 @@ ios_builder(
     name = "ios17-sdk-simulator",
     mirrors = ["ci/ios17-sdk-simulator"],
     gn_args = "ci/ios17-sdk-simulator",
+    os = os.MAC_BETA,
+    cpu = cpu.ARM64,
+    xcode = xcode.x15betabots,
+)
+
+ios_builder(
+    name = "ios18-beta-simulator",
+    mirrors = [
+        "ci/ios18-beta-simulator",
+    ],
+    gn_args = "ci/ios18-beta-simulator",
+    cpu = cpu.ARM64,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+)
+
+ios_builder(
+    name = "ios18-sdk-simulator",
+    mirrors = [
+        "ci/ios18-sdk-simulator",
+    ],
+    gn_args = "ci/ios18-sdk-simulator",
     os = os.MAC_BETA,
     cpu = cpu.ARM64,
     xcode = xcode.x15betabots,

@@ -174,8 +174,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.AlignSelf() == b.AlignSelf();
     case CSSPropertyID::kAlignmentBaseline:
       return a.AlignmentBaseline() == b.AlignmentBaseline();
-    case CSSPropertyID::kAnchorDefault:
-      return base::ValuesEquivalent(a.AnchorDefault(), b.AnchorDefault());
+    case CSSPropertyID::kPositionAnchor:
+      return base::ValuesEquivalent(a.PositionAnchor(), b.PositionAnchor());
     case CSSPropertyID::kAnchorName:
       return base::ValuesEquivalent(a.AnchorName(), b.AnchorName());
     case CSSPropertyID::kAppearance:
@@ -372,7 +372,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.GetFontDescription().FontOpticalSizing() ==
              b.GetFontDescription().FontOpticalSizing();
     case CSSPropertyID::kFontPalette:
-      return base::ValuesEquivalent(a.FontPalette(), b.FontPalette());
+      return base::ValuesEquivalent(a.GetFontPalette(), b.GetFontPalette());
     case CSSPropertyID::kFontFeatureSettings:
       return a.GetFontDescription().FeatureSettings() ==
              b.GetFontDescription().FeatureSettings();
@@ -590,13 +590,13 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.PointerEvents() == b.PointerEvents();
     case CSSPropertyID::kPosition:
       return a.GetPosition() == b.GetPosition();
-    case CSSPropertyID::kPositionFallback:
-      return base::ValuesEquivalent(a.PositionFallback(), b.PositionFallback());
     case CSSPropertyID::kPositionFallbackBounds:
       return base::ValuesEquivalent(a.PositionFallbackBounds(),
                                     b.PositionFallbackBounds());
     case CSSPropertyID::kQuotes:
       return a.Quotes() == b.Quotes();
+    case CSSPropertyID::kReadingOrderItems:
+      return a.ReadingOrderItems() == b.ReadingOrderItems();
     case CSSPropertyID::kResize:
       return a.Resize() == b.Resize();
     case CSSPropertyID::kRight:
@@ -686,6 +686,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.TextAnchor() == b.TextAnchor();
     case CSSPropertyID::kTextAutospace:
       return a.TextAutospace() == b.TextAutospace();
+    case blink::CSSPropertyID::kTextBoxEdge:
+      return a.GetTextBoxEdge() == b.GetTextBoxEdge();
     case blink::CSSPropertyID::kTextBoxTrim:
       return a.TextBoxTrim() == b.TextBoxTrim();
     case CSSPropertyID::kTextDecorationColor:
@@ -1241,6 +1243,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kPlaceContent:
     case CSSPropertyID::kPlaceItems:
     case CSSPropertyID::kPlaceSelf:
+    case CSSPropertyID::kPositionTry:
     case CSSPropertyID::kScrollMargin:
     case CSSPropertyID::kScrollPadding:
     case CSSPropertyID::kScrollStart:

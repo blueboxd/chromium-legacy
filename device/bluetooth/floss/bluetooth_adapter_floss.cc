@@ -1434,6 +1434,15 @@ device::BluetoothLocalGattService* BluetoothAdapterFloss::GetGattService(
                                                : service->second.get();
 }
 
+base::WeakPtr<device::BluetoothLocalGattService>
+BluetoothAdapterFloss::CreateLocalGattService(
+    const device::BluetoothUUID& uuid,
+    bool is_primary,
+    device::BluetoothLocalGattService::Delegate* delegate) {
+  return floss::BluetoothLocalGattServiceFloss::Create(this, uuid, is_primary,
+                                                       delegate);
+}
+
 void BluetoothAdapterFloss::RegisterGattService(
     BluetoothLocalGattServiceFloss* service) {
   FlossDBusManager::Get()->GetGattManagerClient()->AddService(
@@ -1532,8 +1541,31 @@ BluetoothAdapterFloss::GetLowEnergyScanSessionHardwareOffloadingStatus() {
 
 std::vector<device::BluetoothAdapter::BluetoothRole>
 BluetoothAdapterFloss::GetSupportedRoles() {
-  // TODO(b/310995348) - wire to Floss
-  return std::vector<device::BluetoothAdapter::BluetoothRole>{};
+  std::vector<BluetoothAdapter::BluetoothRole> roles;
+
+  if (!IsPresent()) {
+    return roles;
+  }
+
+  for (auto role :
+       FlossDBusManager::Get()->GetAdapterClient()->GetSupportedRoles()) {
+    switch (role) {
+      case FlossAdapterClient::BtAdapterRole::kCentral:
+        roles.push_back(BluetoothAdapter::BluetoothRole::kCentral);
+        break;
+      case FlossAdapterClient::BtAdapterRole::kPeripheral:
+        roles.push_back(BluetoothAdapter::BluetoothRole::kPeripheral);
+        break;
+      case FlossAdapterClient::BtAdapterRole::kCentralPeripheral:
+        roles.push_back(BluetoothAdapter::BluetoothRole::kCentralPeripheral);
+        break;
+      default:
+        BLUETOOTH_LOG(EVENT)
+            << __func__ << ": Unknown role: " << static_cast<uint32_t>(role);
+    }
+  }
+
+  return roles;
 }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 

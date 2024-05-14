@@ -618,8 +618,8 @@ void LockContentsView::AboutToRequestFocusFromTabTraversal(bool reverse) {
 void LockContentsView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Shelf* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
   ShelfWidget* shelf_widget = shelf->shelf_widget();
-  GetViewAccessibility().OverrideNextFocus(shelf_widget);
-  GetViewAccessibility().OverridePreviousFocus(shelf->GetStatusAreaWidget());
+  GetViewAccessibility().SetNextFocus(shelf_widget);
+  GetViewAccessibility().SetPreviousFocus(shelf->GetStatusAreaWidget());
   node_data->role = ax::mojom::Role::kWindow;
   node_data->SetName(
       l10n_util::GetStringUTF16(screen_type_ == LockScreen::ScreenType::kLogin
@@ -776,6 +776,11 @@ void LockContentsView::OnPinEnabledForUserChanged(const AccountId& user,
     LOG(ERROR) << "Unable to find user when changing PIN state to " << enabled;
     return;
   }
+  if (state->show_pin == enabled) {
+    LOG(WARNING)
+        << "Unexpected call to OnPinEnabledForUserChanged; state unchanged.";
+    return;
+  }
 
   state->show_pin = enabled;
   state->autosubmit_pin_length =
@@ -813,6 +818,12 @@ void LockContentsView::OnFingerprintStateChanged(const AccountId& account_id,
                                                  FingerprintState state) {
   UserState* user_state = FindStateForUser(account_id);
   if (!user_state) {
+    LOG(ERROR) << "Unable to find user when changing fingerprint state.";
+    return;
+  }
+  if (user_state->fingerprint_state == state) {
+    LOG(WARNING)
+        << "Unexpected call to OnFingerprintStateChanged; state unchanged.";
     return;
   }
 

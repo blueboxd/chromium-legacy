@@ -79,14 +79,14 @@ class MockAutofillClient : public TestAutofillClient {
 
 class MockAutofillDriver : public TestAutofillDriver {
  public:
-  MockAutofillDriver() = default;
+  using TestAutofillDriver::TestAutofillDriver;
   MockAutofillDriver(const MockAutofillDriver&) = delete;
   MockAutofillDriver& operator=(const MockAutofillDriver&) = delete;
 
   // Mock methods to enable testability.
   MOCK_METHOD((base::flat_set<FieldGlobalId>),
               ApplyFormAction,
-              (mojom::ActionType action_type,
+              (mojom::FormActionType action_type,
                mojom::ActionPersistence action_persistence,
                const FormData& data,
                const url::Origin& triggered_origin,
@@ -94,8 +94,8 @@ class MockAutofillDriver : public TestAutofillDriver {
               (override));
   MOCK_METHOD(void,
               ApplyFieldAction,
-              (mojom::ActionPersistence action_persistence,
-               mojom::TextReplacement text_replacement,
+              (mojom::FieldActionType text_replacement,
+               mojom::ActionPersistence action_persistence,
                const FieldGlobalId& field_id,
                const std::u16string& value),
               (override));
@@ -127,14 +127,14 @@ class FormFillerTest : public testing::Test {
     ASSERT_TRUE(base::Time::FromString("01/01/20", &year2020));
     task_environment_.FastForwardBy(year2020 - AutofillClock::Now());
 
-    autofill_client_.set_test_payments_network_interface(
-        std::make_unique<payments::TestPaymentsNetworkInterface>(
-            autofill_client_.GetURLLoaderFactory(),
-            autofill_client_.GetIdentityManager(),
-            autofill_client_.GetPersonalDataManager()));
-
-    browser_autofill_manager_ = std::make_unique<TestBrowserAutofillManager>(
-        &autofill_driver_, &autofill_client_);
+    autofill_client_.GetPaymentsAutofillClient()
+        ->set_test_payments_network_interface(
+            std::make_unique<payments::TestPaymentsNetworkInterface>(
+                autofill_client_.GetURLLoaderFactory(),
+                autofill_client_.GetIdentityManager(),
+                autofill_client_.GetPersonalDataManager()));
+    browser_autofill_manager_ =
+        std::make_unique<TestBrowserAutofillManager>(&autofill_driver_);
 
     // Mandatory re-auth is required for credit card autofill on automotive, so
     // the authenticator response needs to be properly mocked.
@@ -159,11 +159,11 @@ class FormFillerTest : public testing::Test {
     return browser_autofill_manager_->GetAutofillField(form, field);
   }
 
-  // Calls the appropriate filling function with the specified input parameters.
-  // Also expects that the mock driver's |ApplyFormAction()| method will be
-  // called and saves and returns the parameter of that call.
+  // Lets `BrowserAutofillManager` fill `form` with `profile_or_credit_card` and
+  // returns `form` as it would be extracted from the renderer afterwards, i.e.,
+  // with the autofilled `FormFieldData::value`s.
   FormData FillAutofillFormData(
-      const FormData& form,
+      FormData form,
       const FormFieldData& trigger_field,
       absl::variant<const AutofillProfile*, const CreditCard*>
           profile_or_credit_card,
@@ -174,6 +174,9 @@ class FormFillerTest : public testing::Test {
     for (const FormFieldData& field : form.fields) {
       global_ids.push_back(field.global_id());
     }
+    // After the call, `filled_form` will only contain the fields that were
+    // autofilled in this call of FillOrPreviewFooForm (% fields not filled due
+    // to the iframe security policy).
     EXPECT_CALL(autofill_driver_, ApplyFormAction)
         .WillOnce(DoAll(SaveArg<2>(&filled_form), Return(global_ids)));
     if (const AutofillProfile** profile =
@@ -182,12 +185,19 @@ class FormFillerTest : public testing::Test {
           mojom::ActionPersistence::kFill, form, trigger_field, **profile,
           trigger_details);
     } else {
-      browser_autofill_manager_->FillCreditCardForm(
-          form, trigger_field,
+      browser_autofill_manager_->FillOrPreviewCreditCardForm(
+          mojom::ActionPersistence::kFill, form, trigger_field,
           *absl::get<const CreditCard*>(profile_or_credit_card), /*cvc=*/u"",
           trigger_details);
     }
-    return filled_form;
+    // Copy the filled data into the form.
+    for (FormFieldData& field : form.fields) {
+      if (const FormFieldData* filled_field =
+              filled_form.FindFieldByGlobalId(field.global_id())) {
+        field = *filled_field;
+      }
+    }
+    return form;
   }
 
   FormData PreviewVirtualCardDataAndGetResults(const FormData& input_form,
@@ -199,7 +209,8 @@ class FormFillerTest : public testing::Test {
                          Return(std::vector<FieldGlobalId>{}))));
     browser_autofill_manager_->FillOrPreviewCreditCardForm(
         mojom::ActionPersistence::kPreview, input_form, input_field,
-        virtual_card, {.trigger_source = AutofillTriggerSource::kPopup});
+        virtual_card, std::u16string(),
+        {.trigger_source = AutofillTriggerSource::kPopup});
     return filled_form;
   }
 
@@ -218,8 +229,8 @@ class FormFillerTest : public testing::Test {
     card.SetNetworkForMaskedCard(kVisaCard);
 
     EXPECT_CALL(autofill_driver_, ApplyFormAction).Times(AtLeast(1));
-    browser_autofill_manager_->FillOrPreviewCreditCardForm(
-        mojom::ActionPersistence::kFill, form, form.fields.front(), card,
+    browser_autofill_manager_->AuthenticateThenFillCreditCardForm(
+        form, form.fields.front(), card,
         {.trigger_source = AutofillTriggerSource::kPopup});
   }
 
@@ -261,7 +272,7 @@ class FormFillerTest : public testing::Test {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   test::AutofillUnitTestEnvironment autofill_test_environment_;
   NiceMock<MockAutofillClient> autofill_client_;
-  NiceMock<MockAutofillDriver> autofill_driver_;
+  NiceMock<MockAutofillDriver> autofill_driver_{&autofill_client_};
   // TODO(b/41490871): Replace with FormFiller.
   std::unique_ptr<TestBrowserAutofillManager> browser_autofill_manager_;
 };
@@ -468,7 +479,7 @@ TEST_F(FormFillerTest, UndoSavesFieldByFieldFillingData) {
 
   EXPECT_CALL(autofill_driver_, ApplyFieldAction);
   browser_autofill_manager_->FillOrPreviewField(
-      mojom::ActionPersistence::kFill, mojom::TextReplacement::kReplaceAll,
+      mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
       form, form.fields.front(), u"Test Value",
       PopupItemId::kAddressFieldByFieldFilling);
   // Undo early returns if it has no filling history for the trigger field,
@@ -1785,12 +1796,14 @@ TEST_P(ExpirationDateRefillTest, RefillJavascriptModifiedExpirationDates) {
   testing::Mock::VerifyAndClearExpectations(&autofill_driver_);
 
   if (test_case.triggers_refill) {
-    ASSERT_EQ(3u, refilled_form.fields.size());
-    EXPECT_THAT(refilled_form.fields[0], AutofilledWith(u"Elvis Presley"));
-    EXPECT_THAT(refilled_form.fields[1], AutofilledWith(u"4234567890123456"));
-    EXPECT_THAT(refilled_form.fields[2],
+    ASSERT_EQ(1u, refilled_form.fields.size());
+    // The first two fields aren't filled since their values do not change, so
+    // they're removed from refilled_form.fields`. Therefore the only field in
+    // `refilled_form` corresponds the the third field in `form`.
+    EXPECT_EQ(refilled_form.fields[0].global_id(), form.fields[2].global_id());
+    EXPECT_THAT(refilled_form.fields[0],
                 AutofilledWith(test_case.refilled_exp_date));
-    EXPECT_TRUE(refilled_form.fields[2].force_override);
+    EXPECT_TRUE(refilled_form.fields[0].force_override);
   }
 }
 

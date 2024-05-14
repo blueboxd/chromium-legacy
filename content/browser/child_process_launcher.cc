@@ -4,6 +4,7 @@
 
 #include "content/browser/child_process_launcher.h"
 
+#include <optional>
 #include <utility>
 
 #include "base/check_op.h"
@@ -37,7 +38,7 @@ namespace {
 
 #if !BUILDFLAG(IS_ANDROID)
 // Returns the cumulative CPU usage for the specified process.
-base::TimeDelta GetCPUUsage(base::ProcessHandle process_handle) {
+std::optional<base::TimeDelta> GetCPUUsage(base::ProcessHandle process_handle) {
 #if BUILDFLAG(IS_MAC)
   std::unique_ptr<base::ProcessMetrics> process_metrics =
       base::ProcessMetrics::CreateProcessMetrics(
@@ -46,15 +47,7 @@ base::TimeDelta GetCPUUsage(base::ProcessHandle process_handle) {
   std::unique_ptr<base::ProcessMetrics> process_metrics =
       base::ProcessMetrics::CreateProcessMetrics(process_handle);
 #endif
-
-#if BUILDFLAG(IS_WIN)
-  // Use the precise version which is Windows specific.
-  // TODO(pmonette): Clean up this code when the precise version becomes the
-  //                 default.
-  return process_metrics->GetPreciseCumulativeCPUUsage();
-#else
   return process_metrics->GetCumulativeCPUUsage();
-#endif
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 
@@ -213,7 +206,7 @@ ChildProcessTerminationInfo ChildProcessLauncher::GetChildTerminationInfo(
   }
 
 #if !BUILDFLAG(IS_ANDROID)
-  base::TimeDelta cpu_usage;
+  std::optional<base::TimeDelta> cpu_usage;
   if (!should_launch_elevated_)
     cpu_usage = GetCPUUsage(process_.process.Handle());
 #endif

@@ -229,7 +229,8 @@ const CGFloat kFadeAnimationVerticalOffset = 12;
   // Creates the constraints if the view is newly added to the view hierarchy.
 
   if (IsIpadPopoutOmniboxEnabled()) {
-    self.bottomConstraintPhone = [popup.superview.bottomAnchor
+    self.bottomConstraintPhone = [popup.superview.safeAreaLayoutGuide
+                                      .bottomAnchor
         constraintGreaterThanOrEqualToAnchor:popup.bottomAnchor
                                     constant:
                                         kPopupBottomPaddingTablet +
@@ -275,8 +276,7 @@ const CGFloat kFadeAnimationVerticalOffset = 12;
       IsRegularXRegularSizeClass(self.popupContainerView.traitCollection);
 
   _popupContainerView.layer.cornerRadius = showRegularLayout ? 16 : 0;
-  _popupContainerView.layer.shadowColor =
-      [UIColor.blackColor colorWithAlphaComponent:0.2].CGColor;
+  _popupContainerView.layer.shadowColor = UIColor.blackColor.CGColor;
   _popupContainerView.layer.shadowRadius = 60;
   _popupContainerView.layer.shadowOffset = CGSizeMake(0, 10);
   _popupContainerView.layer.shadowOpacity = 0.2;

@@ -260,7 +260,8 @@ PendingLayer::CompositingType PaintArtifactCompositor::ChunkCompositingType(
     }
     if (const auto* scrollbar = DynamicTo<ScrollbarDisplayItem>(item)) {
       if (const auto* scroll_translation = scrollbar->ScrollTranslation()) {
-        if (NeedsCompositedScrolling(*scroll_translation)) {
+        if (RuntimeEnabledFeatures::RasterInducingScrollEnabled() ||
+            NeedsCompositedScrolling(*scroll_translation)) {
           return PendingLayer::kScrollbarLayer;
         }
       }
@@ -953,6 +954,10 @@ void PaintArtifactCompositor::Update(
   for (auto& chunk : artifact->PaintChunks()) {
     chunk.properties.GetPropertyTreeState().ClearChangedToRoot(
         g_s_property_tree_sequence_number);
+    if (chunk.hit_test_data && chunk.hit_test_data->scroll_translation) {
+      chunk.hit_test_data->scroll_translation->ClearChangedToRoot(
+          g_s_property_tree_sequence_number);
+    }
   }
 
   DVLOG(2) << "PaintArtifactCompositor::Update() done\n"

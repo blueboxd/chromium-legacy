@@ -83,6 +83,7 @@ extern const char kUpdateSwitch[];
 // Installs the updater.
 extern const char kInstallSwitch[];
 extern const char kRuntimeSwitch[];
+extern const char kEulaRequiredSwitch[];
 
 // Contains the meta installer tag. The tag is a string of arguments, separated
 // by a delimiter (in this case, the delimiter is =). The tag is typically
@@ -223,6 +224,7 @@ extern const char kUninstallScript[];
 extern const char kDevOverrideKeyUrl[];
 extern const char kDevOverrideKeyCrashUploadUrl[];
 extern const char kDevOverrideKeyDeviceManagementUrl[];
+extern const char kDevOverrideKeyAppLogoUrl[];
 extern const char kDevOverrideKeyUseCUP[];
 extern const char kDevOverrideKeyInitialDelay[];
 extern const char kDevOverrideKeyServerKeepAliveSeconds[];
@@ -290,6 +292,16 @@ inline constexpr int kErrorMissingRunableFile = kCustomInstallErrorBase + 2;
 // The file extension for the installer is not supported. For instance, on
 // Windows, only `.exe` and `.msi` extensions are supported.
 inline constexpr int kErrorInvalidFileExtension = kCustomInstallErrorBase + 4;
+
+// The app command failed to launch. This code is reported in the `extra_code1`
+// in the ping, along with the actual error code that caused that launch failure
+// in `error`.
+inline constexpr int kErrorAppCommandLaunchFailed = kCustomInstallErrorBase + 5;
+
+// The app command timed out. This code is reported in the `extra_code1` in the
+// ping, along with the error code `HRESULT_FROM_WIN32(ERROR_TIMEOUT)` in
+// `error`.
+inline constexpr int kErrorAppCommandTimedOut = kCustomInstallErrorBase + 6;
 
 // Error codes.
 //
@@ -410,6 +422,10 @@ inline constexpr int kErrorFailedToRunInstallList = 44;
 
 // The server was running but had no tasks to do.
 inline constexpr int kErrorIdle = 45;
+
+// The call was rejected because the user needs to accept the EULA / Terms of
+// service.
+inline constexpr int kErrorEulaRequired = 46;
 
 inline constexpr int kErrorTagParsing = 50;
 

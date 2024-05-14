@@ -47,17 +47,7 @@ CPUMeasurementDelegateImpl::CPUMeasurementDelegateImpl(
 
 std::optional<base::TimeDelta>
 CPUMeasurementDelegateImpl::GetCumulativeCPUUsage() {
-  base::TimeDelta cpu_usage;
-#if BUILDFLAG(IS_WIN)
-  cpu_usage = process_metrics_->GetPreciseCumulativeCPUUsage();
-#else
-  cpu_usage = process_metrics_->GetCumulativeCPUUsage();
-#endif
-  // Most platforms return a zero TimeDelta on error, Linux returns a negative.
-  if (!cpu_usage.is_positive()) {
-    return std::nullopt;
-  }
-  return cpu_usage;
+  return process_metrics_->GetCumulativeCPUUsage();
 }
 
 // The default production factory for CPUMeasurementDelegateImpl objects.

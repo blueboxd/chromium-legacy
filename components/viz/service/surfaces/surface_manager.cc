@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <utility>
+#include <vector>
 
 #include "base/containers/adapters.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -81,9 +81,13 @@ SurfaceManager::~SurfaceManager() {
 
   // All SurfaceClients and their surfaces are supposed to be
   // destroyed before SurfaceManager.
-  // TODO(crbug.com/823043): The following two DCHECKs don't hold.
+  // TODO(crbug.com/823043): The following two DCHECKs don't hold. Destroy
+  // manually for now to avoid ~Surface calling back into a partially-destructed
+  // `this`.
   // DCHECK(surface_map_.empty());
   // DCHECK(surfaces_to_destroy_.empty());
+  surfaces_to_destroy_.clear();
+  surface_map_.clear();
 }
 
 #if DCHECK_IS_ON()
@@ -255,6 +259,17 @@ SurfaceManager::GetSurfacesThatReferenceChildForTesting(
   return parents;
 }
 
+base::TimeTicks SurfaceManager::GetSurfaceReferencedTimestamp(
+    const SurfaceId& surface_id) const {
+  CHECK(surface_id.is_valid());
+  auto surface_referenced_timestamp =
+      surface_referenced_timestamps_.find(surface_id);
+  if (surface_referenced_timestamp != surface_referenced_timestamps_.end()) {
+    return surface_referenced_timestamp->second.first;
+  }
+  return base::TimeTicks();
+}
+
 SurfaceManager::SurfaceIdSet SurfaceManager::GetLiveSurfaces() {
   SurfaceIdSet reachable_surfaces;
 
@@ -312,6 +327,17 @@ void SurfaceManager::AddSurfaceReferenceImpl(
 
   references_[parent_id].insert(child_id);
 
+  // Increase the number of references to `child_id`.
+  if (surface_referenced_timestamps_.find(child_id) ==
+      surface_referenced_timestamps_.end()) {
+    // If the surface has never been referenced before, also record the current
+    // time as the first timestamp that the surface has been referenced.
+    surface_referenced_timestamps_[child_id] =
+        std::make_pair(base::TimeTicks::Now(), 1);
+  } else {
+    surface_referenced_timestamps_[child_id].second++;
+  }
+
   for (auto& observer : observer_list_)
     observer.OnAddedSurfaceReference(parent_id, child_id);
 
@@ -338,6 +364,15 @@ void SurfaceManager::RemoveSurfaceReferenceImpl(
   iter_parent->second.erase(child_iter);
   if (iter_parent->second.empty())
     references_.erase(iter_parent);
+
+  // Decrease the amount of references to `child_id`, and erase the entry from
+  // `surface_referenced_timestamps_` if we've removed the last reference.
+  CHECK(surface_referenced_timestamps_.find(child_id) !=
+        surface_referenced_timestamps_.end());
+  surface_referenced_timestamps_[child_id].second--;
+  if (surface_referenced_timestamps_[child_id].second == 0) {
+    surface_referenced_timestamps_.erase(child_id);
+  }
 }
 
 bool SurfaceManager::HasTemporaryReference(const SurfaceId& surface_id) const {
@@ -626,7 +661,7 @@ void SurfaceManager::MaybeGarbageCollectAllocationGroups() {
     auto list_it = frame_sink_id_to_allocation_groups_.find(
         it->second->submitter_frame_sink_id());
     DCHECK(list_it != frame_sink_id_to_allocation_groups_.end());
-    base::Erase(list_it->second, it->second.get());
+    std::erase(list_it->second, it->second.get());
     if (list_it->second.empty())
       frame_sink_id_to_allocation_groups_.erase(list_it);
     // Destroy the allocation group. Removing it from the map is done in a

@@ -50,13 +50,14 @@ enum class UpstartOperation {
   JOB_STOP_AND_START,
 };
 
-// Enum for configuring ureadahead mode of operation during ARC boot process.
+// Enum for configuring ureadahead mode of operation during ARC boot process for
+// both host and guest.
 enum class ArcUreadaheadMode {
-  // ARCVM ureadahead is in readahead mode for normal user boot flow.
+  // ARC ureadahead is in readahead mode for normal user boot flow.
   READAHEAD = 0,
-  // ARCVM ureadahead is turned on for generate mode in data collector flow.
+  // ARC ureadahead is turned on for generate mode in data collector flow.
   GENERATE,
-  // ARCVM ureadahead is turned off for disabled mode.
+  // ARC ureadahead is turned off for disabled mode.
   DISABLED,
 };
 
@@ -149,14 +150,6 @@ bool IsArcVmUseHugePages();
 // Returns true if all development configuration directives in the
 // vm_tools/init/arcvm_dev.conf file are ignored during ARCVM start.
 bool IsArcVmDevConfIgnored();
-
-// Returns true if ureadahead is disabled completely, including host and guest
-// parts. See also |GetArcVmUreadaheadMode|.
-bool IsUreadaheadDisabled();
-
-// Returns true in case host ureadahead generation is active in the current
-// session.
-bool IsHostUreadaheadGeneration();
 
 // Returns true if ARC is using dev caches for arccachesetup service.
 bool IsArcUseDevCaches();
@@ -323,6 +316,24 @@ using EnsureStaleArcVmAndArcVmUpstartJobsStoppedCallback =
 void EnsureStaleArcVmAndArcVmUpstartJobsStopped(
     const std::string& user_id_hash,
     EnsureStaleArcVmAndArcVmUpstartJobsStoppedCallback callback);
+
+// Returns if Android volumes (DocumentsProviders and Play files) should be
+// mounted in the Files app regardless of whether Play Store is enabled or not.
+bool ShouldAlwaysMountAndroidVolumesInFilesForTesting();
+
+// Returns true if ARC's activation should be deferred until the user session
+// start up tasks are completed.
+// This checks the history of first ARC activation timing in recent user
+// sessions, and decides whether or not to defer ARC.
+// See also b/326065955#comment9 and linked materials for more background.
+bool ShouldDeferArcActivationUntilUserSessionStartUpTaskCompletion(
+    const PrefService* prefs);
+
+// Records whether first ARC activation is done during user session start up
+// in `prefs`. Just to be explicit, `value` == true means the first activation
+// is done during the user session start up.
+void RecordFirstActivationDuringUserSessionStartUp(PrefService* prefs,
+                                                   bool value);
 
 }  // namespace arc
 

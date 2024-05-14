@@ -16,6 +16,7 @@
 #include "third_party/blink/public/mojom/webid/federated_auth_request.mojom-forward.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 class WebContents;
@@ -75,8 +76,10 @@ struct CONTENT_EXPORT IdentityProviderData {
   bool has_login_status_mismatch;
 };
 
-// IdentityRequestDialogController is in interface for control of the UI
-// surfaces that are displayed to intermediate the exchange of ID tokens.
+// IdentityRequestDialogController is an interface, overridden and implemented
+// by embedders, that controls the UI surfaces that are displayed to
+// intermediate the exchange of federated accounts between identity providers
+// and relying parties.
 class CONTENT_EXPORT IdentityRequestDialogController {
  public:
   // This enum is used to back a histogram. Do not remove or reorder members.
@@ -175,12 +178,17 @@ class CONTENT_EXPORT IdentityRequestDialogController {
       DismissCallback dismiss_callback,
       MoreDetailsCallback more_details_callback);
 
+  // Shows a loading UI when the user triggers a button flow and while waiting
+  // for their accounts to be fetched.
+  virtual void ShowLoadingDialog(const std::string& top_frame_for_display,
+                                 const std::string& idp_for_display,
+                                 blink::mojom::RpContext rp_context,
+                                 blink::mojom::RpMode rp_mode,
+                                 DismissCallback dismiss_callback);
+
   // Only to be called after a dialog is shown.
   virtual std::string GetTitle() const;
   virtual std::optional<std::string> GetSubtitle() const;
-
-  // Show dialog notifying user that IdP sign-in failed.
-  virtual void ShowIdpSigninFailureDialog(base::OnceClosure dismiss_callback);
 
   // Open a popup or similar that shows the specified URL.
   virtual void ShowUrl(LinkType type, const GURL& url);
@@ -191,6 +199,13 @@ class CONTENT_EXPORT IdentityRequestDialogController {
 
   // Closes the modal dialog.
   virtual void CloseModalDialog();
+
+  // Request the user's permission to register an origin as an identity
+  // provider. Calls the callback with a response of whether the request was
+  // accepted or not.
+  virtual void RequestIdPRegistrationPermision(
+      const url::Origin& origin,
+      base::OnceCallback<void(bool accepted)> callback);
 
  protected:
   bool is_interception_enabled_{false};

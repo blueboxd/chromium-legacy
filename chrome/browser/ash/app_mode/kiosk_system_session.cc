@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/app_mode/kiosk_system_session.h"
+
 #include <memory>
 #include <optional>
 
@@ -11,8 +12,8 @@
 #include "base/notreached.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/app_mode/app_launch_utils.h"
+#include "chrome/browser/ash/app_mode/auto_sleep/device_weekly_scheduled_suspend_policy_handler.h"
 #include "chrome/browser/ash/app_mode/crash_recovery_launcher.h"
-#include "chrome/browser/ash/app_mode/device_weekly_scheduled_suspend_policy_handler.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_update_service.h"
 #include "chrome/browser/ash/app_mode/kiosk_chrome_app_manager.h"
@@ -128,7 +129,10 @@ KioskSystemSession::KioskSystemSession(
       network_metrics_service_(
           std::make_unique<NetworkConnectivityMetricsService>()),
       periodic_metrics_service_(std::make_unique<PeriodicMetricsService>(
-          g_browser_process->local_state())) {
+          g_browser_process->local_state())),
+      device_weekly_scheduled_suspend_controller_(
+          std::make_unique<DeviceWeeklyScheduledSuspendController>(
+              g_browser_process->local_state())) {
   switch (kiosk_app_id_.type) {
     case KioskAppType::kChromeApp:
       InitForChromeAppKiosk();

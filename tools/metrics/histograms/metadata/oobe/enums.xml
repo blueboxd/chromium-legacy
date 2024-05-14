@@ -41,6 +41,15 @@ chromium-metrics-reviews@google.com.
   <int value="10" label="Error step retry button clicked"/>
 </enum>
 
+<enum name="DeleteFlexOobeConfigDBusResult">
+  <int value="0" label="kSuccess"/>
+  <int value="1" label="kErrorUnknown"/>
+  <int value="2" label="kErrorAccessDenied"/>
+  <int value="3" label="kErrorNotSupported"/>
+  <int value="4" label="kErrorConfigNotFound"/>
+  <int value="5" label="kErrorIOError"/>
+</enum>
+
 <enum name="FingerprintSetupScreenUserAction">
   <summary>Actions which happen on the screen.</summary>
   <int value="0" label="Setup done button clicked"/>
@@ -206,6 +215,9 @@ chromium-metrics-reviews@google.com.
   <summary>
     The result of the cryptohome recovery opt-in. For managed users the policy
     value is used, for unmanaged users the user selection is used.
+
+    Starting from M124 the histogram is not reported for ephemeral users (before
+    that the value reported was always &quot;Not supported&quot;).
   </summary>
   <int value="0" label="Not supported"/>
   <int value="1" label="User Opt In"/>

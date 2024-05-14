@@ -39,9 +39,9 @@ declare -A DISPLAY_RES=(
 [fhd]=1920x1080*1.25
 [wuxga]=1920x1200*1.6
 [qhd]=2560x1440*2
-[qhdp]=3200x1800*2.25
-[f4k]=3840x2160*2.66
-[slate]=3000x2000*2.25
+[qhdp]=3200x1800*2
+[f4k]=3840x2160*2.6666666
+[slate]=3000x2000*2.25225234
 )
 
 # Custom display configs is possible
@@ -58,7 +58,7 @@ declare -A DISPLAY_RES=(
 DISPLAY_CONFIG=${DISPLAY_RES[fhd]}
 
 LACROS_FEATURES=LacrosOnly
-FEATURES=OverviewButton
+FEATURES=
 
 LACROS_ENABLED=false
 
@@ -102,7 +102,6 @@ function build_args {
     --ash-host-window-bounds=${DISPLAY_CONFIG} \
     --enable-features=${FEATURES} \
     ${TOUCH_DEVICE_OPTION} \
-    --enable-ash-debug-browser \
     --lacros-chrome-path=${LACROS_BUILD_DIR}/chrome \
     ${EXTRA_ARGS}"
 
@@ -114,6 +113,7 @@ function build_args {
 function start_ash_chrome {
   if $LACROS_ENABLED ; then
     FEATURES="$FEATURES,$LACROS_FEATURES"
+    EXTRA_ARGS="$EXTRA_ARGS --enable-ash-debug-browser"
   fi
   build_args
 
@@ -160,7 +160,7 @@ function start_lacros_chrome {
     -s ${LACROS_SOCK_FILE} \
     ${LACROS_BUILD_DIR}/chrome \
     --user-data-dir=${lacros_user_data_dir} \
-    --enable-ui-devtools --gpu-sandbox-start-early
+    --enable-ui-devtools --gpu-sandbox-start-early --overview-button-for-tests
 }
 
 # Start wayland client binary on ash-chrome
@@ -214,6 +214,8 @@ else
   shift;
 fi
 
+SLEEP_IF_EXTRA_ARGS_NOT_MATCHED=false
+
 # Parse options.
 while [ ${#} -ne 0 ]
 do
@@ -252,9 +254,11 @@ do
         set +e
         result=$(strings ${ASH_CHROME_BUILD_DIR}/chrome | grep "$flag_name")
         set -e
-        if $result ; then
-          echo "Can't find '${1}' in ash-chrome"
-          help
+        if [ -z "$result" ] ; then
+          cat <<EOF
+Warning: Can't find command line flag '${1}' in ash-chrome
+EOF
+          SLEEP_IF_EXTRA_ARGS_NOT_MATCHED=true
         fi
       fi
       EXTRA_ARGS="${EXTRA_ARGS} $1"
@@ -263,6 +267,11 @@ do
   esac
   shift
 done
+
+if $SLEEP_IF_EXTRA_ARGS_NOT_MATCHED ; then
+  echo
+  sleep 2
+fi
 
 case $command in
   lacros) start_lacros_chrome;;

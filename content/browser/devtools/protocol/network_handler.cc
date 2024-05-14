@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/queue.h"
+#include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/i18n/i18n_constants.h"
@@ -63,7 +64,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -92,6 +92,7 @@
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "services/network/public/mojom/devtools_observer.mojom.h"
 #include "services/network/public/mojom/http_raw_headers.mojom.h"
+#include "services/network/public/mojom/service_worker_router_info.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
@@ -200,12 +201,15 @@ std::unique_ptr<Network::Cookie> BuildCookie(
   }
   std::optional<net::CookiePartitionKey> partition_key = cookie.PartitionKey();
   if (partition_key) {
-    std::string serialized_partition_key;
+    // TODO (crbug.com/326605834) Once ancestor chain bit changes are
+    // implemented update this method utilize the ancestor bit.
     if (partition_key->IsSerializeable()) {
-      bool serialized = net::CookiePartitionKey::Serialize(
-          partition_key, serialized_partition_key);
-      DCHECK(serialized);
-      devtools_cookie->SetPartitionKey(serialized_partition_key);
+      base::expected<net::CookiePartitionKey::SerializedCookiePartitionKey,
+                     std::string>
+          key_serialized_result =
+              net::CookiePartitionKey::Serialize(partition_key);
+      CHECK(key_serialized_result.has_value());
+      devtools_cookie->SetPartitionKey(key_serialized_result->TopLevelSite());
     } else {
       devtools_cookie->SetPartitionKeyOpaque(partition_key->site().opaque());
       // IsSerializeable may return false when the partition key's site is not
@@ -248,17 +252,20 @@ class CookieRetrieverNetworkService
                   const net::CookieAccessResultList& excluded_cookies) {
     for (const auto& cookie_with_access_result : cookies) {
       const net::CanonicalCookie& cookie = cookie_with_access_result.cookie;
-      std::string serialized_partition_key;
+      // TODO (crbug.com/326605834) Once ancestor chain bit changes are
+      // implemented update this method utilize the ancestor bit.
+      base::expected<net::CookiePartitionKey::SerializedCookiePartitionKey,
+                     std::string>
+          serialized_partition_key =
+              net::CookiePartitionKey::Serialize(cookie.PartitionKey());
       // We could be missing cookies that have unserializable partition key.
       // Reference the CookiePartitionKey::IsSerializable docs for more details.
-      if (!net::CookiePartitionKey::Serialize(cookie.PartitionKey(),
-                                              serialized_partition_key)) {
-        serialized_partition_key = "invalid";
-      }
       std::string key = base::StringPrintf(
           "%s::%s::%s::%d::%s", cookie.Name().c_str(), cookie.Domain().c_str(),
           cookie.Path().c_str(), cookie.SecureAttribute(),
-          serialized_partition_key.c_str());
+          serialized_partition_key.has_value()
+              ? serialized_partition_key->TopLevelSite().c_str()
+              : serialized_partition_key.error().c_str());
       all_cookies_.emplace(std::move(key), cookie);
     }
   }
@@ -290,11 +297,14 @@ std::vector<net::CanonicalCookie> FilterCookies(
       continue;
     if (!path.empty() && cookie.Path() != path)
       continue;
-
-    std::string serialized_key;
-    if (!net::CookiePartitionKey::Serialize(cookie.PartitionKey(),
-                                            serialized_key) ||
-        serialized_key != partition_key) {
+    // TODO (crbug.com/326605834) Once ancestor chain bit changes are
+    // implemented update this method utilize the ancestor bit.
+    base::expected<net::CookiePartitionKey::SerializedCookiePartitionKey,
+                   std::string>
+        serialized_result =
+            net::CookiePartitionKey::Serialize(cookie.PartitionKey());
+    if (!serialized_result.has_value() ||
+        serialized_result->TopLevelSite() != partition_key) {
       continue;
     }
     result.push_back(cookie);
@@ -418,24 +428,25 @@ MakeCookieFromProtocolValues(const std::string& name,
   else if (priority == Network::CookiePriorityEnum::Low)
     cp = net::CookiePriority::COOKIE_PRIORITY_LOW;
 
-  std::optional<net::CookiePartitionKey> deserialized_partition_key;
-  if (partition_key.has_value()) {
-    if (!base::FeatureList::IsEnabled(net::features::kPartitionedCookies)) {
-      return Response::InvalidParams(
-          "Partitioned cookies disabled. Cannot set cookie partition key");
-    }
-    if (!net::CookiePartitionKey::Deserialize(partition_key.value(),
-                                              deserialized_partition_key)) {
+  std::optional<net::CookiePartitionKey> cookie_partition_key;
+  if (partition_key.has_value() && !partition_key.value().empty()) {
+    // TODO (crbug.com/326605834) Once ancestor chain bit changes are
+    // implemented update this method utilize the ancestor bit.
+    base::expected<net::CookiePartitionKey, std::string>
+        deserialized_partition_key =
+            net::CookiePartitionKey::FromUntrustedInput(partition_key.value());
+    if (!deserialized_partition_key.has_value()) {
       return Response::InvalidParams(
           "Deserializing cookie partition key failed");
     }
+    cookie_partition_key = deserialized_partition_key.value();
   }
   // TODO(crbug.com/1225444) Add Partitioned to DevTools cookie structures.
   std::unique_ptr<net::CanonicalCookie> cookie =
       net::CanonicalCookie::CreateSanitizedCookie(
           url, name, value, normalized_domain, path, base::Time(),
           expiration_date, base::Time(), secure, http_only, css, cp,
-          deserialized_partition_key);
+          cookie_partition_key);
 
   if (!cookie)
     return Response::InvalidParams("Sanitizing cookie failed");
@@ -574,11 +585,11 @@ std::optional<DevToolsURLLoaderInterceptor::InterceptionStage>
 ToInterceptorStage(
     const protocol::Network::InterceptionStage& interceptor_stage) {
   if (interceptor_stage == protocol::Network::InterceptionStageEnum::Request) {
-    return DevToolsURLLoaderInterceptor::REQUEST;
+    return DevToolsURLLoaderInterceptor::kRequest;
   }
   if (interceptor_stage ==
       protocol::Network::InterceptionStageEnum::HeadersReceived) {
-    return DevToolsURLLoaderInterceptor::RESPONSE;
+    return DevToolsURLLoaderInterceptor::kResponse;
   }
   return std::nullopt;
 }
@@ -1805,7 +1816,10 @@ Response NetworkHandler::EmulateNetworkConditions(
     double latency,
     double download_throughput,
     double upload_throughput,
-    Maybe<protocol::Network::ConnectionType>) {
+    Maybe<protocol::Network::ConnectionType>,
+    Maybe<double> packet_loss,
+    Maybe<int> packet_queue_length,
+    Maybe<bool> packet_reordering) {
   network::mojom::NetworkConditionsPtr network_conditions;
   bool throttling_enabled = offline || latency > 0 || download_throughput > 0 ||
                             upload_throughput > 0;
@@ -1815,6 +1829,9 @@ Response NetworkHandler::EmulateNetworkConditions(
     network_conditions->latency = base::Milliseconds(latency);
     network_conditions->download_throughput = download_throughput;
     network_conditions->upload_throughput = upload_throughput;
+    network_conditions->packet_loss = packet_loss.value_or(0.);
+    network_conditions->packet_queue_length = packet_queue_length.value_or(0);
+    network_conditions->packet_reordering = packet_reordering.value_or(false);
   }
   SetNetworkConditions(std::move(network_conditions));
   return Response::FallThrough();
@@ -1860,9 +1877,7 @@ std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
   ssl_info.cert->GetSubjectAltName(&san_dns, &san_ip);
   auto san_list = std::make_unique<protocol::Array<String>>(std::move(san_dns));
   for (const std::string& san : san_ip) {
-    san_list->emplace_back(
-        net::IPAddress(reinterpret_cast<const uint8_t*>(san.data()), san.size())
-            .ToString());
+    san_list->emplace_back(net::IPAddress(base::as_byte_span(san)).ToString());
   }
 
   const char* protocol = "";
@@ -1968,6 +1983,21 @@ String BuildServiceWorkerResponseSource(
   }
 }
 
+String BuildServiceWorkerRouterSourceType(
+    const network::mojom::ServiceWorkerRouterSourceType& type) {
+  switch (type) {
+    case network::mojom::ServiceWorkerRouterSourceType::kNetwork:
+      return protocol::Network::ServiceWorkerRouterSourceEnum::Network;
+    case network::mojom::ServiceWorkerRouterSourceType::kRace:
+      return protocol::Network::ServiceWorkerRouterSourceEnum::
+          RaceNetworkAndFetchHandler;
+    case network::mojom::ServiceWorkerRouterSourceType::kFetchEvent:
+      return protocol::Network::ServiceWorkerRouterSourceEnum::FetchEvent;
+    case network::mojom::ServiceWorkerRouterSourceType::kCache:
+      return protocol::Network::ServiceWorkerRouterSourceEnum::Cache;
+  }
+}
+
 String AlternateProtocolUsageToString(
     net::AlternateProtocolUsage alternate_protocol_usage) {
   switch (alternate_protocol_usage) {
@@ -2048,6 +2078,8 @@ std::unique_ptr<Network::Response> BuildResponse(
     response->SetServiceWorkerRouterInfo(
         protocol::Network::ServiceWorkerRouterInfo::Create()
             .SetRuleIdMatched(info.service_worker_router_info->rule_id_matched)
+            .SetMatchedSourceType(BuildServiceWorkerRouterSourceType(
+                info.service_worker_router_info->matched_source_type))
             .Build());
   }
 
@@ -3188,10 +3220,16 @@ void NetworkHandler::OnResponseReceivedExtraInfo(
     return;
 
   Maybe<std::string> frontend_partition_key;
-  std::string serialized_key;
-  if (cookie_partition_key && net::CookiePartitionKey::Serialize(
-                                  cookie_partition_key, serialized_key)) {
-    frontend_partition_key = serialized_key;
+  // TODO (crbug.com/326605834) Once ancestor chain bit changes are implemented
+  // update this method utilize the ancestor bit.
+  if (cookie_partition_key) {
+    base::expected<net::CookiePartitionKey::SerializedCookiePartitionKey,
+                   std::string>
+        serialized_result =
+            net::CookiePartitionKey::Serialize(cookie_partition_key);
+    if (serialized_result.has_value()) {
+      frontend_partition_key = serialized_result->TopLevelSite();
+    }
   }
 
   frontend_->ResponseReceivedExtraInfo(

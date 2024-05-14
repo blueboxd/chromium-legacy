@@ -13,7 +13,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
+#include "components/affiliations/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/password_manager/core/browser/password_form.h"
 
@@ -59,7 +59,7 @@ std::unique_ptr<PasswordForm> FillPasswordFormWithData(
     form->password_value.clear();
     form->federation_origin =
         url::Origin::Create(GURL("https://accounts.google.com/login"));
-    if (!IsValidAndroidFacetURI(form->signon_realm)) {
+    if (!affiliations::IsValidAndroidFacetURI(form->signon_realm)) {
       form->signon_realm =
           "federation://" + form->url.host() + "/accounts.google.com";
       form->type = PasswordForm::Type::kApi;
@@ -70,17 +70,26 @@ std::unique_ptr<PasswordForm> FillPasswordFormWithData(
   return form;
 }
 
-std::unique_ptr<PasswordForm> CreateEntry(const std::string& username,
-                                          const std::string& password,
-                                          const GURL& origin_url,
-                                          PasswordForm::MatchType match_type) {
-  auto form = std::make_unique<PasswordForm>();
-  form->username_value = base::ASCIIToUTF16(username);
-  form->password_value = base::ASCIIToUTF16(password);
-  form->url = origin_url;
-  form->signon_realm = origin_url.GetWithEmptyPath().spec();
-  form->match_type = match_type;
+PasswordForm CreateEntry(const std::string& username,
+                         const std::string& password,
+                         const GURL& origin_url,
+                         PasswordForm::MatchType match_type) {
+  PasswordForm form;
+  form.username_value = base::ASCIIToUTF16(username);
+  form.password_value = base::ASCIIToUTF16(password);
+  form.url = origin_url;
+  form.signon_realm = origin_url.GetWithEmptyPath().spec();
+  form.match_type = match_type;
   return form;
+}
+
+std::unique_ptr<PasswordForm> CreateUniquePtrEntry(
+    const std::string& username,
+    const std::string& password,
+    const GURL& origin_url,
+    PasswordForm::MatchType match_type) {
+  return std::make_unique<PasswordForm>(
+      CreateEntry(username, password, origin_url, match_type));
 }
 
 bool ContainsEqualPasswordFormsUnordered(

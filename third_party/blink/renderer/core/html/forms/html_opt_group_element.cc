@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
@@ -51,8 +52,7 @@ bool CanAssignToOptGroupSlot(const Node& node) {
 
 HTMLOptGroupElement::HTMLOptGroupElement(Document& document)
     : HTMLElement(html_names::kOptgroupTag, document) {
-  EnsureUserAgentShadowRoot().SetSlotAssignmentMode(
-      SlotAssignmentMode::kManual);
+  EnsureUserAgentShadowRoot(SlotAssignmentMode::kManual);
 }
 
 // An explicit empty destructor should be in html_opt_group_element.cc, because

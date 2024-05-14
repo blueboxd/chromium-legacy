@@ -31,6 +31,13 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Warned"/>
 </enum>
 
+<enum name="DataProtectionURLVerdictSource">
+  <int value="0" label="Page UserData"/>
+  <int value="1" label="Cached lookup result"/>
+  <int value="2" label="Post navigation lookup"/>
+  <int value="3" label="WebContents UserData"/>
+</enum>
+
 <enum name="DeviceIdentifierStatus">
   <int value="0" label="all device identifiers are present"/>
   <int value="1" label="serial number is missing"/>
@@ -434,6 +441,7 @@ chromium-metrics-reviews@google.com.
   <int value="27" label="FAILURE_HOST_INVALID_DOMAIN_ERROR"/>
   <int value="28" label="HOST_SESSION_DISCONNECTED"/>
   <int value="29" label="FAILURE_UNKNOWN_ERROR"/>
+  <int value="30" label="FAILURE_REAUTHZ_POLICY_CHECK_FAILED"/>
 </enum>
 
 <enum name="EnterpriseDeviceManagementStatus">
@@ -810,6 +818,24 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="kFailedOnCommandEnabledForUserCheck"/>
   <int value="3" label="kFailedOnExportingSupportPacket"/>
   <int value="4" label="kFailedOnEnqueueingEvent"/>
+</enum>
+
+<enum name="EnterpriseKeySignatureVerification">
+  <summary>
+    Defined as MetricKeySignatureVerification in
+    components/policy/core/common/cloud/cloud_policy_validator.cc.
+  </summary>
+  <int value="0" label="Key signature validation succeeded with new data">
+    The new_public_key_verification_data field worked.
+  </int>
+  <int value="1"
+      label="Key signature validation succeeded with deprecated data">
+    The new_public_key_verification_data field failed but the backup in
+    new_public_key_verification_signature_deprecated worked.
+  </int>
+  <int value="2" label="Key signature validation failed">
+    Both signatures for the key failed to validate.
+  </int>
 </enum>
 
 <enum name="EnterpriseMacMDMStatusNew">
@@ -2025,17 +2051,37 @@ chromium-metrics-reviews@google.com.
   <int value="1209" label="DeviceWeeklyScheduledSuspend"/>
   <int value="1210" label="RemoteAccessHostAllowUrlForwarding"/>
   <int value="1211" label="ScreenCaptureLocation"/>
-  <int value="1212" label="AllowDomainsForAppsList"/>
+  <int value="1212" label="AllowedDomainsForAppsList"/>
   <int value="1213" label="ChromeForTestingAllowed"/>
   <int value="1214" label="GoogleLocationServicesEnabled"/>
   <int value="1215" label="ProvisionManagedClientCertificateForUser"/>
   <int value="1216" label="LocalUserFilesAllowed"/>
-  <int value="1217" label="DevToolsGenAiSettings"/>
   <int value="1218"
       label="SubAppsAPIsAllowedWithoutGestureAndAuthorizationForOrigins"/>
   <int value="1219" label="DefaultWebPrintingSetting"/>
   <int value="1220" label="WebPrintingAllowedForUrls"/>
   <int value="1221" label="WebPrintingBlockedForUrls"/>
+  <int value="1222" label="DocumentScanAPITrustedExtensions"/>
+  <int value="1223" label="RemoteAccessHostAllowPinAuthentication"/>
+  <int value="1224" label="DownloadManagerSaveToDriveSettings"/>
+  <int value="1225" label="AutomaticFullscreenAllowedForUrls"/>
+  <int value="1226" label="AutomaticFullscreenBlockedForUrls"/>
+  <int value="1227" label="MutationEventsEnabled"/>
+  <int value="1228" label="DevToolsGenAiSettings"/>
+  <int value="1229" label="CACertificatesWithConstraints"/>
+  <int value="1230" label="DefaultDirectSocketsSetting"/>
+  <int value="1231" label="DirectSocketsAllowedForUrls"/>
+  <int value="1232" label="DirectSocketsBlockedForUrls"/>
+  <int value="1234" label="PrefixedVideoFullscreenApiAvailability"/>
+  <int value="1235" label="PrivacySandboxIpProtectionEnabled"/>
+  <int value="1236" label="OrcaEnabled"/>
+  <int value="1237" label="EnterpriseLogoUrl"/>
+  <int value="1238" label="CustomProfileLabel"/>
+  <int value="1239" label="ProfileLabel"/>
+  <int value="1240" label="PrivacySandboxFingerprintingProtectionEnabled"/>
+  <int value="1244" label="BoundSessionCredentialsEnabled"/>
+  <int value="1251"
+      label="GenAILocalFoundationalModelEnterprisePolicySettings"/>
 </enum>
 
 <enum name="EnterprisePoliciesSources">

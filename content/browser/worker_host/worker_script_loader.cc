@@ -93,7 +93,6 @@ void WorkerScriptLoader::Start() {
                        weak_factory_.GetWeakPtr(), interceptor_.get()),
         base::BindOnce(
             [](base::WeakPtr<WorkerScriptLoader> self,
-               bool /*reset_subresource_loader_params*/,
                ResponseHeadUpdateParams) {
               if (self) {
                 self->LoadFromNetwork();
@@ -145,7 +144,6 @@ void WorkerScriptLoader::LoadFromNetwork() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!completed_);
 
-  default_loader_used_ = true;
   url_loader_client_receiver_.reset();
   url_loader_factory_ = default_loader_factory_;
   url_loader_.reset();

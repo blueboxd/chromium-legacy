@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/apps/app_service/metrics/website_metrics.h"
+
 #include <memory>
 #include <optional>
 #include <set>
@@ -12,7 +14,6 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/apps/app_service/metrics/website_metrics.h"
 #include "chrome/browser/apps/app_service/metrics/website_metrics_browser_test_mixin.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
+#include "chrome/browser/ui/tabs/tab_model.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -30,6 +32,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "components/webapps/browser/banners/installable_web_app_check_result.h"
+#include "components/webapps/browser/banners/web_app_banner_data.h"
 #include "components/webapps/common/web_app_id.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
@@ -70,8 +74,11 @@ class TestWebsiteMetrics : public WebsiteMetrics {
   }
 
   void OnInstallableWebAppStatusUpdated(
-      content::WebContents* web_contents) override {
-    WebsiteMetrics::OnInstallableWebAppStatusUpdated(web_contents);
+      content::WebContents* web_contents,
+      webapps::InstallableWebAppCheckResult result,
+      const std::optional<webapps::WebAppBannerData>& data) override {
+    WebsiteMetrics::OnInstallableWebAppStatusUpdated(web_contents, result,
+                                                     data);
     if (webcontents_to_ukm_key_.find(web_contents) ==
             webcontents_to_ukm_key_.end() ||
         webcontents_to_ukm_key_[web_contents] != ukm_key_) {
@@ -789,11 +796,11 @@ IN_PROC_BROWSER_TEST_F(WebsiteMetricsBrowserTest,
   wm::GetActivationClient(window1->GetRootWindow())->DeactivateWindow(window1);
 
   // Detach `tab1`.
-  auto detached =
-      browser1->tab_strip_model()->DetachWebContentsAtForInsertion(0);
+  std::unique_ptr<tabs::TabModel> detached_tab =
+      browser1->tab_strip_model()->DetachTabAtForInsertion(0);
 
   // Attach `tab1` to `browser2`.
-  browser2->tab_strip_model()->InsertWebContentsAt(0, std::move(detached),
+  browser2->tab_strip_model()->InsertDetachedTabAt(0, std::move(detached_tab),
                                                    AddTabTypes::ADD_ACTIVE);
   auto* tab3 = browser2->tab_strip_model()->GetWebContentsAt(0);
 
@@ -916,11 +923,11 @@ IN_PROC_BROWSER_TEST_F(WebsiteMetricsBrowserTest,
   wm::GetActivationClient(window1->GetRootWindow())->DeactivateWindow(window1);
 
   // Detach `tab2`.
-  auto detached =
-      browser1->tab_strip_model()->DetachWebContentsAtForInsertion(1);
+  std::unique_ptr<tabs::TabModel> detached_tab =
+      browser1->tab_strip_model()->DetachTabAtForInsertion(1);
 
   // Attach `tab2` to `browser2`.
-  browser2->tab_strip_model()->InsertWebContentsAt(0, std::move(detached),
+  browser2->tab_strip_model()->InsertDetachedTabAt(0, std::move(detached_tab),
                                                    AddTabTypes::ADD_ACTIVE);
   auto* tab3 = browser2->tab_strip_model()->GetWebContentsAt(0);
 

@@ -985,6 +985,12 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, GetRunningServiceWorkerInfos) {
   const ServiceWorkerRunningInfo& running_info = infos.begin()->second;
   EXPECT_EQ(embedded_test_server()->GetURL("/service_worker/fetch_event.js"),
             running_info.script_url);
+  // `infos` is not populated synchronously so the worker may have started
+  // before `kActivated`, but it will at least be `kActivating` at this point.
+  EXPECT_TRUE(content::ServiceWorkerRunningInfo::ServiceWorkerVersionStatus::
+                      kActivating == running_info.version_status ||
+              content::ServiceWorkerRunningInfo::ServiceWorkerVersionStatus::
+                      kActivated == running_info.version_status);
   EXPECT_EQ(
       shell()->web_contents()->GetPrimaryMainFrame()->GetProcess()->GetID(),
       running_info.render_process_id);
@@ -2763,14 +2769,6 @@ class CacheStorageControlForBadOrigin
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) override {
     // The CodeCacheHostImpl should not try to add a receiver if the StorageKey
     // is bad.
-    NOTREACHED();
-  }
-  void DeleteForStorageKey(const blink::StorageKey& storage_key) override {
-    NOTREACHED();
-  }
-  void GetAllStorageKeysInfo(
-      storage::mojom::CacheStorageControl::GetAllStorageKeysInfoCallback
-          callback) override {
     NOTREACHED();
   }
   void AddObserver(mojo::PendingRemote<storage::mojom::CacheStorageObserver>

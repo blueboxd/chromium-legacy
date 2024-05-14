@@ -7,6 +7,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "android_webview/browser/aw_browser_context.h"
@@ -36,6 +37,7 @@
 #include "android_webview/browser/state_serializer.h"
 #include "android_webview/browser_jni_headers/AwContents_jni.h"
 #include "android_webview/browser_jni_headers/StartupJavascriptInfo_jni.h"
+#include "android_webview/common/aw_features.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/common/mojom/frame.mojom.h"
@@ -305,8 +307,9 @@ void AwContents::InitializeAndroidAutofill(JNIEnv* env) {
     return;
   }
   android_autofill::AndroidAutofillClient::CreateForWebContents(
-      web_contents_.get(),
-      [&](const JavaRef<jobject>& client) { SetAwAutofillClient(client); });
+      web_contents_.get(), [&](const JavaRef<jobject>& client) {
+        SetAndroidAutofillClient(client);
+      });
 
   // We need to initialize the keyboard suppressor before creating any
   // AutofillManagers and after the autofill client is available.
@@ -314,7 +317,7 @@ void AwContents::InitializeAndroidAutofill(JNIEnv* env) {
       ->MaybeInitKeyboardSuppressor();
 }
 
-void AwContents::SetAwAutofillClient(const JavaRef<jobject>& client) {
+void AwContents::SetAndroidAutofillClient(const JavaRef<jobject>& client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
@@ -390,6 +393,11 @@ ScopedJavaLocalRef<jobject> AwContents::GetRenderProcess(JNIEnv* env) {
   return render_process->GetJavaObject();
 }
 
+base::android::ScopedJavaLocalRef<jobject> AwContents::GetJavaObject() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return java_ref_.get(env);
+}
+
 void AwContents::Destroy(JNIEnv* env) {
   java_ref_.reset();
   delete this;
@@ -459,6 +467,21 @@ ScopedJavaLocalRef<jstring> JNI_AwContents_GetSafeBrowsingLocaleForTesting(
   ScopedJavaLocalRef<jstring> locale =
       ConvertUTF8ToJavaString(env, base::i18n::GetConfiguredLocale());
   return locale;
+}
+
+static ScopedJavaLocalRef<jobject> JNI_AwContents_FromWebContents(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jweb_contents) {
+  base::android::ScopedJavaLocalRef<jobject> jaw_contents;
+
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+  AwContents* aw_contents =
+      web_contents ? AwContents::FromWebContents(web_contents) : nullptr;
+  if (aw_contents) {
+    jaw_contents = aw_contents->GetJavaObject();
+  }
+  return jaw_contents;
 }
 
 namespace {
@@ -870,7 +893,7 @@ base::android::ScopedJavaLocalRef<jbyteArray> AwContents::GetCertificate(
   }
 
   // Convert the certificate and return it
-  base::StringPiece der_string = net::x509_util::CryptoBufferAsStringPiece(
+  std::string_view der_string = net::x509_util::CryptoBufferAsStringPiece(
       entry->GetSSL().certificate->cert_buffer());
   return base::android::ToJavaByteArray(env, base::as_byte_span(der_string));
 }
@@ -1341,23 +1364,19 @@ void AwContents::RemoveWebMessageListener(
       ConvertJavaStringToUTF16(env, js_object_name));
 }
 
-base::android::ScopedJavaLocalRef<jobjectArray>
-AwContents::GetWebMessageListenerInfos(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz) {
+std::vector<ScopedJavaLocalRef<jobject>> AwContents::GetWebMessageListenerInfos(
+    JNIEnv* env) {
   if (js_communication_host_.get()) {
     return AwWebMessageHostFactory::GetWebMessageListenerInfo(
-        GetJsCommunicationHost(), env, clazz);
+        GetJsCommunicationHost(), env);
   }
-  return nullptr;
+  return {};
 }
 
-base::android::ScopedJavaLocalRef<jobjectArray>
-AwContents::GetDocumentStartupJavascripts(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz) {
+std::vector<ScopedJavaLocalRef<jobject>>
+AwContents::GetDocumentStartupJavascripts(JNIEnv* env) {
   if (!js_communication_host_.get()) {
-    return nullptr;
+    return {};
   }
 
   const std::vector<js_injection::DocumentStartJavaScript>& scripts =
@@ -1372,9 +1391,7 @@ AwContents::GetDocumentStartupJavascripts(
         base::android::ToJavaArrayOfStrings(env, rules)));
   }
 
-  ScopedJavaLocalRef<jclass> clazz_ref(clazz);
-  return base::android::ToTypedJavaArrayOfObjects(env, script_objects,
-                                                  clazz_ref);
+  return script_objects;
 }
 
 void AwContents::ClearView(JNIEnv* env) {

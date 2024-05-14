@@ -1,0 +1,50 @@
+// Copyright 2024 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module lens.mojom;
+
+import "ui/gfx/geometry/mojom/geometry.mojom";
+import "url/mojom/url.mojom";
+
+// Factory method for creating a new WebUI page handler.
+interface LensPageHandlerFactory {
+  // The WebUI calls this method when the page is first initialized.
+  CreatePageHandler(
+      pending_receiver<LensPageHandler> handler,
+      pending_remote<LensPage> page);
+
+  // The side panel WebUI calls this method when the page is first initialized.
+  CreateSidePanelPageHandler(pending_receiver<LensSidePanelPageHandler> handler,
+      pending_remote<LensSidePanelPage> page);
+};
+
+// Browser-side handler for requests from WebUI page. (TypeScript -> C++)
+interface LensPageHandler {
+  // When this method is called, the C++ coordinator will begin the tear-down
+  // flow.
+  CloseRequestedByOverlay();
+
+  // When this method is called, the C++ coordinator sends a Lens request with
+  // the given bounding region to the Lens servers and display results in the
+  // Chrome side panel. The region should be normalized between 0 and 1.
+  // TODO(b/329262670): Verify normalization dpoes not cause off-by-1 pixel
+  // errors.
+  IssueLensRequest(gfx.mojom.RectF region);
+};
+
+// WebUI page handler for request from Browser side. (C++ -> TypeScript)
+interface LensPage {
+};
+
+// Browser-side handler for requests from Side PanelWebUI page.
+// (TypeScript -> C++)
+interface LensSidePanelPageHandler {
+};
+
+// Side Panel WebUI page handler for request from Browser side.
+// (C++ -> TypeScript)
+interface LensSidePanelPage {
+  // Load a provided URL into the side panel results iframe.
+  LoadResultsInFrame(url.mojom.Url results_url);
+};

@@ -26,6 +26,7 @@
 namespace {
 
 class BaseCondition;
+class NotCondition;
 class OrCondition;
 class ConditionObject;
 
@@ -193,11 +194,17 @@ base::Value OrConditionToValue(
   return base::Value(std::move(ret));
 }
 
+base::Value NotConditionToValue(
+    const blink::ServiceWorkerRouterNotCondition& not_condition) {
+  CHECK(not_condition.condition);
+  return ConditionToValue(*not_condition.condition);
+}
+
 base::Value ConditionToValue(
     const blink::ServiceWorkerRouterCondition& condition) {
   base::Value::Dict out_c;
-  const auto& [url_pattern, request, running_status, or_condition] =
-      condition.get();
+  const auto& [url_pattern, request, running_status, or_condition,
+               not_condition] = condition.get();
   if (url_pattern) {
     base::Value::Dict url_pattern_value;
 #define TO_VALUE(type, type_name)                            \
@@ -226,6 +233,9 @@ base::Value ConditionToValue(
   if (or_condition) {
     out_c.Set("or", OrConditionToValue(*or_condition));
   }
+  if (not_condition) {
+    out_c.Set("not", NotConditionToValue(*not_condition));
+  }
   return base::Value(std::move(out_c));
 }
 
@@ -240,28 +250,28 @@ bool IsValidSources(
   // Currently, only network source is supported.
   for (const auto& s : sources) {
     switch (s.type) {
-      case blink::ServiceWorkerRouterSource::Type::kNetwork:
+      case network::mojom::ServiceWorkerRouterSourceType::kNetwork:
         if (!s.network_source) {
           RecordSetupError(
               ServiceWorkerRouterEvaluatorErrorEnums::kInvalidSource);
           return false;
         }
         break;
-      case blink::ServiceWorkerRouterSource::Type::kRace:
+      case network::mojom::ServiceWorkerRouterSourceType::kRace:
         if (!s.race_source) {
           RecordSetupError(
               ServiceWorkerRouterEvaluatorErrorEnums::kInvalidSource);
           return false;
         }
         break;
-      case blink::ServiceWorkerRouterSource::Type::kFetchEvent:
+      case network::mojom::ServiceWorkerRouterSourceType::kFetchEvent:
         if (!s.fetch_event_source) {
           RecordSetupError(
               ServiceWorkerRouterEvaluatorErrorEnums::kInvalidSource);
           return false;
         }
         break;
-      case blink::ServiceWorkerRouterSource::Type::kCache:
+      case network::mojom::ServiceWorkerRouterSourceType::kCache:
         if (!s.cache_source) {
           RecordSetupError(
               ServiceWorkerRouterEvaluatorErrorEnums::kInvalidSource);
@@ -360,13 +370,14 @@ bool BaseCondition::Set(const blink::ServiceWorkerRouterCondition& condition) {
     RecordSetupError(ServiceWorkerRouterEvaluatorErrorEnums::kEmptyCondition);
     return false;
   }
-  const auto& [url_pattern, request, running_status, or_condition] =
-      condition.get();
+  const auto& [url_pattern, request, running_status, or_condition,
+               not_condition] = condition.get();
 
   CHECK(!or_condition);
+  CHECK(!not_condition);
 
   non_url_pattern_condition_ = {std::nullopt, request, running_status,
-                                std::nullopt};
+                                std::nullopt, std::nullopt};
   if (running_status) {
     need_running_status_ = true;
   }
@@ -437,9 +448,10 @@ bool BaseCondition::MatchNonUrlPatternConditions(
     const network::ResourceRequest& request,
     std::optional<blink::EmbeddedWorkerStatus> running_status) const {
   const auto& [url_pattern, request_pattern, running_status_pattern,
-               or_condition] = non_url_pattern_condition_.get();
+               or_condition, not_condition] = non_url_pattern_condition_.get();
   CHECK(!url_pattern);
   CHECK(!or_condition);
+  CHECK(!not_condition);
   if (request_pattern && !MatchRequestCondition(*request_pattern, request)) {
     return false;
   }
@@ -474,6 +486,31 @@ class OrCondition {
   bool need_running_status_ = false;
 };
 
+class NotCondition {
+ public:
+  NotCondition() = default;
+  // Not copyable
+  NotCondition(const NotCondition&) = delete;
+  // Movable
+  NotCondition(NotCondition&&) = default;
+  NotCondition& operator=(NotCondition&&) = default;
+  // Returns true on success. Otherwise, false.
+  bool Set(
+      const std::unique_ptr<blink::ServiceWorkerRouterCondition>& condition);
+  bool Match(const network::ResourceRequest& request,
+             std::optional<blink::EmbeddedWorkerStatus> running_status) const;
+  bool need_running_status() const { return need_running_status_; }
+
+ private:
+  bool MatchUrlPatternConditions(const network::ResourceRequest& request) const;
+  bool MatchNonUrlPatternConditions(
+      const network::ResourceRequest& request,
+      std::optional<blink::EmbeddedWorkerStatus> running_status) const;
+
+  std::unique_ptr<ConditionObject> condition_;
+  bool need_running_status_ = false;
+};
+
 class ConditionObject {
  public:
   // Returns true on success. Otherwise, false.
@@ -483,6 +520,7 @@ class ConditionObject {
           ServiceWorkerRouterEvaluatorErrorEnums::kInvalidCondition);
       return false;
     }
+
     const auto& or_condition =
         std::get<const std::optional<blink::ServiceWorkerRouterOrCondition>&>(
             condition.get());
@@ -491,7 +529,20 @@ class ConditionObject {
       bool success = v.Set(or_condition->conditions);
       value_ = std::move(v);
       return success;
-    } else {
+    }
+
+    const auto& not_condition =
+        std::get<const std::optional<blink::ServiceWorkerRouterNotCondition>&>(
+            condition.get());
+    if (not_condition) {
+      NotCondition v;
+      bool success = v.Set(not_condition->condition);
+      value_ = std::move(v);
+      return success;
+    }
+
+    // Neither the not condition nor the or condition.
+    {
       BaseCondition v;
       bool success = v.Set(condition);
       value_ = std::move(v);
@@ -513,7 +564,7 @@ class ConditionObject {
   }
 
  private:
-  absl::variant<BaseCondition, OrCondition> value_;
+  absl::variant<BaseCondition, OrCondition, NotCondition> value_;
 };
 
 bool OrCondition::Set(
@@ -541,6 +592,27 @@ bool OrCondition::Match(
     }
   }
   return false;
+}
+
+bool NotCondition::Set(
+    const std::unique_ptr<blink::ServiceWorkerRouterCondition>& condition) {
+  if (!condition) {
+    return false;
+  }
+
+  condition_ = std::make_unique<ConditionObject>();
+  if (!condition_->Set(*condition)) {
+    condition_.reset();
+    return false;
+  }
+  need_running_status_ = condition_->need_running_status();
+  return true;
+}
+
+bool NotCondition::Match(
+    const network::ResourceRequest& request,
+    std::optional<blink::EmbeddedWorkerStatus> running_status) const {
+  return !condition_->Match(request, running_status);
 }
 
 }  // namespace
@@ -616,7 +688,8 @@ void ServiceWorkerRouterEvaluator::Compile() {
     need_running_status_ |= rule->need_running_status();
     for (const auto& s : r.sources) {
       bool has_fetch_event =
-          (s.type == blink::ServiceWorkerRouterSource::Type::kFetchEvent);
+          (s.type ==
+           network::mojom::ServiceWorkerRouterSourceType::kFetchEvent);
       has_fetch_event_source_ |= has_fetch_event;
       has_non_fetch_event_source_ |= !has_fetch_event;
     }
@@ -672,17 +745,17 @@ base::Value ServiceWorkerRouterEvaluator::ToValue() const {
     base::Value::List source;
     for (const auto& s : r.sources) {
       switch (s.type) {
-        case blink::ServiceWorkerRouterSource::Type::kNetwork:
+        case network::mojom::ServiceWorkerRouterSourceType::kNetwork:
           source.Append("network");
           break;
-        case blink::ServiceWorkerRouterSource::Type::kRace:
+        case network::mojom::ServiceWorkerRouterSourceType::kRace:
           // TODO(crbug.com/1371756): we may need to update the name per target.
           source.Append("race-network-and-fetch-handler");
           break;
-        case blink::ServiceWorkerRouterSource::Type::kFetchEvent:
+        case network::mojom::ServiceWorkerRouterSourceType::kFetchEvent:
           source.Append("fetch-event");
           break;
-        case blink::ServiceWorkerRouterSource::Type::kCache:
+        case network::mojom::ServiceWorkerRouterSourceType::kCache:
           if (s.cache_source->cache_name) {
             base::Value::Dict out_s;
             out_s.Set("cache_name", *s.cache_source->cache_name);

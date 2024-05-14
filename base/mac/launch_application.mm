@@ -69,10 +69,19 @@ NSWorkspaceOpenConfiguration* GetOpenConfiguration(
   NSWorkspaceOpenConfiguration* config =
       [NSWorkspaceOpenConfiguration configuration];
 
+  config.arguments = CommandLineArgsToArgsArray(command_line_args);
+
   config.activates = options.activate;
   config.createsNewApplicationInstance = options.create_new_instance;
   config.promptsUserIfNeeded = options.prompt_user_if_needed;
-  config.arguments = CommandLineArgsToArgsArray(command_line_args);
+
+  if (options.hidden_in_background) {
+    config.addsToRecentItems = NO;
+    config.hides = YES;
+    config._additionalLSOpenOptions = @{
+      apple::CFToNSPtrCast(_kLSOpenOptionBackgroundLaunchKey) : @YES,
+    };
+  }
 
   return config;
 }

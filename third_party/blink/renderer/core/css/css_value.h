@@ -27,6 +27,12 @@
 #include "third_party/blink/renderer/platform/heap/custom_spaces.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
+namespace WTF {
+class String;
+}  // namespace WTF
+
+using WTF::String;
+
 namespace blink {
 
 class Document;
@@ -185,6 +191,7 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
   bool IsCyclicVariableValue() const {
     return class_type_ == kCyclicVariableValueClass;
   }
+  bool IsFlipRevertValue() const { return class_type_ == kFlipRevertClass; }
   bool IsAlternateValue() const { return class_type_ == kAlternateClass; }
   bool IsAxisValue() const { return class_type_ == kAxisClass; }
   bool IsShorthandWrapperValue() const {
@@ -302,6 +309,7 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
     kPendingSystemFontValueClass,
     kInvalidVariableValueClass,
     kCyclicVariableValueClass,
+    kFlipRevertClass,
     kLayoutFunctionClass,
 
     kCSSContentDistributionClass,
@@ -361,6 +369,11 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
   // The flag is true if the value contains such references but hasn't been
   // populated with a tree scope.
   uint8_t needs_tree_scope_population_ : 1;  // NOLINT
+
+  // Whether this value originally came from a quirksmode-specific declaration.
+  // Used for use counting of such situations (to see if we can try to remove
+  // the functionality).
+  uint8_t was_quirky_ : 1 = false;
 
  private:
   const uint8_t class_type_;  // ClassType

@@ -30,9 +30,11 @@
 
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 
+#include "third_party/blink/renderer/core/css/anchor_evaluator.h"
 #include "third_party/blink/renderer/core/css/container_query.h"
 #include "third_party/blink/renderer/core/css/container_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
+#include "third_party/blink/renderer/core/css/out_of_flow_data.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -266,12 +268,23 @@ void CSSToLengthConversionData::ContainerSizes::CacheSizeIfNeeded(
   cache = FindSizeForContainerAxis(requested_axis, context_element_);
 }
 
+CSSToLengthConversionData::AnchorData::AnchorData(Element* anchored,
+                                                  AnchorEvaluator* evaluator)
+    : evaluator_(evaluator) {
+  if (!evaluator_ && anchored) {
+    if (OutOfFlowData* out_of_flow_data = anchored->GetOutOfFlowData()) {
+      evaluator_ = &out_of_flow_data->GetAnchorResults();
+    }
+  }
+}
+
 CSSToLengthConversionData::CSSToLengthConversionData(
     WritingMode writing_mode,
     const FontSizes& font_sizes,
     const LineHeightSize& line_height_size,
     const ViewportSize& viewport_size,
     const ContainerSizes& container_sizes,
+    const AnchorData& anchor_data,
     float zoom,
     Flags& flags)
     : CSSLengthResolver(
@@ -281,6 +294,7 @@ CSSToLengthConversionData::CSSToLengthConversionData(
       line_height_size_(line_height_size),
       viewport_size_(viewport_size),
       container_sizes_(container_sizes),
+      anchor_data_(anchor_data),
       flags_(&flags) {}
 
 float CSSToLengthConversionData::EmFontSize(float zoom) const {
@@ -448,6 +462,10 @@ CSSToLengthConversionData::ContainerSizes
 CSSToLengthConversionData::PreCachedContainerSizesCopy() const {
   SetFlag(Flag::kContainerRelative);
   return container_sizes_.PreCachedCopy();
+}
+
+void CSSToLengthConversionData::ReferenceTreeScope() const {
+  SetFlag(Flag::kTreeScopedReference);
 }
 
 void CSSToLengthConversionData::ReferenceAnchor() const {

@@ -65,7 +65,7 @@ class MockVideoFramePool : public DmabufVideoFramePool {
                                               size_t,
                                               bool,
                                               bool));
-  MOCK_METHOD0(GetFrame, scoped_refptr<VideoFrame>());
+  MOCK_METHOD0(GetFrame, scoped_refptr<FrameResource>());
   MOCK_CONST_METHOD0(GetFrameStorageType, VideoFrame::StorageType());
   MOCK_METHOD0(IsExhausted, bool());
   MOCK_METHOD1(NotifyWhenFrameAvailable, void(base::OnceClosure));
@@ -88,7 +88,7 @@ class MockDecoder : public VideoDecoderMixin {
                     bool,
                     CdmContext*,
                     InitCB,
-                    const OutputCB&,
+                    const PipelineOutputCB&,
                     const WaitingCB&));
   MOCK_METHOD2(Decode, void(scoped_refptr<DecoderBuffer>, DecodeCB));
   MOCK_METHOD1(Reset, void(base::OnceClosure));
@@ -215,6 +215,7 @@ class VideoDecoderPipelineTest
   ~VideoDecoderPipelineTest() override = default;
 
   void TearDown() override {
+    pool_ = nullptr;
     VideoDecoderPipeline::DestroyAsync(std::move(decoder_));
     task_environment_.RunUntilIdle();
   }

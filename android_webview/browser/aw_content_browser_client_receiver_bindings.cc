@@ -28,7 +28,9 @@
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
+#include "third_party/blink/public/mojom/webview/webview_media_integrity.mojom.h"
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/browser/spell_check_host_impl.h"
@@ -89,17 +91,9 @@ void MaybeCreateSafeBrowsing(
   if (!render_process_host)
     return;
 
-  if (base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingOnUIThread)) {
-    safe_browsing::MojoSafeBrowsingImpl::MaybeCreate(
-        rph_id, std::move(resource_context), std::move(get_checker_delegate),
-        std::move(receiver));
-  } else {
-    content::GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(&safe_browsing::MojoSafeBrowsingImpl::MaybeCreate,
-                       rph_id, std::move(resource_context),
-                       std::move(get_checker_delegate), std::move(receiver)));
-  }
+  safe_browsing::MojoSafeBrowsingImpl::MaybeCreate(
+      rph_id, std::move(resource_context), std::move(get_checker_delegate),
+      std::move(receiver));
 }
 
 void BindNetworkHintsHandler(
@@ -148,6 +142,12 @@ void CreateRenderMessageFilter(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   mojo::MakeSelfOwnedReceiver(std::make_unique<AwContentsMessageFilter>(rph_id),
                               std::move(receiver));
+}
+
+template <typename Interface>
+void ForwardToJavaFrame(content::RenderFrameHost* render_frame_host,
+                        mojo::PendingReceiver<Interface> receiver) {
+  render_frame_host->GetJavaInterfaces()->GetInterface(std::move(receiver));
 }
 
 }  // anonymous namespace
@@ -255,6 +255,13 @@ void AwContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
       base::BindRepeating(create_spellcheck_host),
       content::GetUIThreadTaskRunner({}));
 #endif
+
+  if (base::FeatureList::IsEnabled(
+          features::kWebViewMediaIntegrityApiBlinkExtension) &&
+      !base::FeatureList::IsEnabled(features::kWebViewMediaIntegrityApi)) {
+    map->Add<blink::mojom::WebViewMediaIntegrityService>(base::BindRepeating(
+        &ForwardToJavaFrame<blink::mojom::WebViewMediaIntegrityService>));
+  }
 }
 
 void AwContentBrowserClient::

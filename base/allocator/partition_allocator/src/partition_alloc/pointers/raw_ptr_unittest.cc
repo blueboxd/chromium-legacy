@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <thread>
 #include <type_traits>
@@ -24,6 +25,7 @@
 #include "base/test/gtest_util.h"
 #include "base/test/memory/dangling_ptr_instrumentation.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/types/to_address.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "partition_alloc/dangling_raw_ptr_checks.h"
@@ -42,7 +44,6 @@
 #include "partition_alloc/tagging.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 #if BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
@@ -1429,7 +1430,7 @@ TEST_F(RawPtrTest, PointerToMemberFunction) {
 
 TEST_F(RawPtrTest, WorksWithOptional) {
   int x = 0;
-  absl::optional<raw_ptr<int>> maybe_int;
+  std::optional<raw_ptr<int>> maybe_int;
   EXPECT_FALSE(maybe_int.has_value());
 
   maybe_int = nullptr;
@@ -1502,7 +1503,7 @@ TEST_F(RawPtrTest, CrossKindAssignment) {
 // `to_address()`.
 TEST_F(RawPtrTest, ToAddressDoesNotDereference) {
   CountingRawPtr<int> ptr = nullptr;
-  int* raw = std::to_address(ptr);
+  int* raw = base::to_address(ptr);
   std::ignore = raw;
   EXPECT_THAT((CountingRawPtrExpectations{.get_for_dereference_cnt = 0,
                                           .get_for_extraction_cnt = 1,
@@ -1514,7 +1515,7 @@ TEST_F(RawPtrTest, ToAddressDoesNotDereference) {
 TEST_F(RawPtrTest, ToAddressGivesBackRawAddress) {
   int* raw = nullptr;
   raw_ptr<int> miracle = raw;
-  EXPECT_EQ(std::to_address(raw), std::to_address(miracle));
+  EXPECT_EQ(base::to_address(raw), base::to_address(miracle));
 }
 
 void InOutParamFuncWithPointer(int* in, int** out) {
@@ -1750,6 +1751,7 @@ TEST_F(BackupRefPtrTest, QuarantinedBytes) {
 void RunBackupRefPtrImplAdvanceTest(
     partition_alloc::PartitionAllocator& allocator,
     size_t requested_size) {
+#if BUILDFLAG(BACKUP_REF_PTR_EXTRA_OOB_CHECKS)
   char* ptr = static_cast<char*>(allocator.root()->Alloc(requested_size));
   raw_ptr<char, AllowPtrArithmetic> protected_ptr = ptr;
   protected_ptr += 123;
@@ -1804,6 +1806,7 @@ void RunBackupRefPtrImplAdvanceTest(
 
   protected_ptr = nullptr;
   allocator.root()->Free(ptr);
+#endif  // BUILDFLAG(BACKUP_REF_PTR_EXTRA_OOB_CHECKS)
 }
 
 TEST_F(BackupRefPtrTest, Advance) {
@@ -1897,6 +1900,7 @@ TEST_F(BackupRefPtrTest, GetDeltaElems) {
 volatile char g_volatile_char_to_ignore;
 
 TEST_F(BackupRefPtrTest, IndexOperator) {
+#if BUILDFLAG(BACKUP_REF_PTR_EXTRA_OOB_CHECKS)
   size_t requested_size = GetRequestSizeThatFills512BSlot();
   char* ptr = static_cast<char*>(allocator_.root()->Alloc(requested_size));
   {
@@ -1911,6 +1915,7 @@ TEST_F(BackupRefPtrTest, IndexOperator) {
 #endif
   }
   allocator_.root()->Free(ptr);
+#endif  // BUILDFLAG(BACKUP_REF_PTR_EXTRA_OOB_CHECKS)
 }
 
 bool IsQuarantineEmpty(partition_alloc::PartitionAllocator& allocator) {
@@ -1971,7 +1976,7 @@ TEST_F(BackupRefPtrTest, Bind) {
   EXPECT_TRUE(IsQuarantineEmpty(allocator_));
 }
 
-#if PA_CONFIG(REF_COUNT_CHECK_COOKIE)
+#if PA_CONFIG(IN_SLOT_METADATA_CHECK_COOKIE)
 TEST_F(BackupRefPtrTest, ReinterpretCast) {
   void* ptr = allocator_.root()->Alloc(16);
   allocator_.root()->Free(ptr);
@@ -1981,16 +1986,17 @@ TEST_F(BackupRefPtrTest, ReinterpretCast) {
   // been already freed.
   BASE_EXPECT_DEATH(*wrapped_ptr = nullptr, "");
 }
-#endif  // PA_CONFIG(REF_COUNT_CHECK_COOKIE)
+#endif  // PA_CONFIG(IN_SLOT_METADATA_CHECK_COOKIE)
 
-// Tests that ref-count management is correct, despite `absl::optional` may be
+// Tests that ref-count management is correct, despite `std::optional` may be
 // using `union` underneath.
 TEST_F(BackupRefPtrTest, WorksWithOptional) {
   void* ptr = allocator_.root()->Alloc(16);
-  auto* ref_count = allocator_.root()->RefCountPointerFromObjectForTesting(ptr);
+  auto* ref_count =
+      allocator_.root()->InSlotMetadataPointerFromObjectForTesting(ptr);
   EXPECT_TRUE(ref_count->IsAliveWithNoKnownRefs());
 
-  absl::optional<raw_ptr<void>> opt = ptr;
+  std::optional<raw_ptr<void>> opt = ptr;
   ASSERT_TRUE(opt.has_value());
   EXPECT_TRUE(ref_count->IsAlive() && !ref_count->IsAliveWithNoKnownRefs());
 
@@ -2007,7 +2013,7 @@ TEST_F(BackupRefPtrTest, WorksWithOptional) {
   EXPECT_TRUE(ref_count->IsAliveWithNoKnownRefs());
 
   {
-    absl::optional<raw_ptr<void>> opt2 = ptr;
+    std::optional<raw_ptr<void>> opt2 = ptr;
     ASSERT_TRUE(opt2.has_value());
     EXPECT_TRUE(ref_count->IsAlive() && !ref_count->IsAliveWithNoKnownRefs());
   }
@@ -2020,7 +2026,8 @@ TEST_F(BackupRefPtrTest, WorksWithOptional) {
 // using `union` underneath.
 TEST_F(BackupRefPtrTest, WorksWithVariant) {
   void* ptr = allocator_.root()->Alloc(16);
-  auto* ref_count = allocator_.root()->RefCountPointerFromObjectForTesting(ptr);
+  auto* ref_count =
+      allocator_.root()->InSlotMetadataPointerFromObjectForTesting(ptr);
   EXPECT_TRUE(ref_count->IsAliveWithNoKnownRefs());
 
   absl::variant<uintptr_t, raw_ptr<void>> vary = ptr;
@@ -2089,8 +2096,7 @@ TEST_F(BackupRefPtrTest, RawPtrNotDangling) {
 
   void* ptr = allocator_.root()->Alloc(16);
   raw_ptr<void> dangling_ptr = ptr;
-#if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS) && \
-    !BUILDFLAG(ENABLE_DANGLING_RAW_PTR_PERF_EXPERIMENT)
+#if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS)
   BASE_EXPECT_DEATH(
       {
         allocator_.root()->Free(ptr);  // Dangling raw_ptr detected.
@@ -2188,8 +2194,7 @@ TEST_F(BackupRefPtrTest, RawPtrDeleteWithoutExtractAsDangling) {
 
   raw_ptr<int> ptr =
       static_cast<int*>(allocator_.root()->Alloc(sizeof(int), ""));
-#if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS) && \
-    !BUILDFLAG(ENABLE_DANGLING_RAW_PTR_PERF_EXPERIMENT)
+#if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS)
   BASE_EXPECT_DEATH(
       {
         allocator_.root()->Free(ptr.get());  // Dangling raw_ptr detected.
@@ -2201,8 +2206,7 @@ TEST_F(BackupRefPtrTest, RawPtrDeleteWithoutExtractAsDangling) {
 #else
   allocator_.root()->Free(ptr.get());
   ptr = nullptr;
-#endif  // BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS) && \
-        // !BUILDFLAG(ENABLE_DANGLING_RAW_PTR_PERF_EXPERIMENT)
+#endif  // BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS)
 }
 
 TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
@@ -2393,11 +2397,19 @@ TEST_F(BackupRefPtrTest, RawPtrTraits_DisableBRP) {
     raw_ptr<unsigned int, DanglingUntriaged> ptr = static_cast<unsigned int*>(
         allocator_.root()->Alloc(sizeof(unsigned int), ""));
     *ptr = 0;
+    // Freeing would  update the MTE tag so use |TagPtr()| to dereference it
+    // below.
     allocator_.root()->Free(ptr);
 #if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
-    EXPECT_DEATH_IF_SUPPORTED(*ptr = 0, "");
+    // Recreate the raw_ptr so we can use a pointer with the updated MTE tag.
+    // Reassigning to |ptr| would hit the PartitionRefCount cookie check rather
+    // than the |IsPointeeAlive()| check.
+    raw_ptr<unsigned int, DanglingUntriaged> dangling_ptr =
+        partition_alloc::internal::TagPtr(ptr.get());
+    EXPECT_DEATH_IF_SUPPORTED(*dangling_ptr = 0, "");
 #else
-    EXPECT_EQ(kQuarantined4Bytes, *ptr);
+    EXPECT_EQ(kQuarantined4Bytes,
+              *partition_alloc::internal::TagPtr(ptr.get()));
 #endif
   }
   // raw_ptr with DisableBRP, BRP is expected to be off.
@@ -2409,7 +2421,10 @@ TEST_F(BackupRefPtrTest, RawPtrTraits_DisableBRP) {
     allocator_.root()->Free(ptr);
     // A tad fragile as a new allocation or free-list pointer may be there, but
     // highly unlikely it'll match 4 quarantine bytes in a row.
-    EXPECT_NE(kQuarantined4Bytes, *ptr);
+    // Use |TagPtr()| for this dereference because freeing would have updated
+    // the MTE tag.
+    EXPECT_NE(kQuarantined4Bytes,
+              *partition_alloc::internal::TagPtr(ptr.get()));
   }
 
   allocator_.root()->Free(sentinel);

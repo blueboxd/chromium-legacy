@@ -84,7 +84,30 @@ mojom::blink::PermissionStatus NotificationManager::GetPermissionStatus() {
   return permission_status;
 }
 
-ScriptPromise NotificationManager::RequestPermission(
+void NotificationManager::GetPermissionStatusAsync(
+    base::OnceCallback<void(mojom::blink::PermissionStatus)> callback) {
+  if (GetSupplementable()->IsContextDestroyed()) {
+    std::move(callback).Run(mojom::blink::PermissionStatus::DENIED);
+    return;
+  }
+
+  // Tentatively have an early return to avoid calling GetNotificationService()
+  // during prerendering. The return value is the same as
+  // `Notification::permission`'s.
+  // TODO(1280155): defer the construction of notification to ensure this method
+  // is not called during prerendering instead.
+  if (auto* window = DynamicTo<LocalDOMWindow>(GetSupplementable())) {
+    if (Document* document = window->document(); document->IsPrerendering()) {
+      std::move(callback).Run(mojom::blink::PermissionStatus::ASK);
+      return;
+    }
+  }
+
+  GetNotificationService()->GetPermissionStatus(std::move(callback));
+}
+
+ScriptPromiseTyped<V8NotificationPermission>
+NotificationManager::RequestPermission(
     ScriptState* script_state,
     V8NotificationPermissionCallback* deprecated_callback) {
   ExecutionContext* context = ExecutionContext::From(script_state);
@@ -101,8 +124,9 @@ ScriptPromise NotificationManager::RequestPermission(
                       WrapWeakPersistent(this)));
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
+  auto* resolver = MakeGarbageCollected<
+      ScriptPromiseResolverTyped<V8NotificationPermission>>(script_state);
+  auto promise = resolver->Promise();
 
   LocalDOMWindow* win = To<LocalDOMWindow>(context);
   permission_service_->RequestPermission(
@@ -115,17 +139,28 @@ ScriptPromise NotificationManager::RequestPermission(
   return promise;
 }
 
+V8NotificationPermission PermissionStatusToEnum(
+    mojom::blink::PermissionStatus permission) {
+  switch (permission) {
+    case mojom::blink::PermissionStatus::GRANTED:
+      return V8NotificationPermission(V8NotificationPermission::Enum::kGranted);
+    case mojom::blink::PermissionStatus::DENIED:
+      return V8NotificationPermission(V8NotificationPermission::Enum::kDenied);
+    case mojom::blink::PermissionStatus::ASK:
+      return V8NotificationPermission(V8NotificationPermission::Enum::kDefault);
+  }
+}
+
 void NotificationManager::OnPermissionRequestComplete(
-    ScriptPromiseResolver* resolver,
+    ScriptPromiseResolverTyped<V8NotificationPermission>* resolver,
     V8NotificationPermissionCallback* deprecated_callback,
     mojom::blink::PermissionStatus status) {
-  String status_string = Notification::PermissionString(status);
+  V8NotificationPermission permission = PermissionStatusToEnum(status);
   if (deprecated_callback) {
-    deprecated_callback->InvokeAndReportException(
-        nullptr, V8NotificationPermission::Create(status_string).value());
+    deprecated_callback->InvokeAndReportException(nullptr, permission);
   }
 
-  resolver->Resolve(status_string);
+  resolver->Resolve(permission);
 }
 
 void NotificationManager::OnNotificationServiceConnectionError() {
@@ -158,7 +193,7 @@ void NotificationManager::DisplayPersistentNotification(
     int64_t service_worker_registration_id,
     mojom::blink::NotificationDataPtr notification_data,
     mojom::blink::NotificationResourcesPtr notification_resources,
-    ScriptPromiseResolver* resolver) {
+    ScriptPromiseResolverTyped<IDLUndefined>* resolver) {
   DCHECK(notification_data);
   DCHECK(notification_resources);
   DCHECK_EQ(notification_data->actions.has_value()
@@ -195,7 +230,7 @@ void NotificationManager::DisplayPersistentNotification(
 }
 
 void NotificationManager::DidDisplayPersistentNotification(
-    ScriptPromiseResolver* resolver,
+    ScriptPromiseResolverTyped<IDLUndefined>* resolver,
     mojom::blink::PersistentNotificationError error) {
   switch (error) {
     case mojom::blink::PersistentNotificationError::NONE:

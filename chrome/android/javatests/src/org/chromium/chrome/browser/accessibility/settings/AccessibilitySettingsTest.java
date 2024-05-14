@@ -11,6 +11,8 @@ import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.chromium.chrome.browser.accessibility.settings.AccessibilitySettings.PREF_IMAGE_DESCRIPTIONS;
+
 import android.app.Instrumentation;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -37,19 +39,18 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.R;
-import org.chromium.components.browser_ui.accessibility.AccessibilitySettings;
 import org.chromium.components.browser_ui.accessibility.FontSizePrefs;
 import org.chromium.components.browser_ui.accessibility.PageZoomPreference;
 import org.chromium.components.browser_ui.accessibility.PageZoomUtils;
-import org.chromium.components.browser_ui.accessibility.TextScalePreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -73,7 +74,6 @@ import java.text.NumberFormat;
 })
 @Features.EnableFeatures({ContentFeatureList.ACCESSIBILITY_PAGE_ZOOM})
 public class AccessibilitySettingsTest {
-    private static final String PREF_IMAGE_DESCRIPTIONS = "image_descriptions";
     private AccessibilitySettings mAccessibilitySettings;
     private PageZoomPreference mPageZoomPref;
 
@@ -331,6 +331,8 @@ public class AccessibilitySettingsTest {
     @Test
     @SmallTest
     @Feature({"Accessibility"})
+    // Swipe action fails with espresso 3.2. b/329724184
+    @DisableIf.Build(sdk_is_greater_than = android.os.Build.VERSION_CODES.S)
     public void testPageZoomPreference_zoomSliderUpdatesValue() {
         getPageZoomPref();
         int startingVal = mPageZoomPref.getZoomSliderForTesting().getProgress();
@@ -484,6 +486,8 @@ public class AccessibilitySettingsTest {
     @SmallTest
     @Feature({"Accessibility"})
     @EnableFeatures({ContentFeatureList.SMART_ZOOM})
+    // Swipe action Fails with espresso 3.2. b/329724184
+    @DisableIf.Build(sdk_is_greater_than = android.os.Build.VERSION_CODES.S)
     public void testPageZoomPreference_smartZoom_zoomSliderUpdatesValue() {
         getPageZoomPref();
         int startingVal = mPageZoomPref.getTextSizeContrastSliderForTesting().getProgress();
@@ -522,7 +526,7 @@ public class AccessibilitySettingsTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     FontSizePrefs fontSizePrefs =
-                            FontSizePrefs.getInstance(Profile.getLastUsedRegularProfile());
+                            FontSizePrefs.getInstance(ProfileManager.getLastUsedRegularProfile());
                     Assert.assertEquals(
                             expectedForceEnableZoom, fontSizePrefs.getForceEnableZoom());
                     Assert.assertEquals(

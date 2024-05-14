@@ -115,13 +115,6 @@ constexpr int kDeskTraversalsMaxValue = 20;
 // interval.
 constexpr base::TimeDelta kDeskTraversalsTimeout = base::Seconds(5);
 
-constexpr char kCloseAllZombieWindowsFoundHistogramName[] =
-    "Ash.Desks.CloseAllZombieWindowsFound";
-
-// The amount of time we wait after `CleanUpClosedAppWindowsTask` runs before
-// we check how many of those windows are still in memory.
-constexpr base::TimeDelta kCloseAllWindowsZombieCheckTimeout = base::Minutes(1);
-
 constexpr int kDeskDefaultNameIds[] = {
     IDS_ASH_DESKS_DESK_1_MINI_VIEW_TITLE,
     IDS_ASH_DESKS_DESK_2_MINI_VIEW_TITLE,
@@ -268,13 +261,6 @@ void ShowDeskRemovalUndoToast(const std::string& toast_id,
   undo_toast_data.dismiss_callback = std::move(dismiss_callback);
   undo_toast_data.expired_callback = std::move(expired_callback);
   ToastManager::Get()->Show(std::move(undo_toast_data));
-}
-
-// Reports the number of windows that still exist in `window_tracker`.
-void ReportNumberOfZombieWindows(
-    std::unique_ptr<aura::WindowTracker> window_tracker) {
-  base::UmaHistogramCounts100(kCloseAllZombieWindowsFoundHistogramName,
-                              window_tracker->windows().size());
 }
 
 AccountId GetPrimaryUserAccountId() {
@@ -499,7 +485,8 @@ DesksController::GetVisibleOnAllDesksWindowsOnRoot(
     aura::Window* root_window) const {
   DCHECK(root_window->IsRootWindow());
   base::flat_set<aura::Window*> filtered_visible_on_all_desks_windows;
-  for (auto* visible_on_all_desks_window : visible_on_all_desks_windows_) {
+  for (aura::Window* visible_on_all_desks_window :
+       visible_on_all_desks_windows_) {
     if (visible_on_all_desks_window->GetRootWindow() == root_window)
       filtered_visible_on_all_desks_windows.insert(visible_on_all_desks_window);
   }
@@ -510,11 +497,8 @@ void DesksController::RestorePrimaryUserActiveDeskIndex(int active_desk_index) {
   DCHECK_GE(active_desk_index, 0);
   DCHECK_LT(active_desk_index, static_cast<int>(desks_.size()));
   user_to_active_desk_index_[GetPrimaryUserAccountId()] = active_desk_index;
-  // Following |OnActiveUserSessionChanged| approach, restoring uses
-  // DesksSwitchSource::kUserSwitch as a desk switch source.
-  // TODO(crbug.com/1145404): consider adding an UMA metric for desks
-  // restoring to change the source to kDeskRestored.
-  ActivateDesk(desks_[active_desk_index].get(), DesksSwitchSource::kUserSwitch);
+  ActivateDesk(desks_[active_desk_index].get(),
+               DesksSwitchSource::kDeskRestored);
 }
 
 void DesksController::OnNewUserShown() {
@@ -762,7 +746,8 @@ void DesksController::ActivateDesk(const Desk* desk, DesksSwitchSource source) {
 
   // If we are switching users, we don't want to notify desks of content changes
   // until the user switch animation has shown the new user's windows.
-  const bool is_user_switch = source == DesksSwitchSource::kUserSwitch;
+  const bool is_user_switch = source == DesksSwitchSource::kUserSwitch ||
+                              source == DesksSwitchSource::kDeskRestored;
   std::optional<Desk::ScopedContentUpdateNotificationDisabler>
       desks_scoped_notify_disabler;
   if (is_user_switch) {
@@ -2247,8 +2232,6 @@ void DesksController::UntrackWindowFromAllDesks(aura::Window* window) {
 
 void DesksController::CleanUpClosedAppWindowsTask(
     std::unique_ptr<aura::WindowTracker> closing_window_tracker) {
-  auto widgetless_windows = std::make_unique<aura::WindowTracker>();
-
   // We have waited long enough for these app windows to close cleanly.
   // If there is any app windows still around, we will close them forcefully.
   // These window's desk has already been removed. We should not let these
@@ -2263,20 +2246,8 @@ void DesksController::CleanUpClosedAppWindowsTask(
     // close cleanly before this.
     if (widget) {
       widget->CloseNow();
-    } else {
-      // If the window does not have a widget, we add it to the
-      // `widgetless_windows` tracker to check back on later.
-      widgetless_windows->Add(window);
     }
   }
-
-  // We post a delayed task to check that all of the windows in
-  // `widgetless_windows eventually end up closing.
-  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&ReportNumberOfZombieWindows,
-                     std::move(widgetless_windows)),
-      kCloseAllWindowsZombieCheckTimeout);
 }
 
 void DesksController::MoveVisibleOnAllDesksWindowsFromActiveDeskTo(
@@ -2287,7 +2258,8 @@ void DesksController::MoveVisibleOnAllDesksWindowsFromActiveDeskTo(
   auto* mru_tracker = Shell::Get()->mru_window_tracker();
   mru_tracker->SetIgnoreActivations(true);
 
-  for (auto* visible_on_all_desks_window : visible_on_all_desks_windows_) {
+  for (aura::Window* visible_on_all_desks_window :
+       visible_on_all_desks_windows_) {
     MoveWindowFromActiveDeskTo(
         visible_on_all_desks_window, new_desk,
         visible_on_all_desks_window->GetRootWindow(),
@@ -2325,7 +2297,8 @@ void DesksController::RestackVisibleOnAllDesksWindowsOnActiveDesk() {
 
   auto mru_windows =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
-  for (auto* visible_on_all_desks_window : visible_on_all_desks_windows_) {
+  for (aura::Window* visible_on_all_desks_window :
+       visible_on_all_desks_windows_) {
     // If the window is floated, it will always be on top, so there is no need
     // to restack it.
     if (WindowState::Get(visible_on_all_desks_window)->IsFloated()) {

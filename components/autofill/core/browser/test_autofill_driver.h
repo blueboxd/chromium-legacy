@@ -14,6 +14,7 @@
 #include "base/containers/flat_map.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_driver.h"
@@ -64,11 +65,10 @@ class TestAutofillDriverTemplate : public T {
   bool IsPrerendering() const override { return false; }
   bool HasSharedAutofillPermission() const override { return shared_autofill_; }
   bool CanShowAutofillUi() const override { return true; }
-  void ApplyFieldAction(mojom::ActionPersistence action_persistence,
-                        mojom::TextReplacement text_replacement,
+  void ApplyFieldAction(mojom::FieldActionType action_type,
+                        mojom::ActionPersistence action_persistence,
                         const FieldGlobalId& field,
                         const std::u16string& value) override {}
-  void HandleParsedForms(const std::vector<FormData>& forms) override {}
   void SendAutofillTypePredictionsToRenderer(
       const std::vector<raw_ptr<FormStructure, VectorExperimental>>& forms)
       override {}
@@ -100,12 +100,12 @@ class TestAutofillDriverTemplate : public T {
   // type) of `field_type_map` for which
   // `field_type_map_filter_.Run(triggered_origin, field, type)` is true.
   base::flat_set<FieldGlobalId> ApplyFormAction(
-      mojom::ActionType action_type,
+      mojom::FormActionType action_type,
       mojom::ActionPersistence action_persistence,
       const FormData& form_data,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, FieldType>& field_type_map) override {
-    if (action_type == mojom::ActionType::kUndo) {
+    if (action_type == mojom::FormActionType::kUndo) {
       return {};
     }
     std::vector<FieldGlobalId> result;
@@ -186,10 +186,11 @@ class TestAutofillDriverTemplate : public T {
 // Consider using TestAutofillDriverInjector in browser tests.
 class TestAutofillDriver : public TestAutofillDriverTemplate<AutofillDriver> {
  public:
-  TestAutofillDriver();
+  explicit TestAutofillDriver(AutofillClient* client);
   ~TestAutofillDriver() override;
 
   // AutofillDriver
+  AutofillClient& GetAutofillClient() override;
   AutofillManager& GetAutofillManager() override;
 
   void set_autofill_manager(std::unique_ptr<AutofillManager> autofill_manager) {
@@ -197,6 +198,7 @@ class TestAutofillDriver : public TestAutofillDriverTemplate<AutofillDriver> {
   }
 
  private:
+  raw_ref<AutofillClient> autofill_client_;
   std::unique_ptr<AutofillManager> autofill_manager_ = nullptr;
 };
 

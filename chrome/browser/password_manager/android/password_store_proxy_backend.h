@@ -88,6 +88,8 @@ class PasswordStoreProxyBackend final : public PasswordStoreBackend,
   std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
   CreateSyncControllerDelegate() override;
   void OnSyncServiceInitialized(syncer::SyncService* sync_service) override;
+  void RecordAddLoginAsyncCalledFromTheStore() override;
+  void RecordUpdateLoginAsyncCalledFromTheStore() override;
   base::WeakPtr<PasswordStoreBackend> AsWeakPtr() override;
 
   void OnSyncShutdown(syncer::SyncService* sync_service) override;
@@ -104,10 +106,6 @@ class PasswordStoreProxyBackend final : public PasswordStoreBackend,
   // The profile store only uses the built-in backend as a fallback
   // if it's being used for synced passwords (pre store split).
   bool UsesAndroidBackendAsMainBackend();
-
-  // Determines whether the account store should use the Android backend
-  // or the built-in backend as the main backend.
-  bool UsesAndroidBackendAsMainBackendForAccount();
 
   // Determines whether the profile store should use the Android backend
   // or the built-in backend as the main backend.

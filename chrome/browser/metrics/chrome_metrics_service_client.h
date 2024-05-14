@@ -76,7 +76,8 @@ class ChromeMetricsServiceClient
 
   // Factory function.
   static std::unique_ptr<ChromeMetricsServiceClient> Create(
-      metrics::MetricsStateManager* state_manager);
+      metrics::MetricsStateManager* state_manager,
+      variations::SyntheticTrialRegistry* synthetic_trial_registry);
 
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -90,6 +91,7 @@ class ChromeMetricsServiceClient
   variations::SyntheticTrialRegistry* GetSyntheticTrialRegistry() override;
   metrics::MetricsService* GetMetricsService() override;
   ukm::UkmService* GetUkmService() override;
+  IdentifiabilityStudyState* GetIdentifiabilityStudyState() override;
   metrics::structured::StructuredMetricsService* GetStructuredMetricsService()
       override;
   void SetMetricsClientId(const std::string& client_id) override;
@@ -161,7 +163,8 @@ class ChromeMetricsServiceClient
 
  protected:
   explicit ChromeMetricsServiceClient(
-      metrics::MetricsStateManager* state_manager);
+      metrics::MetricsStateManager* state_manager,
+      variations::SyntheticTrialRegistry* synthetic_trial_registry);
 
   // Completes the two-phase initialization of ChromeMetricsServiceClient.
   void Initialize();
@@ -230,7 +233,7 @@ class ChromeMetricsServiceClient
   const raw_ptr<metrics::MetricsStateManager> metrics_state_manager_;
 
   // The synthetic trial registry shared by metrics_service_ and ukm_service_.
-  std::unique_ptr<variations::SyntheticTrialRegistry> synthetic_trial_registry_;
+  const raw_ptr<variations::SyntheticTrialRegistry> synthetic_trial_registry_;
 
   // Metrics service observer for synthetic trials.
   metrics::PersistentSyntheticTrialObserver synthetic_trial_observer_;

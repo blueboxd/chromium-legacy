@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_finish_observer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/background_response_processor.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -179,6 +180,7 @@ void Resource::Trace(Visitor* visitor) const {
   visitor->Trace(clients_awaiting_callback_);
   visitor->Trace(finished_clients_);
   visitor->Trace(finish_observers_);
+  visitor->Trace(options_);
   MemoryPressureListener::Trace(visitor);
 }
 
@@ -259,13 +261,13 @@ void Resource::AppendData(const char* data, size_t length) {
       data_ = SharedBuffer::Create(data, length);
     SetEncodedSize(data_->size());
   }
-  NotifyDataReceived(data, length);
+  NotifyDataReceived(base::span(data, length));
 }
 
-void Resource::NotifyDataReceived(const char* data, size_t length) {
+void Resource::NotifyDataReceived(base::span<const char> data) {
   ResourceClientWalker<ResourceClient> w(Clients());
   while (ResourceClient* c = w.Next())
-    c->DataReceived(this, data, length);
+    c->DataReceived(this, data);
 }
 
 void Resource::SetResourceBuffer(scoped_refptr<SharedBuffer> resource_buffer) {
@@ -570,7 +572,7 @@ String Resource::ReasonNotDeletable() const {
 void Resource::DidAddClient(ResourceClient* client) {
   if (scoped_refptr<SharedBuffer> data = Data()) {
     for (const auto& span : *data) {
-      client->DataReceived(this, span.data(), span.size());
+      client->DataReceived(this, span);
       // Stop pushing data if the client removed itself.
       if (!HasClient(client))
         break;
@@ -1213,6 +1215,11 @@ void Resource::SetIsAdResource() {
 
 void Resource::UpdateMemoryCacheLastAccessedTime() {
   memory_cache_last_accessed_ = base::TimeTicks::Now();
+}
+
+scoped_refptr<BackgroundResponseProcessor>
+Resource::MaybeCreateBackgroundResponseProcessor() {
+  return nullptr;
 }
 
 }  // namespace blink

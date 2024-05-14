@@ -36,6 +36,10 @@
 #include "gpu/command_buffer/common/shared_image_capabilities.h"
 #endif
 
+#if BUILDFLAG(IS_MAC)
+#include "media/capture/video/apple/video_capture_device_factory_apple.h"
+#endif
+
 namespace capture_mode {
 
 namespace {
@@ -140,14 +144,6 @@ std::vector<gfx::BufferPlane> CreateGpuBufferPlanes() {
   return planes;
 }
 
-// Returns the buffer texture target used to create a `MailboxHolder` according
-// to our GPU buffer usage, buffer format, and the given `context_capabilities`.
-uint32_t CalculateBufferTextureTarget(
-    const gpu::Capabilities& context_capabilities) {
-  return gpu::GetBufferTextureTarget(GetBufferUsage(), GetBufferFormat(),
-                                     context_capabilities);
-}
-
 bool IsFatalError(media::VideoCaptureError error) {
   switch (error) {
     case media::VideoCaptureError::kCrosHalV3FailedToStartDeviceThread:
@@ -183,6 +179,27 @@ bool IsD3DSharedImageSupported(ui::ContextFactory* context_factory) {
            shared_image_interface->GetCapabilities().shared_image_d3d;
   }
   return false;
+}
+
+void AdjustWinParamsForCurrentConfig(media::VideoCaptureParams* params,
+                                     ui::ContextFactory* context_factory) {
+  if (media::IsMediaFoundationD3D11VideoCaptureEnabled() &&
+      params->requested_format.pixel_format == media::PIXEL_FORMAT_NV12) {
+    if (IsGpuRasterizationSupported(context_factory)) {
+      params->buffer_type = media::VideoCaptureBufferType::kGpuMemoryBuffer;
+    } else {
+      params->requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+    }
+  }
+}
+#endif
+
+#if BUILDFLAG(IS_MAC)
+void AdjustMacParamsForCurrentConfig(media::VideoCaptureParams* params,
+                                     const std::string& device_id) {
+  if (media::ShouldEnableGpuMemoryBuffer(device_id)) {
+    params->buffer_type = media::VideoCaptureBufferType::kGpuMemoryBuffer;
+  }
 }
 #endif
 
@@ -271,8 +288,6 @@ class GpuMemoryBufferHandleHolder : public BufferHandleHolder,
     DCHECK(buffer_handle->is_gpu_memory_buffer_handle());
     if (context_provider_) {
       context_provider_->AddObserver(this);
-      buffer_texture_target_ = CalculateBufferTextureTarget(
-          context_provider_->ContextCapabilities());
     }
   }
 
@@ -333,8 +348,6 @@ class GpuMemoryBufferHandleHolder : public BufferHandleHolder,
         context_factory_->SharedMainThreadRasterContextProvider();
     if (context_provider_) {
       context_provider_->AddObserver(this);
-      buffer_texture_target_ = CalculateBufferTextureTarget(
-          context_provider_->ContextCapabilities());
     }
   }
 
@@ -411,9 +424,9 @@ class GpuMemoryBufferHandleHolder : public BufferHandleHolder,
 #endif
       CHECK_EQ(buffer_planes_.size(), 1u);
       shared_images_[0] = shared_image_interface->CreateSharedImage(
-          format, gmb->GetSize(), frame_info->color_space,
-          kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, kSharedImageUsage,
-          "CameraVideoFrame", gmb->CloneHandle());
+          {format, gmb->GetSize(), frame_info->color_space, kSharedImageUsage,
+           "CameraVideoFrame"},
+          gmb->CloneHandle());
       CHECK(shared_images_[0]);
     } else {
       gpu::GpuMemoryBufferManager* gmb_manager =
@@ -421,8 +434,8 @@ class GpuMemoryBufferHandleHolder : public BufferHandleHolder,
       for (size_t plane = 0; plane < buffer_planes_.size(); ++plane) {
         shared_images_[plane] = shared_image_interface->CreateSharedImage(
             gmb.get(), gmb_manager, buffer_planes_[plane],
-            frame_info->color_space, kTopLeft_GrSurfaceOrigin,
-            kPremul_SkAlphaType, kSharedImageUsage, "CameraVideoFrame");
+            {frame_info->color_space, kTopLeft_GrSurfaceOrigin,
+             kPremul_SkAlphaType, kSharedImageUsage, "CameraVideoFrame"});
         CHECK(shared_images_[plane]);
       }
     }
@@ -456,12 +469,15 @@ class GpuMemoryBufferHandleHolder : public BufferHandleHolder,
     DCHECK(!frame_info->is_premapped);
 #endif
 
+    auto buffer_texture_target = shared_images_[0]->GetTextureTarget(
+        GetBufferUsage(), GetBufferFormat());
+
     gpu::MailboxHolder mailbox_holder_array[media::VideoFrame::kMaxPlanes];
     for (size_t plane = 0; plane < buffer_planes_.size(); ++plane) {
       DCHECK(shared_images_[plane]);
-      mailbox_holder_array[plane] = gpu::MailboxHolder(
-          shared_images_[plane]->mailbox(), mailbox_holder_sync_token_,
-          buffer_texture_target_);
+      mailbox_holder_array[plane] =
+          gpu::MailboxHolder(shared_images_[plane]->mailbox(),
+                             mailbox_holder_sync_token_, buffer_texture_target);
     }
     mailbox_holder_sync_token_.Clear();
 
@@ -518,11 +534,6 @@ class GpuMemoryBufferHandleHolder : public BufferHandleHolder,
   gpu::GpuMemoryBufferSupport gpu_memory_buffer_support_;
 
   scoped_refptr<viz::RasterContextProvider> context_provider_;
-
-  // The texture target we use to create a `MailboxHolder`. This value is
-  // calculated for out GPU buffer format, and GPU buffer usage, and the current
-  // capabilities of `context_provider_`.
-  uint32_t buffer_texture_target_;
 
   // Contains the shared images of the video frame planes created from the GPU
   // memory buffer.
@@ -694,7 +705,8 @@ std::unique_ptr<BufferHandleHolder> BufferHandleHolder::Create(
 CameraVideoFrameHandler::CameraVideoFrameHandler(
     ui::ContextFactory* context_factory,
     mojo::Remote<video_capture::mojom::VideoSource> camera_video_source,
-    const media::VideoCaptureFormat& capture_format)
+    const media::VideoCaptureFormat& capture_format,
+    const std::string& device_id)
     : context_factory_(context_factory),
       camera_video_source_remote_(std::move(camera_video_source)) {
   CHECK(camera_video_source_remote_);
@@ -707,6 +719,10 @@ CameraVideoFrameHandler::CameraVideoFrameHandler(
   capture_params.requested_format = capture_format;
 #if BUILDFLAG(IS_CHROMEOS)
   AdjustParamsForCurrentConfig(&capture_params);
+#elif BUILDFLAG(IS_WIN)
+  AdjustWinParamsForCurrentConfig(&capture_params, context_factory_);
+#elif BUILDFLAG(IS_MAC)
+  AdjustMacParamsForCurrentConfig(&capture_params, device_id);
 #endif
 
   camera_video_source_remote_->CreatePushSubscription(
@@ -718,15 +734,8 @@ CameraVideoFrameHandler::CameraVideoFrameHandler(
       // if any.
       /*force_reopen_with_new_settings=*/false,
       camera_video_stream_subsciption_remote_.BindNewPipeAndPassReceiver(),
-      base::BindOnce(
-          [](video_capture::mojom::CreatePushSubscriptionResultCodePtr
-                 result_code,
-             const media::VideoCaptureParams& actual_params) {
-            if (result_code->is_error_code()) {
-              LOG(ERROR) << "Error in creating push subscription: "
-                         << static_cast<int>(result_code->get_error_code());
-            }
-          }));
+      base::BindOnce(&CameraVideoFrameHandler::OnSubscriptionCreationResult,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 CameraVideoFrameHandler::~CameraVideoFrameHandler() = default;
@@ -836,6 +845,17 @@ void CameraVideoFrameHandler::OnStopped() {}
 // static
 void CameraVideoFrameHandler::SetForceUseGpuMemoryBufferForTest(bool value) {
   g_force_use_gpu_memory_buffer_for_test = value;
+}
+
+void CameraVideoFrameHandler::OnSubscriptionCreationResult(
+    video_capture::mojom::CreatePushSubscriptionResultCodePtr result_code,
+    const media::VideoCaptureParams& actual_params) {
+  if (result_code->is_error_code()) {
+    LOG(ERROR) << "Error in creating push subscription: "
+               << static_cast<int>(result_code->get_error_code());
+  } else {
+    actual_params_.emplace(actual_params);
+  }
 }
 
 void CameraVideoFrameHandler::OnVideoFrameGone(int buffer_id) {

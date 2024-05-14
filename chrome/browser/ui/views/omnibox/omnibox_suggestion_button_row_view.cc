@@ -201,11 +201,8 @@ OmniboxSuggestionButtonRowView::OmniboxSuggestionButtonRowView(
   // +4 for the focus bar width, which shifts the suggest text but isn't
   // included in `GetTextIndent()`.
   if (OmniboxFieldTrial::IsCr23LayoutEnabled()) {
-    left_margin += 4;
     // Do not apply left margin when action chips are inlined.
-    if (OmniboxFieldTrial::IsActionsUISimplificationEnabled()) {
-      left_margin = 0;
-    }
+    left_margin = 0;
   }
   int top_margin =
       OmniboxFieldTrial::IsChromeRefreshSuggestHoverFillShapeEnabled() ? 6 : 0;
@@ -309,8 +306,7 @@ void OmniboxSuggestionButtonRowView::UpdateFromModel() {
   // the row, which can then be used to apply different layout/styling.
   OmniboxSuggestionRowButton* first_button = nullptr;
 
-  if (OmniboxFieldTrial::IsKeywordModeRefreshEnabled() &&
-      match().HasInstantKeyword(
+  if (match().HasInstantKeyword(
           popup_view_->controller()->client()->GetTemplateURLService())) {
     keyword_button_->SetVisible(false);
   } else {
@@ -352,7 +348,7 @@ void OmniboxSuggestionButtonRowView::UpdateFromModel() {
     }
   }
 
-  if (OmniboxFieldTrial::IsActionsUISimplificationEnabled() && first_button) {
+  if (first_button) {
     // Apply a left margin of 4px (rather than zero) in order to make room for
     // the focus ring that gets rendered around action chips.
     first_button->SetProperty(

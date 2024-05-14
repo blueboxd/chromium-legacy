@@ -24,6 +24,7 @@
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
+#include "components/sessions/core/session_id.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -63,7 +64,7 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
     DCHECK(base::Contains(urls_threat_type_, url));
     DCHECK(base::Contains(urls_delayed_callback_, url));
     EXPECT_EQ(check_type, expected_check_type_);
-    if (urls_threat_type_[url] == SB_THREAT_TYPE_SAFE) {
+    if (urls_threat_type_[url] == SBThreatType::SB_THREAT_TYPE_SAFE) {
       return true;
     }
     if (!urls_delayed_callback_[url]) {
@@ -181,8 +182,8 @@ class MockUrlCheckerDelegate : public UrlCheckerDelegate {
  public:
   explicit MockUrlCheckerDelegate(SafeBrowsingDatabaseManager* database_manager)
       : database_manager_(database_manager),
-        threat_types_(
-            SBThreatTypeSet({safe_browsing::SB_THREAT_TYPE_URL_PHISHING})) {}
+        threat_types_(SBThreatTypeSet(
+            {safe_browsing::SBThreatType::SB_THREAT_TYPE_URL_PHISHING})) {}
 
   MOCK_METHOD1(MaybeDestroyNoStatePrefetchContents,
                void(base::OnceCallback<content::WebContents*()>));
@@ -239,7 +240,10 @@ class MockRealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
   void StartLookup(
       const GURL& gurl,
       RTLookupResponseCallback response_callback,
-      scoped_refptr<base::SequencedTaskRunner> callback_task_runner) override {
+      scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
+      SessionID tab_id) override {
+    using enum SBThreatType;
+
     std::string url = gurl.spec();
     DCHECK(base::Contains(url_details_, url));
     auto response = std::make_unique<RTLookupResponse>();
@@ -288,7 +292,8 @@ class MockRealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
 
   void SendSampledRequest(
       const GURL& gurl,
-      scoped_refptr<base::SequencedTaskRunner> callback_task_runner) override {}
+      scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
+      SessionID tab_id) override {}
 
   // |should_complete_lookup| should generally be true, unless you specifically
   // want to test time-sensitive things like timeouts. Setting it to false will
@@ -330,7 +335,8 @@ class MockRealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
   void GetAccessToken(
       const GURL& url,
       RTLookupResponseCallback response_callback,
-      scoped_refptr<base::SequencedTaskRunner> callback_task_runner) override {}
+      scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
+      SessionID tab_id) override {}
   std::optional<std::string> GetDMTokenString() const override {
     return std::nullopt;
   }
@@ -435,10 +441,12 @@ class SafeBrowsingUrlCheckerTest : public PlatformTest {
                                      : nullptr,
         /*hash_realtime_service=*/hash_realtime_service_->GetWeakPtr(),
         hash_real_time_selection,
-        /*is_async_check=*/false);
+        /*is_async_check=*/false, SessionID::InvalidValue());
   }
 
  protected:
+  using enum SBThreatType;
+
   void CheckHashRealTimeMetrics(std::optional<bool> expected_local_match_result,
                                 std::optional<bool> expected_is_service_found,
                                 bool expected_can_check_reputation) {
@@ -510,7 +518,7 @@ TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_SafeUrl) {
       hash_realtime_utils::HashRealTimeSelection::kNone);
 
   GURL url("https://example.test/");
-  database_manager_->SetThreatTypeForUrl(url, SB_THREAT_TYPE_SAFE,
+  database_manager_->SetThreatTypeForUrl(url, SBThreatType::SB_THREAT_TYPE_SAFE,
                                          /*delayed_callback=*/false);
   base::MockCallback<SafeBrowsingUrlCheckerImpl::NativeCheckUrlCallback>
       callback;

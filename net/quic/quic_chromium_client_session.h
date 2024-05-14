@@ -399,7 +399,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     // if |session_| is destroyed while the stream request is still pending.
     void OnRequestCompleteFailure(int rv);
 
-    raw_ptr<QuicChromiumClientSession::Handle> session_;
+    const raw_ptr<QuicChromiumClientSession::Handle> session_;
     const bool requires_confirmation_;
     CompletionOnceCallback callback_;
     std::unique_ptr<QuicChromiumClientStream::Handle> stream_;
@@ -582,6 +582,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       int cert_verify_flags,
       const quic::QuicConfig& config,
       std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config,
+      const char* const connection_description,
       base::TimeTicks dns_resolution_start_time,
       base::TimeTicks dns_resolution_end_time,
       const base::TickClock* tick_clock,
@@ -896,8 +897,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
  private:
   friend class test::QuicChromiumClientSessionPeer;
 
-  typedef std::set<raw_ptr<Handle, SetExperimental>> HandleSet;
-  typedef std::list<StreamRequest*> StreamRequestQueue;
+  typedef std::set<raw_ptr<Handle>> HandleSet;
+  typedef std::list<raw_ptr<StreamRequest>> StreamRequestQueue;
 
   bool WasConnectionEverUsed();
 

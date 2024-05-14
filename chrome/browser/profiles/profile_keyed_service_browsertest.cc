@@ -4,10 +4,10 @@
 
 #include <sstream>
 
+#include "base/containers/to_vector.h"
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/to_vector.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -21,15 +21,17 @@
 #include "components/keyed_service/core/keyed_service_base_factory.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
-#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/supervised_user/core/common/buildflags.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/features.h"
 #include "pdf/buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/screen_ai/buildflags/buildflags.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/ui_base_features.h"
 
@@ -67,7 +69,7 @@ std::vector<KeyedServiceBaseFactory*> GetKeyedServiceBaseFactories() {
   bool success = dependency_graph.GetConstructionOrder(&nodes);
   DCHECK(success);
 
-  return base::test::ToVector(nodes, [](DependencyNode* node) {
+  return base::ToVector(nodes, [](DependencyNode* node) {
     return static_cast<KeyedServiceBaseFactory*>(node);
   });
 }
@@ -185,6 +187,7 @@ class ProfileKeyedServiceBrowserTest : public InProcessBrowserTest {
           blink::features::kBrowsingTopics,
           net::features::kTpcdMetadataGrants,
           net::features::kTpcdTrialSettings,
+          net::features::kTopLevelTpcdTrialSettings,
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
           features::kPdfOcr,
 #endif
@@ -237,6 +240,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "MediaNotificationService",
 #else
     "LiveCaptionController",
+    "LiveTranslateController",
 #endif // BUILDFLAG(IS_CHROMEOS_LACROS)
     "AlarmManager",
     "BackgroundContentsService",
@@ -330,6 +334,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
   std::set<std::string> guest_active_services {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     "CastNotificationControllerLacros",
+    "CertDbInitializerFactory",
     "CleanupManagerLacros",
     "ClipboardAPI",
     "ExternalLogoutRequestEventHandler",
@@ -405,6 +410,9 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "DeveloperPrivateAPI",
     "DeviceInfoSyncService",
     "DownloadCoreService",
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+    "EnterpriseManagementService",
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
     "EventRouter",
     "ExtensionActionAPI",
     "ExtensionActionManager",
@@ -450,6 +458,9 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "InstallVerifier",
     "InstanceIDProfileService",
     "InvalidationService",
+#if BUILDFLAG(IS_CHROMEOS)
+    "KcerFactory",
+#endif // BUILDFLAG(IS_CHROMEOS)
     "LanguageSettingsPrivateDelegate",
     "LazyBackgroundTaskQueue",
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -469,6 +480,9 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "NavigationPredictorKeyedService",
     "NetworkingPrivateEventRouter",
     "NotificationDisplayService",
+#if BUILDFLAG(IS_CHROMEOS)
+    "NssServiceFactory",
+#endif // BUILDFLAG(IS_CHROMEOS)
     "OmniboxAPI",
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
     "OnDeviceTailModelService",
@@ -503,6 +517,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "ProcessManager",
     "ProcessMap",
     "ProcessesAPI",
+    "ProductSpecificationsService",
     "ProfileNetworkContextService",
     "ProtocolHandlerRegistry",
     "RealtimeReportingClient",
@@ -546,6 +561,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "TemplateURLServiceFactory",
     "ThemeService",
     "ToolbarActionsModel",
+    "TopLevelTrialService",
     "TpcdTrialService",
     "TrackingProtectionSettings",
     "TranslateRanker",
@@ -618,6 +634,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "PermissionsUpdaterShutdownFactory",
     "PluginInfoHostImpl",
     "TurnSyncOnHelperShutdownNotifier",
+    "WebUIContentsPreloadManager",
   };
   // clang-format on
 
@@ -658,6 +675,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "PermissionsUpdaterShutdownFactory",
     "PluginInfoHostImpl",
     "TurnSyncOnHelperShutdownNotifier",
+    "WebUIContentsPreloadManager",
   };
   // clang-format on
 

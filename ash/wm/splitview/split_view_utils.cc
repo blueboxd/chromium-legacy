@@ -21,9 +21,11 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/screen_pinning_controller.h"
+#include "ash/wm/snap_group/snap_group.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/splitview/layout_divider_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_types.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_restore/window_restore_controller.h"
@@ -749,22 +751,24 @@ int GetMinimumWindowLength(aura::Window* window, bool horizontal) {
   return minimum_width;
 }
 
-int CalculateDividerPosition(SnapPosition snap_position,
-                             aura::Window* root_window,
+int CalculateDividerPosition(aura::Window* root_window,
+                             SnapPosition snap_position,
                              float snap_ratio,
                              bool account_for_divider_width) {
   const int divider_upper_limit = GetDividerPositionUpperLimit(root_window);
-  // `snap_width` needs to be a float so that the rounding is performed at the
+  const int divider_delta =
+      account_for_divider_width ? kSplitviewDividerShortSideLength : 0;
+
+  // `snap_length` needs to be a float so that the rounding is performed at the
   // end of the computation of `next_divider_position`. It's important because a
   // 1-DIP gap between snapped windows precludes multiresizing. See b/262011280.
-  const float snap_width = divider_upper_limit * snap_ratio;
-  int next_divider_position = snap_position == SnapPosition::kPrimary
-                                  ? snap_width
-                                  : divider_upper_limit - snap_width;
-  if (account_for_divider_width) {
-    next_divider_position -= kSplitviewDividerShortSideLength / 2;
-  }
-  return next_divider_position;
+  const float snap_length = (divider_upper_limit - divider_delta) * snap_ratio;
+
+  return std::clamp(
+      static_cast<int>(snap_position == SnapPosition::kPrimary
+                           ? snap_length
+                           : divider_upper_limit - snap_length - divider_delta),
+      0, divider_upper_limit);
 }
 
 int GetEquivalentDividerPosition(aura::Window* window,
@@ -772,29 +776,21 @@ int GetEquivalentDividerPosition(aura::Window* window,
   aura::Window* root_window = window->GetRootWindow();
   const bool horizontal = IsLayoutHorizontal(root_window);
   const int window_length = GetWindowLength(window, horizontal);
-  const bool is_physical_left_or_top = IsPhysicalLeftOrTop(window);
-  int divider_position =
-      is_physical_left_or_top
-          ? window_length
-          : GetDividerPositionUpperLimit(root_window) - window_length;
-  if (account_for_divider_width) {
-    const int factor = is_physical_left_or_top ? -1 : 1;
-    divider_position += factor * kSplitviewDividerShortSideLength / 2;
-  }
-  return divider_position;
+  const int divider_delta =
+      account_for_divider_width ? kSplitviewDividerShortSideLength : 0;
+  return IsPhysicalLeftOrTop(window)
+             ? window_length
+             : GetDividerPositionUpperLimit(root_window) - window_length -
+                   divider_delta;
 }
 
 gfx::Rect CalculateSnappedWindowBoundsInScreen(
     SnapPosition snap_position,
     aura::Window* root_window,
     aura::Window* window_for_minimum_size,
+    bool account_for_divider_width,
     int divider_position,
-    int divider_width,
     bool is_resizing_with_divider) {
-  const gfx::Rect work_area_bounds_in_screen =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-          root_window);
-  const bool horizontal = IsLayoutHorizontal(root_window);
   const bool snap_left_or_top = IsPhysicalLeftOrTop(snap_position, root_window);
   const bool in_tablet_mode = display::Screen::GetScreen()->InTabletMode();
   const int work_area_size = GetDividerPositionUpperLimit(root_window);
@@ -817,17 +813,13 @@ gfx::Rect CalculateSnappedWindowBoundsInScreen(
     }
   }
 
-  int window_size;
-  if (snap_left_or_top) {
-    // If there is a divider widget, `divider_position` will have already been
-    // subtracted to account for the divider width.
-    // TODO(sophiewen): Consolidate subtracting `divider_width` for both
-    // primary and secondary windows.
-    window_size = divider_position;
-  } else {
-    window_size = work_area_size - divider_position - divider_width;
-  }
+  const int divider_width =
+      account_for_divider_width ? kSplitviewDividerShortSideLength : 0;
+  int window_size = snap_left_or_top
+                        ? divider_position
+                        : work_area_size - divider_position - divider_width;
 
+  const bool horizontal = IsLayoutHorizontal(root_window);
   const int minimum =
       GetMinimumWindowLength(window_for_minimum_size, horizontal);
   DCHECK(window_for_minimum_size || minimum == 0);
@@ -864,6 +856,9 @@ gfx::Rect CalculateSnappedWindowBoundsInScreen(
     }
   }
 
+  const gfx::Rect work_area_bounds_in_screen =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          root_window);
   // Get the parameter values for which `gfx::Rect::SetByBounds` would recreate
   // `work_area_bounds_in_screen`.
   int left = work_area_bounds_in_screen.x();
@@ -923,10 +918,6 @@ bool ShouldConsiderWindowForFasterSplitView(
     return false;
   }
 
-  // TODO(michelefan): Currently apply the snap source limitations for faster
-  // flag only. It will be removed when we figure out a good way to restore two
-  // windows in a snap group.
-  if (features::IsFasterSplitScreenSetupEnabled()) {
     if (PrefService* pref =
             Shell::Get()->session_controller()->GetActivePrefService();
         pref && !pref->GetBoolean(prefs::kSnapWindowSuggestions)) {
@@ -936,7 +927,6 @@ bool ShouldConsiderWindowForFasterSplitView(
     if (!CanSnapActionSourceStartFasterSplitView(snap_action_source)) {
       return false;
     }
-  }
 
   return !IsInOverviewSession();
 }
@@ -951,8 +941,9 @@ bool CanStartSplitViewOverviewSessionInClamshell(
 
   // If `SnapGroups` is not enabled and the topmost window (excluding
   // `window` itself) is snapped on the opposite side, don't start partial
-  // overview.
-  if (!SnapGroupController::Get() && IsAnotherWindowSnappedOppositeOf(window)) {
+  // overview. Note even if a `SnapGroup` is created and visible, we will snap
+  // on top of the existing group.
+  if (IsAnotherWindowSnappedOppositeOf(window)) {
     return false;
   }
 
@@ -971,6 +962,19 @@ int GetWindowComponentForResize(aura::Window* window) {
   // TODO(b/288356322): Update the component for vertical splitview.
   return state_type == chromeos::WindowStateType::kPrimarySnapped ? HTRIGHT
                                                                   : HTLEFT;
+}
+
+bool ShouldConsiderDivider(aura::Window* window) {
+  if (IsSnapGroupEnabledInClamshellMode()) {
+    if (auto* snap_group =
+            SnapGroupController::Get()->GetSnapGroupForGivenWindow(window)) {
+      return snap_group->split_view_divider()->divider_widget();
+    }
+  }
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(window->GetRootWindow());
+  return split_view_controller->InSplitViewMode() &&
+         split_view_controller->split_view_divider()->divider_widget();
 }
 
 ASH_EXPORT std::string BuildWindowLayoutCompleteOnSessionExitHistogram() {

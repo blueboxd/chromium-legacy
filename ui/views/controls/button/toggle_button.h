@@ -50,6 +50,11 @@ class VIEWS_EXPORT ToggleButton : public Button {
   void SetTrackOffColor(SkColor track_off_color);
   std::optional<SkColor> GetTrackOffColor() const;
 
+  // Sets if the inner border is drawn. If `enabled`, it is drawn when the
+  // switch is off. If `enabled` is false, it's never drawn.
+  void SetInnerBorderEnabled(bool enabled);
+  bool GetInnerBorderEnabled() const;
+
   void SetAcceptsEvents(bool accepts_events);
   bool GetAcceptsEvents() const;
 
@@ -99,8 +104,6 @@ class VIEWS_EXPORT ToggleButton : public Button {
   bool CanAcceptEvent(const ui::Event& event) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void OnFocus() override;
-  void OnBlur() override;
 
   // Button:
   void PaintButtonContents(gfx::Canvas* canvas) override;
@@ -108,6 +111,8 @@ class VIEWS_EXPORT ToggleButton : public Button {
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
+
+  bool inner_border_enabled_ = true;
 
   gfx::SlideAnimation slide_animation_{this};
   gfx::SlideAnimation hover_animation_{this};

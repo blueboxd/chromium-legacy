@@ -86,42 +86,9 @@ namespace media {
 
 namespace {
 
-BASE_FEATURE(kAddSharedImageRasterUsageWithNonOOPR,
-             "AddSharedImageRasterUsageWithNonOOPR",
+BASE_FEATURE(kPCVRAddSharedImageRasterUsageWithNonOOPR,
+             "PCVRAddSharedImageRasterUsageWithNonOOPR",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Return the full-range RGB component of the color space of this frame's
-// content. This will replace several color spaces (Rec601, Rec709, and
-// Apple's Rec709) with sRGB, for compatibility with existing behavior.
-gfx::ColorSpace GetVideoFrameRGBColorSpacePreferringSRGB(
-    const VideoFrame* frame) {
-  const auto rgb_color_space = frame->ColorSpace().GetAsFullRangeRGB();
-  auto primary_id = rgb_color_space.GetPrimaryID();
-  switch (primary_id) {
-    case gfx::ColorSpace::PrimaryID::CUSTOM:
-      return rgb_color_space;
-    case gfx::ColorSpace::PrimaryID::SMPTE170M:
-    case gfx::ColorSpace::PrimaryID::SMPTE240M:
-      primary_id = gfx::ColorSpace::PrimaryID::BT709;
-      break;
-    default:
-      break;
-  }
-  auto transfer_id = rgb_color_space.GetTransferID();
-  switch (transfer_id) {
-    case gfx::ColorSpace::TransferID::CUSTOM:
-    case gfx::ColorSpace::TransferID::CUSTOM_HDR:
-      return rgb_color_space;
-    case gfx::ColorSpace::TransferID::BT709_APPLE:
-    case gfx::ColorSpace::TransferID::SMPTE170M:
-    case gfx::ColorSpace::TransferID::SMPTE240M:
-      transfer_id = gfx::ColorSpace::TransferID::SRGB;
-      break;
-    default:
-      break;
-  }
-  return gfx::ColorSpace(primary_id, transfer_id);
-}
 
 // This class keeps the last image drawn.
 // We delete the temporary resource if it is not used for 3 seconds.
@@ -358,6 +325,7 @@ const libyuv::YuvConstants* GetYuvContantsForColorSpace(SkYUVColorSpace cs) {
     case kBT2020_12bit_Limited_SkYUVColorSpace:
       return &YUV_MATRIX(libyuv::kYuv2020Constants);
     case kIdentity_SkYUVColorSpace:
+    default:
       NOTREACHED_NORETURN();
   };
 }
@@ -755,10 +723,10 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
   VideoImageGenerator() = delete;
 
   VideoImageGenerator(scoped_refptr<VideoFrame> frame)
-      : cc::PaintImageGenerator(
-            SkImageInfo::MakeN32Premul(frame->visible_rect().width(),
-                                       frame->visible_rect().height(),
-                                       frame->ColorSpace().ToSkColorSpace())),
+      : cc::PaintImageGenerator(SkImageInfo::MakeN32Premul(
+            frame->visible_rect().width(),
+            frame->visible_rect().height(),
+            frame->CompatRGBColorSpace().ToSkColorSpace())),
         frame_(std::move(frame)) {
     DCHECK(!frame_->HasTextures());
   }
@@ -975,9 +943,8 @@ class VideoTextureBacking : public cc::TextureBacking {
       return sk_image_->readPixels(dst_info, dst_pixels, dst_row_bytes, src_x,
                                    src_y);
     }
-    ri->ReadbackImagePixels(mailbox_, dst_info, dst_info.minRowBytes(), src_x,
-                            src_y, /*plane_index=*/0, dst_pixels);
-    return true;
+    return ri->ReadbackImagePixels(mailbox_, dst_info, dst_info.minRowBytes(),
+                                   src_x, src_y, /*plane_index=*/0, dst_pixels);
   }
 
   void FlushPendingSkiaOps() override {
@@ -1848,16 +1815,16 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
       // via raster, but historically this usage was included only for OOP-R.
       // Currently in the process of adding with a killswitch.
       // TODO(crbug.com/1524353): Remove this killswitch post-safe rollout.
-      if (base::FeatureList::IsEnabled(kAddSharedImageRasterUsageWithNonOOPR)) {
+      if (base::FeatureList::IsEnabled(
+              kPCVRAddSharedImageRasterUsageWithNonOOPR)) {
         usage = usage | gpu::SHARED_IMAGE_USAGE_RASTER_WRITE;
       }
     }
 
     yuv_cache_.shared_image = sii->CreateSharedImage(
-        SHARED_IMAGE_FORMAT, video_frame->coded_size(),
-        GetVideoFrameRGBColorSpacePreferringSRGB(video_frame.get()),
-        kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
-        "PaintCanvasVideoRenderer", gpu::kNullSurfaceHandle);
+        {SHARED_IMAGE_FORMAT, video_frame->coded_size(),
+         video_frame->CompatRGBColorSpace(), usage, "PaintCanvasVideoRenderer"},
+        gpu::kNullSurfaceHandle);
     CHECK(yuv_cache_.shared_image);
     token = sii->GenUnverifiedSyncToken();
   }
@@ -2087,10 +2054,10 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
           flags |= gpu::SHARED_IMAGE_USAGE_GLES2_WRITE;
         }
         client_shared_image = sii->CreateSharedImage(
-            SHARED_IMAGE_FORMAT, video_frame->coded_size(),
-            GetVideoFrameRGBColorSpacePreferringSRGB(video_frame.get()),
-            kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, flags,
-            "PaintCanvasVideoRenderer", gpu::kNullSurfaceHandle);
+            {SHARED_IMAGE_FORMAT, video_frame->coded_size(),
+             video_frame->CompatRGBColorSpace(), flags,
+             "PaintCanvasVideoRenderer"},
+            gpu::kNullSurfaceHandle);
         CHECK(client_shared_image);
         mailbox = client_shared_image->mailbox();
         ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
@@ -2160,9 +2127,10 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
             std::move(source_image), std::move(access));
       }
     } else if (!cache_->texture_backing) {
-      SkImageInfo sk_image_info =
-          SkImageInfo::Make(gfx::SizeToSkISize(cache_->coded_size),
-                            kRGBA_8888_SkColorType, kPremul_SkAlphaType);
+      SkImageInfo sk_image_info = SkImageInfo::Make(
+          gfx::SizeToSkISize(cache_->coded_size), kRGBA_8888_SkColorType,
+          kPremul_SkAlphaType,
+          video_frame->CompatRGBColorSpace().ToSkColorSpace());
       cache_->texture_backing = sk_make_sp<VideoTextureBacking>(
           mailbox, std::move(client_shared_image), sk_image_info,
           wraps_video_frame_texture, raster_context_provider);

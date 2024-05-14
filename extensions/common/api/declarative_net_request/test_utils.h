@@ -8,6 +8,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+
 #include "base/files/file_path.h"
 #include "base/values.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
@@ -199,6 +200,11 @@ enum ConfigFlag {
   // Whether the "declarativeNetRequestWithHostAccess" permission should be
   // included.
   kConfig_HasDelarativeNetRequestWithHostAccessPermission = 1 << 5,
+
+  // Whether the extension listens for the onUpdateAvailable event. This is
+  // needed for an extension with a background script to receive delayed
+  // updates.
+  kConfig_ListenForOnUpdateAvailable = 1 << 6,
 };
 
 // Describes a single extension ruleset.

@@ -144,6 +144,10 @@ class ASH_EXPORT CaptureModeController
   // `AudioCaptureAllowed` policy.
   bool IsAudioCaptureDisabledByPolicy() const;
 
+  // Returns true if the folder to save captures is enforced by
+  // `ScreenCaptureLocation` policy and can't be changed.
+  bool IsCustomFolderManagedByPolicy() const;
+
   // Returns true if there's an active video recording that is recording audio.
   bool IsAudioRecordingInProgress() const;
 
@@ -220,6 +224,8 @@ class ASH_EXPORT CaptureModeController
   // This can only be called when user is logged in.
   void SetCustomCaptureFolder(const base::FilePath& path);
 
+  // Returns the currently saved custom folder even if it's not being currently
+  // used.
   base::FilePath GetCustomCaptureFolder() const;
 
   // Returns the folder in which all taken screenshots and videos will be saved.
@@ -286,6 +292,10 @@ class ASH_EXPORT CaptureModeController
   // Returns true if the given `path` is the same as the Linux Files path, false
   // otherwise.
   bool IsLinuxFilesPath(const base::FilePath& path) const;
+
+  // Returns true if the given `path` is the root folder of OneDrive, false
+  // otherwise.
+  bool IsRootOneDriveFilesPath(const base::FilePath& path) const;
 
   // Returns the current parent window for the on-capture-surface widgets such
   // as `CaptureModeCameraController::camera_preview_widget_` and

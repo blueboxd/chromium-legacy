@@ -293,6 +293,62 @@ IN_PROC_BROWSER_TEST_F(MetricIntegrationTest,
 }
 #endif
 
+class LCPLazyLoadingImageTest : public MetricIntegrationTest {
+ public:
+  base::Value::Dict setUpTraceEvent(std::string test_url) {
+    auto waiter =
+        std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
+            web_contents());
+
+    Start();
+    StartTracing({"loading"});
+    Load(test_url);
+
+    waiter->AddPageExpectation(page_load_metrics::PageLoadMetricsTestWaiter::
+                                   TimingField::kLargestContentfulPaint);
+    waiter->Wait();
+
+    std::unique_ptr<TraceAnalyzer> trace_analyzer = StopTracingAndAnalyze();
+    TraceEventVector candidate_events;
+    trace_analyzer->FindEvents(
+        Query::EventNameIs("largestContentfulPaint::Candidate"),
+        &candidate_events);
+
+    return candidate_events[0]->GetKnownArgAsDict("data");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(LCPLazyLoadingImageTest,
+                       LargestContentfulPaint_EventLazyLoadingImage_Enabled) {
+  std::string test_url =
+      "/lcp_breakdown_timings_native_lazy_loading_images.html";
+
+  const base::Value::Dict data = setUpTraceEvent(test_url);
+  const std::string* loading_attr = data.FindString("loadingAttr");
+  ASSERT_TRUE(loading_attr);
+  EXPECT_EQ(*loading_attr, "lazy");
+}
+
+IN_PROC_BROWSER_TEST_F(LCPLazyLoadingImageTest,
+                       LargestContentfulPaint_EventLazyLoadingImage_Unset) {
+  std::string test_url = "/iframe_with_image.html";
+
+  const base::Value::Dict data = setUpTraceEvent(test_url);
+  const std::string* loading_attr = data.FindString("loadingAttr");
+  ASSERT_TRUE(loading_attr);
+  EXPECT_EQ(*loading_attr, "");
+}
+
+IN_PROC_BROWSER_TEST_F(LCPLazyLoadingImageTest,
+                       LargestContentfulPaint_EventLazyLoadingImage_Video) {
+  std::string test_url = "/is_video.html";
+
+  const base::Value::Dict data = setUpTraceEvent(test_url);
+  const std::string* loading_attr = data.FindString("loadingAttr");
+  ASSERT_TRUE(loading_attr);
+  EXPECT_EQ(*loading_attr, "");
+}
+
 class PageViewportInLCPTest : public MetricIntegrationTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1523,4 +1579,67 @@ IN_PROC_BROWSER_TEST_F(MetricIntegrationTest,
   // No LCP is recorded.
   ExpectUKMPageLoadMetricNonExistence(
       PageLoad::kPaintTiming_NavigationToLargestContentfulPaint2Name);
+}
+
+IN_PROC_BROWSER_TEST_F(MetricIntegrationTest,
+                       LcpSameOriginImage_CrossOriginTypeNotSet) {
+  Start();
+  auto waiter = std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
+      web_contents());
+  waiter->AddMinimumLargestContentfulPaintImageExpectation(1);
+  auto image_url =
+      embedded_test_server()->GetURL("example.com", "/lcp-256x256.png");
+
+  Load("/lcp_image_varyorigin.html");
+
+  auto image_url_set = EvalJs(
+      web_contents(),
+      base::StringPrintf("lcp_image.src='%s'", image_url.spec().c_str()));
+
+  waiter->Wait();
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
+
+  int64_t expected_lcp_type_flags =
+      static_cast<uint64_t>(blink::LargestContentfulPaintType::kImage |
+                            blink::LargestContentfulPaintType::kPNG);
+
+  ASSERT_EQ(GetUKMPageLoadMetricFlagSet(
+                PageLoad::kPaintTiming_LargestContentfulPaintTypeName),
+            expected_lcp_type_flags);
+
+  ExpectUKMPageLoadMetric(
+      PageLoad::kPaintTiming_LargestContentfulPaintImageIsCrossOriginName, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(MetricIntegrationTest,
+                       LcpCrossOriginImage_CrossOriginTypeIsSet) {
+  Start();
+  auto waiter = std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
+      web_contents());
+  waiter->AddMinimumLargestContentfulPaintImageExpectation(1);
+  auto image_url =
+      embedded_test_server()->GetURL("crossorigin.com", "/lcp-256x256.png");
+
+  Load("/lcp_image_varyorigin.html");
+
+  auto image_url_set = EvalJs(
+      web_contents(),
+      base::StringPrintf("lcp_image.src='%s'", image_url.spec().c_str()));
+
+  waiter->Wait();
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
+
+  int64_t expected_lcp_type_flags =
+      static_cast<uint64_t>(blink::LargestContentfulPaintType::kImage |
+                            blink::LargestContentfulPaintType::kPNG |
+                            blink::LargestContentfulPaintType::kCrossOrigin);
+
+  ASSERT_EQ(GetUKMPageLoadMetricFlagSet(
+                PageLoad::kPaintTiming_LargestContentfulPaintTypeName),
+            expected_lcp_type_flags);
+
+  ExpectUKMPageLoadMetric(
+      PageLoad::kPaintTiming_LargestContentfulPaintImageIsCrossOriginName, 1);
 }

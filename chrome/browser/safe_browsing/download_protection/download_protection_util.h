@@ -60,6 +60,7 @@ enum DownloadCheckResultReason {
   REASON_DOWNLOAD_DANGEROUS_ACCOUNT_COMPROMISE = 36,
   REASON_LOCAL_DECRYPTION_PROMPT = 37,
   REASON_LOCAL_DECRYPTION_FAILED = 38,
+  REASON_IMMEDIATE_DEEP_SCAN = 39,
   REASON_MAX  // Always add new values before this one.
 };
 
@@ -98,9 +99,11 @@ enum class DeepScanEvent {
   kScanFailed = 5,
   kScanDeleted = 6,
   kPromptAcceptedFromWebUI = 7,
-  kMaxValue = kPromptAcceptedFromWebUI,
+  kIncorrectPassword = 8,
+  kMaxValue = kIncorrectPassword,
 };
 void LogDeepScanEvent(download::DownloadItem* item, DeepScanEvent event);
+void LogLocalDecryptionEvent(DeepScanEvent event);
 
 // Callback type which is invoked once the download request is done.
 typedef base::OnceCallback<void(DownloadCheckResult)> CheckDownloadCallback;

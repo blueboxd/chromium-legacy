@@ -94,8 +94,19 @@ void FakeIdentityRequestDialogController::ShowErrorDialog(
     const std::optional<TokenError>& error,
     DismissCallback dismiss_callback,
     MoreDetailsCallback more_details_callback) {
-  DCHECK(dismiss_callback);
-  std::move(dismiss_callback).Run(DismissReason::kOther);
+  if (!is_interception_enabled_) {
+    DCHECK(dismiss_callback);
+    std::move(dismiss_callback).Run(DismissReason::kOther);
+  }
+}
+
+void FakeIdentityRequestDialogController::ShowLoadingDialog(
+    const std::string& top_frame_for_display,
+    const std::string& idp_for_display,
+    blink::mojom::RpContext rp_context,
+    blink::mojom::RpMode rp_mode,
+    DismissCallback dismiss_callback) {
+  title_ = "Loading";
 }
 
 std::string FakeIdentityRequestDialogController::GetTitle() const {
@@ -152,4 +163,11 @@ void FakeIdentityRequestDialogController::WebContentsDestroyed() {
   popup_window_ = nullptr;
 }
 
+void FakeIdentityRequestDialogController::RequestIdPRegistrationPermision(
+    const url::Origin& origin,
+    base::OnceCallback<void(bool accepted)> callback) {
+  if (!is_interception_enabled_) {
+    std::move(callback).Run(false);
+  }
+}
 }  // namespace content

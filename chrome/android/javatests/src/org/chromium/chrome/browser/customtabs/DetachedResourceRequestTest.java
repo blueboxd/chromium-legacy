@@ -42,7 +42,7 @@ import org.chromium.chrome.browser.browserservices.verification.ChromeOriginVeri
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.content_settings.CookieControlsMode;
@@ -50,7 +50,6 @@ import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.components.user_prefs.UserPrefs;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.NetError;
@@ -407,17 +406,6 @@ public class DetachedResourceRequestTest {
 
     /**
      * Tests that cached detached resource requests that are forbidden by SafeBrowsing don't end up
-     * in the content area, for a subresource.
-     */
-    @Test
-    @SmallTest
-    @DisableFeatures(ChromeFeatureList.SAFE_BROWSING_SKIP_SUBRESOURCES)
-    public void testSafeBrowsingSubresource() throws Exception {
-        testSafeBrowsingSubresource(true);
-    }
-
-    /**
-     * Tests that cached detached resource requests that are forbidden by SafeBrowsing don't end up
      * in the content area, for a main resource.
      */
     @Test
@@ -429,17 +417,6 @@ public class DetachedResourceRequestTest {
         testSafeBrowsingMainResource(/* afterNative= */ false, /* splitCacheEnabled= */ false);
     }
 
-    /**
-     * Tests that cached detached resource requests that are forbidden by SafeBrowsing don't end up
-     * in the content area, for a subresource.
-     */
-    @Test
-    @SmallTest
-    @DisableFeatures(ChromeFeatureList.SAFE_BROWSING_SKIP_SUBRESOURCES)
-    public void testSafeBrowsingSubresourceBeforeNative() throws Exception {
-        testSafeBrowsingSubresource(false);
-    }
-
     @Test
     @SmallTest
     @EnableFeatures(ChromeFeatureList.CCT_REPORT_PARALLEL_REQUEST_STATUS)
@@ -448,7 +425,7 @@ public class DetachedResourceRequestTest {
         mServer = EmbeddedTestServer.createAndStartHTTPSServer(mContext, ServerCertificate.CERT_OK);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    PrefService prefs = UserPrefs.get(Profile.getLastUsedRegularProfile());
+                    PrefService prefs = UserPrefs.get(ProfileManager.getLastUsedRegularProfile());
                     Assert.assertEquals(
                             prefs.getInteger(COOKIE_CONTROLS_MODE),
                             CookieControlsMode.INCOGNITO_ONLY);
@@ -493,7 +470,7 @@ public class DetachedResourceRequestTest {
         // This isn't blocking third-party cookies by preferences.
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    PrefService prefs = UserPrefs.get(Profile.getLastUsedRegularProfile());
+                    PrefService prefs = UserPrefs.get(ProfileManager.getLastUsedRegularProfile());
                     Assert.assertEquals(
                             prefs.getInteger(COOKIE_CONTROLS_MODE),
                             CookieControlsMode.INCOGNITO_ONLY);
@@ -538,7 +515,7 @@ public class DetachedResourceRequestTest {
         mServer = EmbeddedTestServer.createAndStartServer(mContext);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    PrefService prefs = UserPrefs.get(Profile.getLastUsedRegularProfile());
+                    PrefService prefs = UserPrefs.get(ProfileManager.getLastUsedRegularProfile());
                     Assert.assertEquals(
                             prefs.getInteger(COOKIE_CONTROLS_MODE),
                             CookieControlsMode.INCOGNITO_ONLY);
@@ -719,34 +696,6 @@ public class DetachedResourceRequestTest {
             MockSafetyNetApiHandler.clearMockResponses();
             MockSafeBrowsingApiHandler.clearMockResponses();
             SafeBrowsingApiBridge.clearHandlerForTesting();
-        }
-    }
-
-    private void testSafeBrowsingSubresource(boolean afterNative) throws Exception {
-        SafeBrowsingApiBridge.setSafetyNetApiHandler(new MockSafetyNetApiHandler());
-        CustomTabsSessionToken session = prepareSession();
-        String cacheable = "/cachetime";
-        waitForDetachedRequest(session, cacheable, afterNative);
-        Uri url = Uri.parse(mServer.getURL(cacheable));
-
-        try {
-            MockSafetyNetApiHandler.addMockResponse(
-                    url.toString(), "{\"matches\":[{\"threat_type\":\"5\"}]}");
-
-            String pageUrl = mServer.getURL("/chrome/test/data/android/cacheable_subresource.html");
-            Intent intent =
-                    CustomTabsIntentTestUtils.createMinimalCustomTabIntent(mContext, pageUrl);
-            mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
-
-            Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-            WebContents webContents = tab.getWebContents();
-            // TODO(crbug.com/1039443): For now, we check the presence of an interstitial through
-            // the title since isShowingInterstitialPage does not work with committed interstitials.
-            // Once we fully migrate to committed interstitials, this should be changed to a more
-            // robust check.
-            CriteriaHelper.pollUiThread(() -> webContents.getTitle().equals("Security error"));
-        } finally {
-            MockSafetyNetApiHandler.clearMockResponses();
         }
     }
 

@@ -29,7 +29,7 @@ import {ButtonBarState, ButtonState} from './cellular_types.js';
 import {getTemplate} from './esim_flow_ui.html.js';
 import {getEuicc, getPendingESimProfiles} from './esim_manager_utils.js';
 import {getESimManagerRemote} from './mojo_interface_provider.js';
-import {ProfileDiscoveryListPageElement} from './profile_discovery_list_page';
+import {ProfileDiscoveryListPageElement} from './profile_discovery_list_page.js';
 import {SubflowMixin} from './subflow_mixin.js';
 
 export enum EsimPageName {
@@ -359,7 +359,12 @@ export class EsimFlowUiElement extends EsimFlowUiElementBase {
     if (!this.smdsSupportEnabled_) {
       this.fetchProfiles_();
     } else {
-      this.getEuicc_();
+      // Installing an eSIM profile may result in Hermes restarting and losing
+      // its state. When this happens the cache of profiles used for the UI may
+      // become corrupted and will not include all installed profiles.
+      // Explicitly refresh the cache when this dialog is opened to ensure the
+      // cache is regenerated and valid.
+      this.refreshInstalledProfiles_();
     }
     this.onNetworkStateListChanged();
   }
@@ -426,6 +431,17 @@ export class EsimFlowUiElement extends EsimFlowUiElementBase {
       this.pendingProfiles_ = [];
     }
     this.pendingProfiles_ = await getPendingESimProfiles(this.euicc_);
+  }
+
+  private async refreshInstalledProfiles_(): Promise<void> {
+    if (!this.smdsSupportEnabled_) {
+      return;
+    }
+    await this.getEuicc_();
+    if (!this.euicc_) {
+      return;
+    }
+    await this.euicc_.refreshInstalledProfiles();
   }
 
   private handleProfileInstallResponse_(

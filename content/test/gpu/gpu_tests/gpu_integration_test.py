@@ -14,7 +14,6 @@ import logging
 import os
 import pkgutil
 import re
-import sys
 import types
 from typing import Any, Dict, Generator, List, Optional, Set, Tuple, Type
 import unittest
@@ -34,8 +33,10 @@ import validate_tag_consistency
 
 from gpu_tests import common_browser_args as cba
 from gpu_tests import common_typing as ct
+from gpu_tests import constants
 from gpu_tests import gpu_helper
 from gpu_tests import overlay_support
+from gpu_tests.util import host_information
 
 TEST_WAS_SLOW = 'test_was_slow'
 
@@ -48,10 +49,10 @@ ResultType = json_results.ResultType
 # Please expand the following lists when we expand to new bot configs.
 _SUPPORTED_WIN_VERSIONS = ['win7', 'win10', 'win11']
 _SUPPORTED_WIN_GPU_VENDORS = [
-    gpu_helper.GpuVendors.AMD,
-    gpu_helper.GpuVendors.INTEL,
-    gpu_helper.GpuVendors.NVIDIA,
-    gpu_helper.GpuVendors.QUALCOMM,
+    constants.GpuVendor.AMD,
+    constants.GpuVendor.INTEL,
+    constants.GpuVendor.NVIDIA,
+    constants.GpuVendor.QUALCOMM,
 ]
 
 _ARGS_TO_CONSOLIDATE = frozenset([
@@ -97,7 +98,6 @@ class GpuIntegrationTest(
     serially_executed_browser_test_case.SeriallyExecutedBrowserTestCase):
 
   _disable_log_uploads = False
-  _extra_intel_device_id_with_overlays: Optional[str] = None
   _skip_post_test_cleanup_and_debug_info = False
   _skip_post_failure_browser_restart = False
   _enforce_browser_version = False
@@ -195,14 +195,17 @@ class GpuIntegrationTest(
     cls._skip_post_failure_browser_restart =\
         options.no_browser_restart_on_failure
     cls._disable_log_uploads = options.disable_log_uploads
-    cls._extra_intel_device_id_with_overlays = (
-        options.extra_intel_device_id_with_overlays)
     cls._enforce_browser_version = options.enforce_browser_version
 
   @classmethod
   def SetUpProcess(cls) -> None:
     super(GpuIntegrationTest, cls).SetUpProcess()
     cls._SetClassVariablesFromOptions(cls._finder_options)
+    # Handled here instead of in _SetClassVariablesFromOptions since we only
+    # ever want to do this once per process.
+    if cls._finder_options.extra_overlay_config_json:
+      overlay_support.ParseOverlayJsonFile(
+          cls._finder_options.extra_overlay_config_json)
 
   @classmethod
   def AddCommandlineArgs(cls, parser: ct.CmdArgParser) -> None:
@@ -216,9 +219,11 @@ class GpuIntegrationTest(
         action='store_true',
         default=False,
         help='Disables uploads of logs to cloud storage')
-    parser.add_option('--extra-intel-device-id-with-overlays',
-                      dest='extra_intel_device_id_with_overlays',
-                      help='The extra Intel device id with overlays')
+    parser.add_option('--extra-overlay-config-json',
+                      help=('A path to a JSON file containing additional '
+                            'overlay configs to use. See '
+                            'overlay_support.ParseOverlayJsonFile() for more '
+                            'information on expected format.'))
     parser.add_option('--skip-post-test-cleanup-and-debug-info',
                       action='store_true',
                       help=('Disables the automatic cleanup of minidumps after '
@@ -584,7 +589,7 @@ class GpuIntegrationTest(
     # GetPlatformTags() to restrict this to the flaking Mac configs.
     if not GpuIntegrationTest._is_first_browser_start:
       return False
-    return sys.platform == 'darwin'
+    return host_information.IsMac()
 
   # pylint: enable=no-self-use
 
@@ -762,7 +767,7 @@ class GpuIntegrationTest(
     return gpu_helper.IsIntel(gpu.devices[0].vendor_id)
 
   def IsDualGPUMacLaptop(self) -> bool:
-    if sys.platform != 'darwin':
+    if not host_information.IsMac():
       return False
     system_info = self.browser.GetSystemInfo()
     if not system_info:
@@ -954,8 +959,7 @@ class GpuIntegrationTest(
       tags.extend([re.sub('[ _]', '-', tag) for tag in gpu_tags])
 
       # Add tags based on GPU feature status.
-      startup_args = getattr(browser, 'startup_args', None)
-      skia_renderer = gpu_helper.GetSkiaRenderer(gpu_info, startup_args)
+      skia_renderer = gpu_helper.GetSkiaRenderer(gpu_info)
       tags.append(skia_renderer)
       tags.extend(cls._GetDriverVersionTags(browser, system_info))
     display_server = gpu_helper.GetDisplayServer(browser.browser_type)
@@ -1039,13 +1043,6 @@ class GpuIntegrationTest(
         raise
     finally:
       GpuIntegrationTest._is_first_browser_start = False
-
-    # Append overlay support for extra Intel GPUs when the extra device id is
-    # current active GPU's device id
-    gpu = self.browser.GetSystemInfo().gpu.devices[0]
-    extra_device_id = self._extra_intel_device_id_with_overlays
-    if extra_device_id and extra_device_id != gpu.device_id:
-      overlay_support.AppendOverlayConfigWithExtraIntelGPU(gpu)
 
   @staticmethod
   def GetJSONResultsDelimiter() -> str:

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/web_applications/chromeos_web_app_experiments.h"
 
+#include <string_view>
+
 #include "base/containers/contains.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
@@ -35,9 +37,9 @@ bool IsExperimentEnabled(const webapps::AppId& app_id) {
   return g_always_enabled_for_testing || app_id == kMicrosoft365AppId;
 }
 
-std::optional<std::vector<const char* const>>&
+std::optional<std::vector<const char*>>&
 GetScopeExtensionsOverrideForTesting() {
-  static base::NoDestructor<std::optional<std::vector<const char* const>>>
+  static base::NoDestructor<std::optional<std::vector<const char*>>>
       scope_extensions;
   return *scope_extensions;
 }
@@ -59,7 +61,7 @@ base::span<const char* const> ChromeOsWebAppExperiments::GetScopeExtensions(
 
 size_t ChromeOsWebAppExperiments::GetExtendedScopeScore(
     const webapps::AppId& app_id,
-    base::StringPiece url_spec) {
+    std::string_view url_spec) {
   DCHECK(chromeos::features::IsUploadOfficeToCloudEnabled());
 
   size_t best_score = 0;
@@ -91,7 +93,7 @@ void ChromeOsWebAppExperiments::SetAlwaysEnabledForTesting() {
 }
 
 void ChromeOsWebAppExperiments::SetScopeExtensionsForTesting(
-    std::vector<const char* const> scope_extensions_override) {
+    std::vector<const char*> scope_extensions_override) {
   GetScopeExtensionsOverrideForTesting() = std::move(scope_extensions_override);
 }
 

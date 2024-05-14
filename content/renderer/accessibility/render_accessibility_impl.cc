@@ -41,8 +41,8 @@
 #include "third_party/blink/public/web/web_disallow_transition_scope.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_input_element.h"
-#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_page_popup.h"
+#include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/accessibility/accessibility_features.h"
@@ -59,7 +59,6 @@ using blink::WebAXContext;
 using blink::WebAXObject;
 using blink::WebDocument;
 using blink::WebElement;
-using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebSettings;
 using blink::WebView;
@@ -168,7 +167,8 @@ void RenderAccessibilityImpl::DidCommitProvisionalLoad(
   weak_factory_for_pending_events_.InvalidateWeakPtrs();
 }
 
-void RenderAccessibilityImpl::AccessibilityModeChanged(const ui::AXMode& mode) {
+void RenderAccessibilityImpl::NotifyAccessibilityModeChange(
+    const ui::AXMode& mode) {
   CHECK(reset_token_);
   ui::AXMode old_mode = accessibility_mode_;
   DCHECK(!mode.is_mode_off())
@@ -482,45 +482,20 @@ ui::AXTreeID RenderAccessibilityImpl::GetTreeIDForPluginHost() const {
 
 void RenderAccessibilityImpl::SetPluginTreeSource(
     PluginAXTreeSource* plugin_tree_source) {
+  if (plugin_tree_source_.get() == plugin_tree_source) {
+    return;
+  }
+
   plugin_tree_source_ = plugin_tree_source;
   plugin_serializer_ =
-      std::make_unique<PluginAXTreeSerializer>(plugin_tree_source_);
-
-  OnPluginRootNodeUpdated();
+      plugin_tree_source
+          ? std::make_unique<PluginAXTreeSerializer>(plugin_tree_source_)
+          : nullptr;
 }
 
-void RenderAccessibilityImpl::OnPluginRootNodeUpdated() {
-  // Search the accessibility tree for plugin's root object and post a
-  // children changed notification on it to force it to update the
-  // plugin accessibility tree.
-  WebAXObject obj = GetPluginRoot();
-  if (obj.IsNull())
-    return;
-
-  MarkWebAXObjectDirty(obj);
-  // Schedule an update immediately whenever the PDF root in PDF accessibility
-  // tree changes. It is needed to ensure that changes (e.g. bounds) in PDF
-  // accessibility tree are serialized.
-  ScheduleImmediateAXUpdate();
-}
-
-void RenderAccessibilityImpl::ShowPluginContextMenu() {
-  // Search the accessibility tree for plugin's root object and invoke
-  // ShowContextMenu() on it to show context menu for plugin.
-  WebAXObject obj = GetPluginRoot();
-  if (obj.IsNull())
-    return;
-
-  const WebDocument& document = GetMainDocument();
-  if (document.IsNull())
-    return;
-
-  std::unique_ptr<ui::AXActionTarget> target =
-      AXActionTargetFactory::CreateFromNodeId(document, plugin_tree_source_,
-                                              obj.AxID());
-  ui::AXActionData action_data;
-  action_data.action = ax::mojom::Action::kShowContextMenu;
-  target->PerformAction(action_data);
+void RenderAccessibilityImpl::MarkPluginDescendantDirty(ui::AXNodeID node_id) {
+  CHECK(plugin_tree_source_ && plugin_serializer_);
+  plugin_serializer_->MarkSubtreeDirty(node_id);
 }
 
 WebDocument RenderAccessibilityImpl::GetMainDocument() const {
@@ -555,8 +530,9 @@ bool RenderAccessibilityImpl::SerializeUpdatesAndEvents(
   DCHECK(ax_context_);
   DCHECK(!accessibility_mode_.is_mode_off());
   ax_context_->SerializeDirtyObjectsAndEvents(
-      !!plugin_tree_source_, updates, events, had_end_of_test_event,
-      had_load_complete_messages, need_to_send_location_changes);
+      plugin_tree_source_ ? plugin_tree_source_->GetPluginContainer() : nullptr,
+      updates, events, had_end_of_test_event, had_load_complete_messages,
+      need_to_send_location_changes, mark_plugin_subtree_dirty);
 
   for (auto& update : updates) {
     if (update.node_id_to_clear > 0) {
@@ -670,9 +646,10 @@ bool RenderAccessibilityImpl::AXReadyCallback() {
       document, root, updates_and_events->events, updates_and_events->updates,
       mark_plugin_subtree_dirty);
   if (updates_and_events->updates.empty()) {
-    // This method should never be called unless there are updates to be made.
-    DUMP_WILL_BE_NOTREACHED_NORETURN();
     // Do not send a serialization if there are no updates.
+    // This can occur because the serializer will already toss unincluded nodes,
+    // which could have become unincluded after they were added to the dirty
+    // object queue.
     DCHECK(updates_and_events->events.empty())
         << "If there are no updates, there also shouldn't be any events, "
            "because events always mark an object dirty.";
@@ -689,14 +666,6 @@ bool RenderAccessibilityImpl::AXReadyCallback() {
                      weak_factory_for_pending_events_.GetWeakPtr()));
   if (need_to_send_location_changes) {
     SendLocationChanges();
-  }
-
-  if (features::IsAblateSendPendingAccessibilityEventsEnabled()) {
-    // Make the total time equal to 2x the original time.
-    auto new_end_time = base::Time::Now() + timer.Elapsed();
-    while (base::Time::Now() < new_end_time) {
-      // spin loop.
-    }
   }
 
   // Measure the amount of time spent in this function. Keep track of the
@@ -775,7 +744,9 @@ void RenderAccessibilityImpl::OnGetImageData(const ui::AXActionTarget* target,
   }
 
   MarkWebAXObjectDirty(obj);
-  HandleAXEvent(ui::AXEvent(obj.AxID(), ax::mojom::Event::kImageFrameUpdated));
+  HandleAXEvent(ui::AXEvent(obj.AxID(), ax::mojom::Event::kImageFrameUpdated,
+                            ax::mojom::EventFrom::kAction,
+                            ax::mojom::Action::kGetImageData));
 }
 
 void RenderAccessibilityImpl::OnDestruct() {
@@ -789,18 +760,19 @@ void RenderAccessibilityImpl::AddPluginTreeToUpdate(
   if (mark_plugin_subtree_dirty) {
     plugin_serializer_->Reset();
   }
-
+  const auto& obj = blink::WebAXObject::FromWebNode(
+      plugin_tree_source_->GetPluginContainer()->GetElement());
+  int ax_id = obj.AxID();
   for (ui::AXNodeData& node : update->nodes) {
-    if (node.role == ax::mojom::Role::kEmbeddedObject) {
+    if (node.id == ax_id) {
       const ui::AXNode* root = plugin_tree_source_->GetRoot();
+      if (!root) {
+        // The tree may not yet be ready.
+        return;
+      }
       node.child_ids.push_back(root->id());
 
       ui::AXTreeUpdate plugin_update;
-
-      // TODO(crbug.com/324124958): meant as a short-term workaround for
-      // instability.
-      plugin_serializer_->Reset();
-
       plugin_serializer_->SerializeChanges(root, &plugin_update);
 
       size_t old_count = update->nodes.size();
@@ -821,13 +793,6 @@ blink::WebDocument RenderAccessibilityImpl::GetPopupDocument() {
   if (popup)
     return popup->GetDocument();
   return WebDocument();
-}
-
-blink::WebAXObject RenderAccessibilityImpl::GetPluginRoot() {
-  if (!ax_context_)
-    return WebAXObject();
-  ax_context_->UpdateAXForAllDocuments();
-  return ax_context_->GetPluginRoot();
 }
 
 WebAXObject RenderAccessibilityImpl::ComputeRoot() {

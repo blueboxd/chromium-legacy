@@ -87,7 +87,7 @@ LcpCriticalPathPredictorPageLoadMetricsObserver::OnCommit(
   }
 
   commit_url_ = navigation_handle->GetURL();
-  if (net::IsLocalhost(*commit_url_) || !commit_url_->SchemeIsHTTPOrHTTPS()) {
+  if (!predictors::ResourcePrefetchPredictor::IsURLValidForLcpp(*commit_url_)) {
     return STOP_OBSERVING;
   }
   LcpCriticalPathPredictorPageLoadMetricsObserver::PageData::GetOrCreateForPage(
@@ -169,7 +169,7 @@ void LcpCriticalPathPredictorPageLoadMetricsObserver::FinalizeLCP() {
     RemoveFetchedSubresourceUrlsAfterLCP(
         lcpp_data_inputs_->subresource_urls,
         largest_contentful_paint.Time().value());
-    predictor->LearnLcpp(commit_url_->host(), *lcpp_data_inputs_);
+    predictor->LearnLcpp(*commit_url_, *lcpp_data_inputs_);
   }
 
   // * Emit LCPP breakdown PageLoad UMAs.

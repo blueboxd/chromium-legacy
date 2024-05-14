@@ -10,7 +10,6 @@
 #include "base/hash/hash.h"
 #include "base/rand_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/uuid.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
@@ -54,14 +53,9 @@ static const char* kValidPassphrase = "passphrase!";
 
 class TwoClientPasswordsSyncTest : public SyncTest {
  public:
-  TwoClientPasswordsSyncTest() : SyncTest(TWO_CLIENT) {
-    feature_list_.InitAndDisableFeature(switches::kUnoDesktop);
-  }
+  TwoClientPasswordsSyncTest() : SyncTest(TWO_CLIENT) {}
 
   ~TwoClientPasswordsSyncTest() override = default;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 class TwoClientPasswordsSyncTestWithVerifier
@@ -98,14 +92,15 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   for (int i = 0; i < num_clients(); i++) {
     ASSERT_TRUE(GetClient(i)->SignInPrimaryAccount());
     ASSERT_TRUE(GetClient(i)->AwaitSyncTransportActive());
-    // The user hasn't opted in, so PASSWORDS is not active yet.
-    ASSERT_FALSE(GetSyncService(i)->GetActiveDataTypes().Has(
-        syncer::ModelType::PASSWORDS));
     ASSERT_FALSE(GetSyncService(i)->IsSyncFeatureEnabled());
 
-    // Opt in. PASSWORDS should become active.
-    password_manager::features_util::OptInToAccountStorage(
-        GetProfile(i)->GetPrefs(), GetSyncService(i));
+    // The PASSWORDS are active only if the signin was explicit.
+    if (!switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
+            switches::ExplicitBrowserSigninPhase::kExperimental)) {
+      // Opt in. PASSWORDS should become active.
+      password_manager::features_util::OptInToAccountStorage(
+          GetProfile(i)->GetPrefs(), GetSyncService(i));
+    }
     PasswordSyncActiveChecker(GetSyncService(i)).Wait();
   }
 

@@ -38,68 +38,70 @@
 // Populates all parameters for texImage2D, including width, height, depth (set
 // to 1), and border. Many callers will need to zero-out border in order to
 // preserve existing behavior (see https://crbug.com/1313604).
-#define POPULATE_TEX_IMAGE_2D_PARAMS(params) \
-  params = {                                 \
-      .function_id = kTexImage2D,            \
-      .target = target,                      \
-      .level = level,                        \
-      .internalformat = internalformat,      \
-      .width = width,                        \
-      .height = height,                      \
-      .depth = 1,                            \
-      .border = border,                      \
-      .format = format,                      \
-      .type = type,                          \
-  };                                         \
+#define POPULATE_TEX_IMAGE_2D_PARAMS(params, src_type) \
+  params = {                                           \
+      .source_type = src_type,                         \
+      .function_id = kTexImage2D,                      \
+      .target = target,                                \
+      .level = level,                                  \
+      .internalformat = internalformat,                \
+      .width = width,                                  \
+      .height = height,                                \
+      .depth = 1,                                      \
+      .border = border,                                \
+      .format = format,                                \
+      .type = type,                                    \
+  };                                                   \
   GetCurrentUnpackState(params)
 
-#define POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params) \
-  params = {                                     \
-      .function_id = kTexSubImage2D,             \
-      .target = target,                          \
-      .level = level,                            \
-      .xoffset = xoffset,                        \
-      .yoffset = yoffset,                        \
-      .width = width,                            \
-      .height = height,                          \
-      .depth = 1,                                \
-      .format = format,                          \
-      .type = type,                              \
-  };                                             \
+#define POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params, src_type) \
+  params = {                                               \
+      .source_type = src_type,                             \
+      .function_id = kTexSubImage2D,                       \
+      .target = target,                                    \
+      .level = level,                                      \
+      .xoffset = xoffset,                                  \
+      .yoffset = yoffset,                                  \
+      .width = width,                                      \
+      .height = height,                                    \
+      .depth = 1,                                          \
+      .format = format,                                    \
+      .type = type,                                        \
+  };                                                       \
   GetCurrentUnpackState(params)
 
-#define POPULATE_TEX_IMAGE_3D_PARAMS(params) \
-  params = {                                 \
-      .function_id = kTexImage3D,            \
-      .target = target,                      \
-      .level = level,                        \
-      .internalformat = internalformat,      \
-      .width = width,                        \
-      .height = height,                      \
-      .depth = depth,                        \
-      .border = border,                      \
-      .format = format,                      \
-      .type = type,                          \
-  };                                         \
+#define POPULATE_TEX_IMAGE_3D_PARAMS(params, src_type) \
+  params = {                                           \
+      .source_type = src_type,                         \
+      .function_id = kTexImage3D,                      \
+      .target = target,                                \
+      .level = level,                                  \
+      .internalformat = internalformat,                \
+      .width = width,                                  \
+      .height = height,                                \
+      .depth = depth,                                  \
+      .border = border,                                \
+      .format = format,                                \
+      .type = type,                                    \
+  };                                                   \
   GetCurrentUnpackState(params)
 
-#define POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params) \
-  params = {                                     \
-      .function_id = kTexSubImage3D,             \
-      .target = target,                          \
-      .level = level,                            \
-      .xoffset = xoffset,                        \
-      .yoffset = yoffset,                        \
-      .zoffset = zoffset,                        \
-      .width = width,                            \
-      .height = height,                          \
-      .depth = depth,                            \
-      .format = format,                          \
-      .type = type,                              \
-  };                                             \
+#define POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params, src_type) \
+  params = {                                               \
+      .source_type = src_type,                             \
+      .function_id = kTexSubImage3D,                       \
+      .target = target,                                    \
+      .level = level,                                      \
+      .xoffset = xoffset,                                  \
+      .yoffset = yoffset,                                  \
+      .zoffset = zoffset,                                  \
+      .width = width,                                      \
+      .height = height,                                    \
+      .depth = depth,                                      \
+      .format = format,                                    \
+      .type = type,                                        \
+  };                                                       \
   GetCurrentUnpackState(params)
-
-using WTF::String;
 
 namespace blink {
 
@@ -129,7 +131,7 @@ bool ValidateSubSourceAndGetData(DOMArrayBufferView* view,
     // type size is at most 8, so no overflow.
     byte_offset = sub_offset * type_size;
   }
-  base::CheckedNumeric<int64_t> total = byte_offset;
+  base::CheckedNumeric<size_t> total = byte_offset;
   total += byte_length;
   if (!total.IsValid() || total.ValueOrDie() > view->byteLength()) {
     return false;
@@ -303,7 +305,7 @@ void WebGL2RenderingContextBase::bufferData(
     GLenum target,
     MaybeShared<DOMArrayBufferView> src_data,
     GLenum usage,
-    GLuint src_offset,
+    int64_t src_offset,
     GLuint length) {
   if (isContextLost())
     return;
@@ -342,7 +344,7 @@ void WebGL2RenderingContextBase::bufferSubData(
     GLenum target,
     int64_t dst_byte_offset,
     MaybeShared<DOMArrayBufferView> src_data,
-    GLuint src_offset,
+    int64_t src_offset,
     GLuint length) {
   if (isContextLost())
     return;
@@ -425,7 +427,7 @@ void WebGL2RenderingContextBase::getBufferSubData(
     GLenum target,
     int64_t src_byte_offset,
     MaybeShared<DOMArrayBufferView> dst_data,
-    GLuint dst_offset,
+    int64_t dst_offset,
     GLuint length) {
   WebGLBuffer* source_buffer = nullptr;
   void* destination_data_ptr = nullptr;
@@ -1180,9 +1182,8 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target,
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_IMAGE_2D_PARAMS(params);
-  if (!ValidateTexFunc(params, kSourceUnpackBuffer, std::nullopt,
-                       std::nullopt)) {
+  POPULATE_TEX_IMAGE_2D_PARAMS(params, kSourceUnpackBuffer);
+  if (!ValidateTexFunc(params, std::nullopt, std::nullopt)) {
     return;
   }
   if (!ValidateValueFitNonNegInt32("texImage2D", "offset", offset))
@@ -1218,9 +1219,8 @@ void WebGL2RenderingContextBase::texSubImage2D(GLenum target,
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
-  if (!ValidateTexFunc(params, kSourceUnpackBuffer, std::nullopt,
-                       std::nullopt)) {
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params, kSourceUnpackBuffer);
+  if (!ValidateTexFunc(params, std::nullopt, std::nullopt)) {
     return;
   }
   if (!ValidateValueFitNonNegInt32("texSubImage2D", "offset", offset))
@@ -1271,7 +1271,7 @@ void WebGL2RenderingContextBase::texImage2D(
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_IMAGE_2D_PARAMS(params);
+  POPULATE_TEX_IMAGE_2D_PARAMS(params, kSourceArrayBufferView);
   TexImageHelperDOMArrayBufferView(params, data.Get(), kNullNotReachable,
                                    src_offset);
 }
@@ -1294,7 +1294,7 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target,
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_IMAGE_2D_PARAMS(params);
+  POPULATE_TEX_IMAGE_2D_PARAMS(params, kSourceImageData);
   params.border = 0;  // See https://crbug.com/1313604
   TexImageHelperImageData(params, pixels);
 }
@@ -1318,7 +1318,7 @@ void WebGL2RenderingContextBase::texImage2D(ScriptState* script_state,
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_IMAGE_2D_PARAMS(params);
+  POPULATE_TEX_IMAGE_2D_PARAMS(params, kSourceHTMLImageElement);
   params.border = 0;  // See https://crbug.com/1313604
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   TexImageHelperHTMLImageElement(execution_context->GetSecurityOrigin(), params,
@@ -1344,7 +1344,7 @@ void WebGL2RenderingContextBase::texImage2D(ScriptState* script_state,
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_IMAGE_2D_PARAMS(params);
+  POPULATE_TEX_IMAGE_2D_PARAMS(params, kSourceHTMLCanvasElement);
   params.border = 0;  // See https://crbug.com/1313604
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   TexImageHelperCanvasRenderingContextHost(
@@ -1370,7 +1370,7 @@ void WebGL2RenderingContextBase::texImage2D(ScriptState* script_state,
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_IMAGE_2D_PARAMS(params);
+  POPULATE_TEX_IMAGE_2D_PARAMS(params, kSourceHTMLVideoElement);
   params.border = 0;  // See https://crbug.com/1313604
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   TexImageHelperHTMLVideoElement(execution_context->GetSecurityOrigin(), params,
@@ -1396,7 +1396,7 @@ void WebGL2RenderingContextBase::texImage2D(ScriptState* script_state,
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_IMAGE_2D_PARAMS(params);
+  POPULATE_TEX_IMAGE_2D_PARAMS(params, kSourceVideoFrame);
   params.border = 0;  // See https://crbug.com/1313604
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   TexImageHelperVideoFrame(execution_context->GetSecurityOrigin(), params,
@@ -1422,7 +1422,7 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target,
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_IMAGE_2D_PARAMS(params);
+  POPULATE_TEX_IMAGE_2D_PARAMS(params, kSourceImageBitmap);
   params.border = 0;  // See https://crbug.com/1313604
   TexImageHelperImageBitmap(params, bitmap, exception_state);
 }
@@ -1587,7 +1587,7 @@ void WebGL2RenderingContextBase::texSubImage2D(
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params, kSourceArrayBufferView);
   TexImageHelperDOMArrayBufferView(params, pixels.Get(), kNullNotReachable,
                                    src_offset);
 }
@@ -1610,7 +1610,7 @@ void WebGL2RenderingContextBase::texSubImage2D(GLenum target,
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params, kSourceImageData);
   TexImageHelperImageData(params, pixels);
 }
 
@@ -1634,7 +1634,7 @@ void WebGL2RenderingContextBase::texSubImage2D(
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params, kSourceHTMLImageElement);
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   TexImageHelperHTMLImageElement(execution_context->GetSecurityOrigin(), params,
                                  image, exception_state);
@@ -1660,7 +1660,7 @@ void WebGL2RenderingContextBase::texSubImage2D(
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params, kSourceHTMLCanvasElement);
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   TexImageHelperCanvasRenderingContextHost(
       execution_context->GetSecurityOrigin(), params, canvas, exception_state);
@@ -1686,7 +1686,7 @@ void WebGL2RenderingContextBase::texSubImage2D(
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params, kSourceHTMLVideoElement);
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   TexImageHelperHTMLVideoElement(execution_context->GetSecurityOrigin(), params,
                                  video, exception_state);
@@ -1712,7 +1712,7 @@ void WebGL2RenderingContextBase::texSubImage2D(
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params, kSourceVideoFrame);
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   TexImageHelperVideoFrame(execution_context->GetSecurityOrigin(), params,
                            frame, exception_state);
@@ -1738,7 +1738,7 @@ void WebGL2RenderingContextBase::texSubImage2D(
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params, kSourceImageBitmap);
   TexImageHelperImageBitmap(params, bitmap, exception_state);
 }
 
@@ -1929,7 +1929,7 @@ void WebGL2RenderingContextBase::texImage3D(
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_IMAGE_3D_PARAMS(params);
+  POPULATE_TEX_IMAGE_3D_PARAMS(params, kSourceArrayBufferView);
   TexImageHelperDOMArrayBufferView(params, pixels.Get(), kNullAllowed, 0);
 }
 
@@ -1960,7 +1960,7 @@ void WebGL2RenderingContextBase::texImage3D(
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_IMAGE_3D_PARAMS(params);
+  POPULATE_TEX_IMAGE_3D_PARAMS(params, kSourceArrayBufferView);
   TexImageHelperDOMArrayBufferView(params, pixels.Get(), kNullNotReachable,
                                    src_offset);
 }
@@ -1991,9 +1991,8 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target,
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_IMAGE_3D_PARAMS(params);
-  if (!ValidateTexFunc(params, kSourceUnpackBuffer, std::nullopt,
-                       std::nullopt)) {
+  POPULATE_TEX_IMAGE_3D_PARAMS(params, kSourceUnpackBuffer);
+  if (!ValidateTexFunc(params, std::nullopt, std::nullopt)) {
     return;
   }
   if (!ValidateValueFitNonNegInt32("texImage3D", "offset", offset))
@@ -2017,7 +2016,7 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target,
                                             ImageData* pixels) {
   DCHECK(pixels);
   TexImageParams params;
-  POPULATE_TEX_IMAGE_3D_PARAMS(params);
+  POPULATE_TEX_IMAGE_3D_PARAMS(params, kSourceImageData);
   params.border = 0;  // See https://crbug.com/1313604
   TexImageHelperImageData(params, pixels);
 }
@@ -2042,7 +2041,7 @@ void WebGL2RenderingContextBase::texImage3D(ScriptState* script_state,
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_IMAGE_3D_PARAMS(params);
+  POPULATE_TEX_IMAGE_3D_PARAMS(params, kSourceHTMLImageElement);
   params.border = 0;  // See https://crbug.com/1313604
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   TexImageHelperHTMLImageElement(execution_context->GetSecurityOrigin(), params,
@@ -2069,7 +2068,7 @@ void WebGL2RenderingContextBase::texImage3D(ScriptState* script_state,
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_IMAGE_3D_PARAMS(params);
+  POPULATE_TEX_IMAGE_3D_PARAMS(params, kSourceHTMLCanvasElement);
   params.border = 0;  // See https://crbug.com/1313604
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   TexImageHelperCanvasRenderingContextHost(
@@ -2096,7 +2095,7 @@ void WebGL2RenderingContextBase::texImage3D(ScriptState* script_state,
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_IMAGE_3D_PARAMS(params);
+  POPULATE_TEX_IMAGE_3D_PARAMS(params, kSourceHTMLVideoElement);
   params.border = 0;  // See https://crbug.com/1313604
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   TexImageHelperHTMLVideoElement(execution_context->GetSecurityOrigin(), params,
@@ -2123,7 +2122,7 @@ void WebGL2RenderingContextBase::texImage3D(ScriptState* script_state,
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_IMAGE_3D_PARAMS(params);
+  POPULATE_TEX_IMAGE_3D_PARAMS(params, kSourceVideoFrame);
   params.border = 0;  // See https://crbug.com/1313604
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   TexImageHelperVideoFrame(execution_context->GetSecurityOrigin(), params,
@@ -2149,7 +2148,7 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target,
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_IMAGE_3D_PARAMS(params);
+  POPULATE_TEX_IMAGE_3D_PARAMS(params, kSourceImageBitmap);
   params.border = 0;  // See https://crbug.com/1313604
   TexImageHelperImageBitmap(params, bitmap, exception_state);
 }
@@ -2182,7 +2181,7 @@ void WebGL2RenderingContextBase::texSubImage3D(
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params);
+  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params, kSourceArrayBufferView);
   TexImageHelperDOMArrayBufferView(params, pixels.Get(), kNullNotReachable,
                                    src_offset);
 }
@@ -2214,9 +2213,8 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target,
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params);
-  if (!ValidateTexFunc(params, kSourceUnpackBuffer, std::nullopt,
-                       std::nullopt)) {
+  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params, kSourceUnpackBuffer);
+  if (!ValidateTexFunc(params, std::nullopt, std::nullopt)) {
     return;
   }
   if (!ValidateValueFitNonNegInt32("texSubImage3D", "offset", offset))
@@ -2247,7 +2245,7 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target,
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params);
+  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params, kSourceImageData);
   TexImageHelperImageData(params, pixels);
 }
 
@@ -2273,7 +2271,7 @@ void WebGL2RenderingContextBase::texSubImage3D(
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params);
+  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params, kSourceHTMLImageElement);
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   TexImageHelperHTMLImageElement(execution_context->GetSecurityOrigin(), params,
                                  image, exception_state);
@@ -2301,7 +2299,7 @@ void WebGL2RenderingContextBase::texSubImage3D(
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params);
+  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params, kSourceHTMLCanvasElement);
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   TexImageHelperCanvasRenderingContextHost(
       execution_context->GetSecurityOrigin(), params, context_host,
@@ -2330,7 +2328,7 @@ void WebGL2RenderingContextBase::texSubImage3D(
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params);
+  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params, kSourceHTMLVideoElement);
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   TexImageHelperHTMLVideoElement(execution_context->GetSecurityOrigin(), params,
                                  video, exception_state);
@@ -2358,7 +2356,7 @@ void WebGL2RenderingContextBase::texSubImage3D(
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params);
+  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params, kSourceVideoFrame);
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   TexImageHelperVideoFrame(execution_context->GetSecurityOrigin(), params,
                            frame, exception_state);
@@ -2385,7 +2383,7 @@ void WebGL2RenderingContextBase::texSubImage3D(
     return;
   }
   TexImageParams params;
-  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params);
+  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params, kSourceImageBitmap);
   TexImageHelperImageBitmap(params, bitmap, exception_state);
 }
 
@@ -6236,7 +6234,7 @@ const char* WebGL2RenderingContextBase::ValidateGetBufferSubData(
     GLenum target,
     int64_t source_byte_offset,
     DOMArrayBufferView* destination_array_buffer_view,
-    GLuint destination_offset,
+    int64_t destination_offset,
     GLuint length,
     WebGLBuffer** out_source_buffer,
     void** out_destination_data_ptr,

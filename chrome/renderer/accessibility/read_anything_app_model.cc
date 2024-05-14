@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <string>
 
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "content/public/renderer/render_thread.h"
@@ -15,14 +16,11 @@
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_node_id_forward.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/ax_tree_update_util.h"
-
-namespace {
-constexpr char kPDFExtension[] = ".pdf";
-}
 
 ReadAnythingAppModel::ReadAnythingAppModel() {
   // TODO(crbug.com/1450930): Use a global ukm recorder instance instead.
@@ -108,8 +106,8 @@ void ReadAnythingAppModel::ResetSelection() {
 }
 
 bool ReadAnythingAppModel::PostProcessSelection() {
-  DCHECK_NE(GetActiveTreeId(), ui::AXTreeIDUnknown());
-  DCHECK(ContainsTree(GetActiveTreeId()));
+  DCHECK_NE(active_tree_id_, ui::AXTreeIDUnknown());
+  DCHECK(ContainsTree(active_tree_id_));
 
   bool was_empty = is_empty();
   requires_post_process_selection_ = false;
@@ -125,8 +123,8 @@ bool ReadAnythingAppModel::PostProcessSelection() {
   // redraw either a) the new selected content or b) the original distilled
   // content if the new selection is inside that or if the selection was
   // cleared.
-  bool need_to_draw = !selection_from_action_ && !SelectionInsideDisplayNodes();
-
+  bool need_to_draw = !selection_from_action_ && !NoCurrentSelection() &&
+                      !SelectionInsideDisplayNodes();
   // Save the current selection
   UpdateSelection();
 
@@ -151,7 +149,7 @@ bool ReadAnythingAppModel::PostProcessSelection() {
 void ReadAnythingAppModel::UpdateSelection() {
   ResetSelection();
   ui::AXSelection selection =
-      GetTreeFromId(GetActiveTreeId())->GetUnignoredSelection();
+      GetTreeFromId(active_tree_id_)->GetUnignoredSelection();
   has_selection_ = selection.anchor_object_id != ui::kInvalidAXNodeID &&
                    selection.focus_object_id != ui::kInvalidAXNodeID &&
                    !selection.IsCollapsed();
@@ -175,8 +173,8 @@ void ReadAnythingAppModel::UpdateSelection() {
 
 void ReadAnythingAppModel::ComputeSelectionNodeIds() {
   DCHECK(has_selection_);
-  DCHECK_NE(GetActiveTreeId(), ui::AXTreeIDUnknown());
-  DCHECK(ContainsTree(GetActiveTreeId()));
+  DCHECK_NE(active_tree_id_, ui::AXTreeIDUnknown());
+  DCHECK(ContainsTree(active_tree_id_));
 
   ui::AXNode* start_node = GetAXNode(start_node_id_);
   DCHECK(start_node);
@@ -184,9 +182,6 @@ void ReadAnythingAppModel::ComputeSelectionNodeIds() {
   DCHECK(end_node);
 
   if (!start_node || !end_node) {
-    DUMP_WILL_BE_NOTREACHED_NORETURN()
-        << "Selection is invalid. Start node existed? " << !!start_node
-        << " End node existed? " << !!end_node;
     return;
   }
 
@@ -278,8 +273,43 @@ ui::AXNode* ReadAnythingAppModel::GetParentForSelection(ui::AXNode* node) {
   return parent;
 }
 
+bool ReadAnythingAppModel::ContentNodesOnlyContainHeadings() {
+  for (ui::AXNodeID node_id : content_node_ids_) {
+    ui::AXNode* node = GetAXNode(node_id);
+    if (!node || node->IsInvisibleOrIgnored() ||
+        node->GetRole() == ax::mojom::Role::kHeading) {
+      continue;
+    }
+
+    // Check the ancestors for a heading node, as inline text boxes or static
+    // text nodes could be deeply nested under one.
+    base::queue<ui::AXNode*> ancestors =
+        node->GetAncestorsCrossingTreeBoundaryAsQueue();
+    bool found_heading = false;
+    while (!ancestors.empty()) {
+      if (ancestors.front()->GetRole() == ax::mojom::Role::kHeading) {
+        found_heading = true;
+        break;
+      }
+      ancestors.pop();
+    }
+    if (!found_heading) {
+      return false;
+    }
+  }
+  return true;
+}
+
 void ReadAnythingAppModel::ComputeDisplayNodeIdsForDistilledTree() {
   DCHECK(!content_node_ids_.empty());
+
+  // RM should not display just headings, return early to allow "highlight to
+  // use RM" empty state screen to show.
+  // TODO(crbug.com/1266555): Remove when Screen2x doesn't return just headings.
+  if (features::IsReadAnythingWithAlgorithmEnabled() &&
+      ContentNodesOnlyContainHeadings()) {
+    return;
+  }
 
   // Display nodes are the nodes which will be displayed by the rendering
   // algorithm of Read Anything app.ts. We wish to create a subtree which
@@ -338,6 +368,12 @@ void ReadAnythingAppModel::ComputeDisplayNodeIdsForDistilledTree() {
   }
 }
 
+bool ReadAnythingAppModel::NoCurrentSelection() {
+  return start_node_id_ == end_node_id_ ||
+         (start_node_id_ == ui::kInvalidAXNodeID &&
+          end_node_id_ == ui::kInvalidAXNodeID);
+}
+
 bool ReadAnythingAppModel::SelectionInsideDisplayNodes() {
   return base::Contains(display_node_ids_, start_node_id_) &&
          base::Contains(display_node_ids_, end_node_id_);
@@ -393,7 +429,7 @@ void ReadAnythingAppModel::UnserializePendingUpdates(ui::AXTreeID tree_id) {
   //  has begun.
   std::vector<ui::AXTreeUpdate> update =
       pending_updates_map_.extract(tree_id).mapped();
-  DCHECK(update.empty() || tree_id == GetActiveTreeId());
+  DCHECK(update.empty() || tree_id == active_tree_id_);
   UnserializeUpdates(update, tree_id);
 }
 
@@ -428,56 +464,6 @@ void ReadAnythingAppModel::UnserializeUpdates(
   ProcessGeneratedEvents(event_generator, prev_tree_size, tree->size());
 }
 
-ui::AXTreeID ReadAnythingAppModel::GetActiveTreeId() const {
-  if (!is_pdf_) {
-    return active_tree_id_;
-  }
-
-  if (!IsPDFFormatted()) {
-    return ui::AXTreeIDUnknown();
-  }
-
-  ui::AXTreeID pdf_web_contents = GetPDFWebContents();
-  if (pdf_web_contents == ui::AXTreeIDUnknown() ||
-      !ContainsTree(pdf_web_contents)) {
-    return ui::AXTreeIDUnknown();
-  }
-
-  ui::AXTreeID iframe =
-      *(GetTreeFromId(pdf_web_contents)->GetAllChildTreeIds().begin());
-  return ContainsTree(iframe) ? iframe : ui::AXTreeIDUnknown();
-}
-
-ui::AXTreeID ReadAnythingAppModel::GetPDFWebContents() const {
-  DCHECK(is_pdf_);
-  if (!ContainsTree(active_tree_id_)) {
-    return ui::AXTreeIDUnknown();
-  }
-  return *(GetTreeFromId(active_tree_id_)->GetAllChildTreeIds().begin());
-}
-
-bool ReadAnythingAppModel::IsPDFFormatted() const {
-  if (!ContainsTree(active_tree_id_)) {
-    return true;
-  }
-
-  // Main web contents should only have one child (the PDF web contents).
-  std::set<ui::AXTreeID> children =
-      GetTreeFromId(active_tree_id_)->GetAllChildTreeIds();
-  if (children.size() != 1) {
-    return false;
-  }
-
-  ui::AXTreeID pdf_web_contents = *(children.begin());
-  if (!ContainsTree(pdf_web_contents)) {
-    return true;
-  }
-
-  // The PDF web contents should only have one child (the PDF iframe).
-  children = GetTreeFromId(pdf_web_contents)->GetAllChildTreeIds();
-  return children.size() == 1;
-}
-
 void ReadAnythingAppModel::AccessibilityEventReceived(
     const ui::AXTreeID& tree_id,
     const std::vector<ui::AXTreeUpdate>& updates,
@@ -495,7 +481,7 @@ void ReadAnythingAppModel::AccessibilityEventReceived(
   // Drawing must be done on the same tree that was sent to the distiller,
   // so it’s critical that updates are not unserialized until drawing is
   // complete.
-  if (tree_id == GetActiveTreeId()) {
+  if (tree_id == active_tree_id_) {
     if (distillation_in_progress_) {
       AddPendingUpdates(tree_id, updates);
       ProcessNonGeneratedEvents(events);
@@ -520,10 +506,10 @@ void ReadAnythingAppModel::OnAXTreeDestroyed(const ui::AXTreeID& tree_id) {
   if (!ContainsTree(tree_id)) {
     return;
   }
-  if (GetActiveTreeId() == tree_id) {
+  if (active_tree_id_ == tree_id) {
     // TODO(crbug.com/1266555): If distillation is in progress, cancel the
     // distillation request.
-    SetActiveTreeId(ui::AXTreeIDUnknown());
+    active_tree_id_ = ui::AXTreeIDUnknown();
     SetActiveUkmSourceId(ukm::kInvalidSourceId);
   }
   EraseTree(tree_id);
@@ -543,7 +529,7 @@ void ReadAnythingAppModel::SetActiveUkmSourceId(ukm::SourceId source_id) {
 }
 
 ui::AXNode* ReadAnythingAppModel::GetAXNode(ui::AXNodeID ax_node_id) const {
-  ui::AXSerializableTree* tree = GetTreeFromId(GetActiveTreeId());
+  ui::AXSerializableTree* tree = GetTreeFromId(active_tree_id_);
   return tree->GetFromId(ax_node_id);
 }
 
@@ -675,9 +661,9 @@ void ReadAnythingAppModel::OnSelection(ax::mojom::EventFrom event_from) {
   // the new selection to the saved selection. If the anchor is the same, update
   // the selection in RM.
   bool is_click_and_drag_selection = false;
-  if (ContainsTree(GetActiveTreeId())) {
+  if (ContainsTree(active_tree_id_)) {
     ui::AXSelection selection =
-        GetTreeFromId(GetActiveTreeId())->GetUnignoredSelection();
+        GetTreeFromId(active_tree_id_)->GetUnignoredSelection();
     is_click_and_drag_selection =
         (selection.anchor_object_id == start_node_id_ &&
          selection.anchor_offset == start_offset_ &&
@@ -742,6 +728,10 @@ void ReadAnythingAppModel::ProcessNonGeneratedEvents(
       case ax::mojom::Event::kHitTestResult:
       case ax::mojom::Event::kHover:
       case ax::mojom::Event::kImageFrameUpdated:
+        if (event.event_from_action == ax::mojom::Action::kGetImageData) {
+          image_to_update_node_id_ = event.id;
+        }
+        break;
       case ax::mojom::Event::kLayoutComplete:
       case ax::mojom::Event::kLiveRegionCreated:
       case ax::mojom::Event::kLiveRegionChanged:
@@ -823,6 +813,7 @@ void ReadAnythingAppModel::ProcessGeneratedEvents(
       case ui::AXEventGenerator::Event::ACCESS_KEY_CHANGED:
       case ui::AXEventGenerator::Event::ACTIVE_DESCENDANT_CHANGED:
       case ui::AXEventGenerator::Event::ARIA_CURRENT_CHANGED:
+      case ui::AXEventGenerator::Event::ARIA_NOTIFICATIONS_POSTED:
       case ui::AXEventGenerator::Event::ATK_TEXT_OBJECT_ATTRIBUTE_CHANGED:
       case ui::AXEventGenerator::Event::ATOMIC_CHANGED:
       case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
@@ -832,7 +823,6 @@ void ReadAnythingAppModel::ProcessGeneratedEvents(
       case ui::AXEventGenerator::Event::CHECKED_STATE_CHANGED:
       case ui::AXEventGenerator::Event::CHECKED_STATE_DESCRIPTION_CHANGED:
       case ui::AXEventGenerator::Event::CHILDREN_CHANGED:
-      case ui::AXEventGenerator::Event::CLASS_NAME_CHANGED:
       case ui::AXEventGenerator::Event::COLLAPSED:
       case ui::AXEventGenerator::Event::CONTROLS_CHANGED:
       case ui::AXEventGenerator::Event::DETAILS_CHANGED:
@@ -868,7 +858,6 @@ void ReadAnythingAppModel::ProcessGeneratedEvents(
       case ui::AXEventGenerator::Event::NAME_CHANGED:
       case ui::AXEventGenerator::Event::OBJECT_ATTRIBUTE_CHANGED:
       case ui::AXEventGenerator::Event::ORIENTATION_CHANGED:
-      case ui::AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
       case ui::AXEventGenerator::Event::PARENT_CHANGED:
       case ui::AXEventGenerator::Event::PLACEHOLDER_CHANGED:
       case ui::AXEventGenerator::Event::PORTAL_ACTIVATED:
@@ -918,10 +907,6 @@ void ReadAnythingAppModel::ResetTextSize() {
 
 void ReadAnythingAppModel::ToggleLinksEnabled() {
   links_enabled_ = !links_enabled_;
-}
-
-void ReadAnythingAppModel::SetIsPdf(const GURL& url) {
-  is_pdf_ = url.spec().ends_with(kPDFExtension);
 }
 
 std::vector<std::string> ReadAnythingAppModel::GetSupportedFonts() const {
@@ -992,6 +977,24 @@ std::string ReadAnythingAppModel::GetHtmlTag(ui::AXNodeID ax_node_id) const {
   }
 
   return html_tag;
+}
+
+std::string ReadAnythingAppModel::GetAltText(ui::AXNodeID ax_node_id) const {
+  ui::AXNode* ax_node = GetAXNode(ax_node_id);
+  CHECK(ax_node);
+  std::string alt_text =
+      ax_node->GetStringAttribute(ax::mojom::StringAttribute::kName);
+  return alt_text;
+}
+
+std::string ReadAnythingAppModel::GetImageDataUrl(
+    ui::AXNodeID ax_node_id) const {
+  ui::AXNode* ax_node = GetAXNode(ax_node_id);
+  CHECK(ax_node);
+
+  std::string url =
+      ax_node->GetStringAttribute(ax::mojom::StringAttribute::kImageDataUrl);
+  return url;
 }
 
 std::string ReadAnythingAppModel::GetAriaLevel(ui::AXNode* ax_node) const {
@@ -1293,7 +1296,7 @@ ReadAnythingAppModel::GetNextNodes() {
 
 // Returns either the node or the lowest platform ancestor of the node, if it's
 // a leaf.
-ui::AXNode* ReadAnythingAppModel::GetNodeFromCurrentPosition() {
+ui::AXNode* ReadAnythingAppModel::GetNodeFromCurrentPosition() const {
   if (ax_position_->GetAnchor()->IsChildOfLeaf()) {
     return ax_position_->GetAnchor()->GetLowestPlatformAncestor();
   }
@@ -1308,7 +1311,7 @@ ui::AXNode* ReadAnythingAppModel::GetNodeFromCurrentPosition() {
 // Some of the checks here right now are probably unneeded.
 ui::AXNodePosition::AXPositionInstance
 ReadAnythingAppModel::GetNextValidPositionFromCurrentPosition(
-    ReadAnythingAppModel::ReadAloudCurrentGranularity current_granularity) {
+    ReadAnythingAppModel::ReadAloudCurrentGranularity& current_granularity) {
   ui::AXNodePosition::AXPositionInstance new_position =
       ui::AXNodePosition::CreateNullPosition();
 
@@ -1379,8 +1382,8 @@ int ReadAnythingAppModel::GetCurrentTextEndIndex(ui::AXNodeID node_id) {
 }
 
 bool ReadAnythingAppModel::NodeBeenOrWillBeSpoken(
-    ReadAnythingAppModel::ReadAloudCurrentGranularity current_granularity,
-    ui::AXNodeID id) {
+    ReadAnythingAppModel::ReadAloudCurrentGranularity& current_granularity,
+    ui::AXNodeID id) const {
   if (base::Contains(current_granularity.segments, id)) {
     return true;
   }
@@ -1417,7 +1420,7 @@ bool ReadAnythingAppModel::IsTextForReadAnything(
   return (GetHtmlTag(ax_node_id).length() == 0) || is_list_marker;
 }
 
-bool ReadAnythingAppModel::IsOpeningPunctuation(char c) {
+bool ReadAnythingAppModel::IsOpeningPunctuation(char& c) const {
   return (c == '(' || c == '{' || c == '[' || c == '<');
 }
 
@@ -1426,13 +1429,13 @@ bool ReadAnythingAppModel::IsOpeningPunctuation(char c) {
 // our current granularity segment.
 bool ReadAnythingAppModel::ShouldSplitAtParagraph(
     ui::AXNodePosition::AXPositionInstance& position,
-    ReadAloudCurrentGranularity& current_granularity) {
+    ReadAloudCurrentGranularity& current_granularity) const {
   return position->AtStartOfParagraph() &&
          (current_granularity.node_ids.size() > 0);
 }
 
 ui::AXNode* ReadAnythingAppModel::GetAnchorNode(
-    ui::AXNodePosition::AXPositionInstance& position) {
+    ui::AXNodePosition::AXPositionInstance& position) const {
   bool is_leaf = position->GetAnchor()->IsChildOfLeaf();
   // If the node is a leaf, use the parent node instead.
   return is_leaf ? position->GetAnchor()->GetLowestPlatformAncestor()
@@ -1441,7 +1444,8 @@ ui::AXNode* ReadAnythingAppModel::GetAnchorNode(
 
 bool ReadAnythingAppModel::IsValidAXPosition(
     ui::AXNodePosition::AXPositionInstance& position,
-    ReadAnythingAppModel::ReadAloudCurrentGranularity& current_granularity) {
+    ReadAnythingAppModel::ReadAloudCurrentGranularity& current_granularity)
+    const {
   ui::AXNode* anchor_node = GetAnchorNode(position);
   bool was_previously_spoken =
       NodeBeenOrWillBeSpoken(current_granularity, anchor_node->id());

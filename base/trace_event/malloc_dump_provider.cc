@@ -8,12 +8,7 @@
 
 #include <unordered_map>
 
-#include "base/allocator/allocator_extension.h"
 #include "base/allocator/buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_config.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_bucket_lookup.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/shim/nonscannable_allocator.h"
 #include "base/debug/profiler.h"
 #include "base/format_macros.h"
 #include "base/metrics/histogram_functions.h"
@@ -22,6 +17,10 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
+#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/partition_alloc_config.h"
+#include "partition_alloc/partition_bucket_lookup.h"
+#include "partition_alloc/shim/nonscannable_allocator.h"
 
 #if BUILDFLAG(IS_APPLE)
 #include <malloc/malloc.h>
@@ -37,11 +36,11 @@
 #endif
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-#include "base/allocator/partition_allocator/src/partition_alloc/shim/allocator_shim_default_dispatch_to_partition_alloc.h"
+#include "partition_alloc/shim/allocator_shim_default_dispatch_to_partition_alloc.h"
 #endif
 
 #if PA_CONFIG(THREAD_CACHE_ALLOC_STATS)
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_constants.h"
+#include "partition_alloc/partition_alloc_constants.h"
 #endif
 
 namespace base {
@@ -284,6 +283,20 @@ void ReportPartitionAllocThreadCacheStats(
     }
 #endif  // PA_CONFIG(THREAD_CACHE_ALLOC_STATS)
   }
+}
+
+void ReportPartitionAllocLightweightQuarantineStats(
+    MemoryAllocatorDump* dump,
+    const partition_alloc::LightweightQuarantineStats& stats) {
+  dump->AddScalar("count", MemoryAllocatorDump::kUnitsObjects, stats.count);
+  dump->AddScalar("size_in_bytes", MemoryAllocatorDump::kUnitsBytes,
+                  stats.size_in_bytes);
+  dump->AddScalar("cumulative_count", MemoryAllocatorDump::kUnitsObjects,
+                  stats.cumulative_count);
+  dump->AddScalar("cumulative_size_in_bytes", MemoryAllocatorDump::kUnitsBytes,
+                  stats.cumulative_size_in_bytes);
+  dump->AddScalar("quarantine_miss_count", MemoryAllocatorDump::kUnitsObjects,
+                  stats.quarantine_miss_count);
 }
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC)
 
@@ -551,6 +564,15 @@ void MemoryDumpPartitionStatsDumper::PartitionDumpTotals(
     ReportPartitionAllocThreadCacheStats(memory_dump_, all_thread_caches_dump,
                                          all_thread_caches_stats, "",
                                          detailed_);
+  }
+
+  if (memory_stats->has_scheduler_loop_quarantine) {
+    MemoryAllocatorDump* quarantine_dump_total =
+        memory_dump_->CreateAllocatorDump(dump_name +
+                                          "/scheduler_loop_quarantine");
+    ReportPartitionAllocLightweightQuarantineStats(
+        quarantine_dump_total,
+        memory_stats->scheduler_loop_quarantine_stats_total);
   }
 }
 

@@ -55,15 +55,22 @@ public class CronetLoggerImpl extends CronetLogger {
                 info.apiVersion.getMinorVersion(),
                 info.apiVersion.getBuildVersion(),
                 info.apiVersion.getPatchVersion(),
-                info.implVersion.getMajorVersion(),
-                info.implVersion.getMinorVersion(),
-                info.implVersion.getBuildVersion(),
-                info.implVersion.getPatchVersion(),
+                // These null checks actually matter. See b/329601514.
+                info.implVersion == null ? -1 : info.implVersion.getMajorVersion(),
+                info.implVersion == null ? -1 : info.implVersion.getMinorVersion(),
+                info.implVersion == null ? -1 : info.implVersion.getBuildVersion(),
+                info.implVersion == null ? -1 : info.implVersion.getPatchVersion(),
                 info.uid);
     }
 
     @Override
     public void logCronetInitializedInfo(CronetInitializedInfo info) {
+        // This atom uses arrays, which are only supported by StatsLog starting from Android T. If
+        // we are running Android <T we simply drop the atom, which is fine-ish because it doesn't
+        // carry critical information, nor does it carry information that other atoms may want to
+        // join against.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return;
+
         CronetStatsLog.write(
                 CronetStatsLog.CRONET_INITIALIZED,
                 info.cronetInitializationRef,

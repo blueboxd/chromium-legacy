@@ -37,12 +37,12 @@ enum class RequestType {
   kFileSystemAccess,
 #endif
   kGeolocation,
+  kIdentityProvider,
   kIdleDetection,
 #if !BUILDFLAG(IS_ANDROID)
   kLocalFonts,
 #endif
   kMicStream,
-  kMidi,
   kMidiSysex,
   kMultipleDownloads,
 #if BUILDFLAG(IS_ANDROID)

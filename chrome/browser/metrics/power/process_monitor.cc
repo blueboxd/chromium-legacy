@@ -58,11 +58,7 @@ std::unique_ptr<base::ProcessMetrics> CreateProcessMetrics(
 ProcessMonitor::Metrics SampleMetrics(base::ProcessMetrics& process_metrics) {
   ProcessMonitor::Metrics metrics;
 
-#if BUILDFLAG(IS_WIN)
-  metrics.cpu_usage = process_metrics.GetPreciseCPUUsage();
-#else
   metrics.cpu_usage = process_metrics.GetPlatformIndependentCPUUsage();
-#endif
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
     BUILDFLAG(IS_AIX)
@@ -78,7 +74,9 @@ ProcessMonitor::Metrics SampleMetrics(base::ProcessMetrics& process_metrics) {
 
 // Scales every metrics by |factor|.
 void ScaleMetrics(ProcessMonitor::Metrics* metrics, double factor) {
-  metrics->cpu_usage *= factor;
+  if (metrics->cpu_usage.has_value()) {
+    metrics->cpu_usage.value() *= factor;
+  }
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
     BUILDFLAG(IS_AIX)
@@ -94,16 +92,9 @@ ProcessMonitor::Metrics GetLastIntervalMetrics(
     base::ProcessMetrics& process_metrics,
     base::TimeDelta cumulative_cpu_usage) {
   ProcessMonitor::Metrics metrics;
-
-#if BUILDFLAG(IS_WIN)
-  metrics.cpu_usage = process_metrics.GetPreciseCPUUsage(cumulative_cpu_usage);
-#else
   metrics.cpu_usage =
       process_metrics.GetPlatformIndependentCPUUsage(cumulative_cpu_usage);
-#endif
-
   // TODO: Add other values in ProcessMonitor::Metrics.
-
   return metrics;
 }
 
@@ -166,10 +157,14 @@ MonitoredProcessType GetMonitoredProcessTypeForNonRendererChildProcess(
   }
 }
 
-// Adds the values from |rhs| to |lhs|.
+// Adds the values from |rhs| to |lhs|. If both parameters have nullopt for
+// `cpu_usage`, the result will also have nullopt, otherwise the result will
+// have the sum of all non-nullopt `cpu_usage`.
 ProcessMonitor::Metrics& operator+=(ProcessMonitor::Metrics& lhs,
                                     const ProcessMonitor::Metrics& rhs) {
-  lhs.cpu_usage += rhs.cpu_usage;
+  if (lhs.cpu_usage.has_value() || rhs.cpu_usage.has_value()) {
+    lhs.cpu_usage = lhs.cpu_usage.value_or(0.0) + rhs.cpu_usage.value_or(0.0);
+  }
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
     BUILDFLAG(IS_AIX)
@@ -322,10 +317,12 @@ void ProcessMonitor::RenderProcessExited(
     return;
   }
 
-  // Remember the metrics from when the process exited.
-  const ProcessInfo& process_info = it->second;
-  exited_processes_metrics_[process_info.type] +=
-      GetLastIntervalMetrics(*process_info.process_metrics, info.cpu_usage);
+  // Remember the metrics from when the process exited, if available.
+  if (info.cpu_usage.has_value()) {
+    const ProcessInfo& process_info = it->second;
+    exited_processes_metrics_[process_info.type] += GetLastIntervalMetrics(
+        *process_info.process_metrics, info.cpu_usage.value());
+  }
 
   render_process_infos_.erase(it);
 }
@@ -416,10 +413,12 @@ void ProcessMonitor::OnBrowserChildProcessExited(
   }
 
   DCHECK(it != browser_child_process_infos_.end());
-  // Remember the metrics from when the process exited.
-  const ProcessInfo& process_info = it->second;
-  exited_processes_metrics_[process_info.type] +=
-      GetLastIntervalMetrics(*process_info.process_metrics, info.cpu_usage);
+  // Remember the metrics from when the process exited, if available.
+  if (info.cpu_usage.has_value()) {
+    const ProcessInfo& process_info = it->second;
+    exited_processes_metrics_[process_info.type] += GetLastIntervalMetrics(
+        *process_info.process_metrics, info.cpu_usage.value());
+  }
 
   browser_child_process_infos_.erase(it);
 }

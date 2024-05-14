@@ -157,8 +157,8 @@ class SaveCardBubbleViewsFullFormBrowserTest
 
   class TestAutofillManager : public BrowserAutofillManager {
    public:
-    TestAutofillManager(ContentAutofillDriver* driver, AutofillClient* client)
-        : BrowserAutofillManager(driver, client, "en-US") {}
+    explicit TestAutofillManager(ContentAutofillDriver* driver)
+        : BrowserAutofillManager(driver, "en-US") {}
 
     testing::AssertionResult WaitForFormsSeen(int min_num_awaited_calls) {
       return forms_seen_waiter_.Wait(min_num_awaited_calls);
@@ -209,7 +209,8 @@ class SaveCardBubbleViewsFullFormBrowserTest
             &test_url_loader_factory_);
     autofill_manager()
         ->client()
-        .GetPaymentsNetworkInterface()
+        .GetPaymentsAutofillClient()
+        ->GetPaymentsNetworkInterface()
         ->set_url_loader_factory_for_testing(test_shared_loader_factory_);
 
     // Wait for Personal Data Manager to be fully loaded to prevent that
@@ -940,9 +941,9 @@ class SaveCardBubbleViewsSyncTransportFullFormBrowserTest
     // Since server card saves upload address information, they are only offered
     // when addresses are being synced. Enable CONTACT_INFO in transport mode.
     enabled_features.push_back(syncer::kSyncDecoupleAddressPaymentSettings);
+    enabled_features.push_back(switches::kExplicitBrowserSigninUIOnDesktop);
     enabled_features.push_back(
         syncer::kSyncEnableContactInfoDataTypeInTransportMode);
-    disabled_features.push_back(switches::kUnoDesktop);
     feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
@@ -2336,59 +2337,19 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
             l10n_util::GetStringUTF16(IDS_TOOLTIP_SAVE_CREDIT_CARD));
 }
 
-// Param of SaveCardBubbleViewsAccountChipFooterBrowserTest:
-// -- bool AccountChipFooterIsEnabled(): returns if the flag to show account
-// chip footer is enabled or not.
-class SaveCardBubbleViewsAccountChipFooterBrowserTest
-    : public SaveCardBubbleViewsFullFormBrowserTest,
-      public testing::WithParamInterface<bool> {
- protected:
-  SaveCardBubbleViewsAccountChipFooterBrowserTest() = default;
-  ~SaveCardBubbleViewsAccountChipFooterBrowserTest() override = default;
-
-  void SetUp() override {
-    std::vector<base::test::FeatureRef> enabled_features = {
-        features::kAutofillUpstream};
-    std::vector<base::test::FeatureRef> disabled_features = {
-        features::kAutofillEnableNewSaveCardBubbleUi};
-    if (AccountChipFooterIsEnabled()) {
-      enabled_features.push_back(
-          features::kAutofillEnableUserAvatarInSaveCardFooter);
-    } else {
-      disabled_features.push_back(
-          features::kAutofillEnableUserAvatarInSaveCardFooter);
-    }
-    feature_list_.InitWithFeatures(enabled_features, disabled_features);
-    SaveCardBubbleViewsFullFormBrowserTest::SetUp();
-  }
-
-  static bool AccountChipFooterIsEnabled() { return GetParam(); }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // Test to verify the account chip footer is displayed correctly on the upload
-// save bubble. User label information contains the user avatar and email. It's
-// visible if `kAutofillEnableUserAvatarInSaveCardFooter` is enabled.
-IN_PROC_BROWSER_TEST_P(SaveCardBubbleViewsAccountChipFooterBrowserTest,
-                       UploadBubble_CheckForAccountChipFooter) {
+// save bubble. User label information contains the user avatar and email.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+    UploadBubble_CheckForAccountChipFooter) {
   ASSERT_TRUE(SetupSync());
 
   FillForm();
   SubmitFormAndWaitForCardUploadSaveBubble();
 
   views::View* view = FindViewInBubbleById(DialogViewId::USER_INFORMATION_VIEW);
-  if (AccountChipFooterIsEnabled()) {
-    ASSERT_NE(nullptr, view);
-    EXPECT_TRUE(view->GetVisible());
-  } else {
-    ASSERT_EQ(nullptr, view);
-  }
+  ASSERT_NE(nullptr, view);
+  EXPECT_TRUE(view->GetVisible());
 }
-
-INSTANTIATE_TEST_SUITE_P(,
-                         SaveCardBubbleViewsAccountChipFooterBrowserTest,
-                         ::testing::Bool());
 
 }  // namespace autofill

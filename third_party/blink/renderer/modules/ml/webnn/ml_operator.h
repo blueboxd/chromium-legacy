@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ML_WEBNN_ML_OPERATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ML_WEBNN_ML_OPERATOR_H_
 
+#include "services/webnn/public/mojom/webnn_graph.mojom-blink.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/dictionary_base.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
@@ -19,84 +21,18 @@ class MLOperand;
 
 class MODULES_EXPORT MLOperator : public GarbageCollected<MLOperator> {
  public:
-  enum class OperatorKind {
-    // Keep the order as the same as build methods of MLGraphBuilder.
-    kArgMin,
-    kArgMax,
-    kBatchNormalization,
-    kCast,
-    kClamp,
-    kConcat,
-    kConv2d,
-    kConvTranspose2d,
-    kAdd,
-    kSub,
-    kMul,
-    kDiv,
-    kMin,
-    kMax,
-    kPow,
-    kEqual,
-    kGreater,
-    kGreaterOrEqual,
-    kLesser,
-    kLesserOrEqual,
-    kAbs,
-    kCeil,
-    kCos,
-    kExp,
-    kFloor,
-    kLog,
-    kNeg,
-    kSin,
-    kTan,
-    kErf,
-    kIdentity,
-    kLogicalNot,
-    kReciprocal,
-    kSqrt,
-    kInstanceNormalization,
-    kLayerNormalization,
-    kLeakyRelu,
-    kLinear,
-    kLstm,
-    kElu,
-    kExpand,
-    kGather,
-    kGemm,
-    kHardSigmoid,
-    kHardSwish,
-    kAveragePool2d,
-    kL2Pool2d,
-    kMatmul,
-    kMaxPool2d,
-    kPad,
-    kPRelu,
-    kReduceL1,
-    kReduceL2,
-    kReduceLogSum,
-    kReduceLogSumExp,
-    kReduceMax,
-    kReduceMean,
-    kReduceMin,
-    kReduceProduct,
-    kReduceSum,
-    kReduceSumSquare,
-    kRelu,
-    kReshape,
-    kResample2d,
-    kSigmoid,
-    kSlice,
-    kSoftmax,
-    kSoftplus,
-    kSoftsign,
-    kSplit,
-    kTanh,
-    kTranspose,
-    kWhere
-  };
+  using OperationSubKind =
+      absl::variant<webnn::mojom::blink::ArgMinMax::Kind,
+                    webnn::mojom::blink::Conv2d::Kind,
+                    webnn::mojom::blink::ElementWiseBinary::Kind,
+                    webnn::mojom::blink::ElementWiseUnary::Kind,
+                    webnn::mojom::blink::Pool2d::Kind,
+                    webnn::mojom::blink::Reduce::Kind,
+                    absl::monostate>;
 
-  static String OperatorKindToString(MLOperator::OperatorKind kind);
+  static String OperatorKindToString(
+      webnn::mojom::blink::Operation::Tag kind,
+      OperationSubKind sub_kind = absl::monostate{});
 
   // It is safe for a caller, usually a MLGraphBuidler operation build method,
   // that passes the reference of the options dictionary argument received from
@@ -111,7 +47,8 @@ class MODULES_EXPORT MLOperator : public GarbageCollected<MLOperator> {
   // MLConv2dOptions::FillMembersFromV8Object, before passing it to a
   // MLGraphBuilder operation build method.
   MLOperator(MLGraphBuilder* builder,
-             OperatorKind kind,
+             webnn::mojom::blink::Operation::Tag kind,
+             OperationSubKind sub_kind = absl::monostate{},
              const bindings::DictionaryBase* options = nullptr);
 
   MLOperator(const MLOperator&) = delete;
@@ -121,7 +58,13 @@ class MODULES_EXPORT MLOperator : public GarbageCollected<MLOperator> {
 
   void Trace(Visitor* visitor) const;
 
-  OperatorKind Kind() const;
+  webnn::mojom::blink::Operation::Tag Kind() const;
+  OperationSubKind SubKind() const;
+  template <typename MojomKind>
+  MojomKind SubKind() const {
+    return absl::get<MojomKind>(SubKind());
+  }
+
   const bindings::DictionaryBase* Options() const;
   bool IsConnected() const;
   const HeapVector<Member<const MLOperand>>& Inputs() const;
@@ -138,7 +81,9 @@ class MODULES_EXPORT MLOperator : public GarbageCollected<MLOperator> {
 
  private:
   Member<MLGraphBuilder> builder_;
-  OperatorKind kind_;
+  webnn::mojom::blink::Operation::Tag kind_;
+  OperationSubKind sub_kind_;
+
   // The correct type of options_ depends on OperatorKind. For example, if the
   // OperatorKind is kClamp, options_ could static_cast to MLClampOptions.
   Member<const bindings::DictionaryBase> options_;
@@ -149,6 +94,9 @@ class MODULES_EXPORT MLOperator : public GarbageCollected<MLOperator> {
   HeapVector<Member<const MLOperand>> inputs_;
   HeapVector<Member<const MLOperand>> outputs_;
 };
+
+// TODO: crbug.com/325612086 - Remove all these subclasses. This information
+// should all be contained within the respective mojo Operation struct.
 
 class MODULES_EXPORT MLConcatOperator : public MLOperator {
  public:
@@ -168,9 +116,9 @@ class MODULES_EXPORT MLConcatOperator : public MLOperator {
 class MODULES_EXPORT MLLstmOperator : public MLOperator {
  public:
   MLLstmOperator(MLGraphBuilder* builder,
-                 const uint32_t steps,
-                 const uint32_t hidden_size,
-                 const bindings::DictionaryBase* options = nullptr);
+                 uint32_t steps,
+                 uint32_t hidden_size,
+                 const bindings::DictionaryBase* options);
 
   MLLstmOperator(const MLLstmOperator&) = delete;
   MLLstmOperator& operator=(const MLLstmOperator&) = delete;
@@ -179,6 +127,26 @@ class MODULES_EXPORT MLLstmOperator : public MLOperator {
 
   uint32_t steps() const;
   uint32_t hidden_size() const;
+
+ private:
+  uint32_t steps_;
+  uint32_t hidden_size_;
+};
+
+class MODULES_EXPORT MLGruOperator : public MLOperator {
+ public:
+  MLGruOperator(MLGraphBuilder* builder,
+                uint32_t steps,
+                uint32_t hidden_size,
+                const bindings::DictionaryBase* options);
+
+  MLGruOperator(const MLGruOperator&) = delete;
+  MLGruOperator& operator=(const MLGruOperator&) = delete;
+
+  ~MLGruOperator() override;
+
+  uint32_t steps() const { return steps_; }
+  uint32_t hidden_size() const { return hidden_size_; }
 
  private:
   uint32_t steps_;

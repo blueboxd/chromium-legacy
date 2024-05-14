@@ -188,8 +188,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(SurfaceTest, Damage) {
   gfx::Size buffer_size(256, 256);
-  std::unique_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   std::unique_ptr<Surface> surface(new Surface);
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
@@ -238,15 +237,13 @@ TEST_P(SurfaceTest, Damage) {
 
 TEST_P(SurfaceTest, SubsurfaceDamageAggregation) {
   gfx::Size buffer_size(256, 512);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
   surface->Attach(buffer.get());
 
   gfx::Size child_buffer_size(64, 128);
-  auto child_buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(child_buffer_size));
+  auto child_buffer = test::ExoTestHelper::CreateBuffer(child_buffer_size);
   auto child_surface = std::make_unique<Surface>();
   auto sub_surface =
       std::make_unique<SubSurface>(child_surface.get(), surface.get());
@@ -301,14 +298,12 @@ TEST_P(SurfaceTest, SubsurfaceDamageAggregation) {
 
 TEST_P(SurfaceTest, SubsurfaceDamageSynchronizedCommitBehavior) {
   gfx::Size buffer_size(256, 512);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
   surface->Attach(buffer.get());
   gfx::Size child_buffer_size(64, 128);
-  auto child_buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(child_buffer_size));
+  auto child_buffer = test::ExoTestHelper::CreateBuffer(child_buffer_size);
   auto child_surface = std::make_unique<Surface>();
   auto sub_surface =
       std::make_unique<SubSurface>(child_surface.get(), surface.get());
@@ -371,14 +366,12 @@ TEST_P(SurfaceTest, SubsurfaceDamageSynchronizedCommitBehavior) {
 
 TEST_P(SurfaceTest, SubsurfaceDamageDesynchronizedCommitBehavior) {
   gfx::Size buffer_size(256, 512);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
   surface->Attach(buffer.get());
   gfx::Size child_buffer_size(64, 128);
-  auto child_buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(child_buffer_size));
+  auto child_buffer = test::ExoTestHelper::CreateBuffer(child_buffer_size);
   auto child_surface = std::make_unique<Surface>();
   auto sub_surface =
       std::make_unique<SubSurface>(child_surface.get(), surface.get());
@@ -448,8 +441,7 @@ TEST_P(SurfaceTest, RequestFrameCallback) {
 #endif
 TEST_P(SurfaceTest, MAYBE_SetOpaqueRegion) {
   gfx::Size buffer_size(1, 1);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
@@ -492,9 +484,8 @@ TEST_P(SurfaceTest, MAYBE_SetOpaqueRegion) {
     EXPECT_EQ(gfx::Rect(buffer_size), ToTargetSpaceDamage(frame));
   }
 
-  std::unique_ptr<Buffer> buffer_without_alpha(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(
-          buffer_size, gfx::BufferFormat::RGBX_8888)));
+  auto buffer_without_alpha = test::ExoTestHelper::CreateBuffer(
+      buffer_size, gfx::BufferFormat::RGBX_8888);
 
   // Attaching a buffer without an alpha channel doesn't require draw with
   // blending.
@@ -519,8 +510,7 @@ TEST_P(SurfaceTest, SetInputRegion) {
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
   gfx::Size buffer_size(512, 512);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   surface->Attach(buffer.get());
   surface->Commit();
 
@@ -587,8 +577,8 @@ TEST_P(SurfaceTest, SetInputRegion) {
     surface->SetInputRegion(input_rect);
 
     gfx::Rect child_input_rect(-50, -50, 1000, 100);
-    auto child_buffer = std::make_unique<Buffer>(
-        exo_test_helper()->CreateGpuMemoryBuffer(child_input_rect.size()));
+    auto child_buffer =
+        test::ExoTestHelper::CreateBuffer(child_input_rect.size());
     auto child_surface = std::make_unique<Surface>();
     auto sub_surface =
         std::make_unique<SubSurface>(child_surface.get(), surface.get());
@@ -607,8 +597,7 @@ TEST_P(SurfaceTest, SetInputRegion) {
 
 TEST_P(SurfaceTest, SetBufferScale) {
   gfx::Size buffer_size(512, 512);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
@@ -623,7 +612,8 @@ TEST_P(SurfaceTest, SetBufferScale) {
       surface->window()->bounds().size().ToString());
   gfx::SizeF buffer_size_float = gfx::SizeF(buffer_size);
   buffer_size_float.Scale(1.0f / kBufferScale);
-  EXPECT_EQ(buffer_size_float.ToString(), surface->content_size().ToString());
+  EXPECT_EQ(buffer_size_float.ToString(),
+            surface->visual_rect().size().ToString());
 
   test::WaitForLastFrameAck(shell_surface.get());
 
@@ -646,8 +636,8 @@ void SurfaceTest::SetBufferTransformHelperTransformAndTest(
   surface->Commit();
   EXPECT_EQ(gfx::Size(expected_size.width(), expected_size.height()),
             surface->window()->bounds().size());
-  EXPECT_EQ(gfx::SizeF(expected_size.width(), expected_size.height()),
-            surface->content_size());
+  EXPECT_EQ(gfx::RectF(0, 0, expected_size.width(), expected_size.height()),
+            surface->visual_rect());
 
   test::WaitForLastFrameAck(shell_surface);
 
@@ -675,8 +665,7 @@ void SurfaceTest::SetBufferTransformHelperTransformAndTest(
 #endif
 TEST_P(SurfaceTest, MAYBE_SetBufferTransform) {
   gfx::Size buffer_size(256, 512);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
@@ -694,8 +683,7 @@ TEST_P(SurfaceTest, MAYBE_SetBufferTransform) {
                                            inverted_size);
 
   gfx::Size child_buffer_size(64, 128);
-  auto child_buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(child_buffer_size));
+  auto child_buffer = test::ExoTestHelper::CreateBuffer(child_buffer_size);
   auto child_surface = std::make_unique<Surface>();
   auto sub_surface =
       std::make_unique<SubSurface>(child_surface.get(), surface.get());
@@ -715,7 +703,7 @@ TEST_P(SurfaceTest, MAYBE_SetBufferTransform) {
       child_surface->window()->bounds().size());
   EXPECT_EQ(
       gfx::ScaleToRoundedSize(child_buffer_size, 1.0f / kChildBufferScale),
-      gfx::ToRoundedSize(child_surface->content_size()));
+      gfx::ToRoundedSize(child_surface->visual_rect().size()));
 
   test::WaitForLastFrameAck(shell_surface.get());
 
@@ -737,8 +725,7 @@ TEST_P(SurfaceTest, MAYBE_SetBufferTransform) {
 
 TEST_P(SurfaceTest, MirrorLayers) {
   gfx::Size buffer_size(512, 512);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
@@ -760,8 +747,7 @@ TEST_P(SurfaceTest, MirrorLayers) {
 
 TEST_P(SurfaceTest, SetViewport) {
   gfx::Size buffer_size(1, 1);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
@@ -771,7 +757,7 @@ TEST_P(SurfaceTest, SetViewport) {
   gfx::SizeF viewport(256, 256);
   surface->SetViewport(viewport);
   surface->Commit();
-  EXPECT_EQ(viewport.ToString(), surface->content_size().ToString());
+  EXPECT_EQ(viewport.ToString(), surface->visual_rect().size().ToString());
 
   // This will update the bounds of the surface and take the viewport2 into
   // account.
@@ -780,7 +766,7 @@ TEST_P(SurfaceTest, SetViewport) {
   surface->Commit();
   EXPECT_EQ(viewport2.ToString(),
             gfx::SizeF(surface->window()->bounds().size()).ToString());
-  EXPECT_EQ(viewport2.ToString(), surface->content_size().ToString());
+  EXPECT_EQ(viewport2.ToString(), surface->visual_rect().size().ToString());
 
   test::WaitForLastFrameAck(shell_surface.get());
 
@@ -791,13 +777,12 @@ TEST_P(SurfaceTest, SetViewport) {
   // This will make the surface have no content regardless of the viewport.
   surface->Attach(nullptr);
   surface->Commit();
-  EXPECT_TRUE(surface->content_size().IsEmpty());
+  EXPECT_TRUE(surface->visual_rect().size().IsEmpty());
 }
 
 TEST_P(SurfaceTest, SubpixelCoordinate) {
   gfx::Size buffer_size(512, 512);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
@@ -808,8 +793,7 @@ TEST_P(SurfaceTest, SubpixelCoordinate) {
   gfx::Size inverted_size(buffer_size.height(), buffer_size.width());
 
   gfx::Size child_buffer_size(64, 64);
-  auto child_buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(child_buffer_size));
+  auto child_buffer = test::ExoTestHelper::CreateBuffer(child_buffer_size);
   auto child_surface = std::make_unique<Surface>();
   auto sub_surface =
       std::make_unique<SubSurface>(child_surface.get(), surface.get());
@@ -881,8 +865,7 @@ TEST_P(SurfaceTest, SubpixelCoordinate) {
 
 TEST_P(SurfaceTest, SetCrop) {
   gfx::Size buffer_size(16, 16);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
@@ -893,7 +876,7 @@ TEST_P(SurfaceTest, SetCrop) {
   EXPECT_EQ(crop_size.ToString(),
             surface->window()->bounds().size().ToString());
   EXPECT_EQ(gfx::SizeF(crop_size).ToString(),
-            surface->content_size().ToString());
+            surface->visual_rect().size().ToString());
 
   test::WaitForLastFrameAck(shell_surface.get());
 
@@ -904,7 +887,7 @@ TEST_P(SurfaceTest, SetCrop) {
   // This will make the surface have no content regardless of the crop.
   surface->Attach(nullptr);
   surface->Commit();
-  EXPECT_TRUE(surface->content_size().IsEmpty());
+  EXPECT_TRUE(surface->visual_rect().size().IsEmpty());
 }
 
 void SurfaceTest::SetCropAndBufferTransformHelperTransformAndTest(
@@ -952,8 +935,7 @@ void SurfaceTest::SetCropAndBufferTransformHelperTransformAndTest(
 #endif
 TEST_P(SurfaceTest, MAYBE_SetCropAndBufferTransform) {
   gfx::Size buffer_size(128, 64);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
@@ -1020,8 +1002,7 @@ TEST_P(SurfaceTest, MAYBE_SetCropAndBufferTransform) {
 
 TEST_P(SurfaceTest, SetBlendMode) {
   gfx::Size buffer_size(1, 1);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
@@ -1040,9 +1021,9 @@ TEST_P(SurfaceTest, SetBlendMode) {
 
 TEST_P(SurfaceTest, OverlayCandidate) {
   gfx::Size buffer_size(1, 1);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D, 0,
-      true, true, false);
+  auto buffer = test::ExoTestHelper::CreateBuffer(
+      buffer_size, gfx::BufferFormat::RGBA_8888,
+      /*is_overlay_candidate=*/true);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
@@ -1063,9 +1044,9 @@ TEST_P(SurfaceTest, OverlayCandidate) {
 
 TEST_P(SurfaceTest, SetAlpha) {
   gfx::Size buffer_size(1, 1);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D, 0,
-      true, true, false);
+  auto buffer = test::ExoTestHelper::CreateBuffer(
+      buffer_size, gfx::BufferFormat::RGBA_8888,
+      /*is_overlay_candidate=*/true);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
@@ -1116,9 +1097,9 @@ TEST_P(SurfaceTest, SetAlpha) {
 
 TEST_P(SurfaceTest, ForceRgbxTest) {
   gfx::Size buffer_size(1, 1);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D, 0,
-      true, true, false);
+  auto buffer = test::ExoTestHelper::CreateBuffer(
+      buffer_size, gfx::BufferFormat::RGBA_8888,
+      /*is_overlay_candidate=*/true);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
@@ -1145,10 +1126,9 @@ TEST_P(SurfaceTest, ForceRgbxTest) {
 
 TEST_P(SurfaceTest, ForceRgbxTestNoBufferAlpha) {
   gfx::Size buffer_size(1, 1);
-  auto buffer =
-      std::make_unique<Buffer>(exo_test_helper()->CreateGpuMemoryBuffer(
-                                   buffer_size, gfx::BufferFormat::RGBX_8888),
-                               GL_TEXTURE_2D, 0, true, true, false);
+  auto buffer = test::ExoTestHelper::CreateBuffer(
+      buffer_size, gfx::BufferFormat::RGBX_8888,
+      /*is_overlay_candidate=*/true);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
@@ -1214,16 +1194,14 @@ TEST_P(SurfaceTest, Commit) {
 
 TEST_P(SurfaceTest, RemoveSubSurface) {
   gfx::Size buffer_size(256, 256);
-  std::unique_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   std::unique_ptr<Surface> surface(new Surface);
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
   surface->Attach(buffer.get());
 
   // Create a subsurface:
   gfx::Size child_buffer_size(64, 128);
-  auto child_buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(child_buffer_size));
+  auto child_buffer = test::ExoTestHelper::CreateBuffer(child_buffer_size);
   auto child_surface = std::make_unique<Surface>();
   auto sub_surface =
       std::make_unique<SubSurface>(child_surface.get(), surface.get());
@@ -1242,8 +1220,7 @@ TEST_P(SurfaceTest, RemoveSubSurface) {
 
 TEST_P(SurfaceTest, DestroyAttachedBuffer) {
   gfx::Size buffer_size(1, 1);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
@@ -1254,7 +1231,7 @@ TEST_P(SurfaceTest, DestroyAttachedBuffer) {
   // Make sure surface size is still valid after buffer is destroyed.
   buffer.reset();
   surface->Commit();
-  EXPECT_FALSE(surface->content_size().IsEmpty());
+  EXPECT_FALSE(surface->visual_rect().size().IsEmpty());
 }
 
 TEST_P(SurfaceTest, SetClientSurfaceId) {
@@ -1267,8 +1244,7 @@ TEST_P(SurfaceTest, SetClientSurfaceId) {
 
 TEST_P(SurfaceTest, DestroyWithAttachedBufferReleasesBuffer) {
   gfx::Size buffer_size(1, 1);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
@@ -1293,8 +1269,7 @@ TEST_P(SurfaceTest, DestroyWithAttachedBufferReleasesBuffer) {
 }
 
 TEST_P(SurfaceTest, AcquireFence) {
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(1, 1)));
+  auto buffer = test::ExoTestHelper::CreateBuffer(gfx::Size(1, 1));
   auto surface = std::make_unique<Surface>();
 
   // We can only commit an acquire fence if a buffer is attached.
@@ -1310,16 +1285,14 @@ TEST_P(SurfaceTest, AcquireFence) {
 
 TEST_P(SurfaceTest, UpdatesOcclusionOnDestroyingSubsurface) {
   gfx::Size buffer_size(256, 512);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
   surface->Attach(buffer.get());
   surface->Commit();
 
   gfx::Size child_buffer_size(64, 128);
-  auto child_buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(child_buffer_size));
+  auto child_buffer = test::ExoTestHelper::CreateBuffer(child_buffer_size);
   auto child_surface = std::make_unique<Surface>();
   auto sub_surface =
       std::make_unique<SubSurface>(child_surface.get(), surface.get());
@@ -1368,8 +1341,7 @@ TEST_P(SurfaceTest, OcclusionNotRecomputedOnWidgetCommit) {
 }
 
 TEST_P(SurfaceTest, HasPendingPerCommitBufferReleaseCallback) {
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(1, 1)));
+  auto buffer = test::ExoTestHelper::CreateBuffer(gfx::Size(1, 1));
   auto surface = std::make_unique<Surface>();
 
   // We can only commit a buffer release callback if a buffer is attached.
@@ -1385,10 +1357,8 @@ TEST_P(SurfaceTest, HasPendingPerCommitBufferReleaseCallback) {
 
 TEST_P(SurfaceTest, PerCommitBufferReleaseCallbackForSameSurface) {
   gfx::Size buffer_size(64, 64);
-  auto buffer1 = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
-  auto buffer2 = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer1 = test::ExoTestHelper::CreateBuffer(buffer_size);
+  auto buffer2 = test::ExoTestHelper::CreateBuffer(buffer_size);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
   int per_commit_release_count = 0;
@@ -1437,10 +1407,8 @@ TEST_P(SurfaceTest, PerCommitBufferReleaseCallbackForSameSurface) {
 
 TEST_P(SurfaceTest, PerCommitBufferReleaseCallbackForDifferentSurfaces) {
   gfx::Size buffer_size(64, 64);
-  auto buffer1 = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
-  auto buffer2 = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer1 = test::ExoTestHelper::CreateBuffer(buffer_size);
+  auto buffer2 = test::ExoTestHelper::CreateBuffer(buffer_size);
   auto surface1 = std::make_unique<Surface>();
   auto shell_surface1 = std::make_unique<ShellSurface>(surface1.get());
   auto surface2 = std::make_unique<Surface>();
@@ -1498,55 +1466,196 @@ TEST_P(SurfaceTest, PerCommitBufferReleaseCallbackForDifferentSurfaces) {
   EXPECT_EQ(buffer_release_count, 1);
 }
 
-TEST_P(SurfaceTest, SubsurfaceClipRect) {
+//
+TEST_P(SurfaceTest, SimpleSurfaceGraphicsOcclusion) {
+  if (!base::FeatureList::IsEnabled(kExoPerSurfaceOcclusion)) {
+    GTEST_SKIP();
+  }
+
+  auto canonical_form_check = [](const auto& frame) {
+    EXPECT_EQ(1u, frame.render_pass_list.size());
+    auto& quad_list = frame.render_pass_list.back()->quad_list;
+    bool is_canonical_form = true;
+    for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
+      // For this test we assume that a 1x1 quad indicates a AA quad. This
+      // assumption is only valid for this test because of our input rects are
+      // not 1x1.
+      is_canonical_form &= (*it)->rect != gfx::Rect(1, 1);
+    }
+    return is_canonical_form;
+  };
+
+  // This parent is merely the background for our children and plays no role in
+  // this test.
   gfx::Size buffer_size(256, 256);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
   surface->Attach(buffer.get());
+  surface->SetViewport(gfx::SizeF(13, 13));
 
-  gfx::Size child_buffer_size(64, 128);
-  auto child_buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(child_buffer_size));
-  auto child_surface = std::make_unique<Surface>();
-  auto sub_surface =
-      std::make_unique<SubSurface>(child_surface.get(), surface.get());
-  child_surface->Attach(child_buffer.get());
-  child_surface->Commit();
+  // # Basic occlusion
+
+  // The order of subsurface parent attachment is the inverse order of quad
+  // submission so child B comes first.
+  auto child_buffer_b = test::ExoTestHelper::CreateBuffer(gfx::Size(64, 64));
+  auto child_surface_b = std::make_unique<Surface>();
+  auto sub_surface_b =
+      std::make_unique<SubSurface>(child_surface_b.get(), surface.get());
+  child_surface_b->Attach(child_buffer_b.get());
+  sub_surface_b->SetPosition(gfx::PointF(40, 10));
+  child_surface_b->SetViewport(gfx::SizeF(20, 10));
+  child_surface_b->Commit();
+
+  auto child_buffer_a = test::ExoTestHelper::CreateBuffer(gfx::Size(64, 64));
+  auto child_surface_a = std::make_unique<Surface>();
+  auto sub_surface_a =
+      std::make_unique<SubSurface>(child_surface_a.get(), surface.get());
+  child_surface_a->Attach(child_buffer_a.get());
+  sub_surface_a->SetPosition(gfx::PointF(40, 10));
+  child_surface_a->SetViewport(gfx::SizeF(20, 10));
+  child_surface_a->SetBlendMode(SkBlendMode::kSrc);
+  child_surface_a->Commit();
+
   surface->Commit();
   test::WaitForLastFrameAck(shell_surface.get());
-
   {
-    // Subsurface initially has no clip.
     const viz::CompositorFrame& frame =
         GetFrameFromSurface(shell_surface.get());
-    ASSERT_EQ(1u, frame.render_pass_list.size());
-    ASSERT_EQ(2u, frame.render_pass_list.back()->quad_list.size());
-    const auto& quad_list = frame.render_pass_list[0]->quad_list;
-    EXPECT_EQ(std::nullopt, quad_list.front()->shared_quad_state->clip_rect);
+    bool const is_canonical_form = canonical_form_check(frame);
+    auto const kExpectedNumSQSs = is_canonical_form ? 2u : 3u;
+    ASSERT_EQ(kExpectedNumSQSs,
+              frame.render_pass_list.back()->shared_quad_state_list.size());
   }
 
-  int clip_size = 10;
-  std::optional<gfx::RectF> clip_rect =
-      gfx::RectF(clip_size, clip_size, clip_size, clip_size);
-  sub_surface->SetClipRect(clip_rect);
-  child_surface->Attach(child_buffer.get());
-  child_surface->Commit();
+  // # Non occlusion location
+  sub_surface_a->SetPosition(gfx::PointF(20, 10));
+  child_surface_a->SetViewport(gfx::SizeF(20, 10));
+  child_surface_a->Commit();
+
+  sub_surface_b->SetPosition(gfx::PointF(30, 10));
+  child_surface_b->SetViewport(gfx::SizeF(20, 10));
+  child_surface_b->Commit();
+
   surface->Commit();
   test::WaitForLastFrameAck(shell_surface.get());
-
   {
-    // Subsurface has a clip applied.
-    std::optional<gfx::Rect> clip_rect_px =
-        gfx::Rect(clip_size, clip_size, clip_size, clip_size);
-
     const viz::CompositorFrame& frame =
         GetFrameFromSurface(shell_surface.get());
-    ASSERT_EQ(1u, frame.render_pass_list.size());
-    ASSERT_EQ(2u, frame.render_pass_list.back()->quad_list.size());
-    const auto& quad_list = frame.render_pass_list[0]->quad_list;
-    EXPECT_EQ(clip_rect_px, quad_list.front()->shared_quad_state->clip_rect);
+
+    auto const kExpectedNumSQSs = 3u;
+    ASSERT_EQ(kExpectedNumSQSs,
+              frame.render_pass_list.back()->shared_quad_state_list.size());
+  }
+
+  // # Non occluding size.
+  sub_surface_a->SetPosition(gfx::PointF(20, 10));
+  child_surface_a->SetViewport(gfx::SizeF(20, 10));
+  child_surface_a->Commit();
+
+  sub_surface_b->SetPosition(gfx::PointF(20, 10));
+  child_surface_b->SetViewport(gfx::SizeF(30, 10));
+  child_surface_b->Commit();
+
+  surface->Commit();
+  test::WaitForLastFrameAck(shell_surface.get());
+  {
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
+
+    auto const kExpectedNumSQSs = 3u;
+    ASSERT_EQ(kExpectedNumSQSs,
+              frame.render_pass_list.back()->shared_quad_state_list.size());
+  }
+
+  // # Different occlusion
+  sub_surface_a->SetPosition(gfx::PointF(30, 20));
+  child_surface_a->SetViewport(gfx::SizeF(30, 15));
+  child_surface_a->Commit();
+
+  sub_surface_b->SetPosition(gfx::PointF(30, 20));
+  child_surface_b->SetViewport(gfx::SizeF(30, 15));
+  child_surface_b->Commit();
+
+  surface->Commit();
+  test::WaitForLastFrameAck(shell_surface.get());
+  {
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
+    bool const is_canonical_form = canonical_form_check(frame);
+    auto const kExpectedNumSQSs = is_canonical_form ? 2u : 3u;
+    ASSERT_EQ(kExpectedNumSQSs,
+              frame.render_pass_list.back()->shared_quad_state_list.size());
+  }
+
+  // # Rounded occlusion not matching
+  child_surface_a->SetRoundedCorners(gfx::RRectF(gfx::RectF(0, 0, 30, 15), 6.0),
+                                     false);
+  child_surface_a->Commit();
+
+  child_surface_b->SetRoundedCorners(gfx::RRectF(gfx::RectF(0, 0, 30, 15), 1.0),
+                                     false);
+  child_surface_b->Commit();
+
+  surface->Commit();
+  test::WaitForLastFrameAck(shell_surface.get());
+  {
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
+    auto const kExpectedNumSQSs = 3u;
+    ASSERT_EQ(kExpectedNumSQSs,
+              frame.render_pass_list.back()->shared_quad_state_list.size());
+  }
+
+  // # Rounded occlusion matching
+  child_surface_a->SetRoundedCorners(gfx::RRectF(gfx::RectF(0, 0, 20, 10), 6.0),
+                                     false);
+  child_surface_a->Commit();
+
+  child_surface_b->SetRoundedCorners(gfx::RRectF(gfx::RectF(0, 0, 20, 10), 6.0),
+                                     false);
+  child_surface_b->Commit();
+
+  surface->Commit();
+  test::WaitForLastFrameAck(shell_surface.get());
+  {
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
+    bool const is_canonical_form = canonical_form_check(frame);
+    auto const kExpectedNumSQSs = is_canonical_form ? 2u : 3u;
+    ASSERT_EQ(kExpectedNumSQSs,
+              frame.render_pass_list.back()->shared_quad_state_list.size());
+  }
+
+  // # Clip rect too small
+  child_surface_a->SetClipRect(gfx::RectF(10, 10));
+  child_surface_a->Commit();
+
+  child_surface_b->Commit();
+
+  surface->Commit();
+  test::WaitForLastFrameAck(shell_surface.get());
+  {
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
+    auto const kExpectedNumSQSs = 3u;
+    ASSERT_EQ(kExpectedNumSQSs,
+              frame.render_pass_list.back()->shared_quad_state_list.size());
+  }
+
+  //  # Clip rect large enough
+  child_surface_a->SetClipRect(gfx::RectF(100, 100));
+  child_surface_a->Commit();
+  child_surface_b->Commit();
+  surface->Commit();
+  test::WaitForLastFrameAck(shell_surface.get());
+  {
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
+    bool const is_canonical_form = canonical_form_check(frame);
+    auto const kExpectedNumSQSs = is_canonical_form ? 2u : 3u;
+    ASSERT_EQ(kExpectedNumSQSs,
+              frame.render_pass_list.back()->shared_quad_state_list.size());
   }
 }
 
@@ -1569,16 +1678,14 @@ TEST_P(SurfaceTest, LayerSharedQuadState) {
   // This parent is merely the background for our children and plays no role in
   // this test.
   gfx::Size buffer_size(256, 256);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
   surface->Attach(buffer.get());
   surface->SetViewport(gfx::SizeF(13, 13));
 
   // Test layer joining in x.
-  auto child_buffer_a = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(64, 64)));
+  auto child_buffer_a = test::ExoTestHelper::CreateBuffer(gfx::Size(64, 64));
   auto child_surface_a = std::make_unique<Surface>();
   auto sub_surface_a =
       std::make_unique<SubSurface>(child_surface_a.get(), surface.get());
@@ -1588,8 +1695,7 @@ TEST_P(SurfaceTest, LayerSharedQuadState) {
   child_surface_a->SetViewport(gfx::SizeF(20, 10));
   child_surface_a->Commit();
 
-  auto child_buffer_b = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(64, 64)));
+  auto child_buffer_b = test::ExoTestHelper::CreateBuffer(gfx::Size(64, 64));
   auto child_surface_b = std::make_unique<Surface>();
   auto sub_surface_b =
       std::make_unique<SubSurface>(child_surface_b.get(), surface.get());
@@ -1696,8 +1802,7 @@ TEST_P(SurfaceTest, LayerSharedQuadState) {
   child_surface_b->SetViewport(gfx::SizeF(20, 10));
   child_surface_b->Commit();
 
-  auto child_buffer_c = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(64, 64)));
+  auto child_buffer_c = test::ExoTestHelper::CreateBuffer(gfx::Size(64, 64));
   auto child_surface_c = std::make_unique<Surface>();
   auto sub_surface_c =
       std::make_unique<SubSurface>(child_surface_c.get(), surface.get());
@@ -1783,8 +1888,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(ReactiveFrameSubmissionSurfaceTest, FullDamageAfterDiscardingFrame) {
   gfx::Size buffer_size(256, 256);
-  std::unique_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   std::unique_ptr<Surface> surface(new Surface);
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 

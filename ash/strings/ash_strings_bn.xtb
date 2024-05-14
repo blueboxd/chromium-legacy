@@ -18,6 +18,7 @@
 <translation id="1056775291175587022">নেটওয়ার্ক নেই</translation>
 <translation id="1056898198331236512">সতর্কতা</translation>
 <translation id="1058009965971887428">প্রতিক্রিয়া জানান</translation>
+<translation id="1059120031266247284">আপনার সাথে শেয়ার করা হয়েছে</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="1062407476771304334">প্রতিস্থাপন করুন</translation>
 <translation id="1073899992769346247">ব্যাটারিটি বদলান বা রিচার্জ করুন</translation>
@@ -34,6 +35,7 @@
 <translation id="1111021433905331574">'সেটিংস' &gt; <ph name="APP_TITLE" /> থেকে কীবোর্ড ব্যাকলাইটের রঙ পরিবর্তন করতে পারবেন</translation>
 <translation id="1117719261843403176">মোবাইল ডেটা টগল করুন। <ph name="STATE" />।</translation>
 <translation id="112308213915226829">তাককে স্বয়ংক্রিয়ভাবে লুকান</translation>
+<translation id="1129383337808748948"><ph name="CONTENT_TITLE" /> রিফ্রেশ করুন</translation>
 <translation id="1142002900084379065">সাম্প্রতিক ফটো</translation>
 <translation id="114221662579355151">এর ফলে <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> এবং ক্যামেরা ও মাইক্রোফোন ব্যবহার করার অনুমতি আছে এমন সমস্ত অ্যাপ ও ওয়েবসাইটে ক্যামেরা অ্যাক্সেস করা যায়। আপনাকে ওয়েব পেজ রিফ্রেশ করতে বা অ্যাপটি রিস্টার্ট করতে হতে পারে।</translation>
 <translation id="1148499908455722006"><ph name="USER_NAME" />-এর জন্য অ্যাকাউন্টের তথ্য সহ ডায়ালগ খুলুন</translation>
@@ -100,6 +102,7 @@
 <translation id="1312604459020188865">সিগন্যাল: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">সবসময় শেল্ফ দেখান</translation>
 <translation id="132346741904777634">ক্যামেরাটি উপরে বাঁদিকের কোণে স্ন্যাপ করা হয়েছে। সিস্টেমের সারফেসে ছবির কিছুটা ঢাকা পড়ছে।</translation>
+<translation id="132415371743256095">উইন্ডো ও <ph name="DESK_NAME" /> বন্ধ করুন</translation>
 <translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> কানেক্ট করা হয়েছে</translation>
 <translation id="1340378040547539434">পৃষ্ঠায় জুম ছোট করুন</translation>
 <translation id="1341651618736211726">ওভারফ্লো</translation>
@@ -171,7 +174,6 @@
 <translation id="1647986356840967552">আগের পৃষ্ঠা</translation>
 <translation id="1651914502370159744">ইতিহাসের পৃষ্ঠা খুলুন</translation>
 <translation id="1654477262762802994">ভয়েস কোয়েরি শুরু করুন</translation>
-<translation id="1662667383227796099">'লঞ্চার'-এ নিজের ফাইল, অ্যাপ ও আরও অনেক কিছু সার্চ করুন। এছাড়াও আপনার Chromebook সম্পর্কে প্রশ্নের উত্তর পেতে পারবেন।</translation>
 <translation id="1668469839109562275">বিল্ট-ইন ভিপিএন</translation>
 <translation id="1675844249244994876">ডানদিকের উইন্ডো আপডেট করুন</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> বাকি আছে</translation>
@@ -227,6 +229,7 @@
 <translation id="1882814835921407042">মোবাইল নেটওয়ার্ক নেই</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> তে প্রতিবিম্বিত হচ্ছে</translation>
 <translation id="1885785240814121742">আঙ্গুলের ছাপ দিয়ে আনলক করুন</translation>
+<translation id="1904997243703671177">আপনি ব্লুটুথ বন্ধ করলে, আপনার <ph name="DEVICE_TYPE" /> থেকে <ph name="DEVICE_COUNT" />টি এক্সটার্নাল ডিভাইস ডিসকানেক্ট হয়ে যাবে, যার মধ্যে এগুলি আছে:</translation>
 <translation id="1908992311423394684">নতুন ইনস্টল</translation>
 <translation id="1915307458270490472">কল নামিয়ে রাখুন</translation>
 <translation id="1918022425394817322">ক্যামেরাটি উপরে ডানদিকের কোণে স্ন্যাপ করা হয়েছে</translation>
@@ -328,9 +331,11 @@
 <translation id="2369165858548251131">চীনা ভাষায় "হ্যালো"</translation>
 <translation id="2382875860893882175">বর্তমানে কাস্টিং পজ করা আছে। আপনি যেকোনও সময় আবার কাস্টিং চালু অথবা বন্ধ করতে পারবেন।</translation>
 <translation id="2386292613071805067">পৃষ্ঠাতে থাকা সবকিছুই বেছে নিন</translation>
+<translation id="2392659840443812875">কোনও হটস্পট উপলভ্য নেই। আপনার ডিভাইস হাতের কাছে রাখুন এবং এটিতে ব্লুটুথ চালু আছে কিনা তা দেখে নিন।</translation>
 <translation id="2397416548179033562">Chrome মেনু দেখান</translation>
 <translation id="240006516586367791">মিডিয়া কন্ট্রোল</translation>
 <translation id="2402411679569069051">ফিঙ্গারপ্রিন্ট বা ফোনের সাহায্যে আপনার Chromebook আনলক করুন</translation>
+<translation id="240545663114741956">সাইন-আউট করতে <ph name="ACCELERATOR" /> দুবার প্রেস করুন।</translation>
 <translation id="2405664212338326887">কানেক্ট করা নেই</translation>
 <translation id="2408955596600435184">আপনার পিন লিখুন</translation>
 <translation id="2412593942846481727">আপডেট উপলভ্য</translation>
@@ -352,12 +357,16 @@
 <translation id="2478076885740497414">অ্যাপ্লিকেশান ইনস্টল করুন</translation>
 <translation id="2482878487686419369">বিজ্ঞপ্তিগুলি</translation>
 <translation id="2484513351006226581">কীবোর্ড লে-আউট পরিবর্তন করতে <ph name="KEYBOARD_SHORTCUT" /> টিপুন।</translation>
+<translation id="2486214324139475545"><ph name="DESK_NAME" />-এর প্রিভিউ। ডেস্ক অ্যাক্টিভ আছে।</translation>
 <translation id="2487915095798731898">যোগদান করুন</translation>
+<translation id="2499445554382787206">ডেস্ক প্রোফাইল মেনু। <ph name="DESK_NAME" /></translation>
 <translation id="2501920221385095727">স্টিকি কীজ</translation>
 <translation id="2504454902900101003">আপনার ফোনের সাম্প্রতিক ফটো, মিডিয়া ও বিজ্ঞপ্তি দেখা সংক্রান্ত সেট-আপের পদ্ধতি বাতিল করুন</translation>
+<translation id="2505378917951323738">টাস্ক এডিট করা যায়নি। অনলাইন থাকাকালীন আবার চেষ্টা করে দেখুন।</translation>
 <translation id="2509468283778169019">CAPS LOCK চালু</translation>
 <translation id="2514415433888497495"><ph name="CAPTURE_MEDIUM" /> থামান। <ph name="CAPTURE_MEDIUM" /> <ph name="CAPTURE_STATE" /> হয়েছে।</translation>
 <translation id="2515586267016047495">Alt</translation>
+<translation id="2516637483312286228">গেম কন্ট্রোল এডিট করুন</translation>
 <translation id="2526581474998477112">উইন্ডো আনলক করুন</translation>
 <translation id="2528111225373402384">হটস্পট সেটিংস</translation>
 <translation id="253007620291357635"><ph name="NETWORK_NAME" /> · <ph name="SERVICE_PROVIDER" /></translation>
@@ -407,7 +416,7 @@
 <translation id="2726420622004325180">হটস্পট দেওয়ার জন্য আপনার ফোনে মোবাইল ডেটার অ্যাক্সেস থাকতে হবে</translation>
 <translation id="2727175239389218057">উত্তর দিন</translation>
 <translation id="2727977024730340865">একটি নিম্ন শক্তির চার্জার প্লাগইন করা হয়েছে৷ বিশ্বস্ত ব্যাটারি চার্জ নাও হতে পারে৷</translation>
-<translation id="2744221223678373668">শেয়ার করে নেওয়া</translation>
+<translation id="2743387203779672305">ক্লিপবোর্ডে কপি করুন</translation>
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2750932254614666392">"মুছে ফেলুন"</translation>
 <translation id="2750941250130734256">অ্যাক্টিভ উইন্ডোটি আনডক করা হয়েছে।</translation>
@@ -461,7 +470,6 @@
 <translation id="2965227184985674128">মাইক্রোফোন অ্যাক্সেস চালু করতে চান?</translation>
 <translation id="296762781903199866"><ph name="LANGUAGE" /> স্পিচ ফাইল ডাউনলোড করা যায়নি</translation>
 <translation id="2970920913501714344">অ্যাপ, এক্সটেনশন এবং থিম ইনস্টল করুন</translation>
-<translation id="2977098646659697261">আপনার পিন করা ও খোলা অ্যাপ শেল্ফে আছে। শেল্ফে কোনও অ্যাপে পিন করতে, দুটি আঙুলের মাধ্যমে আপনার টাচপ্যাডে ট্যাপ বা অ্যাপে ডানদিকের বোতামে ক্লিক করুন।</translation>
 <translation id="2977598380246111477">পরবর্তী নম্বর</translation>
 <translation id="2985148236010982088">সব অ্যাপ দেখুন</translation>
 <translation id="2992327365391326550">ডিভাইসের মাইক্রোফোন বোতাম বন্ধ আছে।</translation>
@@ -478,6 +486,7 @@
 <translation id="3038571455154067151">সাইন-ইন করতে, আপনার Family Link-এর অভিভাবকীয় অ্যাক্সেস কোডটি লিখুন</translation>
 <translation id="3039939407102840004">স্টাইলাস ব্যাটারিতে <ph name="PERCENTAGE" /> শতাংশ চার্জ আছে।</translation>
 <translation id="304097922505898963">Key Shortcuts অ্যাপ খুলুন</translation>
+<translation id="304417730895741346">আপনার পিন করা ও খোলা অ্যাপ শেল্ফে আছে। শেল্ফে কোনও অ্যাপে পিন করতে, অ্যাপে ডানদিকের বোতামে ক্লিক বা দুটি আঙুলের মাধ্যমে আপনার টাচপ্যাডে ট্যাপ করুন।</translation>
 <translation id="3045488863354895414">শুভ অপরাহ্ন,</translation>
 <translation id="3047761520276763270">এটি বলে দেখুন:</translation>
 <translation id="3055162170959710888">এই ডিভাইসটি আজ আপনি <ph name="USED_TIME" /> ব্যবহার করেছেন</translation>
@@ -583,6 +592,7 @@
 <translation id="3437677362970530951">Play Store ও অন্যান্য গেমিং প্ল্যাটফর্মের গেম</translation>
 <translation id="3439896670700055005">ক্যাশ করা কন্টেন্ট ব্যবহার না করেই আপনার বর্তমান পৃষ্ঠাটি আবার লোড করুন</translation>
 <translation id="3441920967307853524"><ph name="RECEIVED_BYTES" />/<ph name="TOTAL_BYTES" /></translation>
+<translation id="3443917186865471894">আপনার মাউস কাস্টমাইজ করুন</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> মিনিট</translation>
 <translation id="3445925074670675829">USB-C ডিভাইস</translation>
 <translation id="3454555520521576458">পরিবর্তনযোগ্য আকার</translation>
@@ -599,16 +609,15 @@
 <translation id="3509391053705095206">আপনার ফোন খুঁজে পাওয়া যায়নি। আপনার ফোনের ব্লুটুথ চালু আছে কিনা তা ভালভাবে দেখে নিন।</translation>
 <translation id="3510164367642747937">মাউস কার্সার হাইলাইট করুন</translation>
 <translation id="3513798432020909783">অ্যাকাউন্টটি <ph name="MANAGER_EMAIL" /> ম্যানেজ করছেন</translation>
+<translation id="3517037892157925473">টাস্ক শেষবার আপডেট করা হয়েছে: <ph name="TIME" />, <ph name="DATE" />।</translation>
 <translation id="352245152354538528">{0,plural, =1{১ মিনিটের মধ্যে ডিভাইস আপডেট করুন}one{# মিনিটের মধ্যে ডিভাইস আপডেট করুন}other{# মিনিটের মধ্যে ডিভাইস আপডেট করুন}}</translation>
 <translation id="3522979239100719575">উপলভ্য প্রোফাইল খুঁজে দেখা হচ্ছে। এর জন্য কয়েক মিনিট সময় লাগতে পারে।</translation>
 <translation id="3526440770046466733">নতুন ট্যাবে লিঙ্ক খুলুন এবং বর্তমান ট্যাবে কাজ চালিয়ে যান</translation>
 <translation id="353086728817903341"><ph name="NUM_DEVICES" />টি ডিভাইসে কানেক্ট করা হয়েছে</translation>
 <translation id="3533126039236445965">শেল্ফে অ্যাপ</translation>
-<translation id="3537350467437346467">আপনি দেখেছেন</translation>
 <translation id="3539957339480430241"><ph name="DEVICE_NAME" /> হটস্পট</translation>
 <translation id="3540893133818942399">আপনার ফোনের সাম্প্রতিক ফটো ও মিডিয়া দেখা সংক্রান্ত সেট-আপের পদ্ধতি বাতিল করুন</translation>
 <translation id="3542066395059568317">আপনি সাজেশন দেখতে পাবেন যাতে যেখানে শেষ কাজ করেছিলেন সেখান থেকেই আবার শুরু করতে পারেন। সাজেশন সরিয়ে দেওয়ার জন্য আপনি ডানদিকের বোতামে ক্লিক করতে পারেন।</translation>
-<translation id="3547318469722231257">আপনি পরিবর্তন করেছেন</translation>
 <translation id="3552189655002856821">ওয়াই-ফাই বন্ধ করা আছে</translation>
 <translation id="3554215588514239132">ডেভেলপার টুল প্যানেল দেখান বা লুকান</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> পিন করা হয়েছে</translation>
@@ -622,6 +631,7 @@
 <translation id="3577473026931028326">কোনও সমস্যা হয়েছে। আবার চেষ্টা করুন।</translation>
 <translation id="3580650856351781466">স্পিচ ফাইল ডাউনলোড করা চলছে</translation>
 <translation id="3585296979871889131">আপনার ফোনের সাম্প্রতিক ফটো, মিডিয়া, বিজ্ঞপ্তি ও অ্যাপ দেখুন</translation>
+<translation id="358832729276157756">ExpressKey 1</translation>
 <translation id="3590441166907930941">সাইডের বোতাম</translation>
 <translation id="3593039967545720377">ক্লিপবোর্ড ইতিহাস অ্যাক্সেস করতে এবং ক্লিপবোর্ড দেখতে <ph name="SHORTCUT_KEY_NAME" /> + V টিপুন। শুরু করতে আইটেম কপি করুন।</translation>
 <translation id="3593646411856133110">খুলে রাখা অ্যাপগুলি দেখার জন্য উপরের দিকে সোয়াইপ করে ধরে রাখুন</translation>
@@ -638,6 +648,7 @@
 <translation id="3621202678540785336">ইনপুট</translation>
 <translation id="3621712662352432595">অডিও সেটিংস</translation>
 <translation id="3626281679859535460">উজ্জ্বলতা</translation>
+<translation id="3628323833346754646">সামনের বোতাম</translation>
 <translation id="3630697955794050612">বন্ধ</translation>
 <translation id="3631369015426612114">নিম্নলিখিত থেকে বিজ্ঞপ্তি অনুমতি দিন</translation>
 <translation id="3633097874324966332">আপনার ডিভাইস পেয়ার করতে ব্লুটুথ সেটিংস খুলুন</translation>
@@ -657,7 +668,6 @@
 <translation id="3660860940251915011"><ph name="FEATURE_NAME" /> হাই ভিজিবিলিটি টগল করুন</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> ম্যানেজ করা ব্যবহারকারী</translation>
 <translation id="3666266999138159418">আপনার ফ্লোটিং উইন্ডো লুকাতে সোয়াইপ করুন</translation>
-<translation id="3673898235958558034">আপনি ব্লুটুথ বন্ধ করে দিলে, "<ph name="DEVICE_NAME_1" />" ও "<ph name="DEVICE_NAME_2" />" আপনার Chromebook থেকে ডিসকানেক্ট হয়ে যাবে।</translation>
 <translation id="367531336287639526">অ্যাড্রেস বারের বাঁদিকে প্রথম আইকন বেছে নিন</translation>
 <translation id="3677931086890821290">এর ফলে, লোকেশন সংক্রান্ত অনুমতি থাকা অন্য সবকটি অ্যাপ ও ওয়েবসাইট এবং ChromeOS, ওয়াই-ফাই ও মোবাইল নেটওয়ার্কের লোকেশন ব্যবহার করতে পারবে।</translation>
 <translation id="3679827876008292680">উইন্ডোতে শেষ ট্যাবে যান</translation>
@@ -673,6 +683,7 @@
 <translation id="371370241367527062">সামনের মাইক্রোফোন</translation>
 <translation id="3713734891607377840">সম্পূর্ণ হলে খুলুন</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> এবং আরও <ph name="UNAVAILABLE_APPS_COUNT" />টি অ্যাপ এই ডিভাইসে উপলভ্য নেই।</translation>
+<translation id="3727231512028252576">আইটেম লোড করা যায়নি। অনলাইন থাকাকালীন আবার চেষ্টা করে দেখুন।</translation>
 <translation id="3735740477244556633">এই অনুসারে সাজান</translation>
 <translation id="3738664582935948253">আপনি এখন স্ক্রিন রেকর্ডিংয়ে ক্লিক এবং কীবোর্ড শর্টকাট দেখাতে পারেন</translation>
 <translation id="3742055079367172538">স্ক্রিনশট নেওয়া হয়েছে</translation>
@@ -702,7 +713,6 @@
 <translation id="385300504083504382">শুরুর দিকে</translation>
 <translation id="3859364108019690">অ্যাপ স্ট্রিম করা যাবে না</translation>
 <translation id="3861651314799684201">ফুল স্ক্রিন রেকর্ড করার জন্য Enter প্রেস করুন</translation>
-<translation id="3882323608730650973">পরিবর্তন করা</translation>
 <translation id="3886872229787704059">আজ খোলা হয়েছে</translation>
 <translation id="3891340733213178823">সাইন-আউট করার জন্য দু'বার Ctrl+Shift+Q টিপুন৷</translation>
 <translation id="3893630138897523026">ChromeVox (কথ্য প্রতিবার্তা)</translation>
@@ -766,7 +776,6 @@
 <translation id="4123259114412175274">আপনার Chromebook আনলক করতে, ফোনের ব্লুটুথ চালু আছে কিনা তা দেখে নিন</translation>
 <translation id="4125970834901680537">'ট্যাবলেট' মোডে অ্যাপ স্ট্রিম করা যাচ্ছে না। আবার 'ল্যাপটপ' মোডে চেষ্টা করুন।</translation>
 <translation id="4131973331381812765">তাপমাত্রা: <ph name="TEMPERATURE" />°C - বর্তমান স্পিড: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" />GHz</translation>
-<translation id="4132502210362661715">কাজ সম্পূর্ণ করার ব্যাপারে সহায়তা করার উপযোগী বিল্ট-ইন অ্যাপ আপনার Chromebook-এই থাকে। লঞ্চারে আপনার অ্যাপ খুঁজুন।</translation>
 <translation id="4136724716305260864">সূর্যোদয় পর্যন্ত চালু আছে</translation>
 <translation id="4141710407113804517"><ph name="LAUNCHER_KEY_NAME" /> + ডানদিকের তীরচিহ্ন</translation>
 <translation id="4146671046252289537">পরবর্তী শব্দের শেষ অবধি সরান</translation>
@@ -794,11 +803,11 @@
 <translation id="4209973997261364186">ওয়াই-ফাই চালু করা আছে</translation>
 <translation id="4212472694152630271">যাচাইকরণের জন্য পিন ব্যবহার করুন</translation>
 <translation id="4215497585250573029">ভিপিএন সেটিংস</translation>
+<translation id="4215548513524864822">ওভারভিউয়ের ৫টি ধাপের মধ্যে ৫ নম্বর ধাপ। আপনি 'লঞ্চার'-এ নিজের ডিভাইস সেটিংস খুঁজতে পারবেন। 'সেটিংস' থেকে আপনার <ph name="PRODUCT_NAME" /> কাস্টমাইজ করার চেষ্টা করুন বা যেমন নিজের ওয়ালপেপার পরিবর্তন বা স্ক্রিন সেভার সেট করা।</translation>
 <translation id="4217571870635786043">ডিক্টেশন</translation>
 <translation id="4221957499226645091"><ph name="APP_NAME" />, ইনস্টল করা অ্যাপ, পজ করা হয়েছে</translation>
 <translation id="4228078597006700451">কন্ট্রোল সেট-আপ করা নেই</translation>
 <translation id="4231053948789591973">বর্তমানে কাস্টিং পজ করা আছে। যেকোনও সময় আপনার স্ক্রিন কাস্টিং আবার চালু অথবা বন্ধ করতে পারবেন।</translation>
-<translation id="423685346499232137">এই মুহূর্তে কন্টেন্ট কপি বা পেস্ট করা যাচ্ছে না</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4240486403425279990">এক নজরে দেখার মোড</translation>
 <translation id="4242533952199664413">সেটিংস খুলুন</translation>
@@ -810,7 +819,6 @@
 <translation id="4269883910223712419">এই ডিভাইসের প্রশাসক এগুলি করতে পারেন:</translation>
 <translation id="4274537685965975248">Ctrl + Alt + Down Arrow কীবোর্ড শর্ককার্ট পরিবর্তন করা হয়েছে। End কী ব্যবহার করতে <ph name="LAUNCHER_KEY_NAME" /> + Right Arrow কী প্রেস করুন।</translation>
 <translation id="4275283744500212192">উইন্ডো লেআউট বিকল্প খুলুন</translation>
-<translation id="4278138729651139331">'সেটিংস'-এ আপনার Chromebook কাস্টমাইজ ও পছন্দমতো সাজিয়ে নিন। আপনার ওয়ালপেপার পরিবর্তন বা স্ক্রিন সেভার সেট করে দেখুন।</translation>
 <translation id="4279490309300973883">অনুকরণ করা হচ্ছে</translation>
 <translation id="4280601795273309128">নিরাপত্তা আপডেট শেষ হয়েছে। আপনার ডিভাইস আপগ্রেড করুন।</translation>
 <translation id="4283888303416325161">আরও নিরাপত্তার জন্য পাসওয়ার্ড লিখুন</translation>
@@ -868,6 +876,7 @@
 <translation id="4481530544597605423">বিযুক্ত করা ডিভাইসগুলি</translation>
 <translation id="4485506555414638855">আপনার ফোনের সাম্প্রতিক ফটো, মিডিয়া ও বিজ্ঞপ্তি দেখা সংক্রান্ত সেট-আপের পদ্ধতি বাতিল করুন</translation>
 <translation id="4491109536499578614">ছবি</translation>
+<translation id="4493452241184130939">এগুলি ছিল প্রাথমিক! পরামর্শ ও সহায়তার জন্য আমাদের বিল্ট-ইন অ্যাপ, 'ঘুরে দেখুন'-এ চালিয়ে যান। আপনি চালু করার জন্য পরামর্শ, সাজেশন দেওয়া অ্যাপ, বিশেষ অফার ও সবচেয়ে নতুন <ph name="PRODUCT_NAME" /> ফিচার পাবেন।</translation>
 <translation id="450584155212756404">ডেভ চ্যানেল</translation>
 <translation id="4513946894732546136">প্রতিক্রিয়া</translation>
 <translation id="4518404433291145981">Chromebook আনলক করতে, প্রথমে আপনার ফোন আনলক করুন</translation>
@@ -905,6 +914,8 @@
 <translation id="4642092649622328492">আংশিক স্ক্রিনশট নিন</translation>
 <translation id="4644727592819780893">ক্যাপচার করার সারফেস ক্যামেরা প্রিভিউয়ের জন্য খুবই ছোট</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, অ্যাপের সাজেশন</translation>
+<translation id="4649019912155580914">আপনি এডিট করেছেন</translation>
+<translation id="4654916960643280876"><ph name="PROFILE_NAME" /> <ph name="EMAIL" /> চেক বক্সে টিকচিহ্ন দেওয়া আছে।</translation>
 <translation id="4657775630156561295">নিম্নলিখিত সাজেশনটি আপনার অ্যাকাউন্টের সাজেশনের ইতিহাস থেকে স্থায়ীভাবে মুছে ফেলা হবে:
 
 <ph name="QUERY" /></translation>
@@ -916,6 +927,7 @@
 <translation id="468293128311738995">আপনার ফোন থেকে অ্যাপ</translation>
 <translation id="4690510401873698237">শেল্ফ নিচে দেখানো হচ্ছে</translation>
 <translation id="4696813013609194136">অভিভাবকীয় কোড দিয়ে ডিভাইস আনলক করুন</translation>
+<translation id="469693290987463983">ওভারভিউয়ের ৫টি ধাপের মধ্যে ১ নম্বর ধাপ। আপনার পিন করা ও খোলা অ্যাপ আপনার স্ক্রিনের নিচে থাকা শেল্ফে আছে। শেল্ফ আইটেমে ফোকাস করতে Alt + Shift + L 'কী'-তে তারপর ট্যাবে প্রেস করুন।</translation>
 <translation id="4702647871202761252">গোপনীয়তা স্ক্রিন বন্ধ করা আছে</translation>
 <translation id="4706121060329443414">পরে ডাউনলোডের চেষ্টা করা হবে। এখন প্রসেস করার জন্য Google-এর কাছে স্পিচ পাঠানো হবে।</translation>
 <translation id="470644585772471629">কালার ইনভার্সন</translation>
@@ -949,6 +961,7 @@
 <translation id="4813311884204119883">ট্যাব বারের ফাঁকা অঞ্চলে লিঙ্ক টেনে আনুন</translation>
 <translation id="4814539958450445987">লগ-ইন স্ক্রিন</translation>
 <translation id="481455355267255546">এর পরে</translation>
+<translation id="481749895090480684">টাস্ক লিস্ট: <ph name="GLANCEABLES_TASKS_LIST_NAME" /></translation>
 <translation id="4826588772550366629">ক্যামেরা এবং মাইক্রোফোন</translation>
 <translation id="482908187605862807">Play Store-এ উপলভ্য অ্যাপ</translation>
 <translation id="4831034276697007977">অটোমেটিক ক্লিক বন্ধ করতে চান কিনা সেই বিষয়টি ভাল করে দেখে নিন?</translation>
@@ -990,6 +1003,7 @@
 <translation id="4952936045814352993">অ্যালার্মের শব্দ বন্ধ করা হলে, ফোন শনাক্ত করার বিকল্প ব্যবহার করা যাবে না</translation>
 <translation id="4960324571663582548"><ph name="MANAGER" /> আপনাকে <ph name="DEVICE_TYPE" /> আগের ভার্সনে ফিরিয়ে নিয়ে যেতে বলছে। আপনার ডিভাইস রিসেট করা হবে এবং সব ডেটা মুছে যাবে।</translation>
 <translation id="4961318399572185831">স্ক্রিন কাস্ট করুন</translation>
+<translation id="4964188651935955085">আপনি ব্লুটুথ বন্ধ করলে, আপনার <ph name="DEVICE_TYPE" /> থেকে এই এক্সটার্নাল ডিভাইস ডিসকানেক্ট হয়ে যাবে:</translation>
 <translation id="4966431234408005599">ভলিউম বাড়ান</translation>
 <translation id="4969092041573468113"><ph name="HOURS" />ঘঃ <ph name="MINUTES" />মিঃ <ph name="SECONDS" />সেঃ</translation>
 <translation id="4975771730019223894">অ্যাপ ব্যাজিং</translation>
@@ -1023,6 +1037,7 @@
 <translation id="5083553833479578423">অ্যাসিস্ট্যান্ট-এর আরও বৈশিষ্ট্য আনলক করুন।</translation>
 <translation id="5092436659250499817">কীবোর্ডের ব্যাক</translation>
 <translation id="5094577350232361255">প্রায়</translation>
+<translation id="5095136268899496849">'সেটিংস' থেকে আপনার <ph name="PRODUCT_NAME" /> কাস্টমাইজ করুন ও পছন্দমতো সাজিয়ে নিন। আপনার ওয়ালপেপার পরিবর্তন বা স্ক্রিন সেভার সেট করে দেখুন।</translation>
 <translation id="509790653408515442">আপনি ফোনের অ্যাপ স্ট্রিম করলে, সেগুলি এখানে দেখা যাবে</translation>
 <translation id="5098537242461068432">ডেস্ক ও উইন্ডো আবার খোলা হয়েছে</translation>
 <translation id="5104236669533825617">স্ক্রিনকাস্ট তৈরি করা যাচ্ছে না</translation>
@@ -1031,6 +1046,7 @@
 <translation id="5111930673176965299">ব্যাকগ্রাউন্ড অস্পষ্ট</translation>
 <translation id="5117590920725113268">পরবর্তী মাস দেখান</translation>
 <translation id="5121628974188116412">পৃষ্ঠার নিচে যান</translation>
+<translation id="5122517996953421795"><ph name="DESK_NAME" />-এর প্রিভিউ। ডেস্ক অ্যাক্টিভ নেই।</translation>
 <translation id="5136175204352732067">বিভিন্ন কীবোর্ড কানেক্ট করা হয়েছে</translation>
 <translation id="5147567197700016471">আনলক করা হয়েছে</translation>
 <translation id="5150070631291639005">গোপনীয়তার সেটিংস</translation>
@@ -1050,9 +1066,9 @@
 <translation id="5207949376430453814">পাঠ্যের কার্সার হাইলাইট করুন</translation>
 <translation id="5208059991603368177">চালু আছে</translation>
 <translation id="5216991270656129561"><ph name="TIME" /> পর্যন্ত বন্ধ আছে</translation>
-<translation id="5218064144558110424">শেষ হয়নি হিসেবে চিহ্নিত করুন</translation>
 <translation id="5222676887888702881">সাইন-আউট করুন</translation>
 <translation id="5229343007215035173">প্রাইভেসি স্ক্রিন চালু/বন্ধ করুন</translation>
+<translation id="5230516054153933099">উইন্ডো</translation>
 <translation id="5234764350956374838">খারিজ</translation>
 <translation id="523505283826916779">অ্যাক্সেসিবিলিটি সেটিংস</translation>
 <translation id="5238719049014159442">লঞ্চার খুলুন/বন্ধ করুন</translation>
@@ -1061,7 +1077,6 @@
 <translation id="5253783950165989294"><ph name="DEVICE_NAME" /> নামের ডিভাইসে কানেক্ট করা হয়েছে, ব্যাটারি চার্জ <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="5258528442992323769">সেভ করা কোনও ডেস্ক নেই</translation>
 <translation id="5260676007519551770">ডেস্ক ৪</translation>
-<translation id="5268819379131021772">Google Tasks-এর তালিকা</translation>
 <translation id="5277869901083657836">স্টাইলাস টুল টগল করুন</translation>
 <translation id="5278086053818066789">ChromeVox চালু/বন্ধ করুন (পড়ে শোনানো)</translation>
 <translation id="5283099933536931082"><ph name="APP_ITEM_TITLE" /> আপনার মনোযোগ আকর্ষণ করতে চাইছে।</translation>
@@ -1078,6 +1093,7 @@
 <translation id="5313326810920013265">ব্লুটুথ সেটিংস</translation>
 <translation id="5314219114274263156">স্ক্রিন রেকর্ডিং করা হয়েছে</translation>
 <translation id="5314489738835854379">উইন্ডোর মাধ্যমে আগের উইন্ডোতে যান</translation>
+<translation id="5315931444962548795">আশেপাশে উপলভ্য হটস্পট খুঁজে দেখতে ব্লুটুথ চালু করুন</translation>
 <translation id="5316716239522500219">আয়না মনিটর</translation>
 <translation id="5317780077021120954">সেভ করুন</translation>
 <translation id="5319712128756744240">নতুন ডিভাইস পেয়ার করুন</translation>
@@ -1122,7 +1138,6 @@
 <translation id="550391772491508736">কাস্ট করা আবার চালু করুন</translation>
 <translation id="5506975627792768506">ম্যাগনিফায়ার চালু বা বন্ধ করুন</translation>
 <translation id="5512042095225963688">আগের শব্দ মুছে দিন</translation>
-<translation id="5518068085000130971">এগুলি ছিল প্রাথমিক! 'ঘুরে দেখুন'-এ চালিয়ে যান, পরামর্শ ও সহায়তার জন্য আমাদের বিল্ট-ইন অ্যাপ। আপনি চালু করার জন্য পরামর্শ, সাজেশন দেওয়া অ্যাপ, বিশেষ অফার ও সবচেয়ে নতুন Chromebook ফিচার পাবেন।</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="5520229639206813572">আপনার অ্যাডমিনিস্ট্রেটর সকল ই-সিম প্রোফাইল সরিয়ে দিয়েছেন। আরও তথ্যের জন্য আপনার অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন।</translation>
 <translation id="5520909879404821039">ফরাসি ভাষায় 'Hi'</translation>
@@ -1132,12 +1147,14 @@
 <translation id="5536723544185013515">সাম্প্রতিক অ্যাপ, সবকটি সাম্প্রতিক অ্যাপের মধ্যে নেভিগেট করার জন্য বাঁ অথবা ডানদিকের তীরচিহ্ন কী ব্যবহার করুন</translation>
 <translation id="553675580533261935">সেশন থেকে প্রস্থান করছে</translation>
 <translation id="5537725057119320332">কাস্ট করুন</translation>
+<translation id="554017492391497564">'সম্পূর্ণ হয়েছে' হিসেবে মার্ক করা যায়নি।</translation>
 <translation id="5546397813406633847">ব্যবহারকারীকে আগের অবস্থায় ফেরান</translation>
 <translation id="554893713779400387">ডিক্টেশন চালু বা বন্ধ করুন</translation>
 <translation id="5550417424894892620"><ph name="HOLDING_SPACE_TITLE" />-এ যোগ করার জন্য ডেস্কটপে ফাইলগুলি ড্রপ করুন। আপনি ডেস্কটপে ফাইল যোগ করতে পারবেন না।</translation>
 <translation id="5551456515017410630">ক্যালেন্ডার খুলুন/বন্ধ করুন</translation>
 <translation id="5551974246223970793">একটি পৃষ্ঠা সার্চ করার সময়, সার্চের জন্য পরবর্তী ম্যাচে যান</translation>
 <translation id="5555639311269196631">হটস্পট বন্ধ করুন</translation>
+<translation id="5556459405103347317">রিলোড করুন</translation>
 <translation id="5558091555391176027">'নিয়ারবাই শেয়ার হাই ভিজিবিলিটি' মোড টগল করুন</translation>
 <translation id="556042886152191864">বোতাম</translation>
 <translation id="5570122939431135380">নতুন ছদ্মবেশী উইন্ডোতে নতুন ট্যাব খুলুন</translation>
@@ -1182,6 +1199,7 @@
 <translation id="570390244361237317">সবকটি অ্যাপ, সবকটি অ্যাপের মধ্যে নেভিগেট করার জন্য তীরচিহ্নযুক্ত কী ব্যবহার করুন</translation>
 <translation id="5707775774148071965">আপনার ডিভাইস কেবেলের থেকে হাই রেট ডেটা সমর্থন করে। ডিভাইসের পারফর্ম্যান্স সীমিত হতে পারে।</translation>
 <translation id="5710450975648804523">'বিরক্ত করবে না' মোড চালু আছে</translation>
+<translation id="5712132663381964774">আপনার <ph name="PRODUCT_NAME" />-এ প্রয়োজনীয় সবকিছু করতে অ্যাপ ব্যবহার করুন। আপনি 'লঞ্চার'-এ নিজের অ্যাপ খুঁজে পেতে পারবেন।</translation>
 <translation id="571295407079589142">মোবাইল ডেটা বন্ধ করা আছে</translation>
 <translation id="5727460725221669831">আপনি যদি আপনার পাসওয়ার্ড ভুলে গিয়ে থাকেন বা সম্প্রতি আপনার Google অ্যাকাউন্ট পাসওয়ার্ড পরিবর্তন করেন, তাহলে এই ব্যবহারকারীকে আগের অবস্থায় ফেরানোর চেষ্টা করুন।</translation>
 <translation id="573413375004481890">এই ডিভাইসে সব ডিসপ্লে করা যাবে না তাই একটি ডিসকানেক্ট করা হয়েছে</translation>
@@ -1210,7 +1228,6 @@
 <translation id="5802516411616338943">'দ্রুত সেটিংস' মেনু খুলুন</translation>
 <translation id="5804651031882187592">"সিম কার্ড লক করা" সেটিং বন্ধ করা</translation>
 <translation id="5805809050170488595"><ph name="NETWORK_NAME" /> চালু করতে ক্লিক করুন</translation>
-<translation id="5816222150329690597">আপনি ব্লুটুথ বন্ধ করে দিলে, "<ph name="DEVICE_NAME_1" />", "<ph name="DEVICE_NAME_2" />" ও আপনার অন্য <ph name="DEVICE_COUNT" />টি ডিভাইস Chromebook থেকে ডিসকানেক্ট হয়ে যাবে।</translation>
 <translation id="5823239091726045201">ওয়েবে Google Tasks</translation>
 <translation id="5825969630400862129">কানেক্ট করা ডিভাইসের সেটিংস</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" />-এ <ph name="ROUTE_TITLE" /> বন্ধ করুন</translation>
@@ -1251,6 +1268,7 @@
 <translation id="5983567367406220847">ইনঅ্যাক্টিভ থাকার কারণে, হটস্পট বন্ধ করা হয়েছে।</translation>
 <translation id="598407983968395253">টেমপ্লেট ব্যবহার করুন</translation>
 <translation id="598882571027504733">আপডেট পেতে, অ্যাটাচ করা কীবোর্ডের মাধ্যমে আপনার Chromebook রিস্টার্ট করুন।</translation>
+<translation id="5998374579424866922">গেম কন্ট্রোল বন্ধ করুন</translation>
 <translation id="6000279412553873020">কী, বোতাম ও আরও অনেক কিছু</translation>
 <translation id="6002122790816966947">আপনার ডিভাইসগুলি</translation>
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" />টি পৃষ্ঠার মধ্যে <ph name="SELECTED_PAGE" />টি পৃষ্ঠা</translation>
@@ -1276,6 +1294,7 @@
 <translation id="6052614013050385269">একটি লিঙ্কে রাইট ক্লিক করুন</translation>
 <translation id="6054305421211936131">স্মার্ট কার্ড দিয়ে সাইন-ইন করুন</translation>
 <translation id="6059276912018042191">Chrome-এ সম্প্রতি খোলা ট্যাবগুলি</translation>
+<translation id="606147842285839995">ExpressKey 3</translation>
 <translation id="6062360702481658777">আপনি <ph name="LOGOUT_TIME_LEFT" /> এর মধ্যে স্বয়ংক্রিয়ভাবে প্রস্থান করুন হবেন৷</translation>
 <translation id="6064463340679478396">ফাইল ব্যবহার করে সম্পূর্ণ করা হয়েছে</translation>
 <translation id="6068258534237496331">ভিডিও কল কন্ট্রোল</translation>
@@ -1325,6 +1344,7 @@
 <translation id="6237231532760393653">1X</translation>
 <translation id="62380141479352646">ব্যাটারির চার্জ কম আছে। 'ব্যাটারি সেভার' ফিচার চালু করা হয়েছে।</translation>
 <translation id="6247728804802644171">বিজ্ঞপ্তি খুলুন</translation>
+<translation id="6249795363855770621">'সম্পূর্ণ হয়েছে' হিসেবে মার্ক করা যায়নি। অনলাইন থাকাকালীন আবার চেষ্টা করে দেখুন।</translation>
 <translation id="6254629735336163724">স্ক্রিনটি ল্যান্ডস্কেপ মোডে লক করা আছে</translation>
 <translation id="6259254695169772643">বেছে নিতে স্টাইলাস ব্যবহার করুন</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: সক্রিয় করা হচ্ছে...</translation>
@@ -1337,6 +1357,7 @@
 <translation id="6309219492973062892">শেল্ফ আইকন ১-৮ এ ক্লিক বা ট্যাপ করুন</translation>
 <translation id="6315170314923504164">ভয়েস</translation>
 <translation id="6319058840130157106">স্ক্রিনের নিচের দিকে ডান কোণে, লঞ্চার, অ্যাড্রেস বার, বুকমার্ক বার, খোলা আছে এমন ওয়েবসাইট এবং ডাউনলোডগুলির মধ্যে সুইচ করতে পিছনের দিকে যান</translation>
+<translation id="6319503618073410818">ব্রাউজারে বিবরণ দেখুন</translation>
 <translation id="6324916366299863871">শর্টকার্ট এডিট করুন</translation>
 <translation id="6330012934079202188">সব ডেস্ক থেকে উইন্ডো দেখানো হচ্ছে, বর্তমান ডেস্ক থেকে উইন্ডো দেখাতে 'উর্ধমুখী তীরচিহ্ন' কী প্রেস করুন</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> এমন একটি ম্যানেজ করা সেশন যা <ph name="MANAGER" />-এর মাধ্যমে ম্যানেজ করা হয়</translation>
@@ -1390,7 +1411,6 @@
 <translation id="6539852571005954999">ডাউনলোডের জন্য <ph name="FILENAME" /> ফাইল স্ক্যান করা হচ্ছে</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> এ কাস্ট করা হচ্ছে</translation>
 <translation id="6546062506073634094">কন্টেন্ট ও ছবির প্রিভিউর মাধ্যমে ছবি সার্চ করা</translation>
-<translation id="6547795021703527064">আপনি ব্লুটুথ বন্ধ করে দিলে, "<ph name="DEVICE_NAME" />" আপনার Chromebook থেকে ডিসকানেক্ট হয়ে যাবে।</translation>
 <translation id="6555373427270923730">অ্যাড্রেস বারে ওয়েব অ্যাড্রেস টাইপ করুন, তারপর <ph name="MODIFIER" /><ph name="KEY" /> প্রেস করুন</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 নতুন ইনস্টল</translation>
@@ -1419,6 +1439,7 @@
 <translation id="6643169293433369663">নাম অনুযায়ী বেছে নেওয়া সেটিং থেকে বেরিয়ে আগের অবস্থায় ফেরানো হয়েছে</translation>
 <translation id="6649641931981131786">নিজেকে ফ্রেমের কেন্দ্রে রাখতে ক্যামেরা অ্যাডজাস্ট করুন।</translation>
 <translation id="6650072551060208490"><ph name="ORIGIN_NAME" /> আপনার পরিচয় যাচাই করতে চায়</translation>
+<translation id="6650742588569439432">আইটেম লোড করা যায়নি।</translation>
 <translation id="6650933572246256093">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। ডিভাইসটিতে এই পাস কীটি দিন: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">পাসওয়ার্ড</translation>
 <translation id="666343722268997814">হাইলাইট করা আইটেমের জন্য রাইট ক্লিক মেনু খুলুন</translation>
@@ -1431,6 +1452,7 @@
 <translation id="6683022854667115063">হেডফোন</translation>
 <translation id="6686023075541098243">আপনার ফোনের বিজ্ঞপ্তি দেখা সংক্রান্ত পদ্ধতি সেট-আপ করুন</translation>
 <translation id="6696025732084565524">আলাদা করা যায় এমন কীবোর্ডের একটি জরুরি আপডেট প্রয়োজন</translation>
+<translation id="6697913454192220372">নতুন ডেস্ক যোগ করুন</translation>
 <translation id="6700713906295497288">IME মেনু বোতাম</translation>
 <translation id="6707693040195709527">ডিভাইস আগের ভার্সনে ফিরিয়ে নিয়ে যাওয়ার ডেডলাইন পেরিয়ে গেছে</translation>
 <translation id="6710213216561001401">আগের</translation>
@@ -1476,6 +1498,7 @@
 <translation id="6874854809828346832">হটস্পটের বিবরণ দেখুন। হটস্পট চালু আছে।</translation>
 <translation id="6878400149835617132">শর্টকাট বন্ধ করা আছে</translation>
 <translation id="6878701771800702153">{NUM_APPS,plural, =1{১টি অ্যাপ}one{#টি অ্যাপ}other{#টি অ্যাপ}}</translation>
+<translation id="6878787305374738418">ওভারভিউয়ের ৫টি ধাপের মধ্যে ৪ নম্বর ধাপ। একবার 'লঞ্চার' চালু করা হলে, আপনি একটি উন্নত সার্চবার পাবেন। আপনার ফাইল, অ্যাপ ও আরও অনেক কিছুর জন্য সার্চ করতে টাইপ করা শুরু করে দেখতে পারেন। এছাড়াও আপনার <ph name="PRODUCT_NAME" /> সম্পর্কে প্রশ্নের উত্তর পেতে পারবেন।</translation>
 <translation id="6883768636838842873">ডিভাইস ব্যবহার ও আরও অনেক কিছু করার জন্য কীবোর্ড শর্টকাট, পরামর্শ</translation>
 <translation id="6884665277231944629">আজকের তারিখ বেছে নিন</translation>
 <translation id="6886172995547742638">আপনার <ph name="DEVICE_TYPE" />-এর পারফর্ম্যান্স আশানুরূপ নাও হতে পারে। একটি <ph name="PREFERRED_MINIMUM_POWER" />W অথবা আরও ভাল USB-C পাওয়ার অ্যাডাপ্টার ব্যবহার করুন।</translation>
@@ -1483,6 +1506,7 @@
 <translation id="6896758677409633944">কপি</translation>
 <translation id="6912841030378044227">অ্যাড্রেস বারে ফোকাস করুন</translation>
 <translation id="6912901278692845878">দ্রুত ট্যুর</translation>
+<translation id="6917259695595127329">টাস্ক শেষবার আপডেট করা হয়েছে: <ph name="TIME" />।</translation>
 <translation id="6919251195245069855">আপনার স্মার্ট কার্ড শনাক্ত করা যায়নি। আবার চেষ্টা করুন।</translation>
 <translation id="692135145298539227">মুছুন</translation>
 <translation id="6929081673585394903">কন্ট্রোল দেখুন</translation>
@@ -1502,7 +1526,6 @@
 <translation id="6981982820502123353">ব্যবহারযোগ্যতা</translation>
 <translation id="698231206551913481">একবার এই ব্যবহারকারীকে সরানো হলে এর সঙ্গে সংশ্লিষ্ট সমস্ত ফাইল এবং স্থানীয় ডেটা স্থায়ীভাবে মুছে ফেলা হবে।</translation>
 <translation id="6984028004251196682"><ph name="DISPLAY_NAME" />-এ <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> হার্জ) কাজ করে না। রেজোলিউশন পরিবর্তন করে <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" /> হার্জ) করা হয়েছে। পরিবর্তিত সেটিংস রেখে দিতে 'কনফার্ম করুন' বিকল্পে ক্লিক করুন। <ph name="TIMEOUT_SECONDS" />-এর মধ্যে পুরনো সেটিংসে ফিরিয়ে নিয়ে যাওয়া হবে।</translation>
-<translation id="6989752354829085073">আপনার Chromebook আরও ভালোভাবে বুঝে নিতে এই দ্রুত টিউটোরিয়ালটি দেখুন। ৬টি ধাপ দেখে নিন ও ব্যবহার করুন।</translation>
 <translation id="7000027735917578303">উইন্ডো ও ডেস্ক সেটিংস</translation>
 <translation id="7004910047186208204">মোবাইল ডেটার সাথে কানেক্ট করুন</translation>
 <translation id="7005239792648594238">শুরু করার জন্য অ্যাপ খুলুন</translation>
@@ -1549,6 +1572,7 @@
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> -এ পুরনো রেজোলিউশানে ফেরানো হচ্ছে</translation>
 <translation id="7173114856073700355">সেটিংস খুলুন</translation>
 <translation id="7180611975245234373">রিফ্রেশ করুন</translation>
+<translation id="7181691792034457084">হ্যালো। <ph name="PRODUCT_NAME" /> হল একটু আলাদা।</translation>
 <translation id="7188494361780961876">স্ক্রিনের উপরে বাঁদিকের কোণায় মেনু সরে গেছে।</translation>
 <translation id="7189412385142492784">পৃথিবী থেকে শুক্র গ্রহের দুরত্ব কত</translation>
 <translation id="7198435252016571249">ক্যামেরাটি নিচে ডানদিকের কোণে স্ন্যাপ করা হয়েছে। সিস্টেমের সারফেসে ছবির কিছুটা ঢাকা পড়ছে।</translation>
@@ -1557,18 +1581,20 @@
 <translation id="7244725679040769470"><ph name="PERCENTAGE" />% ব্যাটারির চার্জ রয়েছে।
 ডিভাইসটি চার্জে বসান।</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />। একটি আপডেট প্রয়োগ করতে Chromebook রিস্টার্ট করতে হবে। এতে ১ মিনিট পর্যন্ত সময় লাগতে পারে।</translation>
+<translation id="7256057185598509352">ExpressKey 2</translation>
 <translation id="7256634071279256947">পেছনের মাইক্রোফোন</translation>
 <translation id="7258828758145722155">গতকাল এডিট করা হয়েছে</translation>
 <translation id="726276584504105859">বিভক্ত স্ক্রিন ব্যবহার করতে এখানে টেনে আনুন</translation>
 <translation id="7262906531272962081">রিমাইন্ডার তৈরি করুন</translation>
 <translation id="7278787617901301220"><ph name="LAUNCHER_KEY_NAME" /> + backspace</translation>
+<translation id="7282547098317872382">ওভারভিউয়ের ৫টি ধাপের মধ্যে ৩ নম্বর ধাপ। আপনার <ph name="PRODUCT_NAME" />-এ প্রয়োজনীয় সবকিছু করতে অ্যাপ ব্যবহার করুন। আপনি 'লঞ্চার'-এ নিজের অ্যাপ খুঁজে পেতে পারবেন। 'লঞ্চার' বোতামে ফোকাস করতে Alt + Shift + L 'কী' প্রেস করুন।</translation>
 <translation id="7285232777292757180">স্ক্রিনশট নিতে, 'দ্রুত সেটিংস' ফিচারের মধ্যে 'স্ক্রিন ক্যাপচার' বিকল্প ব্যবহার করুন</translation>
+<translation id="7301826272005790482">উইন্ডো সম্পর্কিত সাজেশন বাতিল করুন</translation>
 <translation id="7302889331339392448">লাইভ ক্যাপশন বন্ধ আছে।</translation>
 <translation id="7303365578352795231">অন্য ডিভাইসে উত্তর দেওয়া হচ্ছে।</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7312210124139670355">আপনার অ্যাডমিনিস্ট্রেটর আপনার ই-সিম রিসেট করছেন। এতে কয়েক মিনিট সময় লাগতে পারে।</translation>
 <translation id="7313193732017069507">ক্যামেরা সামনে আনুন</translation>
-<translation id="7316261577130609484">নতুন টাস্ক যোগ করুন</translation>
 <translation id="7330397557116570022">'ডিকটেশন' ব্যবহার করতে টেক্সট ফিল্ডে যান</translation>
 <translation id="7331646370422660166">alt + নিম্নমুখী তীরচিহ্ন</translation>
 <translation id="7340731148882810149">অটোমেটিক ক্লিক মেনু</translation>
@@ -1605,6 +1631,7 @@
 <translation id="746232733191930409">স্ক্রিন রেকর্ড করার মোড</translation>
 <translation id="7466449121337984263">সেন্সরটি স্পর্শ করুন</translation>
 <translation id="7477793887173910789">আপনার মিউজিক, ভিডিও ও আরও অনেক কিছু নিয়ন্ত্রণ করুন</translation>
+<translation id="7488762544858401571">এডিট করা হয়েছে</translation>
 <translation id="7489261257412536105">ফুল স্ক্রিন করুন বা বেরিয়ে আসুন</translation>
 <translation id="7490360161041035804">আপনি Google Drive ফাইল সহ গুরুত্বপূর্ণ ফাইলগুলি পিন করতে পারেন। পিন করার জন্য, আইটেমের উপর নিয়ে যান বা ফাইল খুলে আইটেমের উপর ডানদিকের বোতামে ক্লিক করুন।</translation>
 <translation id="7497767806359279797">ভাষা এবং কীবোর্ড বেছে নিন</translation>
@@ -1613,6 +1640,7 @@
 <translation id="7509246181739783082">আপনার পরিচয় যাচাই করুন</translation>
 <translation id="7512509370370076552">'ডানদিকের বোতামে ক্লিক করুন' শর্টকার্ট alt + click থেকে <ph name="LAUNCHER_KEY_NAME" /> কী + click-এ আপডেট করা হয়েছে</translation>
 <translation id="7512726380443357693"><ph name="BUTTON_LABEL" />, বেছে নেওয়া হয়নি</translation>
+<translation id="7513057995673284840">আপনি নিজের <ph name="PERIPHERAL_NAME" />-এর জন্য বোতামের অ্যাকশন পছন্দমতো কাস্টমাইজ করতে পারবেন</translation>
 <translation id="7513622367902644023">স্ক্রিনশট মোড বেছে নেওয়া হয়েছে</translation>
 <translation id="7513922695575567867">ক্যালেন্ডার, <ph name="DATE" /> তারিখের সপ্তাহ, <ph name="SELECTED_DATE" /> তারিখ বর্তমানে বেছে নেওয়া হয়েছে।</translation>
 <translation id="7514365320538308">ডাউনলোড করুন</translation>
@@ -1632,7 +1660,6 @@
 <translation id="7557816257942363084"><ph name="APP_NAME" /> এখন আপনার মাইক্রোফোন ব্যবহার করছে</translation>
 <translation id="7561982940498449837">মেনু বন্ধ করুন</translation>
 <translation id="7564874036684306347">কোনও উইন্ডো অন্য ডেস্কটপে সরানো হলে সেটির আচরণে অপ্রত্যাশিত পরিবর্তন হতে পারে। পরবর্তী বিজ্ঞপ্তি, উইন্ডো এবং ডায়ালগ দুটি ডেস্কটপ মিলিয়ে দেখানো হতে পারে।</translation>
-<translation id="7567950130372125778">হ্যালো। Chromebook খানিকটা আলাদা।</translation>
 <translation id="7569509451529460200">ব্রেল এবং ChromeVox সক্ষম করেছেন</translation>
 <translation id="7569886975397378678">আপনার ফোনের বিজ্ঞপ্তি ও অ্যাপ দেখা সংক্রান্ত সেট-আপের পদ্ধতি বাতিল করুন</translation>
 <translation id="7571361473021531288">ব্যাটারিতে আর <ph name="BATTERY_PERCENTAGE" />% চার্জ | <ph name="TIME" /> বাকি আছে</translation>
@@ -1645,6 +1672,7 @@
 <translation id="7607002721634913082">বিরত রয়েছে</translation>
 <translation id="7609951632080598826">ক্যালেন্ডার ভিউ, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">ক্যামেরা আবার কানেক্ট করা হয়েছে।</translation>
+<translation id="7613620083300976559">গেম কন্ট্রোল চালু করুন</translation>
 <translation id="761736749114493194">ক্যামেরা ফ্রেমিং টগল করুন। <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° ফারেনহাইট</translation>
 <translation id="7634648064048557203">ক্যামেরাটি নিচে ডানদিকের কোণে স্ন্যাপ করা হয়েছে</translation>
@@ -1664,11 +1692,13 @@
 <translation id="7672095158465655885"><ph name="NAME" />-এর সাথে কানেক্ট করা রয়েছে, <ph name="SUBTEXT" /></translation>
 <translation id="7682351277038250258">ক্লিপবোর্ড থেকে সাধারণ টেক্সট হিসেবে কন্টেন্ট পেস্ট করুন</translation>
 <translation id="7684531502177797067">ক্যামেরা ইনপুট <ph name="CAMERA_NAME" />-এ সেট করা আছে।</translation>
+<translation id="7687172143976244806">আপনি খুলেছেন</translation>
 <translation id="7689817529363080918">এটি মাইক্রোফোন অনুমতি সহ <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> এবং সমস্ত অ্যাপ এবং ওয়েবসাইটগুলির জন্য মাইক্রোফোন অ্যাক্সেসের অনুমতি দেয়</translation>
 <translation id="7704000866383261579">শেষ অ্যাকশনটি আবার করুন</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="770741401784017797">GIF তৈরি করা হচ্ছে</translation>
 <translation id="7714767791242455379">নতুন মোবাইল নেটওয়ার্ক যোগ করুন</translation>
+<translation id="7716257086539630827">আপনার ট্যাবলেট কাস্টমাইজ করুন</translation>
 <translation id="7720400844887872976"><ph name="TIME" /> পর্যন্ত চালু আছে</translation>
 <translation id="7720410380936703141">আবার চেষ্টা করুন</translation>
 <translation id="7721132362314201794">ডেস্কের নাম</translation>
@@ -1681,6 +1711,7 @@
 <translation id="7742327441377685481">কোনও বিজ্ঞপ্তি নেই</translation>
 <translation id="7748275671948949022">শেল্ফের 'লঞ্চার' বোতাম হাইলাইট করুন</translation>
 <translation id="7749443890790263709">সর্বাধিক সংখ্যক ডেস্ক যোগ করা হয়ে গেছে।</translation>
+<translation id="7749958366403230681">ExpressKey 4</translation>
 <translation id="776344839111254542">আপডেটের বিশদ বিবরণ জানার জন্য ক্লিক করুন</translation>
 <translation id="7768784765476638775">বাছুন ও শুনুন</translation>
 <translation id="7769299611924763557">আপনার GIF শীঘ্রই তৈরি হয়ে যাবে</translation>
@@ -1694,6 +1725,7 @@
 <translation id="7807067443225230855">সার্চ এবং সহায়ক</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> এবং <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">জোরালো সিগন্যাল</translation>
+<translation id="7830453190047749513">আপনি নিজের জন্য বোতামের অ্যাকশন, কার্সরের স্পিড ও আরও অনেক কিছু পছন্দমতো কাস্টমাইজ করতে পারবেন <ph name="PERIPHERAL_NAME" /></translation>
 <translation id="7837740436429729974">সময় শেষ</translation>
 <translation id="7842569679327885685">সতর্কতা: পরীক্ষামূলক বৈশিষ্ট্য</translation>
 <translation id="7846634333498149051">কীবোর্ড</translation>
@@ -1714,6 +1746,7 @@
 <translation id="7893503627044934815">এই ফাইলটি দেখাতে চাই না</translation>
 <translation id="7893547474469215105">'পরম' শব্দটির সংজ্ঞা কী</translation>
 <translation id="7895348134893321514">টোট</translation>
+<translation id="7896681766480521542">একটি টাস্ক যোগ করুন</translation>
 <translation id="7897375687985782769">স্ক্রিন ঘোরানোর জন্য আপনি কীবোর্ড শর্টকাট টিপেছেন। আপনি কি স্ক্রিন ঘোরাতে চান?</translation>
 <translation id="7897626842031123113">স্ট্যাটাস ট্রে, সময় <ph name="TIME" />,
         <ph name="BATTERY" />
@@ -1755,6 +1788,7 @@
 <translation id="8000066093800657092">কোনও নেটওয়ার্ক নেই</translation>
 <translation id="8001755249288974029">কার্সার থেকে লাইনের শুরুতে টেক্সট বেছে নিন</translation>
 <translation id="8004512796067398576">বৃদ্ধি</translation>
+<translation id="8015361438441228492">টাস্ক এডিট করা যায়নি।</translation>
 <translation id="8026334261755873520">ব্রাউজিং ডেটা সাফ করুন</translation>
 <translation id="802782383769312836">পূর্ববর্তী ডেস্ক: <ph name="DESK_NAME" />. <ph name="DESK_COUNT" />টির মধ্যে <ph name="DESK_INDEX" /> নম্বর ডেস্ক।</translation>
 <translation id="8029247720646289474">হটস্পট থেকে কানেক্ট করা যায়নি</translation>
@@ -1769,6 +1803,7 @@
 <translation id="8054466585765276473">ব্যাটারি সময় গণনা করা হচ্ছে।</translation>
 <translation id="8079538659226626406">স্ক্রিন শেয়ার করা</translation>
 <translation id="8083540854303889870">পরবর্তী সময়ের জন্য সেভ করুন</translation>
+<translation id="8088141034189573826">আরও বিকল্পের জন্য ট্যাব ব্যবহার করুন। সব ডেস্ক অ্যাক্সেস করতে বাঁদিকের ও ডানদিকের তীরচিহ্ন ব্যবহার করুন।</translation>
 <translation id="8091153018031979607"><ph name="DAYS_ELAPSED" />-এর <ph name="START_TIME" />-এ শুরু হবে</translation>
 <translation id="8091387634532529612">অটোমেটিক আপডেট</translation>
 <translation id="8092380135549145188">স্ক্রল কন্ট্রোল</translation>
@@ -1796,6 +1831,7 @@
 <translation id="8155628902202578800"><ph name="USER_EMAIL_ADDRESS" />-এর জন্য তথ্য সংক্রান্ত ডায়ালগ খুলুন</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> ব্যবহার করা হচ্ছে</translation>
 <translation id="8185090165691050712">লক মোড ছোট বড় করতে মেনু চালু/বন্ধ করুন</translation>
+<translation id="8192727139462702395">আপনি ব্লুটুথ বন্ধ করলে, আপনার <ph name="DEVICE_TYPE" /> থেকে এইসব এক্সটার্নাল ডিভাইস ডিসকানেক্ট হয়ে যাবে:</translation>
 <translation id="8198456017687137612">কাস্ট করার ট্যাব</translation>
 <translation id="8200772114523450471">আবার চালু করা</translation>
 <translation id="8203795194971602413">ডানদিকের বোতামে ক্লিক করুন</translation>
@@ -1805,10 +1841,12 @@
 <translation id="8230305195727960608">কালার ইনভার্সন মোড</translation>
 <translation id="8236042855478648955">বিরতির সময় হয়েছে</translation>
 <translation id="8237964652943995219">পরবর্তী ডেস্ক: <ph name="DESK_NAME" />। <ph name="DESK_COUNT" />টির মধ্যে <ph name="DESK_INDEX" /> নম্বর ডেস্ক।</translation>
+<translation id="8238817965863339552">আপনার <ph name="PRODUCT_NAME" /> সম্পর্কে আরও ভালোভাবে বুঝে নিতে দ্রুত এই ওভারভিউ দেখুন। এগিয়ে যান ও ৫টি ধাপ সম্পূর্ণ করুন।</translation>
 <translation id="8239034820133090126">ডানদিকের ডেস্ক চালু করুন</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, সিগন্যাল: <ph name="SIGNAL_STRENGTH" />, ফোনের ব্যাটারি <ph name="BATTERY_STATUS" /></translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, অ্যাপ</translation>
 <translation id="8255234195843591763">আপডেট করতে রিসেট করুন</translation>
+<translation id="8257510091797044096">আপনার ডিভাইস সেট-আপ করুন</translation>
 <translation id="8261506727792406068">মুছুন</translation>
 <translation id="8262312463845990408">প্লেব্যাক টগল করুন</translation>
 <translation id="8270450402312105425">{0,plural, =1{১ ঘণ্টার মধ্যে ডিভাইসটি আগের ভার্সনে ফিরিয়ে নিয়ে যান}one{# ঘণ্টার মধ্যে ডিভাইসটি আগের ভার্সনে ফিরিয়ে নিয়ে যান}other{# ঘণ্টার মধ্যে ডিভাইসটি আগের ভার্সনে ফিরিয়ে নিয়ে যান}}</translation>
@@ -1841,6 +1879,7 @@
 <translation id="8412677897383510995">ডিসপ্লে সেটিংস দেখুন</translation>
 <translation id="8413272770729657668">রেকর্ডিং শুরু করা হচ্ছে ৩, ২, ১</translation>
 <translation id="8416730306157376817"><ph name="BATTERY_PERCENTAGE" />% (কেস)</translation>
+<translation id="8417951779969083400">ওভারভিউয়ের ৫টি ধাপের মধ্যে ২ নম্বর ধাপ। ওয়াই-ফাই, ব্লুটুথ এবং ভলিউমের মতো প্রায়শই ব্যবহার করা কন্ট্রোল 'দ্রুত সেটিংস'-এ আছে। এছাড়াও স্ক্রিনশট নিতে এখানে যেতে পারবেন। 'দ্রুত সেটিংস' খুলতে Alt + Shift + S 'কী' প্রেস করুন।</translation>
 <translation id="8420205633584771378">সাজেশনটি সরাতে চান?</translation>
 <translation id="8421270167862077762">এই ডিভাইসে <ph name="UNAVAILABLE_APPS" /> উপলভ্য নেই।</translation>
 <translation id="8426708595819210923">শুভ সন্ধ্যা <ph name="GIVEN_NAME" />,</translation>
@@ -1875,8 +1914,8 @@
 <translation id="8551588720239073785">তারিখ ও সময়ের সেটিংস</translation>
 <translation id="8553395910833293175">সব ডেস্কে আগেই অ্যাসাইন করা হয়েছে।</translation>
 <translation id="8555757996376137129">বর্তমান ডেস্ক সরিয়ে দিন</translation>
+<translation id="8559845965695780508"><ph name="USER" /> এডিট করেছেন</translation>
 <translation id="856298576161209842"><ph name="MANAGER" /> আপনার <ph name="DEVICE_TYPE" /> আপডেট করার সাজেশন দিচ্ছে</translation>
-<translation id="8563862697512465947">বিজ্ঞপ্তি সেটিংস</translation>
 <translation id="8569751806372591456">চেষ্টা করে দেখতে পারেন এমন কয়েকটি সাজেশন দেওয়া হল</translation>
 <translation id="857201607579416096">স্ক্রিনের নিচে ডানদিকের কোণায় মেনু সরে গেছে।</translation>
 <translation id="8581946341807941670"><ph name="MODIFIER_1" /> <ph name="MODIFIER_2" /> প্রেস করুন এবং একটি লিঙ্কে ক্লিক করুন</translation>
@@ -1885,6 +1924,7 @@
 <translation id="8609384513243082612">নতুন ট্যাব খুলুন</translation>
 <translation id="8612216344243590325">গুরুত্বপূর্ণ ফাইলগুলি ডেস্কটপের পরিবর্তে <ph name="HOLDING_SPACE_TITLE" />-এ রাখুন। ফাইলগুলি শুধুমাত্র <ph name="HOLDING_SPACE_TITLE" />-এ টেনে আনুন।</translation>
 <translation id="8614517853887502247">ভিউ সংক্রান্ত নিরাপত্তা চালু থাকার জন্য <ph name="APP_1_TITLE" /> এবং <ph name="APP_2_TITLE" />-এর বিজ্ঞপ্তি লুকানো আছে</translation>
+<translation id="8619000641825875669">OneDrive</translation>
 <translation id="8619138598101195078">ভলিউম কমান</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" />-এর সাথে কানেক্ট হয়েছে</translation>
 <translation id="8631727435199967028">অ্যাক্সেসিবিলিটি সেটিংস</translation>
@@ -1966,6 +2006,7 @@
 <translation id="8936501819958976551">বন্ধ আছে</translation>
 <translation id="8938800817013097409">USB-C ডিভাইস (পিছনের ডান পোর্ট)</translation>
 <translation id="8940956008527784070">(<ph name="PERCENTAGE" />%) কম ব্যাটারি</translation>
+<translation id="894774083269346314"><ph name="PROFILE_NAME" /> <ph name="EMAIL" /> চেক বক্সে টিকচিহ্ন দেওয়া নেই।</translation>
 <translation id="8949925099261528566">কানেক্ট করা আছে, ইন্টারনেট নেই</translation>
 <translation id="8951539504029375108">শুধুমাত্র অনুমোদিত Thunderbolt ডিভাইসে আপনার Chromebook ব্যবহার করা যাবে</translation>
 <translation id="8964525410783593407">১ঘঃ</translation>
@@ -1990,6 +2031,7 @@
 <translation id="9065203028668620118">সম্পাদনা</translation>
 <translation id="9070640332319875144">অ্যাসিস্ট্যান্ট সেটিংস</translation>
 <translation id="9072519059834302790"><ph name="TIME_LEFT" /> পরে ব্যাটারির চার্জ শেষ হয়ে যাবে।</translation>
+<translation id="9074432941673450836">আপনার <ph name="PRODUCT_NAME" />-এ প্রয়োজনীয় সবকিছু করতে অ্যাপ ব্যবহার করুন। আপনি 'লঞ্চার'-এ নিজের অ্যাপ খুঁজে পেতে পারবেন। এছাড়াও কীবোর্ডে 'লঞ্চার কী' (বাঁদিকের shift 'কী'-এর উপরে) প্রেস করতে পারবেন।</translation>
 <translation id="9074739597929991885">ব্লুটুথ</translation>
 <translation id="9077515519330855811">এটি মিডিয়া কন্ট্রোল, এখন <ph name="MEDIA_TITLE" /> প্লে করা হচ্ছে</translation>
 <translation id="9079731690316798640">ওয়াই ফাই: <ph name="ADDRESS" /></translation>
@@ -2001,10 +2043,12 @@
 <translation id="9084606467167974638">মেনুর অবস্থান টগল করুন</translation>
 <translation id="9085962983642906571">ব্যাটারির আয়ু বাড়ানোর জন্য প্লাগ-ইন করার সময় আপনার ব্যাটারি ৮০% এ রাখা হয়।</translation>
 <translation id="9089416786594320554">ইনপুট পদ্ধতিগুলি</translation>
+<translation id="9091406374499386796">'লঞ্চার'-এ নিজের ফাইল, অ্যাপ ও আরও অনেক কিছু সার্চ করুন। এছাড়াও আপনার <ph name="PRODUCT_NAME" /> সম্পর্কে প্রশ্নের উত্তর পেতে পারবেন।</translation>
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> প্রদর্শন সরানো হয়েছে</translation>
 <translation id="9098969848082897657">সাইলেন্স ফোন</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> বা <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>
 <translation id="9126339866969410112">শেষ অ্যাকশনটি আগের অবস্থায় ফেরান</translation>
+<translation id="9129245940793250979">পিছনের বোতাম</translation>
 <translation id="9133335900048457298">সুরক্ষিত কন্টেন্ট রেকর্ড করা যাবে না</translation>
 <translation id="9139720510312328767">পরের অক্ষর মুছে দিন</translation>
 <translation id="9151906066336345901">end</translation>
@@ -2039,7 +2083,6 @@
 <translation id="953431725143473984">ডিভাইস বন্ধ করবেন?</translation>
 <translation id="954052413789300507"><ph name="FILENAME" />-এর জন্য পর্যাপ্ত স্টোরেজ নেই। স্টোরেজ খালি করুন।</translation>
 <translation id="954520015070501466">৩০মিনিট</translation>
-<translation id="954786879461589145"><ph name="USER" /> পরিবর্তন করেছেন</translation>
 <translation id="974545358917229949"><ph name="QUERY" />-এর জন্য <ph name="RESULT_COUNT" />টি ফলাফল দেখানো হচ্ছে</translation>
 <translation id="981011780479609956">শেষ করার কোনও তারিখ নেই</translation>
 <translation id="98120814841227350">ডকুমেন্টের শেষে যান</translation>

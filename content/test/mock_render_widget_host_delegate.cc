@@ -11,8 +11,7 @@
 
 namespace content {
 
-MockRenderWidgetHostDelegate::MockRenderWidgetHostDelegate()
-    : text_input_manager_(false /* should_do_learning */) {}
+MockRenderWidgetHostDelegate::MockRenderWidgetHostDelegate() = default;
 
 MockRenderWidgetHostDelegate::~MockRenderWidgetHostDelegate() = default;
 
@@ -80,10 +79,6 @@ RenderViewHostDelegateView* MockRenderWidgetHostDelegate::GetDelegateView() {
 VisibleTimeRequestTrigger&
 MockRenderWidgetHostDelegate::GetVisibleTimeRequestTrigger() {
   return visible_time_request_trigger_;
-}
-
-bool MockRenderWidgetHostDelegate::ShouldIgnoreInputEvents() {
-  return should_ignore_input_events_;
 }
 
 }  // namespace content

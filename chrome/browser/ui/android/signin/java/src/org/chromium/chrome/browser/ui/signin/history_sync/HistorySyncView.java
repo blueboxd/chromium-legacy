@@ -13,23 +13,18 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.browser.ui.signin.ConsentTextTracker;
 import org.chromium.chrome.browser.ui.signin.R;
-import org.chromium.ui.widget.ButtonCompat;
+import org.chromium.components.browser_ui.widget.DualControlLayout;
 
 /** View that wraps history sync consent screen and caches references to UI elements. */
 class HistorySyncView extends LinearLayout {
     private ImageView mAccountImage;
     private Button mDeclineButton;
-    private Button mMoreButton;
-    private ButtonCompat mAcceptButton;
+    private Button mAcceptButton;
     private TextView mDetailsDescription;
-
-    private ConsentTextTracker mConsentTextTracker;
 
     public HistorySyncView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        mConsentTextTracker = new ConsentTextTracker(getResources());
     }
 
     @Override
@@ -40,19 +35,12 @@ class HistorySyncView extends LinearLayout {
         mAccountImage = findViewById(R.id.account_image);
         TextView title = findViewById(R.id.sync_consent_title);
         TextView subtitle = findViewById(R.id.sync_consent_subtitle);
-        mDeclineButton = findViewById(R.id.negative_button);
-        mMoreButton = findViewById(R.id.more_button);
-        mAcceptButton = findViewById(R.id.positive_button);
         mDetailsDescription = findViewById(R.id.sync_consent_details_description);
 
         // TODO(crbug.com/1520791): Confirm that these are the correct title and subtitle strings.
         // Using group C from the strings variation experiment as a placeholder in the meantime.
-        mConsentTextTracker.setText(title, R.string.history_sync_consent_title_c);
-        mConsentTextTracker.setText(subtitle, R.string.history_sync_consent_subtitle_c);
-        mConsentTextTracker.setText(mDeclineButton, R.string.no_thanks);
-        mConsentTextTracker.setText(mMoreButton, R.string.more);
-        mConsentTextTracker.setText(mAcceptButton, R.string.signin_accept_button);
-        mConsentTextTracker.setText(mDetailsDescription, R.string.sync_consent_details_description);
+        title.setText(R.string.history_sync_consent_title_c);
+        subtitle.setText(R.string.history_sync_consent_subtitle_c);
     }
 
     ImageView getAccountImageView() {
@@ -63,15 +51,39 @@ class HistorySyncView extends LinearLayout {
         return mDeclineButton;
     }
 
-    Button getMoreButton() {
-        return mMoreButton;
-    }
-
-    ButtonCompat getAcceptButton() {
+    Button getAcceptButton() {
         return mAcceptButton;
     }
 
-    TextView getDetailsDescriptionView() {
+    TextView getDetailsDescription() {
         return mDetailsDescription;
+    }
+
+    void createButtons(boolean isButtonBar) {
+        if (isButtonBar) {
+            createButtonBar();
+        } else {
+            mAcceptButton = findViewById(R.id.button_primary);
+            mDeclineButton = findViewById(R.id.button_secondary);
+            mAcceptButton.setVisibility(VISIBLE);
+            mDeclineButton.setVisibility(VISIBLE);
+        }
+        assert mAcceptButton != null && mDeclineButton != null;
+        mAcceptButton.setText(R.string.signin_accept_button);
+        mDeclineButton.setText(R.string.no_thanks);
+    }
+
+    private void createButtonBar() {
+        mAcceptButton =
+                DualControlLayout.createButtonForLayout(
+                        getContext(), DualControlLayout.ButtonType.PRIMARY_FILLED, "", null);
+        mDeclineButton =
+                DualControlLayout.createButtonForLayout(
+                        getContext(), DualControlLayout.ButtonType.SECONDARY, "", null);
+        DualControlLayout buttonBar = findViewById(R.id.dual_control_button_bar);
+        buttonBar.addView(mAcceptButton);
+        buttonBar.addView(mDeclineButton);
+        buttonBar.setAlignment(DualControlLayout.DualControlLayoutAlignment.END);
+        buttonBar.setVisibility(VISIBLE);
     }
 }

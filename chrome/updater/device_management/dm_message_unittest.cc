@@ -41,8 +41,18 @@ TEST(DMMessage, GetPolicyFetchRequestData) {
 
   CachedPolicyInfo policy_info;
   ASSERT_TRUE(policy_info.Populate(policy_response_string));
-  std::string request_data(GetPolicyFetchRequestData(policy_type, policy_info));
+  const std::string request_data =
+      GetPolicyFetchRequestData(policy_type, policy_info);
   EXPECT_FALSE(request_data.empty());
+
+  enterprise_management::DeviceManagementRequest dm_request;
+  ASSERT_TRUE(dm_request.ParseFromString(request_data));
+  ASSERT_TRUE(dm_request.has_policy_request());
+  const enterprise_management::DevicePolicyRequest& device_policy_request =
+      dm_request.policy_request();
+  ASSERT_TRUE(device_policy_request.has_reason());
+  EXPECT_EQ(device_policy_request.reason(),
+            enterprise_management::DevicePolicyRequest::SCHEDULED);
 }
 
 TEST(DMMessage, ParseDeviceRegistrationResponse) {
@@ -134,7 +144,7 @@ TEST(DMMessage, ResponseValidation) {
       dm_response_data, initial_policy_info, bad_dm_token, "test-device-id",
       validation_results);
   EXPECT_EQ(validation_results.size(), size_t{1});
-  EXPECT_TRUE(validation_results[0].policy_type.empty());
+  EXPECT_EQ(validation_results[0].policy_type, policy_type);
   EXPECT_EQ(validation_results[0].status,
             PolicyValidationResult::Status::kValidationBadDMToken);
   EXPECT_TRUE(validation_results[0].issues.empty());
@@ -146,7 +156,7 @@ TEST(DMMessage, ResponseValidation) {
                                         "test-dm-token", bad_devide_id,
                                         validation_results);
   EXPECT_EQ(validation_results.size(), size_t{1});
-  EXPECT_TRUE(validation_results[0].policy_type.empty());
+  EXPECT_EQ(validation_results[0].policy_type, policy_type);
   EXPECT_EQ(validation_results[0].status,
             PolicyValidationResult::Status::kValidationBadDeviceID);
   EXPECT_TRUE(validation_results[0].issues.empty());
@@ -161,7 +171,7 @@ TEST(DMMessage, ResponseValidation) {
                                         initial_policy_info, "test-dm-token",
                                         "test-device-id", validation_results);
   EXPECT_EQ(validation_results.size(), size_t{1});
-  EXPECT_TRUE(validation_results[0].policy_type.empty());
+  EXPECT_EQ(validation_results[0].policy_type, policy_type);
   EXPECT_EQ(validation_results[0].status,
             PolicyValidationResult::Status::kValidationBadSignature);
   EXPECT_TRUE(validation_results[0].issues.empty());
@@ -190,7 +200,7 @@ TEST(DMMessage, ResponseValidation) {
                                         updated_policy_info, "test-dm-token",
                                         "test-device-id", validation_results);
   EXPECT_EQ(validation_results.size(), size_t{1});
-  EXPECT_TRUE(validation_results[0].policy_type.empty());
+  EXPECT_EQ(validation_results[0].policy_type, policy_type);
   EXPECT_EQ(
       validation_results[0].status,
       PolicyValidationResult::Status::kValidationBadKeyVerificationSignature);

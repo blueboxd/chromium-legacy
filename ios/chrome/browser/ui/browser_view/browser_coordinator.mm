@@ -10,9 +10,11 @@
 #import <optional>
 
 #import "base/memory/raw_ptr.h"
+#import "base/memory/weak_ptr.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/scoped_observation.h"
 #import "base/strings/sys_string_conversions.h"
+#import "components/autofill/core/browser/payments/autofill_error_dialog_context.h"
 #import "components/commerce/core/shopping_service.h"
 #import "components/content_settings/core/browser/host_content_settings_map.h"
 #import "components/feature_engagement/public/event_constants.h"
@@ -31,7 +33,6 @@
 #import "ios/chrome/browser/commerce/model/push_notification/push_notification_feature.h"
 #import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
 #import "ios/chrome/browser/content_settings/model/host_content_settings_map_factory.h"
-#import "ios/chrome/browser/credential_provider_promo/model/features.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/docking_promo/coordinator/docking_promo_coordinator.h"
 #import "ios/chrome/browser/download/model/download_directory_util.h"
@@ -76,7 +77,7 @@
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/public/commands/activity_service_commands.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
-#import "ios/chrome/browser/shared/public/commands/autofill_bottom_sheet_commands.h"
+#import "ios/chrome/browser/shared/public/commands/autofill_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/feed_commands.h"
@@ -108,6 +109,7 @@
 #import "ios/chrome/browser/shared/public/commands/unit_conversion_commands.h"
 #import "ios/chrome/browser/shared/public/commands/web_content_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/public/features/features_utils.h"
 #import "ios/chrome/browser/shared/ui/elements/activity_overlay_coordinator.h"
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/page_animation_util.h"
@@ -116,7 +118,6 @@
 #import "ios/chrome/browser/signin/model/account_consistency_browser_agent.h"
 #import "ios/chrome/browser/signin/model/account_consistency_service_factory.h"
 #import "ios/chrome/browser/snapshots/model/model_swift.h"
-#import "ios/chrome/browser/snapshots/model/snapshot_browser_agent.h"
 #import "ios/chrome/browser/snapshots/model/snapshot_tab_helper.h"
 #import "ios/chrome/browser/snapshots/model/web_state_snapshot_info.h"
 #import "ios/chrome/browser/store_kit/model/store_kit_coordinator.h"
@@ -129,8 +130,10 @@
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_prompt/enterprise_prompt_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_prompt/enterprise_prompt_type.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
+#import "ios/chrome/browser/ui/autofill/authentication/card_unmask_authentication_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/bottom_sheet/payments_suggestion_bottom_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/bottom_sheet/virtual_card_enrollment_bottom_sheet_coordinator.h"
+#import "ios/chrome/browser/ui/autofill/error_dialog/autofill_error_dialog_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/home/bookmarks_coordinator.h"
@@ -362,6 +365,10 @@ enum class ToolbarKind {
 @property(nonatomic, strong) PaymentsSuggestionBottomSheetCoordinator*
     paymentsSuggestionBottomSheetCoordinator;
 
+// Coordinator for the authentication when unmasking card during autofill.
+@property(nonatomic, strong)
+    CardUnmaskAuthenticationCoordinator* cardUnmaskAuthenticationCoordinator;
+
 @property(nonatomic, strong)
     PlusAddressBottomSheetCoordinator* plusAddressBottomSheetCoordinator;
 
@@ -386,6 +393,10 @@ enum class ToolbarKind {
 // The coordinator that manages enterprise prompts.
 @property(nonatomic, strong)
     EnterprisePromptCoordinator* enterprisePromptCoordinator;
+
+// Coordinator to show the Autofill error dialog.
+@property(nonatomic, strong)
+    AutofillErrorDialogCoordinator* autofillErrorDialogCoordinator;
 
 // Coordinator for the find bar.
 @property(nonatomic, strong) FindBarCoordinator* findBarCoordinator;
@@ -717,6 +728,8 @@ enum class ToolbarKind {
   [self.virtualCardEnrollmentBottomSheetCoordinator stop];
   self.virtualCardEnrollmentBottomSheetCoordinator = nil;
 
+  [self dismissAutofillErrorDialog];
+
   [_sendTabToSelfCoordinator stop];
   _sendTabToSelfCoordinator = nil;
 
@@ -862,7 +875,7 @@ enum class ToolbarKind {
   // handlers.
   NSArray<Protocol*>* protocols = @[
     @protocol(ActivityServiceCommands),
-    @protocol(AutofillBottomSheetCommands),
+    @protocol(AutofillCommands),
     @protocol(BrowserCoordinatorCommands),
     @protocol(DefaultBrowserPromoNonModalCommands),
     @protocol(FeedCommands),
@@ -939,7 +952,7 @@ enum class ToolbarKind {
   }
 
   if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
-    if (base::FeatureList::IsEnabled(kModernTabStrip)) {
+    if (IsModernTabStripOrRaccoonEnabled()) {
       _tabStripCoordinator =
           [[TabStripCoordinator alloc] initWithBrowser:self.browser];
     } else {
@@ -976,17 +989,14 @@ enum class ToolbarKind {
   _toolbarAccessoryPresenter.toolbarLayoutGuide =
       [_layoutGuideCenter makeLayoutGuideNamed:kPrimaryToolbarGuide];
 
-  SnapshotBrowserAgent* snapshotBrowserAgent =
-      SnapshotBrowserAgent::FromBrowser(self.browser);
   _sideSwipeMediator = [[SideSwipeMediator alloc]
       initWithFullscreenController:_fullscreenController
-              snapshotBrowserAgent:snapshotBrowserAgent
                       webStateList:self.browser->GetWebStateList()];
   _sideSwipeMediator.toolbarInteractionHandler = _toolbarCoordinator;
   _sideSwipeMediator.toolbarSnapshotProvider = _toolbarCoordinator;
   _sideSwipeMediator.engagementTracker = engagementTracker;
   if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET &&
-      !base::FeatureList::IsEnabled(kModernTabStrip)) {
+      !IsModernTabStripOrRaccoonEnabled()) {
     [_sideSwipeMediator setTabStripDelegate:_legacyTabStripCoordinator];
   }
 
@@ -1238,6 +1248,9 @@ enum class ToolbarKind {
   /* virtualCardEnrollmentBottomSheetCoordinator is created and started by a
    * BrowserCommand */
 
+  /* autofillErrorDialogCoordinator is created and started by a BrowserCommand
+   */
+
   /* PriceNotificationsViewCoordinator is created and started by a
    * BrowserCommand */
 
@@ -1367,11 +1380,16 @@ enum class ToolbarKind {
   [self.paymentsSuggestionBottomSheetCoordinator stop];
   self.paymentsSuggestionBottomSheetCoordinator = nil;
 
+  [self.cardUnmaskAuthenticationCoordinator stop];
+  self.cardUnmaskAuthenticationCoordinator = nil;
+
   [self.plusAddressBottomSheetCoordinator stop];
   self.plusAddressBottomSheetCoordinator = nil;
 
   [self.virtualCardEnrollmentBottomSheetCoordinator stop];
   self.virtualCardEnrollmentBottomSheetCoordinator = nil;
+
+  [self dismissAutofillErrorDialog];
 
   [self.printCoordinator stop];
   self.printCoordinator = nil;
@@ -1615,7 +1633,7 @@ enum class ToolbarKind {
   [self.sharingCoordinator start];
 }
 
-#pragma mark - AutofillBottomSheetCommands
+#pragma mark - AutofillCommands
 
 - (void)showPasswordBottomSheet:(const autofill::FormActivityParams&)params {
   self.passwordSuggestionBottomSheetCoordinator =
@@ -1645,6 +1663,14 @@ enum class ToolbarKind {
   [self.paymentsSuggestionBottomSheetCoordinator start];
 }
 
+- (void)showCardUnmaskAuthentication {
+  self.cardUnmaskAuthenticationCoordinator =
+      [[CardUnmaskAuthenticationCoordinator alloc]
+          initWithBaseViewController:self.viewController
+                             browser:self.browser];
+  [self.cardUnmaskAuthenticationCoordinator start];
+}
+
 - (void)showPlusAddressesBottomSheet {
   self.plusAddressBottomSheetCoordinator =
       [[PlusAddressBottomSheetCoordinator alloc]
@@ -1664,6 +1690,26 @@ enum class ToolbarKind {
           baseViewController:self.viewController
                      browser:self.browser];
   [self.virtualCardEnrollmentBottomSheetCoordinator start];
+}
+
+- (void)showAutofillErrorDialog:
+    (autofill::AutofillErrorDialogContext)errorContext {
+  if (self.autofillErrorDialogCoordinator) {
+    [self.autofillErrorDialogCoordinator stop];
+  }
+
+  self.autofillErrorDialogCoordinator = [[AutofillErrorDialogCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+                    errorContext:std::move(errorContext)];
+  self.autofillErrorDialogCoordinator.autofillCommandsHandler =
+      HandlerForProtocol(self.dispatcher, AutofillCommands);
+  [self.autofillErrorDialogCoordinator start];
+}
+
+- (void)dismissAutofillErrorDialog {
+  [self.autofillErrorDialogCoordinator stop];
+  self.autofillErrorDialogCoordinator = nil;
 }
 
 #pragma mark - BrowserCoordinatorCommands
@@ -1785,8 +1831,6 @@ enum class ToolbarKind {
 }
 
 - (void)showSendTabToSelfUI:(const GURL&)url title:(NSString*)title {
-  CHECK(!_sendTabToSelfCoordinator);
-
   _sendTabToSelfCoordinator = [[SendTabToSelfCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser
@@ -1881,6 +1925,11 @@ enum class ToolbarKind {
 - (void)dismissPaymentSuggestions {
   [self.paymentsSuggestionBottomSheetCoordinator stop];
   self.paymentsSuggestionBottomSheetCoordinator = nil;
+}
+
+- (void)dismissCardUnmaskAuthentication {
+  [self.cardUnmaskAuthenticationCoordinator stop];
+  self.cardUnmaskAuthenticationCoordinator = nil;
 }
 
 - (void)dismissPlusAddressBottomSheet {
@@ -2193,13 +2242,6 @@ enum class ToolbarKind {
 - (void)hidePageInfo {
   [self.pageInfoCoordinator stop];
   self.pageInfoCoordinator = nil;
-}
-
-- (void)showSecurityHelpPage {
-  UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kPageInfoHelpCenterURL));
-  params.in_incognito = self.browser->GetBrowserState()->IsOffTheRecord();
-  _urlLoadingBrowserAgent->Load(params);
-  [self hidePageInfo];
 }
 
 #pragma mark - FormInputAccessoryCoordinatorNavigator

@@ -5,13 +5,12 @@
 #include "chrome/browser/ash/crosapi/ash_requires_lacros_browsertestbase.h"
 
 #include "base/command_line.h"
+#include "base/containers/to_vector.h"
 #include "base/location.h"
 #include "base/one_shot_event.h"
 #include "base/test/test_future.h"
-#include "base/test/to_vector.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
-#include "chrome/browser/ash/crosapi/crosapi_ash.h"
-#include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/crosapi/test_controller_ash.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
@@ -36,26 +35,23 @@ void AshRequiresLacrosBrowserTestBase::SetUpOnMainThread() {
   }
 
   CHECK(!browser_util::IsAshWebBrowserEnabled());
-  auto* manager = crosapi::CrosapiManager::Get();
-  test_controller_ash_ = std::make_unique<crosapi::TestControllerAsh>();
-  manager->crosapi_ash()->SetTestControllerForTesting(  // IN-TEST
-      test_controller_ash_.get());
-
   ash_starter_.StartLacros(this);
 
+  CHECK(crosapi::TestControllerAsh::Get());
   base::test::TestFuture<void> waiter;
-  test_controller_ash_->on_standalone_browser_test_controller_bound().Post(
-      FROM_HERE, waiter.GetCallback());
+  crosapi::TestControllerAsh::Get()
+      ->on_standalone_browser_test_controller_bound()
+      .Post(FROM_HERE, waiter.GetCallback());
   EXPECT_TRUE(waiter.Wait());
 
-  ASSERT_TRUE(crosapi::browser_util::IsLacrosEnabled());
+  ASSERT_TRUE(browser_util::IsLacrosEnabled());
 }
 
 void AshRequiresLacrosBrowserTestBase::EnableFeaturesInLacros(
     const std::vector<base::test::FeatureRef>& features) {
   CHECK(ash_starter_.HasLacrosArgument());
 
-  std::vector<std::string> feature_strings = base::test::ToVector(  // IN-TEST
+  std::vector<std::string> feature_strings = base::ToVector(  // IN-TEST
       features, [](base::test::FeatureRef feature) -> std::string {
         return feature->name;
       });
@@ -69,8 +65,9 @@ void AshRequiresLacrosBrowserTestBase::EnableFeaturesInLacros(
 
 mojom::StandaloneBrowserTestController*
 AshRequiresLacrosBrowserTestBase::GetStandaloneBrowserTestController() {
-  CHECK(test_controller_ash_);
-  return test_controller_ash_->GetStandaloneBrowserTestController().get();
+  CHECK(crosapi::TestControllerAsh::Get());
+  return crosapi::TestControllerAsh::Get()
+      ->GetStandaloneBrowserTestController();
 }
 
 Profile* AshRequiresLacrosBrowserTestBase::GetAshProfile() const {

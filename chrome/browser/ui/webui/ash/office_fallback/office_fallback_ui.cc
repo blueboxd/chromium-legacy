@@ -36,8 +36,9 @@ OfficeFallbackUI::OfficeFallbackUI(content::WebUI* web_ui)
   static constexpr webui::LocalizedString kStrings[] = {
       {"officeFallbackCancel", IDS_OFFICE_FALLBACK_CANCEL},
       {"officeFallbackTryAgain", IDS_OFFICE_FALLBACK_TRY_AGAIN},
-      {"officeFallbackOpenWithOfflineEditor",
-       IDS_OFFICE_FALLBACK_OPEN_WITH_OFFLINE_EDITOR},
+      {"officeFallbackOk", IDS_OFFICE_FALLBACK_OK},
+      {"officeFallbackOpenInBasicEditor",
+       IDS_OFFICE_FALLBACK_OPEN_IN_BASIC_EDITOR},
   };
   source->AddLocalizedStrings(kStrings);
   source->AddBoolean("isJellyEnabled", chromeos::features::IsJellyEnabled());
@@ -70,6 +71,9 @@ void OfficeFallbackUI::CloseDialog(mojom::DialogChoice choice) {
   switch (choice) {
     case mojom::DialogChoice::kCancel:
       args.Append(kDialogChoiceCancel);
+      break;
+    case mojom::DialogChoice::kOk:
+      args.Append(kDialogChoiceOk);
       break;
     case mojom::DialogChoice::kQuickOffice:
       args.Append(kDialogChoiceQuickOffice);

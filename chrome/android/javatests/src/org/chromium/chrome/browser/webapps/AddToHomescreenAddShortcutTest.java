@@ -25,6 +25,8 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
@@ -33,6 +35,7 @@ import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.banners.AppMenuVerbiage;
 import org.chromium.chrome.browser.browserservices.intents.BitmapHelper;
 import org.chromium.chrome.browser.browserservices.intents.WebappConstants;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -44,6 +47,7 @@ import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.chrome.test.util.browser.webapps.WebappTestPage;
 import org.chromium.components.webapps.AddToHomescreenCoordinator;
 import org.chromium.components.webapps.AddToHomescreenDialogView;
+import org.chromium.components.webapps.AddToHomescreenProperties;
 import org.chromium.components.webapps.AddToHomescreenViewDelegate;
 import org.chromium.components.webapps.AppBannerManager;
 import org.chromium.components.webapps.AppType;
@@ -178,14 +182,19 @@ public class AddToHomescreenAddShortcutTest {
     private static class TestAddToHomescreenCoordinator extends AddToHomescreenCoordinator {
         private String mTitle;
 
+        // The type of of dialog expected to show (at the time of submission).
+        private @AppType int mExpectedDialogType;
+
         TestAddToHomescreenCoordinator(
                 WebContents webContents,
                 Context context,
                 WindowAndroid windowAndroid,
                 ModalDialogManager modalDialogManager,
-                String title) {
+                String title,
+                @AppType int expectedDialogType) {
             super(webContents, context, windowAndroid, modalDialogManager);
             mTitle = title;
+            mExpectedDialogType = expectedDialogType;
         }
 
         @Override
@@ -206,7 +215,12 @@ public class AddToHomescreenAddShortcutTest {
 
                 @Override
                 protected void setCanSubmit(boolean canSubmit) {
-                    new Handler().post(() ->mDelegate.onAddToHomescreen(mTitle, AppType.SHORTCUT));
+                    Assert.assertEquals(
+                            mExpectedDialogType,
+                            getPropertyModelForTesting().get(AddToHomescreenProperties.TYPE));
+
+                    // Submit the dialog.
+                    new Handler().post(() -> mDelegate.onAddToHomescreen(mTitle, AppType.SHORTCUT));
                 }
             };
         }
@@ -228,29 +242,57 @@ public class AddToHomescreenAddShortcutTest {
     @Test
     @SmallTest
     @Feature("{Webapp}")
+    @EnableFeatures({ChromeFeatureList.PWA_UNIVERSAL_INSTALL_UI})
+    public void testAddToHomescreenForWebappCreatesShortcut() throws Exception {
+        // This test attempts to create a shortcut for something the installability pipeline sees as
+        // a web app and would, under normal circumstances, install a webapk, but because universal
+        // install is in play, a shortcut gets created. If the universal install flag is disabled,
+        // the assert in canSubmit (above) fires.
+        loadUrl(
+                WebappTestPage.getServiceWorkerUrl(mTestServerRule.getServer()),
+                WebappTestPage.PAGE_TITLE);
+        addShortcutToTab(mTab, "", true, /* expectedDialogType= */ AppType.SHORTCUT);
+    }
+
+    @Test
+    @SmallTest
+    @Feature("{Webapp}")
     public void testAddWebappShortcuts() throws Exception {
         // Add a webapp shortcut and make sure the intent's parameters make sense.
         loadUrl(WEBAPP_HTML, WEBAPP_TITLE);
-        addShortcutToTab(mTab, "", true);
+        addShortcutToTab(mTab, "", true, /* expectedDialogType= */ AppType.SHORTCUT);
         Assert.assertEquals(WEBAPP_TITLE, mShortcutHelperDelegate.mRequestedShortcutTitle);
 
         Intent launchIntent = mShortcutHelperDelegate.mRequestedShortcutIntent;
-        Assert.assertEquals(WEBAPP_HTML, launchIntent.getStringExtra(WebappConstants.EXTRA_URL));
-        Assert.assertEquals(WEBAPP_ACTION_NAME, launchIntent.getAction());
-        Assert.assertEquals(mActivity.getPackageName(), launchIntent.getPackage());
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PWA_UNIVERSAL_INSTALL_UI)) {
+            Assert.assertEquals(mActivity.getPackageName(), launchIntent.getPackage());
+            Assert.assertEquals(Intent.ACTION_VIEW, launchIntent.getAction());
+            Assert.assertEquals(WEBAPP_HTML, launchIntent.getDataString());
+        } else {
+            Assert.assertEquals(
+                    WEBAPP_HTML, launchIntent.getStringExtra(WebappConstants.EXTRA_URL));
+            Assert.assertEquals(WEBAPP_ACTION_NAME, launchIntent.getAction());
+            Assert.assertEquals(mActivity.getPackageName(), launchIntent.getPackage());
+        }
 
         // Add a second shortcut and make sure it matches the second webapp's
         // parameters.
         mShortcutHelperDelegate.clearRequestedShortcutData();
         loadUrl(SECOND_WEBAPP_HTML, SECOND_WEBAPP_TITLE);
-        addShortcutToTab(mTab, "", true);
+        addShortcutToTab(mTab, "", true, /* expectedDialogType= */ AppType.SHORTCUT);
         Assert.assertEquals(SECOND_WEBAPP_TITLE, mShortcutHelperDelegate.mRequestedShortcutTitle);
 
         Intent newLaunchIntent = mShortcutHelperDelegate.mRequestedShortcutIntent;
-        Assert.assertEquals(
-                SECOND_WEBAPP_HTML, newLaunchIntent.getStringExtra(WebappConstants.EXTRA_URL));
-        Assert.assertEquals(WEBAPP_ACTION_NAME, newLaunchIntent.getAction());
-        Assert.assertEquals(mActivity.getPackageName(), newLaunchIntent.getPackage());
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PWA_UNIVERSAL_INSTALL_UI)) {
+            Assert.assertEquals(mActivity.getPackageName(), newLaunchIntent.getPackage());
+            Assert.assertEquals(Intent.ACTION_VIEW, newLaunchIntent.getAction());
+            Assert.assertEquals(SECOND_WEBAPP_HTML, newLaunchIntent.getDataString());
+        } else {
+            Assert.assertEquals(
+                    SECOND_WEBAPP_HTML, newLaunchIntent.getStringExtra(WebappConstants.EXTRA_URL));
+            Assert.assertEquals(WEBAPP_ACTION_NAME, newLaunchIntent.getAction());
+            Assert.assertEquals(mActivity.getPackageName(), newLaunchIntent.getPackage());
+        }
     }
 
     @Test
@@ -258,11 +300,16 @@ public class AddToHomescreenAddShortcutTest {
     @Feature("{Webapp}")
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
     public void testAddAdaptableShortcut() throws Exception {
+        int expectedDialogType =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.PWA_UNIVERSAL_INSTALL_UI)
+                        ? AppType.SHORTCUT
+                        : AppType.WEBAPK;
+
         // Test the baseline of no adaptive icon.
         loadUrl(
                 mTestServerRule.getServer().getURL(NON_MASKABLE_MANIFEST_TEST_PAGE_PATH),
                 MANIFEST_TEST_PAGE_TITLE);
-        addShortcutToTab(mTab, "", true);
+        addShortcutToTab(mTab, "", true, /* expectedDialogType= */ expectedDialogType);
 
         Assert.assertFalse(mShortcutHelperDelegate.mRequestedShortcutAdaptable);
 
@@ -272,7 +319,7 @@ public class AddToHomescreenAddShortcutTest {
         loadUrl(
                 mTestServerRule.getServer().getURL(MASKABLE_MANIFEST_TEST_PAGE_PATH),
                 MANIFEST_TEST_PAGE_TITLE);
-        addShortcutToTab(mTab, "", true);
+        addShortcutToTab(mTab, "", true, /* expectedDialogType= */ expectedDialogType);
 
         Assert.assertTrue(mShortcutHelperDelegate.mRequestedShortcutAdaptable);
     }
@@ -282,7 +329,7 @@ public class AddToHomescreenAddShortcutTest {
     @Feature("{Webapp}")
     public void testAddBookmarkShortcut() throws Exception {
         loadUrl(NORMAL_HTML, NORMAL_TITLE);
-        addShortcutToTab(mTab, "", true);
+        addShortcutToTab(mTab, "", true, /* expectedDialogType= */ AppType.SHORTCUT);
 
         // Make sure the intent's parameters make sense.
         Assert.assertEquals(NORMAL_TITLE, mShortcutHelperDelegate.mRequestedShortcutTitle);
@@ -299,7 +346,7 @@ public class AddToHomescreenAddShortcutTest {
     public void testAddWebappShortcutsWithoutTitleEdit() throws Exception {
         // Add a webapp shortcut using the page's title.
         loadUrl(WEBAPP_HTML, WEBAPP_TITLE);
-        addShortcutToTab(mTab, "", true);
+        addShortcutToTab(mTab, "", true, /* expectedDialogType= */ AppType.SHORTCUT);
         Assert.assertEquals(WEBAPP_TITLE, mShortcutHelperDelegate.mRequestedShortcutTitle);
     }
 
@@ -309,7 +356,7 @@ public class AddToHomescreenAddShortcutTest {
     public void testAddWebappShortcutsWithTitleEdit() throws Exception {
         // Add a webapp shortcut with a custom title.
         loadUrl(WEBAPP_HTML, WEBAPP_TITLE);
-        addShortcutToTab(mTab, EDITED_WEBAPP_TITLE, true);
+        addShortcutToTab(mTab, EDITED_WEBAPP_TITLE, true, AppType.SHORTCUT);
         Assert.assertEquals(EDITED_WEBAPP_TITLE, mShortcutHelperDelegate.mRequestedShortcutTitle);
     }
 
@@ -318,7 +365,7 @@ public class AddToHomescreenAddShortcutTest {
     @Feature("{Webapp}")
     public void testAddWebappShortcutsWithApplicationName() throws Exception {
         loadUrl(META_APP_NAME_HTML, META_APP_NAME_PAGE_TITLE);
-        addShortcutToTab(mTab, "", true);
+        addShortcutToTab(mTab, "", true, /* expectedDialogType= */ AppType.SHORTCUT);
         Assert.assertEquals(META_APP_NAME_TITLE, mShortcutHelperDelegate.mRequestedShortcutTitle);
     }
 
@@ -329,12 +376,13 @@ public class AddToHomescreenAddShortcutTest {
     @CommandLineFlags.Add(ContentSwitches.DISABLE_POPUP_BLOCKING)
     public void testAddWebappShortcutWithEmptyPage() {
         Tab spawnedPopup = spawnPopupInBackground("");
-        addShortcutToTab(spawnedPopup, "", /* expectAdded= */ true);
+        addShortcutToTab(spawnedPopup, "", /* expectAdded= */ true, AppType.SHORTCUT);
     }
 
     @Test
     @SmallTest
     @Feature("{Webapp}")
+    @DisableFeatures({ChromeFeatureList.PWA_UNIVERSAL_INSTALL_UI})
     public void testAddWebappShortcutSplashScreenIcon() throws Exception {
         // Sets the overridden factory to observe splash screen update.
         final TestDataStorageFactory dataStorageFactory = new TestDataStorageFactory();
@@ -343,7 +391,13 @@ public class AddToHomescreenAddShortcutTest {
         loadUrl(
                 WebappTestPage.getServiceWorkerUrl(mTestServerRule.getServer()),
                 WebappTestPage.PAGE_TITLE);
-        addShortcutToTab(mTab, "", true);
+        addShortcutToTab(
+                mTab,
+                "",
+                true,
+                ChromeFeatureList.isEnabled(ChromeFeatureList.PWA_UNIVERSAL_INSTALL_UI)
+                        ? AppType.SHORTCUT
+                        : AppType.WEBAPK);
 
         // Make sure that the splash screen image was downloaded.
         CriteriaHelper.pollUiThread(
@@ -374,7 +428,13 @@ public class AddToHomescreenAddShortcutTest {
                         "verify_appinstalled"),
                 WebappTestPage.PAGE_TITLE);
 
-        addShortcutToTab(mTab, "", true);
+        addShortcutToTab(
+                mTab,
+                "",
+                true,
+                ChromeFeatureList.isEnabled(ChromeFeatureList.PWA_UNIVERSAL_INSTALL_UI)
+                        ? AppType.SHORTCUT
+                        : AppType.WEBAPK);
 
         // Wait for the tab title to change. This will happen (due to the JavaScript
         // that runs
@@ -387,7 +447,8 @@ public class AddToHomescreenAddShortcutTest {
         new TabLoadObserver(mTab, expectedPageTitle, null).fullyLoadUrl(url);
     }
 
-    private void addShortcutToTab(Tab tab, String title, boolean expectAdded) {
+    private void addShortcutToTab(
+            Tab tab, String title, boolean expectAdded, @AppType int expectedDialogType) {
         // Add the shortcut.
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
@@ -397,9 +458,12 @@ public class AddToHomescreenAddShortcutTest {
                                             mActivity,
                                             mActivity.getWindowAndroid(),
                                             mActivity.getModalDialogManager(),
-                                            title)
+                                            title,
+                                            expectedDialogType)
                                     .showForAppMenu(
-                                            AppMenuVerbiage.APP_MENU_OPTION_ADD_TO_HOMESCREEN);
+                                            AppMenuVerbiage.APP_MENU_OPTION_ADD_TO_HOMESCREEN,
+                                            /* universalInstall= */ ChromeFeatureList.isEnabled(
+                                                    ChromeFeatureList.PWA_UNIVERSAL_INSTALL_UI));
                     Assert.assertEquals(expectAdded, started);
                 });
 

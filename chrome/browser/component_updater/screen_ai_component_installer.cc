@@ -13,10 +13,10 @@
 #include "chrome/browser/screen_ai/screen_ai_install_state.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/crx_file/id_util.h"
-#include "components/services/screen_ai/public/cpp/utilities.h"
 #include "components/update_client/update_client_errors.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
+#include "services/screen_ai/public/cpp/utilities.h"
 
 using content::BrowserThread;
 
@@ -130,10 +130,6 @@ ScreenAIComponentInstallerPolicy::GetInstallerAttributes() const {
 
 // static
 void ScreenAIComponentInstallerPolicy::DeleteComponent() {
-  if (screen_ai::GetLatestComponentBinaryPath().empty()) {
-    return;
-  }
-
   base::DeletePathRecursively(screen_ai::GetComponentDir());
   screen_ai::ScreenAIInstallState::RecordComponentInstallationResult(
       /*install=*/false,
@@ -148,7 +144,7 @@ void ManageScreenAIComponentRegistration(ComponentUpdateService* cus,
   }
 
   // Clean up.
-  if (!screen_ai::GetLatestComponentBinaryPath().empty()) {
+  if (base::PathExists(screen_ai::GetComponentDir())) {
     ScreenAIComponentInstallerPolicy::DeleteComponent();
   }
 }

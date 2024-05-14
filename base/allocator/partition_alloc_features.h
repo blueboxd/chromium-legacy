@@ -5,9 +5,6 @@
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOC_FEATURES_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOC_FEATURES_H_
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/time/time.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_root.h"
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
@@ -15,6 +12,9 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "partition_alloc/partition_alloc_base/time/time.h"
+#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/partition_root.h"
 
 namespace base {
 namespace features {
@@ -193,11 +193,6 @@ extern const base::FeatureParam<bool>
     kPartialLowEndModeExcludePartitionAllocSupport;
 #endif
 
-// Name of the synthetic trial associated with forcibly enabling BRP in
-// all processes.
-inline constexpr base::StringPiece kRendererLiveBRPSyntheticTrialName =
-    "BackupRefPtrRendererLive";
-
 BASE_EXPORT BASE_DECLARE_FEATURE(kEnableConfigurableThreadCacheMultiplier);
 BASE_EXPORT double GetThreadCacheMultiplier();
 BASE_EXPORT double GetThreadCacheMultiplierForAndroid();
@@ -222,6 +217,10 @@ BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocDisableBRPInBufferPartition);
 #if BUILDFLAG(USE_FREELIST_POOL_OFFSETS)
 BASE_EXPORT BASE_DECLARE_FEATURE(kUsePoolOffsetFreelists);
 #endif
+
+// When set, partitions use a larger ring buffer and free memory less
+// aggressively when in the foreground.
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocAdjustSizeWhenInForeground);
 
 }  // namespace features
 }  // namespace base

@@ -268,9 +268,10 @@ TEST(CSSParserImplTest, RuleNotStartingWithAmpersand) {
   EXPECT_EQ(".outer &", child->SelectorsText());
 }
 
-TEST(CSSParserImplTest, ImplicitDescendantSelector) {
+TEST(CSSParserImplTest, ImplicitDescendantSelectors) {
   test::TaskEnvironment task_environment;
-  String sheet_text = ".element { color: green; .outer { color: red; }}";
+  String sheet_text =
+      ".element { color: green; .outer, .outer2 { color: red; }}";
 
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
@@ -291,7 +292,7 @@ TEST(CSSParserImplTest, ImplicitDescendantSelector) {
       DynamicTo<StyleRule>((*parent->ChildRules())[0].Get());
   ASSERT_NE(nullptr, child);
   EXPECT_EQ("color: red;", child->Properties().AsText());
-  EXPECT_EQ(".outer", child->SelectorsText());
+  EXPECT_EQ("& .outer, & .outer2", child->SelectorsText());
 }
 
 TEST(CSSParserImplTest, NestedRelativeSelector) {
@@ -317,7 +318,7 @@ TEST(CSSParserImplTest, NestedRelativeSelector) {
       DynamicTo<StyleRule>((*parent->ChildRules())[0].Get());
   ASSERT_NE(nullptr, child);
   EXPECT_EQ("color: red;", child->Properties().AsText());
-  EXPECT_EQ("> .inner", child->SelectorsText());
+  EXPECT_EQ("& > .inner", child->SelectorsText());
 }
 
 TEST(CSSParserImplTest, NestingAtTopLevelIsLegalThoughIsMatchesNothing) {
@@ -476,7 +477,6 @@ TEST(CSSParserImplTest, ObserveNestedLayer) {
 
 TEST(CSSParserImplTest, NestedIdent) {
   test::TaskEnvironment task_environment;
-  ScopedCSSNestingIdentForTest enabled(true);
 
   String sheet_text = "div { p:hover { } }";
   auto* context = MakeGarbageCollected<CSSParserContext>(
@@ -1064,37 +1064,6 @@ TEST(CSSParserImplTest, FontFeatureValuesOffsets) {
   EXPECT_EQ(test_css_parser_observer.rule_body_end_, 53u);
 }
 
-TEST(CSSParserImplTest, PositionFallbackRuleMaxLength) {
-  test::TaskEnvironment task_environment;
-  ScopedCSSAnchorPositioningForTest enabled(true);
-
-  String sheet_text = R"CSS(
-    @position-fallback --pf {
-      @try {}
-      @try {}
-      @try {}
-      @try {}
-      @try {}
-      @try {}
-    }
-  )CSS";
-  auto* context = MakeGarbageCollected<CSSParserContext>(
-      kHTMLStandardMode, SecureContextMode::kInsecureContext);
-  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(context);
-  TestCSSParserObserver test_css_parser_observer;
-  CSSParserImpl::ParseStyleSheetForInspector(sheet_text, context, style_sheet,
-                                             test_css_parser_observer);
-  EXPECT_EQ(style_sheet->ChildRules().size(), 1u);
-
-  const StyleRulePositionFallback* rule =
-      DynamicTo<StyleRulePositionFallback>(style_sheet->ChildRules()[0].Get());
-  EXPECT_TRUE(rule);
-
-  // We allow only 5 @try rules at maximum. See kPositionFallbackRuleMaxLength
-  // in css_parser_impl.cc.
-  EXPECT_EQ(5u, rule->ChildRules().size());
-}
-
 namespace {
 
 StyleRule& ParseStyleRule(String string) {
@@ -1142,7 +1111,7 @@ TEST(CSSParserImplTest, NoChildRules) {
 
 TEST(CSSParserImplTest, LeadingBareDeclaration) {
   test::TaskEnvironment task_environment;
-  EXPECT_EQ(".a { color: green; }",
+  EXPECT_EQ("& .a { color: green; }",
             SerializeChildRulesIncludingInvisible(ParseStyleRule(R"CSS(
     div {
       color: red;
@@ -1154,8 +1123,8 @@ TEST(CSSParserImplTest, LeadingBareDeclaration) {
 TEST(CSSParserImplTest, LeadingBareDeclaratioMultipleChildRule) {
   test::TaskEnvironment task_environment;
   EXPECT_EQ(
-      ".a { color: green; }"
-      ".b { color: coral; }",
+      "& .a { color: green; }"
+      "& .b { color: coral; }",
       SerializeChildRulesIncludingInvisible(ParseStyleRule(R"CSS(
     div {
       color: red;
@@ -1168,9 +1137,9 @@ TEST(CSSParserImplTest, LeadingBareDeclaratioMultipleChildRule) {
 TEST(CSSParserImplTest, IntermediateBareDeclaration) {
   test::TaskEnvironment task_environment;
   EXPECT_EQ(
-      ".a { color: green; }"
+      "& .a { color: green; }"
       "div { color: plum; } (invisible)"
-      ".b { color: coral; }",
+      "& .b { color: coral; }",
       SerializeChildRulesIncludingInvisible(ParseStyleRule(R"CSS(
     div {
       color: red;
@@ -1185,9 +1154,9 @@ TEST(CSSParserImplTest, MultipleIntermediateBareDeclarations) {
   test::TaskEnvironment task_environment;
   // Multiple adjacent declarations only become one invisible rule.
   EXPECT_EQ(
-      ".a { color: green; }"
+      "& .a { color: green; }"
       "div { color: plum; width: 10px; } (invisible)"
-      ".b { color: coral; }",
+      "& .b { color: coral; }",
       SerializeChildRulesIncludingInvisible(ParseStyleRule(R"CSS(
     div {
       color: red;
@@ -1204,9 +1173,9 @@ TEST(CSSParserImplTest, IntermediateAndTrailingBareDeclarations) {
   // Bare declarations interrupted by a nested rule causes multiple
   // invisible rules.
   EXPECT_EQ(
-      ".a { color: green; }"
+      "& .a { color: green; }"
       "div { color: plum; width: 10px; } (invisible)"
-      ".b { color: coral; }"
+      "& .b { color: coral; }"
       "div { left: 10px; } (invisible)",
       SerializeChildRulesIncludingInvisible(ParseStyleRule(R"CSS(
     div {
@@ -1225,10 +1194,10 @@ TEST(CSSParserImplTest, IntermediateAndTrailingBareDeclarationsMultiple) {
   // Same as IntermediateAndTrailingBareDeclarations,
   // but with multiple adjacent nested rules.
   EXPECT_EQ(
-      ".a { color: green; }"
+      "& .a { color: green; }"
       "div { color: plum; width: 10px; } (invisible)"
-      ".b { color: coral; }"
-      ".c { color: pink; }"
+      "& .b { color: coral; }"
+      "& .c { color: pink; }"
       "div { left: 10px; } (invisible)",
       SerializeChildRulesIncludingInvisible(ParseStyleRule(R"CSS(
     div {
@@ -1248,8 +1217,8 @@ TEST(CSSParserImplTest, BareDeclarationsWithAdjacentNestedGroupRule) {
   EXPECT_EQ(
       "@media (width) { color: orchid; }"
       "div { color: plum; width: 10px; } (invisible)"
-      ".b { color: coral; }"
-      ".c { color: pink; }"
+      "& .b { color: coral; }"
+      "& .c { color: pink; }"
       "div { left: 10px; } (invisible)",
       SerializeChildRulesIncludingInvisible(ParseStyleRule(R"CSS(
     div {
@@ -1333,9 +1302,9 @@ TEST(CSSParserImplTest, IntermediateBareDeclarationOuterList) {
   test::TaskEnvironment task_environment;
   // Outer rule with more than one selector in the list.
   EXPECT_EQ(
-      ".a { color: green; }"
+      "& .a { color: green; }"
       "div, span, h1 { color: plum; } (invisible)"
-      ".b { color: coral; }",
+      "& .b { color: coral; }",
       SerializeChildRulesIncludingInvisible(ParseStyleRule(R"CSS(
     div, span, h1 {
       color: red;
@@ -1362,9 +1331,9 @@ TEST(CSSParserImplTest, DeeplyNestedBareDeclarations) {
     )CSS");
 
   EXPECT_EQ(
-      ".a {\n  color: green; width: 10px;\n  .x { color: pink; }\n}"
+      "& .a {\n  color: green; width: 10px;\n  & .x { color: pink; }\n}"
       "div { color: plum; } (invisible)"
-      ".b { color: coral; }",
+      "& .b { color: coral; }",
       SerializeChildRulesIncludingInvisible(style_rule));
 
   ASSERT_TRUE(style_rule.ChildRules());
@@ -1372,10 +1341,31 @@ TEST(CSSParserImplTest, DeeplyNestedBareDeclarations) {
 
   // Inspect child rules of '.a'.
   EXPECT_EQ(
-      ".x { color: pink; }"
-      ".a { width: 10px; } (invisible)",
+      "& .x { color: pink; }"
+      "& .a { width: 10px; } (invisible)",
       SerializeChildRulesIncludingInvisible(
           To<StyleRule>(*(*style_rule.ChildRules())[0])));
+}
+
+TEST(CSSParserImplTest, CSSFunction) {
+  test::TaskEnvironment task_environment;
+
+  String sheet_text = R"CSS(
+    @function --foo(): color {
+      @return red;
+    }
+  )CSS";
+  auto* context = MakeGarbageCollected<CSSParserContext>(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
+  auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
+  CSSParserImpl::ParseStyleSheet(sheet_text, context, sheet);
+  ASSERT_EQ(sheet->ChildRules().size(), 1u);
+
+  const StyleRuleFunction* rule =
+      DynamicTo<StyleRuleFunction>(sheet->ChildRules()[0].Get());
+  EXPECT_TRUE(rule);
+
+  EXPECT_EQ("red", rule->GetFunctionBody().OriginalText());
 }
 
 }  // namespace blink

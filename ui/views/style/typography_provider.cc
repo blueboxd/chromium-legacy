@@ -9,6 +9,7 @@
 
 #include "base/check_op.h"
 #include "base/containers/fixed_flat_map.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -83,6 +84,7 @@ const TypographyProvider& TypographyProvider::Get() {
 }
 
 const gfx::FontList& TypographyProvider::GetFont(int context, int style) const {
+  TRACE_EVENT0("ui", "TypographyProvider::GetFont");
   return GetFontForDetails(GetFontDetails(context, style));
 }
 
@@ -333,7 +335,7 @@ int TypographyProvider::GetLineHeightImpl(int context, int style) const {
       {style::STYLE_BODY_5_MEDIUM, 16}, {style::STYLE_BODY_5_BOLD, 16},
       {style::STYLE_CAPTION, 12},
   });
-  const auto* const it = kLineHeights.find(style);
+  const auto it = kLineHeights.find(style);
   return (it == kLineHeights.end())
              ? GetFontForDetails(GetFontDetailsImpl(context, style)).GetHeight()
              : it->second;

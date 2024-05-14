@@ -38,9 +38,9 @@
 #include "services/network/network_service.h"
 #include "services/network/network_service_memory_cache.h"
 #include "services/network/private_network_access_checker.h"
-#include "services/network/public/cpp/corb/corb_api.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
+#include "services/network/public/cpp/orb/orb_api.h"
 #include "services/network/public/cpp/private_network_access_check_result.h"
 #include "services/network/public/mojom/accept_ch_frame_observer.mojom.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
@@ -66,9 +66,10 @@
 
 namespace net {
 class HttpResponseHeaders;
+class IOBufferWithSize;
 class IPEndPoint;
-struct RedirectInfo;
 class URLRequestContext;
+struct RedirectInfo;
 }  // namespace net
 
 namespace network {
@@ -542,20 +543,20 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       bool should_report_orb_blocking,
       std::optional<mojom::BlockedByResponseReason> reason = std::nullopt);
 
-  enum BlockResponseForCorbResult {
-    // Returned when caller of BlockResponseForCorb doesn't need to continue,
+  enum BlockResponseForOrbResult {
+    // Returned when caller of BlockResponseForOrb doesn't need to continue,
     // because the request will be cancelled soon.
     kWillCancelRequest,
 
-    // Returned when the caller of BlockResponseForCorb should continue
+    // Returned when the caller of BlockResponseForOrb should continue
     // processing the request (e.g. by calling ReadMore as necessary).
     kContinueRequest,
   };
-  // Block the response because of CORB (or ORB).
-  BlockResponseForCorbResult BlockResponseForCorb();
-  // Decide whether to call block a response via BlockResponseForCorb.
+  // Block the response because of ORB.
+  BlockResponseForOrbResult BlockResponseForOrb();
+  // Decide whether to call block a response via BlockResponseForOrb.
   // Returns true if the request should be cancelled.
-  bool MaybeBlockResponseForCorb(corb::ResponseAnalyzer::Decision);
+  bool MaybeBlockResponseForOrb(orb::ResponseAnalyzer::Decision);
 
   void ReportFlaggedResponseCookies(bool call_cookie_observer);
   void StartReading();
@@ -596,7 +597,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   DeleteCallback delete_callback_;
 
   int32_t options_;
-  const bool corb_detachable_;
   const int resource_type_;
   const bool is_load_timing_enabled_;
   bool has_received_response_ = false;
@@ -627,6 +627,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   mojo::SimpleWatcher writable_handle_watcher_;
   mojo::SimpleWatcher peer_closed_handle_watcher_;
 
+  scoped_refptr<net::IOBufferWithSize> discard_buffer_;
+
   // True if there's a URLRequest::Read() call in progress.
   bool read_in_progress_ = false;
 
@@ -638,12 +640,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   mojom::URLResponseHeadPtr response_;
   mojo::ScopedDataPipeConsumerHandle consumer_handle_;
 
-  // Sniffing state and CORB state.
-  bool is_more_corb_sniffing_needed_ = false;
+  // Sniffing state and ORB state.
+  bool is_more_orb_sniffing_needed_ = false;
   bool is_more_mime_sniffing_needed_ = false;
-  const raw_ref<corb::PerFactoryState> per_factory_corb_state_;
-  // `corb_analyzer_` must be destructed before `per_factory_corb_state_`.
-  std::unique_ptr<corb::ResponseAnalyzer> corb_analyzer_;
+  const raw_ref<orb::PerFactoryState> per_factory_orb_state_;
+  // `orb_analyzer_` must be destructed before `per_factory_orb_state_`.
+  std::unique_ptr<orb::ResponseAnalyzer> orb_analyzer_;
 
   std::unique_ptr<ResourceScheduler::ScheduledResourceRequest>
       resource_scheduler_request_handle_;

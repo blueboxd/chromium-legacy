@@ -219,10 +219,13 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
     std::map<int32_t, GURL> blocked_requests =
         popup_blocker_helper->GetBlockedPopupRequests();
     std::map<int32_t, GURL>::const_iterator iter = blocked_requests.begin();
+    ui_test_utils::BrowserChangeObserver popup_observer(
+        nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
     popup_blocker_helper->ShowBlockedPopup(iter->first, disposition);
 
     Browser* new_browser;
     if (what_to_expect == kExpectPopup || what_to_expect == kExpectNewWindow) {
+      ui_test_utils::WaitForBrowserSetLastActive(popup_observer.Wait());
       new_browser = BrowserList::GetInstance()->GetLastActive();
       EXPECT_NE(browser, new_browser);
       web_contents = new_browser->tab_strip_model()->GetActiveWebContents();
@@ -448,7 +451,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
 // https://codereview.chromium.org/23903056
 // BUG=https://code.google.com/p/chromium/issues/detail?id=295299
 // TODO(ananta). Debug and fix this test.
-#if defined(USE_AURA) && (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS))
+#if defined(USE_AURA) && \
+    (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN))
 #define MAYBE_WindowFeatures DISABLED_WindowFeatures
 #else
 #define MAYBE_WindowFeatures WindowFeatures

@@ -62,6 +62,10 @@ class PointF;
 class RectF;
 }  // namespace gfx
 
+namespace viz {
+struct FrameTimingDetails;
+}  // namespace viz
+
 namespace blink {
 
 class FrameWidgetTestHelper;
@@ -161,7 +165,7 @@ class WebFrameWidget : public WebWidget {
   // passed to the callback is the presentation timestamp; otherwise, it would
   // be timestamp of when the failure is detected.
   virtual void NotifyPresentationTime(
-      base::OnceCallback<void(base::TimeTicks)> callback) = 0;
+      base::OnceCallback<void(const viz::FrameTimingDetails&)> callback) = 0;
 
 #if BUILDFLAG(IS_APPLE)
   virtual void NotifyCoreAnimationErrorCode(
@@ -211,9 +215,10 @@ class WebFrameWidget : public WebWidget {
   // Override the device scale factor for testing.
   virtual void SetDeviceScaleFactorForTesting(float factor) = 0;
 
-  // Get the window segments for this widget.
-  // See https://github.com/webscreens/window-segments/blob/master/EXPLAINER.md
-  virtual const WebVector<gfx::Rect>& WindowSegments() const = 0;
+  // Get the viewport segments for this widget.
+  // See
+  // https://github.com/WICG/visual-viewport/blob/gh-pages/segments-explainer/SEGMENTS-EXPLAINER.md
+  virtual const WebVector<gfx::Rect>& ViewportSegments() const = 0;
 
   // Release any mouse lock or pointer capture held. This is used to reset
   // state between WebTest runs.

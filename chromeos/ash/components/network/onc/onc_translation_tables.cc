@@ -21,6 +21,9 @@ namespace ash::onc {
 
 namespace {
 
+const char kShillApnSourceModem[] = "modem";
+const char kShillApnSourceModb[] = "modb";
+
 const FieldTranslationEntry eap_fields[] = {
     {::onc::eap::kAnonymousIdentity, shill::kEapAnonymousIdentityProperty},
     // This field is converted during translation, see onc_translator_*.
@@ -463,6 +466,18 @@ const StringTranslationEntry kApnIpTypeTranslationTable[] = {
     {::onc::cellular_apn::kIpTypeIpv4, shill::kApnIpTypeV4},
     {::onc::cellular_apn::kIpTypeIpv6, shill::kApnIpTypeV6},
     {::onc::cellular_apn::kIpTypeIpv4Ipv6, shill::kApnIpTypeV4V6},
+    {nullptr}};
+
+const StringTranslationEntry kApnSourceTranslationTable[] = {
+    {::onc::cellular_apn::kSourceModem, kShillApnSourceModem},
+    {::onc::cellular_apn::kSourceModb, kShillApnSourceModb},
+    {::onc::cellular_apn::kSourceUi, shill::kApnSourceUi},
+    {nullptr}};
+
+const StringTranslationEntry kCheckCaptivePortalTranslationTable[] = {
+    {::onc::check_captive_portal::kFalse, "false"},
+    {::onc::check_captive_portal::kHTTPOnly, "http-only"},
+    {::onc::check_captive_portal::kTrue, "true"},
     {nullptr}};
 
 // This must contain only Shill Device properties and no Service properties.

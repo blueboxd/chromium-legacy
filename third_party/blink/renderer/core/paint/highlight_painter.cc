@@ -21,12 +21,12 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/layout/text_decoration_offset.h"
-#include "third_party/blink/renderer/core/paint/document_marker_painter.h"
 #include "third_party/blink/renderer/core/paint/highlight_overlay.h"
 #include "third_party/blink/renderer/core/paint/line_relative_rect.h"
 #include "third_party/blink/renderer/core/paint/marker_range_mapping_context.h"
 #include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/styleable_marker_painter.h"
 #include "third_party/blink/renderer/core/paint/text_decoration_painter.h"
 #include "third_party/blink/renderer/core/paint/text_painter.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
@@ -37,11 +37,9 @@ namespace blink {
 namespace {
 
 using HighlightLayerType = HighlightOverlay::HighlightLayerType;
-using HighlightLayer = HighlightOverlay::HighlightLayer;
 using HighlightRange = HighlightOverlay::HighlightRange;
 using HighlightEdge = HighlightOverlay::HighlightEdge;
 using HighlightDecoration = HighlightOverlay::HighlightDecoration;
-using HighlightPart = HighlightOverlay::HighlightPart;
 
 LineRelativeRect LineRelativeLocalRect(const FragmentItem& text_fragment,
                                        StringView text,
@@ -68,23 +66,6 @@ void PaintRect(GraphicsContext& context,
   const gfx::Rect pixel_snapped_rect = ToPixelSnappedRect(rect);
   if (!pixel_snapped_rect.IsEmpty())
     context.FillRect(pixel_snapped_rect, color, auto_dark_mode);
-}
-
-void PaintRect(GraphicsContext& context,
-               const PhysicalOffset& location,
-               const PhysicalRect& rect,
-               const Color color,
-               const AutoDarkMode& auto_dark_mode) {
-  PaintRect(context, PhysicalRect(rect.offset + location, rect.size), color,
-            auto_dark_mode);
-}
-
-const HighlightRegistry* GetHighlightRegistry(const Node* node) {
-  if (!node)
-    return nullptr;
-  return node->GetDocument()
-      .domWindow()
-      ->Supplementable<LocalDOMWindow>::RequireSupplement<HighlightRegistry>();
 }
 
 const LayoutSelectionStatus* GetSelectionStatus(
@@ -198,6 +179,34 @@ bool HasNonTrivialSpellingGrammarStyles(const FragmentItem& fragment_item,
     }
   }
   return false;
+}
+
+TextPaintStyle TextPaintStyleForTextMatch(const TextMatchMarker& marker,
+                                          const ComputedStyle& style,
+                                          const Document& document,
+                                          bool ignore_current_color) {
+  const mojom::blink::ColorScheme color_scheme = style.UsedColorScheme();
+  const Color platform_text_color =
+      LayoutTheme::GetTheme().PlatformTextSearchColor(
+          marker.IsActiveMatch(), color_scheme,
+          document.GetColorProviderForPainting(color_scheme));
+  // Comparing against the value of the 'color' property doesn't always make
+  // sense (for example for SVG <text> which paints using 'fill' and 'stroke').
+  if (!ignore_current_color) {
+    const Color text_color = style.VisitedDependentColor(GetCSSPropertyColor());
+    if (platform_text_color == text_color) {
+      return {};
+    }
+  }
+
+  TextPaintStyle text_style;
+  text_style.current_color = text_style.fill_color = text_style.stroke_color =
+      text_style.emphasis_mark_color = platform_text_color;
+  text_style.stroke_width = style.TextStrokeWidth();
+  text_style.color_scheme = color_scheme;
+  text_style.shadow = nullptr;
+  text_style.paint_order = style.PaintOrder();
+  return text_style;
 }
 
 }  // namespace
@@ -326,7 +335,6 @@ HighlightPainter::HighlightPainter(
     const PaintInfo& paint_info,
     const InlineCursor& cursor,
     const FragmentItem& fragment_item,
-    const std::optional<AffineTransform> writing_mode_rotation,
     const PhysicalOffset& box_origin,
     const ComputedStyle& style,
     const TextPaintStyle& text_style,
@@ -377,40 +385,20 @@ HighlightPainter::HighlightPainter(
 
   paint_case_ = ComputePaintCase();
 
-  // |layers_| and |parts_| are only needed when using the full overlay painting
-  // algorithm, otherwise we can leave them empty.
+  // |layers_| and |parts_| are only needed when using the full overlay
+  // painting algorithm, otherwise we can leave them empty.
   if (paint_case_ == kOverlay) {
-    Vector<HighlightLayer> layers = HighlightOverlay::ComputeLayers(
-        GetHighlightRegistry(node_), GetSelectionStatus(selection_), custom_,
+    auto* selection_status = GetSelectionStatus(selection_);
+    layers_ = HighlightOverlay::ComputeLayers(
+        layout_object_->GetDocument(), node_, originating_style_,
+        originating_text_style_, paint_info_, selection_status, custom_,
         grammar_, spelling_, target_);
     Vector<HighlightEdge> edges = HighlightOverlay::ComputeEdges(
-        node_, GetHighlightRegistry(node_), fragment_item_.IsGeneratedText(),
-        fragment_dom_offsets_, GetSelectionStatus(selection_), custom_,
-        grammar_, spelling_, target_);
+        node_, fragment_item_.IsGeneratedText(), fragment_dom_offsets_, layers_,
+        selection_status, custom_, grammar_, spelling_, target_);
     parts_ =
-        HighlightOverlay::ComputeParts(fragment_paint_info_, layers, edges);
+        HighlightOverlay::ComputeParts(fragment_paint_info_, layers_, edges);
 
-    const Document& document = layout_object_->GetDocument();
-    for (wtf_size_t i = 0; i < layers.size(); i++) {
-      if (layers[i].type == HighlightLayerType::kOriginating) {
-        layers_.push_back(LayerPaintState{
-            layers[i],
-            &originating_style_,
-            originating_text_style_,
-        });
-      } else {
-        layers_.push_back(LayerPaintState{
-            layers[i],
-            HighlightStyleUtils::HighlightPseudoStyle(
-                node_, originating_style_, layers[i].PseudoId(),
-                layers[i].PseudoArgument()),
-            HighlightStyleUtils::HighlightPaintingStyle(
-                document, originating_style_, node_, layers[i].PseudoId(),
-                layers_[i - 1].text_style, paint_info_,
-                layers[i].PseudoArgument()),
-        });
-      }
-    }
     if (!parts_.empty()) {
       if (const ShapeResultView* shape_result_view =
               fragment_item_->TextShapeResult()) {
@@ -465,14 +453,6 @@ void HighlightPainter::Paint(Phase phase) {
         marker->GetType()));
 
     switch (marker->GetType()) {
-      case DocumentMarker::kSpelling:
-      case DocumentMarker::kGrammar:
-        if (phase == kForeground) {
-          PaintOneSpellingGrammarDecoration(
-              marker->GetType(), text, paint_start_offset, paint_end_offset);
-        }
-        break;
-
       case DocumentMarker::kTextMatch: {
         const Document& document = node_->GetDocument();
         if (!document.GetFrame()->GetEditor().MarkedTextMatchesAreHighlighted())
@@ -485,34 +465,20 @@ void HighlightPainter::Paint(Phase phase) {
                   originating_style_.UsedColorScheme(),
                   document.GetColorProviderForPainting(
                       originating_style_.UsedColorScheme()));
-          PaintRect(paint_info_.context, PhysicalOffset(box_origin_),
-                    fragment_item_.LocalRect(text, paint_start_offset,
-                                             paint_end_offset),
-                    color, background_auto_dark_mode_);
+          PaintRect(
+              paint_info_.context,
+              ComputeBackgroundRect(text, paint_start_offset, paint_end_offset),
+              color, background_auto_dark_mode_);
           break;
         }
 
-        TextPaintStyle text_style;
+        const TextPaintStyle text_style =
+            TextPaintStyleForTextMatch(text_match_marker, originating_style_,
+                                       document, fragment_item_->IsSvgText());
         if (fragment_item_->IsSvgText()) {
-          // DocumentMarkerPainter::ComputeTextPaintStyleFrom() doesn't work
-          // well with SVG <text>, which doesn't apply 'color' CSS property.
-          const Color platform_matched_color =
-              LayoutTheme::GetTheme().PlatformTextSearchColor(
-                  text_match_marker.IsActiveMatch(),
-                  originating_style_.UsedColorScheme(),
-                  document.GetColorProviderForPainting(
-                      originating_style_.UsedColorScheme()));
           text_painter_.SetSvgState(
               *To<LayoutSVGInlineText>(fragment_item_->GetLayoutObject()),
-              originating_style_, platform_matched_color);
-          text_style.current_color = platform_matched_color;
-          text_style.stroke_width = originating_style_.TextStrokeWidth();
-          text_style.color_scheme = originating_style_.UsedColorScheme();
-          text_style.paint_order = originating_style_.PaintOrder();
-        } else {
-          text_style = DocumentMarkerPainter::ComputeTextPaintStyleFrom(
-              document, node_, originating_style_, text_match_marker,
-              paint_info_);
+              originating_style_, text_style.fill_color);
         }
         text_painter_.Paint(
             fragment_paint_info_.Slice(paint_start_offset, paint_end_offset),
@@ -524,20 +490,18 @@ void HighlightPainter::Paint(Phase phase) {
       case DocumentMarker::kSuggestion: {
         const auto& styleable_marker = To<StyleableMarker>(*marker);
         if (phase == kBackground) {
-          PaintRect(paint_info_.context, PhysicalOffset(box_origin_),
-                    fragment_item_.LocalRect(text, paint_start_offset,
-                                             paint_end_offset),
-                    styleable_marker.BackgroundColor(),
-                    background_auto_dark_mode_);
+          PaintRect(
+              paint_info_.context,
+              ComputeBackgroundRect(text, paint_start_offset, paint_end_offset),
+              styleable_marker.BackgroundColor(), background_auto_dark_mode_);
           break;
         }
-        if (DocumentMarkerPainter::ShouldPaintMarkerUnderline(
-                styleable_marker)) {
+        if (StyleableMarkerPainter::ShouldPaintUnderline(styleable_marker)) {
           const SimpleFontData* font_data =
               originating_style_.GetFont().PrimaryFont();
-          DocumentMarkerPainter::PaintStyleableMarkerUnderline(
-              paint_info_.context, box_origin_, styleable_marker,
-              originating_style_, node_->GetDocument(),
+          StyleableMarkerPainter::PaintUnderline(
+              styleable_marker, paint_info_.context, box_origin_,
+              originating_style_,
               LineRelativeLocalRect(fragment_item_, text, paint_start_offset,
                                     paint_end_offset),
               LayoutUnit(font_data->GetFontMetrics().Height()),
@@ -549,39 +513,12 @@ void HighlightPainter::Paint(Phase phase) {
           PaintDecoratedText(text, styleable_marker.TextColor(),
                              paint_start_offset, paint_end_offset);
         }
-      } break;
-
+        break;
+      }
+      case DocumentMarker::kSpelling:
+      case DocumentMarker::kGrammar:
       case DocumentMarker::kTextFragment:
-      case DocumentMarker::kCustomHighlight: {
-        const auto& highlight_pseudo_marker =
-            To<HighlightPseudoMarker>(*marker);
-        const Document& document = node_->GetDocument();
-
-        // Paint background
-        if (phase == kBackground) {
-          Color background_color =
-              HighlightStyleUtils::HighlightBackgroundColor(
-                  document, originating_style_, node_, std::nullopt,
-                  highlight_pseudo_marker.GetPseudoId(),
-                  highlight_pseudo_marker.GetPseudoArgument());
-
-          PaintRect(paint_info_.context, PhysicalOffset(box_origin_),
-                    fragment_item_.LocalRect(text, paint_start_offset,
-                                             paint_end_offset),
-                    background_color, background_auto_dark_mode_);
-          break;
-        }
-
-        DCHECK_EQ(phase, kForeground);
-        Color text_color =
-            originating_style_.VisitedDependentColor(GetCSSPropertyColor());
-        PaintDecoratedText(text, text_color, paint_start_offset,
-                           paint_end_offset,
-                           highlight_pseudo_marker.GetPseudoId(),
-                           highlight_pseudo_marker.GetPseudoArgument());
-      } break;
-
-      default:
+      case DocumentMarker::kCustomHighlight:
         NOTREACHED();
         break;
     }
@@ -675,25 +612,14 @@ void HighlightPainter::PaintOneSpellingGrammarDecoration(
   if (fragment_item_.GetNode()->GetDocument().Printing())
     return;
 
-  // If the new ::spelling-error and ::grammar-error pseudos are not enabled,
-  // use the old marker-based decorations for now.
-  if (!RuntimeEnabledFeatures::CSSSpellingGrammarErrorsEnabled()) {
-    return DocumentMarkerPainter::PaintDocumentMarker(
-        paint_info_, box_origin_, originating_style_, type,
-        LineRelativeLocalRect(fragment_item_, text, paint_start_offset,
-                              paint_end_offset),
-        HighlightStyleUtils::HighlightTextDecorationColor(
-            layout_object_->GetDocument(), originating_style_, node_,
-            originating_text_style_.current_color, PseudoFor(type)));
-  }
-
   if (!text_painter_.GetSvgState()) {
     if (const auto* pseudo_style = HighlightStyleUtils::HighlightPseudoStyle(
             node_, originating_style_, PseudoFor(type))) {
       const TextPaintStyle text_style =
           HighlightStyleUtils::HighlightPaintingStyle(
               node_->GetDocument(), originating_style_, node_, PseudoFor(type),
-              originating_text_style_, paint_info_);
+              originating_text_style_, paint_info_)
+              .style;
       PaintOneSpellingGrammarDecoration(type, text, paint_start_offset,
                                         paint_end_offset, *pseudo_style,
                                         text_style, nullptr);
@@ -761,23 +687,23 @@ void HighlightPainter::PaintOriginatingText(const TextPaintStyle& text_style,
   // Then paint the text proper for any unhighlighted parts in storage order,
   // so that they’re always on top of the shadows.
   for (const HighlightPart& part : parts_) {
-    if (part.layer.type != HighlightLayerType::kOriginating)
+    if (part.type != HighlightLayerType::kOriginating) {
       continue;
+    }
 
     PaintDecorationsExceptLineThrough(part);
     text_painter_.Paint(
         fragment_paint_info_.Slice(part.range.from, part.range.to), text_style,
         node_id, foreground_auto_dark_mode_, TextPainter::kTextProperOnly);
     PaintDecorationsOnlyLineThrough(part);
-    PaintSpellingGrammarDecorations(part);
   }
 }
 
 Vector<LayoutSelectionStatus> HighlightPainter::GetHighlights(
-    const LayerPaintState& layer) {
+    const HighlightLayer& layer) {
   Vector<LayoutSelectionStatus> result{};
   const auto* text_node = DynamicTo<Text>(fragment_item_.GetNode());
-  switch (layer.id.type) {
+  switch (layer.type) {
     case HighlightLayerType::kOriginating:
       NOTREACHED();
       break;
@@ -788,7 +714,7 @@ Vector<LayoutSelectionStatus> HighlightPainter::GetHighlights(
       for (const auto& marker : custom_) {
         // Filter custom highlight markers to one highlight at a time.
         auto* custom = To<CustomHighlightMarker>(marker.Get());
-        if (custom->GetHighlightName() != layer.id.PseudoArgument()) {
+        if (custom->GetHighlightName() != layer.PseudoArgument()) {
           continue;
         }
         std::optional<TextOffsetRange> marker_offsets =
@@ -866,9 +792,7 @@ const PhysicalRect HighlightPainter::ComputeBackgroundRect(
     StringView text,
     unsigned start_offset,
     unsigned end_offset) {
-  const PhysicalRect& rect =
-      fragment_item_.LocalRect(text, start_offset, end_offset);
-  return PhysicalRect(rect.offset + PhysicalOffset(box_origin_), rect.size);
+  return fragment_item_.LocalRect(text, start_offset, end_offset) + box_origin_;
 }
 
 void HighlightPainter::PaintHighlightOverlays(
@@ -887,12 +811,12 @@ void HighlightPainter::PaintHighlightOverlays(
 
   // For each overlay, paint its backgrounds and shadows over every highlighted
   // range in full.
-  for (const LayerPaintState& layer : layers_) {
-    if (layer.id.type == HighlightLayerType::kOriginating) {
+  for (const HighlightLayer& layer : layers_) {
+    if (layer.type == HighlightLayerType::kOriginating) {
       continue;
     }
 
-    if (layer.id.type == HighlightLayerType::kSelection &&
+    if (layer.type == HighlightLayerType::kSelection &&
         !paint_marker_backgrounds) {
       continue;
     }
@@ -910,47 +834,41 @@ void HighlightPainter::PaintHighlightOverlays(
       // as CurrentLocalSelectionRectForText, that is, it should expand
       // selection to the line height and extend for line breaks.
       const PhysicalRect& rect =
-          layer.id.type == HighlightLayerType::kSelection
+          layer.type == HighlightLayerType::kSelection
               ? selection_->PhysicalSelectionRect()
               : ComputeBackgroundRect(text, highlight.start, highlight.end);
 
       Color background_color = HighlightStyleUtils::HighlightBackgroundColor(
-          document, originating_style_, node_, layer.text_style.current_color,
-          layer.id.PseudoId(), layer.id.PseudoArgument());
+          document, originating_style_, node_,
+          layer.text_style.style.current_color, layer.PseudoId(),
+          layer.PseudoArgument());
 
       PaintHighlightBackground(paint_info_.context, originating_style_,
                                background_color, rect, rotation);
 
-      if (layer.text_style.shadow) {
+      if (layer.text_style.style.shadow) {
         text_painter_.Paint(
             fragment_paint_info_.Slice(highlight.start, highlight.end),
-            layer.text_style, node_id, foreground_auto_dark_mode_,
+            layer.text_style.style, node_id, foreground_auto_dark_mode_,
             TextPainterBase::kShadowsOnly);
       }
     }
   }
 
-  // For each overlay, paint the text proper over every highlighted range,
-  // except any parts for which we’re not the topmost active highlight.
-  for (const LayerPaintState& layer : layers_) {
-    if (layer.id.type == HighlightLayerType::kOriginating ||
-        layer.id.type == HighlightLayerType::kSelection)
+  // For each part, paint the text proper over every highlighted range,
+  for (auto part : parts_) {
+    if (part.type == HighlightLayerType::kOriginating ||
+        part.type == HighlightLayerType::kSelection) {
       continue;
-
-    for (const HighlightPart& part : parts_) {
-      if (part.layer != layer.id)
-        continue;
-
-      // TODO(crbug.com/1434114) expand range to include partial glyphs, then
-      // paint with clipping (TextPainter::PaintSelectedText)
-      PaintDecorationsExceptLineThrough(part);
-      text_painter_.Paint(
-          fragment_paint_info_.Slice(part.range.from, part.range.to),
-          layer.text_style, node_id, foreground_auto_dark_mode_,
-          TextPainterBase::kTextProperOnly);
-      PaintDecorationsOnlyLineThrough(part);
-      PaintSpellingGrammarDecorations(part);
     }
+
+    // TODO(crbug.com/1434114) expand range to include partial glyphs, then
+    // paint with clipping (TextPainter::PaintSelectedText)
+    PaintDecorationsExceptLineThrough(part);
+    text_painter_.Paint(
+        fragment_paint_info_.Slice(part.range.from, part.range.to), part.style,
+        node_id, foreground_auto_dark_mode_, TextPainterBase::kTextProperOnly);
+    PaintDecorationsOnlyLineThrough(part);
   }
 
   // Paint ::selection foreground, including its shadows.
@@ -958,8 +876,9 @@ void HighlightPainter::PaintHighlightOverlays(
   // all highlights, then merge this branch into the loop above
   if (UNLIKELY(selection_)) {
     for (const HighlightPart& part : parts_) {
-      if (part.layer.type == HighlightLayerType::kSelection)
+      if (part.type == HighlightLayerType::kSelection) {
         PaintDecorationsExceptLineThrough(part);
+      }
     }
 
     selection_->PaintSelectedText(text_painter_, fragment_paint_info_,
@@ -967,9 +886,8 @@ void HighlightPainter::PaintHighlightOverlays(
                                   foreground_auto_dark_mode_);
 
     for (const HighlightPart& part : parts_) {
-      if (part.layer.type == HighlightLayerType::kSelection) {
+      if (part.type == HighlightLayerType::kSelection) {
         PaintDecorationsOnlyLineThrough(part);
-        PaintSpellingGrammarDecorations(part);
       }
     }
   }
@@ -1107,10 +1025,7 @@ void HighlightPainter::PaintDecorationsExceptLineThrough(
   GraphicsContextStateSaver state_saver(paint_info_.context, false);
 
   for (const HighlightDecoration& decoration : part.decorations) {
-    wtf_size_t decoration_layer_index = layers_.Find(decoration.layer);
-    DCHECK_NE(decoration_layer_index, kNotFound);
-
-    LayerPaintState& decoration_layer = layers_[decoration_layer_index];
+    HighlightLayer& decoration_layer = layers_[decoration.layer_index];
 
     // Clipping the canvas unnecessarily is expensive, so avoid doing it if
     // there are no decorations of the given |lines_to_paint|.
@@ -1123,7 +1038,7 @@ void HighlightPainter::PaintDecorationsExceptLineThrough(
     // TODO(crbug.com/1147859) is SVG spec ready for highlight decorations?
     // TODO(crbug.com/1147859) https://github.com/w3c/svgwg/issues/894
     if (text_painter_.GetSvgState() &&
-        decoration.layer.type != HighlightLayerType::kOriginating) {
+        decoration.type != HighlightLayerType::kOriginating) {
       continue;
     }
 
@@ -1145,23 +1060,17 @@ void HighlightPainter::PaintDecorationsExceptLineThrough(
       ClipToPartDecorations(part_rect);
     }
 
-    if (part.layer.type != HighlightLayerType::kOriginating) {
-      if (decoration.layer.type == HighlightLayerType::kOriginating) {
-        wtf_size_t part_layer_index = layers_.Find(part.layer);
-        decoration_info->SetHighlightOverrideColor(
-            layers_[part_layer_index].text_style.current_color);
+    if (part.type != HighlightLayerType::kOriginating) {
+      if (decoration.type == HighlightLayerType::kOriginating) {
+        decoration_info->SetHighlightOverrideColor(part.style.current_color);
       } else {
         decoration_info->SetHighlightOverrideColor(
-            HighlightStyleUtils::ResolveColor(
-                layout_object_->GetDocument(), originating_style_,
-                decoration_layer.style.Get(), decoration_layer.id.PseudoId(),
-                GetCSSPropertyTextDecorationColor(),
-                layers_[decoration_layer_index - 1].text_style.current_color));
+            decoration.highlight_override_color);
       }
     }
 
     decoration_painter_.PaintExceptLineThrough(
-        *decoration_info, decoration_layer.text_style,
+        *decoration_info, decoration_layer.text_style.style,
         fragment_paint_info_.Slice(part.range.from, part.range.to),
         lines_to_paint);
   }
@@ -1172,10 +1081,7 @@ void HighlightPainter::PaintDecorationsOnlyLineThrough(
   GraphicsContextStateSaver state_saver(paint_info_.context, false);
 
   for (const HighlightDecoration& decoration : part.decorations) {
-    wtf_size_t decoration_layer_index = layers_.Find(decoration.layer);
-    DCHECK_NE(decoration_layer_index, kNotFound);
-
-    LayerPaintState& decoration_layer = layers_[decoration_layer_index];
+    HighlightLayer& decoration_layer = layers_[decoration.layer_index];
 
     // Clipping the canvas unnecessarily is expensive, so avoid doing it if
     // there are no ‘line-through’ decorations.
@@ -1189,7 +1095,7 @@ void HighlightPainter::PaintDecorationsOnlyLineThrough(
     // TODO(crbug.com/1147859) is SVG spec ready for highlight decorations?
     // TODO(crbug.com/1147859) https://github.com/w3c/svgwg/issues/894
     if (text_painter_.GetSvgState() &&
-        decoration.layer.type != HighlightLayerType::kOriginating) {
+        decoration.type != HighlightLayerType::kOriginating) {
       continue;
     }
 
@@ -1211,71 +1117,17 @@ void HighlightPainter::PaintDecorationsOnlyLineThrough(
       ClipToPartDecorations(part_rect);
     }
 
-    if (part.layer.type != HighlightLayerType::kOriginating) {
-      if (decoration.layer.type == HighlightLayerType::kOriginating) {
-        wtf_size_t part_layer_index = layers_.Find(part.layer);
-        decoration_info->SetHighlightOverrideColor(
-            layers_[part_layer_index].text_style.current_color);
+    if (part.type != HighlightLayerType::kOriginating) {
+      if (decoration.type == HighlightLayerType::kOriginating) {
+        decoration_info->SetHighlightOverrideColor(part.style.current_color);
       } else {
         decoration_info->SetHighlightOverrideColor(
-            HighlightStyleUtils::ResolveColor(
-                layout_object_->GetDocument(), originating_style_,
-                decoration_layer.style.Get(), decoration_layer.id.PseudoId(),
-                GetCSSPropertyTextDecorationColor(),
-                layers_[decoration_layer_index - 1].text_style.current_color));
+            decoration.highlight_override_color);
       }
     }
 
     decoration_painter_.PaintOnlyLineThrough(*decoration_info,
-                                             decoration_layer.text_style);
-  }
-}
-
-void HighlightPainter::PaintSpellingGrammarDecorations(
-    const HighlightPart& part) {
-  if (RuntimeEnabledFeatures::CSSSpellingGrammarErrorsEnabled())
-    return;
-
-  const StringView text = cursor_.CurrentText();
-  std::optional<LineRelativeRect> marker_rect;
-
-  for (const HighlightDecoration& decoration : part.decorations) {
-    switch (decoration.layer.type) {
-      case HighlightLayerType::kSpelling:
-      case HighlightLayerType::kGrammar: {
-        wtf_size_t i = layers_.Find(decoration.layer);
-        DCHECK_NE(i, kNotFound);
-        const LayerPaintState& decoration_layer = layers_[i];
-
-        // TODO(crbug.com/1163436): remove once UA stylesheet sets ::spelling
-        // and ::grammar to text-decoration-line:{spelling,grammar}-error
-        if (decoration_layer.style &&
-            decoration_layer.style->HasAppliedTextDecorations()) {
-          break;
-        }
-
-        if (!marker_rect) {
-          marker_rect = LineRelativeLocalRect(fragment_item_, text,
-                                              part.range.from, part.range.to);
-        }
-
-        DocumentMarkerPainter::PaintDocumentMarker(
-            paint_info_, box_origin_, originating_style_,
-            decoration.layer.type == HighlightLayerType::kSpelling
-                ? DocumentMarker::kSpelling
-                : DocumentMarker::kGrammar,
-            *marker_rect,
-            HighlightStyleUtils::HighlightTextDecorationColor(
-                layout_object_->GetDocument(), originating_style_, node_,
-                layers_[i - 1].text_style.current_color,
-                decoration.layer.type == HighlightLayerType::kSpelling
-                    ? kPseudoIdSpellingError
-                    : kPseudoIdGrammarError));
-      } break;
-
-      default:
-        break;
-    }
+                                             decoration_layer.text_style.style);
   }
 }
 
@@ -1302,8 +1154,9 @@ void HighlightPainter::PaintDecoratedText(const StringView& text,
 
   if (pseudo_style) {
     text_style = HighlightStyleUtils::HighlightPaintingStyle(
-        document, originating_style_, node_, pseudo, text_style, paint_info_,
-        pseudo_argument);
+                     document, originating_style_, node_, pseudo, text_style,
+                     paint_info_, pseudo_argument)
+                     .style;
   }
   LineRelativeRect decoration_rect = LineRelativeLocalRect(
       fragment_item_, text, paint_start_offset, paint_end_offset);
@@ -1322,27 +1175,6 @@ void HighlightPainter::PaintDecoratedText(const StringView& text,
       text_style, kInvalidDOMNodeId, foreground_auto_dark_mode_);
 
   decoration_painter.PaintOnlyLineThrough();
-}
-
-HighlightPainter::LayerPaintState::LayerPaintState(
-    HighlightOverlay::HighlightLayer id,
-    const ComputedStyle* style,
-    TextPaintStyle text_style)
-    : id(id),
-      style(style),
-      text_style(text_style),
-      decorations_in_effect(style && style->HasAppliedTextDecorations()
-                                ? style->TextDecorationsInEffect()
-                                : TextDecorationLine::kNone) {}
-
-bool HighlightPainter::LayerPaintState::operator==(
-    const HighlightLayer& other) const {
-  return id == other;
-}
-
-bool HighlightPainter::LayerPaintState::operator!=(
-    const HighlightLayer& other) const {
-  return !operator==(other);
 }
 
 }  // namespace blink

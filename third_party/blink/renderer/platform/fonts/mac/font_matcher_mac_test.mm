@@ -6,18 +6,22 @@
 
 #import <AppKit/AppKit.h>
 #import <CoreText/CoreText.h>
+#include <Foundation/Foundation.h>
 
+#include "base/apple/bridging.h"
 #import "base/apple/foundation_util.h"
 #include "base/apple/scoped_cftyperef.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
-using base::apple::CFCast;
-using base::apple::GetValueFromDictionary;
-using base::apple::NSToCFPtrCast;
+using base::apple::CFToNSOwnershipCast;
+using base::apple::CFToNSPtrCast;
+using base::apple::NSToCFOwnershipCast;
+using base::apple::ObjCCast;
 using base::apple::ScopedCFTypeRef;
 
 namespace blink {
@@ -84,7 +88,7 @@ ScopedCFTypeRef<CTFontRef> MatchCTFontFamily(const AtomicString& font_name,
     traits |= NSFontCondensedTrait;
   }
 
-  return ScopedCFTypeRef<CTFontRef>(NSToCFPtrCast(
+  return ScopedCFTypeRef<CTFontRef>(NSToCFOwnershipCast(
       MatchNSFontFamily(font_name, traits, desired_weight, size)));
 }
 
@@ -137,6 +141,38 @@ void TestFontMatchingByPostscriptName(const char* font_name) {
             kCFCompareEqualTo);
 }
 
+void TestCTAndNSMatchEqual(const char* font_name,
+                           float size,
+                           int weight,
+                           int style,
+                           int stretch) {
+  ScopedCFTypeRef<CTFontRef> matched_font = MatchFontFamily(
+      AtomicString(font_name), FontSelectionValue(weight),
+      FontSelectionValue(style), FontSelectionValue(stretch), size);
+
+  NSFontTraitMask traits = (style != kNormalSlopeValue) ? NSFontItalicTrait : 0;
+  ScopedCFTypeRef<CTFontRef> matched_ns_font(
+      base::apple::NSToCFOwnershipCast(MatchNSFontFamily(
+          AtomicString(font_name), traits, FontSelectionValue(weight), size)));
+
+  if (matched_font || matched_ns_font) {
+    EXPECT_TRUE(matched_font);
+    EXPECT_TRUE(matched_ns_font);
+
+    ScopedCFTypeRef<CFStringRef> matched_font_name(
+        CTFontCopyPostScriptName(matched_font.get()));
+    EXPECT_TRUE(matched_font_name);
+
+    ScopedCFTypeRef<CFStringRef> matched_ns_font_name(
+        CTFontCopyPostScriptName(matched_ns_font.get()));
+    EXPECT_TRUE(matched_ns_font_name);
+
+    EXPECT_TRUE(
+        CFStringCompare(matched_font_name.get(), matched_ns_font_name.get(),
+                        kCFCompareCaseInsensitive) == kCFCompareEqualTo);
+  }
+}
+
 }  // namespace
 
 TEST(FontMatcherMacTest, MatchSystemFont) {
@@ -149,11 +185,10 @@ TEST(FontMatcherMacTest, MatchSystemFontItalic) {
   ScopedCFTypeRef<CTFontRef> font = MatchSystemUIFont(
       kNormalWeightValue, kItalicSlopeValue, kNormalWidthValue, 11);
   EXPECT_TRUE(font);
-  ScopedCFTypeRef<CFDictionaryRef> traits(CTFontCopyTraits(font.get()));
-  CFNumberRef slant_num = base::apple::GetValueFromDictionary<CFNumberRef>(
-      traits.get(), kCTFontSlantTrait);
-  float slant;
-  CFNumberGetValue(slant_num, kCFNumberFloatType, &slant);
+  NSDictionary* traits = CFToNSOwnershipCast(CTFontCopyTraits(font.get()));
+  NSNumber* slant_num =
+      ObjCCast<NSNumber>(traits[CFToNSPtrCast(kCTFontSlantTrait)]);
+  float slant = slant_num.floatValue;
   EXPECT_NE(slant, 0.0);
 }
 
@@ -162,21 +197,18 @@ TEST(FontMatcherMacTest, MatchSystemFontWithWeightVariations) {
   int min_weight = 1;
   int max_weight = 1000;
   FourCharCode wght_tag = 'wght';
-  ScopedCFTypeRef<CFNumberRef> wght_tag_num(
-      CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &wght_tag));
   for (int weight = min_weight - 1; weight <= max_weight + 1; weight += 50) {
     if (weight != kNormalWeightValue) {
       ScopedCFTypeRef<CTFontRef> font = MatchSystemUIFont(
           FontSelectionValue(weight), kNormalSlopeValue, kNormalWidthValue, 11);
       EXPECT_TRUE(font);
-      ScopedCFTypeRef<CFDictionaryRef> variations(
-          CTFontCopyVariation(font.get()));
-      CFNumberRef actual_weight_cf_num = CFCast<CFNumberRef>(
-          CFDictionaryGetValue(variations.get(), wght_tag_num.get()));
-      EXPECT_TRUE(actual_weight_cf_num);
-      float actual_weight = 0.0;
-      CFNumberGetValue(actual_weight_cf_num, kCFNumberFloatType,
-                       &actual_weight);
+
+      NSDictionary* variations =
+          CFToNSOwnershipCast(CTFontCopyVariation(font.get()));
+      NSNumber* actual_weight_num = ObjCCast<NSNumber>(variations[@(wght_tag)]);
+      EXPECT_TRUE(actual_weight_num);
+
+      float actual_weight = actual_weight_num.floatValue;
       float expected_weight =
           std::max(min_weight, std::min(max_weight, weight));
       EXPECT_EQ(actual_weight, expected_weight);
@@ -191,8 +223,6 @@ TEST(FontMatcherMacTest, MatchSystemFontWithWidthVariations) {
     int min_width = 30;
     int max_width = 150;
     FourCharCode wdth_tag = 'wdth';
-    ScopedCFTypeRef<CFNumberRef> wdth_tag_num(
-        CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &wdth_tag));
     for (int width = min_width - 10; width <= max_width + 10; width += 10) {
       if (width != kNormalWidthValue) {
         ScopedCFTypeRef<CTFontRef> font =
@@ -200,15 +230,13 @@ TEST(FontMatcherMacTest, MatchSystemFontWithWidthVariations) {
                               FontSelectionValue(width), 11);
         EXPECT_TRUE(font);
 
-        ScopedCFTypeRef<CFDictionaryRef> variations(
-            CTFontCopyVariation(font.get()));
-        CFNumberRef actual_width_cf_num = CFCast<CFNumberRef>(
-            CFDictionaryGetValue(variations.get(), wdth_tag_num.get()));
-        EXPECT_TRUE(actual_width_cf_num);
+        NSDictionary* variations =
+            CFToNSOwnershipCast(CTFontCopyVariation(font.get()));
+        NSNumber* actual_width_num =
+            ObjCCast<NSNumber>(variations[@(wdth_tag)]);
+        EXPECT_TRUE(actual_width_num);
 
-        float actual_width = 0.0;
-        CFNumberGetValue(actual_width_cf_num, kCFNumberFloatType,
-                         &actual_width);
+        float actual_width = actual_width_num.floatValue;
         float expected_width = std::max(min_width, std::min(max_width, width));
         EXPECT_EQ(actual_width, expected_width);
       }
@@ -281,6 +309,52 @@ TEST_P(TestFontMatchingByName, MatchUniqueFontByPostscriptName) {
   EXPECT_TRUE(font);
 }
 
+class TestFontMatchingByNameAndWeight
+    : public testing::Test,
+      public testing::WithParamInterface<std::tuple<FontName, int, bool>> {};
+
+INSTANTIATE_TEST_SUITE_P(FontMatcherMacTest,
+                         TestFontMatchingByNameAndWeight,
+                         ::testing::Combine(::testing::ValuesIn(FontNames),
+                                            ::testing::Range(100, 900, 100),
+                                            ::testing::ValuesIn({true,
+                                                                 false})));
+
+INSTANTIATE_TEST_SUITE_P(
+    CommonFontMatcherMacTest,
+    TestFontMatchingByNameAndWeight,
+    ::testing::Combine(::testing::ValuesIn(CommonFontNames),
+                       ::testing::Range(100, 900, 100),
+                       ::testing::ValuesIn({true, false})));
+
+TEST_P(TestFontMatchingByNameAndWeight, TestCTAndNSMatchEqual) {
+  struct FontName font_name;
+  int weight;
+  bool flag;
+  std::tie(font_name, weight, flag) = GetParam();
+  ScopedFontFamilyPostscriptMatchingCTMigrationForTest scoped_feature(flag);
+  // AppKit computes weight values of some fonts not as discrete as CoreText.
+  // This is causing matching results of CoreText approach for some weight
+  // values of several font families to be more precise than AppKit's. For
+  // instance, if desired weight is 300, with AppKit approach will match
+  // "HelveticaNeue-Thin" font, while with CoreText we will match
+  // "HelveticaNeue-Light". This fonts should be skipped in this test.
+  // This issue is described in the comment under
+  // "MatchFamilyWithWeightVariations" test.
+  if (strcmp(font_name.family_name, "Helvetica Neue") == 0 ||
+      strcmp(font_name.family_name, "Hiragino Sans") == 0) {
+    return;
+  }
+  TestCTAndNSMatchEqual(font_name.family_name, 11, weight, kNormalSlopeValue,
+                        kNormalWidthValue);
+  TestCTAndNSMatchEqual(font_name.family_name, 11, weight, kItalicSlopeValue,
+                        kNormalWidthValue);
+  TestCTAndNSMatchEqual(font_name.postscript_name, 11, weight,
+                        kNormalSlopeValue, kNormalWidthValue);
+  TestCTAndNSMatchEqual(font_name.postscript_name, 11, weight,
+                        kItalicSlopeValue, kNormalWidthValue);
+}
+
 class TestFontWithTraitsMatching : public testing::TestWithParam<const char*> {
 };
 
@@ -316,16 +390,34 @@ TEST(FontMatcherMacTest, FontFamilyMatchingWithBoldCondensedTraits) {
 }
 
 TEST(FontMatcherMacTest, MatchFamilyWithWeightVariations) {
+  // For some fonts AppKit returns inconsistent weight values in the font
+  // information, retrieved using `availableFontsForFamily`. For instance, both
+  // "NotoSansMyanmar-Light" and "NotoSansMyanmar-Thin" have AppKit weight value
+  // of 3, while "NotoSansMyanmar-Thin" should be thinner than
+  // "NotoSansMyanmar-Light".
+  // This behavior is affecting matching results. For instance, in this test, if
+  // the "FontMatchingCTMigration" flag is off, we are using
+  // `availableFontsForFamily`, so for `weight=300` we will match
+  // "NotoSansMyanmar-Thin" font instead of "NotoSansMyanmar-Light".
+  // The same issue might appear with CoreText but less often. For instance, for
+  // both "AppleSDGothicNeo-Heavy" and "AppleSDGothicNeo-ExtraBold" CoreText
+  // returns font weight value 0.56, although weight value of
+  // "AppleSDGothicNeo-Heavy" is higher than weight value of
+  // "AppleSDGothicNeo-ExtraBold". However, for fonts in "Noto Sans Myanmar"
+  // family CoreText returns the correct weight values.
+  // Hence we only run this test with the "FontMatchingCTMigration" flag
+  // on.
+  ScopedFontMatchingCTMigrationForTest scoped_feature(true);
   AtomicString family_name = AtomicString("Noto Sans Myanmar");
-  for (int weight = 100; weight < 900; weight += 100) {
+  for (int weight = 100; weight <= 900; weight += 100) {
     ScopedCFTypeRef<CTFontRef> font =
         MatchCTFontFamily(family_name, FontSelectionValue(weight),
-                          kNormalSlopeValue, kCondensedWidthValue, 11);
-    ScopedCFTypeRef<CFDictionaryRef> traits_dict(CTFontCopyTraits(font.get()));
-    CFNumberRef actual_weight_num = GetValueFromDictionary<CFNumberRef>(
-        traits_dict.get(), kCTFontWeightTrait);
-    float actual_ct_weight;
-    CFNumberGetValue(actual_weight_num, kCFNumberFloatType, &actual_ct_weight);
+                          kNormalSlopeValue, kNormalWidthValue, 11);
+    NSDictionary* traits = CFToNSOwnershipCast(CTFontCopyTraits(font.get()));
+    NSNumber* actual_weight_num =
+        ObjCCast<NSNumber>(traits[CFToNSPtrCast(kCTFontWeightTrait)]);
+
+    float actual_ct_weight = actual_weight_num.floatValue;
     int actual_weight = ToCSSFontWeight(actual_ct_weight);
     EXPECT_EQ(actual_weight, weight);
   }

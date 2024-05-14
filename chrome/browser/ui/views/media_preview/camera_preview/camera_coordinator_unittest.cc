@@ -81,9 +81,12 @@ class CameraCoordinatorTest : public TestWithBrowserView {
 
   void InitializeCoordinator(std::vector<std::string> eligible_camera_ids) {
     CHECK(profile()->GetPrefs());
-    coordinator_.emplace(*parent_view_,
-                         /*needs_borders=*/true, eligible_camera_ids,
-                         *profile()->GetPrefs());
+    coordinator_.emplace(
+        *parent_view_,
+        /*needs_borders=*/true, eligible_camera_ids, *profile()->GetPrefs(),
+        /*allow_device_selection=*/true,
+        media_preview_metrics::Context(
+            media_preview_metrics::UiLocation::kPermissionPrompt));
   }
 
   const ui::SimpleComboboxModel& GetComboboxModel() const {
@@ -91,13 +94,10 @@ class CameraCoordinatorTest : public TestWithBrowserView {
   }
 
   void VerifyEmptyCombobox() const {
-    // Our combobox model size will always be >= 1. If no cameras are connected,
-    // a message is shown to the user to connect a camera.
+    // Our combobox model size will always be >= 1.
     // Verify that there is precisely one item in the combobox model.
-    EXPECT_EQ(GetComboboxModel().GetItemCount(), size_t(1));
-    EXPECT_EQ(
-        GetComboboxModel().GetItemAt(/*index=*/0),
-        l10n_util::GetStringUTF16(IDS_MEDIA_PREVIEW_NO_CAMERAS_FOUND_COMBOBOX));
+    EXPECT_EQ(GetComboboxModel().GetItemCount(), 1u);
+    EXPECT_EQ(GetComboboxModel().GetItemAt(/*index=*/0), std::u16string());
   }
 
   bool AddFakeCamera(const media::VideoCaptureDeviceDescriptor& descriptor) {

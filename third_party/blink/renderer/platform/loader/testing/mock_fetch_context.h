@@ -45,9 +45,7 @@ class MockFetchContext : public FetchContext {
     tagged_urls_ = std::move(tagged_urls);
   }
 
-  bool AllowImage(bool images_enabled, const KURL&) const override {
-    return true;
-  }
+  bool AllowImage() const override { return true; }
   std::optional<ResourceRequestBlockedReason> CanRequest(
       ResourceType,
       const ResourceRequest&,
@@ -116,8 +114,8 @@ class MockFetchContext : public FetchContext {
   }
 
  private:
-  raw_ptr<mojom::ResourceLoadInfoNotifier, ExperimentalRenderer>
-      resource_load_info_notifier_ = nullptr;
+  raw_ptr<mojom::ResourceLoadInfoNotifier> resource_load_info_notifier_ =
+      nullptr;
   std::unique_ptr<WeakWrapperResourceLoadInfoNotifier>
       weak_wrapper_resource_load_info_notifier_;
   Vector<String> blocked_urls_;

@@ -38,6 +38,10 @@ public class InsetObserver implements OnApplyWindowInsetsListener {
             new ArrayList<>();
     private final List<WindowInsetsConsumer> mInsetsConsumers = new ArrayList<>();
     private final View mRootView;
+    // Insets to be added to the current safe area.
+    private int mBottomInsetsForEdgeToEdge;
+    private final boolean mInsetsManagementEnabled;
+    private final Rect mDisplayCutoutRect;
 
     /** Allows observing changes to the window insets from Android system UI. */
     public interface WindowInsetObserver {
@@ -100,12 +104,16 @@ public class InsetObserver implements OnApplyWindowInsetsListener {
 
     /**
      * Creates an instance of {@link InsetObserver}.
+     *
      * @param rootView The root view of the app.
+     * @param insetsManagementEnabled Whether the edge-to-edge insets management flag is enabled.
      */
-    public InsetObserver(View rootView) {
+    public InsetObserver(View rootView, boolean insetsManagementEnabled) {
         mRootView = rootView;
+        mInsetsManagementEnabled = insetsManagementEnabled;
         mWindowInsets = new Rect();
         mCurrentSafeArea = new Rect();
+        mDisplayCutoutRect = new Rect();
         mKeyboardInset = 0;
         mObservers = new ObserverList<>();
         mKeyboardInsetSupplier = new KeyboardInsetObservableSupplier();
@@ -211,7 +219,7 @@ public class InsetObserver implements OnApplyWindowInsetsListener {
     @Override
     public WindowInsetsCompat onApplyWindowInsets(
             @NonNull View view, @NonNull WindowInsetsCompat insets) {
-        setCurrentSafeAreaFromInsets(insets);
+        updateDisplayCutoutRect(insets);
         insets = forwardToInsetConsumers(insets);
         updateKeyboardInset();
         onInsetChanged(
@@ -272,35 +280,51 @@ public class InsetObserver implements OnApplyWindowInsetsListener {
 
     /**
      * Get the safe area from the WindowInsets, store it and notify any observers.
+     *
      * @param insets The WindowInsets containing the safe area.
      */
-    private void setCurrentSafeAreaFromInsets(WindowInsetsCompat insets) {
-        DisplayCutoutCompat displayCutout = insets.getDisplayCutout();
-
-        int left = 0;
-        int top = 0;
-        int right = 0;
-        int bottom = 0;
-
-        if (displayCutout != null) {
-            left = displayCutout.getSafeInsetLeft();
-            top = displayCutout.getSafeInsetTop();
-            right = displayCutout.getSafeInsetRight();
-            bottom = displayCutout.getSafeInsetBottom();
-        }
-
+    private void updateCurrentSafeArea() {
+        Rect newSafeArea = new Rect(mDisplayCutoutRect);
+        newSafeArea.bottom += mBottomInsetsForEdgeToEdge;
         // If the safe area has not changed then we should stop now.
-        if (mCurrentSafeArea.left == left
-                && mCurrentSafeArea.top == top
-                && mCurrentSafeArea.right == right
-                && mCurrentSafeArea.bottom == bottom) {
+        if (newSafeArea.equals(mCurrentSafeArea)) {
             return;
         }
 
-        mCurrentSafeArea.set(left, top, right, bottom);
-
+        mCurrentSafeArea.set(newSafeArea);
+        // Create a new rect to avoid rect being changed by observers.
         for (WindowInsetObserver mObserver : mObservers) {
-            mObserver.onSafeAreaChanged(mCurrentSafeArea);
+            if (mInsetsManagementEnabled) {
+                mObserver.onSafeAreaChanged(new Rect(mCurrentSafeArea));
+            } else {
+                mObserver.onSafeAreaChanged(mCurrentSafeArea);
+            }
         }
+    }
+
+    private void updateDisplayCutoutRect(final WindowInsetsCompat insets) {
+        DisplayCutoutCompat displayCutout = insets.getDisplayCutout();
+        Rect rect = new Rect();
+        if (displayCutout != null) {
+            rect.set(
+                    displayCutout.getSafeInsetLeft(),
+                    displayCutout.getSafeInsetTop(),
+                    displayCutout.getSafeInsetRight(),
+                    displayCutout.getSafeInsetBottom());
+        }
+        mDisplayCutoutRect.set(rect);
+        updateCurrentSafeArea();
+    }
+
+    /**
+     * @param bottomInset The bottom system insets tracked in edge to edge.
+     */
+    public void updateBottomInsetForEdgeToEdge(int bottomInset) {
+        // When updating toEdge with bottom insets, meaning we should update the safe area
+        // accordingly.
+        if (mBottomInsetsForEdgeToEdge == bottomInset) return;
+
+        mBottomInsetsForEdgeToEdge = bottomInset;
+        updateCurrentSafeArea();
     }
 }

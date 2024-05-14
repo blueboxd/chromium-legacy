@@ -324,6 +324,19 @@ TEST(AuctionConfigMojomTraitsTest, DuplicateAllSlotsRequestedSizes) {
   EXPECT_FALSE(SerializeAndDeserialize(auction_config));
 }
 
+TEST(AuctionConfigMojomTraitsTest, MaxTrustedScoringSignalsUrlLength) {
+  AuctionConfig auction_config = CreateBasicAuctionConfig();
+  auction_config.non_shared_params.max_trusted_scoring_signals_url_length =
+      8000;
+  EXPECT_TRUE(SerializeAndDeserialize(auction_config));
+
+  auction_config.non_shared_params.max_trusted_scoring_signals_url_length = 0;
+  EXPECT_TRUE(SerializeAndDeserialize(auction_config));
+
+  auction_config.non_shared_params.max_trusted_scoring_signals_url_length = -1;
+  EXPECT_FALSE(SerializeAndDeserialize(auction_config));
+}
+
 TEST(AuctionConfigMojomTraitsTest,
      DirectFromSellerSignalsPrefixWithQueryString) {
   AuctionConfig auction_config = CreateFullAuctionConfig();
@@ -556,6 +569,25 @@ TEST(AuctionConfigMojomTraitsTest, MaybePromiseBuyerTimeouts) {
     EXPECT_TRUE(
         SerializeAndDeserialize<
             blink::mojom::AuctionAdConfigMaybePromiseBuyerTimeouts>(timeouts));
+  }
+}
+
+TEST(AuctionConfigMojomTraitsTest, ReportingTimeout) {
+  {
+    AuctionConfig auction_config = CreateBasicAuctionConfig();
+    auction_config.non_shared_params.reporting_timeout = base::Milliseconds(50);
+    EXPECT_TRUE(SerializeAndDeserialize(auction_config));
+  }
+  {
+    AuctionConfig auction_config = CreateBasicAuctionConfig();
+    auction_config.non_shared_params.reporting_timeout = base::Milliseconds(0);
+    EXPECT_TRUE(SerializeAndDeserialize(auction_config));
+  }
+  {
+    AuctionConfig auction_config = CreateBasicAuctionConfig();
+    auction_config.non_shared_params.reporting_timeout =
+        base::Milliseconds(-50);
+    EXPECT_FALSE(SerializeAndDeserialize(auction_config));
   }
 }
 

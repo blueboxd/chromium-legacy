@@ -66,11 +66,11 @@ BASE_FEATURE(kPermissionOnDeviceGeolocationPredictions,
 
 BASE_FEATURE(kPermissionDedicatedCpssSetting,
              "PermissionDedicatedCpssSettings",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kPermissionPredictionsV2,
              "PermissionPredictionsV2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether to trigger showing a HaTS survey, with the given
 // `probability` and `trigger_id`. The `probability` parameter is defined and
@@ -112,13 +112,6 @@ BASE_FEATURE(kMitigateUnpartitionedWebviewPermissions,
 
 #endif  // BUILDFLAG(IS_ANDROID)
 
-// When enabled, permission grants for Storage Access API will be enabled.
-// This includes enabling prompts, a new settings page and page info and
-// omnibox integration.
-BASE_FEATURE(kPermissionStorageAccessAPI,
-             "PermissionStorageAccessAPI",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // When enabled "window-placement" may be used as an alias for
 // "window-management". Additionally, reverse mappings (i.e. enum to string)
 // will default to the legacy strings ("window-placement").
@@ -131,6 +124,12 @@ BASE_FEATURE(kWindowPlacementPermissionAlias,
 // visible in the Embedded content settings page.
 BASE_FEATURE(kShowRelatedWebsiteSetsPermissionGrants,
              "ShowRelatedWebsiteSetsPermissionGrants",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, Quiet prompts triggered by CPSS will have "Get Notifications?"
+// as the the chip text instead of the usual "Notifications Blocked".
+BASE_FEATURE(kCpssQuietChipTextUpdate,
+             "CpssQuietChipTextUpdate",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

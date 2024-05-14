@@ -18,10 +18,8 @@ import org.chromium.components.browser_ui.site_settings.WebsiteAddress;
 import org.chromium.components.browser_ui.site_settings.WebsitePermissionsFetcher;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.browsing_data.DeleteBrowsingDataAction;
-import org.chromium.components.content_settings.CookieControlsBreakageConfidenceLevel;
 import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsObserver;
-import org.chromium.components.content_settings.CookieControlsStatus;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.user_prefs.UserPrefs;
 
@@ -41,11 +39,12 @@ public class PageInfoCookiesController extends PageInfoPreferenceSubpageControll
     private int mBlockedCookies;
     private int mAllowedSites;
     private int mBlockedSites;
-    private int mStatus;
+    private boolean mCookieControlsVisible;
+    private boolean mThirdPartyCookiesBlocked;
     private int mEnforcement;
     private boolean mIsEnforced;
     private long mExpiration;
-    private int mConfidenceLevel;
+    private boolean mShouldDisplaySiteBreakageString;
     private Website mWebsite;
     private boolean mTrackingProtectionUI;
     private boolean mBlockAll3PC;
@@ -81,10 +80,7 @@ public class PageInfoCookiesController extends PageInfoPreferenceSubpageControll
         rowParams.decreaseIconSize = true;
         rowParams.clickCallback = this::launchSubpage;
         mRowView.setParams(rowParams);
-        // Need to get the status and confidence level synchronously since the callbacks are
-        // only invoked when those change.
-        mStatus = mBridge.getCookieControlsStatus();
-        mConfidenceLevel = mBridge.getBreakageConfidenceLevel();
+        mShouldDisplaySiteBreakageString = false;
         updateRowViewSubtitle();
     }
 
@@ -126,7 +122,8 @@ public class PageInfoCookiesController extends PageInfoPreferenceSubpageControll
         params.blockAll3PC = mBlockAll3PC;
         params.isIncognito = mIsIncognito;
         mSubPage.setParams(params);
-        mSubPage.setCookieStatus(mStatus, mEnforcement, mExpiration);
+        mSubPage.setCookieStatus(
+                mCookieControlsVisible, mThirdPartyCookiesBlocked, mEnforcement, mExpiration);
         mSubPage.setSitesCount(mAllowedSites, mBlockedSites);
 
         SiteSettingsCategory storageCategory =
@@ -198,15 +195,22 @@ public class PageInfoCookiesController extends PageInfoPreferenceSubpageControll
     }
 
     @Override
-    public void onStatusChanged(int status, int enforcement, int blockingStatus, long expiration) {
-        mStatus = status;
+    public void onStatusChanged(
+            boolean controlsVisible,
+            boolean protectionsOn,
+            int enforcement,
+            int blockingStatus,
+            long expiration) {
+        mCookieControlsVisible = controlsVisible;
+        mThirdPartyCookiesBlocked = protectionsOn;
         mEnforcement = enforcement;
         mExpiration = expiration;
 
         updateRowViewSubtitle();
 
         if (mSubPage != null) {
-            mSubPage.setCookieStatus(mStatus, mEnforcement, expiration);
+            mSubPage.setCookieStatus(
+                    mCookieControlsVisible, mThirdPartyCookiesBlocked, mEnforcement, expiration);
         }
     }
 
@@ -220,8 +224,8 @@ public class PageInfoCookiesController extends PageInfoPreferenceSubpageControll
     }
 
     @Override
-    public void onBreakageConfidenceLevelChanged(@CookieControlsBreakageConfidenceLevel int level) {
-        mConfidenceLevel = level;
+    public void onHighlightCookieControl(boolean shouldHighlight) {
+        mShouldDisplaySiteBreakageString = shouldHighlight;
         updateRowViewSubtitle();
     }
 
@@ -231,8 +235,8 @@ public class PageInfoCookiesController extends PageInfoPreferenceSubpageControll
     }
 
     private void updateRowViewSubtitle() {
-        if (mStatus == CookieControlsStatus.DISABLED) return;
-        if (mStatus == CookieControlsStatus.DISABLED_FOR_SITE) {
+        if (!mCookieControlsVisible) return;
+        if (!mThirdPartyCookiesBlocked) {
             mRowView.updateSubtitle(
                     mRowView.getContext().getString(R.string.page_info_cookies_subtitle_allowed));
             return;
@@ -250,7 +254,7 @@ public class PageInfoCookiesController extends PageInfoPreferenceSubpageControll
         mRowView.updateSubtitle(
                 mRowView.getContext()
                         .getString(
-                                mConfidenceLevel == CookieControlsBreakageConfidenceLevel.HIGH
+                                mShouldDisplaySiteBreakageString
                                         ? R.string
                                                 .page_info_cookies_subtitle_blocked_high_confidence
                                         : R.string.page_info_cookies_subtitle_blocked));

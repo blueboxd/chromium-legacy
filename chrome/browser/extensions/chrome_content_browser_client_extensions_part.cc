@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/auto_reset.h"
+#include "base/check_deref.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
@@ -58,7 +59,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/renderer_startup_helper.h"
-#include "extensions/browser/service_worker_task_queue.h"
+#include "extensions/browser/service_worker/service_worker_task_queue.h"
 #include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/browser/view_type_utils.h"
@@ -67,6 +68,7 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/common/mojom/manifest.mojom-shared.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
@@ -388,26 +390,6 @@ bool ChromeContentBrowserClientExtensionsPart::DoesSiteRequireDedicatedProcess(
                                    .GetExtensionOrAppByURL(effective_site_url);
   // Isolate all extensions.
   return extension != nullptr;
-}
-
-// static
-bool ChromeContentBrowserClientExtensionsPart::
-    ShouldAllowCrossProcessSandboxedFrameForPrecursor(
-        content::BrowserContext* browser_context,
-        const GURL& precursor) {
-  if (precursor.is_empty()) {
-    return true;
-  }
-
-  // Disallow cross-process sandboxed iframes for for cases with an extension
-  // precursor origin (including data: URLs, about:srcdoc, and same-origin
-  // extensions).
-  // TODO(https://crbug.com/1501910): remove this once we have an implementation
-  // that correctly allows sandboxed frames in extensions access to resources.
-  const ExtensionId extension_id = ExtensionRegistry::Get(browser_context)
-                                       ->enabled_extensions()
-                                       .GetExtensionIdByURL(precursor);
-  return extension_id.empty();
 }
 
 // static
@@ -770,13 +752,19 @@ bool ChromeContentBrowserClientExtensionsPart::IsBuiltinComponent(
   const auto& extension_id = origin.host();
 
 #if BUILDFLAG(IS_CHROMEOS)
-  // Check if the component is the ODFS external component extension.
+  // Check if the component is the ODFS extension.
   if (chromeos::features::IsUploadOfficeToCloudEnabled() &&
-      extension_id == extension_misc::kODFSExtensionId &&
-      ExtensionRegistry::Get(browser_context)
-              ->GetInstalledExtension(extension_id)
-              ->location() == mojom::ManifestLocation::kExternalComponent) {
-    return true;
+      extension_id == extension_misc::kODFSExtensionId) {
+    // Check ODFS was loaded externally.
+    const Extension* extension = ExtensionRegistry::Get(browser_context)
+                                     ->GetInstalledExtension(extension_id);
+    if (!extension) {
+      // Occurs due to a race condition at startup where the ODFS is installed
+      // but does not yet appear in the extension registry.
+      LOG(ERROR) << "ODFS cannot be found in the extension registry";
+      return false;
+    }
+    return extension->location() == mojom::ManifestLocation::kExternalComponent;
   }
 #endif
 
@@ -813,8 +801,9 @@ void ChromeContentBrowserClientExtensionsPart::SiteInstanceGotProcessAndSite(
   // since it isn't treated as a hosted app.
   const Extension* extension =
       GetEnabledExtensionFromSiteURL(context, site_instance->GetSiteURL());
-  if (!extension)
+  if (!extension) {
     return;
+  }
 
   // Don't consider guests that load extension URLs as extension processes.
   // This is possible when an embedder app navigates <webview> to a
@@ -912,22 +901,33 @@ void ChromeContentBrowserClientExtensionsPart::GetAdditionalFileSystemBackends(
 }
 
 void ChromeContentBrowserClientExtensionsPart::
-    AppendExtraRendererCommandLineSwitches(base::CommandLine* command_line,
-                                           content::RenderProcessHost* process,
-                                           Profile* profile) {
-  if (!process) {
+    AppendExtraRendererCommandLineSwitches(
+        base::CommandLine* command_line,
+        content::RenderProcessHost& process) {
+  if (AreExtensionsDisabledForProfile(process.GetBrowserContext())) {
     return;
   }
 
-  DCHECK(profile);
-  if (AreExtensionsDisabledForProfile(profile)) {
-    return;
-  }
-
-  auto* process_map = ProcessMap::Get(profile);
-  CHECK(process_map);
-  if (process_map->Contains(process->GetID())) {
+  auto& process_map = CHECK_DEREF(ProcessMap::Get(process.GetBrowserContext()));
+  std::set<ExtensionId> extensions =
+      process_map.GetExtensionsInProcess(process.GetID());
+  if (!extensions.empty()) {
     command_line->AppendSwitch(switches::kExtensionProcess);
+
+    // Blink usually initializes the main-thread Isolate in background mode for
+    // extension processes, assuming that they can't detect visibility. However,
+    // mimehandler processes such as the PDF document viewer can indeed detect
+    // visibility, and benefit from being started in foreground mode. We can
+    // safely start those processes in foreground mode, knowing that
+    // RenderThreadImpl::OnRendererHidden will be called when appropriate.
+    const std::vector<std::string>& mimehandler_extensions =
+        MimeTypesHandler::GetMIMETypeAllowlist();
+    for (const std::string& extension : mimehandler_extensions) {
+      if (extensions.contains(extension)) {
+        command_line->AppendSwitch(::switches::kInitIsolateAsForeground);
+        break;
+      }
+    }
   }
 }
 

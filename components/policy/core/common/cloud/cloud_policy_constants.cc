@@ -48,7 +48,7 @@ const char kValueRequestPsmHasDeviceState[] = "enterprise_psm_check";
 const char kValueCheckUserAccount[] = "check_user_account";
 const char kValueRequestPolicy[] = "policy";
 const char kValueRequestRegister[] = "register";
-const char kValueRequestOidcRegister[] = "oidc-register";
+const char kValueRequestRegisterProfile[] = "register_profile";
 const char kValueRequestApiAuthorization[] = "api_authorization";
 const char kValueRequestUnregister[] = "unregister";
 const char kValueRequestUploadCertificate[] = "cert_upload";
@@ -92,12 +92,15 @@ const char kChromePublicAccountPolicyType[] = "google/chromeos/publicaccount";
 const char kChromeExtensionPolicyType[] = "google/chrome/extension";
 const char kChromeSigninExtensionPolicyType[] =
     "google/chromeos/signinextension";
+
 const char kChromeMachineLevelUserCloudPolicyType[] =
-    "google/chrome/machine-level-user";
-const char kChromeMachineLevelUserCloudPolicyAndroidType[] =
+#if BUILDFLAG(IS_ANDROID)
     "google/chrome/machine-level-user-android";
-const char kChromeMachineLevelUserCloudPolicyIOSType[] =
+#elif BUILDFLAG(IS_IOS)
     "google/chrome/machine-level-user-ios";
+#else
+    "google/chrome/machine-level-user";
+#endif
 const char kChromeMachineLevelExtensionCloudPolicyType[] =
     "google/chrome/machine-level-extension";
 const char kChromeRemoteCommandPolicyType[] = "google/chromeos/remotecommand";

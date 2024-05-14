@@ -39,6 +39,30 @@ const char kAutofillEnableCardBenefitsDescription[] =
     "When enabled, card benefits offered by issuers will be shown in "
     "Payments Autofill UI.";
 
+const char kAutofillEnableCardBenefitsForAmericanExpressName[] =
+    "Enable showing American Express card benefits";
+const char kAutofillEnableCardBenefitsForAmericanExpressDescription[] =
+    "When enabled, card benefits offered by American Express will be shown in "
+    "Autofill suggestions.";
+
+const char kAutofillEnableCardBenefitsForCapitalOneName[] =
+    "Enable showing Capital One card benefits";
+const char kAutofillEnableCardBenefitsForCapitalOneDescription[] =
+    "When enabled, card benefits offered by Capital One will be shown in "
+    "Autofill suggestions.";
+
+const char kAutofillEnableCardBenefitsSyncName[] =
+    "Enable syncing card benefits from the server";
+const char kAutofillEnableCardBenefitsSyncDescription[] =
+    "When enabled, card benefits offered by issuers will be synced from "
+    "the Payments server.";
+
+const char kAutofillEnableDynamicallyLoadingFieldsForAddressInputName[] =
+    "Enable dynamically loading fields for address input";
+const char kAutofillEnableDynamicallyLoadingFieldsForAddressInputDescription[] =
+    "When enabled, the address fields for input would be dynamically loaded "
+    "based on the country value";
+
 const char kAutofillEnableMerchantDomainInUnmaskCardRequestName[] =
     "Enable sending merchant domain in server card unmask requests";
 const char kAutofillEnableMerchantDomainInUnmaskCardRequestDescription[] =
@@ -100,6 +124,12 @@ const char kAutofillEnableVirtualCardsName[] =
 const char kAutofillEnableVirtualCardsDescription[] =
     "When enabled, virtual card enrollment and retrieval will be available on "
     "Bling.";
+
+const char kAutofillEnableXHRSubmissionDetectionIOSName[] =
+    "Enable XHR submission detection for Autofill";
+const char kAutofillEnableXHRSubmissionDetectionIOSDescription[] =
+    "When enabled, Chrome will detect forms submitted asynchronously (e.g. "
+    "AJAX and XMLHttpRequest) for Autofill.";
 
 const char kAutofillParseVcnCardOnFileStandaloneCvcFieldsName[] =
     "Parse standalone CVC fields for VCN card on file in forms";
@@ -282,20 +312,19 @@ const char kDetectMainThreadFreezeDescription[] =
     "A crash report will be uploaded if the main thread is frozen more than "
     "the time specified by this flag.";
 
+const char kDisableFullscreenScrollingName[] = "Disable fullscreen scrolling";
+const char kDisableFullscreenScrollingDescription[] =
+    "When this flag is enabled and a user scroll a web page, toolbars will "
+    "stay extanded and the user will not enter in fullscreen mode.";
+
 const char kDiscoverFeedSportCardName[] = "Sport card in Discover feed";
 const char kDiscoverFeedSportCardDescription[] =
     "Enables the live sport card in the NTP's Discover feed";
 
-const char kDynamicBackgroundColorName[] = "Use Dynamic theme color";
-const char kDynamicBackgroundColorDescription[] =
-    "When enabled, the toolbar background is using a dynamic color from the "
-    "page's theme color. Takes precedence over Background color if both flags "
-    "are enabled.";
-
-const char kDynamicThemeColorName[] = "Use Dynamic background color";
-const char kDynamicThemeColorDescription[] =
-    "When enabled, the toolbar background is using a dynamic color from the "
-    "page's underpage background color. If the color is white, it is ignored.";
+const char kEnableColorLensAndVoiceIconsInHomeScreenWidgetName[] =
+    "Enable color Lens and voice icons in home screen widget.";
+const char kEnableColorLensAndVoiceIconsInHomeScreenWidgetDescription[] =
+    "Shows the color icons, rather than the monochrome icons.";
 
 const char kEnableDiscoverFeedTopSyncPromoName[] =
     "Enables the top of feed sync promo.";
@@ -373,11 +402,6 @@ const char kEnableFollowIPHExpParamsName[] =
 const char kEnableFollowIPHExpParamsDescription[] =
     "Enable follow IPH experiment parameters.";
 
-const char kEnableFollowManagementInstantReloadName[] =
-    "Enable Follow Management Instant Reload";
-const char kEnableFollowManagementInstantReloadDescription[] =
-    "Enable follow management page instant reloading when being opened.";
-
 const char kEnableFollowUIUpdateName[] = "Enable the Follow UI Update";
 const char kEnableFollowUIUpdateDescription[] =
     "Enable Follow UI Update for the Feed.";
@@ -438,12 +462,6 @@ const char kForceStartupSigninPromoDescription[] =
 const char kFullscreenImprovementName[] = "Improve fullscreen";
 const char kFullscreenImprovementDescription[] =
     "When enabled, fullscreen should have a better stability.";
-
-const char kFullScreenPromoOnOmniboxCopyPasteName[] =
-    "Trigger Default Browser full-screen promo on omnibox copy-paste";
-const char kFullScreenPromoOnOmniboxCopyPasteDescription[] =
-    "When enabled full-screen promo will be displayed on omnibox copy-paste "
-    "event";
 
 const char kFullscreenPromosManagerSkipInternalLimitsName[] =
     "Fullscreen Promos Manager (Skip internal Impression Limits)";
@@ -506,12 +524,6 @@ extern const char kIOSEditMenuHideSearchWebDescription[] =
 extern const char kIOSExternalActionURLsName[] = "iOS external action URLs";
 extern const char kIOSExternalActionURLsDescription[] =
     "When enabled, the browser will support handling external action URLs.";
-
-const char kIOSIncognitoDownloadsWarningName[] =
-    "Enable Incognito downloads warning on iOS";
-const char kIOSIncognitoDownloadsWarningDescription[] =
-    "When enabled, users will be warned that downloaded files are saved on the "
-    "device and might be seen by other users even if they are in Incognito.";
 
 const char kIOSKeyboardAccessoryUpgradeName[] =
     "Enable the keyboard accessory upgrade on iOS";
@@ -602,11 +614,21 @@ const char kIPHiOSSwipeBackForwardFeatureDescription[] =
     "forward on the currently opened website to navigate to the previous or "
     "next one visited.";
 
+const char kIPHiOSSwipeToolbarToChangeTabFeatureName[] =
+    "IPH for Swipe Toolbar To Change Tab";
+const char kIPHiOSSwipeToolbarToChangeTabFeatureDescription[] =
+    "Enables displaying the gesture IPH instructing users to swipe the toolbar "
+    "to navigate to the previous or next tab in the tab list.";
+
 const char kIPHiOSTabGridSwipeRightForIncognitoName[] =
     "IPH for Swipe Right for Incognito on Tab Grid";
 const char kIPHiOSTabGridSwipeRightForIncognitoDescription[] =
     "Enables displaying the gesture IPH instructing users to swipe right on "
     "regular tab grid to view incognito tabs to new users.";
+
+const char kLinkedServicesSettingIosName[] = "Linked Services Setting";
+const char kLinkedServicesSettingIosDescription[] =
+    "Add Linked Services Setting to the Sync Settings page.";
 
 const char kLockBottomToolbarName[] = "Lock bottom toolbar";
 const char kLockBottomToolbarDescription[] =
@@ -647,9 +669,6 @@ const char kNewNTPOmniboxLayoutName[] = "New NTP Omnibox Layout";
 const char kNewNTPOmniboxLayoutDescription[] =
     "Enables the new NTP omnibox layout with leading-edge aligned hint label "
     "and magnifying glass icon.";
-
-const char kNewOverflowMenuName[] = "New Overflow Menu";
-const char kNewOverflowMenuDescription[] = "Enables the new overflow menu";
 
 const char kOverflowMenuCustomizationName[] = "Overflow Menu Customization";
 const char kOverflowMenuCustomizationDescription[] =
@@ -787,6 +806,10 @@ const char kOmniboxZeroSuggestPrefetchingOnWebName[] =
 const char kOmniboxZeroSuggestPrefetchingOnWebDescription[] =
     "Enables prefetching of the zero prefix suggestions for eligible users "
     "on the Web (i.e. non-NTP and non-SRP URLs).";
+
+const char kOmniboxColorIconsName[] = "Enable color icons in the Omnibox";
+const char kOmniboxColorIconsDescription[] =
+    "When enabled, displays color microphone and Lens icons in the omnibox.";
 
 const char kOnlyAccessClipboardAsyncName[] =
     "Only access the clipboard asynchronously";
@@ -1046,6 +1069,11 @@ const char kUndoMigrationOfSyncingUserToSignedInName[] =
 const char kUndoMigrationOfSyncingUserToSignedInDescription[] =
     "Enables the reverse-migration of syncing users who were previously "
     "migrated to the signed-in, non-syncing state.";
+
+const char kUnifiedBookmarkModelName[] = "Use unified bookmark model";
+const char kUnifiedBookmarkModelDescription[] =
+    "When enabled, all bookmarks are represented in a single BookmarkModel "
+    "object per BrowserState, instead of using two instances.";
 
 const char kUseLoadSimulatedRequestForOfflinePageName[] =
     "Use loadSimulatedRequest:responseHTMLString: when displaying offline "

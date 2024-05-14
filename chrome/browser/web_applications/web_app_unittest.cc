@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 
 #include "base/check.h"
 #include "base/command_line.h"
@@ -15,10 +16,9 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
-#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -35,7 +35,7 @@ namespace web_app {
 
 namespace {
 
-constexpr base::StringPiece kGenerateExpectationsMessage = R"(
+constexpr std::string_view kGenerateExpectationsMessage = R"(
 In order to regenerate expectations run
 the following command:
   out/<dir>/unit_tests \
@@ -61,7 +61,7 @@ base::FilePath GetPathRelativeToTestDataDir(
   return relative_path;
 }
 
-base::FilePath GetPathToTestFile(base::StringPiece filename) {
+base::FilePath GetPathToTestFile(std::string_view filename) {
   return GetTestDataDir().AppendASCII("web_apps").AppendASCII(filename);
 }
 
@@ -72,7 +72,7 @@ std::string GetContentsOrDie(const base::FilePath& filepath) {
 }
 
 void SetContentsOrDie(const base::FilePath& filepath,
-                      base::StringPiece contents) {
+                      std::string_view contents) {
   CHECK(base::WriteFile(filepath, contents));
 }
 
@@ -83,7 +83,7 @@ std::string SerializeValueToJsonOrDie(const base::Value& value) {
   return contents;
 }
 
-base::Value DeserializeValueFromJsonOrDie(base::StringPiece json) {
+base::Value DeserializeValueFromJsonOrDie(std::string_view json) {
   std::optional<base::Value> value = base::JSONReader::Read(json);
   CHECK(value.has_value());
   return *std::move(value);
@@ -96,7 +96,7 @@ bool IsRebaseline() {
 }
 
 void SaveExpectationsContentsOrDie(const base::FilePath path,
-                                   base::StringPiece contents) {
+                                   std::string_view contents) {
   const std::string current_contents = GetContentsOrDie(path);
 
   const base::FilePath test_data_dir_relative_path =
@@ -338,15 +338,16 @@ TEST(WebAppTest, IsolationDataDebugValue) {
   WebApp app{GenerateAppId(/*manifest_id_path=*/std::nullopt,
                            GURL("https://example.com"))};
   app.SetIsolationData(WebApp::IsolationData(
-      InstalledBundle{.path = base::FilePath(FILE_PATH_LITERAL("random_path"))},
+      IwaStorageOwnedBundle{"random_name", /*dev_mode=*/false},
       base::Version("1.0.0")));
 
   EXPECT_TRUE(app.isolation_data().has_value());
 
   base::Value expected_isolation_data = base::JSONReader::Read(R"|({
         "isolated_web_app_location": {
-          "installed_bundle": {
-            "path": "random_path"
+          "owned_bundle": {
+            "dev_mode": false,
+            "dir_name_ascii": "random_name"
           }
         },
         "version": "1.0.0",
@@ -366,27 +367,28 @@ TEST(WebAppTest, IsolationDataPendingUpdateInfoDebugValue) {
   WebApp app{GenerateAppId(/*manifest_id_path=*/std::nullopt,
                            GURL("https://example.com"))};
   app.SetIsolationData(WebApp::IsolationData(
-      InstalledBundle{.path = base::FilePath(FILE_PATH_LITERAL("random_path"))},
+      IwaStorageOwnedBundle{"random_name", /*dev_mode=*/true},
       base::Version("1.0.0"), {},
       WebApp::IsolationData::PendingUpdateInfo(
-          InstalledBundle{
-              .path = base::FilePath(FILE_PATH_LITERAL("another_path"))},
+          IwaStorageUnownedBundle{
+              base::FilePath(FILE_PATH_LITERAL("random_folder"))},
           base::Version("2.0.0"))));
 
   EXPECT_TRUE(app.isolation_data().has_value());
 
   base::Value expected_isolation_data = base::JSONReader::Read(R"|({
         "isolated_web_app_location": {
-          "installed_bundle": {
-            "path": "random_path"
+          "owned_bundle": {
+            "dev_mode": true,
+            "dir_name_ascii": "random_name"
           }
         },
         "version": "1.0.0",
         "controlled_frame_partitions (on-disk)": [],
         "pending_update_info": {
           "isolated_web_app_location": {
-            "installed_bundle": {
-              "path": "another_path"
+            "unowned_bundle": {
+              "path": "random_folder"
             }
           },
           "version": "2.0.0"

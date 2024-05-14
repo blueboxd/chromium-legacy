@@ -33,13 +33,15 @@
 #include "components/autofill/core/browser/field_filling_address_util.h"
 #include "components/autofill/core/browser/field_type_utils.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/browser/metrics/address_rewriter_in_profile_subset_metrics.h"
+#include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/metrics/granular_filling_metrics.h"
 #include "components/autofill/core/browser/metrics/log_event.h"
 #include "components/autofill/core/browser/metrics/suggestions_list_metrics.h"
+#include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/payments/iban_access_manager.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/common/aliases.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -87,6 +89,7 @@ AutofillTriggerSource TriggerSourceFromSuggestionTriggerSource(
     case AutofillSuggestionTriggerSource::kiOS:
     case AutofillSuggestionTriggerSource::
         kShowPromptAfterDialogClosedNonManualFallback:
+    case AutofillSuggestionTriggerSource::kComposeDialogLostFocus:
       // On Android, no popup exists. Instead, the keyboard accessory is used.
 #if BUILDFLAG(IS_ANDROID)
       return AutofillTriggerSource::kKeyboardAccessory;
@@ -96,6 +99,7 @@ AutofillTriggerSource TriggerSourceFromSuggestionTriggerSource(
     case AutofillSuggestionTriggerSource::kManualFallbackAddress:
     case AutofillSuggestionTriggerSource::kManualFallbackPayments:
     case AutofillSuggestionTriggerSource::kManualFallbackPasswords:
+    case AutofillSuggestionTriggerSource::kManualFallbackPlusAddresses:
       // Manual fallbacks are both a suggestion trigger source (e.g. through the
       // context menu) and a trigger source (by selecting a suggestion generated
       // through the context menu).
@@ -103,16 +107,36 @@ AutofillTriggerSource TriggerSourceFromSuggestionTriggerSource(
   }
   NOTREACHED_NORETURN();
 }
+
+// Returns a pointer to the first Suggestion whose GUID matches that of a
+// PersonalDataManager::test_addresses() profile.
+const Suggestion* FindTestSuggestion(PersonalDataManager& pdm,
+                                     base::span<const Suggestion> suggestions,
+                                     int index) {
+  auto is_test_suggestion = [&pdm](const Suggestion& suggestion) {
+    auto* backend_id = absl::get_if<Suggestion::BackendId>(&suggestion.payload);
+    auto* guid =
+        backend_id ? absl::get_if<Suggestion::Guid>(backend_id) : nullptr;
+    return guid && base::Contains(pdm.test_addresses(), guid->value(),
+                                  &AutofillProfile::guid);
+  };
+  for (const Suggestion& suggestion : suggestions) {
+    if (is_test_suggestion(suggestion) && index-- == 0) {
+      return &suggestion;
+    }
+  }
+  return nullptr;
+}
+
 }  // namespace
+
+int AutofillExternalDelegate::shortcut_test_suggestion_index_ = -1;
 
 AutofillExternalDelegate::AutofillExternalDelegate(
     BrowserAutofillManager* manager)
     : manager_(CHECK_DEREF(manager)) {}
 
-AutofillExternalDelegate::~AutofillExternalDelegate() {
-  if (deletion_callback_)
-    std::move(deletion_callback_).Run();
-}
+AutofillExternalDelegate::~AutofillExternalDelegate() = default;
 
 // static
 bool AutofillExternalDelegate::IsAutofillAndFirstLayerSuggestionId(
@@ -138,6 +162,7 @@ bool AutofillExternalDelegate::IsAutofillAndFirstLayerSuggestionId(
     case PopupItemId::kAutofillOptions:
     case PopupItemId::kClearForm:
     case PopupItemId::kCompose:
+    case PopupItemId::kComposeSavedStateNotification:
     case PopupItemId::kCreateNewPlusAddress:
     case PopupItemId::kDatalistEntry:
     case PopupItemId::kDeleteAddressProfile:
@@ -233,11 +258,20 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   for (const Suggestion& suggestion : input_suggestions) {
     shown_suggestion_types_.push_back(suggestion.popup_item_id);
   }
+
   // Send to display.
   if (query_field_.is_focusable && manager_->driver().CanShowAutofillUi()) {
-    AutofillClient::PopupOpenArgs open_args(element_bounds_,
-                                            query_field_.text_direction,
-                                            suggestions, trigger_source_);
+    if (shortcut_test_suggestion_index_ >= 0) {
+      const Suggestion* test_suggestion =
+          FindTestSuggestion(*manager_->client().GetPersonalDataManager(),
+                             suggestions, shortcut_test_suggestion_index_);
+      CHECK(test_suggestion) << "Only test suggestions can shortcut the UI";
+      DidAcceptSuggestion(*test_suggestion, {});
+      return;
+    }
+    AutofillClient::PopupOpenArgs open_args(
+        element_bounds_, query_field_.text_direction, suggestions,
+        trigger_source_, query_field_.form_control_ax_id);
     manager_->client().ShowAutofillPopup(open_args, GetWeakPtr());
   }
 }
@@ -273,6 +307,11 @@ void AutofillExternalDelegate::SetCurrentDataListValues(
     std::vector<SelectOption> datalist) {
   datalist_ = std::move(datalist);
   manager_->client().UpdateAutofillPopupDataListValues(datalist_);
+}
+
+absl::variant<AutofillDriver*, password_manager::PasswordManagerDriver*>
+AutofillExternalDelegate::GetDriver() {
+  return &manager_->driver();
 }
 
 void AutofillExternalDelegate::OnPopupShown() {
@@ -375,7 +414,7 @@ void AutofillExternalDelegate::DidSelectSuggestion(
     case PopupItemId::kFillExistingPlusAddress:
       manager_->FillOrPreviewField(
           mojom::ActionPersistence::kPreview,
-          mojom::TextReplacement::kReplaceAll, query_form_, query_field_,
+          mojom::FieldActionType::kReplaceAll, query_form_, query_field_,
           suggestion.main_text.value, suggestion.popup_item_id);
       break;
     case PopupItemId::kAddressFieldByFieldFilling:
@@ -396,6 +435,7 @@ void AutofillExternalDelegate::DidSelectSuggestion(
     case PopupItemId::kDeleteAddressProfile:
     case PopupItemId::kAutofillOptions:
     case PopupItemId::kCompose:
+    case PopupItemId::kComposeSavedStateNotification:
     case PopupItemId::kDatalistEntry:
     case PopupItemId::kShowAccountCards:
     case PopupItemId::kInsecureContextPaymentDisabledMessage:
@@ -483,7 +523,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
                             if (delegate) {
                               delegate->manager_->FillOrPreviewField(
                                   mojom::ActionPersistence::kFill,
-                                  mojom::TextReplacement::kReplaceAll,
+                                  mojom::FieldActionType::kReplaceAll,
                                   delegate->query_form_, delegate->query_field_,
                                   value, PopupItemId::kIbanEntry);
                             }
@@ -495,8 +535,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
       break;
     case PopupItemId::kFillFullAddress:
       autofill_metrics::LogFillingMethodUsed(
-          autofill_metrics::AutofillFillingMethodMetric::kGroupFillingAddress,
-          FillingProduct::kAddress,
+          FillingMethod::kGroupFillingAddress, FillingProduct::kAddress,
           /*triggering_field_type_matches_filling_product=*/true);
       FillAutofillFormData(
           suggestion.popup_item_id,
@@ -507,8 +546,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
       break;
     case PopupItemId::kFillFullName:
       autofill_metrics::LogFillingMethodUsed(
-          autofill_metrics::AutofillFillingMethodMetric::kGroupFillingName,
-          FillingProduct::kAddress,
+          FillingMethod::kGroupFillingName, FillingProduct::kAddress,
           /*triggering_field_type_matches_filling_product=*/true);
       FillAutofillFormData(
           suggestion.popup_item_id,
@@ -519,9 +557,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
       break;
     case PopupItemId::kFillFullPhoneNumber:
       autofill_metrics::LogFillingMethodUsed(
-          autofill_metrics::AutofillFillingMethodMetric::
-              kGroupFillingPhoneNumber,
-          FillingProduct::kAddress,
+          FillingMethod::kGroupFillingPhoneNumber, FillingProduct::kAddress,
           /*triggering_field_type_matches_filling_product=*/true);
       FillAutofillFormData(
           suggestion.popup_item_id,
@@ -533,8 +569,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
       break;
     case PopupItemId::kFillFullEmail:
       autofill_metrics::LogFillingMethodUsed(
-          autofill_metrics::AutofillFillingMethodMetric::kGroupFillingEmail,
-          FillingProduct::kAddress,
+          FillingMethod::kGroupFillingEmail, FillingProduct::kAddress,
           /*triggering_field_type_matches_filling_product=*/true);
       FillAutofillFormData(
           suggestion.popup_item_id,
@@ -545,13 +580,17 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
                GetFieldTypesOfGroup(FieldTypeGroup::kEmail)});
       break;
     case PopupItemId::kAutocompleteEntry:
-      AutofillMetrics::LogAutocompleteSuggestionAcceptedIndex(position.row);
+      AutofillMetrics::LogAutocompleteEvent(
+          AutofillMetrics::AutocompleteEvent::AUTOCOMPLETE_SUGGESTION_SELECTED);
+      autofill_metrics::LogSuggestionAcceptedIndex(
+          position.row, FillingProduct::kAutocomplete,
+          manager_->client().IsOffTheRecord());
       ABSL_FALLTHROUGH_INTENDED;
     case PopupItemId::kMerchantPromoCodeEntry:
       // User selected an Autocomplete or Merchant Promo Code field, so we fill
       // directly.
       manager_->FillOrPreviewField(
-          mojom::ActionPersistence::kFill, mojom::TextReplacement::kReplaceAll,
+          mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
           query_form_, query_field_, suggestion.main_text.value,
           suggestion.popup_item_id);
       manager_->OnSingleFieldSuggestionSelected(suggestion.main_text.value,
@@ -612,7 +651,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
                 kExistingPlusAddressChosen);
       }
       manager_->FillOrPreviewField(
-          mojom::ActionPersistence::kFill, mojom::TextReplacement::kReplaceAll,
+          mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
           query_form_, query_field_, suggestion.main_text.value,
           PopupItemId::kFillExistingPlusAddress);
       break;
@@ -630,7 +669,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
             if (delegate) {
               delegate->manager_->FillOrPreviewField(
                   mojom::ActionPersistence::kFill,
-                  mojom::TextReplacement::kReplaceAll, form, field,
+                  mojom::FieldActionType::kReplaceAll, form, field,
                   base::UTF8ToUTF16(plus_address),
                   PopupItemId::kCreateNewPlusAddress);
             }
@@ -642,10 +681,11 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
       break;
     }
     case PopupItemId::kCompose:
+    case PopupItemId::kComposeSavedStateNotification:
       if (AutofillComposeDelegate* delegate =
               manager_->client().GetComposeDelegate()) {
         delegate->OpenCompose(
-            manager_->driver(), query_form_.global_id(),
+            manager_->driver(), query_field_.renderer_form_id(),
             query_field_.global_id(),
             autofill::AutofillComposeDelegate::UiEntryPoint::kAutofillPopup);
       }
@@ -655,16 +695,13 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
       // If the selected element is a warning we don't want to do anything.
       break;
     case PopupItemId::kAddressEntry:
-      autofill_metrics::LogAutofillSuggestionAcceptedIndex(
+      autofill_metrics::LogSuggestionAcceptedIndex(
           position.row,
           GetFillingProductFromPopupItemId(PopupItemId::kAddressEntry),
           manager_->client().IsOffTheRecord());
       autofill_metrics::LogFillingMethodUsed(
-          autofill_metrics::AutofillFillingMethodMetric::kFullForm,
-          FillingProduct::kAddress,
+          FillingMethod::kFullForm, FillingProduct::kAddress,
           /*triggering_field_type_matches_filling_product=*/true);
-      autofill_metrics::LogUserAcceptedPreviouslyHiddenProfileSuggestion(
-          suggestion.hidden_prior_to_address_rewriter_usage);
       FillAutofillFormData(
           suggestion.popup_item_id,
           suggestion.GetPayload<Suggestion::BackendId>(), /*is_preview=*/false,
@@ -673,8 +710,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
       break;
     case PopupItemId::kFillEverythingFromAddressProfile:
       autofill_metrics::LogFillingMethodUsed(
-          autofill_metrics::AutofillFillingMethodMetric::kFullForm,
-          FillingProduct::kAddress,
+          FillingMethod::kFullForm, FillingProduct::kAddress,
           /*triggering_field_type_matches_filling_product=*/true);
       FillAutofillFormData(
           suggestion.popup_item_id,
@@ -683,7 +719,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
                TriggerSourceFromSuggestionTriggerSource(trigger_source_)});
       break;
     case PopupItemId::kCreditCardEntry:
-      autofill_metrics::LogAutofillSuggestionAcceptedIndex(
+      autofill_metrics::LogSuggestionAcceptedIndex(
           position.row,
           GetFillingProductFromPopupItemId(PopupItemId::kCreditCardEntry),
           manager_->client().IsOffTheRecord());
@@ -783,6 +819,7 @@ bool AutofillExternalDelegate::RemoveSuggestion(const Suggestion& suggestion) {
     case PopupItemId::kPasswordAccountStorageReSignin:
     case PopupItemId::kPasswordAccountStorageEmpty:
     case PopupItemId::kCompose:
+    case PopupItemId::kComposeSavedStateNotification:
     case PopupItemId::kDatalistEntry:
     case PopupItemId::kMerchantPromoCodeEntry:
     case PopupItemId::kSeePromoCodeDetails:
@@ -813,19 +850,16 @@ FillingProduct AutofillExternalDelegate::GetMainFillingProduct() const {
     if (FillingProduct product =
             GetFillingProductFromPopupItemId(popup_item_id);
         product != FillingProduct::kNone) {
+      // Plus address filling product is not considered a stand-alone filling
+      // product.
+      // TODO(b/331364160): Consider removing separate filling product.
+      if (product == FillingProduct::kPlusAddresses) {
+        return FillingProduct::kAddress;
+      }
       return product;
     }
   }
   return FillingProduct::kNone;
-}
-
-int32_t AutofillExternalDelegate::GetWebContentsPopupControllerAxId() const {
-  return query_field_.form_control_ax_id;
-}
-
-void AutofillExternalDelegate::RegisterDeletionCallback(
-    base::OnceClosure deletion_callback) {
-  deletion_callback_ = std::move(deletion_callback);
 }
 
 base::WeakPtr<AutofillExternalDelegate> AutofillExternalDelegate::GetWeakPtr() {
@@ -857,10 +891,9 @@ void AutofillExternalDelegate::ShowDeleteAddressProfileDialog(
 }
 
 void AutofillExternalDelegate::OnAddressEditorClosed(
-    AutofillClient::SaveAddressProfileOfferUserDecision decision,
+    AutofillClient::AddressPromptUserDecision decision,
     base::optional_ref<const AutofillProfile> edited_profile) {
-  if (decision ==
-      AutofillClient::SaveAddressProfileOfferUserDecision::kEditAccepted) {
+  if (decision == AutofillClient::AddressPromptUserDecision::kEditAccepted) {
     autofill_metrics::LogEditAddressProfileDialogClosed(
         /*user_saved_changes=*/true);
     PersonalDataManager* pdm = manager_->client().GetPersonalDataManager();
@@ -893,7 +926,7 @@ void AutofillExternalDelegate::OnDeleteDialogClosed(const std::string& guid,
                                                       GetReopenTriggerSource());
 }
 
-void AutofillExternalDelegate::OnPersonalDataFinishedProfileTasks() {
+void AutofillExternalDelegate::OnPersonalDataChanged() {
   pdm_observation_.Reset();
   manager_->driver().RendererShouldTriggerSuggestions(query_field_.global_id(),
                                                       GetReopenTriggerSource());
@@ -902,9 +935,9 @@ void AutofillExternalDelegate::OnPersonalDataFinishedProfileTasks() {
 void AutofillExternalDelegate::OnCreditCardScanned(
     const AutofillTriggerSource trigger_source,
     const CreditCard& card) {
-  manager_->FillCreditCardForm(query_form_, query_field_, card,
-                               std::u16string(),
-                               {.trigger_source = trigger_source});
+  manager_->FillOrPreviewCreditCardForm(
+      mojom::ActionPersistence::kFill, query_form_, query_field_, card,
+      std::u16string(), {.trigger_source = trigger_source});
 }
 
 void AutofillExternalDelegate::PreviewFieldByFieldFillingSuggestion(
@@ -952,7 +985,7 @@ void AutofillExternalDelegate::PreviewAddressFieldByFieldFillingSuggestion(
       manager_->client().GetAddressNormalizer());
   if (!filling_value.empty()) {
     manager_->FillOrPreviewField(
-        mojom::ActionPersistence::kPreview, mojom::TextReplacement::kReplaceAll,
+        mojom::ActionPersistence::kPreview, mojom::FieldActionType::kReplaceAll,
         query_form_, query_field_, filling_value, suggestion.popup_item_id);
   }
 }
@@ -979,8 +1012,7 @@ void AutofillExternalDelegate::FillAddressFieldByFieldFillingSuggestion(
       IsAddressType(autofill_trigger_field->Type().GetStorableType());
 
   autofill_metrics::LogFillingMethodUsed(
-      autofill_metrics::AutofillFillingMethodMetric::kFieldByFieldFilling,
-      FillingProduct::kAddress,
+      FillingMethod::kFieldByFieldFilling, FillingProduct::kAddress,
       /*triggering_field_type_matches_filling_product=*/
       is_triggering_field_address);
 
@@ -1010,7 +1042,7 @@ void AutofillExternalDelegate::FillAddressFieldByFieldFillingSuggestion(
       manager_->client().GetAddressNormalizer());
   if (!filling_value.empty()) {
     manager_->FillOrPreviewField(
-        mojom::ActionPersistence::kFill, mojom::TextReplacement::kReplaceAll,
+        mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
         query_form_, query_field_, filling_value, suggestion.popup_item_id);
   }
 }
@@ -1018,7 +1050,7 @@ void AutofillExternalDelegate::FillAddressFieldByFieldFillingSuggestion(
 void AutofillExternalDelegate::PreviewCreditCardFieldByFieldFillingSuggestion(
     const Suggestion& suggestion) {
   manager_->FillOrPreviewField(mojom::ActionPersistence::kPreview,
-                               mojom::TextReplacement::kReplaceAll, query_form_,
+                               mojom::FieldActionType::kReplaceAll, query_form_,
                                query_field_, suggestion.main_text.value,
                                suggestion.popup_item_id);
 }
@@ -1034,7 +1066,7 @@ void AutofillExternalDelegate::FillCreditCardFieldByFieldFillingSuggestion(
     return;
   }
   manager_->FillOrPreviewField(mojom::ActionPersistence::kFill,
-                               mojom::TextReplacement::kReplaceAll, query_form_,
+                               mojom::FieldActionType::kReplaceAll, query_form_,
                                query_field_, suggestion.main_text.value,
                                suggestion.popup_item_id);
 }
@@ -1051,7 +1083,7 @@ void AutofillExternalDelegate::OnCreditCardFetched(
 
   manager_->OnCreditCardFetchedSuccessfully(*credit_card);
   manager_->FillOrPreviewField(
-      mojom::ActionPersistence::kFill, mojom::TextReplacement::kReplaceAll,
+      mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
       query_form_, query_field_,
       credit_card->GetInfo(CREDIT_CARD_NUMBER, manager_->app_locale()),
       PopupItemId::kCreditCardFieldByFieldFilling);
@@ -1099,23 +1131,22 @@ void AutofillExternalDelegate::FillAutofillFormData(
                  : mojom::ActionPersistence::kFill;
 
   PersonalDataManager* pdm = manager_->client().GetPersonalDataManager();
-  if (CreditCard* credit_card = pdm->GetCreditCardByGUID(
+  if (const AutofillProfile* profile = pdm->GetProfileByGUID(
           absl::get<Suggestion::Guid>(backend_id).value())) {
-    if (popup_item_id == PopupItemId::kVirtualCreditCardEntry) {
-      // Virtual credit cards are not persisted in Chrome, modify record type
-      // locally.
-      manager_->FillOrPreviewCreditCardForm(
-          action_persistence, query_form_, query_field_,
-          CreditCard::CreateVirtualCard(*credit_card), trigger_details);
-    } else {
-      manager_->FillOrPreviewCreditCardForm(action_persistence, query_form_,
-                                            query_field_, *credit_card,
-                                            trigger_details);
-    }
-  } else if (const AutofillProfile* profile = pdm->GetProfileByGUID(
-                 absl::get<Suggestion::Guid>(backend_id).value())) {
     manager_->FillOrPreviewProfileForm(action_persistence, query_form_,
                                        query_field_, *profile, trigger_details);
+  } else if (const CreditCard* credit_card = pdm->GetCreditCardByGUID(
+                 absl::get<Suggestion::Guid>(backend_id).value())) {
+    is_preview
+        ? manager_->FillOrPreviewCreditCardForm(
+              mojom::ActionPersistence::kPreview, query_form_, query_field_,
+              *credit_card, std::u16string(), trigger_details)
+        : manager_->AuthenticateThenFillCreditCardForm(
+              query_form_, query_field_,
+              popup_item_id == PopupItemId::kVirtualCreditCardEntry
+                  ? CreditCard::CreateVirtualCard(*credit_card)
+                  : *credit_card,
+              trigger_details);
   }
 }
 

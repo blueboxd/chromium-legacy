@@ -6,7 +6,9 @@
 #define UI_OZONE_PLATFORM_DRM_GPU_DRM_GPU_DISPLAY_MANAGER_H_
 
 #include <stdint.h>
+
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "base/functional/callback.h"
@@ -14,10 +16,13 @@
 #include "ui/display/types/display_configuration_params.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/ozone/platform/drm/common/display_types.h"
+#include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
 
 using drmModeModeInfo = struct _drmModeModeInfo;
 
 namespace display {
+class GammaCurve;
+struct ColorCalibration;
 struct ColorTemperatureAdjustment;
 struct GammaAdjustment;
 }  // namespace display
@@ -57,7 +62,7 @@ class DrmGpuDisplayManager {
 
   bool ConfigureDisplays(
       const std::vector<display::DisplayConfigurationParams>& config_requests,
-      uint32_t modeset_flag);
+      display::ModesetFlags modeset_flags);
   bool SetHdcpKeyProp(int64_t display_id, const std::string& key);
   bool GetHDCPState(int64_t display_id,
                     display::HDCPState* state,
@@ -68,15 +73,25 @@ class DrmGpuDisplayManager {
   void SetColorTemperatureAdjustment(
       int64_t display_id,
       const display::ColorTemperatureAdjustment& cta);
+  void SetColorCalibration(int64_t display_id,
+                           const display::ColorCalibration& calibration);
   void SetGammaAdjustment(int64_t display_id,
                           const display::GammaAdjustment& adjustment);
+  void SetColorMatrix(int64_t display_id,
+                      const std::vector<float>& color_matrix);
   void SetBackgroundColor(int64_t display_id, const uint64_t background_color);
+  void SetGammaCorrection(int64_t display_id,
+                          const display::GammaCurve& degamma,
+                          const display::GammaCurve& gamma);
   bool SetPrivacyScreen(int64_t display_id, bool enabled);
+  std::optional<display::RefreshRange> GetSeamlessRefreshRates(
+      int64_t display_id) const;
 
  private:
   friend class DrmGpuDisplayManagerTest;
 
-  DrmDisplay* FindDisplay(int64_t display_id);
+  DrmDisplay* FindDisplay(int64_t display_id) const;
+  DrmDisplay* FindDisplayByConnectorId(uint32_t connector_id) const;
 
   // Notify ScreenManager of all the displays that were present before the
   // update but are gone after the update.
@@ -84,12 +99,35 @@ class DrmGpuDisplayManager {
       const std::vector<std::unique_ptr<DrmDisplay>>& new_displays,
       const std::vector<std::unique_ptr<DrmDisplay>>& old_displays) const;
 
+  // Test modesets with |controllers_to_configure|, but with all
+  // possible permutations of CRTC-connector pairings. Returns true if one of
+  // the permutation leads to a successful test modest.
+  bool RetryTestConfigureDisplaysWithAlternateCrtcs(
+      const std::vector<display::DisplayConfigurationParams>& config_requests,
+      const std::vector<ControllerConfigParams>& controllers_to_configure);
+
+  // Replace the CRTC of all displays and display controllers specified in
+  // |controllers_to_configure| by its connector with their new CRTC.
+  bool UpdateDisplaysWithNewCrtcs(
+      const std::vector<ControllerConfigParams>& controllers_to_configure);
+
+  // Get the display state associated with |config_requests| if there was a
+  // successful test configuration before the commit modeset call.
+  std::vector<ControllerConfigParams> GetLatestModesetTestConfig(
+      const std::vector<display::DisplayConfigurationParams>& config_requests);
+
   const raw_ptr<ScreenManager> screen_manager_;         // Not owned.
   const raw_ptr<DrmDeviceManager> drm_device_manager_;  // Not owned.
 
   std::vector<std::unique_ptr<DrmDisplay>> displays_;
 
   base::RepeatingClosure displays_configured_callback_;
+
+  // A map of successful test display config request and the config params. The
+  // map is cleared on every commit modeset, or whenever the displays and
+  // controllers are recreated in GetDisplays().
+  base::flat_map<std::string, std::vector<ControllerConfigParams>>
+      successful_test_config_params_;
 };
 
 }  // namespace ui

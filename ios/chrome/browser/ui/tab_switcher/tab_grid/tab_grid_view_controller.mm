@@ -16,7 +16,6 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/crash_report/model/crash_keys_helper.h"
-#import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
@@ -314,11 +313,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // as dragging in scrollViewDidScroll:
   TabGridPage page = GetPageFromScrollView(scrollView);
   if (page != self.currentPage) {
-    self.currentPage = page;
-    [self broadcastIncognitoContentVisibility];
     [self.mutator
         pageChanged:page
         interaction:TabSwitcherPageChangeInteraction::kAccessibilitySwipe];
+    self.currentPage = page;
+    [self broadcastIncognitoContentVisibility];
     [self.topToolbar.pageControl setSelectedPage:page animated:YES];
   }
 }
@@ -1498,12 +1497,19 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // Create the view.
   UIView* regularGridView = self.regularTabsViewController.view;
   CGSize expectedSize = CGSize();
-  expectedSize.height =
-      regularGridView.bounds.size.height - self.topToolbar.bounds.size.height;
+  CGFloat expectedHeight =
+      regularGridView.frame.size.height - self.topToolbar.bounds.size.height;
+  expectedHeight -=
+      self.view.window.windowScene.statusBarManager.statusBarFrame.size.height;
   if ([self shouldUseCompactLayout]) {
-    expectedSize.height -= self.bottomToolbar.bounds.size.height;
+    expectedHeight -= self.bottomToolbar.bounds.size.height;
   }
-  expectedSize.width = regularGridView.bounds.size.width;
+  expectedSize.height = expectedHeight;
+  CGFloat safeAreaInsetForArrowDirection =
+      UseRTLLayout() ? regularGridView.safeAreaInsets.right
+                     : regularGridView.safeAreaInsets.left;
+  expectedSize.width =
+      regularGridView.frame.size.width - safeAreaInsetForArrowDirection;
   GestureInProductHelpView* gestureIPHView = [[GestureInProductHelpView alloc]
                initWithText:l10n_util::GetNSString(
                                 UseRTLLayout()
@@ -1526,13 +1532,22 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
 
   // Coast is clear. Show the message!
-  id<TabGridViewControllerDelegate> delegate = self.delegate;
+  __weak TabGridViewController* weakSelf = self;
   gestureIPHView.dismissCallback =
-      ^(IPHDismissalReasonType IPHDismissalReasonType,
+      ^(IPHDismissalReasonType reason,
         feature_engagement::Tracker::SnoozeAction snoozeAction) {
-        [delegate tabGridDidDismissSwipeToIncognitoIPH];
+        if (reason == IPHDismissalReasonType::kSwipedAsInstructedByGestureIPH) {
+          // Animate a swipe to incognito if the user has swiped right on the
+          // IPH.
+          [weakSelf.mutator
+              pageChanged:TabGridPageIncognitoTabs
+              interaction:TabSwitcherPageChangeInteraction::kScrollDrag];
+          [weakSelf setCurrentPageAndPageControl:TabGridPageIncognitoTabs
+                                        animated:YES];
+        }
+        [weakSelf.delegate tabGridDidDismissSwipeToIncognitoIPH];
       };
-  if (![delegate tabGridShouldPresentSwipeToIncognitoIPH]) {
+  if (![self.delegate tabGridShouldPresentSwipeToIncognitoIPH]) {
     return;
   }
   self.swipeToIncognitoIPH = gestureIPHView;
@@ -1702,7 +1717,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
             (PinnedTabsViewController*)pinnedTabsViewController
              didSelectItemWithID:(web::WebStateID)itemID {
   base::RecordAction(base::UserMetricsAction("MobileTabGridPinnedTabSelected"));
-  LogPinnedTabsUsedForDefaultBrowserPromo();
   // Record how long it took to select an item.
   [self reportTabSelectionTime];
 
@@ -1818,7 +1832,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
   // TODO(crbug.com/1501837): Change the condition to verify if the given item
   // ID is a group or not.
-  if (base::FeatureList::IsEnabled(kTabGroupsInGrid)) {
+  if (IsTabGroupInGridEnabled()) {
     // Do not present the currently selected tab.
     return;
   }
@@ -1843,20 +1857,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                                        focusOmnibox:NO];
 }
 
+// TODO(crbug.com/1457146): Remove once inactive tabs do not depends on it
+// anymore.
 - (void)gridViewController:(BaseGridViewController*)gridViewController
         didCloseItemWithID:(web::WebStateID)itemID {
-  [self setCurrentIdlePageStatus:NO];
-
-  if (gridViewController == self.regularTabsViewController) {
-    [self.regularGridHandler closeItemWithID:itemID];
-    // Record when a regular tab is closed.
-    base::RecordAction(base::UserMetricsAction("MobileTabGridCloseRegularTab"));
-  } else if (gridViewController == self.incognitoTabsViewController) {
-    [self.incognitoGridHandler closeItemWithID:itemID];
-    // Record when an incognito tab is closed.
-    base::RecordAction(
-        base::UserMetricsAction("MobileTabGridCloseIncognitoTab"));
-  }
+  // No-op
 }
 
 - (void)gridViewController:(BaseGridViewController*)gridViewController
@@ -1963,6 +1968,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     [self setCurrentIdlePageStatus:YES];
     newActivePage = self.activePage;
   }
+
+  [self.mutator pageChanged:newActivePage
+                interaction:TabSwitcherPageChangeInteraction::kNone];
   self.activePage = newActivePage;
   // Holding the done button down when it is enabled could result in done tap
   // being triggered on release after tabs have been closed and the button

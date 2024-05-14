@@ -49,6 +49,7 @@
 
 #if BUILDFLAG(IS_MAC)
 #include "third_party/blink/public/mojom/choosers/popup_menu.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-test-utils.h"
 #endif
 
 namespace content {
@@ -958,7 +959,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostFoldableCSSTest,
       EvalJs(shell(), "parseInt(getComputedStyle(video).width)").ExtractInt());
 }
 
-// Tests that the renderer receives the root widget's window segments and
+// Tests that the renderer receives the root widget's viewport segments and
 // correctly exposes those via CSS.
 // TODO(crbug.com/1098549) Convert this to a WPT once emulation is available
 // via WebDriver.

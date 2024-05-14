@@ -4,6 +4,8 @@
 
 #include "components/commerce/core/shopping_service_test_base.h"
 
+#include <optional>
+
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
@@ -104,7 +106,7 @@ void MockOptGuideDecider::CanApplyOptimizationOnDemand(
     const base::flat_set<OptimizationType>& optimization_types,
     RequestContext request_context,
     OnDemandOptimizationGuideDecisionRepeatingCallback callback,
-    RequestContextMetadata* request_context_metadata) {
+    std::optional<RequestContextMetadata> request_context_metadata) {
   if (optimization_types.contains(OptimizationType::PRICE_TRACKING)) {
     for (const GURL& url : urls) {
       if (on_demand_shopping_responses_.find(url.spec()) ==
@@ -439,6 +441,11 @@ ShoppingServiceTestBase::ShoppingServiceTestBase()
   RegisterPrefs(pref_service_->registry());
   pref_service_->registry()->RegisterBooleanPref(
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled, false);
+  // These tests use a dedicated BookmarkModel instance for account bookmarks.
+  // Let BookmarkModel know about it, so it can return the correct value in
+  // BookmarkModel::IsLocalOnlyNode().
+  account_bookmark_model_
+      ->SetLoadedAccountBookmarksFileAsLocalOrSyncableBookmarksForTest();
 }
 
 ShoppingServiceTestBase::~ShoppingServiceTestBase() = default;
@@ -450,7 +457,7 @@ void ShoppingServiceTestBase::SetUp() {
       identity_test_env_->identity_manager(), sync_service_.get(),
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           test_url_loader_factory_.get()),
-      nullptr, nullptr, nullptr, nullptr, nullptr,
+      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
       std::make_unique<TestWebExtractor>());
 }
 
@@ -495,16 +502,16 @@ void ShoppingServiceTestBase::MergeProductInfoData(
 }
 
 int ShoppingServiceTestBase::GetProductInfoCacheOpenURLCount(const GURL& url) {
-  auto it = shopping_service_->product_info_cache_.find(url.spec());
-  if (it == shopping_service_->product_info_cache_.end())
-    return 0;
-
-  return it->second->pages_with_url_open;
+  return shopping_service_->commerce_info_cache_.GetUrlRefCount(url);
 }
 
 const ProductInfo* ShoppingServiceTestBase::GetFromProductInfoCache(
     const GURL& url) {
   return shopping_service_->GetFromProductInfoCache(url);
+}
+
+CommerceInfoCache& ShoppingServiceTestBase::GetCache() {
+  return shopping_service_->commerce_info_cache_;
 }
 
 }  // namespace commerce

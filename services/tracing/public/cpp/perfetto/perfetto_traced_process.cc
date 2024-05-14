@@ -24,8 +24,13 @@
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/cpp/traced_process_impl.h"
 #include "services/tracing/public/cpp/tracing_features.h"
+#include "services/tracing/public/cpp/triggers_data_source.h"
 #include "services/tracing/public/mojom/tracing_service.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/tracing.h"
+
+#if BUILDFLAG(IS_WIN)
+#include "components/tracing/common/etw_system_data_source_win.h"
+#endif
 
 #if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 // As per 'gn help check':
@@ -393,7 +398,14 @@ void PerfettoTracedProcess::SetupClientLibrary(bool enable_consumer) {
 
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   base::TrackEvent::Register();
+  tracing::TriggersDataSource::Register();
   tracing::TracingSamplerProfiler::RegisterDataSource();
+#if BUILDFLAG(IS_WIN)
+  if (enable_consumer) {
+    // Etw Data Source only needs to be installed in the browser process.
+    tracing::EtwSystemDataSource::Register();
+  }
+#endif
   TrackNameRecorder::GetInstance();
   CustomEventRecorder::GetInstance();
 #endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)

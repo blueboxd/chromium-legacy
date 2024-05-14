@@ -4,7 +4,8 @@
 
 #include "chrome/browser/media/webrtc/capture_policy_utils.h"
 
-#include "base/containers/cxx20_erase_vector.h"
+#include <vector>
+
 #include "base/feature_list.h"
 #include "base/ranges/algorithm.h"
 #include "build/build_config.h"
@@ -140,7 +141,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
 }
 
 bool IsGetAllScreensMediaAllowedForAnySite(content::BrowserContext* context) {
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_CHROMEOS)
   Profile* profile = Profile::FromBrowserContext(context);
   if (!profile) {
     return false;
@@ -175,7 +176,7 @@ bool IsGetAllScreensMediaAllowedForAnySite(content::BrowserContext* context) {
 
 bool IsGetAllScreensMediaAllowed(content::BrowserContext* context,
                                  const GURL& url) {
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_CHROMEOS)
   Profile* profile = Profile::FromBrowserContext(context);
   if (!profile) {
     return false;
@@ -261,7 +262,7 @@ DesktopMediaList::WebContentsFilter GetIncludableWebContentsFilter(
 
 void FilterMediaList(std::vector<DesktopMediaList::Type>& media_types,
                      AllowedScreenCaptureLevel capture_level) {
-  base::EraseIf(
+  std::erase_if(
       media_types, [capture_level](const DesktopMediaList::Type& type) {
         switch (type) {
           case DesktopMediaList::Type::kNone:

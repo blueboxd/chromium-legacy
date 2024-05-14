@@ -5,6 +5,7 @@
 #include "chrome/browser/vr/ui_scene_creator.h"
 
 #include <memory>
+#include <numbers>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -14,7 +15,6 @@
 #include "base/functional/callback_helpers.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
-#include "base/numerics/math_constants.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -26,7 +26,6 @@
 #include "chrome/browser/vr/elements/linear_layout.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/scaled_depth_adjuster.h"
-#include "chrome/browser/vr/elements/spinner.h"
 #include "chrome/browser/vr/elements/text.h"
 #include "chrome/browser/vr/elements/transient_element.h"
 #include "chrome/browser/vr/elements/ui_element.h"
@@ -47,6 +46,10 @@
 #include "ui/gfx/animation/keyframe/keyframed_animation_curve.h"
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+
+#if BUILDFLAG(IS_WIN)
+#include "chrome/browser/vr/elements/spinner.h"
+#endif
 
 namespace vr {
 
@@ -188,7 +191,7 @@ void ApplyFloorTransform(Rect* floor) {
   floor->SetSize(1.0f, 1.0f);
   floor->SetScale(kSceneSize, kSceneSize, kSceneSize);
   floor->SetTranslate(0.0, kFloorHeight, 0.0);
-  floor->SetRotate(1, 0, 0, -base::kPiFloat / 2);
+  floor->SetRotate(1, 0, 0, -std::numbers::pi_v<float> / 2);
 }
 
 void SetVisibleInLayout(UiElement* e, bool v) {
@@ -504,6 +507,8 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
           [](UiElement* e, const bool& value) { e->SetVisible(value); },
           base::Unretained(scaler.get()))));
 
+  // TODO(https://crbug.com/327467653): Investigate spinner code.
+#if BUILDFLAG(IS_WIN)
   auto spinner = std::make_unique<Spinner>(512);
   spinner->SetName(kWebVrTimeoutSpinner);
   spinner->SetDrawPhase(kPhaseForeground);
@@ -514,6 +519,7 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
   spinner->SetColor(model_->color_scheme().web_vr_timeout_spinner);
   spinner->set_hit_testable(true);
   VR_BIND_VISIBILITY(spinner, model->web_vr.state == kWebVrTimeoutImminent);
+#endif
 
   auto timeout_message = Create<Rect>(kWebVrTimeoutMessage, kPhaseForeground);
   timeout_message->SetVisible(false);
@@ -552,7 +558,9 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
   timeout_message->AddChild(std::move(timeout_layout));
 
   scaler->AddChild(std::move(timeout_message));
+#if BUILDFLAG(IS_WIN)
   scaler->AddChild(std::move(spinner));
+#endif
   scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(scaler));
 }
 void UiSceneCreator::CreateViewportAwareRoot() {

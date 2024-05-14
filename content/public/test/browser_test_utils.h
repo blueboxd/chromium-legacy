@@ -26,9 +26,9 @@
 #include "base/template_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/types/strong_alias.h"
+#include "base/types/to_address.h"
 #include "build/build_config.h"
 #include "cc/test/pixel_test_utils.h"
-#include "components/viz/common/quads/compositor_frame.h"
 #include "content/public/browser/commit_deferring_condition.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/global_routing_id.h"
@@ -41,7 +41,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/page_type.h"
-#include "content/public/test/fake_frame_widget.h"
 #include "content/public/test/test_utils.h"
 #include "ipc/message_filter.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -51,6 +50,7 @@
 #include "net/base/load_flags.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_partition_key_collection.h"
+#include "services/network/public/mojom/cookie_manager.mojom-forward.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
@@ -60,8 +60,6 @@
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
-#include "third_party/blink/public/mojom/frame/frame.mojom-test-utils.h"
-#include "third_party/blink/public/mojom/frame/remote_frame.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -77,9 +75,6 @@
 #include "base/win/scoped_handle.h"
 #endif
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-#include "content/public/test/mock_captured_surface_controller.h"
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
 namespace gfx {
 class Point;
@@ -121,7 +116,11 @@ typedef int PROPERTYID;
 
 namespace blink {
 class StorageKey;
-struct FrameVisualProperties;
+
+namespace mojom {
+class FrameWidget;
+}  // namespace mojom
+
 }  // namespace blink
 
 namespace storage {
@@ -129,6 +128,10 @@ class BlobUrlRegistry;
 }
 
 namespace content {
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+class MockCapturedSurfaceController;
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
 #if defined(USE_AURA)
 class SelectionBoundsWaiter;
@@ -139,7 +142,6 @@ class FileSystemAccessPermissionContext;
 class FrameTreeNode;
 class NavigationHandle;
 class NavigationRequest;
-class RenderFrameHostImpl;
 class RenderFrameMetadataProviderImpl;
 class RenderFrameProxyHost;
 class RenderWidgetHost;
@@ -214,8 +216,8 @@ void NavigateToURLBlockUntilNavigationsComplete(
 //   RenderProcessHostBadMojoMessageWaiter kill_waiter(rfh->GetProcess());
 //   EXPECT_THAT(kill_waiter.Wait(), Optional(HasSubstr("...")));
 
-// Perform a renderer-initiated navigation of |window| to |url|, blocking
-// until the navigation finishes.  The navigation is done by assigning
+// Perform a renderer-initiated navigation of the frame |adapter| to |url|,
+// blocking until the navigation finishes. The navigation is done by assigning
 // location.href in the frame |adapter|. Returns true if the page was loaded
 // successfully and the last committed URL matches |url|.
 [[nodiscard]] bool NavigateToURLFromRenderer(const ToRenderFrameHost& adapter,
@@ -238,8 +240,8 @@ void NavigateToURLBlockUntilNavigationsComplete(
     const GURL& url,
     const GURL& expected_commit_url);
 
-// Perform a renderer-initiated navigation of `window` to `url`. Returns true if
-// the navigation started successfully and false otherwise.
+// Perform a renderer-initiated navigation of the frame `adapter` to `url`.
+// Returns true if the navigation started successfully and false otherwise.
 [[nodiscard]] bool BeginNavigateToURLFromRenderer(
     const ToRenderFrameHost& adapter,
     const GURL& url);
@@ -585,10 +587,11 @@ bool IsWebcamAvailableOnSystem(WebContents* web_contents);
 class ToRenderFrameHost {
  public:
   template <typename Ptr>
+    requires requires(Ptr p) { base::to_address(p); }
   // NOLINTNEXTLINE(google-explicit-constructor)
   ToRenderFrameHost(Ptr frame_convertible_value)
       : render_frame_host_(ConvertToRenderFrameHost(
-            std::to_address(frame_convertible_value))) {}
+            base::to_address(frame_convertible_value))) {}
 
   // Extract the underlying frame.
   RenderFrameHost* render_frame_host() const { return render_frame_host_; }
@@ -661,8 +664,9 @@ base::Value ListValueOf(Args&&... args) {
   return base::Value(std::move(values));
 }
 
-// Replaces $1, $2, $3, etc in |script_template| with JS literal values
-// constructed from |args|, similar to base::ReplaceStringPlaceholders.
+// Replaces $1, $2, $3, ..., $9 in |script_template| with JS literal values
+// constructed from |args|, similar to base::ReplaceStringPlaceholders. Note
+// that $10 and above aren't allowed.
 //
 // Unlike StringPrintf or manual concatenation, this version will properly
 // escape string content, even if it contains slashes or quotation marks.
@@ -884,12 +888,17 @@ enum EvalJsOptions {
 //    callers of domAutomationController.send() -- EvalJs does not rely on
 //    domAutomationController.
 //  - Lists, dicts, null values, etc. can be returned as base::Values.
+//  - |after_script_invoke| is an optional callback which will be invoked after
+//    script execution has started in the renderer but before the RunLoop is
+//    blocked on the result.
 //
 // It is guaranteed that EvalJs works even when the target frame is frozen.
-[[nodiscard]] EvalJsResult EvalJs(const ToRenderFrameHost& execution_target,
-                                  base::StringPiece script,
-                                  int options = EXECUTE_SCRIPT_DEFAULT_OPTIONS,
-                                  int32_t world_id = ISOLATED_WORLD_ID_GLOBAL);
+[[nodiscard]] EvalJsResult EvalJs(
+    const ToRenderFrameHost& execution_target,
+    base::StringPiece script,
+    int options = EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+    int32_t world_id = ISOLATED_WORLD_ID_GLOBAL,
+    base::OnceClosure after_script_invoke = base::DoNothing());
 
 // Like EvalJs(), but runs |raf_script| inside a requestAnimationFrame handler,
 // and runs |script| after the rendering update has completed. By the time
@@ -1058,6 +1067,15 @@ void WaitForAccessibilityTreeToChange(WebContents* web_contents);
 // Keeps looping until the text is found (or the test times out).
 void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
                                                    base::StringPiece name);
+
+// Waits for a document selection changed event then checks to see if the
+// accessibility tree has a selection start and end with the given name(s).
+// Keeps looping until the text is found (or the
+// test times out).
+void WaitForAccessibilityTreeToContainSelection(
+    WebContents* web_contents,
+    base::StringPiece selection_start_name,
+    base::StringPiece selection_end_name);
 
 // Get a snapshot of a web page's accessibility tree.
 ui::AXTreeUpdate GetAccessibilityTreeSnapshot(WebContents* web_contents);
@@ -2012,73 +2030,6 @@ void VerifyStaleContentOnFrameEviction(
 
 #endif  // defined(USE_AURA)
 
-// This class intercepts for ShowContextMenu Mojo method called from a
-// renderer process, and allows observing the UntrustworthyContextMenuParams as
-// sent by the renderer.
-class ContextMenuInterceptor
-    : public blink::mojom::LocalFrameHostInterceptorForTesting {
- public:
-  // Whether or not the ContextMenu should be prevented from performing
-  // its default action, preventing the context menu from showing.
-  enum ShowBehavior { kShow, kPreventShow };
-
-  explicit ContextMenuInterceptor(content::RenderFrameHost* render_frame_host,
-                                  ShowBehavior behavior = ShowBehavior::kShow);
-  ContextMenuInterceptor(const ContextMenuInterceptor&) = delete;
-  ContextMenuInterceptor& operator=(const ContextMenuInterceptor&) = delete;
-  ~ContextMenuInterceptor() override;
-
-  blink::mojom::LocalFrameHost* GetForwardingInterface() override;
-
-  void ShowContextMenu(
-      mojo::PendingAssociatedRemote<blink::mojom::ContextMenuClient>
-          context_menu_client,
-      const blink::UntrustworthyContextMenuParams& params) override;
-
-  void Wait();
-  void Reset();
-
-  blink::UntrustworthyContextMenuParams get_params() { return last_params_; }
-
- private:
-  raw_ptr<content::RenderFrameHostImpl> render_frame_host_impl_;
-  mojo::test::ScopedSwapImplForTesting<
-      mojo::AssociatedReceiver<blink::mojom::LocalFrameHost>>
-      swapped_impl_;
-  std::unique_ptr<base::RunLoop> run_loop_;
-  base::OnceClosure quit_closure_;
-  blink::UntrustworthyContextMenuParams last_params_;
-  const ShowBehavior show_behavior_;
-};
-
-class UpdateUserActivationStateInterceptor
-    : public blink::mojom::LocalFrameHostInterceptorForTesting {
- public:
-  explicit UpdateUserActivationStateInterceptor(
-      content::RenderFrameHost* render_frame_host);
-  UpdateUserActivationStateInterceptor(
-      const UpdateUserActivationStateInterceptor&) = delete;
-  UpdateUserActivationStateInterceptor& operator=(
-      const UpdateUserActivationStateInterceptor&) = delete;
-  ~UpdateUserActivationStateInterceptor() override;
-
-  void set_quit_handler(base::OnceClosure handler);
-  bool update_user_activation_state() { return update_user_activation_state_; }
-
-  blink::mojom::LocalFrameHost* GetForwardingInterface() override;
-  void UpdateUserActivationState(
-      blink::mojom::UserActivationUpdateType update_type,
-      blink::mojom::UserActivationNotificationType notification_type) override;
-
- private:
-  raw_ptr<content::RenderFrameHostImpl> render_frame_host_impl_;
-  mojo::test::ScopedSwapImplForTesting<
-      mojo::AssociatedReceiver<blink::mojom::LocalFrameHost>>
-      swapped_impl_;
-  base::OnceClosure quit_handler_;
-  bool update_user_activation_state_ = false;
-};
-
 // Helper class to interpose on Blob URL registrations, replacing the URL
 // contained in incoming registration requests with the specified URL.
 class BlobURLStoreInterceptor
@@ -2137,65 +2088,6 @@ void EnsureCookiesFlushed(BrowserContext* browser_context);
 // single response messages back from the guest, with the expected values.
 bool TestGuestAutoresize(WebContents* embedder_web_contents,
                          RenderFrameHost* guest_main_frame);
-
-// Class to intercept SynchronizeVisualProperties method. This allows the
-// message to continue to the target child so that processing can be verified by
-// tests. It also monitors for GesturePinchBegin/End events.
-class SynchronizeVisualPropertiesInterceptor
-    : public blink::mojom::RemoteFrameHostInterceptorForTesting {
- public:
-  explicit SynchronizeVisualPropertiesInterceptor(
-      RenderFrameProxyHost* render_frame_proxy_host);
-
-  SynchronizeVisualPropertiesInterceptor(
-      const SynchronizeVisualPropertiesInterceptor&) = delete;
-  SynchronizeVisualPropertiesInterceptor& operator=(
-      const SynchronizeVisualPropertiesInterceptor&) = delete;
-
-  ~SynchronizeVisualPropertiesInterceptor() override;
-
-  blink::mojom::RemoteFrameHost* GetForwardingInterface() override;
-
-  void SynchronizeVisualProperties(
-      const blink::FrameVisualProperties& visual_properties) override;
-
-  gfx::Rect last_rect() const { return last_rect_; }
-
-  void WaitForRect();
-  void ResetRectRunLoop();
-
-  // Waits for the next viz::LocalSurfaceId be received and returns it.
-  viz::LocalSurfaceId WaitForSurfaceId();
-
-  void WaitForPinchGestureEnd();
-
- private:
-  // |rect| is in DIPs.
-  void OnUpdatedFrameRectOnUI(const gfx::Rect& rect);
-  void OnUpdatedFrameSinkIdOnUI();
-  void OnUpdatedSurfaceIdOnUI(viz::LocalSurfaceId surface_id);
-
-  base::RunLoop run_loop_;
-
-  raw_ptr<RenderFrameProxyHost> render_frame_proxy_host_;
-
-  std::unique_ptr<base::RunLoop> local_root_rect_run_loop_;
-  bool local_root_rect_received_ = false;
-  gfx::Rect last_rect_;
-
-  viz::LocalSurfaceId last_surface_id_;
-  std::unique_ptr<base::RunLoop> surface_id_run_loop_;
-
-  bool last_pinch_gesture_active_ = false;
-  base::RunLoop pinch_end_run_loop_;
-
-  mojo::test::ScopedSwapImplForTesting<
-      mojo::AssociatedReceiver<blink::mojom::RemoteFrameHost>>
-      swapped_impl_;
-
-  base::WeakPtrFactory<SynchronizeVisualPropertiesInterceptor> weak_factory_{
-      this};
-};
 
 // This class allows monitoring of mouse events received by a specific
 // RenderWidgetHost.

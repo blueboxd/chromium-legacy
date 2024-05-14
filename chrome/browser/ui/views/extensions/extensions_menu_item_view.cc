@@ -44,6 +44,7 @@
 #include "ui/views/controls/button/menu_button_controller.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/layout/layout_types.h"
@@ -203,8 +204,8 @@ ExtensionMenuItemView::ExtensionMenuItemView(
     // By default, the button's accessible description is set to the button's
     // tooltip text. For the pin button, we only want the accessible name to be
     // read on accessibility mode since it includes the tooltip text. Thus we
-    // override the accessible description.
-    pin_button_->GetViewAccessibility().OverrideDescription(
+    // set the accessible description.
+    pin_button_->GetViewAccessibility().SetDescription(
         std::u16string(),
         ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty);
   }
@@ -349,6 +350,13 @@ ExtensionMenuItemView::ExtensionMenuItemView(
   }
 
   SetupContextMenuButton();
+
+  // By default, the button's accessible description is set to the button's
+  // tooltip text. This is the accepted workaround to ensure only accessible
+  // name is announced by a screenreader rather than tooltip text and
+  // accessible name.
+  site_access_toggle_->GetViewAccessibility().SetDescription(
+      std::u16string(), ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty);
 }
 
 ExtensionMenuItemView::~ExtensionMenuItemView() = default;
@@ -397,7 +405,7 @@ void ExtensionMenuItemView::Update(
                                          SitePermissionsButtonState::kEnabled);
     std::u16string site_permissions_text =
         GetSitePermissionsButtonText(site_permissions_button_access);
-    site_permissions_button_->SetTitleText(site_permissions_text);
+    site_permissions_button_->title()->SetText(site_permissions_text);
     site_permissions_button_->SetAccessibleName(l10n_util::GetStringFUTF16(
         IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ACCESSIBLE_NAME,
         site_permissions_text));
@@ -485,7 +493,7 @@ void ExtensionMenuItemView::SetupContextMenuButton() {
   // tooltip text. This is the accepted workaround to ensure only accessible
   // name is announced by a screenreader rather than tooltip text and
   // accessible name.
-  context_menu_button_->GetViewAccessibility().OverrideDescription(
+  context_menu_button_->GetViewAccessibility().SetDescription(
       std::u16string(), ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty);
 }
 

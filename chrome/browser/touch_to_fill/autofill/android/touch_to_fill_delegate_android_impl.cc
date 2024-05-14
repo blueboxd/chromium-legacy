@@ -22,6 +22,7 @@
 #include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/logging/log_macros.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 
 namespace autofill {
 
@@ -111,35 +112,22 @@ TouchToFillDelegateAndroidImpl::DryRun(FormGlobalId form_id,
   if (!manager_->client().GetFastCheckoutClient()->IsNotShownYet()) {
     return {TriggerOutcome::kFastCheckoutWasShown, {}};
   }
-  // Trigger only if there is at least 1 complete valid credit card on file.
-  // Complete = contains number, expiration date and name on card.
-  // Valid = unexpired with valid number format.
-  std::vector<CreditCard> cards_to_suggest =
-      AutofillSuggestionGenerator::GetOrderedCardsToSuggest(
-          manager_->client(), /*suppress_disused_cards=*/true);
-  if (base::ranges::none_of(cards_to_suggest,
-                            &CreditCard::IsCompleteValidCard)) {
-    return {TriggerOutcome::kNoValidCards, {}};
-  }
   // Trigger only if the UI is available.
   if (!manager_->CanShowAutofillUi()) {
     return {TriggerOutcome::kCannotShowAutofillUi, {}};
   }
-
-  // If the card is enrolled into virtual card number, create a copy of the
-  // card with `CreditCard::RecordType::kVirtualCard` as the record type, and
-  // insert it before the actual card.
-  std::vector<autofill::CreditCard> real_and_virtual_cards;
-  for (const CreditCard& card : cards_to_suggest) {
-    if (card.virtual_card_enrollment_state() ==
-            CreditCard::VirtualCardEnrollmentState::kEnrolled &&
-        base::FeatureList::IsEnabled(
-            features::kAutofillVirtualCardsOnTouchToFillAndroid)) {
-      real_and_virtual_cards.push_back(CreditCard::CreateVirtualCard(card));
-    }
-    real_and_virtual_cards.push_back(card);
-  }
-  return {TriggerOutcome::kShown, std::move(real_and_virtual_cards)};
+  // Fetch all complete valid credit cards on file.
+  // Complete = contains number, expiration date and name on card.
+  // Valid = unexpired with valid number format.
+  // TODO(b/40227496): `*field` must contain the updated field information.
+  std::vector<CreditCard> cards_to_suggest =
+      AutofillSuggestionGenerator(manager_->client())
+          .GetTouchToFillCardsToSuggest(*field,
+                                        field->Type().GetStorableType());
+  return cards_to_suggest.empty()
+             ? DryRunResult(TriggerOutcome::kNoValidCards, {})
+             : DryRunResult(TriggerOutcome::kShown,
+                            std::move(cards_to_suggest));
 }
 
 // TODO(crbug.com/1485693): Remove received FormData
@@ -236,8 +224,9 @@ void TouchToFillDelegateAndroidImpl::ScanCreditCard() {
 void TouchToFillDelegateAndroidImpl::OnCreditCardScanned(
     const CreditCard& card) {
   HideTouchToFill();
-  manager_->FillCreditCardForm(
-      query_form_, query_field_, card, std::u16string(),
+  manager_->FillOrPreviewCreditCardForm(
+      mojom::ActionPersistence::kFill, query_form_, query_field_, card,
+      std::u16string(),
       {.trigger_source = AutofillTriggerSource::kTouchToFillCreditCard});
 }
 
@@ -259,13 +248,12 @@ void TouchToFillDelegateAndroidImpl::SuggestionSelected(std::string unique_id,
   if (is_virtual) {
     // Virtual credit cards are not persisted in Chrome, modify record type
     // locally.
-    manager_->FillOrPreviewCreditCardForm(
-        mojom::ActionPersistence::kFill, query_form_, query_field_,
-        CreditCard::CreateVirtualCard(*card),
+    manager_->AuthenticateThenFillCreditCardForm(
+        query_form_, query_field_, CreditCard::CreateVirtualCard(*card),
         {.trigger_source = AutofillTriggerSource::kTouchToFillCreditCard});
   } else {
-    manager_->FillOrPreviewCreditCardForm(
-        mojom::ActionPersistence::kFill, query_form_, query_field_, *card,
+    manager_->AuthenticateThenFillCreditCardForm(
+        query_form_, query_field_, *card,
         {.trigger_source = AutofillTriggerSource::kTouchToFillCreditCard});
   }
 }

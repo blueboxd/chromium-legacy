@@ -803,9 +803,9 @@ bool UpdateAppShortcutsSubdirLocalizedName(
   std::string locale = l10n_util::NormalizeLocale(
       l10n_util::GetApplicationLocale(std::string()));
 
-  NSString* strings_path =
-      base::apple::FilePathToNSString(localized.Append(locale + ".strings"));
-  [strings_dict writeToFile:strings_path atomically:YES];
+  NSURL* strings_url =
+      base::apple::FilePathToNSURL(localized.Append(locale + ".strings"));
+  [strings_dict writeToURL:strings_url error:nil];
 
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&GetImageResourcesOnUIThread,
@@ -1791,9 +1791,9 @@ bool WebAppShortcutCreator::UpdateDisplayName(
     app_mode::kCFBundleDisplayNameKey : display_name
   };
 
-  NSString* localized_path = base::apple::FilePathToNSString(
-      localized_dir.Append("InfoPlist.strings"));
-  return [strings_plist writeToFile:localized_path atomically:YES];
+  NSURL* localized_url =
+      base::apple::FilePathToNSURL(localized_dir.Append("InfoPlist.strings"));
+  return [strings_plist writeToURL:localized_url error:nil];
 }
 
 bool WebAppShortcutCreator::UpdateIcon(const base::FilePath& app_path) const {

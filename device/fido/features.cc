@@ -49,11 +49,6 @@ BASE_FEATURE(kWebAuthnGoogleCorpRemoteDesktopClientPrivilege,
 BASE_FEATURE(kWebAuthnAndroidCredMan,
              "WebAuthenticationAndroidCredMan",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enabled in M118. Remove in or after M121.
-BASE_FEATURE(kWebAuthnAndroidCredManForHybrid,
-             "WebAuthenticationAndroidCredManForHybrid",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // Added in M115. Remove in or after M118
@@ -129,11 +124,6 @@ BASE_FEATURE(kChromeOsPasskeys,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
-// Enabled in M121. Remove in or after M124.
-BASE_FEATURE(kWebAuthnScreenReaderMode,
-             "WebAuthenticationScreenReaderMode",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enabled in M120. Remove in or after M123.
 BASE_FEATURE(kWebAuthnAccessibleTimeouts,
              "WebAuthenticationAccessibleTimeouts",
@@ -163,5 +153,11 @@ BASE_FEATURE(kWebAuthnAndroidFidoJson,
 BASE_FEATURE(kWebAuthnPreferVirtualPlatformAuthenticator,
              "WebAuthenticationPreferVirtualPlatformAuthenticator",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Deprecation flag.
+// Default disabled in M125. Remove in or after M128.
+BASE_FEATURE(kWebAuthnEnableAndroidCableAuthenticator,
+             "WebAuthenticationEnableAndroidCableAuthenticator",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace device

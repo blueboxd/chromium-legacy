@@ -35,13 +35,14 @@ public class HubTabSwitcherAppMenuFacility extends StationFacility<HubTabSwitche
 
     /** Selects "New tab" from the app menu. */
     public NewTabPageStation openNewTab() {
-        recheckEnterConditions();
+        recheckActiveConditions();
 
         NewTabPageStation destination =
                 new NewTabPageStation(
                         mChromeTabbedActivityTestRule,
                         /* incognito= */ false,
-                        /* isOpeningTab= */ true);
+                        /* isOpeningTab= */ true,
+                        /* isSelectingTab= */ true);
 
         // TODO(crbug/1506104): Uncomment once the app menu is hooked up to Hub.
         // return Trip.travelSync(
@@ -63,13 +64,14 @@ public class HubTabSwitcherAppMenuFacility extends StationFacility<HubTabSwitche
 
     /** Selects "New Incognito tab" from the app menu. */
     public NewTabPageStation openNewIncognitoTab() {
-        recheckEnterConditions();
+        recheckActiveConditions();
 
         NewTabPageStation destination =
                 new NewTabPageStation(
                         mChromeTabbedActivityTestRule,
                         /* incognito= */ true,
-                        /* isOpeningTab= */ true);
+                        /* isOpeningTab= */ true,
+                        /* isSelectingTab= */ true);
 
         // TODO(crbug/1506104): Uncomment once the app menu is hooked up to Hub.
         // return Trip.travelSync(
@@ -87,5 +89,29 @@ public class HubTabSwitcherAppMenuFacility extends StationFacility<HubTabSwitche
                                                 .getActivity()
                                                 .onMenuOrKeyboardAction(
                                                         R.id.new_incognito_tab_menu_id, true)));
+    }
+
+    /** Clicks "Select tabs" from the app menu. */
+    public HubTabSwitcherListEditorFacility clickSelectTabs() {
+        recheckActiveConditions();
+
+        HubTabSwitcherListEditorFacility listEditor =
+                new HubTabSwitcherListEditorFacility(this.mStation, mChromeTabbedActivityTestRule);
+
+        // TODO(crbug/1506104): Click menu item directly.
+        return StationFacility.enterSync(
+                listEditor,
+                t1 -> {
+                    StationFacility.exitSync(
+                            this,
+                            t2 -> {
+                                ThreadUtils.postOnUiThread(
+                                        () ->
+                                                mChromeTabbedActivityTestRule
+                                                        .getActivity()
+                                                        .onMenuOrKeyboardAction(
+                                                                R.id.menu_select_tabs, true));
+                            });
+                });
     }
 }

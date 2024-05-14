@@ -106,7 +106,7 @@ chromium-metrics-reviews@google.com.
 
 <enum name="FaviconAvailabilityStatus">
   <int value="0" label="Favicon available locally"/>
-  <int value="1" label="Favicon available via sync"/>
+  <int value="1" label="(obsolete) Favicon available via sync"/>
   <int value="2" label="Favicon not available"/>
 </enum>
 
@@ -196,7 +196,7 @@ chromium-metrics-reviews@google.com.
   <int value="26" label="PreferencesMigratedToBasic"/>
   <int value="27" label="PriceEmailNotificationsEnabled"/>
   <int value="28" label="Font"/>
-  <int value="29" label="OfferReaderMode"/>
+  <int value="29" label="(obsolete) OfferReaderMode"/>
   <int value="30" label="ReaderForAccessibility"/>
   <int value="31" label="Theme"/>
   <int value="32" label="AcceptLanguages"/>
@@ -238,6 +238,8 @@ chromium-metrics-reviews@google.com.
   <int value="67" label="SyncableMergeableListPrefForTesting"/>
   <int value="68" label="SyncableHistorySensitiveListPrefForTesting"/>
   <int value="69" label="AutofillPaymentCardBenefits"/>
+  <int value="70" label="CloseTabs"/>
+  <int value="71" label="ShowTabGroupsInBookmarkBar"/>
   <int value="100000" label="AppLanguagePromptShown"/>
   <int value="100001" label="(Obsolete) PrefExplicitLanguageAskShown"/>
   <int value="100002" label="ContextualSearchEnabled_Android"/>
@@ -263,7 +265,8 @@ chromium-metrics-reviews@google.com.
   <int value="100022" label="ShowHomeButton"/>
   <int value="100023" label="PinnedExtensions"/>
   <int value="100024" label="SupervisedUserApprovedExtensions"/>
-  <int value="100025" label="IsDefaultPageColorsOnHighContrast"/>
+  <int value="100025"
+      label="(obsolete, no longer synced) IsDefaultPageColorsOnHighContrast"/>
   <int value="100026" label="ShowFullscreenToolbar"/>
   <int value="100027" label="AllowJavascriptAppleEvents"/>
   <int value="100028" label="RestoreAppsAndPagesPrefName"/>
@@ -387,7 +390,9 @@ chromium-metrics-reviews@google.com.
   <int value="100142" label="AccessibilityImageLabelsEnabled"/>
   <int value="100143" label="AccessibilityImageLabelsOptInAccepted"/>
   <int value="100144" label="AccessibilityPdfOcrAlwaysActive"/>
-  <int value="100145" label="ApplyPageColorsOnlyOnIncreasedContrast"/>
+  <int value="100145"
+      label="(obsolete, no longer synced)
+             ApplyPageColorsOnlyOnIncreasedContrast"/>
   <int value="100146" label="DefaultCharset"/>
   <int value="100147" label="DefaultTasksByMimeType"/>
   <int value="100148" label="DefaultTasksBySuffix"/>
@@ -404,10 +409,10 @@ chromium-metrics-reviews@google.com.
   <int value="100159" label="NetworkPredictionOptions"/>
   <int value="100160" label="NetworkQualities"/>
   <int value="100161" label="(obsolete) NtpAppPageNames"/>
-  <int value="100162" label="PageColors"/>
+  <int value="100162" label="(obsolete, no longer synced) PageColors"/>
   <int value="100163" label="PerformanceTracingEnabled"/>
   <int value="100164" label="PluginsAlwaysOpenPdfExternally"/>
-  <int value="100165" label="PrivacySandboxApisEnabled"/>
+  <int value="100165" label="(obsolete) PrivacySandboxApisEnabled"/>
   <int value="100166" label="PrivacySandboxRelatedWebsiteSetsEnabled"/>
   <int value="100167" label="(obsolete) PrivacySandboxManuallyControlled"/>
   <int value="100168" label="PromptForDownload"/>
@@ -521,12 +526,15 @@ chromium-metrics-reviews@google.com.
       label="kProfileContentSettingsPartitionedExceptionsWindowPlacement"/>
   <int value="100261" label="kStandaloneWindowMigrationNudgeShown"/>
   <int value="100262" label="TabDiscardingExceptionsWithTime"/>
-  <int value="100263" label="kAccessibilityFaceGazeCursorSpeedUp"/>
-  <int value="100264" label="kAccessibilityFaceGazeCursorSpeedDown"/>
-  <int value="100265" label="kAccessibilityFaceGazeCursorSpeedLeft"/>
-  <int value="100266" label="kAccessibilityFaceGazeCursorSpeedRight"/>
-  <int value="100267" label="kAccessibilityFaceGazeCursorSmoothing"/>
-  <int value="100268" label="kAccessibilityFaceGazeCursorUseAcceleration"/>
+  <int value="100263" label="AccessibilityFaceGazeCursorSpeedUp"/>
+  <int value="100264" label="AccessibilityFaceGazeCursorSpeedDown"/>
+  <int value="100265" label="AccessibilityFaceGazeCursorSpeedLeft"/>
+  <int value="100266" label="AccessibilityFaceGazeCursorSpeedRight"/>
+  <int value="100267" label="AccessibilityFaceGazeCursorSmoothing"/>
+  <int value="100268" label="AccessibilityFaceGazeCursorUseAcceleration"/>
+  <int value="100269" label="FingerprintingProtectionEnabled"/>
+  <int value="100270" label="AccessibilityFaceGazeGesturesToMacros"/>
+  <int value="100271" label="AccessibilityFaceGazeGesturesToConfidence"/>
   <int value="200000" label="ArticlesForYouEnabled"/>
   <int value="200001" label="ContextualSearchEnabled_IOS"/>
   <int value="200002" label="DefaultCharset_IOS"/>
@@ -658,6 +666,12 @@ chromium-metrics-reviews@google.com.
   </int>
   <int value="13" label="CLIENT_DATA_OBSOLETE"/>
   <int value="100" label="UNKNOWN"/>
+</enum>
+
+<enum name="SyncErrorUiAction">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Dismissed"/>
+  <int value="2" label="Button clicked"/>
 </enum>
 
 <enum name="SyncFeatureOrTransport">
@@ -825,6 +839,9 @@ chromium-metrics-reviews@google.com.
   <int value="61" label="Autofill Wallet Credential"/>
   <int value="62" label="WebAPKs"/>
   <int value="63" label="Shared Tab Group Data"/>
+  <int value="64" label="Collaboration Groups"/>
+  <int value="65" label="Plus Address"/>
+  <int value="66" label="Compare"/>
 </enum>
 
 <enum name="SyncPassphraseType">
@@ -932,19 +949,6 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Migration was started"/>
   <int value="2" label="Migration failed (and will be retried)"/>
   <int value="3" label="Migration finished successfully"/>
-</enum>
-
-<enum name="SyncTypedUrlDatabaseError">
-  <int value="0" label="Error in MergeFullSyncData(): reading"/>
-  <int value="1" label="Error in MergeFullSyncData(): writing data"/>
-  <int value="2" label="Error in MergeFullSyncData(): writing metadata"/>
-  <int value="3" label="Error in ApplyIncrementalSyncChanges(): writing data"/>
-  <int value="4"
-      label="Error in ApplyIncrementalSyncChanges(): writing metadata"/>
-  <int value="5" label="Error in OnURLsDeleted(): reading metadata"/>
-  <int value="6" label="OnDatabaseError() called"/>
-  <int value="7" label="Error in LoadMetadata(): opening DB"/>
-  <int value="8" label="Error in LoadMetadata(): reading"/>
 </enum>
 
 <enum name="SyncUserEventType">

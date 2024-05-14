@@ -5,6 +5,7 @@
 #include "chrome/browser/task_manager/sampling/task_group_sampler.h"
 
 #include <limits>
+#include <optional>
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -118,10 +119,15 @@ TaskGroupSampler::~TaskGroupSampler() {
 
 double TaskGroupSampler::RefreshCpuUsage() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(worker_pool_sequenced_checker_);
-  double cpu_usage = process_metrics_->GetPlatformIndependentCPUUsage();
+  // TODO(https://crbug.com/331250452): Errors are converted to 0.0 for
+  // backwards compatibility. The values returned from this are surfaced by the
+  // `chrome.processes` extension API, so changing this will need developer
+  // outreach.
+  double cpu_usage =
+      process_metrics_->GetPlatformIndependentCPUUsage().value_or(0.0);
   if (!cpu_usage_calculated_) {
-    // First call to GetPlatformIndependentCPUUsage returns 0. Ignore it,
-    // and return NaN.
+    // First successful call to GetPlatformIndependentCPUUsage returns 0. Ignore
+    // it, and return NaN.
     cpu_usage_calculated_ = true;
     return std::numeric_limits<double>::quiet_NaN();
   }

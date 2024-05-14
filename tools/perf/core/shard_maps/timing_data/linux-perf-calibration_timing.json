@@ -1,9 +1,5 @@
 [
     {
-        "duration": "3.0",
-        "name": "load_library_perf_tests/_gtest_"
-    },
-    {
         "duration": "165.0",
         "name": "performance_browser_tests/_gtest_"
     },
@@ -14,5 +10,9 @@
     {
         "duration": "200.0",
         "name": "base_perftests/_gtest_"
+    },
+    {
+        "duration": "3.0",
+        "name": "load_library_perf_tests/_gtest_"
     }
 ]

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/physical_box_fragment.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -137,7 +138,7 @@ TEST_F(HitTestingTest, HitTestWithCallback) {
 
   // Ensure that occluders intersect with the target.
   const int div_height =
-      GetLayoutObjectByElementId("target")->StyleRef().UsedHeight().IntValue();
+      GetLayoutObjectByElementId("target")->StyleRef().Height().IntValue();
   occluder_1->SetInlineStyleProperty(CSSPropertyID::kMarginTop, "-10px");
   occluder_2->SetInlineStyleProperty(
       CSSPropertyID::kMarginTop,

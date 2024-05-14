@@ -112,14 +112,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kEnableIPv6ReachabilityOverride);
 // Enables TLS 1.3 early data.
 NET_EXPORT BASE_DECLARE_FEATURE(kEnableTLS13EarlyData);
 
-// Enables checking the X.509 keyUsage extension in TLS 1.2 for RSA server
-// certificates that chain to a local trust anchor.
-//
-// Independent of the setting of this feature, keyUsage is always checked at TLS
-// 1.3, for ECDSA certificates, and for all certificates that chain to a known
-// root.
-NET_EXPORT BASE_DECLARE_FEATURE(kRSAKeyUsageForLocalAnchors);
-
 // Enables optimizing the network quality estimation algorithms in network
 // quality estimator (NQE).
 NET_EXPORT BASE_DECLARE_FEATURE(kNetworkQualityEstimator);
@@ -212,11 +204,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kShortLaxAllowUnsafeThreshold);
 // This only has an effect if the cookie defaults to SameSite=Lax.
 NET_EXPORT BASE_DECLARE_FEATURE(kSameSiteDefaultChecksMethodRigorously);
 
-#if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
-// When enabled, use the Chrome Root Store instead of the system root store
-NET_EXPORT BASE_DECLARE_FEATURE(kChromeRootStoreUsed);
-#endif  // BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
-
 // When enabled, bssl::TrustStore implementations will use TRUSTED_LEAF,
 // TRUSTED_ANCHOR_OR_LEAF, and TRUSTED_ANCHOR as appropriate. When disabled,
 // bssl::TrustStore implementation will only use TRUSTED_ANCHOR.
@@ -302,11 +289,9 @@ NET_EXPORT BASE_DECLARE_FEATURE(kWaitForFirstPartySetsInit);
 NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kWaitForFirstPartySetsInitNavigationThrottleTimeout;
 
-// When enabled, sites can opt-in to having their cookies partitioned by
-// top-level site with the Partitioned attribute. Partitioned cookies will only
-// be sent when the browser is on the same top-level site that it was on when
-// the cookie was set.
-NET_EXPORT BASE_DECLARE_FEATURE(kPartitionedCookies);
+// When enabled, a cross-site ancestor chain bit is included in the partition
+// key in partitioned cookies.
+NET_EXPORT BASE_DECLARE_FEATURE(kAncestorChainBitEnabledInPartitionedCookies);
 
 // When enabled, cookie-related code will treat cookies containing '\0', '\r',
 // and '\n' as invalid and reject the cookie.
@@ -442,6 +427,19 @@ NET_EXPORT extern const base::FeatureParam<bool>
 NET_EXPORT extern const base::FeatureParam<bool>
     kIpPrivacyAddHeaderToProxiedRequests;
 
+// Token expirations will have a random time between 5 seconds and this delta
+// subtracted from their expiration, in order to even out the load on the token
+// servers.
+NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kIpPrivacyExpirationFuzz;
+
+// If true, only proxy traffic when the top-level site uses the http:// or
+// https:// schemes. This prevents attempts to proxy from top-level sites with
+// chrome://, chrome-extension://, or other non-standard schemes, in addition to
+// top-level sites using less common schemes like blob:// and data://.
+NET_EXPORT extern const base::FeatureParam<bool>
+    kIpPrivacyRestrictTopLevelSiteSchemes;
+
 // Whether QuicParams::migrate_sessions_on_network_change_v2 defaults to true or
 // false. This is needed as a workaround to set this value to true on Android
 // but not on WebView (until crbug.com/1430082 has been fixed).
@@ -513,6 +511,15 @@ NET_EXPORT BASE_DECLARE_FEATURE(kUseNewAlpsCodepointQUIC);
 // TODO(https://crbug.com/853508): Remove after the bug fix will go well for a
 // while on stable channels.
 NET_EXPORT BASE_DECLARE_FEATURE(kTreatHTTPExpiresHeaderValueZeroAsExpired);
+
+// Enables truncating the response body to the content length.
+NET_EXPORT BASE_DECLARE_FEATURE(kTruncateBodyToContentLength);
+
+#if BUILDFLAG(IS_MAC)
+// Reduces the frequency of IP address change notifications that result in
+// TCP and QUIC connection resets.
+NET_EXPORT BASE_DECLARE_FEATURE(kReduceIPAddressChangeNotification);
+#endif  // BUILDFLAG(IS_MAC)
 
 }  // namespace net::features
 

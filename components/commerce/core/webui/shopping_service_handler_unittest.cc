@@ -22,6 +22,8 @@
 #include "components/power_bookmarks/core/proto/power_bookmark_meta.pb.h"
 #include "components/power_bookmarks/core/proto/shopping_specifics.pb.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/ukm/test_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/webui/resources/cr_components/commerce/shopping_service.mojom.h"
@@ -54,7 +56,10 @@ class MockPage : public shopping_service::mojom::Page {
 
 class MockDelegate : public ShoppingServiceHandler::Delegate {
  public:
-  MockDelegate() { SetCurrentTabUrl(GURL("http://example.com")); }
+  MockDelegate() {
+    SetCurrentTabUrl(GURL("http://example.com"));
+    SetCurrentTabUkmSourceId(123);
+  }
   ~MockDelegate() override = default;
 
   MOCK_METHOD(std::optional<GURL>, GetCurrentTabUrl, (), (override));
@@ -66,10 +71,15 @@ class MockDelegate : public ShoppingServiceHandler::Delegate {
               (),
               (override));
   MOCK_METHOD(void, ShowBookmarkEditorForCurrentUrl, (), (override));
+  MOCK_METHOD(ukm::SourceId, GetCurrentTabUkmSourceId, (), (override));
 
   void SetCurrentTabUrl(const GURL& url) {
     ON_CALL(*this, GetCurrentTabUrl)
         .WillByDefault(testing::Return(std::make_optional<GURL>(url)));
+  }
+
+  void SetCurrentTabUkmSourceId(ukm::SourceId id) {
+    ON_CALL(*this, GetCurrentTabUkmSourceId).WillByDefault(testing::Return(id));
   }
 };
 
@@ -121,7 +131,10 @@ class ShoppingServiceHandlerTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    bookmark_model_ = bookmarks::TestBookmarkClient::CreateModel();
+    auto client = std::make_unique<bookmarks::TestBookmarkClient>();
+    client->SetIsSyncFeatureEnabledIncludingBookmarks(true);
+    bookmark_model_ =
+        bookmarks::TestBookmarkClient::CreateModelWithClient(std::move(client));
     shopping_service_ = std::make_unique<MockShoppingService>();
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     RegisterPrefs(pref_service_->registry());
@@ -421,6 +434,34 @@ TEST_F(ShoppingServiceHandlerTest,
   run_loop.Run();
 }
 
+TEST_F(ShoppingServiceHandlerTest, TestGetProductInfoForUrl) {
+  base::RunLoop run_loop;
+
+  shopping_service_->SetIsPriceInsightsEligible(true);
+
+  std::optional<commerce::ProductInfo> info;
+  info.emplace();
+  info->title = "example_title";
+  info->product_cluster_title = "example_cluster_title";
+  info->product_cluster_id = std::optional<uint64_t>(123u);
+  shopping_service_->SetResponseForGetProductInfoForUrl(info);
+
+  handler_->GetProductInfoForUrl(
+      GURL("http://example.com/"),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, const GURL& url,
+             shopping_service::mojom::ProductInfoPtr product_info) {
+            ASSERT_EQ("example_title", product_info->title);
+            ASSERT_EQ("example_cluster_title", product_info->cluster_title);
+            ASSERT_EQ(123u, product_info->cluster_id);
+            ASSERT_EQ("http://example.com/", url.spec());
+            run_loop->Quit();
+          },
+          &run_loop));
+
+  run_loop.Run();
+}
+
 TEST_F(ShoppingServiceHandlerTest,
        TestGetProductInfoForCurrentUrl_FeatureIneligible) {
   base::RunLoop run_loop;
@@ -571,6 +612,7 @@ TEST_F(ShoppingServiceHandlerTest,
 }
 
 TEST_F(ShoppingServiceHandlerTest, TestTrackPriceForCurrentUrl) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   const bookmarks::BookmarkNode* product = AddProductBookmark(
       bookmark_model_.get(), u"product 1", GURL("http://example.com/1"), 123L,
       false, 1230000, "usd");
@@ -582,6 +624,12 @@ TEST_F(ShoppingServiceHandlerTest, TestTrackPriceForCurrentUrl) {
       .Times(1);
 
   handler_->SetPriceTrackingStatusForCurrentUrl(true);
+
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::Shopping_ShoppingAction::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  ukm_recorder.ExpectEntryMetric(
+      entries[0], ukm::builders::Shopping_ShoppingAction::kPriceTrackedName, 1);
 }
 
 TEST_F(ShoppingServiceHandlerTest, TestUntrackPriceForCurrentUrl) {
@@ -618,6 +666,39 @@ TEST_F(ShoppingServiceHandlerTest,
 
 TEST_F(ShoppingServiceHandlerTest, TestShowBookmarkEditorForCurrentUrl) {
   EXPECT_CALL(*delegate_, ShowBookmarkEditorForCurrentUrl).Times(1);
+
+  handler_->ShowBookmarkEditorForCurrentUrl();
+}
+
+TEST_F(ShoppingServiceHandlerTest, TestGetProductSpecifications) {
+  ProductSpecifications specs;
+  specs.product_dimension_map[1] = "color";
+  ProductSpecifications::Product product;
+  product.product_cluster_id = 12345L;
+  product.title = "title";
+  product.product_dimension_values[1] = {"red"};
+  specs.products.push_back(std::move(product));
+
+  shopping_service_->SetResponseForGetProductSpecificationsForUrls(
+      std::move(specs));
+
+  base::RunLoop run_loop;
+  handler_->GetProductSpecificationsForUrls(
+      {GURL("http://example.com")},
+      base::BindOnce(
+          [](base::RunLoop* run_loop,
+             shopping_service::mojom::ProductSpecificationsPtr specs_ptr) {
+            ASSERT_EQ("color", specs_ptr->product_dimension_map[1]);
+
+            ASSERT_EQ(12345u, specs_ptr->products[0]->product_cluster_id);
+            ASSERT_EQ("red",
+                      specs_ptr->products[0]->product_dimension_values[1][0]);
+            ASSERT_EQ("title", specs_ptr->products[0]->title);
+
+            run_loop->Quit();
+          },
+          &run_loop));
+  run_loop.Run();
 
   handler_->ShowBookmarkEditorForCurrentUrl();
 }

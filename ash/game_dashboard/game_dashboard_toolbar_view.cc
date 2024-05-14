@@ -12,16 +12,19 @@
 #include "ash/constants/ash_features.h"
 #include "ash/game_dashboard/game_dashboard_context.h"
 #include "ash/game_dashboard/game_dashboard_controller.h"
+#include "ash/game_dashboard/game_dashboard_metrics.h"
 #include "ash/game_dashboard/game_dashboard_utils.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/icon_button.h"
+#include "ash/style/system_shadow.h"
 #include "base/check.h"
 #include "base/types/cxx23_to_underlying.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
+#include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
@@ -31,6 +34,8 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
+#include "ui/views/highlight_border.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -48,16 +53,20 @@ constexpr int kVerticalInset = 4;
 // Padding between children in the toolbar.
 constexpr int kBetweenChildSpacing = 4;
 
-std::unique_ptr<IconButton> CreateIconButton(base::RepeatingClosure callback,
-                                             const gfx::VectorIcon* icon,
-                                             int view_id,
-                                             const std::u16string& text,
-                                             bool is_togglable) {
+std::unique_ptr<IconButton> CreateIconButton(
+    base::RepeatingClosure callback,
+    const gfx::VectorIcon* icon,
+    int view_id,
+    const std::u16string& text,
+    bool is_togglable,
+    ui::ColorId icon_color = cros_tokens::kCrosSysOnSurface) {
   // TODO(b/290696780): Update logic so the toolbar can drag from icon buttons.
   auto button = std::make_unique<IconButton>(
       std::move(callback), IconButton::Type::kMedium, icon, text,
       /*is_togglable=*/is_togglable, /*has_border=*/true);
   button->SetID(view_id);
+  button->SetIconColor(icon_color);
+  button->SetBackgroundColor(SK_ColorTRANSPARENT);
   return button;
 }
 
@@ -232,9 +241,11 @@ GameDashboardToolbarView::GameDashboardToolbarView(
   SetCrossAxisAlignment(views::BoxLayout::CrossAxisAlignment::kCenter);
   SetBackground(views::CreateThemedRoundedRectBackground(
       cros_tokens::kCrosSysSystemBaseElevatedOpaque, kCornerRadius));
-  SetPaintToLayer();
-  layer()->SetRoundedCornerRadius(gfx::RoundedCornersF(kCornerRadius));
-  layer()->SetFillsBoundsOpaquely(false);
+  SetBorder(views::CreateThemedRoundedRectBorder(
+      1, kCornerRadius, ui::ColorIds::kColorCrosSystemHighlightBorder));
+  shadow_ = SystemShadow::CreateShadowOnNinePatchLayerForView(
+      this, SystemShadow::Type::kElevation12);
+  shadow_->SetRoundedCornerRadius(kCornerRadius);
 
   AddShortcutTiles();
 }
@@ -321,6 +332,7 @@ void GameDashboardToolbarView::OnGamepadButtonPressed() {
       child->SetVisible(is_expanded_);
     }
   }
+  UpdateGamepadButtonTooltipText();
   context_->MaybeUpdateToolbarWidgetBounds();
 }
 
@@ -335,18 +347,22 @@ void GameDashboardToolbarView::OnGameControlsButtonPressed() {
 }
 
 void GameDashboardToolbarView::OnRecordButtonPressed() {
+  context_->set_recording_from_main_menu(false);
+
   if (record_game_button_->toggled()) {
     CaptureModeController::Get()->EndVideoRecording(
         EndRecordingReason::kGameToolbarStopRecordingButton);
   } else {
-    GameDashboardController::Get()->StartCaptureSession(
-        context_, /*record_instantly=*/true);
+    GameDashboardController::Get()->StartCaptureSession(context_);
   }
 }
 
 void GameDashboardToolbarView::OnScreenshotButtonPressed() {
   CaptureModeController::Get()->CaptureScreenshotOfGivenWindow(
       context_->game_window());
+
+  RecordGameDashboardScreenshotTakeSource(context_->app_id(),
+                                          GameDashboardMenu::kToolbar);
 }
 
 void GameDashboardToolbarView::AddShortcutTiles() {
@@ -357,8 +373,9 @@ void GameDashboardToolbarView::AddShortcutTiles() {
       &kGdToolbarIcon, base::to_underlying(ToolbarViewId::kGamepadButton),
       l10n_util::GetStringUTF16(
           IDS_ASH_GAME_DASHBOARD_TOOLBAR_TILE_BUTTON_TITLE),
-      /*is_togglable=*/false));
+      /*is_togglable=*/false, /*icon_color=*/cros_tokens::kCrosSysPrimary));
 
+  UpdateGamepadButtonTooltipText();
   MayAddGameControlsTile();
 
   if (base::FeatureList::IsEnabled(
@@ -372,8 +389,6 @@ void GameDashboardToolbarView::AddShortcutTiles() {
             IDS_ASH_GAME_DASHBOARD_RECORD_GAME_TILE_BUTTON_TITLE),
         /*is_togglable=*/true));
     record_game_button_->SetVectorIcon(kGdRecordGameIcon);
-    record_game_button_->SetIconColor(cros_tokens::kCrosSysOnSurface);
-
     record_game_button_->SetBackgroundToggledColor(cros_tokens::kCrosSysError);
     record_game_button_->SetToggledVectorIcon(kCaptureModeCircleStopIcon);
     record_game_button_->SetIconToggledColor(cros_tokens::kCrosSysOnError);
@@ -381,13 +396,15 @@ void GameDashboardToolbarView::AddShortcutTiles() {
         GameDashboardController::Get()->active_recording_context() == context_);
   }
 
-  AddChildView(CreateIconButton(
+  auto* screenshot_button = AddChildView(CreateIconButton(
       base::BindRepeating(&GameDashboardToolbarView::OnScreenshotButtonPressed,
                           base::Unretained(this)),
       &kGdScreenshotIcon, base::to_underlying(ToolbarViewId::kScreenshotButton),
       l10n_util::GetStringUTF16(
           IDS_ASH_GAME_DASHBOARD_SCREENSHOT_TILE_BUTTON_TITLE),
       /*is_togglable=*/false));
+  screenshot_button->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_ASH_GAME_DASHBOARD_SCREENSHOT_TILE_BUTTON_TITLE));
 }
 
 void GameDashboardToolbarView::MayAddGameControlsTile() {
@@ -420,9 +437,20 @@ void GameDashboardToolbarView::UpdateRecordGameButton(
       is_recording_game_window ||
       CaptureModeController::Get()->can_start_new_recording());
   record_game_button_->SetToggled(is_recording_game_window);
+  record_game_button_->SetTooltipText(l10n_util::GetStringUTF16(
+      is_recording_game_window
+          ? IDS_ASH_GAME_DASHBOARD_RECORD_GAME_TILE_TOOLTIPS_RECORD_STOP
+          : IDS_ASH_GAME_DASHBOARD_RECORD_GAME_TILE_TOOLTIPS_RECORD_START));
 }
 
-BEGIN_METADATA(GameDashboardToolbarView, views::BoxLayoutView)
+void GameDashboardToolbarView::UpdateGamepadButtonTooltipText() {
+  gamepad_button_->SetTooltipText(l10n_util::GetStringUTF16(
+      is_expanded_
+          ? IDS_ASH_GAME_DASHBOARD_TOOLBAR_TILE_TOOLTIPS_CLOSE_TOOLBAR
+          : IDS_ASH_GAME_DASHBOARD_TOOLBAR_TILE_TOOLTIPS_OPEN_TOOLBAR));
+}
+
+BEGIN_METADATA(GameDashboardToolbarView)
 END_METADATA
 
 }  // namespace ash

@@ -11,6 +11,7 @@
 
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/apps/app_service/app_install/app_install_types.h"
 #include "content/public/browser/navigation_throttle.h"
 
 static_assert(BUILDFLAG(IS_CHROMEOS));
@@ -19,6 +20,8 @@ namespace apps {
 
 class PackageId;
 
+// Matches URIs of the form almanac://install-app?package_id=<package id> and
+// triggers an installation using app metadata from Almanac.
 class AppInstallNavigationThrottle : public content::NavigationThrottle {
  public:
   using ThrottleCheckResult = content::NavigationThrottle::ThrottleCheckResult;
@@ -29,7 +32,17 @@ class AppInstallNavigationThrottle : public content::NavigationThrottle {
       content::NavigationHandle* handle);
 
   // Exposed for testing.
-  static std::optional<PackageId> ExtractPackageId(std::string_view query);
+  struct QueryParams {
+    QueryParams();
+    QueryParams(std::optional<PackageId> package_id, AppInstallSurface source);
+    QueryParams(QueryParams&&);
+    ~QueryParams();
+    bool operator==(const QueryParams& other) const;
+
+    std::optional<PackageId> package_id;
+    AppInstallSurface source = AppInstallSurface::kAppInstallUriUnknown;
+  };
+  static QueryParams ExtractQueryParams(std::string_view query);
 
   explicit AppInstallNavigationThrottle(
       content::NavigationHandle* navigation_handle);

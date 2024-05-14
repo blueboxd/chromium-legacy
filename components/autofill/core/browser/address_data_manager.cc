@@ -16,6 +16,9 @@
 #include "components/autofill/core/browser/metrics/profile_token_quality_metrics.h"
 #include "components/autofill/core/browser/metrics/stored_profile_metrics.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_prefs.h"
+#include "components/prefs/pref_service.h"
+#include "components/sync/base/model_type.h"
 #include "components/webdata/common/web_data_results.h"
 
 namespace autofill {
@@ -51,6 +54,8 @@ void OrderProfiles(std::vector<AutofillProfile*>& profiles,
 
 AddressDataManager::AddressDataManager(
     scoped_refptr<AutofillWebDataService> webdata_service,
+    PrefService* pref_service,
+    StrikeDatabaseBase* strike_database,
     base::RepeatingClosure notify_pdm_observers,
     const std::string& app_locale)
     : notify_pdm_observers_(notify_pdm_observers),
@@ -61,10 +66,22 @@ AddressDataManager::AddressDataManager(
     webdata_service_->SetAutofillProfileChangedCallback(
         base::BindRepeating(&AddressDataManager::OnAutofillProfileChanged,
                             weak_factory_.GetWeakPtr()));
+    webdata_service_observer_.Observe(webdata_service_.get());
   }
+  SetPrefService(pref_service);
+  SetStrikeDatabase(strike_database);
 }
 
-AddressDataManager::~AddressDataManager() = default;
+AddressDataManager::~AddressDataManager() {
+  CancelAllPendingQueries();
+}
+
+void AddressDataManager::OnAutofillChangedBySync(syncer::ModelType model_type) {
+  if (model_type == syncer::ModelType::AUTOFILL_PROFILE ||
+      model_type == syncer::ModelType::CONTACT_INFO) {
+    LoadProfiles();
+  }
+}
 
 void AddressDataManager::OnWebDataServiceRequestDone(
     WebDataServiceBase::Handle handle,
@@ -101,14 +118,7 @@ void AddressDataManager::OnWebDataServiceRequestDone(
     has_initial_load_finished_ = true;
     LogStoredDataMetrics();
   }
-  // TODO(b/322170538): Notify observers: `PDM::Refresh()` is the only
-  // mechanism to read from the database. Since the DB sequence is a sequenced
-  // task runner, and since address data is queried before payments data,
-  // `PDM::OnWebDataServiceRequestDone()` is always called after this
-  // function. This makes sure that observers are notified.
-  // By notifying observers here too, more events are triggered (once when
-  // address data has finished reloading and once when credit card data has
-  // finished reloading). This breaks just about every test.
+  notify_pdm_observers_.Run();
 }
 
 std::vector<AutofillProfile*> AddressDataManager::GetProfiles(
@@ -147,7 +157,7 @@ AutofillProfile* AddressDataManager::GetProfileByGUID(
 }
 
 void AddressDataManager::AddProfile(const AutofillProfile& profile) {
-  if (!webdata_service_) {
+  if (!webdata_service_ || !IsAutofillProfileEnabled()) {
     return;
   }
   if (profile.IsEmpty(app_locale_)) {
@@ -203,6 +213,10 @@ void AddressDataManager::UpdateProfile(const AutofillProfile& profile) {
 }
 
 void AddressDataManager::RemoveProfile(const std::string& guid) {
+  if (!webdata_service_) {
+    return;
+  }
+
   // Find the profile to remove.
   // TODO(crbug.com/1420547): This shouldn't be necessary. Providing a `guid`
   // to the `AutofillProfileChange()` should suffice for removals.
@@ -252,6 +266,204 @@ void AddressDataManager::RecordUseOf(const AutofillProfile& profile) {
   AutofillProfile updated_profile = *adm_profile;
   updated_profile.RecordAndLogUse();
   UpdateProfile(updated_profile);
+}
+
+bool AddressDataManager::IsProfileMigrationBlocked(
+    const std::string& guid) const {
+  AutofillProfile* profile = GetProfileByGUID(guid);
+  DCHECK(profile == nullptr ||
+         profile->source() == AutofillProfile::Source::kLocalOrSyncable);
+  if (!GetProfileMigrationStrikeDatabase()) {
+    return false;
+  }
+  return GetProfileMigrationStrikeDatabase()->ShouldBlockFeature(guid);
+}
+
+void AddressDataManager::AddStrikeToBlockProfileMigration(
+    const std::string& guid) {
+  if (!GetProfileMigrationStrikeDatabase()) {
+    return;
+  }
+  GetProfileMigrationStrikeDatabase()->AddStrike(guid);
+}
+
+void AddressDataManager::AddMaxStrikesToBlockProfileMigration(
+    const std::string& guid) {
+  if (AutofillProfileMigrationStrikeDatabase* db =
+          GetProfileMigrationStrikeDatabase()) {
+    db->AddStrikes(db->GetMaxStrikesLimit() - db->GetStrikes(guid), guid);
+  }
+}
+
+void AddressDataManager::RemoveStrikesToBlockProfileMigration(
+    const std::string& guid) {
+  if (!GetProfileMigrationStrikeDatabase()) {
+    return;
+  }
+  GetProfileMigrationStrikeDatabase()->ClearStrikes(guid);
+}
+
+bool AddressDataManager::IsNewProfileImportBlockedForDomain(
+    const GURL& url) const {
+  if (!GetProfileSaveStrikeDatabase() || !url.is_valid() || !url.has_host()) {
+    return false;
+  }
+
+  return GetProfileSaveStrikeDatabase()->ShouldBlockFeature(url.host());
+}
+
+void AddressDataManager::AddStrikeToBlockNewProfileImportForDomain(
+    const GURL& url) {
+  if (!GetProfileSaveStrikeDatabase() || !url.is_valid() || !url.has_host()) {
+    return;
+  }
+  GetProfileSaveStrikeDatabase()->AddStrike(url.host());
+}
+
+void AddressDataManager::RemoveStrikesToBlockNewProfileImportForDomain(
+    const GURL& url) {
+  if (!GetProfileSaveStrikeDatabase() || !url.is_valid() || !url.has_host()) {
+    return;
+  }
+  GetProfileSaveStrikeDatabase()->ClearStrikes(url.host());
+}
+
+bool AddressDataManager::IsProfileUpdateBlocked(const std::string& guid) const {
+  if (!GetProfileUpdateStrikeDatabase()) {
+    return false;
+  }
+  return GetProfileUpdateStrikeDatabase()->ShouldBlockFeature(guid);
+}
+
+void AddressDataManager::AddStrikeToBlockProfileUpdate(
+    const std::string& guid) {
+  if (!GetProfileUpdateStrikeDatabase()) {
+    return;
+  }
+  GetProfileUpdateStrikeDatabase()->AddStrike(guid);
+}
+
+void AddressDataManager::RemoveStrikesToBlockProfileUpdate(
+    const std::string& guid) {
+  if (!GetProfileUpdateStrikeDatabase()) {
+    return;
+  }
+  GetProfileUpdateStrikeDatabase()->ClearStrikes(guid);
+}
+
+bool AddressDataManager::AreAddressSuggestionsBlocked(
+    FormSignature form_signature,
+    FieldSignature field_signature,
+    const GURL& gurl) const {
+  if (!GetAddressSuggestionStrikeDatabase()) {
+    return false;
+  }
+  return GetAddressSuggestionStrikeDatabase()->ShouldBlockFeature(
+      AddressSuggestionStrikeDatabase::GetId(form_signature, field_signature,
+                                             gurl));
+}
+
+void AddressDataManager::AddStrikeToBlockAddressSuggestions(
+    FormSignature form_signature,
+    FieldSignature field_signature,
+    const GURL& gurl) {
+  if (!GetAddressSuggestionStrikeDatabase()) {
+    return;
+  }
+  GetAddressSuggestionStrikeDatabase()->AddStrike(
+      AddressSuggestionStrikeDatabase::GetId(form_signature, field_signature,
+                                             gurl));
+}
+
+void AddressDataManager::ClearStrikesToBlockAddressSuggestions(
+    FormSignature form_signature,
+    FieldSignature field_signature,
+    const GURL& gurl) {
+  if (!GetAddressSuggestionStrikeDatabase()) {
+    return;
+  }
+  GetAddressSuggestionStrikeDatabase()->ClearStrikes(
+      AddressSuggestionStrikeDatabase::GetId(form_signature, field_signature,
+                                             gurl));
+}
+
+void AddressDataManager::SetPrefService(PrefService* pref_service) {
+  pref_service_ = pref_service;
+  profile_enabled_pref_ = std::make_unique<BooleanPrefMember>();
+  // `pref_service_` can be nullptr in tests. Using base::Unretained(this) is
+  // safe because observer instances are destroyed once `this` is destroyed.
+  if (pref_service_) {
+    profile_enabled_pref_->Init(prefs::kAutofillProfileEnabled, pref_service_,
+                                base::BindRepeating(
+                                    [](AddressDataManager* self) {
+                                      self->most_common_country_code_.clear();
+                                      self->LoadProfiles();
+                                    },
+                                    this));
+  }
+}
+
+void AddressDataManager::SetStrikeDatabase(
+    StrikeDatabaseBase* strike_database) {
+  if (!strike_database) {
+    return;
+  }
+  profile_migration_strike_database_ =
+      std::make_unique<AutofillProfileMigrationStrikeDatabase>(strike_database);
+  profile_save_strike_database_ =
+      std::make_unique<AutofillProfileSaveStrikeDatabase>(strike_database);
+  profile_update_strike_database_ =
+      std::make_unique<AutofillProfileUpdateStrikeDatabase>(strike_database);
+  address_suggestion_strike_database_ =
+      std::make_unique<AddressSuggestionStrikeDatabase>(strike_database);
+}
+
+AutofillProfileMigrationStrikeDatabase*
+AddressDataManager::GetProfileMigrationStrikeDatabase() {
+  return const_cast<AutofillProfileMigrationStrikeDatabase*>(
+      std::as_const(*this).GetProfileMigrationStrikeDatabase());
+}
+
+const AutofillProfileMigrationStrikeDatabase*
+AddressDataManager::GetProfileMigrationStrikeDatabase() const {
+  return profile_migration_strike_database_.get();
+}
+
+AutofillProfileSaveStrikeDatabase*
+AddressDataManager::GetProfileSaveStrikeDatabase() {
+  return const_cast<AutofillProfileSaveStrikeDatabase*>(
+      std::as_const(*this).GetProfileSaveStrikeDatabase());
+}
+
+const AutofillProfileSaveStrikeDatabase*
+AddressDataManager::GetProfileSaveStrikeDatabase() const {
+  return profile_save_strike_database_.get();
+}
+
+AutofillProfileUpdateStrikeDatabase*
+AddressDataManager::GetProfileUpdateStrikeDatabase() {
+  return const_cast<AutofillProfileUpdateStrikeDatabase*>(
+      std::as_const(*this).GetProfileUpdateStrikeDatabase());
+}
+
+const AutofillProfileUpdateStrikeDatabase*
+AddressDataManager::GetProfileUpdateStrikeDatabase() const {
+  return profile_update_strike_database_.get();
+}
+
+AddressSuggestionStrikeDatabase*
+AddressDataManager::GetAddressSuggestionStrikeDatabase() {
+  return const_cast<AddressSuggestionStrikeDatabase*>(
+      std::as_const(*this).GetAddressSuggestionStrikeDatabase());
+}
+
+const AddressSuggestionStrikeDatabase*
+AddressDataManager::GetAddressSuggestionStrikeDatabase() const {
+  return address_suggestion_strike_database_.get();
+}
+
+bool AddressDataManager::IsAutofillProfileEnabled() const {
+  return prefs::IsAutofillProfileEnabled(pref_service_);
 }
 
 void AddressDataManager::CancelPendingQuery(
@@ -412,7 +624,13 @@ void AddressDataManager::OnProfileChangeDone(const std::string& guid) {
   HandleNextProfileChange(guid);
 }
 
-std::string AddressDataManager::MostCommonCountryCodeFromProfiles() const {
+const std::string& AddressDataManager::MostCommonCountryCodeFromProfiles()
+    const {
+  // When `!IsAutofillProfileEnabled()`, `most_common_country_code_` is empty,
+  // since it is reset by a pref observer. See `SetPrefService()`.
+  if (!most_common_country_code_.empty() || !IsAutofillProfileEnabled()) {
+    return most_common_country_code_;
+  }
   // Count up country codes from existing profiles.
   std::map<std::string, int> votes;
   const std::vector<AutofillProfile*>& profiles = GetProfiles();
@@ -428,12 +646,13 @@ std::string AddressDataManager::MostCommonCountryCodeFromProfiles() const {
 
   // Take the most common country code.
   if (!votes.empty()) {
-    return base::ranges::max_element(
-               votes, [](auto& a, auto& b) { return a.second < b.second; })
-        ->first;
+    most_common_country_code_ =
+        base::ranges::max_element(votes, [](auto& a, auto& b) {
+          return a.second < b.second;
+        })->first;
   }
 
-  return std::string();
+  return most_common_country_code_;
 }
 
 void AddressDataManager::LogStoredDataMetrics() const {

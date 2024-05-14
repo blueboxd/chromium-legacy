@@ -135,7 +135,7 @@ class ImageLoader::Task {
       return;
     ExecutionContext* context = loader_->GetElement()->GetExecutionContext();
     probe::AsyncTask async_task(context, &async_task_context_);
-    loader_->DoUpdateFromElement(world_, update_behavior_);
+    loader_->DoUpdateFromElement(world_.Get(), update_behavior_);
   }
 
   void ClearLoader() {
@@ -148,7 +148,7 @@ class ImageLoader::Task {
  private:
   WeakPersistent<ImageLoader> loader_;
   UpdateFromElementBehavior update_behavior_;
-  scoped_refptr<const DOMWrapperWorld> world_;
+  Persistent<const DOMWrapperWorld> world_;
 
   probe::AsyncTaskContext async_task_context_;
   base::WeakPtrFactory<Task> weak_factory_{this};
@@ -420,11 +420,10 @@ void ImageLoader::UpdateImageState(ImageResourceContent* new_image_content) {
   delay_until_image_notify_finished_ = nullptr;
 }
 
-void ImageLoader::DoUpdateFromElement(
-    scoped_refptr<const DOMWrapperWorld> world,
-    UpdateFromElementBehavior update_behavior,
-    UpdateType update_type,
-    bool force_blocking) {
+void ImageLoader::DoUpdateFromElement(const DOMWrapperWorld* world,
+                                      UpdateFromElementBehavior update_behavior,
+                                      UpdateType update_type,
+                                      bool force_blocking) {
   // FIXME: According to
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/embedded-content.html#the-img-element:the-img-element-55
   // When "update image" is called due to environment changes and the load
@@ -460,6 +459,8 @@ void ImageLoader::DoUpdateFromElement(
         url.ProtocolIsData()) {
       if (auto transparent_image =
               BitmapImage::MaybeCreateTransparentPlaceholderImage(url)) {
+        document.CountUse(
+            WebFeature::kSimplifyLoadingTransparentPlaceholderImage);
         new_image_content = MakeGarbageCollected<ImageResourceContent>(
             std::move(transparent_image));
       }
@@ -965,8 +966,9 @@ bool ImageLoader::GetImageAnimationPolicy(
   return true;
 }
 
-ScriptPromise ImageLoader::Decode(ScriptState* script_state,
-                                  ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLUndefined> ImageLoader::Decode(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   // It's possible that |script_state|'s context isn't valid, which means we
   // should immediately reject the request. This is possible in situations like
@@ -976,13 +978,13 @@ ScriptPromise ImageLoader::Decode(ScriptState* script_state,
   if (!script_state->ContextIsValid() || !execution_context) {
     exception_state.ThrowDOMException(DOMExceptionCode::kEncodingError,
                                       "The source image cannot be decoded.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   UseCounter::Count(execution_context, WebFeature::kImageDecodeAPI);
 
   auto* request = MakeGarbageCollected<DecodeRequest>(
-      this, MakeGarbageCollected<ScriptPromiseResolver>(
+      this, MakeGarbageCollected<ScriptPromiseResolverTyped<IDLUndefined>>(
                 script_state, exception_state.GetContext()));
   execution_context->GetAgent()->event_loop()->EnqueueMicrotask(WTF::BindOnce(
       &DecodeRequest::ProcessForTask, WrapWeakPersistent(request)));
@@ -1021,8 +1023,9 @@ void ImageLoader::ElementDidMoveToNewDocument() {
 // request.
 uint64_t ImageLoader::DecodeRequest::s_next_request_id_ = 0;
 
-ImageLoader::DecodeRequest::DecodeRequest(ImageLoader* loader,
-                                          ScriptPromiseResolver* resolver)
+ImageLoader::DecodeRequest::DecodeRequest(
+    ImageLoader* loader,
+    ScriptPromiseResolverTyped<IDLUndefined>* resolver)
     : request_id_(s_next_request_id_++), resolver_(resolver), loader_(loader) {}
 
 void ImageLoader::DecodeRequest::Resolve() {

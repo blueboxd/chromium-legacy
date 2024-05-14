@@ -21,6 +21,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "url/gurl.h"
 
 namespace ash {
 
@@ -31,7 +32,7 @@ constexpr char kUser2Email[] = "user2@focusmode";
 
 bool IsEndingMomentNudgeShown() {
   return Shell::Get()->anchored_nudge_manager()->IsNudgeShown(
-      "focus_mode_ending_moment_nudge");
+      focus_mode_util::kFocusModeEndingMomentNudgeId);
 }
 
 }  // namespace
@@ -196,11 +197,12 @@ TEST_F(FocusModeControllerMultiUserTest, TasksFlow) {
   const std::string title = "Focus Task";
   controller->SetSelectedTask(std::make_unique<api::Task>(
                                   /*id=*/base::NumberToString(id), title,
-                                  /*due=*/absl::nullopt, /*completed=*/false,
+                                  /*due=*/std::nullopt, /*completed=*/false,
                                   /*has_subtasks=*/false,
                                   /*has_email_link=*/false,
                                   /*has_notes=*/false,
-                                  /*updated=*/base::Time::Now())
+                                  /*updated=*/base::Time::Now(),
+                                  /*web_view_link=*/GURL())
                                   .get());
   EXPECT_TRUE(controller->HasSelectedTask());
   EXPECT_EQ(base::NumberToString(id), controller->selected_task_id());

@@ -72,6 +72,12 @@ std::unique_ptr<MessagePump> MessagePump::Create(MessagePumpType type) {
       // TODO(abarth): Figure out if we need this.
       NOTREACHED();
       return nullptr;
+#elif BUILDFLAG(IS_ANDROID)
+      {
+        auto message_pump = std::make_unique<MessagePumpAndroid>();
+        message_pump->set_is_type_ui(true);
+        return message_pump;
+      }
 #else
       return std::make_unique<MessagePumpForUI>();
 #endif
@@ -81,7 +87,7 @@ std::unique_ptr<MessagePump> MessagePump::Create(MessagePumpType type) {
 
 #if BUILDFLAG(IS_ANDROID)
     case MessagePumpType::JAVA:
-      return std::make_unique<MessagePumpForUI>();
+      return std::make_unique<MessagePumpAndroid>();
 #endif
 
 #if BUILDFLAG(IS_APPLE)

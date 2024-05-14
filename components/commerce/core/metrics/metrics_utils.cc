@@ -140,4 +140,26 @@ void RecordShoppingListIneligibilityReasons(
   }
 }
 
+void RecordShoppingActionUKM(ukm::SourceId ukm_source_id,
+                             ShoppingAction action) {
+  auto ukm_builder = ukm::builders::Shopping_ShoppingAction(ukm_source_id);
+  switch (action) {
+    case ShoppingAction::kDiscountCopied:
+      ukm_builder.SetDiscountCopied(true);
+      break;
+    case ShoppingAction::kDiscountOpened:
+      ukm_builder.SetDiscountOpened(true);
+      break;
+    case ShoppingAction::kPriceInsightsOpened:
+      ukm_builder.SetPriceInsightsOpened(true);
+      break;
+    case ShoppingAction::kPriceTracked:
+      ukm_builder.SetPriceTracked(true);
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+  ukm_builder.Record(ukm::UkmRecorder::Get());
+}
 }  // namespace commerce::metrics

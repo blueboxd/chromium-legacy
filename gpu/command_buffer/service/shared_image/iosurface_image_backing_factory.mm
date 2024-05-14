@@ -125,12 +125,14 @@ bool IsPixelDataValid(viz::SharedImageFormat format,
 
 constexpr uint32_t kSupportedUsage =
     SHARED_IMAGE_USAGE_GLES2_READ | SHARED_IMAGE_USAGE_GLES2_WRITE |
+    SHARED_IMAGE_USAGE_GLES2_FOR_RASTER_ONLY |
     SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
     SHARED_IMAGE_USAGE_DISPLAY_WRITE | SHARED_IMAGE_USAGE_DISPLAY_READ |
     SHARED_IMAGE_USAGE_RASTER_READ | SHARED_IMAGE_USAGE_RASTER_WRITE |
+    SHARED_IMAGE_USAGE_RASTER_OVER_GLES2_ONLY |
     SHARED_IMAGE_USAGE_OOP_RASTERIZATION | SHARED_IMAGE_USAGE_SCANOUT |
-    SHARED_IMAGE_USAGE_WEBGPU | SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE |
-    SHARED_IMAGE_USAGE_VIDEO_DECODE |
+    SHARED_IMAGE_USAGE_WEBGPU_READ | SHARED_IMAGE_USAGE_WEBGPU_WRITE |
+    SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE | SHARED_IMAGE_USAGE_VIDEO_DECODE |
     SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
     SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX |
     SHARED_IMAGE_USAGE_RASTER_DELEGATED_COMPOSITING |
@@ -365,18 +367,15 @@ IOSurfaceImageBackingFactory::CreateSharedImageInternal(
     std::string debug_label,
     base::span<const uint8_t> pixel_data) {
   if (!base::Contains(supported_formats_, format)) {
-    LOG(ERROR) << "CreateSharedImage: SCANOUT shared images unavailable. "
-                  "Format= "
+    LOG(ERROR) << "CreateSharedImage: Unable to create SharedImage with format "
                << format.ToString();
     return nullptr;
   }
 
   if (format.is_multi_plane() && !pixel_data.empty()) {
-    LOG(ERROR)
-        << "CreateSharedImage: Creation from pixel data for SCANOUT is not "
-           "supported for multiplanar formats. "
-           "Format= "
-        << format.ToString();
+    LOG(ERROR) << "CreateSharedImage: Creation from pixel data is not "
+                  "supported for multiplanar format "
+               << format.ToString();
     return nullptr;
   }
 
@@ -516,6 +515,10 @@ IOSurfaceImageBackingFactory::CreateSharedImageGMBs(
       color_space, surface_origin, alpha_type, usage, std::move(debug_label),
       target, framebuffer_attachment_angle, /*is_cleared=*/true,
       gr_context_type_, std::move(buffer_usage));
+}
+
+SharedImageBackingType IOSurfaceImageBackingFactory::GetBackingType() {
+  return SharedImageBackingType::kIOSurface;
 }
 
 }  // namespace gpu

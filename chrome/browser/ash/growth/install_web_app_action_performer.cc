@@ -63,6 +63,7 @@ ParseInstallWebAppActionPerformerParams(const base::Value::Dict* params) {
     return nullptr;
   }
 
+  // TODO(b/308440474): take the concrete param for performing the action.
   auto* install_params = params->FindDict(kInstallWebAppParams);
   if (!install_params) {
     LOG(ERROR) << kInstallWebAppParams << " parameter not found.";
@@ -98,10 +99,11 @@ void InstallWebAppResult(growth::ActionPerformer::Callback callback,
 void InstallWebAppImpl(web_app::WebAppProvider& provider,
                        std::unique_ptr<web_app::WebAppInstallInfo> web_app_info,
                        growth::ActionPerformer::Callback callback) {
-  provider.scheduler().InstallFromInfo(
+  provider.scheduler().InstallFromInfoWithParams(
       std::move(web_app_info), /* overwrite_existing_manifest_fields= */ true,
       webapps::WebappInstallSource::EXTERNAL_DEFAULT,
-      base::BindOnce(&InstallWebAppResult, std::move(callback)));
+      base::BindOnce(&InstallWebAppResult, std::move(callback)),
+      web_app::WebAppInstallParams());
 }
 
 web_app::WebAppProvider* GetWebAppProvider() {

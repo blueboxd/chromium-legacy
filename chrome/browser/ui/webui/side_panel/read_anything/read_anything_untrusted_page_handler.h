@@ -23,6 +23,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "ui/accessibility/ax_action_data.h"
 
 namespace content {
 class ScopedAccessibilityMode;
@@ -116,13 +117,14 @@ class ReadAnythingUntrustedPageHandler
       read_anything::mojom::HighlightGranularity granularity) override;
   void OnLinkClicked(const ui::AXTreeID& target_tree_id,
                      ui::AXNodeID target_node_id) override;
+  void OnImageDataRequested(const ui::AXTreeID& target_tree_id,
+                            ui::AXNodeID target_node_id) override;
   void OnSelectionChange(const ui::AXTreeID& target_tree_id,
                          ui::AXNodeID anchor_node_id,
                          int anchor_offset,
                          ui::AXNodeID focus_node_id,
                          int focus_offset) override;
   void OnCollapseSelection() override;
-  void EnablePDFContentAccessibility(const ui::AXTreeID& ax_tree_id) override;
 
   // ReadAnythingModel::Observer:
   void OnReadAnythingThemeChanged(
@@ -161,9 +163,9 @@ class ReadAnythingUntrustedPageHandler
   // 2. Notifies the model that the AXTreeID has changed.
   void OnActiveWebContentsChanged();
 
-  // force_update_state will tell the UI to update the state even if the active
-  // tree id does not change.
-  void OnActiveAXTreeIDChanged(bool force_update_state = false);
+  void SetUpPdfObserver();
+
+  void OnActiveAXTreeIDChanged();
 
   // Logs the current visual settings values.
   void LogTextStyle();
@@ -172,6 +174,9 @@ class ReadAnythingUntrustedPageHandler
   // WebContents.
   void ObserveWebContentsSidePanelController(
       content::WebContents* web_contents);
+
+  void PerformActionInTargetTree(const ui::AXTreeID& target_tree_id,
+                                 const ui::AXActionData& data);
 
   raw_ptr<ReadAnythingCoordinator> coordinator_;
   raw_ptr<ReadAnythingTabHelper> tab_helper_;

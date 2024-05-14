@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/common/buildflags.h"
+#include "components/lens/buildflags.h"
 #include "components/supervised_user/core/common/buildflags.h"
 #include "content/public/common/url_constants.h"
 #include "media/media_buildflags.h"
@@ -219,6 +220,7 @@ extern const char kChromeUISyncHost[];
 extern const char kChromeUISyncInternalsHost[];
 extern const char kChromeUISyncInternalsUrl[];
 extern const char kChromeUISystemInfoHost[];
+extern const char kChromeUIFeedbackSystemInfoUrl[];
 extern const char kChromeUITermsHost[];
 extern const char kChromeUITermsURL[];
 extern const char kChromeUIThemeHost[];
@@ -270,6 +272,9 @@ extern const char kChromeUICustomizeChromeSidePanelHost[];
 extern const char kChromeUICustomizeChromeSidePanelURL[];
 extern const char kChromeUIHistoryClustersSidePanelHost[];
 extern const char kChromeUIHistoryClustersSidePanelURL[];
+extern const char kChromeUILensHost[];
+extern const char kChromeUILensUntrustedURL[];
+extern const char kChromeUILensUntrustedSidePanelURL[];
 extern const char kChromeUIReadLaterHost[];
 extern const char kChromeUIReadLaterURL[];
 extern const char kChromeUIUntrustedCompanionSidePanelHost[];
@@ -568,10 +573,8 @@ extern const char kCleanupSubPage[];
 extern const char kChromeUICastFeedbackHost[];
 #endif
 
-#if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-extern const char kChromeUILensUntrustedURL[];
+#if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
 extern const char kChromeUILensURL[];
-extern const char kChromeUILensHost[];
 #endif
 
 // Extensions sub pages.

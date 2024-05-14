@@ -203,6 +203,9 @@ class AutofillProviderAndroid : public AutofillProvider,
 
   void Reset();
 
+  // Cancels the current Autofill session, resetting cached session data.
+  void CancelSession();
+
   // Returns a new session id. Session ids are required when creating a
   // `FormDataAndroid` object and used to generate virtual ids that identify
   // form fields uniquely to the Android Autofill framework.
@@ -288,9 +291,6 @@ class AutofillProviderAndroid : public AutofillProvider,
     base::TimeTicks prefill_request_creation_time;
   };
   std::optional<CachedData> cached_data_;
-
-  // The form for which a prefill request has been sent.
-  std::unique_ptr<FormDataAndroid> cached_form_;
 
   // Indicates whether we have used the cached form to show a bottom sheet. This
   // state is kept because a bottom sheet should only be shown once per cached

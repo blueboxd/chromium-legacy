@@ -45,7 +45,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Renderer.BrowserLaunchToRunLoopStart" units="ms"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>sky@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -56,7 +56,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Renderer.Core.Timing.Performance.SwapsPerPerformanceEntryInsertion"
-    units="swaps" expires_after="2024-06-23">
+    units="swaps" expires_after="2024-08-25">
   <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
@@ -69,8 +69,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.CriticalFonts.BlockingResourcesLoadTime" units="ms"
-    expires_after="2024-03-17">
-  <owner>yoavweiss@chromium.org</owner>
+    expires_after="2025-03-01">
+  <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     Time (in milliseconds) from timeOrigin until all the render blocking
@@ -81,8 +81,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.CriticalFonts.CriticalFontDelay" units="ms"
-    expires_after="2024-06-30">
-  <owner>yoavweiss@chromium.org</owner>
+    expires_after="2025-03-01">
+  <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     Time difference (in milliseconds) between `PreloadedFontLoadTime` and
@@ -94,8 +94,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.CriticalFonts.PreloadedFontsLoadTime" units="ms"
-    expires_after="2024-07-28">
-  <owner>yoavweiss@chromium.org</owner>
+    expires_after="2025-03-01">
+  <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     Time (in milliseconds) from timeOrigin until all the preloaded fonts were
@@ -301,7 +301,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.Font.PrimaryFont.DomContentLoaded" units="ms"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>kojii@chromium.org</owner>
   <owner>tkent@chromium.org</owner>
   <owner>layout-dev@chromium.org</owner>
@@ -313,7 +313,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.Font.PrimaryFont.DomContentLoaded.Style" units="ms"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>kojii@chromium.org</owner>
   <owner>tkent@chromium.org</owner>
   <owner>layout-dev@chromium.org</owner>
@@ -325,7 +325,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.Font.PrimaryFont.FCP" units="ms"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>kojii@chromium.org</owner>
   <owner>tkent@chromium.org</owner>
   <owner>layout-dev@chromium.org</owner>
@@ -374,7 +374,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Renderer.Images.HasOverfetchedCappedPixels" enum="Boolean"
     expires_after="2024-08-04">
-  <owner>yoavweiss@chromium.org</owner>
+  <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     Boolean indicating that OverfetchedCappedPixels was a positive integer.
@@ -384,7 +384,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Renderer.Images.HasOverfetchedPixels" enum="Boolean"
     expires_after="2024-09-03">
-  <owner>yoavweiss@chromium.org</owner>
+  <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     Boolean indicating that OverfetchedPixels was a positive integer. Reported
@@ -394,7 +394,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Renderer.Images.HasSizesAttributeMiss" enum="Boolean"
     expires_after="2024-09-03">
-  <owner>yoavweiss@chromium.org</owner>
+  <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     Boolean indicating that SizesAttributeMiss was a positive integer. Only set
@@ -405,7 +405,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Renderer.Images.OverfetchedCappedPixels" units="px^2"
     expires_after="2024-09-03">
-  <owner>yoavweiss@chromium.org</owner>
+  <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     The amount of HTMLImageElement image pixels squared (width * height) that
@@ -418,7 +418,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Renderer.Images.OverfetchedPixels" units="px^2"
     expires_after="2024-07-28">
-  <owner>yoavweiss@chromium.org</owner>
+  <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     The amount of HTMLImageElement image pixels squared (width * height) that
@@ -431,7 +431,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Renderer.Images.SizesAttributeMiss" units="px"
     expires_after="2024-09-03">
-  <owner>yoavweiss@chromium.org</owner>
+  <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     The amount of HTMLImageElement pixels by which the eventual layout width was
@@ -481,7 +481,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.PaintPreview.Capture.MainFrameSuccess"
-    enum="BooleanSuccess" expires_after="2024-04-04">
+    enum="BooleanSuccess" expires_after="2024-08-11">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -491,7 +491,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.PaintPreview.Capture.SubframeBlinkCaptureDuration"
-    units="ms" expires_after="2024-04-04">
+    units="ms" expires_after="2024-08-11">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -502,7 +502,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.PaintPreview.Capture.SubframeSuccess"
-    enum="BooleanSuccess" expires_after="2024-04-04">
+    enum="BooleanSuccess" expires_after="2024-08-11">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -527,7 +527,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Renderer.Preload.UnusedResource" enum="BooleanSuccess"
     expires_after="2024-08-11">
-  <owner>yoavweiss@chromium.org</owner>
+  <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     Counts the number of unused preloads per ResourceType.
@@ -581,7 +581,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.ReduceSubresourceResponseIPC.DidNotifyBrowser"
-    enum="Boolean" expires_after="2024-06-30">
+    enum="Boolean" expires_after="2024-09-01">
   <owner>amanvr@chromium.org</owner>
   <owner>carlscab@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -595,7 +595,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.RenderThreadImpl.Init" units="ms"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>jam@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -605,7 +605,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="RendererScheduler.QueueingDuration.{Priority}Priority"
-    units="microseconds" expires_after="2024-06-30">
+    units="microseconds" expires_after="2024-09-01">
   <owner>szager@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>

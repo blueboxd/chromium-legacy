@@ -10,8 +10,10 @@
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/permissions/chip/permission_chip_view.h"
 #include "chrome/browser/ui/views/permissions/chip/permission_dashboard_view.h"
+#include "content/public/browser/global_routing_id.h"
 #include "ui/views/view_tracker.h"
 
 class Browser;
@@ -41,7 +43,8 @@ class PermissionDashboardController : public PermissionChipView::Observer {
 
   // This method updates UI based on `ContentSettingImageModel` state. Returns
   // `true` if there are user-visible changes, otherwise returns `false`.
-  bool Update(ContentSettingImageModel* indicator_model, bool force_hide);
+  bool Update(ContentSettingImageModel* indicator_model,
+              ContentSettingImageView::Delegate* delegate);
 
   // PermissionChipView::Observer
   void OnChipVisibilityChanged(bool is_visible) override;
@@ -63,6 +66,7 @@ class PermissionDashboardController : public PermissionChipView::Observer {
   void StartCollapseTimer();
   void Collapse(bool hide);
   void HideIndicators();
+  void ShowBubble();
   void ShowPageInfoDialog();
   // Actions executed when the user closes the page info dialog.
   void OnPageInfoBubbleClosed(views::Widget::ClosedReason closed_reason,
@@ -70,9 +74,12 @@ class PermissionDashboardController : public PermissionChipView::Observer {
   void OnIndicatorsChipButtonPressed();
   std::u16string GetIndicatorTitle(ContentSettingImageModel* model);
 
-  raw_ptr<Browser> browser_;
-  raw_ptr<LocationBarView> location_bar_view_;
-  raw_ptr<PermissionDashboardView> permission_dashboard_view_;
+  raw_ptr<Browser> browser_ = nullptr;
+  raw_ptr<LocationBarView> location_bar_view_ = nullptr;
+  raw_ptr<PermissionDashboardView> permission_dashboard_view_ = nullptr;
+  // Currently only Camera and Mic are supported.
+  raw_ptr<ContentSettingImageModel> content_setting_image_model_ = nullptr;
+  raw_ptr<ContentSettingImageView::Delegate> delegate_;
   std::unique_ptr<ChipController> request_chip_controller_;
   // A timer used to collapse indicators after a delay.
   base::OneShotTimer collapse_timer_;
@@ -82,6 +89,8 @@ class PermissionDashboardController : public PermissionChipView::Observer {
   // `false` - is used for a collapsed (not verbose) state that includes only an
   // icon. It appears without animation.
   bool is_verbose_ = false;
+  bool blocked_on_system_level_ = false;
+  content::GlobalRenderFrameHostId main_frame_id_;
   views::ViewTracker page_info_bubble_tracker_;
   base::ScopedObservation<PermissionChipView, PermissionChipView::Observer>
       observation_{this};

@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/check.h"
 #include "base/functional/bind.h"
@@ -829,7 +830,7 @@ ExtensionFunction::ResponseAction RuntimeGetContextsFunction::Run() {
                 std::make_move_iterator(frame_contexts.end()));
 
   // Erase any contexts that don't match the specified filter.
-  base::EraseIf(result,
+  std::erase_if(result,
                 [&filter](const api::runtime::ExtensionContext& context) {
                   return !ExtensionContextMatchesFilter(context, filter);
                 });
@@ -846,9 +847,12 @@ RuntimeGetContextsFunction::GetWorkerContext() {
 
   std::vector<WorkerId> active_workers =
       process_manager->GetServiceWorkersForExtension(extension()->id());
-  // TODO(crbug.com/1493391): Upgrade this to a CHECK once multiple active
-  // workers has been resolved.
-  DCHECK_LE(active_workers.size(), 1u);
+
+  // TODO(crbug.com/1493391):Enable this CHECK once multiple active workers is
+  // resolved.
+  // CHECK_LE(active_workers.size(), 1u)
+  //     << "runtime.getContexts() API call found more than one service worker "
+  //        "for extension.";
 
   if (active_workers.empty()) {
     return std::nullopt;

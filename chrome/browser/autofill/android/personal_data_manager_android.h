@@ -13,6 +13,8 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 
+class PrefService;
+
 namespace autofill {
 
 // Android wrapper of the PersonalDataManager which provides access from the
@@ -20,11 +22,17 @@ namespace autofill {
 // therefore a single instance of this wrapper.
 class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
  public:
-  PersonalDataManagerAndroid(JNIEnv* env, jobject obj);
+  PersonalDataManagerAndroid(JNIEnv* env,
+                             jobject obj,
+                             PersonalDataManager* personal_data_manager,
+                             PrefService* prefs);
 
   PersonalDataManagerAndroid(const PersonalDataManagerAndroid&) = delete;
   PersonalDataManagerAndroid& operator=(const PersonalDataManagerAndroid&) =
       delete;
+
+  // Trigger the destruction of the C++ object from Java.
+  void Destroy(JNIEnv* env);
 
   static base::android::ScopedJavaLocalRef<jobject>
   CreateJavaCreditCardFromNative(JNIEnv* env, const CreditCard& card);
@@ -172,15 +180,6 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jobject>& jcard);
 
-  // Returns the issuer network string according to PaymentRequest spec, or an
-  // empty string if the given card number is not valid and |jempty_if_invalid|
-  // is true.
-  base::android::ScopedJavaLocalRef<jstring> GetBasicCardIssuerNetwork(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj,
-      const base::android::JavaParamRef<jstring>& jcard_number,
-      const jboolean jempty_if_invalid);
-
   // Adds a server credit card. Used only in tests.
   void AddServerCreditCardForTest(
       JNIEnv* env,
@@ -203,12 +202,6 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
 
   // Delete all local credit cards.
   void DeleteAllLocalCreditCards(JNIEnv* env);
-
-  // Resets the given unmasked card back to the masked state.
-  void ClearUnmaskedCache(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj,
-      const base::android::JavaParamRef<jstring>& jguid);
 
   // PersonalDataManagerObserver:
   void OnPersonalDataChanged() override;
@@ -319,6 +312,45 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
   base::android::ScopedJavaLocalRef<jobject> GetOrCreateJavaImageFetcher(
       JNIEnv* env);
 
+  static base::android::ScopedJavaLocalRef<jobject> CreateJavaIbanFromNative(
+      JNIEnv* env,
+      const Iban& iban);
+
+  static void PopulateNativeIbanFromJava(
+      const base::android::JavaRef<jobject>& jiban,
+      JNIEnv* env,
+      Iban* iban);
+
+  // Return IBAN with the specified `jguid`, or Null if there is no IBAN with
+  // the specified `jguid`.
+  base::android::ScopedJavaLocalRef<jobject> GetIbanByGuid(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jstring>& jguid);
+
+  // Adds or modifies a local IBAN. If `jiban`'s GUID is an empty string we
+  // create a new IBAN, otherwise we update the existing IBAN. Always returns
+  // the GUID for this IBAN; the GUID may have just been created.
+  base::android::ScopedJavaLocalRef<jstring> AddOrUpdateLocalIban(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jobject>& jiban);
+
+  // Checks if `jiban_value` is a valid IBAN.
+  static jboolean IsValidIban(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jstring>& jiban_value);
+
+  // Returns whether the Autofill feature is managed.
+  jboolean IsAutofillManaged(JNIEnv* env);
+
+  // Returns whether the Autofill feature for profiles is managed.
+  jboolean IsAutofillProfileManaged(JNIEnv* env);
+
+  // Returns whether the Autofill feature for credit cards is managed.
+  jboolean IsAutofillCreditCardManaged(JNIEnv* env);
+
  private:
   ~PersonalDataManagerAndroid() override;
 
@@ -352,6 +384,8 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
 
   // Pointer to the PersonalDataManager for the main profile.
   raw_ptr<PersonalDataManager> personal_data_manager_;
+
+  raw_ptr<PrefService> prefs_;
 };
 
 }  // namespace autofill

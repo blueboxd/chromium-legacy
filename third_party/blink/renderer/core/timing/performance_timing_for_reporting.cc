@@ -35,7 +35,7 @@ std::optional<base::TimeTicks> MergeLargestContentfulPaintValues(
   const base::TimeTicks largest_image_paint = timing.largest_image_paint_time;
 
   if (text_paint_size == image_paint_size) {
-    return std::max(largest_text_paint, largest_image_paint);
+    return std::min(largest_text_paint, largest_image_paint);
   }
   return text_paint_size > image_paint_size ? largest_text_paint
                                             : largest_image_paint;
@@ -67,23 +67,20 @@ LargestContentfulPaintDetailsForReporting PerformanceTimingForReporting::
           MonotonicTimeToIntegerMilliseconds(timing.largest_text_paint_time))
           .InSecondsF();
 
-  std::optional<base::TimeDelta> largest_image_discovery_time =
-      MonotonicTimeToPseudoWallTime(timing.largest_image_discovery_time);
+  ResourceLoadTimingsForReporting resource_load_timings = {
+      MonotonicTimeToPseudoWallTime(
+          timing.resource_load_timings.discovery_time),
+      MonotonicTimeToPseudoWallTime(timing.resource_load_timings.load_start),
+      MonotonicTimeToPseudoWallTime(timing.resource_load_timings.load_end)
 
-  std::optional<base::TimeDelta> largest_image_load_start =
-      MonotonicTimeToPseudoWallTime(timing.largest_image_load_start);
-
-  std::optional<base::TimeDelta> largest_image_load_end =
-      MonotonicTimeToPseudoWallTime(timing.largest_image_load_end);
+  };
 
   std::optional<base::TimeTicks> merged_unclamped_paint_time =
       MergeLargestContentfulPaintValues(timing);
 
   return {largest_image_paint_time,
           timing.largest_image_paint_size,
-          largest_image_discovery_time,
-          largest_image_load_start,
-          largest_image_load_end,
+          resource_load_timings,
           timing.largest_contentful_paint_type,
 
           timing.largest_contentful_paint_image_bpp,

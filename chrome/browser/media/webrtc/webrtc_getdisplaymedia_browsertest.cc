@@ -22,14 +22,16 @@
 #include "build/config/chromebox_for_meetings/buildflags.h"  // PLATFORM_CFM
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tab_sharing/tab_sharing_infobar_delegate.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/infobars/content/content_infobar_manager.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -208,21 +210,22 @@ infobars::ContentInfoBarManager* GetInfoBarManager(
   return infobars::ContentInfoBarManager::FromWebContents(web_contents);
 }
 
-ConfirmInfoBarDelegate* GetDelegate(content::WebContents* web_contents,
-                                    size_t infobar_index = 0) {
-  return static_cast<ConfirmInfoBarDelegate*>(
+TabSharingInfoBarDelegate* GetDelegate(content::WebContents* web_contents,
+                                       size_t infobar_index = 0) {
+  return static_cast<TabSharingInfoBarDelegate*>(
       GetInfoBarManager(web_contents)->infobars()[infobar_index]->delegate());
 }
 
 bool HasSecondaryButton(content::WebContents* web_contents) {
   return GetDelegate(web_contents)->GetButtons() &
-         ConfirmInfoBarDelegate::InfoBarButton::BUTTON_CANCEL;
+         TabSharingInfoBarDelegate::InfoBarButton::kShareThisTabInstead;
 }
 
 std::u16string GetSecondaryButtonLabel(content::WebContents* web_contents) {
   DCHECK(HasSecondaryButton(web_contents));  // Test error otherwise.
   return GetDelegate(web_contents)
-      ->GetButtonLabel(ConfirmInfoBarDelegate::InfoBarButton::BUTTON_CANCEL);
+      ->GetButtonLabel(
+          TabSharingInfoBarDelegate::InfoBarButton::kShareThisTabInstead);
 }
 
 void AdjustCommandLineForZeroCopyCapture(base::CommandLine* command_line) {
@@ -1204,7 +1207,7 @@ IN_PROC_BROWSER_TEST_P(GetDisplayMediaChangeSourceBrowserTest,
   EXPECT_EQ(GetSecondaryButtonLabel(other_tab), kShareThisTabInsteadMessage);
 
   // Click the secondary button, i.e., the "Share this tab instead" button
-  GetDelegate(other_tab)->Cancel();
+  GetDelegate(other_tab)->ShareThisTabInstead();
 
   // Wait until the capture of the other tab has started.
   while (!other_tab->IsBeingCaptured()) {
@@ -1247,7 +1250,7 @@ IN_PROC_BROWSER_TEST_P(GetDisplayMediaChangeSourceBrowserTest,
                      /*is_tab_capture=*/true);
 
   // Click the secondary button, i.e., the "Share this tab instead" button
-  GetDelegate(other_tab)->Cancel();
+  GetDelegate(other_tab)->ShareThisTabInstead();
 
   // Wait until the capture of the other tab has started.
   while (!other_tab->IsBeingCaptured()) {
@@ -1307,7 +1310,7 @@ IN_PROC_BROWSER_TEST_P(GetDisplayMediaChangeSourceBrowserTest,
 
   // Click the secondary button, i.e., the "Share this tab instead" button. This
   // is rejected since screen capture is not allowed by the above policy.
-  GetDelegate(other_tab)->Cancel();
+  GetDelegate(other_tab)->ShareThisTabInstead();
 
   // When "Share this tab instead" fails for other_tab, the focus goes back to
   // the captured tab. Wait until that happens:
@@ -1885,7 +1888,7 @@ IN_PROC_BROWSER_TEST_F(GetDisplayMediaCapturedSurfaceControlTest,
   // Expect that clicking "share this tab instead" will pipe a notification of
   // the change to the captured surface controller.
   capture_session.SetExpectUpdateCaptureTarget();
-  GetDelegate(capture_session.other_tab())->Cancel();
+  GetDelegate(capture_session.other_tab())->ShareThisTabInstead();
   capture_session.WaitForCaptureOf(CapturedTab::kOtherTab);
 
   capture_session.VerifyAndClearExpectations();
@@ -1919,7 +1922,7 @@ void GetDisplayMediaCapturedSurfaceControlTest::
   capture_session_experiencing_change.SetExpectUpdateCaptureTarget();
   GetDelegate(capture_session_experiencing_change.other_tab(),
               /*infobar_index=*/session_experiencing_change)
-      ->Cancel();
+      ->ShareThisTabInstead();
   capture_session_experiencing_change.WaitForCaptureOf(CapturedTab::kOtherTab);
 
   capture_session_0.VerifyAndClearExpectations();

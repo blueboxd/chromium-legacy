@@ -25,14 +25,17 @@ BASE_FEATURE(kCorrectFramebufferAttachmentComputationInGLTexture,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 constexpr uint32_t kWebGPUUsages =
-    SHARED_IMAGE_USAGE_WEBGPU | SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
+    SHARED_IMAGE_USAGE_WEBGPU_READ | SHARED_IMAGE_USAGE_WEBGPU_WRITE |
+    SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
     SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE;
 
 constexpr uint32_t kSupportedUsage =
     SHARED_IMAGE_USAGE_GLES2_READ | SHARED_IMAGE_USAGE_GLES2_WRITE |
     SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
+    SHARED_IMAGE_USAGE_GLES2_FOR_RASTER_ONLY |
     SHARED_IMAGE_USAGE_DISPLAY_WRITE | SHARED_IMAGE_USAGE_DISPLAY_READ |
     SHARED_IMAGE_USAGE_RASTER_READ | SHARED_IMAGE_USAGE_RASTER_WRITE |
+    SHARED_IMAGE_USAGE_RASTER_OVER_GLES2_ONLY |
     SHARED_IMAGE_USAGE_OOP_RASTERIZATION | SHARED_IMAGE_USAGE_SCANOUT |
     SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE |
     SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU | SHARED_IMAGE_USAGE_CPU_UPLOAD |
@@ -167,13 +170,23 @@ bool GLTextureImageBackingFactory::IsSupported(
   // This is not beneficial on iOS. The main purpose of this is a multi-gpu
   // support.
   if (!support_all_metal_usages_) {
-    if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
-        gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal) {
-      constexpr uint32_t kMetalInvalidUsages =
-          SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_SCANOUT |
-          SHARED_IMAGE_USAGE_GLES2_READ | SHARED_IMAGE_USAGE_GLES2_WRITE |
-          SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
-      if (usage & kMetalInvalidUsages) {
+    if ((gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
+         gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal) ||
+        emulate_using_angle_metal_for_testing_) {
+      uint32_t metal_invalid_usages = SHARED_IMAGE_USAGE_DISPLAY_READ |
+                                      SHARED_IMAGE_USAGE_SCANOUT |
+                                      SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
+
+      // GLES2 usage is in general not allowed, as WebGL might be on a different
+      // GPU than raster/composite. However, if the GLES2 usage is for
+      // raster-over-GLES2 only, it is by definition on the same GPU as
+      // raster/composite and thus allowable.
+      if (!(usage & SHARED_IMAGE_USAGE_GLES2_FOR_RASTER_ONLY)) {
+        metal_invalid_usages = metal_invalid_usages |
+                               SHARED_IMAGE_USAGE_GLES2_READ |
+                               SHARED_IMAGE_USAGE_GLES2_WRITE;
+      }
+      if (usage & metal_invalid_usages) {
         return false;
       }
     }
@@ -184,10 +197,17 @@ bool GLTextureImageBackingFactory::IsSupported(
   // this usages aren't actually relevant but WebGL still adds them so ignore.
   if (gr_context_type != GrContextType::kGL &&
       gr_context_type != GrContextType::kNone) {
-    constexpr uint32_t kUnsupportedUsages =
-        SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_DISPLAY_WRITE |
-        SHARED_IMAGE_USAGE_RASTER_READ | SHARED_IMAGE_USAGE_RASTER_WRITE;
-    if (usage & kUnsupportedUsages) {
+    uint32_t unsupported_usages =
+        SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_DISPLAY_WRITE;
+
+    // Raster usage is in general not allowed, as described above. However, if
+    // this SI is being used in the context of raster-over-GLES2 only, then
+    // raster is by definition using GL for the SI and thus allowable.
+    if (!(usage & SHARED_IMAGE_USAGE_RASTER_OVER_GLES2_ONLY)) {
+      unsupported_usages = unsupported_usages | SHARED_IMAGE_USAGE_RASTER_READ |
+                           SHARED_IMAGE_USAGE_RASTER_WRITE;
+    }
+    if (usage & unsupported_usages) {
       return false;
     }
   }
@@ -204,8 +224,14 @@ bool GLTextureImageBackingFactory::IsSupported(
   return CanCreateTexture(format, size, pixel_data, GL_TEXTURE_2D);
 }
 
-void GLTextureImageBackingFactory::EnableSupportForAllMetalUsagesForTesting() {
-  support_all_metal_usages_ = true;
+void GLTextureImageBackingFactory::EnableSupportForAllMetalUsagesForTesting(
+    bool enable) {
+  support_all_metal_usages_ = enable;
+}
+
+void GLTextureImageBackingFactory::ForceSetUsingANGLEMetalForTesting(
+    bool value) {
+  emulate_using_angle_metal_for_testing_ = value;
 }
 
 std::unique_ptr<SharedImageBacking>
@@ -252,6 +278,10 @@ GLTextureImageBackingFactory::CreateSharedImageInternal(
                               progress_reporter_, framebuffer_attachment_angle);
 
   return std::move(result);
+}
+
+SharedImageBackingType GLTextureImageBackingFactory::GetBackingType() {
+  return SharedImageBackingType::kGLTexture;
 }
 
 }  // namespace gpu

@@ -104,10 +104,8 @@ CGFloat FakeToolbarVerticalMargin() {
 UIColor* FakeboxIconColor() {
   if (IsIOSLargeFakeboxEnabled()) {
     return [UIColor colorNamed:kGrey700Color];
-  } else if (IsMagicStackEnabled()) {
-    return [UIColor colorNamed:@"fake_omnibox_placeholder_color"];
   }
-  return [UIColor colorNamed:kTextfieldPlaceholderColor];
+  return [UIColor colorNamed:@"fake_omnibox_placeholder_color"];
 }
 
 // Sets up fakebox button with a symbol and a round background.
@@ -288,19 +286,19 @@ void ConfigureSearchHintLabel(UILabel* search_hint_label,
 }
 
 void ConfigureVoiceSearchButton(UIButton* voice_search_button,
-                                UIView* search_tab_target) {
+                                BOOL use_color_icon) {
   [voice_search_button setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [search_tab_target addSubview:voice_search_button];
 
   UIButtonConfiguration* buttonConfig =
       [UIButtonConfiguration plainButtonConfiguration];
   buttonConfig.contentInsets = NSDirectionalEdgeInsetsMake(0, 0, 0, 0);
   voice_search_button.configuration = buttonConfig;
 
-  UIImage* mic_image = DefaultSymbolWithPointSize(
-      kMicrophoneSymbol, kSymbolContentSuggestionsPointSize);
   voice_search_button.tintColor = FakeboxIconColor();
-
+  UIImage* mic_image = CustomSymbolWithPointSize(
+      kVoiceSymbol, kSymbolContentSuggestionsPointSize);
+  mic_image = use_color_icon ? MakeSymbolMulticolor(mic_image)
+                             : MakeSymbolMonochrome(mic_image);
   [voice_search_button setImage:mic_image forState:UIControlStateNormal];
   [voice_search_button setAccessibilityLabel:l10n_util::GetNSString(
                                                  IDS_IOS_ACCNAME_VOICE_SEARCH)];
@@ -312,7 +310,9 @@ void ConfigureVoiceSearchButton(UIButton* voice_search_button,
       CreateLiftEffectCirclePointerStyleProvider();
 }
 
-void ConfigureLensButtonAppearance(UIButton* lens_button, BOOL use_new_badge) {
+void ConfigureLensButtonAppearance(UIButton* lens_button,
+                                   BOOL use_new_badge,
+                                   BOOL use_color_icon) {
   lens_button.translatesAutoresizingMaskIntoConstraints = NO;
 
   UIButtonConfiguration* buttonConfig =
@@ -331,9 +331,11 @@ void ConfigureLensButtonAppearance(UIButton* lens_button, BOOL use_new_badge) {
     // Show the "New" badge and colored symbol.
     SetUpButtonWithNewFeatureBadge(lens_button, kCameraLensSymbol);
   } else {
-    // Use a monochrome symbol with no background.
+    // Use a monochrome or colored symbol with no background.
     UIImage* camera_image = CustomSymbolWithPointSize(
         kCameraLensSymbol, kSymbolContentSuggestionsPointSize);
+    camera_image = use_color_icon ? MakeSymbolMulticolor(camera_image)
+                                  : MakeSymbolMonochrome(camera_image);
     [lens_button setImage:camera_image forState:UIControlStateNormal];
     lens_button.tintColor = FakeboxIconColor();
   }
@@ -352,10 +354,8 @@ UIView* NearestAncestor(UIView* view, Class of_class) {
 UIColor* SearchHintLabelColor() {
   if (IsIOSLargeFakeboxEnabled()) {
     return [UIColor colorNamed:kGrey800Color];
-  } else if (IsMagicStackEnabled()) {
-    return [UIColor colorNamed:@"fake_omnibox_placeholder_color"];
   }
-  return [UIColor colorNamed:kTextfieldPlaceholderColor];
+  return [UIColor colorNamed:@"fake_omnibox_placeholder_color"];
 }
 
 int SetUpListTitleStringID() {

@@ -46,11 +46,11 @@ std::vector<Result> MapToApps(const proto::LauncherAppResponse& proto) {
         app_group.action_link().empty()) {
       continue;
     }
-    // There should be just a single GFN app with a single icon. We want to
+    // There should be just a single app with a single icon. We want to
     // handle more in the future but for now just read the first icon.
     const proto::LauncherAppResponse::Icon& icon = app_group.icons(0);
     auto extras = std::make_unique<GameExtras>(
-        u"GeForce NOW",
+        base::UTF8ToUTF16(app_group.badge_text()),
         /*relative_icon_path_=*/base::FilePath(""), icon.is_masking_allowed(),
         GURL(app_group.action_link()));
 
@@ -80,7 +80,6 @@ AlmanacFetcher::AlmanacFetcher(Profile* profile,
   // Chrome API key or this is a test environment as the server call would fail.
   if ((google_apis::IsGoogleChromeAPIKeyUsed() ||
        skip_api_key_check_for_testing) &&
-      base::FeatureList::IsEnabled(kAlmanacGameMigration) &&
       chromeos::features::IsCloudGamingDeviceEnabled()) {
     base::FilePath path = profile->GetPath().AppendASCII(kLauncherAppFilePath);
     proto_file_manager_ =

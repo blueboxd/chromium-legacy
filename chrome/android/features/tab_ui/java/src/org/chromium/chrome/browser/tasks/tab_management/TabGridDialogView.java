@@ -14,7 +14,6 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -27,6 +26,7 @@ import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
@@ -35,7 +35,6 @@ import androidx.core.widget.ImageViewCompat;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ResettersForTesting;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
@@ -44,6 +43,8 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.interpolators.Interpolators;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.widget.ButtonCompat;
+import org.chromium.ui.widget.ChromeImageButton;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -116,6 +117,8 @@ public class TabGridDialogView extends FrameLayout {
     @ColorInt private int mUngroupBarTextColor;
     @ColorInt private int mUngroupBarHoveredTextColor;
     private Integer mBindingToken;
+    private boolean mShouldShowShare;
+    private boolean mIsTabGroupShared;
 
     public TabGridDialogView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -805,27 +808,76 @@ public class TabGridDialogView extends FrameLayout {
     }
 
     /**
+     * Update whether the share bar should be shown.
+     *
+     * @param shouldShowShare Whether the share bar should be shown in the view.
+     */
+    void updateShouldShowShare(boolean shouldShowShare) {
+        assert getVisibility() != VISIBLE
+                : "ShouldShowShare state only changes when the dialog is hidden.";
+        mShouldShowShare = shouldShowShare;
+    }
+
+    /**
      * Reset the dialog content with {@code toolbarView} and {@code recyclerView}.
      *
      * @param toolbarView The toolbarview to be added to dialog.
      * @param recyclerView The recyclerview to be added to dialog.
+     * @param shareBar The sharing bottom toolbar to be added to dialog.
      */
-    void resetDialog(View toolbarView, View recyclerView) {
+    void resetDialog(View toolbarView, View recyclerView, @Nullable View shareBar) {
         mDialogContainerView.removeAllViews();
         mDialogContainerView.addView(toolbarView);
         mDialogContainerView.addView(recyclerView);
         mDialogContainerView.addView(mUngroupBar);
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DATA_SHARING_ANDROID)) {
+
+        // The shareBar will not be initiated if the feature is not enabled.
+        if (shareBar != null && mShouldShowShare) {
             // Add the data sharing bottom toolbar view.
-            LayoutInflater inflater = LayoutInflater.from(mDialogContainerView.getContext());
-            inflater.inflate(R.layout.data_sharing_group_bar, mDialogContainerView, true);
+            mDialogContainerView.addView(shareBar);
+
+            // TODO(b/325082444): Update |mIsTabGroupShared| by asking data sharing service about if
+            // the tab group is shared.
+            refreshShareBar(mIsTabGroupShared);
         }
+
+        // The snackbar need to be added last to appear on top of any bottom toolbar.
         mDialogContainerView.addView(mSnackBarContainer);
 
         RelativeLayout.LayoutParams params =
                 (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
         params.setMargins(0, mToolbarHeight, 0, 0);
         recyclerView.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Refresh the share bar view without resetting the whole dialog.
+     *
+     * @param isTabGroupShared Whether the tab group is shared.
+     */
+    void refreshShareBar(boolean isTabGroupShared) {
+        mIsTabGroupShared = isTabGroupShared;
+        ViewGroup manageBar = mDialogContainerView.findViewById(R.id.dialog_data_sharing_manage);
+        ButtonCompat inviteButton =
+                mDialogContainerView.findViewById(R.id.dialog_share_invite_button);
+
+        // Check for conditions which the sharebar should not show.
+        if (manageBar == null || inviteButton == null || !mShouldShowShare) {
+            return;
+        }
+
+        if (mIsTabGroupShared) {
+            manageBar.setVisibility(View.VISIBLE);
+            inviteButton.setVisibility(View.GONE);
+        } else {
+            manageBar.setVisibility(View.GONE);
+            inviteButton.setVisibility(View.VISIBLE);
+        }
+    }
+
+    void refreshScrim() {
+        assert mScrimCoordinator != null && mScrimPropertyModel != null;
+        mScrimCoordinator.showScrim(mScrimPropertyModel);
     }
 
     /** Show {@link PopupWindow} for dialog with animation. */
@@ -950,6 +1002,45 @@ public class TabGridDialogView extends FrameLayout {
     void setBindingToken(Integer bindingToken) {
         assert mBindingToken == null || bindingToken == null;
         mBindingToken = bindingToken;
+    }
+
+    /**
+     * Set click listener for the share bar invite button.
+     *
+     * @param listener {@link android.view.View.OnClickListener} for the button.
+     */
+    void setShareInviteOnClickListener(OnClickListener listener) {
+        ButtonCompat inviteButton =
+                mDialogContainerView.findViewById(R.id.dialog_share_invite_button);
+        if (inviteButton != null) {
+            inviteButton.setOnClickListener(listener);
+        }
+    }
+
+    /**
+     * Set click listener for the share bar image tiles.
+     *
+     * @param listener {@link android.view.View.OnClickListener} for the View.
+     */
+    void setShareImageTilesOnClickListener(OnClickListener listener) {
+        ViewGroup imageTilesView =
+                mDialogContainerView.findViewById(R.id.dialog_data_sharing_shared_image_tiles);
+        if (imageTilesView != null) {
+            imageTilesView.setOnClickListener(listener);
+        }
+    }
+
+    /**
+     * Set click listener for the share bar manage add button.
+     *
+     * @param listener {@link android.view.View.OnClickListener} for the button.
+     */
+    void setShareManageAddOnClickListener(OnClickListener listener) {
+        ChromeImageButton manageAddButton =
+                mDialogContainerView.findViewById(R.id.dialog_data_sharing_manage_add);
+        if (manageAddButton != null) {
+            manageAddButton.setOnClickListener(listener);
+        }
     }
 
     Integer getBindingToken() {

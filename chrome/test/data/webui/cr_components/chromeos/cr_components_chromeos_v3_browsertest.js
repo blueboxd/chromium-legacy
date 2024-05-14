@@ -16,9 +16,9 @@ GEN('#include "content/public/test/browser_test.h"');
   ['BluetoothIcon', 'bluetooth/bluetooth_icon_test.js'],
   [
     'BatteryIconPercentage',
-    'bluetooth/bluetooth_battery_icon_percentage_tests.js',
+    'bluetooth/bluetooth_battery_icon_percentage_test.js',
   ],
-  ['DeviceBatteryInfo', 'bluetooth/bluetooth_device_battery_info_tests.js'],
+  ['DeviceBatteryInfo', 'bluetooth/bluetooth_device_battery_info_test.js'],
   [
     'DeviceSelectionPage',
     'bluetooth/bluetooth_pairing_device_selection_page_test.js',
@@ -42,6 +42,8 @@ GEN('#include "content/public/test/browser_test.h"');
 
 [['ApnList', 'network/apn_list_test.js'],
  ['ApnListItem', 'network/apn_list_item_test.js'],
+ ['ApnSelectionDialog', 'network/apn_selection_dialog_test.js'],
+ ['ApnSelectionDialogListItem', 'network/apn_selection_dialog_list_item_test.js'],
  ['CrPolicyNetworkBehaviorMojo', 'network/cr_policy_network_behavior_mojo_tests.js'],
  ['CrPolicyNetworkIndicatorMojo', 'network/cr_policy_network_indicator_mojo_tests.js'],
  ['NetworkApnlist', 'network/network_apnlist_test.js'],
@@ -88,6 +90,7 @@ GEN('#include "content/public/test/browser_test.h"');
  ['CellularSetup', 'cellular_setup/cellular_setup_test.js'],
  ['ConfirmationCodePageLegacy', 'cellular_setup/confirmation_code_page_legacy_test.js'],
  ['ConfirmationCodePage', 'cellular_setup/confirmation_code_page_test.js'],
+ ['ProfileDiscoveryListPage', 'cellular_setup/profile_discovery_list_page_test.js'],
  ['EsimFlowUiLegacy', 'cellular_setup/esim_flow_ui_legacy_test.js'],
  ['EsimFlowUi', 'cellular_setup/esim_flow_ui_test.js'],
  ['FinalPage', 'cellular_setup/final_page_test.js'],

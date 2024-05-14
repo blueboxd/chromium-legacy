@@ -239,6 +239,32 @@ TEST_F(NonModalDefaultBrowserPromoSchedulerSceneAgentTest,
   EXPECT_EQ(UserInteractionWithNonModalPromoCount(), 1);
 }
 
+// Tests that if the user manages to trigger multiple interactions, the
+// interactions count is only incremented once.
+TEST_F(NonModalDefaultBrowserPromoSchedulerSceneAgentTest,
+       TestMultipleInteractionsOnlyIncrementsCountOnce) {
+  [scheduler_ logUserPastedInOmnibox];
+
+  // Finish loading the page.
+  test_web_state_->SetLoading(true);
+  test_web_state_->OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
+  test_web_state_->SetLoading(false);
+
+  // Advance the timer by the post-load delay. This should trigger the promo.
+  [[promo_commands_handler_ expect] showDefaultBrowserNonModalPromo];
+  task_env_.FastForwardBy(base::Seconds(3));
+
+  [promo_commands_handler_ verify];
+
+  // Attempt to log the action 3 times.
+  [scheduler_ logUserPerformedPromoAction];
+  [scheduler_ logUserPerformedPromoAction];
+  [scheduler_ logUserPerformedPromoAction];
+
+  // Check that NSUserDefaults has been updated, incremented only by 1.
+  EXPECT_EQ(UserInteractionWithNonModalPromoCount(), 1);
+}
+
 // Tests that if the user switches to a different tab before the post-load timer
 // finishes, the promo does not show.
 TEST_F(NonModalDefaultBrowserPromoSchedulerSceneAgentTest,
@@ -521,4 +547,29 @@ TEST_F(NonModalDefaultBrowserPromoSchedulerSceneAgentTest,
   task_env_.FastForwardBy(base::Seconds(60));
 }
 
+// Tests that backgrounding the app will not record anything if promo couldn't
+// have been displayed. See b/326565601.
+TEST_F(NonModalDefaultBrowserPromoSchedulerSceneAgentTest,
+       TestBackgroundingDoesNotRecordIfCannotDisplayPromo) {
+  // Make sure the impression limit is met.
+  for (int i = 0; i < GetNonModalDefaultBrowserPromoImpressionLimit(); i++) {
+    LogUserInteractionWithNonModalPromo(i, i);
+  }
+
+  base::HistogramTester histogram_tester;
+  [scheduler_ logUserPastedInOmnibox];
+
+  // Background the app before page is finished loading.
+  test_web_state_->SetLoading(true);
+  [[promo_commands_handler_ expect]
+      dismissDefaultBrowserNonModalPromoAnimated:NO];
+  [scheduler_ sceneState:nil
+      transitionedToActivationLevel:SceneActivationLevelBackground];
+  [promo_commands_handler_ verify];
+
+  // Check that backgrounding did not record any metrics.
+  histogram_tester.ExpectUniqueSample(
+      "IOS.DefaultBrowserPromo.NonModal.VisitPastedLink",
+      NonModalPromoAction::kBackgroundCancel, 0);
+}
 }  // namespace

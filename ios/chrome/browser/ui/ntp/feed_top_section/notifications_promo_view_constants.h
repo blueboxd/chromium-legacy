@@ -8,6 +8,35 @@
 #import <Foundation/Foundation.h>
 #import "base/time/time.h"
 
+// Enum actions for content notification promo UMA metrics. Entries should not
+// be renumbered and numeric values should never be reused. This should align
+// with the ContentNotificationTopOfFeedPromoAction enum in enums.xml.
+//
+// LINT.IfChange
+enum class ContentNotificationTopOfFeedPromoAction {
+  kAccept = 0,
+  kDecline = 1,
+  kMainButtonTapped = 2,
+  kDismissedFromCloseButton = 3,
+  kDismissedFromSecondaryButton = 4,
+  kMaxValue = kDismissedFromSecondaryButton,
+};
+// LINT.ThenChange(/tools/metrics/histograms/metadata/content/enums.xml)
+
+// Enum events for content notification promo UMA metrics. Entries should not
+// be renumbered and numeric values should never be reused. This should align
+// with the ContentNotificationTopOfFeedPromoEvent enum in enums.xml.
+//
+// LINT.IfChange
+enum class ContentNotificationTopOfFeedPromoEvent {
+  kPromptShown = 0,
+  kNotifActive = 1,
+  kError = 2,
+  kCanceled = 3,
+  kMaxValue = kCanceled,
+};
+// LINT.ThenChange(/tools/metrics/histograms/metadata/content/enums.xml)
+
 typedef NS_ENUM(NSInteger, NotificationsExperimentType) {
   NotificationsExperimentTypeEnabled = 0,
   NotificationsExperimentTypePromoEnabled = 1,
@@ -30,5 +59,7 @@ extern int const kNotificationsPromoMaxDismissedCount;
 extern int const kNotificationsPromoMaxShownCount;
 extern base::TimeDelta const kNotificationsPromoDismissedCooldownTime;
 extern base::TimeDelta const kNotificationsPromoShownCooldownTime;
+
+extern int const kMaxImpressionsForDismissedThreshold;
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_FEED_TOP_SECTION_NOTIFICATIONS_PROMO_VIEW_CONSTANTS_H_

@@ -15,12 +15,12 @@
 namespace ui {
 
 class MotionEventAndroid;
+class AXPlatformTreeManagerDelegate;
 
 }  // namespace ui
 
 namespace content {
 
-class WebAXPlatformTreeManagerDelegate;
 
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content.browser.accessibility
@@ -49,7 +49,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   BrowserAccessibilityManagerAndroid(
       const ui::AXTreeUpdate& initial_tree,
       base::WeakPtr<WebContentsAccessibilityAndroid> web_contents_accessibility,
-      WebAXPlatformTreeManagerDelegate* delegate);
+      ui::AXPlatformTreeManagerDelegate* delegate);
 
   BrowserAccessibilityManagerAndroid(
       const BrowserAccessibilityManagerAndroid&) = delete;
@@ -126,6 +126,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   void ClearNodeInfoCacheForGivenId(int32_t unique_id);
 
   std::u16string GenerateAccessibilityNodeInfoString(int32_t unique_id);
+
+  std::vector<std::string> GetMetadataForTree() const;
 
  private:
   // AXTreeObserver overrides.

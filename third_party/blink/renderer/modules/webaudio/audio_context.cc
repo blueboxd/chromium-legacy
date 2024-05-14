@@ -10,6 +10,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
@@ -258,7 +259,7 @@ AudioContext::AudioContext(LocalDOMWindow& window,
   SendLogMessage(GetAudioContextLogString(latency_hint, sample_rate));
 
   // TODO(http://crbug.com/1410553) update the echo cancellation reference
-  // if the client explicitly specified the sink and there are no issuess
+  // if the client explicitly specified the sink and there are no issues
   // accessing it.
   destination_node_ = RealtimeAudioDestinationNode::Create(
       this, sink_descriptor_, latency_hint, sample_rate);
@@ -438,7 +439,7 @@ ScriptPromise AudioContext::resumeContext(ScriptState* script_state,
   // Save the resolver which will get resolved when the destination node starts
   // pulling on the graph again.
   {
-    GraphAutoLocker locker(this);
+    DeferredTaskHandler::GraphAutoLocker locker(this);
     resume_resolvers_.push_back(resolver);
   }
 
@@ -593,7 +594,7 @@ double AudioContext::outputLatency() const {
   DCHECK(IsMainThread());
   DCHECK(destination());
 
-  GraphAutoLocker locker(this);
+  DeferredTaskHandler::GraphAutoLocker locker(this);
 
   double factor = GetOutputLatencyQuantizingFactor();
   return std::round(output_position_.hardware_output_latency / factor) * factor;
@@ -626,7 +627,7 @@ ScriptPromise AudioContext::setSinkId(
   }
 
   SetSinkIdResolver* resolver =
-      SetSinkIdResolver::Create(script_state, *this, *v8_sink_id);
+      MakeGarbageCollected<SetSinkIdResolver>(script_state, *this, *v8_sink_id);
   ScriptPromise promise = resolver->Promise();
 
   set_sink_id_resolvers_.push_back(resolver);
@@ -937,7 +938,7 @@ void AudioContext::ResolvePromisesForUnpause() {
 
 AudioIOPosition AudioContext::OutputPosition() const {
   DCHECK(IsMainThread());
-  GraphAutoLocker locker(this);
+  DeferredTaskHandler::GraphAutoLocker locker(this);
   return output_position_;
 }
 
@@ -981,14 +982,14 @@ AudioCallbackMetric AudioContext::GetCallbackMetric() const {
   // allow seeing the audio thread changing the struct values. This method
   // gets called once per second and the size of the struct is small, so
   // creating a copy is acceptable here.
-  GraphAutoLocker locker(this);
+  DeferredTaskHandler::GraphAutoLocker locker(this);
   return callback_metric_;
 }
 
-uint32_t AudioContext::PlatformBufferSize() const {
+base::TimeDelta AudioContext::PlatformBufferDuration() const {
   return (static_cast<RealtimeAudioDestinationHandler&>(
               destination()->GetAudioDestinationHandler()))
-      .GetCallbackBufferSize();
+      .GetPlatformBufferDuration();
 }
 
 void AudioContext::OnPermissionStatusChange(
@@ -1186,6 +1187,21 @@ bool AudioContext::IsValidSinkDescriptor(
   return sink_descriptor.Type() ==
              WebAudioSinkDescriptor::AudioSinkType::kSilent ||
          output_device_ids_.Contains(sink_descriptor.SinkId());
+}
+
+void AudioContext::OnRenderError() {
+  if (base::FeatureList::IsEnabled(features::kWebAudioHandleOnRenderError)) {
+    DCHECK(IsMainThread());
+
+    CHECK(GetExecutionContext());
+    LocalDOMWindow* window = To<LocalDOMWindow>(GetExecutionContext());
+    if (window && window->GetFrame()) {
+      window->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::blink::ConsoleMessageSource::kOther,
+          mojom::blink::ConsoleMessageLevel::kError,
+          "The AudioContext encountered a render error."));
+    }
+  }
 }
 
 void AudioContext::ResumeOnPrerenderActivation() {

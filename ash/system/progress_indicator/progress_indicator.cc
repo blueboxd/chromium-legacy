@@ -110,10 +110,15 @@ float GetInnerRingStrokeWidth(const ui::Layer* layer) {
          std::min(size.width(), size.height());
 }
 
+// TODO(b/324644877): We want the progress ring still keep the same opacity
+// after the `Pulse` animation. Please also provide an option for our this
+// expectation after removing `kForcedShow`.
 // Returns the opacity for the outer ring given the current `progress`.
 float GetOuterRingOpacity(const std::optional<float>& progress) {
-  return progress != ProgressIndicator::kProgressComplete ? kOuterRingOpacity
-                                                          : 1.f;
+  return (progress == ProgressIndicator::kProgressComplete ||
+          progress == ProgressIndicator::kForcedShow)
+             ? 1.f
+             : kOuterRingOpacity;
 }
 
 // Returns the stroke width for the outer ring given `layer` dimensions and
@@ -188,15 +193,17 @@ class DefaultProgressIndicatorAnimationRegistry
         FROM_HERE,
         base::BindOnce(
             [](const base::WeakPtr<DefaultProgressIndicatorAnimationRegistry>&
-                   registry,
-               ProgressRingAnimation* animation) {
-              if (!registry)
+                   self,
+               MayBeDangling<ProgressRingAnimation> animation) {
+              if (!self) {
                 return;
-              auto key = registry->progress_indicator_->animation_key();
-              if (registry->GetProgressRingAnimationForKey(key) == animation)
-                registry->SetProgressRingAnimationForKey(key, nullptr);
+              }
+              auto key = self->progress_indicator_->animation_key();
+              if (self->GetProgressRingAnimationForKey(key) == animation) {
+                self->SetProgressRingAnimationForKey(key, nullptr);
+              }
             },
-            weak_ptr_factory_.GetWeakPtr(), animation));
+            weak_ptr_factory_.GetWeakPtr(), base::UnsafeDangling(animation)));
   }
 
   // Ensures that a progress icon animation exists and is started.

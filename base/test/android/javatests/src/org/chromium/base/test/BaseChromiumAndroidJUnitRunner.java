@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Application;
 import android.app.Instrumentation;
-import android.app.job.JobScheduler;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.SharedPreferences;
@@ -43,7 +42,6 @@ import org.chromium.base.LifetimeAssert;
 import org.chromium.base.Log;
 import org.chromium.base.ResettersForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.InMemorySharedPreferences;
@@ -51,6 +49,7 @@ import org.chromium.base.test.util.InMemorySharedPreferencesContext;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.build.BuildConfig;
+import org.chromium.testing.TestListInstrumentationRunListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,12 +64,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * A custom AndroidJUnitRunner that supports incremental install and custom test listing. Also
- * customizes various TestRunner and Instrumentation behaviors, like when Activities get finished,
- * and adds a timeout to waitForIdleSync.
  *
- * <p>Please beware that is this not a class runner. It is declared in test apk AndroidManifest.xml
- * <instrumentation>
+ *
+ * <pre>
+ * An Instrumentation subclass that:
+ *    * Supports incremental install.
+ *    * Installs an InMemorySharedPreferences, and a few other try-to-make-things-less-flaky things.
+ * </pre>
  */
 public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
     private static final String IS_UNIT_TEST_FLAG =
@@ -178,7 +178,7 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                                 arguments.toString()));
             }
             finishAllAppTasks(getTargetContext());
-            getTargetContext().getSystemService(JobScheduler.class).cancelAll();
+            BaseJUnit4TestRule.clearJobSchedulerJobs();
             checkOrDeleteOnDiskSharedPreferences(false);
             clearDataDirectory(sInMemorySharedPreferencesContext);
             InstrumentationRegistry.getInstrumentation().setInTouchMode(true);
@@ -220,16 +220,15 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
 
     private void listTests() {
         Bundle results = new Bundle();
-        TestListInstrumentationRunListener listener = new TestListInstrumentationRunListener();
         try {
             TestExecutor.Builder executorBuilder = new TestExecutor.Builder(this);
-            executorBuilder.addRunListener(listener);
+            executorBuilder.addRunListener(new TestListInstrumentationRunListener(true));
 
-            // Do not use Log runner from android test support.
+            // Do not use androidx's AndroidLogOnlyBuilder.
             //
-            // Test logging and execution skipping is handled by BaseJUnit4ClassRunner,
-            // having ARGUMENT_LOG_ONLY in argument bundle here causes AndroidJUnitRunner
-            // to use its own log-only class runner instead of BaseJUnit4ClassRunner.
+            // We require BaseJUnit4ClassRunner to implement our test skipping / restrictions logic,
+            // but ARGUMENT_LOG_ONLY means that our runner will not be used.
+            // Remove the argument, and have BaseJUnit4ClassRunner run in no-op mode.
             Bundle junit4Arguments = new Bundle(InstrumentationRegistry.getArguments());
             junit4Arguments.remove(ARGUMENT_LOG_ONLY);
 
@@ -387,13 +386,6 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
         }
     }
 
-    private static Object getField(Class<?> clazz, Object instance, String name)
-            throws ReflectiveOperationException {
-        Field field = clazz.getDeclaredField(name);
-        field.setAccessible(true);
-        return field.get(instance);
-    }
-
     /**
      * ClassLoader that translates NoClassDefFoundError into ClassNotFoundException.
      *
@@ -451,14 +443,6 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                                 "Skipping abstract class %s: not a test", loadedClass.getName()));
                 return false;
             }
-            if (junit.framework.Test.class.isAssignableFrom(loadedClass)) {
-                // ensure that if a TestCase, it has at least one test method otherwise
-                // TestSuite will throw error
-                if (junit.framework.TestCase.class.isAssignableFrom(loadedClass)) {
-                    return hasJUnit3TestMethod(loadedClass);
-                }
-                return true;
-            }
             if (loadedClass.isAnnotationPresent(RunWith.class)) {
                 return true;
             }
@@ -481,27 +465,6 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
         }
     }
 
-    private static boolean hasJUnit3TestMethod(Class<?> loadedClass) {
-        for (Method testMethod : loadedClass.getMethods()) {
-            if (isPublicTestMethod(testMethod)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // copied from junit.framework.TestSuite
-    private static boolean isPublicTestMethod(Method m) {
-        return isTestMethod(m) && Modifier.isPublic(m.getModifiers());
-    }
-
-    // copied from junit.framework.TestSuite
-    private static boolean isTestMethod(Method m) {
-        return m.getParameterTypes().length == 0
-                && m.getName().startsWith("test")
-                && m.getReturnType().equals(Void.TYPE);
-    }
-
     @Override
     public void finish(int resultCode, Bundle results) {
         if (sTestListMode) {
@@ -521,9 +484,7 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
 
         try {
             writeClangCoverageProfileIfEnabled();
-            getTargetContext().getSystemService(JobScheduler.class).cancelAll();
             checkOrDeleteOnDiskSharedPreferences(true);
-            UmaRecorderHolder.resetForTesting();
 
             // There is a bug on L and below that DestroyActivitiesRule does not cause onStop and
             // onDestroy. On other versions, DestroyActivitiesRule may still fail flakily. Ignore

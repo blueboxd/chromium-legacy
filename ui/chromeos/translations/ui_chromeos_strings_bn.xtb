@@ -851,6 +851,7 @@
 <translation id="7589661784326793847">এক সেকেন্ড অপেক্ষা করুন</translation>
 <translation id="7600126690270271294">সার্বিয়ান</translation>
 <translation id="7603724359189955920">গ্রিড</translation>
+<translation id="7624010287655004652">অন্য কোনও মোবাইল পরিষেবা প্রদানকারী লক করেছে</translation>
 <translation id="7627790789328695202">ওহো, <ph name="FILE_NAME" /> ইতিমধ্যেই বিদ্যমান রয়েছে৷ এটির পুনঃনামকরণ করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="7628656427739290098"><ph name="PERCENT" />% সম্পূর্ণ হয়েছে।</translation>
 <translation id="7649070708921625228">সহায়তা</translation>
@@ -1017,7 +1018,6 @@
 <translation id="8698877009525468705">এই ফাইলটি গোপনীয় এবং অ্যাডমিনিস্ট্রেটর নীতির মাধ্যমে প্রযোজ্য বিধিনিষেধ পালন করেই এটি শেয়ার করা হয়।</translation>
 <translation id="8712637175834984815">বুঝেছি</translation>
 <translation id="8713112442029511308">মল্টিজ</translation>
-<translation id="8714138378966541668">পরিষেবা প্রদানকারী লক করে দিয়েছে</translation>
 <translation id="8714406895390098252">সাইকেল</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> বেছে নেওয়া হয়েছে।</translation>
 <translation id="872537912056138402">ক্রোয়েশিয়</translation>

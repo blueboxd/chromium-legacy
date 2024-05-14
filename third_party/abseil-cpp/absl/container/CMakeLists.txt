@@ -283,13 +283,17 @@ absl_cc_library(
     flat_hash_map
   HDRS
     "flat_hash_map.h"
+  SRCS
+    "flat_hash_map.cc"
   COPTS
     ${ABSL_DEFAULT_COPTS}
   DEPS
+    absl::config
     absl::container_memory
     absl::core_headers
     absl::hash_function_defaults
     absl::raw_hash_map
+    absl::raw_hash_set
     absl::algorithm_container
     absl::memory
   PUBLIC
@@ -321,9 +325,12 @@ absl_cc_library(
     flat_hash_set
   HDRS
     "flat_hash_set.h"
+  SRCS
+    "flat_hash_set.cc"
   COPTS
     ${ABSL_DEFAULT_COPTS}
   DEPS
+    absl::config
     absl::container_memory
     absl::hash_function_defaults
     absl::raw_hash_set
@@ -362,14 +369,18 @@ absl_cc_library(
     node_hash_map
   HDRS
     "node_hash_map.h"
+  SRCS
+    "node_hash_map.cc"
   COPTS
     ${ABSL_DEFAULT_COPTS}
   DEPS
+    absl::config
     absl::container_memory
     absl::core_headers
     absl::hash_function_defaults
     absl::node_slot_policy
     absl::raw_hash_map
+    absl::raw_hash_set
     absl::algorithm_container
     absl::memory
   PUBLIC
@@ -398,9 +409,13 @@ absl_cc_library(
     node_hash_set
   HDRS
     "node_hash_set.h"
+  SRCS
+    "node_hash_set.cc"
   COPTS
     ${ABSL_DEFAULT_COPTS}
   DEPS
+    absl::config
+    absl::container_memory
     absl::core_headers
     absl::hash_function_defaults
     absl::node_slot_policy
@@ -470,9 +485,11 @@ absl_cc_library(
     ${ABSL_DEFAULT_COPTS}
   DEPS
     absl::config
+    absl::container_common
     absl::cord
     absl::hash
     absl::strings
+    absl::type_traits
   PUBLIC
 )
 
@@ -486,6 +503,8 @@ absl_cc_test(
   DEPS
     absl::cord
     absl::cord_test_helpers
+    absl::flat_hash_map
+    absl::flat_hash_set
     absl::hash_function_defaults
     absl::hash
     absl::random_random
@@ -560,6 +579,7 @@ absl_cc_test(
   COPTS
     ${ABSL_TEST_COPTS}
   DEPS
+    absl::container_memory
     absl::hash_policy_traits
     GTest::gmock_main
 )
@@ -776,6 +796,7 @@ absl_cc_test(
     ${ABSL_TEST_COPTS}
   DEPS
     absl::config
+    absl::container_memory
     absl::raw_hash_set
     absl::tracked
     GTest::gmock_main

@@ -76,25 +76,33 @@ void RejectWithCode(ScriptPromiseResolver* resolver,
   exception_state.ThrowDOMException(code, message);
   resolver->Reject(exception_state);
 }
+
+void DisposeTemporaryRange(Range* range) {
+  if (range) {
+    range->Dispose();
+  }
+}
 }  // namespace
 
-ScriptPromise FragmentDirective::createSelectorDirective(
-    ScriptState* state,
-    const V8UnionRangeOrSelection* arg) {
+ScriptPromiseTyped<SelectorDirective>
+FragmentDirective::createSelectorDirective(ScriptState* state,
+                                           const V8UnionRangeOrSelection* arg) {
   if (ExecutionContext::From(state)->IsContextDestroyed())
-    return ScriptPromise();
+    return ScriptPromiseTyped<SelectorDirective>();
 
-  ScriptPromiseResolver* resolver =
-      MakeGarbageCollected<ScriptPromiseResolver>(state);
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<SelectorDirective>>(
+          state);
 
   // Access the promise first to ensure it is created so that the proper state
   // can be changed when it is resolved or rejected.
-  ScriptPromise promise = resolver->Promise();
+  auto promise = resolver->Promise();
 
   Range* range = nullptr;
 
-  if (arg->GetContentType() ==
-      V8UnionRangeOrSelection::ContentType::kSelection) {
+  bool is_content_type_selection =
+      arg->GetContentType() == V8UnionRangeOrSelection::ContentType::kSelection;
+  if (is_content_type_selection) {
     DOMSelection* selection = arg->GetAsSelection();
     if (selection->rangeCount() == 0) {
       RejectWithCode(resolver, DOMExceptionCode::kNotSupportedError,
@@ -112,12 +120,18 @@ ScriptPromise FragmentDirective::createSelectorDirective(
   if (!range || range->collapsed()) {
     RejectWithCode(resolver, DOMExceptionCode::kNotSupportedError,
                    "RangeOrSelector must be non-null and non-collapsed");
+    if (is_content_type_selection) {
+      DisposeTemporaryRange(range);
+    }
     return promise;
   }
 
   if (range->OwnerDocument() != owner_document_) {
     RejectWithCode(resolver, DOMExceptionCode::kWrongDocumentError,
                    "RangeOrSelector must be from this document");
+    if (is_content_type_selection) {
+      DisposeTemporaryRange(range);
+    }
     return promise;
   }
 
@@ -125,6 +139,9 @@ ScriptPromise FragmentDirective::createSelectorDirective(
   if (!frame) {
     RejectWithCode(resolver, DOMExceptionCode::kInvalidStateError,
                    "Document must be attached to frame");
+    if (is_content_type_selection) {
+      DisposeTemporaryRange(range);
+    }
     return promise;
   }
 
@@ -136,7 +153,7 @@ ScriptPromise FragmentDirective::createSelectorDirective(
   generator->Generate(
       *range_in_flat_tree,
       WTF::BindOnce(
-          [](ScriptPromiseResolver* resolver,
+          [](ScriptPromiseResolverTyped<SelectorDirective>* resolver,
              TextFragmentSelectorGenerator* generator,
              const RangeInFlatTree* range, const TextFragmentSelector& selector,
              shared_highlighting::LinkGenerationError error) {
@@ -154,6 +171,9 @@ ScriptPromise FragmentDirective::createSelectorDirective(
           WrapPersistent(resolver), WrapPersistent(generator),
           WrapPersistent(range_in_flat_tree)));
 
+  if (is_content_type_selection) {
+    DisposeTemporaryRange(range);
+  }
   return promise;
 }
 

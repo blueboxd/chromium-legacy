@@ -15,6 +15,7 @@
 #include "ash/public/cpp/wallpaper/wallpaper_controller.h"
 #include "ash/public/cpp/wallpaper/wallpaper_drivefs_delegate.h"
 #include "ash/public/cpp/wallpaper/wallpaper_types.h"
+#include "ash/webui/common/mojom/sea_pen.mojom.h"
 #include "base/files/file_path.h"
 #include "base/observer_list.h"
 #include "base/strings/string_util.h"
@@ -162,15 +163,8 @@ class TestWallpaperController : public ash::WallpaperController {
       const ash::personalization_app::mojom::SeaPenQueryPtr& query,
       SetWallpaperCallback callback) override;
   void SetSeaPenWallpaperFromFile(const AccountId& account_id,
-                                  const base::FilePath& sea_pen_file_path,
+                                  uint32_t id,
                                   SetWallpaperCallback callback) override;
-  void GetSeaPenMetadata(const AccountId& account_id,
-                         const base::FilePath& sea_pen_file_path,
-                         GetSeaPenMetadataCallback callback) override;
-  void DeleteRecentSeaPenImage(
-      const AccountId& account_id,
-      const base::FilePath& sea_pen_file_path,
-      DeleteRecentSeaPenImageCallback callback) override;
   void ConfirmPreviewWallpaper() override;
   void CancelPreviewWallpaper() override;
   void UpdateCurrentWallpaperLayout(const AccountId& account_id,

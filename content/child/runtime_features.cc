@@ -32,7 +32,6 @@
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/base/media_switches.h"
-#include "net/base/features.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/buildflags.h"
@@ -216,6 +215,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kSetOnlyIfOverridden},
           {wf::EnableDocumentPolicyNegotiation,
            raw_ref(features::kDocumentPolicyNegotiation)},
+          {wf::EnableEyeDropperAPI, raw_ref(features::kEyeDropper),
+           kSetOnlyIfOverridden},
           {wf::EnableFedCm, raw_ref(features::kFedCm), kSetOnlyIfOverridden},
           {wf::EnableFedCmAutoSelectedFlag,
            raw_ref(features::kFedCmAutoSelectedFlag), kSetOnlyIfOverridden},
@@ -240,11 +241,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
            kSetOnlyIfOverridden},
           {wf::EnableSharedStorageAPIM118,
-           raw_ref(blink::features::kSharedStorageAPIM118),
-           kSetOnlyIfOverridden},
-          {wf::EnableSharedStorageAPIM123,
-           raw_ref(blink::features::kSharedStorageAPIM123),
-           kSetOnlyIfOverridden},
+           raw_ref(blink::features::kSharedStorageAPIM118), kDefault},
+          {wf::EnableSharedStorageAPIM124,
+           raw_ref(blink::features::kSharedStorageAPIM124), kDefault},
           {wf::EnableFedCmMultipleIdentityProviders,
            raw_ref(features::kFedCmMultipleIdentityProviders), kDefault},
           {wf::EnableFedCmDisconnect, raw_ref(features::kFedCmDisconnect),
@@ -257,10 +256,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {wf::EnableFencedFrames,
            raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
            kSetOnlyIfOverridden},
-          // FledgeFeatureDetection should be on if any of the features it aims
-          // to help detect is on.
-          {wf::EnableFledgeFeatureDetection,
-           raw_ref(blink::features::kFledgeCustomMaxAuctionAdComponents)},
           {wf::EnableForcedColors, raw_ref(features::kForcedColors)},
           {wf::EnableFractionalScrollOffsets,
            raw_ref(features::kFractionalScrollOffsets)},
@@ -351,6 +346,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            raw_ref(device::features::kWebXrIncubations)},
           {wf::EnableWebXRPoseMotionData,
            raw_ref(device::features::kWebXrIncubations)},
+          {wf::EnableWebXRSpecParity,
+           raw_ref(device::features::kWebXrIncubations)},
 #endif
           {wf::EnableRemoveMobileViewportDoubleTap,
            raw_ref(features::kRemoveMobileViewportDoubleTap)},
@@ -417,9 +414,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"LegacyWindowsDWriteFontFallback",
            raw_ref(features::kLegacyWindowsDWriteFontFallback)},
           {"OriginIsolationHeader", raw_ref(features::kOriginIsolationHeader)},
-          {"PartitionedCookies", raw_ref(net::features::kPartitionedCookies)},
           {"ReduceAcceptLanguage",
            raw_ref(network::features::kReduceAcceptLanguage)},
+          {"SerialPortConnected", raw_ref(features::kSerialPortConnected)},
           {"TopicsAPI", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
            kSetOnlyIfOverridden},
           {"TopicsAPI", raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
@@ -497,6 +494,8 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
       {wrf::EnableScriptedSpeechSynthesis, switches::kDisableSpeechSynthesisAPI,
        false},
       {wrf::EnableSharedWorker, switches::kDisableSharedWorkers, false},
+      {wrf::EnableMutationEvents, blink::switches::kMutationEventsEnabled,
+       true},
       {wrf::EnableTextFragmentIdentifiers,
        switches::kDisableScrollToTextFragment, false},
       {wrf::EnableWebAuthenticationRemoteDesktopSupport,
@@ -508,8 +507,6 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
       {wrf::EnableWebGPUDeveloperFeatures,
        switches::kEnableWebGPUDeveloperFeatures, true},
       {wrf::EnableWebGPUExperimentalFeatures, switches::kEnableUnsafeWebGPU,
-       true},
-      {wrf::EnableDirectSockets, switches::kEnableIsolatedWebAppsInRenderer,
        true},
   };
 
@@ -703,15 +700,15 @@ void ResolveInvalidConfigurations() {
     WebRuntimeFeatures::EnableSharedStorageAPIM118(false);
   }
 
-  if (!base::FeatureList::IsEnabled(blink::features::kSharedStorageAPIM123) ||
+  if (!base::FeatureList::IsEnabled(blink::features::kSharedStorageAPIM124) ||
       !base::FeatureList::IsEnabled(blink::features::kSharedStorageAPI)) {
-    LOG_IF(WARNING, WebRuntimeFeatures::IsSharedStorageAPIM123Enabled())
-        << "SharedStorage for M123+ cannot be enabled in this "
+    LOG_IF(WARNING, WebRuntimeFeatures::IsSharedStorageAPIM124Enabled())
+        << "SharedStorage for M124+ cannot be enabled in this "
            "configuration. Use --"
         << switches::kEnableFeatures << "="
         << blink::features::kSharedStorageAPI.name << ","
-        << blink::features::kSharedStorageAPIM123.name << " in addition.";
-    WebRuntimeFeatures::EnableSharedStorageAPIM123(false);
+        << blink::features::kSharedStorageAPIM124.name << " in addition.";
+    WebRuntimeFeatures::EnableSharedStorageAPIM124(false);
   }
 
   if (!base::FeatureList::IsEnabled(
@@ -748,6 +745,17 @@ void ResolveInvalidConfigurations() {
         << blink::features::kInterestGroupStorage.name << " in addition.";
     WebRuntimeFeatures::EnableAdInterestGroupAPI(false);
     WebRuntimeFeatures::EnableFledge(false);
+  }
+
+  if (base::FeatureList::IsEnabled(
+          features::kCookieDeprecationFacilitatedTesting)) {
+    WebRuntimeFeatures::EnableFledgeMultiBid(false);
+
+    if (!base::FeatureList::IsEnabled(
+            blink::features::
+                kAlwaysAllowFledgeDeprecatedRenderURLReplacements)) {
+      WebRuntimeFeatures::EnableFledgeDeprecatedRenderURLReplacements(false);
+    }
   }
 }
 

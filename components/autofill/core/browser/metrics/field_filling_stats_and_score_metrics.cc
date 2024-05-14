@@ -8,6 +8,7 @@
 #include "base/strings/strcat.h"
 #include "components/autofill/core/browser/autofill_granular_filling_utils.h"
 #include "components/autofill/core/browser/form_types.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics_utils.h"
 #include "components/autofill/core/browser/metrics/granular_filling_metrics_utils.h"
 
 namespace autofill::autofill_metrics {
@@ -91,19 +92,48 @@ void LogFieldFillingStatsWithHistogramPrefix(
       filling_stats.Total());
 }
 
+void LogAutocompleteUnrecognizedFieldFillingStats(
+    FormType form_type,
+    const FormGroupFillingStats& filling_stats) {
+  // Do not acquire metrics if autofill was not used on ac=unrecognized fields
+  if (filling_stats.TotalFilled() == 0) {
+    return;
+  }
+  for (size_t i = 0; i < filling_stats.num_accepted; ++i) {
+    base::UmaHistogramEnumeration(
+        "Autofill.AutocompleteUnrecognized.FieldFillingStats",
+        FieldFillingStat::kAccepted);
+  }
+  for (size_t i = 0; i < filling_stats.TotalCorrected(); ++i) {
+    base::UmaHistogramEnumeration(
+        "Autofill.AutocompleteUnrecognized.FieldFillingStats",
+        FieldFillingStat::kCorrected);
+  }
+  for (size_t i = 0; i < filling_stats.TotalManuallyFilled(); ++i) {
+    base::UmaHistogramEnumeration(
+        "Autofill.AutocompleteUnrecognized.FieldFillingStats",
+        FieldFillingStat::kManuallyFilled);
+  }
+  for (size_t i = 0; i < filling_stats.num_left_empty; ++i) {
+    base::UmaHistogramEnumeration(
+        "Autofill.AutocompleteUnrecognized.FieldFillingStats",
+        FieldFillingStat::kLeftEmpty);
+  }
+}
+
 void LogFieldFillingStats(FormType form_type,
                           const FormGroupFillingStats& filling_stats) {
   LogFieldFillingStatsWithHistogramPrefix(
       form_type, base::StrCat({"Autofill.FieldFillingStats."}), filling_stats);
 }
 
-void LogAddressFieldFillingStatsForAutofillFillingMethod(
-    AutofillFillingMethod filling_method,
+void LogAddressFieldFillingStatsForFillingMethod(
+    FillingMethod filling_method,
     const FormGroupFillingStats& filling_stats) {
   LogFieldFillingStatsWithHistogramPrefix(
       FormType::kAddressForm,
       base::StrCat({"Autofill.FieldFillingStats.",
-                    AutofillFillingMethodToStringView(filling_method), "."}),
+                    FillingMethodToCompactStringView(filling_method), "."}),
       filling_stats);
 }
 
@@ -172,9 +202,12 @@ void LogFormFillingComplexScore(FormType form_type,
 
 void LogFieldFillingStatsAndScore(
     const FormGroupFillingStats& address_filling_stats,
-    const FormGroupFillingStats& cc_filling_stats) {
+    const FormGroupFillingStats& cc_filling_stats,
+    const FormGroupFillingStats& ac_unrecognized_address_field_stats) {
   LogFieldFillingStats(FormType::kAddressForm, address_filling_stats);
   LogFieldFillingStats(FormType::kCreditCardForm, cc_filling_stats);
+  LogAutocompleteUnrecognizedFieldFillingStats(
+      FormType::kCreditCardForm, ac_unrecognized_address_field_stats);
 
   LogFormFillingScore(FormType::kAddressForm, address_filling_stats);
   LogFormFillingScore(FormType::kCreditCardForm, cc_filling_stats);
@@ -183,14 +216,14 @@ void LogFieldFillingStatsAndScore(
   LogFormFillingComplexScore(FormType::kCreditCardForm, cc_filling_stats);
 }
 
-void LogAddressFieldFillingStatsAndScoreByAutofillFillingMethod(
-    const base::flat_map<AutofillFillingMethod,
+void LogAddressFieldFillingStatsAndScoreByFillingMethod(
+    const base::flat_map<FillingMethod,
                          autofill_metrics::FormGroupFillingStats>&
         address_filling_stats_by_filling_method) {
   autofill_metrics::FormGroupFillingStats any;
   for (const auto& filling_stats : address_filling_stats_by_filling_method) {
-    LogAddressFieldFillingStatsForAutofillFillingMethod(filling_stats.first,
-                                                        filling_stats.second);
+    LogAddressFieldFillingStatsForFillingMethod(filling_stats.first,
+                                                filling_stats.second);
     MergeFormGroupFillingStats(filling_stats.second, any);
   }
   LogFieldFillingStatsWithHistogramPrefix(

@@ -83,7 +83,7 @@ class ExtensionHooksDelegateTest
  private:
   std::unique_ptr<NativeRendererMessagingService> messaging_service_;
 
-  raw_ptr<ScriptContext, ExperimentalRenderer> script_context_ = nullptr;
+  raw_ptr<ScriptContext> script_context_ = nullptr;
   scoped_refptr<const Extension> extension_;
 };
 
@@ -302,6 +302,7 @@ TEST_F(ExtensionHooksDelegateMV3Test, AliasesArentAvailableInMV3) {
 
   EXPECT_EQ("undefined", script_to_value("chrome.extension.connect"));
   EXPECT_EQ("undefined", script_to_value("chrome.extension.connectNative"));
+  EXPECT_EQ("undefined", script_to_value("chrome.extension.getURL"));
   EXPECT_EQ("undefined", script_to_value("chrome.extension.onConnect"));
   EXPECT_EQ("undefined", script_to_value("chrome.extension.onConnectExternal"));
   EXPECT_EQ("undefined", script_to_value("chrome.extension.onMessage"));

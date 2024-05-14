@@ -480,7 +480,7 @@ class CONTENT_EXPORT FencedFrameProperties {
   // FencedFrameProperties constructor rather than
   // OnFencedFrameURLMappingComplete.
   void AdjustPropertiesForUrnIframe() {
-    partition_nonce_ = absl::nullopt;
+    partition_nonce_ = std::nullopt;
     can_disable_untrusted_network_ = false;
   }
 
@@ -515,9 +515,8 @@ class CONTENT_EXPORT FencedFrameProperties {
   }
 
   // Safe to call multiple times (will do nothing after the first time).
-  void DisableUntrustedNetwork() {
+  void MarkUntrustedNetworkDisabled() {
     CHECK(can_disable_untrusted_network_);
-    // TODO(crbug.com/1294933): Actually disable network.
     has_disabled_untrusted_network_ = true;
   }
 

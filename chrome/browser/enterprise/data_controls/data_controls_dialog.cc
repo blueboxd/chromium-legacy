@@ -25,6 +25,28 @@ constexpr int kBusinessIconSize = 24;
 
 DataControlsDialog::TestObserver* observer_for_testing_ = nullptr;
 
+// Helper that keeps track of dialogs currently showing for given
+// WebContents-type pair.  These are used to determine if a call to
+// `DataControlsDialog::Show` is redundant or not. Keyed with `void*` instead of
+// `content::WebContents*` to avoid accidental bugs from dereferencing that
+// pointer.
+std::map<std::pair<void*, DataControlsDialog::Type>, DataControlsDialog*>&
+CurrentDialogsStorage() {
+  static std::map<std::pair<void*, DataControlsDialog::Type>,
+                  DataControlsDialog*>
+      dialogs;
+  return dialogs;
+}
+
+// Returns null if no dialog is currently shown on `web_contents` for `type`.
+DataControlsDialog* GetCurrentDialog(content::WebContents* web_contents,
+                                     DataControlsDialog::Type type) {
+  if (CurrentDialogsStorage().count({web_contents, type})) {
+    return CurrentDialogsStorage().at({web_contents, type});
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 DataControlsDialog::TestObserver::TestObserver() {
@@ -53,11 +75,25 @@ void DataControlsDialog::Show(
     Type type,
     base::OnceCallback<void(bool bypassed)> callback) {
   DCHECK(web_contents);
+
+  // Don't show a new dialog if there is already an existing dialog of the same
+  // type showing in `web_contents` already. If `callback` is non-null, we add
+  // it to the currently showing dialog.
+  if (auto* dialog = GetCurrentDialog(web_contents, type)) {
+    if (callback) {
+      dialog->callbacks_.push_back(std::move(callback));
+    }
+    return;
+  }
+
   constrained_window::ShowWebModalDialogViews(
-      new DataControlsDialog(type, std::move(callback)), web_contents);
+      new DataControlsDialog(type, web_contents, std::move(callback)),
+      web_contents);
 }
 
 DataControlsDialog::~DataControlsDialog() {
+  CurrentDialogsStorage().erase({web_contents_, type_});
+
   if (observer_for_testing_) {
     observer_for_testing_->OnDestructed(this);
   }
@@ -73,9 +109,14 @@ std::u16string DataControlsDialog::GetWindowTitle() const {
     case Type::kClipboardCopyBlock:
       id = IDS_DATA_CONTROLS_CLIPBOARD_COPY_BLOCK_TITLE;
       break;
-      // TODO(domfc): Add text for other values.
-      // case Type::kClipboardPasteWarn:
-      // case Type::kClipboardCopyWarn:
+
+    case Type::kClipboardPasteWarn:
+      id = IDS_DATA_CONTROLS_CLIPBOARD_PASTE_WARN_TITLE;
+      break;
+
+    case Type::kClipboardCopyWarn:
+      id = IDS_DATA_CONTROLS_CLIPBOARD_COPY_WARN_TITLE;
+      break;
   }
   return l10n_util::GetStringUTF16(id);
 }
@@ -119,9 +160,15 @@ void DataControlsDialog::OnWidgetInitialized() {
 
 DataControlsDialog::DataControlsDialog(
     Type type,
+    content::WebContents* web_contents,
     base::OnceCallback<void(bool bypassed)> callback)
-    : type_(type), callback_(std::move(callback)) {
+    : type_(type), web_contents_(web_contents) {
   SetOwnedByWidget(true);
+
+  CurrentDialogsStorage()[{web_contents_, type_}] = this;
+  if (callback) {
+    callbacks_.push_back(std::move(callback));
+  }
 
   switch (type_) {
     case Type::kClipboardPasteBlock:
@@ -130,9 +177,42 @@ DataControlsDialog::DataControlsDialog(
       DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                                      l10n_util::GetStringUTF16(IDS_OK));
       break;
-      // TODO(domfc): Add text for other values.
-      // case Type::kClipboardPasteWarn:
-      // case Type::kClipboardCopyWarn:
+
+    case Type::kClipboardPasteWarn:
+      DialogDelegate::SetButtons(ui::DIALOG_BUTTON_CANCEL |
+                                 ui::DIALOG_BUTTON_OK);
+      DialogDelegate::SetButtonLabel(
+          ui::DIALOG_BUTTON_CANCEL,
+          l10n_util::GetStringUTF16(
+              IDS_DATA_CONTROLS_PASTE_WARN_CANCEL_BUTTON));
+      DialogDelegate::SetButtonLabel(
+          ui::DIALOG_BUTTON_OK,
+          l10n_util::GetStringUTF16(
+              IDS_DATA_CONTROLS_PASTE_WARN_CONTINUE_BUTTON));
+      break;
+
+    case Type::kClipboardCopyWarn:
+      DialogDelegate::SetButtons(ui::DIALOG_BUTTON_CANCEL |
+                                 ui::DIALOG_BUTTON_OK);
+      DialogDelegate::SetButtonLabel(
+          ui::DIALOG_BUTTON_CANCEL,
+          l10n_util::GetStringUTF16(IDS_DATA_CONTROLS_COPY_WARN_CANCEL_BUTTON));
+      DialogDelegate::SetButtonLabel(
+          ui::DIALOG_BUTTON_OK,
+          l10n_util::GetStringUTF16(
+              IDS_DATA_CONTROLS_COPY_WARN_CONTINUE_BUTTON));
+      break;
+  }
+
+  if (!callbacks_.empty()) {
+    DCHECK(type_ == Type::kClipboardPasteWarn ||
+           type_ == Type::kClipboardCopyWarn);
+    SetAcceptCallback(base::BindOnce(&DataControlsDialog::OnDialogButtonClicked,
+                                     base::Unretained(this),
+                                     /*bypassed=*/true));
+    SetCancelCallback(base::BindOnce(&DataControlsDialog::OnDialogButtonClicked,
+                                     base::Unretained(this),
+                                     /*bypassed=*/false));
   }
 
   if (observer_for_testing_) {
@@ -154,15 +234,25 @@ std::unique_ptr<views::Label> DataControlsDialog::CreateMessage() const {
     case Type::kClipboardCopyBlock:
       id = IDS_DATA_CONTROLS_BLOCKED_LABEL;
       break;
-      // TODO(domfc): Add text for other values.
-      // case Type::kClipboardPasteWarn:
-      // case Type::kClipboardCopyWarn:
+    case Type::kClipboardPasteWarn:
+    case Type::kClipboardCopyWarn:
+      id = IDS_DATA_CONTROLS_WARNED_LABEL;
+      break;
   }
   return std::make_unique<views::Label>(l10n_util::GetStringUTF16(id));
 }
 
 DataControlsDialog::Type DataControlsDialog::type() const {
   return type_;
+}
+
+void DataControlsDialog::OnDialogButtonClicked(bool bypassed) {
+  for (auto& callback : callbacks_) {
+    if (callback) {
+      std::move(callback).Run(bypassed);
+    }
+  }
+  callbacks_.clear();
 }
 
 }  // namespace data_controls

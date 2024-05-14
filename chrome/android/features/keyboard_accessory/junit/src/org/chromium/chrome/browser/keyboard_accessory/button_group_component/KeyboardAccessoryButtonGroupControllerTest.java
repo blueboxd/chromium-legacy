@@ -16,8 +16,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.chromium.chrome.browser.keyboard_accessory.button_group_component.KeyboardAccessoryButtonGroupProperties.ACTIVE_TAB;
 import static org.chromium.chrome.browser.keyboard_accessory.button_group_component.KeyboardAccessoryButtonGroupProperties.TABS;
 
-import com.google.android.material.tabs.TabLayout;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,7 +25,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Features;
@@ -60,7 +57,6 @@ public class KeyboardAccessoryButtonGroupControllerTest {
 
     @Before
     public void setUp() {
-        UmaRecorderHolder.resetForTesting();
         MockitoAnnotations.initMocks(this);
 
         mCoordinator = new KeyboardAccessoryButtonGroupCoordinator();
@@ -121,18 +117,6 @@ public class KeyboardAccessoryButtonGroupControllerTest {
         assertThat(mModel.get(ACTIVE_TAB), is(nullValue()));
         verify(mMockPropertyObserver).onPropertyChanged(mModel, ACTIVE_TAB);
         verify(mMockAccessoryTabObserver).onActiveTabChanged(null);
-    }
-
-    @Test
-    public void testConvertsInvalidTabPositionToNull() {
-        // Asserts that the helper used to validate tab positions converts the invalid position to
-        // null. It would be better to call onTabSelected() with a tab having this position but Tab
-        // is final and has a private constructor, so this works only in mockito V2 or newer.
-        assertThat(mMediator.validateActiveTab(TabLayout.Tab.INVALID_POSITION), is(nullValue()));
-
-        mMediator.setTabs(new KeyboardAccessoryData.Tab[0]);
-        // Simulate a call when a removed tab was marked selected before the view picked it up:
-        assertThat(mMediator.validateActiveTab(0), is(nullValue()));
     }
 
     @Test

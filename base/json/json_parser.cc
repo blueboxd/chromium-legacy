@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <iterator>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -18,13 +19,11 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/third_party/icu/icu_utf.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 namespace internal {
@@ -70,7 +69,7 @@ constexpr base_icu::UChar32 kUnicodeReplacementPoint = 0xFFFD;
 // UnprefixedHexStringToInt acts like |HexStringToInt|, but enforces that the
 // input consists purely of hex digits. I.e. no "0x" nor "OX" prefix is
 // permitted.
-bool UnprefixedHexStringToInt(StringPiece input, int* output) {
+bool UnprefixedHexStringToInt(std::string_view input, int* output) {
   for (size_t i = 0; i < input.size(); i++) {
     if (!IsHexDigit(input[i])) {
       return false;
@@ -127,7 +126,7 @@ JSONParser::JSONParser(int options, size_t max_depth)
 
 JSONParser::~JSONParser() = default;
 
-absl::optional<Value> JSONParser::Parse(StringPiece input) {
+std::optional<Value> JSONParser::Parse(std::string_view input) {
   input_ = input;
   index_ = 0;
   // Line and column counting is 1-based, but |index_| is 0-based. For example,
@@ -154,14 +153,14 @@ absl::optional<Value> JSONParser::Parse(StringPiece input) {
   ConsumeIfMatch("\xEF\xBB\xBF");
 
   // Parse the first and any nested tokens.
-  absl::optional<Value> root(ParseNextToken());
+  std::optional<Value> root(ParseNextToken());
   if (!root)
-    return absl::nullopt;
+    return std::nullopt;
 
   // Make sure the input stream is at an end.
   if (GetNextToken() != T_END_OF_INPUT) {
     ReportError(JSON_UNEXPECTED_DATA_AFTER_ROOT, 0);
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return root;
@@ -230,33 +229,33 @@ std::string JSONParser::StringBuilder::DestructiveAsString() {
 
 // JSONParser private //////////////////////////////////////////////////////////
 
-absl::optional<StringPiece> JSONParser::PeekChars(size_t count) {
+std::optional<std::string_view> JSONParser::PeekChars(size_t count) {
   if (index_ + count > input_.length())
-    return absl::nullopt;
+    return std::nullopt;
   // Using StringPiece::substr() is significantly slower (according to
   // base_perftests) than constructing a substring manually.
-  return StringPiece(input_.data() + index_, count);
+  return std::string_view(input_.data() + index_, count);
 }
 
-absl::optional<char> JSONParser::PeekChar() {
-  absl::optional<StringPiece> chars = PeekChars(1);
+std::optional<char> JSONParser::PeekChar() {
+  std::optional<std::string_view> chars = PeekChars(1);
   if (chars)
     return (*chars)[0];
-  return absl::nullopt;
+  return std::nullopt;
 }
 
-absl::optional<StringPiece> JSONParser::ConsumeChars(size_t count) {
-  absl::optional<StringPiece> chars = PeekChars(count);
+std::optional<std::string_view> JSONParser::ConsumeChars(size_t count) {
+  std::optional<std::string_view> chars = PeekChars(count);
   if (chars)
     index_ += count;
   return chars;
 }
 
-absl::optional<char> JSONParser::ConsumeChar() {
-  absl::optional<StringPiece> chars = ConsumeChars(1);
+std::optional<char> JSONParser::ConsumeChar() {
+  std::optional<std::string_view> chars = ConsumeChars(1);
   if (chars)
     return (*chars)[0];
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 const char* JSONParser::pos() {
@@ -267,7 +266,7 @@ const char* JSONParser::pos() {
 JSONParser::Token JSONParser::GetNextToken() {
   EatWhitespaceAndComments();
 
-  absl::optional<char> c = PeekChar();
+  std::optional<char> c = PeekChar();
   if (!c)
     return T_END_OF_INPUT;
 
@@ -310,7 +309,7 @@ JSONParser::Token JSONParser::GetNextToken() {
 }
 
 void JSONParser::EatWhitespaceAndComments() {
-  while (absl::optional<char> c = PeekChar()) {
+  while (std::optional<char> c = PeekChar()) {
     switch (*c) {
       case '\r':
       case '\n':
@@ -335,7 +334,7 @@ void JSONParser::EatWhitespaceAndComments() {
 }
 
 bool JSONParser::EatComment() {
-  absl::optional<StringPiece> comment_start = PeekChars(2);
+  std::optional<std::string_view> comment_start = PeekChars(2);
   if (!comment_start)
     return false;
 
@@ -351,7 +350,7 @@ bool JSONParser::EatComment() {
 
     ConsumeChars(2);
     // Single line comment, read to newline.
-    while (absl::optional<char> c = PeekChar()) {
+    while (std::optional<char> c = PeekChar()) {
       if (c == '\n' || c == '\r')
         return true;
       ConsumeChar();
@@ -367,7 +366,7 @@ bool JSONParser::EatComment() {
     ConsumeChars(2);
     char previous_char = '\0';
     // Block comment, read until end marker.
-    while (absl::optional<char> c = PeekChar()) {
+    while (std::optional<char> c = PeekChar()) {
       if (previous_char == '*' && c == '/') {
         // EatWhitespaceAndComments will inspect pos(), which will still be on
         // the last / of the comment, so advance once more (which may also be
@@ -384,11 +383,11 @@ bool JSONParser::EatComment() {
   return false;
 }
 
-absl::optional<Value> JSONParser::ParseNextToken() {
+std::optional<Value> JSONParser::ParseNextToken() {
   return ParseToken(GetNextToken());
 }
 
-absl::optional<Value> JSONParser::ParseToken(Token token) {
+std::optional<Value> JSONParser::ParseToken(Token token) {
   switch (token) {
     case T_OBJECT_BEGIN:
       return ConsumeDictionary();
@@ -404,20 +403,20 @@ absl::optional<Value> JSONParser::ParseToken(Token token) {
       return ConsumeLiteral();
     default:
       ReportError(JSON_UNEXPECTED_TOKEN, 0);
-      return absl::nullopt;
+      return std::nullopt;
   }
 }
 
-absl::optional<Value> JSONParser::ConsumeDictionary() {
+std::optional<Value> JSONParser::ConsumeDictionary() {
   if (ConsumeChar() != '{') {
     ReportError(JSON_UNEXPECTED_TOKEN, 0);
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   StackMarker depth_check(max_depth_, &stack_depth_);
   if (depth_check.IsTooDeep()) {
     ReportError(JSON_TOO_MUCH_NESTING, -1);
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   std::vector<std::pair<std::string, Value>> values;
@@ -426,28 +425,28 @@ absl::optional<Value> JSONParser::ConsumeDictionary() {
   while (token != T_OBJECT_END) {
     if (token != T_STRING) {
       ReportError(JSON_UNQUOTED_DICTIONARY_KEY, 0);
-      return absl::nullopt;
+      return std::nullopt;
     }
 
     // First consume the key.
     StringBuilder key;
     if (!ConsumeStringRaw(&key)) {
-      return absl::nullopt;
+      return std::nullopt;
     }
 
     // Read the separator.
     token = GetNextToken();
     if (token != T_OBJECT_PAIR_SEPARATOR) {
       ReportError(JSON_SYNTAX_ERROR, 0);
-      return absl::nullopt;
+      return std::nullopt;
     }
 
     // The next token is the value. Ownership transfers to |dict|.
     ConsumeChar();
-    absl::optional<Value> value = ParseNextToken();
+    std::optional<Value> value = ParseNextToken();
     if (!value) {
       // ReportError from deeper level.
-      return absl::nullopt;
+      return std::nullopt;
     }
 
     values.emplace_back(key.DestructiveAsString(), std::move(*value));
@@ -458,11 +457,11 @@ absl::optional<Value> JSONParser::ConsumeDictionary() {
       token = GetNextToken();
       if (token == T_OBJECT_END && !(options_ & JSON_ALLOW_TRAILING_COMMAS)) {
         ReportError(JSON_TRAILING_COMMA, 0);
-        return absl::nullopt;
+        return std::nullopt;
       }
     } else if (token != T_OBJECT_END) {
       ReportError(JSON_SYNTAX_ERROR, 0);
-      return absl::nullopt;
+      return std::nullopt;
     }
   }
 
@@ -474,26 +473,26 @@ absl::optional<Value> JSONParser::ConsumeDictionary() {
                            std::make_move_iterator(values.end())));
 }
 
-absl::optional<Value> JSONParser::ConsumeList() {
+std::optional<Value> JSONParser::ConsumeList() {
   if (ConsumeChar() != '[') {
     ReportError(JSON_UNEXPECTED_TOKEN, 0);
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   StackMarker depth_check(max_depth_, &stack_depth_);
   if (depth_check.IsTooDeep()) {
     ReportError(JSON_TOO_MUCH_NESTING, -1);
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   Value::List list;
 
   Token token = GetNextToken();
   while (token != T_ARRAY_END) {
-    absl::optional<Value> item = ParseToken(token);
+    std::optional<Value> item = ParseToken(token);
     if (!item) {
       // ReportError from deeper level.
-      return absl::nullopt;
+      return std::nullopt;
     }
 
     list.Append(std::move(*item));
@@ -504,11 +503,11 @@ absl::optional<Value> JSONParser::ConsumeList() {
       token = GetNextToken();
       if (token == T_ARRAY_END && !(options_ & JSON_ALLOW_TRAILING_COMMAS)) {
         ReportError(JSON_TRAILING_COMMA, 0);
-        return absl::nullopt;
+        return std::nullopt;
       }
     } else if (token != T_ARRAY_END) {
       ReportError(JSON_SYNTAX_ERROR, 0);
-      return absl::nullopt;
+      return std::nullopt;
     }
   }
 
@@ -517,10 +516,10 @@ absl::optional<Value> JSONParser::ConsumeList() {
   return Value(std::move(list));
 }
 
-absl::optional<Value> JSONParser::ConsumeString() {
+std::optional<Value> JSONParser::ConsumeString() {
   StringBuilder string;
   if (!ConsumeStringRaw(&string))
-    return absl::nullopt;
+    return std::nullopt;
   return Value(string.DestructiveAsString());
 }
 
@@ -530,12 +529,12 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
     return false;
   }
 
-  // StringBuilder will internally build a StringPiece unless a UTF-16
+  // StringBuilder will internally build a std::string_view unless a UTF-16
   // conversion occurs, at which point it will perform a copy into a
   // std::string.
   StringBuilder string(pos());
 
-  while (absl::optional<char> c = PeekChar()) {
+  while (std::optional<char> c = PeekChar()) {
     base_icu::UChar32 next_char = 0;
     if (static_cast<unsigned char>(*c) < kExtendedASCIIStart) {
       // Fast path for ASCII.
@@ -589,12 +588,12 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
     } else {
       // And if it is an escape sequence, the input string will be adjusted
       // (either by combining the two characters of an encoded escape sequence,
-      // or with a UTF conversion), so using StringPiece isn't possible -- force
-      // a conversion.
+      // or with a UTF conversion), so using std::string_view isn't possible --
+      // force a conversion.
       string.Convert();
 
       // Read past the escape '\' and ensure there's a character following.
-      absl::optional<StringPiece> escape_sequence = ConsumeChars(2);
+      std::optional<std::string_view> escape_sequence = ConsumeChars(2);
       if (!escape_sequence) {
         ReportError(JSON_INVALID_ESCAPE, -1);
         return false;
@@ -685,7 +684,7 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
 
 // Entry is at the first X in \uXXXX.
 bool JSONParser::DecodeUTF16(base_icu::UChar32* out_code_point) {
-  absl::optional<StringPiece> escape_sequence = ConsumeChars(4);
+  std::optional<std::string_view> escape_sequence = ConsumeChars(4);
   if (!escape_sequence)
     return false;
 
@@ -743,7 +742,7 @@ bool JSONParser::DecodeUTF16(base_icu::UChar32* out_code_point) {
   return true;
 }
 
-absl::optional<Value> JSONParser::ConsumeNumber() {
+std::optional<Value> JSONParser::ConsumeNumber() {
   const char* num_start = pos();
   const size_t start_index = index_;
   size_t end_index = start_index;
@@ -753,7 +752,7 @@ absl::optional<Value> JSONParser::ConsumeNumber() {
 
   if (!ReadInt(false)) {
     ReportError(JSON_SYNTAX_ERROR, 0);
-    return absl::nullopt;
+    return std::nullopt;
   }
   end_index = index_;
 
@@ -762,13 +761,13 @@ absl::optional<Value> JSONParser::ConsumeNumber() {
     ConsumeChar();
     if (!ReadInt(true)) {
       ReportError(JSON_SYNTAX_ERROR, 0);
-      return absl::nullopt;
+      return std::nullopt;
     }
     end_index = index_;
   }
 
   // Optional exponent part.
-  absl::optional<char> c = PeekChar();
+  std::optional<char> c = PeekChar();
   if (c == 'e' || c == 'E') {
     ConsumeChar();
     if (PeekChar() == '-' || PeekChar() == '+') {
@@ -776,7 +775,7 @@ absl::optional<Value> JSONParser::ConsumeNumber() {
     }
     if (!ReadInt(true)) {
       ReportError(JSON_SYNTAX_ERROR, 0);
-      return absl::nullopt;
+      return std::nullopt;
     }
     end_index = index_;
   }
@@ -795,12 +794,12 @@ absl::optional<Value> JSONParser::ConsumeNumber() {
       break;
     default:
       ReportError(JSON_SYNTAX_ERROR, 0);
-      return absl::nullopt;
+      return std::nullopt;
   }
 
   index_ = exit_index;
 
-  StringPiece num_string(num_start, end_index - start_index);
+  std::string_view num_string(num_start, end_index - start_index);
 
   int num_int;
   if (StringToInt(num_string, &num_int)) {
@@ -820,14 +819,14 @@ absl::optional<Value> JSONParser::ConsumeNumber() {
   }
 
   ReportError(JSON_UNREPRESENTABLE_NUMBER, 0);
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 bool JSONParser::ReadInt(bool allow_leading_zeros) {
   size_t len = 0;
   char first = 0;
 
-  while (absl::optional<char> c = PeekChar()) {
+  while (std::optional<char> c = PeekChar()) {
     if (!IsAsciiDigit(c))
       break;
 
@@ -847,7 +846,7 @@ bool JSONParser::ReadInt(bool allow_leading_zeros) {
   return true;
 }
 
-absl::optional<Value> JSONParser::ConsumeLiteral() {
+std::optional<Value> JSONParser::ConsumeLiteral() {
   if (ConsumeIfMatch("true"))
     return Value(true);
   if (ConsumeIfMatch("false"))
@@ -855,10 +854,10 @@ absl::optional<Value> JSONParser::ConsumeLiteral() {
   if (ConsumeIfMatch("null"))
     return Value(Value::Type::NONE);
   ReportError(JSON_SYNTAX_ERROR, 0);
-  return absl::nullopt;
+  return std::nullopt;
 }
 
-bool JSONParser::ConsumeIfMatch(StringPiece match) {
+bool JSONParser::ConsumeIfMatch(std::string_view match) {
   if (match == PeekChars(match.size())) {
     ConsumeChars(match.size());
     return true;

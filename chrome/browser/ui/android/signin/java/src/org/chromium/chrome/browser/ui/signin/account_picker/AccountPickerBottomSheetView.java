@@ -54,9 +54,9 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
     }
 
     /**
-     * The title id for each screen of the bottom sheet's view flipper, the position of
-     * each id corresponds to the value of {@link ViewState}. It is used to set focus
-     * on title when the view flipper moves to a new screen.
+     * The title id for each screen of the bottom sheet's view flipper, the position of each id
+     * corresponds to the value of {@link ViewState}. It is used to set focus on title when the view
+     * flipper moves to a new screen.
      */
     private static final @IdRes int[] sTitleIds =
             new int[] {
@@ -66,6 +66,7 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
                 R.id.account_picker_signin_in_progress_title,
                 R.id.account_picker_general_error_title,
                 R.id.account_picker_auth_error_title,
+                R.id.account_picker_confirm_management_title,
             };
 
     private final Activity mActivity;
@@ -108,6 +109,9 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
         setUpContinueButton(
                 mViewFlipper.getChildAt(ViewState.NO_ACCOUNTS),
                 R.string.signin_add_account_to_device);
+        setUpContinueButton(
+                mViewFlipper.getChildAt(ViewState.CONFIRM_MANAGEMENT),
+                R.string.policy_dialog_proceed);
         setUpContinueButton(
                 mViewFlipper.getChildAt(ViewState.SIGNIN_GENERAL_ERROR),
                 R.string.signin_account_picker_general_error_button);
@@ -158,11 +162,19 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
      */
     void updateSelectedAccount(DisplayableProfileData accountProfileData) {
         View view = mViewFlipper.getChildAt(ViewState.COLLAPSED_ACCOUNT_LIST);
-        ExistingAccountRowViewBinder.bindAccountView(accountProfileData, mSelectedAccountView);
+        ExistingAccountRowViewBinder.bindAccountView(
+                accountProfileData, mSelectedAccountView, /* isCurrentlySelected= */ true);
 
         ButtonCompat continueButton = view.findViewById(R.id.account_picker_continue_as_button);
         continueButton.setText(
                 SigninUtils.getContinueAsButtonText(view.getContext(), accountProfileData));
+    }
+
+    void updateSelectedDomain(String domain) {
+        TextViewWithLeading confirmManagementDescription =
+                mViewFlipper.findViewById(R.id.account_picker_confirm_management_description);
+        confirmManagementDescription.setText(
+                mActivity.getString(R.string.managed_signin_with_user_policy_subtitle, domain));
     }
 
     /** Sets the title, subtitle, and dismiss button text. */
@@ -174,10 +186,23 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
         for (int viewState : viewStates) {
             final View view = mViewFlipper.getChildAt(viewState);
             ((TextView) view.findViewById(R.id.account_picker_header_title)).setText(title);
-            ((TextViewWithLeading) view.findViewById(R.id.account_picker_header_subtitle))
-                    .setText(subtitle);
+
+            TextViewWithLeading subtitleView =
+                    ((TextViewWithLeading) view.findViewById(R.id.account_picker_header_subtitle));
+            if (subtitle == 0) {
+                subtitleView.setVisibility(View.GONE);
+            } else {
+                subtitleView.setText(subtitle);
+                subtitleView.setVisibility(View.VISIBLE);
+            }
         }
-        mDismissButton.setText(cancelButton);
+
+        if (cancelButton == 0) {
+            mDismissButton.setVisibility(View.GONE);
+        } else {
+            mDismissButton.setText(cancelButton);
+            mDismissButton.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -276,6 +301,10 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
                 R.id.account_picker_state_general_error);
         checkViewFlipperChildIdAndViewStateMatch(
                 viewFlipper, ViewState.SIGNIN_AUTH_ERROR, R.id.account_picker_state_auth_error);
+        checkViewFlipperChildIdAndViewStateMatch(
+                viewFlipper,
+                ViewState.CONFIRM_MANAGEMENT,
+                R.id.account_picker_state_confirm_management);
     }
 
     private static void checkViewFlipperChildIdAndViewStateMatch(

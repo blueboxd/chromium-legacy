@@ -7,6 +7,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/mojom/hid_preserving_bluetooth_state_controller.mojom.h"
 #include "ash/system/bluetooth/hid_preserving_controller/disable_bluetooth_dialog_controller_impl.h"
+#include "ash/system/bluetooth/hid_preserving_controller/hid_preserving_bluetooth_metrics.h"
 #include "base/functional/bind.h"
 #include "base/task/single_thread_task_runner.h"
 #include "components/device_event_log/device_event_log.h"
@@ -38,7 +39,8 @@ void HidPreservingBluetoothStateController::BindPendingReceiver(
 }
 
 void HidPreservingBluetoothStateController::TryToSetBluetoothEnabledState(
-    bool enabled) {
+    bool enabled,
+    mojom::HidWarningDialogSource source) {
   // If we are not disabling Bluetooth, no action is needed.
   if (enabled) {
     SetBluetoothEnabledState(enabled);
@@ -49,6 +51,7 @@ void HidPreservingBluetoothStateController::TryToSetBluetoothEnabledState(
   if (device_names.empty()) {
     BLUETOOTH_LOG(DEBUG) << "No Bluetooth devices found, disabling Bluetooth";
     SetBluetoothEnabledState(enabled);
+    bluetooth::RecordHidPoweredStateDisableBehavior(/*dialog_shown=*/false);
     return;
   }
 
@@ -57,6 +60,8 @@ void HidPreservingBluetoothStateController::TryToSetBluetoothEnabledState(
         std::make_unique<DisableBluetoothDialogControllerImpl>();
   }
 
+  bluetooth::RecordHidWarningDialogSource(source);
+  bluetooth::RecordHidPoweredStateDisableBehavior(/*dialog_shown=*/true);
   BLUETOOTH_LOG(EVENT)
       << "Showing warning dialog: number of Bluetooth HID devices connected: "
       << device_names.size();
@@ -70,7 +75,7 @@ void HidPreservingBluetoothStateController::OnShowCallback(
     bool enabled,
     bool show_dialog_result) {
   BLUETOOTH_LOG(USER) << "Warning dialog result: " << show_dialog_result;
-
+  bluetooth::RecordHidWarningUserAction(show_dialog_result);
   // User decided not to disable bluetooth.
   if (!show_dialog_result) {
     return;
@@ -85,15 +90,26 @@ HidPreservingBluetoothStateController::GetBluetoothDeviceNamesIfOnlyHids() {
       ui::DeviceDataManager::GetInstance();
 
   DisableBluetoothDialogController::DeviceNamesList bluetooth_devices;
-  if (device_data_manager->GetTouchscreenDevices().size() > 0 ||
-      device_data_manager->GetPointingStickDevices().size() > 0 ||
-      device_data_manager->GetTouchpadDevices().size() > 0) {
+
+  const int touchscreen_count =
+      device_data_manager->GetTouchscreenDevices().size();
+  const int pointing_stick_count =
+      device_data_manager->GetPointingStickDevices().size();
+  const int touchpad_count = device_data_manager->GetTouchpadDevices().size();
+
+  if (touchscreen_count > 0 || pointing_stick_count > 0 || touchpad_count > 0) {
+    BLUETOOTH_LOG(DEBUG) << "Touchscreen count: " << touchscreen_count
+                         << ", Touchpad count: " << touchpad_count
+                         << ", Pointing stick count: " << pointing_stick_count;
     return bluetooth_devices;
   }
 
   for (const auto& keyboard : device_data_manager->GetKeyboardDevices()) {
     // A non-Bluetooth HID is connected, return an empty list.
     if (keyboard.type != ui::InputDeviceType::INPUT_DEVICE_BLUETOOTH) {
+      BLUETOOTH_LOG(DEBUG) << "Non-Bluetooth keyboard found: " << keyboard.name
+                           << " Type: " << keyboard.type;
+      ;
       return DisableBluetoothDialogController::DeviceNamesList();
     }
     bluetooth_devices.push_back(keyboard.name);
@@ -102,6 +118,8 @@ HidPreservingBluetoothStateController::GetBluetoothDeviceNamesIfOnlyHids() {
   for (const auto& mice : device_data_manager->GetMouseDevices()) {
     // A non-Bluetooth HID is connected, return an empty list.
     if (mice.type != ui::InputDeviceType::INPUT_DEVICE_BLUETOOTH) {
+      BLUETOOTH_LOG(DEBUG) << "Non-Bluetooth mouse found: " << mice.name
+                           << ", Type: " << mice.type;
       return DisableBluetoothDialogController::DeviceNamesList();
     }
     bluetooth_devices.push_back(mice.name);

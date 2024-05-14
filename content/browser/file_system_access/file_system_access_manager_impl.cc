@@ -4,6 +4,7 @@
 
 #include "content/browser/file_system_access/file_system_access_manager_impl.h"
 
+#include <iterator>
 #include <memory>
 #include <optional>
 #include <string>
@@ -58,9 +59,9 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
-#include "third_party/blink/public/mojom/file_system_access/file_system_access_capacity_allocation_host.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_data_transfer_token.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_error.mojom.h"
+#include "third_party/blink/public/mojom/file_system_access/file_system_access_file_modification_host.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom-shared.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -1217,8 +1218,8 @@ FileSystemAccessManagerImpl::CreateAccessHandleHost(
     const storage::FileSystemURL& url,
     mojo::PendingReceiver<blink::mojom::FileSystemAccessFileDelegateHost>
         file_delegate_receiver,
-    mojo::PendingReceiver<blink::mojom::FileSystemAccessCapacityAllocationHost>
-        capacity_allocation_host_receiver,
+    mojo::PendingReceiver<blink::mojom::FileSystemAccessFileModificationHost>
+        file_modification_host_receiver,
     int64_t file_size,
     scoped_refptr<FileSystemAccessLockManager::LockHandle> lock,
     base::ScopedClosureRunner on_close_callback) {
@@ -1230,7 +1231,7 @@ FileSystemAccessManagerImpl::CreateAccessHandleHost(
       std::make_unique<FileSystemAccessAccessHandleHostImpl>(
           this, url, std::move(lock), PassKey(), std::move(receiver),
           std::move(file_delegate_receiver),
-          std::move(capacity_allocation_host_receiver), file_size,
+          std::move(file_modification_host_receiver), file_size,
           std::move(on_close_callback));
   access_handle_host_receivers_.insert(std::move(access_handle_host));
 
@@ -1425,7 +1426,59 @@ void FileSystemAccessManagerImpl::DidVerifySensitiveDirectoryAccess(
     return;
   }
 
-  if (permission_context_ && !entries.empty()) {
+  // Move `entries` to `pathinfos_to_check` to minimize memory copies.
+  // `ResultEntry` and `PathInfo` are actually equivalent structures with a 1:1
+  // mapping of fields.
+  // TODO: crbug.com/326462071 - ResultEntry and PathInfo may become aliases,
+  // in which case this transform is not required.
+  std::vector<FileSystemAccessPermissionContext::PathInfo> pathinfos_to_check;
+  pathinfos_to_check.reserve(entries.size());
+  std::transform(std::make_move_iterator(entries.begin()),
+                 std::make_move_iterator(entries.end()),
+                 std::back_inserter(pathinfos_to_check),
+                 [](FileSystemChooser::ResultEntry&& entry) {
+                   return PathInfo{.type = entry.type,
+                                   .path = std::move(entry.path)};
+                 });
+
+  if (permission_context_) {
+    permission_context_->CheckPathsAgainstEnterprisePolicy(
+        std::move(pathinfos_to_check), binding_context.frame_id,
+        base::BindOnce(
+            &FileSystemAccessManagerImpl::OnCheckPathsAgainstEnterprisePolicy,
+            weak_factory_.GetWeakPtr(), binding_context, options,
+            starting_directory_id, request_directory_write_access,
+            std::move(callback)));
+    return;
+  }
+
+  OnCheckPathsAgainstEnterprisePolicy(
+      binding_context, options, starting_directory_id,
+      request_directory_write_access, std::move(callback),
+      std::move(pathinfos_to_check));
+}
+
+void FileSystemAccessManagerImpl::OnCheckPathsAgainstEnterprisePolicy(
+    const BindingContext& binding_context,
+    const FileSystemChooser::Options& options,
+    const std::string& starting_directory_id,
+    bool request_directory_write_access,
+    ChooseEntriesCallback callback,
+    std::vector<FileSystemAccessPermissionContext::PathInfo> entries) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // It is possible for `entries` to be empty if enterprise policy blocked all
+  // files or folders selected by the user.  If there are no entries, simulate
+  // a user abort.
+  if (entries.empty()) {
+    std::move(callback).Run(
+        file_system_access_error::FromStatus(
+            blink::mojom::FileSystemAccessStatus::kOperationAborted),
+        std::vector<blink::mojom::FileSystemAccessEntryPtr>());
+    return;
+  }
+
+  if (permission_context_) {
     auto picked_directory =
         options.type() == ui::SelectFileDialog::SELECT_FOLDER
             ? entries.front().path
@@ -1479,13 +1532,14 @@ void FileSystemAccessManagerImpl::DidVerifySensitiveDirectoryAccess(
     result_entries.push_back(CreateFileEntryFromPath(
         binding_context, entry.type, entry.path, UserAction::kOpen));
   }
+
   std::move(callback).Run(file_system_access_error::Ok(),
                           std::move(result_entries));
 }
 
 void FileSystemAccessManagerImpl::DidCreateAndTruncateSaveFile(
     const BindingContext& binding_context,
-    const FileSystemChooser::ResultEntry& entry,
+    const FileSystemAccessPermissionContext::PathInfo& entry,
     const storage::FileSystemURL& url,
     ChooseEntriesCallback callback,
     bool success) {
@@ -1523,7 +1577,7 @@ void FileSystemAccessManagerImpl::DidCreateAndTruncateSaveFile(
 
 void FileSystemAccessManagerImpl::DidChooseDirectory(
     const BindingContext& binding_context,
-    const FileSystemChooser::ResultEntry& entry,
+    const FileSystemAccessPermissionContext::PathInfo& entry,
     ChooseEntriesCallback callback,
     const SharedHandleState& shared_handle_state,
     FileSystemAccessPermissionGrant::PermissionRequestOutcome outcome) {

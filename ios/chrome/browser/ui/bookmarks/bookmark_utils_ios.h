@@ -18,14 +18,14 @@
 #import "base/uuid.h"
 
 class AuthenticationService;
+enum class BookmarkModelType;
 class ChromeBrowserState;
 class GURL;
 @class MDCSnackbarMessage;
+class LegacyBookmarkModel;
 
 namespace bookmarks {
-class BookmarkModel;
 class BookmarkNode;
-enum class StorageType;
 }  // namespace bookmarks
 
 namespace syncer {
@@ -37,7 +37,7 @@ namespace bookmark_utils_ios {
 // This class holds a node id and its bookmark model.
 struct BookmarkNodeReference {
   BookmarkNodeReference(const base::Uuid& uuid,
-                        bookmarks::BookmarkModel* bookmark_model);
+                        LegacyBookmarkModel* bookmark_model);
   BookmarkNodeReference(const BookmarkNodeReference&);
   ~BookmarkNodeReference();
 
@@ -48,7 +48,7 @@ struct BookmarkNodeReference {
   // Node id for the BookmarkNode.
   const base::Uuid uuid;
   // Bookmark model from the BookmarkNode.
-  raw_ptr<bookmarks::BookmarkModel> bookmark_model;
+  raw_ptr<LegacyBookmarkModel> bookmark_model;
 };
 
 typedef std::vector<const bookmarks::BookmarkNode*> NodeVector;
@@ -58,8 +58,8 @@ typedef std::set<BookmarkNodeReference> NodeReferenceSet;
 // Converts a set of BookmarkNode into a set of BookmarkNodeReference.
 NodeReferenceSet FindNodeReferenceByNodes(
     NodeSet nodes,
-    bookmarks::BookmarkModel* profile_bookmark_model,
-    bookmarks::BookmarkModel* account_bookmark_model);
+    LegacyBookmarkModel* profile_bookmark_model,
+    LegacyBookmarkModel* account_bookmark_model);
 
 // Converts a BookmarkNodeReference into a BookmarkNode. This function might
 // returns `nullptr` if the bookmark node doesn't exist anymore.
@@ -72,12 +72,12 @@ const bookmarks::BookmarkNode* FindNodeByNodeReference(
 NodeSet FindNodesByNodeReferences(NodeReferenceSet references);
 
 // Finds bookmark node passed in `id`, in the `model`.
-const bookmarks::BookmarkNode* FindNodeById(bookmarks::BookmarkModel* model,
+const bookmarks::BookmarkNode* FindNodeById(LegacyBookmarkModel* model,
                                             int64_t id);
 
 // Finds bookmark node passed in `id`, in the `model`. Returns null if the
 // node is found but not a folder.
-const bookmarks::BookmarkNode* FindFolderById(bookmarks::BookmarkModel* model,
+const bookmarks::BookmarkNode* FindFolderById(LegacyBookmarkModel* model,
                                               int64_t id);
 
 // The iOS code is doing some munging of the bookmark folder names in order
@@ -91,12 +91,10 @@ NSString* TitleForBookmarkNode(const bookmarks::BookmarkNode* node);
 // `account_model` is the account mode. It can be null.
 // The node must belong to one of the two models.
 // This function is linear in time in the depth of the bookmark_node.
-// TODO(crbug.com/1417992): once the bookmark nodes has access to its model,
-// rewrite the function to be constant time.
-bookmarks::StorageType GetBookmarkModelType(
+BookmarkModelType GetBookmarkModelType(
     const bookmarks::BookmarkNode* bookmark_node,
-    bookmarks::BookmarkModel* profile_model,
-    bookmarks::BookmarkModel* account_model);
+    LegacyBookmarkModel* profile_model,
+    LegacyBookmarkModel* account_model);
 
 // Returns the bookmark model for a node, based on profile model and account
 // model.
@@ -106,12 +104,10 @@ bookmarks::StorageType GetBookmarkModelType(
 // The node must belong to one of the two models.
 // This function is linear in time in the depth of the bookmark_node because it
 // uses `GetBookmarkModelType(...)`.
-// TODO(crbug.com/1417992): once the bookmark nodes has access to its model,
-// rewrite the function to be constant time.
-bookmarks::BookmarkModel* GetBookmarkModelForNode(
+LegacyBookmarkModel* GetBookmarkModelForNode(
     const bookmarks::BookmarkNode* bookmark_node,
-    bookmarks::BookmarkModel* profile_model,
-    bookmarks::BookmarkModel* account_model);
+    LegacyBookmarkModel* profile_model,
+    LegacyBookmarkModel* account_model);
 
 // Returns true if the user is signed in and they opted in for the account
 // bookmark storage.
@@ -126,8 +122,8 @@ bool UpdateBookmark(const bookmarks::BookmarkNode* node,
                     NSString* title,
                     const GURL& url,
                     const bookmarks::BookmarkNode* folder,
-                    bookmarks::BookmarkModel* local_or_syncable_model,
-                    bookmarks::BookmarkModel* account_model);
+                    LegacyBookmarkModel* local_or_syncable_model,
+                    LegacyBookmarkModel* account_model);
 
 // Similar to `UpdateBookmark`, but returns a snackbar that allows to
 // undo the performed action. Returns nil if there's nothing to undo.
@@ -141,8 +137,8 @@ MDCSnackbarMessage* UpdateBookmarkWithUndoToast(
     const GURL& url,
     const bookmarks::BookmarkNode* original_folder,
     const bookmarks::BookmarkNode* folder,
-    bookmarks::BookmarkModel* local_or_syncable_model,
-    bookmarks::BookmarkModel* account_model,
+    LegacyBookmarkModel* local_or_syncable_model,
+    LegacyBookmarkModel* account_model,
     ChromeBrowserState* browser_state,
     base::WeakPtr<AuthenticationService> authenticationService,
     raw_ptr<syncer::SyncService> syncService);
@@ -155,8 +151,8 @@ MDCSnackbarMessage* CreateBookmarkAtPositionWithUndoToast(
     const GURL& url,
     const bookmarks::BookmarkNode* folder,
     int position,
-    bookmarks::BookmarkModel* local_or_syncable_model,
-    bookmarks::BookmarkModel* account_model,
+    LegacyBookmarkModel* local_or_syncable_model,
+    LegacyBookmarkModel* account_model,
     ChromeBrowserState* browser_state);
 
 // Updates a bookmark node position, and returns a snackbar with an undo action.
@@ -166,8 +162,8 @@ MDCSnackbarMessage* UpdateBookmarkPositionWithUndoToast(
     const bookmarks::BookmarkNode* node,
     const bookmarks::BookmarkNode* folder,
     size_t position,
-    bookmarks::BookmarkModel* local_or_syncable_model,
-    bookmarks::BookmarkModel* account_model,
+    LegacyBookmarkModel* local_or_syncable_model,
+    LegacyBookmarkModel* account_model,
     ChromeBrowserState* browser_state);
 
 // Deletes all nodes in `bookmarks` from models in `bookmark_models` that are
@@ -175,12 +171,12 @@ MDCSnackbarMessage* UpdateBookmarkPositionWithUndoToast(
 // the operation wasn't successful or there's nothing to undo.
 MDCSnackbarMessage* DeleteBookmarksWithUndoToast(
     const std::set<const bookmarks::BookmarkNode*>& bookmarks,
-    const std::vector<bookmarks::BookmarkModel*>& bookmark_models,
+    const std::vector<LegacyBookmarkModel*>& bookmark_models,
     ChromeBrowserState* browser_state);
 
 // Deletes all nodes in `bookmarks`.
 void DeleteBookmarks(const std::set<const bookmarks::BookmarkNode*>& bookmarks,
-                     bookmarks::BookmarkModel* model);
+                     LegacyBookmarkModel* model);
 
 // Move all `bookmarks_to_move` to the given `folder`, and returns a snackbar
 // with an undo action. Returns nil if the operation wasn't successful or
@@ -189,8 +185,8 @@ void DeleteBookmarks(const std::set<const bookmarks::BookmarkNode*>& bookmarks,
 // `MoveBookmarks` documentation for details.
 MDCSnackbarMessage* MoveBookmarksWithUndoToast(
     std::vector<const bookmarks::BookmarkNode*>& bookmarks_to_move,
-    bookmarks::BookmarkModel* local_model,
-    bookmarks::BookmarkModel* account_model,
+    LegacyBookmarkModel* local_model,
+    LegacyBookmarkModel* account_model,
     const bookmarks::BookmarkNode* destination_folder,
     ChromeBrowserState* browser_state,
     base::WeakPtr<AuthenticationService> authenticationService,
@@ -205,8 +201,8 @@ MDCSnackbarMessage* MoveBookmarksWithUndoToast(
 // the same index N.
 bool MoveBookmarks(
     std::vector<const bookmarks::BookmarkNode*>& bookmarks_to_move,
-    bookmarks::BookmarkModel* local_model,
-    bookmarks::BookmarkModel* account_model,
+    LegacyBookmarkModel* local_model,
+    LegacyBookmarkModel* account_model,
     const bookmarks::BookmarkNode* destination_folder);
 
 // Category name for all bookmarks related snackbars.
@@ -219,7 +215,7 @@ void SortFolders(NodeVector* vector);
 // sorted depth-first, then alphabetically. The returned nodes are visible, and
 // are guaranteed to not be descendants of any nodes in `obstructions`.
 NodeVector VisibleNonDescendantNodes(const NodeSet& obstructions,
-                                     bookmarks::BookmarkModel* model);
+                                     LegacyBookmarkModel* model);
 
 // Whether `vector1` contains only elements of `vector2` in the same order.
 BOOL IsSubvectorOfNodes(const NodeVector& vector1, const NodeVector& vector2);
@@ -232,19 +228,14 @@ std::vector<NodeVector::size_type> MissingNodesIndices(
     const NodeVector& vector2);
 
 // Creates bookmark path for `folderId` passed in. For eg: for folderId = 76,
-// Root node(0) --> MobileBookmarks (3) --> Test1(76) will be returned as [0, 3,
-// 76].
-NSArray<NSNumber*>* CreateBookmarkPath(bookmarks::BookmarkModel* model,
+// MobileBookmarks (3) --> Test1(76) will be returned as [3, 76], where the
+// first element always represents a permanent folder. Returns nullptr if the
+// folder is not found or is the root node.
+NSArray<NSNumber*>* CreateBookmarkPath(LegacyBookmarkModel* model,
                                        int64_t folder_id);
 
 // Converts NSString entered by the user to a GURL.
 GURL ConvertUserDataToGURL(NSString* urlString);
-
-// Uses `IsBookmarked` to check whether `url` is bookmarked in any of the
-// provided bookmark models. `account_model` can be null.
-bool IsBookmarked(const GURL& url,
-                  bookmarks::BookmarkModel* local_model,
-                  bookmarks::BookmarkModel* account_model);
 
 // Uses `GetMostRecentlyAddedUserNodeForURL` to find the most recently added
 // bookmark node with the corresponding URL in both models. If both models
@@ -253,20 +244,20 @@ bool IsBookmarked(const GURL& url,
 // models contain matching entries - returns null. `account_model` can be null.
 const bookmarks::BookmarkNode* GetMostRecentlyAddedUserNodeForURL(
     const GURL& url,
-    bookmarks::BookmarkModel* local_model,
-    bookmarks::BookmarkModel* account_model);
+    LegacyBookmarkModel* local_model,
+    LegacyBookmarkModel* account_model);
 
 // The localized strings for adding bookmarks.
 // `folderTitle`:  The name of the folder. Assumed to be non-nil.
 // `chosenByUser`: whether this is the last folder in which the user moved a
 // bookmark since last time the set of model changed.
-// `storageType`: whether it  is is on account storage, or local or syncable.
-// `showCount`: Display the number of moved bookmarks in the snackbar.
+// `bookmarkModelType`: whether it  is is on account storage, or local or
+// syncable. `showCount`: Display the number of moved bookmarks in the snackbar.
 // `count`: the number of bookmarks.
 NSString* messageForAddingBookmarksInFolder(
     NSString* folderTitle,
     bool chosenByUser,
-    bookmarks::StorageType storageType,
+    BookmarkModelType bookmarkModelType,
     bool showCount,
     int count,
     base::WeakPtr<AuthenticationService> authenticationService,
@@ -275,8 +266,8 @@ NSString* messageForAddingBookmarksInFolder(
 // The bookmark is saved in the account if either following condition is true:
 // * the saved folder is in the account model,
 // * the sync consent has been granted and the bookmark data type is enabled
-bool bookmarkSavedIntoAccountWithStorageType(
-    bookmarks::StorageType storageType,
+bool bookmarkSavedIntoAccount(
+    BookmarkModelType bookmarkModelType,
     base::WeakPtr<AuthenticationService> authenticationService,
     raw_ptr<syncer::SyncService> syncService);
 

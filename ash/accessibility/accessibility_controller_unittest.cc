@@ -25,6 +25,7 @@
 #include "base/functional/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/live_caption/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -53,6 +54,43 @@ class TestAccessibilityObserver : public AccessibilityObserver {
   int status_changed_count_ = 0;
 };
 
+class AccessibilityControllerDefaultCaretIntervalTest : public AshTestBase {
+ protected:
+  AccessibilityControllerDefaultCaretIntervalTest() = default;
+  AccessibilityControllerDefaultCaretIntervalTest(
+      const AccessibilityControllerDefaultCaretIntervalTest&) = delete;
+  AccessibilityControllerDefaultCaretIntervalTest& operator=(
+      const AccessibilityControllerDefaultCaretIntervalTest&) = delete;
+  ~AccessibilityControllerDefaultCaretIntervalTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndDisableFeature(
+        ::features::kAccessibilityCaretBlinkIntervalSetting);
+    AshTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(AccessibilityControllerDefaultCaretIntervalTest,
+       DefaultCaretBlinkInterval) {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  // The pref is not registered.
+  EXPECT_FALSE(prefs->FindPreference(prefs::kAccessibilityCaretBlinkInterval));
+
+  auto* native_theme_dark = ui::NativeTheme::GetInstanceForDarkUI();
+  auto* native_theme_web = ui::NativeTheme::GetInstanceForWeb();
+  auto* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+
+  // All NativeThemes use the default value.
+  base::TimeDelta default_interval = base::Milliseconds(500);
+  EXPECT_EQ(default_interval, native_theme_dark->GetCaretBlinkInterval());
+  EXPECT_EQ(default_interval, native_theme_web->GetCaretBlinkInterval());
+  EXPECT_EQ(default_interval, native_theme->GetCaretBlinkInterval());
+}
+
 class AccessibilityControllerTest : public AshTestBase {
  protected:
   AccessibilityControllerTest() = default;
@@ -66,7 +104,10 @@ class AccessibilityControllerTest : public AshTestBase {
         /*enabled_features=*/{media::kLiveCaption,
                               media::kLiveCaptionSystemWideOnChromeOS,
                               ash::features::kOnDeviceSpeechRecognition,
-                              ::features::kAccessibilityFaceGaze},
+                              ::features::kAccessibilityFaceGaze,
+                              ::features::kAccessibilityMouseKeys,
+                              ::features::
+                                  kAccessibilityCaretBlinkIntervalSetting},
         /*disabled_feaures=*/{
             ::features::kAccessibilityDictationKeyboardImprovements});
     AshTestBase::SetUp();
@@ -113,6 +154,17 @@ TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityLargeCursorDipSize));
   EXPECT_TRUE(prefs->FindPreference(::prefs::kLiveCaptionEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityMonoAudioEnabled));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityMouseKeysEnabled));
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kAccessibilityMouseKeysShortcutToPauseEnabled));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityMouseKeysDisableInTextFields));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityMouseKeysAcceleration));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityMouseKeysMaxSpeed));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityMouseKeysDominantHand));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityAutoclickDelayMs));
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kAccessibilityScreenMagnifierEnabled));
   EXPECT_TRUE(prefs->FindPreference(
@@ -191,6 +243,23 @@ TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kAccessibilityColorVisionCorrectionAmount));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityFaceGazeEnabled));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityFaceGazeCursorSpeedUp));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityFaceGazeCursorSpeedDown));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityFaceGazeCursorSpeedLeft));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityFaceGazeCursorSpeedRight));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityFaceGazeCursorSmoothing));
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kAccessibilityFaceGazeCursorUseAcceleration));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityFaceGazeGesturesToMacros));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityFaceGazeGesturesToConfidence));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityCaretBlinkInterval));
 }
 
 TEST_F(AccessibilityControllerTest, SetAutoclickEnabled) {
@@ -599,6 +668,27 @@ TEST_F(AccessibilityControllerTest, MonoAudioTrayMenuVisibility) {
       prefs->IsManagedPreference(prefs::kAccessibilityMonoAudioEnabled));
   EXPECT_FALSE(controller->mono_audio().enabled());
   EXPECT_FALSE(controller->IsMonoAudioSettingVisibleInTray());
+}
+
+TEST_F(AccessibilityControllerTest, SetMouseKeysEnabled) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  auto& mouse_keys = controller->mouse_keys();
+  EXPECT_FALSE(mouse_keys.enabled());
+
+  TestAccessibilityObserver observer;
+  controller->AddObserver(&observer);
+  EXPECT_EQ(0, observer.status_changed_count_);
+
+  mouse_keys.SetEnabled(true);
+  EXPECT_TRUE(mouse_keys.enabled());
+  EXPECT_EQ(1, observer.status_changed_count_);
+
+  mouse_keys.SetEnabled(false);
+  EXPECT_FALSE(mouse_keys.enabled());
+  EXPECT_EQ(2, observer.status_changed_count_);
+
+  controller->RemoveObserver(&observer);
 }
 
 TEST_F(AccessibilityControllerTest, DictationTrayMenuVisibility) {
@@ -1514,6 +1604,30 @@ TEST_F(AccessibilityControllerTest, EnableOrToggleDictation) {
   ASSERT_FALSE(controller->IsDictationKeyboardDialogShowingForTesting());
 }
 
+TEST_F(AccessibilityControllerTest, ChangingPrefChangesCaretBlinkInterval) {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+
+  // Starts with default value.
+  EXPECT_EQ(prefs->GetInteger(prefs::kAccessibilityCaretBlinkInterval), 500);
+
+  auto* native_theme_dark = ui::NativeTheme::GetInstanceForDarkUI();
+  auto* native_theme_web = ui::NativeTheme::GetInstanceForWeb();
+  auto* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+
+  base::TimeDelta expected_interval = base::Milliseconds(500);
+  EXPECT_EQ(expected_interval, native_theme_dark->GetCaretBlinkInterval());
+  EXPECT_EQ(expected_interval, native_theme_web->GetCaretBlinkInterval());
+  EXPECT_EQ(expected_interval, native_theme->GetCaretBlinkInterval());
+
+  // Native Themes should be updated.
+  prefs->SetInteger(prefs::kAccessibilityCaretBlinkInterval, 42);
+  expected_interval = base::Milliseconds(42);
+  EXPECT_EQ(expected_interval, native_theme_dark->GetCaretBlinkInterval());
+  EXPECT_EQ(expected_interval, native_theme_web->GetCaretBlinkInterval());
+  EXPECT_EQ(expected_interval, native_theme->GetCaretBlinkInterval());
+}
+
 class AccessibilityControllerDictationKeyboardImprovementsTest
     : public AshTestBase {
  protected:
@@ -1655,11 +1769,13 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
   EXPECT_FALSE(accessibility->high_contrast().enabled());
   EXPECT_FALSE(accessibility->autoclick().enabled());
   EXPECT_FALSE(accessibility->mono_audio().enabled());
+  EXPECT_FALSE(accessibility->mouse_keys().enabled());
   EXPECT_FALSE(docked_magnifier->GetEnabled());
   using prefs::kAccessibilityAutoclickEnabled;
   using prefs::kAccessibilityHighContrastEnabled;
   using prefs::kAccessibilityLargeCursorEnabled;
   using prefs::kAccessibilityMonoAudioEnabled;
+  using prefs::kAccessibilityMouseKeysEnabled;
   using prefs::kAccessibilitySpokenFeedbackEnabled;
   using prefs::kDockedMagnifierEnabled;
   PrefService* signin_prefs = session->GetSigninScreenPrefService();
@@ -1668,6 +1784,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
   EXPECT_FALSE(signin_prefs->GetBoolean(kAccessibilityHighContrastEnabled));
   EXPECT_FALSE(signin_prefs->GetBoolean(kAccessibilityAutoclickEnabled));
   EXPECT_FALSE(signin_prefs->GetBoolean(kAccessibilityMonoAudioEnabled));
+  EXPECT_FALSE(signin_prefs->GetBoolean(kAccessibilityMouseKeysEnabled));
   EXPECT_FALSE(signin_prefs->GetBoolean(kDockedMagnifierEnabled));
 
   // Verify that toggling prefs at the signin screen changes the signin setting.
@@ -1676,6 +1793,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
   accessibility->high_contrast().SetEnabled(true);
   accessibility->autoclick().SetEnabled(true);
   accessibility->mono_audio().SetEnabled(true);
+  accessibility->mouse_keys().SetEnabled(true);
   docked_magnifier->SetEnabled(true);
   docked_magnifier->SetScale(kMagnifierScale);
   // TODO(afakhry): Test the Fullscreen magnifier prefs once the
@@ -1686,6 +1804,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
   EXPECT_TRUE(accessibility->high_contrast().enabled());
   EXPECT_TRUE(accessibility->autoclick().enabled());
   EXPECT_TRUE(accessibility->mono_audio().enabled());
+  EXPECT_TRUE(accessibility->mouse_keys().enabled());
   EXPECT_TRUE(docked_magnifier->GetEnabled());
   EXPECT_FLOAT_EQ(kMagnifierScale, docked_magnifier->GetScale());
   EXPECT_TRUE(signin_prefs->GetBoolean(kAccessibilityLargeCursorEnabled));
@@ -1693,6 +1812,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
   EXPECT_TRUE(signin_prefs->GetBoolean(kAccessibilityHighContrastEnabled));
   EXPECT_TRUE(signin_prefs->GetBoolean(kAccessibilityAutoclickEnabled));
   EXPECT_TRUE(signin_prefs->GetBoolean(kAccessibilityMonoAudioEnabled));
+  EXPECT_TRUE(signin_prefs->GetBoolean(kAccessibilityMouseKeysEnabled));
   EXPECT_TRUE(signin_prefs->GetBoolean(kDockedMagnifierEnabled));
 
   SimulateLogin();
@@ -1709,6 +1829,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
     EXPECT_TRUE(accessibility->high_contrast().enabled());
     EXPECT_TRUE(accessibility->autoclick().enabled());
     EXPECT_TRUE(accessibility->mono_audio().enabled());
+    EXPECT_TRUE(accessibility->mouse_keys().enabled());
     EXPECT_TRUE(docked_magnifier->GetEnabled());
     EXPECT_FLOAT_EQ(kMagnifierScale, docked_magnifier->GetScale());
     EXPECT_TRUE(user_prefs->GetBoolean(kAccessibilityLargeCursorEnabled));
@@ -1716,6 +1837,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
     EXPECT_TRUE(user_prefs->GetBoolean(kAccessibilityHighContrastEnabled));
     EXPECT_TRUE(user_prefs->GetBoolean(kAccessibilityAutoclickEnabled));
     EXPECT_TRUE(user_prefs->GetBoolean(kAccessibilityMonoAudioEnabled));
+    EXPECT_TRUE(user_prefs->GetBoolean(kAccessibilityMouseKeysEnabled));
     EXPECT_TRUE(user_prefs->GetBoolean(kDockedMagnifierEnabled));
   } else {
     EXPECT_FALSE(accessibility->large_cursor().enabled());
@@ -1723,6 +1845,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
     EXPECT_FALSE(accessibility->high_contrast().enabled());
     EXPECT_FALSE(accessibility->autoclick().enabled());
     EXPECT_FALSE(accessibility->mono_audio().enabled());
+    EXPECT_FALSE(accessibility->mouse_keys().enabled());
     EXPECT_FALSE(docked_magnifier->GetEnabled());
     EXPECT_NE(kMagnifierScale, docked_magnifier->GetScale());
     EXPECT_FALSE(user_prefs->GetBoolean(kAccessibilityLargeCursorEnabled));
@@ -1730,6 +1853,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
     EXPECT_FALSE(user_prefs->GetBoolean(kAccessibilityHighContrastEnabled));
     EXPECT_FALSE(user_prefs->GetBoolean(kAccessibilityAutoclickEnabled));
     EXPECT_FALSE(user_prefs->GetBoolean(kAccessibilityMonoAudioEnabled));
+    EXPECT_FALSE(user_prefs->GetBoolean(kAccessibilityMouseKeysEnabled));
     EXPECT_FALSE(user_prefs->GetBoolean(kDockedMagnifierEnabled));
   }
 }

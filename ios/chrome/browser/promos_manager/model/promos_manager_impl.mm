@@ -15,6 +15,7 @@
 #import <vector>
 
 #import "base/containers/contains.h"
+#import "base/feature_list.h"
 #import "base/json/values_util.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/time/time.h"
@@ -25,18 +26,22 @@
 #import "ios/chrome/browser/promos_manager/model/constants.h"
 #import "ios/chrome/browser/promos_manager/model/features.h"
 #import "ios/chrome/browser/promos_manager/model/impression_limit.h"
-#import "ios/chrome/browser/promos_manager/model/promos_manager_event_exporter.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 
 using promos_manager::Promo;
 
 namespace {
 
-// The number of days since the Unix epoch; one day, in this context, runs
-// from UTC midnight to UTC midnight.
-int TodaysDay() {
-  return (base::Time::Now() - base::Time::UnixEpoch()).InDays();
-}
+// Killswitch to control the hard-coded DockingPromo and
+// DockingPromoRemindMeLater sort injections in `SortPromos()`.
+BASE_FEATURE(kPromosManagerDockingPromoSortKillswitch,
+             "PromosManagerDockingPromoSortKillswitch",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Killswitch to control new DockingPromo histograms.
+BASE_FEATURE(kPromosManagerDockingPromoHistogramsKillswitch,
+             "PromosManagerDockingPromoHistogramsKillswitch",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Conditionally appends `promo` to the list pref `pref_path`. If `promo`
 // already exists in the list pref `pref_path`, does nothing. If `promo` doesn't
@@ -65,12 +70,8 @@ void ConditionallyAppendPromoToPrefList(promos_manager::Promo promo,
 
 PromosManagerImpl::PromosManagerImpl(PrefService* local_state,
                                      base::Clock* clock,
-                                     feature_engagement::Tracker* tracker,
-                                     PromosManagerEventExporter* event_exporter)
-    : local_state_(local_state),
-      clock_(clock),
-      tracker_(tracker),
-      event_exporter_(event_exporter) {
+                                     feature_engagement::Tracker* tracker)
+    : local_state_(local_state), clock_(clock), tracker_(tracker) {
   DCHECK(local_state_);
   DCHECK(clock_);
 }
@@ -90,25 +91,8 @@ void PromosManagerImpl::Init() {
   InitializePendingPromos();
 }
 
-// Impression history should grow in sorted order. Given this happens on the
-// main thread, appending to the end of the impression history list is
-// sufficient.
-void PromosManagerImpl::RecordImpression(promos_manager::Promo promo) {
-  DCHECK(local_state_);
-
-  base::Value::Dict impression;
-  impression.Set(promos_manager::kImpressionPromoKey,
-                 promos_manager::NameForPromo(promo));
-  impression.Set(promos_manager::kImpressionDayKey, TodaysDay());
-  impression.Set(
-      promos_manager::kImpressionFeatureEngagementMigrationCompletedKey, true);
-
-  ScopedListPrefUpdate update(local_state_,
-                              prefs::kIosPromosManagerImpressions);
-
-  update->Append(std::move(impression));
-
-  // Auto-deregister `promo`.
+void PromosManagerImpl::DeregisterAfterDisplay(promos_manager::Promo promo) {
+  // Auto-deregister single display promos.
   // Edge case: Possible to remove two instances of promo in
   // `single_display_active_promos_` and `single_display_pending_promos_` that
   // match the same type.
@@ -181,9 +165,6 @@ void PromosManagerImpl::DeregisterPromo(promos_manager::Promo promo) {
 
 void PromosManagerImpl::InitializePromoConfigs(PromoConfigsSet promo_configs) {
   promo_configs_ = std::move(promo_configs);
-  if (event_exporter_) {
-    event_exporter_->InitializePromoConfigs(promo_configs);
-  }
 }
 
 // Determines which promo to display next.
@@ -231,6 +212,22 @@ std::optional<promos_manager::Promo> PromosManagerImpl::NextPromoForDisplay() {
 
   for (promos_manager::Promo promo : sorted_promos) {
     if (CanShowPromo(promo)) {
+      // TODO(crbug.com/330387623): Cleanup Docking Promo histograms.
+      if (base::FeatureList::IsEnabled(
+              kPromosManagerDockingPromoHistogramsKillswitch)) {
+        if (active_promos_with_context.contains(Promo::DockingPromo) &&
+            promo != Promo::DockingPromo) {
+          base::UmaHistogramEnumeration("IOS.DockingPromo.LostToCompetingPromo",
+                                        promo);
+        }
+        if (active_promos_with_context.contains(
+                Promo::DockingPromoRemindMeLater) &&
+            promo != Promo::DockingPromoRemindMeLater) {
+          base::UmaHistogramEnumeration(
+              "IOS.DockingPromoRemindMeLater.LostToCompetingPromo", promo);
+        }
+      }
+
       return promo;
     }
   }
@@ -346,6 +343,24 @@ std::vector<promos_manager::Promo> PromosManagerImpl::SortPromos(
     }
     if (rhs.first == Promo::PostDefaultAbandonment) {
       return false;
+    }
+    // TODO(crbug.com/330387623): Cleanup hard-coded Docking Promo sort logic.
+    if (base::FeatureList::IsEnabled(
+            kPromosManagerDockingPromoSortKillswitch)) {
+      // Docking Promo comes next.
+      if (lhs.first == Promo::DockingPromo) {
+        return true;
+      }
+      if (rhs.first == Promo::DockingPromo) {
+        return false;
+      }
+      // Docking Promo (Remind Me Later) comes next.
+      if (lhs.first == Promo::DockingPromoRemindMeLater) {
+        return true;
+      }
+      if (rhs.first == Promo::DockingPromoRemindMeLater) {
+        return false;
+      }
     }
     // prefer the promo with pending state to the other without.
     if (lhs.second.was_pending && !rhs.second.was_pending) {

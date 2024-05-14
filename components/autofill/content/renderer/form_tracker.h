@@ -125,11 +125,13 @@ class FormTracker : public content::RenderFrameObserver,
 
   // Tells the tracker to track the autofilled `element`. Since autofilling a
   // form or field won't trigger the regular *DidChange events, the tracker
-  // won't be notified of this `element` otherwise.
+  // won't be notified of this `element` otherwise. This is currently only used
+  // by PWM.
   void TrackAutofilledElement(const blink::WebFormControlElement& element);
 
-  void set_ignore_control_changes(bool ignore_control_changes) {
-    ignore_control_changes_ = ignore_control_changes;
+  // TODO(b/40281981): Remove.
+  std::optional<FormData>& provisionally_saved_form() {
+    return last_interacted_.saved_state;
   }
 
  private:
@@ -194,13 +196,23 @@ class FormTracker : public content::RenderFrameObserver,
   const UserGestureRequired user_gesture_required_;
 
   base::ObserverList<Observer>::Unchecked observers_;
-  bool ignore_control_changes_ = false;
-  FormRef last_interacted_form_;
-  FieldRef last_interacted_formless_element_;
+  struct {
+    FormRef form;
+    FieldRef formless_element;
+    // Used when a FormData version of the last interacted form is needed if
+    // we'd like to avoid extracting using `form`.
+    std::optional<FormData> saved_state;
+  } last_interacted_;
 
   // TODO(crbug.com/1483242): Remove.
-  raw_ptr<blink::WebFormElementObserver, ExperimentalRenderer>
-      form_element_observer_ = nullptr;
+  raw_ptr<blink::WebFormElementObserver> form_element_observer_ = nullptr;
+
+  struct {
+    bool tracked_element_disappeared = false;
+    bool tracked_element_autofilled = false;
+    bool finished_same_document_navigation = false;
+    bool xhr_succeeded = false;
+  } submission_triggering_events_;
 
   SEQUENCE_CHECKER(form_tracker_sequence_checker_);
 

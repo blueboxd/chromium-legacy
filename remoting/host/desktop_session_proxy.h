@@ -8,9 +8,9 @@
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <optional>
 #include <vector>
 
-#include <optional>
 #include "base/callback_list.h"
 #include "base/functional/callback.h"
 #include "base/memory/read_only_shared_memory_region.h"
@@ -37,6 +37,7 @@
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/desktop_capturer.h"
 #include "remoting/protocol/errors.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace base {
@@ -51,8 +52,6 @@ class Message;
 namespace webrtc {
 class MouseCursor;
 }  // namespace webrtc
-
-struct SerializedDesktopFrame;
 
 namespace remoting {
 
@@ -105,7 +104,7 @@ class DesktopSessionProxy
   std::unique_ptr<AudioCapturer> CreateAudioCapturer();
   std::unique_ptr<InputInjector> CreateInputInjector();
   std::unique_ptr<ScreenControls> CreateScreenControls();
-  std::unique_ptr<DesktopCapturer> CreateVideoCapturer();
+  std::unique_ptr<DesktopCapturer> CreateVideoCapturer(webrtc::ScreenId id);
   std::unique_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor();
   std::unique_ptr<KeyboardLayoutMonitor> CreateKeyboardLayoutMonitor(
       base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback);
@@ -136,18 +135,7 @@ class DesktopSessionProxy
   // on the |audio_capture_task_runner_| thread.
   void SetAudioCapturer(const base::WeakPtr<IpcAudioCapturer>& audio_capturer);
 
-  // APIs used to implement the webrtc::DesktopCapturer interface. These must be
-  // called on the |video_capture_task_runner_| thread.
-  void CaptureFrame();
-  bool SelectSource(webrtc::DesktopCapturer::SourceId id);
-
-  // Stores |video_capturer| to be used to post captured video frames. Called on
-  // the |video_capture_task_runner_| thread.
-  void SetVideoCapturer(
-      const base::WeakPtr<IpcVideoFrameCapturer> video_capturer);
-
   // Stores |mouse_cursor_monitor| to be used to post mouse cursor changes.
-  // Called on the |video_capture_task_runner_| thread.
   void SetMouseCursorMonitor(
       const base::WeakPtr<IpcMouseCursorMonitor>& mouse_cursor_monitor);
 
@@ -208,24 +196,13 @@ class DesktopSessionProxy
   friend class base::DeleteHelper<DesktopSessionProxy>;
   friend struct DesktopSessionProxyTraits;
 
-  class IpcSharedBufferCore;
-  class IpcSharedBuffer;
-  typedef std::map<int, scoped_refptr<IpcSharedBufferCore>> SharedBuffers;
-
   ~DesktopSessionProxy() override;
-
-  // Returns a shared buffer from the list of known buffers.
-  scoped_refptr<IpcSharedBufferCore> GetSharedBufferCore(int id);
 
   // Called when the desktop agent has started and provides the remote used to
   // inject input events and control A/V capture.
   void OnDesktopSessionAgentStarted(
       mojo::PendingAssociatedRemote<mojom::DesktopSessionControl>
           pending_remote);
-
-  // Handles CaptureResult notification from the desktop session agent.
-  void OnCaptureResult(webrtc::DesktopCapturer::Result result,
-                       const SerializedDesktopFrame& serialized_frame);
 
   // Handles the BeginFileReadResult returned from the DesktopSessionAgent.
   void OnBeginFileReadResult(
@@ -281,12 +258,6 @@ class DesktopSessionProxy
 
   // IPC channel to the desktop session agent.
   std::unique_ptr<IPC::ChannelProxy> desktop_channel_;
-
-  int pending_capture_frame_requests_;
-
-  // Shared memory buffers by Id. Each buffer is owned by the corresponding
-  // frame.
-  SharedBuffers shared_buffers_;
 
   // Keeps the desired screen resolution so it can be passed to a newly attached
   // desktop session agent.

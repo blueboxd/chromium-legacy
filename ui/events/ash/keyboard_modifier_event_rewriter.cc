@@ -5,6 +5,7 @@
 #include "ui/events/ash/keyboard_modifier_event_rewriter.h"
 
 #include "base/containers/fixed_flat_map.h"
+#include "base/notreached.h"
 #include "ui/base/ime/ash/extension_ime_util.h"
 #include "ui/base/ime/ash/ime_keyboard.h"
 #include "ui/base/ime/ash/input_method_manager.h"
@@ -423,12 +424,17 @@ KeyboardModifierEventRewriter::GetRemappedKey(mojom::ModifierKey modifier_key,
       break;
     case mojom::ModifierKey::kIsoLevel5ShiftMod3:
       LOG(FATAL) << "No pref_name for kIsoLevel5ShiftMod3";
+    // TODO(dpad, b/328316040): Implement for function and right alt.
+    case mojom::ModifierKey::kFunction:
+    case mojom::ModifierKey::kRightAlt:
+      NOTREACHED();
+      break;
   }
   CHECK(!pref_name.empty());
 
   auto modifier_value = delegate_->GetKeyboardRemappedModifierValue(
       device_id, modifier_key, std::string(pref_name));
-  auto* it = kRemappedKeyMap.find(modifier_value.value_or(modifier_key));
+  auto it = kRemappedKeyMap.find(modifier_value.value_or(modifier_key));
   CHECK(it != kRemappedKeyMap.end());
   return &it->second;
 }

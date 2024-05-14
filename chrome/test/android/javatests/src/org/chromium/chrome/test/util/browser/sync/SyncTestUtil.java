@@ -15,14 +15,16 @@ import org.json.JSONObject;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.components.sync.SyncService;
+import org.chromium.components.sync.UserSelectableType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -35,11 +37,14 @@ public final class SyncTestUtil {
 
     private SyncTestUtil() {}
 
-    /** Return the {@link SyncService} for the {@link Profile#getLastUsedRegularProfile()}. */
+    /**
+     * Return the {@link SyncService} for the {@link ProfileManager#getLastUsedRegularProfile()}.
+     */
     public static SyncService getSyncServiceForLastUsedProfile() {
         return TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> {
-                    return SyncServiceFactory.getForProfile(Profile.getLastUsedRegularProfile());
+                    return SyncServiceFactory.getForProfile(
+                            ProfileManager.getLastUsedRegularProfile());
                 });
     }
 
@@ -135,6 +140,30 @@ public final class SyncTestUtil {
                 },
                 TIMEOUT_MS,
                 INTERVAL_MS);
+    }
+
+    /** Returns whether history sync is active. */
+    public static boolean isHistorySyncEnabled() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                () ->
+                        getSyncServiceForLastUsedProfile()
+                                .getSelectedTypes()
+                                .containsAll(
+                                        Set.of(
+                                                UserSelectableType.HISTORY,
+                                                UserSelectableType.TABS)));
+    }
+
+    /** Waits for history and tabs sync to be active. */
+    public static void waitForHistorySyncEnabled() {
+        CriteriaHelper.pollUiThread(
+                () ->
+                        getSyncServiceForLastUsedProfile()
+                                .getSelectedTypes()
+                                .containsAll(
+                                        Set.of(
+                                                UserSelectableType.HISTORY,
+                                                UserSelectableType.TABS)));
     }
 
     /** Triggers a sync cycle. */

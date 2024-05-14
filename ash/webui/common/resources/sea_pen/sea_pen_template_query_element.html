@@ -13,7 +13,6 @@
 
   #template {
     align-items: start;
-    border-bottom-color: var(--cros-text-color-primary);
     color: var(--cros-text-color-primary);
     display: flex;
     font: var(--cros-display-6_regular-font);
@@ -32,6 +31,14 @@
     grid-template-areas: 'chip';
   }
 
+  .chip-container[disabled] {
+    cursor: text;
+  }
+
+  .chip-container[disabled] > .chip-text {
+    pointer-events: none;
+  }
+
   .template-text {
     padding: 0 4px;
   }
@@ -41,7 +48,6 @@
     border-radius: 8px;
     bottom: 2px;
     grid-area: chip;
-    padding: 0 4px;
     position: relative;
   }
 
@@ -49,9 +55,9 @@
     background-color: var(--cros-sys-hover_on_subtle);
   }
 
-  .chip-text:focus {
+  .chip-text:focus-visible {
     background-color: var(--cros-sys-ripple_primary);
-    border: 2px solid var(--cros-sys-focus_ring);
+    outline: 2px solid var(--cros-sys-focus_ring);
   }
 
   .underline {
@@ -85,6 +91,7 @@
 
   cr-button {
     font: var(--cros-button-2-font);
+    padding: 0px 12px;
   }
 
   .dropdown-check {
@@ -95,29 +102,36 @@
     visibility: hidden;
   }
 
-  p {
-    padding-inline-end: 3px;
-  }
-
   button {
     font: var(--cros-button-2-font);
     padding: 8px 32px 8px 16px;
   }
-
-  cr-action-menu::part(dialog) {
-    /* The menu only takes up half of the screen. */
-    max-height: calc(100vh / 2);
-  }
 </style>
 <div class="main">
+  <template is="dom-if" if="[[shouldShowOptions_(options_)]]">
+    <sea-pen-options
+        options="[[options_]]"
+        selected-chip="[[selectedChip_]]"
+        selected-options="{{selectedOptions_}}">
+    </sea-pen-options>
+  </template>
   <div id="template">
     <template is="dom-repeat" items="[[templateTokens_]]" as="token">
       <template is="dom-if" if="[[isChip_(token)]]">
-        <div class$="chip-container [[getChipClassName_(token, selectedChip_)]]">
-          <div class="underline"></div>
-          <div class="chip-text" tabindex="0" on-click="onClickChip_" on-keypress="onClickChip_">
-            [[token.translation]]
-          </div>
+        <div class$="chip-container [[getChipClassName_(token, selectedChip_)]]"
+            disabled$="[[thumbnailsLoading_]]">
+          <template is="dom-if" if="[[!thumbnailsLoading_]]" restamp>
+            <div class="underline"></div>
+            <div class="chip-text" tabindex="0" on-click="onClickChip_"
+                on-keypress="onClickChip_">
+              [[token.translation]]
+            </div>
+          </template>
+          <template is="dom-if" if="[[thumbnailsLoading_]]" restamp>
+            <div class="chip-text">
+              [[token.translation]]
+            </div>
+          </template>
         </div>
       </template>
       <template is="dom-if" if="[[!isChip_(token)]]">
@@ -140,22 +154,10 @@
           id="searchButton"
           class="action-button"
           on-click="onClickSearchButton_">
-        <iron-icon icon$="[[getSearchButtonIcon_(path, thumbnails_)]]" slot="prefix-icon">
+        <iron-icon icon$="[[searchButtonIcon_]]" slot="prefix-icon">
         </iron-icon>
-        <p>[[getSearchButtonText_(path, thumbnails_)]]</p>
+        <p>[[searchButtonText_]]</p>
       </cr-button>
     </template>
   </div>
-  <cr-action-menu>
-    <template id="optionList" is="dom-repeat" items="[[options_]]" as="option">
-      <button
-          aria-selected$="[[isOptionSelected_(option, selectedChip_.translation)]]"
-          class="dropdown-item"
-          data-id$="[[template.id]]"
-          on-click="onClickOption_">
-        <iron-icon class="dropdown-check" icon="cr:check"></iron-icon>
-        [[option.translation]]
-      </button>
-    </template>
-  </cr-action-menu>
 </div>

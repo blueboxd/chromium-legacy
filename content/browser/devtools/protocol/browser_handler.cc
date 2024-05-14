@@ -187,6 +187,8 @@ Response PermissionDescriptorToPermissionType(
     *permission_type = PermissionType::TOP_LEVEL_STORAGE_ACCESS;
   } else if (name == "captured-surface-control") {
     *permission_type = PermissionType::CAPTURED_SURFACE_CONTROL;
+  } else if (name == "speaker-selection") {
+    *permission_type = PermissionType::SPEAKER_SELECTION;
   } else {
     return Response::InvalidParams("Invalid PermissionDescriptor name: " +
                                    name);
@@ -260,6 +262,8 @@ Response FromProtocolPermissionType(
   } else if (type ==
              protocol::Browser::PermissionTypeEnum::CapturedSurfaceControl) {
     *out_type = PermissionType::CAPTURED_SURFACE_CONTROL;
+  } else if (type == protocol::Browser::PermissionTypeEnum::SpeakerSelection) {
+    *out_type = PermissionType::SPEAKER_SELECTION;
   } else {
     return Response::InvalidParams("Unknown permission type: " + type);
   }
@@ -606,8 +610,9 @@ void BrowserHandler::DownloadWillBegin(FrameTreeNode* ftn,
 
 void BrowserHandler::SetDownloadEventsEnabled(bool enabled) {
   if (!enabled) {
-    for (auto* item : pending_downloads_)
+    for (download::DownloadItem* item : pending_downloads_) {
       item->RemoveObserver(this);
+    }
     pending_downloads_.clear();
   }
   download_events_enabled_ = enabled;

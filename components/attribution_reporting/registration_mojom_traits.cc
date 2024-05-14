@@ -26,6 +26,8 @@
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/os_registration.h"
 #include "components/attribution_reporting/registration.mojom-shared.h"
+#include "components/attribution_reporting/registration_header_error.h"
+#include "components/attribution_reporting/registration_header_type.mojom-shared.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_config.h"
@@ -323,6 +325,30 @@ bool StructTraits<attribution_reporting::mojom::AggregatableDedupKeyDataView,
 }
 
 // static
+bool StructTraits<attribution_reporting::mojom::AggregatableValuesDataView,
+                  attribution_reporting::AggregatableValues>::
+    Read(attribution_reporting::mojom::AggregatableValuesDataView data,
+         attribution_reporting::AggregatableValues* out) {
+  attribution_reporting::FilterPair filters;
+  if (!data.ReadFilters(&filters)) {
+    return false;
+  }
+
+  attribution_reporting::AggregatableValues::Values values;
+  if (!data.ReadValues(&values)) {
+    return false;
+  }
+  auto aggregatable_values = attribution_reporting::AggregatableValues::Create(
+      std::move(values), std::move(filters));
+  if (!aggregatable_values) {
+    return false;
+  }
+
+  *out = std::move(*aggregatable_values);
+  return true;
+}
+
+// static
 bool StructTraits<attribution_reporting::mojom::TriggerRegistrationDataView,
                   attribution_reporting::TriggerRegistration>::
     Read(attribution_reporting::mojom::TriggerRegistrationDataView data,
@@ -339,18 +365,9 @@ bool StructTraits<attribution_reporting::mojom::TriggerRegistrationDataView,
     return false;
   }
 
-  attribution_reporting::AggregatableValues::Values values;
-  if (!data.ReadAggregatableValues(&values)) {
+  if (!data.ReadAggregatableValues(&out->aggregatable_values)) {
     return false;
   }
-
-  auto aggregatable_values =
-      attribution_reporting::AggregatableValues::Create(std::move(values));
-  if (!aggregatable_values) {
-    return false;
-  }
-
-  out->aggregatable_values = std::move(*aggregatable_values);
 
   if (!data.ReadAggregatableDedupKeys(&out->aggregatable_dedup_keys)) {
     return false;
@@ -390,6 +407,22 @@ bool StructTraits<attribution_reporting::mojom::OsRegistrationItemDataView,
     return false;
   }
   out->debug_reporting = data.debug_reporting();
+  return true;
+}
+
+// static
+bool StructTraits<attribution_reporting::mojom::RegistrationHeaderErrorDataView,
+                  attribution_reporting::RegistrationHeaderError>::
+    Read(attribution_reporting::mojom::RegistrationHeaderErrorDataView data,
+         attribution_reporting::RegistrationHeaderError* out) {
+  if (!data.ReadHeaderType(&out->header_type)) {
+    return false;
+  }
+
+  if (!data.ReadHeaderValue(&out->header_value)) {
+    return false;
+  }
+
   return true;
 }
 

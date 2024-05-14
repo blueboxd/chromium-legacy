@@ -467,6 +467,72 @@ TEST_F(VaapiTest, DefaultEntrypointIsSupported) {
   }
 }
 
+// Verifies that VaapiWrapper::Create...() fails when called with an unsupported
+// codec profile.
+TEST_F(VaapiTest, UnsupportedVAProfile) {
+  std::map<VAProfile, std::vector<VAEntrypoint>> configurations =
+      VaapiWrapper::GetSupportedConfigurationsForCodecModeForTesting(
+          VaapiWrapper::kDecode);
+  // H.263 decoding is NOT supported anywhere, but leave an ASSERT JIC.
+  constexpr auto kUnsupportedVAProfile = VAProfileH263Baseline;
+  ASSERT_FALSE(base::Contains(configurations, kUnsupportedVAProfile));
+
+  auto wrapper_or_error =
+      VaapiWrapper::Create(VaapiWrapper::kDecode, kUnsupportedVAProfile,
+                           EncryptionScheme::kUnencrypted, base::DoNothing());
+  ASSERT_FALSE(wrapper_or_error.has_value());
+  ASSERT_EQ(wrapper_or_error.error(),
+            DecoderStatus::Codes::kUnsupportedProfile);
+}
+
+// Verifies that VaapiWrapper::Create...() fails after the limit of created
+// instances exceeds the threshold.
+TEST_F(VaapiTest, TooManyDecoderInstances) {
+  std::map<VAProfile, std::vector<VAEntrypoint>> configurations =
+      VaapiWrapper::GetSupportedConfigurationsForCodecModeForTesting(
+          VaapiWrapper::kDecode);
+  // H.264 decoding is currently supported everywhere, but leave an ASSERT.
+  constexpr auto kVAProfile = VAProfileH264ConstrainedBaseline;
+  ASSERT_TRUE(base::Contains(configurations, kVAProfile));
+
+  const int kMaxNumOfInstances = VaapiWrapper::GetMaxNumDecoderInstances();
+  std::vector<scoped_refptr<VaapiWrapper>> vaapi_wrappers(kMaxNumOfInstances);
+  for (auto& wrapper : vaapi_wrappers) {
+    auto wrapper_or_error =
+        VaapiWrapper::Create(VaapiWrapper::kDecode, kVAProfile,
+                             EncryptionScheme::kUnencrypted, base::DoNothing());
+    ASSERT_TRUE(wrapper_or_error.has_value());
+    wrapper = std::move(wrapper_or_error.value());
+  }
+  // Next one fails
+  auto wrapper_or_error = VaapiWrapper::Create(VaapiWrapper::kDecode, kVAProfile,
+                                     EncryptionScheme::kUnencrypted,
+                                     base::DoNothing());
+  ASSERT_FALSE(wrapper_or_error.has_value());
+  ASSERT_EQ(wrapper_or_error.error(), DecoderStatus::Codes::kTooManyDecoders);
+}
+
+// Verifies that VaapiWrapper::Create...() fails when an EncryptionScheme is
+// specified for a non-protected CodecMode.
+TEST_F(VaapiTest, EncryptionSchemeNeedsCodecMode) {
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  GTEST_SKIP() << "This test only applies to Chrome Ash builds.";
+#else
+  std::map<VAProfile, std::vector<VAEntrypoint>> configurations =
+      VaapiWrapper::GetSupportedConfigurationsForCodecModeForTesting(
+          VaapiWrapper::kDecode);
+  // H.264 decoding is currently supported everywhere, but leave an ASSERT.
+  constexpr auto kVAProfile = VAProfileH264ConstrainedBaseline;
+  ASSERT_TRUE(base::Contains(configurations, kVAProfile));
+
+  auto wrapper_or_error =
+      VaapiWrapper::Create(VaapiWrapper::kDecode, kVAProfile,
+                           EncryptionScheme::kCenc, base::DoNothing());
+  ASSERT_FALSE(wrapper_or_error.has_value());
+  ASSERT_EQ(wrapper_or_error.error(), DecoderStatus::Codes::kFailed);
+#endif
+}
+
 // Verifies that VaapiWrapper::CreateContext() will queue up a buffer to set the
 // encoder to its lowest quality setting if a given VAProfile and VAEntrypoint
 // claims to support configuring it.
@@ -492,9 +558,11 @@ TEST_F(VaapiTest, LowQualityEncodingSetting) {
 
     for (const auto& profile_and_entrypoints : configurations) {
       const VAProfile va_profile = profile_and_entrypoints.first;
-      scoped_refptr<VaapiWrapper> wrapper = VaapiWrapper::Create(
-          VaapiWrapper::kEncodeConstantBitrate, va_profile,
-          EncryptionScheme::kUnencrypted, base::DoNothing());
+      scoped_refptr<VaapiWrapper> wrapper =
+          VaapiWrapper::Create(VaapiWrapper::kEncodeConstantBitrate, va_profile,
+                               EncryptionScheme::kUnencrypted,
+                               base::DoNothing())
+              .value_or(nullptr);
 
       // Depending on the GPU Gen, flags and policies, we may or may not utilize
       // all entrypoints (e.g. we might always want VAEntrypointEncSliceLP if
@@ -564,9 +632,12 @@ TEST_F(VaapiTest, CheckSupportedSVCScalabilityModes) {
       VaapiWrapper::GetSupportedScalabilityModes(VP9PROFILE_PROFILE0,
                                                  VAProfileVP9Profile0);
 #if BUILDFLAG(IS_CHROMEOS)
-  if (VaapiWrapper::GetDefaultVaEntryPoint(
+  const VAEntrypoint vp9_cqp_enc_va_entry_point =
+      VaapiWrapper::GetDefaultVaEntryPoint(
           VaapiWrapper::kEncodeConstantQuantizationParameter,
-          VAProfileVP9Profile0) == VAEntrypointEncSliceLP) {
+          VAProfileVP9Profile0);
+  if (vp9_cqp_enc_va_entry_point == VAEntrypointEncSliceLP ||
+      vp9_cqp_enc_va_entry_point == VAEntrypointEncSlice) {
     EXPECT_EQ(scalability_modes_vp9_profile0, kSupportedTemporalAndKeySVC);
   } else {
     EXPECT_EQ(scalability_modes_vp9_profile0, kSupportedTemporalSVC);
@@ -646,7 +717,8 @@ TEST_P(VaapiVppTest, BlitWithVAAllocatedSurfaces) {
 
   auto wrapper =
       VaapiWrapper::Create(VaapiWrapper::kVideoProcess, VAProfileNone,
-                           EncryptionScheme::kUnencrypted, base::DoNothing());
+                           EncryptionScheme::kUnencrypted, base::DoNothing())
+          .value_or(nullptr);
   ASSERT_TRUE(!!wrapper);
   // Size is unnecessary for a VPP context.
   ASSERT_TRUE(wrapper->CreateContext(gfx::Size()));
@@ -765,7 +837,8 @@ TEST_P(VaapiMinigbmTest, AllocateAndCompareWithMinigbm) {
 
   auto wrapper =
       VaapiWrapper::Create(VaapiWrapper::kDecode, va_profile,
-                           EncryptionScheme::kUnencrypted, base::DoNothing());
+                           EncryptionScheme::kUnencrypted, base::DoNothing())
+          .value_or(nullptr);
   ASSERT_TRUE(!!wrapper);
   ASSERT_TRUE(wrapper->CreateContext(resolution));
 

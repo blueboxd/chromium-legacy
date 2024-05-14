@@ -11,7 +11,7 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/screen_ai/screen_ai_install_state.h"
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice.pb.h"
-#include "components/services/screen_ai/public/cpp/utilities.h"
+#include "services/screen_ai/public/cpp/utilities.h"
 
 namespace {
 
@@ -94,7 +94,7 @@ void OnInstallProgress(double progress) {
 
 // This function can be called only on a thread that can be blocked.
 bool CheckIfDlcExistsOnNonUIThread() {
-  return !screen_ai::GetLatestComponentBinaryPath().empty();
+  return base::PathExists(screen_ai::GetComponentDir());
 }
 
 void InstallInternal(InstallMetadata metadata) {

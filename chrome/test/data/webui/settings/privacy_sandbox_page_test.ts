@@ -187,7 +187,7 @@ suite('RestrictedEnabled', function() {
   });
 });
 
-suite('TopicsSubpage', function() {
+suite('TopicsSubpageWithProactiveTopicsBlockingDisabled', function() {
   let page: SettingsPrivacySandboxTopicsSubpageElement;
   let testPrivacySandboxBrowserProxy: TestPrivacySandboxBrowserProxy;
   let settingsPrefs: SettingsPrefsElement;
@@ -197,6 +197,7 @@ suite('TopicsSubpage', function() {
   suiteSetup(function() {
     loadTimeData.overrideValues({
       isPrivacySandboxRestricted: false,
+      isProactiveTopicsBlockingEnabled: false,
     });
     settingsPrefs = document.createElement('settings-prefs');
     return CrSettingsPrefs.initialized;
@@ -516,7 +517,7 @@ suite('TopicsSubpage', function() {
   });
 });
 
-suite('TopicsSubpageEmpty', function() {
+suite('TopicsSubpageEmptyWithProactiveTopicsBlockingDisabled', function() {
   let page: SettingsPrivacySandboxTopicsSubpageElement;
   let testPrivacySandboxBrowserProxy: TestPrivacySandboxBrowserProxy;
   let metricsBrowserProxy: TestMetricsBrowserProxy;
@@ -525,6 +526,7 @@ suite('TopicsSubpageEmpty', function() {
   suiteSetup(function() {
     loadTimeData.overrideValues({
       isPrivacySandboxRestricted: false,
+      isProactiveTopicsBlockingEnabled: false,
     });
     settingsPrefs = document.createElement('settings-prefs');
     return CrSettingsPrefs.initialized;
@@ -1753,7 +1755,7 @@ suite('ManageTopicsAndAdTopicsPageState', function() {
   });
 });
 
-suite('FledgeSubpage', function() {
+suite('FledgeSubpageWithProactiveTopicsBlockingDisabled', function() {
   let page: SettingsPrivacySandboxFledgeSubpageElement;
   let testPrivacySandboxBrowserProxy: TestPrivacySandboxBrowserProxy;
   let settingsPrefs: SettingsPrefsElement;
@@ -1763,6 +1765,7 @@ suite('FledgeSubpage', function() {
   suiteSetup(function() {
     loadTimeData.overrideValues({
       isPrivacySandboxRestricted: false,
+      isProactiveTopicsBlockingEnabled: false,
     });
     settingsPrefs = document.createElement('settings-prefs');
     return CrSettingsPrefs.initialized;

@@ -10,7 +10,9 @@
 #include <iterator>
 #include <map>
 #include <string>
+#include <string_view>
 #include <utility>
+#include <vector>
 
 #include "apps/launcher.h"
 #include "ash/constants/ash_features.h"
@@ -41,7 +43,6 @@
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/file_manager/app_service_file_tasks.h"
-#include "chrome/browser/ash/file_manager/arc_file_tasks.h"
 #include "chrome/browser/ash/file_manager/file_browser_handlers.h"
 #include "chrome/browser/ash/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
@@ -177,7 +178,7 @@ bool ContainsGoogleDocument(const std::vector<extensions::EntryInfo>& entries) {
 
 // Removes all tasks except tasks handled by file manager.
 void KeepOnlyFileManagerInternalTasks(std::vector<FullTaskDescriptor>* tasks) {
-  base::EraseIf(*tasks, [](const auto& task) {
+  std::erase_if(*tasks, [](const auto& task) {
     return !IsFilesAppId(task.task_descriptor.app_id);
   });
 }
@@ -185,7 +186,7 @@ void KeepOnlyFileManagerInternalTasks(std::vector<FullTaskDescriptor>* tasks) {
 // Removes task |actions| handled by file manager.
 void RemoveFileManagerInternalActions(const std::set<std::string>& actions,
                                       std::vector<FullTaskDescriptor>* tasks) {
-  base::EraseIf(*tasks, [&actions](const auto& task) {
+  std::erase_if(*tasks, [&actions](const auto& task) {
     const auto& td = task.task_descriptor;
     return IsFilesAppId(td.app_id) &&
            base::Contains(actions, ParseFilesAppActionId(td.action_id));
@@ -195,7 +196,7 @@ void RemoveFileManagerInternalActions(const std::set<std::string>& actions,
 // Removes tasks handled by |app_id|".
 void RemoveActionsForApp(const std::string& app_id,
                          std::vector<FullTaskDescriptor>* tasks) {
-  base::EraseIf(*tasks, [&](const auto& task) {
+  std::erase_if(*tasks, [&](const auto& task) {
     return task.task_descriptor.app_id == app_id;
   });
 }
@@ -251,7 +252,7 @@ bool IsFallbackFileHandler(const FullTaskDescriptor& task) {
   // handler of image files (e.g. Keep, Photos) would take precedence. But we
   // want that only to occur if the user has explicitly set the preference for
   // an app other than kMediaAppId to be the default (b/153387960).
-  constexpr auto kBuiltInApps = base::MakeFixedFlatSet<base::StringPiece>({
+  constexpr auto kBuiltInApps = base::MakeFixedFlatSet<std::string_view>({
       // clang-format off
       kFileManagerAppId,
       kFileManagerSwaAppId,
@@ -291,16 +292,7 @@ void ExecuteTaskAfterMimeTypesCollected(
     FileTaskFinishedCallback done,
     extensions::app_file_handler_util::MimeTypeCollector* mime_collector,
     std::unique_ptr<std::vector<std::string>> mime_types) {
-  if (task.task_type == TASK_TYPE_ARC_APP &&
-      !ash::features::ShouldArcFileTasksUseAppService()) {
-    apps::RecordAppLaunchMetrics(profile, apps::AppType::kArc, task.app_id,
-                                 apps::LaunchSource::kFromFileManager,
-                                 apps::LaunchContainer::kLaunchContainerWindow);
-    ExecuteArcTask(profile, task, file_urls, *mime_types, std::move(done));
-  } else {
-    ExecuteAppServiceTask(profile, task, file_urls, *mime_types,
-                          std::move(done));
-  }
+  ExecuteAppServiceTask(profile, task, file_urls, *mime_types, std::move(done));
 }
 
 void PostProcessFoundTasks(Profile* profile,
@@ -372,7 +364,7 @@ void PostProcessFoundTasks(Profile* profile,
 bool ShouldBeOpenedWithBrowser(const std::string& extension_id,
                                const std::string& action_id) {
   constexpr auto kOpenWithBrowserActions =
-      base::MakeFixedFlatSet<base::StringPiece>({
+      base::MakeFixedFlatSet<std::string_view>({
           // clang-format off
           "view-pdf",
           "view-in-browser",
@@ -510,7 +502,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 // Converts a string to a TaskType. Returns TASK_TYPE_UNKNOWN on error.
 TaskType StringToTaskType(const std::string& str) {
   constexpr auto kStringToTaskTypeMapping =
-      base::MakeFixedFlatMap<base::StringPiece, TaskType>({
+      base::MakeFixedFlatMap<std::string_view, TaskType>({
           // clang-format off
           {kFileBrowserHandlerTaskType, TASK_TYPE_FILE_BROWSER_HANDLER},
           {kFileHandlerTaskType,        TASK_TYPE_FILE_HANDLER},
@@ -521,7 +513,7 @@ TaskType StringToTaskType(const std::string& str) {
           {kPluginVmAppTaskType,        TASK_TYPE_PLUGIN_VM_APP},
           // clang-format on
       });
-  auto* itr = kStringToTaskTypeMapping.find(str);
+  auto itr = kStringToTaskTypeMapping.find(str);
   if (itr != kStringToTaskTypeMapping.end()) {
     return itr->second;
   }
@@ -565,7 +557,7 @@ std::string ParseFilesAppActionId(const std::string& action_id) {
   return action_id;
 }
 
-std::string ToSwaActionId(base::StringPiece action_id) {
+std::string ToSwaActionId(std::string_view action_id) {
   return base::StrCat(
       {ash::file_manager::kChromeUIFileManagerURL, "?", action_id});
 }
@@ -612,8 +604,7 @@ void UpdateDefaultTask(Profile* profile,
   }
 
   std::string task_id = TaskDescriptorToId(task_descriptor);
-  if (ash::features::ShouldArcFileTasksUseAppService() &&
-      task_descriptor.task_type == TASK_TYPE_ARC_APP) {
+  if (task_descriptor.task_type == TASK_TYPE_ARC_APP) {
     // Task IDs for Android apps are stored in a legacy format (app id:
     // "<package>/<activity>", task id: "view"). For ARC app task descriptors
     // (which use app id: "<app service id>", action id: "<activity>"), we
@@ -813,16 +804,21 @@ bool ExecuteFileTask(Profile* profile,
   const std::string parsed_action_id(ParseFilesAppActionId(task.action_id));
 
   if (IsWebDriveOfficeTask(task)) {
+    base::UmaHistogramSparse(
+        ash::cloud_upload::kNumberOfFilesToOpenWithGoogleDriveMetric,
+        file_urls.size());
     UMA_HISTOGRAM_ENUMERATION(
         ash::cloud_upload::kOpenInitialCloudProviderMetric,
         ash::cloud_upload::CloudProvider::kGoogleDrive);
-    for (const FileSystemURL& file_url : file_urls) {
-      RecordOfficeOpenExtensionDriveMetric(file_url);
-    }
+    // Only attempt to open the first selected file, as a temporary way to
+    // avoid conflicts and error inconsistencies.
+    // TODO(b/242685536) add support for multiple files.
+    FileSystemURL file_url = file_urls[0];
+    RecordOfficeOpenExtensionDriveMetric(file_url);
     const bool started = ExecuteWebDriveOfficeTask(
-        profile, task, file_urls,
+        profile, task, {file_url},
         std::make_unique<ash::cloud_upload::CloudOpenMetrics>(
-            ash::cloud_upload::CloudProvider::kGoogleDrive, file_urls.size()));
+            ash::cloud_upload::CloudProvider::kGoogleDrive, 1));
     if (done) {
       if (started) {
         std::move(done).Run(
@@ -834,16 +830,21 @@ bool ExecuteFileTask(Profile* profile,
     }
     return true;
   } else if (IsOpenInOfficeTask(task)) {
+    base::UmaHistogramSparse(
+        ash::cloud_upload::kNumberOfFilesToOpenWithOneDriveMetric,
+        file_urls.size());
     UMA_HISTOGRAM_ENUMERATION(
         ash::cloud_upload::kOpenInitialCloudProviderMetric,
         ash::cloud_upload::CloudProvider::kOneDrive);
-    for (const FileSystemURL& file_url : file_urls) {
-      RecordOfficeOpenExtensionOneDriveMetric(file_url);
-    }
+    // Only attempt to open the first selected file, as a temporary way to
+    // avoid conflicts and error inconsistencies.
+    // TODO(b/242685536) add support for multiple files.
+    FileSystemURL file_url = file_urls[0];
+    RecordOfficeOpenExtensionOneDriveMetric(file_url);
     const bool started = ExecuteOpenInOfficeTask(
-        profile, task, file_urls,
+        profile, task, {file_url},
         std::make_unique<ash::cloud_upload::CloudOpenMetrics>(
-            ash::cloud_upload::CloudProvider::kOneDrive, file_urls.size()));
+            ash::cloud_upload::CloudProvider::kOneDrive, 1));
     if (done) {
       if (started) {
         std::move(done).Run(
@@ -1016,17 +1017,8 @@ void FindAllTypesOfTasks(Profile* profile,
   FindVirtualTasks(profile, entries, file_urls, dlp_source_urls,
                    &resulting_tasks->tasks);
 
-  if (!ash::features::ShouldArcFileTasksUseAppService()) {
-    // 1. Find and append ARC handler tasks if ARC file tasks aren't
-    // provided by App Service.
-    FindArcTasks(
-        profile, entries, file_urls, std::move(resulting_tasks),
-        base::BindOnce(&FindExtensionAndAppTasks, profile, entries, file_urls,
-                       dlp_source_urls, std::move(callback)));
-  } else {
-    FindExtensionAndAppTasks(profile, entries, file_urls, dlp_source_urls,
-                             std::move(callback), std::move(resulting_tasks));
-  }
+  FindExtensionAndAppTasks(profile, entries, file_urls, dlp_source_urls,
+                           std::move(callback), std::move(resulting_tasks));
 }
 
 void ChooseAndSetDefaultTask(Profile* profile,
@@ -1052,8 +1044,7 @@ void ChooseAndSetDefaultTask(Profile* profile,
             file_tasks::GetDefaultTaskFromPrefs(*profile->GetPrefs(), mime_type,
                                                 file_path.Extension())) {
       default_tasks.insert(*default_task);
-      if (ash::features::ShouldArcFileTasksUseAppService() &&
-          default_task->task_type == TASK_TYPE_ARC_APP) {
+      if (default_task->task_type == TASK_TYPE_ARC_APP) {
         // Default preference Task Descriptors for Android apps are stored in a
         // legacy format (app id: "<package>/<activity>", action id: "view"). To
         // match against ARC app task descriptors (which use app id: "<app

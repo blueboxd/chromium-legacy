@@ -71,9 +71,6 @@ class CORE_EXPORT LCPCriticalPathPredictor final
   void OnLargestContentfulPaintUpdated(
       const Element& lcp_element,
       std::optional<const KURL> maybe_image_url);
-  LCPScriptObserver* lcp_script_observer() {
-    return lcp_script_observer_.Get();
-  }
   void OnFontFetched(const KURL& url);
   void OnStartPreload(const KURL& url);
   void OnOutermostMainFrameDocumentLoad();
@@ -91,7 +88,6 @@ class CORE_EXPORT LCPCriticalPathPredictor final
   Member<LocalFrame> frame_;
   HeapMojoRemote<mojom::blink::LCPCriticalPathPredictorHost> host_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  Member<LCPScriptObserver> lcp_script_observer_;
 
   // LCPP hints for consumption (read path):
 
@@ -104,8 +100,8 @@ class CORE_EXPORT LCPCriticalPathPredictor final
   // Callbacks are called when predicted LCP is painted. Never called if
   // prediction is incorrect.
   Vector<LCPCallback> lcp_predicted_callbacks_;
-  bool called_predicted_callbacks_ = false;
-  bool is_lcp_candidate_found_ = false;
+  bool are_predicted_callbacks_called_ = false;
+  bool has_lcp_occurred_ = false;
   bool is_outermost_main_frame_document_loaded_ = false;
 };
 

@@ -24,7 +24,6 @@ import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.supplier.ObservableSupplier;
-import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
@@ -48,6 +47,7 @@ import org.chromium.chrome.browser.layouts.components.VirtualView;
 import org.chromium.chrome.browser.layouts.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
+import org.chromium.chrome.browser.lifecycle.TopResumedActivityChangedObserver;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.LoadUrlResult;
@@ -89,7 +89,10 @@ import java.util.List;
  * all input and model events to the proper destination.
  */
 public class StripLayoutHelperManager
-        implements SceneOverlay, PauseResumeWithNativeObserver, TabStripHeightObserver {
+        implements SceneOverlay,
+                PauseResumeWithNativeObserver,
+                TabStripHeightObserver,
+                TopResumedActivityChangedObserver {
 
     /**
      * POD type that contains the necessary tab model info on startup. Used in the startup flicker
@@ -128,6 +131,8 @@ public class StripLayoutHelperManager
     private static final float MODEL_SELECTOR_BUTTON_HOVER_BACKGROUND_DEFAULT_OPACITY = 0.08f;
     private static final float MODEL_SELECTOR_BUTTON_CLICK_SLOP_DP = 12.f;
     private static final float BUTTON_DESIRED_TOUCH_TARGET_SIZE = 48.f;
+    private static final float EXPERIMENT_LEFT_MARGIN_DP = 10f;
+    private static final float EXPERIMENT_RIGHT_MARGIN_DP = 20f;
 
     // Tab strip transition constants.
     @VisibleForTesting
@@ -157,6 +162,10 @@ public class StripLayoutHelperManager
     // UI State
     private float mWidth; // in dp units
     private final float mHeight; // in dp units
+    // Padding regions that tabs should remain untouchable.
+    private float mLeftPadding; // in dp units
+    private float mRightPadding; // in dp units
+    private final float mDensity;
     private int mOrientation;
     private TintedCompositorButton mModelSelectorButton;
     private Context mContext;
@@ -171,6 +180,9 @@ public class StripLayoutHelperManager
     private TabSwitcherLayoutObserver mTabSwitcherLayoutObserver;
     private final ViewStub mTabHoverCardViewStub;
     private float mModelSelectorWidth;
+    private float mLastVisibleViewportOffsetY;
+
+    private boolean mIsTopResumedActivity;
 
     // 3-dots menu button with tab strip end padding
     private float mStripEndPadding;
@@ -187,7 +199,7 @@ public class StripLayoutHelperManager
     private TabModelObserver mTabModelObserver;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
     private final String mDefaultTitle;
-    private final Supplier<LayerTitleCache> mLayerTitleCacheSupplier;
+    private final ObservableSupplier<LayerTitleCache> mLayerTitleCacheSupplier;
     private final BrowserControlsStateProvider mBrowserControlsStateProvider;
 
     // Drag-Drop
@@ -340,7 +352,7 @@ public class StripLayoutHelperManager
             LayoutManagerHost managerHost,
             LayoutUpdateHost updateHost,
             LayoutRenderHost renderHost,
-            Supplier<LayerTitleCache> layerTitleCacheSupplier,
+            ObservableSupplier<LayerTitleCache> layerTitleCacheSupplier,
             ObservableSupplier<TabModelStartupInfo> tabModelStartupInfoSupplier,
             ActivityLifecycleDispatcher lifecycleDispatcher,
             MultiInstanceManager multiInstanceManager,
@@ -355,7 +367,8 @@ public class StripLayoutHelperManager
             @NonNull ToolbarManager toolbarManager) {
         mUpdateHost = updateHost;
         mLayerTitleCacheSupplier = layerTitleCacheSupplier;
-        mTabStripTreeProvider = new TabStripSceneLayer(context);
+        mDensity = context.getResources().getDisplayMetrics().density;
+        mTabStripTreeProvider = new TabStripSceneLayer(mDensity);
         mTabStripEventHandler = new TabStripEventHandler();
         mTabSwitcherLayoutObserver = new TabSwitcherLayoutObserver();
         mLifecycleDispatcher = lifecycleDispatcher;
@@ -423,8 +436,7 @@ public class StripLayoutHelperManager
 
         // Use toolbar menu button padding to align MSB with menu button.
         mStripEndPadding =
-                context.getResources().getDimension(R.dimen.button_end_padding)
-                        / context.getResources().getDisplayMetrics().density;
+                context.getResources().getDimension(R.dimen.button_end_padding) / mDensity;
 
         mModelSelectorButton.setIncognito(false);
         mModelSelectorButton.setVisible(false);
@@ -432,7 +444,7 @@ public class StripLayoutHelperManager
         mModelSelectorButton.setClickSlop(MODEL_SELECTOR_BUTTON_CLICK_SLOP_DP);
 
         Resources res = context.getResources();
-        mHeight = res.getDimension(R.dimen.tab_strip_height) / res.getDisplayMetrics().density;
+        mHeight = res.getDimension(R.dimen.tab_strip_height) / mDensity;
         mModelSelectorButton.setAccessibilityDescription(
                 res.getString(R.string.accessibility_tabstrip_btn_incognito_toggle_standard),
                 res.getString(R.string.accessibility_tabstrip_btn_incognito_toggle_incognito));
@@ -497,6 +509,23 @@ public class StripLayoutHelperManager
             }
         }
 
+        mLayerTitleCacheSupplier.addObserver(
+                (LayerTitleCache layerTitleCache) -> {
+                    layerTitleCache.addObserver(mNormalHelper);
+                    layerTitleCache.addObserver(mIncognitoHelper);
+                });
+
+        // TODO (crbug.com/326290073): Update this to check the actual activity resumption state
+        // because it is technically possible for the current activity to lose the top resumed
+        // activity status before the StripLayoutHelperManager instance is instantiated.
+        mIsTopResumedActivity = true;
+
+        if (TabUiFeatureUtilities.isTabStripWindowLayoutOptimizationEnabled()) {
+            // Add some large margins to tab strip when flag enabled.
+            // TODO(crbug/325351108): Introducing external callers and remove this call.
+            updateHorizontalPaddings(
+                    EXPERIMENT_LEFT_MARGIN_DP * mDensity, EXPERIMENT_RIGHT_MARGIN_DP * mDensity);
+        }
         onContextChanged(context);
     }
 
@@ -530,6 +559,11 @@ public class StripLayoutHelperManager
 
     /** Cleans up internal state. */
     public void destroy() {
+        LayerTitleCache layerTitleCache = mLayerTitleCacheSupplier.get();
+        if (layerTitleCache != null) {
+            layerTitleCache.removeObserver(mNormalHelper);
+            layerTitleCache.removeObserver(mIncognitoHelper);
+        }
         mTabStripTreeProvider.destroy();
         mTabStripTreeProvider = null;
         mIncognitoHelper.destroy();
@@ -626,11 +660,14 @@ public class StripLayoutHelperManager
                 mLayerTitleCacheSupplier.get(),
                 resourceManager,
                 getActiveStripLayoutHelper().getStripLayoutTabsToRender(),
+                getActiveStripLayoutHelper().getStripLayoutGroupTitlesToRender(),
                 yOffset,
                 selectedTabId,
                 hoveredTabId,
                 getStripTransitionScrimColor(),
-                scrimOpacity);
+                scrimOpacity,
+                mLeftPadding,
+                mRightPadding);
         return mTabStripTreeProvider;
     }
 
@@ -657,24 +694,42 @@ public class StripLayoutHelperManager
     public void onSizeChanged(
             float width, float height, float visibleViewportOffsetY, int orientation) {
         mWidth = width;
+        mLastVisibleViewportOffsetY = visibleViewportOffsetY;
         boolean orientationChanged = false;
         if (mOrientation != orientation) {
             mOrientation = orientation;
             orientationChanged = true;
         }
         if (!LocalizationUtils.isLayoutRtl()) {
-            mModelSelectorButton.setDrawX(mWidth - getModelSelectorButtonWidthWithEndPadding());
+            mModelSelectorButton.setDrawX(
+                    mWidth - mRightPadding - getModelSelectorButtonWidthWithEndPadding());
         } else {
             mModelSelectorButton.setDrawX(
-                    getModelSelectorButtonWidthWithEndPadding() - mModelSelectorWidth);
+                    mLeftPadding
+                            + getModelSelectorButtonWidthWithEndPadding()
+                            - mModelSelectorWidth);
         }
 
         mNormalHelper.onSizeChanged(
-                mWidth, getHeight(), orientationChanged, LayoutManagerImpl.time());
+                mWidth,
+                getHeight(),
+                orientationChanged,
+                LayoutManagerImpl.time(),
+                mLeftPadding,
+                mRightPadding);
         mIncognitoHelper.onSizeChanged(
-                mWidth, getHeight(), orientationChanged, LayoutManagerImpl.time());
+                mWidth,
+                getHeight(),
+                orientationChanged,
+                LayoutManagerImpl.time(),
+                mLeftPadding,
+                mRightPadding);
 
-        mStripFilterArea.set(0, 0, mWidth, Math.min(getHeight(), visibleViewportOffsetY));
+        mStripFilterArea.set(
+                mLeftPadding,
+                0,
+                mWidth - mRightPadding,
+                Math.min(getHeight(), visibleViewportOffsetY));
         mEventFilter.setEventArea(mStripFilterArea);
     }
 
@@ -740,6 +795,15 @@ public class StripLayoutHelperManager
         return mStripTransitionScrimOpacity;
     }
 
+    @Override
+    public void onTopResumedActivityChanged(boolean isTopResumedActivity) {
+        // TODO (crbug.com/326290073): Update this to use the helper method from
+        // TabUiFeatureUtilities.
+        if (!ChromeFeatureList.sTabStripLayoutOptimization.isEnabled()) return;
+        mIsTopResumedActivity = isTopResumedActivity;
+        mUpdateHost.requestUpdate();
+    }
+
     private float getModelSelectorButtonWidthWithEndPadding() {
         return mModelSelectorWidth + mStripEndPadding;
     }
@@ -760,6 +824,10 @@ public class StripLayoutHelperManager
 
     public TintedCompositorButton getNewTabButton() {
         return getActiveStripLayoutHelper().getNewTabButton();
+    }
+
+    public boolean shouldShowTabOutline(StripLayoutTab tab) {
+        return getActiveStripLayoutHelper().shouldShowTabOutline(tab);
     }
 
     /**
@@ -970,7 +1038,7 @@ public class StripLayoutHelperManager
                     @Override
                     public void tabClosureCommitted(Tab tab) {
                         if (mLayerTitleCacheSupplier.hasValue()) {
-                            mLayerTitleCacheSupplier.get().remove(tab.getId());
+                            mLayerTitleCacheSupplier.get().removeTabTitle(tab.getId());
                         }
                     }
 
@@ -1074,6 +1142,19 @@ public class StripLayoutHelperManager
         }
     }
 
+    /**
+     * Update the start / end padding for the tab strip.
+     *
+     * @param leftPaddingPx Left padding for the tab strip in px.
+     * @param rightPaddingPx Right padding for the tab strip in px.
+     */
+    public void updateHorizontalPaddings(float leftPaddingPx, float rightPaddingPx) {
+        mLeftPadding = leftPaddingPx / mDensity;
+        mRightPadding = rightPaddingPx / mDensity;
+
+        onSizeChanged(mWidth, mHeight, mLastVisibleViewportOffsetY, mOrientation);
+    }
+
     private void updateTitleForTab(Tab tab) {
         if (mLayerTitleCacheSupplier.get() == null) return;
 
@@ -1091,7 +1172,8 @@ public class StripLayoutHelperManager
     }
 
     public @ColorInt int getBackgroundColor() {
-        return TabUiThemeUtil.getTabStripBackgroundColor(mContext, mIsIncognito);
+        return TabUiThemeUtil.getTabStripBackgroundColor(
+                mContext, mIsIncognito, mIsTopResumedActivity);
     }
 
     /**
@@ -1141,15 +1223,15 @@ public class StripLayoutHelperManager
 
             mModelSelectorButton.setVisible(isVisible);
 
-            // endMargin = msbEndPadding(8dp) + msbWidth(32dp) + msbStartPadding(8dp to create more
-            // gap between MSB and NTB so there is enough space for touch target).
-            float endMargin =
+            // msbTouchTargetSize = msbEndPadding(8dp) + msbWidth(32dp) + msbStartPadding(8dp to
+            // create more gap between MSB and NTB so there is enough space for touch target).
+            float msbTouchTargetSize =
                     isVisible
                             ? getModelSelectorButtonWidthWithEndPadding()
                                     + getButtonStartPaddingForTouchTarget()
                             : 0.0f;
-            mNormalHelper.setEndMargin(endMargin, isVisible);
-            mIncognitoHelper.setEndMargin(endMargin, true);
+            mNormalHelper.updateEndMarginForStripButtons(msbTouchTargetSize);
+            mIncognitoHelper.updateEndMarginForStripButtons(msbTouchTargetSize);
         }
     }
 
@@ -1198,5 +1280,9 @@ public class StripLayoutHelperManager
 
     public TabDragSource getTabDragSourceForTesting() {
         return mTabDragSource;
+    }
+
+    public void setIsIncognitoForTesting(boolean isIncognito) {
+        mIsIncognito = isIncognito;
     }
 }

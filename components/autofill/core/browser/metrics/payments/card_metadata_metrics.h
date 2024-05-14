@@ -59,7 +59,14 @@ struct CardMetadataLoggingContext {
   CardMetadataLoggingContext& operator=(const CardMetadataLoggingContext&);
   ~CardMetadataLoggingContext();
 
-  bool card_metadata_available = false;
+  // Updates `selected_card_has_metadata_available` and
+  // `selected_issuer_or_network_to_metadata_availability` with the
+  // `credit_card` information.
+  void SetSelectedCardInfo(const CreditCard& credit_card);
+
+  // Keeps record of what type of metadata was shown to the user when credit
+  // card suggestions are presented. When set to true, implies at least one
+  // suggestion shown to the user had the listed metadata attribute.
   bool card_product_description_shown = false;
   bool card_art_image_shown = false;
 
@@ -72,6 +79,23 @@ struct CardMetadataLoggingContext {
   // suggestion from the issuer or network had metadata. If it is false, none of
   // the card suggestions from the issuer or network had metadata.
   base::flat_map<std::string, bool> issuer_or_network_to_metadata_availability;
+
+  // Keeps record of which credit cards shown to the user had metadata
+  // available.
+  base::flat_set<int64_t> instruments_with_metadata_available;
+
+  // Keeps record on if the selected card had metadata available.
+  bool selected_card_has_metadata_available = false;
+
+  // Keeps record of the selected card's issuer and network and if the card had
+  // metadata available. If there is no selected card,
+  // `selected_issuer_or_network_to_metadata_availability` has no value.
+  std::optional<base::flat_map<std::string, bool>>
+      selected_issuer_or_network_to_metadata_availability;
+
+  // Keeps record of credit card suggestions that included a benefit being
+  // available to show.
+  base::flat_set<int64_t> instrument_ids_with_benefits_available;
 };
 
 // Get histogram suffix based on given card issuer id or network.
@@ -95,6 +119,9 @@ void LogCardWithMetadataFormEventMetric(
 void LogAcceptanceLatency(base::TimeDelta latency,
                           const CardMetadataLoggingContext& suggestion_context,
                           const CreditCard& selected_card);
+
+// Logs if credit card benefits are enabled when a new profile is launched.
+void LogIsCreditCardBenefitsEnabledAtStartup(bool enabled);
 
 }  // namespace autofill::autofill_metrics
 

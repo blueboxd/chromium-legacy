@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "base/time/time.h"
@@ -58,6 +59,7 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "media/base/media_switches.h"
@@ -134,15 +136,16 @@ class BrowsingDataRemoverBrowserTest
  public:
   BrowsingDataRemoverBrowserTest() {
     std::vector<base::test::FeatureRef> enabled_features = {};
+    // TODO(b/314968275): Add tests for when UNO Desktop is enabled.
+    std::vector<base::test::FeatureRef> disabled_features = {
+        switches::kUnoDesktop};
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
     enabled_features.push_back(media::kExternalClearKeyForTesting);
 #endif
     // WebSQL is disabled by default as of M119 (crbug/695592). Enable feature
     // in tests during deprecation trial and enterprise policy support.
     enabled_features.push_back(blink::features::kWebSQLAccess);
-    // TODO(b/314968275): Add tests for when UNO Desktop is enabled.
-    InitFeatureLists(std::move(enabled_features),
-                     /*disabled_features=*/{switches::kUnoDesktop});
+    InitFeatureLists(std::move(enabled_features), std::move(disabled_features));
   }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

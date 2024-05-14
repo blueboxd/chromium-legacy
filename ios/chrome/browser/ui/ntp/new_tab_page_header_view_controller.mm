@@ -28,7 +28,6 @@
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/lens/lens_entrypoint.h"
 #import "ios/chrome/browser/ui/ntp/logo_vendor.h"
@@ -115,6 +114,14 @@ const CGFloat kFakeLocationBarHeightMargin = 2;
       previousTraitCollection.preferredContentSizeCategory !=
           self.traitCollection.preferredContentSizeCategory) {
     [self updateFakeboxDisplay];
+  }
+  if (previousTraitCollection.userInterfaceStyle !=
+      self.traitCollection.userInterfaceStyle) {
+    if (base::FeatureList::IsEnabled(kOmniboxColorIcons)) {
+      [self.headerView
+          updateButtonsForUserInterfaceStyle:self.traitCollection
+                                                 .userInterfaceStyle];
+    }
   }
 }
 
@@ -453,9 +460,7 @@ const CGFloat kFakeLocationBarHeightMargin = 2;
 
 - (void)openLens {
   [self.NTPMetricsRecorder recordLensTapped];
-  if (IsIOSLargeFakeboxEnabled()) {
-    TriggerHapticFeedbackForSelectionChange();
-  }
+  TriggerHapticFeedbackForSelectionChange();
   OpenLensInputSelectionCommand* command = [[OpenLensInputSelectionCommand
       alloc]
           initWithEntryPoint:LensEntrypoint::NewTabPage
@@ -467,9 +472,7 @@ const CGFloat kFakeLocationBarHeightMargin = 2;
 - (void)loadVoiceSearch:(id)sender {
   DCHECK(self.voiceSearchIsEnabled);
   [self.NTPMetricsRecorder recordVoiceSearchTapped];
-  if (IsIOSLargeFakeboxEnabled()) {
-    TriggerHapticFeedbackForSelectionChange();
-  }
+  TriggerHapticFeedbackForSelectionChange();
   UIView* voiceSearchButton = base::apple::ObjCCastStrict<UIView>(sender);
   [self.layoutGuideCenter referenceView:voiceSearchButton
                               underName:kVoiceSearchButtonGuide];
@@ -491,9 +494,7 @@ const CGFloat kFakeLocationBarHeightMargin = 2;
 
 - (void)fakeboxTapped {
   [self.NTPMetricsRecorder recordFakeOmniboxTapped];
-  if (IsIOSLargeFakeboxEnabled()) {
-    TriggerHapticFeedbackForSelectionChange();
-  }
+  TriggerHapticFeedbackForSelectionChange();
   [self.commandHandler fakeboxTapped];
 }
 

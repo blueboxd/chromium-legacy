@@ -296,9 +296,9 @@ CSSValue* ConsumeDescriptor(StyleRule::RuleType rule_type,
     case StyleRule::kNamespace:
     case StyleRule::kScope:
     case StyleRule::kSupports:
-    case StyleRule::kPositionFallback:
-    case StyleRule::kTry:
     case StyleRule::kStartingStyle:
+    case StyleRule::kFunction:
+    case StyleRule::kPositionTry:
       // TODO(andruud): Handle other descriptor types here.
       NOTREACHED();
       return nullptr;

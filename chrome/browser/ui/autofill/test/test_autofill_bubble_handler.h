@@ -48,11 +48,15 @@ class TestAutofillBubbleHandler : public AutofillBubbleHandler {
       bool is_user_gesture) override;
   AutofillBubbleBase* ShowSaveAddressProfileBubble(
       content::WebContents* contents,
-      SaveUpdateAddressProfileBubbleController* controller,
+      std::unique_ptr<SaveAddressBubbleController> controller,
       bool is_user_gesture) override;
   AutofillBubbleBase* ShowUpdateAddressProfileBubble(
       content::WebContents* contents,
-      SaveUpdateAddressProfileBubbleController* controller,
+      std::unique_ptr<UpdateAddressBubbleController> controller,
+      bool is_user_gesture) override;
+  AutofillBubbleBase* ShowAddNewAddressProfileBubble(
+      content::WebContents* contents,
+      std::unique_ptr<AddNewAddressBubbleController> controller,
       bool is_user_gesture) override;
   AutofillBubbleBase* ShowVirtualCardManualFallbackBubble(
       content::WebContents* web_contents,
@@ -70,14 +74,9 @@ class TestAutofillBubbleHandler : public AutofillBubbleHandler {
       MandatoryReauthBubbleController* controller,
       bool is_user_gesture,
       MandatoryReauthBubbleType bubble_type) override;
-
   AutofillBubbleBase* ShowSaveCardConfirmationBubble(
       content::WebContents* web_contents,
       SaveCardBubbleController* controller) override;
-
-  int SaveCardConfirmationBubbleShownCount() {
-    return save_card_confirmation_bubble_shown_count_;
-  }
 
  private:
   std::unique_ptr<TestAutofillBubble> local_card_migration_bubble_view_;
@@ -86,6 +85,7 @@ class TestAutofillBubbleHandler : public AutofillBubbleHandler {
   std::unique_ptr<TestAutofillBubble> iban_bubble_view_;
   std::unique_ptr<TestAutofillBubble> save_address_profile_bubble_view_;
   std::unique_ptr<TestAutofillBubble> update_address_profile_bubble_view_;
+  std::unique_ptr<TestAutofillBubble> add_new_address_profile_bubble_view_;
   std::unique_ptr<TestAutofillBubble> edit_address_profile_bubble_view_;
   std::unique_ptr<TestAutofillBubble> virtual_card_manual_fallback_bubble_view_;
   std::unique_ptr<TestAutofillBubble> virtual_card_enroll_bubble_view_;

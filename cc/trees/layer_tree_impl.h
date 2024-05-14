@@ -15,6 +15,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/time/time.h"
 #include "cc/base/synced_property.h"
 #include "cc/input/browser_controls_offset_manager.h"
@@ -318,9 +319,9 @@ class CC_EXPORT LayerTreeImpl {
   TakePresentationCallbacks();
 
   void AddSuccessfulPresentationCallbacks(
-      std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback>
+      std::vector<PresentationTimeCallbackBuffer::SuccessfulCallbackWithDetails>
           callbacks);
-  std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback>
+  std::vector<PresentationTimeCallbackBuffer::SuccessfulCallbackWithDetails>
   TakeSuccessfulPresentationCallbacks();
 
   // The following viewport related property nodes will only ever be set on the
@@ -539,7 +540,8 @@ class CC_EXPORT LayerTreeImpl {
 
   void AddLayerShouldPushProperties(LayerImpl* layer);
   void ClearLayersThatShouldPushProperties();
-  const base::flat_set<LayerImpl*>& LayersThatShouldPushProperties() const {
+  const base::flat_set<raw_ptr<LayerImpl, CtnExperimental>>&
+  LayersThatShouldPushProperties() const {
     return layers_that_should_push_properties_;
   }
 
@@ -605,8 +607,8 @@ class CC_EXPORT LayerTreeImpl {
 
   void NotifyLayerHasPaintWorkletsChanged(PictureLayerImpl* layer,
                                           bool has_worklets);
-  const base::flat_set<PictureLayerImpl*>& picture_layers_with_paint_worklets()
-      const {
+  const base::flat_set<raw_ptr<PictureLayerImpl, CtnExperimental>>&
+  picture_layers_with_paint_worklets() const {
     return picture_layers_with_paint_worklets_;
   }
 
@@ -869,7 +871,8 @@ class CC_EXPORT LayerTreeImpl {
   LayerImplMap layer_id_map_;
 
   // Set of layers that need to push properties.
-  base::flat_set<LayerImpl*> layers_that_should_push_properties_;
+  base::flat_set<raw_ptr<LayerImpl, CtnExperimental>>
+      layers_that_should_push_properties_;
 
   std::unordered_map<ElementId, float, ElementIdHash>
       element_id_to_opacity_animations_;
@@ -894,12 +897,15 @@ class CC_EXPORT LayerTreeImpl {
   // After commit (or impl-side invalidation), the LayerTreeHostImpl must walk
   // all PictureLayerImpls that have PaintWorklets to ensure they are painted.
   // To avoid unnecessary walking, we track that set here.
-  base::flat_set<PictureLayerImpl*> picture_layers_with_paint_worklets_;
+  base::flat_set<raw_ptr<PictureLayerImpl, CtnExperimental>>
+      picture_layers_with_paint_worklets_;
 
   base::flat_set<viz::SurfaceRange> surface_layer_ranges_;
 
   // List of render surfaces for the most recently prepared frame.
-  RenderSurfaceList render_surface_list_;
+  //
+  // RAW_PTR_EXCLUSION: visible in stack samples when Renderer BRP is enabled.
+  RAW_PTR_EXCLUSION RenderSurfaceList render_surface_list_;
   // After drawing the |render_surface_list_| the areas in this region
   // would not be fully covered by opaque content.
   Region unoccluded_screen_space_region_;
@@ -952,7 +958,7 @@ class CC_EXPORT LayerTreeImpl {
   gfx::OverlayTransform display_transform_hint_ = gfx::OVERLAY_TRANSFORM_NONE;
 
   std::vector<PresentationTimeCallbackBuffer::Callback> presentation_callbacks_;
-  std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback>
+  std::vector<PresentationTimeCallbackBuffer::SuccessfulCallbackWithDetails>
       successful_presentation_callbacks_;
 
   // Event metrics that are reported back from the main thread.

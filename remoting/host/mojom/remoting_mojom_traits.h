@@ -6,10 +6,11 @@
 #define REMOTING_HOST_MOJOM_REMOTING_MOJOM_TRAITS_H_
 
 #include <stddef.h>
+
 #include <memory>
+#include <optional>
 #include <string>
 
-#include <optional>
 #include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/numerics/safe_conversions.h"
@@ -1517,6 +1518,8 @@ struct EnumTraits<remoting::mojom::ProtocolErrorCode,
             kLocationAuthzPolicyCheckFailed;
       case ::remoting::protocol::ErrorCode::UNAUTHORIZED_ACCOUNT:
         return remoting::mojom::ProtocolErrorCode::kUnauthorizedAccount;
+      case ::remoting::protocol::ErrorCode::REAUTHZ_POLICY_CHECK_FAILED:
+        return remoting::mojom::ProtocolErrorCode::kReauthzPolicyCheckFailed;
     }
 
     NOTREACHED();
@@ -1589,6 +1592,9 @@ struct EnumTraits<remoting::mojom::ProtocolErrorCode,
         return true;
       case remoting::mojom::ProtocolErrorCode::kUnauthorizedAccount:
         *out = ::remoting::protocol::ErrorCode::UNAUTHORIZED_ACCOUNT;
+        return true;
+      case remoting::mojom::ProtocolErrorCode::kReauthzPolicyCheckFailed:
+        *out = ::remoting::protocol::ErrorCode::REAUTHZ_POLICY_CHECK_FAILED;
         return true;
     }
 

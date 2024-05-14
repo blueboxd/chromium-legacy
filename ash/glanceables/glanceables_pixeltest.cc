@@ -9,6 +9,7 @@
 #include "ash/glanceables/common/glanceables_view_id.h"
 #include "ash/glanceables/glanceables_controller.h"
 #include "ash/glanceables/tasks/glanceables_task_view.h"
+#include "ash/glanceables/tasks/test/glanceables_tasks_test_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/system/unified/date_tray.h"
 #include "ash/system/unified/glanceable_tray_bubble.h"
@@ -52,7 +53,7 @@ class GlanceablesPixelTest : public AshTestBase {
     base::Time date;
     ASSERT_TRUE(base::Time::FromString(due_date, &date));
     fake_glanceables_tasks_client_ =
-        std::make_unique<api::FakeTasksClient>(date);
+        glanceables_tasks_test_util::InitializeFakeTasksClient(date);
     Shell::Get()->glanceables_controller()->UpdateClientsRegistration(
         account_id_, GlanceablesController::ClientsRegistration{
                          .tasks_client = fake_glanceables_tasks_client_.get()});
@@ -115,7 +116,7 @@ TEST_F(GlanceablesPixelTest, GlanceablesZeroState) {
   GetGlanceableTrayBubble()->GetTasksView()->ScrollViewToVisible();
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      "glanceables_zero_state", /*revision_number=*/7,
+      "glanceables_zero_state", /*revision_number=*/8,
       GetGlanceableTrayBubble()->GetBubbleView()));
 }
 
@@ -151,7 +152,7 @@ TEST_F(GlanceablesPixelTest, GlanceablesTasksMarkAsCompleted) {
             fake_glanceables_tasks_client()->pending_completed_tasks().size());
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      "glanceables_task_view_no_completed_tasks", /*revision_number=*/3,
+      "glanceables_task_view_no_completed_tasks", /*revision_number=*/4,
       GetGlanceableTrayBubble()->GetTasksView()));
 
   GestureTapOn(task_view->GetButtonForTest());
@@ -160,7 +161,7 @@ TEST_F(GlanceablesPixelTest, GlanceablesTasksMarkAsCompleted) {
             fake_glanceables_tasks_client()->pending_completed_tasks().size());
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      "glanceables_task_view_one_completed_task", /*revision_number=*/3,
+      "glanceables_task_view_one_completed_task", /*revision_number=*/4,
       GetGlanceableTrayBubble()->GetTasksView()));
 }
 
@@ -187,7 +188,7 @@ TEST_F(GlanceablesPixelTest, GlanceablesCalendarHeight) {
   ASSERT_TRUE(GetDateTray()->is_active());
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      "glanceables_calendar_height", /*revision_number=*/2,
+      "glanceables_calendar_height", /*revision_number=*/3,
       GetGlanceableTrayBubble()->GetBubbleView()));
 }
 

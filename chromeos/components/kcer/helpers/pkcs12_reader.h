@@ -23,6 +23,7 @@
 namespace kcer::internal {
 
 // Used for logging, the values should never be reordered or reused.
+// TODO(miersh): Merge this into kcer::Error.
 enum class Pkcs12ReaderStatusCode {
   kSuccess = 0,
   kCreateKeyFailed = 1,
@@ -60,6 +61,10 @@ enum class Pkcs12ReaderStatusCode {
   kEcKeyBytesEmpty = 33,
   kEcCkaIdExtractionFailed = 34,
   kPkeyComparisonFailure = 35,
+  kPkcs12WrongPassword = 36,
+  kPkcs12InvalidMac = 37,
+  kPkcs12InvalidFile = 38,
+  kPkcs12UnsupportedFile = 39,
 };
 
 enum class Pkcs12ReaderCertSearchType {
@@ -69,8 +74,9 @@ enum class Pkcs12ReaderCertSearchType {
 
 struct CertData {
   CertData();
+  CertData(CertData&& other);
   ~CertData();
-  raw_ptr<X509> x509;
+  bssl::UniquePtr<X509> x509;
   std::string nickname;
 };
 

@@ -169,6 +169,12 @@ class AuthenticationFlowTest : public PlatformTest {
 // Tests a Sign In of a normal account on the same profile with Sync
 // consent granted.
 TEST_F(AuthenticationFlowTest, TestSignInSimple) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  // Enable user policy to make sure that the authentication flow doesn't try
+  // a registration when the account isn't managed.
+  scoped_feature_list.InitAndEnableFeature(
+      policy::kUserPolicyForSigninOrSyncConsentLevel);
+
   CreateAuthenticationFlow(
       PostSignInAction::kCommitSync, identity1_,
       signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE);
@@ -382,68 +388,6 @@ TEST_F(AuthenticationFlowTest, TestShowManagedConfirmationWithSyncConsent) {
   histogram_tester_.ExpectUniqueSample(
       "Signin.AccountType.SyncConsent",
       signin_metrics::SigninAccountType::kManaged, 1);
-}
-
-// Tests that when signed in without sync with a managed account and the
-// policy::kUserPolicyForSigninAndNoSyncConsentLevel feature is disabled, the
-// managed account confirmation dialog isn't shown.
-TEST_F(AuthenticationFlowTest,
-       TestDontShowManagedConfirmationForSigninOnlyIfUserPolicyDisabled) {
-  // Enable sign-in promos but leave user policy disabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {syncer::kReplaceSyncPromosWithSignInPromos}, {});
-
-  CreateAuthenticationFlow(
-      PostSignInAction::kNone, managed_identity_,
-      signin_metrics::AccessPoint::ACCESS_POINT_SUPERVISED_USER);
-
-  [[[performer_ expect] andDo:^(NSInvocation*) {
-    [authentication_flow_ didFetchManagedStatus:@"foo.com"];
-  }] fetchManagedStatus:browser_state_.get() forIdentity:managed_identity_];
-
-  SetSigninSuccessExpectations(
-      managed_identity_,
-      signin_metrics::AccessPoint::ACCESS_POINT_SUPERVISED_USER, @"foo.com");
-
-  [authentication_flow_ startSignInWithCompletion:sign_in_completion_];
-
-  CheckSignInCompletion(/*expected_signed_in=*/true);
-  histogram_tester_.ExpectUniqueSample(
-      "Signin.AccountType.SigninConsent",
-      signin_metrics::SigninAccountType::kManaged, 1);
-  histogram_tester_.ExpectTotalCount("Signin.AccountType.SyncConsent", 0);
-}
-
-// Tests that when signed in only with a managed account and the
-// policy::kUserPolicyForSigninAndNoSyncConsentLevel feature is disabled, the
-// managed account confirmation dialog isn't shown.
-TEST_F(AuthenticationFlowTest,
-       TestDontShowManagedConfirmationForSigninConsetLevelIfPromoDisabled) {
-  // Enable user policy but leave sign-in promos disabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {syncer::kReplaceSyncPromosWithSignInPromos}, {});
-
-  CreateAuthenticationFlow(
-      PostSignInAction::kNone, managed_identity_,
-      signin_metrics::AccessPoint::ACCESS_POINT_SUPERVISED_USER);
-
-  [[[performer_ expect] andDo:^(NSInvocation*) {
-    [authentication_flow_ didFetchManagedStatus:@"foo.com"];
-  }] fetchManagedStatus:browser_state_.get() forIdentity:managed_identity_];
-
-  SetSigninSuccessExpectations(
-      managed_identity_,
-      signin_metrics::AccessPoint::ACCESS_POINT_SUPERVISED_USER, @"foo.com");
-
-  [authentication_flow_ startSignInWithCompletion:sign_in_completion_];
-
-  CheckSignInCompletion(/*expected_signed_in=*/true);
-  histogram_tester_.ExpectUniqueSample(
-      "Signin.AccountType.SigninConsent",
-      signin_metrics::SigninAccountType::kManaged, 1);
-  histogram_tester_.ExpectTotalCount("Signin.AccountType.SyncConsent", 0);
 }
 
 // Tests that when signed in only with a managed account and the

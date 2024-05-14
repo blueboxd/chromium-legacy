@@ -8,13 +8,14 @@
 
 #include <cmath>
 #include <memory>
+#include <optional>
 #include <utility>
 
-#include <optional>
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/angle_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
@@ -35,7 +36,7 @@
 #include "cc/input/scrollbar_controller.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/layers/painted_overlay_scrollbar_layer_impl.h"
+#include "cc/layers/nine_patch_thumb_scrollbar_layer_impl.h"
 #include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/solid_color_layer_impl.h"
@@ -94,7 +95,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
 #include "ui/events/types/scroll_input_type.h"
-#include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/test/geometry_util.h"
@@ -1845,7 +1845,7 @@ class LayerTreeHostImplTestInvokePresentationCallbacks
     for (auto& callback : activated.main_callbacks)
       std::move(callback).Run(details.presentation_feedback);
     for (auto& callback : activated.main_successful_callbacks)
-      std::move(callback).Run(details.presentation_feedback.timestamp);
+      std::move(callback).Run(details);
   }
 };
 
@@ -1892,7 +1892,9 @@ TEST_F(LayerTreeHostImplTestInvokePresentationCallbacks,
   // frame for `frame_token_2` gets presented.
   host_impl_->RegisterMainThreadSuccessfulPresentationTimeCallbackForTesting(
       frame_token_2,
-      base::BindLambdaForTesting([&](base::TimeTicks presentation_timestamp) {
+      base::BindLambdaForTesting([&](const viz::FrameTimingDetails& details) {
+        base::TimeTicks presentation_timestamp =
+            details.presentation_feedback.timestamp;
         DCHECK(main_successful_callback_presentation_timestamp.is_null());
         DCHECK(!presentation_timestamp.is_null());
         main_successful_callback_fired = true;
@@ -3696,6 +3698,10 @@ class MissingTilesLayer : public LayerImpl {
 };
 
 TEST_F(LayerTreeHostImplTest, CurrentScrollCheckerboardsDueToNoRecording) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kUseRecordedBoundsForTiling);
+
   LayerTreeSettings settings = DefaultSettings();
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
   host_impl_->active_tree()->PushPageScaleFromMainThread(1, 0.25f, 4);
@@ -3750,7 +3756,8 @@ TEST_F(LayerTreeHostImplTest, CurrentScrollCheckerboardsDueToNoRecording) {
   // Now that a scroll update has been processed and the latest
   // CalculateRenderPasses run has computed significant visible checkerboarding,
   // expect this flag to be true.
-  EXPECT_TRUE(host_impl_->CurrentScrollCheckerboardsDueToNoRecording());
+  // TODO(crbug.com/41490692): For now this is disabled.
+  EXPECT_FALSE(host_impl_->CurrentScrollCheckerboardsDueToNoRecording());
 
   GetInputHandler().ScrollEnd();
 
@@ -9148,7 +9155,7 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
     // amount proportional to the angle between it and the input scroll delta.
     gfx::Vector2dF expected_scroll_delta(
         0, std::floor(gesture_scroll_delta.y() *
-                      std::cos(gfx::DegToRad(child_layer_angle))));
+                      std::cos(base::DegToRad(child_layer_angle))));
     std::unique_ptr<CompositorCommitData> commit_data =
         host_impl_->ProcessCompositorDeltas(
             /* main_thread_mutator_host */ nullptr);
@@ -9186,7 +9193,7 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
     // amount proportional to the angle between it and the input scroll delta.
     gfx::Vector2dF expected_scroll_delta(
         0, std::floor(-gesture_scroll_delta.x() *
-                      std::sin(gfx::DegToRad(child_layer_angle))));
+                      std::sin(base::DegToRad(child_layer_angle))));
     std::unique_ptr<CompositorCommitData> commit_data =
         host_impl_->ProcessCompositorDeltas(
             /* main_thread_mutator_host */ nullptr);
@@ -14045,7 +14052,7 @@ TEST_F(LayerTreeHostImplTest, FadedOutPaintedOverlayScrollbarHitTest) {
 
   // Set up the scrollbar and its dimensions.
   LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
-  auto* scrollbar = AddLayer<PaintedOverlayScrollbarLayerImpl>(
+  auto* scrollbar = AddLayer<NinePatchThumbScrollbarLayerImpl>(
       layer_tree_impl, ScrollbarOrientation::kVertical, false);
   SetupScrollbarLayerCommon(scroll_layer, scrollbar);
   scrollbar->SetHitTestOpaqueness(HitTestOpaqueness::kMixed);
@@ -14070,7 +14077,7 @@ TEST_F(LayerTreeHostImplTest, FadedOutPaintedOverlayScrollbarHitTest) {
   TestInputHandlerClient input_handler_client;
   GetInputHandler().BindToClient(&input_handler_client);
 
-  // PaintedOverlayScrollbarLayerImpl(s) don't have a track, so we test thumb
+  // NinePatchThumbScrollbarLayerImpl(s) don't have a track, so we test thumb
   // drags instead. Start with 0.8 opacity. Scrolling is expected to occur in
   // this case.
   auto& scrollbar_effect_node = CreateEffectNode(scrollbar);
@@ -18743,7 +18750,7 @@ TEST_F(LayerTreeHostImplTest, ViewTransitionRequestCausesDamage) {
   // Adding a transition effect should cause us to redraw.
   host_impl_->active_tree()->AddViewTransitionRequest(
       ViewTransitionRequest::CreateAnimateRenderer(
-          /*document_tag=*/0, viz::NavigationID::Null()));
+          /*document_tag=*/0, viz::NavigationId::Null()));
 
   // Ensure there is damage and we requested a redraw.
   host_impl_->OnDraw(draw_transform, draw_viewport, resourceless_software_draw,

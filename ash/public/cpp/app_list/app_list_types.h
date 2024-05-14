@@ -113,6 +113,16 @@ class ASH_PUBLIC_EXPORT IconColor {
   int hue_ = kHueInvalid;
 };
 
+enum class AppCollection {
+  kUnknown = 0,
+  kEssentials,
+  kProductivity,
+  kCreativity,
+  kEntertainment,
+  kOem,
+  kUtilities,
+};
+
 // A structure holding the common information which is sent between ash and,
 // chrome representing an app list item.
 struct ASH_PUBLIC_EXPORT AppListItemMetadata {
@@ -161,6 +171,8 @@ struct ASH_PUBLIC_EXPORT AppListItemMetadata {
 
   // Applicable only for promise apps. Percentage of app installation completed.
   float progress = -1;
+
+  AppCollection collection_id = AppCollection::kUnknown;
 };
 
 // Where an app list item is being shown. Used for context menu.
@@ -294,6 +306,10 @@ enum class AppListToastType {
   // Shows the notification that the apps are temporarily sorted and allows
   // users to undo the sorting actions.
   kReorderUndo,
+
+  // Show the notification that the tutorial view is showing in the bubble
+  // launcher. Allows user to exit the tutorial view into the default apps view.
+  kTutorialViewNudge,
 };
 
 ASH_PUBLIC_EXPORT std::ostream& operator<<(std::ostream& os,
@@ -806,6 +822,10 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
 
   // A search result type used for metrics.
   ash::SearchResultType metrics_type = ash::SEARCH_RESULT_TYPE_BOUNDARY;
+
+  // For file suggestions in continue section, the suggestion type - i.e. the
+  // reason the file was suggested to the user.
+  std::optional<ContinueFileSuggestionType> continue_file_suggestion_type;
 
   // Which UI container(s) the result should be displayed in.
   SearchResultDisplayType display_type = SearchResultDisplayType::kList;

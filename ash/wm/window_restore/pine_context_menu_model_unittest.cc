@@ -11,12 +11,14 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_grid_test_api.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/window_restore/pine_contents_data.h"
 #include "ash/wm/window_restore/pine_contents_view.h"
 #include "ash/wm/window_restore/pine_context_menu_model.h"
 #include "ash/wm/window_restore/pine_controller.h"
+#include "ash/wm/window_restore/pine_test_base.h"
 #include "ash/wm/window_restore/window_restore_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -29,54 +31,16 @@ namespace ash {
 
 namespace {
 
-constexpr char kTestUserEmail[] = "testuser@pine";
-
-constexpr size_t kMenuItemCount = 3u;
+constexpr size_t kMenuItemCount = 5u;
 
 }  // namespace
 
-class PineContextMenuModelTest : public AshTestBase {
+class PineContextMenuModelTest : public PineTestBase {
  public:
-  PineContextMenuModelTest() {
-    switches::SetIgnoreForestSecretKeyForTest(true);
-  }
+  PineContextMenuModelTest() = default;
   PineContextMenuModelTest(const PineContextMenuModelTest&) = delete;
   PineContextMenuModelTest& operator=(const PineContextMenuModelTest) = delete;
-  ~PineContextMenuModelTest() override {
-    switches::SetIgnoreForestSecretKeyForTest(false);
-  }
-
-  // AshTestBase:
-  void SetUp() override {
-    AshTestBase::SetUp();
-
-    TestSessionControllerClient* session_controller =
-        GetSessionControllerClient();
-    session_controller->Reset();
-
-    // Inject our own PrefService as the restore preference is normally
-    // registered in chrome/browser/ash/ and is not registered in ash unit
-    // tests.
-    auto test_prefs = std::make_unique<TestingPrefServiceSimple>();
-    RegisterUserProfilePrefs(test_prefs.get()->registry(), /*country=*/"",
-                             /*for_test=*/true);
-    // Note: normally, this pref is registered with the
-    // `user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF` flag.
-    test_prefs.get()->registry()->RegisterIntegerPref(
-        prefs::kRestoreAppsAndPagesPrefName,
-        static_cast<int>(full_restore::RestoreOption::kAskEveryTime));
-
-    session_controller->AddUserSession(kTestUserEmail,
-                                       user_manager::UserType::kRegular,
-                                       /*provide_pref_service=*/false);
-    session_controller->SetUserPrefService(
-        AccountId::FromUserEmail(kTestUserEmail), std::move(test_prefs));
-
-    // Switch to the test user and simulate login.
-    session_controller->SwitchActiveUser(
-        AccountId::FromUserEmail(kTestUserEmail));
-    session_controller->SetSessionState(session_manager::SessionState::ACTIVE);
-  }
+  ~PineContextMenuModelTest() override = default;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_{features::kForestFeature};
@@ -86,13 +50,15 @@ class PineContextMenuModelTest : public AshTestBase {
 TEST_F(PineContextMenuModelTest, LayoutAndCommands) {
   PineContextMenuModel menu;
   ASSERT_EQ(kMenuItemCount, menu.GetItemCount());
+  EXPECT_EQ(ui::MenuModel::kTitleId, menu.GetCommandIdAt(0));
   EXPECT_EQ(full_restore::RestoreOption::kAskEveryTime,
-            static_cast<full_restore::RestoreOption>(menu.GetCommandIdAt(0)));
-  EXPECT_EQ(full_restore::RestoreOption::kAlways,
             static_cast<full_restore::RestoreOption>(menu.GetCommandIdAt(1)));
-  EXPECT_EQ(full_restore::RestoreOption::kDoNotRestore,
+  EXPECT_EQ(full_restore::RestoreOption::kAlways,
             static_cast<full_restore::RestoreOption>(menu.GetCommandIdAt(2)));
-  for (size_t i = 0; i < kMenuItemCount; ++i) {
+  EXPECT_EQ(full_restore::RestoreOption::kDoNotRestore,
+            static_cast<full_restore::RestoreOption>(menu.GetCommandIdAt(3)));
+  EXPECT_EQ(PineContextMenuModel::kDescriptionId, menu.GetCommandIdAt(4));
+  for (size_t i = 1; i < kMenuItemCount; ++i) {
     EXPECT_TRUE(menu.IsEnabledAt(i));
     EXPECT_TRUE(menu.IsVisibleAt(i));
   }
@@ -109,7 +75,7 @@ TEST_F(PineContextMenuModelTest, ShowContextMenuOnSettingsButtonClicked) {
   // Get the active Pine widget.
   OverviewGrid* grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   ASSERT_TRUE(grid);
-  auto* pine_widget = grid->pine_widget_for_testing();
+  auto* pine_widget = OverviewGridTestApi(grid).pine_widget();
   ASSERT_TRUE(pine_widget);
 
   // The context menu should not be open.
@@ -138,15 +104,15 @@ TEST_F(PineContextMenuModelTest, RestorePreferences) {
   // Activate the other menu options (commands) and ensure the preference is set
   // properly.
   PineContextMenuModel menu;
-  menu.ActivatedAt(1);
+  menu.ActivatedAt(2);
   EXPECT_EQ(full_restore::RestoreOption::kAlways,
             static_cast<full_restore::RestoreOption>(
                 pref_service->GetInteger(prefs::kRestoreAppsAndPagesPrefName)));
-  menu.ActivatedAt(2);
+  menu.ActivatedAt(3);
   EXPECT_EQ(full_restore::RestoreOption::kDoNotRestore,
             static_cast<full_restore::RestoreOption>(
                 pref_service->GetInteger(prefs::kRestoreAppsAndPagesPrefName)));
-  menu.ActivatedAt(0);
+  menu.ActivatedAt(1);
   EXPECT_EQ(full_restore::RestoreOption::kAskEveryTime,
             static_cast<full_restore::RestoreOption>(
                 pref_service->GetInteger(prefs::kRestoreAppsAndPagesPrefName)));

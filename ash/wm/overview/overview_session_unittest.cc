@@ -20,6 +20,7 @@
 #include "ash/constants/app_types.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/frame_throttler/frame_throttling_controller.h"
@@ -39,7 +40,10 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/raster_scale_change_tracker.h"
 #include "ash/test/test_window_builder.h"
+#include "ash/wallpaper/views/wallpaper_view.h"
+#include "ash/wallpaper/views/wallpaper_widget_controller.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desk_action_button.h"
 #include "ash/wm/desks/desk_action_view.h"
 #include "ash/wm/desks/desk_icon_button.h"
 #include "ash/wm/desks/desks_constants.h"
@@ -58,6 +62,7 @@
 #include "ash/wm/overview/overview_focus_cycler.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_grid_event_handler.h"
+#include "ash/wm/overview/overview_grid_test_api.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_item_base.h"
 #include "ash/wm/overview/overview_item_view.h"
@@ -84,8 +89,10 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_constants.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm/wm_metrics.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "base/containers/contains.h"
+#include "base/containers/to_vector.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -93,11 +100,9 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/to_vector.h"
 #include "base/time/time.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -119,7 +124,12 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -220,10 +230,19 @@ void CombineDesksViaMiniView(const DeskMiniView* desk_mini_view,
   event_generator->ClickLeftButton();
 }
 
+std::string OverviewSessionTestParamsToString(
+    const testing::TestParamInfo<std::tuple<bool, bool>>& info) {
+  const auto& [desk_templates, has_snapshot] = info.param;
+  std::string name = desk_templates ? "DesksTemplatesOn" : "DesksTemplatesOff";
+  name += has_snapshot ? "_SnapshotOn" : "_SnapshotOff";
+  return name;
+}
+
 }  // namespace
 
-class OverviewSessionTest : public OverviewTestBase,
-                            public testing::WithParamInterface<bool> {
+class OverviewSessionTest
+    : public OverviewTestBase,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   OverviewSessionTest() = default;
   OverviewSessionTest(const OverviewSessionTest&) = delete;
@@ -236,65 +255,18 @@ class OverviewSessionTest : public OverviewTestBase,
   }
   bool IsUIShown(ExitWarningHandler* ewh) { return !!ewh->widget_; }
 
+  bool DeskTemplatesOn() const { return std::get<0>(GetParam()); }
+
+  bool SnapshotOn() const { return std::get<1>(GetParam()); }
+
   // OverviewTestBase:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatureState(features::kDesksTemplates,
-                                              GetParam());
+                                              DeskTemplatesOn());
 
     OverviewTestBase::SetUp();
-  }
-
-  float ExpectedRasterScale(aura::Window* window,
-                            gfx::Rect start_bounds,
-                            bool window_grows) {
-    auto* item = GetOverviewItemForWindow(window);
-    CHECK(item);
-
-    // If the window is minimized, the widget size is changed. Otherwise, it's
-    // transformed via the transform window. Use the target bounds if it's not
-    // minimized. If it's minimized, it won't have its size animated so it's
-    // safe to look at the item view size.
-    auto end_bounds = window->layer()->GetTargetTransform().MapRect(
-        gfx::RectF(window->GetTargetBounds()));
-
-    if (WindowState::Get(window)->IsMinimized()) {
-      const auto insets = gfx::Insets::TLBR(
-          window->GetProperty(aura::client::kTopViewInset), 0, 0, 0);
-      start_bounds.Inset(insets);
-      const auto size = item->GetLeafItemForWindow(window)
-                            ->overview_item_view()
-                            ->GetPreviewViewSize();
-      end_bounds = gfx::RectF(gfx::Rect(size));
-    }
-
-    auto transform = gfx::TransformBetweenRects(gfx::RectF(start_bounds),
-                                                gfx::RectF(end_bounds));
-    auto scale_2d = transform.To2dScale();
-    auto scale = std::max(scale_2d.x(), scale_2d.y());
-    // Specify 1.0's manually, since they are easy to know, and we want to
-    // minimize the amount of extra computation for raster scale expectations.
-    EXPECT_NE(1.0f, scale);
-    if (window_grows) {
-      EXPECT_GT(scale, 1.0);
-    } else {
-      EXPECT_LT(scale, 1.0);
-    }
-    return scale;
-  }
-
-  void MinimizeAndCheckWindow(aura::Window* window) {
-    WMEvent minimize_event(WM_EVENT_MINIMIZE);
-    WindowState::Get(window)->OnWMEvent(&minimize_event);
-    EXPECT_FALSE(window->IsVisible());
-    EXPECT_EQ(0.f, window->layer()->GetTargetOpacity());
-    ASSERT_TRUE(WindowState::Get(window)->IsMinimized());
-  }
-
-  void MaximizeAndCheckWindow(aura::Window* window) {
-    WMEvent maximize_event(WM_EVENT_MAXIMIZE);
-    WindowState::Get(window)->OnWMEvent(&maximize_event);
-    EXPECT_TRUE(window->IsVisible());
-    ASSERT_TRUE(WindowState::Get(window)->IsMaximized());
+    Shell::Get()->overview_controller()->set_windows_have_snapshot_for_test(
+        SnapshotOn());
   }
 
  private:
@@ -463,6 +435,13 @@ TEST_P(OverviewSessionTest, Basic) {
   // In overview mode the windows should no longer overlap and the overview
   // focus window should be focused.
   ToggleOverview();
+
+  // Warms up the compositor so that UI changes are picked up in time before
+  // throughput tracker is stopped.
+  ui::Compositor* const compositor = window1->GetHost()->compositor();
+  compositor->ScheduleFullRedraw();
+  ASSERT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
+
   WaitForOverviewEnterAnimation();
 
   EXPECT_EQ(GetOverviewSession()->GetOverviewFocusWindow(),
@@ -472,6 +451,12 @@ TEST_P(OverviewSessionTest, Basic) {
 
   // Clicking window 1 should activate it.
   ClickWindow(window1.get());
+
+  // Warms up the compositor so that UI changes are picked up in time before
+  // throughput tracker is stopped.
+  compositor->ScheduleFullRedraw();
+  ASSERT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
+
   WaitForOverviewExitAnimation();
 
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
@@ -950,8 +935,9 @@ TEST_P(OverviewSessionTest, MaximizedWindow) {
 
 // Tests the animation histograms when entering and exiting overview with a
 // maximized and fullscreen window.
-#if defined(NDEBUG) && !defined(ADDRESS_SANITIZER) && \
-    !defined(LEAK_SANITIZER) && !defined(THREAD_SANITIZER)
+#if defined(NDEBUG) && !defined(ADDRESS_SANITIZER) &&         \
+    !defined(LEAK_SANITIZER) && !defined(THREAD_SANITIZER) && \
+    !defined(MEMORY_SANITIZER)
 TEST_P(OverviewSessionTest, MaximizedFullscreenHistograms) {
   std::unique_ptr<aura::Window> maximized_window(CreateTestWindow());
   std::unique_ptr<aura::Window> fullscreen_window(CreateTestWindow());
@@ -3213,7 +3199,7 @@ TEST_P(OverviewSessionTest, AccessibilityFocusAnnotator) {
   // flip for Save & Recall has truly landed, remove the `NoSavedDesks` variant
   // of this test below and remove the Save & Recall feature check at the start
   // of this test.
-  if (GetParam() || !saved_desk_util::ShouldShowSavedDesksButtons()) {
+  if (DeskTemplatesOn() || !saved_desk_util::ShouldShowSavedDesksButtons()) {
     return;
   }
 
@@ -3266,7 +3252,7 @@ TEST_P(OverviewSessionTest, AccessibilityFocusAnnotator) {
 TEST_P(OverviewSessionTest, AccessibilityFocusAnnotatorNoSavedDesks) {
   // If saved desk is enabled, the a11y order changes. This is tested in
   // the saved desk test suite.
-  if (GetParam() || saved_desk_util::ShouldShowSavedDesksButtons()) {
+  if (DeskTemplatesOn() || saved_desk_util::ShouldShowSavedDesksButtons()) {
     return;
   }
 
@@ -3489,7 +3475,7 @@ TEST_P(OverviewSessionTest, FrameThrottlingArc) {
   }
 
   auto windows_to_throttle =
-      base::test::ToVector(windows, &std::unique_ptr<aura::Window>::get);
+      base::ToVector(windows, &std::unique_ptr<aura::Window>::get);
   EXPECT_CALL(observer,
               OnThrottlingStarted(
                   testing::UnorderedElementsAreArray(windows_to_throttle),
@@ -3588,25 +3574,246 @@ TEST_P(OverviewSessionTest, TabbingDuringExitAnimation) {
   SendKey(ui::VKEY_TAB);
 }
 
+TEST_P(OverviewSessionTest,
+       OcclusionUpdatedOnOverviewToggleForVirtualDeskPreviewsSingleWindow) {
+  using OcclusionState = aura::Window::OcclusionState;
+
+  // We don't need to worry about virtual desk previews not showing up if we
+  // have snapshots, so this test tests the case where we don't have snapshots.
+  if (SnapshotOn()) {
+    GTEST_SKIP();
+  }
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // First ensure there are two desks.
+  auto* controller = DesksController::Get();
+  controller->NewDesk(DesksCreationRemovalSource::kKeyboard);
+  ASSERT_EQ(2u, controller->desks().size());
+
+  Desk* desk1 = controller->desks()[0].get();
+  Desk* desk2 = controller->desks()[1].get();
+
+  // Create one window on an inactive desk.
+  std::unique_ptr<aura::Window> window(CreateAppWindow(gfx::Rect(100, 100)));
+  controller->SendToDeskAtIndex(window.get(), 1);
+  EXPECT_TRUE(base::Contains(desk2->windows(), window.get()));
+  EXPECT_TRUE(desk1->is_active());
+  window->TrackOcclusionState();
+
+  // Window should be hidden on an inactive desk.
+  EXPECT_EQ(OcclusionState::HIDDEN, window->GetOcclusionState());
+
+  // Enter overview mode.
+  ToggleOverview();
+
+  // Window should immediately be marked as visible.
+  EXPECT_EQ(OcclusionState::VISIBLE, window->GetOcclusionState());
+  WaitForOverviewEnterAnimation();
+
+  // Window should stay visible.
+  EXPECT_EQ(OcclusionState::VISIBLE, window->GetOcclusionState());
+
+  // Exit overview mode.
+  ToggleOverview();
+
+  // Window should still be visible until the animation finishes.
+  EXPECT_EQ(OcclusionState::VISIBLE, window->GetOcclusionState());
+  WaitForOverviewExitAnimation();
+
+  // Overview mode pauses occlusion on exit for a while, so wait for this state.
+  WaitForOcclusionStateChange(window.get(), OcclusionState::HIDDEN);
+}
+
+TEST_P(OverviewSessionTest,
+       OcclusionUpdatedOnOverviewToggleForVirtualDeskPreviewsTwoWindows) {
+  using OcclusionState = aura::Window::OcclusionState;
+
+  // We don't need to worry about virtual desk previews not showing up if we
+  // have snapshots, so this test tests the case where we don't have snapshots.
+  if (SnapshotOn()) {
+    GTEST_SKIP();
+  }
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // First ensure there are two desks.
+  auto* controller = DesksController::Get();
+  controller->NewDesk(DesksCreationRemovalSource::kKeyboard);
+  ASSERT_EQ(2u, controller->desks().size());
+
+  Desk* desk1 = controller->desks()[0].get();
+  Desk* desk2 = controller->desks()[1].get();
+
+  // Create one window on the active desk.
+  std::unique_ptr<aura::Window> window1(CreateAppWindow(gfx::Rect(100, 100)));
+  controller->SendToDeskAtIndex(window1.get(), 0);
+  EXPECT_TRUE(base::Contains(desk1->windows(), window1.get()));
+  window1->TrackOcclusionState();
+
+  // Create one window on an inactive desk.
+  std::unique_ptr<aura::Window> window2(CreateAppWindow(gfx::Rect(100, 100)));
+  controller->SendToDeskAtIndex(window2.get(), 1);
+  EXPECT_TRUE(base::Contains(desk2->windows(), window2.get()));
+  EXPECT_TRUE(desk1->is_active());
+  window2->TrackOcclusionState();
+
+  // `window2` should be hidden on an inactive desk.
+  EXPECT_EQ(OcclusionState::VISIBLE, window1->GetOcclusionState());
+  EXPECT_EQ(OcclusionState::HIDDEN, window2->GetOcclusionState());
+
+  // Enter overview mode.
+  ToggleOverview();
+
+  // `window2` will not immediately be marked as visible, because the desks
+  // widget is only shown after the animation finishes.
+  EXPECT_EQ(OcclusionState::VISIBLE, window1->GetOcclusionState());
+  WaitForOverviewEnterAnimation();
+
+  // `window2` should stay visible.
+  EXPECT_EQ(OcclusionState::VISIBLE, window1->GetOcclusionState());
+  EXPECT_EQ(OcclusionState::VISIBLE, window2->GetOcclusionState());
+
+  // Exit overview mode.
+  ToggleOverview();
+
+  // `window2` should still be visible until the animation finishes.
+  EXPECT_EQ(OcclusionState::VISIBLE, window1->GetOcclusionState());
+  EXPECT_EQ(OcclusionState::VISIBLE, window2->GetOcclusionState());
+  WaitForOverviewExitAnimation();
+
+  // Overview mode pauses occlusion on exit for a while, so wait for this state.
+  WaitForOcclusionStateChange(window2.get(), OcclusionState::HIDDEN);
+  EXPECT_EQ(OcclusionState::VISIBLE, window1->GetOcclusionState());
+}
+
+// Verify that when an overview item is moved to a different display, it
+// is properly removed from the original grid and displayed in the new one with
+// no crash. See original crash reported at http://b/320479135.
+TEST_P(OverviewSessionTest,
+       NoCrashWhenSettingOverviewItemBoundsOnAnotherDisplay) {
+  UpdateDisplay("800x700,801+0-800x700");
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  EXPECT_EQ(2U, display_manager->GetNumDisplays());
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+
+  std::unique_ptr<aura::Window> window =
+      CreateAppWindow(gfx::Rect(10, 10, 200, 100));
+  // Explicitly call `set_allow_set_bounds_direct()` to true to trigger the same
+  // stack trace.
+  WindowState::Get(window.get())->set_allow_set_bounds_direct(true);
+  aura::Window* old_root_window = window->GetRootWindow();
+
+  ToggleOverview();
+  ASSERT_TRUE(IsInOverviewSession());
+
+  const auto& grids = GetOverviewSession()->grid_list();
+  ASSERT_EQ(2u, grids.size());
+  auto grid0 = grids[0].get();
+  ASSERT_TRUE(grid0);
+  const auto& overview_items = grid0->window_list();
+  ASSERT_EQ(overview_items.size(), 1u);
+  EXPECT_TRUE(IsWindowInItsCorrespondingOverviewGrid(window.get()));
+
+  // Verify that when setting the window bounds to another display, the window
+  // will be moved properly.
+  window->SetBoundsInScreen(
+      gfx::Rect(900, 10, 200, 100),
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          Shell::GetAllRootWindows()[1].get()));
+  EXPECT_NE(window->GetRootWindow(), old_root_window);
+  EXPECT_TRUE(IsWindowInItsCorrespondingOverviewGrid(window.get()));
+}
+
 // If you update the parameterisation of OverviewSessionTest also update the
 // parameterisation of OverviewRasterScaleTest below.
-INSTANTIATE_TEST_SUITE_P(/*no prefix*/,
-                         OverviewSessionTest,
-                         testing::Bool(),
-                         [](const testing::TestParamInfo<bool>& info) {
-                           return info.param ? "DesksTemplatesOn"
-                                             : "DesksTemplatesOff";
-                         });
+INSTANTIATE_TEST_SUITE_P(
+    /*no prefix*/,
+    OverviewSessionTest,
+    testing::Combine(testing::Bool(), testing::Bool()),
+    OverviewSessionTestParamsToString);
 
-using OverviewRasterScaleTest = OverviewSessionTest;
+class OverviewRasterScaleTest : public OverviewSessionTest {
+ public:
+  OverviewRasterScaleTest() = default;
+  OverviewRasterScaleTest(const OverviewRasterScaleTest&) = delete;
+  OverviewRasterScaleTest& operator=(const OverviewRasterScaleTest&) = delete;
+  ~OverviewRasterScaleTest() override = default;
+
+  // OverviewSessionTest:
+  void SetUp() override {
+    OverviewSessionTest::SetUp();
+
+    Shell::Get()
+        ->raster_scale_controller()
+        ->set_raster_scale_slop_proportion_for_testing(0.0f);
+    Shell::Get()
+        ->overview_controller()
+        ->set_occlusion_pause_duration_for_start_for_test(
+            base::Milliseconds(0));
+    Shell::Get()
+        ->overview_controller()
+        ->set_occlusion_pause_duration_for_end_for_test(base::Milliseconds(0));
+  }
+
+  float ExpectedRasterScale(aura::Window* window,
+                            gfx::Rect start_bounds,
+                            bool window_grows) {
+    auto* item = GetOverviewItemForWindow(window);
+    CHECK(item);
+
+    // If the window is minimized, the widget size is changed. Otherwise, it's
+    // transformed via the transform window. Use the target bounds if it's not
+    // minimized. If it's minimized, it won't have its size animated so it's
+    // safe to look at the item view size.
+    auto end_bounds = window->layer()->GetTargetTransform().MapRect(
+        gfx::RectF(window->GetTargetBounds()));
+
+    if (WindowState::Get(window)->IsMinimized()) {
+      const auto insets = gfx::Insets::TLBR(
+          window->GetProperty(aura::client::kTopViewInset), 0, 0, 0);
+      start_bounds.Inset(insets);
+      const auto size = item->GetLeafItemForWindow(window)
+                            ->overview_item_view()
+                            ->GetPreviewViewSize();
+      end_bounds = gfx::RectF(gfx::Rect(size));
+    }
+
+    auto transform = gfx::TransformBetweenRects(gfx::RectF(start_bounds),
+                                                gfx::RectF(end_bounds));
+    auto scale_2d = transform.To2dScale();
+    auto scale = std::max(scale_2d.x(), scale_2d.y());
+    // Specify 1.0's manually, since they are easy to know, and we want to
+    // minimize the amount of extra computation for raster scale expectations.
+    EXPECT_NE(1.0f, scale);
+    if (window_grows) {
+      EXPECT_GT(scale, 1.0);
+    } else {
+      EXPECT_LT(scale, 1.0);
+    }
+    return scale;
+  }
+
+  void MinimizeAndCheckWindow(aura::Window* window) {
+    WMEvent minimize_event(WM_EVENT_MINIMIZE);
+    WindowState::Get(window)->OnWMEvent(&minimize_event);
+    EXPECT_FALSE(window->IsVisible());
+    EXPECT_EQ(0.f, window->layer()->GetTargetOpacity());
+    ASSERT_TRUE(WindowState::Get(window)->IsMinimized());
+  }
+
+  void MaximizeAndCheckWindow(aura::Window* window) {
+    WMEvent maximize_event(WM_EVENT_MAXIMIZE);
+    WindowState::Get(window)->OnWMEvent(&maximize_event);
+    EXPECT_TRUE(window->IsVisible());
+    ASSERT_TRUE(WindowState::Get(window)->IsMaximized());
+  }
+};
 
 // Tests raster scale changes for a single window which grows when entering
 // overview mode.
 TEST_P(OverviewRasterScaleTest,
        RasterScaleAnimatedSingleWindowEnterGrowExitShrink) {
-  Shell::Get()
-      ->raster_scale_controller()
-      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(100, 100)));
   auto tracker = RasterScaleChangeTracker(window.get());
 
@@ -3624,6 +3831,8 @@ TEST_P(OverviewRasterScaleTest,
       ExpectedRasterScale(window.get(), start_bounds, /*window_grows=*/true);
   EXPECT_EQ(std::vector<float>{raster_scale}, tracker.TakeRasterScaleChanges());
   WaitForOverviewEnterAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview enter.
+  base::RunLoop().RunUntilIdle();
 
   // No change after animation.
   EXPECT_EQ(empty, tracker.TakeRasterScaleChanges());
@@ -3634,6 +3843,8 @@ TEST_P(OverviewRasterScaleTest,
   // the shrink animation.
   EXPECT_EQ(empty, tracker.TakeRasterScaleChanges());
   WaitForOverviewExitAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview exit.
+  base::RunLoop().RunUntilIdle();
 
   // After completion, restore to normal raster scale.
   EXPECT_EQ(std::vector<float>{1.0}, tracker.TakeRasterScaleChanges());
@@ -3643,9 +3854,6 @@ TEST_P(OverviewRasterScaleTest,
 // overview mode.
 TEST_P(OverviewRasterScaleTest,
        RasterScaleAnimatedSingleWindowEnterShrinkExitGrow) {
-  Shell::Get()
-      ->raster_scale_controller()
-      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(600, 600)));
   auto tracker = RasterScaleChangeTracker(window.get());
 
@@ -3661,6 +3869,8 @@ TEST_P(OverviewRasterScaleTest,
   // until after the animation finishes.
   EXPECT_EQ(empty, tracker.TakeRasterScaleChanges());
   WaitForOverviewEnterAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview enter.
+  base::RunLoop().RunUntilIdle();
 
   auto raster_scale =
       ExpectedRasterScale(window.get(), start_bounds, /*window_grows=*/false);
@@ -3672,6 +3882,9 @@ TEST_P(OverviewRasterScaleTest,
   // the grow animation.
   EXPECT_EQ(std::vector<float>{1.0}, tracker.TakeRasterScaleChanges());
   WaitForOverviewExitAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview exit.
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(empty, tracker.TakeRasterScaleChanges());
 }
 
@@ -3679,9 +3892,6 @@ TEST_P(OverviewRasterScaleTest,
 // entering overview mode.
 TEST_P(OverviewRasterScaleTest,
        RasterScaleMinimizedSingleWindowEnterGrowExitShrink) {
-  Shell::Get()
-      ->raster_scale_controller()
-      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(100, 100)));
   auto tracker = RasterScaleChangeTracker(window.get());
 
@@ -3701,6 +3911,8 @@ TEST_P(OverviewRasterScaleTest,
       ExpectedRasterScale(window.get(), start_bounds, /*window_grows=*/true);
   EXPECT_EQ(std::vector<float>{raster_scale}, tracker.TakeRasterScaleChanges());
   WaitForOverviewEnterAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview enter.
+  base::RunLoop().RunUntilIdle();
 
   // No change after enter.
   EXPECT_EQ(empty, tracker.TakeRasterScaleChanges());
@@ -3711,6 +3923,8 @@ TEST_P(OverviewRasterScaleTest,
   // everything is hidden.
   EXPECT_EQ(empty, tracker.TakeRasterScaleChanges());
   WaitForOverviewExitAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview exit.
+  base::RunLoop().RunUntilIdle();
 
   // After completion, restore to normal raster scale.
   EXPECT_EQ(std::vector<float>{1.0}, tracker.TakeRasterScaleChanges());
@@ -3720,9 +3934,6 @@ TEST_P(OverviewRasterScaleTest,
 // entering overview mode.
 TEST_P(OverviewRasterScaleTest,
        RasterScaleMinimizedSingleWindowEnterShrinkExitGrow) {
-  Shell::Get()
-      ->raster_scale_controller()
-      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(600, 600)));
   auto tracker = RasterScaleChangeTracker(window.get());
 
@@ -3742,6 +3953,8 @@ TEST_P(OverviewRasterScaleTest,
       ExpectedRasterScale(window.get(), start_bounds, /*window_grows=*/false);
   EXPECT_EQ(std::vector<float>{raster_scale}, tracker.TakeRasterScaleChanges());
   WaitForOverviewEnterAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview enter.
+  base::RunLoop().RunUntilIdle();
 
   // No change after enter.
   EXPECT_EQ(empty, tracker.TakeRasterScaleChanges());
@@ -3752,6 +3965,8 @@ TEST_P(OverviewRasterScaleTest,
   // detail.
   EXPECT_EQ(empty, tracker.TakeRasterScaleChanges());
   WaitForOverviewExitAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview exit.
+  base::RunLoop().RunUntilIdle();
 
   // After completion, restore to normal raster scale.
   EXPECT_EQ(std::vector<float>{1.0}, tracker.TakeRasterScaleChanges());
@@ -3760,9 +3975,6 @@ TEST_P(OverviewRasterScaleTest,
 // Tests raster scale changes for a more complex case with multiple windows in
 // different states.
 TEST_P(OverviewRasterScaleTest, RasterScaleMultipleWindows) {
-  Shell::Get()
-      ->raster_scale_controller()
-      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window_grow_animated(
       CreateTestWindow(gfx::Rect(100, 100)));
   std::unique_ptr<aura::Window> window_shrink_animated(
@@ -3825,6 +4037,8 @@ TEST_P(OverviewRasterScaleTest, RasterScaleMultipleWindows) {
             tracker_shrink_minimized.TakeRasterScaleChanges());
 
   WaitForOverviewEnterAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview enter.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(empty, tracker_grow_animated.TakeRasterScaleChanges());
   EXPECT_EQ(std::vector<float>{raster_scale_shrink_animated},
@@ -3841,6 +4055,8 @@ TEST_P(OverviewRasterScaleTest, RasterScaleMultipleWindows) {
   EXPECT_EQ(empty, tracker_shrink_minimized.TakeRasterScaleChanges());
 
   WaitForOverviewExitAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview exit.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(std::vector<float>{1.0},
             tracker_grow_animated.TakeRasterScaleChanges());
@@ -3854,9 +4070,6 @@ TEST_P(OverviewRasterScaleTest, RasterScaleMultipleWindows) {
 // Tests raster scale changes when a maximized window exists with windows on
 // top.
 TEST_P(OverviewRasterScaleTest, RasterScaleMaximizedWithGrowingRestoredOnTop) {
-  Shell::Get()
-      ->raster_scale_controller()
-      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window_maximized(
       CreateTestWindow(gfx::Rect(100, 100)));
   std::unique_ptr<aura::Window> window_grow(
@@ -3902,6 +4115,8 @@ TEST_P(OverviewRasterScaleTest, RasterScaleMaximizedWithGrowingRestoredOnTop) {
   EXPECT_EQ(empty, tracker_shrink.TakeRasterScaleChanges());
 
   WaitForOverviewEnterAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview enter.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(std::vector<float>{raster_scale_maximized},
             tracker_maximized.TakeRasterScaleChanges());
@@ -3917,6 +4132,8 @@ TEST_P(OverviewRasterScaleTest, RasterScaleMaximizedWithGrowingRestoredOnTop) {
   EXPECT_EQ(std::vector<float>{1.0}, tracker_shrink.TakeRasterScaleChanges());
 
   WaitForOverviewExitAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview exit.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(empty, tracker_maximized.TakeRasterScaleChanges());
   EXPECT_EQ(std::vector<float>{1.0}, tracker_grow.TakeRasterScaleChanges());
@@ -3925,9 +4142,6 @@ TEST_P(OverviewRasterScaleTest, RasterScaleMaximizedWithGrowingRestoredOnTop) {
 
 // Tests raster scale changes when a maximized window exists with windows below.
 TEST_P(OverviewRasterScaleTest, RasterScaleMaximizedWithGrowingRestoredBelow) {
-  Shell::Get()
-      ->raster_scale_controller()
-      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window_grow(
       CreateTestWindow(gfx::Rect(100, 100)));
   std::unique_ptr<aura::Window> window_shrink(
@@ -3975,6 +4189,8 @@ TEST_P(OverviewRasterScaleTest, RasterScaleMaximizedWithGrowingRestoredBelow) {
             tracker_shrink.TakeRasterScaleChanges());
 
   WaitForOverviewEnterAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview enter.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(std::vector<float>{raster_scale_maximized},
             tracker_maximized.TakeRasterScaleChanges());
@@ -3989,6 +4205,8 @@ TEST_P(OverviewRasterScaleTest, RasterScaleMaximizedWithGrowingRestoredBelow) {
   EXPECT_EQ(empty, tracker_shrink.TakeRasterScaleChanges());
 
   WaitForOverviewExitAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview exit.
+  base::RunLoop().RunUntilIdle();
 
   // Windows will be covered and not animate, so they wait until the animation
   // has finished to update.
@@ -4001,9 +4219,6 @@ TEST_P(OverviewRasterScaleTest, RasterScaleMaximizedWithGrowingRestoredBelow) {
 // different states when the overview mode animation is cancelled while entering
 // and exiting.
 TEST_P(OverviewRasterScaleTest, RasterScaleMultipleWindowsCancel) {
-  Shell::Get()
-      ->raster_scale_controller()
-      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window_grow_covered(
       CreateTestWindow(gfx::Rect(100, 100)));
   std::unique_ptr<aura::Window> window_shrink_covered(
@@ -4123,6 +4338,8 @@ TEST_P(OverviewRasterScaleTest, RasterScaleMultipleWindowsCancel) {
   EXPECT_EQ(empty, tracker_shrink_minimized.TakeRasterScaleChanges());
 
   WaitForOverviewExitAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview exit.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(std::vector<float>{1.0},
             tracker_grow_covered.TakeRasterScaleChanges());
@@ -4154,6 +4371,8 @@ TEST_P(OverviewRasterScaleTest, RasterScaleMultipleWindowsCancel) {
             tracker_shrink_minimized.TakeRasterScaleChanges());
 
   WaitForOverviewEnterAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview enter.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(empty, tracker_grow_covered.TakeRasterScaleChanges());
   EXPECT_EQ(empty, tracker_shrink_covered.TakeRasterScaleChanges());
@@ -4222,6 +4441,8 @@ TEST_P(OverviewRasterScaleTest, RasterScaleMultipleWindowsCancel) {
 
   // Finally fully enter overview mode.
   WaitForOverviewEnterAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview enter.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(empty, tracker_grow_covered.TakeRasterScaleChanges());
   EXPECT_EQ(empty, tracker_shrink_covered.TakeRasterScaleChanges());
@@ -4236,9 +4457,6 @@ TEST_P(OverviewRasterScaleTest, RasterScaleMultipleWindowsCancel) {
 
 // Tests raster scale changes for transient windows.
 TEST_P(OverviewRasterScaleTest, RasterScaleTransientChildWindows) {
-  Shell::Get()
-      ->raster_scale_controller()
-      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window_grow_covered(
       CreateTestWindow(gfx::Rect(100, 100)));
   std::unique_ptr<aura::Window> window_shrink_covered(
@@ -4407,6 +4625,8 @@ TEST_P(OverviewRasterScaleTest, RasterScaleTransientChildWindows) {
             tracker_shrink_minimized_transient.TakeRasterScaleChanges());
 
   WaitForOverviewEnterAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview enter.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(empty, tracker_grow_covered.TakeRasterScaleChanges());
   EXPECT_EQ(empty, tracker_shrink_covered.TakeRasterScaleChanges());
@@ -4452,6 +4672,8 @@ TEST_P(OverviewRasterScaleTest, RasterScaleTransientChildWindows) {
   EXPECT_EQ(empty, tracker_shrink_minimized_transient.TakeRasterScaleChanges());
 
   WaitForOverviewExitAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview exit.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(std::vector<float>{1.0},
             tracker_grow_covered.TakeRasterScaleChanges());
@@ -4509,6 +4731,8 @@ TEST_P(OverviewRasterScaleTest, RasterScaleTransientChildWindows) {
             tracker_shrink_minimized_transient.TakeRasterScaleChanges());
 
   WaitForOverviewEnterAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview enter.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(empty, tracker_grow_covered.TakeRasterScaleChanges());
   EXPECT_EQ(empty, tracker_shrink_covered.TakeRasterScaleChanges());
@@ -4628,79 +4852,11 @@ TEST_P(OverviewRasterScaleTest, RasterScaleTransientChildWindows) {
   EXPECT_EQ(empty, tracker_grow_minimized_transient.TakeRasterScaleChanges());
   EXPECT_EQ(empty, tracker_shrink_minimized_transient.TakeRasterScaleChanges());
 
-  // Only expect updates for ones that were not updated when beginning the exit
-  // animation.
-  wm::RemoveTransientChild(window_grow_covered.get(),
-                           window_grow_covered_transient.get());
-  EXPECT_EQ(std::vector<float>{1.0},
-            tracker_grow_covered_transient.TakeRasterScaleChanges());
-
-  wm::RemoveTransientChild(window_shrink_covered.get(),
-                           window_shrink_covered_transient.get());
-  EXPECT_EQ(std::vector<float>{1.0},
-            tracker_shrink_covered_transient.TakeRasterScaleChanges());
-
-  wm::RemoveTransientChild(window_maximized.get(),
-                           window_maximized_transient.get());
-  EXPECT_EQ(empty, tracker_maximized_transient.TakeRasterScaleChanges());
-
-  wm::RemoveTransientChild(window_grow_animated.get(),
-                           window_grow_animated_transient.get());
-  EXPECT_EQ(std::vector<float>{1.0},
-            tracker_grow_animated_transient.TakeRasterScaleChanges());
-
-  wm::RemoveTransientChild(window_shrink_animated.get(),
-                           window_shrink_animated_transient.get());
-  EXPECT_EQ(empty, tracker_shrink_animated_transient.TakeRasterScaleChanges());
-
-  wm::RemoveTransientChild(window_grow_minimized.get(),
-                           window_grow_minimized_transient.get());
-  EXPECT_EQ(std::vector<float>{1.0},
-            tracker_grow_minimized_transient.TakeRasterScaleChanges());
-
-  wm::RemoveTransientChild(window_shrink_minimized.get(),
-                           window_shrink_minimized_transient.get());
-  EXPECT_EQ(std::vector<float>{1.0},
-            tracker_shrink_minimized_transient.TakeRasterScaleChanges());
-
-  // Add back the transient child windows and expect the raster scales to be
-  // set except for the windows that were already set to 1.0.
-  wm::AddTransientChild(window_grow_covered.get(),
-                        window_grow_covered_transient.get());
-  EXPECT_EQ(std::vector<float>{raster_scale_grow_covered},
-            tracker_grow_covered_transient.TakeRasterScaleChanges());
-
-  wm::AddTransientChild(window_shrink_covered.get(),
-                        window_shrink_covered_transient.get());
-  EXPECT_EQ(std::vector<float>{raster_scale_shrink_covered},
-            tracker_shrink_covered_transient.TakeRasterScaleChanges());
-
-  wm::AddTransientChild(window_maximized.get(),
-                        window_maximized_transient.get());
-  EXPECT_EQ(empty, tracker_maximized_transient.TakeRasterScaleChanges());
-
-  wm::AddTransientChild(window_grow_animated.get(),
-                        window_grow_animated_transient.get());
-  EXPECT_EQ(std::vector<float>{raster_scale_grow_animated},
-            tracker_grow_animated_transient.TakeRasterScaleChanges());
-
-  wm::AddTransientChild(window_shrink_animated.get(),
-                        window_shrink_animated_transient.get());
-  EXPECT_EQ(empty, tracker_shrink_animated_transient.TakeRasterScaleChanges());
-
-  wm::AddTransientChild(window_grow_minimized.get(),
-                        window_grow_minimized_transient.get());
-  EXPECT_EQ(std::vector<float>{raster_scale_grow_minimized},
-            tracker_grow_minimized_transient.TakeRasterScaleChanges());
-
-  wm::AddTransientChild(window_shrink_minimized.get(),
-                        window_shrink_minimized_transient.get());
-  EXPECT_EQ(std::vector<float>{raster_scale_shrink_minimized},
-            tracker_shrink_minimized_transient.TakeRasterScaleChanges());
-
   // Expect that transient children added during the overview mode animation
   // have their raster scale set at the end of the animation.
   WaitForOverviewExitAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview exit.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(std::vector<float>{1.0},
             tracker_grow_covered.TakeRasterScaleChanges());
@@ -4725,71 +4881,6 @@ TEST_P(OverviewRasterScaleTest, RasterScaleTransientChildWindows) {
   EXPECT_EQ(empty, tracker_shrink_animated_transient.TakeRasterScaleChanges());
   EXPECT_EQ(std::vector<float>{1.0},
             tracker_grow_minimized_transient.TakeRasterScaleChanges());
-  EXPECT_EQ(std::vector<float>{1.0},
-            tracker_shrink_minimized_transient.TakeRasterScaleChanges());
-
-  // Re-enter overview mode to test removing transient child windows during
-  // enter animation.
-  ToggleOverview();
-
-  EXPECT_EQ(std::vector<float>{raster_scale_grow_covered},
-            tracker_grow_covered.TakeRasterScaleChanges());
-  EXPECT_EQ(std::vector<float>{raster_scale_shrink_covered},
-            tracker_shrink_covered.TakeRasterScaleChanges());
-  EXPECT_EQ(empty, tracker_maximized.TakeRasterScaleChanges());
-  EXPECT_EQ(std::vector<float>{raster_scale_grow_animated},
-            tracker_grow_animated.TakeRasterScaleChanges());
-  EXPECT_EQ(empty, tracker_shrink_animated.TakeRasterScaleChanges());
-  EXPECT_EQ(std::vector<float>{raster_scale_grow_minimized},
-            tracker_grow_minimized.TakeRasterScaleChanges());
-  EXPECT_EQ(std::vector<float>{raster_scale_shrink_minimized},
-            tracker_shrink_minimized.TakeRasterScaleChanges());
-
-  EXPECT_EQ(std::vector<float>{raster_scale_grow_covered},
-            tracker_grow_covered_transient.TakeRasterScaleChanges());
-  EXPECT_EQ(std::vector<float>{raster_scale_shrink_covered},
-            tracker_shrink_covered_transient.TakeRasterScaleChanges());
-  EXPECT_EQ(empty, tracker_maximized_transient.TakeRasterScaleChanges());
-  EXPECT_EQ(std::vector<float>{raster_scale_grow_animated},
-            tracker_grow_animated_transient.TakeRasterScaleChanges());
-  EXPECT_EQ(empty, tracker_shrink_animated_transient.TakeRasterScaleChanges());
-  EXPECT_EQ(std::vector<float>{raster_scale_grow_minimized},
-            tracker_grow_minimized_transient.TakeRasterScaleChanges());
-  EXPECT_EQ(std::vector<float>{raster_scale_shrink_minimized},
-            tracker_shrink_minimized_transient.TakeRasterScaleChanges());
-
-  // Only expect updates for ones that were already updated when starting to
-  // enter.
-  wm::RemoveTransientChild(window_grow_covered.get(),
-                           window_grow_covered_transient.get());
-  EXPECT_EQ(std::vector<float>{1.0},
-            tracker_grow_covered_transient.TakeRasterScaleChanges());
-
-  wm::RemoveTransientChild(window_shrink_covered.get(),
-                           window_shrink_covered_transient.get());
-  EXPECT_EQ(std::vector<float>{1.0},
-            tracker_shrink_covered_transient.TakeRasterScaleChanges());
-
-  wm::RemoveTransientChild(window_maximized.get(),
-                           window_maximized_transient.get());
-  EXPECT_EQ(empty, tracker_maximized_transient.TakeRasterScaleChanges());
-
-  wm::RemoveTransientChild(window_grow_animated.get(),
-                           window_grow_animated_transient.get());
-  EXPECT_EQ(std::vector<float>{1.0},
-            tracker_grow_animated_transient.TakeRasterScaleChanges());
-
-  wm::RemoveTransientChild(window_shrink_animated.get(),
-                           window_shrink_animated_transient.get());
-  EXPECT_EQ(empty, tracker_shrink_animated_transient.TakeRasterScaleChanges());
-
-  wm::RemoveTransientChild(window_grow_minimized.get(),
-                           window_grow_minimized_transient.get());
-  EXPECT_EQ(std::vector<float>{1.0},
-            tracker_grow_minimized_transient.TakeRasterScaleChanges());
-
-  wm::RemoveTransientChild(window_shrink_minimized.get(),
-                           window_shrink_minimized_transient.get());
   EXPECT_EQ(std::vector<float>{1.0},
             tracker_shrink_minimized_transient.TakeRasterScaleChanges());
 }
@@ -4798,9 +4889,6 @@ TEST_P(OverviewRasterScaleTest, RasterScaleTransientChildWindows) {
 // update its raster scale.
 TEST_P(OverviewRasterScaleTest,
        RasterScaleAddRemoveTransientChildWindowsDuringOverviewMode) {
-  Shell::Get()
-      ->raster_scale_controller()
-      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(100, 100)));
 
   std::unique_ptr<aura::Window> window_transient(
@@ -4831,6 +4919,8 @@ TEST_P(OverviewRasterScaleTest,
   EXPECT_EQ(empty, tracker_transient.TakeRasterScaleChanges());
 
   WaitForOverviewEnterAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview enter.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(empty, tracker.TakeRasterScaleChanges());
   EXPECT_EQ(std::vector<float>{raster_scale_transient},
@@ -4847,9 +4937,6 @@ TEST_P(OverviewRasterScaleTest,
 // scales.
 TEST_P(OverviewRasterScaleTest,
        RasterScaleAddWindowsDuringOverviewModeByCombiningAVirtualDesk) {
-  Shell::Get()
-      ->raster_scale_controller()
-      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -4901,6 +4988,8 @@ TEST_P(OverviewRasterScaleTest,
   EXPECT_EQ(empty, tracker3.TakeRasterScaleChanges());
 
   WaitForOverviewEnterAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview enter.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(empty, tracker1.TakeRasterScaleChanges());
   EXPECT_EQ(empty, tracker2.TakeRasterScaleChanges());
@@ -4942,9 +5031,6 @@ TEST_P(OverviewRasterScaleTest,
 // works.
 TEST_P(OverviewRasterScaleTest,
        RasterScaleMoveWindowToVirtualDeskDuringOverviewMode) {
-  Shell::Get()
-      ->raster_scale_controller()
-      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -4984,6 +5070,8 @@ TEST_P(OverviewRasterScaleTest,
             tracker2.TakeRasterScaleChanges());
 
   WaitForOverviewEnterAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview enter.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(empty, tracker1.TakeRasterScaleChanges());
   EXPECT_EQ(empty, tracker2.TakeRasterScaleChanges());
@@ -5002,6 +5090,8 @@ TEST_P(OverviewRasterScaleTest,
   EXPECT_EQ(empty, tracker2.TakeRasterScaleChanges());
 
   WaitForOverviewExitAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview exit.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(std::vector<float>{1.0f}, tracker1.TakeRasterScaleChanges());
   EXPECT_EQ(empty, tracker2.TakeRasterScaleChanges());
@@ -5010,9 +5100,6 @@ TEST_P(OverviewRasterScaleTest,
 // Tests raster scale changes work in tablet mode.
 // TODO(crbug.com/1508655): Fix flaky test.
 TEST_P(OverviewRasterScaleTest, DISABLED_RasterScaleTabletMode) {
-  Shell::Get()
-      ->raster_scale_controller()
-      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   EnterTabletMode();
 
   std::unique_ptr<aura::Window> window_maximized(
@@ -5058,6 +5145,8 @@ TEST_P(OverviewRasterScaleTest, DISABLED_RasterScaleTabletMode) {
   EXPECT_EQ(empty, tracker_minimized.TakeRasterScaleChanges());
 
   WaitForOverviewExitAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview exit.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(empty, tracker_maximized.TakeRasterScaleChanges());
   EXPECT_EQ(std::vector<float>{1.0},
@@ -5071,6 +5160,8 @@ TEST_P(OverviewRasterScaleTest, DISABLED_RasterScaleTabletMode) {
             tracker_minimized.TakeRasterScaleChanges());
 
   WaitForOverviewEnterAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview enter.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(std::vector<float>{raster_scale_maximized},
             tracker_maximized.TakeRasterScaleChanges());
@@ -5112,6 +5203,8 @@ TEST_P(OverviewRasterScaleTest, DISABLED_RasterScaleTabletMode) {
 
   // Finally fully enter overview mode.
   WaitForOverviewEnterAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview enter.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(std::vector<float>{raster_scale_maximized},
             tracker_maximized.TakeRasterScaleChanges());
@@ -5120,9 +5213,6 @@ TEST_P(OverviewRasterScaleTest, DISABLED_RasterScaleTabletMode) {
 
 // Tests raster scale changes work during screen rotations.
 TEST_P(OverviewRasterScaleTest, RasterScaleScreenRotation) {
-  Shell::Get()
-      ->raster_scale_controller()
-      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   UpdateDisplay("1600x1200");
   display::test::ScopedSetInternalDisplayId set_internal(
       Shell::Get()->display_manager(),
@@ -5166,6 +5256,8 @@ TEST_P(OverviewRasterScaleTest, RasterScaleScreenRotation) {
             tracker_minimized.TakeRasterScaleChanges());
 
   WaitForOverviewEnterAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview enter.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(std::vector<float>{raster_scale_maximized},
             tracker_maximized.TakeRasterScaleChanges());
@@ -5185,9 +5277,6 @@ TEST_P(OverviewRasterScaleTest, RasterScaleScreenRotation) {
 
 // Tests raster scale changes work during screen rotations in tablet mode.
 TEST_P(OverviewRasterScaleTest, RasterScaleScreenRotationTabletMode) {
-  Shell::Get()
-      ->raster_scale_controller()
-      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   UpdateDisplay("1600x1200");
   EnterTabletMode();
 
@@ -5233,6 +5322,8 @@ TEST_P(OverviewRasterScaleTest, RasterScaleScreenRotationTabletMode) {
             tracker_minimized.TakeRasterScaleChanges());
 
   WaitForOverviewEnterAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview enter.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(std::vector<float>{raster_scale_maximized},
             tracker_maximized.TakeRasterScaleChanges());
@@ -5252,11 +5343,8 @@ TEST_P(OverviewRasterScaleTest, RasterScaleScreenRotationTabletMode) {
 
 INSTANTIATE_TEST_SUITE_P(/*no prefix*/,
                          OverviewRasterScaleTest,
-                         testing::Bool(),
-                         [](const testing::TestParamInfo<bool>& info) {
-                           return info.param ? "DesksTemplatesOn"
-                                             : "DesksTemplatesOff";
-                         });
+                         testing::Combine(testing::Bool(), testing::Bool()),
+                         OverviewSessionTestParamsToString);
 
 class FloatOverviewSessionTest : public OverviewTestBase {
  public:
@@ -5265,20 +5353,31 @@ class FloatOverviewSessionTest : public OverviewTestBase {
   FloatOverviewSessionTest& operator=(const FloatOverviewSessionTest&) = delete;
   ~FloatOverviewSessionTest() override = default;
 
-  // Checks if the float container is in its regular position above the
-  // always on top container and below the app list container. Returns false if
-  // this is not true on any of the root windows.
+  // Checks if the float container is in its regular position. Returns false if
+  // it is not true on any of the root windows.
   bool IsFloatContainerNormalStacked() const {
     for (aura::Window* root : Shell::GetAllRootWindows()) {
-      if (!window_util::IsStackedBelow(
-              root->GetChildById(kShellWindowId_AlwaysOnTopContainer),
-              root->GetChildById(kShellWindowId_FloatContainer))) {
-        return false;
-      }
-      if (!window_util::IsStackedBelow(
-              root->GetChildById(kShellWindowId_FloatContainer),
-              root->GetChildById(kShellWindowId_AppListContainer))) {
-        return false;
+      if (features::IsForestFeatureEnabled()) {
+        // The float container should be the top-most child of the
+        // `ShutdownScreenshotContainer` when the feature `ForestFeature` is
+        // enabled.
+        auto* shutdown_screenshot_container =
+            root->GetChildById(kShellWindowId_ShutdownScreenshotContainer);
+        EXPECT_EQ(root->GetChildById(kShellWindowId_FloatContainer),
+                  shutdown_screenshot_container->children().back());
+      } else {
+        // The float container should above the always on top container and
+        // below the app list container when the `ForestFeature` is not enabled.
+        if (!window_util::IsStackedBelow(
+                root->GetChildById(kShellWindowId_AlwaysOnTopContainer),
+                root->GetChildById(kShellWindowId_FloatContainer))) {
+          return false;
+        }
+        if (!window_util::IsStackedBelow(
+                root->GetChildById(kShellWindowId_FloatContainer),
+                root->GetChildById(kShellWindowId_AppListContainer))) {
+          return false;
+        }
       }
     }
 
@@ -5323,6 +5422,9 @@ TEST_F(FloatOverviewSessionTest, FloatContainerStacking) {
   ToggleOverview();
   EXPECT_FALSE(IsFloatContainerBelowActiveDesk());
   WaitForOverviewExitAnimation();
+  // Wait for the occlusion tracker to be unpaused after overview exit.
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_TRUE(IsFloatContainerNormalStacked());
 
   // Start overview but exit before the animation is complete. Verify the float
@@ -5672,7 +5774,7 @@ TEST_F(TabletModeOverviewSessionTest, WindowDestroyWhileScrolling) {
   }
 
   // Delete one of the windows.
-  base::Erase(windows, windows[2]);
+  std::erase(windows, windows[2]);
 
   // Continue scrolling and then end the scroll. There should be no crash.
   for (int i = 0; i < 10; ++i) {
@@ -6190,7 +6292,7 @@ TEST_F(OverviewSessionFlingTest, BasicFling) {
   // there may not be enough time passed to decay the velocity so the scroll
   // offset will not change, but the overall change should be substantial.
   constexpr int kMaxLoops = 10;
-  const float initial_scroll_offset = grid->scroll_offset_for_testing();
+  const float initial_scroll_offset = OverviewGridTestApi(grid).scroll_offset();
   float previous_scroll_offset = initial_scroll_offset;
   for (int i = 0;
        i < kMaxLoops && grid_event_handler->IsFlingInProgressForTesting();
@@ -6198,12 +6300,13 @@ TEST_F(OverviewSessionFlingTest, BasicFling) {
     task_environment()->FastForwardBy(base::Milliseconds(50));
     ui::DrawWaiterForTest::WaitForCompositingStarted(compositor);
 
-    float scroll_offset = grid->scroll_offset_for_testing();
+    float scroll_offset = OverviewGridTestApi(grid).scroll_offset();
     EXPECT_LE(scroll_offset, previous_scroll_offset);
     previous_scroll_offset = scroll_offset;
   }
 
-  EXPECT_LT(grid->scroll_offset_for_testing(), initial_scroll_offset - 100.f);
+  EXPECT_LT(OverviewGridTestApi(grid).scroll_offset(),
+            initial_scroll_offset - 100.f);
 }
 
 // Tests that a vertical scroll sequence will close the window it is scrolled
@@ -6698,7 +6801,12 @@ TEST_F(TabletModeOverviewSessionTest, AvoidUaFOnCompleteDrag) {
 // Test the split view and overview functionalities in tablet mode.
 class SplitViewOverviewSessionTest : public OverviewTestBase {
  public:
-  SplitViewOverviewSessionTest() = default;
+  SplitViewOverviewSessionTest() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kFasterSplitScreenSetup,
+                              features::kOsSettingsRevampWayfinding},
+        /*disabled_features=*/{});
+  }
 
   SplitViewOverviewSessionTest(const SplitViewOverviewSessionTest&) = delete;
   SplitViewOverviewSessionTest& operator=(const SplitViewOverviewSessionTest&) =
@@ -6897,6 +7005,8 @@ class SplitViewOverviewSessionTest : public OverviewTestBase {
     void OnWindowDestroying(aura::Window* window) override { window->Hide(); }
     void OnWindowDestroyed(aura::Window* window) override { delete this; }
   };
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Tests that dragging an overview item to the edge of the screen snaps the
@@ -7845,9 +7955,7 @@ TEST_F(SplitViewOverviewSessionTest, SelectUnsnappableWindowInSplitView) {
 
 // Verify that when in overview mode, the selector items unsnappable indicator
 // shows up when expected.
-// TODO(crbug.com/324024580): Re-enable this flaky test.
-TEST_F(SplitViewOverviewSessionTest,
-       DISABLED_OverviewUnsnappableIndicatorVisibility) {
+TEST_F(SplitViewOverviewSessionTest, OverviewUnsnappableIndicatorVisibility) {
   // Create three windows; two normal and one unsnappable, so that when after
   // snapping |window1| to enter split view we can test the state of each normal
   // and unsnappable windows.
@@ -8296,9 +8404,8 @@ TEST_F(SplitViewOverviewSessionTest, SnappedWindowBoundsWithMinimumSizeTest) {
 // Verify that if the split view divider is dragged all the way to the edge, the
 // window being dragged gets returned to the overview list, if overview mode is
 // still active.
-// TODO(crbug.com/324024580): Re-enable this flaky test.
 TEST_F(SplitViewOverviewSessionTest,
-       DISABLED_DividerDraggedToEdgeReturnsWindowToOverviewList) {
+       DividerDraggedToEdgeReturnsWindowToOverviewList) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -8343,10 +8450,9 @@ TEST_F(SplitViewOverviewSessionTest,
 // all the way to the opposite edge, then the split view window is reinserted
 // into the overview grid at the correct position according to MRU order, and
 // the stacking order is also correct.
-// TODO(crbug.com/324024580): Re-enable this flaky test.
 TEST_F(
     SplitViewOverviewSessionTest,
-    DISABLED_SplitViewWindowReinsertedToOverviewAtCorrectPositionWhenSplitViewIsEnded) {
+    SplitViewWindowReinsertedToOverviewAtCorrectPositionWhenSplitViewIsEnded) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -8468,10 +8574,12 @@ TEST_F(SplitViewOverviewSessionTest,
   generator->PressLeftButton();
 
   // Tests that near the right edge, the grid bounds are fixed at 200 and are
-  // partially off screen to the right.
-  generator->MoveMouseTo(580, 0);
-  EXPECT_EQ(200, grid->bounds_for_testing().width());
-  EXPECT_GT(grid->bounds_for_testing().right(), 600);
+  // partially off screen to the right. Drag with at least 2 steps to
+  // simulate a real mouse drag movement.
+  generator->MoveMouseTo(gfx::Point(580, 0), /*count=*/2);
+  gfx::Rect grid_bounds = OverviewGridTestApi(grid).bounds();
+  EXPECT_EQ(200, grid_bounds.width());
+  EXPECT_GT(grid_bounds.right(), 600);
   generator->ReleaseLeftButton();
   SkipDividerSnapAnimation();
 
@@ -8490,11 +8598,13 @@ TEST_F(SplitViewOverviewSessionTest,
   generator->set_current_screen_location(divider_bounds.CenterPoint());
   generator->PressLeftButton();
 
-  generator->MoveMouseTo(20, 0);
+  // Drag with at least 2 steps to simulate a real mouse drag movement.
+  generator->MoveMouseTo(gfx::Point(20, 0), /*count=*/2);
   // Tests that near the left edge, the grid bounds are fixed at 200 and are
   // partially off screen to the left.
-  EXPECT_EQ(200, grid->bounds_for_testing().width());
-  EXPECT_LT(grid->bounds_for_testing().x(), 0);
+  grid_bounds = OverviewGridTestApi(grid).bounds();
+  EXPECT_EQ(200, grid_bounds.width());
+  EXPECT_LT(grid_bounds.x(), 0);
   generator->ReleaseLeftButton();
   SkipDividerSnapAnimation();
 }
@@ -9404,7 +9514,9 @@ TEST_F(SplitViewOverviewSessionInClamshellTest,
           ->GetDividerBoundsInScreen(/*is_dragging=*/false)
           .CenterPoint());
   generator->PressTouch();
-  generator->MoveTouchBy(5, 0);
+  // Drag the divider by an amount big enough to be considered
+  // ET_GESTURE_SCROLL_BEGIN.
+  generator->MoveTouchBy(7, 0);
   EXPECT_TRUE(snapped_window_state_delegate->drag_in_progress());
   EXPECT_NE(nullptr, snapped_window_state->drag_details());
 
@@ -9972,7 +10084,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
           ->GetSnappedWindowBoundsInScreen(SnapPosition::kPrimary,
                                            /*window_for_minimum_size=*/nullptr,
                                            chromeos::kDefaultSnapRatio),
-      grid_on_root2->bounds_for_testing());
+      OverviewGridTestApi(grid_on_root2).bounds());
   event_generator->ReleaseLeftButton();
   EXPECT_EQ(SplitViewController::State::kSecondarySnapped,
             split_view_controller->state());
@@ -10035,11 +10147,11 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(display_with_root1.work_area(),
-            grid_on_root1->bounds_for_testing());
+            OverviewGridTestApi(grid_on_root1).bounds());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
             indicators_on_root2->current_window_dragging_state());
   EXPECT_EQ(display_with_root2.work_area(),
-            grid_on_root2->bounds_for_testing());
+            OverviewGridTestApi(grid_on_root2).bounds());
 
   const gfx::Point root1_left_snap_point(0, 300);
   event_generator->MoveMouseTo(root1_left_snap_point);
@@ -10050,22 +10162,22 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
           ->GetSnappedWindowBoundsInScreen(SnapPosition::kSecondary,
                                            /*window_for_minimum_size=*/nullptr,
                                            chromeos::kDefaultSnapRatio),
-      grid_on_root1->bounds_for_testing());
+      OverviewGridTestApi(grid_on_root1).bounds());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kOtherDisplay,
             indicators_on_root2->current_window_dragging_state());
   EXPECT_EQ(display_with_root2.work_area(),
-            grid_on_root2->bounds_for_testing());
+            OverviewGridTestApi(grid_on_root2).bounds());
 
   const gfx::Point root1_middle_point(400, 300);
   event_generator->MoveMouseTo(root1_middle_point);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(display_with_root1.work_area(),
-            grid_on_root1->bounds_for_testing());
+            OverviewGridTestApi(grid_on_root1).bounds());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kOtherDisplay,
             indicators_on_root2->current_window_dragging_state());
   EXPECT_EQ(display_with_root2.work_area(),
-            grid_on_root2->bounds_for_testing());
+            OverviewGridTestApi(grid_on_root2).bounds());
 
   const gfx::Point root1_right_snap_point(799, 300);
   event_generator->MoveMouseTo(root1_right_snap_point);
@@ -10076,18 +10188,18 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
           ->GetSnappedWindowBoundsInScreen(SnapPosition::kPrimary,
                                            /*window_for_minimum_size=*/nullptr,
                                            chromeos::kDefaultSnapRatio),
-      grid_on_root1->bounds_for_testing());
+      OverviewGridTestApi(grid_on_root1).bounds());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kOtherDisplay,
             indicators_on_root2->current_window_dragging_state());
   EXPECT_EQ(display_with_root2.work_area(),
-            grid_on_root2->bounds_for_testing());
+            OverviewGridTestApi(grid_on_root2).bounds());
 
   const gfx::Point root2_left_snap_point(800, 300);
   event_generator->MoveMouseTo(root2_left_snap_point);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kOtherDisplay,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(display_with_root1.work_area(),
-            grid_on_root1->bounds_for_testing());
+            OverviewGridTestApi(grid_on_root1).bounds());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapPrimary,
             indicators_on_root2->current_window_dragging_state());
   EXPECT_EQ(
@@ -10095,14 +10207,14 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
           ->GetSnappedWindowBoundsInScreen(SnapPosition::kSecondary,
                                            /*window_for_minimum_size=*/nullptr,
                                            chromeos::kDefaultSnapRatio),
-      grid_on_root2->bounds_for_testing());
+      OverviewGridTestApi(grid_on_root2).bounds());
 
   const gfx::Point root2_left_snap_point_away_from_edge(816, 300);
   event_generator->MoveMouseTo(root2_left_snap_point_away_from_edge);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kOtherDisplay,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(display_with_root1.work_area(),
-            grid_on_root1->bounds_for_testing());
+            OverviewGridTestApi(grid_on_root1).bounds());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapPrimary,
             indicators_on_root2->current_window_dragging_state());
   EXPECT_EQ(
@@ -10110,14 +10222,14 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
           ->GetSnappedWindowBoundsInScreen(SnapPosition::kSecondary,
                                            /*window_for_minimum_size=*/nullptr,
                                            chromeos::kDefaultSnapRatio),
-      grid_on_root2->bounds_for_testing());
+      OverviewGridTestApi(grid_on_root2).bounds());
 
   const gfx::Point root2_right_snap_point(1599, 300);
   event_generator->MoveMouseTo(root2_right_snap_point);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kOtherDisplay,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(display_with_root1.work_area(),
-            grid_on_root1->bounds_for_testing());
+            OverviewGridTestApi(grid_on_root1).bounds());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapSecondary,
             indicators_on_root2->current_window_dragging_state());
   EXPECT_EQ(
@@ -10125,28 +10237,28 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
           ->GetSnappedWindowBoundsInScreen(SnapPosition::kPrimary,
                                            /*window_for_minimum_size=*/nullptr,
                                            chromeos::kDefaultSnapRatio),
-      grid_on_root2->bounds_for_testing());
+      OverviewGridTestApi(grid_on_root2).bounds());
 
   const gfx::Point root2_middle_point(1200, 300);
   event_generator->MoveMouseTo(root2_middle_point);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kOtherDisplay,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(display_with_root1.work_area(),
-            grid_on_root1->bounds_for_testing());
+            OverviewGridTestApi(grid_on_root1).bounds());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
             indicators_on_root2->current_window_dragging_state());
   EXPECT_EQ(display_with_root2.work_area(),
-            grid_on_root2->bounds_for_testing());
+            OverviewGridTestApi(grid_on_root2).bounds());
 
   event_generator->ReleaseLeftButton();
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(display_with_root1.work_area(),
-            grid_on_root1->bounds_for_testing());
+            OverviewGridTestApi(grid_on_root1).bounds());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
             indicators_on_root2->current_window_dragging_state());
   EXPECT_EQ(display_with_root2.work_area(),
-            grid_on_root2->bounds_for_testing());
+            OverviewGridTestApi(grid_on_root2).bounds());
 }
 
 // Verify the drop target positions for multi-display dragging.
@@ -10693,6 +10805,263 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   EXPECT_FALSE(InOverviewSession());
   EXPECT_FALSE(SplitViewController::Get(root_windows[0])->InSplitViewMode());
   EXPECT_FALSE(SplitViewController::Get(root_windows[1])->InSplitViewMode());
+}
+
+// -----------------------------------------------------------------------------
+// OakTest:
+
+// Test fixture to validate overview behavior with forest enabled.
+class OakTest : public OverviewTestBase {
+ public:
+  OakTest() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kForestFeature,
+                              features::kFasterSplitScreenSetup,
+                              features::kOsSettingsRevampWayfinding},
+        /*disabled_features=*/{});
+    switches::SetIgnoreForestSecretKeyForTest(true);
+  }
+  OakTest(const OakTest&) = delete;
+  OakTest& operator=(const OakTest&) = delete;
+  ~OakTest() override { switches::SetIgnoreForestSecretKeyForTest(false); }
+
+  void SnapOneTestWindow(aura::Window* window,
+                         WindowStateType state_type,
+                         float snap_ratio,
+                         WindowSnapActionSource snap_action_source) {
+    WindowState* window_state = WindowState::Get(window);
+    const WindowSnapWMEvent snap_event(
+        state_type == WindowStateType::kPrimarySnapped
+            ? WM_EVENT_SNAP_PRIMARY
+            : WM_EVENT_SNAP_SECONDARY,
+        snap_ratio, snap_action_source);
+    window_state->OnWMEvent(&snap_event);
+    EXPECT_EQ(state_type, window_state->GetStateType());
+  }
+
+  gfx::Rect GetDisplayBoundsForRootWindow(aura::Window* root_window) {
+    return display::Screen::GetScreen()
+        ->GetDisplayNearestWindow(root_window)
+        .bounds();
+  }
+
+  ui::Layer* GetWallpaperViewLayer() {
+    return Shell::GetPrimaryRootWindowController()
+        ->wallpaper_widget_controller()
+        ->wallpaper_view()
+        ->layer();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Test that the wallpaper layer's clipping (with rounded corners) is applied
+// correctly during overview sessions, restores fully upon exit, and that the
+// wallpaper underlay layer's visibility refreshes properly upon entering and
+// exiting overview.
+TEST_F(OakTest, WallpaperClipRectAndRoundedCorners) {
+  const gfx::Rect display_bounds(
+      GetDisplayBoundsForRootWindow(Shell::GetPrimaryRootWindow()));
+  auto* wallpaper_widget_controller =
+      Shell::GetPrimaryRootWindowController()->wallpaper_widget_controller();
+  auto* wallpaper_view_layer =
+      wallpaper_widget_controller->wallpaper_view()->layer();
+  auto* wallpaper_underlay_layer =
+      wallpaper_widget_controller->wallpaper_underlay_layer();
+  EXPECT_FALSE(wallpaper_underlay_layer->IsVisible());
+  EXPECT_EQ(display_bounds, wallpaper_view_layer->bounds());
+
+  // Ensure the wallpaper begins with its original dimensions (matching the
+  // active display) and has square corners.
+  EXPECT_EQ(display_bounds, wallpaper_view_layer->bounds());
+  EXPECT_TRUE(wallpaper_view_layer->clip_rect().IsEmpty());
+  EXPECT_TRUE(wallpaper_view_layer->rounded_corner_radii().IsEmpty());
+
+  // Enter overview mode and verify that the wallpaper is clipped with rounded
+  // corners.
+  ToggleOverview();
+  OverviewGrid* overview_grid = GetOverviewSession()->grid_list()[0].get();
+  EXPECT_EQ(overview_grid->GetGridEffectiveBounds(),
+            wallpaper_view_layer->clip_rect());
+  EXPECT_EQ(kWallpaperClipRoundedCornerRadii,
+            wallpaper_view_layer->rounded_corner_radii());
+
+  EXPECT_TRUE(wallpaper_underlay_layer->IsVisible());
+
+  // Exit overview. Check that the wallpaper has been fully restored and the
+  // wallpaper underlay layer becomes invisible.
+  ToggleOverview();
+  EXPECT_EQ(display_bounds, wallpaper_view_layer->bounds());
+  EXPECT_TRUE(wallpaper_view_layer->clip_rect().IsEmpty());
+  EXPECT_TRUE(wallpaper_view_layer->rounded_corner_radii().IsEmpty());
+
+  EXPECT_FALSE(wallpaper_underlay_layer->IsVisible());
+}
+
+// Tests that the wallpaper clipping and wallpaper underlay layer refresh their
+// bounds appropriately on display change.
+TEST_F(OakTest, DisplayChange) {
+  auto* wallpaper_widget_controller =
+      Shell::GetPrimaryRootWindowController()->wallpaper_widget_controller();
+  auto* wallpaper_view_layer =
+      wallpaper_widget_controller->wallpaper_view()->layer();
+  auto* wallpaper_underlay_layer =
+      wallpaper_widget_controller->wallpaper_underlay_layer();
+
+  UpdateDisplay("800x600");
+  const gfx::Rect display_bounds1(
+      GetDisplayBoundsForRootWindow(Shell::GetPrimaryRootWindow()));
+
+  EXPECT_EQ(display_bounds1, wallpaper_underlay_layer->bounds());
+  EXPECT_EQ(display_bounds1, wallpaper_view_layer->bounds());
+
+  UpdateDisplay("1200x900");
+  const gfx::Rect display_bounds2(
+      GetDisplayBoundsForRootWindow(Shell::GetPrimaryRootWindow()));
+  EXPECT_EQ(display_bounds2, wallpaper_underlay_layer->bounds());
+  EXPECT_EQ(display_bounds2, wallpaper_view_layer->bounds());
+
+  ToggleOverview();
+  OverviewGrid* overview_grid = GetOverviewSession()->grid_list()[0].get();
+  EXPECT_EQ(display_bounds2, wallpaper_underlay_layer->bounds());
+  EXPECT_EQ(overview_grid->GetGridEffectiveBounds(),
+            wallpaper_view_layer->clip_rect());
+  EXPECT_TRUE(wallpaper_underlay_layer->IsVisible());
+
+  UpdateDisplay("800x600");
+  const gfx::Rect display_bounds3(
+      GetDisplayBoundsForRootWindow(Shell::GetPrimaryRootWindow()));
+  EXPECT_EQ(display_bounds3, wallpaper_underlay_layer->bounds());
+  EXPECT_EQ(display_bounds3, wallpaper_view_layer->bounds());
+}
+
+// Tests that the wallpaper is clipped in partial overview mode and adjusts
+// correctly when the snapped window is resized.
+TEST_F(OakTest, PartialOverviewVisualsAndResize) {
+  const gfx::Rect display_bounds(
+      GetDisplayBoundsForRootWindow(Shell::GetPrimaryRootWindow()));
+  auto* wallpaper_view_layer = GetWallpaperViewLayer();
+  std::unique_ptr<aura::Window> win1(
+      CreateAppWindow(gfx::Rect(10, 10, 100, 100)));
+  std::unique_ptr<aura::Window> win2(
+      CreateAppWindow(gfx::Rect(500, 10, 200, 200)));
+  // Check the wallpaper's original state before initiating partial overview.
+  EXPECT_EQ(display_bounds, wallpaper_view_layer->bounds());
+  EXPECT_TRUE(wallpaper_view_layer->clip_rect().IsEmpty());
+  EXPECT_TRUE(wallpaper_view_layer->rounded_corner_radii().IsEmpty());
+
+  // Snap one test window to start partial overview.
+  SnapOneTestWindow(win1.get(), chromeos::WindowStateType::kPrimarySnapped,
+                    chromeos::kDefaultSnapRatio,
+                    WindowSnapActionSource::kSnapByWindowLayoutMenu);
+  ASSERT_TRUE(IsInOverviewSession());
+  OverviewGrid* overview_grid = GetOverviewSession()->grid_list()[0].get();
+  // Verify that wallpaper is clipped properly with rounded corners applied in
+  // partial overview.
+  EXPECT_EQ(overview_grid->GetGridEffectiveBounds(),
+            wallpaper_view_layer->clip_rect());
+  EXPECT_EQ(kWallpaperClipRoundedCornerRadii,
+            wallpaper_view_layer->rounded_corner_radii());
+
+  // Verify that the wallpaper's clip rect updates responsively when the snapped
+  // window is dragged in partial overview.
+  auto* event_generator = GetEventGenerator();
+  const gfx::Point drag_starting_point =
+      win1.get()->GetBoundsInScreen().right_center();
+  event_generator->set_current_screen_location(drag_starting_point);
+  event_generator->PressLeftButton();
+  event_generator->MoveMouseBy(-10, 0);
+  ASSERT_TRUE(IsInOverviewSession());
+  EXPECT_TRUE(WindowState::Get(win1.get())->is_dragged());
+  EXPECT_EQ(overview_grid->GetGridEffectiveBounds(),
+            wallpaper_view_layer->clip_rect());
+  EXPECT_EQ(kWallpaperClipRoundedCornerRadii,
+            wallpaper_view_layer->rounded_corner_radii());
+  event_generator->ReleaseLeftButton();
+}
+
+// Tests that the wallpaper view layer clips correctly with animation upon
+// entering Overview mode and that both the wallpaper view layer and underlay
+// layer restore properly upon exiting.
+TEST_F(OakTest, WallpaperClipAnimation) {
+  ui::ScopedAnimationDurationScaleMode animation_scale(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  const gfx::Rect display_bounds(
+      GetDisplayBoundsForRootWindow(Shell::GetPrimaryRootWindow()));
+
+  auto* wallpaper_widget_controller =
+      Shell::GetPrimaryRootWindowController()->wallpaper_widget_controller();
+  auto* wallpaper_view_layer =
+      wallpaper_widget_controller->wallpaper_view()->layer();
+  auto* wallpaper_underlay_layer =
+      wallpaper_widget_controller->wallpaper_underlay_layer();
+  EXPECT_FALSE(wallpaper_underlay_layer->IsVisible());
+
+  ui::LayerAnimator* wallpaper_view_layer_animator =
+      wallpaper_view_layer->GetAnimator();
+  ASSERT_FALSE(wallpaper_view_layer_animator->is_animating());
+  ASSERT_EQ(display_bounds, wallpaper_view_layer->bounds());
+
+  ToggleOverview();
+  OverviewGrid* overview_grid = GetOverviewSession()->grid_list()[0].get();
+  const auto& grid_effective_bounds = overview_grid->GetGridEffectiveBounds();
+  EXPECT_TRUE(wallpaper_view_layer_animator->is_animating());
+  EXPECT_TRUE(
+      wallpaper_view_layer->clip_rect().Contains(grid_effective_bounds));
+  EXPECT_TRUE(display_bounds.Contains(wallpaper_view_layer->clip_rect()));
+
+  ui::LayerAnimationStoppedWaiter layer_animation_stopped_waiter;
+  layer_animation_stopped_waiter.Wait(wallpaper_view_layer);
+  EXPECT_TRUE(wallpaper_underlay_layer->IsVisible());
+  EXPECT_FALSE(wallpaper_view_layer_animator->is_animating());
+  EXPECT_EQ(wallpaper_view_layer->clip_rect(), grid_effective_bounds);
+
+  ToggleOverview();
+  EXPECT_TRUE(wallpaper_view_layer_animator->is_animating());
+  EXPECT_TRUE(
+      wallpaper_view_layer->clip_rect().Contains(grid_effective_bounds));
+  EXPECT_TRUE(display_bounds.Contains(wallpaper_view_layer->clip_rect()));
+
+  layer_animation_stopped_waiter.Wait(wallpaper_view_layer);
+  EXPECT_FALSE(wallpaper_view_layer_animator->is_animating());
+  ASSERT_EQ(display_bounds, wallpaper_view_layer->bounds());
+  EXPECT_FALSE(wallpaper_underlay_layer->IsVisible());
+  EXPECT_TRUE(wallpaper_view_layer->clip_rect().IsEmpty());
+}
+
+TEST_F(OakTest, CenterOverviewItems) {
+  auto window1 = CreateAppWindow(gfx::Rect(0, 0, 100, 50));
+  auto window2 = CreateAppWindow(gfx::Rect(20, 10, 200, 100));
+  auto window3 = CreateAppWindow(gfx::Rect(30, 20, 300, 200));
+  auto window4 = CreateAppWindow(gfx::Rect(40, 30, 400, 300));
+  auto window5 = CreateAppWindow(gfx::Rect(50, 40, 500, 400));
+  auto window6 = CreateAppWindow(gfx::Rect(60, 50, 600, 500));
+  auto window7 = CreateAppWindow(gfx::Rect(70, 60, 700, 600));
+  auto window8 = CreateAppWindow(gfx::Rect(80, 70, 100, 100));
+  auto window9 = CreateAppWindow(gfx::Rect(90, 80, 200, 200));
+  auto window10 = CreateAppWindow(gfx::Rect(100, 90, 300, 300));
+  auto window11 = CreateAppWindow(gfx::Rect(110, 100, 500, 500));
+
+  ToggleOverview();
+  ASSERT_TRUE(IsInOverviewSession());
+
+  const auto* overview_grid =
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  ASSERT_TRUE(overview_grid);
+  const auto& overview_items = overview_grid->window_list();
+  ASSERT_EQ(overview_items.size(), 11u);
+
+  // If the middle of the bounding box which contains the bounds of the overview
+  // items is aligned with the middle of the grid, then the overview items are
+  // centered.
+  gfx::RectF union_bounds;
+  for (const auto& overview_item : overview_items) {
+    union_bounds.Union(overview_item->target_bounds());
+  }
+
+  EXPECT_NEAR(overview_grid->GetGridEffectiveBounds().CenterPoint().x(),
+              union_bounds.CenterPoint().x(), 1);
 }
 
 }  // namespace ash

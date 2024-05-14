@@ -34,13 +34,11 @@
 #include "cc/paint/skottie_wrapper.h"
 #include "cc/paint/transfer_cache_deserialize_helper.h"
 #include "components/crash/core/common/crash_key.h"
-#include "third_party/skia/include/codec/SkPngDecoder.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkScalar.h"
-#include "third_party/skia/include/core/SkSerialProcs.h"
 #include "third_party/skia/include/effects/SkHighContrastFilter.h"
 #include "third_party/skia/include/private/SkGainmapInfo.h"
 #include "third_party/skia/include/private/chromium/SkChromeRemoteGlyphCache.h"
@@ -356,6 +354,9 @@ void PaintOpReader::Read(
       case PaintOp::SerializedImageType::kImageData: {
         SkColorType color_type;
         Read(&color_type);
+        if (!valid_) {
+          return;
+        }
         // Color types requiring alignment larger than kDefaultAlignment is not
         // supported.
         if (static_cast<size_t>(SkColorTypeBytesPerPixel(color_type)) >
@@ -583,17 +584,8 @@ void PaintOpReader::Read(sk_sp<sktext::gpu::Slug>* slug) {
     return;
   }
 
-  SkDeserialProcs procs;
-  procs.fImageProc = [](const void* bytes, size_t length,
-                        void*) -> sk_sp<SkImage> {
-    auto data = SkData::MakeWithoutCopy(bytes, length);
-    auto codec = SkPngDecoder::Decode(data, nullptr);
-    DCHECK(codec);
-    return std::get<0>(codec->getImage());
-  };
   *slug = sktext::gpu::Slug::Deserialize(const_cast<const char*>(memory_),
-                                         data_bytes, options_->strike_client,
-                                         procs);
+                                         data_bytes, options_->strike_client);
   DidRead(data_bytes);
 
   if (!*slug) {
@@ -1572,9 +1564,10 @@ inline void PaintOpReader::DidRead(size_t bytes_read) {
   // All data are aligned with PaintOpWriter::kDefaultAlignment at least.
   size_t aligned_bytes =
       base::bits::AlignUp(bytes_read, PaintOpWriter::kDefaultAlignment);
-  memory_ += aligned_bytes;
   DCHECK_LE(aligned_bytes, remaining_bytes_);
-  remaining_bytes_ -= aligned_bytes;
+  bytes_read = std::min(aligned_bytes, remaining_bytes_);
+  memory_ += bytes_read;
+  remaining_bytes_ -= bytes_read;
 }
 
 }  // namespace cc

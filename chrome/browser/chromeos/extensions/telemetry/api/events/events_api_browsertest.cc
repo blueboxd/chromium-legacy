@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/extensions/telemetry/api/common/base_telemetry_extension_browser_test.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/events/events_api.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/events/fake_events_service.h"
+#include "chrome/browser/ui/browser.h"
 #include "chromeos/crosapi/mojom/probe_service.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_event_service.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_extension_exception.mojom.h"
@@ -48,7 +49,8 @@ namespace {
 namespace crosapi = ::crosapi::mojom;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-const char kKeyboardDiagnosticsUrl[] = "chrome://diagnostics?input";
+const char kKeyboardDiagnosticsUrl[] =
+    "chrome://diagnostics?input&showDefaultKeyboardTester";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace

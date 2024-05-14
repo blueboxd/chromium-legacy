@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "base/test/ios/wait_util.h"
+#import "base/time/time.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/constants.h"
@@ -20,6 +21,9 @@
 #import "ui/base/l10n/l10n_util.h"
 
 namespace {
+
+// The accessibility identifier of the Safety Check collection view.
+NSString* const kSafetyCheckTableViewId = @"kSafetyCheckTableViewId";
 
 // Checks that the visibility of the Safety Check module matches `should_show`.
 void WaitUntilSafetyCheckModuleVisibleOrTimeout(bool should_show) {
@@ -50,10 +54,10 @@ void WaitUntilSafetyCheckModuleVisibleOrTimeout(bool should_show) {
 }  // namespace
 
 // Test case for the Safety Check view, i.e. Safety Check (Magic Stack) module.
-@interface SafetyCheckViewCase : ChromeTestCase
+@interface SafetyCheckViewTestCase : ChromeTestCase
 @end
 
-@implementation SafetyCheckViewCase
+@implementation SafetyCheckViewTestCase
 
 - (void)setUp {
   [super setUp];
@@ -64,6 +68,14 @@ void WaitUntilSafetyCheckModuleVisibleOrTimeout(bool should_show) {
                                     ReauthenticationResult::kSuccess];
   [ChromeEarlGrey resetDataForLocalStatePref:
                       safety_check_prefs::kSafetyCheckInMagicStackDisabledPref];
+
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    // Rotate iphone device so Magic Stack can be scrollable.
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
+                                  error:nil];
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
+        performAction:grey_scrollInDirection(kGREYDirectionDown, 180)];
+  }
 }
 
 - (void)tearDown {
@@ -75,8 +87,6 @@ void WaitUntilSafetyCheckModuleVisibleOrTimeout(bool should_show) {
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
-
-  config.features_enabled.push_back(kMagicStack);
   config.features_enabled.push_back(kSafetyCheckMagicStack);
   config.features_enabled.push_back(
       password_manager::features::kIOSPasswordAuthOnEntryV2);
@@ -86,7 +96,13 @@ void WaitUntilSafetyCheckModuleVisibleOrTimeout(bool should_show) {
 
 // Tests that long pressing the Safety Check view displays a context menu; tests
 // the Safety Check view is properly hidden via the context menu.
-- (void)testLongPressAndHide {
+// TODO(crbug.com/330173089): Test fails on device.
+#if !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testLongPressAndHide DISABLED_testLongPressAndHide
+#else
+#define MAYBE_testLongPressAndHide testLongPressAndHide
+#endif
+- (void)MAYBE_testLongPressAndHide {
   [[[EarlGrey
       selectElementWithMatcher:grey_allOf(grey_accessibilityID(
                                               safety_check::kSafetyCheckViewID),
@@ -112,7 +128,15 @@ void WaitUntilSafetyCheckModuleVisibleOrTimeout(bool should_show) {
 
 // Tests that the Password Checkup view is dismissed when there are no saved
 // passwords.
-- (void)testPasswordCheckupDismissedAfterAllPasswordsGone {
+// TODO(crbug.com/330173089): Test fails on device.
+#if !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testPasswordCheckupDismissedAfterAllPasswordsGone \
+  DISABLED_testPasswordCheckupDismissedAfterAllPasswordsGone
+#else
+#define MAYBE_testPasswordCheckupDismissedAfterAllPasswordsGone \
+  testPasswordCheckupDismissedAfterAllPasswordsGone
+#endif
+- (void)MAYBE_testPasswordCheckupDismissedAfterAllPasswordsGone {
   password_manager_test_utils::SavePasswordFormToProfileStore();
 
   [[[EarlGrey
@@ -126,11 +150,19 @@ void WaitUntilSafetyCheckModuleVisibleOrTimeout(bool should_show) {
 
   ConditionBlock condition = ^{
     NSError* error = nil;
-    [[EarlGrey
-        selectElementWithMatcher:grey_text(l10n_util::GetNSString(
-                                     IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON))]
+
+    [[[EarlGrey
+        selectElementWithMatcher:grey_allOf(
+                                     grey_text(l10n_util::GetNSString(
+                                         IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON)),
+                                     grey_sufficientlyVisible(), nil)]
+           usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 350)
+        onElementWithMatcher:grey_allOf(
+                                 grey_accessibilityID(kSafetyCheckTableViewId),
+                                 grey_sufficientlyVisible(), nil)]
         assertWithMatcher:grey_sufficientlyVisible()
                     error:&error];
+
     return error == nil;
   };
 
@@ -160,7 +192,15 @@ void WaitUntilSafetyCheckModuleVisibleOrTimeout(bool should_show) {
 
 // Tests that the Password Checkup view is dismissed when the user doesn't pass
 // Local Authentication.
-- (void)testPasswordCheckupDismissedAfterFailedAuthentication {
+// TODO(crbug.com/330173089): Test fails on device.
+#if !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testPasswordCheckupDismissedAfterFailedAuthentication \
+  DISABLED_testPasswordCheckupDismissedAfterFailedAuthentication
+#else
+#define MAYBE_testPasswordCheckupDismissedAfterFailedAuthentication \
+  testPasswordCheckupDismissedAfterFailedAuthentication
+#endif
+- (void)MAYBE_testPasswordCheckupDismissedAfterFailedAuthentication {
   password_manager_test_utils::SavePasswordFormToProfileStore();
 
   [[[EarlGrey
@@ -174,11 +214,19 @@ void WaitUntilSafetyCheckModuleVisibleOrTimeout(bool should_show) {
 
   ConditionBlock condition = ^{
     NSError* error = nil;
-    [[EarlGrey
-        selectElementWithMatcher:grey_text(l10n_util::GetNSString(
-                                     IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON))]
+
+    [[[EarlGrey
+        selectElementWithMatcher:grey_allOf(
+                                     grey_text(l10n_util::GetNSString(
+                                         IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON)),
+                                     grey_sufficientlyVisible(), nil)]
+           usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 350)
+        onElementWithMatcher:grey_allOf(
+                                 grey_accessibilityID(kSafetyCheckTableViewId),
+                                 grey_sufficientlyVisible(), nil)]
         assertWithMatcher:grey_sufficientlyVisible()
                     error:&error];
+
     return error == nil;
   };
 

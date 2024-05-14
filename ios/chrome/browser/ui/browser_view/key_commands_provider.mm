@@ -13,7 +13,7 @@
 #import "components/prefs/pref_service.h"
 #import "components/sessions/core/tab_restore_service_helper.h"
 #import "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_model_factory.h"
 #import "ios/chrome/browser/find_in_page/model/abstract_find_tab_helper.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_util.h"
 #import "ios/chrome/browser/policy/model/policy_util.h"
@@ -603,8 +603,8 @@ using base::UserMetricsAction;
   }
 
   const GURL& url = currentWebState->GetLastCommittedURL();
-  bookmarks::BookmarkModel* bookmarkModel =
-      ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
+  bookmarks::CoreBookmarkModel* bookmarkModel =
+      ios::BookmarkModelFactory::GetForBrowserState(
           _browser->GetBrowserState());
   return bookmarkModel->IsBookmarked(url);
 }

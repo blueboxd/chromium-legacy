@@ -187,9 +187,9 @@ class ClientControlledWindowStateDelegate : public ash::WindowStateDelegate {
           case ui::SHOW_STATE_FULLSCREEN:
           case ui::SHOW_STATE_INACTIVE:
           case ui::SHOW_STATE_END:
-            NOTREACHED() << " unknown state :"
-                         << window->GetProperty(
-                                aura::client::kRestoreShowStateKey);
+            DUMP_WILL_BE_NOTREACHED_NORETURN()
+                << " unknown state :"
+                << window->GetProperty(aura::client::kRestoreShowStateKey);
             return false;
         }
         break;
@@ -336,6 +336,47 @@ class ClientControlledShellSurface::ScopedLockedToRoot {
 
  private:
   const raw_ptr<aura::Window> window_;
+};
+
+class ClientControlledShellSurface::ScopedDeferWindowStateUpdate {
+ public:
+  explicit ScopedDeferWindowStateUpdate(
+      ClientControlledShellSurface* shell_surface)
+      : shell_surface_(shell_surface) {
+    CHECK(!shell_surface_->scoped_defer_window_state_update_);
+    shell_surface_->scoped_defer_window_state_update_ = base::WrapUnique(this);
+    // Do not activate if the widget is initially minimized.
+    if (shell_surface->GetWidget()->IsMinimized()) {
+      can_activate_ =
+          shell_surface->GetWidget()->widget_delegate()->CanActivate();
+      shell_surface->GetWidget()->widget_delegate()->SetCanActivate(false);
+    }
+  }
+
+  ScopedDeferWindowStateUpdate(const ScopedDeferWindowStateUpdate&) = delete;
+  ScopedDeferWindowStateUpdate& operator=(const ScopedDeferWindowStateUpdate&) =
+      delete;
+
+  ~ScopedDeferWindowStateUpdate() {
+    auto self = shell_surface_->scoped_defer_window_state_update_.release();
+    DCHECK_EQ(self, this);
+    if (can_activate_.has_value()) {
+      shell_surface_->GetWidget()->widget_delegate()->SetCanActivate(
+          can_activate_.value());
+    }
+    if (next_state_) {
+      shell_surface_->OnWindowStateChangeEvent(*next_state_, *next_state_);
+    }
+  }
+
+  void SetNextState(chromeos::WindowStateType next_state) {
+    next_state_ = next_state;
+  }
+
+ private:
+  raw_ptr<ClientControlledShellSurface> shell_surface_;
+  std::optional<chromeos::WindowStateType> next_state_;
+  std::optional<bool> can_activate_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -485,6 +526,11 @@ void ClientControlledShellSurface::OnWindowStateChangeEvent(
     chromeos::WindowStateType next_state) {
   // Android already knows this state change. Don't send state change to Android
   // that it is about to do anyway.
+  if (scoped_defer_window_state_update_) {
+    scoped_defer_window_state_update_->SetNextState(next_state);
+    return;
+  }
+
   if (delegate_ && pending_window_state_ != next_state)
     delegate_->OnStateChanged(current_state, next_state);
 }
@@ -617,9 +663,6 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
     int64_t display_id,
     const gfx::Rect& window_bounds,
     int bounds_change) {
-  if (ignore_bounds_change_request_)
-    return;
-
   // 1) Do no update the bounds unless we have geometry from client.
   // 2) Do not update the bounds if window is minimized unless it
   // exiting the minimzied state.
@@ -854,6 +897,11 @@ void ClientControlledShellSurface::OnWindowAddedToRootWindow(
 
 ////////////////////////////////////////////////////////////////////////////////
 // views::WidgetDelegate overrides:
+
+void ClientControlledShellSurface::WindowClosing() {
+  wide_frame_.reset();
+  ShellSurfaceBase::WindowClosing();
+}
 
 bool ClientControlledShellSurface::CanMaximize() const {
   return can_maximize_;
@@ -1227,10 +1275,6 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
   }
 
   bool wasPip = window_state->IsPip();
-
-  // As the bounds of the widget is updated later, ensure that no bounds change
-  // happens with this state change (e.g. updatePipBounds can be triggered).
-  base::AutoReset<bool> resetter(&ignore_bounds_change_request_, true);
   if (client_controlled_state_->EnterNextState(window_state,
                                                pending_window_state_)) {
     client_controlled_state_->set_next_bounds_change_animation_type(
@@ -1254,6 +1298,11 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
   }
 
   return true;
+}
+
+void ClientControlledShellSurface::ShowWidget(bool inactive) {
+  ScopedDeferWindowStateUpdate update(this);
+  ShellSurfaceBase::ShowWidget(inactive);
 }
 
 void ClientControlledShellSurface::OnPostWidgetCommit() {

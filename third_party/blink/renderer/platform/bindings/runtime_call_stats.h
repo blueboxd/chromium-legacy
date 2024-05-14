@@ -33,6 +33,11 @@ namespace base {
 class TickClock;
 }
 
+namespace WTF {
+class String;
+class StringBuilder;
+}  // namespace WTF
+
 namespace blink {
 
 class TracedValue;
@@ -109,11 +114,11 @@ class PLATFORM_EXPORT RuntimeCallTimer {
 
   bool IsRunning() { return start_ticks_ != base::TimeTicks(); }
 
-  RuntimeCallCounter* counter_;
-  RuntimeCallTimer* parent_;
+  raw_ptr<RuntimeCallCounter> counter_;
+  raw_ptr<RuntimeCallTimer> parent_;
   base::TimeTicks start_ticks_;
   base::TimeDelta elapsed_time_;
-  const base::TickClock* clock_ = nullptr;
+  raw_ptr<const base::TickClock> clock_ = nullptr;
 };
 
 // Macros that take RuntimeCallStats as a parameter; used only in
@@ -321,7 +326,7 @@ class PLATFORM_EXPORT RuntimeCallStats {
     return &(counters_[static_cast<uint16_t>(id)]);
   }
 
-  String ToString() const;
+  WTF::String ToString() const;
 
   static void SetRuntimeCallStatsForTesting();
   static void ClearRuntimeCallStatsForTesting();
@@ -335,19 +340,19 @@ class PLATFORM_EXPORT RuntimeCallStats {
   const base::TickClock* clock() const { return clock_; }
 
  private:
-  raw_ptr<RuntimeCallTimer, ExperimentalRenderer> current_timer_ = nullptr;
+  raw_ptr<RuntimeCallTimer> current_timer_ = nullptr;
   bool in_use_ = false;
   RuntimeCallCounter counters_[static_cast<int>(CounterId::kNumberOfCounters)];
   static const int number_of_counters_ =
       static_cast<int>(CounterId::kNumberOfCounters);
-  raw_ptr<const base::TickClock, ExperimentalRenderer> clock_ = nullptr;
+  raw_ptr<const base::TickClock> clock_ = nullptr;
 
 #if BUILDFLAG(RCS_COUNT_EVERYTHING)
   typedef HashMap<const char*, std::unique_ptr<RuntimeCallCounter>> CounterMap;
   CounterMap counter_map_;
 
   Vector<RuntimeCallCounter*> CounterMapToSortedArray() const;
-  void AddCounterMapStatsToBuilder(StringBuilder&) const;
+  void AddCounterMapStatsToBuilder(WTF::StringBuilder&) const;
 #endif
 };
 

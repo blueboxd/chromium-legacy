@@ -8,6 +8,7 @@
 #include <set>
 #include <utility>
 
+#include "aida_client.h"
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
@@ -25,10 +26,13 @@
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/devtools/devtools_eye_dropper.h"
+#include "chrome/browser/devtools/process_sharing_infobar_delegate.h"
 #include "chrome/browser/file_select_helper.h"
+#include "chrome/browser/infobars/confirm_infobar_creator.h"
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -43,12 +47,14 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/infobars/content/content_infobar_manager.h"
+#include "components/infobars/core/infobar.h"
 #include "components/javascript_dialogs/app_modal_dialog_manager.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/search_engines/util.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -153,7 +159,7 @@ class DevToolsToolboxDelegate
       public content::WebContentsDelegate {
  public:
   DevToolsToolboxDelegate(WebContents* toolbox_contents,
-                          base::WeakPtr<WebContents> inspected_web_contents);
+                          WebContents* inspected_web_contents);
 
   DevToolsToolboxDelegate(const DevToolsToolboxDelegate&) = delete;
   DevToolsToolboxDelegate& operator=(const DevToolsToolboxDelegate&) = delete;
@@ -176,11 +182,11 @@ class DevToolsToolboxDelegate
   base::WeakPtr<content::WebContents> inspected_web_contents_;
 };
 
-DevToolsToolboxDelegate::DevToolsToolboxDelegate(
-    WebContents* toolbox_contents,
-    base::WeakPtr<WebContents> web_contents)
+DevToolsToolboxDelegate::DevToolsToolboxDelegate(WebContents* toolbox_contents,
+                                                 WebContents* web_contents)
     : WebContentsObserver(toolbox_contents),
-      inspected_web_contents_(web_contents) {}
+      inspected_web_contents_(web_contents ? web_contents->GetWeakPtr()
+                                           : nullptr) {}
 
 DevToolsToolboxDelegate::~DevToolsToolboxDelegate() {
 }
@@ -454,6 +460,10 @@ DevToolsWindow::~DevToolsWindow() {
   UpdateBrowserWindow();
   UpdateBrowserToolbar();
 
+  if (sharing_infobar_) {
+    sharing_infobar_->RemoveSelf();
+  }
+
   capture_handle_.RunAndReset();
   owned_toolbox_web_contents_.reset();
 
@@ -512,6 +522,9 @@ void DevToolsWindow::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterDictionaryPref(
       prefs::kDevToolsSyncedPreferencesSyncDisabled);
+  registry->RegisterIntegerPref(
+      prefs::kDevToolsGenAiSettings,
+      static_cast<int>(DevToolsGenAiEnterprisePolicyValue::kAllow));
 }
 
 // static
@@ -847,9 +860,22 @@ void DevToolsWindow::ToggleDevToolsWindow(
   if (!window->is_docked_ || do_open) {
     window->ScheduleShow(action);
   } else {
-    window->Close(toggled_by == DevToolsOpenedByAction::kMainMenuOrMainShortcut
-                      ? DevToolsClosedByAction::kMainMenuOrMainShortcut
-                      : DevToolsClosedByAction::kToggleShortcut);
+    DevToolsClosedByAction closed_by;
+    switch (toggled_by) {
+      case DevToolsOpenedByAction::kMainMenuOrMainShortcut:
+        closed_by = DevToolsClosedByAction::kMainMenuOrMainShortcut;
+        break;
+      case DevToolsOpenedByAction::kToggleShortcut:
+        closed_by = DevToolsClosedByAction::kToggleShortcut;
+        break;
+      case DevToolsOpenedByAction::kPinnedToolbarButton:
+        closed_by = DevToolsClosedByAction::kPinnedToolbarButton;
+        break;
+      default:
+        closed_by = DevToolsClosedByAction::kUnknown;
+        break;
+    }
+    window->Close(closed_by);
   }
 }
 
@@ -924,7 +950,7 @@ void DevToolsWindow::UpdateInspectedWebContents(
   DCHECK(!reattach_complete_callback_);
   reattach_complete_callback_ = std::move(callback);
 
-  inspected_web_contents_ = new_web_contents->GetWeakPtr();
+  Observe(new_web_contents);
   bindings_->AttachTo(
       content::DevToolsAgentHost::GetOrCreateFor(new_web_contents));
   bindings_->CallClientMethod(
@@ -988,6 +1014,8 @@ void DevToolsWindow::Show(const DevToolsToggleAction& action) {
     PrefsTabHelper::CreateForWebContents(main_web_contents_);
     OverrideAndSyncDevToolsRendererPrefs();
 
+    MaybeShowSharedProcessInfobar();
+
     DoAction(action);
     return;
   }
@@ -1005,6 +1033,7 @@ void DevToolsWindow::Show(const DevToolsToggleAction& action) {
     return;
 
   RegisterModalDialogManager(browser_);
+  MaybeShowSharedProcessInfobar();
 
   if (should_show_window) {
     browser_->window()->Show();
@@ -1127,8 +1156,9 @@ DevToolsWindow::DevToolsWindow(FrontendType frontend_type,
   g_devtools_window_instances.Get().push_back(this);
 
   // There is no inspected_web_contents in case of various workers.
-  if (inspected_web_contents)
-    inspected_web_contents_ = inspected_web_contents->GetWeakPtr();
+  if (inspected_web_contents) {
+    Observe(inspected_web_contents);
+  }
 
   // Initialize docked page to be of the right size.
   if (can_dock_ && inspected_web_contents) {
@@ -1249,15 +1279,13 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
       if (base::FeatureList::IsEnabled(::features::kDevToolsVeLogging)) {
         url += "&veLogging=true";
       }
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-      if (base::FeatureList::IsEnabled(::features::kDevToolsConsoleInsights)) {
+      if (AidaClient::CanUseAida(profile)) {
         url += "&enableAida=true&aidaModelId=" +
                features::kDevToolsConsoleInsightsModelId.Get() +
                "&aidaTemperature=" +
                base::NumberToString(
                    features::kDevToolsConsoleInsightsTemperature.Get());
       }
-#endif
       break;
     case kFrontendWorker:
       url = kWorkerFrontendURL + remote_base;
@@ -1368,8 +1396,8 @@ void DevToolsWindow::AddNewContents(
     owned_toolbox_web_contents_ = std::move(new_contents);
     owned_toolbox_web_contents_->SetOwnerLocationForDebug(FROM_HERE);
 
-    toolbox_web_contents_->SetDelegate(new DevToolsToolboxDelegate(
-        toolbox_web_contents_, inspected_web_contents_));
+    toolbox_web_contents_->SetDelegate(
+        new DevToolsToolboxDelegate(toolbox_web_contents_, web_contents()));
     if (main_web_contents_->GetRenderWidgetHostView() &&
         toolbox_web_contents_->GetRenderWidgetHostView()) {
       gfx::Size size =
@@ -1531,6 +1559,11 @@ void DevToolsWindow::Close(DevToolsClosedByAction closed_by) {
   life_stage_ = kClosing;
   main_web_contents_->DispatchBeforeUnload(false /* auto_cancel */);
   closed_by_ = closed_by;
+
+  if (sharing_infobar_) {
+    sharing_infobar_->RemoveSelf();
+    checked_sharing_process_id_ = content::ChildProcessHost::kInvalidUniqueID;
+  }
 }
 
 void DevToolsWindow::Inspect(scoped_refptr<content::DevToolsAgentHost> host) {
@@ -1628,8 +1661,8 @@ int DevToolsWindow::GetClosedByForLogging() {
   return static_cast<int>(closed_by_);
 }
 
-void DevToolsWindow::OpenInNewTab(const std::string& url) {
-  GURL fixed_url(url);
+void DevToolsWindow::OpenInNewTab(const GURL& url) {
+  GURL fixed_url = url;
   WebContents* inspected_web_contents = GetInspectedWebContents();
   int child_id = content::ChildProcessHost::kInvalidUniqueID;
   if (inspected_web_contents) {
@@ -1643,7 +1676,6 @@ void DevToolsWindow::OpenInNewTab(const std::string& url) {
   if (!content::ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
           child_id, fixed_url))
     fixed_url = GURL(url::kAboutBlankURL);
-
   content::OpenURLParams params(fixed_url, content::Referrer(),
                                 WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                 ui::PAGE_TRANSITION_LINK, false);
@@ -1652,6 +1684,19 @@ void DevToolsWindow::OpenInNewTab(const std::string& url) {
     chrome::AddSelectedTabWithURL(displayer.browser(), fixed_url,
                                   ui::PAGE_TRANSITION_LINK);
   }
+}
+
+void DevToolsWindow::OpenInNewTab(const std::string& url) {
+  OpenInNewTab(GURL(url));
+}
+
+void DevToolsWindow::OpenSearchResultsInNewTab(const std::string& query) {
+  TemplateURLService* url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  DCHECK(url_service);
+  GURL url =
+      GetDefaultSearchURLForSearchTerms(url_service, base::UTF8ToUTF16(query));
+  OpenInNewTab(url);
 }
 
 void DevToolsWindow::SetWhitelistedShortcuts(
@@ -1861,7 +1906,7 @@ void DevToolsWindow::UpdateBrowserWindow() {
 }
 
 WebContents* DevToolsWindow::GetInspectedWebContents() {
-  return inspected_web_contents_.get();
+  return web_contents();
 }
 
 void DevToolsWindow::LoadCompleted() {
@@ -1916,4 +1961,60 @@ void DevToolsWindow::OverrideAndSyncDevToolsRendererPrefs() {
   main_web_contents_->GetMutableRendererPrefs()->accept_languages =
       g_browser_process->GetApplicationLocale();
   main_web_contents_->SyncRendererPrefs();
+}
+
+void DevToolsWindow::MaybeShowSharedProcessInfobar() {
+  WebContents* inspected_web_contents = GetInspectedWebContents();
+  if (!inspected_web_contents) {
+    return;
+  }
+
+  // Only show the infobar only if the RenderProcessHost id changes.
+  int rph_id =
+      inspected_web_contents->GetPrimaryMainFrame()->GetProcess()->GetID();
+  if (checked_sharing_process_id_ == rph_id) {
+    return;
+  }
+  checked_sharing_process_id_ = rph_id;
+
+  if (!base::FeatureList::IsEnabled(
+          ::features::kDevToolsSharedProcessInfobar)) {
+    return;
+  }
+
+  size_t primary_main_frame_count = 0;
+  inspected_web_contents->GetPrimaryMainFrame()
+      ->GetProcess()
+      ->ForEachRenderFrameHost(
+          [&primary_main_frame_count](
+              content::RenderFrameHost* render_frame_host) {
+            if (render_frame_host->IsInPrimaryMainFrame()) {
+              ++primary_main_frame_count;
+            }
+          });
+
+  // Dismiss old infobar.
+  if (sharing_infobar_) {
+    sharing_infobar_->RemoveSelf();
+  }
+
+  if (primary_main_frame_count > 1) {
+    auto* info_bar_manager = GetInfoBarManager();
+    sharing_infobar_ = info_bar_manager->AddInfoBar(
+        CreateConfirmInfoBar(std::make_unique<ProcessSharingInfobarDelegate>(
+            inspected_web_contents)));
+    info_bar_manager->AddObserver(this);
+  }
+}
+
+void DevToolsWindow::OnInfoBarRemoved(infobars::InfoBar* infobar,
+                                      bool animate) {
+  if (sharing_infobar_ == infobar) {
+    infobar->owner()->RemoveObserver(this);
+    sharing_infobar_ = nullptr;
+  }
+}
+
+void DevToolsWindow::PrimaryPageChanged(content::Page& page) {
+  MaybeShowSharedProcessInfobar();
 }

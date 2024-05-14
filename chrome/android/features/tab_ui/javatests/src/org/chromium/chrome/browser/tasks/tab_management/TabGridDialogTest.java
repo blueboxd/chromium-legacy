@@ -23,22 +23,25 @@ import static androidx.test.espresso.matcher.ViewMatchers.isClickable;
 import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withParent;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.DEFER_TAB_SWITCHER_LAYOUT_CREATION;
-import static org.chromium.chrome.browser.flags.ChromeFeatureList.START_SURFACE_REFACTOR;
+import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GROUP_PARITY_ANDROID;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.addBlankTabs;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstCardFromTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstTabInDialog;
@@ -51,6 +54,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.f
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.getSwipeToDismissAction;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.getTabSwitcherAncestorId;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.leaveTabSwitcher;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.mergeAllIncognitoTabsToAGroup;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.mergeAllNormalTabsToAGroup;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.prepareTabsWithThumbnail;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyAllTabsHaveThumbnail;
@@ -150,7 +154,7 @@ import java.util.concurrent.ExecutionException;
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Restriction({Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-@EnableFeatures({DEFER_TAB_SWITCHER_LAYOUT_CREATION, START_SURFACE_REFACTOR})
+@EnableFeatures({DEFER_TAB_SWITCHER_LAYOUT_CREATION, TAB_GROUP_PARITY_ANDROID})
 @Batch(Batch.PER_CLASS)
 public class TabGridDialogTest {
     private static final String CUSTOMIZED_TITLE1 = "wfh tips";
@@ -175,7 +179,7 @@ public class TabGridDialogTest {
             ChromeRenderTestRule.Builder.withPublicCorpus()
                     .setBugComponent(
                             ChromeRenderTestRule.Component.UI_BROWSER_MOBILE_TAB_SWITCHER_GRID)
-                    .setRevision(3)
+                    .setRevision(4)
                     .build();
 
     // Must force tab re-creation to ensure tab group names make sense.
@@ -446,6 +450,99 @@ public class TabGridDialogTest {
             clickScrimToExitDialog(cta);
             verifyTabStripFaviconCount(cta, 2);
         }
+    }
+
+    @Test
+    @MediumTest
+    public void testColorPickerOnIconClick() throws ExecutionException {
+        final ChromeTabbedActivity cta = sActivityTestRule.getActivity();
+
+        String blueColor =
+                cta.getString(R.string.accessibility_tab_group_color_picker_color_item_blue);
+        String notSelectedStringBlue =
+                cta.getString(
+                        R.string
+                                .accessibility_tab_group_color_picker_color_item_not_selected_description,
+                        blueColor);
+
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+
+        // Create a tab group.
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Open dialog and click the color icon to show the color picker.
+        openDialogFromTabSwitcherAndVerify(cta, 2, null);
+        onView(withId(R.id.tab_group_color_icon)).perform(click());
+        onView(
+                        allOf(
+                                instanceOf(TabGroupColorPickerContainer.class),
+                                withId(R.id.color_picker_container)))
+                .check(matches(isDisplayed()));
+
+        // Select a non default color and assert the pop up closes.
+        onView(withContentDescription(notSelectedStringBlue)).perform(click());
+        onView(
+                        allOf(
+                                instanceOf(TabGroupColorPickerContainer.class),
+                                withId(R.id.color_picker_container)))
+                .check(doesNotExist());
+
+        // Back press should close the color picker pop up.
+        onView(withId(R.id.tab_group_color_icon)).perform(click());
+        Espresso.pressBack();
+        onView(
+                        allOf(
+                                instanceOf(TabGroupColorPickerContainer.class),
+                                withId(R.id.color_picker_container)))
+                .check(doesNotExist());
+
+        // Clicking ScrimView should close the color picker pop up.
+        onView(withId(R.id.tab_group_color_icon)).perform(click());
+        clickScrimToExitDialog(cta);
+    }
+
+    @Test
+    @MediumTest
+    public void testColorPickerOnToolbarMenuItemClick() throws ExecutionException {
+        final ChromeTabbedActivity cta = sActivityTestRule.getActivity();
+
+        String blueColor =
+                cta.getString(R.string.accessibility_tab_group_color_picker_color_item_blue);
+        String notSelectedStringBlue =
+                cta.getString(
+                        R.string
+                                .accessibility_tab_group_color_picker_color_item_not_selected_description,
+                        blueColor);
+
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+
+        // Create a tab group.
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Open dialog and click the toolbar menu item to show the color picker.
+        openDialogFromTabSwitcherAndVerify(cta, 2, null);
+        openDialogToolbarMenuAndVerify(cta);
+        selectTabGridDialogToolbarMenuItem(cta, "Edit group color");
+        onView(
+                        allOf(
+                                instanceOf(TabGroupColorPickerContainer.class),
+                                withId(R.id.color_picker_container)))
+                .check(matches(isDisplayed()));
+
+        // Select a non default color and assert the pop up closes.
+        onView(withContentDescription(notSelectedStringBlue)).perform(click());
+        onView(
+                        allOf(
+                                instanceOf(TabGroupColorPickerContainer.class),
+                                withId(R.id.color_picker_container)))
+                .check(doesNotExist());
+        clickScrimToExitDialog(cta);
     }
 
     @Test
@@ -886,6 +983,8 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
+    // Swipe action Fails with espresso 3.2. b/329707221
+    @DisableIf.Build(sdk_is_greater_than = android.os.Build.VERSION_CODES.S)
     public void testSwipeToDismiss_Dialog() {
         ChromeTabbedActivity cta = sActivityTestRule.getActivity();
         // Create 2 tabs and merge them into one group.
@@ -1271,6 +1370,95 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
+    @Feature({"RenderTest"})
+    @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
+    public void testRenderDialog_TabGroupColorChange(boolean nightModeEnabled) throws Exception {
+        final ChromeTabbedActivity cta = sActivityTestRule.getActivity();
+
+        String blueColor =
+                cta.getString(R.string.accessibility_tab_group_color_picker_color_item_blue);
+        String notSelectedStringBlue =
+                cta.getString(
+                        R.string
+                                .accessibility_tab_group_color_picker_color_item_not_selected_description,
+                        blueColor);
+
+        String redColor =
+                cta.getString(R.string.accessibility_tab_group_color_picker_color_item_red);
+        String notSelectedStringRed =
+                cta.getString(
+                        R.string
+                                .accessibility_tab_group_color_picker_color_item_not_selected_description,
+                        redColor);
+
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+
+        // Create a tab group.
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Open dialog and click the color icon to show the color picker.
+        openDialogFromTabSwitcherAndVerify(cta, 2, null);
+        onView(withId(R.id.tab_group_color_icon)).perform(click());
+        onView(
+                        allOf(
+                                instanceOf(TabGroupColorPickerContainer.class),
+                                withId(R.id.color_picker_container)))
+                .check(matches(isDisplayed()));
+
+        // Select a non default color and assert the pop up closes.
+        onView(withContentDescription(notSelectedStringBlue)).perform(click());
+        onView(
+                        allOf(
+                                instanceOf(TabGroupColorPickerContainer.class),
+                                withId(R.id.color_picker_container)))
+                .check(doesNotExist());
+
+        clickScrimToExitDialog(cta);
+        waitForDialogHidingAnimationInTabSwitcher(cta);
+        View dialogView = cta.findViewById(R.id.dialog_parent_view);
+        View tabSwitcherView = cta.findViewById(R.id.tab_list_recycler_view);
+        waitForThumbnailsToFetch((RecyclerView) tabSwitcherView);
+        // Take the GTS first snapshot, which should have the second color (blue) shown.
+        mRenderTestRule.render(tabSwitcherView, "GTS_tab_group_color_initial");
+
+        openDialogFromTabSwitcherAndVerify(cta, 2, null);
+        waitForThumbnailsToFetch(
+                (RecyclerView) dialogView.findViewById(R.id.tab_list_recycler_view));
+        // Take the dialog first snapshot, which should have the second color (blue) shown.
+        mRenderTestRule.render(dialogView, "dialog_tab_group_color_initial");
+
+        onView(withId(R.id.tab_group_color_icon)).perform(click());
+        onView(
+                        allOf(
+                                instanceOf(TabGroupColorPickerContainer.class),
+                                withId(R.id.color_picker_container)))
+                .check(matches(isDisplayed()));
+
+        // Select a non default color and assert the pop up closes.
+        onView(withContentDescription(notSelectedStringRed)).perform(click());
+        onView(
+                        allOf(
+                                instanceOf(TabGroupColorPickerContainer.class),
+                                withId(R.id.color_picker_container)))
+                .check(doesNotExist());
+
+        waitForThumbnailsToFetch(
+                (RecyclerView) dialogView.findViewById(R.id.tab_list_recycler_view));
+        // Take the dialog second snapshot, which should have the third color (red) shown.
+        mRenderTestRule.render(dialogView, "dialog_tab_group_color_changed");
+
+        clickScrimToExitDialog(cta);
+        waitForDialogHidingAnimationInTabSwitcher(cta);
+        waitForThumbnailsToFetch((RecyclerView) tabSwitcherView);
+        // Take the GTS second snapshot, which should have the third color (red) shown.
+        mRenderTestRule.render(tabSwitcherView, "GTS_tab_group_color_changed");
+    }
+
+    @Test
+    @MediumTest
     @EnableFeatures({ChromeFeatureList.INSTANT_START})
     @DisabledTest(message = "crbug.com/1522195")
     public void testSetup_WithInstantStart() {
@@ -1588,6 +1776,54 @@ public class TabGridDialogTest {
         }
     }
 
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.DATA_SHARING_ANDROID})
+    public void testDataSharing() {
+        final ChromeTabbedActivity cta = sActivityTestRule.getActivity();
+        // Create a tab group.
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Open dialog from tab switcher and verify dialog is showing data sharing bar.
+        openDialogFromTabSwitcherAndVerifyDataSharing(cta, true);
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.DATA_SHARING_ANDROID})
+    public void testDataSharingIncognitoMode() {
+        final ChromeTabbedActivity cta = sActivityTestRule.getActivity();
+        // Create an incognito tab group.
+        createTabs(cta, true, 2);
+        enterTabSwitcher(cta);
+        mergeAllIncognitoTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Open dialog from tab switcher and verify dialog is not showing data sharing bar.
+        openDialogFromTabSwitcherAndVerifyDataSharing(cta, false);
+    }
+
+    private void openDialogFromTabSwitcherAndVerifyDataSharing(
+            ChromeTabbedActivity cta, boolean shouldShow) {
+        clickFirstCardFromTabSwitcher(cta);
+        onView(
+                        allOf(
+                                withId(R.id.dialog_data_sharing_group_bar),
+                                withParent(withId(R.id.dialog_container_view))))
+                .check(
+                        (v, noMatchException) -> {
+                            if (!shouldShow) {
+                                assertNotNull(noMatchException);
+                            } else {
+                                assertNotNull(v);
+                                assertEquals(v.getVisibility(), View.VISIBLE);
+                            }
+                        });
+    }
+
     private void openDialogFromTabSwitcherAndVerify(
             ChromeTabbedActivity cta, int tabCount, String customizedTitle) {
         clickFirstCardFromTabSwitcher(cta);
@@ -1688,6 +1924,9 @@ public class TabGridDialogTest {
         // Verify the menu button exists.
         onView(withId(R.id.toolbar_menu_button)).check(matches(isDisplayed()));
 
+        // Verify the color icon exists.
+        onView(withId(R.id.tab_group_color_icon)).check(matches(isDisplayed()));
+
         // Try to grab focus of the title text field by clicking on it.
         onView(allOf(withParent(withId(R.id.main_content)), withId(R.id.title))).perform(click());
         onView(allOf(withParent(withId(R.id.main_content)), withId(R.id.title)))
@@ -1721,7 +1960,12 @@ public class TabGridDialogTest {
                                     1,
                                     cta.getString(
                                             R.string.tab_grid_dialog_toolbar_edit_group_name));
-                            assertEquals(2, listView.getCount());
+                            verifyTabGridDialogToolbarMenuItem(
+                                    listView,
+                                    2,
+                                    cta.getString(
+                                            R.string.tab_grid_dialog_toolbar_edit_group_color));
+                            assertEquals(3, listView.getCount());
                         });
     }
 

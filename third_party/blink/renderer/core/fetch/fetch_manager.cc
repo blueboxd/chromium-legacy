@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <optional>
+#include <string_view>
 #include <utility>
 
 #include "base/check.h"
@@ -161,19 +162,6 @@ constexpr net::NetworkTrafficAnnotationTag kFetchLaterTrafficAnnotationTag =
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 //
-// Must remain in sync with FetchKeepAliveRendererMetricType in
-// tools/metrics/histograms/enums.xml.
-enum class FetchKeepAliveRendererMetricType {
-  kLoadingSuceeded = 0,
-  kLoadingFailed = 1,
-  kAbortedByUser = 2,
-  kContextDestroyed = 3,
-  kMaxValue = kContextDestroyed,
-};
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-//
 // Must remain in sync with FetchLaterRendererMetricType in
 // tools/metrics/histograms/enums.xml.
 enum class FetchLaterRendererMetricType {
@@ -301,6 +289,7 @@ class FetchLoaderBase : public GarbageCollectedMixin {
     visitor->Trace(script_state_);
     visitor->Trace(signal_);
     visitor->Trace(abort_handle_);
+    visitor->Trace(world_);
   }
 
  protected:
@@ -332,14 +321,14 @@ class FetchLoaderBase : public GarbageCollectedMixin {
     return fetch_request_data_.Get();
   }
   ScriptState* GetScriptState() { return script_state_.Get(); }
-  scoped_refptr<const DOMWrapperWorld> World() { return world_; }
+  const DOMWrapperWorld* World() { return world_; }
   AbortSignal* Signal() { return signal_.Get(); }
 
  private:
   Member<ExecutionContext> execution_context_;
   Member<FetchRequestData> fetch_request_data_;
   Member<ScriptState> script_state_;
-  scoped_refptr<const DOMWrapperWorld> world_;
+  Member<const DOMWrapperWorld> world_;
   Member<AbortSignal> signal_;
   Member<AbortSignal::AlgorithmHandle> abort_handle_;
 };
@@ -351,7 +340,7 @@ class FetchManager::Loader final
  public:
   Loader(ExecutionContext*,
          FetchManager*,
-         ScriptPromiseResolver*,
+         ScriptPromiseResolverTyped<Response>*,
          FetchRequestData*,
          ScriptState*,
          AbortSignal*);
@@ -360,8 +349,7 @@ class FetchManager::Loader final
 
   void Dispose() override;
 
-  void LogIfKeepalive(const FetchKeepAliveRendererMetricType& type) const;
-  void LogIfKeepalive(const std::string& metric) const;
+  void LogIfKeepalive(std::string_view request_state) const;
 
   // ThreadableLoaderClient implementation.
   bool WillFollowRedirect(uint64_t,
@@ -499,7 +487,7 @@ class FetchManager::Loader final
       std::optional<base::UnguessableToken> issue_id = std::nullopt) override;
 
   Member<FetchManager> fetch_manager_;
-  Member<ScriptPromiseResolver> resolver_;
+  Member<ScriptPromiseResolverTyped<Response>> resolver_;
   Member<ThreadableLoader> threadable_loader_;
   Member<PlaceHolderBytesConsumer> place_holder_body_;
   bool failed_;
@@ -515,7 +503,7 @@ class FetchManager::Loader final
 
 FetchManager::Loader::Loader(ExecutionContext* execution_context,
                              FetchManager* fetch_manager,
-                             ScriptPromiseResolver* resolver,
+                             ScriptPromiseResolverTyped<Response>* resolver,
                              FetchRequestData* fetch_request_data,
                              ScriptState* script_state,
                              AbortSignal* signal)
@@ -541,7 +529,6 @@ FetchManager::Loader::Loader(ExecutionContext* execution_context,
       V8ThrowException::CreateTypeError(isolate, "Failed to fetch");
   exception_.Reset(isolate, exception);
   SendHistogram(FetchManagerLoaderCheckPoint::kConstructor);
-  LogIfKeepalive("FetchKeepAlive.Renderer.Total");
 }
 
 FetchManager::Loader::~Loader() {
@@ -610,7 +597,7 @@ void FetchManager::Loader::DidReceiveResponse(
   auto response_type = response.GetType();
   DCHECK_NE(response_type, FetchResponseType::kError);
 
-  LogIfKeepalive(FetchKeepAliveRendererMetricType::kLoadingSuceeded);
+  LogIfKeepalive("Succeeded");
 
   ScriptState::Scope scope(GetScriptState());
 
@@ -720,7 +707,8 @@ void FetchManager::Loader::DidStartLoadingResponseBody(BytesConsumer& body) {
     // https://fetch.spec.whatwg.org/#fetching
     // The user agent should ignore the suspension request if the ongoing
     // fetch is updating the response in the HTTP cache for the request.
-    place_holder_body_->Update(BufferingBytesConsumer::CreateWithDelay(&body));
+    place_holder_body_->Update(BufferingBytesConsumer::CreateWithDelay(
+        &body, GetExecutionContext()->GetTaskRunner(TaskType::kNetworking)));
   } else {
     place_holder_body_->Update(&body);
   }
@@ -794,7 +782,7 @@ void FetchLoaderBase::Start(ExceptionState& exception_state) {
 
   // "- should fetching |request| be blocked as content security returns
   //    blocked"
-  if (!execution_context_->GetContentSecurityPolicyForWorld(world_.get())
+  if (!execution_context_->GetContentSecurityPolicyForWorld(world_.Get())
            ->AllowConnectToSource(fetch_request_data_->Url(),
                                   fetch_request_data_->Url(),
                                   RedirectStatus::kNoRedirect)) {
@@ -887,10 +875,15 @@ void FetchManager::Loader::Dispose() {
   SetExecutionContext(nullptr);
 }
 
+// https://fetch.spec.whatwg.org/#abort-fetch
+// To abort a fetch() call with a promise, request, responseObject, and an
+// error:
 void FetchManager::Loader::Abort() {
+  ScriptState* script_state = GetScriptState();
+  v8::Local<v8::Value> error = Signal()->reason(script_state).V8Value();
+  // 1. Reject promise with error.
   if (resolver_) {
-    resolver_->Reject(
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
+    resolver_->Reject(error);
     resolver_.Clear();
   }
   if (threadable_loader_) {
@@ -899,7 +892,16 @@ void FetchManager::Loader::Abort() {
     threadable_loader_ = nullptr;
     loader->Cancel();
   }
-  LogIfKeepalive(FetchKeepAliveRendererMetricType::kAbortedByUser);
+
+  // 2. If request’s body is non-null and is readable, then cancel request’s
+  //  body with error.
+  if (FetchRequestData* fetch_request_data = GetFetchRequestData()) {
+    if (BodyStreamBuffer* body_stream_buffer = fetch_request_data->Buffer()) {
+      if (ReadableStream* readable_stream = body_stream_buffer->Stream()) {
+        ReadableStream::Cancel(script_state, readable_stream, error);
+      }
+    }
+  }
   NotifyFinished();
 }
 
@@ -1093,6 +1095,11 @@ void FetchLoaderBase::PerformHTTPFetch(ExceptionState& exception_state) {
             std::move(factory_clone));
   }
 
+  if (fetch_request_data_->Keepalive() && !request.IsFetchLaterAPI()) {
+    FetchUtils::LogFetchKeepAliveRequestMetric(
+        request.GetRequestContext(),
+        FetchUtils::FetchKeepAliveRequestState::kTotal);
+  }
   CreateLoader(std::move(request), resource_loader_options);
 }
 
@@ -1190,14 +1197,13 @@ void FetchManager::Loader::Failed(
       }
       resolver_->Reject(value);
       SendHistogram(FetchManagerLoaderCheckPoint::kFailed);
-      LogIfKeepalive(FetchKeepAliveRendererMetricType::kLoadingFailed);
+      LogIfKeepalive("Failed");
     }
   }
   NotifyFinished();
 }
 
 void FetchManager::Loader::NotifyFinished() {
-  LogIfKeepalive("FetchKeepAlive.Renderer.Total.Finished");
   if (fetch_manager_)
     fetch_manager_->OnLoaderFinished(this);
 }
@@ -1207,34 +1213,18 @@ bool FetchManager::Loader::IsDeferred() const {
 }
 
 void FetchManager::Loader::LogIfKeepalive(
-    const FetchKeepAliveRendererMetricType& type) const {
+    std::string_view request_state) const {
+  return;
+  CHECK(request_state == "Succeeded" || request_state == "Failed");
   if (!GetFetchRequestData()->Keepalive()) {
     return;
   }
-
-  base::UmaHistogramEnumeration("FetchKeepAlive.Renderer.Metrics", type);
 
   base::TimeDelta duration = base::TimeTicks::Now() - request_started_time_;
-  if (type == FetchKeepAliveRendererMetricType::kLoadingSuceeded ||
-      type == FetchKeepAliveRendererMetricType::kLoadingFailed) {
-    base::UmaHistogramMediumTimes("FetchKeepAlive.Renderer.Duration", duration);
-
-    if (type == FetchKeepAliveRendererMetricType::kLoadingSuceeded) {
-      base::UmaHistogramMediumTimes(
-          "FetchKeepAlive.Renderer.Duration.Succeeded", duration);
-    } else {
-      base::UmaHistogramMediumTimes("FetchKeepAlive.Renderer.Duration.Failed",
-                                    duration);
-    }
-  }
-}
-
-void FetchManager::Loader::LogIfKeepalive(const std::string& metric) const {
-  if (!GetFetchRequestData()->Keepalive()) {
-    return;
-  }
-
-  base::UmaHistogramBoolean(metric, true);
+  base::UmaHistogramMediumTimes("FetchKeepAlive.RequestDuration", duration);
+  base::UmaHistogramMediumTimes(
+      base::StrCat({"FetchKeepAlive.RequestDuration.", request_state}),
+      duration);
 }
 
 // A subtype of FetchLoader to handle the deferred fetching algorithm [1].
@@ -1482,21 +1472,22 @@ class FetchLaterManager::DeferredLoader final
 FetchManager::FetchManager(ExecutionContext* execution_context)
     : ExecutionContextLifecycleObserver(execution_context) {}
 
-ScriptPromise FetchManager::Fetch(ScriptState* script_state,
-                                  FetchRequestData* request,
-                                  AbortSignal* signal,
-                                  ExceptionState& exception_state) {
+ScriptPromiseTyped<Response> FetchManager::Fetch(
+    ScriptState* script_state,
+    FetchRequestData* request,
+    AbortSignal* signal,
+    ExceptionState& exception_state) {
   DCHECK(signal);
   if (signal->aborted()) {
     exception_state.RethrowV8Exception(signal->reason(script_state).V8Value());
-    return ScriptPromise();
+    return ScriptPromiseTyped<Response>();
   }
 
   request->SetDestination(network::mojom::RequestDestination::kEmpty);
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<Response>>(
       script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  auto promise = resolver->Promise();
 
   auto* loader = MakeGarbageCollected<Loader>(
       GetExecutionContext(), this, resolver, request, script_state, signal);
@@ -1632,7 +1623,6 @@ void FetchManager::ContextDestroyed() {
   // controller is non-null and record’s done flag is unset and keepalive is
   // false, terminate the fetch record’s controller .
   for (auto& loader : loaders_) {
-    loader->LogIfKeepalive(FetchKeepAliveRendererMetricType::kContextDestroyed);
     loader->Dispose();
   }
 }

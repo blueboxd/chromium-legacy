@@ -79,6 +79,10 @@ enum class TrustedVaultUserActionTriggerForUMA;
                                                                    AccessPoint)
                                                                   accessPoint;
 
+// Shows the Safe Browsing settings page presenting from `baseViewController`.
+- (void)showSafeBrowsingSettingsFromViewController:
+    (UIViewController*)baseViewController;
+
 // Starts a voice search on the current BVC.
 - (void)startVoiceSearch;
 
@@ -146,6 +150,10 @@ enum class TrustedVaultUserActionTriggerForUMA;
 
 // Open a new window with `userActivity`
 - (void)openNewWindowWithActivity:(NSUserActivity*)userActivity;
+
+// Closes all open modals and ensures that a non-incognito tab is open. If
+// incognito is forced, then it will ensure an incognito tab is open.
+- (void)prepareToPresentModal:(ProceduralBlock)completion;
 
 @end
 

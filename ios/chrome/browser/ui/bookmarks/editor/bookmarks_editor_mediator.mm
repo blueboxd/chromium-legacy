@@ -7,15 +7,15 @@
 #import "base/check.h"
 #import "base/memory/raw_ptr.h"
 #import "base/strings/sys_string_conversions.h"
-#import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/browser/bookmark_node.h"
 #import "components/bookmarks/common/bookmark_features.h"
-#import "components/bookmarks/common/storage_type.h"
 #import "components/prefs/pref_service.h"
 #import "components/sync/base/features.h"
 #import "components/url_formatter/url_fixer.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_model_bridge_observer.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_model_type.h"
 #import "ios/chrome/browser/bookmarks/model/bookmarks_utils.h"
+#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/signin/model/authentication_service.h"
@@ -45,8 +45,8 @@
 @end
 
 @implementation BookmarksEditorMediator {
-  base::WeakPtr<bookmarks::BookmarkModel> _localOrSyncableBookmarkModel;
-  base::WeakPtr<bookmarks::BookmarkModel> _accountBookmarkModel;
+  base::WeakPtr<LegacyBookmarkModel> _localOrSyncableBookmarkModel;
+  base::WeakPtr<LegacyBookmarkModel> _accountBookmarkModel;
   raw_ptr<syncer::SyncService> _syncService;
   // The folder in which was the bookmark when the view was opened.
   const bookmarks::BookmarkNode* _originalFolder;
@@ -56,9 +56,9 @@
 
 - (instancetype)
     initWithLocalOrSyncableBookmarkModel:
-        (bookmarks::BookmarkModel*)localOrSyncableBookmarkModel
+        (LegacyBookmarkModel*)localOrSyncableBookmarkModel
                     accountBookmarkModel:
-                        (bookmarks::BookmarkModel*)accountBookmarkModel
+                        (LegacyBookmarkModel*)accountBookmarkModel
                             bookmarkNode:
                                 (const bookmarks::BookmarkNode*)bookmarkNode
                                    prefs:(PrefService*)prefs
@@ -110,7 +110,7 @@
   DCHECK(!_localOrSyncableBookmarkModel);
 }
 
-#pragma mark - Public
+#pragma mark - Public
 
 - (void)manuallyChangeFolder:(const bookmarks::BookmarkNode*)folder {
   _manuallyChangedTheFolder = YES;
@@ -119,7 +119,7 @@
 
 #pragma mark - Properties
 
-- (bookmarks::BookmarkModel*)bookmarkModel {
+- (LegacyBookmarkModel*)bookmarkModel {
   return bookmark_utils_ios::GetBookmarkModelForNode(
       self.bookmark, _localOrSyncableBookmarkModel.get(),
       _accountBookmarkModel.get());
@@ -128,13 +128,13 @@
 #pragma mark - BookmarksEditorMutator
 
 - (BOOL)shouldDisplayCloudSlashSymbolForParentFolder {
-  bookmarks::StorageType type = bookmark_utils_ios::GetBookmarkModelType(
+  BookmarkModelType type = bookmark_utils_ios::GetBookmarkModelType(
       self.folder, _localOrSyncableBookmarkModel.get(),
       _accountBookmarkModel.get());
   switch (type) {
-    case bookmarks::StorageType::kLocalOrSyncable:
+    case BookmarkModelType::kLocalOrSyncable:
       return bookmark_utils_ios::IsAccountBookmarkStorageOptedIn(_syncService);
-    case bookmarks::StorageType::kAccount:
+    case BookmarkModelType::kAccount:
       return NO;
   }
   NOTREACHED_NORETURN();
@@ -152,11 +152,11 @@
 
 #pragma mark - BookmarkModelBridgeObserver
 
-- (void)bookmarkModelLoaded:(bookmarks::BookmarkModel*)model {
+- (void)bookmarkModelLoaded:(LegacyBookmarkModel*)model {
   // No-op.
 }
 
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+- (void)bookmarkModel:(LegacyBookmarkModel*)model
         didChangeNode:(const bookmarks::BookmarkNode*)bookmarkNode {
   if (self.ignoresBookmarkModelChanges) {
     return;
@@ -171,7 +171,7 @@
             folderName:bookmark_utils_ios::TitleForBookmarkNode(_folder)];
 }
 
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+- (void)bookmarkModel:(LegacyBookmarkModel*)model
     didChangeChildrenForNode:(const bookmarks::BookmarkNode*)bookmarkNode {
   if (self.ignoresBookmarkModelChanges) {
     return;
@@ -180,7 +180,7 @@
   [self updateFolderLabel];
 }
 
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+- (void)bookmarkModel:(LegacyBookmarkModel*)model
           didMoveNode:(const bookmarks::BookmarkNode*)bookmarkNode
            fromParent:(const bookmarks::BookmarkNode*)oldParent
              toParent:(const bookmarks::BookmarkNode*)newParent {
@@ -193,7 +193,7 @@
   }
 }
 
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+- (void)bookmarkModel:(LegacyBookmarkModel*)model
        willDeleteNode:(const bookmarks::BookmarkNode*)node
            fromFolder:(const bookmarks::BookmarkNode*)folder {
   if (self.ignoresBookmarkModelChanges) {
@@ -207,18 +207,25 @@
     // This might happen when the user has changed `self.folder` but has not
     // commited the changes by pressing done. And in the background the chosen
     // folder was deleted.
-    [self changeFolder:model->mobile_node()];
+    if (model->mobile_node()) {
+      [self changeFolder:model->mobile_node()];
+    } else {
+      // When dealing with account bookmarks, it is possible that permanent
+      // folders no longer exist (e.g. the user signed out). In this case, fall
+      // back to the local model.
+      [self changeFolder:_localOrSyncableBookmarkModel->mobile_node()];
+    }
   }
 }
 
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+- (void)bookmarkModel:(LegacyBookmarkModel*)model
         didDeleteNode:(const bookmarks::BookmarkNode*)node
            fromFolder:(const bookmarks::BookmarkNode*)folder {
   // No-op. Bookmark deletion handled in
   // `bookmarkModel:willDeleteNode:fromFolder:`
 }
 
-- (void)bookmarkModelRemovedAllNodes:(bookmarks::BookmarkModel*)model {
+- (void)bookmarkModelRemovedAllNodes:(LegacyBookmarkModel*)model {
   CHECK(!self.ignoresBookmarkModelChanges);
   _bookmark = nullptr;
   self.folder = nullptr;
@@ -251,7 +258,7 @@
                               _accountBookmarkModel.get(), _browserState,
                               _authenticationService, _syncService)];
   if (_manuallyChangedTheFolder) {
-    bookmarks::StorageType type = bookmark_utils_ios::GetBookmarkModelType(
+    BookmarkModelType type = bookmark_utils_ios::GetBookmarkModelType(
         _folder, _localOrSyncableBookmarkModel.get(),
         _accountBookmarkModel.get());
     SetLastUsedBookmarkFolder(_prefs, _folder, type);
@@ -268,6 +275,8 @@
 
   // When launched from the star button, removing the current bookmark
   // removes all matching nodes.
+  // TODO(crbug.com/326185948): Clarify if this should remove the matching
+  // bookmarks from both BookmarkModel instances.
   std::vector<raw_ptr<const bookmarks::BookmarkNode, VectorExperimental>>
       nodesVector = [self bookmarkModel]->GetNodesByURL([self bookmark]->url());
   std::set<const bookmarks::BookmarkNode*> nodes(nodesVector.begin(),

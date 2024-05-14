@@ -11,35 +11,37 @@ import type {VolumeInfo} from '../../background/js/volume_info.js';
 import type {VolumeManager} from '../../background/js/volume_manager.js';
 import {getDirectory, getDisallowedTransfers, getFile, getParentEntry, grantAccess, startIOTask} from '../../common/js/api.js';
 import {getFocusedTreeItem, htmlEscape, isDirectoryTree, isDirectoryTreeItem, queryRequiredElement} from '../../common/js/dom_utils.js';
-import {convertURLsToEntries, entriesToURLs, getRootType, getTeamDriveName, isNonModifiable, isRecentRoot, isSameEntry, isSharedDriveEntry, isSiblingEntry, isTeamDriveRoot, isTrashEntry, isTrashRoot, unwrapEntry} from '../../common/js/entry_utils.js';
+import {convertURLsToEntries, entriesToURLs, getRootType, getTeamDriveName, getTreeItemEntry, isNonModifiable, isRecentRoot, isSameEntry, isSharedDriveEntry, isSiblingEntry, isTeamDriveRoot, isTrashEntry, isTrashRoot, unwrapEntry} from '../../common/js/entry_utils.js';
 import {getIcon, isEncrypted} from '../../common/js/file_type.js';
 import {getFileTypeForName} from '../../common/js/file_types_base.js';
 import type {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../common/js/files_app_entry_types.js';
 import {isDlpEnabled} from '../../common/js/flags.js';
 import {ProgressCenterItem, ProgressItemState} from '../../common/js/progress_center_common.js';
 import {str, strf} from '../../common/js/translations.js';
-import {getEnabledTrashVolumeURLs, isAllTrashEntries, TrashEntry} from '../../common/js/trash.js';
+import type {TrashEntry} from '../../common/js/trash.js';
+import {getEnabledTrashVolumeURLs, isAllTrashEntries} from '../../common/js/trash.js';
 import {FileErrorToDomError, visitURL} from '../../common/js/util.js';
 import {RootType, VolumeType} from '../../common/js/volume_manager_types.js';
 import type {FileKey} from '../../state/state.js';
 import {getFileData, getStore} from '../../state/store.js';
-import {XfTree} from '../../widgets/xf_tree.js';
+import type {XfTree} from '../../widgets/xf_tree.js';
 import {XfTreeItem} from '../../widgets/xf_tree_item.js';
 import {isTreeItem} from '../../widgets/xf_tree_util.js';
-import {FilesToast} from '../elements/files_toast.js';
+import type {FilesToast} from '../elements/files_toast.js';
 
-import {DirectoryModel} from './directory_model.js';
-import {EventType, FileSelectionHandler} from './file_selection.js';
-import {MetadataModel} from './metadata/metadata_model.js';
-import {Command} from './ui/command.js';
-import {DirectoryItem, DirectoryTree} from './ui/directory_tree.js';
+import type {DirectoryModel} from './directory_model.js';
+import type {FileSelectionHandler} from './file_selection.js';
+import {EventType} from './file_selection.js';
+import type {MetadataModel} from './metadata/metadata_model.js';
+import type {Command} from './ui/command.js';
+import type {DirectoryItem, DirectoryTree} from './ui/directory_tree.js';
 import {DragSelector} from './ui/drag_selector.js';
 import type {FileGrid} from './ui/file_grid.js';
 import type {FileTableList} from './ui/file_table_list.js';
 import type {Grid} from './ui/grid.js';
 import type {List} from './ui/list.js';
-import {ListContainer} from './ui/list_container.js';
-import {ListItem} from './ui/list_item.js';
+import type {ListContainer} from './ui/list_container.js';
+import type {ListItem} from './ui/list_item.js';
 import {TreeItem} from './ui/tree.js';
 
 /**
@@ -921,9 +923,10 @@ export class FileTransferController {
       return;
     }
 
-    if (item && 'entry' in item && item.entry && event.dataTransfer) {
-      this.setDropTarget_(
-          item, event.dataTransfer, item.entry as DirectoryEntry);
+    const entry = getTreeItemEntry(item);
+
+    if (item && entry && event.dataTransfer) {
+      this.setDropTarget_(item, event.dataTransfer, entry as DirectoryEntry);
     } else {
       this.clearDropTarget_();
     }
@@ -1157,11 +1160,10 @@ export class FileTransferController {
       return;
     }
 
-    if (!('entry' in focusedItem)) {
+    const entry = focusedItem && getTreeItemEntry(focusedItem);
+    if (!entry) {
       return;
     }
-
-    const entry = focusedItem.entry as DirectoryEntry;
 
     const volumeInfo = this.volumeManager_.getVolumeInfo(entry);
     if (!volumeInfo) {

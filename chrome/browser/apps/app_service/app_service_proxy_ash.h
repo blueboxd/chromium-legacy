@@ -25,7 +25,7 @@
 #include "chrome/browser/apps/app_service/paused_apps.h"
 #include "chrome/browser/apps/app_service/publisher_host.h"
 #include "chrome/browser/apps/app_service/subscriber_crosapi.h"
-#include "chrome/browser/ash/crosapi/browser_manager.h"
+#include "chrome/browser/ash/crosapi/browser_manager_scoped_keep_alive.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_storage/app_storage.h"
@@ -128,12 +128,16 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
 
   // apps::AppServiceProxyBase overrides:
   void RegisterPublisher(AppType app_type, AppPublisher* publisher) override;
-  void Uninstall(const std::string& app_id,
-                 UninstallSource uninstall_source,
-                 gfx::NativeWindow parent_window) override;
   void OnApps(std::vector<AppPtr> deltas,
               AppType app_type,
               bool should_notify_initialized) override;
+
+  // Uninstalls an app for the given |app_id|. If |parent_window| is specified,
+  // the uninstall dialog will be created as a modal dialog anchored at
+  // |parent_window|. Otherwise, the browser window will be used as the anchor.
+  void Uninstall(const std::string& app_id,
+                 UninstallSource uninstall_source,
+                 gfx::NativeWindow parent_window);
 
   // Pauses apps. |pause_data|'s key is the app_id. |pause_data|'s PauseData
   // is the time limit setting for the app, which is shown in the pause app
@@ -613,7 +617,7 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
 
   // App service require the Lacros Browser to keep alive for web apps.
   // TODO(crbug.com/1174246): Support Lacros not keeping alive.
-  std::unique_ptr<crosapi::BrowserManager::ScopedKeepAlive> keep_alive_;
+  std::unique_ptr<crosapi::BrowserManagerScopedKeepAlive> keep_alive_;
 
   base::ScopedObservation<apps::InstanceRegistry,
                           apps::InstanceRegistry::Observer>

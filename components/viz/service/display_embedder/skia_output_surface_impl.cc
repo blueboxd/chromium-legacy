@@ -578,7 +578,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
         graphite_recorder_, yuva_info, texture_infos, skgpu::Mipmapped::kNo);
     image = SkImages::PromiseTextureFromYUVA(
         graphite_recorder_, yuva_backend_info, std::move(image_color_space),
-        skgpu::graphite::Volatile::kYes, FulfillGraphite, CleanUp,
+        graphite_use_volatile_promise_images_, FulfillGraphite, CleanUp,
         ReleaseGraphite, {}, fulfills);
   } else {
     GrBackendFormat formats[SkYUVAInfo::kMaxPlanes] = {};
@@ -649,7 +649,7 @@ void SkiaOutputSurfaceImpl::MakePromiseSkImageSinglePlane(
                                : skgpu::Origin::kBottomLeft;
     auto image = SkImages::PromiseTextureFrom(
         graphite_recorder_, gfx::SizeToSkISize(image_context->size()),
-        texture_info, color_info, origin, skgpu::graphite::Volatile::kYes,
+        texture_info, color_info, origin, graphite_use_volatile_promise_images_,
         FulfillGraphite, CleanUp, ReleaseGraphite, fulfill);
     LOG_IF(ERROR, !image) << "Failed to create the promise sk image";
     image_context->SetImage(std::move(image), {texture_info});
@@ -699,7 +699,7 @@ void SkiaOutputSurfaceImpl::MakePromiseSkImageMultiPlane(
         graphite_recorder_, yuva_info, texture_infos, skgpu::Mipmapped::kNo);
     auto image = SkImages::PromiseTextureFromYUVA(
         graphite_recorder_, yuva_backend_info, image_context->color_space(),
-        skgpu::graphite::Volatile::kYes, FulfillGraphite, CleanUp,
+        graphite_use_volatile_promise_images_, FulfillGraphite, CleanUp,
         ReleaseGraphite, {}, fulfills);
     LOG_IF(ERROR, !image) << "Failed to create the yuv promise sk image";
     image_context->SetImage(std::move(image), std::move(texture_infos));
@@ -1182,7 +1182,14 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(bool* result) {
     gr_context_thread_safe_ = gr_context->threadSafeProxy();
   }
   graphite_recorder_ = shared_context_state->viz_compositor_graphite_recorder();
-
+  // On Dawn/Metal, it is possible to use non-volatile promise images as Dawn
+  // as are cached between BeginAccess() calls on a per-usage basis. Other
+  // platforms/backends cannot use non-volatile promise images as Dawn textures
+  // live only for the duration of a scoped access.
+  graphite_use_volatile_promise_images_ =
+      shared_context_state->IsGraphiteDawnMetal()
+          ? skgpu::graphite::Volatile::kNo
+          : skgpu::graphite::Volatile::kYes;
   *result = true;
 }
 
@@ -1514,11 +1521,12 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
                          ? gpu::ToVkFormatExternalSampler(si_format)
                          : gpu::ToVkFormatSinglePlanar(si_format);
     // Assume optimal tiling.
-    GrVkYcbcrConversionInfo gr_ycbcr_info = CreateGrVkYcbcrConversionInfo(
-        dependency_->GetVulkanContextProvider()
-            ->GetDeviceQueue()
-            ->GetVulkanPhysicalDevice(),
-        VK_IMAGE_TILING_OPTIMAL, vk_format, yuv_color_space, ycbcr_info);
+    GrVkYcbcrConversionInfo gr_ycbcr_info =
+        CreateGrVkYcbcrConversionInfo(dependency_->GetVulkanContextProvider()
+                                          ->GetDeviceQueue()
+                                          ->GetVulkanPhysicalDevice(),
+                                      VK_IMAGE_TILING_OPTIMAL, vk_format,
+                                      si_format, yuv_color_space, ycbcr_info);
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
     // Textures that were allocated _on linux_ with ycbcr info came from
     // VaapiVideoDecoder, which exports using DRM format modifiers.

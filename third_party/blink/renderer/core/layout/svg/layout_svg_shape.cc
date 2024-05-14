@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_shape.h"
 
+#include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/pointer_events_hit_rules.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_paint_server.h"
@@ -256,19 +257,23 @@ bool LayoutSVGShape::ShapeDependentStrokeContains(
     stroke_path_cache_ =
         std::make_unique<Path>(path->StrokePath(stroke_data, root_transform));
   }
-
   DCHECK(stroke_path_cache_);
-  auto point = location.TransformedPoint();
+
+  AffineTransform host_space_transform;
   if (HasNonScalingStroke())
-    point = NonScalingStrokeTransform().MapPoint(point);
-  return stroke_path_cache_->Contains(point);
+    host_space_transform = NonScalingStrokeTransform();
+  TransformedHitTestLocation host_space_location(
+      location, host_space_transform,
+      TransformedHitTestLocation::kDontComputeInverse);
+  DCHECK(host_space_location);
+  return host_space_location->Intersects(*stroke_path_cache_, RULE_NONZERO);
 }
 
 bool LayoutSVGShape::ShapeDependentFillContains(
     const HitTestLocation& location,
     const WindRule fill_rule) const {
   NOT_DESTROYED();
-  return GetPath().Contains(location.TransformedPoint(), fill_rule);
+  return location.Intersects(GetPath(), fill_rule);
 }
 
 static bool HasPaintServer(const LayoutObject& object, const SVGPaint& paint) {
@@ -287,8 +292,9 @@ bool LayoutSVGShape::FillContains(const HitTestLocation& location,
                                   bool requires_fill,
                                   const WindRule fill_rule) {
   NOT_DESTROYED();
-  if (!fill_bounding_box_.InclusiveContains(location.TransformedPoint()))
+  if (!location.Intersects(fill_bounding_box_)) {
     return false;
+  }
 
   if (requires_fill && !HasPaintServer(*this, StyleRef().FillPaint()))
     return false;
@@ -304,18 +310,15 @@ bool LayoutSVGShape::StrokeContains(const HitTestLocation& location,
     return false;
 
   if (requires_stroke) {
-    if (!DecoratedBoundingBox().InclusiveContains(
-            location.TransformedPoint())) {
+    if (!location.Intersects(DecoratedBoundingBox())) {
       return false;
     }
 
     if (!HasPaintServer(*this, StyleRef().StrokePaint()))
       return false;
-  } else if (!HitTestStrokeBoundingBox().InclusiveContains(
-                 location.TransformedPoint())) {
+  } else if (!location.Intersects(HitTestStrokeBoundingBox())) {
     return false;
   }
-
   return ShapeDependentStrokeContains(location);
 }
 

@@ -9,16 +9,16 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-
-import android.view.LayoutInflater;
+import static org.mockito.Mockito.when;
 
 import androidx.test.filters.MediumTest;
 
-import org.junit.Assert;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,12 +31,16 @@ import org.mockito.quality.Strictness;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DoNotBatch;
+import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.ui.signin.R;
 import org.chromium.chrome.test.util.browser.signin.SigninTestRule;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.sync.SyncService;
 import org.chromium.components.sync.UserSelectableType;
 import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
@@ -44,27 +48,11 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.BlankUiTestActivity;
 import org.chromium.ui.test.util.ViewUtils;
 
-import java.util.Set;
-
 /** Tests for the standalone history sync consent dialog */
 @RunWith(BaseJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @DoNotBatch(reason = "This test relies on native initialization")
 public class HistorySyncTest {
-    /** Stub implementation of the {@link HistorySyncDelegate} for testing */
-    public class HistorySyncTestDelegate implements HistorySyncCoordinator.HistorySyncDelegate {
-        private boolean mIsDialogClosed;
-
-        @Override
-        public void dismiss() {
-            mIsDialogClosed = true;
-        }
-
-        public boolean isDialogClosed() {
-            return mIsDialogClosed;
-        }
-    }
-
     @Rule
     public final MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
 
@@ -74,10 +62,12 @@ public class HistorySyncTest {
 
     @Rule public final SigninTestRule mSigninTestRule = new SigninTestRule();
 
+    private static final @SigninAccessPoint int SIGNIN_ACCESS_POINT = SigninAccessPoint.UNKNOWN;
+
     @Mock private SyncService mSyncServiceMock;
+    @Mock private HistorySyncCoordinator.HistorySyncDelegate mHistorySyncDelegateMock;
 
     private HistorySyncCoordinator mHistorySyncCoordinator;
-    private HistorySyncTestDelegate mDelegate;
 
     @Before
     public void setUp() {
@@ -85,54 +75,114 @@ public class HistorySyncTest {
         mActivityTestRule.launchActivity(null);
         mSigninTestRule.addTestAccountThenSignin();
         SyncServiceFactory.setInstanceForTesting(mSyncServiceMock);
+        when(mHistorySyncDelegateMock.isLargeScreen()).thenReturn(false);
+    }
+
+    @After
+    public void tearDown() {
+        mSigninTestRule.forceSignOut();
     }
 
     @Test
     @MediumTest
     public void testHistorySyncLayout() {
+        HistogramWatcher histogramWatcher =
+                HistogramWatcher.newSingleRecordWatcher(
+                        "Signin.HistorySyncOptIn.Started", SIGNIN_ACCESS_POINT);
+
         buildHistorySyncCoordinator();
 
+        histogramWatcher.assertExpected();
         onView(withId(R.id.sync_consent_title)).check(matches(isDisplayed()));
         onView(withId(R.id.sync_consent_subtitle)).check(matches(isDisplayed()));
         onView(withId(R.id.account_image)).check(matches(isDisplayed()));
         onView(withId(R.id.history_sync_illustration)).check(matches(isDisplayed()));
-        onView(withId(R.id.positive_button)).check(matches(isDisplayed()));
-        onView(withId(R.id.negative_button)).check(matches(isDisplayed()));
-        onView(withId(R.id.sync_consent_details_description)).check(matches(isDisplayed()));
+        onView(withText(R.string.signin_accept_button)).check(matches(isDisplayed()));
+        onView(withText(R.string.no_thanks)).check(matches(isDisplayed()));
+        onView(
+                        allOf(
+                                withId(R.id.sync_consent_details_description),
+                                withText(R.string.history_sync_footer)))
+                .check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    public void testFooterStringWithEmail() {
+        String expectedFooter =
+                mActivityTestRule
+                        .getActivity()
+                        .getString(
+                                R.string.history_sync_signed_in_footer,
+                                mSigninTestRule.getPrimaryAccount(ConsentLevel.SIGNIN).getEmail());
+
+        buildHistorySyncCoordinator(true);
+
+        onView(allOf(withId(R.id.sync_consent_details_description), withText(expectedFooter)))
+                .check(matches(isDisplayed()));
     }
 
     @Test
     @MediumTest
     public void testPositiveButton() {
         buildHistorySyncCoordinator();
+        HistogramWatcher histogramWatcher =
+                HistogramWatcher.newSingleRecordWatcher(
+                        "Signin.HistorySyncOptIn.Completed", SIGNIN_ACCESS_POINT);
 
-        onView(withId(R.id.positive_button)).perform(click());
-        verify(mSyncServiceMock)
-                .setSelectedTypes(
-                        true, Set.of(UserSelectableType.HISTORY, UserSelectableType.TABS));
-        Assert.assertTrue(mDelegate.isDialogClosed());
+        onView(withText(R.string.signin_accept_button)).perform(click());
+
+        histogramWatcher.assertExpected();
+        verify(mSyncServiceMock).setSelectedType(UserSelectableType.HISTORY, true);
+        verify(mSyncServiceMock).setSelectedType(UserSelectableType.TABS, true);
+        verify(mHistorySyncDelegateMock).dismissHistorySync();
     }
 
     @Test
     @MediumTest
     public void testNegativeButton() {
         buildHistorySyncCoordinator();
+        HistogramWatcher histogramWatcher =
+                HistogramWatcher.newSingleRecordWatcher(
+                        "Signin.HistorySyncOptIn.Declined", SIGNIN_ACCESS_POINT);
 
-        onView(withId(R.id.negative_button)).perform(click());
+        onView(withText(R.string.no_thanks)).perform(click());
+
+        histogramWatcher.assertExpected();
         verifyNoInteractions(mSyncServiceMock);
-        Assert.assertTrue(mDelegate.isDialogClosed());
+        verify(mHistorySyncDelegateMock).dismissHistorySync();
+    }
+
+    @Test
+    @MediumTest
+    public void testOnSignedOut() {
+        buildHistorySyncCoordinator();
+        HistogramWatcher histogramWatcher =
+                HistogramWatcher.newSingleRecordWatcher(
+                        "Signin.HistorySyncOptIn.Aborted", SIGNIN_ACCESS_POINT);
+
+        mSigninTestRule.signOut();
+        CriteriaHelper.pollUiThread(
+                () -> mSigninTestRule.getPrimaryAccount(ConsentLevel.SIGNIN) == null);
+
+        histogramWatcher.assertExpected();
+        verify(mHistorySyncDelegateMock).dismissHistorySync();
     }
 
     private void buildHistorySyncCoordinator() {
-        mDelegate = new HistorySyncTestDelegate();
+        buildHistorySyncCoordinator(false);
+    }
+
+    private void buildHistorySyncCoordinator(boolean showEmailInFooter) {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mHistorySyncCoordinator =
                             new HistorySyncCoordinator(
-                                    LayoutInflater.from(mActivityTestRule.getActivity()),
-                                    mActivityTestRule.getActivity().findViewById(R.id.container),
-                                    mDelegate,
-                                    Profile.getLastUsedRegularProfile());
+                                    mActivityTestRule.getActivity(),
+                                    mHistorySyncDelegateMock,
+                                    ProfileManager.getLastUsedRegularProfile(),
+                                    SIGNIN_ACCESS_POINT,
+                                    showEmailInFooter);
                     mActivityTestRule
                             .getActivity()
                             .setContentView(mHistorySyncCoordinator.getView());

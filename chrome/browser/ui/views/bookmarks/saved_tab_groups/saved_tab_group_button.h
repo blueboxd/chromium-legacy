@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "chrome/browser/ui/views/event_utils.h"
 #include "components/saved_tab_groups/saved_tab_group.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
@@ -22,11 +23,14 @@
 #include "ui/views/drag_controller.h"
 
 class Browser;
-class SavedTabGroupKeyedService;
 
 namespace gfx {
 class Canvas;
 }
+
+namespace tab_groups {
+
+class SavedTabGroupKeyedService;
 
 // The visual representation of a SavedTabGroup shown in the bookmarks bar.
 class SavedTabGroupButton : public views::MenuButton,
@@ -56,6 +60,9 @@ class SavedTabGroupButton : public views::MenuButton,
   // views::View
   bool OnKeyPressed(const ui::KeyEvent& event) override;
 
+  // views::LabelButton
+  bool IsTriggerableEvent(const ui::Event& e) override;
+
   // views::DragController
   void WriteDragDataForView(View* sender,
                             const gfx::Point& press_pt,
@@ -79,7 +86,7 @@ class SavedTabGroupButton : public views::MenuButton,
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kMoveGroupToNewWindowMenuItem);
 
  private:
-  std::u16string GetAccessibleNameForButton();
+  std::u16string GetAccessibleNameForButton() const;
   void SetTextProperties(const SavedTabGroup& group);
   void UpdateButtonLayout();
   void TabMenuItemPressed(const GURL& url, int event_flags);
@@ -115,5 +122,7 @@ class SavedTabGroupButton : public views::MenuButton,
   // Context menu controller used for this View.
   views::DialogModelContextMenuController context_menu_controller_;
 };
+
+}  // namespace tab_groups
 
 #endif  // CHROME_BROWSER_UI_VIEWS_BOOKMARKS_SAVED_TAB_GROUPS_SAVED_TAB_GROUP_BUTTON_H_

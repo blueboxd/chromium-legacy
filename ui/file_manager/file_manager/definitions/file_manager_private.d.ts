@@ -10,7 +10,7 @@
  * regenerate.
  */
 
-import {ChromeEvent} from './chrome_event.js';
+import type {ChromeEvent} from './chrome_event.js';
 
 declare global {
   export namespace chrome {
@@ -899,11 +899,6 @@ declare global {
           searchParams: SearchMetadataParams,
           callback: (results: DriveMetadataSearchResult[]) => void): void;
 
-      export function searchFilesByHashes(
-          volumeId: string, hashList: string[], callback: (paths: {
-                                                  [key: string]: any,
-                                                }) => void): void;
-
       export function searchFiles(
           searchParams: SearchMetadataParams,
           callback: (entries: Entry[]) => void): void;
@@ -926,9 +921,6 @@ declare global {
       export function openInspector(type: InspectionType): void;
 
       export function openSettingsSubpage(subPage: string): void;
-
-      export function computeChecksum(
-          entry: Entry, callback: (checksum: string) => void): void;
 
       export function getProviders(callback: (extensions: Provider[]) => void):
           void;
@@ -987,12 +979,12 @@ declare global {
       export function selectAndroidPickerApp(
           androidApp: AndroidApp, callback: () => void): void;
 
-      export function sharesheetHasTargets(
-          entries: Entry[], callback: (result: boolean) => void): void;
+      export function sharesheetHasTargets(fileUrls: string[]):
+          Promise<boolean>;
 
       export function invokeSharesheet(
-          entries: Entry[], launchSource: SharesheetLaunchSource,
-          dlpSourceUrls: string[], callback: () => void): void;
+          fileUrls: string[], launchSource: SharesheetLaunchSource,
+          dlpSourceUrls: string[]): Promise<void>;
 
       export function toggleAddedToHoldingSpace(
           entries: Entry[], added: boolean, callback?: () => void): void;

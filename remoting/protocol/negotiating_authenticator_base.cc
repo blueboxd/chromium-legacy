@@ -14,7 +14,9 @@
 #include "base/strings/string_split.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/rsa_key_pair.h"
+#include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/channel_authenticator.h"
+#include "remoting/protocol/credentials_type.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
 namespace remoting::protocol {
@@ -36,6 +38,20 @@ NegotiatingAuthenticatorBase::NegotiatingAuthenticatorBase(
     : state_(initial_state) {}
 
 NegotiatingAuthenticatorBase::~NegotiatingAuthenticatorBase() = default;
+
+CredentialsType NegotiatingAuthenticatorBase::credentials_type() const {
+  if (!current_authenticator_) {
+    return CredentialsType::UNKNOWN;
+  }
+  return current_authenticator_->credentials_type();
+}
+
+const Authenticator& NegotiatingAuthenticatorBase::implementing_authenticator()
+    const {
+  return current_authenticator_
+             ? current_authenticator_->implementing_authenticator()
+             : *this;
+}
 
 Authenticator::State NegotiatingAuthenticatorBase::state() const {
   return state_;
@@ -108,6 +124,14 @@ NegotiatingAuthenticatorBase::GetNextMessageInternal() {
   result->AddAttr(kMethodAttributeQName,
                   HostAuthenticationConfig::MethodToString(current_method_));
   return result;
+}
+
+void NegotiatingAuthenticatorBase::NotifyStateChangeAfterAccepted() {
+  state_ = current_authenticator_->state();
+  if (state_ == REJECTED) {
+    rejection_reason_ = current_authenticator_->rejection_reason();
+  }
+  Authenticator::NotifyStateChangeAfterAccepted();
 }
 
 void NegotiatingAuthenticatorBase::AddMethod(Method method) {

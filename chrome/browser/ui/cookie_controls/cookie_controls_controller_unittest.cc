@@ -15,7 +15,6 @@
 #include "components/content_settings/browser/ui/cookie_controls_view.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/cookie_blocking_3pcd_status.h"
-#include "components/content_settings/core/common/cookie_controls_breakage_confidence_level.h"
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -50,21 +49,18 @@ class MockCookieControlsObserver
  public:
   MOCK_METHOD(void,
               OnStatusChanged,
-              (CookieControlsStatus,
-               /*controls_visible*/ bool,
+              (/*controls_visible*/ bool,
                /*protections_on*/ bool,
                CookieControlsEnforcement,
                CookieBlocking3pcdStatus,
                base::Time));
   MOCK_METHOD(void, OnSitesCountChanged, (int, int));
   MOCK_METHOD(void,
-              OnBreakageConfidenceLevelChanged,
-              (CookieControlsBreakageConfidenceLevel));
-  MOCK_METHOD(void,
-              OnUserBypassIconStatusChanged,
+              OnCookieControlsIconStatusChanged,
               (/*icon_visible*/ bool,
                /*protections_on*/ bool,
-               CookieBlocking3pcdStatus));
+               CookieBlocking3pcdStatus,
+               /*should_highlight*/ bool));
   MOCK_METHOD(void, OnFinishedPageReloadWithChangedSettings, ());
 };
 
@@ -73,20 +69,6 @@ blink::StorageKey CreateUnpartitionedStorageKey(const GURL& url) {
 }
 
 }  // namespace
-
-// More readable output for test expectation.
-std::ostream& operator<<(std::ostream& os, const CookieControlsStatus& status) {
-  switch (status) {
-    case CookieControlsStatus::kDisabled:
-      return os << "kDisabled";
-    case CookieControlsStatus::kEnabled:
-      return os << "kEnabled";
-    case CookieControlsStatus::kDisabledForSite:
-      return os << "kDisabledForSite";
-    case CookieControlsStatus::kUninitialized:
-      return os << "kUninitialized";
-  }
-}
 
 std::ostream& operator<<(std::ostream& os,
                          const CookieControlsEnforcement& enforcement) {
@@ -261,25 +243,23 @@ TEST_P(CookieControlsUserBypassTest, SiteCounts) {
   NavigateAndCommit(GURL("https://example.com"));
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
-                           /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  // TODO(b/317883749): Remove call to `OnBreakageConfidenceLevelChanged` in
-  // this test.
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // Accessing 1p cookies should not increase count.
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   page_specific_content_settings()->OnBrowsingDataAccessed(
       CreateUnpartitionedStorageKey(GURL("https://example.com")),
       BrowsingDataModel::StorageType::kQuotaStorage,
@@ -288,8 +268,10 @@ TEST_P(CookieControlsUserBypassTest, SiteCounts) {
 
   // Accessing cookies should be notified.
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   page_specific_content_settings()->OnBrowsingDataAccessed(
       CreateUnpartitionedStorageKey(GURL("https://thirdparty.com")),
       BrowsingDataModel::StorageType::kQuotaStorage,
@@ -299,23 +281,23 @@ TEST_P(CookieControlsUserBypassTest, SiteCounts) {
   // Manually trigger a full update to check that the sites count changed.
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // Blocking cookies should update the blocked sites count.
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 1));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   page_specific_content_settings()->OnBrowsingDataAccessed(
       CreateUnpartitionedStorageKey(GURL("https://anotherthirdparty.com")),
       BrowsingDataModel::StorageType::kQuotaStorage,
@@ -325,24 +307,25 @@ TEST_P(CookieControlsUserBypassTest, SiteCounts) {
   // Manually trigger a full update to check that the sites count changed.
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 1));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // A site accessing cookies should be counted only once.
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 1));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   page_specific_content_settings()->OnBrowsingDataAccessed(
+
       CreateUnpartitionedStorageKey(GURL("https://thirdparty.com")),
       BrowsingDataModel::StorageType::kQuotaStorage,
       /*blocked_by_policy=*/false);
@@ -350,8 +333,10 @@ TEST_P(CookieControlsUserBypassTest, SiteCounts) {
 
   // Another site accessing cookies should update the sites count.
   EXPECT_CALL(*mock(), OnSitesCountChanged(2, 1));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   page_specific_content_settings()->OnBrowsingDataAccessed(
       CreateUnpartitionedStorageKey(GURL("https://anothersite.com")),
       BrowsingDataModel::StorageType::kQuotaStorage,
@@ -360,16 +345,14 @@ TEST_P(CookieControlsUserBypassTest, SiteCounts) {
 
   // Enabling third-party cookies records metrics.
   EXPECT_CALL(*mock(), OnStatusChanged(
-                           CookieControlsStatus::kDisabledForSite,
                            /*controls_visible=*/true, /*protections_on=*/false,
                            CookieControlsEnforcement::kNoEnforcement,
                            CookieBlocking3pcdStatus::kNotIn3pcd, expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/true, /*protections_on=*/false,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(2, 1));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
   cookie_controls()->OnCookieBlockingEnabledForSite(false);
   t.ExpectUniqueSample(kCookieControlsActivatedSaaHistogram, false, 1);
   t.ExpectUniqueSample(kCookieControlsActivatedRefreshCountHistogram, 0, 1);
@@ -382,35 +365,28 @@ TEST_P(CookieControlsUserBypassTest, SiteCounts) {
   NavigateAndCommit(GURL("https://somethingelse.com"));
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
-                           /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
   cookie_controls()->Update(web_contents());
 }
 
 TEST_P(CookieControlsUserBypassTest, NewTabPage) {
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kDisabled,
-                      /*controls_visible=*/false, /*protections_on=*/false,
+      OnStatusChanged(/*controls_visible=*/false, /*protections_on=*/false,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/false, /*protections_on=*/false,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  // TODO(b/317883749): Remove call to `OnBreakageConfidenceLevelChanged` in
-  // this test.
-  EXPECT_CALL(*mock(),
-              OnBreakageConfidenceLevelChanged(
-                  CookieControlsBreakageConfidenceLevel::kUninitialized));
   cookie_controls()->Update(web_contents());
 }
 
@@ -418,35 +394,28 @@ TEST_P(CookieControlsUserBypassTest, PreferenceDisabled) {
   NavigateAndCommit(GURL("https://example.com"));
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
-                           /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  // TODO(b/317883749): Remove call to `OnBreakageConfidenceLevelChanged` in
-  // this test.
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // Disabling the feature should disable the UI.
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kDisabled,
-                      /*controls_visible=*/false, /*protections_on=*/false,
+      OnStatusChanged(/*controls_visible=*/false, /*protections_on=*/false,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/false, /*protections_on=*/false,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  EXPECT_CALL(*mock(),
-              OnBreakageConfidenceLevelChanged(
-                  CookieControlsBreakageConfidenceLevel::kUninitialized));
   profile()->GetPrefs()->SetInteger(
       prefs::kCookieControlsMode,
       static_cast<int>(content_settings::CookieControlsMode::kOff));
@@ -458,49 +427,41 @@ TEST_P(CookieControlsUserBypassTest, AllCookiesBlocked) {
   NavigateAndCommit(GURL("https://example.com"));
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
-                           /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  // TODO(b/317883749): Remove call to `OnBreakageConfidenceLevelChanged` in
-  // this test.
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // Disable all cookies - an OnStatusCallback should get triggered.
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
-                           /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
   cookie_settings()->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // Disable cookie blocking for example.com.
   EXPECT_CALL(*mock(), OnStatusChanged(
-                           CookieControlsStatus::kDisabledForSite,
                            /*controls_visible=*/true, /*protections_on=*/false,
                            CookieControlsEnforcement::kNoEnforcement,
                            CookieBlocking3pcdStatus::kNotIn3pcd, expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/true, /*protections_on=*/false,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
   cookie_controls()->OnCookieBlockingEnabledForSite(false);
   t.ExpectUniqueSample(kCookieControlsActivatedSaaHistogram, false, 1);
   t.ExpectUniqueSample(kCookieControlsActivatedRefreshCountHistogram, 0, 1);
@@ -515,33 +476,27 @@ TEST_P(CookieControlsUserBypassTest, DisableForSite) {
   NavigateAndCommit(GURL("https://example.com"));
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
-                           /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  // TODO(b/317883749): Remove call to `OnBreakageConfidenceLevelChanged` in
-  // this test.
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // Disabling cookie blocking for example.com should update the ui.
   EXPECT_CALL(*mock(), OnStatusChanged(
-                           CookieControlsStatus::kDisabledForSite,
                            /*controls_visible=*/true, /*protections_on=*/false,
                            CookieControlsEnforcement::kNoEnforcement,
                            CookieBlocking3pcdStatus::kNotIn3pcd, expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/true, /*protections_on=*/false,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
   cookie_controls()->OnCookieBlockingEnabledForSite(false);
   testing::Mock::VerifyAndClearExpectations(mock());
 
@@ -549,48 +504,42 @@ TEST_P(CookieControlsUserBypassTest, DisableForSite) {
   NavigateAndCommit(GURL("https://somethingelse.com"));
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
-                           /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // Visiting example.com should turn protections off.
   NavigateAndCommit(GURL("https://example.com"));
   EXPECT_CALL(*mock(), OnStatusChanged(
-                           CookieControlsStatus::kDisabledForSite,
                            /*controls_visible=*/true, /*protections_on=*/false,
                            CookieControlsEnforcement::kNoEnforcement,
                            CookieBlocking3pcdStatus::kNotIn3pcd, expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/true, /*protections_on=*/false,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // Enabling example.com again should re-enable protections.
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
-                           /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
   cookie_controls()->OnCookieBlockingEnabledForSite(true);
   testing::Mock::VerifyAndClearExpectations(mock());
 }
@@ -599,18 +548,14 @@ TEST_P(CookieControlsUserBypassTest, Incognito) {
   NavigateAndCommit(GURL("https://example.com"));
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
-                           /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  // TODO(b/317883749): Remove call to `OnBreakageConfidenceLevelChanged` in
-  // this test.
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
@@ -637,18 +582,15 @@ TEST_P(CookieControlsUserBypassTest, Incognito) {
   tester->NavigateAndCommit(GURL("https://example.com"));
   EXPECT_CALL(
       incognito_mock_,
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(incognito_mock_,
-              OnUserBypassIconStatusChanged(
-                  /*icon_visible=*/true, /*protections_on=*/true,
-                  CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(
+      incognito_mock_,
+      OnCookieControlsIconStatusChanged(
+          /*icon_visible=*/false, /*protections_on=*/true,
+          CookieBlocking3pcdStatus::kNotIn3pcd, /*should_highlight=*/false));
   EXPECT_CALL(incognito_mock_, OnSitesCountChanged(0, 0));
-  EXPECT_CALL(incognito_mock_,
-              OnBreakageConfidenceLevelChanged(
-                  CookieControlsBreakageConfidenceLevel::kLow));
   incognito_cookie_controls.Update(incognito_web_contents.get());
   testing::Mock::VerifyAndClearExpectations(mock());
   testing::Mock::VerifyAndClearExpectations(&incognito_mock_);
@@ -656,30 +598,25 @@ TEST_P(CookieControlsUserBypassTest, Incognito) {
   // Allow cookies in regular mode should also allow in incognito but enforced
   // through regular mode.
   EXPECT_CALL(*mock(), OnStatusChanged(
-                           CookieControlsStatus::kDisabledForSite,
                            /*controls_visible=*/true, /*protections_on=*/false,
                            CookieControlsEnforcement::kNoEnforcement,
                            CookieBlocking3pcdStatus::kNotIn3pcd, expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/true, /*protections_on=*/false,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
   EXPECT_CALL(
       incognito_mock_,
-      OnStatusChanged(CookieControlsStatus::kDisabledForSite,
-                      /*controls_visible=*/true, /*protections_on=*/false,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/false,
                       CookieControlsEnforcement::kEnforcedByCookieSetting,
                       CookieBlocking3pcdStatus::kNotIn3pcd, expiration()));
-  EXPECT_CALL(incognito_mock_,
-              OnUserBypassIconStatusChanged(
-                  /*icon_visible=*/true, /*protections_on=*/false,
-                  CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(
+      incognito_mock_,
+      OnCookieControlsIconStatusChanged(
+          /*icon_visible=*/true, /*protections_on=*/false,
+          CookieBlocking3pcdStatus::kNotIn3pcd, /*should_highlight=*/false));
   EXPECT_CALL(incognito_mock_, OnSitesCountChanged(0, 0));
-  EXPECT_CALL(incognito_mock_,
-              OnBreakageConfidenceLevelChanged(
-                  CookieControlsBreakageConfidenceLevel::kMedium));
   cookie_controls()->OnCookieBlockingEnabledForSite(false);
   testing::Mock::VerifyAndClearExpectations(mock());
   testing::Mock::VerifyAndClearExpectations(&incognito_mock_);
@@ -687,7 +624,6 @@ TEST_P(CookieControlsUserBypassTest, Incognito) {
   // This should be enforced regardless of the default cookie setting in the
   // default profile.
   EXPECT_CALL(*mock(), OnStatusChanged(
-                           CookieControlsStatus::kDisabled,
                            /*controls_visible=*/false, /*protections_on=*/false,
                            CookieControlsEnforcement::kNoEnforcement,
                            CookieBlocking3pcdStatus::kNotIn3pcd,
@@ -695,19 +631,20 @@ TEST_P(CookieControlsUserBypassTest, Incognito) {
                            // expiration, because the default allow never
                            // expires, zero_expiration is correct.
                            zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/false, /*protections_on=*/false,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(
       incognito_mock_,
-      OnStatusChanged(CookieControlsStatus::kDisabledForSite,
-                      /*controls_visible=*/true, /*protections_on=*/false,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/false,
                       CookieControlsEnforcement::kEnforcedByCookieSetting,
                       CookieBlocking3pcdStatus::kNotIn3pcd, expiration()));
-  EXPECT_CALL(incognito_mock_,
-              OnUserBypassIconStatusChanged(
-                  /*icon_visible=*/true, /*protections_on=*/false,
-                  CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(
+      incognito_mock_,
+      OnCookieControlsIconStatusChanged(
+          /*icon_visible=*/true, /*protections_on=*/false,
+          CookieBlocking3pcdStatus::kNotIn3pcd, /*should_highlight=*/false));
   profile()->GetPrefs()->SetInteger(
       prefs::kCookieControlsMode,
       static_cast<int>(content_settings::CookieControlsMode::kIncognitoOnly));
@@ -726,34 +663,28 @@ TEST_P(CookieControlsUserBypassTest, ThirdPartyCookiesException) {
   // created for user bypass.
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kDisabledForSite,
-                      /*controls_visible=*/true, /*protections_on=*/false,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/false,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/true, /*protections_on=*/false,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  // TODO(b/317883749): Remove call to `OnBreakageConfidenceLevelChanged` in
-  // this test.
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // Disabling 3PC for example.com again should change status to kEnabled.
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
-                           /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
   cookie_controls()->OnCookieBlockingEnabledForSite(true);
   testing::Mock::VerifyAndClearExpectations(mock());
 }
@@ -765,22 +696,26 @@ TEST_P(CookieControlsUserBypassTest, FrequentPageReloads) {
 
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   NavigateAndCommit(GURL("https://example.com"));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // Accessing cookies should be notified.
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   page_specific_content_settings()->OnBrowsingDataAccessed(
+
       CreateUnpartitionedStorageKey(GURL("https://thirdparty.com")),
       BrowsingDataModel::StorageType::kQuotaStorage,
       /*blocked_by_policy=*/false);
@@ -788,8 +723,10 @@ TEST_P(CookieControlsUserBypassTest, FrequentPageReloads) {
 
   // Reload the page and simulate accessing storage on page load.
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   NavigateAndCommit(GURL("https://example.com"));
   page_specific_content_settings()->OnBrowsingDataAccessed(
       CreateUnpartitionedStorageKey(GURL("https://thirdparty.com")),
@@ -797,13 +734,12 @@ TEST_P(CookieControlsUserBypassTest, FrequentPageReloads) {
       /*blocked_by_policy=*/false);
   testing::Mock::VerifyAndClearExpectations(mock());
 
-  // After the second reload and accessing storage, the confidence level is
-  // high.
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
+  // After the second reload and accessing storage, UB should highlight.
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kHigh));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/true));
   NavigateAndCommit(GURL("https://example.com"));
   page_specific_content_settings()->OnBrowsingDataAccessed(
       CreateUnpartitionedStorageKey(GURL("https://thirdparty.com")),
@@ -812,25 +748,12 @@ TEST_P(CookieControlsUserBypassTest, FrequentPageReloads) {
   cookie_controls()->OnEntryPointAnimated();
   testing::Mock::VerifyAndClearExpectations(mock());
 
-  // After the entry point was animated (due to high confidence signal), a
-  // setting is recorded.
+  // After the entry point was highlighted, a setting is recorded.
   base::Value stored_value =
       hcsm->GetWebsiteSetting(GURL("https://example.com"), GURL(),
                               ContentSettingsType::COOKIE_CONTROLS_METADATA);
   EXPECT_TRUE(stored_value.is_dict());
   EXPECT_TRUE(stored_value.GetDict().FindBool("entry_point_animated").value());
-
-  // Visiting some other site that have access site data, should reset the
-  // confidence level.
-  EXPECT_CALL(*mock(), OnSitesCountChanged(1, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
-  NavigateAndCommit(GURL("https://somethingelse.com"));
-  page_specific_content_settings()->OnBrowsingDataAccessed(
-      CreateUnpartitionedStorageKey(GURL("https://anotherthirdparty.com")),
-      BrowsingDataModel::StorageType::kQuotaStorage,
-      /*blocked_by_policy=*/false);
-  testing::Mock::VerifyAndClearExpectations(mock());
 }
 
 TEST_P(CookieControlsUserBypassTest, FrequentPageReloadsMetrics) {
@@ -840,26 +763,25 @@ TEST_P(CookieControlsUserBypassTest, FrequentPageReloadsMetrics) {
   NavigateAndCommit(GURL("https://example.com"));
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
-                           /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  // TODO(b/317883749): Remove call to `OnBreakageConfidenceLevelChanged` in
-  // this test.
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // Accessing cookies should be notified.
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   page_specific_content_settings()->OnBrowsingDataAccessed(
+
       CreateUnpartitionedStorageKey(GURL("https://thirdparty.com")),
       BrowsingDataModel::StorageType::kQuotaStorage,
       /*blocked_by_policy=*/false);
@@ -867,8 +789,10 @@ TEST_P(CookieControlsUserBypassTest, FrequentPageReloadsMetrics) {
 
   // Reload the page and simulate accessing storage on page load.
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   NavigateAndCommit(GURL("https://example.com"));
   page_specific_content_settings()->OnBrowsingDataAccessed(
       CreateUnpartitionedStorageKey(GURL("https://thirdparty.com")),
@@ -876,13 +800,12 @@ TEST_P(CookieControlsUserBypassTest, FrequentPageReloadsMetrics) {
       /*blocked_by_policy=*/false);
   testing::Mock::VerifyAndClearExpectations(mock());
 
-  // After the second reload and accessing storage, the confidence level is
-  // high.
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
+  // After the second reload and accessing storage, UB should be highlighted.
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kHigh));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/true));
   NavigateAndCommit(GURL("https://example.com"));
   page_specific_content_settings()->OnBrowsingDataAccessed(
       CreateUnpartitionedStorageKey(GURL("https://thirdparty.com")),
@@ -892,16 +815,14 @@ TEST_P(CookieControlsUserBypassTest, FrequentPageReloadsMetrics) {
 
   // Enabling third-party cookies records metrics.
   EXPECT_CALL(*mock(), OnStatusChanged(
-                           CookieControlsStatus::kDisabledForSite,
                            /*controls_visible=*/true, /*protections_on=*/false,
                            CookieControlsEnforcement::kNoEnforcement,
                            CookieBlocking3pcdStatus::kNotIn3pcd, expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/true, /*protections_on=*/false,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/true));
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
   cookie_controls()->OnCookieBlockingEnabledForSite(false);
   t.ExpectUniqueSample(kCookieControlsActivatedSaaHistogram, false, 1);
   t.ExpectUniqueSample(kCookieControlsActivatedRefreshCountHistogram, 2, 1);
@@ -923,26 +844,25 @@ TEST_P(CookieControlsUserBypassTest, InfrequentPageReloads) {
   NavigateAndCommit(GURL("https://example.com"));
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
-                           /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  // TODO(b/317883749): Remove call to `OnBreakageConfidenceLevelChanged` in
-  // this test.
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // Accessing cookies should be notified.
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   page_specific_content_settings()->OnBrowsingDataAccessed(
+
       CreateUnpartitionedStorageKey(GURL("https://thirdparty.com")),
       BrowsingDataModel::StorageType::kQuotaStorage,
       /*blocked_by_policy=*/false);
@@ -950,8 +870,10 @@ TEST_P(CookieControlsUserBypassTest, InfrequentPageReloads) {
 
   // Reload the page and simulate accessing storage on page load.
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   NavigateAndCommit(GURL("https://example.com"));
   page_specific_content_settings()->OnBrowsingDataAccessed(
       CreateUnpartitionedStorageKey(GURL("https://thirdparty.com")),
@@ -962,11 +884,12 @@ TEST_P(CookieControlsUserBypassTest, InfrequentPageReloads) {
   // Wait for 30 seconds.
   FastForwardBy(base::Seconds(30));
 
-  // The second reload happens with a delay and doesn't trigger the confidence
-  // level change.
+  // The second reload happens with a delay and doesn't highlight.
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   NavigateAndCommit(GURL("https://example.com"));
   page_specific_content_settings()->OnBrowsingDataAccessed(
       CreateUnpartitionedStorageKey(GURL("https://thirdparty.com")),
@@ -976,16 +899,14 @@ TEST_P(CookieControlsUserBypassTest, InfrequentPageReloads) {
 
   // Enabling third-party cookies records metrics.
   EXPECT_CALL(*mock(), OnStatusChanged(
-                           CookieControlsStatus::kDisabledForSite,
                            /*controls_visible=*/true, /*protections_on=*/false,
                            CookieControlsEnforcement::kNoEnforcement,
                            CookieBlocking3pcdStatus::kNotIn3pcd, expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/true, /*protections_on=*/false,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
   cookie_controls()->OnCookieBlockingEnabledForSite(false);
   t.ExpectUniqueSample(kCookieControlsActivatedSaaHistogram, false, 1);
   t.ExpectUniqueSample(kCookieControlsActivatedRefreshCountHistogram, 1, 1);
@@ -1018,68 +939,74 @@ TEST_P(CookieControlsUserBypassTest, HighSiteEngagement) {
   NavigateAndCommit(GURL("https://highengagement.com"));
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
-                           /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/true));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
-  // Without site data access the confidence level cannot be higher than low.
+  // Site data access should highlight.
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kHigh));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/true));
   page_specific_content_settings()->OnBrowsingDataAccessed(
+
       CreateUnpartitionedStorageKey(GURL("https://thirdparty.com")),
       BrowsingDataModel::StorageType::kQuotaStorage,
       /*blocked_by_policy=*/false);
   cookie_controls()->OnEntryPointAnimated();
   testing::Mock::VerifyAndClearExpectations(mock());
 
-  // After the entry point was animated (due to high confidence signal), a
-  // setting is recorded.
+  // After the entry point was highlighted a setting is recorded.
   base::Value stored_value =
       hcsm->GetWebsiteSetting(GURL("https://highengagement.com"), GURL(),
                               ContentSettingsType::COOKIE_CONTROLS_METADATA);
   EXPECT_TRUE(stored_value.is_dict());
   EXPECT_TRUE(stored_value.GetDict().FindBool("entry_point_animated").value());
 
-  // Visiting some other site resets the confidence level.
+  // Visiting some other site should reset the state.
   NavigateAndCommit(GURL("https://somethingelse.com"));
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
-  // Site with medium or low engagement index that has accessed site data has
-  // medium confidence level.
+  // Site with medium or low engagement index that has accessed site does not
+  // highlight UB and only shows the icon.
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   page_specific_content_settings()->OnBrowsingDataAccessed(
+
       CreateUnpartitionedStorageKey(GURL("https://anotherthirdparty.com")),
       BrowsingDataModel::StorageType::kQuotaStorage,
       /*blocked_by_policy=*/false);
   testing::Mock::VerifyAndClearExpectations(mock());
 
-  // Revisiting high site engagement site doesn't lead to high confidence signal
-  // because the entry point was already animated for that site.
+  // Revisiting high site engagement site doesn't highlight UB
+  // because the entry point was already highlighted for that site.
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   NavigateAndCommit(GURL("https://highengagement.com"));
   page_specific_content_settings()->OnBrowsingDataAccessed(
       CreateUnpartitionedStorageKey(GURL("https://thirdparty.com")),
@@ -1107,27 +1034,26 @@ TEST_P(CookieControlsUserBypassTest, StorageAccessApiHighSiteEngagement) {
   NavigateAndCommit(GURL("https://highengagement.com"));
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
-                           /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  // TODO(b/317883749): Remove call to `OnBreakageConfidenceLevelChanged` in
-  // this test.
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
-  // Even though the site has high engagement level, the confidence level is
-  // medium because SAA was requested in the site context.
+  // Even though the site has high engagement level, UB does not highlight
+  // because SAA was requested in the site context.
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   page_specific_content_settings()->OnBrowsingDataAccessed(
+
       CreateUnpartitionedStorageKey(GURL("https://thirdparty.com")),
       BrowsingDataModel::StorageType::kQuotaStorage,
       /*blocked_by_policy=*/false);
@@ -1135,16 +1061,14 @@ TEST_P(CookieControlsUserBypassTest, StorageAccessApiHighSiteEngagement) {
 
   // Enabling third-party cookies records metrics.
   EXPECT_CALL(*mock(), OnStatusChanged(
-                           CookieControlsStatus::kDisabledForSite,
                            /*controls_visible=*/true, /*protections_on=*/false,
                            CookieControlsEnforcement::kNoEnforcement,
                            CookieBlocking3pcdStatus::kNotIn3pcd, expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/true, /*protections_on=*/false,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(1, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
   cookie_controls()->OnCookieBlockingEnabledForSite(false);
   t.ExpectUniqueSample(kCookieControlsActivatedSaaHistogram, true, 1);
   t.ExpectUniqueSample(kCookieControlsActivatedRefreshCountHistogram, 0, 1);
@@ -1168,18 +1092,14 @@ TEST_P(CookieControlsUserBypassTest, CustomExceptionsNoWildcardMatchingDomain) {
   NavigateAndCommit(GURL("https://cool.things.com"));
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
-                           /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  // TODO(b/317883749): Remove call to `OnBreakageConfidenceLevelChanged` in
-  // this test.
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
@@ -1187,17 +1107,14 @@ TEST_P(CookieControlsUserBypassTest, CustomExceptionsNoWildcardMatchingDomain) {
   // wildcards in the domain and isn't enforced.
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kDisabledForSite,
-                      /*controls_visible=*/true, /*protections_on=*/false,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/false,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/true, /*protections_on=*/false,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
-
   hcsm->SetContentSettingCustomScope(
       ContentSettingsPattern::Wildcard(),
       ContentSettingsPattern::FromString("cool.things.com"),
@@ -1211,18 +1128,14 @@ TEST_P(CookieControlsUserBypassTest, CustomExceptionsWildcardMatchingDomain) {
   NavigateAndCommit(GURL("https://cool.things.com"));
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
-                           /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  // TODO(b/317883749): Remove call to `OnBreakageConfidenceLevelChanged` in
-  // this test.
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
@@ -1230,16 +1143,14 @@ TEST_P(CookieControlsUserBypassTest, CustomExceptionsWildcardMatchingDomain) {
   // the domain and cannot be reset, it is enforced by cookie setting.
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kDisabledForSite,
-                      /*controls_visible=*/true, /*protections_on=*/false,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/false,
                       CookieControlsEnforcement::kEnforcedByCookieSetting,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/true, /*protections_on=*/false,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
   hcsm->SetContentSettingCustomScope(
       ContentSettingsPattern::Wildcard(),
       ContentSettingsPattern::FromString("[*.]cool.things.com"),
@@ -1254,18 +1165,14 @@ TEST_P(CookieControlsUserBypassTest,
   NavigateAndCommit(GURL("https://cool.things.com"));
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
-                           /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  // TODO(b/317883749): Remove call to `OnBreakageConfidenceLevelChanged` in
-  // this test.
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
@@ -1274,16 +1181,14 @@ TEST_P(CookieControlsUserBypassTest,
   // setting.
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kDisabledForSite,
-                      /*controls_visible=*/true, /*protections_on=*/false,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/false,
                       CookieControlsEnforcement::kEnforcedByCookieSetting,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/true, /*protections_on=*/false,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
   hcsm->SetContentSettingCustomScope(
       ContentSettingsPattern::Wildcard(),
       ContentSettingsPattern::FromString("[*.]things.com"),
@@ -1297,18 +1202,14 @@ TEST_P(CookieControlsUserBypassTest, CustomExceptionsDotComWildcard) {
   NavigateAndCommit(GURL("https://cool.things.com"));
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
-                           /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  // TODO(b/317883749): Remove call to `OnBreakageConfidenceLevelChanged` in
-  // this test.
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kLow));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
@@ -1317,16 +1218,14 @@ TEST_P(CookieControlsUserBypassTest, CustomExceptionsDotComWildcard) {
   // setting.
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kDisabledForSite,
-                      /*controls_visible=*/true, /*protections_on=*/false,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/false,
                       CookieControlsEnforcement::kEnforcedByCookieSetting,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/true, /*protections_on=*/false,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
   hcsm->SetContentSettingCustomScope(
       ContentSettingsPattern::Wildcard(),
       ContentSettingsPattern::FromString("[*.]com"),
@@ -1385,7 +1284,7 @@ TEST_P(CookieControlsUserBypassTest, FinishedPageReloadWithChangedSettings) {
 }
 
 TEST_P(CookieControlsUserBypassTest,
-       DoesNotAnimateLabelWhenSettingNotChangedInContext) {
+       DoesNotHighlightLabelWhenSettingNotChangedInContext) {
   auto* hcsm = HostContentSettingsMapFactory::GetForProfile(profile());
   EXPECT_CALL(*mock(), OnFinishedPageReloadWithChangedSettings()).Times(0);
   cookie_controls()->Update(web_contents());
@@ -1417,7 +1316,7 @@ TEST_P(CookieControlsUserBypassTest,
   testing::Mock::VerifyAndClearExpectations(mock());
 }
 
-TEST_P(CookieControlsUserBypassTest, HighConfidenceAfterExpiration) {
+TEST_P(CookieControlsUserBypassTest, IconHighlightedAfterExceptionExpires) {
   if (!GetParam()) {
     return;
   }
@@ -1429,33 +1328,27 @@ TEST_P(CookieControlsUserBypassTest, HighConfidenceAfterExpiration) {
       /*blocked_by_policy=*/true);
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 1));
-  // TODO(b/317883749): Remove call to `OnBreakageConfidenceLevelChanged` in
-  // this test.
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // Enable third-party cookies.
   EXPECT_CALL(*mock(), OnStatusChanged(
-                           CookieControlsStatus::kDisabledForSite,
                            /*controls_visible=*/true, /*protections_on=*/false,
                            CookieControlsEnforcement::kNoEnforcement,
                            CookieBlocking3pcdStatus::kNotIn3pcd, expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/true, /*protections_on=*/false,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 1));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
   cookie_controls()->OnCookieBlockingEnabledForSite(false);
   ValidateCookieControlsActivatedUKM(
       /*fed_cm_initiated=*/false,
@@ -1470,7 +1363,7 @@ TEST_P(CookieControlsUserBypassTest, HighConfidenceAfterExpiration) {
   // Wait for exception to expire.
   FastForwardTo(expiration() + base::Days(1));
 
-  // Visiting the site after exception expires leads to high confidence signal.
+  // Visiting the site after exception expires highlights UB.
   NavigateAndCommit(GURL("https://example.com"));
   page_specific_content_settings()->OnBrowsingDataAccessed(
       CreateUnpartitionedStorageKey(GURL("https://thirdparty.com")),
@@ -1478,21 +1371,18 @@ TEST_P(CookieControlsUserBypassTest, HighConfidenceAfterExpiration) {
       /*blocked_by_policy=*/true);
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/true));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 1));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kHigh));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
-  // Revisiting the site again after 30 seconds doesn't report high confidence
-  // signal.
+  // Revisiting the site again after 30 seconds shouldn't highlight UB.
   FastForwardBy(base::Seconds(30));
   NavigateAndCommit(GURL("https://example.com"));
   page_specific_content_settings()->OnBrowsingDataAccessed(
@@ -1501,21 +1391,19 @@ TEST_P(CookieControlsUserBypassTest, HighConfidenceAfterExpiration) {
       /*blocked_by_policy=*/true);
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
-  EXPECT_CALL(*mock(), OnUserBypassIconStatusChanged(
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/true, /*protections_on=*/true,
-                           CookieBlocking3pcdStatus::kNotIn3pcd));
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 1));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 }
 
-TEST_P(CookieControlsUserBypassTest, MediumConfidenceStatefulBounce) {
+TEST_P(CookieControlsUserBypassTest, StatefulBounce) {
   if (!GetParam()) {
     return;
   }
@@ -1525,13 +1413,14 @@ TEST_P(CookieControlsUserBypassTest, MediumConfidenceStatefulBounce) {
 
   EXPECT_CALL(
       *mock(),
-      OnStatusChanged(CookieControlsStatus::kEnabled,
-                      /*controls_visible=*/true, /*protections_on=*/true,
+      OnStatusChanged(/*controls_visible=*/true, /*protections_on=*/true,
                       CookieControlsEnforcement::kNoEnforcement,
                       CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration()));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   EXPECT_CALL(*mock(), OnSitesCountChanged(0, 0));
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
   cookie_controls()->Update(web_contents());
 }
 
@@ -1619,8 +1508,10 @@ TEST_P(CookieControlsUserBypassTest, SandboxedTopLevelFrame) {
   navigation->Start();
   navigation->Commit();
 
-  EXPECT_CALL(*mock(), OnBreakageConfidenceLevelChanged(
-                           CookieControlsBreakageConfidenceLevel::kMedium));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 }

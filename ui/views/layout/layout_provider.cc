@@ -123,6 +123,8 @@ int LayoutProvider::GetDistanceMetric(int metric) const {
       return 12;
     case DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING:
       return features::IsChromeRefresh2023() ? 10 : 8;
+    case DISTANCE_UNRELATED_CONTROL_HORIZONTAL:
+      return 16;
     case DISTANCE_UNRELATED_CONTROL_VERTICAL:
       return 16;
     case DISTANCE_VECTOR_ICON_PADDING:
@@ -200,7 +202,7 @@ ShapeSysTokens GetShapeSysToken(ShapeContextTokens id) {
           {ShapeContextTokens::kSidePanelPageContentRadius,
            ShapeSysTokens::kSmall},
       });
-  const auto* it = shape_token_map.find(id);
+  const auto it = shape_token_map.find(id);
   return it == shape_token_map.end() ? ShapeSysTokens::kDefault : it->second;
 }
 

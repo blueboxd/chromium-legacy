@@ -162,8 +162,10 @@ public class HistoryUITest {
                         mProfile,
                         /* Supplier<Tab>= */ null,
                         mHistoryProvider,
+                        new HistoryUmaRecorder(),
                         null,
-                        true);
+                        true,
+                        false);
         mAdapter = mHistoryManager.getContentManagerForTests().getAdapter();
         mRecyclerView = mHistoryManager.getContentManagerForTests().getRecyclerView();
 
@@ -731,7 +733,7 @@ public class HistoryUITest {
     private void signOut() {
         // Clear supervised user id.
         doReturn("").when(mPrefService).getString(Pref.SUPERVISED_USER_ID);
-        mAccountManagerTestRule.removeAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
+        mAccountManagerTestRule.removeAccount(AccountManagerTestRule.TEST_ACCOUNT_1.getId());
     }
 
     private void performMenuAction(int menuItemId) {

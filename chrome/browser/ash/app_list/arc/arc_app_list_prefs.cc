@@ -578,12 +578,10 @@ ArcAppListPrefs::ArcAppListPrefs(
   if (resize_lock_manager)
     resize_lock_manager->SetPrefDelegate(this);
 
-  if (ash::features::IsPasspointARCSupportEnabled()) {
-    arc::ArcNetHostImpl* net_host =
-        arc::ArcNetHostImpl::GetForBrowserContext(profile_);
-    if (net_host) {
-      net_host->SetArcAppMetadataProvider(this);
-    }
+  arc::ArcNetHostImpl* net_host =
+      arc::ArcNetHostImpl::GetForBrowserContext(profile_);
+  if (net_host) {
+    net_host->SetArcAppMetadataProvider(this);
   }
 
   if (base::FeatureList::IsEnabled(arc::kSyncInstallPriority)) {
@@ -2395,18 +2393,6 @@ void ArcAppListPrefs::OnNotificationsEnabledChanged(
   }
   for (auto& observer : observer_list_)
     observer.OnNotificationsEnabledChanged(package_name, enabled);
-}
-
-bool ArcAppListPrefs::IsUnknownPackage(const std::string& package_name) const {
-  if (GetPackage(package_name))
-    return false;
-  if (sync_service_ && sync_service_->IsPackageSyncing(package_name))
-    return false;
-  if (default_apps_->HasPackage(package_name))
-    return false;
-  if (apps_installations_.count(package_name))
-    return false;
-  return true;
 }
 
 bool ArcAppListPrefs::IsDefaultPackage(const std::string& package_name) const {

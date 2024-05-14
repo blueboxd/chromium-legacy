@@ -31,6 +31,16 @@
     margin-bottom: 6px;
   }
 
+  /* User select should be disabled on the Read Anything panel when Read Aloud
+   * is playing audio and enabled otherwise. */
+  .user-select-disabled-when-speech-playing-true {
+    user-select: none;
+  }
+
+  .user-select-disabled-when-speech-aloud-playing-false {
+    user-select: auto;
+  }
+
   #container {
     background: var(--background-color);
     color: var(--foreground-color);
@@ -71,23 +81,39 @@
     background-color: transparent;
   }
 
+  img {
+    max-width: 100%;
+  }
+
 </style>
 <div id="flexParent" on-keydown="onKeyDown_">
   <div id="toolbar-container" hidden="[[!isWebUIToolbarVisible_]]">
     <read-anything-toolbar
-      paused="[[paused]]"
+      paused="[[speechPlayingState.paused]]"
+      has-content="[[hasContent_]]"
       selected-voice="[[selectedVoice]]"
       available-voices="[[availableVoices]]"
       preview-voice-playing="[[previewVoicePlaying]]"
+      locale-to-display-name="[[localeToDisplayName]]"
       on-select-voice="onSelectVoice_"
       on-preview-voice="onPreviewVoice_"
       on-voice-menu-close="onVoiceMenuClose_"
+      on-play-pause-click="onPlayPauseClick_"
+      on-font-size-change="updateFontSize_"
+      on-font-change="onFontChange_"
+      on-rate-change="onSpeechRateChange_"
+      on-next-granularity-click="playNextGranularity_"
+      on-previous-granularity-click="playPreviousGranularity_"
+      on-links-toggle="updateContent"
+      on-highlight-toggle="onHighlightToggle_"
       id="toolbar">
     </read-anything-toolbar>
   </div>
   <div id="container-parent" class="sp-card sp-scroller"
        hidden="[[!hasContent_]]">
-    <div id="container"></div>
+    <div id="container" class$=
+    "user-select-disabled-when-speech-playing-[[!speechPlayingState.paused]]">
+  </div>
   </div>
   <div id="empty-state-container" hidden="[[hasContent_]]">
     <sp-empty-state

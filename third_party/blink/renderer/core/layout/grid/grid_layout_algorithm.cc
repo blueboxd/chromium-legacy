@@ -1070,14 +1070,10 @@ LayoutUnit ComputeBlockSizeForSubgrid(const GridSizingSubtree& sizing_subtree,
   const auto& node = To<GridNode>(subgrid_data.node);
   const auto& style = node.Style();
 
-  const auto available_inline_size =
-      std::make_optional(space.AvailableSize().inline_size);
-
   return ComputeBlockSizeForFragment(
       space, style, ComputeBorders(space, node) + ComputePadding(space, style),
       node.ComputeSubgridIntrinsicBlockSize(sizing_subtree, space),
-      (*available_inline_size == kIndefiniteSize) ? std::nullopt
-                                                  : available_inline_size);
+      space.AvailableSize().inline_size);
 }
 
 }  // namespace
@@ -1597,10 +1593,9 @@ void GridLayoutAlgorithm::ComputeGridItemBaselines(
                               std::move(subgrid_layout_subtree));
 
     // Skip this item if we aren't able to resolve our inline size.
-    const auto& item_style = grid_item.node.Style();
-    if (InlineLengthUnresolvable(space, item_style.LogicalWidth()) ||
-        InlineLengthUnresolvable(space, item_style.LogicalMinWidth()) ||
-        InlineLengthUnresolvable(space, item_style.LogicalMaxWidth())) {
+    if (CalculateInitialFragmentGeometry(space, grid_item.node,
+                                         /* break_token */ nullptr)
+            .border_box_size.inline_size == kIndefiniteSize) {
       continue;
     }
 
@@ -1622,7 +1617,8 @@ void GridLayoutAlgorithm::ComputeGridItemBaselines(
     }
 
     const LayoutUnit extra_margin = GetExtraMarginForBaseline(
-        ComputeMarginsFor(space, item_style, baseline_writing_direction),
+        ComputeMarginsFor(space, grid_item.node.Style(),
+                          baseline_writing_direction),
         subgridded_item, track_direction, writing_mode);
 
     const LayoutUnit baseline =
@@ -3702,8 +3698,9 @@ void GridLayoutAlgorithm::PlaceGridItemsForFragmentation(
 
     // Only allow growth on "auto" block-size items, (a fixed block-size item
     // can't grow).
-    if (!item_style.LogicalHeight().IsAutoOrContentOrIntrinsic())
+    if (!item_style.LogicalHeight().HasAutoOrContentOrIntrinsic()) {
       return false;
+    }
 
     // Only allow growth on items which only span a single row.
     if (grid_item.SpanSize(kForRows) > 1)
@@ -3716,7 +3713,7 @@ void GridLayoutAlgorithm::PlaceGridItemsForFragmentation(
       return false;
 
     return !grid_item.IsSpanningFixedMinimumTrack(kForRows) ||
-           Style().LogicalHeight().IsAutoOrContentOrIntrinsic();
+           Style().LogicalHeight().HasAutoOrContentOrIntrinsic();
   };
 
   wtf_size_t previous_expansion_row_set_index = kNotFound;
@@ -4043,18 +4040,17 @@ void GridLayoutAlgorithm::PlaceGridItemsForFragmentation(
   while (ExpandRow())
     PlaceItems();
 
-  if (fragmentainer_space != kIndefiniteSize) {
-    // Encompass any fragmentainer overflow (caused by monolithic content). We
-    // want this to contribute to the grid container fragment size, and it is
-    // also needed to shift any breakpoints all the way into the next
-    // fragmentainer.
-    fragmentainer_space = std::max(fragmentainer_space, max_item_block_end);
-  }
-
   // See if we need to take a row break-point, and if-so re-run |PlaceItems()|.
   // We only need to do this once.
-  if (ShiftBreakpointIntoNextFragmentainer())
+  if (ShiftBreakpointIntoNextFragmentainer()) {
     PlaceItems();
+  } else if (fragmentainer_space != kIndefiniteSize) {
+    // Encompass any fragmentainer overflow (caused by monolithic content)
+    // that hasn't been accounted for. We want this to contribute to the
+    // grid container fragment size, and it is also needed to shift any
+    // breakpoints all the way into the next fragmentainer.
+    fragmentainer_space = std::max(fragmentainer_space, max_item_block_end);
+  }
 
   if (has_subsequent_children)
     container_builder_.SetHasSubsequentChildren();

@@ -6,12 +6,9 @@ import("//build/config/features.gni")
 import("//media/media_options.gni")
 import("//remoting/remoting_options.gni")
 
-static_library("errors") {
-  sources = [
-    "errors.cc",
-    "errors.h",
-  ]
-  deps = [ "//remoting/base:base" ]
+source_set("errors") {
+  sources = [ "errors.h" ]
+  deps = [ "//remoting/base:errors" ]
 }
 
 static_library("transport") {
@@ -73,6 +70,7 @@ static_library("protocol") {
     "connection_to_host.h",
     "content_description.cc",
     "content_description.h",
+    "credentials_type.h",
     "data_channel_manager.cc",
     "data_channel_manager.h",
     "datagram_channel_factory.h",
@@ -180,7 +178,10 @@ static_library("protocol") {
     "session.h",
     "session_authz_authenticator.cc",
     "session_authz_authenticator.h",
+    "session_authz_reauthorizer.cc",
+    "session_authz_reauthorizer.h",
     "session_manager.h",
+    "session_observer.h",
     "session_options_provider.h",
     "session_plugin.h",
     "socket_util.cc",
@@ -251,6 +252,7 @@ static_library("protocol") {
     "//remoting/base",
     "//remoting/base:authorization",
     "//remoting/base:logging",
+    "//remoting/base:name_value_map",
     "//remoting/codec:decoder",
     "//remoting/proto:internal_structs",
     "//remoting/proto/remoting/v1:network_traversal_proto",
@@ -417,6 +419,7 @@ source_set("unit_tests") {
     "remoting_ice_config_request_unittest.cc",
     "sdp_message_unittest.cc",
     "session_authz_authenticator_unittest.cc",
+    "session_authz_reauthorizer_unittest.cc",
     "session_config_unittest.cc",
     "spake2_authenticator_unittest.cc",
     "ssl_hmac_channel_authenticator_unittest.cc",

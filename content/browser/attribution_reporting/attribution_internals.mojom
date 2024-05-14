@@ -89,6 +89,9 @@ struct WebUIDebugReport {
 
 // Struct representing a stored attribution source that will be displayed by WebUI.
 struct WebUISource {
+  // The source's internal ID, unique across all sources in storage.
+  // Not intended to be displayed.
+  int64 id;
   uint64 source_event_id;
   url.mojom.Origin source_origin;
   attribution_reporting.mojom.DestinationSet destinations;
@@ -211,9 +214,9 @@ interface Handler {
   // being sent.
   GetReports() => (array<WebUIReport> reports);
 
-  // Sends the given reports, ignoring delay, returning when the operation has
-  // been completed and the reports have been cleared from storage.
-  SendReports(array<ReportID> ids) => ();
+  // Sends the given report, ignoring delay, returning when the operation has
+  // been completed and the report has been cleared from storage.
+  SendReport(ReportID id) => ();
 
   // Deletes all persisted data for the attribution reporting API, returning when the
   // operation has been completed.

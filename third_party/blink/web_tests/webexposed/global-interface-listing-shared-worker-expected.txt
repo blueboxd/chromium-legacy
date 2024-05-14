@@ -1209,10 +1209,15 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     setter onerror
 [Worker]     setter onshow
 [Worker] interface Observable
+[Worker]     static method from
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
+[Worker]     method drop
+[Worker]     method filter
 [Worker]     method forEach
+[Worker]     method map
 [Worker]     method subscribe
+[Worker]     method take
 [Worker]     method takeUntil
 [Worker]     method toArray
 [Worker] interface OffscreenCanvas : EventTarget
@@ -1262,6 +1267,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method arcTo
 [Worker]     method beginLayer
 [Worker]     method beginPath
+[Worker]     method beginWebGPUAccess
 [Worker]     method bezierCurveTo
 [Worker]     method clearRect
 [Worker]     method clip
@@ -1280,11 +1286,13 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method drawMesh
 [Worker]     method ellipse
 [Worker]     method endLayer
+[Worker]     method endWebGPUAccess
 [Worker]     method fill
 [Worker]     method fillRect
 [Worker]     method fillText
 [Worker]     method getImageData
 [Worker]     method getLineDash
+[Worker]     method getTextureFormat
 [Worker]     method getTransform
 [Worker]     method isContextLost
 [Worker]     method isPointInPath
@@ -1508,12 +1516,14 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker] interface ReadableStream
 [Worker]     attribute @@toStringTag
 [Worker]     getter locked
+[Worker]     method @@asyncIterator
 [Worker]     method cancel
 [Worker]     method constructor
 [Worker]     method getReader
 [Worker]     method pipeThrough
 [Worker]     method pipeTo
 [Worker]     method tee
+[Worker]     method values
 [Worker] interface ReadableStreamBYOBReader
 [Worker]     attribute @@toStringTag
 [Worker]     getter closed
@@ -3236,6 +3246,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker]     method createBidirectionalStream
 [Worker]     method createUnidirectionalStream
+[Worker]     method getStats
 [Worker] interface WebTransportBidirectionalStream
 [Worker]     attribute @@toStringTag
 [Worker]     getter readable

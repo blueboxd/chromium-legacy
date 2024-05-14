@@ -131,14 +131,18 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   VoiceSearchNavigationTabHelper::CreateForWebState(web_state);
   IOSChromeSyncedTabDelegate::CreateForWebState(web_state);
   InfoBarManagerImpl::CreateForWebState(web_state);
-  BlockedPopupTabHelper::CreateForWebState(web_state);
+  if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
+    BlockedPopupTabHelper::GetOrCreateForWebState(web_state);
+  }
   if (IsNativeFindInPageAvailable()) {
     FindTabHelper::CreateForWebState(web_state);
   } else {
     web::JavaScriptFindInPageManager::CreateForWebState(web_state);
     JavaScriptFindTabHelper::CreateForWebState(web_state);
   }
-  ITunesUrlsHandlerTabHelper::CreateForWebState(web_state);
+  if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
+    ITunesUrlsHandlerTabHelper::GetOrCreateForWebState(web_state);
+  }
   HistoryTabHelper::CreateForWebState(web_state);
   LoadTimingTabHelper::CreateForWebState(web_state);
   OverscrollActionsTabHelper::CreateForWebState(web_state);
@@ -223,15 +227,21 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   ukm::InitializeSourceUrlRecorderForWebState(web_state);
 
   // Download tab helpers.
-  ARQuickLookTabHelper::CreateForWebState(web_state);
+  if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
+    ARQuickLookTabHelper::GetOrCreateForWebState(web_state);
+  }
   DownloadManagerTabHelper::CreateForWebState(web_state);
   SafariDownloadTabHelper::CreateForWebState(web_state);
-  PassKitTabHelper::CreateForWebState(web_state);
+  if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
+    PassKitTabHelper::GetOrCreateForWebState(web_state);
+  }
   VcardTabHelper::CreateForWebState(web_state);
 
   // Drive tab helper.
   if (base::FeatureList::IsEnabled(kIOSSaveToDrive)) {
-    DriveTabHelper::CreateForWebState(web_state);
+    if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
+      DriveTabHelper::GetOrCreateForWebState(web_state);
+    }
     DocumentDownloadTabHelper::CreateForWebState(web_state);
   }
 
@@ -251,7 +261,9 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
         web_state, SadTabTabHelper::kDefaultRepeatFailureInterval);
     SnapshotTabHelper::CreateForWebState(web_state);
     PagePlaceholderTabHelper::CreateForWebState(web_state);
-    PrintTabHelper::CreateForWebState(web_state);
+    if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
+      PrintTabHelper::GetOrCreateForWebState(web_state);
+    }
     ChromeIOSTranslateClient::CreateForWebState(web_state);
 
     PasswordTabHelper::CreateForWebState(web_state);
@@ -269,7 +281,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     ]);
   }
 
-  InfobarBadgeTabHelper::CreateForWebState(web_state);
+  InfobarBadgeTabHelper::GetOrCreateForWebState(web_state);
 
   if (base::FeatureList::IsEnabled(kSharedHighlightingIOS)) {
     LinkToTextTabHelper::CreateForWebState(web_state);
@@ -286,7 +298,9 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   PermissionsTabHelper::CreateForWebState(web_state);
 
   RepostFormTabHelper::CreateForWebState(web_state);
-  NetExportTabHelper::CreateForWebState(web_state);
+  if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
+    NetExportTabHelper::GetOrCreateForWebState(web_state);
+  }
 
   if (base::FeatureList::IsEnabled(
           security_interstitials::features::kHttpsOnlyMode) ||
@@ -309,7 +323,9 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     FollowTabHelper::CreateForWebState(web_state);
   }
 
-  CaptivePortalTabHelper::CreateForWebState(web_state);
+  if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
+    CaptivePortalTabHelper::GetOrCreateForWebState(web_state);
+  }
 
   if (!is_off_the_record) {
     PriceNotificationsTabHelper::CreateForWebState(web_state);
@@ -319,7 +335,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     ContextualPanelTabHelper::CreateForWebState(web_state);
   }
 
-  if (!is_off_the_record && IsRevampPageInfoIosEnabled()) {
+  if (!is_off_the_record && IsAboutThisSiteFeatureEnabled()) {
     AboutThisSiteTabHelper::CreateForWebState(web_state);
   }
 }

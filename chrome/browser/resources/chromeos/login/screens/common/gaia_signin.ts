@@ -25,9 +25,9 @@ import {afterNextRender, mixinBehaviors, PolymerElement} from '//resources/polym
 
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.js';
 import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.js';
-import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.js';
+import {OobeI18nMixin, OobeI18nMixinInterface} from '../../components/mixins/oobe_i18n_mixin.js';
 import type {OobeModalDialog} from '../../components/dialogs/oobe_modal_dialog.js';
-import {OOBE_UI_STATE} from '../../components/display_manager_types.js';
+import {OobeUiState} from '../../components/display_manager_types.js';
 import type {GaiaDialog} from '../../components/gaia_dialog.js';
 import {OobeTypes} from '../../components/oobe_types.js';
 import type {SecurityTokenPin} from '../../components/security_token_pin.js';
@@ -88,9 +88,9 @@ enum EnrollmentNudgeUserAction {
 
 const GaiaSigninElementBase =
     mixinBehaviors(
-        [OobeI18nBehavior, LoginScreenBehavior, MultiStepBehavior],
-        PolymerElement) as {
-      new (): PolymerElement & OobeI18nBehaviorInterface &
+        [LoginScreenBehavior, MultiStepBehavior],
+        OobeI18nMixin(PolymerElement)) as {
+      new (): PolymerElement & OobeI18nMixinInterface &
           LoginScreenBehaviorInterface & MultiStepBehaviorInterface,
     };
 
@@ -477,7 +477,8 @@ export class GaiaSigninElement extends GaiaSigninElementBase {
    * Handler for Gaia loading timeout.
    */
   private onLoadingTimeOut(): void {
-    if (Oobe.getInstance().currentScreen.id != 'gaia-signin') {
+    const currentScreen = Oobe.getInstance().currentScreen;
+    if (currentScreen && currentScreen.id !== 'gaia-signin') {
       return;
     }
     this.clearLoadingTimer();
@@ -532,8 +533,8 @@ export class GaiaSigninElement extends GaiaSigninElementBase {
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  override getOobeUIInitialState(): OOBE_UI_STATE {
-    return OOBE_UI_STATE.GAIA_SIGNIN;
+  override getOobeUIInitialState(): OobeUiState {
+    return OobeUiState.GAIA_SIGNIN;
   }
 
   /**
@@ -610,8 +611,8 @@ export class GaiaSigninElement extends GaiaSigninElementBase {
     });
 
     this.isDefaultSsoProviderConfigured =
-        data.screenMode == ScreenAuthMode.SAML_REDIRECT;
-    params.doSamlRedirect = data.screenMode == ScreenAuthMode.SAML_REDIRECT;
+        data.screenMode === ScreenAuthMode.SAML_REDIRECT;
+    params.doSamlRedirect = data.screenMode === ScreenAuthMode.SAML_REDIRECT;
     params.menuEnterpriseEnrollment =
         !(data.enterpriseManagedDevice || data.hasDeviceOwner);
     params.isFirstUser = !(data.enterpriseManagedDevice || data.hasDeviceOwner);
@@ -627,7 +628,7 @@ export class GaiaSigninElement extends GaiaSigninElementBase {
    * Whether the current auth flow is SAML.
    */
   isSamlAuthFlowForTesting(): boolean {
-    return this.isSaml && this.authFlow == AuthFlow.SAML;
+    return this.isSaml && this.authFlow === AuthFlow.SAML;
   }
 
   /**
@@ -666,7 +667,7 @@ export class GaiaSigninElement extends GaiaSigninElementBase {
    * Invoked when the authFlow property is changed on the authenticator.
    */
   private onAuthFlowChange(): void {
-    this.isSaml = this.authFlow == AuthFlow.SAML;
+    this.isSaml = this.authFlow === AuthFlow.SAML;
   }
 
   /**

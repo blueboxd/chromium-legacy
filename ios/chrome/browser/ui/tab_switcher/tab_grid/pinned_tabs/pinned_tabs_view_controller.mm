@@ -59,7 +59,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // Identifier of the selected item.
   web::WebStateID _selectedItemID;
 
-  // Lastest dragged item. This property is set when the item
+  // Latest dragged item. This property is set when the item
   // is long pressed which does not always result in a drag action.
   TabSwitcherItem* _draggedItem;
 
@@ -69,8 +69,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   web::WebStateID _lastInsertedItemID;
 
   // Constraints used to update the view during drag and drop actions.
-  NSLayoutConstraint* _dragEnabledConstraint;
-  NSLayoutConstraint* _defaultConstraint;
+  NSLayoutConstraint* _heightConstraint;
 
   // Background color of the view.
   UIColor* _backgroundColor;
@@ -151,19 +150,13 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   _dragSessionEnabled = enabled;
 
-  __weak __typeof(self) weakSelf = self;
-  [UIView animateWithDuration:kPinnedViewDragAnimationTime
-      animations:^{
-        self->_dragEnabledConstraint.active = enabled;
-        self->_defaultConstraint.active = !enabled;
-        [self updateDropOverlayViewVisibility];
-        [self resetViewBackgrounds];
-        [self.view.superview layoutIfNeeded];
-        [self.view layoutIfNeeded];
-      }
-      completion:^(BOOL finished) {
-        [weakSelf popLastInsertedItem];
-      }];
+  if (!_available) {
+    // If not available, return early to avoid a visual glitch, see
+    // crbug.com/328019332.
+    return;
+  }
+
+  [self updateForDragInProgress:enabled];
 }
 
 - (void)pinnedTabsAvailable:(BOOL)available {
@@ -179,6 +172,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   // Show the view if `visible` is true to ensure smooth animation.
   if (visible) {
+    if (_dragSessionEnabled) {
+      // The update has been canceled to avoid glitch, see crbug.com/328019332,
+      // restart it here.
+      [self updateForDragInProgress:_dragSessionEnabled];
+    }
     [self updateDropOverlayViewVisibility];
     self.view.hidden = NO;
   }
@@ -298,7 +296,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   return self.selectedIndex != NSNotFound;
 }
 
-#pragma mark - TabCollectionConsumer
+#pragma mark - PinnedTabCollectionConsumer
 
 - (void)populateItems:(NSArray<TabSwitcherItem*>*)items
        selectedItemID:(web::WebStateID)selectedItemID {
@@ -667,7 +665,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 #pragma mark - Private
 
-// Animates the lastest inserted item (if any) with a pop animation.
+// Animates the latest inserted item (if any) with a pop animation.
 // This method is called when :
 // - The pinned overlay is hidden.
 // - A scroll animation ends.
@@ -801,11 +799,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   collectionView.backgroundView = backgroundView;
   collectionView.backgroundColor = _backgroundColor;
 
-  _dragEnabledConstraint = [collectionView.heightAnchor
-      constraintEqualToConstant:kPinnedViewDragEnabledHeight];
-  _defaultConstraint = [collectionView.heightAnchor
+  _heightConstraint = [collectionView.heightAnchor
       constraintEqualToConstant:kPinnedViewDefaultHeight];
-  _defaultConstraint.active = YES;
+  _heightConstraint.active = YES;
 }
 
 // Configures `dropOverlayView`.
@@ -970,6 +966,26 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                                              animated:NO];
                }
                completion:nil];
+}
+
+// Updates the visual of the Pinned Tabs to account for whether a drag and drop
+// is currently happening or not.
+- (void)updateForDragInProgress:(BOOL)dragInProgress {
+  __weak __typeof(self) weakSelf = self;
+  __weak NSLayoutConstraint* heightConstraint = _heightConstraint;
+  [UIView animateWithDuration:kPinnedViewDragAnimationTime
+      animations:^{
+        heightConstraint.constant = dragInProgress
+                                        ? kPinnedViewDragEnabledHeight
+                                        : kPinnedViewDefaultHeight;
+        [weakSelf updateDropOverlayViewVisibility];
+        [weakSelf resetViewBackgrounds];
+        [weakSelf.view.superview layoutIfNeeded];
+        [weakSelf.view layoutIfNeeded];
+      }
+      completion:^(BOOL finished) {
+        [weakSelf popLastInsertedItem];
+      }];
 }
 
 // Tells the delegate that the user tapped the item with identifier

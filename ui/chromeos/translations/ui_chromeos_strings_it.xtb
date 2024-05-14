@@ -72,7 +72,7 @@
 <translation id="1577977504532381335">Controlla il criterio dell'amministratore</translation>
 <translation id="158849752021629804">Occorre una rete domestica</translation>
 <translation id="1589128298353575783"><ph name="NUMBER_OF_PB" /> PB</translation>
-<translation id="1620510694547887537">Fotocamera</translation>
+<translation id="1620510694547887537">Videocamera</translation>
 <translation id="162175252992296058">Portoghese con tastiera internazionale USA</translation>
 <translation id="1629521517399325891">Il certificato utente non è disponibile per l'autenticazione della rete.</translation>
 <translation id="1641780993263690097">Cinese pinyin</translation>
@@ -851,6 +851,7 @@
 <translation id="7589661784326793847">Aspetta solo un secondo</translation>
 <translation id="7600126690270271294">Serbo</translation>
 <translation id="7603724359189955920">Griglie</translation>
+<translation id="7624010287655004652">Bloccato da un altro operatore mobile</translation>
 <translation id="7627790789328695202">Spiacenti. <ph name="FILE_NAME" /> esiste già. Rinominarlo e riprovare.</translation>
 <translation id="7628656427739290098"><ph name="PERCENT" />% completato.</translation>
 <translation id="7649070708921625228">Guida</translation>
@@ -1017,7 +1018,6 @@
 <translation id="8698877009525468705">Questo file è riservato e soggetto a limitazioni stabilite dal criterio dell'amministratore.</translation>
 <translation id="8712637175834984815">Ok</translation>
 <translation id="8713112442029511308">Maltese</translation>
-<translation id="8714138378966541668">Rete bloccata dall'operatore</translation>
 <translation id="8714406895390098252">Bicicletta</translation>
 <translation id="8719721339511222681">È stato selezionato l'elemento <ph name="ENTRY_NAME" />.</translation>
 <translation id="872537912056138402">Croato</translation>

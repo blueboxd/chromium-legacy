@@ -4,18 +4,19 @@
 #include "base/test/memory/dangling_ptr_instrumentation.h"
 
 #include <cstdint>
+#include <string_view>
 
 #include "base/allocator/partition_alloc_features.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/dangling_raw_ptr_checks.h"
 #include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
+#include "partition_alloc/dangling_raw_ptr_checks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base::test {
 
 // static
-base::expected<DanglingPtrInstrumentation, base::StringPiece>
+base::expected<DanglingPtrInstrumentation, std::string_view>
 DanglingPtrInstrumentation::Create() {
   if (!FeatureList::IsEnabled(features::kPartitionAllocBackupRefPtr)) {
     return base::unexpected(
@@ -34,10 +35,6 @@ DanglingPtrInstrumentation::Create() {
   return base::unexpected(
       "DanglingPtrInstrumentation requires the binary flag "
       "'enable_dangling_raw_ptr_checks' to be on.");
-#elif BUILDFLAG(ENABLE_DANGLING_RAW_PTR_PERF_EXPERIMENT)
-  return base::unexpected(
-      "DanglingPtrInstrumentation requires the binary flag "
-      "'enable_dangling_raw_ptr_perf_experiment' to be off.");
 #else
   return DanglingPtrInstrumentation();
 #endif

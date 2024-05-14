@@ -16,6 +16,7 @@
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "components/sync/base/features.h"
+#import "ios/chrome/browser/push_notification/model/provisional_push_notification_util.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_client_id.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_service.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_settings_util.h"
@@ -146,9 +147,9 @@ using base::UserMetricsAction;
   [self updateFeedTopSectionWhenClosed];
   // Update prefs that save the dismissed times if the promo conditions are not
   // being overriden.
+  int notificationsPromoTimesDismissed =
+      self.prefService->GetInteger(prefs::kNotificationsPromoTimesDismissed);
   if (!experimental_flags::ShouldForceContentNotificationsPromo()) {
-    int notificationsPromoTimesDismissed =
-        self.prefService->GetInteger(prefs::kNotificationsPromoTimesDismissed);
     self.prefService->SetTime(prefs::kNotificationsPromoLastDismissed,
                               base::Time::Now());
     self.prefService->SetInteger(prefs::kNotificationsPromoTimesDismissed,
@@ -158,8 +159,18 @@ using base::UserMetricsAction;
     case NotificationsPromoButtonTypeClose:
       [self logHistogramForAction:ContentNotificationTopOfFeedPromoAction::
                                       kDismissedFromCloseButton];
+      if (notificationsPromoTimesDismissed >=
+          kNotificationsPromoMaxDismissedCount) {
+        [self enrollUserToProvisionalNotificationsFromEntrypoint:
+                  ContentNotificationPromoProvisionalEntrypoint::kCloseButton];
+      }
       break;
     case NotificationsPromoButtonTypeSecondary:
+      // If notification is dismissed from secondary button, set TimesDismissed
+      // > kNotificationsPromoMaxDismissedCount, to ensure the user doesn't see
+      // the notifications promo anymore.
+      self.prefService->SetInteger(prefs::kNotificationsPromoTimesDismissed,
+                                   kMaxImpressionsForDismissedThreshold);
       [self logHistogramForAction:ContentNotificationTopOfFeedPromoAction::
                                       kDismissedFromSecondaryButton];
       break;
@@ -177,82 +188,11 @@ using base::UserMetricsAction;
       "ContentNotifications.Promo.TopOfFeed.MainButtonTapped"));
   [self logHistogramForAction:ContentNotificationTopOfFeedPromoAction::
                                   kMainButtonTapped];
-  __weak FeedTopSectionMediator* weakSelf = self;
-  // Request displaying the OS notifications permission prompt.
-  [PushNotificationUtil requestPushNotificationPermission:^(
-                            BOOL granted, BOOL promptShown, NSError* error) {
-    if (error) {
-      [self closeNotificationPromoAndEnablePref:NO];
-      [self
-          logHistogramForEvent:ContentNotificationTopOfFeedPromoEvent::kError];
-      return;
-    }
-    if (!promptShown && !granted) {
-      // If the OS notification prompt has been previously shown, display a
-      // custom alert to ask for permission.
-      // This callback can be executed on a background thread, make sure the UI
-      // is updated on the main thread.
-      dispatch_async(dispatch_get_main_queue(), ^{
-        [weakSelf
-                .notificationsPresenter presentPushNotificationPermissionAlert];
-        [self logHistogramForEvent:ContentNotificationTopOfFeedPromoEvent::
-                                       kPromptShown];
-      });
-      return;
-    }
-    if (promptShown && granted) {
-      // If the OS prompt is shown and the user granted notifications access,
-      // save the preference and close the promo.
-      [weakSelf.messagePresenter presentNotificationsConfirmationMessage];
-      [self closeNotificationPromoAndEnablePref:YES];
-      RecordAction(UserMetricsAction(
-          "ContentNotifications.Promo.TopOfFeed.Permission.Accepted"));
-      [self logHistogramForAction:ContentNotificationTopOfFeedPromoAction::
-                                      kAccept];
-      return;
-    }
-    if (promptShown && !granted) {
-      // If the OS prompt is shown and the user denied notifications access,
-      // close the promo.
-      [self closeNotificationPromoAndEnablePref:NO];
-      RecordAction(UserMetricsAction(
-          "ContentNotifications.Promo.TopOfFeed.Permission.Declined"));
-      [self logHistogramForAction:ContentNotificationTopOfFeedPromoAction::
-                                      kDecline];
-      return;
-    }
-    if (!promptShown && granted) {
-      // If the OS prompt has been previously shown but notifications are not
-      // active on Chrome activate the notifications. This is an edge case.
-      [weakSelf.messagePresenter presentNotificationsConfirmationMessage];
-      [self closeNotificationPromoAndEnablePref:YES];
-      [self logHistogramForEvent:ContentNotificationTopOfFeedPromoEvent::
-                                     kNotifActive];
-      return;
-    }
-  }];
+  [self.presenter presentPushNotificationPermissionAlert];
+  [self updateFeedTopSectionWhenClosed];
 }
 
 #pragma mark - Private
-
-// Helper method to close the promo on the main thread. Takes `enablePref` as a
-// parameter which toggles the pref ON only.
-- (void)closeNotificationPromoAndEnablePref:(BOOL)enablePref {
-  // This callback can be executed on a background thread, make sure the UI
-  // is updated on the main thread.
-  dispatch_async(dispatch_get_main_queue(), ^{
-    if (enablePref) {
-      PushNotificationService* service =
-          GetApplicationContext()->GetPushNotificationService();
-      id<SystemIdentity> identity =
-          self.authenticationService->GetPrimaryIdentity(
-              signin::ConsentLevel::kSignin);
-      service->SetPreference(identity.gaiaID,
-                             PushNotificationClientId::kContent, true);
-    }
-    [self updateFeedTopSectionWhenClosed];
-  });
-}
 
 // Handles closing the promo, and the NTP and Feed Top Section layout when the
 // promo is closed.
@@ -326,10 +266,12 @@ using base::UserMetricsAction;
   base::Time now = base::Time::Now();
   // Check if promo has been displayed `kNotificationsPromoMaxShownCount`.
   if (notificationsPromoTimesShown >= kNotificationsPromoMaxShownCount) {
+    [self enrollUserToProvisionalNotificationsFromEntrypoint:
+              ContentNotificationPromoProvisionalEntrypoint::kShownThreshold];
     return false;
   }
 
-  // Check if promo is in cooldown from dismissal.
+  // Check if promo has been dismissed more than the threshold.
   if (notificationsPromoTimesDismissed >=
       kNotificationsPromoMaxDismissedCount) {
     return false;
@@ -403,6 +345,19 @@ using base::UserMetricsAction;
   }
 }
 
+#pragma mark - Private
+
+- (void)enrollUserToProvisionalNotificationsFromEntrypoint:
+    (ContentNotificationPromoProvisionalEntrypoint)entrypoint {
+  [self logHistogramForEntrypoint:entrypoint];
+  [ProvisionalPushNotificationUtil
+      enrollUserToProvisionalNotificationsForClientIds:
+          {PushNotificationClientId::kContent,
+           PushNotificationClientId::kSports}
+                                       withAuthService:
+                                           self.authenticationService];
+}
+
 #pragma mark - Metrics
 
 - (void)logHistogramForAction:(ContentNotificationTopOfFeedPromoAction)action {
@@ -410,8 +365,11 @@ using base::UserMetricsAction;
                           action);
 }
 
-- (void)logHistogramForEvent:(ContentNotificationTopOfFeedPromoEvent)event {
-  UmaHistogramEnumeration("ContentNotifications.Promo.TopOfFeed.Event", event);
+- (void)logHistogramForEntrypoint:
+    (ContentNotificationPromoProvisionalEntrypoint)entrypoint {
+  UmaHistogramEnumeration(
+      "ContentNotifications.Promo.ProvisionalNotifications.Entrypoint",
+      entrypoint);
 }
 
 @end

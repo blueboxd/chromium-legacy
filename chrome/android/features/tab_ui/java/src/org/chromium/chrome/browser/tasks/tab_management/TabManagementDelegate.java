@@ -15,6 +15,7 @@ import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.lifetime.Destroyable;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
@@ -33,6 +34,7 @@ import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_management.ColorPickerCoordinator.ColorPickerLayoutType;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
@@ -86,6 +88,7 @@ public interface TabManagementDelegate {
 
     /**
      * Create the {@link TabSwitcher} to display Tabs in grid.
+     *
      * @param activity The current android {@link Activity}.
      * @param activityLifecycleDispatcher Allows observation of the activity lifecycle.
      * @param tabModelSelector Gives access to the current set of {@TabModel}.
@@ -100,11 +103,12 @@ public interface TabManagementDelegate {
      * @param dynamicResourceLoaderSupplier Supplies the current {@link DynamicResourceLoader}.
      * @param snackbarManager Manages the snackbar.
      * @param modalDialogManager Manages modal dialogs.
+     * @param bottomSheetController The {@link BottomSheetController} for the current activity.
      * @param incognitoReauthControllerSupplier {@link OneshotSupplier<IncognitoReauthController>}
-     *         to detect pending re-auth when tab switcher is shown.
+     *     to detect pending re-auth when tab switcher is shown.
      * @param backPressManager {@link BackPressManager} to handle back press gesture.
      * @param layoutStateProviderSupplier {@link OneshotSupplier<LayoutStateProvider>} to provide
-     *                                    the layout state changes.
+     *     the layout state changes.
      * @return The {@link TabSwitcher}.
      */
     TabSwitcher createGridTabSwitcher(
@@ -122,20 +126,22 @@ public interface TabManagementDelegate {
             @NonNull Supplier<DynamicResourceLoader> dynamicResourceLoaderSupplier,
             @NonNull SnackbarManager snackbarManager,
             @NonNull ModalDialogManager modalDialogManager,
+            @NonNull BottomSheetController bottomSheetController,
             @NonNull OneshotSupplier<IncognitoReauthController> incognitoReauthControllerSupplier,
             @Nullable BackPressManager backPressManager,
             @Nullable OneshotSupplier<LayoutStateProvider> layoutStateProviderSupplier);
 
     /**
      * Create the {@link TabGroupUi}.
+     *
      * @param activity The {@link Activity} that creates this surface.
      * @param parentView The parent view of this UI.
      * @param browserControlsStateProvider The {@link BrowserControlsStateProvider} of the top
-     *                                     controls.
+     *     controls.
      * @param incognitoStateProvider Observable provider of incognito state.
      * @param scrimCoordinator The {@link ScrimCoordinator} to control scrim view.
      * @param omniboxFocusStateSupplier Supplier to access the focus state of the omnibox.
-     * @param bottomSheetController Controls the state of the bottom sheet.
+     * @param bottomSheetController The {@link BottomSheetController} for the current activity.
      * @param activityLifecycleDispatcher Allows observation of the activity lifecycle.
      * @param isWarmOnResumeSupplier Supplies whether the app was warm on resume.
      * @param tabModelSelector Gives access to the current set of {@TabModel}.
@@ -180,6 +186,7 @@ public interface TabManagementDelegate {
      *     unused as the root UI's scrim coordinator is used for the show/hide animation.
      * @param snackbarManager The activity level snackbar manager.
      * @param modalDialogManager The modal dialog manager for the activity.
+     * @param bottomSheetController The {@link BottomSheetController} for the current activity.
      * @param incognitoReauthControllerSupplier The incognito reauth controller supplier.
      * @param newTabButtonOnClickListener The listener for clicking the new tab button.
      * @param isIncognito Whether this is an incognito pane.
@@ -197,22 +204,36 @@ public interface TabManagementDelegate {
             @NonNull ScrimCoordinator rootUiScrimCoordinator,
             @NonNull SnackbarManager snackbarManager,
             @NonNull ModalDialogManager modalDialogManager,
+            @NonNull BottomSheetController bottomSheetController,
             @Nullable OneshotSupplier<IncognitoReauthController> incognitoReauthControllerSupplier,
             @NonNull OnClickListener newTabButtonOnClickListener,
             boolean isIncognito,
             @NonNull DoubleConsumer onToolbarAlphaChange);
 
     /**
-     * Create a {@link TabGroupCreationDialog} when creating a new tab group.
+     * *
+     *
+     * @param context Used to inflate UI.
+     * @param tabModelSelector Used to pull tab data from.
+     * @param onToolbarAlphaChange Observer to notify when alpha changes during animations.
+     * @return The pane implementation that displays and allows interactions with tab groups.
+     */
+    Pane createTabGroupsPane(
+            @NonNull Context context,
+            @NonNull TabModelSelector tabModelSelector,
+            @NonNull DoubleConsumer onToolbarAlphaChange);
+
+    /**
+     * Create a TabGroupCreationDialogManager when creating a new tab group.
      *
      * @param activity The {@link Activity} that hosts this dialog.
      * @param modalDialogManager The modal dialog manager for the activity.
-     * @param tabModelSelectorSupplier The supplier for the {@link TabModelSelector}.
+     * @param tabModelSelector The current {@link TabModelSelector}.
      */
-    TabGroupCreationDialog createTabGroupCreationDialogDelegate(
+    Destroyable createTabGroupCreationDialogManager(
             @NonNull Activity activity,
             @NonNull ModalDialogManager modalDialogManager,
-            @NonNull ObservableSupplier<TabModelSelector> tabModelSelectorSupplier);
+            @NonNull TabModelSelector tabModelSelector);
 
     /**
      * Create a {@link ColorPicker} when creating a custom color picker component.
@@ -222,11 +243,15 @@ public interface TabManagementDelegate {
      * @param colorPickerLayout The layout resource to be inflated.
      * @param colorPickerType The {@link ColorPickerType} that this color picker use.
      * @param isIncognito Whether the current tab model is in incognito mode.
+     * @param layoutType The {@ColorPickerLayoutType} that the component will be arranged as.
+     * @param onColorItemClicked The runnable for performing an action on each color click event.
      */
     ColorPicker createColorPickerCoordinator(
             @NonNull Context context,
             @NonNull List<Integer> colors,
             @NonNull @LayoutRes int colorPickerLayout,
             @NonNull @ColorPickerType int colorPickerType,
-            @NonNull boolean isIncognito);
+            @NonNull boolean isIncognito,
+            @NonNull @ColorPickerLayoutType int layoutType,
+            @Nullable Runnable onColorItemClicked);
 }

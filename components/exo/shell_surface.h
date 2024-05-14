@@ -18,9 +18,9 @@
 #include "components/exo/shell_surface_observer.h"
 #include "ui/base/ui_base_types.h"
 
-namespace ash {
+namespace wm {
 class ScopedAnimationDisabler;
-}  // namespace ash
+}  // namespace wm
 
 namespace ui {
 class CompositorLock;
@@ -145,6 +145,8 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
   void AddObserver(ShellSurfaceObserver* observer);
   void RemoveObserver(ShellSurfaceObserver* observer);
 
+  void MaybeSetCompositorLockForNextConfigure(int milliseconds);
+
   // Overridden from SurfaceDelegate:
   void OnSetFrame(SurfaceFrameType type) override;
   void OnSetParent(Surface* parent, const gfx::Point& position) override;
@@ -184,12 +186,15 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
                          aura::Window* lost_active) override;
 
   // Overridden from ShellSurfaceBase:
+  void OnSurfaceCommit() override;
   gfx::Rect ComputeAdjustedBounds(const gfx::Rect& bounds) const override;
   void SetWidgetBounds(const gfx::Rect& bounds,
                        bool adjusted_by_server) override;
   bool OnPreWidgetCommit() override;
+  void ShowWidget(bool activate) override;
   std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override;
+  void SetRootSurface(Surface* root_surface) override;
 
   // Overridden from ui::LayerOwner::Observer:
   void OnLayerRecreated(ui::Layer* old_layer) override;
@@ -224,6 +229,33 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
     bool needs_configure_ = false;
   };
 
+  class OcclusionObserver : public aura::WindowObserver {
+   public:
+    explicit OcclusionObserver(ShellSurface* shell_surface,
+                               aura::Window* window);
+    ~OcclusionObserver() override;
+
+    aura::Window::OcclusionState state() const { return state_; }
+
+    aura::Window::OcclusionState GetInitialStateForConfigure(
+        chromeos::WindowStateType state_type);
+
+    void MaybeConfigure(aura::Window* window);
+
+    // aura::WindowObserver:
+    void OnWindowDestroying(aura::Window* window) override;
+    void OnWindowOcclusionChanged(aura::Window* window) override;
+
+   private:
+    // Keeps track of what the current state should be. During initialization,
+    // we want to defer sending occlusion messages until everything is ready,
+    // so this may be different to the current occlusion state.
+    aura::Window::OcclusionState state_;
+    const raw_ptr<ShellSurface> shell_surface_;
+    base::ScopedObservation<aura::Window, aura::WindowObserver>
+        window_observation_{this};
+  };
+
   // Set the parent window of this surface.
   void SetParentWindow(aura::Window* parent);
 
@@ -252,7 +284,8 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
   // TODO(tluk): Screen position changes should be merged into Configure().
   void OnWidgetScreenPositionChanged();
 
-  std::unique_ptr<ash::ScopedAnimationDisabler> animations_disabler_;
+  std::unique_ptr<wm::ScopedAnimationDisabler> animations_disabler_;
+  std::optional<OcclusionObserver> occlusion_observer_;
 
   // Temporarily stores the `host_window()`'s layer when it's recreated for
   // animation. Client-side commits may be directed towards the `old_layer_`
@@ -291,8 +324,6 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
   bool notify_bounds_changes_ = true;
   bool window_state_is_changing_ = false;
   float pending_raster_scale_ = 1.0;
-  aura::Window::OcclusionState last_occlusion_state_ =
-      aura::Window::OcclusionState::UNKNOWN;
 
   struct InflightFocusRotateRequest {
     uint32_t serial;

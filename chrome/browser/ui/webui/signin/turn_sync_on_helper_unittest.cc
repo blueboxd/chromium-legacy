@@ -688,7 +688,8 @@ class TurnSyncOnHelperTest : public testing::Test {
             Bucket(kAccessPoint, expected.sync_settings_opened ? 1 : 0)));
 
     EXPECT_THAT(histogram_tester_->GetAllSamples("Signin.SignOut.Completed"),
-                BucketsAre(Bucket(signin_metrics::ProfileSignout::kTest,
+                BucketsAre(Bucket(signin_metrics::ProfileSignout::
+                                      kCancelSyncConfirmationRemoveAccount,
                                   expected.sign_out ? 1 : 0)));
 
     EXPECT_THAT(
@@ -1097,7 +1098,8 @@ TEST_F(TurnSyncOnHelperTest, SyncDisabledAbortRemoveAccount) {
   CheckDelegateCalls();
   CheckSigninMetrics({.sign_in_access_point = kAccessPoint,
                       .sign_in_recorded = true,
-                      .sync_opt_in_started = true});
+                      .sync_opt_in_started = true,
+                      .sign_out = true});
 }
 
 // Tests that the sync disabled message is displayed and that the account is
@@ -1121,7 +1123,8 @@ TEST_F(TurnSyncOnHelperTest, SyncDisabledAbortKeepAccount) {
   CheckDelegateCalls();
   CheckSigninMetrics({.sign_in_access_point = kAccessPoint,
                       .sign_in_recorded = true,
-                      .sync_opt_in_started = true});
+                      .sync_opt_in_started = true,
+                      .sign_out = true});
 }
 
 // Tests that the sync disabled message is displayed and that the account is
@@ -1198,7 +1201,7 @@ TEST_F(TurnSyncOnHelperWithMockSigninManagerTest,
 
 // Tests that the sync aborted before displaying the sync disabled message and
 // `SigninAbortedMode::REMOVE_ACCOUNT` is honored.
-TEST_F(TurnSyncOnHelperTest, SyncDisabledAbortWithoutShowingUI_RemoveAccount) {
+TEST_F(TurnSyncOnHelperTest, SyncDisabledAbortWithoutShowingUIRemoveAccount) {
   // Set expectations.
   expected_sync_disabled_confirmation_ = kAbortedBeforeShown;
   SetExpectationsForSyncDisabled(profile());
@@ -1216,7 +1219,8 @@ TEST_F(TurnSyncOnHelperTest, SyncDisabledAbortWithoutShowingUI_RemoveAccount) {
   CheckDelegateCalls();
   CheckSigninMetrics({.sign_in_access_point = kAccessPoint,
                       .sign_in_recorded = true,
-                      .sync_opt_in_started = true});
+                      .sync_opt_in_started = true,
+                      .sign_out = true});
 }
 
 // Tests that the sync aborted before displaying the sync disabled message and
@@ -1344,7 +1348,8 @@ TEST_F(TurnSyncOnHelperTest, CrossAccountContinue) {
   CheckDelegateCalls();
   CheckSigninMetrics({.sign_in_access_point = kAccessPoint,
                       .sign_in_recorded = true,
-                      .sync_opt_in_started = true});
+                      .sync_opt_in_started = true,
+                      .sign_out = true});
 }
 
 // Merge data after the cross account dialog.
@@ -1422,12 +1427,13 @@ TEST_F(TurnSyncOnHelperTest, CrossAccountNewProfile) {
   CheckDelegateCalls();
   CheckSigninMetrics({
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-    .sign_in_access_point = signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
+      .sign_in_access_point =
+          signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS,
 #else
-    .sign_in_access_point = kAccessPoint,
+      .sign_in_access_point = kAccessPoint,
 #endif
-    .sign_in_recorded = true, .sync_opt_in_started = true
-  });
+      .sign_in_recorded = true,
+      .sync_opt_in_started = true});
 }
 
 // Abort after the enterprise confirmation prompt.
@@ -1508,12 +1514,13 @@ TEST_F(TurnSyncOnHelperTest, EnterpriseConfirmationNewProfile) {
   CheckDelegateCalls();
   CheckSigninMetrics({
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-    .sign_in_access_point = signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
+      .sign_in_access_point =
+          signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS,
 #else
-    .sign_in_access_point = kAccessPoint,
+      .sign_in_access_point = kAccessPoint,
 #endif
-    .sign_in_recorded = true, .sync_opt_in_started = true
-  });
+      .sign_in_recorded = true,
+      .sync_opt_in_started = true});
 }
 
 // Wait for cloud policy to be merged before showing sync confirmation.
@@ -1607,12 +1614,13 @@ TEST_F(TurnSyncOnHelperTest, SignedInAccountUndoSyncKeepAccount) {
   CheckDelegateCalls();
   CheckSigninMetrics({
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-    .sign_in_access_point = signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
+      .sign_in_access_point =
+          signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS,
 #else
-    .sign_in_access_point = kAccessPoint,
+      .sign_in_access_point = kAccessPoint,
 #endif
-    .sign_in_recorded = true, .sync_opt_in_started = true
-  });
+      .sign_in_recorded = true,
+      .sync_opt_in_started = true});
 }
 
 class TurnSyncOnHelperSearchEngineTest : public TurnSyncOnHelperTest {
@@ -1751,7 +1759,8 @@ TEST_F(TurnSyncOnHelperTest, UndoSync) {
   CheckDelegateCalls();
   CheckSigninMetrics({.sign_in_access_point = kAccessPoint,
                       .sign_in_recorded = true,
-                      .sync_opt_in_started = true});
+                      .sync_opt_in_started = true,
+                      .sign_out = true});
 }
 
 // Tests that the sync settings page is shown.

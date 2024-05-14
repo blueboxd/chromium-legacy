@@ -68,6 +68,7 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.CriteriaNotSatisfiedException;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.autofill.PersonalDataManagerFactory;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -210,7 +211,7 @@ public class KeyboardAccessoryViewTest {
     public void setUp() throws InterruptedException {
         MockitoAnnotations.initMocks(this);
         mActivityTestRule.startMainActivityOnBlankPage();
-        PersonalDataManager.setInstanceForTesting(mMockPersonalDataManager);
+        PersonalDataManagerFactory.setInstanceForTesting(mMockPersonalDataManager);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mModel =
@@ -264,6 +265,20 @@ public class KeyboardAccessoryViewTest {
                     mModel.set(VISIBLE, false);
                 });
         assertNotEquals(view.getVisibility(), View.VISIBLE);
+    }
+
+    @Test
+    @MediumTest
+    public void testClicksWhileViewObscuredNotAllowed() throws InterruptedException {
+        // Initially, there shouldn't be a view yet.
+        assertNull(mKeyboardAccessoryView.poll());
+
+        // After setting the visibility to true, the view should exist and be visible.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    mModel.set(VISIBLE, true);
+                });
+        assertThat(mKeyboardAccessoryView.take().areClicksAllowedWhenObscured(), is(false));
     }
 
     @Test
@@ -409,7 +424,7 @@ public class KeyboardAccessoryViewTest {
 
     @Test
     @MediumTest
-    public void testDismissesPasswordEducationBubbleOnFilling() {
+    public void testDismissesPasswordEducationBubbleOnFilling() throws InterruptedException {
         AutofillBarItem itemWithIPH =
                 new AutofillBarItem(
                         new AutofillSuggestion.Builder()
@@ -433,6 +448,7 @@ public class KeyboardAccessoryViewTest {
 
         onViewWaiting(withText("Johnathan"));
         waitForHelpBubble(withText(R.string.iph_keyboard_accessory_fill_with_chrome));
+        assertThat(mKeyboardAccessoryView.take().areClicksAllowedWhenObscured(), is(true));
         onView(withChild(withText("Johnathan"))).check(matches(isSelected()));
         onView(withText("Johnathan")).perform(click());
 
@@ -445,7 +461,7 @@ public class KeyboardAccessoryViewTest {
 
     @Test
     @MediumTest
-    public void testDismissesAddressEducationBubbleOnFilling() {
+    public void testDismissesAddressEducationBubbleOnFilling() throws InterruptedException {
         AutofillBarItem itemWithIPH =
                 new AutofillBarItem(
                         new AutofillSuggestion.Builder()
@@ -469,6 +485,7 @@ public class KeyboardAccessoryViewTest {
 
         onViewWaiting(withText("Johnathan"));
         waitForHelpBubble(withText(R.string.iph_keyboard_accessory_fill_with_chrome));
+        assertThat(mKeyboardAccessoryView.take().areClicksAllowedWhenObscured(), is(true));
         onView(withText("Johnathan")).perform(click());
 
         assertThat(tracker.wasDismissed(), is(true));
@@ -479,7 +496,7 @@ public class KeyboardAccessoryViewTest {
 
     @Test
     @MediumTest
-    public void testDismissesPaymentEducationBubbleOnFilling() {
+    public void testDismissesPaymentEducationBubbleOnFilling() throws InterruptedException {
         AutofillBarItem itemWithIPH =
                 new AutofillBarItem(
                         new AutofillSuggestion.Builder()
@@ -503,6 +520,7 @@ public class KeyboardAccessoryViewTest {
 
         onViewWaiting(withText("Johnathan"));
         waitForHelpBubble(withText(R.string.iph_keyboard_accessory_fill_with_chrome));
+        assertThat(mKeyboardAccessoryView.take().areClicksAllowedWhenObscured(), is(true));
         onView(withText("Johnathan")).perform(click());
 
         assertThat(tracker.wasDismissed(), is(true));
@@ -513,7 +531,7 @@ public class KeyboardAccessoryViewTest {
 
     @Test
     @MediumTest
-    public void testDismissesSwipingEducationBubbleOnTap() {
+    public void testDismissesSwipingEducationBubbleOnTap() throws InterruptedException {
         TestTracker tracker =
                 new TestTracker() {
                     @Override
@@ -540,6 +558,8 @@ public class KeyboardAccessoryViewTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(SHOW_SWIPING_IPH, true));
 
         // Wait until the bubble appears, then dismiss is by tapping it.
+        waitForHelpBubble(withText(R.string.iph_keyboard_accessory_swipe_for_more));
+        assertThat(mKeyboardAccessoryView.take().areClicksAllowedWhenObscured(), is(true));
         waitForHelpBubble(withText(R.string.iph_keyboard_accessory_swipe_for_more))
                 .perform(click());
         assertThat(tracker.wasDismissed(), is(true));
@@ -547,7 +567,7 @@ public class KeyboardAccessoryViewTest {
 
     @Test
     @MediumTest
-    public void testDismissesPaymentOfferEducationBubbleOnFilling() {
+    public void testDismissesPaymentOfferEducationBubbleOnFilling() throws InterruptedException {
         String itemTag = "Cashback linked";
         AutofillBarItem itemWithIPH =
                 new AutofillBarItem(
@@ -573,6 +593,7 @@ public class KeyboardAccessoryViewTest {
 
         onViewWaiting(withText("Johnathan"));
         waitForHelpBubble(withText(itemTag));
+        assertThat(mKeyboardAccessoryView.take().areClicksAllowedWhenObscured(), is(true));
         onView(withText("Johnathan")).perform(click());
 
         assertThat(tracker.wasDismissed(), is(true));

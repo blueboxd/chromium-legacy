@@ -120,7 +120,8 @@ enum class ComposeSessionEventTypes {
   kCloseClicked = 18,
   kEditClicked = 19,
   kCancelEditClicked = 20,
-  kMaxValue = kCancelEditClicked,
+  kAnyModifierUsed = 21,
+  kMaxValue = kAnyModifierUsed,
 };
 
 // Enum for recording the show status of the Compose context menu item.
@@ -309,7 +310,10 @@ void LogComposeContextMenuShowStatus(ComposeShowStatus status);
 void LogOpenComposeDialogResult(OpenComposeDialogResult result);
 
 void LogComposeRequestReason(ComposeRequestReason reason);
+void LogComposeRequestReason(EvalLocation eval_location,
+                             ComposeRequestReason reason);
 
+void LogComposeRequestStatus(compose::mojom::ComposeStatus status);
 void LogComposeRequestStatus(EvalLocation eval_location,
                              compose::mojom::ComposeStatus status);
 
@@ -332,6 +336,12 @@ void LogComposeMSBBSessionCloseReason(ComposeMSBBSessionCloseReason reason);
 // Log session based metrics when a consent session ends.
 void LogComposeMSBBSessionDialogShownCount(ComposeMSBBSessionCloseReason reason,
                                            int dialog_shown_count);
+
+SessionEvalLocation GetSessionEvalLocationFromEvents(
+    const ComposeSessionEvents& session_events);
+
+std::optional<EvalLocation> GetEvalLocationFromEvents(
+    const ComposeSessionEvents& session_events);
 
 // Log session based metrics when a session ends.
 // Should only be called once per session.
@@ -361,8 +371,10 @@ void LogComposeDialogOpenLatency(base::TimeDelta duration);
 void LogComposeDialogSelectionLength(int length);
 
 // Log the session duration with |session_suffix| applied to histogram name.
-void LogComposeSessionDuration(base::TimeDelta session_duration,
-                               std::string session_suffix = "");
+void LogComposeSessionDuration(
+    base::TimeDelta session_duration,
+    std::string session_suffix = "",
+    std::optional<EvalLocation> eval_location = std::nullopt);
 
 void LogComposeRequestFeedback(EvalLocation eval_location,
                                ComposeRequestFeedback feedback);

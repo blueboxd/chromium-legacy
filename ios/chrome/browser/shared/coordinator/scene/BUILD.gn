@@ -69,6 +69,9 @@ source_set("scene") {
     "//components/signin/public/base",
     "//components/signin/public/identity_manager",
     "//components/signin/public/identity_manager/objc",
+    "//components/supervised_user/core/browser",
+    "//components/supervised_user/core/browser:fetcher",
+    "//components/supervised_user/core/browser/proto",
     "//components/url_formatter",
     "//components/version_info",
     "//components/web_resource",
@@ -95,6 +98,7 @@ source_set("scene") {
     "//ios/chrome/browser/mailto_handler/model",
     "//ios/chrome/browser/mailto_handler/model:mailto_handler_factory",
     "//ios/chrome/browser/main/model",
+    "//ios/chrome/browser/metrics/model:metrics_browser_agent",
     "//ios/chrome/browser/ntp/model",
     "//ios/chrome/browser/passwords/model",
     "//ios/chrome/browser/passwords/model:password_checkup_utils",
@@ -200,6 +204,10 @@ source_set("scene_util_test_support") {
     "scene_util_test_support.mm",
   ]
   frameworks = [ "UIKit.framework" ]
+  deps = [
+    "//ios/chrome/app/application_delegate:app_state_header",
+    "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
+  ]
 }
 
 source_set("unit_tests") {
@@ -213,13 +221,32 @@ source_set("unit_tests") {
     ":scene_util",
     ":scene_util_test_support",
     "//base/test:test_support",
+    "//components/signin/public/identity_manager:test_support",
+    "//components/supervised_user/test_support",
+    "//components/variations",
+    "//components/variations:test_support",
     "//ios/chrome/app/application_delegate:app_state_header",
+    "//ios/chrome/browser/bookmarks/model",
+    "//ios/chrome/browser/favicon/model",
+    "//ios/chrome/browser/history/model",
     "//ios/chrome/browser/intents:constants",
     "//ios/chrome/browser/intents:user_activity_browser_agent",
+    "//ios/chrome/browser/prerender/model",
+    "//ios/chrome/browser/search_engines/model:template_url_service_factory",
+    "//ios/chrome/browser/sessions:session_restoration_service_factory",
+    "//ios/chrome/browser/sessions:test_support",
+    "//ios/chrome/browser/shared/coordinator/scene",
+    "//ios/chrome/browser/shared/coordinator/scene:scene_testing",
     "//ios/chrome/browser/shared/model/browser/test:test_support",
     "//ios/chrome/browser/shared/model/browser_state:test_support",
+    "//ios/chrome/browser/signin/model",
+    "//ios/chrome/browser/signin/model:test_support",
+    "//ios/chrome/browser/sync/model",
     "//ios/chrome/browser/ui/main",
+    "//ios/chrome/test:test_support",
+    "//ios/public/provider/chrome/browser/user_feedback:user_feedback_api",
     "//ios/web/public/test",
+    "//services/network:test_support",
     "//testing/gtest",
     "//third_party/ocmock",
   ]

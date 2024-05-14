@@ -417,6 +417,53 @@ bool ArcVmDataMigrationIsInProgress(PrefService* prefs) {
          ArcVmDataMigrationStatus::kStarted;
 }
 
+// The result status of deferring ARC activation until user session start up
+// task completion, used for UMA.
+enum class DeferArcActivationResult {
+  // Decided to defer, and the prediction succeeded, i.e. no activation
+  // happens during user session start up.
+  kDeferSucceeded = 0,
+
+  // Decided to defer, but the prediction failed, i.e. an activation happens
+  // during user session start up.
+  kDeferFailed = 1,
+
+  // Decided not to defer, and the prediction succeeded, i.e. an activation
+  // happens during user session start up.
+  kNotDeferSucceeded = 2,
+
+  // Decided not to defer, and the prediction failed, i.e. no activation
+  // happens during user session start up.
+  kNotDeferFailed = 3,
+
+  kMaxValue = kNotDeferFailed,
+};
+
+enum class DeferArcActivationCategory {
+  // ARC activation is deferred until the user session start up task completion.
+  kDeferred = 0,
+
+  // ARC activation is not deferred, because the user is suspected to activate
+  // ARC very soon.
+  kNotDeferred = 1,
+
+  // ARC is already activated, or the user session start up tasks are already
+  // completed. Thus, it was out of scope to decide deferring.
+  kNotTarget = 2,
+
+  kMaxValue = kNotTarget,
+};
+
+// Using 1ms as minimum for common practice.
+// The delay will be up to 20 seconds, because of the timer in the tracker.
+// Using 25 secs just in case for additional buffer. The number of buckets are
+// linearly extrapolated from the common one.
+void UmaHistogramDeferActivationTimes(const std::string& name,
+                                      base::TimeDelta elapsed) {
+  base::UmaHistogramCustomTimes(name, elapsed, base::Milliseconds(1),
+                                base::Seconds(25), 125);
+}
+
 }  // namespace
 
 // This class is used to track statuses on OptIn flow. It is created in case ARC
@@ -744,6 +791,7 @@ void ArcSessionManager::SetProfile(Profile* profile) {
   // RequestEnable() requires |profile_| set, therefore shouldn't have been
   // called at this point.
   SetArcEnabledStateMetric(false);
+  session_manager_observation_.Observe(session_manager::SessionManager::Get());
 }
 
 void ArcSessionManager::SetUserInfo() {
@@ -846,6 +894,7 @@ void ArcSessionManager::Shutdown() {
   VLOG(1) << "Shutting down session manager";
   enable_requested_ = false;
   ResetArcState();
+  session_manager_observation_.Reset();
   arc_session_runner_->OnShutdown();
   data_remover_.reset();
   if (support_host_) {
@@ -989,8 +1038,77 @@ void ArcSessionManager::RequestEnable() {
   RequestEnableImpl();
 }
 
-void ArcSessionManager::AllowActivation() {
+void ArcSessionManager::OnUserSessionStartUpTaskCompleted() {
+  MaybeRecordFirstActivationDuringUserSessionStartUp(false);
+
+  // Allow activation only when it already turns out ARC-On-Demand does not
+  // delay the activation.
+  if (is_activation_delayed_.has_value() && !is_activation_delayed_.value()) {
+    AllowActivation(AllowActivationReason::kUserSessionStartUpTaskCompleted);
+  }
+}
+
+void ArcSessionManager::AllowActivation(AllowActivationReason reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (user_session_start_up_task_timer_.has_value() &&
+      reason != AllowActivationReason::kImmediateActivation) {
+    base::TimeDelta elapsed =
+        user_session_start_up_task_timer_->timer.Elapsed();
+    if (user_session_start_up_task_timer_->deferred) {
+      if (reason == AllowActivationReason::kUserSessionStartUpTaskCompleted) {
+        base::UmaHistogramEnumeration(
+            "Arc.DeferActivation.Result",
+            DeferArcActivationResult::kDeferSucceeded);
+        UmaHistogramDeferActivationTimes(
+            "Arc.DeferActivation.Deferred.Success.ElapsedTime", elapsed);
+      } else {
+        base::UmaHistogramEnumeration("Arc.DeferActivation.Result",
+                                      DeferArcActivationResult::kDeferFailed);
+        base::UmaHistogramEnumeration(
+            "Arc.DeferActivation.Deferred.Failure.Reason", reason);
+        UmaHistogramDeferActivationTimes(
+            "Arc.DeferActivation.Deferred.Failure.ElapsedTime", elapsed);
+      }
+    } else {
+      if (reason == AllowActivationReason::kUserSessionStartUpTaskCompleted) {
+        base::UmaHistogramEnumeration(
+            "Arc.DeferActivation.Result",
+            DeferArcActivationResult::kNotDeferFailed);
+        UmaHistogramDeferActivationTimes(
+            "Arc.DeferActivation.NotDeferred.Failure.ElapsedTime", elapsed);
+      } else {
+        base::UmaHistogramEnumeration(
+            "Arc.DeferActivation.Result",
+            DeferArcActivationResult::kNotDeferSucceeded);
+        base::UmaHistogramEnumeration(
+            "Arc.DeferActivation.NotDeferred.Success.Reason", reason);
+        UmaHistogramDeferActivationTimes(
+            "Arc.DeferActivation.NotDeferred.Success.ElapsedTime", elapsed);
+      }
+    }
+    user_session_start_up_task_timer_.reset();
+  }
+
+  // Record the first activation is happening during the user session start up
+  // to be referred whether or not to defer ARC for user session start up in
+  // following user sessions.
+  // ImmediateAction is ignored here. That happens when ARC gets READY and
+  // it is decided not to defer ARC, and it should not be considered on deciding
+  // whether or not to defer ARC in the following user sessions. Instead,
+  // a following activation is recorded, e.g. user's explicit action to launch
+  // an ARC app.
+  // TODO(hidehiko): Consider excluding non user initiated actions, such as
+  // forced by policy.
+  if (reason != AllowActivationReason::kImmediateActivation) {
+    MaybeRecordFirstActivationDuringUserSessionStartUp(
+        reason != AllowActivationReason::kUserSessionStartUpTaskCompleted);
+  }
+
+  // First time that ARCVM is allowed in this user session.
+  if (!activation_is_allowed_) {
+    VLOG(1) << "ARCVM activation is allowed: " << static_cast<int>(reason);
+  }
 
   activation_is_allowed_ = true;
   if (state_ == State::READY) {
@@ -1133,7 +1251,7 @@ void ArcSessionManager::RequestEnableImpl() {
   }
 
   if (should_start_arc_without_user_interaction) {
-    AllowActivation();
+    AllowActivation(AllowActivationReason::kAlwaysStartIsEnabled);
   }
 
   if (skip_terms_of_service_negotiation) {
@@ -1162,10 +1280,45 @@ void ArcSessionManager::OnActivationNecessityChecked(bool result) {
   base::UmaHistogramBoolean("Arc.ArcOnDemand.ActivationIsDelayed", !result);
 
   activation_necessity_checker_.reset();
+
+  is_activation_delayed_ = !result;
   if (result) {
-    AllowActivation();
+    bool should_defer =
+        !activation_is_allowed_ && !session_manager::SessionManager::Get()
+                                        ->IsUserSessionStartUpTaskCompleted();
+    if (base::FeatureList::IsEnabled(
+            kDeferArcActivationUntilUserSessionStartUpTaskCompletion)) {
+      if (should_defer) {
+        should_defer =
+            ShouldDeferArcActivationUntilUserSessionStartUpTaskCompletion(
+                profile_->GetPrefs());
+        if (should_defer) {
+          base::UmaHistogramEnumeration("Arc.DeferActivation.Category",
+                                        DeferArcActivationCategory::kDeferred);
+        } else {
+          base::UmaHistogramEnumeration(
+              "Arc.DeferActivation.Category",
+              DeferArcActivationCategory::kNotDeferred);
+        }
+        user_session_start_up_task_timer_.emplace(
+            UserSessionStartUpTaskTimer{base::ElapsedTimer(), should_defer});
+      } else {
+        base::UmaHistogramEnumeration("Arc.DeferActivation.Category",
+                                      DeferArcActivationCategory::kNotTarget);
+      }
+    }
+    if (should_defer) {
+      // Wait for the user session start up task completion to prioritize
+      // resources for them.
+      VLOG(1) << "ARC activation is deferred until user sesssion start up "
+              << "tasks are completed";
+    } else {
+      // In AllowActivation, actual ARC instance is going to be launched,
+      // so call it here even if `activation_is_allowed_` checked above is
+      // true, intentionally.
+      AllowActivation(AllowActivationReason::kImmediateActivation);
+    }
   } else {
-    activation_is_delayed = true;
     VLOG(1) << "Activation is not allowed yet. Not starting ARC for now.";
     for (auto& observer : observer_list_) {
       observer.OnArcStartDelayed();
@@ -1874,6 +2027,29 @@ void ArcSessionManager::StopMiniArcIfNecessary() {
   pre_start_time_ = base::TimeTicks();
   VLOG(1) << "Stopping mini-ARC instance (if any)";
   arc_session_runner_->RequestStop();
+}
+
+void ArcSessionManager::MaybeRecordFirstActivationDuringUserSessionStartUp(
+    bool value) {
+  if (is_first_activation_during_user_session_start_up_recorded_) {
+    return;
+  }
+  is_first_activation_during_user_session_start_up_recorded_ = true;
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kLoginUser)) {
+    // On browser restart, we don't record the user session start up,
+    // because the start up process is different.
+    // Theoretically, this is not a pure user login start up, so out of
+    // the scope.
+    // Practically, start up tasks are considered to be completed
+    // quickly as a workaround of the current architecture (b/328339021),
+    // so the recording is not reliable.
+    return;
+  }
+
+  CHECK(profile_);
+  RecordFirstActivationDuringUserSessionStartUp(profile_->GetPrefs(), value);
 }
 
 std::ostream& operator<<(std::ostream& os,

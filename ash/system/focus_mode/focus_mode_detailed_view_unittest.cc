@@ -46,6 +46,7 @@
 #include "ui/views/test/views_test_utils.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
+#include "url/gurl.h"
 
 namespace ash {
 
@@ -802,11 +803,12 @@ TEST_F(FocusModeDetailedViewTest, CheckHasSelectedTaskHistogram) {
   const std::string title = "Focus Task";
   controller->SetSelectedTask(std::make_unique<api::Task>(
                                   /*id=*/base::NumberToString(id), title,
-                                  /*due=*/absl::nullopt, /*completed=*/false,
+                                  /*due=*/std::nullopt, /*completed=*/false,
                                   /*has_subtasks=*/false,
                                   /*has_email_link=*/false,
                                   /*has_notes=*/false,
-                                  /*updated=*/base::Time::Now())
+                                  /*updated=*/base::Time::Now(),
+                                  /*web_view_link=*/GURL())
                                   .get());
   EXPECT_TRUE(controller->HasSelectedTask());
 

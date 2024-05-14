@@ -40,13 +40,17 @@ void UpdateBookmarksForSubscriptionsResult(
     uint64_t cluster_id,
     bool success) {
   if (success) {
-    std::vector<const bookmarks::BookmarkNode*> results;
     power_bookmarks::PowerBookmarkQueryFields query;
     query.type = power_bookmarks::PowerBookmarkType::SHOPPING;
-    power_bookmarks::GetBookmarksMatchingProperties(model.get(), query, -1,
-                                                    &results);
+    std::vector<const bookmarks::BookmarkNode*> results =
+        power_bookmarks::GetBookmarksMatchingProperties(model.get(), query, -1);
 
-    for (const auto* node : results) {
+    for (const bookmarks::BookmarkNode* node : results) {
+      CHECK(node);
+      if (model->IsLocalOnlyNode(*node)) {
+        continue;
+      }
+
       std::unique_ptr<power_bookmarks::PowerBookmarkMeta> meta =
           power_bookmarks::GetNodePowerBookmarkMeta(model.get(), node);
 
@@ -147,8 +151,9 @@ void SetPriceTrackingStateForBookmark(
     bool enabled,
     base::OnceCallback<void(bool)> callback,
     bool was_bookmark_created_by_price_tracking) {
-  if (!service || !model || !node)
+  if (!service || !model || !node || model->IsLocalOnlyNode(*node)) {
     return;
+  }
 
   std::unique_ptr<power_bookmarks::PowerBookmarkMeta> meta =
       power_bookmarks::GetNodePowerBookmarkMeta(model, node);
@@ -311,12 +316,17 @@ std::vector<const bookmarks::BookmarkNode*> GetAllShoppingBookmarks(
     bookmarks::BookmarkModel* model) {
   CHECK(model);
 
-  std::vector<const bookmarks::BookmarkNode*> results;
   power_bookmarks::PowerBookmarkQueryFields query;
   query.type = power_bookmarks::PowerBookmarkType::SHOPPING;
-  power_bookmarks::GetBookmarksMatchingProperties(model, query, -1, &results);
 
-  return results;
+  std::vector<const bookmarks::BookmarkNode*> nodes =
+      power_bookmarks::GetBookmarksMatchingProperties(model, query, -1);
+
+  std::erase_if(nodes, [model](const bookmarks::BookmarkNode* node) {
+    return model->IsLocalOnlyNode(*node);
+  });
+
+  return nodes;
 }
 
 bool PopulateOrUpdateBookmarkMetaIfNeeded(
@@ -428,8 +438,10 @@ std::optional<std::u16string> GetBookmarkParentName(
     const GURL& url) {
   const bookmarks::BookmarkNode* node =
       model->GetMostRecentlyAddedUserNodeForURL(url);
-  return node ? std::optional<std::u16string>(node->parent()->GetTitle())
-              : std::nullopt;
+  if (!node || model->IsLocalOnlyNode(*node)) {
+    return std::nullopt;
+  }
+  return std::optional<std::u16string>(node->parent()->GetTitle());
 }
 
 const bookmarks::BookmarkNode* GetShoppingCollectionBookmarkFolder(
@@ -479,7 +491,7 @@ std::optional<uint64_t> GetProductClusterIdFromBookmark(
   const bookmarks::BookmarkNode* node =
       model->GetMostRecentlyAddedUserNodeForURL(url);
 
-  if (!node) {
+  if (!node || model->IsLocalOnlyNode(*node)) {
     return std::nullopt;
   }
 

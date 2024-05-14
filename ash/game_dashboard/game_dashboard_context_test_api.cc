@@ -8,12 +8,15 @@
 
 #include "ash/capture_mode/capture_mode_test_util.h"
 #include "ash/game_dashboard/game_dashboard_button.h"
+#include "ash/game_dashboard/game_dashboard_button_reveal_controller.h"
 #include "ash/game_dashboard/game_dashboard_context.h"
+#include "ash/game_dashboard/game_dashboard_main_menu_cursor_handler.h"
 #include "ash/game_dashboard/game_dashboard_main_menu_view.h"
 #include "ash/game_dashboard/game_dashboard_toolbar_view.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
+#include "ash/style/switch.h"
 #include "ash/system/toast/anchored_nudge.h"
 #include "ash/system/unified/feature_tile.h"
 #include "base/timer/timer.h"
@@ -43,6 +46,11 @@ const std::u16string& GameDashboardContextTestApi::GetRecordingDuration()
   return context_->GetRecordingDuration();
 }
 
+const GameDashboardMainMenuCursorHandler*
+GameDashboardContextTestApi::GetMainMenuCursorHandler() const {
+  return context_->main_menu_cursor_handler_.get();
+}
+
 views::Widget* GameDashboardContextTestApi::GetGameDashboardButtonWidget()
     const {
   return context_->game_dashboard_button_widget();
@@ -57,6 +65,18 @@ views::Label* GameDashboardContextTestApi::GetGameDashboardButtonTitle() const {
   auto* game_dashboard_button = GetGameDashboardButton();
   CHECK(game_dashboard_button);
   return game_dashboard_button->title_view_;
+}
+
+GameDashboardButtonRevealController*
+GameDashboardContextTestApi::GetGameDashboardButtonRevealController() const {
+  return context_->game_dashboard_button_reveal_controller_.get();
+}
+
+base::OneShotTimer&
+GameDashboardContextTestApi::GetRevealControllerTopEdgeHoverTimer() const {
+  auto* reveal_controller = GetGameDashboardButtonRevealController();
+  CHECK(reveal_controller);
+  return reveal_controller->top_edge_hover_timer_;
 }
 
 views::Widget* GameDashboardContextTestApi::GetMainMenuWidget() {
@@ -111,7 +131,7 @@ PillButton* GameDashboardContextTestApi::GetMainMenuGameControlsSetupButton() {
 Switch* GameDashboardContextTestApi::GetMainMenuGameControlsFeatureSwitch() {
   auto* main_menu_view = GetMainMenuView();
   CHECK(main_menu_view);
-  return main_menu_view->GetGameControlsFeatureSwith();
+  return main_menu_view->GetGameControlsFeatureSwitch();
 }
 
 views::LabelButton* GameDashboardContextTestApi::GetMainMenuFeedbackButton() {
@@ -129,6 +149,30 @@ IconButton* GameDashboardContextTestApi::GetMainMenuSettingsButton() {
       GetMainMenuViewById(VIEW_ID_GD_GENERAL_SETTINGS_BUTTON));
 }
 
+views::BoxLayoutView* GameDashboardContextTestApi::GetMainMenuContainer() {
+  auto* main_menu_view = GetMainMenuView();
+  CHECK(main_menu_view);
+  return main_menu_view->main_menu_container_;
+}
+
+views::BoxLayoutView* GameDashboardContextTestApi::GetSettingsContainer() {
+  auto* main_menu_view = GetMainMenuView();
+  CHECK(main_menu_view);
+  return main_menu_view->settings_view_container_;
+}
+
+IconButton* GameDashboardContextTestApi::GetSettingsViewBackButton() {
+  auto* main_menu_view = GetMainMenuView();
+  CHECK(main_menu_view);
+  return main_menu_view->settings_view_back_button_;
+}
+
+Switch* GameDashboardContextTestApi::GetSettingsViewWelcomeDialogSwitch() {
+  auto* main_menu_view = GetMainMenuView();
+  CHECK(main_menu_view);
+  return main_menu_view->welcome_dialog_settings_switch_;
+}
+
 AnchoredNudge* GameDashboardContextTestApi::GetGameControlsSetupNudge() {
   if (auto* main_menu = GetMainMenuView()) {
     return main_menu->GetGameControlsSetupNudgeForTesting();
@@ -143,6 +187,8 @@ views::Widget* GameDashboardContextTestApi::GetWelcomeDialogWidget() {
 void GameDashboardContextTestApi::OpenTheMainMenu() {
   ASSERT_FALSE(GetMainMenuView()) << "The main menu view is already open.";
   ASSERT_FALSE(GetMainMenuWidget()) << "The main menu widget is already open.";
+  ASSERT_FALSE(GetMainMenuCursorHandler())
+      << "The cursor handler is already registered.";
   auto* game_dashboard_button = GetGameDashboardButton();
   ASSERT_TRUE(game_dashboard_button);
   ClickOnView(game_dashboard_button, event_generator_);
@@ -151,11 +197,14 @@ void GameDashboardContextTestApi::OpenTheMainMenu() {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(GetMainMenuView());
   ASSERT_TRUE(GetMainMenuWidget());
+  ASSERT_TRUE(GetMainMenuCursorHandler());
 }
 
 void GameDashboardContextTestApi::CloseTheMainMenu() {
   ASSERT_TRUE(GetMainMenuView()) << "The main menu view is already closed.";
   ASSERT_TRUE(GetMainMenuWidget()) << "The main menu widget is already closed.";
+  ASSERT_TRUE(GetMainMenuCursorHandler())
+      << "The cursor handler is already registered.";
   auto* game_dashboard_button = GetGameDashboardButton();
   ASSERT_TRUE(game_dashboard_button);
   ClickOnView(game_dashboard_button, event_generator_);
@@ -164,6 +213,7 @@ void GameDashboardContextTestApi::CloseTheMainMenu() {
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(GetMainMenuView());
   ASSERT_FALSE(GetMainMenuWidget());
+  ASSERT_FALSE(GetMainMenuCursorHandler());
 }
 
 views::Widget* GameDashboardContextTestApi::GetToolbarWidget() {
@@ -214,6 +264,8 @@ void GameDashboardContextTestApi::OpenTheToolbar() {
       << "The main menu widget must be opened first before opening the toolbar";
   ASSERT_TRUE(GetMainMenuView())
       << "The main menu view must be opened first before opening the toolbar";
+  ASSERT_TRUE(GetMainMenuContainer()->GetVisible())
+      << "The main menu container must be open before opening the toolbar";
   ASSERT_FALSE(GetToolbarView())
       << "The toolbar view must be closed before opening it";
   ASSERT_FALSE(GetToolbarWidget())
@@ -236,6 +288,8 @@ void GameDashboardContextTestApi::CloseTheToolbar() {
   ASSERT_TRUE(GetMainMenuWidget())
       << "The main menu widget must be opened first before closing the toolbar";
   ASSERT_TRUE(GetMainMenuView())
+      << "The main menu view must be open before closing the toolbar.";
+  ASSERT_TRUE(GetMainMenuContainer()->GetVisible())
       << "The main menu must be opened first before closing the toolbar";
   ASSERT_TRUE(GetToolbarView())
       << "The toolbar view must be opened before closing it";
@@ -247,6 +301,54 @@ void GameDashboardContextTestApi::CloseTheToolbar() {
   ClickOnView(main_menu_toolbar_tile, event_generator_);
   ASSERT_FALSE(GetToolbarView());
   ASSERT_FALSE(GetToolbarWidget());
+}
+
+void GameDashboardContextTestApi::OpenMainMenuSettings() {
+  ASSERT_TRUE(GetMainMenuWidget()) << "The main menu widget must be opened "
+                                      "first before opening the settings view.";
+  ASSERT_TRUE(GetMainMenuView())
+      << "The main menu view must be open first to open the settings view.";
+  ASSERT_TRUE(GetMainMenuContainer()->GetVisible())
+      << "The main menu view must be displayed to open the settings view.";
+  auto* settings_container = GetSettingsContainer();
+  ASSERT_TRUE(!settings_container || !settings_container->GetVisible())
+      << "The settings container must either not be created or not visible "
+         "when opening the settings view.";
+  ClickOnView(GetMainMenuSettingsButton(), event_generator_);
+  ASSERT_TRUE(GetSettingsContainer()->GetVisible());
+  ASSERT_FALSE(GetMainMenuContainer()->GetVisible());
+}
+
+void GameDashboardContextTestApi::CloseTheSettings() {
+  ASSERT_TRUE(GetMainMenuWidget()) << "The main menu widget must be open "
+                                      "already when closing the settings view.";
+  ASSERT_TRUE(GetMainMenuView()) << "The main menu view must be open already "
+                                    "when closing the settings view.";
+  ASSERT_TRUE(GetSettingsContainer()->GetVisible())
+      << "The settings container must be visible when closing the settings "
+         "view.";
+  ASSERT_TRUE(!GetMainMenuContainer()->GetVisible())
+      << "The main menu container must not be visible when closing the "
+         "settings.";
+  ClickOnView(GetSettingsViewBackButton(), event_generator_);
+  ASSERT_FALSE(GetSettingsContainer()->GetVisible());
+  ASSERT_TRUE(GetMainMenuContainer()->GetVisible());
+}
+
+void GameDashboardContextTestApi::ToggleWelcomeDialogSettingsSwitch() {
+  ASSERT_TRUE(GetMainMenuWidget())
+      << "The main menu widget must be open already "
+         "when toggling the welcome dialog switch.";
+  ASSERT_TRUE(GetMainMenuView())
+      << "The main menu view must be open already when "
+         "toggling the welcome dialog switch.";
+  ASSERT_TRUE(GetSettingsContainer()->GetVisible())
+      << "The settings container must be visible when toggling the welcome "
+         "dialog switch.";
+  auto* welcome_dialog_switch = GetSettingsViewWelcomeDialogSwitch();
+  bool initial_state = welcome_dialog_switch->GetIsOn();
+  ClickOnView(welcome_dialog_switch, event_generator_);
+  ASSERT_EQ(GetSettingsViewWelcomeDialogSwitch()->GetIsOn(), !initial_state);
 }
 
 views::View* GameDashboardContextTestApi::GetMainMenuViewById(int view_id) {

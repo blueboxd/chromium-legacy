@@ -36,7 +36,11 @@ bool WaitableEventWatcher::StartWatching(
   // out from under the watcher, a signal can still be observed.
   receive_right_ = event->receive_right_;
 
-  callback_ = BindOnce(std::move(callback), event);
+  // UnsafeDanglingUntriaged triggered by test:
+  // WaitableEventWatcherDeletionTest.SignalAndDelete
+  // TODO(https://crbug.com/1380714): Remove `UnsafeDanglingUntriaged`
+  callback_ =
+      BindOnce(std::move(callback), base::UnsafeDanglingUntriaged(event));
 
   // Locals for capture by the block. Accessing anything through the |this| or
   // |event| pointers is not safe, since either may have been deleted by the

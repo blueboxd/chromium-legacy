@@ -4,6 +4,7 @@
 
 #include <optional>
 #include <sstream>
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -72,7 +73,7 @@ class ProductMessagingControllerUiTest : public InteractiveFeaturePromoTest {
 
 IN_PROC_BROWSER_TEST_F(ProductMessagingControllerUiTest, NoticeBlocksIPH) {
   RunTestSequence(
-      WaitForFeatureEngagementReady(), QueueNotice(),
+      QueueNotice(),
       MaybeShowPromo(feature_engagement::kIPHTabSearchFeature,
                      user_education::FeaturePromoResult::kBlockedByPromo),
       FlushEvents(), EnsureHandle(), ReleaseHandle(),

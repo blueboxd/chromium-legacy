@@ -169,11 +169,6 @@ public class SingleTabSwitcherCoordinator implements TabSwitcher, ModuleProvider
                     }
 
                     @Override
-                    public void prepareTabGridView() {
-                        assert false : "should not reach here";
-                    }
-
-                    @Override
                     public boolean prepareTabSwitcherView() {
                         return true;
                     }
@@ -274,11 +269,6 @@ public class SingleTabSwitcherCoordinator implements TabSwitcher, ModuleProvider
     @Override
     public void showQuickDeleteAnimation(Runnable onAnimationEnd, List<Tab> tabs) {
         assert false : "should not reach here";
-    }
-
-    @Override
-    public void refreshTabList() {
-        assert false : "Not reached.";
     }
 
     /**
@@ -398,7 +388,8 @@ public class SingleTabSwitcherCoordinator implements TabSwitcher, ModuleProvider
 
     @Override
     public String getModuleContextMenuHideText(Context context) {
-        return null;
+        return context.getResources()
+                .getQuantityString(R.plurals.home_modules_context_menu_hide_tab, 1);
     }
 
     @VisibleForTesting

@@ -20,7 +20,6 @@
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/ntp/feed_control_delegate.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_constants.h"
-#import "ios/chrome/browser/ui/ntp/metrics/feed_session_recorder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_follow_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_metrics_delegate.h"
 
@@ -35,8 +34,6 @@ using feed::FeedEngagementType;
 using feed::FeedUserActionType;
 
 @interface FeedMetricsRecorder ()
-// Helper for recording session time metrics.
-@property(nonatomic, strong) FeedSessionRecorder* sessionRecorder;
 // Tracking property to avoid duplicate recordings of
 // FeedEngagementType::kFeedEngagedSimple.
 @property(nonatomic, assign) BOOL engagedSimpleReportedDiscover;
@@ -59,6 +56,12 @@ using feed::FeedUserActionType;
 // Tracking property to avoid duplicate recordings of the Activity Buckets
 // metric.
 @property(nonatomic, assign) NSDate* activityBucketLastReportedDate;
+
+// Tracks whether user has engaged with the latest refreshed content. The term
+// "engaged" is defined by its usage in this file. For example, it may be
+// similar to `engagedSimpleReportedDiscover`.
+@property(nonatomic, assign, getter=hasEngagedWithLatestRefreshedContent)
+    BOOL engagedWithLatestRefreshedContent;
 
 // Tracking property to record a scroll for Good Visits.
 // TODO(crbug.com/1373650) separate the property below in two, one for each
@@ -104,15 +107,6 @@ using feed::FeedUserActionType;
     _prefService = prefService;
   }
   return self;
-}
-
-#pragma mark - Properties
-
-- (FeedSessionRecorder*)sessionRecorder {
-  if (!_sessionRecorder) {
-    _sessionRecorder = [[FeedSessionRecorder alloc] init];
-  }
-  return _sessionRecorder;
 }
 
 #pragma mark - Public
@@ -168,13 +162,14 @@ using feed::FeedUserActionType;
 
 - (void)recordNTPDidChangeVisibility:(BOOL)visible {
   self.isNTPVisible = visible;
+
   if (visible) {
+    // Sets `feedBecameVisibleTime` before any time based check is ran to
+    // prevent negative values from non-initialized variables.
+    self.feedBecameVisibleTime = base::Time::Now();
     [self recordDiscoverFeedUserActionHistogram:FeedUserActionType::
                                                     kOpenedFeedSurface
                                   asInteraction:NO];
-  }
-
-  if (visible) {
     base::Time lastInteractionTimeForGoodVisitsDate =
         self.prefService->GetTime(kLastInteractionTimeForGoodVisits);
     if (lastInteractionTimeForGoodVisitsDate != base::Time()) {
@@ -233,7 +228,6 @@ using feed::FeedUserActionType;
     // interaction.
     base::Time articleVisitStart =
         self.prefService->GetTime(kArticleVisitTimestampKey);
-    self.feedBecameVisibleTime = base::Time::Now();
 
     if (articleVisitStart != base::Time()) {
       // Report Good Visit if user came back to the NTP after spending
@@ -256,7 +250,15 @@ using feed::FeedUserActionType;
     // PrefService.
 
     // Also calculate total aggregate for the time in feed aggregate metric.
-    self.timeSpentInFeed = base::Time::Now() - self.feedBecameVisibleTime;
+
+    // When the user opens the browser directly to a website while they
+    // originally were on the NTP. Set `feedBecameVisibleTime` to now if it has
+    // never been set before.
+    base::Time now = base::Time::Now();
+    if (self.feedBecameVisibleTime.is_null()) {
+      self.feedBecameVisibleTime = now;
+    }
+    self.timeSpentInFeed = now - self.feedBecameVisibleTime;
 
     [self checkEngagementGoodVisitWithInteraction:NO];
     self.prefService->SetDouble(kTimeSpentInFeedAggregateKey,
@@ -572,6 +574,10 @@ using feed::FeedUserActionType;
 
 - (void)recordFeedWillRefresh {
   base::RecordAction(base::UserMetricsAction(kFeedWillRefresh));
+  // The feed will have new content so reset the engagement tracking variable.
+  // TODO(crbug.com/1423467): We need to know whether the feed was actually
+  // refreshed, and not just when it was triggered.
+  self.engagedWithLatestRefreshedContent = NO;
 }
 
 - (void)recordFeedSelected:(FeedType)feedType
@@ -1024,6 +1030,7 @@ using feed::FeedUserActionType;
   // Chrome run.
   if (scrollDistance > 0 || interacted) {
     [self recordEngagedSimple];
+    self.engagedWithLatestRefreshedContent = YES;
   }
 
   // Report the user as engaged if they have scrolled more than the threshold or
@@ -1032,8 +1039,6 @@ using feed::FeedUserActionType;
   if (scrollDistance > kMinScrollThreshold || interacted) {
     [self recordEngaged];
   }
-
-  [self.sessionRecorder recordUserInteractionOrScrolling];
 }
 
 // Checks if a Good Visit should be recorded. `interacted` is YES if it was
@@ -1249,8 +1254,11 @@ using feed::FeedUserActionType;
   if (additionalTimeInFeed.is_negative()) {
     base::debug::DumpWithoutCrashing();
   }
+  // Temporary fix to resolve negative values in prefs.
+  // TODO(crbug.com/329274886): Remove fix once crashes are down to zero.
   if (self.previousTimeInFeedForGoodVisitSession < 0) {
     base::debug::DumpWithoutCrashing();
+    self.previousTimeInFeedForGoodVisitSession = 0;
   }
   self.previousTimeInFeedForGoodVisitSession =
       self.previousTimeInFeedForGoodVisitSession +

@@ -435,7 +435,7 @@ TEST_F(PopupViewViewsTest, AcceptingOnTap) {
   CreateAndShowView({PopupItemId::kPasswordEntry});
 
   // Tapping will accept the selection.
-  EXPECT_CALL(controller(), AcceptSuggestion(0, _));
+  EXPECT_CALL(controller(), AcceptSuggestion(0));
   generator().GestureTapAt(
       GetPopupRowViewAt(0).GetBoundsInScreen().CenterPoint());
 }
@@ -711,14 +711,14 @@ class PopupViewViewsTestKeyboard : public PopupViewViewsTest {
 // Tests that hitting enter on a suggestion autofills it.
 TEST_F(PopupViewViewsTestKeyboard, FillOnEnter) {
   SelectFirstSuggestion();
-  EXPECT_CALL(controller(), AcceptSuggestion(0, _));
+  EXPECT_CALL(controller(), AcceptSuggestion(0));
   SimulateKeyPress(ui::VKEY_RETURN);
 }
 
 // Tests that hitting tab on a suggestion autofills it.
 TEST_F(PopupViewViewsTestKeyboard, FillOnTabPressed) {
   SelectFirstSuggestion();
-  EXPECT_CALL(controller(), AcceptSuggestion(0, _));
+  EXPECT_CALL(controller(), AcceptSuggestion(0));
   SimulateKeyPress(ui::VKEY_TAB);
 }
 
@@ -726,7 +726,7 @@ TEST_F(PopupViewViewsTestKeyboard, FillOnTabPressed) {
 // autofill a selected suggestion.
 TEST_F(PopupViewViewsTestKeyboard, NoFillOnTabPressedWithModifiers) {
   SelectFirstSuggestion();
-  EXPECT_CALL(controller(), AcceptSuggestion(0, _)).Times(0);
+  EXPECT_CALL(controller(), AcceptSuggestion(0)).Times(0);
   SimulateKeyPress(ui::VKEY_TAB, /*shift_modifier_pressed=*/false,
                    /*non_shift_modifier_pressed=*/true);
 }
@@ -1093,6 +1093,50 @@ TEST_F(PopupViewViewsTest, SubPopupHidingOnNoSelection) {
   EXPECT_EQ(test_api(*sub_view).GetOpenSubPopupRow(), std::nullopt);
 }
 
+TEST_F(PopupViewViewsTest, SubPopupHidingIsCanceledOnSelection) {
+  controller().set_suggestions({
+      CreateSuggestionWithChildren({Suggestion(u"Child #1")}),
+      Suggestion(u"Suggestion #2"),
+  });
+  CreateAndShowView();
+  CellIndex cell{0, CellType::kControl};
+  view().SetSelectedCell(cell, PopupCellSelectionSource::kNonUserInput);
+  task_environment()->FastForwardBy(PopupViewViews::kNonMouseOpenSubPopupDelay);
+  ASSERT_EQ(test_api(view()).GetOpenSubPopupRow(), cell.first);
+
+  auto [sub_controller, sub_view] = OpenSubView(
+      view(), {CreateSuggestionWithChildren({Suggestion(u"Sub Child #1")})});
+  view().SetSelectedCell(std::nullopt, PopupCellSelectionSource::kNonUserInput);
+
+  // This triggers the no-selection hiding timer.
+  sub_view->OnMouseExited(ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(),
+                                         gfx::Point(), ui::EventTimeForNow(),
+                                         ui::EF_IS_SYNTHESIZED, 0));
+
+  // A cell is selected - the timer should be canceled.
+  view().SetSelectedCell(cell, PopupCellSelectionSource::kNonUserInput);
+  task_environment()->FastForwardBy(
+      PopupViewViews::kNoSelectionHideSubPopupDelay);
+  EXPECT_NE(test_api(view()).GetOpenSubPopupRow(), std::nullopt);
+}
+
+TEST_F(PopupViewViewsTest, SubPopupHidingIsCanceledOnParentHiding) {
+  controller().set_suggestions({
+      CreateSuggestionWithChildren({Suggestion(u"Child #1")}),
+      Suggestion(u"Suggestion #2"),
+  });
+  CreateAndShowView();
+  CellIndex cell{0, CellType::kControl};
+  view().SetSelectedCell(cell, PopupCellSelectionSource::kNonUserInput);
+
+  ASSERT_EQ(test_api(view()).GetOpenSubPopupRow(), std::nullopt);
+
+  view().Hide();
+  task_environment()->FastForwardBy(PopupViewViews::kNonMouseOpenSubPopupDelay);
+
+  EXPECT_EQ(test_api(view()).GetOpenSubPopupRow(), std::nullopt);
+}
+
 TEST_F(PopupViewViewsTest, SubPopupOwnSelectionPreventsHiding) {
   ui::MouseEvent fake_event(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
                             ui::EventTimeForNow(), ui::EF_IS_SYNTHESIZED, 0);
@@ -1326,7 +1370,7 @@ TEST_F(PopupViewViewsTest, VirtualCardSuggestion_ElementId) {
 // Tests that (only) clickable items trigger an AcceptSuggestion event.
 TEST_P(PopupViewViewsTestWithAnyPopupItemId, MAYBE_ShowClickTest) {
   CreateAndShowView({popup_item_id()});
-  EXPECT_CALL(controller(), AcceptSuggestion(0, _))
+  EXPECT_CALL(controller(), AcceptSuggestion(0))
       .Times(IsClickable(popup_item_id()));
   generator().MoveMouseTo(gfx::Point(1000, 1000));
   ASSERT_FALSE(view().IsMouseHovered());
@@ -1340,7 +1384,7 @@ TEST_P(PopupViewViewsTestWithAnyPopupItemId, MAYBE_ShowClickTest) {
 TEST_P(PopupViewViewsTestWithClickablePopupItemId,
        AcceptSuggestionIfUnfocusedAtPaint) {
   CreateAndShowView({popup_item_id()});
-  EXPECT_CALL(controller(), AcceptSuggestion(0, _)).Times(1);
+  EXPECT_CALL(controller(), AcceptSuggestion(0));
   generator().MoveMouseTo(gfx::Point(1000, 1000));
   ASSERT_FALSE(view().IsMouseHovered());
   Paint();
@@ -1353,7 +1397,7 @@ TEST_P(PopupViewViewsTestWithClickablePopupItemId,
 TEST_P(PopupViewViewsTestWithClickablePopupItemId,
        AcceptSuggestionIfMouseSelectedAnotherRow) {
   CreateAndShowView({popup_item_id(), popup_item_id()});
-  EXPECT_CALL(controller(), AcceptSuggestion).Times(1);
+  EXPECT_CALL(controller(), AcceptSuggestion);
   generator().MoveMouseTo(GetCenterOfSuggestion(0));
   ASSERT_TRUE(view().IsMouseHovered());
   Paint();
@@ -1366,7 +1410,7 @@ TEST_P(PopupViewViewsTestWithClickablePopupItemId,
 TEST_P(PopupViewViewsTestWithClickablePopupItemId,
        AcceptSuggestionIfMouseTemporarilySelectedAnotherRow) {
   CreateAndShowView({popup_item_id(), popup_item_id()});
-  EXPECT_CALL(controller(), AcceptSuggestion).Times(1);
+  EXPECT_CALL(controller(), AcceptSuggestion);
   generator().MoveMouseTo(GetCenterOfSuggestion(0));
   ASSERT_TRUE(view().IsMouseHovered());
   Paint();
@@ -1381,7 +1425,7 @@ TEST_P(PopupViewViewsTestWithClickablePopupItemId,
 TEST_P(PopupViewViewsTestWithClickablePopupItemId,
        AcceptSuggestionIfMouseExitedPopupSincePaint) {
   CreateAndShowView({popup_item_id()});
-  EXPECT_CALL(controller(), AcceptSuggestion).Times(1);
+  EXPECT_CALL(controller(), AcceptSuggestion);
   generator().MoveMouseTo(GetCenterOfSuggestion(0));
   ASSERT_TRUE(view().IsMouseHovered());
   Paint();

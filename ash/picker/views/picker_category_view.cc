@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/picker/model/picker_search_results.h"
+#include "ash/picker/model/picker_search_results_section.h"
 #include "ash/picker/picker_asset_fetcher.h"
 #include "ash/picker/views/picker_search_results_view.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -31,8 +31,36 @@ PickerCategoryView::PickerCategoryView(
 
 PickerCategoryView::~PickerCategoryView() = default;
 
-void PickerCategoryView::SetResults(const PickerSearchResults& results) {
-  search_results_view_->SetSearchResults(results);
+bool PickerCategoryView::DoPseudoFocusedAction() {
+  return search_results_view_->DoPseudoFocusedAction();
+}
+
+bool PickerCategoryView::MovePseudoFocusUp() {
+  return search_results_view_->MovePseudoFocusUp();
+}
+
+bool PickerCategoryView::MovePseudoFocusDown() {
+  return search_results_view_->MovePseudoFocusDown();
+}
+
+bool PickerCategoryView::MovePseudoFocusLeft() {
+  return search_results_view_->MovePseudoFocusLeft();
+}
+
+bool PickerCategoryView::MovePseudoFocusRight() {
+  return search_results_view_->MovePseudoFocusRight();
+}
+
+void PickerCategoryView::AdvancePseudoFocus(PseudoFocusDirection direction) {
+  search_results_view_->AdvancePseudoFocus(direction);
+}
+
+void PickerCategoryView::SetResults(
+    std::vector<PickerSearchResultsSection> sections) {
+  search_results_view_->ClearSearchResults();
+  for (PickerSearchResultsSection& section : sections) {
+    search_results_view_->AppendSearchResults(std::move(section));
+  }
 }
 
 BEGIN_METADATA(PickerCategoryView)

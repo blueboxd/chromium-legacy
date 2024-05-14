@@ -36,11 +36,14 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/crash_client.h"
 #include "chrome/updater/crash_reporter.h"
+#include "chrome/updater/update_usage_stats_task.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util/util.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/crash/core/common/crash_keys.h"
+#include "third_party/crashpad/crashpad/client/crash_report_database.h"
+#include "third_party/crashpad/crashpad/client/settings.h"
 
 #if BUILDFLAG(IS_POSIX)
 #include "chrome/updater/ipc/ipc_support.h"
@@ -90,6 +93,10 @@ void InitializeCrashReporting(UpdaterScope updater_scope) {
   if (!CrashClient::GetInstance()->InitializeCrashReporting(updater_scope)) {
     VLOG(1) << "Crash reporting is not available.";
     return;
+  }
+  if (AreRawUsageStatsEnabled(updater_scope)) {
+    CrashClient::GetInstance()->database()->GetSettings()->SetUploadsEnabled(
+        true);
   }
   VLOG(1) << "Crash reporting initialized.";
 }
@@ -164,9 +171,10 @@ int HandleUpdaterCommands(UpdaterScope updater_scope,
                                    command_line->HasSwitch(kTagSwitch) ||
                                    command_line->HasSwitch(kRuntimeSwitch) ||
                                    command_line->HasSwitch(kHandoffSwitch);
+  const bool is_silent = command_line->HasSwitch(kSilentSwitch);
   base::SingleThreadTaskExecutor main_task_executor(
-      is_app_install_mode ? base::MessagePumpType::UI
-                          : base::MessagePumpType::DEFAULT);
+      (is_app_install_mode && !is_silent) ? base::MessagePumpType::UI
+                                          : base::MessagePumpType::DEFAULT);
   if (is_app_install_mode) {
     return MakeAppInstall(command_line->HasSwitch(kSilentSwitch))->Run();
   }

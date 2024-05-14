@@ -35,6 +35,7 @@
 #include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
+#include "components/attribution_reporting/privacy_math.h"
 #include "components/attribution_reporting/source_registration_time_config.mojom.h"
 #include "components/attribution_reporting/source_type.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
@@ -50,7 +51,6 @@
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/create_report_result.h"
-#include "content/browser/attribution_reporting/privacy_math.h"
 #include "content/browser/attribution_reporting/rate_limit_result.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/attribution_reporting/store_source_result.h"
@@ -649,9 +649,12 @@ TEST_F(AttributionStorageTest, GetAttributionReportsMultipleTimes_SameResult) {
   EXPECT_EQ(first_call_reports, second_call_reports);
 }
 
-TEST_F(AttributionStorageTest, ExceedsChannelCapacity) {
-  delegate()->set_exceeds_channel_capacity_limit(true);
+TEST_F(AttributionStorageTest, ExceedsChannelCapacity_SupersedesRateLimits) {
+  delegate()->set_max_sources_per_origin(1);
+  EXPECT_EQ(storage()->StoreSource(SourceBuilder().Build()).status(),
+            StorableSource::Result::kSuccess);
 
+  delegate()->set_exceeds_channel_capacity_limit(true);
   EXPECT_EQ(storage()->StoreSource(SourceBuilder().Build()).status(),
             StorableSource::Result::kExceedsMaxChannelCapacity);
 }
@@ -1260,7 +1263,8 @@ TEST_F(AttributionStorageTest,
 
 TEST_F(AttributionStorageTest,
        NeverAttributeImpression_EventLevelReportNotStored) {
-  delegate()->set_randomized_response(std::vector<FakeEventLevelReport>{});
+  delegate()->set_randomized_response(
+      std::vector<attribution_reporting::FakeEventLevelReport>{});
   StoreSourceResult result = storage()->StoreSource(
       TestAggregatableSourceProvider().GetBuilder().Build());
   EXPECT_EQ(result.status(), StorableSource::Result::kSuccessNoised);
@@ -1282,14 +1286,12 @@ TEST_F(AttributionStorageTest,
 
 TEST_F(AttributionStorageTest,
        AttributeFalseImpression_OtherSourceDeactivated) {
-  base::test::ScopedFeatureList feature_list(
-      kAttributionReportingDeactivateAfterFilterMatch);
-
   storage()->StoreSource(SourceBuilder().SetSourceEventId(7).Build());
 
   task_environment_.FastForwardBy(base::Milliseconds(1));
-  delegate()->set_randomized_response(std::vector<FakeEventLevelReport>{
-      {.trigger_data = 7, .window_index = 0}});
+  delegate()->set_randomized_response(
+      std::vector<attribution_reporting::FakeEventLevelReport>{
+          {.trigger_data = 7, .window_index = 0}});
   StoreSourceResult result =
       storage()->StoreSource(SourceBuilder().SetSourceEventId(5).Build());
   EXPECT_EQ(result.status(), StorableSource::Result::kSuccessNoised);
@@ -1303,25 +1305,6 @@ TEST_F(AttributionStorageTest,
   EXPECT_THAT(storage()->GetActiveSources(), ElementsAre(SourceEventIdIs(5u)));
 }
 
-TEST_F(AttributionStorageTest,
-       AttributeFalseImpression_OtherSourceStillActive) {
-  storage()->StoreSource(SourceBuilder().Build());
-
-  task_environment_.FastForwardBy(base::Milliseconds(1));
-  delegate()->set_randomized_response(std::vector<FakeEventLevelReport>{
-      {.trigger_data = 7, .window_index = 0}});
-  StoreSourceResult result = storage()->StoreSource(SourceBuilder().Build());
-  EXPECT_EQ(result.status(), StorableSource::Result::kSuccessNoised);
-  delegate()->set_randomized_response(std::nullopt);
-
-  EXPECT_THAT(storage()->GetActiveSources(), SizeIs(2u));
-
-  EXPECT_EQ(AttributionTrigger::EventLevelResult::kFalselyAttributedSource,
-            MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
-
-  EXPECT_THAT(storage()->GetActiveSources(), SizeIs(2u));
-}
-
 TEST_F(AttributionStorageTest, NeverAttributeImpression_RateLimitsChanged) {
   delegate()->set_rate_limits([]() {
     AttributionConfig::RateLimitConfig r;
@@ -1333,7 +1316,8 @@ TEST_F(AttributionStorageTest, NeverAttributeImpression_RateLimitsChanged) {
     return r;
   }());
 
-  delegate()->set_randomized_response(std::vector<FakeEventLevelReport>{});
+  delegate()->set_randomized_response(
+      std::vector<attribution_reporting::FakeEventLevelReport>{});
   storage()->StoreSource(TestAggregatableSourceProvider()
                              .GetBuilder()
                              .SetSourceEventId(5)
@@ -1364,7 +1348,8 @@ TEST_F(AttributionStorageTest,
 
   SourceBuilder builder = TestAggregatableSourceProvider().GetBuilder();
 
-  delegate()->set_randomized_response(std::vector<FakeEventLevelReport>{});
+  delegate()->set_randomized_response(
+      std::vector<attribution_reporting::FakeEventLevelReport>{});
   storage()->StoreSource(builder.SetSourceEventId(5).Build());
   delegate()->set_randomized_response(std::nullopt);
 
@@ -1381,6 +1366,7 @@ TEST_F(AttributionStorageTest,
           .SetAttributionLogic(StoredSource::AttributionLogic::kNever)
           .SetPriority(0)
           .SetAggregatableBudgetConsumed(1)
+          .SetActiveState(StoredSource::ActiveState::kInactive)
           .BuildStored(),
       DefaultAggregatableHistogramContributions(), trigger);
 
@@ -1396,7 +1382,8 @@ TEST_F(AttributionStorageTest,
 
   task_environment_.FastForwardBy(base::Milliseconds(1));
 
-  delegate()->set_randomized_response(std::vector<FakeEventLevelReport>{});
+  delegate()->set_randomized_response(
+      std::vector<attribution_reporting::FakeEventLevelReport>{});
 
   storage()->StoreSource(provider.GetBuilder().Build());
   delegate()->set_randomized_response(std::nullopt);
@@ -1795,8 +1782,9 @@ TEST_F(AttributionStorageTest, FalselyAttributeImpression_ReportStored) {
                        *attribution_reporting::EventReportWindows::Create(
                            base::Days(0), {kFirstWindow, kExpiry})))
       .SetMaxEventLevelReports(1);
-  delegate()->set_randomized_response(std::vector<FakeEventLevelReport>{
-      {.trigger_data = 1, .window_index = 0}});
+  delegate()->set_randomized_response(
+      std::vector<attribution_reporting::FakeEventLevelReport>{
+          {.trigger_data = 1, .window_index = 0}});
   StoreSourceResult result = storage()->StoreSource(builder.Build());
   EXPECT_EQ(result.status(), StorableSource::Result::kSuccessNoised);
   delegate()->set_randomized_response(std::nullopt);
@@ -1885,7 +1873,7 @@ TEST_F(AttributionStorageTest, StoreSource_ReturnsMinFakeReportTime) {
   const base::Time now = base::Time::Now();
 
   const struct {
-    RandomizedResponse randomized_response;
+    attribution_reporting::RandomizedResponse randomized_response;
     ::testing::Matcher<StoreSourceResult::Result> matches;
   } kTestCases[] = {
       {
@@ -1893,13 +1881,13 @@ TEST_F(AttributionStorageTest, StoreSource_ReturnsMinFakeReportTime) {
           VariantWith<StoreSourceResult::Success>(_),
       },
       {
-          std::vector<FakeEventLevelReport>(),
+          std::vector<attribution_reporting::FakeEventLevelReport>(),
           VariantWith<StoreSourceResult::SuccessNoised>(
               Field(&StoreSourceResult::SuccessNoised::min_fake_report_time,
                     std::nullopt)),
       },
       {
-          std::vector<FakeEventLevelReport>{
+          std::vector<attribution_reporting::FakeEventLevelReport>{
               {.trigger_data = 0, .window_index = 0},
               {.trigger_data = 0, .window_index = 1},
               {.trigger_data = 0, .window_index = 2}},
@@ -2464,8 +2452,9 @@ TEST_F(AttributionStorageTest, AggregatableDedupKeysFiltering) {
               absl::MakeUint128(/*high=*/1, /*low=*/0),
               /*source_keys=*/{"0"}, FilterPair())};
 
-  auto aggregatable_values =
-      *attribution_reporting::AggregatableValues::Create({{"0", 1}});
+  auto aggregatable_values = {
+      *attribution_reporting::AggregatableValues::Create({{"0", 1}},
+                                                         FilterPair())};
 
   storage()->StoreSource(
       SourceBuilder()
@@ -3436,8 +3425,9 @@ TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
               absl::MakeUint128(/*high=*/1, /*low=*/0),
               /*source_keys=*/{"0"}, FilterPair())};
 
-  auto aggregatable_values =
-      *attribution_reporting::AggregatableValues::Create({{"0", 1}});
+  auto aggregatable_values = {
+      *attribution_reporting::AggregatableValues::Create({{"0", 1}},
+                                                         FilterPair())};
 
   storage()->StoreSource(
       SourceBuilder()
@@ -3560,6 +3550,29 @@ TEST_F(AttributionStorageTest,
             NewAggregatableReportIs(Eq(std::nullopt))));
 }
 
+TEST_F(AttributionStorageTest,
+       AggregatableAttributionValues_NoMatchingFilters_NoContributions) {
+  storage()->StoreSource(
+      SourceBuilder()
+          .SetAggregationKeys(
+              *attribution_reporting::AggregationKeys::FromKeys({{"0", 1}}))
+          .SetFilterData(
+              *attribution_reporting::FilterData::Create({{"product", {"1"}}}))
+          .Build());
+
+  EXPECT_EQ(
+      MaybeCreateAndStoreAggregatableReport(
+          TriggerBuilder()
+              .SetAggregatableValues(
+                  {*attribution_reporting::AggregatableValues::Create(
+                      {{"0", 123}}, FilterPair(
+                                        /*positive=*/{*FilterConfig::Create(
+                                            {{"product", {"2"}}})},
+                                        /*negative=*/{}))})
+              .Build()),
+      AttributionTrigger::AggregatableResult::kNoHistograms);
+}
+
 TEST_F(AttributionStorageTest, AggregatableAttribution_ReportsScheduled) {
   auto source_builder = TestAggregatableSourceProvider().GetBuilder();
   storage()->StoreSource(source_builder.Build());
@@ -3666,7 +3679,7 @@ TEST_F(AttributionStorageTest,
                 TriggerBuilder()
                     .SetAggregatableValues(
                         {*attribution_reporting::AggregatableValues::Create(
-                            {{"0", 123}})})
+                            {{"0", 123}}, FilterPair())})
                     .Build()),
             AttributionTrigger::AggregatableResult::kSuccess);
 }

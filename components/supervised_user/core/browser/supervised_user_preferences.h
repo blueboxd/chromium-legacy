@@ -18,7 +18,7 @@ namespace supervised_user {
 // Register preferences that describe parental controls.
 void RegisterFamilyPrefs(
     PrefService& pref_service,
-    const kids_chrome_management::ListFamilyMembersResponse& response);
+    const kids_chrome_management::ListMembersResponse& response);
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
 // Set preferences that describe parental controls.
@@ -27,11 +27,6 @@ void DisableParentalControls(PrefService& pref_service);
 
 bool IsChildAccountStatusKnown(const PrefService& pref_service);
 
-// Returns true if the user is a type of Family Link supervised account.
-// This method should be preferred on gating child-specific features if there
-// is no dedicated method for the feature (e.g IsUrlFilteringEnabled).
-bool IsChildAccount(const PrefService& pref_service);
-
 // Returns true if the safe sites preference is enabled and user is supervised.
 bool IsSafeSitesEnabled(const PrefService& pref_service);
 
@@ -39,12 +34,17 @@ bool IsSafeSitesEnabled(const PrefService& pref_service);
 // parental controls and the platform supports Family Link supervision features.
 bool IsSubjectToParentalControls(const PrefService& pref_service);
 
-// Returns true if the URL filtering parental control is enabled.
-bool IsUrlFilteringEnabled(const PrefService& pref_service);
-
-// Returns true if the extensions permissions parental control is enabled.
+// Returns true if the extensions permissions parental control is enabled
+// for supervised users.
+// Returns false if the user is not supervised.
 bool AreExtensionsPermissionsEnabled(const PrefService& pref_service);
 
+// Returns true if the extension handling mode for skipping parent approval is
+// enabled and the parent has authorized installing extensions without their
+// approval.
+// Returns false if the user is not supervised.
+bool SupervisedUserCanSkipExtensionParentApprovals(
+    const PrefService& pref_service);
 }  // namespace supervised_user
 
 #endif  // COMPONENTS_SUPERVISED_USER_CORE_BROWSER_SUPERVISED_USER_PREFERENCES_H_

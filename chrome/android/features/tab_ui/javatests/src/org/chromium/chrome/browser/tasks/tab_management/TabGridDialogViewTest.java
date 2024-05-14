@@ -16,6 +16,7 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import androidx.test.annotation.UiThreadTest;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
@@ -26,7 +27,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Criteria;
@@ -158,7 +158,7 @@ public class TabGridDialogViewTest extends BlankUiTestActivityTestCase {
         View recyclerView = new View(getActivity());
         recyclerView.setVisibility(View.GONE);
 
-        mTabGridDialogView.resetDialog(toolbarView, recyclerView);
+        mTabGridDialogView.resetDialog(toolbarView, recyclerView, null);
 
         // It should contain four child views: top tool bar, recyclerview, ungroup bar and undo bar
         // container.
@@ -180,9 +180,12 @@ public class TabGridDialogViewTest extends BlankUiTestActivityTestCase {
         mTabGridDialogContainer.removeAllViews();
         View toolbarView = new View(getActivity());
         View recyclerView = new View(getActivity());
+        View shareBar =
+                LayoutInflater.from(getActivity()).inflate(R.layout.data_sharing_group_bar, null);
         recyclerView.setVisibility(View.GONE);
 
-        mTabGridDialogView.resetDialog(toolbarView, recyclerView);
+        mTabGridDialogView.updateShouldShowShare(true);
+        mTabGridDialogView.resetDialog(toolbarView, recyclerView, shareBar);
 
         // It should contain five child views: top tool bar, recyclerview, ungroup bar, data sharing
         // bar and undo bar container.
@@ -201,7 +204,7 @@ public class TabGridDialogViewTest extends BlankUiTestActivityTestCase {
                     mTabGridDialogContainer.removeAllViews();
                     View toolbarView = new View(getActivity());
                     View recyclerView = new View(getActivity());
-                    mTabGridDialogView.resetDialog(toolbarView, recyclerView);
+                    mTabGridDialogView.resetDialog(toolbarView, recyclerView, null);
                 });
 
         // From hide to show.

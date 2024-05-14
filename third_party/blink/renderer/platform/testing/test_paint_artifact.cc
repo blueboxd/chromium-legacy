@@ -63,18 +63,10 @@ TestPaintArtifact& TestPaintArtifact::RectDrawing(const gfx::Rect& bounds,
   return RectDrawing(NewClient(), bounds, color);
 }
 
-TestPaintArtifact& TestPaintArtifact::ScrollHitTest(
-    const gfx::Rect& rect,
-    const TransformPaintPropertyNode* scroll_translation) {
-  return ScrollHitTest(NewClient(), rect, scroll_translation);
-}
-
 TestPaintArtifact& TestPaintArtifact::ForeignLayer(
     scoped_refptr<cc::Layer> layer,
     const gfx::Point& offset) {
-  DEFINE_STATIC_LOCAL(
-      Persistent<LiteralDebugNameClient>, client,
-      (MakeGarbageCollected<LiteralDebugNameClient>("ForeignLayer")));
+  DEFINE_STATIC_DISPLAY_ITEM_CLIENT(client, "ForeignLayer");
   paint_artifact_->GetDisplayItemList()
       .AllocateAndConstruct<ForeignLayerDisplayItem>(
           client->Id(), DisplayItem::kForeignLayerFirst, std::move(layer),
@@ -114,7 +106,6 @@ TestPaintArtifact& TestPaintArtifact::RectDrawing(DisplayItemClient& client,
 }
 
 TestPaintArtifact& TestPaintArtifact::ScrollHitTest(
-    DisplayItemClient& client,
     const gfx::Rect& rect,
     const TransformPaintPropertyNode* scroll_translation) {
   auto& chunk = paint_artifact_->PaintChunks().back();

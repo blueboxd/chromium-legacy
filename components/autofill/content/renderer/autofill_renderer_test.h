@@ -14,12 +14,16 @@
 
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
+#include "components/autofill/content/renderer/password_autofill_agent.h"
+#include "components/autofill/content/renderer/password_generation_agent.h"
 #include "content/public/test/render_view_test.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/metrics/document_update_reason.h"
+#include "third_party/blink/public/web/web_frame_widget.h"
 
 namespace autofill::test {
 
@@ -110,6 +114,13 @@ class AutofillRendererTest : public content::RenderViewTest {
   void SetUp() override;
   void TearDown() override;
 
+  virtual std::unique_ptr<AutofillAgent> CreateAutofillAgent(
+      content::RenderFrame* render_frame,
+      const AutofillAgent::Config& config,
+      std::unique_ptr<PasswordAutofillAgent> password_autofill_agent,
+      std::unique_ptr<PasswordGenerationAgent> password_generation_agent,
+      blink::AssociatedInterfaceRegistry* associated_interfaces);
+
   // Simulates a click on the element with id `element_id` and, if, successful,
   // runs until the task environment is idle. Waits until the `TaskEnvironment`
   // is idle to ensure that the `AutofillDriver` is notified via mojo.
@@ -125,6 +136,12 @@ class AutofillRendererTest : public content::RenderViewTest {
   // FormsSeen() has happened.
   void WaitForFormsSeen() {
     task_environment_.FastForwardBy(AutofillAgent::kFormsSeenThrottle * 3 / 2);
+  }
+
+  // This triggers a layout update to apply JS changes like display = 'none'.
+  void ForceLayoutUpdate() {
+    GetWebFrameWidget()->UpdateAllLifecyclePhases(
+        blink::DocumentUpdateReason::kTest);
   }
 
  protected:

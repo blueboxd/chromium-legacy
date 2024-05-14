@@ -53,6 +53,7 @@
 #include "gpu/command_buffer/client/client_shared_image.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
+#include "gpu/ipc/client/client_shared_image_interface.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "media/renderers/video_resource_updater.h"
@@ -128,8 +129,9 @@ ResourceId CreateGpuResource(
   gpu::SharedImageInterface* sii = context_provider->SharedImageInterface();
   DCHECK(sii);
   auto client_shared_image = sii->CreateSharedImage(
-      format, size, color_space, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
-      gpu::SHARED_IMAGE_USAGE_DISPLAY_READ, "TestLabel", pixels);
+      {format, size, color_space, gpu::SHARED_IMAGE_USAGE_DISPLAY_READ,
+       "TestLabel"},
+      pixels);
   gpu::SyncToken sync_token = sii->GenUnverifiedSyncToken();
 
   TransferableResource gl_resource = TransferableResource::MakeGpu(
@@ -855,8 +857,8 @@ void CreateTestYUVVideoDrawQuad_NV12(
   yuv_quad->SetNew(shared_state, rect, visible_rect, needs_blending,
                    ya_tex_size, video_frame_visible_rect, uv_sample_size,
                    mapped_resource_y, mapped_resource_u, mapped_resource_v,
-                   resource_a, color_space, 0.0f, 1.0f, 8,
-                   gfx::ProtectedVideoType::kClear, std::nullopt);
+                   resource_a, color_space, 8, gfx::ProtectedVideoType::kClear,
+                   std::nullopt);
 }
 
 // Create two quads of specified colors on half-pixel boundaries.
@@ -1953,11 +1955,13 @@ class IntersectingMultiplanarVideoQuadPixelTest : public VizPixelTestWithParam {
 
     video_resource_updater_ = std::make_unique<media::VideoResourceUpdater>(
         this->child_context_provider_.get(), nullptr,
-        this->child_resource_provider_.get(), kUseStreamVideoDrawQuad,
+        this->child_resource_provider_.get(),
+        /*shared_image_interface=*/nullptr, kUseStreamVideoDrawQuad,
         kUseGpuMemoryBufferResources, kMaxResourceSize);
     video_resource_updater2_ = std::make_unique<media::VideoResourceUpdater>(
         this->child_context_provider_.get(), nullptr,
-        this->child_resource_provider_.get(), kUseStreamVideoDrawQuad,
+        this->child_resource_provider_.get(),
+        /*shared_image_interface=*/nullptr, kUseStreamVideoDrawQuad,
         kUseGpuMemoryBufferResources, kMaxResourceSize);
   }
 
@@ -2429,8 +2433,8 @@ class VideoRendererPixelTestBase : public VizPixelTest {
     constexpr int kMaxResourceSize = 10000;
     video_resource_updater_ = std::make_unique<media::VideoResourceUpdater>(
         child_context_provider_.get(), nullptr, child_resource_provider_.get(),
-        kUseStreamVideoDrawQuad, kUseGpuMemoryBufferResources,
-        kMaxResourceSize);
+        /*shared_image_interface=*/nullptr, kUseStreamVideoDrawQuad,
+        kUseGpuMemoryBufferResources, kMaxResourceSize);
   }
 
   void TearDown() override {
@@ -2479,6 +2483,44 @@ TEST_P(VideoRendererPixelHiLoTest, SimpleYUVRect) {
   // upload support lands for Windows for multiplanar SI.
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list, base::FilePath(FILE_PATH_LITERAL("yuv_stripes.png")),
+      cc::FuzzyPixelComparator()
+          .DiscardAlpha()
+          .SetErrorPixelsPercentageLimit(100.f)
+          .SetAvgAbsErrorLimit(1.2f)
+          .SetAbsErrorLimit(2)));
+}
+
+TEST_P(VideoRendererPixelHiLoTest, SimpleYCoCgYUVRect) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  CompositorRenderPassId id{1};
+  auto pass = CreateTestRootRenderPass(id, rect);
+  // Set the output color space to match the input primaries and transfer.
+  this->display_color_spaces_ = kRec601DisplayColorSpaces;
+
+  CreateTestMultiplanarVideoDrawQuad_Striped(
+      media::PIXEL_FORMAT_I420,
+      gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
+                      gfx::ColorSpace::TransferID::SMPTE170M,
+                      gfx::ColorSpace::MatrixID::YCOCG,
+                      gfx::ColorSpace::RangeID::LIMITED),
+      false, IsHighbit(), gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), pass.get(),
+      this->video_resource_updater_.get(), rect, rect,
+      this->resource_provider_.get(), this->child_resource_provider_.get(),
+      this->child_context_provider_.get());
+
+  AggregatedRenderPassId new_id{1};
+  auto copy_pass = cc::CopyToAggregatedRenderPass(
+      pass.get(), new_id, gfx::ContentColorUsage::kSRGB);
+
+  AggregatedRenderPassList pass_list;
+  pass_list.push_back(std::move(copy_pass));
+
+  // TODO(crbug.com/1465939): Remove error relaxations once software pixel
+  // upload support lands for Windows for multiplanar SI.
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("yuv_stripes_ycocg_limited.png")),
       cc::FuzzyPixelComparator()
           .DiscardAlpha()
           .SetErrorPixelsPercentageLimit(100.f)

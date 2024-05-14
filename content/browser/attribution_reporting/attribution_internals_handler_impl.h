@@ -10,10 +10,19 @@
 #include "content/browser/attribution_reporting/attribution_internals.mojom.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
+#include "content/browser/attribution_reporting/attribution_reporting.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+
+namespace attribution_reporting {
+struct OsRegistrationItem;
+}  // namespace attribution_reporting
+
+namespace url {
+class Origin;
+}  // namespace url
 
 namespace content {
 
@@ -50,9 +59,9 @@ class AttributionInternalsHandlerImpl
       override;
   void GetReports(attribution_internals::mojom::Handler::GetReportsCallback
                       callback) override;
-  void SendReports(const std::vector<AttributionReport::Id>& ids,
-                   attribution_internals::mojom::Handler::SendReportsCallback
-                       callback) override;
+  void SendReport(AttributionReport::Id,
+                  attribution_internals::mojom::Handler::SendReportCallback
+                      callback) override;
   void ClearStorage(attribution_internals::mojom::Handler::ClearStorageCallback
                         callback) override;
 
@@ -71,12 +80,13 @@ class AttributionInternalsHandlerImpl
   void OnDebugReportSent(const AttributionDebugReport&,
                          int status,
                          base::Time) override;
-  void OnTriggerHandled(const AttributionTrigger& trigger,
-                        std::optional<uint64_t> cleared_debug_key,
+  void OnTriggerHandled(std::optional<uint64_t> cleared_debug_key,
                         const CreateReportResult& result) override;
   void OnOsRegistration(
       base::Time time,
-      const OsRegistration&,
+      const attribution_reporting::OsRegistrationItem&,
+      const url::Origin& top_level_origin,
+      attribution_reporting::mojom::RegistrationType,
       bool is_debug_key_allowed,
       attribution_reporting::mojom::OsRegistrationResult) override;
 

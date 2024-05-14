@@ -7,21 +7,36 @@
 #include <memory>
 #include <utility>
 
+#include "base/check_is_test.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "services/webnn/buildflags.h"
 #include "services/webnn/error.h"
 #include "services/webnn/public/mojom/webnn_error.mojom.h"
 #include "services/webnn/webnn_context_impl.h"
 
 #if BUILDFLAG(IS_WIN)
+#include <wrl.h>
+
 #include "services/webnn/dml/adapter.h"
+#include "services/webnn/dml/command_queue.h"
+#include "services/webnn/dml/command_recorder.h"
 #include "services/webnn/dml/context_impl.h"
+#include "services/webnn/dml/utils.h"
 #endif
 
 #if BUILDFLAG(IS_MAC)
 #include "services/webnn/coreml/context_impl.h"
 #endif
 
+#if BUILDFLAG(WEBNN_USE_TFLITE)
+#include "services/webnn/tflite/context_impl.h"
+#endif
+
 namespace webnn {
+
+#if BUILDFLAG(IS_WIN)
+using Microsoft::WRL::ComPtr;
+#endif
 
 namespace {
 
@@ -30,17 +45,82 @@ WebNNContextProviderImpl::BackendForTesting* g_backend_for_testing = nullptr;
 using webnn::mojom::CreateContextOptionsPtr;
 using webnn::mojom::WebNNContextProvider;
 
+#if BUILDFLAG(IS_WIN)
+base::expected<scoped_refptr<dml::Adapter>, mojom::ErrorPtr> GetDmlGpuAdapter(
+    gpu::SharedContextState* shared_context_state) {
+  constexpr DML_FEATURE_LEVEL kMinDMLFeatureLevelForWebNN =
+      DML_FEATURE_LEVEL_4_0;
+  if (!shared_context_state) {
+    // Unit tests do not pass in a SharedContextState, since a reference to
+    // a GpuServiceImpl must be initialized to obtain a SharedContextState.
+    // Instead, we just enumerate the first DXGI adapter.
+    CHECK_IS_TEST();
+    return dml::Adapter::GetInstanceForTesting(kMinDMLFeatureLevelForWebNN);
+  }
+
+  // At the current stage, all `ContextImpl` share this instance.
+  //
+  // TODO(crbug.com/40277628): Support getting `Adapter` instance based on
+  // `options`.
+  ComPtr<ID3D11Device> d3d11_device = shared_context_state->GetD3D11Device();
+  if (!d3d11_device) {
+    return base::unexpected(dml::CreateError(
+        mojom::Error::Code::kNotSupportedError,
+        "Failed to get D3D11 Device from SharedContextState."));
+  }
+
+  ComPtr<IDXGIDevice> dxgi_device;
+  // A QueryInterface() via As() from a ID3D11Device to IDXGIDevice should
+  // always succeed.
+  CHECK_EQ(d3d11_device.As(&dxgi_device), S_OK);
+  ComPtr<IDXGIAdapter> dxgi_adapter;
+  // Asking for an adapter from IDXGIDevice is always expected to succeed.
+  CHECK_EQ(dxgi_device->GetAdapter(&dxgi_adapter), S_OK);
+  return dml::Adapter::GetInstance(kMinDMLFeatureLevelForWebNN,
+                                   std::move(dxgi_adapter));
+}
+#endif
+
 }  // namespace
 
-WebNNContextProviderImpl::WebNNContextProviderImpl() = default;
+WebNNContextProviderImpl::WebNNContextProviderImpl(
+    scoped_refptr<gpu::SharedContextState> shared_context_state,
+    gpu::GpuFeatureInfo gpu_feature_info)
+    : shared_context_state_(std::move(shared_context_state)),
+      gpu_feature_info_(std::move(gpu_feature_info)) {}
 
 WebNNContextProviderImpl::~WebNNContextProviderImpl() = default;
 
 // static
 void WebNNContextProviderImpl::Create(
-    mojo::PendingReceiver<WebNNContextProvider> receiver) {
+    mojo::PendingReceiver<WebNNContextProvider> receiver,
+    scoped_refptr<gpu::SharedContextState> shared_context_state,
+    gpu::GpuFeatureInfo gpu_feature_info) {
+  CHECK_NE(shared_context_state, nullptr);
   mojo::MakeSelfOwnedReceiver<WebNNContextProvider>(
-      std::make_unique<WebNNContextProviderImpl>(), std::move(receiver));
+      std::make_unique<WebNNContextProviderImpl>(
+          std::move(shared_context_state), std::move(gpu_feature_info)),
+      std::move(receiver));
+}
+
+// static
+void WebNNContextProviderImpl::CreateForTesting(
+    mojo::PendingReceiver<mojom::WebNNContextProvider> receiver,
+    bool is_gpu_supported) {
+  CHECK_IS_TEST();
+
+  gpu::GpuFeatureInfo gpu_feature_info;
+  for (auto& status : gpu_feature_info.status_values) {
+    status = gpu::GpuFeatureStatus::kGpuFeatureStatusDisabled;
+  }
+  gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_WEBNN] =
+      is_gpu_supported ? gpu::kGpuFeatureStatusEnabled
+                       : gpu::kGpuFeatureStatusBlocklisted;
+
+  mojo::MakeSelfOwnedReceiver<WebNNContextProvider>(
+      std::make_unique<WebNNContextProviderImpl>(
+          /*shared_context_state=*/nullptr, std::move(gpu_feature_info)),
+      std::move(receiver));
 }
 
 void WebNNContextProviderImpl::OnConnectionError(WebNNContextImpl* impl) {
@@ -64,28 +144,49 @@ void WebNNContextProviderImpl::CreateWebNNContext(
                                               std::move(callback));
     return;
   }
+#if BUILDFLAG(WEBNN_USE_TFLITE)
+  // The remote sent to the renderer.
+  mojo::PendingRemote<mojom::WebNNContext> blink_remote;
+  impls_.push_back(base::WrapUnique<WebNNContextImpl>(new tflite::ContextImpl(
+      blink_remote.InitWithNewPipeAndPassReceiver(), this)));
+  std::move(callback).Run(
+      mojom::CreateContextResult::NewContextRemote(std::move(blink_remote)));
+#elif BUILDFLAG(IS_WIN)
+  DCHECK(gpu_feature_info_.IsInitialized());
+  if (gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_WEBNN] !=
+      gpu::kGpuFeatureStatusEnabled) {
+    std::move(callback).Run(ToError<mojom::CreateContextResult>(
+        mojom::Error::Code::kNotSupportedError,
+        "WebNN is not compatible with GPU."));
+    DLOG(ERROR) << "WebNN is not compatible with GPU.";
+    return;
+  }
 
-#if BUILDFLAG(IS_WIN)
-  // Get the default `Adapter` instance which is created for the adapter queried
-  // from ANGLE. At the current stage, all `ContextImpl` share this instance.
-  //
-  // TODO(crbug.com/1469755): Support getting `Adapter` instance based on
-  // `options`.
-  constexpr DML_FEATURE_LEVEL kMinDMLFeatureLevelForWebNN =
-      DML_FEATURE_LEVEL_4_0;
-  auto adapter_creation_result =
-      dml::Adapter::GetInstance(kMinDMLFeatureLevelForWebNN);
+  auto adapter_creation_result = GetDmlGpuAdapter(shared_context_state_.get());
   if (!adapter_creation_result.has_value()) {
     std::move(callback).Run(mojom::CreateContextResult::NewError(
         std::move(adapter_creation_result.error())));
     return;
   }
+
+  scoped_refptr<dml::Adapter> adapter = adapter_creation_result.value();
+  std::unique_ptr<dml::CommandRecorder> command_recorder =
+      dml::CommandRecorder::Create(adapter->command_queue(),
+                                   adapter->dml_device());
+  if (!command_recorder) {
+    std::move(callback).Run(ToError<mojom::CreateContextResult>(
+        mojom::Error::Code::kUnknownError,
+        "Failed to create a WebNN context."));
+    DLOG(ERROR) << "Failed to open the command recorder.";
+    return;
+  }
+
   // The remote sent to the renderer.
   mojo::PendingRemote<mojom::WebNNContext> blink_remote;
   // The receiver bound to WebNNContextImpl.
   impls_.push_back(base::WrapUnique<WebNNContextImpl>(new dml::ContextImpl(
-      std::move(adapter_creation_result.value()),
-      blink_remote.InitWithNewPipeAndPassReceiver(), this)));
+      std::move(adapter), blink_remote.InitWithNewPipeAndPassReceiver(), this,
+      std::move(command_recorder), gpu_feature_info_)));
   std::move(callback).Run(
       mojom::CreateContextResult::NewContextRemote(std::move(blink_remote)));
 #elif BUILDFLAG(IS_MAC)

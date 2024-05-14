@@ -45,7 +45,7 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_loading_indicator_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/web_data_service_factory.h"
+#include "chrome/browser/webdata_services/web_data_service_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -159,8 +159,8 @@ class LocalCardMigrationBrowserTest
  protected:
   class TestAutofillManager : public BrowserAutofillManager {
    public:
-    TestAutofillManager(ContentAutofillDriver* driver, AutofillClient* client)
-        : BrowserAutofillManager(driver, client, "en-US") {}
+    explicit TestAutofillManager(ContentAutofillDriver* driver)
+        : BrowserAutofillManager(driver, "en-US") {}
 
     testing::AssertionResult WaitForFormsSeen(int min_num_awaited_calls) {
       return forms_seen_waiter_.Wait(min_num_awaited_calls);
@@ -206,8 +206,9 @@ class LocalCardMigrationBrowserTest
             &test_url_loader_factory_);
     ContentAutofillClient* client =
         ContentAutofillClient::FromWebContents(GetActiveWebContents());
-    client->GetPaymentsNetworkInterface()->set_url_loader_factory_for_testing(
-        test_shared_loader_factory_);
+    client->GetPaymentsAutofillClient()
+        ->GetPaymentsNetworkInterface()
+        ->set_url_loader_factory_for_testing(test_shared_loader_factory_);
 
     // Set up this class as the ObserverForTest implementation.
     client->GetFormDataImporter()

@@ -43,16 +43,21 @@
 extern crate lazy_static;
 
 extern crate alloc;
+extern crate base64;
 extern crate cbor;
 extern crate crypto;
 
+mod der;
 #[macro_use]
 mod macros;
 mod passkeys;
+mod recovery_key_store;
 mod spki;
 
-// When building for fuzzing, the SPKI parser is re-exported so the fuzzer can
-// call it.
+// When building for fuzzing, these functions are re-exported so the fuzzer can
+// call them.
+#[cfg(fuzzing)]
+pub use recovery_key_store::fuzzing::{x509_parse, xml_parse};
 #[cfg(fuzzing)]
 pub use spki::parse as spki_parse;
 
@@ -137,6 +142,8 @@ map_keys! {
     SIG, SIG_KEY = "sig",
     TO, TO_KEY = "to",
     WRAPPING_KEYS, WRAPPING_KEYS_KEY = "wrapping_keys",
+    PIN_ATTEMPTS, PIN_ATTEMPTS_KEY = "pin_attempts",
+    PIN_HIGH_WATER, PIN_HIGH_WATER_KEY = "pin_high_water",
 }
 
 // Since AES-GCM can only handle 2^32 encryptions per key, the per-registration
@@ -193,6 +200,13 @@ fn unwrap(wrapping_key: &[u8], data: &[u8], purpose: &str) -> Result<Vec<u8>, Re
         Vec::from(ciphertext),
     )
     .map_err(|_| RequestError::Debug("decryption failed"))
+}
+
+pub struct PINState {
+    /// The number of incorrect attempts made.
+    attempts: i64,
+    /// The highest PIN generation seen so far.
+    generation_high_water: i64,
 }
 
 // The parsed form of the account's state.
@@ -284,6 +298,34 @@ impl ParsedState {
         let wrapping_key = self.wrapping_key(device_id)?;
         unwrap(wrapping_key, data, purpose)
     }
+
+    fn get_pin_state(&self, device_id: &[u8]) -> Result<PINState, RequestError> {
+        let device = self.get_device(device_id).ok_or(RequestError::Debug("unknown device"))?;
+        let attempts = match device.get(PIN_ATTEMPTS_KEY) {
+            Some(Value::Int(attempts)) => *attempts,
+            _ => 0,
+        };
+        let generation_high_water = match device.get(PIN_HIGH_WATER_KEY) {
+            Some(Value::Int(value)) => *value,
+            _ => 0,
+        };
+        Ok(PINState { attempts, generation_high_water })
+    }
+
+    fn set_pin_state(&mut self, device_id: &[u8], pin_state: PINState) -> Result<(), RequestError> {
+        let device = self.get_mut_device(device_id).ok_or(RequestError::Debug("unknown device"))?;
+        if pin_state.attempts == 0 {
+            device.remove(PIN_ATTEMPTS_KEY);
+        } else {
+            device.insert(PIN_ATTEMPTS.into(), Value::Int(pin_state.attempts));
+        }
+        if pin_state.generation_high_water == 0 {
+            device.remove(PIN_HIGH_WATER_KEY);
+        } else {
+            device.insert(PIN_HIGH_WATER.into(), Value::Int(pin_state.generation_high_water));
+        }
+        Ok(())
+    }
 }
 
 impl Default for ParsedState {
@@ -337,10 +379,6 @@ impl core::str::FromStr for AuthLevel {
 enum Authentication {
     None,
     // Contains the device ID and authentication level.
-    //
-    // This `dead_code` annotation exists because `AuthLevel` is not currently
-    // used, but it will be.
-    #[allow(dead_code)]
     Device(Vec<u8>, AuthLevel),
     // Requests processed after a registration will observe this special
     // authentication level. Duplicate registrations are silently accepted so
@@ -375,6 +413,7 @@ impl ClientState {
 struct DirtyFlag<'a, T> {
     _contents: &'a mut T,
     changed: bool,
+    minor_change: bool,
 }
 
 impl<'a, T> core::ops::Deref for DirtyFlag<'a, T> {
@@ -386,18 +425,24 @@ impl<'a, T> core::ops::Deref for DirtyFlag<'a, T> {
 
 impl<'a, T> DirtyFlag<'a, T> {
     fn new(r: &'a mut T) -> Self {
-        DirtyFlag { _contents: r, changed: false }
+        DirtyFlag { _contents: r, changed: false, minor_change: false }
     }
 
-    fn get_mut<'b>(&'b mut self) -> &'b mut T where {
+    fn get_mut(&mut self) -> &mut T where {
         self.changed = true;
+        self._contents
+    }
+
+    /// Declare that a mutation is minor and thus shouldn't set the dirty flag.
+    fn get_mut_for_minor_change(&mut self) -> &mut T where {
+        self.minor_change = true;
         self._contents
     }
 }
 
 pub fn process_client_msg(
     state: ClientState,
-    current_time: i64,
+    current_time_epoch_millis: i64,
     handshake_hash: &[u8],
     client_msg: Vec<u8>,
 ) -> Result<(Value, StateUpdate), Error> {
@@ -462,7 +507,8 @@ pub fn process_client_msg(
         let Value::Map(request) = request else {
             return Err(Error::Str("each request must be a map"));
         };
-        match do_request(current_time, &mut auth, &mut state_with_dirty_flag, request) {
+        match do_request(current_time_epoch_millis, &mut auth, &mut state_with_dirty_flag, request)
+        {
             Ok(result) => results
                 .push(Value::Map(BTreeMap::from([(MapKey::String(String::from(OK)), result)]))),
             Err(error) => {
@@ -481,17 +527,21 @@ pub fn process_client_msg(
 
     // If a device was recognised, the `last_used` value for it will be updated.
     // This is a "minor" state update and may be discarded.
-    let has_minor_update = match auth {
-        Authentication::Device(device_id, _) => {
-            if let Some(device) = state.get_mut_device(&device_id) {
-                device.insert(MapKey::String(String::from(LAST_USED)), Value::Int(current_time));
-                true
-            } else {
-                false
+    let has_minor_update = state_with_dirty_flag.minor_change
+        || match auth {
+            Authentication::Device(device_id, _) => {
+                if let Some(device) = state.get_mut_device(&device_id) {
+                    device.insert(
+                        MapKey::String(String::from(LAST_USED)),
+                        Value::Int(current_time_epoch_millis),
+                    );
+                    true
+                } else {
+                    false
+                }
             }
-        }
-        _ => false,
-    };
+            _ => false,
+        };
 
     let update = if has_major_update {
         StateUpdate::Major(state.serialize())
@@ -524,6 +574,17 @@ enum RequestError {
     /// A resource with the same identifier already exists.
     Duplicate,
 
+    /// The claimed PIN was incorrect.
+    IncorrectPIN,
+
+    /// The device has made too many incorrect PIN attempts and cannot make
+    /// any more.
+    PINLocked,
+
+    /// A newer PIN has been seen. The client should fetch updated PIN
+    /// information.
+    PINOutdated,
+
     /// An error that should never happen and thus is only reported for
     /// debugging purposes. Clients are not expected to handle these errors
     /// other than to log them.
@@ -536,6 +597,9 @@ impl RequestError {
             RequestError::MissingSecrets => Value::Int(0),
             RequestError::NoSupportedAlgorithm => Value::Int(1),
             RequestError::Duplicate => Value::Int(2),
+            RequestError::IncorrectPIN => Value::Int(3),
+            RequestError::PINLocked => Value::Int(4),
+            RequestError::PINOutdated => Value::Int(5),
             RequestError::Debug(s) => Value::String(String::from(*s)),
         }
     }
@@ -547,7 +611,7 @@ fn debug<T>(msg: &'static str) -> Result<T, RequestError> {
 }
 
 fn do_request(
-    current_time: i64,
+    current_time_epoch_millis: i64,
     auth: &mut Authentication,
     state: &mut DirtyFlag<ParsedState>,
     request: BTreeMap<MapKey, Value>,
@@ -556,7 +620,7 @@ fn do_request(
         return debug("request is missing cmd");
     };
     match cmd.as_str() {
-        "device/register" => do_device_register(current_time, auth, state, request),
+        "device/register" => do_device_register(current_time_epoch_millis, auth, state, request),
         "device/forget" => do_device_forget(auth, state, request),
         "debug/success" => Ok(Value::Boolean(true)),
         "debug/dump" => do_debug_dump(auth, state, request),
@@ -564,12 +628,15 @@ fn do_request(
         "keys/wrap" => do_keys_wrap(auth, state, request),
         "passkeys/assert" => passkeys::do_assert(auth, state, request),
         "passkeys/create" => passkeys::do_create(auth, state, request),
+        "recovery_key_store/wrap" => {
+            recovery_key_store::do_wrap(current_time_epoch_millis, request)
+        }
         _ => debug("unknown command"),
     }
 }
 
 fn do_device_register(
-    current_time: i64,
+    current_time_epoch_millis: i64,
     auth: &mut Authentication,
     state: &mut DirtyFlag<ParsedState>,
     request: BTreeMap<MapKey, Value>,
@@ -583,7 +650,8 @@ fn do_device_register(
     let device_id = device_id.clone();
 
     let mut device: BTreeMap<MapKey, Value> = BTreeMap::new();
-    device.insert(MapKey::String(String::from(REGISTER_TIME)), Value::Int(current_time));
+    device
+        .insert(MapKey::String(String::from(REGISTER_TIME)), Value::Int(current_time_epoch_millis));
 
     for (key, value) in request {
         let MapKey::String(key) = key else {
@@ -749,8 +817,8 @@ mod tests {
     use cbor::cbor;
     use crypto::EcdsaKeyPair;
     use passkeys::{
-        CLIENT_DATA_JSON, COSE_ALGORITHM, KEY_PURPOSE_SECURITY_DOMAIN_SECRET, PROTOBUF,
-        PUB_KEY_CRED_PARAMS, RP_ID, USER_VERIFICATION, WEBAUTHN_REQUEST, WRAPPED_SECRET,
+        CLAIMED_PIN, CLIENT_DATA_JSON, COSE_ALGORITHM, KEY_PURPOSE_SECURITY_DOMAIN_SECRET,
+        PROTOBUF, PUB_KEY_CRED_PARAMS, RP_ID, WEBAUTHN_REQUEST, WRAPPED_PIN_DATA, WRAPPED_SECRET,
         WRAPPED_SECRETS,
     };
     use prost::Message;
@@ -777,7 +845,7 @@ mod tests {
     pub const TIMESTAMP: i64 = 100;
 
     fn bytes(b: Vec<u8>) -> Value {
-        return Value::Bytestring(Bytes::from(b));
+        Value::Bytestring(Bytes::from(b))
     }
 
     fn x962_to_spki(x962: &[u8]) -> Vec<u8> {
@@ -831,6 +899,55 @@ mod tests {
                 panic!("unexpected result")
             };
             wrapped.to_vec()
+        };
+        static ref ENTITY_PROTOBUF_BYTES: Vec<u8> = {
+            let msg = sign_request(cbor!({
+                CMD: "passkeys/create",
+                WRAPPED_SECRET: (REGISTERED_STATE_WRAPPED_SECRET.clone()),
+                WEBAUTHN_REQUEST: {
+                    PUB_KEY_CRED_PARAMS: [{
+                        COSE_ALGORITHM: (-7),
+                    }],
+                },
+            }));
+
+            let (output, _state) = process_client_msg(
+                REGISTERED_STATE.clone(),
+                TIMESTAMP,
+                TEST_HANDSHAKE_HASH.as_slice(),
+                msg.clone(),
+            )
+            .unwrap();
+
+            let Value::Map(result) = ok_value(&output).unwrap() else {
+                panic!("wrong type: {:?}", output)
+            };
+            let Some(Value::Bytestring(encrypted)) = result.get(passkeys::ENCRYPTED_KEY) else {
+                panic!("missing encrypted data: {:?}", result)
+            };
+            let Some(Value::Bytestring(_)) = result.get(PUB_KEY_KEY) else {
+                panic!("missing public key: {:?}", result)
+            };
+
+            chromesync::pb::WebauthnCredentialSpecifics {
+                sync_id: None,
+                credential_id: None,
+                rp_id: None,
+                user_id: Some(vec![1, 2, 3, 4]),
+                newly_shadowed_credential_ids: vec![],
+                creation_time: None,
+                user_name: None,
+                user_display_name: None,
+                third_party_payments_support: None,
+                last_used_time_windows_epoch_micros: None,
+                key_version: Some(1),
+                encrypted_data: Some(
+                    chromesync::pb::webauthn_credential_specifics::EncryptedData::Encrypted(
+                        encrypted.clone(),
+                    ),
+                ),
+            }
+            .encode_to_vec()
         };
         static ref RSA_REGISTERED_STATE: ClientState = {
             let encoded_register = cbor!([{
@@ -1049,7 +1166,6 @@ mod tests {
             WRAPPED_SECRETS: [(REGISTERED_STATE_WRAPPED_SECRET.clone())],
             PROTOBUF: (PROTOBUF_BYTES.to_vec()),
             CLIENT_DATA_JSON: r#"{"type": "webauthn.get", challenge: "1234", "origin": "example.com"}"#,
-            USER_VERIFICATION: true,
             WEBAUTHN_REQUEST: {
                 RP_ID: "example.com",
             },
@@ -1066,62 +1182,14 @@ mod tests {
 
     #[test]
     fn test_passkeys_create() {
-        let msg = sign_request(cbor!({
-            CMD: "passkeys/create",
-            WRAPPED_SECRET: (REGISTERED_STATE_WRAPPED_SECRET.clone()),
-            WEBAUTHN_REQUEST: {
-                PUB_KEY_CRED_PARAMS: [{
-                    COSE_ALGORITHM: (-7),
-                }],
-            },
-        }));
-
-        let (output, _state) = process_client_msg(
-            REGISTERED_STATE.clone(),
-            TIMESTAMP,
-            TEST_HANDSHAKE_HASH.as_slice(),
-            msg.clone(),
-        )
-        .unwrap();
-
-        // Take the encrypted data, build a sync protobuf around it, and test
-        // that we can successfully assert that credential.
-        let Value::Map(result) = ok_value(&output).unwrap() else {
-            panic!("wrong type: {:?}", output)
-        };
-        let Some(Value::Bytestring(encrypted)) = result.get(passkeys::ENCRYPTED_KEY) else {
-            panic!("missing encrypted data: {:?}", result)
-        };
-        let Some(Value::Bytestring(_)) = result.get(PUB_KEY_KEY) else {
-            panic!("missing public key: {:?}", result)
-        };
-
-        let pb_bytes = chromesync::pb::WebauthnCredentialSpecifics {
-            sync_id: None,
-            credential_id: None,
-            rp_id: None,
-            user_id: Some(vec![1, 2, 3, 4]),
-            newly_shadowed_credential_ids: vec![],
-            creation_time: None,
-            user_name: None,
-            user_display_name: None,
-            third_party_payments_support: None,
-            last_used_time_windows_epoch_micros: None,
-            key_version: Some(1),
-            encrypted_data: Some(
-                chromesync::pb::webauthn_credential_specifics::EncryptedData::Encrypted(
-                    encrypted.clone(),
-                ),
-            ),
-        }
-        .encode_to_vec();
+        // Test that we can successfully assert the credential that was
+        // created with "passkeys/create".
 
         let msg = sign_request(cbor!({
             CMD: "passkeys/assert",
             WRAPPED_SECRETS: [(REGISTERED_STATE_WRAPPED_SECRET.clone())],
-            PROTOBUF: pb_bytes,
+            PROTOBUF: (ENTITY_PROTOBUF_BYTES.clone()),
             CLIENT_DATA_JSON: r#"{"type": "webauthn.get", challenge: "1234", "origin": "example.com"}"#,
-            USER_VERIFICATION: true,
             WEBAUTHN_REQUEST: {
                 RP_ID: "example.com",
             },
@@ -1134,6 +1202,161 @@ mod tests {
         )
         .unwrap();
         assert!(is_ok(&output), "{:?}", output);
+    }
+
+    fn seal_aes_256_gcm(key: &[u8; 32], plaintext: &[u8], aad: &[u8]) -> Vec<u8> {
+        let mut plaintext = plaintext.to_vec();
+        let mut nonce = [0u8; 12];
+        crypto::rand_bytes(&mut nonce);
+        crypto::aes_256_gcm_seal_in_place(&key, &nonce, aad, &mut plaintext);
+
+        [nonce.as_slice(), &plaintext].concat()
+    }
+
+    fn encrypt_pin_data(security_domain_secret: &[u8], pin_data: &[u8]) -> Vec<u8> {
+        let mut pin_data_key = [0u8; 32];
+        crypto::hkdf_sha256(
+            security_domain_secret,
+            &[],
+            passkeys::KEY_PURPOSE_PIN_DATA_KEY,
+            &mut pin_data_key,
+        )
+        .unwrap();
+        seal_aes_256_gcm(&pin_data_key, pin_data, &[])
+    }
+
+    /// Make an assertion with the given claimed PIN. Returns any error that
+    /// resulted, the resulting PIN state, and the updated account state.
+    fn attempt_pin(
+        state: ClientState,
+        wrapped_pin_data: &[u8],
+        pin_claim: &[u8],
+    ) -> (Option<cbor::Value>, PINState, ClientState) {
+        let msg = sign_request(cbor!({
+            CMD: "passkeys/assert",
+            WRAPPED_SECRETS: [(REGISTERED_STATE_WRAPPED_SECRET.clone())],
+            PROTOBUF: (ENTITY_PROTOBUF_BYTES.clone()),
+            WRAPPED_PIN_DATA: wrapped_pin_data,
+            CLAIMED_PIN: pin_claim,
+            CLIENT_DATA_JSON: r#"{"type": "webauthn.get", challenge: "1234", "origin": "example.com"}"#,
+            WEBAUTHN_REQUEST: {
+                RP_ID: "example.com",
+            },
+        }));
+        let (output, state_update) = process_client_msg(
+            state.clone(),
+            TIMESTAMP,
+            TEST_HANDSHAKE_HASH.as_slice(),
+            msg.clone(),
+        )
+        .unwrap();
+
+        let Value::Array(array) = output else {
+            panic!("");
+        };
+        let [first] = &array[..] else {
+            panic!("");
+        };
+        let Value::Map(map) = first else {
+            panic!("");
+        };
+        let error = map.get(&MapKeyRef::Str("err") as &dyn MapLookupKey);
+
+        // Get the state after processing the command. That's either a new
+        // state, or the original state because no update was made.
+        let state_data = match state_update {
+            StateUpdate::Minor(state_data) => state_data,
+            StateUpdate::Major(state_data) => state_data,
+            StateUpdate::None => match state {
+                ClientState::Explicit(state_data) => state_data,
+                ClientState::Initial => panic!(""),
+            },
+        };
+        let parsed_state = ClientState::Explicit(state_data.clone()).parse().unwrap();
+        (
+            error.cloned(),
+            parsed_state.get_pin_state(&TEST_DEVICE_ID).unwrap(),
+            ClientState::Explicit(state_data),
+        )
+    }
+
+    #[test]
+    fn test_use_pin() {
+        let pin_hash = [1u8; 32];
+        let claim_key = [2u8; 32];
+        let pin_data = cbor!({
+            1: (pin_hash.as_ref()),
+            2: /*generation=*/ 1,
+            3: (claim_key.as_ref()),
+        });
+        let wrapped_pin_data =
+            encrypt_pin_data(SAMPLE_SECURITY_DOMAIN_SECRET, &pin_data.to_bytes());
+        let pin_claim = seal_aes_256_gcm(&claim_key, &pin_hash, passkeys::PIN_CLAIM_AAD);
+
+        // Using the PIN should set the highwater mark to 1, which is the generation
+        // number from `pin_data`, above.
+        let (error, pin_state, state) =
+            attempt_pin(REGISTERED_STATE.clone(), &wrapped_pin_data, &pin_claim);
+        assert!(error.is_none());
+        assert_eq!(pin_state.generation_high_water, 1);
+        assert_eq!(pin_state.attempts, 0);
+
+        // Using the same PIN again shouldn't change anything.
+        let (error, pin_state, state) = attempt_pin(state, &wrapped_pin_data, &pin_claim);
+        assert!(error.is_none());
+        assert_eq!(pin_state.generation_high_water, 1);
+        assert_eq!(pin_state.attempts, 0);
+
+        // Trying the wrong PIN should fail and increment the attempts counter.
+        let wrong_pin_hash = [20u8; 32];
+        let wrong_pin_claim =
+            seal_aes_256_gcm(&claim_key, &wrong_pin_hash, passkeys::PIN_CLAIM_AAD);
+        let (error, pin_state, state) = attempt_pin(state, &wrapped_pin_data, &wrong_pin_claim);
+        assert_eq!(error, Some(Value::Int(3)));
+        assert_eq!(pin_state.generation_high_water, 1);
+        assert_eq!(pin_state.attempts, 1);
+
+        // The correct PIN should reset it again.
+        let (error, pin_state, state) = attempt_pin(state, &wrapped_pin_data, &pin_claim);
+        assert!(error.is_none());
+        assert_eq!(pin_state.generation_high_water, 1);
+        assert_eq!(pin_state.attempts, 0);
+
+        // Trying to submit an older generation PIN should fail without updating the
+        // attempts counter.
+        let older_generation_pin_data = cbor!({
+            1: (pin_hash.as_ref()),
+            2: /*generation=*/ 0,
+            3: (claim_key.as_ref()),
+        });
+        let older_generation_wrapped_pin_data =
+            encrypt_pin_data(SAMPLE_SECURITY_DOMAIN_SECRET, &older_generation_pin_data.to_bytes());
+        let (error, pin_state, state) =
+            attempt_pin(state, &older_generation_wrapped_pin_data, &pin_claim);
+        assert_eq!(error, Some(Value::Int(5)));
+        assert_eq!(pin_state.generation_high_water, 1);
+        assert_eq!(pin_state.attempts, 0);
+
+        // The wrong PIN three times in a row should lock the device.
+        let (_error, _pin_state, state) = attempt_pin(state, &wrapped_pin_data, &wrong_pin_claim);
+        let (_error, _pin_state, state) = attempt_pin(state, &wrapped_pin_data, &wrong_pin_claim);
+        let (error, pin_state, state) = attempt_pin(state, &wrapped_pin_data, &wrong_pin_claim);
+        assert_eq!(error, Some(Value::Int(3)));
+        assert_eq!(pin_state.generation_high_water, 1);
+        assert_eq!(pin_state.attempts, 3);
+
+        // Now the wrong PIN will generate a different error and not increment the
+        // counter.
+        let (error, pin_state, state) = attempt_pin(state, &wrapped_pin_data, &wrong_pin_claim);
+        assert_eq!(error, Some(Value::Int(4)));
+        assert_eq!(pin_state.generation_high_water, 1);
+        assert_eq!(pin_state.attempts, 3);
+
+        // And so will the correct PIN.
+        let (error, pin_state, _state) = attempt_pin(state, &wrapped_pin_data, &pin_claim);
+        assert_eq!(error, Some(Value::Int(4)));
+        assert_eq!(pin_state.generation_high_water, 1);
+        assert_eq!(pin_state.attempts, 3);
     }
 
     fn is_single_error_response(value: &Value) -> bool {
@@ -1400,7 +1623,6 @@ mod tests {
             WRAPPED_SECRETS: [(REGISTERED_STATE_WRAPPED_SECRET.clone())],
             PROTOBUF: PROTOBUF_BYTES,
             CLIENT_DATA_JSON: r#"{"type": "webauthn.get", challenge: "1234", "origin": "example.com"}"#,
-            USER_VERIFICATION: true,
             WEBAUTHN_REQUEST: {
                 RP_ID: "example.com",
             },

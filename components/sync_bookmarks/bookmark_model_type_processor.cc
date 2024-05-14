@@ -212,10 +212,6 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
   // TODO(crbug.com/1356900): validate incoming updates, e.g. `gc_directive`
   // must be empty for Bookmarks.
 
-  syncer::LogUpdatesReceivedByProcessorHistogram(
-      syncer::BOOKMARKS,
-      /*is_initial_sync=*/!bookmark_tracker_, updates.size());
-
   // Clients before M94 did not populate the parent UUID in specifics.
   PopulateParentGuidInSpecifics(bookmark_tracker_.get(), &updates);
 
@@ -690,7 +686,9 @@ void BookmarkModelTypeProcessor::GetAllNodesForDebugging(
   const bookmarks::BookmarkNode* model_root_node = bookmark_model_->root_node();
   int i = 0;
   for (const auto& child : model_root_node->children()) {
-    AppendNodeAndChildrenForDebugging(child.get(), i++, &all_nodes);
+    if (bookmark_model_->IsNodeSyncable(child.get())) {
+      AppendNodeAndChildrenForDebugging(child.get(), i++, &all_nodes);
+    }
   }
 
   std::move(callback).Run(syncer::BOOKMARKS, std::move(all_nodes));

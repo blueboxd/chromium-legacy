@@ -15,21 +15,35 @@
 #include "remoting/base/protobuf_http_status.h"
 #include "remoting/proto/session_authz_service.h"
 #include "remoting/protocol/authenticator.h"
+#include "remoting/protocol/credentials_type.h"
+#include "remoting/protocol/session_authz_reauthorizer.h"
 
 namespace remoting::protocol {
 
 SessionAuthzAuthenticator::SessionAuthzAuthenticator(
+    CredentialsType credentials_type,
     std::unique_ptr<SessionAuthzServiceClient> service_client,
-    const CreateBaseAuthenticatorCallback& create_base_authenticator_callback,
-    ReauthTokenReadyCallback reauth_token_ready_callback)
-    : service_client_(std::move(service_client)),
-      create_base_authenticator_callback_(create_base_authenticator_callback),
-      reauth_token_ready_callback_(std::move(reauth_token_ready_callback)) {}
+    const CreateBaseAuthenticatorCallback& create_base_authenticator_callback)
+    : credentials_type_(credentials_type),
+      service_client_(std::move(service_client)),
+      create_base_authenticator_callback_(create_base_authenticator_callback) {
+  // CORP_SESSION_AUTHZ is currently the only supported type.
+  DCHECK_EQ(credentials_type, CredentialsType::CORP_SESSION_AUTHZ);
+}
 
 SessionAuthzAuthenticator::~SessionAuthzAuthenticator() = default;
 
 void SessionAuthzAuthenticator::Start(base::OnceClosure resume_callback) {
   GenerateHostToken(std::move(resume_callback));
+}
+
+CredentialsType SessionAuthzAuthenticator::credentials_type() const {
+  return credentials_type_;
+}
+
+const Authenticator& SessionAuthzAuthenticator::implementing_authenticator()
+    const {
+  return *this;
 }
 
 Authenticator::State SessionAuthzAuthenticator::state() const {
@@ -75,6 +89,7 @@ void SessionAuthzAuthenticator::ProcessMessage(
     case SessionAuthzState::SHARED_SECRET_FETCHED:
       DCHECK_EQ(underlying_->state(), WAITING_MESSAGE);
       underlying_->ProcessMessage(message, std::move(resume_callback));
+      StartReauthorizerIfNecessary();
       break;
     default:
       NOTREACHED() << "Unexpected SessionAuthz state: "
@@ -89,6 +104,7 @@ SessionAuthzAuthenticator::GetNextMessage() {
   std::unique_ptr<jingle_xmpp::XmlElement> message;
   if (underlying_ && underlying_->state() == MESSAGE_READY) {
     message = underlying_->GetNextMessage();
+    StartReauthorizerIfNecessary();
   } else {
     message = CreateEmptyAuthenticatorMessage();
   }
@@ -111,6 +127,16 @@ SessionAuthzAuthenticator::CreateChannelAuthenticator() const {
   DCHECK_EQ(state(), ACCEPTED);
 
   return underlying_->CreateChannelAuthenticator();
+}
+
+void SessionAuthzAuthenticator::SetReauthorizerForTesting(
+    std::unique_ptr<SessionAuthzReauthorizer> reauthorizer) {
+  reauthorizer_ = std::move(reauthorizer);
+}
+
+void SessionAuthzAuthenticator::SetSessionIdForTesting(
+    std::string_view session_id) {
+  session_id_ = session_id;
 }
 
 void SessionAuthzAuthenticator::GenerateHostToken(
@@ -187,11 +213,9 @@ void SessionAuthzAuthenticator::OnVerifiedSessionToken(
   // The other side already started the SPAKE authentication.
   underlying_ = create_base_authenticator_callback_.Run(response->shared_secret,
                                                         WAITING_MESSAGE);
+  verify_token_response_ = std::move(response);
   underlying_->ProcessMessage(&message, std::move(resume_callback));
-
-  std::move(reauth_token_ready_callback_)
-      .Run(response->session_id, response->session_reauth_token,
-           response->session_reauth_token_lifetime);
+  StartReauthorizerIfNecessary();
 }
 
 void SessionAuthzAuthenticator::HandleSessionAuthzError(
@@ -216,6 +240,33 @@ void SessionAuthzAuthenticator::HandleSessionAuthzError(
     default:
       session_authz_rejection_reason_ = RejectionReason::PROTOCOL_ERROR;
   }
+}
+
+void SessionAuthzAuthenticator::StartReauthorizerIfNecessary() {
+  if (reauthorizer_) {
+    return;
+  }
+  if (!underlying_ || underlying_->state() != ACCEPTED) {
+    return;
+  }
+  DCHECK(verify_token_response_);
+  reauthorizer_ = std::make_unique<SessionAuthzReauthorizer>(
+      service_client_.get(), verify_token_response_->session_id,
+      verify_token_response_->session_reauth_token,
+      verify_token_response_->session_reauth_token_lifetime,
+      base::BindOnce(&SessionAuthzAuthenticator::OnReauthorizationFailed,
+                     base::Unretained(this)));
+  reauthorizer_->Start();
+  verify_token_response_.reset();
+}
+
+void SessionAuthzAuthenticator::OnReauthorizationFailed() {
+  session_authz_state_ = SessionAuthzState::FAILED;
+  session_authz_rejection_reason_ =
+      RejectionReason::REAUTHZ_POLICY_CHECK_FAILED;
+
+  reauthorizer_.reset();
+  NotifyStateChangeAfterAccepted();
 }
 
 }  // namespace remoting::protocol

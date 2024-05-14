@@ -128,13 +128,14 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
                      const GPUDeviceDescriptor* descriptor,
                      GPUDeviceLostInfo* lost_info)
     : ExecutionContextClient(execution_context),
-      DawnObject(dawn_control_client, dawn_device),
+      DawnObject(dawn_control_client, dawn_device, descriptor->label()),
       adapter_(adapter),
       features_(MakeGarbageCollected<GPUSupportedFeatures>(
           descriptor->requiredFeatures())),
-      queue_(MakeGarbageCollected<GPUQueue>(
-          this,
-          GetProcs().deviceGetQueue(GetHandle()))),
+      queue_(
+          MakeGarbageCollected<GPUQueue>(this,
+                                         GetProcs().deviceGetQueue(GetHandle()),
+                                         descriptor->defaultQueue()->label())),
       lost_property_(MakeGarbageCollected<LostProperty>(execution_context)),
       error_callback_(BindWGPURepeatingCallback(&GPUDevice::OnUncapturedError,
                                                 WrapWeakPersistent(this))),
@@ -171,12 +172,6 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
   GetProcs().deviceSetDeviceLostCallback(GetHandle(),
                                          lost_callback_->UnboundCallback(),
                                          lost_callback_->AsUserdata());
-
-  if (descriptor->hasLabel())
-    setLabel(descriptor->label());
-
-  if (descriptor->defaultQueue()->hasLabel())
-    queue_->setLabel(descriptor->defaultQueue()->label());
 
   external_texture_cache_ = MakeGarbageCollected<ExternalTextureCache>(this);
 
@@ -376,8 +371,8 @@ void GPUDevice::OnDeviceLostError(WGPUDeviceLostReason reason,
 }
 
 void GPUDevice::OnCreateRenderPipelineAsyncCallback(
-    std::optional<String> label,
-    ScriptPromiseResolver* resolver,
+    const String& label,
+    ScriptPromiseResolverTyped<GPURenderPipeline>* resolver,
     WGPUCreatePipelineAsyncStatus status,
     WGPURenderPipeline render_pipeline,
     const char* message) {
@@ -386,10 +381,7 @@ void GPUDevice::OnCreateRenderPipelineAsyncCallback(
   switch (status) {
     case WGPUCreatePipelineAsyncStatus_Success: {
       GPURenderPipeline* pipeline =
-          MakeGarbageCollected<GPURenderPipeline>(this, render_pipeline);
-      if (label) {
-        pipeline->setLabel(label.value());
-      }
+          MakeGarbageCollected<GPURenderPipeline>(this, render_pipeline, label);
       resolver->Resolve(pipeline);
       break;
     }
@@ -417,8 +409,8 @@ void GPUDevice::OnCreateRenderPipelineAsyncCallback(
 }
 
 void GPUDevice::OnCreateComputePipelineAsyncCallback(
-    std::optional<String> label,
-    ScriptPromiseResolver* resolver,
+    const String& label,
+    ScriptPromiseResolverTyped<GPUComputePipeline>* resolver,
     WGPUCreatePipelineAsyncStatus status,
     WGPUComputePipeline compute_pipeline,
     const char* message) {
@@ -426,11 +418,8 @@ void GPUDevice::OnCreateComputePipelineAsyncCallback(
 
   switch (status) {
     case WGPUCreatePipelineAsyncStatus_Success: {
-      GPUComputePipeline* pipeline =
-          MakeGarbageCollected<GPUComputePipeline>(this, compute_pipeline);
-      if (label) {
-        pipeline->setLabel(label.value());
-      }
+      GPUComputePipeline* pipeline = MakeGarbageCollected<GPUComputePipeline>(
+          this, compute_pipeline, label);
       resolver->Resolve(pipeline);
       break;
     }
@@ -549,11 +538,13 @@ GPUComputePipeline* GPUDevice::createComputePipeline(
   return GPUComputePipeline::Create(this, descriptor);
 }
 
-ScriptPromise GPUDevice::createRenderPipelineAsync(
+ScriptPromiseTyped<GPURenderPipeline> GPUDevice::createRenderPipelineAsync(
     ScriptState* script_state,
     const GPURenderPipelineDescriptor* descriptor) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<GPURenderPipeline>>(
+          script_state);
+  auto promise = resolver->Promise();
 
   v8::Isolate* isolate = script_state->GetIsolate();
   ExceptionState exception_state(isolate,
@@ -565,13 +556,9 @@ ScriptPromise GPUDevice::createRenderPipelineAsync(
   if (exception_state.HadException()) {
     resolver->Reject(exception_state);
   } else {
-    std::optional<String> label = {};
-    if (descriptor->hasLabel()) {
-      label = descriptor->label();
-    }
     auto* callback = MakeWGPUOnceCallback(resolver->WrapCallbackInScriptScope(
         WTF::BindOnce(&GPUDevice::OnCreateRenderPipelineAsyncCallback,
-                      WrapPersistent(this), std::move(label))));
+                      WrapPersistent(this), descriptor->label())));
 
     GetProcs().deviceCreateRenderPipelineAsync(
         GetHandle(), &dawn_desc_info.dawn_desc, callback->UnboundCallback(),
@@ -584,11 +571,13 @@ ScriptPromise GPUDevice::createRenderPipelineAsync(
   return promise;
 }
 
-ScriptPromise GPUDevice::createComputePipelineAsync(
+ScriptPromiseTyped<GPUComputePipeline> GPUDevice::createComputePipelineAsync(
     ScriptState* script_state,
     const GPUComputePipelineDescriptor* descriptor) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<GPUComputePipeline>>(
+          script_state);
+  auto promise = resolver->Promise();
 
   std::string desc_label;
   OwnedProgrammableStage computeStage;
@@ -606,13 +595,9 @@ ScriptPromise GPUDevice::createComputePipelineAsync(
     dawn_desc.nextInChain = &fullSubgroupsOptions.chain;
   }
 
-  std::optional<String> label = {};
-  if (descriptor->hasLabel()) {
-    label = descriptor->label();
-  }
   auto* callback = MakeWGPUOnceCallback(resolver->WrapCallbackInScriptScope(
       WTF::BindOnce(&GPUDevice::OnCreateComputePipelineAsyncCallback,
-                    WrapPersistent(this), std::move(label))));
+                    WrapPersistent(this), descriptor->label())));
 
   GetProcs().deviceCreateComputePipelineAsync(GetHandle(), &dawn_desc,
                                               callback->UnboundCallback(),
@@ -658,10 +643,12 @@ void GPUDevice::pushErrorScope(const V8GPUErrorFilter& filter) {
   GetProcs().devicePushErrorScope(GetHandle(), AsDawnEnum(filter));
 }
 
-ScriptPromise GPUDevice::popErrorScope(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver =
-      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
+ScriptPromiseTyped<IDLNullable<GPUError>> GPUDevice::popErrorScope(
+    ScriptState* script_state) {
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<IDLNullable<GPUError>>>(
+          script_state);
+  auto promise = resolver->Promise();
 
   auto* callback =
       MakeWGPUOnceCallback(resolver->WrapCallbackInScriptScope(WTF::BindOnce(
@@ -676,14 +663,13 @@ ScriptPromise GPUDevice::popErrorScope(ScriptState* script_state) {
   return promise;
 }
 
-void GPUDevice::OnPopErrorScopeCallback(ScriptPromiseResolver* resolver,
-                                        WGPUErrorType type,
-                                        const char* message) {
-  v8::Isolate* isolate = resolver->GetScriptState()->GetIsolate();
-
+void GPUDevice::OnPopErrorScopeCallback(
+    ScriptPromiseResolverTyped<IDLNullable<GPUError>>* resolver,
+    WGPUErrorType type,
+    const char* message) {
   switch (type) {
     case WGPUErrorType_NoError:
-      resolver->Resolve(v8::Null(isolate));
+      resolver->Resolve(nullptr);
       break;
     case WGPUErrorType_OutOfMemory:
       resolver->Resolve(MakeGarbageCollected<GPUOutOfMemoryError>(

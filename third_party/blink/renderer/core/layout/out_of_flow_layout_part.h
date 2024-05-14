@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/layout/absolute_utils.h"
 #include "third_party/blink/renderer/core/layout/block_node.h"
 #include "third_party/blink/renderer/core/layout/box_fragment_builder.h"
-#include "third_party/blink/renderer/core/layout/constraint_space.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/geometry/static_position.h"
@@ -114,6 +113,12 @@ class CORE_EXPORT OutOfFlowLayoutPart {
     // The writing direction of the container.
     WritingDirectionMode writing_direction = {WritingMode::kHorizontalTb,
                                               TextDirection::kLtr};
+    // inset-area, aligned with an anchor edge, modified the rect
+    // which might require horizontal scroll adjustments.
+    bool needs_scroll_adjustment_in_x = false;
+    // inset-area, aligned with an anchor edge, modified the rect
+    // which might require vertical scroll adjustments.
+    bool needs_scroll_adjustment_in_y = false;
     // Size and offset of the container.
     LogicalRect rect;
     // The relative positioned offset to be applied after fragmentation is
@@ -145,39 +150,30 @@ class CORE_EXPORT OutOfFlowLayoutPart {
 
    public:
     BlockNode node;
-    const ConstraintSpace constraint_space;
     const LogicalStaticPosition static_position;
-    PhysicalSize container_physical_content_size;
     const ContainingBlockInfo container_info;
     const WritingDirectionMode default_writing_direction;
     const OofContainingBlock<LogicalOffset> containing_block;
     const OofContainingBlock<LogicalOffset> fixedpos_containing_block;
     const OofInlineContainer<LogicalOffset> fixedpos_inline_container;
-    bool inline_container = false;
     bool requires_content_before_breaking = false;
 
     NodeInfo(BlockNode node,
-             const ConstraintSpace constraint_space,
              const LogicalStaticPosition static_position,
-             PhysicalSize container_physical_content_size,
              const ContainingBlockInfo container_info,
              const WritingDirectionMode default_writing_direction,
              bool is_fragmentainer_descendant,
              const OofContainingBlock<LogicalOffset>& containing_block,
              const OofContainingBlock<LogicalOffset>& fixedpos_containing_block,
              const OofInlineContainer<LogicalOffset>& fixedpos_inline_container,
-             bool inline_container,
              bool requires_content_before_breaking)
         : node(node),
-          constraint_space(constraint_space),
           static_position(static_position),
-          container_physical_content_size(container_physical_content_size),
           container_info(container_info),
           default_writing_direction(default_writing_direction),
           containing_block(containing_block),
           fixedpos_containing_block(fixedpos_containing_block),
           fixedpos_inline_container(fixedpos_inline_container),
-          inline_container(inline_container),
           requires_content_before_breaking(requires_content_before_breaking) {}
 
     void Trace(Visitor* visitor) const;
@@ -195,32 +191,27 @@ class CORE_EXPORT OutOfFlowLayoutPart {
     BoxStrut insets_for_get_computed_style;
     // Offset to container's border box.
     LogicalOffset offset;
-    // If |has_cached_layout_result| is true, this will hold the cached layout
-    // result that should be returned. Otherwise, this will hold the initial
-    // layout result if we needed to know the size in order to calculate the
-    // offset. If an initial result is set, it will either be re-used or
-    // replaced in the final layout pass.
+    // Holds the initial layout result if we needed to know the size in order
+    // to calculate the offset. If an initial result is set, it will either be
+    // re-used or replaced in the final layout pass.
     Member<const LayoutResult> initial_layout_result;
-    // The |block_estimate| is wrt. the candidate's writing mode.
+
+    // The `block_estimate` and `container_content_size` is wrt. the
+    // candidate's writing mode.
     std::optional<LayoutUnit> block_estimate;
+    LogicalSize container_content_size;
+
     LogicalOofDimensions node_dimensions;
 
     // The offset from the OOF to the top of the fragmentation context root.
     // This should only be used when laying out a fragmentainer descendant.
     LogicalOffset original_offset;
 
-    // These fields are set only if this |OffsetInfo| is calculated from a
-    // position fallback style, either from a @try rule or auto-generated.
-    std::optional<wtf_size_t> fallback_index;
+    // This field is set only if this |OffsetInfo| is calculated from a
+    // position-try-options style, either from a @position-try rule or a tactic.
     Vector<NonOverflowingScrollRange> non_overflowing_ranges;
 
     bool inline_size_depends_on_min_max_sizes = false;
-
-    // If true, a cached layout result was found. See the comment for
-    // |initial_layout_result| for more details.
-    bool has_cached_layout_result = false;
-
-    bool disable_first_tier_cache = false;
 
     bool uses_fallback_style = false;
 
@@ -301,17 +292,15 @@ class CORE_EXPORT OutOfFlowLayoutPart {
   void CreateAnchorEvaluator(
       std::optional<AnchorEvaluatorImpl>& anchor_evaluator_storage,
       const ContainingBlockInfo& container_info,
-      const PhysicalSize& available_size,
       WritingDirectionMode self_writing_direction,
       const ScopedCSSName* default_anchor_specifier,
       const LayoutBox& candidate_layout_box,
-      const LogicalAnchorQueryMap* anchor_queries,
-      const LayoutObject* implicit_anchor);
+      const LogicalAnchorQueryMap* anchor_queries);
 
   const ContainingBlockInfo ApplyInsetArea(
       const InsetArea& inset_area,
       const ContainingBlockInfo& container_info,
-      const LogicalOofPositionedNode& candidate,
+      const BlockNode& candidate,
       const LogicalAnchorQueryMap* anchor_queries);
 
   NodeInfo SetupNodeInfo(const LogicalOofPositionedNode& oof_node,
@@ -326,7 +315,6 @@ class CORE_EXPORT OutOfFlowLayoutPart {
   // changing this to a more accurate name.
   OffsetInfo CalculateOffset(
       const NodeInfo& node_info,
-      bool is_first_run = true,
       const LogicalAnchorQueryMap* anchor_queries = nullptr);
   // Calculates offsets with the given ComputedStyle. Returns nullopt if
   // |try_fit_available_space| is true and the layout result does not fit the
@@ -336,9 +324,7 @@ class CORE_EXPORT OutOfFlowLayoutPart {
       const ComputedStyle& style,
       AnchorEvaluatorImpl*,
       const LogicalAnchorQueryMap* anchor_queries,
-      const LayoutObject* implicit_anchor,
       bool try_fit_available_space,
-      bool is_first_run,
       NonOverflowingScrollRange* out_scroll_range);
 
   const LayoutResult* Layout(
@@ -356,18 +342,19 @@ class CORE_EXPORT OutOfFlowLayoutPart {
   // Performs layout on the OOFs stored in |pending_descendants| and
   // |fragmented_descendants|, adding them as children in the fragmentainer
   // found at the provided |index|. If a fragmentainer does not already exist at
-  // the given |index|, one will be created (unless we are in a nested
-  // fragmentation context). The OOFs stored in |fragmented_descendants| are
-  // those that are continuing layout from a previous fragmentainer.
-  // |fragmented_descendants| is also an output variable in that any OOF that
-  // has not finished layout in the current pass will be added back to
-  // |fragmented_descendants| to continue layout in the next fragmentainer.
-  // |has_actual_break_inside| will be set to true if any of the OOFs laid out
-  // broke (this does not include repeated fixed-positioned elements).
+  // the given |index|, one will be created. The OOFs stored in
+  // |fragmented_descendants| are those that are continuing layout from a
+  // previous fragmentainer.  |fragmented_descendants| is also an output
+  // variable in that any OOF that has not finished layout in the current pass
+  // will be added back to |fragmented_descendants| to continue layout in the
+  // next fragmentainer.  |has_actual_break_inside| will be set to true if any
+  // of the OOFs laid out broke (this does not include repeated fixed-positioned
+  // elements).
   void LayoutOOFsInFragmentainer(
       HeapVector<NodeToLayout>& pending_descendants,
       wtf_size_t index,
       LogicalOffset fragmentainer_progression,
+      bool has_oofs_in_later_fragmentainer,
       LayoutUnit* monolithic_overflow,
       bool* has_actual_break_inside,
       HeapVector<NodeToLayout>* fragmented_descendants);
@@ -379,11 +366,6 @@ class CORE_EXPORT OutOfFlowLayoutPart {
                              bool* has_actual_break_inside,
                              SimplifiedOofLayoutAlgorithm* algorithm,
                              HeapVector<NodeToLayout>* fragmented_descendants);
-  LogicalOffset UpdatedFragmentainerOffset(
-      LogicalOffset offset,
-      wtf_size_t index,
-      LogicalOffset fragmentainer_progression,
-      bool create_new_fragment);
   ConstraintSpace GetFragmentainerConstraintSpace(wtf_size_t index);
   void ComputeStartFragmentIndexAndRelativeOffset(
       WritingMode default_writing_mode,
@@ -427,16 +409,11 @@ class CORE_EXPORT OutOfFlowLayoutPart {
   // will affect column balancing, if any, without actually adding the OOFs to
   // the associated columns.
   ColumnBalancingInfo* column_balancing_info_ = nullptr;
-  // The block size of the multi-column (before adjustment for spanners, etc.)
-  // This is used to calculate the column size of any newly added proxy
-  // fragments when handling fragmentation for abspos elements.
-  LayoutUnit original_column_block_size_ = kIndefiniteSize;
   // The consumed block size of previous fragmentainers. This is accumulated and
   // used as we add OOF elements to fragmentainers.
   LayoutUnit fragmentainer_consumed_block_size_;
   bool is_absolute_container_ = false;
   bool is_fixed_container_ = false;
-  bool allow_first_tier_oof_cache_ = false;
   bool has_block_fragmentation_ = false;
   // A fixedpos containing block was found in an outer fragmentation context.
   bool outer_context_has_fixedpos_container_ = false;

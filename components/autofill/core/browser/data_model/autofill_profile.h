@@ -14,6 +14,7 @@
 #include <string_view>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -49,6 +50,27 @@ class AutofillProfile : public AutofillDataModel {
     // that are shared beyond Autofill across different services.
     kAccount = 1,
     kMaxValue = kAccount,
+  };
+
+  // These fields are, by default, the only candidates for being added to the
+  // list of profile labels. Note that the call to generate labels can specify a
+  // custom set of fields, in which case such set would be used instead of this
+  // one.
+  // TODO(b/40285811): Change this into a FieldTypeSet once the priority is not
+  // decided by the order of these entries anymore.
+  static constexpr FieldType kDefaultDistinguishingFieldsForLabels[] = {
+      NAME_FULL,
+      ADDRESS_HOME_LINE1,
+      ADDRESS_HOME_LINE2,
+      ADDRESS_HOME_DEPENDENT_LOCALITY,
+      ADDRESS_HOME_CITY,
+      ADDRESS_HOME_STATE,
+      ADDRESS_HOME_ZIP,
+      ADDRESS_HOME_SORTING_CODE,
+      ADDRESS_HOME_COUNTRY,
+      EMAIL_ADDRESS,
+      PHONE_HOME_WHOLE_NUMBER,
+      COMPANY_NAME,
   };
 
   // The values used to represent Autofill in the `initial_creator_id()` and
@@ -98,16 +120,9 @@ class AutofillProfile : public AutofillDataModel {
 
   std::u16string GetRawInfo(FieldType type) const override;
 
-  int GetRawInfoAsInt(FieldType type) const override;
-
   void SetRawInfoWithVerificationStatus(FieldType type,
                                         const std::u16string& value,
                                         VerificationStatus status) override;
-
-  void SetRawInfoAsIntWithVerificationStatus(
-      FieldType type,
-      int value,
-      VerificationStatus status) override;
 
   void GetSupportedTypes(FieldTypeSet* supported_types) const override;
 
@@ -207,6 +222,7 @@ class AutofillProfile : public AutofillDataModel {
   // from it minus those in `excluded_fields`. Otherwise, the label fields are
   // drawn from a default set. Each label includes at least
   // `minimal_fields_shown` fields, if possible.
+  // TODO(b/40285811): Make `suggested_fields` non-optional.
   static void CreateInferredLabels(
       const std::vector<raw_ptr<const AutofillProfile, VectorExperimental>>&
           profiles,
@@ -220,10 +236,10 @@ class AutofillProfile : public AutofillDataModel {
   // Builds inferred label from the first |num_fields_to_include| non-empty
   // fields in |label_fields|. Uses as many fields as possible if there are not
   // enough non-empty fields.
-  std::u16string ConstructInferredLabel(const FieldType* label_fields,
-                                        const size_t label_fields_size,
-                                        size_t num_fields_to_include,
-                                        const std::string& app_locale) const;
+  std::u16string ConstructInferredLabel(
+      base::span<const FieldType> label_fields,
+      size_t num_fields_to_include,
+      const std::string& app_locale) const;
 
   const std::string& language_code() const { return language_code_; }
   void set_language_code(const std::string& language_code) {

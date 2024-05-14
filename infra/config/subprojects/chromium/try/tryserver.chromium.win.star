@@ -20,9 +20,9 @@ try_.defaults.set(
     cores = 8,
     os = os.WINDOWS_DEFAULT,
     compilator_cores = 16,
-    compilator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     orchestrator_cores = 2,
+    orchestrator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
@@ -187,7 +187,7 @@ try_.builder(
     mirrors = [
         "ci/Win Builder (dbg)",
     ],
-    try_settings = builder_config.try_settings(
+    builder_config_settings = builder_config.try_settings(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
@@ -214,7 +214,7 @@ try_.builder(
     mirrors = [
         "ci/Win Builder",
     ],
-    try_settings = builder_config.try_settings(
+    builder_config_settings = builder_config.try_settings(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
@@ -306,7 +306,8 @@ try_.builder(
 )
 
 try_.builder(
-    name = "win11-x64-fyi-rel",
+    name = "win11-rel",
+    description_html = "This builder run tests for Windows 11 release build.",
     mirrors = [
         "ci/Win x64 Builder",
         "ci/Win11 Tests x64",
@@ -323,10 +324,9 @@ try_.builder(
     ),
     builderless = True,
     os = os.WINDOWS_10,
+    contact_team_email = "chrome-desktop-engprod@google.com",
     coverage_test_types = ["unit", "overall"],
     tryjob = try_.job(
-        # TODO(https://crbug.com/1441206): Enable after resources verified.
-        experiment_percentage = 100,
         location_filters = [
             "sandbox/win/.+",
             "sandbox/policy/win/.+",
@@ -370,12 +370,17 @@ try_.orchestrator_builder(
     compilator = "win-arm64-rel-compilator",
     contact_team_email = "chrome-desktop-engprod@google.com",
     coverage_test_types = ["unit", "overall"],
-    use_clang_coverage = True,
-    # Enable when stable.
-    # main_list_view = "try",
+    main_list_view = "try",
     # TODO (crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     #use_orchestrator_pool = True,
+    tryjob = try_.job(
+        location_filters = [
+            "sandbox/win/.+",
+            "sandbox/policy/win/.+",
+        ],
+    ),
+    use_clang_coverage = True,
 )
 
 try_.builder(
@@ -449,7 +454,7 @@ try_.gpu.optional_tests_builder(
         ),
         build_gs_bucket = "chromium-gpu-fyi-archive",
     ),
-    try_settings = builder_config.try_settings(
+    builder_config_settings = builder_config.try_settings(
         retry_failed_shards = False,
     ),
     gn_args = gn_args.config(

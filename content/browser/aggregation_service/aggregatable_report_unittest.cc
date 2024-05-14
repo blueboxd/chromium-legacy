@@ -14,7 +14,9 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/containers/span.h"
 #include "base/json/json_writer.h"
+#include "base/numerics/byte_conversions.h"
 #include "base/strings/abseil_string_number_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -24,12 +26,14 @@
 #include "components/aggregation_service/features.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/values.h"
+#include "content/browser/aggregation_service/aggregatable_report.h"
 #include "content/browser/aggregation_service/aggregation_service_features.h"
 #include "content/browser/aggregation_service/aggregation_service_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom.h"
+#include "third_party/distributed_point_functions/shim/buildflags.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -153,8 +157,8 @@ void VerifyReport(
               data_map.at(cbor::Value("bucket")).GetBytestring();
           EXPECT_EQ(bucket_byte_string.size(), 16u);  // 16 bytes = 128 bits
 
-          // TODO(crbug.com/1298196): Replace with `base::ReadBigEndian()` when
-          // available.
+          // TODO(crbug.com/1298196): Replace with
+          // `base::numerics::U128FromBigEndian()` when available.
           absl::uint128 bucket;
           base::HexStringToUInt128(base::HexEncode(bucket_byte_string),
                                    &bucket);
@@ -166,12 +170,9 @@ void VerifyReport(
               data_map.at(cbor::Value("value")).GetBytestring();
           EXPECT_EQ(value_byte_string.size(), 4u);  // 4 bytes = 32 bits
 
-          // TODO(crbug.com/1298196): Replace with `base::ReadBigEndian()` when
-          // available.
-          uint32_t value;
-          base::HexStringToUInt(base::HexEncode(value_byte_string), &value);
-          EXPECT_EQ(static_cast<int64_t>(value),
-                    expected_contributions[j].value);
+          uint32_t value = base::numerics::U32FromBigEndian(
+              base::as_byte_span(value_byte_string).first<4u>());
+          EXPECT_EQ(int64_t{value}, expected_contributions[j].value);
         }
 
         EXPECT_FALSE(payload_map.contains(cbor::Value("dpf_key")));
@@ -227,7 +228,9 @@ TEST_P(AggregatableReportTest,
       request.payload_contents();
   AggregatableReportSharedInfo expected_shared_info =
       request.shared_info().Clone();
-  size_t expected_num_processing_urls = request.processing_urls().size();
+
+  [[maybe_unused]] size_t expected_num_processing_urls =
+      request.processing_urls().size();
 
   std::vector<aggregation_service::TestHpkeKey> hpke_keys;
   hpke_keys.emplace_back("id123");
@@ -238,12 +241,16 @@ TEST_P(AggregatableReportTest,
           std::move(request),
           {hpke_keys[0].GetPublicKey(), hpke_keys[1].GetPublicKey()});
 
+#if BUILDFLAG(USE_DISTRIBUTED_POINT_FUNCTIONS)
   ASSERT_NO_FATAL_FAILURE(
       VerifyReport(report, expected_payload_contents, expected_shared_info,
                    expected_num_processing_urls,
                    /*expected_debug_key=*/std::nullopt,
                    /*expected_additional_fields=*/{}, std::move(hpke_keys),
                    /*should_pad_contributions=*/GetParam()));
+#else
+  EXPECT_FALSE(report.has_value());
+#endif
 }
 
 TEST_P(AggregatableReportTest, ValidTeeBasedRequest_ValidReportReturned) {

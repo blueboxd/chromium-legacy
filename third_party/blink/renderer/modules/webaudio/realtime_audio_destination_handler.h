@@ -10,8 +10,10 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
 #include "third_party/blink/public/platform/web_audio_sink_descriptor.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_destination_node.h"
 #include "third_party/blink/renderer/platform/audio/audio_callback_metric_reporter.h"
 #include "third_party/blink/renderer/platform/audio/audio_destination.h"
@@ -37,6 +39,7 @@ class RealtimeAudioDestinationHandler final
 
   // For AudioHandler.
   void Dispose() override;
+  AudioContext* Context() const override;
   void Initialize() override;
   void Uninitialize() override;
   void SetChannelCount(unsigned, ExceptionState&) override;
@@ -62,11 +65,18 @@ class RealtimeAudioDestinationHandler final
               const AudioIOPosition& output_position,
               const AudioCallbackMetric& metric) final;
 
+  // For `AudioIOCallback`. This is invoked by the `AudioDestination` to notify
+  // when an error has occurred in the lower layer in the stack. It may be
+  // called from either the main thread or non-main threads.
+  void OnRenderError() final;
+
   // Returns a hardware callback buffer size from audio infra.
   uint32_t GetCallbackBufferSize() const;
 
   // Returns a given frames-per-buffer size from audio infra.
   int GetFramesPerBuffer() const;
+
+  base::TimeDelta GetPlatformBufferDuration() const;
 
   bool IsPullingAudioGraphAllowed() const {
     return allow_pulling_audio_graph_.load(std::memory_order_acquire);
@@ -105,6 +115,8 @@ class RealtimeAudioDestinationHandler final
   void DisablePullingAudioGraph() {
     allow_pulling_audio_graph_.store(false, std::memory_order_release);
   }
+
+  void NotifyAudioContext();
 
   // Stores a sink descriptor for sink transition.
   WebAudioSinkDescriptor sink_descriptor_;

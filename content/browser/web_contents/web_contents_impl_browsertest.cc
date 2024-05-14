@@ -5362,8 +5362,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        IgnoreUnresponsiveRendererDuringPaste) {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  ClipboardPasteData clipboard_paste_data =
-      ClipboardPasteData("random pasted text", std::string(), {});
+  ClipboardPasteData clipboard_paste_data;
+  clipboard_paste_data.text = u"random pasted text";
 
   EXPECT_FALSE(web_contents->ShouldIgnoreUnresponsiveRenderer());
   web_contents->IsClipboardPasteAllowedByPolicy(
@@ -6112,15 +6112,11 @@ class MediaWatchTimeChangedDelegate : public WebContentsDelegate {
   void MediaWatchTimeChanged(const MediaPlayerWatchTime& watch_time) override {
     watch_time_ = watch_time;
   }
-  base::WeakPtr<WebContentsDelegate> GetDelegateWeakPtr() override {
-    return weak_factory_.GetWeakPtr();
-  }
 
   const MediaPlayerWatchTime& watch_time() { return watch_time_; }
 
  private:
   MediaPlayerWatchTime watch_time_;
-  base::WeakPtrFactory<MediaWatchTimeChangedDelegate> weak_factory_{this};
 };
 
 // Tests that a media in a fenced frame reports the watch time with the url from

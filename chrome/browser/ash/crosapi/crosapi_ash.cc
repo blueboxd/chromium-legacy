@@ -88,6 +88,7 @@
 #include "chrome/browser/ash/crosapi/networking_attributes_ash.h"
 #include "chrome/browser/ash/crosapi/networking_private_ash.h"
 #include "chrome/browser/ash/crosapi/nonclosable_app_toast_service_ash.h"
+#include "chrome/browser/ash/crosapi/one_drive_integration_service_ash.h"
 #include "chrome/browser/ash/crosapi/one_drive_notification_service_ash.h"
 #include "chrome/browser/ash/crosapi/parent_access_ash.h"
 #include "chrome/browser/ash/crosapi/payment_app_instance_ash.h"
@@ -103,6 +104,7 @@
 #include "chrome/browser/ash/crosapi/sharesheet_ash.h"
 #include "chrome/browser/ash/crosapi/speech_recognition_ash.h"
 #include "chrome/browser/ash/crosapi/structured_metrics_service_ash.h"
+#include "chrome/browser/ash/crosapi/suggestion_service_ash.h"
 #include "chrome/browser/ash/crosapi/task_manager_ash.h"
 #include "chrome/browser/ash/crosapi/time_zone_service_ash.h"
 #include "chrome/browser/ash/crosapi/url_handler_ash.h"
@@ -212,6 +214,8 @@ Profile* GetAshProfile() {
 
 }  // namespace
 
+CrosapiAsh::TestControllerReceiver::~TestControllerReceiver() = default;
+
 CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
     : arc_ash_(std::make_unique<ArcAsh>()),
       audio_service_ash_(std::make_unique<AudioServiceAsh>()),
@@ -294,6 +298,8 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
           g_browser_process->platform_part()->ash_proxy_monitor())),
       one_drive_notification_service_ash_(
           std::make_unique<OneDriveNotificationServiceAsh>()),
+      one_drive_integration_service_ash_(
+          std::make_unique<OneDriveIntegrationServiceAsh>()),
       parent_access_ash_(std::make_unique<ParentAccessAsh>()),
       payment_app_instance_ash_(std::make_unique<PaymentAppInstanceAsh>()),
       policy_service_ash_(std::make_unique<PolicyServiceAsh>()),
@@ -324,6 +330,7 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       speech_recognition_ash_(std::make_unique<SpeechRecognitionAsh>()),
       structured_metrics_service_ash_(
           std::make_unique<StructuredMetricsServiceAsh>()),
+      suggestion_service_ash_(std::make_unique<SuggestionServiceAsh>()),
       task_manager_ash_(std::make_unique<TaskManagerAsh>()),
       time_zone_service_ash_(std::make_unique<TimeZoneServiceAsh>()),
       tts_ash_(std::make_unique<TtsAsh>(g_browser_process->profile_manager())),
@@ -845,6 +852,11 @@ void CrosapiAsh::BindOneDriveNotificationService(
   one_drive_notification_service_ash_->BindReceiver(std::move(receiver));
 }
 
+void CrosapiAsh::BindOneDriveIntegrationService(
+    mojo::PendingReceiver<mojom::OneDriveIntegrationService> receiver) {
+  one_drive_integration_service_ash_->BindReceiver(std::move(receiver));
+}
+
 void CrosapiAsh::BindParentAccess(
     mojo::PendingReceiver<mojom::ParentAccess> receiver) {
   parent_access_ash_->BindReceiver(std::move(receiver));
@@ -984,6 +996,11 @@ void CrosapiAsh::BindStableVideoDecoderFactory(
 void CrosapiAsh::BindStructuredMetricsService(
     mojo::PendingReceiver<crosapi::mojom::StructuredMetricsService> receiver) {
   structured_metrics_service_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindSuggestionService(
+    mojo::PendingReceiver<crosapi::mojom::SuggestionService> receiver) {
+  suggestion_service_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindSyncService(
@@ -1149,8 +1166,8 @@ void CrosapiAsh::REMOVED_62(
 }
 
 void CrosapiAsh::SetTestControllerForTesting(
-    TestControllerReceiver* test_controller) {
-  test_controller_ = test_controller;
+    std::unique_ptr<TestControllerReceiver> test_controller) {
+  test_controller_ = std::move(test_controller);
 }
 
 void CrosapiAsh::OnDisconnected() {

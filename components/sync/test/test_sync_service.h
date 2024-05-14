@@ -81,7 +81,6 @@ class TestSyncService : public SyncService {
       const base::RepeatingClosure& send_passphrase_to_platform_client_cb);
 
   void FireStateChanged();
-  void FirePaymentsIntegrationEnabledChanged();
   void FireSyncCycleCompleted();
 
   // SyncService implementation.
@@ -171,7 +170,8 @@ class TestSyncService : public SyncService {
 
   SyncCycleSnapshot last_cycle_snapshot_;
 
-  base::ObserverList<SyncServiceObserver>::Unchecked observers_;
+  base::ObserverList<SyncServiceObserver>::UncheckedAndDanglingUntriaged
+      observers_;
 
   GURL sync_service_url_;
 

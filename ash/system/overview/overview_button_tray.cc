@@ -4,7 +4,7 @@
 
 #include "ash/system/overview/overview_button_tray.h"
 
-#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/constants/tray_background_view_catalog.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -48,17 +48,7 @@ bool ShouldButtonBeVisible() {
     return false;
   }
 
-  // Check whether the button should be visible for 'kOverviewButton' feature,
-  // which is running as an experiment now. We want to enable it if the user has
-  // explicitly enabled `kOverviewButton` from chrome://flags or from the
-  // command line.
-  // Note: only check whether the feature is overridden from command line if the
-  // FeatureList is initialized.
-  const base::FeatureList* feature_list = base::FeatureList::GetInstance();
-  if ((feature_list && feature_list->IsFeatureOverriddenFromCommandLine(
-                           features::kOverviewButton.name,
-                           base::FeatureList::OVERRIDE_ENABLE_FEATURE)) ||
-      base::FeatureList::IsEnabled(features::kOverviewButton)) {
+  if (switches::IsOverviewButtonEnabledForTests()) {
     return true;
   }
 
@@ -144,7 +134,7 @@ void OverviewButtonTray::OnOverviewModeEnded() {
   SetIsActive(false);
 }
 
-void OverviewButtonTray::ClickedOutsideBubble() {}
+void OverviewButtonTray::ClickedOutsideBubble(const ui::LocatedEvent& event) {}
 
 void OverviewButtonTray::UpdateTrayItemColor(bool is_active) {
   DCHECK(chromeos::features::IsJellyEnabled());

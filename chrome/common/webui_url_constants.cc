@@ -230,6 +230,8 @@ const char kChromeUISyncHost[] = "sync";
 const char kChromeUISyncInternalsHost[] = "sync-internals";
 const char kChromeUISyncInternalsUrl[] = "chrome://sync-internals";
 const char kChromeUISystemInfoHost[] = "system";
+const char kChromeUIFeedbackSystemInfoUrl[] =
+    "chrome://system?showFeedbackInfo=true";
 const char kChromeUITermsHost[] = "terms";
 const char kChromeUITermsURL[] = "chrome://terms/";
 const char kChromeUIThemeHost[] = "theme";
@@ -291,6 +293,10 @@ const char kChromeUIHistoryClustersSidePanelHost[] =
     "history-clusters-side-panel.top-chrome";
 const char kChromeUIHistoryClustersSidePanelURL[] =
     "chrome://history-clusters-side-panel.top-chrome/";
+const char kChromeUILensHost[] = "lens";
+const char kChromeUILensUntrustedURL[] = "chrome-untrusted://lens/";
+const char kChromeUILensUntrustedSidePanelURL[] =
+    "chrome-untrusted://lens/side_panel/side_panel.html";
 const char kChromeUIUntrustedReadAnythingSidePanelHost[] =
     "read-anything-side-panel.top-chrome";
 const char kChromeUIUntrustedReadAnythingSidePanelURL[] =
@@ -659,8 +665,6 @@ const char kChromeUICastFeedbackHost[] = "cast-feedback";
 
 #if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
 const char kChromeUILensURL[] = "chrome://lens/";
-const char kChromeUILensUntrustedURL[] = "chrome-untrusted://lens/";
-const char kChromeUILensHost[] = "lens";
 #endif
 
 // Extension sub pages.

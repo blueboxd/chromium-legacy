@@ -6,6 +6,8 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "components/prefs/pref_service.h"
+#include "components/signin/public/base/signin_pref_names.h"
 
 namespace switches {
 
@@ -33,7 +35,12 @@ BASE_FEATURE(kEnableBoundSessionCredentials,
              "EnableBoundSessionCredentials",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-bool IsBoundSessionCredentialsEnabled() {
+bool IsBoundSessionCredentialsEnabled(const PrefService* profile_prefs) {
+  // Enterprise policy takes precedence over the feature value.
+  if (profile_prefs->HasPrefPath(prefs::kBoundSessionCredentialsEnabled)) {
+    return profile_prefs->GetBoolean(prefs::kBoundSessionCredentialsEnabled);
+  }
+
   return base::FeatureList::IsEnabled(kEnableBoundSessionCredentials);
 }
 
@@ -44,8 +51,16 @@ const base::FeatureParam<EnableBoundSessionCredentialsDiceSupport>::Option
 const base::FeatureParam<EnableBoundSessionCredentialsDiceSupport>
     kEnableBoundSessionCredentialsDiceSupport{
         &kEnableBoundSessionCredentials, "dice-support",
-        EnableBoundSessionCredentialsDiceSupport::kDisabled,
+        EnableBoundSessionCredentialsDiceSupport::kEnabled,
         &enable_bound_session_credentials_dice_support};
+
+// Restricts the DBSC registration URL path to a single allowed string.
+// Set to "/" to denote an empty path.
+// Set to an empty string to remove the restriction.
+const base::FeatureParam<std::string>
+    kEnableBoundSessionCredentialsExclusiveRegistrationPath{
+        &kEnableBoundSessionCredentials, "exclusive-registration-path",
+        "/RegisterSession"};
 
 // Enables Chrome refresh tokens binding to a device. Requires
 // "EnableBoundSessionCredentials" being enabled as a prerequisite.
@@ -53,8 +68,8 @@ BASE_FEATURE(kEnableChromeRefreshTokenBinding,
              "EnableChromeRefreshTokenBinding",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-bool IsChromeRefreshTokenBindingEnabled() {
-  return IsBoundSessionCredentialsEnabled() &&
+bool IsChromeRefreshTokenBindingEnabled(const PrefService* profile_prefs) {
+  return IsBoundSessionCredentialsEnabled(profile_prefs) &&
          base::FeatureList::IsEnabled(kEnableChromeRefreshTokenBinding);
 }
 #endif
@@ -92,12 +107,20 @@ BASE_FEATURE(kRestoreSignedInAccountAndSettingsFromBackup,
 BASE_FEATURE(kSearchEngineChoice,
              "SearchEngineChoice",
              base::FEATURE_DISABLED_BY_DEFAULT);
+// Rewrites DefaultSearchEnginePromoDialog into MVC pattern.
+BASE_FEATURE(kSearchEnginePromoDialogRewrite,
+             "SearchEnginePromoDialogRewrite",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 BASE_FEATURE(kUnoDesktop, "UnoDesktop", base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kExplicitBrowserSigninUIOnDesktop,
              "ExplicitBrowserSigninUIOnDesktop",
              base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<bool> kInterceptBubblesDismissibleByAvatarButton{
+    &kExplicitBrowserSigninUIOnDesktop,
+    /*name=*/"bubble_dismissible_by_avatar_button",
+    /*default_value=*/true};
 
 bool IsExplicitBrowserSigninUIOnDesktopEnabled(
     ExplicitBrowserSigninPhase phase) {
@@ -133,6 +156,10 @@ const base::FeatureParam<int> kMinorModeRestrictionsFetchDeadlineMs{
 #endif
 
 #if BUILDFLAG(IS_IOS)
+BASE_FEATURE(kUseSystemCapabilitiesForMinorModeRestrictions,
+             "UseSystemCapabilitiesForMinorModeRestrictions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kRemoveSignedInAccountsDialog,
              "RemoveSignedInAccountsDialog",
              base::FEATURE_ENABLED_BY_DEFAULT);

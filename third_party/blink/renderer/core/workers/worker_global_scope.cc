@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "base/trace_event/typed_macros.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
@@ -52,6 +53,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 #include "third_party/blink/renderer/core/inspector/inspector_audits_issue.h"
 #include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
+#include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
@@ -87,6 +89,7 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/perfetto/include/perfetto/tracing/track_event_args.h"
 
 namespace blink {
 namespace {
@@ -558,9 +561,9 @@ void WorkerGlobalScope::ReceiveMessage(BlinkTransferableMessage message) {
       MessagePort::EntanglePorts(*this, std::move(message.ports));
   WorkerThreadDebugger* debugger =
       WorkerThreadDebugger::From(GetThread()->GetIsolate());
-  if (debugger)
+  if (debugger) {
     debugger->ExternalAsyncTaskStarted(message.sender_stack_trace_id);
-
+  }
   if (message.message->CanDeserializeIn(this)) {
     UserActivation* user_activation = nullptr;
     if (message.user_activation) {
@@ -568,8 +571,17 @@ void WorkerGlobalScope::ReceiveMessage(BlinkTransferableMessage message) {
           message.user_activation->has_been_active,
           message.user_activation->was_active);
     }
-    DispatchEvent(*MessageEvent::Create(ports, std::move(message.message),
-                                        user_activation));
+    MessageEvent* message_event = MessageEvent::Create(
+        ports, std::move(message.message), user_activation);
+    message_event->SetTraceId(message.trace_id);
+    TRACE_EVENT(
+        "devtools.timeline", "HandlePostMessage", "data",
+        [&](perfetto::TracedValue context) {
+          inspector_handle_post_message_event::Data(
+              std::move(context), GetExecutionContext(), *message_event);
+        },
+        perfetto::Flow::Global(message_event->GetTraceId()));
+    DispatchEvent(*message_event);
   } else {
     DispatchEvent(*MessageEvent::CreateError());
   }

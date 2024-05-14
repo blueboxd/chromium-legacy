@@ -12,14 +12,18 @@
 #include "base/feature_list.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
+#include "chrome/android/chrome_jni_headers/PwaRestorePromoUtils_jni.h"
 #include "chrome/android/chrome_jni_headers/WebApkSyncService_jni.h"
 #include "chrome/browser/android/webapk/webapk_sync_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/sync/base/features.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;
+using base::android::ScopedJavaGlobalRef;
+using base::android::ScopedJavaLocalRef;
 
 namespace webapk {
 
@@ -48,24 +52,44 @@ void WebApkSyncService::MergeSyncDataForTesting(
       std::move(app_vector), std::move(last_used_days_vector));  // IN-TEST
 }
 
+void WebApkSyncService::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
+  sync_bridge_->SetClockForTesting(std::move(clock));  // IN-TEST
+}
+
+const Registry& WebApkSyncService::GetRegistryForTesting() const {
+  return sync_bridge_->GetRegistryForTesting();  // IN-TEST
+}
+
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 WebApkSyncService::GetModelTypeControllerDelegate() {
   return sync_bridge_->GetModelTypeControllerDelegate();
 }
 
 void WebApkSyncService::OnWebApkUsed(
-    std::unique_ptr<sync_pb::WebApkSpecifics> app_specifics) {
-  sync_bridge_->OnWebApkUsed(std::move(app_specifics));
+    std::unique_ptr<sync_pb::WebApkSpecifics> app_specifics,
+    bool is_install) {
+  sync_bridge_->OnWebApkUsed(std::move(app_specifics), is_install);
 }
 
 void WebApkSyncService::OnWebApkUninstalled(const std::string& manifest_id) {
   sync_bridge_->OnWebApkUninstalled(manifest_id);
 }
 
+void WebApkSyncService::RemoveOldWebAPKsFromSync(
+    int64_t current_time_ms_since_unix_epoch) {
+  sync_bridge_->RemoveOldWebAPKsFromSync(current_time_ms_since_unix_epoch);
+}
+
+std::vector<std::vector<std::string>> WebApkSyncService::GetRestorableAppsInfo()
+    const {
+  return sync_bridge_->GetRestorableAppsInfo();
+}
+
 // static
 static void JNI_WebApkSyncService_OnWebApkUsed(
     JNIEnv* env,
-    const JavaParamRef<jbyteArray>& java_webapk_specifics) {
+    const JavaParamRef<jbyteArray>& java_webapk_specifics,
+    jboolean is_install) {
   if (!base::FeatureList::IsEnabled(syncer::kWebApkBackupAndRestoreBackend)) {
     return;
   }
@@ -85,7 +109,8 @@ static void JNI_WebApkSyncService_OnWebApkUsed(
     LOG(ERROR) << "failed to parse WebApkSpecifics proto";
     return;
   }
-  WebApkSyncService::GetForProfile(profile)->OnWebApkUsed(std::move(specifics));
+  WebApkSyncService::GetForProfile(profile)->OnWebApkUsed(
+      std::move(specifics), static_cast<bool>(is_install));
 }
 
 static void JNI_WebApkSyncService_OnWebApkUninstalled(
@@ -102,6 +127,42 @@ static void JNI_WebApkSyncService_OnWebApkUninstalled(
 
   WebApkSyncService::GetForProfile(profile)->OnWebApkUninstalled(
       ConvertJavaStringToUTF8(env, java_manifest_id));
+}
+
+static void JNI_WebApkSyncService_RemoveOldWebAPKsFromSync(
+    JNIEnv* env,
+    jlong java_current_time_ms_since_unix_epoch) {
+  if (!base::FeatureList::IsEnabled(syncer::kWebApkBackupAndRestoreBackend)) {
+    return;
+  }
+
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  if (profile == nullptr) {
+    return;
+  }
+
+  WebApkSyncService::GetForProfile(profile)->RemoveOldWebAPKsFromSync(
+      static_cast<int64_t>(java_current_time_ms_since_unix_epoch));
+}
+
+static void JNI_WebApkSyncService_FetchRestorableApps(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jprofile,
+    const JavaParamRef<jobject>& jwindow_android,
+    int arrow_resource_id) {
+  Profile* profile =
+      ProfileAndroid::FromProfileAndroid(jprofile)->GetWeakPtr().get();
+
+  if (profile == nullptr) {
+    return;
+  }
+
+  auto result =
+      WebApkSyncService::GetForProfile(profile)->GetRestorableAppsInfo();
+  ScopedJavaLocalRef<jobjectArray> jresults =
+      base::android::ToJavaArrayOfStringArray(env, result);
+  webapps::Java_PwaRestorePromoUtils_onRestorableAppsAvailable(
+      env, true, jresults, jwindow_android, arrow_resource_id);
 }
 
 }  // namespace webapk

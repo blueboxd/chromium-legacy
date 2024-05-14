@@ -657,7 +657,6 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
       blob_registry_remote_(init.context_lifecycle_notifier),
       context_lifecycle_notifier_(init.context_lifecycle_notifier),
       auto_load_images_(true),
-      images_enabled_(true),
       allow_stale_resources_(false),
       image_fetched_(false) {
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
@@ -787,12 +786,12 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
     final_response.SetEncodedDataLength(0);
     // Resources loaded from memory cache should be reported the first time
     // they're used.
-    mojom::blink::ResourceTimingInfoPtr info = CreateResourceTimingInfo(
-        now,
+    KURL initial_url =
         resource->GetResourceRequest().GetRedirectInfo().has_value()
             ? resource->GetResourceRequest().GetRedirectInfo()->original_url
-            : resource->GetResourceRequest().Url(),
-        &final_response);
+            : resource->GetResourceRequest().Url();
+    mojom::blink::ResourceTimingInfoPtr info =
+        CreateResourceTimingInfo(now, initial_url, &final_response);
     info->response_end = now;
     info->render_blocking_status =
         render_blocking_behavior == RenderBlockingBehavior::kBlocking;
@@ -809,8 +808,12 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
       }
     }
 
-    scheduled_resource_timing_reports_.push_back(ScheduledResourceTimingInfo{
-        std::move(info), resource->Options().initiator_info.name});
+    AtomicString initiator_type = resource->Options().initiator_info.name;
+    MarkEarlyHintConsumedAndOverrideInitiatorTypeIfNeeded(initial_url, resource,
+                                                          &initiator_type);
+    scheduled_resource_timing_reports_.push_back(
+        ScheduledResourceTimingInfo{std::move(info), initiator_type});
+
     if (!resource_timing_report_timer_.IsActive())
       resource_timing_report_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
   }
@@ -1424,7 +1427,6 @@ std::unique_ptr<URLLoader> ResourceFetcher::CreateURLLoader(
             network::mojom::AttributionReportingEligibility::kUnset &&
         !base::FeatureList::IsEnabled(
             features::kAttributionReportingInBrowserMigration)))) {
-    base::UmaHistogramBoolean("Blink.Fetch.KeepAlive.Total", true);
     // Set the `task_runner` to the `AgentGroupScheduler`'s task-runner for
     // keepalive fetches because we want it to keep running even after the
     // frame is detached. It's pretty fragile to do that with the
@@ -1673,7 +1675,7 @@ bool ResourceFetcher::IsImageResourceDisallowedToBeReused(
   if (existing_resource.GetType() != ResourceType::kImage)
     return false;
 
-  return !Context().AllowImage(images_enabled_, existing_resource.Url());
+  return !Context().AllowImage();
 }
 
 ResourceFetcher::RevalidationPolicy
@@ -1916,20 +1918,8 @@ void ResourceFetcher::SetAutoLoadImages(bool enable) {
   ReloadImagesIfNotDeferred();
 }
 
-void ResourceFetcher::SetImagesEnabled(bool enable) {
-  if (enable == images_enabled_)
-    return;
-
-  images_enabled_ = enable;
-
-  if (!images_enabled_)
-    return;
-
-  ReloadImagesIfNotDeferred();
-}
-
 bool ResourceFetcher::ShouldDeferImageLoad(const KURL& url) const {
-  return !Context().AllowImage(images_enabled_, url) ||
+  return !Context().AllowImage() ||
          (!auto_load_images_ && !url.ProtocolIsData());
 }
 
@@ -1982,10 +1972,6 @@ void ResourceFetcher::ClearContext() {
           !base::FeatureList::IsEnabled(
               blink::features::kAttributionReportingInBrowserMigration));
     // There are some keepalive requests.
-
-    // Records the current time to estimate how long the remaining requests will
-    // stay.
-    detached_time_ = base::TimeTicks::Now();
 
     // The use of WrapPersistent creates a reference cycle intentionally,
     // to keep the ResourceFetcher and ResourceLoaders alive until the requests
@@ -2044,8 +2030,9 @@ void ResourceFetcher::ScheduleWarnUnusedPreloads() {
   // If preloads_ is not empty here, it's full of link
   // preloads, as speculative preloads should have already been cleared when
   // parsing finished.
-  if (preloads_.empty() && early_hints_preloaded_resources_.empty())
+  if (preloads_.empty() && unused_early_hints_preloaded_resources_.empty()) {
     return;
+  }
   unused_preloads_timer_ = PostDelayedCancellableTask(
       *freezable_task_runner_, FROM_HERE,
       WTF::BindOnce(&ResourceFetcher::WarnUnusedPreloads,
@@ -2091,7 +2078,7 @@ void ResourceFetcher::WarnUnusedPreloads() {
   base::UmaHistogramCounts100("Renderer.Preload.UnusedResourceCount",
                               unused_resource_count);
 
-  for (auto& pair : early_hints_preloaded_resources_) {
+  for (auto& pair : unused_early_hints_preloaded_resources_) {
     if (pair.value.state == EarlyHintsPreloadEntry::State::kWarnedUnused)
       continue;
 
@@ -2130,6 +2117,14 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
     }
   }
 
+  if (resource->GetResourceRequest().GetKeepalive()) {
+    // Logs when a keepalive request succeeds. It does not matter whether the
+    // response is a multipart resource or not.
+    FetchUtils::LogFetchKeepAliveRequestMetric(
+        resource->GetResourceRequest().GetRequestContext(),
+        FetchUtils::FetchKeepAliveRequestState::kSucceeded);
+  }
+
   if (IsControlledByServiceWorker() ==
       mojom::blink::ControllerServiceWorkerMode::kControlled) {
     if (resource->GetResponse().WasFetchedViaServiceWorker()) {
@@ -2157,14 +2152,6 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
   } else {
     RemoveResourceLoader(loader);
     DCHECK(!non_blocking_loaders_.Contains(loader));
-
-    if (resource->GetResourceRequest().GetKeepalive()) {
-      base::UmaHistogramBoolean("Blink.Fetch.KeepAlive.Total.IsSuccess", true);
-      if (IsDetached()) {
-        base::UmaHistogramBoolean(
-            "Blink.Fetch.KeepAlive.AfterDetached.IsSuccess", true);
-      }
-    }
   }
   DCHECK(!loaders_.Contains(loader));
 
@@ -2224,14 +2211,13 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
   DCHECK_LE(inflight_keepalive_bytes, inflight_keepalive_bytes_);
   inflight_keepalive_bytes_ -= inflight_keepalive_bytes;
 
-  RemoveResourceLoader(resource->Loader());
   if (resource->GetResourceRequest().GetKeepalive()) {
-    base::UmaHistogramBoolean("Blink.Fetch.KeepAlive.Total.IsSuccess", false);
-    if (IsDetached()) {
-      base::UmaHistogramBoolean("Blink.Fetch.KeepAlive.AfterDetached.IsSuccess",
-                                false);
-    }
+    FetchUtils::LogFetchKeepAliveRequestMetric(
+        resource->GetResourceRequest().GetRequestContext(),
+        FetchUtils::FetchKeepAliveRequestState::kFailed);
   }
+
+  RemoveResourceLoader(resource->Loader());
   PendingResourceTimingInfo info = resource_timing_info_map_.Take(resource);
 
   if (!info.is_null()) {
@@ -2363,6 +2349,12 @@ bool ResourceFetcher::StartLoad(
                                                render_blocking_behavior);
   }
 
+  if (resource->GetResourceRequest().GetKeepalive()) {
+    FetchUtils::LogFetchKeepAliveRequestMetric(
+        resource->GetResourceRequest().GetRequestContext(),
+        FetchUtils::FetchKeepAliveRequestState::kStarted);
+  }
+
   loader->Start();
 
   {
@@ -2381,14 +2373,6 @@ bool ResourceFetcher::StartLoad(
 
 void ResourceFetcher::RemoveResourceLoader(ResourceLoader* loader) {
   DCHECK(loader);
-
-  if (IsDetached() && detached_time_ != base::TimeTicks()) {
-    // Only logs the requests duration timed after the context is detached.
-    base::TimeDelta elapsed = base::TimeTicks::Now() - detached_time_;
-    // kKeepaliveLoadersTimeout > 10 sec, so UmaHistogramTimes can't be used.
-    base::UmaHistogramMediumTimes(
-        "Blink.Fetch.KeepAlive.AfterDetached.Duration", elapsed);
-  }
 
   if (loaders_.Contains(loader))
     loaders_.erase(loader);
@@ -2691,7 +2675,7 @@ void ResourceFetcher::PopulateAndAddResourceTimingInfo(
 
   // Resource timing entries that correspond to resources fetched by extensions
   // are precluded.
-  if (resource->Options().world_for_csp.get() &&
+  if (resource->Options().world_for_csp &&
       resource->Options().world_for_csp->IsIsolatedWorld()) {
     return;
   }
@@ -2703,18 +2687,8 @@ void ResourceFetcher::PopulateAndAddResourceTimingInfo(
           ? resource->GetResourceRequest().GetRedirectInfo()->original_url
           : resource->GetResourceRequest().Url();
 
-  auto pair = early_hints_preloaded_resources_.find(initial_url);
-  if (pair != early_hints_preloaded_resources_.end()) {
-    early_hints_preloaded_resources_.erase(pair);
-    const ResourceResponse& response = resource->GetResponse();
-    if (!response.NetworkAccessed() &&
-        (!response.WasFetchedViaServiceWorker() ||
-         response.IsServiceWorkerPassThrough())) {
-      initiator_type = AtomicString("early-hints");
-      resource->SetIsPreloadedByEarlyHints();
-    }
-  }
-
+  MarkEarlyHintConsumedAndOverrideInitiatorTypeIfNeeded(initial_url, resource,
+                                                        &initiator_type);
   mojom::blink::ResourceTimingInfoPtr info = CreateResourceTimingInfo(
       pending_info.start_time, initial_url, &resource->GetResponse());
   if (info->allow_timing_details) {
@@ -2812,6 +2786,26 @@ void ResourceFetcher::RecordLCPPSubresourceMetrics() {
 
   base::UmaHistogramCounts100("Blink.LCPP.PotentiallyLCPResourcePriorityBoosts",
                               potentially_lcp_resource_priority_boosts_);
+}
+
+void ResourceFetcher::MarkEarlyHintConsumedAndOverrideInitiatorTypeIfNeeded(
+    const KURL& resource_initial_url,
+    Resource* resource,
+    AtomicString* origin_initiator_type) {
+  auto iter =
+      unused_early_hints_preloaded_resources_.find(resource_initial_url);
+  if (iter != unused_early_hints_preloaded_resources_.end()) {
+    unused_early_hints_preloaded_resources_.erase(iter);
+    const ResourceResponse& response = resource->GetResponse();
+    // The network service may not reuse the response fetched by the early hints
+    // due to cache control policies.
+    if (!response.NetworkAccessed() &&
+        (!response.WasFetchedViaServiceWorker() ||
+         response.IsServiceWorkerPassThrough())) {
+      *origin_initiator_type = AtomicString("early-hints");
+      resource->SetIsPreloadedByEarlyHints();
+    }
+  }
 }
 
 void ResourceFetcher::Trace(Visitor* visitor) const {

@@ -39,7 +39,6 @@
 #include "chrome/test/interaction/interactive_browser_test.h"
 #include "components/lookalikes/core/safety_tip_test_utils.h"
 #include "components/performance_manager/public/decorators/process_metrics_decorator.h"
-#include "components/performance_manager/public/features.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -56,6 +55,7 @@
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/test/widget_activation_waiter.h"
 #include "ui/views/test/widget_test.h"
 #include "url/gurl.h"
 
@@ -84,25 +84,18 @@ std::vector<TabHoverCardTestFeatureConfig> GetTabHoverCardTestFeatureConfig() {
   return {
       {{{features::kChromeRefresh2023, {}},
         {features::kTabHoverCardImages, {}}},
-       {performance_manager::features::kMemoryUsageInHovercards}},
-      {{{features::kTabHoverCardImages, {}}},
-       {features::kChromeRefresh2023,
-        performance_manager::features::kMemoryUsageInHovercards}},
+       {}},
+      {{{features::kTabHoverCardImages, {}}}, {features::kChromeRefresh2023}},
   };
 }
 
 std::vector<TabHoverCardTestFeatureConfig>
 GetTabHoverCardFooterTestFeatureConfig() {
   return {
-      {{{performance_manager::features::kMemoryUsageInHovercards,
-         {{"memory_update_trigger", "navigation"}}},
-        {features::kTabHoverCardImages, {}},
+      {{{features::kTabHoverCardImages, {}},
         {features::kChromeRefresh2023, {}}},
        {}},
-      {{{performance_manager::features::kMemoryUsageInHovercards,
-         {{"memory_update_trigger", "navigation"}}},
-        {features::kTabHoverCardImages, {}}},
-       {features::kChromeRefresh2023}},
+      {{{features::kTabHoverCardImages, {}}}, {features::kChromeRefresh2023}},
   };
 }
 
@@ -340,10 +333,9 @@ IN_PROC_BROWSER_TEST_P(TabHoverCardInteractiveUiTest,
 
   // Activate the active browser and wait for the inactive browser to be
   // inactive.
-  views::test::WidgetActivationWaiter waiter(
-      BrowserView::GetBrowserViewForBrowser(inactive_window)->frame(), false);
   BrowserView::GetBrowserViewForBrowser(active_window)->Activate();
-  waiter.Wait();
+  views::test::WaitForWidgetActive(
+      BrowserView::GetBrowserViewForBrowser(inactive_window)->frame(), false);
   ASSERT_FALSE(
       BrowserView::GetBrowserViewForBrowser(inactive_window)->IsActive());
 
@@ -636,10 +628,7 @@ IN_PROC_BROWSER_TEST_P(TabHoverCardFadeFooterInteractiveUiTest,
   EXPECT_FALSE(performance_row->icon()->GetImageModel().IsEmpty());
 
   // Hover card updates and shows high memory usage when card is still open
-  bytes_used =
-      performance_manager::features::kMemoryUsageInHovercardsHighThresholdBytes
-          .Get() +
-      100;
+  bytes_used = TabResourceUsage::kHighMemoryUsageThresholdBytes + 100;
   tab_resource_usage_tab_helper->SetMemoryUsageInBytes(bytes_used);
   GetTabStrip(browser())
       ->hover_card_controller_for_testing()
@@ -673,10 +662,7 @@ IN_PROC_BROWSER_TEST_P(TabHoverCardFadeFooterInteractiveUiTest,
   EXPECT_TRUE(performance_row->icon()->GetImageModel().IsEmpty());
 
   // Hover card updates and shows high memory usage when card is still open
-  bytes_used =
-      performance_manager::features::kMemoryUsageInHovercardsHighThresholdBytes
-          .Get() +
-      100;
+  bytes_used = TabResourceUsage::kHighMemoryUsageThresholdBytes + 100;
   tab_resource_usage_tab_helper->SetMemoryUsageInBytes(bytes_used);
   GetTabStrip(browser())
       ->hover_card_controller_for_testing()
@@ -765,8 +751,14 @@ IN_PROC_BROWSER_TEST_P(TabHoverCardFadeFooterInteractiveUiTest,
   EXPECT_FALSE(footer_view->GetVisible());
 }
 
+#if BUILDFLAG(IS_WIN)
+// https://crbug.com/327245883
+#define MAYBE_BackgroundTabHoverCardContentsHaveCorrectDimensions DISABLED_BackgroundTabHoverCardContentsHaveCorrectDimensions
+#else
+#define MAYBE_BackgroundTabHoverCardContentsHaveCorrectDimensions BackgroundTabHoverCardContentsHaveCorrectDimensions
+#endif
 IN_PROC_BROWSER_TEST_P(TabHoverCardFadeFooterInteractiveUiTest,
-                       BackgroundTabHoverCardContentsHaveCorrectDimensions) {
+                       MAYBE_BackgroundTabHoverCardContentsHaveCorrectDimensions) {
   TabStrip* const tab_strip = GetTabStrip(browser());
   ASSERT_TRUE(
       AddTabAtIndex(1, GURL(url::kAboutBlankURL), ui::PAGE_TRANSITION_TYPED));

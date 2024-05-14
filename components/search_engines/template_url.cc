@@ -145,8 +145,7 @@ class SearchTermLocation {
              (url_component_type == url::Parsed::REF));
       url::Component query, key, value;
       query.len = static_cast<int>(url_component.size());
-      while (url::ExtractQueryKeyValue(url_component.data(), &query, &key,
-                                       &value)) {
+      while (url::ExtractQueryKeyValue(url_component, &query, &key, &value)) {
         if (key.is_nonempty() && value.is_nonempty()) {
           const base::StringPiece value_string =
               url_component.substr(value.begin, value.len);
@@ -443,8 +442,9 @@ bool TemplateURLRef::SupportsReplacement(
 std::string TemplateURLRef::ReplaceSearchTerms(
     const SearchTermsArgs& search_terms_args,
     const SearchTermsData& search_terms_data,
-    PostContent* post_content) const {
-  ParseIfNecessary(search_terms_data);
+    PostContent* post_content,
+    std::string url_override) const {
+  ParseIfNecessary(search_terms_data, url_override);
   if (!valid_)
     return std::string();
 
@@ -641,7 +641,7 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
     url::Component query, key, value;
     query.len = static_cast<int>(source.size());
     bool key_found = false;
-    while (url::ExtractQueryKeyValue(source.data(), &query, &key, &value)) {
+    while (url::ExtractQueryKeyValue(source, &query, &key, &value)) {
       if (key.is_nonempty()) {
         if (source.substr(key.begin, key.len) == search_term_key_) {
           // Fail if search term key is found twice.
@@ -796,11 +796,7 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == "google:sessionToken") {
     replacements->push_back(Replacement(GOOGLE_SESSION_TOKEN, start));
   } else if (parameter == "google:sourceId") {
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-    url->insert(start, "sourceid=chrome-mobile&");
-#else
-    url->insert(start, "sourceid=chrome&");
-#endif
+    replacements->push_back(Replacement(GOOGLE_SEARCH_SOURCE_ID, start));
   } else if (parameter == "google:suggestAPIKeyParameter") {
     url->insert(start,
                 base::EscapeQueryParamValue(google_apis::GetAPIKey(), false));
@@ -907,12 +903,14 @@ std::string TemplateURLRef::ParseURL(const std::string& url,
   return parsed_url;
 }
 
-void TemplateURLRef::ParseIfNecessary(
-    const SearchTermsData& search_terms_data) const {
-  if (!parsed_) {
+void TemplateURLRef::ParseIfNecessary(const SearchTermsData& search_terms_data,
+                                      std::string url_override) const {
+  bool url_override_is_valid = GURL(url_override).is_valid();
+  if (!parsed_ || url_override_is_valid) {
     InvalidateCachedValues();
     parsed_ = true;
-    parsed_url_ = ParseURL(GetURL(), &replacements_, &post_params_, &valid_);
+    parsed_url_ = ParseURL(url_override_is_valid ? url_override : GetURL(),
+                           &replacements_, &post_params_, &valid_);
     supports_replacements_ = false;
     if (valid_) {
       bool has_only_one_search_term = false;
@@ -1286,6 +1284,16 @@ std::string TemplateURLRef::HandleReplacements(
         // url.  If we do, then we'd have some conditional insert such as:
         // url.insert(replacement.index, used_www ? "gcx=w&" : "gcx=c&");
         break;
+
+      case GOOGLE_SEARCH_SOURCE_ID: {
+        DCHECK(!replacement.is_post_param);
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+        HandleReplacement("sourceid", "chrome-mobile", replacement, &url);
+#else
+        HandleReplacement("sourceid", "chrome", replacement, &url);
+#endif
+        break;
+      }
 
       case GOOGLE_SEARCH_VERSION:
         HandleReplacement("gs_rn", "42", replacement, &url);

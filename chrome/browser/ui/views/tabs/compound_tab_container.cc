@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/functional/bind.h"
 #include "base/trace_event/trace_event.h"
+#include "base/types/to_address.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -216,7 +217,7 @@ class PinUnpinAnimationDelegate : public TabSlotAnimationDelegate {
 
   void AnimationEnded(const gfx::Animation* animation) override {
     TabSlotAnimationDelegate::AnimationEnded(animation);
-    tab_container()->ReturnTabSlotView(std::to_address(slot_view()));
+    tab_container()->ReturnTabSlotView(slot_view());
   }
 };
 }  // namespace
@@ -259,8 +260,8 @@ CompoundTabContainer::~CompoundTabContainer() {
   // Ensure that happens now so we aren't in a half-destructed state when they
   // do so.
   CancelAnimation();
-  RemoveChildViewT(std::to_address(pinned_tab_container_));
-  RemoveChildViewT(std::to_address(unpinned_tab_container_));
+  RemoveChildViewT(base::to_address(pinned_tab_container_));
+  RemoveChildViewT(base::to_address(unpinned_tab_container_));
 }
 
 void CompoundTabContainer::SetAvailableWidthCallback(
@@ -293,17 +294,17 @@ void CompoundTabContainer::MoveTab(int from_model_index, int to_model_index) {
   if (prev_pinned != next_pinned) {
     TransferTabBetweenContainers(from_model_index, to_model_index);
   } else if (prev_pinned) {
-    CHECK(to_model_index < NumPinnedTabs());
+    CHECK_LT(to_model_index, NumPinnedTabs());
     pinned_tab_container_->MoveTab(from_model_index, to_model_index);
   } else {  // !prev_pinned
-    CHECK(to_model_index >= NumPinnedTabs());
+    CHECK_GE(to_model_index, NumPinnedTabs());
     unpinned_tab_container_->MoveTab(from_model_index - NumPinnedTabs(),
                                      to_model_index - NumPinnedTabs());
   }
 }
 
 void CompoundTabContainer::RemoveTab(int index, bool was_active) {
-  CHECK(IsValidViewModelIndex(index));
+  CHECK(IsValidViewModelIndex(index)) << index;
   if (index < NumPinnedTabs()) {
     pinned_tab_container_->RemoveTab(index, was_active);
   } else {
@@ -451,7 +452,7 @@ std::optional<int> CompoundTabContainer::GetModelIndexOf(
 }
 
 Tab* CompoundTabContainer::GetTabAtModelIndex(int index) const {
-  CHECK(index < GetTabCount());
+  CHECK_LT(index, GetTabCount());
   const int num_pinned_tabs = NumPinnedTabs();
   if (index < num_pinned_tabs) {
     return pinned_tab_container_->GetTabAtModelIndex(index);
@@ -519,14 +520,14 @@ void CompoundTabContainer::HandleLongTap(ui::GestureEvent* const event) {
 
 bool CompoundTabContainer::IsRectInContentArea(const gfx::Rect& rect) {
   if (pinned_tab_container_->IsRectInContentArea(ToEnclosingRect(
-          ConvertRectToTarget(this, std::to_address(pinned_tab_container_),
+          ConvertRectToTarget(this, base::to_address(pinned_tab_container_),
                               gfx::RectF(rect))))) {
     return true;
   }
 
   return unpinned_tab_container_->IsRectInContentArea(
       ToEnclosingRect(ConvertRectToTarget(
-          this, std::to_address(unpinned_tab_container_), gfx::RectF(rect))));
+          this, base::to_address(unpinned_tab_container_), gfx::RectF(rect))));
 }
 
 std::optional<ZOrderableTabContainerElement>
@@ -677,12 +678,12 @@ gfx::Size CompoundTabContainer::GetMinimumSize() const {
 
 views::SizeBounds CompoundTabContainer::GetAvailableSize(
     const views::View* child) const {
-  if (child == std::to_address(pinned_tab_container_)) {
+  if (child == base::to_address(pinned_tab_container_)) {
     return views::SizeBounds(GetAvailableWidthForTabContainer(),
                              views::SizeBound());
   }
 
-  CHECK_EQ(child, std::to_address(unpinned_tab_container_));
+  CHECK_EQ(child, base::to_address(unpinned_tab_container_));
   return views::SizeBounds(GetAvailableWidthForUnpinnedTabContainer(),
                            views::SizeBound());
 }
@@ -766,8 +767,9 @@ void CompoundTabContainer::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-BrowserRootView::DropIndex CompoundTabContainer::GetDropIndex(
-    const ui::DropTargetEvent& event) {
+std::optional<BrowserRootView::DropIndex> CompoundTabContainer::GetDropIndex(
+    const ui::DropTargetEvent& event,
+    bool allow_replacement) {
   TabContainer* sub_drop_target = GetTabContainerForDrop(event.location());
   CHECK(sub_drop_target);
   CHECK(sub_drop_target->GetDropTarget(
@@ -780,17 +782,19 @@ BrowserRootView::DropIndex CompoundTabContainer::GetDropIndex(
       event.data(), gfx::PointF(loc_in_sub_target),
       gfx::PointF(loc_in_sub_target), event.source_operations());
 
-  if (sub_drop_target == std::to_address(pinned_tab_container_)) {
+  if (sub_drop_target == base::to_address(pinned_tab_container_)) {
     // Pinned tab container shares an index and coordinate space, so no
     // adjustments needed.
-    return sub_drop_target->GetDropIndex(adjusted_event);
+    return sub_drop_target->GetDropIndex(adjusted_event, allow_replacement);
   } else {
     // For the unpinned container, we need to transform the output to the
     // correct index space.
-    const BrowserRootView::DropIndex sub_target_index =
-        sub_drop_target->GetDropIndex(adjusted_event);
-    return {sub_target_index.value + NumPinnedTabs(),
-            sub_target_index.drop_before, sub_target_index.drop_in_group};
+    const std::optional<BrowserRootView::DropIndex> sub_target_index =
+        sub_drop_target->GetDropIndex(adjusted_event, allow_replacement);
+    return BrowserRootView::DropIndex{
+        .index = sub_target_index->index + NumPinnedTabs(),
+        .relative_to_index = sub_target_index->relative_to_index,
+        .group_inclusion = sub_target_index->group_inclusion};
   }
 }
 
@@ -816,9 +820,9 @@ void CompoundTabContainer::HandleDragUpdate(
   // Update `current_text_drop_target_`.
   TabContainer* next_drop_target = nullptr;
   if (index.has_value()) {
-    next_drop_target = std::to_address(index.value().value < NumPinnedTabs()
-                                           ? pinned_tab_container_
-                                           : unpinned_tab_container_);
+    next_drop_target = base::to_address(index->index < NumPinnedTabs()
+                                            ? pinned_tab_container_
+                                            : unpinned_tab_container_);
   }
   if (next_drop_target != current_text_drop_target_) {
     if (current_text_drop_target_) {
@@ -832,12 +836,13 @@ void CompoundTabContainer::HandleDragUpdate(
   }
 
   // Forward to `current_text_drop_target_`, adjusting if needed.
-  if (current_text_drop_target_ == std::to_address(pinned_tab_container_)) {
+  if (current_text_drop_target_ == base::to_address(pinned_tab_container_)) {
     pinned_tab_container_->HandleDragUpdate(index);
   } else {
-    BrowserRootView::DropIndex adjusted_index = {
-        index.value().value - NumPinnedTabs(), index.value().drop_before,
-        index.value().drop_in_group};
+    BrowserRootView::DropIndex adjusted_index{
+        .index = index->index - NumPinnedTabs(),
+        .relative_to_index = index->relative_to_index,
+        .group_inclusion = index->group_inclusion};
     unpinned_tab_container_->HandleDragUpdate(adjusted_index);
   }
 }
@@ -994,9 +999,9 @@ TabContainer* CompoundTabContainer::GetTabContainerForDrop(
                        2;
 
   if (point_in_local_coords.x() < cutoff_x) {
-    return std::to_address(pinned_tab_container_);
+    return base::to_address(pinned_tab_container_);
   }
-  return std::to_address(unpinned_tab_container_);
+  return base::to_address(unpinned_tab_container_);
 }
 
 TabContainer* CompoundTabContainer::GetTabContainerAt(
@@ -1011,16 +1016,16 @@ TabContainer* CompoundTabContainer::GetTabContainerAt(
                           unpinned_tab_container_->bounds().x()) /
                          2;
     if (point_in_local_coords.x() < cutoff_x) {
-      return std::to_address(pinned_tab_container_);
+      return base::to_address(pinned_tab_container_);
     }
-    return std::to_address(unpinned_tab_container_);
+    return base::to_address(unpinned_tab_container_);
   }
 
   if (in_pinned) {
-    return std::to_address(pinned_tab_container_);
+    return base::to_address(pinned_tab_container_);
   }
   if (in_unpinned) {
-    return std::to_address(unpinned_tab_container_);
+    return base::to_address(unpinned_tab_container_);
   }
 
   // `point_in_local_coords` might be in neither sub container if our layout is

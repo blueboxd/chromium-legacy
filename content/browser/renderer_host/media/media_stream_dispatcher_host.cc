@@ -333,7 +333,8 @@ void MediaStreamDispatcherHost::OnZoomLevelChange(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(device.display_media_info);
 
-  if (!base::FeatureList::IsEnabled(blink::features::kCapturedSurfaceControl)) {
+  if (!base::FeatureList::IsEnabled(
+          features::kCapturedSurfaceControlKillswitch)) {
     return;
   }
 
@@ -467,15 +468,6 @@ void MediaStreamDispatcherHost::GenerateStreams(
       ValidateControlsForGenerateStreams(controls);
   if (bad_message.has_value()) {
     ReceivedBadMessage(render_frame_host_id_.child_id, bad_message.value());
-    return;
-  }
-
-  if (audio_stream_selection_info_ptr->strategy ==
-          blink::mojom::StreamSelectionStrategy::SEARCH_BY_SESSION_ID &&
-      (!audio_stream_selection_info_ptr->session_id.has_value() ||
-       audio_stream_selection_info_ptr->session_id->is_empty())) {
-    ReceivedBadMessage(render_frame_host_id_.child_id,
-                       bad_message::MDDH_INVALID_STREAM_SELECTION_INFO);
     return;
   }
 

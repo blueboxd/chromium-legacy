@@ -19,6 +19,10 @@ export function isChild(): boolean {
   return loadTimeData.getBoolean('isChild');
 }
 
+export function isSecondaryUser(): boolean {
+  return loadTimeData.getBoolean('isSecondaryUser');
+}
+
 export function isRevampWayfindingEnabled(): boolean {
   return loadTimeData.getBoolean('isRevampWayfindingEnabled');
 }
@@ -66,6 +70,11 @@ export function isKerberosEnabled(): boolean {
 // People page
 export function isAccountManagerEnabled(): boolean {
   return loadTimeData.getBoolean('isAccountManagerEnabled');
+}
+
+// Personalization page
+export function shouldShowMultitaskingInPersonalization(): boolean {
+  return loadTimeData.getBoolean('shouldShowMultitaskingInPersonalization');
 }
 
 // Reset page

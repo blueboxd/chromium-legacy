@@ -16,7 +16,6 @@ from unexpected_passes_common import builders
 from unexpected_passes_common import constants
 from unexpected_passes_common import data_types
 from unexpected_passes_common import expectations
-from unexpected_passes_common import multiprocessing_utils
 from unexpected_passes_common import queries
 from unexpected_passes_common import unittest_utils
 
@@ -267,7 +266,8 @@ class QueryBuilderUnittest(unittest.TestCase):
         return_value=unittest_utils.SimpleFixedQueryGenerator(
             self._builder, 'a real filter')), mock.patch.object(
                 self._querier,
-                '_RunBigQueryCommandsForJsonOutput') as query_mock:
+                '_RunBigQueryCommandsForJsonOutput',
+                return_value=[]) as query_mock:
       self._querier.QueryBuilder(self._builder)
       query_mock.assert_called_once()
       query = query_mock.call_args[0][0][0]
@@ -328,11 +328,6 @@ class FillExpectationMapForBuildersUnittest(unittest.TestCase):
     self._query_patcher = mock.patch.object(self._querier, 'QueryBuilder')
     self._query_mock = self._query_patcher.start()
     self.addCleanup(self._query_patcher.stop)
-    self._pool_patcher = mock.patch.object(multiprocessing_utils,
-                                           'GetProcessPool')
-    self._pool_mock = self._pool_patcher.start()
-    self._pool_mock.return_value = unittest_utils.FakePool()
-    self.addCleanup(self._pool_patcher.stop)
     self._filter_patcher = mock.patch.object(self._querier,
                                              '_FilterOutInactiveBuilders')
     self._filter_mock = self._filter_patcher.start()

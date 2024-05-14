@@ -856,6 +856,35 @@ The enrollment token is stored in:
 The device management token is stored in:
 `/opt/{COMPANY_SHORTNAME}/{PRODUCT_FULLNAME}/CloudManagement`
 
+### Enterprise DM token
+DM server sends back a DM token to the client device after the device
+enrollment. The client persists the DM token for the authorization purpose
+in the subsequent communication with the DM server.
+
+DM token is stored at:
+##### Windows
+- The `dmtoken` REG_SZ value at path:
+  `HKLM\Software\WOW6432Node\{COMPANY_SHORTNAME}\Enrollment\`
+- The `dmtoken` REG_SZ value at path:
+  `HKLM64\Software\{COMPANY_SHORTNAME}\{BROWSER_NAME}\Enrollment\`. This is
+  for backward compatibility.
+
+#### macOS
+- File `/Library/Application Support/{COMPANY_SHORTNAME}/CloudManagement`.
+
+#### Linux
+- File `/opt/{COMPANY_SHORTNAME}/{PRODUCT_FULLNAME}/CloudManagement`.
+
+DM server can send back a response to delete the DM token or invalidate the DM
+token during policy fetch. If a DM token is deleted, the device could be
+re-enrolled into cloud management at the next `--wake` run provided there is a
+valid enrollment token. If a DM token is invalidated, a special DM token value
+`INVALID_DM_TOKEN` is persisted at the DM token location. The device won't
+re-enroll until the invalidated token is deleted externally.
+
+Note the device must have a valid DM token for the downloaded CBCM policies to
+be effective.
+
 ### Enterprise Policies
 Enterprise policies can prevent the installation of applications:
 *   A per-application setting may specify whether an application is installable.
@@ -914,6 +943,24 @@ installs (per user)`.
 
 The updater then downloads and installs the application on all machines where
 the policy is deployed, and where the application is not already installed.
+
+#### CBCM policy cache
+The updater fetches all machine level app CBCM policies and caches them in the
+file system.  The cached policy files are global readable for other apps to
+consume. Location of the policy cache folder:
+
+* **Windows**: `%PROGRAMFILESX86%\{COMPANY_SHORTNAME}\Policies`
+* **macOS**: `/Library/{COMPANY_SHORTNAME}/GoogleSoftwareUpdate/DeviceManagement`
+* **Linux**: `/opt/{COMPANY_SHORTNAME}/{PRODUCT_FULLNAME}/DeviceManagement`
+
+The policies are signed. The verification chain is:
+
+* A special file called `CachedPolicyInfo` contains a public signing key
+  with its verification data. This public key verification data is signed by
+  the pinned key always using `RSA_PKCS1_SHA256`.
+* Each type of policy is saved at
+  `base64_encoding{policy_type}/PolicyFetchResponse`. This file is signed by
+  the key in `CachedPolicyInfo` using the algorithm specified in this file.
 
 ### Dynamic Install Parameters
 
@@ -1230,11 +1277,32 @@ counts.
 *   The updater deletes the file when reporting active use.
 
 ### EULA/ToS Acceptance
-Software can be installed or updated only if the user has agreed to the `Terms
-of Service`. The updater only runs if the user has accepted the ToS for at
-least one application.
+Most commonly, users accept relevant Terms of Service before downloading or
+installing the updater.
 
-TODO(crbug.com/1035895): Document EULA signals.
+The updater can be installed in "eula-required" mode by passing the install
+process the `--eularequired` switch. While in eula-required mode, the updater
+will not update software nor make any communications to the server, with the
+following exceptions:
+*   The updater will report its own uninstallation to the server, if the user
+    takes manual action to uninstall it.
+*   If the user has agreed to send usage stats / crash reports, the updater will
+    transmit those. (This case may be vacuous.)
+
+In eula-required mode, the updater will still perform offline installations and
+respond as necessary to requests about its version and product set. It will not
+check for device policies or domain enrollment.
+
+If a user installs an app using an online installer, the updater will transition
+out of eula-required mode and begin normal operation.
+
+On Windows, applications can signal the updater that the user has accepted Terms
+of Service by writing `HKCU\SOFTWARE\{Company}\Update\ClientState\{AppID}` →
+`usagestats` (DWORD): `1`. The updater will then transition out of eula-required
+mode and begin normal operation the next time it runs periodic tasks.
+
+Once operating normally, the updater only returns to eula-required mode when
+it is uninstalled and then reinstalled with `--eularequired`.
 
 ### Usage Stats Acceptance
 The updater may upload its crash reports and send usage stats if and only if
@@ -1303,6 +1371,21 @@ use `%PROGRAMFILESX86%` if appropriate instead.)
 
 On Windows for user-scope updaters, `{UPDATER_DATA_DIR}` is
 `%LOCALAPPDATA%\{COMPANY_SHORTNAME}\{PRODUCT_FULLNAME}`.
+
+## Network
+
+#### Proxy detection and authentication (Windows)
+The updater uses the proxy configuration defined by cloud policy or Windows
+proxy settings, in this order of priority.
+
+Windows proxy settings are defined per-system or per-user. If no user is logged
+in when the updater is running, then WinHTTP per-system proxy settings are
+used. Otherwise, the updater impersonates one of the logged in users, and uses
+the corresponding proxy settings for that user.
+
+The proxy settings include a combination of auto-proxy (WPAD), proxy
+auto-configuration, or named proxy. The updater tries one of these mechanisms
+in the order described above.
 
 ## Services
 
@@ -1438,8 +1521,24 @@ bypass any signature checking by binplanting a DLL, or just by performing
 whatever changes they like on the system, so is outside the threat model.
 
 #### Telemetry
-A ping with the value `kEventAppCommandBegin` = `40` is sent if usagestats are
-enabled when an app command is launched.
+A ping with the value `kEventAppCommandComplete` = `41` is sent if usagestats
+are enabled after an app command completes execution.
+
+TODO(crbug.com/329482488): Send the `name` attribute in pings.
+The app command id will be reported in the `name` attribute in the ping. The
+`name` attribute can be used along with the `app_id` attribute to uniquely
+identify the app command associated with the ping.
+
+If the app command launched successfully, the result returned by the app command
+process will be reported in `error` in the ping.
+
+If the app command fails to launch, code `kErrorAppCommandLaunchFailed ` is
+reported in the `extra_code1` in the ping, along with the actual error code that
+caused that launch failure in `error`.
+
+If the app command times out, code `kErrorAppCommandTimedOut` is reported in the
+`extra_code1` in the ping, along with the error code
+`HRESULT_FROM_WIN32(ERROR_TIMEOUT)` in `error`.
 
 ### Policy Status API
 The feature allows Chrome and other applications to query the policies that are

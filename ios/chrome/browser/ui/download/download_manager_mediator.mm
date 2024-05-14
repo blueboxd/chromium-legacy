@@ -27,6 +27,10 @@
 DownloadManagerMediator::DownloadManagerMediator() : weak_ptr_factory_(this) {}
 DownloadManagerMediator::~DownloadManagerMediator() {
   SetDownloadTask(nullptr);
+  if (identity_manager_) {
+    identity_manager_->RemoveObserver(this);
+  }
+  identity_manager_ = nullptr;
 }
 
 #pragma mark - Public
@@ -37,12 +41,23 @@ void DownloadManagerMediator::SetIsIncognito(bool is_incognito) {
 
 void DownloadManagerMediator::SetIdentityManager(
     signin::IdentityManager* identity_manager) {
+  if (identity_manager_) {
+    identity_manager_->RemoveObserver(this);
+  }
   identity_manager_ = identity_manager;
+  if (identity_manager_) {
+    identity_manager_->AddObserver(this);
+    UpdateConsumer();
+  }
 }
 
 void DownloadManagerMediator::SetDriveService(
     drive::DriveService* drive_service) {
   drive_service_ = drive_service;
+}
+
+void DownloadManagerMediator::SetPrefService(PrefService* pref_service) {
+  pref_service_ = pref_service;
 }
 
 void DownloadManagerMediator::SetConsumer(
@@ -58,10 +73,13 @@ void DownloadManagerMediator::SetDownloadTask(web::DownloadTask* task) {
   download_task_ = task;
   if (download_task_) {
     download_task_->AddObserver(this);
-    UpdateConsumer();
   }
   // Update upload task associated with `download_task_`.
   UpdateUploadTask();
+  // In case download updates were missed, check for any.
+  if (download_task_) {
+    OnDownloadUpdated(download_task_);
+  }
 }
 
 base::FilePath DownloadManagerMediator::GetDownloadPath() {
@@ -126,14 +144,18 @@ DownloadManagerState DownloadManagerMediator::GetDownloadManagerState() const {
 
 bool DownloadManagerMediator::IsSaveToDriveAvailable() const {
   return drive::IsSaveToDriveAvailable(is_incognito_, identity_manager_,
-                                       drive_service_);
+                                       drive_service_, pref_service_);
 }
 
 #pragma mark - Private
 
 void DownloadManagerMediator::UpdateConsumer() {
+  if (!download_task_) {
+    // If there is no download task, keep the latest state (not started or
+    // finished) as it is not possible to determine what is the new state).
+    return;
+  }
   DownloadManagerState state = GetDownloadManagerState();
-
 
   if (base::FeatureList::IsEnabled(kIOSSaveToDrive)) {
     [consumer_ setMultipleDestinationsAvailable:IsSaveToDriveAvailable()];
@@ -205,17 +227,21 @@ void DownloadManagerMediator::RemoveComplete(bool remove_completed) {
 }
 
 int DownloadManagerMediator::GetDownloadManagerA11yAnnouncement() const {
-  switch (download_task_->GetState()) {
-    case web::DownloadTask::State::kNotStarted:
+  switch (GetDownloadManagerState()) {
+    case kDownloadManagerStateNotStarted:
       return IDS_IOS_DOWNLOAD_MANAGER_REQUESTED_ACCESSIBILITY_ANNOUNCEMENT;
-    case web::DownloadTask::State::kComplete:
-    case web::DownloadTask::State::kFailed:
-    case web::DownloadTask::State::kFailedNotResumable:
-      return download_task_->GetErrorCode()
+    case kDownloadManagerStateSucceeded:
+    case kDownloadManagerStateFailed:
+    case kDownloadManagerStateFailedNotResumable: {
+      bool has_error = download_task_->GetErrorCode();
+      if (!has_error && upload_task_) {
+        has_error = upload_task_->GetError();
+      }
+      return has_error
                  ? IDS_IOS_DOWNLOAD_MANAGER_FAILED_ACCESSIBILITY_ANNOUNCEMENT
                  : IDS_IOS_DOWNLOAD_MANAGER_SUCCEEDED_ACCESSIBILITY_ANNOUNCEMENT;
-    case web::DownloadTask::State::kCancelled:
-    case web::DownloadTask::State::kInProgress:
+    }
+    case kDownloadManagerStateInProgress:
       return -1;
   }
 }
@@ -243,7 +269,7 @@ void DownloadManagerMediator::UpdateUploadTask() {
   UploadTask* new_upload_task = nullptr;
   if (download_task_) {
     DriveTabHelper* drive_tab_helper =
-        DriveTabHelper::FromWebState(download_task_->GetWebState());
+        DriveTabHelper::GetOrCreateForWebState(download_task_->GetWebState());
     new_upload_task =
         drive_tab_helper->GetUploadTaskForDownload(download_task_);
   }
@@ -306,4 +332,16 @@ void DownloadManagerMediator::OnUploadUpdated(UploadTask* task) {
 
 void DownloadManagerMediator::OnUploadDestroyed(UploadTask* task) {
   SetUploadTask(nullptr);
+}
+
+#pragma mark - signin::IdentityManager::Observer overrides
+
+void DownloadManagerMediator::OnIdentityManagerShutdown(
+    signin::IdentityManager* identity_manager) {
+  SetIdentityManager(nullptr);
+}
+
+void DownloadManagerMediator::OnPrimaryAccountChanged(
+    const signin::PrimaryAccountChangeEvent& event_details) {
+  UpdateConsumer();
 }

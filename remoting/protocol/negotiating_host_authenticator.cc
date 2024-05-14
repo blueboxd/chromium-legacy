@@ -17,6 +17,7 @@
 #include "base/strings/string_split.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/channel_authenticator.h"
+#include "remoting/protocol/credentials_type.h"
 #include "remoting/protocol/host_authentication_config.h"
 #include "remoting/protocol/pairing_host_authenticator.h"
 #include "remoting/protocol/pairing_registry.h"
@@ -148,14 +149,12 @@ void NegotiatingHostAuthenticator::CreateAuthenticator(
 
     case Method::CORP_SESSION_AUTHZ_SPAKE2_CURVE25519: {
       DCHECK(config_->session_authz_client_factory);
-      // TODO: b/323068262 - implement intra-session reauth and pass a valid
-      // reauth callback.
       auto authenticator = std::make_unique<SessionAuthzAuthenticator>(
+          CredentialsType::CORP_SESSION_AUTHZ,
           config_->session_authz_client_factory->Create(),
           base::BindRepeating(&Spake2Authenticator::CreateForHost, local_id_,
                               remote_id_, config_->local_cert,
-                              config_->key_pair),
-          base::DoNothing());
+                              config_->key_pair));
       authenticator->Start(std::move(resume_callback));
       current_authenticator_ = std::move(authenticator);
       break;
@@ -192,6 +191,8 @@ void NegotiatingHostAuthenticator::CreateAuthenticator(
       std::move(resume_callback).Run();
       break;
   }
+
+  ChainStateChangeAfterAcceptedWithUnderlying(*current_authenticator_);
 }
 
 }  // namespace remoting::protocol

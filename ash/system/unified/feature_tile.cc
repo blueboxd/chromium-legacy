@@ -36,7 +36,6 @@
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/layout/layout_types.h"
@@ -56,7 +55,6 @@ constexpr int kDefaultCornerRadius = 16;
 constexpr float kFocusRingPadding = 3.0f;
 
 // Primary tile constants
-constexpr gfx::Size kDefaultSize(180, kFeatureTileHeight);
 constexpr gfx::Size kIconButtonSize(36, 52);
 constexpr int kIconButtonCornerRadius = 12;
 constexpr gfx::Insets kIconButtonMargins = gfx::Insets::VH(6, 6);
@@ -68,7 +66,6 @@ constexpr gfx::Insets kTitleContainerWithDiveInButtonMargins = gfx::Insets();
 // Compact tile constants
 constexpr int kCompactWidth = 86;
 constexpr int kCompactTitleLineHeight = 14;
-constexpr gfx::Size kCompactSize(kCompactWidth, kFeatureTileHeight);
 constexpr gfx::Size kCompactIconButtonSize(kIconSize, kIconSize);
 constexpr gfx::Insets kCompactIconButtonMargins =
     gfx::Insets::TLBR(6, 22, 4, 22);
@@ -205,18 +202,23 @@ FeatureTile::~FeatureTile() {
 void FeatureTile::CreateChildViews() {
   const bool is_compact = type_ == TileType::kCompact;
 
-  auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>());
-  layout_manager->SetOrientation(
-      is_compact ? views::BoxLayout::Orientation::kVertical
-                 : views::BoxLayout::Orientation::kHorizontal);
+  SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(is_compact ? views::LayoutOrientation::kVertical
+                                  : views::LayoutOrientation::kHorizontal)
+      .SetMainAxisAlignment(views::LayoutAlignment::kCenter);
+  // Set `MaximumFlexSizeRule` to `kUnbounded` so the view takes up all of the
+  // available space in its parent container.
+  SetProperty(views::kFlexBehaviorKey,
+              views::FlexSpecification(views::FlexSpecification(
+                  views::MinimumFlexSizeRule::kScaleToZero,
+                  views::MaximumFlexSizeRule::kUnbounded,
+                  /*adjust_height_for_width=*/true)));
 
   ink_drop_container_ =
       AddChildView(std::make_unique<views::InkDropContainerView>());
 
   auto* focus_ring = views::FocusRing::Get(this);
   focus_ring->SetColorId(cros_tokens::kCrosSysFocusRing);
-
-  SetPreferredSize(is_compact ? kCompactSize : kDefaultSize);
 
   icon_button_ = AddChildView(std::make_unique<views::ImageButton>());
   icon_button_->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
@@ -230,11 +232,23 @@ void FeatureTile::CreateChildViews() {
   icon_button_->SetEnabled(false);
   icon_button_->SetCanProcessEventsWithinSubtree(false);
 
-  title_container_ = AddChildView(std::make_unique<FlexLayoutView>());
-  title_container_->SetCanProcessEventsWithinSubtree(false);
-  title_container_->SetOrientation(views::LayoutOrientation::kVertical);
-  title_container_->SetMainAxisAlignment(views::LayoutAlignment::kCenter);
-  title_container_->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
+  title_container_ =
+      AddChildView(views::Builder<FlexLayoutView>()
+                       .SetCanProcessEventsWithinSubtree(false)
+                       .SetOrientation(views::LayoutOrientation::kVertical)
+                       .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
+                       .SetCrossAxisAlignment(views::LayoutAlignment::kStretch)
+                       .Build());
+  // Set `MaximumFlexSizeRule` to `kUnbounded` so that `title_container_` takes
+  // up all of the available space in the middle of the primary tile.
+  if (!is_compact) {
+    title_container_->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(
+            views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                                     views::MaximumFlexSizeRule::kUnbounded,
+                                     /*adjust_height_for_width=*/true)));
+  }
 
   label_ = title_container_->AddChildView(std::make_unique<views::Label>());
   label_->SetAutoColorReadabilityEnabled(false);
@@ -263,7 +277,6 @@ void FeatureTile::CreateChildViews() {
     sub_label_->SetVisible(false);
   } else {
     // `title_container_` will take all the remaining space of the tile.
-    layout_manager->SetFlexForView(title_container_, 1);
     title_container_->SetProperty(views::kMarginsKey,
                                   kTitleContainerWithoutDiveInButtonMargins);
     label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -300,7 +313,8 @@ void FeatureTile::SetIconClickCallback(
 }
 
 void FeatureTile::CreateDecorativeDrillInArrow() {
-  CHECK_EQ(type_, TileType::kPrimary);
+  CHECK_EQ(type_, TileType::kPrimary)
+      << "Drill-in arrows are just used in Primary tiles";
 
   title_container_->SetProperty(views::kMarginsKey,
                                 kTitleContainerWithDiveInButtonMargins);
@@ -333,9 +347,12 @@ void FeatureTile::UpdateColors() {
         toggled_ ? cros_tokens::kCrosSysSystemOnPrimaryContainer
                  : cros_tokens::kCrosSysOnSurfaceVariant;
   } else {
-    background_color = cros_tokens::kCrosSysDisabledContainer;
-    foreground_color = cros_tokens::kCrosSysDisabled;
-    foreground_optional_color = cros_tokens::kCrosSysDisabled;
+    background_color = background_disabled_color_.value_or(
+        cros_tokens::kCrosSysDisabledContainer);
+    foreground_color =
+        foreground_disabled_color_.value_or(cros_tokens::kCrosSysDisabled);
+    foreground_optional_color =
+        foreground_disabled_color_.value_or(cros_tokens::kCrosSysDisabled);
   }
 
   SetBackground(
@@ -411,6 +428,16 @@ void FeatureTile::SetBackgroundToggledColorId(
     UpdateColors();
   }
 }
+void FeatureTile::SetBackgroundDisabledColorId(
+    ui::ColorId background_disabled_color_id) {
+  if (background_disabled_color_ == background_disabled_color_id) {
+    return;
+  }
+  background_disabled_color_ = background_disabled_color_id;
+  if (!GetEnabled()) {
+    UpdateColors();
+  }
+}
 
 void FeatureTile::SetButtonCornerRadius(const int radius) {
   corner_radius_ = radius;
@@ -440,6 +467,17 @@ void FeatureTile::SetForegroundToggledColorId(
   }
 }
 
+void FeatureTile::SetForegroundDisabledColorId(
+    ui::ColorId foreground_disabled_color_id) {
+  if (foreground_disabled_color_ == foreground_disabled_color_id) {
+    return;
+  }
+  foreground_disabled_color_ = foreground_disabled_color_id;
+  if (!GetEnabled()) {
+    UpdateColors();
+  }
+}
+
 void FeatureTile::SetImage(gfx::ImageSkia image) {
   auto image_model = ui::ImageModel::FromImageSkia(image);
   icon_button_->SetImageModel(views::Button::STATE_NORMAL, image_model);
@@ -465,6 +503,9 @@ void FeatureTile::SetLabel(const std::u16string& label) {
   }
 
   label_->SetText(label);
+  if (GetTooltipText().empty()) {
+    SetTooltipText(label);
+  }
 }
 
 int FeatureTile::GetSubLabelMaxWidth() const {

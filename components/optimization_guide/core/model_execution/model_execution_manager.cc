@@ -22,6 +22,7 @@
 #include "components/optimization_guide/core/optimization_guide_logger.h"
 #include "components/optimization_guide/core/optimization_guide_model_executor.h"
 #include "components/optimization_guide/core/optimization_guide_model_provider.h"
+#include "components/optimization_guide/core/optimization_guide_prefs.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/core/optimization_metadata.h"
 #include "components/optimization_guide/proto/common_types.pb.h"
@@ -90,6 +91,19 @@ void RecordModelExecutionResultHistogram(proto::ModelExecutionFeature feature,
       result);
 }
 
+void NoOpExecuteRemoteFn(
+    proto::ModelExecutionFeature feature,
+    const google::protobuf::MessageLite& request,
+    std::unique_ptr<proto::LogAiDataRequest> log_request,
+    OptimizationGuideModelExecutionResultStreamingCallback callback) {
+  OptimizationGuideModelStreamingExecutionResult streaming_result;
+  streaming_result.response = base::unexpected(
+      OptimizationGuideModelExecutionError::FromModelExecutionError(
+          OptimizationGuideModelExecutionError::ModelExecutionError::
+              kGenericFailure));
+  std::move(callback).Run(std::move(streaming_result));
+}
+
 }  // namespace
 
 using ModelExecutionError =
@@ -97,12 +111,16 @@ using ModelExecutionError =
 
 ModelExecutionManager::ModelExecutionManager(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    PrefService* local_state,
     signin::IdentityManager* identity_manager,
     scoped_refptr<OnDeviceModelServiceController>
         on_device_model_service_controller,
     OptimizationGuideModelProvider* model_provider,
-    OptimizationGuideLogger* optimization_guide_logger)
-    : optimization_guide_logger_(optimization_guide_logger),
+    OptimizationGuideLogger* optimization_guide_logger,
+    base::WeakPtr<ModelQualityLogsUploaderService>
+        model_quality_uploader_service)
+    : model_quality_uploader_service_(model_quality_uploader_service),
+      optimization_guide_logger_(optimization_guide_logger),
       model_execution_service_url_(net::AppendOrReplaceQueryParameter(
           GetModelExecutionServiceURL(),
           "key",
@@ -112,15 +130,23 @@ ModelExecutionManager::ModelExecutionManager(
       model_provider_(model_provider),
       on_device_model_service_controller_(
           std::move(on_device_model_service_controller)) {
-  if (model_provider_ && on_device_model_service_controller_ &&
-      features::ShouldUseTextSafetyClassifierModel()) {
-    model_provider_->AddObserverForOptimizationTargetModel(
-        proto::OptimizationTarget::OPTIMIZATION_TARGET_TEXT_SAFETY,
-        /*model_metadata=*/std::nullopt, this);
-    model_provider_->AddObserverForOptimizationTargetModel(
-        proto::OptimizationTarget::OPTIMIZATION_TARGET_LANGUAGE_DETECTION,
-        /*model_metadata=*/std::nullopt, this);
+  if (!model_provider_ && !on_device_model_service_controller_) {
+    return;
   }
+  if (!features::ShouldUseTextSafetyClassifierModel()) {
+    return;
+  }
+  if (GetGenAILocalFoundationalModelEnterprisePolicySettings(local_state) !=
+      prefs::GenAILocalFoundationalModelEnterprisePolicySettings::kAllowed) {
+    return;
+  }
+
+  model_provider_->AddObserverForOptimizationTargetModel(
+      proto::OptimizationTarget::OPTIMIZATION_TARGET_TEXT_SAFETY,
+      /*model_metadata=*/std::nullopt, this);
+  model_provider_->AddObserverForOptimizationTargetModel(
+      proto::OptimizationTarget::OPTIMIZATION_TARGET_LANGUAGE_DETECTION,
+      /*model_metadata=*/std::nullopt, this);
 }
 
 ModelExecutionManager::~ModelExecutionManager() {
@@ -132,6 +158,15 @@ ModelExecutionManager::~ModelExecutionManager() {
         proto::OptimizationTarget::OPTIMIZATION_TARGET_LANGUAGE_DETECTION,
         this);
   }
+}
+
+void ModelExecutionManager::Shutdown() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Invalidate the weak pointers before clearing the active fetchers, which
+  // will cause the drop all the model execution consumer callbacks, and avoid
+  // all processing during destructor.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  active_model_execution_fetchers_.clear();
 }
 
 void ModelExecutionManager::ExecuteModelWithStreaming(
@@ -226,24 +261,37 @@ void ModelExecutionManager::ExecuteModel(
 }
 
 std::unique_ptr<OptimizationGuideModelExecutor::Session>
-ModelExecutionManager::StartSession(proto::ModelExecutionFeature feature) {
+ModelExecutionManager::StartSession(
+    proto::ModelExecutionFeature feature,
+    const std::optional<SessionConfigParams>& config_params) {
+  bool disable_server_fallback =
+      config_params && config_params->disable_server_fallback;
   ExecuteRemoteFn execute_fn =
-      base::BindRepeating(&ModelExecutionManager::ExecuteModelWithStreaming,
-                          base::Unretained(this));
+      disable_server_fallback
+          ? base::BindRepeating(&NoOpExecuteRemoteFn)
+          : base::BindRepeating(
+                &ModelExecutionManager::ExecuteModelWithStreaming,
+                base::Unretained(this));
   if (on_device_model_service_controller_) {
     auto session = on_device_model_service_controller_->CreateSession(
-        feature, execute_fn, optimization_guide_logger_.get());
+        feature, execute_fn, optimization_guide_logger_.get(),
+        model_quality_uploader_service_, config_params);
     if (session) {
       RecordSessionUsedRemoteExecutionHistogram(feature, /*is_remote=*/false);
       return session;
     }
   }
 
+  if (disable_server_fallback) {
+    return nullptr;
+  }
+
   RecordSessionUsedRemoteExecutionHistogram(feature, /*is_remote=*/true);
   return std::make_unique<SessionImpl>(
       base::DoNothing(), feature, std::nullopt, nullptr, nullptr,
       /*safety_config=*/std::nullopt, std::move(execute_fn),
-      optimization_guide_logger_.get());
+      optimization_guide_logger_.get(), model_quality_uploader_service_,
+      config_params);
 }
 
 void ModelExecutionManager::OnModelExecuteResponse(
@@ -266,7 +314,8 @@ void ModelExecutionManager::OnModelExecuteResponse(
   // Create corresponding log entry for `log_ai_data_request` to pass it with
   // the callback.
   std::unique_ptr<ModelQualityLogEntry> log_entry =
-      std::make_unique<ModelQualityLogEntry>(std::move(log_ai_data_request));
+      std::make_unique<ModelQualityLogEntry>(std::move(log_ai_data_request),
+                                             model_quality_uploader_service_);
 
   // Set the id if present.
   if (execute_response->has_server_execution_id()) {

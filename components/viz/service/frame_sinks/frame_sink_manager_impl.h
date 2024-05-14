@@ -25,6 +25,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/viz/common/constants.h"
+#include "components/viz/common/navigation_id.h"
 #include "components/viz/common/surfaces/frame_sink_bundle_id.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_impl.h"
@@ -162,6 +163,10 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
                                  base::TimeDelta bucket_size) override;
   void StopFrameCountingForTest(
       StopFrameCountingForTestCallback callback) override;
+  void ClearUnclaimedViewTransitionResources(
+      const NavigationId& navigation_id) override;
+  void HasUnclaimedViewTransitionResourcesForTest(
+      HasUnclaimedViewTransitionResourcesForTestCallback callback) override;
 
   void DestroyFrameSinkBundle(const FrameSinkBundleId& id);
 
@@ -271,11 +276,11 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // CompositorFrameSink but animations are executed on a different
   // CompositorFrameSink.
   void CacheSurfaceAnimationManager(
-      NavigationID navigation_id,
+      NavigationId navigation_id,
       std::unique_ptr<SurfaceAnimationManager> manager);
   std::unique_ptr<SurfaceAnimationManager> TakeSurfaceAnimationManager(
-      NavigationID navigation_id);
-  void ClearSurfaceAnimationManager(NavigationID navigation_id);
+      NavigationId navigation_id);
+  void ClearSurfaceAnimationManager(NavigationId navigation_id);
 
   FrameCounter* frame_counter() {
     return frame_counter_ ? &frame_counter_.value() : nullptr;
@@ -415,7 +420,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
                  base::UniquePtrComparator>
       video_capturers_;
 
-  base::flat_map<NavigationID, std::unique_ptr<SurfaceAnimationManager>>
+  base::flat_map<NavigationId, std::unique_ptr<SurfaceAnimationManager>>
       navigation_to_animation_manager_;
 
   // The ids of the frame sinks that are currently being captured.

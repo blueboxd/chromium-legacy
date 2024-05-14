@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
@@ -1257,7 +1258,8 @@ LayoutUnit LayoutBox::DefaultIntrinsicContentInlineSize() const {
 
   const bool apply_fixed_size = StyleRef().ApplyControlFixedSize(&element);
   const auto* select = DynamicTo<HTMLSelectElement>(element);
-  if (UNLIKELY(select && select->UsesMenuList() && !select->SlottedButton())) {
+  if (UNLIKELY(select && select->UsesMenuList() &&
+               !select->IsAppearanceBikeshed())) {
     return apply_fixed_size ? MenuListIntrinsicInlineSize(*select, *this)
                             : kIndefiniteSize;
   }
@@ -3056,7 +3058,8 @@ bool LayoutBox::SkipContainingBlockForPercentHeightCalculation(
     }
   }
 
-  return !containing_block->IsTableCell() &&
+  return !containing_block->IsLayoutReplaced() &&
+         !containing_block->IsTableCell() &&
          !containing_block->IsOutOfFlowPositioned() &&
          !containing_block->IsLayoutGrid() &&
          !containing_block->IsFlexibleBox() &&
@@ -4359,21 +4362,6 @@ const LayoutObject* LayoutBox::AcceptableImplicitAnchor() const {
   };
   ForEachAnchorQueryOnContainer(*this, validate_anchor);
   return is_acceptable_anchor ? anchor_layout_object : nullptr;
-}
-
-std::optional<wtf_size_t> LayoutBox::PositionFallbackIndex() const {
-  const auto& layout_results = GetLayoutResults();
-  if (layout_results.empty()) {
-    return std::nullopt;
-  }
-  // We only need to check the first fragment, because when the box is
-  // fragmented, position fallback results are duplicated on all fragments.
-#if EXPENSIVE_DCHECKS_ARE_ON()
-  AssertSameDataOnLayoutResults(layout_results, [](const auto& result) {
-    return result->PositionFallbackIndex();
-  });
-#endif
-  return layout_results.front()->PositionFallbackIndex();
 }
 
 const Vector<NonOverflowingScrollRange>*

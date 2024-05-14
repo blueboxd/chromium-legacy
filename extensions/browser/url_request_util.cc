@@ -91,13 +91,26 @@ bool AllowCrossRendererResourceLoad(
     return true;
   }
 
-  // When navigating in subframe, allow if it is the same origin
-  // as the top-level frame. This can only be the case if the subframe
-  // request is coming from the extension process.
+  // When navigating in subframe, verify that the extension the resource is
+  // loaded from matches the process loading it.
   if (network::IsRequestDestinationEmbeddedFrame(destination) &&
-      process_map.Contains(child_id)) {
+      process_map.Contains(extension->id(), child_id)) {
     *allowed = true;
     return true;
+  }
+
+  // If the request is initiated by an opaque origin, allow it if the origin's
+  // precursor matches the extension. This allows sandboxed data URLs and srcdoc
+  // documents from an extension to access its resources (necessary for
+  // backwards compatibility), even if they rendered in a non-extension process.
+  if (request.request_initiator && request.request_initiator.value().opaque()) {
+    const GURL precursor_url = request.request_initiator.value()
+                                   .GetTupleOrPrecursorTupleIfOpaque()
+                                   .GetURL();
+    if (extension->origin() == url::Origin::Create(precursor_url)) {
+      *allowed = true;
+      return true;
+    }
   }
 
   // Allow web accessible extension resources to be loaded as

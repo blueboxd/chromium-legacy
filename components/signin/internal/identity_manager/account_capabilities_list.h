@@ -43,6 +43,10 @@ ACCOUNT_CAPABILITY(kCanUseChromeIpProtectionName,
                    CAN_USE_CHROME_IP_PROTECTION_NAME,
                    "accountcapabilities/geydgnznmnqxa")
 
+ACCOUNT_CAPABILITY(kCanUseMantaServiceName,
+                   CAN_USE_MANTA_SERVICE_NAME,
+                   "accountcapabilities/geytcnbnmnqxa")
+
 ACCOUNT_CAPABILITY(kCanUseModelExecutionFeaturesName,
                    CAN_USE_MODEL_EXECUTION_FEATURES_NAME,
                    "accountcapabilities/gezdcnbnmnqxa")
@@ -63,3 +67,7 @@ ACCOUNT_CAPABILITY(kIsSubjectToEnterprisePoliciesCapabilityName,
 ACCOUNT_CAPABILITY(kIsSubjectToParentalControlsCapabilityName,
                    IS_SUBJECT_TO_PARENTAL_CONTROLS_CAPABILITY_NAME,
                    "accountcapabilities/guydolldmfya")
+
+ACCOUNT_CAPABILITY(kCanUseEduFeaturesCapabilityName,
+                   CAN_USE_EDU_FEATURES_CAPABILITY_NAME,
+                   "accountcapabilities/gezdsmbnmnqxa")

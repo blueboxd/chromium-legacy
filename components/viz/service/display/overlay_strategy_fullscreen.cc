@@ -54,8 +54,10 @@ void OverlayStrategyFullscreen::Propose(
   }
 
   OverlayCandidate candidate;
-  const OverlayCandidateFactory::OverlayContext context = {
-      .supports_mask_filter = false};
+  OverlayCandidateFactory::OverlayContext context;
+  context.supports_mask_filter = false;
+  context.supports_flip_rotate_transform =
+      capability_checker_->SupportsFlipRotateTransform();
 
   OverlayCandidateFactory candidate_factory = OverlayCandidateFactory(
       render_pass, resource_provider, surface_damage_rect_list,

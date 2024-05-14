@@ -100,6 +100,14 @@ class FakePasswordAutofillAgent
               FillIntoFocusedField,
               (bool, const std::u16string&),
               (override));
+  MOCK_METHOD(void,
+              PreviewField,
+              (autofill::FieldRendererId, const std::u16string&),
+              (override));
+  MOCK_METHOD(void,
+              FillField,
+              (autofill::FieldRendererId, const std::u16string&),
+              (override));
 #if BUILDFLAG(IS_ANDROID)
   MOCK_METHOD(void, KeyboardReplacingSurfaceClosed, (bool), (override));
   MOCK_METHOD(void, TriggerFormSubmission, (), (override));
@@ -168,12 +176,12 @@ PasswordFormFillData GetTestPasswordFormFillData() {
   preferred_match.password_value = u"test";
   preferred_match.match_type = PasswordForm::MatchType::kExact;
 
-  std::vector<raw_ptr<const PasswordForm, VectorExperimental>> matches;
+  std::vector<PasswordForm> matches;
   PasswordForm non_preferred_match = preferred_match;
   non_preferred_match.username_value = u"test1@gmail.com";
   non_preferred_match.password_value = u"test1";
   non_preferred_match.match_type = PasswordForm::MatchType::kPSL;
-  matches.push_back(&non_preferred_match);
+  matches.push_back(std::move(non_preferred_match));
 
   url::Origin page_origin = url::Origin::Create(GURL("https://foo.com/"));
 

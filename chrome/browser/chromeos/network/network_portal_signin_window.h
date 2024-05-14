@@ -12,6 +12,11 @@
 #include "url/gurl.h"
 
 class Browser;
+class NetworkPortalSigninWindowLacrosBrowserTest;
+
+namespace content {
+class WebContents;
+}
 
 namespace chromeos {
 
@@ -31,9 +36,11 @@ class NetworkPortalSigninWindow {
   void Show(const GURL& url);
 
   Browser* GetBrowserForTesting();
+  content::WebContents* GetWebContentsForTesting();
 
  protected:
   friend class base::NoDestructor<NetworkPortalSigninWindow>;
+  friend class NetworkPortalSigninWindowLacrosBrowserTest;
   NetworkPortalSigninWindow();
 
  private:

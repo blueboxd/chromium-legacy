@@ -7,6 +7,7 @@
 #include <vulkan/vulkan.h>
 
 #include <optional>
+
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
@@ -88,7 +89,12 @@ bool VulkanMemory::Initialize(VulkanDeviceQueue* device_queue,
   auto index =
       FindMemoryTypeIndex(device_queue->GetVulkanPhysicalDevice(), requirements,
                           VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
+  if (!index) {
+    // Fallback to use any driver advertised memory type when the preferred
+    // DEVICE_LOCAL_BIT is not available.
+    index = FindMemoryTypeIndex(device_queue->GetVulkanPhysicalDevice(),
+                                requirements, 0 /* flags */);
+  }
   if (!index) {
     DLOG(ERROR) << "Cannot find validate memory type index.";
     return false;

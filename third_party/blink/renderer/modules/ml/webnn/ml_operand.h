@@ -8,6 +8,7 @@
 #include <optional>
 
 #include "base/types/expected.h"
+#include "services/webnn/public/mojom/webnn_graph.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_operand_descriptor.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
@@ -28,32 +29,54 @@ class MODULES_EXPORT MLOperand final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum class OperandKind { kInput, kConstant, kOutput };
+  // Represents an MLOperandDescriptor whose characteristics have already been
+  // validated according to the steps specified in
+  // https://www.w3.org/TR/webnn/#mloperanddescriptor-check-dimensions.
+  class ValidatedDescriptor {
+   public:
+    // Creates a ValidatedDescriptor or returns an error message which may be
+    // used to throw a TypeError if the inputs are not valid.
+    [[nodiscard]] static base::expected<ValidatedDescriptor, String> Create(
+        V8MLOperandDataType::Enum data_type,
+        Vector<uint32_t> dimensions);
+
+    V8MLOperandDataType::Enum DataType() const { return data_type_; }
+    const Vector<uint32_t>& Dimensions() const { return dimensions_; }
+    size_t ByteLength() const;
+    size_t NumberOfElements() const;
+
+   private:
+    ValidatedDescriptor(V8MLOperandDataType::Enum data_type,
+                        Vector<uint32_t> dimensions);
+
+    const V8MLOperandDataType::Enum data_type_;
+    const Vector<uint32_t> dimensions_;
+  };
 
   // Validate and create different kinds of operand if there are no errors.
-  // Otherwise return nullptr and set the corresponding error message.
+  // Otherwise return an error message which may be used
+  // to throw a TypeError if the inputs are not valid.
   static base::expected<MLOperand*, String> ValidateAndCreateInput(
       MLGraphBuilder* builder,
-      const V8MLOperandDataType::Enum data_type,
+      V8MLOperandDataType::Enum data_type,
       Vector<uint32_t> dimensions,
       String name);
   static base::expected<MLOperand*, String> ValidateAndCreateConstant(
       MLGraphBuilder* builder,
-      const V8MLOperandDataType::Enum data_type,
+      V8MLOperandDataType::Enum data_type,
       Vector<uint32_t> dimensions,
       const DOMArrayBufferView* array_buffer_view);
   static base::expected<MLOperand*, String> ValidateAndCreateOutput(
       MLGraphBuilder* builder,
-      const V8MLOperandDataType::Enum data_type,
+      V8MLOperandDataType::Enum data_type,
       Vector<uint32_t> dimensions,
       const MLOperator* ml_operator);
 
   // The constructor shouldn't be called directly. The callers should use
   // Create* methods instead.
   MLOperand(MLGraphBuilder* builder,
-            OperandKind kind,
-            const V8MLOperandDataType::Enum data_type,
-            Vector<uint32_t> dimensions);
+            webnn::mojom::blink::Operand::Kind kind,
+            ValidatedDescriptor descriptor);
 
   MLOperand(const MLOperand&) = delete;
   MLOperand& operator=(const MLOperand&) = delete;
@@ -63,7 +86,7 @@ class MODULES_EXPORT MLOperand final : public ScriptWrappable {
   void Trace(Visitor* visitor) const override;
 
   MLGraphBuilder* Builder() const;
-  OperandKind Kind() const;
+  webnn::mojom::blink::Operand::Kind Kind() const;
   V8MLOperandDataType::Enum DataType() const;
   const Vector<uint32_t>& Dimensions() const;
   const String& Name() const;
@@ -85,10 +108,13 @@ class MODULES_EXPORT MLOperand final : public ScriptWrappable {
 
  private:
   Member<MLGraphBuilder> builder_;
-  OperandKind kind_;
-  V8MLOperandDataType::Enum data_type_;
-  // The dimensions of the operand. For scalar value, set {1}.
-  Vector<uint32_t> dimensions_;
+
+  const webnn::mojom::blink::Operand::Kind kind_;
+
+  // Represents a valid MLOperandDescriptor.
+  // https://www.w3.org/TR/webnn/#dictdef-mloperanddescriptor
+  const ValidatedDescriptor descriptor_;
+
   // The name of input operand. According to
   // https://www.w3.org/TR/webnn/#dom-mlgraphbuilder-input, only input operand
   // is created with a name.

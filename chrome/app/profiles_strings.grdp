@@ -41,6 +41,9 @@
   <message name="IDS_AVATAR_BUTTON_SYNC_PAUSED" desc="Short label for the avatar button when sync is paused for the current profile." meaning="Sync is paused">
     Paused
   </message>
+  <message name="IDS_AVATAR_BUTTON_SIGNIN_PAUSED" desc="Short label for the avatar button when the profile is in a Signin Paused state." meaning="The account is signed in on Chrome but signed out on the Web.">
+    Verify it's you
+  </message>
   <message name="IDS_AVATAR_BUTTON_WORK" desc="Short label for the avatar button when the profile is a work profile." meaning="Using a work profile">
     Work
   </message>
@@ -119,6 +122,9 @@
   <message name="IDS_PROFILES_ADDRESSES_LINK" desc="Text of the menu item leading to the list of autofill addresses.">
     Addresses and more
   </message>
+  <message name="IDS_PROFILE_MENU_SIGNIN_PROMO_DESCRIPTION" desc="Text for the sign-in promo in the profile menu when the used is signed out, describing the benefits of signing in.">
+    Sign in to get your passwords and more on all your devices
+  </message>
   <if expr="not use_titlecase">
     <message name="IDS_PROFILES_LIST_PROFILES_TITLE" desc="Title in the profile menu for the list of 'other profiles'.">
       Other profiles
@@ -128,6 +134,18 @@
     </message>
     <message name="IDS_PROFILES_PROFILE_HIDE_MANAGE_ACCOUNTS_BUTTON" desc="Button in the avatar menu bubble view used to hide the accounts for a profile.">
       Hide accounts
+    </message>
+    <message name="IDS_PROFILE_MENU_OPEN_GUEST_PROFILE" desc="The text label of the open guest profile item in the profile menu.">
+      Open Guest profile
+    </message>
+    <message name="IDS_PROFILE_MENU_CLOSE_PROFILE_X_WINDOWS_BUTTON" desc="Button in the profile menu to close all windows of the current profile. This is not used for zero windows.">
+      {0, plural,
+      =1 {Close this profile}
+      other {Close this profile (# windows)}
+      }
+    </message>
+    <message name="IDS_PROFILE_MENU_ADD_NEW_PROFILE" desc="The text label of the add new profile item in the profile menu.">
+      Add new profile
     </message>
   </if>
   <if expr="use_titlecase">
@@ -139,6 +157,18 @@
     </message>
     <message name="IDS_PROFILES_PROFILE_HIDE_MANAGE_ACCOUNTS_BUTTON" desc="Button in the avatar menu bubble view used to hide the accounts for a profile.">
       Hide Accounts
+    </message>
+    <message name="IDS_PROFILE_MENU_OPEN_GUEST_PROFILE" desc="The text label of the open guest profile item in the profile menu.">
+      Open Guest Profile
+    </message>
+    <message name="IDS_PROFILE_MENU_CLOSE_PROFILE_X_WINDOWS_BUTTON" desc="Button in the profile menu to close all windows of the current profile. This is not used for zero windows.">
+      {0, plural,
+      =1 {Close This Profile}
+      other {Close This Profile (# Windows)}
+      }
+    </message>
+    <message name="IDS_PROFILE_MENU_ADD_NEW_PROFILE" desc="The text label of the add new profile item in the profile menu.">
+      Add New Profile
     </message>
   </if>
   <message name="IDS_PROFILES_MANAGED_BY" desc="Label shown under the avatar in the avatar menu bubble view stating that the account is managed.">
@@ -174,9 +204,6 @@
   <message name="IDS_GUEST_PROFILE_NAME" desc="The name given to the guest
   browsing profile. Displayed in the avatar menu bubble and button UI.">
     Guest
-  </message>
-  <message name="IDS_PROFILE_MENU_OPEN_GUEST_PROFILE" desc="The text label of the open guest profile item in the profile menu.">
-    Open Guest Profile
   </message>
 
   <message name="IDS_DEFAULT_AVATAR_NAME_8" desc="The default name given to a newly created profile with the female spy avatar.">

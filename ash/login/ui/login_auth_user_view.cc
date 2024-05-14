@@ -346,7 +346,7 @@ class LoginAuthUserView::ChallengeResponseView : public views::View {
   base::OneShotTimer reset_state_timer_;
 };
 
-BEGIN_METADATA(LoginAuthUserView, ChallengeResponseView, views::View)
+BEGIN_METADATA(LoginAuthUserView, ChallengeResponseView)
 END_METADATA
 
 LoginAuthUserView::AuthMethodsMetadata::AuthMethodsMetadata() = default;
@@ -1177,6 +1177,23 @@ void LoginAuthUserView::OnUserViewTap() {
     // Tapping anywhere in the user view is the same with tapping the message.
     OnOnlineSignInMessageTap();
   } else {
+    // Do not propageta OnOnlineSignInMessageTap callback while user is mid
+    // login.
+    if (Shell::Get()->session_controller()->GetSessionState() ==
+        session_manager::SessionState::LOGGED_IN_NOT_ACTIVE) {
+      LOG(WARNING) << "Skip on_tap_ callback during session is in "
+                      "LOGGED_IN_NOT_ACTIVE state.";
+      return;
+    }
+
+    if (Shell::Get()->login_screen_controller()->IsAuthenticating()) {
+      // TODO(b/330738798): We should prevent starting a
+      // new authentication process if one is already running.
+      LOG(WARNING) << "LoginAuthUserView::OnUserViewTap called during "
+                      "Authentication. To avoid double authentication we "
+                      "skip to run the on_tap_ callback.";
+      return;
+    }
     on_tap_.Run();
   }
 }
@@ -1185,6 +1202,22 @@ void LoginAuthUserView::OnOnlineSignInMessageTap() {
   // Do not show on secondary login screen as there is no OOBE there.
   if (Shell::Get()->session_controller()->GetSessionState() ==
       session_manager::SessionState::LOGIN_SECONDARY) {
+    return;
+  }
+
+  // Do not propageta OnOnlineSignInMessageTap while user is mid login.
+  if (Shell::Get()->session_controller()->GetSessionState() ==
+      session_manager::SessionState::LOGGED_IN_NOT_ACTIVE) {
+    LOG(WARNING) << "LoginAuthUserView::OnOnlineSignInMessageTap called during "
+                    "session is in LOGGED_IN_NOT_ACTIVE state.";
+    return;
+  }
+
+  if (Shell::Get()->login_screen_controller()->IsAuthenticating()) {
+    // TODO(b/330738798): We should prevent starting a
+    // new authentication process if one is already running.
+    LOG(WARNING) << "LoginAuthUserView::OnOnlineSignInMessageTap called during "
+                    "Authentication.";
     return;
   }
 

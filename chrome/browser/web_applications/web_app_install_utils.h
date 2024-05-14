@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_INSTALL_UTILS_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_INSTALL_UTILS_H_
 
+#include <string_view>
 #include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/strings/string_piece.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_icon_operations.h"
@@ -100,13 +100,13 @@ void RecordDownloadedIconsResultAndHttpStatusCodes(
 // Records the class of http status code (2XX, 3XX, 4XX, 5XX) for each processed
 // icon url.
 void RecordDownloadedIconsHttpResultsCodeClass(
-    base::StringPiece histogram_name,
+    std::string_view histogram_name,
     IconsDownloadedResult result,
     const DownloadedIconsHttpResults& icons_http_results);
 
 // Records http status code for each processed icon url.
 void RecordDownloadedIconHttpStatusCodes(
-    base::StringPiece histogram_name,
+    std::string_view histogram_name,
     const DownloadedIconsHttpResults& icons_http_results);
 
 WebAppManagement::Type ConvertExternalInstallSourceToSource(
@@ -123,20 +123,6 @@ WebAppManagement::Type ConvertInstallSurfaceToWebAppSource(
     webapps::WebappInstallSource install_surface);
 
 void CreateWebAppInstallTabHelpers(content::WebContents* web_contents);
-
-// The function should be called after removing a source from the WebApp.
-// TODO: Remove this when cleaning up after os integration sub-manager launch.
-void MaybeRegisterOsUninstall(const WebApp* web_app,
-                              WebAppManagementTypes original_sources,
-                              OsIntegrationManager& os_integration_manager,
-                              InstallOsHooksCallback callback);
-
-// The function should be called before adding source to the WebApp.
-// TODO(crbug.com/1401125): Remove this when cleaning up after os integration
-// sub-manager launch.
-void MaybeUnregisterOsUninstall(const WebApp* web_app,
-                                WebAppManagement::Type source_installing,
-                                OsIntegrationManager& os_integration_manager);
 
 // Updates |web_app| using |web_app_info|
 void SetWebAppManifestFields(const WebAppInstallInfo& web_app_info,

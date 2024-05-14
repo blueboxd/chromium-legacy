@@ -54,13 +54,23 @@ class NavigatorDelegate {
   // of this call.
   virtual void DidFinishNavigation(NavigationHandle* navigation_handle) = 0;
 
+  // Called when the navigation gets cancelled before it even starts (i.e.,
+  // the respective `NavigationRequest::StartNavigation()`). This can happen
+  // when the user decides to not leave the current page by interacting with the
+  // BeforeUnload dialog. Can also happen if `BeginNavigationImpl()` reaches an
+  // early out. If the navigation never starts, `DidFinishNavigation()` won't be
+  // fired. Use this API to observe the destruction of such a navigation
+  // request.
+  virtual void DidCancelNavigationBeforeStart(
+      NavigationHandle* navigation_handle) = 0;
+
   // TODO(clamy): all methods below that are related to navigation
   // events should go away in favor of the ones above.
 
   // Handles post-navigation tasks in navigation BEFORE the entry has been
   // committed to the NavigationController.
   virtual void DidNavigateMainFramePreCommit(
-      FrameTreeNode* frame_tree_node,
+      NavigationHandle* navigation_handle,
       bool navigation_is_within_page) = 0;
 
   // Handles post-navigation tasks in navigation AFTER the entry has been

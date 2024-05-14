@@ -4,11 +4,14 @@
 
 #include "content/browser/renderer_host/navigation_throttle_runner.h"
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/strcat.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
+#include "content/browser/preloading/prefetch/contamination_delay_navigation_throttle.h"
+#include "content/browser/preloading/prefetch/prefetch_features.h"
 #include "content/browser/preloading/prerender/prerender_navigation_throttle.h"
 #include "content/browser/preloading/prerender/prerender_subframe_navigation_throttle.h"
 #include "content/browser/renderer_host/ancestor_throttle.h"
@@ -146,6 +149,8 @@ void NavigationThrottleRunner::CallResumeForTesting() {
 }
 
 void NavigationThrottleRunner::RegisterNavigationThrottles() {
+  TRACE_EVENT0("navigation",
+               "NavigationThrottleRunner::RegisterNavigationThrottles");
   // Note: |throttle_| might not be empty. Some NavigationThrottles might have
   // been registered with RegisterThrottleForTesting. These must reside at the
   // end of |throttles_|. TestNavigationManagerThrottle expects that the
@@ -187,6 +192,14 @@ void NavigationThrottleRunner::RegisterNavigationThrottles() {
   AddThrottle(
       MixedContentNavigationThrottle::CreateThrottleForNavigation(request));
 
+  if (base::FeatureList::IsEnabled(
+          features::kPrefetchStateContaminationMitigation)) {
+    // Delay response processing for certain prefetch responses where it might
+    // otherwise reveal information about cross-site state.
+    AddThrottle(
+        std::make_unique<ContaminationDelayNavigationThrottle>(request));
+  }
+
   // Block certain requests that are not permitted for prerendering.
   AddThrottle(PrerenderNavigationThrottle::MaybeCreateThrottleFor(request));
 
@@ -223,12 +236,14 @@ void NavigationThrottleRunner::RegisterNavigationThrottles() {
 
   // Defer subframe navigation in bfcached page if it hasn't sent a network
   // request.
+  // This must be the last throttle to run. See https://crrev.com/c/5316738.
   if (base::FeatureList::IsEnabled(
           features::kEnableBackForwardCacheForOngoingSubframeNavigation)) {
     AddThrottle(
         BackForwardCacheSubframeNavigationThrottle::MaybeCreateThrottleFor(
             request));
   }
+  // DO NOT ADD any throttles after this line.
 
   // Insert all testing NavigationThrottles last.
   throttles_.insert(throttles_.end(),
@@ -288,11 +303,16 @@ NavigationThrottle* NavigationThrottleRunner::GetDeferringThrottle() const {
 
 void NavigationThrottleRunner::AddThrottle(
     std::unique_ptr<NavigationThrottle> navigation_throttle) {
-  if (navigation_throttle)
+  if (navigation_throttle) {
+    TRACE_EVENT1("navigation", "NavigationThrottleRunner::AddThrottle",
+                 "navigation_throttle",
+                 navigation_throttle->GetNameForLogging());
     throttles_.push_back(std::move(navigation_throttle));
+  }
 }
 
 void NavigationThrottleRunner::ProcessInternal() {
+  TRACE_EVENT0("navigation", "NavigationThrottleRunner::ProcessInternal");
   DCHECK_NE(Event::NoEvent, current_event_);
   base::WeakPtr<NavigationThrottleRunner> weak_ref = weak_factory_.GetWeakPtr();
 
@@ -302,6 +322,8 @@ void NavigationThrottleRunner::ProcessInternal() {
   int64_t local_navigation_id = navigation_id_;
 
   for (size_t i = next_index_; i < throttles_.size(); ++i) {
+    TRACE_EVENT0("navigation",
+                 "NavigationThrottleRunner::ProcessInternal.loop");
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
         "navigation", GetEventName(current_event_), local_navigation_id,
         "throttle", throttles_[i]->GetNameForLogging());

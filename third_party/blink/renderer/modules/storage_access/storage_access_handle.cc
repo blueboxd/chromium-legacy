@@ -76,10 +76,11 @@ const char StorageAccessHandle::kSharedWorkerNotRequested[] =
 
 namespace {
 
-void EstimateImplAfterRemoteEstimate(ScriptPromiseResolver* resolver,
-                                     int64_t current_usage,
-                                     int64_t current_quota,
-                                     bool success) {
+void EstimateImplAfterRemoteEstimate(
+    ScriptPromiseResolverTyped<StorageEstimate>* resolver,
+    int64_t current_usage,
+    int64_t current_quota,
+    bool success) {
   ScriptState* script_state = resolver->GetScriptState();
   if (!script_state->ContextIsValid()) {
     return;
@@ -308,14 +309,14 @@ CacheStorage* StorageAccessHandle::caches(
   return caches_;
 }
 
-ScriptPromise StorageAccessHandle::getDirectory(
+ScriptPromiseTyped<FileSystemDirectoryHandle> StorageAccessHandle::getDirectory(
     ScriptState* script_state,
     ExceptionState& exception_state) const {
   if (!storage_access_types_->all() && !storage_access_types_->getDirectory()) {
-    ScriptPromiseResolver* resolver =
-        MakeGarbageCollected<ScriptPromiseResolver>(
-            script_state, exception_state.GetContext());
-    ScriptPromise promise = resolver->Promise();
+    auto* resolver = MakeGarbageCollected<
+        ScriptPromiseResolverTyped<FileSystemDirectoryHandle>>(
+        script_state, exception_state.GetContext());
+    auto promise = resolver->Promise();
     resolver->RejectWithSecurityError(kGetDirectoryNotRequested,
                                       kGetDirectoryNotRequested);
     return promise;
@@ -330,7 +331,7 @@ ScriptPromise StorageAccessHandle::getDirectory(
 }
 
 void StorageAccessHandle::GetDirectoryImpl(
-    ScriptPromiseResolver* resolver) const {
+    ScriptPromiseResolverTyped<FileSystemDirectoryHandle>* resolver) const {
   if (!remote_) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError));
@@ -341,12 +342,13 @@ void StorageAccessHandle::GetDirectoryImpl(
                     WrapPersistent(resolver)));
 }
 
-ScriptPromise StorageAccessHandle::estimate(
+ScriptPromiseTyped<StorageEstimate> StorageAccessHandle::estimate(
     ScriptState* script_state,
     ExceptionState& exception_state) const {
-  ScriptPromiseResolver* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<StorageEstimate>>(
+          script_state, exception_state.GetContext());
+  auto promise = resolver->Promise();
   if (!storage_access_types_->all() && !storage_access_types_->estimate()) {
     resolver->RejectWithSecurityError(kEstimateNotRequested,
                                       kEstimateNotRequested);
@@ -414,7 +416,7 @@ BroadcastChannel* StorageAccessHandle::BroadcastChannel(
       PassKey(), execution_context, name, broadcast_channel_.get());
 }
 
-SharedWorker* StorageAccessHandle::SharedWorker(
+blink::SharedWorker* StorageAccessHandle::SharedWorker(
     ExecutionContext* context,
     const String& url,
     const V8UnionSharedWorkerOptionsOrString* name_or_options,

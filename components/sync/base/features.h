@@ -55,6 +55,11 @@ BASE_DECLARE_FEATURE(kSyncAutofillWalletUsageData);
 // Controls whether to enable syncing of Autofill Wallet Credential Data.
 BASE_DECLARE_FEATURE(kSyncAutofillWalletCredentialData);
 
+// Controls if the `PlusAddressSyncBridge`, controlling PLUS_ADDRESS should be
+// instantiated.
+// TODO(b/322147254): Cleanup when launched.
+BASE_DECLARE_FEATURE(kSyncPlusAddress);
+
 // If enabled, Segmentation data type will be synced.
 BASE_DECLARE_FEATURE(kSyncSegmentationDataType);
 
@@ -83,10 +88,6 @@ BASE_DECLARE_FEATURE(kSkipInvalidationOptimizationsWhenDeviceInfoUpdated);
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeInTransportMode);
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeForCustomPassphraseUsers);
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeForDasherUsers);
-inline constexpr base::FeatureParam<bool>
-    kSyncEnableContactInfoDataTypeForDasherGoogleUsers{
-        &kSyncEnableContactInfoDataTypeForDasherUsers,
-        "enable_for_google_accounts", false};
 
 // For users who support separate "profile" and "account" password stores -
 // see password_manager::features_util::CanCreateAccountStore() - and have
@@ -197,11 +198,12 @@ BASE_DECLARE_FEATURE(kRestoreSyncedPlaceholderTabs);
 // -OnVisibilityChanged method is called.
 BASE_DECLARE_FEATURE(kSyncSessionOnVisibilityChanged);
 
-// The minimum time between two sync updates of last_active_time when
+// The minimum time between two sync updates of last_active_time when the tab
+// hasn't changed.
 inline constexpr base::FeatureParam<base::TimeDelta>
     kSyncSessionOnVisibilityChangedTimeThreshold{
         &kSyncSessionOnVisibilityChanged,
-        "SyncSessionOnVisibilityChangedTimeThreshold", base::Minutes(1)};
+        "SyncSessionOnVisibilityChangedTimeThreshold", base::Minutes(10)};
 
 // If enabled, the payment methods sync setting toggle is decoupled from
 // autofill. See crbug.com/1435431 for details.

@@ -81,6 +81,16 @@ export const fakeInternalMicActive: AudioDevice = {
   hfpMicSrState: AudioEffectState.kNotSupported,
 };
 
+export const fakeBluetoothNbMicActiveHfpMicSrNotEnabled: AudioDevice = {
+  id: BigInt(8),
+  displayName: 'Bluetooth Nb Mic',
+  isActive: true,
+  deviceType: AudioDeviceType.kBluetoothNbMic,
+  noiseCancellationState: AudioEffectState.kNotSupported,
+  forceRespectUiGainsState: AudioEffectState.kNotEnabled,
+  hfpMicSrState: AudioEffectState.kNotEnabled,
+};
+
 export interface FakePropertiesObserverInterface {
   onPropertiesUpdated(properties: AudioSystemProperties): void;
 }
@@ -203,6 +213,16 @@ export class FakeCrosAudioConfig implements FakeCrosAudioConfigInterface {
     this.audioSystemProperties.inputDevices[activeIndex].hfpMicSrState =
         nextState;
     this.notifyAudioSystemPropertiesUpdated();
+  }
+
+  /**
+   * Returns true if hfpMicSrState is enabled on the device with id `deviceId`.
+   */
+  isHfpMicSrEnabled(deviceId: bigint): boolean {
+      const device = this.audioSystemProperties.inputDevices.find(
+          (device: AudioDevice) => device.id === deviceId);
+      assert(device !== undefined);
+      return device.hfpMicSrState === AudioEffectState.kEnabled;
   }
 
   /**

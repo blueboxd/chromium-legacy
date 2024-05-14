@@ -36,11 +36,16 @@
 #ifndef ABSL_CONTAINER_NODE_HASH_MAP_H_
 #define ABSL_CONTAINER_NODE_HASH_MAP_H_
 
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 
 #include "absl/algorithm/container.h"
+#include "absl/base/config.h"
 #include "absl/base/macros.h"
 #include "absl/container/internal/container_memory.h"
 #include "absl/container/internal/hash_function_defaults.h"  // IWYU pragma: export
@@ -66,7 +71,7 @@ class NodeHashMapPolicy;
 //
 // * Supports heterogeneous lookup, through `find()`, `operator[]()` and
 //   `insert()`, provided that the map is provided a compatible heterogeneous
-//   hashing function and equality operator.
+//   hashing function and equality operator. See below for details.
 // * Contains a `capacity()` member function indicating the number of element
 //   slots (open, deleted, and empty) within the hash map.
 // * Returns `void` from the `erase(iterator)` overload.
@@ -81,6 +86,19 @@ class NodeHashMapPolicy;
 // Using `absl::node_hash_map` at interface boundaries in dynamically loaded
 // libraries (e.g. .dll, .so) is unsupported due to way `absl::Hash` values may
 // be randomized across dynamically loaded libraries.
+//
+// To achieve heterogeneous lookup for custom types either `Hash` and `Eq` type
+// parameters can be used or `T` should have public inner types
+// `absl_container_hash` and (optionally) `absl_container_eq`. In either case,
+// `typename Hash::is_transparent` and `typename Eq::is_transparent` should be
+// well-formed. Both types are basically functors:
+// * `Hash` should support `size_t operator()(U val) const` that returns a hash
+// for the given `val`.
+// * `Eq` should support `bool operator()(U lhs, V rhs) const` that returns true
+// if `lhs` is equal to `rhs`.
+//
+// In most cases `T` needs only to provide the `absl_container_hash`. In this
+// case `std::equal_to<void>` will be used instead of `eq` part.
 //
 // Example:
 //
@@ -590,6 +608,13 @@ class NodeHashMapPolicy
 
   static Value& value(value_type* elem) { return elem->second; }
   static const Value& value(const value_type* elem) { return elem->second; }
+
+  template <class Hash>
+  static constexpr HashSlotFn get_hash_slot_fn() {
+    return memory_internal::IsLayoutCompatible<Key, Value>::value
+               ? &TypeErasedDerefAndApplyToSlotFn<Hash, Key>
+               : nullptr;
+  }
 };
 }  // namespace container_internal
 
@@ -601,6 +626,42 @@ struct IsUnorderedContainer<
     absl::node_hash_map<Key, T, Hash, KeyEqual, Allocator>> : std::true_type {};
 
 }  // namespace container_algorithm_internal
+
+// Explicit template instantiations for common map types in order to decrease
+// linker input size. Note that explicitly instantiating node_hash_map itself
+// doesn't help because it has no non-alias members. If we need to decrease
+// linker input size more, we could potentially (a) add more key/value types,
+// e.g. string_view/Cord, (b) instantiate some template member functions, e.g.
+// operator[]/find. The EXTERN argument is `extern` for the declaration and
+// empty for the definition.
+#define ABSL_INTERNAL_TEMPLATE_NODE_HASH_MAP(TEMPLATE, KEY, VALUE) \
+  TEMPLATE class absl::container_internal::raw_hash_map<           \
+      absl::container_internal::NodeHashMapPolicy<KEY, VALUE>,     \
+      absl::container_internal::hash_default_hash<KEY>,            \
+      absl::container_internal::hash_default_eq<KEY>,              \
+      std::allocator<std::pair<const KEY, VALUE>>>;                \
+  TEMPLATE class absl::container_internal::raw_hash_set<           \
+      absl::container_internal::NodeHashMapPolicy<KEY, VALUE>,     \
+      absl::container_internal::hash_default_hash<KEY>,            \
+      absl::container_internal::hash_default_eq<KEY>,              \
+      std::allocator<std::pair<const KEY, VALUE>>>
+
+// We use exact-width integer types rather than `int`/`long`/`long long` because
+// these are the types recommended in the Google C++ style guide and which are
+// commonly used in Google code.
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_MAP(extern template, int32_t, int32_t);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_MAP(extern template, std::string, int32_t);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_MAP(extern template, int32_t, std::string);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_MAP(extern template, int64_t, int64_t);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_MAP(extern template, std::string, int64_t);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_MAP(extern template, int64_t, std::string);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_MAP(extern template, uint32_t, uint32_t);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_MAP(extern template, std::string, uint32_t);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_MAP(extern template, uint32_t, std::string);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_MAP(extern template, uint64_t, uint64_t);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_MAP(extern template, std::string, uint64_t);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_MAP(extern template, uint64_t, std::string);
+ABSL_INTERNAL_TEMPLATE_NODE_HASH_MAP(extern template, std::string, std::string);
 
 ABSL_NAMESPACE_END
 }  // namespace absl

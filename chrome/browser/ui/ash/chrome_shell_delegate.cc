@@ -30,6 +30,7 @@
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/assistant/assistant_util.h"
+#include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crosapi/desk_profiles_ash.h"
@@ -127,6 +128,10 @@ chrome::FeedbackSource ToChromeFeedbackSource(
       return chrome::FeedbackSource::kFeedbackSourceFocusMode;
     case ash::ShellDelegate::FeedbackSource::kGameDashboard:
       return chrome::FeedbackSource::kFeedbackSourceGameDashboard;
+    case ash::ShellDelegate::FeedbackSource::kOverview:
+      return chrome::FeedbackSource::kFeedbackSourceOverview;
+    case ash::ShellDelegate::FeedbackSource::kSnapGroups:
+      return chrome::FeedbackSource::kFeedbackSourceSnapGroups;
     case ash::ShellDelegate::FeedbackSource::kWindowLayoutMenu:
       return chrome::FeedbackSource::kFeedbackSourceWindowLayoutMenu;
   }
@@ -395,10 +400,11 @@ base::FilePath ChromeShellDelegate::GetPrimaryUserDownloadsFolder() const {
 
 void ChromeShellDelegate::OpenFeedbackDialog(
     ShellDelegate::FeedbackSource source,
-    const std::string& description_template) {
+    const std::string& description_template,
+    const std::string& category_tag) {
   chrome::OpenFeedbackDialog(/*browser=*/nullptr,
                              ToChromeFeedbackSource(source),
-                             description_template);
+                             description_template, category_tag);
 }
 
 void ChromeShellDelegate::OpenProfileManager() {
@@ -475,8 +481,11 @@ ash::DeskProfilesDelegate* ChromeShellDelegate::GetDeskProfilesDelegate() {
 }
 
 void ChromeShellDelegate::OpenMultitaskingSettings() {
+  const auto& sub_page_path =
+      ash::features::IsOsSettingsRevampWayfindingEnabled()
+          ? chromeos::settings::mojom::kSystemPreferencesSectionPath
+          : chromeos::settings::mojom::kPersonalizationSectionPath;
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      ProfileManager::GetActiveUserProfile(),
-      chromeos::settings::mojom::kSystemPreferencesSectionPath,
+      ProfileManager::GetActiveUserProfile(), sub_page_path,
       chromeos::settings::mojom::Setting::kSnapWindowSuggestions);
 }

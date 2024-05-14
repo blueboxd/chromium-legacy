@@ -269,11 +269,8 @@ gfx::RectF ClipPathClipper::LocalReferenceBox(const LayoutObject& object) {
   }
 
   if (object.IsSVGChild()) {
-    if (!RuntimeEnabledFeatures::ClipPathGeometryBoxEnabled()) {
-      // Preserve the pre-geometry-box behavior of using the object bounding
-      // box.
-      geometry_box = GeometryBox::kFillBox;
-    } else if (clip_path.GetType() == ClipPathOperation::kReference) {
+    // Use the object bounding box for url() references.
+    if (clip_path.GetType() == ClipPathOperation::kReference) {
       geometry_box = GeometryBox::kFillBox;
     }
     gfx::RectF unzoomed_reference_box = SVGResources::ReferenceBoxForEffects(
@@ -397,14 +394,14 @@ bool ClipPathClipper::HitTest(const LayoutObject& clip_path_owner,
   if (const auto* shape = DynamicTo<ShapeClipPathOperation>(clip_path)) {
     const Path path =
         GetPathWithObjectZoom(*shape, reference_box, reference_box_object);
-    return path.Contains(location.TransformedPoint());
+    return location.Intersects(path);
   }
   if (const auto* box = DynamicTo<GeometryBoxClipPathOperation>(clip_path)) {
     Path path;
     FloatRoundedRect rounded_reference_box =
         RoundedReferenceBox(box->GetGeometryBox(), reference_box_object);
     path.AddRoundedRect(rounded_reference_box);
-    return path.Contains(location.TransformedPoint());
+    return location.Intersects(path);
   }
   const LayoutSVGResourceClipper* clipper = ResolveElementReference(
       clip_path_owner, To<ReferenceClipPathOperation>(clip_path));

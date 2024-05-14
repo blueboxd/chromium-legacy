@@ -9,31 +9,56 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "components/pdf/browser/pdf_stream_delegate.h"
+#include "components/pdf/common/constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
+#include "net/http/http_response_headers.h"
+#include "pdf/pdf_features.h"
+#include "services/network/public/cpp/web_sandbox_flags.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace pdf {
 
-// static
-std::unique_ptr<content::NavigationThrottle>
-PdfNavigationThrottle::MaybeCreateThrottleFor(
-    content::NavigationHandle* navigation_handle,
-    std::unique_ptr<PdfStreamDelegate> stream_delegate) {
-  if (navigation_handle->IsInMainFrame())
-    return nullptr;
+content::NavigationThrottle::ThrottleCheckResult
+PdfNavigationThrottle::WillProcessResponse() {
+  // OOPIF PDF viewer only.
+  if (!base::FeatureList::IsEnabled(chrome_pdf::features::kPdfOopif)) {
+    return PROCEED;
+  }
 
-  return std::make_unique<PdfNavigationThrottle>(navigation_handle,
-                                                 std::move(stream_delegate));
+  const net::HttpResponseHeaders* response_headers =
+      navigation_handle()->GetResponseHeaders();
+  if (!response_headers) {
+    return PROCEED;
+  }
+
+  std::string mime_type;
+  response_headers->GetMimeType(&mime_type);
+  if (mime_type != kPDFMimeType) {
+    return PROCEED;
+  }
+
+  // Fenced frames should not be able to load PDFs.
+  bool is_sandboxed_pdf = (navigation_handle()->SandboxFlagsToCommit() &
+                           network::mojom::WebSandboxFlags::kPlugins) !=
+                          network::mojom::WebSandboxFlags::kNone;
+  if (!is_sandboxed_pdf) {
+    return PROCEED;
+  }
+
+  stream_delegate_->OnPdfEmbedderSandboxed(
+      navigation_handle()->GetFrameTreeNodeId());
+  return ThrottleCheckResult(CANCEL, net::ERR_BLOCKED_BY_CLIENT);
 }
 
 PdfNavigationThrottle::PdfNavigationThrottle(
@@ -52,7 +77,16 @@ const char* PdfNavigationThrottle::GetNameForLogging() {
 
 content::NavigationThrottle::ThrottleCheckResult
 PdfNavigationThrottle::WillStartRequest() {
-  // Ignore unless navigating to the stream URL.
+  // Intercepts navigations to a PDF stream URL in a PDF content frame and
+  // re-navigates to the original PDF URL.
+
+  // Skip main frame navigations, as the main frame should never be navigating
+  // to the stream URL.
+  if (navigation_handle()->IsInMainFrame()) {
+    return PROCEED;
+  }
+
+  // Skip unless navigating to the stream URL.
   const std::optional<GURL> original_url =
       stream_delegate_->MapToOriginalUrl(*navigation_handle());
   if (!original_url.has_value())
@@ -70,7 +104,7 @@ PdfNavigationThrottle::WillStartRequest() {
   params.is_pdf = true;
 
   // The parent frame should always exist after main frame navigations are
-  // filtered out in `MaybeCreateThrottleFor()`, and it has the expected
+  // filtered out at the beginning of this method, and it has the expected
   // embedder URL based on the checks in
   // `PdfStreamDelegate::MapToOriginalUrl()`. For the PDF viewer, the parent
   // frame is the PDF extension frame. For Print Preview, the parent frame is

@@ -376,7 +376,7 @@ class CalendarView::MonthHeaderLabelView : public views::View {
   const raw_ptr<views::Label> month_label_ = nullptr;
 };
 
-BEGIN_METADATA(CalendarView, MonthHeaderLabelView, views::View)
+BEGIN_METADATA(CalendarView, MonthHeaderLabelView)
 END_METADATA
 
 CalendarView::ScrollContentsView::ScrollContentsView(
@@ -441,7 +441,7 @@ void CalendarView::ScrollContentsView::StylusEventHandler::OnTouchEvent(
   }
 }
 
-BEGIN_METADATA(CalendarView, ScrollContentsView, views::View)
+BEGIN_METADATA(CalendarView, ScrollContentsView)
 END_METADATA
 
 CalendarHeaderView::CalendarHeaderView(const std::u16string& month,
@@ -466,8 +466,8 @@ void CalendarHeaderView::UpdateHeaders(const std::u16string& month,
 BEGIN_METADATA(CalendarHeaderView)
 END_METADATA
 
-CalendarView::CalendarView(bool for_glanceables_container)
-    : GlanceableTrayChildBubble(for_glanceables_container),
+CalendarView::CalendarView(bool use_glanceables_container_style)
+    : GlanceableTrayChildBubble(use_glanceables_container_style),
       calendar_view_controller_(std::make_unique<CalendarViewController>()),
       scrolling_settled_timer_(
           FROM_HERE,
@@ -502,8 +502,9 @@ CalendarView::CalendarView(bool for_glanceables_container)
 
   // Focusable nodes must have an accessible name and valid role.
   // TODO(crbug.com/1348930): Review the accessible name and role.
-  GetViewAccessibility().OverrideRole(ax::mojom::Role::kPane);
-  GetViewAccessibility().OverrideName(GetClassName());
+  GetViewAccessibility().SetRole(ax::mojom::Role::kPane);
+  GetViewAccessibility().SetName(GetClassName(),
+                                 ax::mojom::NameFrom::kAttribute);
 
   views::View* calendar_header_view = nullptr;
   if (calendar_utils::IsForGlanceablesV2()) {
@@ -568,8 +569,9 @@ CalendarView::CalendarView(bool for_glanceables_container)
 
   // Focusable nodes must have an accessible name and valid role.
   // TODO(crbug.com/1348930): Review the accessible name and role.
-  content_view_->GetViewAccessibility().OverrideRole(ax::mojom::Role::kPane);
-  content_view_->GetViewAccessibility().OverrideName(GetClassName());
+  content_view_->GetViewAccessibility().SetRole(ax::mojom::Role::kPane);
+  content_view_->GetViewAccessibility().SetName(
+      GetClassName(), ax::mojom::NameFrom::kAttribute);
   content_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
 
   // Set up layer for animations.
@@ -1340,13 +1342,13 @@ void CalendarView::OpenEventList() {
   // Updates `scroll_view_`'s accessible name with the selected date.
   std::optional<base::Time> selected_date =
       calendar_view_controller_->selected_date();
-  scroll_view_->GetViewAccessibility().OverrideName(l10n_util::GetStringFUTF16(
-      IDS_ASH_CALENDAR_CONTENT_ACCESSIBLE_DESCRIPTION,
-      calendar_utils::GetMonthNameAndYear(
-          calendar_view_controller_->currently_shown_date()),
-      calendar_utils::GetMonthDayYear(selected_date.value())));
-  scroll_view_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
-                                         /*send_native_event=*/true);
+  scroll_view_->GetViewAccessibility().SetName(
+      l10n_util::GetStringFUTF16(
+          IDS_ASH_CALENDAR_CONTENT_ACCESSIBLE_DESCRIPTION,
+          calendar_utils::GetMonthNameAndYear(
+              calendar_view_controller_->currently_shown_date()),
+          calendar_utils::GetMonthDayYear(selected_date.value())),
+      ax::mojom::NameFrom::kAttribute);
 
   event_list_view_ = calendar_sliding_surface_->AddChildView(
       std::make_unique<CalendarEventListView>(calendar_view_controller_.get()));
@@ -1440,12 +1442,12 @@ void CalendarView::CloseEventList() {
   calendar_metrics::RecordEventListClosed();
 
   // Updates `scroll_view_`'s accessible name without the selected date.
-  scroll_view_->GetViewAccessibility().OverrideName(l10n_util::GetStringFUTF16(
-      IDS_ASH_CALENDAR_BUBBLE_ACCESSIBLE_DESCRIPTION,
-      calendar_utils::GetMonthDayYearWeek(
-          calendar_view_controller_->currently_shown_date())));
-  scroll_view_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
-                                         /*send_native_event=*/true);
+  scroll_view_->GetViewAccessibility().SetName(
+      l10n_util::GetStringFUTF16(
+          IDS_ASH_CALENDAR_BUBBLE_ACCESSIBLE_DESCRIPTION,
+          calendar_utils::GetMonthDayYearWeek(
+              calendar_view_controller_->currently_shown_date())),
+      ax::mojom::NameFrom::kAttribute);
   // Increase the scroll height before the animation starts, so that it's
   // already full height when animating `event_list_view_` sliding down.
   ClipScrollViewHeight(IsUpNextViewVisible() ? ScrollViewState::UP_NEXT_SHOWING
@@ -1979,7 +1981,7 @@ void CalendarView::AdjustDateCellVoxBounds() {
   // height, which is `scroll_view_->GetVisibleRect().y()` should also be added.
   // Otherwise the position of the Chrome Vox box is off.
   gfx::Rect bounds = focused_view->GetBoundsInScreen();
-  focused_view->GetViewAccessibility().OverrideBounds(
+  focused_view->GetViewAccessibility().SetBounds(
       gfx::RectF(bounds.x(), bounds.y() + scroll_view_->GetVisibleRect().y(),
                  bounds.width(), bounds.height()));
 }

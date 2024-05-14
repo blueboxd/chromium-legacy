@@ -20,6 +20,7 @@
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "media/base/key_system_capability.h"
 #include "media/base/key_system_names.h"
 #include "media/base/key_systems.h"
 #include "media/base/media_switches.h"
@@ -629,7 +630,7 @@ KeySystemCapabilities CdmRegistryImpl::GetKeySystemCapabilities() {
   std::set<std::string> supported_key_systems = GetSupportedKeySystems();
   for (const auto& key_system : supported_key_systems) {
     CdmInfo::Status status;
-    media::mojom::KeySystemCapability capability;
+    media::KeySystemCapability capability;
 
     // Software secure capability.
     std::tie(capability.sw_secure_capability, status) =

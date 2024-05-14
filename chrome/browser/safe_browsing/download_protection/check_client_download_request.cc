@@ -72,6 +72,7 @@ void MaybeOverrideScanResult(DownloadCheckResultReason reason,
     case DownloadCheckResult::PROMPT_FOR_LOCAL_PASSWORD_SCANNING:
     case DownloadCheckResult::POTENTIALLY_UNWANTED:
     case DownloadCheckResult::UNCOMMON:
+    case DownloadCheckResult::IMMEDIATE_DEEP_SCAN:
       if (reason == REASON_DOWNLOAD_DANGEROUS) {
         callback.Run(DownloadCheckResult::DANGEROUS);
       } else if (reason == REASON_DOWNLOAD_DANGEROUS_HOST) {
@@ -97,6 +98,7 @@ void MaybeOverrideScanResult(DownloadCheckResultReason reason,
     case DownloadCheckResult::SENSITIVE_CONTENT_BLOCK:
     case DownloadCheckResult::BLOCKED_UNSUPPORTED_FILE_TYPE:
     case DownloadCheckResult::ALLOWLISTED_BY_POLICY:
+    case DownloadCheckResult::BLOCKED_SCAN_FAILED:
       callback.Run(deep_scan_result);
       return;
   }
@@ -309,12 +311,13 @@ void CheckClientDownloadRequest::UploadBinary(
       reason == REASON_DOWNLOAD_DANGEROUS_ACCOUNT_COMPROMISE) {
     service()->UploadForDeepScanning(
         item_, base::BindRepeating(&MaybeOverrideScanResult, reason, callback_),
-        DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY, result,
+        DownloadItemWarningData::DeepScanTrigger::TRIGGER_POLICY, result,
         std::move(settings), /*password=*/std::nullopt);
   } else {
     service()->UploadForDeepScanning(
-        item_, callback_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
-        result, std::move(settings), /*password=*/std::nullopt);
+        item_, callback_,
+        DownloadItemWarningData::DeepScanTrigger::TRIGGER_POLICY, result,
+        std::move(settings), /*password=*/std::nullopt);
   }
 }
 
@@ -341,6 +344,32 @@ bool CheckClientDownloadRequest::IsUnderAdvancedProtection(
     return false;
   }
   return advanced_protection_status_manager->IsUnderAdvancedProtection();
+}
+
+bool CheckClientDownloadRequest::ShouldImmediatelyDeepScan(
+    bool server_requests_prompt) const {
+  if (!ShouldPromptForDeepScanning(server_requests_prompt)) {
+    return false;
+  }
+
+  Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
+  if (!profile) {
+    return false;
+  }
+
+  if (!IsEnhancedProtectionEnabled(*profile->GetPrefs())) {
+    return false;
+  }
+
+  if (DownloadItemWarningData::IsEncryptedArchive(item_)) {
+    return false;
+  }
+
+  if (!base::FeatureList::IsEnabled(kDeepScanningPromptRemoval)) {
+    return false;
+  }
+
+  return true;
 }
 
 bool CheckClientDownloadRequest::ShouldPromptForDeepScanning(

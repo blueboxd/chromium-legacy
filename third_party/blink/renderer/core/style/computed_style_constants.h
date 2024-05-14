@@ -91,6 +91,7 @@ enum PseudoId : uint8_t {
   kPseudoIdInputListButton,
   // Special values follow:
   kAfterLastInternalPseudoId,
+  kPseudoIdInvalid,
   kFirstPublicPseudoId = kPseudoIdFirstLine,
   kLastTrackedPublicPseudoId = kPseudoIdGrammarError,
   kFirstInternalPseudoId = kPseudoIdFirstLineInherited,
@@ -488,6 +489,14 @@ enum class CompositingOperator : unsigned {
   kDestinationAtop,
   kXOR,
   kPlusLighter
+};
+
+// https://drafts.csswg.org/css-anchor-position-1/#typedef-position-try-options-try-tactic
+enum class TryTactic : uint8_t {
+  kNone,
+  kFlipBlock,
+  kFlipInline,
+  kFlipStart,
 };
 
 }  // namespace blink

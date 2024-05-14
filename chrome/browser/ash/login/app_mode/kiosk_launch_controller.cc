@@ -267,6 +267,34 @@ std::string ToString(app_mode::ForceInstallObserver::Result result) {
   }
 }
 
+std::string ToString(KioskAppLaunchError::Error error) {
+#define CASE(_name)                       \
+  case KioskAppLaunchError::Error::_name: \
+    return #_name;
+
+  switch (error) {
+    CASE(kNone);
+    CASE(kHasPendingLaunch);
+    CASE(kCryptohomedNotRunning);
+    CASE(kAlreadyMounted);
+    CASE(kUnableToMount);
+    CASE(kUnableToRemove);
+    CASE(kUnableToInstall);
+    CASE(kUserCancel);
+    CASE(kNotKioskEnabled);
+    CASE(kUnableToRetrieveHash);
+    CASE(kPolicyLoadFailed);
+    CASE(kUnableToDownload);
+    CASE(kUnableToLaunch);
+    CASE(kArcAuthFailed);
+    CASE(kExtensionsLoadTimeout);
+    CASE(kExtensionsPolicyInvalid);
+    CASE(kUserNotAllowlisted);
+  }
+  NOTREACHED_NORETURN();
+#undef CASE
+}
+
 }  // namespace
 
 using NetworkUIState = NetworkUiController::NetworkUIState;
@@ -614,7 +642,8 @@ void KioskLaunchController::OnLaunchFailed(KioskAppLaunchError::Error error) {
   SetKioskLaunchStateCrashKey(KioskLaunchState::kLaunchFailed);
 
   DCHECK_NE(KioskAppLaunchError::Error::kNone, error);
-  SYSLOG(ERROR) << "Kiosk launch failed, error=" << static_cast<int>(error);
+  SYSLOG(ERROR) << "Kiosk launch failed, error=" << ToString(error) << " ("
+                << static_cast<int>(error) << ")";
 
   // Reboot on the recoverable cryptohome errors.
   if (error == KioskAppLaunchError::Error::kCryptohomedNotRunning ||
@@ -794,17 +823,13 @@ NetworkUiController* KioskLaunchController::GetNetworkUiControllerForTesting() {
 }
 
 // static
-std::unique_ptr<base::AutoReset<bool>>
-KioskLaunchController::SkipSplashScreenWaitForTesting() {
-  return std::make_unique<base::AutoReset<bool>>(
-      &g_skip_splash_wait_for_testing, true);
+base::AutoReset<bool> KioskLaunchController::SkipSplashScreenWaitForTesting() {
+  return base::AutoReset<bool>(&g_skip_splash_wait_for_testing, true);
 }
 
 // static
-std::unique_ptr<base::AutoReset<bool>>
-KioskLaunchController::BlockAppLaunchForTesting() {
-  return std::make_unique<base::AutoReset<bool>>(
-      &g_block_app_launch_for_testing, true);
+base::AutoReset<bool> KioskLaunchController::BlockAppLaunchForTesting() {
+  return base::AutoReset<bool>(&g_block_app_launch_for_testing, true);
 }
 
 // static

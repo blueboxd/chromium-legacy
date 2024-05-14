@@ -27,7 +27,6 @@
 #import "components/sync/service/sync_service.h"
 #import "components/translate/core/browser/translate_manager.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
-#import "ios/chrome/browser/credential_provider_promo/model/features.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_account_password_store_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_password_reuse_manager_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
@@ -49,7 +48,6 @@
 #import "services/network/public/cpp/shared_url_loader_factory.h"
 #import "url/gurl.h"
 
-using password_manager::AffiliationService;
 using password_manager::PasswordFormManagerForUI;
 using password_manager::PasswordManagerMetricsRecorder;
 using password_manager::PasswordStore;
@@ -166,7 +164,8 @@ const syncer::SyncService* IOSChromePasswordManagerClient::GetSyncService()
   return SyncServiceFactory::GetForBrowserStateIfExists(bridge_.browserState);
 }
 
-AffiliationService* IOSChromePasswordManagerClient::GetAffiliationService() {
+affiliations::AffiliationService*
+IOSChromePasswordManagerClient::GetAffiliationService() {
   // Not used on IOS platform.
   return nullptr;
 }
@@ -209,11 +208,9 @@ void IOSChromePasswordManagerClient::NotifySuccessfulLoginWithExistingPassword(
         submitted_manager) {
   helper_.NotifySuccessfulLoginWithExistingPassword(
       std::move(submitted_manager));
-  if (IsCredentialProviderExtensionPromoEnabled()) {
-    [bridge_
-        showCredentialProviderPromo:CredentialProviderPromoTrigger::
-                                        SuccessfulLoginUsingExistingPassword];
-  }
+  [bridge_
+      showCredentialProviderPromo:CredentialProviderPromoTrigger::
+                                      SuccessfulLoginUsingExistingPassword];
 }
 
 void IOSChromePasswordManagerClient::NotifyStorePasswordCalled() {

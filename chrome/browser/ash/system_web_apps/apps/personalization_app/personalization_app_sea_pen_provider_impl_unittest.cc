@@ -12,16 +12,24 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/test/in_process_data_decoder.h"
+#include "ash/wallpaper/sea_pen_wallpaper_manager.h"
+#include "ash/wallpaper/wallpaper_file_manager.h"
 #include "ash/webui/common/mojom/sea_pen.mojom.h"
 #include "base/containers/flat_map.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/json/json_writer.h"
+#include "base/i18n/rtl.h"
+#include "base/i18n/time_formatting.h"
 #include "base/json/values_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_future.h"
+#include "base/time/time.h"
 #include "base/time/time_override.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_utils.h"
@@ -29,11 +37,9 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/account_id/account_id.h"
-#include "components/manta/features.h"
 #include "components/manta/manta_status.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
@@ -46,6 +52,8 @@
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 
 namespace ash::personalization_app {
 
@@ -59,6 +67,23 @@ constexpr char kFakeTestEmail2[] = "anotherfakeemail@personalization";
 constexpr char kTestGaiaId2[] = "9876543210";
 constexpr char kGooglerEmail[] = "user@google.com";
 constexpr char kGooglerGaiaId[] = "123459876";
+constexpr uint32_t kSeaPenId1 = 111;
+constexpr uint32_t kSeaPenId2 = 222;
+
+SkBitmap CreateBitmap() {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(1, 1);
+  bitmap.eraseARGB(255, 31, 63, 127);
+  return bitmap;
+}
+
+// Create fake Jpg image bytes.
+std::string CreateJpgBytes() {
+  SkBitmap bitmap = CreateBitmap();
+  std::vector<unsigned char> data;
+  gfx::JPEGCodec::Encode(bitmap, /*quality=*/100, &data);
+  return std::string(data.begin(), data.end());
+}
 
 // Repeat `string_view` until the output is size `target_size` or as close as
 // possible to `target_size` without being longer.
@@ -142,7 +167,9 @@ base::subtle::ScopedTimeClockOverrides CreateScopedTimeNowOverride() {
 class PersonalizationAppSeaPenProviderImplTest : public testing::Test {
  public:
   PersonalizationAppSeaPenProviderImplTest()
-      : scoped_user_manager_(std::make_unique<ash::FakeChromeUserManager>()),
+      : sea_pen_wallpaper_manager_(
+            SeaPenWallpaperManager(&wallpaper_file_manager_)),
+        scoped_user_manager_(std::make_unique<ash::FakeChromeUserManager>()),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {
     scoped_feature_list_.InitWithFeatures(
         {features::kSeaPen, features::kFeatureManagementSeaPen}, {});
@@ -161,6 +188,8 @@ class PersonalizationAppSeaPenProviderImplTest : public testing::Test {
     testing::Test::SetUp();
 
     ASSERT_TRUE(profile_manager_.SetUp());
+    ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
+    sea_pen_wallpaper_manager_.SetStorageDirectory(GetTempDirectory());
   }
 
   // Set up the profile for an account. This can be used to set up the profile
@@ -184,6 +213,8 @@ class PersonalizationAppSeaPenProviderImplTest : public testing::Test {
         sea_pen_provider_remote_.BindNewPipeAndPassReceiver());
   }
 
+  base::FilePath GetTempDirectory() { return scoped_temp_dir_.GetPath(); }
+
   mojo::Remote<ash::personalization_app::mojom::SeaPenProvider>&
   sea_pen_provider_remote() {
     return sea_pen_provider_remote_;
@@ -198,6 +229,24 @@ class PersonalizationAppSeaPenProviderImplTest : public testing::Test {
   }
 
   TestingProfile* profile() { return profile_; }
+
+  const base::FilePath& GetTempFileDirectory() {
+    return scoped_temp_dir_.GetPath();
+  }
+
+  void CreateSeaPenFilesForTesting(const AccountId& account_id,
+                                   std::vector<uint32_t> sea_pen_ids) {
+    for (const uint32_t& sea_pen_id : sea_pen_ids) {
+      base::test::TestFuture<const gfx::ImageSkia&>
+          decode_and_save_sea_pen_image_future;
+      sea_pen_wallpaper_manager_.DecodeAndSaveSeaPenImage(
+          account_id, {CreateJpgBytes(), sea_pen_id},
+          personalization_app::mojom::SeaPenQuery::NewTextQuery(
+              "test query " + base::NumberToString(sea_pen_id)),
+          decode_and_save_sea_pen_image_future.GetCallback());
+      ASSERT_FALSE(decode_and_save_sea_pen_image_future.Get().isNull());
+    }
+  }
 
  private:
   void AddProfile(const std::string& name, user_manager::UserType user_type) {
@@ -222,9 +271,13 @@ class PersonalizationAppSeaPenProviderImplTest : public testing::Test {
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::ScopedTempDir scoped_temp_dir_;
   content::BrowserTaskEnvironment task_environment_;
   TestWallpaperController test_wallpaper_controller_;
+  WallpaperFileManager wallpaper_file_manager_;
+  SeaPenWallpaperManager sea_pen_wallpaper_manager_;
   content::TestWebUI web_ui_;
+  InProcessDataDecoder in_process_data_decoder_;
   user_manager::ScopedUserManager scoped_user_manager_;
   TestingProfileManager profile_manager_;
   raw_ptr<TestingProfile> profile_;
@@ -366,53 +419,35 @@ TEST_F(PersonalizationAppSeaPenProviderImplTest,
 
 TEST_F(PersonalizationAppSeaPenProviderImplTest, GetRecentSeaPenImages) {
   SetUpProfileForTesting(kFakeTestEmail, GetTestAccountId());
-  base::ScopedTempDir scoped_temp_dir;
-  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
-  auto chromeos_wallpaper_dir_override_ =
-      std::make_unique<base::ScopedPathOverride>(
-          chrome::DIR_CHROMEOS_WALLPAPERS, scoped_temp_dir.GetPath());
 
-  base::FilePath sea_pen_dir1 =
-      scoped_temp_dir.GetPath().Append("sea_pen").Append(
-          GetTestAccountId().GetAccountIdKey());
-  ASSERT_TRUE(base::CreateDirectory(sea_pen_dir1));
-  base::FilePath sea_pen_file_path1 = sea_pen_dir1.Append("111.jpg");
-  ASSERT_TRUE(base::WriteFile(sea_pen_file_path1, "test image 1"));
-  base::FilePath sea_pen_file_path2 = sea_pen_dir1.Append("222.jpg");
-  ASSERT_TRUE(base::WriteFile(sea_pen_file_path2, "test image 2"));
+  // Create two images in the Sea Pen directory for the 1st user, then get the
+  // list of the recent images.
+  CreateSeaPenFilesForTesting(GetTestAccountId(), {kSeaPenId1, kSeaPenId2});
 
-  base::test::TestFuture<const std::vector<base::FilePath>&>
-      recent_images_future;
+  base::test::TestFuture<const std::vector<uint32_t>&> recent_images_future;
   sea_pen_provider_remote()->GetRecentSeaPenImages(
       recent_images_future.GetCallback());
 
-  std::vector<base::FilePath> recent_images = recent_images_future.Take();
-  ASSERT_EQ(2u, recent_images.size());
-  EXPECT_TRUE(base::Contains(recent_images, sea_pen_file_path1));
-  EXPECT_TRUE(base::Contains(recent_images, sea_pen_file_path2));
+  std::vector<uint32_t> recent_images = recent_images_future.Take();
+  EXPECT_THAT(recent_images,
+              testing::UnorderedElementsAre(kSeaPenId1, kSeaPenId2));
 
   // Log in the second user, get the list of recent images.
   SetUpProfileForTesting(kFakeTestEmail2, GetTestAccountId2());
+
   sea_pen_provider_remote()->GetRecentSeaPenImages(
       recent_images_future.GetCallback());
   ASSERT_EQ(0u, recent_images_future.Take().size());
-  ASSERT_TRUE(base::PathExists(sea_pen_file_path1));
-  ASSERT_TRUE(base::PathExists(sea_pen_file_path2));
 
   // Create an image in the Sea Pen directory for second user, then get the list
   // of recent images again.
-  base::FilePath sea_pen_dir2 =
-      scoped_temp_dir.GetPath().Append("sea_pen").Append(
-          GetTestAccountId2().GetAccountIdKey());
-  ASSERT_TRUE(base::CreateDirectory(sea_pen_dir2));
-  base::FilePath sea_pen_file_path3 = sea_pen_dir2.Append("111.jpg");
-  ASSERT_TRUE(base::WriteFile(sea_pen_file_path3, "test image 3"));
+  CreateSeaPenFilesForTesting(GetTestAccountId2(), {kSeaPenId1});
 
   sea_pen_provider_remote()->GetRecentSeaPenImages(
       recent_images_future.GetCallback());
   recent_images = recent_images_future.Take();
-  ASSERT_EQ(1u, recent_images.size());
-  EXPECT_TRUE(base::Contains(recent_images, sea_pen_file_path3));
+  EXPECT_THAT(recent_images,
+              testing::ContainerEq(std::vector<uint32_t>({kSeaPenId1})));
 }
 
 TEST_F(PersonalizationAppSeaPenProviderImplTest,
@@ -487,6 +522,92 @@ TEST_F(PersonalizationAppSeaPenProviderImplTest,
           mojom::SeaPenTemplateId::kCharacters, chosen_options,
           mojom::SeaPenUserVisibleQuery::New("test template query",
                                              "test template title")))));
+}
+
+TEST_F(PersonalizationAppSeaPenProviderImplTest,
+       GetRecentSeaPenImageThumbnailWithValidMetadata) {
+  const auto time_override = CreateScopedTimeNowOverride();
+  SetUpProfileForTesting(kFakeTestEmail, GetTestAccountId());
+  const base::test::ScopedRestoreICUDefaultLocale locale("en_US");
+  const base::test::ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
+
+  CreateSeaPenFilesForTesting(GetTestAccountId(), {kSeaPenId1});
+
+  base::test::TestFuture<const std::vector<uint32_t>&> recent_images_future;
+  sea_pen_provider_remote()->GetRecentSeaPenImages(
+      recent_images_future.GetCallback());
+
+  std::vector<uint32_t> recent_images = recent_images_future.Take();
+  EXPECT_THAT(recent_images,
+              testing::ContainerEq(std::vector<uint32_t>({kSeaPenId1})));
+
+  base::test::TestFuture<mojom::RecentSeaPenThumbnailDataPtr>
+      thumbnail_info_future;
+  sea_pen_provider_remote()->GetRecentSeaPenImageThumbnail(
+      recent_images[0], thumbnail_info_future.GetCallback());
+
+  GURL url(thumbnail_info_future.Get()->url);
+  EXPECT_FALSE(url.is_empty());
+  EXPECT_EQ(base::TimeFormatShortDate(base::Time::Now()),
+            thumbnail_info_future.Get()->image_info->creation_time.value());
+  EXPECT_EQ("test query 111",
+            thumbnail_info_future.Get()->image_info->user_visible_query->text);
+}
+
+TEST_F(PersonalizationAppSeaPenProviderImplTest,
+       GetRecentSeaPenImageThumbnailWithInvalidFilePath) {
+  SetUpProfileForTesting(kFakeTestEmail, GetTestAccountId());
+
+  CreateSeaPenFilesForTesting(GetTestAccountId(), {kSeaPenId1});
+
+  base::test::TestFuture<const std::vector<uint32_t>&> recent_images_future;
+  sea_pen_provider_remote()->GetRecentSeaPenImages(
+      recent_images_future.GetCallback());
+
+  std::vector<uint32_t> recent_images = recent_images_future.Take();
+  EXPECT_THAT(recent_images,
+              testing::ContainerEq(std::vector<uint32_t>({kSeaPenId1})));
+
+  base::test::TestFuture<mojom::RecentSeaPenThumbnailDataPtr>
+      thumbnail_info_future;
+  // Try to get thumbnail data for an invalid Sea Pen id (not in the
+  // `recent_images` list).
+  sea_pen_provider_remote()->GetRecentSeaPenImageThumbnail(
+      333, thumbnail_info_future.GetCallback());
+
+  EXPECT_FALSE(thumbnail_info_future.Take());
+}
+
+TEST_F(PersonalizationAppSeaPenProviderImplTest,
+       GetRecentSeaPenImageThumbnailWithDecodingFailure) {
+  SetUpProfileForTesting(kFakeTestEmail, GetTestAccountId());
+
+  CreateSeaPenFilesForTesting(GetTestAccountId(), {kSeaPenId1});
+  {
+    // Mess up the file so it fails decoding.
+    const auto file_path =
+        SeaPenWallpaperManager::GetInstance()->GetFilePathForImageId(
+            GetTestAccountId(), kSeaPenId1);
+    std::string data;
+    ASSERT_TRUE(base::ReadFileToString(file_path, &data));
+    // Cut off the last half of the data.
+    data.erase(data.begin() + data.length() / 2);
+    ASSERT_TRUE(base::WriteFile(file_path, data));
+  }
+
+  base::test::TestFuture<const std::vector<uint32_t>&> recent_images_future;
+  sea_pen_provider_remote()->GetRecentSeaPenImages(
+      recent_images_future.GetCallback());
+
+  std::vector<uint32_t> recent_images = recent_images_future.Take();
+  EXPECT_THAT(recent_images,
+              testing::ContainerEq(std::vector<uint32_t>({kSeaPenId1})));
+
+  base::test::TestFuture<mojom::RecentSeaPenThumbnailDataPtr>
+      thumbnail_info_future;
+  sea_pen_provider_remote()->GetRecentSeaPenImageThumbnail(
+      recent_images[0], thumbnail_info_future.GetCallback());
+  EXPECT_TRUE(thumbnail_info_future.Take().is_null());
 }
 
 TEST_F(PersonalizationAppSeaPenProviderImplTest,

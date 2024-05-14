@@ -11,6 +11,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/functional/function_ref.h"
+#include "base/memory/raw_ptr.h"
 #include "components/performance_manager/public/freezing/freezing.h"
 #include "components/performance_manager/public/graph/node.h"
 #include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
@@ -18,6 +19,7 @@
 #include "components/performance_manager/public/resource_attribution/page_context.h"
 #include "components/performance_manager/public/web_contents_proxy.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 
 class GURL;
 
@@ -184,9 +186,13 @@ class PageNode : public Node {
   // See PageNodeObserver::OnMainFrameNavigationCommitted.
   virtual int64_t GetNavigationID() const = 0;
 
-  // Returns the MIME type of the contents associated with the last committed
-  // navigation event for the main frame of this page.
+  // Returns the MIME type for the last committed main frame navigation.
   virtual const std::string& GetContentsMimeType() const = 0;
+
+  // Returns the notification permission status for the last committed main
+  // frame navigation (nullopt if it wasn't retrieved).
+  virtual std::optional<blink::mojom::PermissionStatus>
+  GetNotificationPermissionStatus() const = 0;
 
   // Returns "zero" if no navigation has happened, otherwise returns the time
   // since the last navigation commit.
@@ -206,7 +212,8 @@ class PageNode : public Node {
   // are no main frames at the moment, returns the empty set. Note that this
   // incurs a full container copy of all main frame nodes. Please use
   // VisitMainFrameNodes when that makes sense.
-  virtual const base::flat_set<const FrameNode*> GetMainFrameNodes() const = 0;
+  virtual const base::flat_set<raw_ptr<const FrameNode, CtnExperimental>>
+  GetMainFrameNodes() const = 0;
 
   // Returns the URL the main frame last committed a navigation to, or the
   // initial URL of the page before navigation. The latter case is distinguished

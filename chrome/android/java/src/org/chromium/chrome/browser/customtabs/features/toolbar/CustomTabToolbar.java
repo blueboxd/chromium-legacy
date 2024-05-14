@@ -22,6 +22,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
@@ -54,6 +55,7 @@ import androidx.core.widget.ImageViewCompat;
 import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
 import org.chromium.base.ObserverList;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
@@ -79,6 +81,7 @@ import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.page_info.ChromePageInfo;
 import org.chromium.chrome.browser.page_info.ChromePageInfoHighlight;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.searchwidget.SearchActivityUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TrustedCdn;
 import org.chromium.chrome.browser.tabmodel.TabCreator;
@@ -95,14 +98,13 @@ import org.chromium.chrome.browser.toolbar.top.ToolbarSnapshotDifference;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.ToolbarColorObserver;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
+import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
 import org.chromium.components.content_settings.CookieBlocking3pcdStatus;
-import org.chromium.components.content_settings.CookieControlsBreakageConfidenceLevel;
 import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsObserver;
-import org.chromium.components.content_settings.CookieControlsStatus;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.page_info.PageInfoController.OpenedFromSource;
 import org.chromium.content_public.browser.BrowserContextHandle;
@@ -154,8 +156,9 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
 
     private OnClickListener mCloseClickListener;
     private CookieControlsBridge mCookieControlsBridge;
-    private boolean mHighConfidenceBreakageReceived;
-    private int mCookieBlockingStatus;
+    private boolean mShouldHighlightCookieControlsIcon;
+    private boolean mCookieControlsVisible;
+    private boolean mThirdPartyCookiesBlocked;
     private int mBlockingStatus3pcd;
 
     private final Handler mTaskHandler = new Handler();
@@ -375,6 +378,11 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
      */
     public void setMinimizeDelegate(@NonNull CustomTabMinimizeDelegate delegate) {
         mMinimizeButton.setOnClickListener(view -> delegate.minimize());
+    }
+
+    /** Enables the interactive Omnibox in CCT. */
+    public void setOmniboxEnabled() {
+        mLocationBar.setOmniboxEnabled();
     }
 
     private void setButtonsVisibility() {
@@ -879,6 +887,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                                             fraction);
                     int color = Color.rgb(red, green, blue);
                     background.setColor(color);
+                    notifyToolbarColorChanged(color);
                     setHandleViewBackgroundColor(color);
                 });
         mBrandColorTransitionAnimation.addListener(
@@ -910,6 +919,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         mTint = tint;
         mLocationBar.updateColors();
         setToolbarHairlineColor(background);
+        notifyToolbarColorChanged(background);
     }
 
     @Override
@@ -1166,15 +1176,20 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
 
         // CookieControlsObserver interface
         @Override
-        public void onBreakageConfidenceLevelChanged(int level) {
-            if (mHighConfidenceBreakageReceived) return;
-            mHighConfidenceBreakageReceived = level == CookieControlsBreakageConfidenceLevel.HIGH;
+        public void onHighlightCookieControl(boolean shouldHighlight) {
+            if (mShouldHighlightCookieControlsIcon) return;
+            mShouldHighlightCookieControlsIcon = shouldHighlight;
         }
 
         @Override
         public void onStatusChanged(
-                int status, int enforcement, int blockingStatus, long expiration) {
-            mCookieBlockingStatus = status;
+                boolean controlsVisible,
+                boolean protectionsOn,
+                int enforcement,
+                int blockingStatus,
+                long expiration) {
+            mCookieControlsVisible = controlsVisible;
+            mThirdPartyCookiesBlocked = protectionsOn;
             mBlockingStatus3pcd = blockingStatus;
         }
 
@@ -1386,19 +1401,24 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                 if (currentTab == null) return;
                 Activity activity = currentTab.getWindowAndroid().getActivity().get();
                 if (activity == null) return;
-                mPageInfoIPHController = new PageInfoIPHController(activity, getSecurityIconView());
+                mPageInfoIPHController =
+                        new PageInfoIPHController(
+                                new UserEducationHelper(
+                                        activity,
+                                        currentTab.getProfile(),
+                                        new Handler(Looper.getMainLooper())),
+                                getSecurityIconView());
             }
-
             if (mBlockingStatus3pcd != CookieBlocking3pcdStatus.NOT_IN3PCD) {
-                if (mCookieBlockingStatus != CookieControlsStatus.ENABLED) return;
+                if (!mCookieControlsVisible || !mThirdPartyCookiesBlocked) return;
                 mPageInfoIPHController.showCookieControlsReminderIPH(
                         COOKIE_CONTROLS_ICON_DISPLAY_TIMEOUT,
                         R.string.cookie_controls_reminder_iph_message);
-            } else if (mHighConfidenceBreakageReceived) {
+            } else if (mShouldHighlightCookieControlsIcon) {
                 mPageInfoIPHController.showCookieControlsIPH(
                         COOKIE_CONTROLS_ICON_DISPLAY_TIMEOUT, R.string.cookie_controls_iph_message);
                 animateCookieControlsIcon();
-                mHighConfidenceBreakageReceived = false;
+                mShouldHighlightCookieControlsIcon = false;
             }
         }
 
@@ -1765,6 +1785,16 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
 
         void setIPHControllerForTesting(PageInfoIPHController pageInfoIPHController) {
             mPageInfoIPHController = pageInfoIPHController;
+        }
+
+        void setOmniboxEnabled() {
+            mTitleUrlContainer.setOnClickListener(
+                    v -> {
+                        RecordUserAction.record("CustomTabs.OmniboxClicked");
+                        var tab = getCurrentTab();
+                        SearchActivityUtils.requestOmniboxForResult(
+                                tab.getWindowAndroid().getActivity().get(), tab.getUrl());
+                    });
         }
     }
 

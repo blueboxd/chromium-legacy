@@ -125,7 +125,7 @@ BASE_FEATURE(kReclaimResourcesFlushInBackground,
 
 BASE_FEATURE(kReclaimResourcesDelayedFlushInBackground,
              "ReclaimResourcesDelayedFlushInBackground",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kMoreAggressiveSolidColorDetection,
              "MoreAggressiveSolidColorDetection",
@@ -187,6 +187,14 @@ BASE_FEATURE(kAdjustFastMainThreadThreshold,
 
 BASE_FEATURE(kClearCanvasResourcesInBackground,
              "ClearCanvasResourcesInBackground",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kUseV1MetricsTermination,
+             "UseV1MetricsTermination",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kMetricsTracingCalculationReduction,
+             "MetricsTracingCalculationReduction",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

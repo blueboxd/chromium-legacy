@@ -80,8 +80,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/screen.h"
 #include "ui/display/tablet_state.h"
+#include "ui/gfx/animation/animation.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/wm/core/cursor_manager.h"
 
@@ -93,6 +95,14 @@ namespace {
 AccessibilityController* g_instance = nullptr;
 
 using FeatureType = A11yFeatureType;
+
+// The default acceleration as a scale factor ranging from 0-1 for mouse keys
+// movement.
+constexpr double kDefaultAccessibilityMouseKeysAcceleration = 0.5;
+
+// The default max speed as a factor of the minimum speed for mouse keys
+// movement.  Ranges from 0-10.
+constexpr double kDefaultAccessibilityMouseKeysMaxSpeed = 5;
 
 // These classes are used to store the static configuration for a11y features.
 struct FeatureData {
@@ -151,9 +161,14 @@ const FeatureData kFeatures[] = {
      &vector_icons::kLiveCaptionOnIcon, IDS_ASH_STATUS_TRAY_LIVE_CAPTION},
     {FeatureType::kMonoAudio, prefs::kAccessibilityMonoAudioEnabled, nullptr,
      IDS_ASH_STATUS_TRAY_ACCESSIBILITY_MONO_AUDIO},
+    {FeatureType::kMouseKeys, prefs::kAccessibilityMouseKeysEnabled, nullptr, 0,
+     /*toggleable_in_quicksettings=*/false},
     {FeatureType::kSpokenFeedback, prefs::kAccessibilitySpokenFeedbackEnabled,
      &kSystemMenuAccessibilityChromevoxIcon,
      IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SPOKEN_FEEDBACK},
+    {FeatureType::kReducedAnimations,
+     prefs::kAccessibilityReducedAnimationsEnabled, nullptr, 0,
+     /*toggleable_in_quicksettings=*/false},
     {FeatureType::kSelectToSpeak, prefs::kAccessibilitySelectToSpeakEnabled,
      &kSystemMenuAccessibilitySelectToSpeakIcon,
      IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SELECT_TO_SPEAK},
@@ -247,6 +262,13 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kAccessibilityLargeCursorEnabled,
     prefs::kAccessibilityFaceGazeEnabled,
     prefs::kAccessibilityMonoAudioEnabled,
+    prefs::kAccessibilityReducedAnimationsEnabled,
+    prefs::kAccessibilityMouseKeysEnabled,
+    prefs::kAccessibilityMouseKeysShortcutToPauseEnabled,
+    prefs::kAccessibilityMouseKeysDisableInTextFields,
+    prefs::kAccessibilityMouseKeysAcceleration,
+    prefs::kAccessibilityMouseKeysMaxSpeed,
+    prefs::kAccessibilityMouseKeysDominantHand,
     prefs::kAccessibilityScreenMagnifierEnabled,
     prefs::kAccessibilityScreenMagnifierFocusFollowingEnabled,
     prefs::kAccessibilityScreenMagnifierMouseFollowingMode,
@@ -1009,6 +1031,7 @@ void AccessibilityController::RegisterProfilePrefs(
                                 false);
   registry->RegisterBooleanPref(prefs::kAccessibilityLargeCursorEnabled, false);
   registry->RegisterBooleanPref(prefs::kAccessibilityMonoAudioEnabled, false);
+  registry->RegisterBooleanPref(prefs::kAccessibilityMouseKeysEnabled, false);
   registry->RegisterBooleanPref(prefs::kAccessibilityScreenMagnifierEnabled,
                                 false);
   registry->RegisterBooleanPref(prefs::kAccessibilitySpokenFeedbackEnabled,
@@ -1058,8 +1081,11 @@ void AccessibilityController::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(prefs::kAccessibilityColorCorrectionEnabled,
                                 false);
-    registry->RegisterBooleanPref(
-        prefs::kAccessibilityColorCorrectionHasBeenSetup, false);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityColorCorrectionHasBeenSetup, false);
+
+  registry->RegisterBooleanPref(prefs::kAccessibilityReducedAnimationsEnabled,
+                                false);
 
   // TODO(b/266816160): Make ChromeVox prefs are syncable, to so that ChromeOS
   // backs up users' ChromeVox settings and reflects across their devices.
@@ -1125,6 +1151,19 @@ void AccessibilityController::RegisterProfilePrefs(
       kDefaultAccessibilityChromeVoxVirtualBrailleRows);
   registry->RegisterStringPref(prefs::kAccessibilityChromeVoxVoiceName,
                                kDefaultAccessibilityChromeVoxVoiceName);
+
+  // TODO(b/259372916): Enable sync for Mouse Keys settings before launch.
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityMouseKeysShortcutToPauseEnabled, true);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityMouseKeysDisableInTextFields, true);
+  registry->RegisterDoublePref(prefs::kAccessibilityMouseKeysAcceleration,
+                               kDefaultAccessibilityMouseKeysAcceleration);
+  registry->RegisterDoublePref(prefs::kAccessibilityMouseKeysMaxSpeed,
+                               kDefaultAccessibilityMouseKeysMaxSpeed);
+  registry->RegisterIntegerPref(
+      prefs::kAccessibilityMouseKeysDominantHand,
+      static_cast<int>(MouseKeysDominantHand::kRightHandDominant));
 
   //
   // Syncable prefs.
@@ -1273,6 +1312,17 @@ void AccessibilityController::RegisterProfilePrefs(
         prefs::kAccessibilityFaceGazeCursorUseAcceleration,
         kDefaultFaceGazeCursorUseAcceleration,
         user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+    registry->RegisterDictionaryPref(
+        prefs::kAccessibilityFaceGazeGesturesToMacros,
+        user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+    registry->RegisterDictionaryPref(
+        prefs::kAccessibilityFaceGazeGesturesToConfidence,
+        user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  }
+
+  if (::features::IsAccessibilityCaretBlinkIntervalSettingEnabled()) {
+    registry->RegisterIntegerPref(prefs::kAccessibilityCaretBlinkInterval,
+                                  kDefaultCaretBlinkIntervalMs);
   }
 }
 
@@ -1407,6 +1457,15 @@ AccessibilityController::Feature& AccessibilityController::live_caption()
 
 AccessibilityController::Feature& AccessibilityController::mono_audio() const {
   return GetFeature(FeatureType::kMonoAudio);
+}
+
+AccessibilityController::Feature& AccessibilityController::mouse_keys() const {
+  return GetFeature(FeatureType::kMouseKeys);
+}
+
+AccessibilityController::Feature& AccessibilityController::reduced_animations()
+    const {
+  return GetFeature(FeatureType::kReducedAnimations);
 }
 
 AccessibilityController::Feature& AccessibilityController::spoken_feedback()
@@ -1933,16 +1992,6 @@ void AccessibilityController::SilenceSpokenFeedback() {
     client_->SilenceSpokenFeedback();
 }
 
-void AccessibilityController::OnTwoFingerTouchStart() {
-  if (client_)
-    client_->OnTwoFingerTouchStart();
-}
-
-void AccessibilityController::OnTwoFingerTouchStop() {
-  if (client_)
-    client_->OnTwoFingerTouchStop();
-}
-
 bool AccessibilityController::ShouldToggleSpokenFeedbackViaTouch() const {
   return client_ && client_->ShouldToggleSpokenFeedbackViaTouch();
 }
@@ -2197,6 +2246,13 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
       base::BindRepeating(
           &AccessibilityController::UpdateColorCorrectionFromPrefs,
           base::Unretained(this)));
+  if (::features::IsAccessibilityCaretBlinkIntervalSettingEnabled()) {
+    pref_change_registrar_->Add(
+        prefs::kAccessibilityCaretBlinkInterval,
+        base::BindRepeating(
+            &AccessibilityController::UpdateCaretBlinkIntervalFromPrefs,
+            base::Unretained(this)));
+  }
 
   // Load current state.
   for (const std::unique_ptr<Feature>& feature : features_) {
@@ -2215,6 +2271,7 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
   UpdateShortcutsEnabledFromPref();
   UpdateTabletModeShelfNavigationButtonsFromPref();
   UpdateColorCorrectionFromPrefs();
+  UpdateCaretBlinkIntervalFromPrefs();
 
   if (::features::IsAccessibilityFaceGazeEnabled()) {
     UpdateFaceGazeFromPrefs();
@@ -2425,6 +2482,23 @@ void AccessibilityController::UpdateColorCorrectionFromPrefs() {
   // Ensure displays get updated.
   color_enhancement_controller->SetColorCorrectionEnabledAndUpdateDisplays(
       true);
+}
+
+void AccessibilityController::UpdateCaretBlinkIntervalFromPrefs() const {
+  if (!::features::IsAccessibilityCaretBlinkIntervalSettingEnabled()) {
+    return;
+  }
+  base::TimeDelta caret_blink_interval = base::Milliseconds(
+      active_user_prefs_->GetInteger(prefs::kAccessibilityCaretBlinkInterval));
+  auto* native_theme_dark = ui::NativeTheme::GetInstanceForDarkUI();
+  native_theme_dark->set_caret_blink_interval(caret_blink_interval);
+  native_theme_dark->NotifyOnNativeThemeUpdated();
+  auto* native_theme_web = ui::NativeTheme::GetInstanceForWeb();
+  native_theme_web->set_caret_blink_interval(caret_blink_interval);
+  native_theme_web->NotifyOnNativeThemeUpdated();
+  auto* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+  native_theme->set_caret_blink_interval(caret_blink_interval);
+  native_theme->NotifyOnNativeThemeUpdated();
 }
 
 void AccessibilityController::UpdateAccessibilityHighlightingFromPrefs() {
@@ -2821,6 +2895,9 @@ void AccessibilityController::UpdateFeatureFromPref(FeatureType feature) {
     case FeatureType::kMonoAudio:
       CrasAudioHandler::Get()->SetOutputMonoEnabled(enabled);
       break;
+    case FeatureType::kMouseKeys:
+      // TODO(b/259372916): Consider creating/deleting MouseKeysController here.
+      break;
     case FeatureType::kSpokenFeedback:
       message_center::MessageCenter::Get()->SetSpokenFeedbackEnabled(enabled);
       // TODO(warx): ChromeVox loading/unloading requires browser process
@@ -2828,6 +2905,10 @@ void AccessibilityController::UpdateFeatureFromPref(FeatureType feature) {
 
       // ChromeVox focus highlighting overrides the other focus highlighting.
       focus_highlight().UpdateFromPref();
+      break;
+    case FeatureType::kReducedAnimations:
+      gfx::Animation::SetPrefersReducedMotionForA11y(
+          reduced_animations().enabled());
       break;
     case FeatureType::kSelectToSpeak:
       select_to_speak_state_ = SelectToSpeakState::kSelectToSpeakStateInactive;

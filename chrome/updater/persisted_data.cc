@@ -50,6 +50,7 @@ constexpr char kAPKey[] = "ap_key";
 
 constexpr char kHadApps[] = "had_apps";
 constexpr char kUsageStatsEnabledKey[] = "usage_stats_enabled";
+constexpr char kEulaRequired[] = "eula_required";
 
 constexpr char kLastChecked[] = "last_checked";
 constexpr char kLastStarted[] = "last_started";
@@ -331,6 +332,11 @@ int PersistedData::GetInstallDate(const std::string& id) const {
   return delegate_->GetInstallDate(id);
 }
 
+void PersistedData::SetInstallDate(const std::string& id, int install_date) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  delegate_->SetInstallDate(id, install_date);
+}
+
 void PersistedData::GetActiveBits(
     const std::vector<std::string>& ids,
     base::OnceCallback<void(const std::set<std::string>&)> callback) const {
@@ -387,6 +393,9 @@ void PersistedData::RegisterApp(const RegistrationRequest& rq) {
     SetDateLastRollCall(rq.app_id, rq.dlrc.value());
   } else if (GetDateLastRollCall(rq.app_id) == update_client::kDateUnknown) {
     SetDateLastRollCall(rq.app_id, update_client::kDateFirstTime);
+  }
+  if (rq.install_date) {
+    SetInstallDate(rq.app_id, *rq.install_date);
   }
   if (!rq.cohort.empty()) {
     SetCohort(rq.app_id, rq.cohort);
@@ -538,6 +547,18 @@ void PersistedData::SetUsageStatsEnabled(bool usage_stats_enabled) {
   }
 }
 
+bool PersistedData::GetEulaRequired() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return pref_service_ && pref_service_->GetBoolean(kEulaRequired);
+}
+
+void PersistedData::SetEulaRequired(bool eula_required) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (pref_service_) {
+    pref_service_->SetBoolean(kEulaRequired, eula_required);
+  }
+}
+
 base::Time PersistedData::GetLastChecked() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return pref_service_->GetTime(kLastChecked);
@@ -610,6 +631,7 @@ void PersistedData::SetLastOSVersion() {
 void RegisterPersistedDataPrefs(scoped_refptr<PrefRegistrySimple> registry) {
   registry->RegisterBooleanPref(kHadApps, false);
   registry->RegisterBooleanPref(kUsageStatsEnabledKey, false);
+  registry->RegisterBooleanPref(kEulaRequired, false);
   registry->RegisterTimePref(kLastChecked, {});
   registry->RegisterTimePref(kLastStarted, {});
   registry->RegisterStringPref(kLastOSVersion, {});

@@ -25,13 +25,16 @@
 #include "chrome/browser/ash/file_manager/copy_or_move_io_task_policy_impl.h"
 #include "chrome/browser/ash/file_manager/file_manager_browsertest_base.h"
 #include "chrome/browser/ash/file_manager/file_manager_browsertest_utils.h"
+#include "chrome/browser/ash/file_manager/file_manager_test_util.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/extensions/component_loader.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -191,7 +194,8 @@ IN_PROC_BROWSER_TEST_P(ExtendedFilesAppBrowserTest, PRE_Test) {
                                     GetOptions().native_smb);
 }
 
-IN_PROC_BROWSER_TEST_P(ExtendedFilesAppBrowserTest, Test) {
+// TODO(crbug.com/40943441): re-enable this.
+IN_PROC_BROWSER_TEST_P(ExtendedFilesAppBrowserTest, DISABLED_Test) {
   StartTest();
 }
 
@@ -208,11 +212,8 @@ class QuickOfficeBrowserTestBase : public InProcessBrowserTest {
  protected:
   // extensions::ExtensionApiTest:
   void SetUpOnMainThread() override {
-    extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
-    extensions::ExtensionService* service =
-        extensions::ExtensionSystem::Get(browser()->profile())
-            ->extension_service();
-    service->component_loader()->AddDefaultComponentExtensions(false);
+    file_manager::test::AddDefaultComponentExtensionsOnMainThread(
+        browser()->profile());
 
     embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -861,6 +862,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .NewDirectoryTree(),
         TestCase("directoryTreeHideExpandIconWhenLastSubFolderIsRemoved")
             .NewDirectoryTree(),
+        TestCase("directoryTreeKeepDriveOrderAfterReconnected")
+            .NewDirectoryTree(),
         // Section end - browser tests for new directory tree
         TestCase("directoryTreeActiveDirectory"),
         TestCase("directoryTreeSelectedDirectory"),
@@ -876,7 +879,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("directoryTreeExpandFolderOnDelayExpansionVolume"),
         TestCase("directoryTreeExpandAndSelectedOnDragMove"),
         TestCase("directoryTreeClickDriveRootWhenMyDriveIsActive"),
-        TestCase("directoryTreeHideExpandIconWhenLastSubFolderIsRemoved")));
+        TestCase("directoryTreeHideExpandIconWhenLastSubFolderIsRemoved"),
+        TestCase("directoryTreeKeepDriveOrderAfterReconnected")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DirectoryTreeContextMenu, /* directory_tree_context_menu.js */
@@ -915,6 +919,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirCreateWithContextMenu").NewDirectoryTree(),
         TestCase("dirCreateWithKeyboard").NewDirectoryTree(),
         TestCase("dirCreateWithoutChangingCurrent").NewDirectoryTree(),
+        TestCase("dirCreateMultipleFolders").NewDirectoryTree(),
         TestCase("dirContextMenuZip").NewDirectoryTree(),
         TestCase("dirContextMenuZipEject").NewDirectoryTree(),
         TestCase("dirContextMenuRecent").NewDirectoryTree(),
@@ -984,8 +989,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirCreateWithContextMenu"),
         TestCase("dirCreateWithKeyboard"),
         TestCase("dirCreateWithoutChangingCurrent"),
-        // TODO(http://crbug.com/1480973): Enable
-        // TestCase("dirCreateMultipleFolders"),
+        TestCase("dirCreateMultipleFolders"),
         TestCase("dirContextMenuZip"),
         TestCase("dirContextMenuZipEject"),
         TestCase("dirContextMenuRecent"),
@@ -1708,17 +1712,18 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     CopyBetweenWindows, /* copy_between_windows.js */
     FilesAppBrowserTest,
     ::testing::Values(
+        TestCase("copyBetweenWindowsLocalToDrive").NewDirectoryTree(),
         TestCase("copyBetweenWindowsLocalToUsb").NewDirectoryTree(),
-        // TODO(crbug.com/1523263): Re-enable this flaky test.
-        // TestCase("copyBetweenWindowsUsbToLocal").NewDirectoryTree(),
+        TestCase("copyBetweenWindowsUsbToDrive").NewDirectoryTree(),
+        TestCase("copyBetweenWindowsDriveToLocal").NewDirectoryTree(),
+        TestCase("copyBetweenWindowsDriveToUsb").NewDirectoryTree(),
+        TestCase("copyBetweenWindowsUsbToLocal").NewDirectoryTree(),
         // Section end - browser tests for new directory tree
         TestCase("copyBetweenWindowsLocalToDrive"),
         TestCase("copyBetweenWindowsLocalToUsb"),
-        // TODO(b/189173190): Enable
-        // TestCase("copyBetweenWindowsUsbToDrive"),
+        TestCase("copyBetweenWindowsUsbToDrive"),
         TestCase("copyBetweenWindowsDriveToLocal"),
-        // TODO(b/189173190): Enable
-        // TestCase("copyBetweenWindowsDriveToUsb"),
+        TestCase("copyBetweenWindowsDriveToUsb"),
         TestCase("copyBetweenWindowsUsbToLocal")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
@@ -2238,6 +2243,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .NewDirectoryTree(),
         TestCase("trashStaleTrashInfoFilesAreRemovedAfterOneHour")
             .NewDirectoryTree(),
+        TestCase("trashTogglingHiddenFilesNavigatesAwayFromTrash")
+            .NewDirectoryTree(),
         // Section end - browser tests for new directory tree
         TestCase("trashMoveToTrash")
             .FeatureIds({"screenplay-a06f961a-17f5-4fbd-8285-49abb000dee1"}),
@@ -2287,7 +2294,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("trashInfeasibleActionsForFolderDisabledAndHiddenInTrashRoot"),
         TestCase("trashExtractAllForZipHiddenAndDisabledInTrashRoot"),
         TestCase("trashAllActionsDisabledForBlankSpaceInTrashRoot"),
-        TestCase("trashStaleTrashInfoFilesAreRemovedAfterOneHour")));
+        TestCase("trashStaleTrashInfoFilesAreRemovedAfterOneHour"),
+        TestCase("trashTogglingHiddenFilesNavigatesAwayFromTrash")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     AndroidPhotos, /* android_photos.js */

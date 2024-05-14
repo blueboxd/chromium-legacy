@@ -76,6 +76,12 @@ namespace viz {
 
 namespace {
 
+// Try turning off aggregate only damaged everywhere to verify it doesn't cause
+// performance problems.
+BASE_FEATURE(kUseAggregateOnlyDamaged,
+             "UseAggregateOnlyDamaged",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 const DrawQuad::Material kNonSplittableMaterials[] = {
     // Exclude debug quads from quad splitting
     DrawQuad::Material::kDebugBorder,
@@ -584,6 +590,7 @@ void Display::InitializeRenderer(bool enable_shared_images) {
   // Outputting a partial list of quads might not work in cases where contents
   // outside the damage rect might be needed by the renderer.
   bool output_partial_list =
+      base::FeatureList::IsEnabled(kUseAggregateOnlyDamaged) &&
       renderer_->use_partial_swap() &&
       output_surface_->capabilities().only_invalidates_damage_rect &&
       !overlay_processor_->IsOverlaySupported();
@@ -738,6 +745,12 @@ void DebugDrawFrameVisible(const AggregatedFrame& frame) {
 void VisualDebuggerSync(gfx::OverlayTransform current_display_transform,
                         gfx::Size current_surface_size,
                         int64_t last_presented_trace_id) {
+  bool is_debugger_connected = false;
+  DBG_CONNECTED_OR_TRACING(is_debugger_connected);
+  if (!is_debugger_connected) {
+    return;
+  }
+
   const gfx::Transform display_transform = gfx::OverlayTransformToTransform(
       current_display_transform, gfx::SizeF(current_surface_size));
   current_surface_size =
@@ -831,12 +844,6 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
         current_surface_id_, params.expected_display_time,
         current_display_transform, target_damage_bounding_rect,
         ++swapped_trace_id_);
-
-    // Dump aggregated frame (will dump render passes and draw quads) if run
-    // with: --vmodule=display=3
-    if (VLOG_IS_ON(3)) {
-      VLOG(3) << "Post-aggregation\n" << frame.ToString();
-    }
   }
   DebugDrawFrame(frame, resource_provider_);
 

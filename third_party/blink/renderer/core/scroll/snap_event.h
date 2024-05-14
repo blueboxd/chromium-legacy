@@ -24,20 +24,26 @@ class SnapEvent : public Event {
 
  public:
   static SnapEvent* Create(const AtomicString& type,
-                           HeapVector<Member<Node>>& targets);
-  SnapEvent(const AtomicString& type, HeapVector<Member<Node>>& targets);
+                           Member<Node>& block_target,
+                           Member<Node>& inline_target);
+  SnapEvent(const AtomicString& type,
+            Member<Node>& block_target,
+            Member<Node>& inline_target);
 
-  StaticNodeList* snapTargets() { return snap_targets_.Get(); }
+  Node* snapTargetBlock() { return snap_target_block_.Get(); }
+  Node* snapTargetInline() { return snap_target_inline_.Get(); }
 
   void Trace(Visitor* visitor) const override {
-    visitor->Trace(snap_targets_);
+    visitor->Trace(snap_target_block_);
+    visitor->Trace(snap_target_inline_);
     Event::Trace(visitor);
   }
 
  private:
-  // This contains elements to which the scrolling container is currently
-  // snapped along both axes.
-  Member<StaticNodeList> snap_targets_;
+  // This are the elements that the scrolling container selected as snap targets
+  // for the related snap event.
+  Member<Node> snap_target_block_;
+  Member<Node> snap_target_inline_;
 };
 
 }  // namespace blink

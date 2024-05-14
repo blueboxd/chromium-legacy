@@ -23,6 +23,9 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import type {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {recordSettingChange} from '../metrics_recorder.js';
+import {Setting} from '../mojom-webui/setting.mojom-webui.js';
+
 import {matchesSearchTerm, sortPrinters} from './cups_printer_dialog_util.js';
 import {PrinterListEntry} from './cups_printer_types.js';
 import {PrinterSettingsUserAction, recordPrinterSettingsUserAction} from './cups_printers.js';
@@ -173,30 +176,6 @@ export class SettingsCupsSavedPrintersElement extends
         value: () => [],
       },
 
-      /**
-       * True when the "printer-settings-printer-status" feature flag is
-       * enabled.
-       */
-      isPrinterSettingsPrinterStatusEnabled_: {
-        type: Boolean,
-        value: () => {
-          return loadTimeData.getBoolean(
-              'isPrinterSettingsPrinterStatusEnabled');
-        },
-        readOnly: true,
-      },
-
-      /**
-       * True when the "printer-settings-revamp" feature flag is enabled.
-       */
-      isPrinterSettingsRevampEnabled_: {
-        type: Boolean,
-        value: () => {
-          return loadTimeData.getBoolean('isPrinterSettingsRevampEnabled');
-        },
-        readOnly: true,
-        reflectToAttribute: true,
-      },
 
       /**
        * True when the "local-printer-observing" feature flag is enabled.
@@ -235,7 +214,6 @@ export class SettingsCupsSavedPrintersElement extends
   private pageStartTime_: number;
   private timeoutIds_: number[];
   private onFocusListener_: () => void;
-  private isPrinterSettingsPrinterStatusEnabled_: boolean;
   private isLocalPrinterObservingEnabled_: boolean;
 
   constructor() {
@@ -272,23 +250,18 @@ export class SettingsCupsSavedPrintersElement extends
     // When `isLocalPrinterObservingEnabled_` is enabled printer statuses get
     // pushed from the backend so printer statuses don't need to be
     // individually requested.
-    if (this.isPrinterSettingsPrinterStatusEnabled_ &&
-        !this.isLocalPrinterObservingEnabled_) {
+    if (!this.isLocalPrinterObservingEnabled_) {
       this.startPrinterStatusQueryTimer_(/*forErrorStatePrinters=*/ true);
       this.startPrinterStatusQueryTimer_(/*forErrorStatePrinters=*/ false);
     }
   }
 
   addFocusListener(): void {
-    if (this.isPrinterSettingsPrinterStatusEnabled_) {
-      window.addEventListener('focus', this.onFocusListener_);
-    }
+    window.addEventListener('focus', this.onFocusListener_);
   }
 
   removeFocusListener(): void {
-    if (this.isPrinterSettingsPrinterStatusEnabled_) {
-      window.removeEventListener('focus', this.onFocusListener_);
-    }
+    window.removeEventListener('focus', this.onFocusListener_);
   }
 
   /**
@@ -349,6 +322,7 @@ export class SettingsCupsSavedPrintersElement extends
     this.activePrinter = null;
     this.activePrinterListEntryIndex_ = -1;
     this.closeActionMenu_();
+    recordSettingChange(Setting.kRemovePrinter);
     recordPrinterSettingsUserAction(PrinterSettingsUserAction.REMOVE_PRINTER);
   }
 
@@ -477,10 +451,6 @@ export class SettingsCupsSavedPrintersElement extends
 
   /** Query each saved printer for its printer status. */
   private fetchAllPrinterStatuses_(): void {
-    if (!this.isPrinterSettingsPrinterStatusEnabled_) {
-      return;
-    }
-
     this.savedPrinters.forEach(printer => {
       this.fetchPrinterStatus_(printer.printerInfo.printerId);
     });
@@ -488,10 +458,6 @@ export class SettingsCupsSavedPrintersElement extends
 
   /** Sends a printer status request for `printerId`. */
   private fetchPrinterStatus_(printerId: string): void {
-    if (!this.isPrinterSettingsPrinterStatusEnabled_) {
-      return;
-    }
-
     this.browserProxy_.requestPrinterStatusUpdate(printerId).then(
         printerStatus => this.onPrinterStatusReceived_(printerStatus));
   }
@@ -502,7 +468,6 @@ export class SettingsCupsSavedPrintersElement extends
    */
   private onPrinterStatusReceived_(printerStatus: PrinterStatus|
                                    undefined): void {
-    assert(this.isPrinterSettingsPrinterStatusEnabled_);
     if (!printerStatus?.printerId) {
       return;
     }
@@ -569,8 +534,6 @@ export class SettingsCupsSavedPrintersElement extends
    */
   private onPrinterStatusQueryTimerElapsed_(forErrorStatePrinters: boolean):
       void {
-    assert(this.isPrinterSettingsPrinterStatusEnabled_);
-
     this.savedPrinters
         .filter(
             printer =>
@@ -597,7 +560,6 @@ export class SettingsCupsSavedPrintersElement extends
   // querying printers when the Saved printers section regains focus.
   // TODO(b/298474359): Add browser test for below logic.
   private resetPrinterStatusQueryTimers(): void {
-    assert(this.isPrinterSettingsPrinterStatusEnabled_);
     this.timeoutIds_.forEach(timeoutId => clearTimeout(timeoutId));
     this.pageStartTime_ = Date.now();
 

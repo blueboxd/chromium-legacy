@@ -20,6 +20,7 @@
 #include "base/dcheck_is_on.h"
 #include "base/immediate_crash.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/byte_conversions.h"
 #include "base/strings/string_piece.h"
 #include "net/base/ip_address.h"
 #include "net/dns/dns_names_util.h"
@@ -109,11 +110,13 @@ bool ParseIpAddresses(base::StringPiece param_value,
   auto reader = base::BigEndianReader::FromStringPiece(param_value);
 
   std::vector<IPAddress> addresses;
-  uint8_t addr_bytes[ADDRESS_SIZE];
   do {
-    if (!reader.ReadBytes(addr_bytes, ADDRESS_SIZE))
+    if (auto addr_bytes = reader.ReadSpan(ADDRESS_SIZE);
+        !addr_bytes.has_value()) {
       return false;
-    addresses.emplace_back(addr_bytes);
+    } else {
+      addresses.emplace_back(*addr_bytes);
+    }
     DCHECK(addresses.back().IsValid());
   } while (reader.remaining() > 0);
 
@@ -360,9 +363,8 @@ std::unique_ptr<ServiceFormHttpsRecordRdata> ServiceFormHttpsRecordRdata::Parse(
     DCHECK(IsSupportedKey(param_key));
     if (param_value.size() != 2)
       return nullptr;
-    uint16_t port_val;
-    base::ReadBigEndian(reinterpret_cast<const uint8_t*>(param_value.data()),
-                        &port_val);
+    uint16_t port_val = base::numerics::U16FromBigEndian(
+        base::as_byte_span(param_value).first<2>());
     port = port_val;
     if (reader.remaining() > 0 &&
         !ReadNextServiceParam(param_key, reader, &param_key, &param_value)) {

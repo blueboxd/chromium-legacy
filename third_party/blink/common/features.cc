@@ -61,6 +61,17 @@ BASE_FEATURE(kAllowBFCacheWhenClosedMediaStreamTrack,
              "AllowBFCacheWhenClosedMediaStreamTrack",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Allow DeprecatedRenderURLReplacements when
+// CookieDeprecationFacilitatedTesting is enabled.
+BASE_FEATURE(kAlwaysAllowFledgeDeprecatedRenderURLReplacements,
+             "kAlwaysAllowFledgeDeprecatedRenderURLReplacements",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Block all MIDI access with the MIDI_SYSEX permission
+BASE_FEATURE(kBlockMidiByDefault,
+             "BlockMidiByDefault",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kComputePressureRateObfuscationMitigation,
              "ComputePressureRateObfuscationMitigation",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -88,6 +99,10 @@ const base::FeatureParam<AlignFontDisplayAutoTimeoutWithLCPGoalMode>
         &kAlignFontDisplayAutoTimeoutWithLCPGoal, "intervention-mode",
         AlignFontDisplayAutoTimeoutWithLCPGoalMode::kToSwapPeriod,
         &align_font_display_auto_timeout_with_lcp_goal_modes};
+
+BASE_FEATURE(kAllowDatapipeDrainedAsBytesConsumerInBFCache,
+             "AllowDatapipeDrainedAsBytesConsumerInBFCache",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAllowDevToolsMainThreadDebuggerForMultipleMainFrames,
              "AllowDevToolsMainThreadDebuggerForMultipleMainFrames",
@@ -153,10 +168,34 @@ BASE_FEATURE(kAudioWorkletThreadRealtimePriority,
              "AudioWorkletThreadRealtimePriority",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+#if BUILDFLAG(IS_APPLE)
+// When enabled, RealtimeAudioWorkletThread scheduling is optimized taking into
+// account how often the worklet logic is executed (which is determined by the
+// AudioContext buffer duration).
+BASE_FEATURE(kAudioWorkletThreadRealtimePeriodMac,
+             "AudioWorkletThreadRealtimePeriodMac",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
+
+// A thread pool system for effective usage of RealtimeAudioWorkletThread
+// instances.
+BASE_FEATURE(kAudioWorkletThreadPool,
+             "AudioWorkletThreadPool",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // When enabled, extraction of unassociated listed elements includes elements
 // inside Shadow DOM.
 BASE_FEATURE(kAutofillIncludeShadowDomInUnassociatedListedElements,
              "AutofillIncludeShadowDomInUnassociatedListedElements",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, Autofill extracts all top level shadow DOM form elements of a
+// document. Additionally, the shadow-tree-including form control elements of a
+// form `f` include all descendants that are form controls - even those whose
+// closest shadow-tree-including form ancestor is a different form `f2` (which
+// itself is a descendant of `f`).
+BASE_FEATURE(kAutofillIncludeFormElementsInShadowDom,
+             "AutofillIncludeFormElementsInShadowDom",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If disabled (default for many years), autofilling triggers KeyDown and
@@ -245,6 +284,10 @@ BASE_FEATURE(kAvifGainmapHdrImages,
              "AvifGainmapHdrImages",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kAvoidForcedLayoutOnInitialEmptyDocumentInSubframe,
+             "AvoidForcedLayoutOnInitialEmptyDocumentInSubframe",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kBackForwardCacheDWCOnJavaScriptExecution,
              "BackForwardCacheDWCOnJavaScriptExecution",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -260,6 +303,8 @@ BASE_FEATURE(kBackForwardCacheWithKeepaliveRequest,
 BASE_FEATURE(kBackgroundResourceFetch,
              "BackgroundResourceFetch",
              base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<bool> kBackgroundResponseProcessor{
+    &kBackgroundResourceFetch, "background-response-processor", true};
 
 // Redefine the oklab and oklch spaces to have gamut mapping baked into them.
 // https://crbug.com/1508329
@@ -476,17 +521,23 @@ BASE_FEATURE(kCacheStorageCodeCacheHintHeader,
 const base::FeatureParam<std::string> kCacheStorageCodeCacheHintHeaderName{
     &kCacheStorageCodeCacheHintHeader, "name", "x-CacheStorageCodeCacheHint"};
 
-BASE_FEATURE(
-    kCanvas2DHibernation,
-    "Canvas2DHibernation",
-#if BUILDFLAG(IS_MAC)
-    // Canvas hibernation is not always enabled on MacOS X due to a bug that
-    // causes content loss. TODO: Find a better fix for crbug.com/588434
-    base::FeatureState::FEATURE_DISABLED_BY_DEFAULT
-#else
-    base::FeatureState::FEATURE_ENABLED_BY_DEFAULT
+// Enabled 03/2024 on macOS (and much earlier elsewhere).
+// Keeping the feature to perform a holdback experiment.
+BASE_FEATURE(kCanvas2DHibernation,
+             "Canvas2DHibernation",
+             base::FeatureState::FEATURE_ENABLED_BY_DEFAULT);
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_FUCHSIA)
+// Enables camera preview in permission bubble and site settings.
+BASE_FEATURE(kCameraMicPreview,
+             "CameraMicPreview",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Defers device selection until after permission is granted.
+BASE_FEATURE(kGetUserMediaDeferredDeviceSettingsSelection,
+             "GetUserMediaDeferredDeviceSettingsSelection",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
-);
 
 // Whether to losslessly compress the resulting image after canvas hibernation.
 BASE_FEATURE(kCanvasCompressHibernatedImage,
@@ -534,10 +585,10 @@ BASE_FEATURE(kClientHintsDeviceMemory_DEPRECATED,
              "ClientHintsDeviceMemory_DEPRECATED",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enable `form-factor` client hint.
-BASE_FEATURE(kClientHintsFormFactor,
-             "ClientHintsFormFactor",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+// Enable `form-factors` client hint.
+BASE_FEATURE(kClientHintsFormFactors,
+             "ClientHintsFormFactors",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable `sec-ch-prefers-reduced-transparency` client hint.
 BASE_FEATURE(kClientHintsPrefersReducedTransparency,
@@ -573,10 +624,6 @@ BASE_FEATURE(kClientHintsXRFormFactor,
 BASE_FEATURE(kClientHintsViewportWidth_DEPRECATED,
              "ClientHintsViewportWidth_DEPRECATED",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kClipboardUnsanitizedContent,
-             "ClipboardUnsanitizedContent",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Disabling this will cause parkable strings to never be compressed.
 // This is useful for headless mode + virtual time. Since virtual time advances
@@ -615,10 +662,6 @@ BASE_FEATURE(kCreateImageBitmapOrientationNone,
 BASE_FEATURE(kDOMContentLoadedWaitForAsyncScript,
              "DOMContentLoadedWaitForAsyncScript",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kDecodeScriptSourceOffThread,
-             "DecodeScriptSourceOffThread",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, pages that don't specify a layout width will default to the
 // window width rather than the traditional mobile fallback width of 980px.
@@ -800,6 +843,12 @@ BASE_FEATURE(kEstablishGpuChannelAsync,
 #endif
 );
 
+// Exposes Event Timing keyboard InteractionId of composition and keypress
+// events.
+BASE_FEATURE(kEventTimingKeypressAndCompositionInteractionId,
+             "EventTimingKeypressAndCompositionInteractionId",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables unload handler deprecation via Permissions-Policy.
 // https://crbug.com/1324111
 BASE_FEATURE(kDeprecateUnload,
@@ -823,12 +872,6 @@ BASE_FEATURE(kDeprecateUnloadByAllowList,
 // the all hosts are allowed.
 const base::FeatureParam<std::string> kDeprecateUnloadAllowlist{
     &kDeprecateUnloadByAllowList, "allowlist", ""};
-
-// Enables using a 'deprecatedRenderURLReplacements' field within the a
-// Protected Audience ad auction config.
-BASE_FEATURE(kEnableDeprecatedRenderURLReplacements,
-             "EnableDeprecatedRenderURLReplacements",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables using a base::ProtectedMemory<bool> value to provide extra protection
 // against MojoJS bindings being enabled via a data-only attack.
@@ -906,10 +949,16 @@ BASE_FEATURE(kFencedFramesAutomaticBeaconCredentials,
              "FencedFramesAutomaticBeaconCredentials",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Controls functionality related to network revocation/local unpartitioned data
-// access in fenced frames.
+// Controls functionality related to network revocation/local unpartitioned
+// data access in fenced frames.
 BASE_FEATURE(kFencedFramesLocalUnpartitionedDataAccess,
              "FencedFramesLocalUnpartitionedDataAccess",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls access to an API to exempt certain URLs from fenced frame
+// network revocation to facilitate testing.
+BASE_FEATURE(kExemptUrlFromNetworkRevocationForTesting,
+             "ExemptUrlFromNetworkRevocationForTesting",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Use "style" and "json" destinations for CSS and JSON modules.
@@ -981,6 +1030,11 @@ BASE_FEATURE(kFledgePassRecencyToGenerateBid,
 BASE_FEATURE(kFledgeSampleDebugReports,
              "FledgeSampleDebugReports",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kFledgeSplitTrustedSignalsFetchingURL,
+             "FledgeSplitTrustedSignalsFetchingURL",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 const base::FeatureParam<base::TimeDelta> kFledgeDebugReportLockout{
     &kFledgeSampleDebugReports, "fledge_debug_report_lockout",
     base::Days(365 * 3)};
@@ -1003,9 +1057,6 @@ const base::FeatureParam<base::TimeDelta>
         "fledge_enable_filtering_debug_report_starting_from",
         base::Milliseconds(0)};
 
-BASE_FEATURE(kFledgeCustomMaxAuctionAdComponents,
-             "FledgeCustomMaxAuctionAdComponents",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 const base::FeatureParam<int> kFledgeCustomMaxAuctionAdComponentsValue{
     &kFledgeCustomMaxAuctionAdComponents, "FledgeAdComponentLimit",
     kMaxAdAuctionAdComponentsDefault};
@@ -1267,6 +1318,10 @@ const base::FeatureParam<int> kLCPScriptObserverMaxUrlCountPerOrigin{
 const base::FeatureParam<bool> kLCPScriptObserverAdjustImageLoadPriority{
     &kLCPScriptObserver, "lcpscriptobserver_adjust_image_load_priority", false};
 
+BASE_FEATURE(kLCPTimingPredictorPrerender2,
+             "LCPTimingPredictorPrerender2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kLCPPAutoPreconnectLcpOrigin,
              "LCPPAutoPreconnectLcpOrigin",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1293,6 +1348,13 @@ const base::FeatureParam<double> kLCPPFontURLPredictorFrequencyThreshold{
 const base::FeatureParam<int> kLCPPFontURLPredictorMaxPreloadCount{
     &kLCPPFontURLPredictor, "lcpp_max_font_url_to_preload", 5};
 
+const base::FeatureParam<bool> kLCPPFontURLPredictorEnablePrefetch{
+    &kLCPPFontURLPredictor, "lcpp_enable_font_prefetch", false};
+
+// Negative value is used for disabling this threshold.
+const base::FeatureParam<double> kLCPPFontURLPredictorThresholdInMbps{
+    &kLCPPFontURLPredictor, "lcpp_font_prefetch_threshold", -1};
+
 BASE_FEATURE(kLCPPLazyLoadImagePreload,
              "LCPPLazyLoadImagePreload",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1308,9 +1370,6 @@ const base::FeatureParam<LcppPreloadLazyLoadImageType>
     kLCPCriticalPathPredictorPreloadLazyLoadImageType{
         &kLCPPLazyLoadImagePreload, "lcpp_preload_lazy_load_image_type",
         LcppPreloadLazyLoadImageType::kNone, &lcpp_preload_lazy_load_image};
-
-const base::FeatureParam<bool> kLCPPFontURLPredictorEnablePrefetch{
-    &kLCPPFontURLPredictor, "lcpp_enable_font_prefetch", false};
 
 BASE_FEATURE(kHttpDiskCachePrewarming,
              "HttpDiskCachePrewarming",
@@ -1353,6 +1412,15 @@ BASE_FEATURE(kLightweightNoStatePrefetch,
 
 BASE_FEATURE(kLinkPreview, "LinkPreview", base::FEATURE_DISABLED_BY_DEFAULT);
 
+constexpr base::FeatureParam<LinkPreviewTriggerType>::Option
+    link_preview_trigger_type_options[] = {
+        {LinkPreviewTriggerType::kAltClick, "alt_click"},
+        {LinkPreviewTriggerType::kAltHover, "alt_hover"},
+        {LinkPreviewTriggerType::kLongPress, "long_press"}};
+const base::FeatureParam<LinkPreviewTriggerType> kLinkPreviewTriggerType{
+    &kLinkPreview, "trigger_type", LinkPreviewTriggerType::kAltHover,
+    &link_preview_trigger_type_options};
+
 // A feature to control whether the loading phase should be extended beyond
 // First Meaningful Paint by a configurable buffer.
 BASE_FEATURE(kLoadingPhaseBufferTimeAfterFirstMeaningfulPaint,
@@ -1385,7 +1453,7 @@ BASE_FEATURE(kLowLatencyCanvas2dImageChromium,
 // directly to display), even if regular canvas are not in overlay
 // (WebGLImageChromium is disabled).
 BASE_FEATURE(kLowLatencyWebGLImageChromium,
-             "kLowLatencyWebGLImageChromium",
+             "LowLatencyWebGLImageChromium",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kLowPriorityAsyncScriptExecution,
@@ -1520,14 +1588,19 @@ const base::FeatureParam<int>
 // If kNavigationPredictor is enabled, then metrics of anchor elements
 // in the first viewport after the page load and the metrics of the clicked
 // anchor element will be extracted and recorded.
+// Note that the desktop roll out is being done separately from android. See
+// https://crbug.com/40258405
 BASE_FEATURE(kNavigationPredictor,
              "NavigationPredictor",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+const base::FeatureParam<int> kPredictorTrafficClientEnabledPercent{
+    &kNavigationPredictor, "traffic_client_enabled_percent",
 #if BUILDFLAG(IS_ANDROID)
-             base::FEATURE_ENABLED_BY_DEFAULT
+    100
 #else
-             base::FEATURE_DISABLED_BY_DEFAULT
+    5
 #endif
-);
+};
 
 BASE_FEATURE(kNewBaseUrlInheritanceBehavior,
              "NewBaseUrlInheritanceBehavior",
@@ -1535,6 +1608,10 @@ BASE_FEATURE(kNewBaseUrlInheritanceBehavior,
 
 BASE_FEATURE(kNoForcedFrameUpdatesForWebTests,
              "NoForcedFrameUpdatesForWebTests",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kBFCacheOpenBroadcastChannel,
+             "BFCacheOpenBroadcastChannel",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kOriginAgentClusterDefaultEnabled,
@@ -1906,7 +1983,7 @@ BASE_FEATURE(kPausePagesPerBrowsingContextGroup,
 
 BASE_FEATURE(kShowHudDisplayForPausedPages,
              "ShowHudDisplayForPausedPages",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls script streaming.
 BASE_FEATURE(kScriptStreaming,
@@ -1968,10 +2045,9 @@ BASE_FEATURE(kSharedStorageAPI,
 const base::FeatureParam<int>
     kSharedStorageURLSelectionOperationInputURLSizeLimit{
         &kSharedStorageAPI, "url_selection_operation_input_url_size_limit", 8};
-const base::FeatureParam<int> kMaxSharedStorageStringLength = {
-    &kSharedStorageAPI, "MaxSharedStorageStringLength", 1024};
-const base::FeatureParam<int> kMaxSharedStorageEntriesPerOrigin = {
-    &kSharedStorageAPI, "MaxSharedStorageEntriesPerOrigin", 10000};
+// We use a max of 5 MB = 5 * 1024 * 1024 B = 5242880 B.
+const base::FeatureParam<int> kMaxSharedStorageBytesPerOrigin = {
+    &kSharedStorageAPI, "MaxSharedStorageBytesPerOrigin", 5242880};
 const base::FeatureParam<int> kMaxSharedStoragePageSize = {
     &kSharedStorageAPI, "MaxSharedStoragePageSize", 4096};
 const base::FeatureParam<int> kMaxSharedStorageCacheSize = {
@@ -2024,9 +2100,9 @@ BASE_FEATURE(kSharedStorageAPIM118,
              "SharedStorageAPIM118",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSharedStorageAPIM123,
-             "SharedStorageAPIM123",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kSharedStorageAPIM124,
+             "SharedStorageAPIM124",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSharedStorageAPIEnableWALForDatabase,
              "SharedStorageAPIEnableWALForDatabase",
@@ -2048,10 +2124,6 @@ const char kSkipTouchEventFilterFilteringProcessParamValueBrowserAndRenderer[] =
 // Allow streaming small (<30kB) scripts.
 BASE_FEATURE(kSmallScriptStreaming,
              "SmallScriptStreaming",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSpeculationRulesHeaderEnableThirdPartyOriginTrial,
-             "SpeculationRulesHeaderEnableThirdPartyOriginTrial",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSpeculationRulesPrefetchFuture,
@@ -2197,10 +2269,6 @@ BASE_FEATURE(kThreadedPreloadScanner,
              "ThreadedPreloadScanner",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes,
-             "ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enable throttling of fetch() requests from service workers in the
 // installing state.  The limit of 3 was chosen to match the limit
 // in background main frames.  In addition, trials showed that this
@@ -2340,6 +2408,11 @@ BASE_FEATURE(kWebAppManifestLockScreen,
              "WebAppManifestLockScreen",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Allow OnRenderError callback to propagate in WebAudio
+BASE_FEATURE(kWebAudioHandleOnRenderError,
+             "WebAudioHandleOnRenderError",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // A server-side switch for the output device (sink) selection in Web Audio API.
 // This enables the selection via the AudioContext constructor and also via
 // AudioContext.setSinkId() method.
@@ -2400,11 +2473,6 @@ BASE_FEATURE(kWebRtcIgnoreUnspecifiedColorSpace,
 BASE_FEATURE(kWebRtcInitializeEncoderOnFirstFrame,
              "WebRtcInitializeEncoderOnFirstFrame",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables negotiation of experimental multiplex codec in SDP.
-BASE_FEATURE(kWebRtcMultiplexCodec,
-             "WebRTC-MultiplexCodec",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kWebRtcSendPacketBatch,
              "WebRtcSendPacketBatch",
@@ -2496,17 +2564,6 @@ bool IsSetTimeoutWithoutClampEnabled() {
   return base::FeatureList::IsEnabled(features::kSetTimeoutWithoutClamp);
 }
 
-bool IsThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesEnabled() {
-  static bool throttling_disabled =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableThrottleNonVisibleCrossOriginIframes);
-
-  return !throttling_disabled &&
-         base::FeatureList::IsEnabled(
-             features::
-                 kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes);
-}
-
 bool IsUnloadBlocklisted() {
   return base::FeatureList::IsEnabled(kUnloadBlocklisted);
 }
@@ -2518,6 +2575,11 @@ bool ParkableStringsUseSnappy() {
 bool IsKeepAliveURLLoaderServiceEnabled() {
   return base::FeatureList::IsEnabled(kKeepAliveInBrowserMigration) ||
          base::FeatureList::IsEnabled(kFetchLaterAPI);
+}
+
+bool IsLinkPreviewTriggerTypeEnabled(LinkPreviewTriggerType type) {
+  return base::FeatureList::IsEnabled(blink::features::kLinkPreview) &&
+         type == blink::features::kLinkPreviewTriggerType.Get();
 }
 
 BASE_FEATURE(kExpandCompositedCullRect,
@@ -2532,6 +2594,10 @@ BASE_FEATURE(kTreatHTTPExpiresHeaderValueZeroAsExpiredInBlink,
 
 BASE_FEATURE(kSimplifyLoadingTransparentPlaceholderImage,
              "SimplifyLoadingTransparentPlaceholderImage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kNoThrottlingVisibleAgent,
+             "NoThrottlingVisibleAgent",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

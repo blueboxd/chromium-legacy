@@ -8,6 +8,8 @@
 
 #import "base/metrics/histogram_functions.h"
 #import "components/favicon/ios/web_favicon_driver.h"
+#import "components/tab_groups/tab_group_color.h"
+#import "components/tab_groups/tab_group_visual_data.h"
 #import "ios/chrome/browser/drag_and_drop/model/drag_item_util.h"
 #import "ios/chrome/browser/main/model/browser_util.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_util.h"
@@ -22,6 +24,7 @@
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/tabs/model/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_metrics.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_group_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_strip/ui/swift.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
 #import "ios/chrome/browser/ui/tab_switcher/web_state_tab_switcher_item.h"
@@ -35,12 +38,25 @@
 namespace {
 
 // Constructs an array of TabSwitcherItems from a `web_state_list`.
-NSArray<TabSwitcherItem*>* CreateItems(WebStateList* web_state_list) {
-  NSMutableArray<TabSwitcherItem*>* items = [[NSMutableArray alloc] init];
+NSArray<TabStripItemIdentifier*>* CreateItems(WebStateList* web_state_list) {
+  NSMutableArray<TabStripItemIdentifier*>* items =
+      [[NSMutableArray alloc] init];
   for (int i = 0; i < web_state_list->count(); i++) {
+    const TabGroup* group = web_state_list->GetGroupOfWebStateAt(i);
+    if (group && web_state_list->GetGroupRange(group).range_begin() == i) {
+      // If WebState at index `i` is the first of its TabGroup, add a
+      // `TabGroupItem` to the result before adding the `TabSwitcherItem`.
+      TabGroupItem* group_item = [[TabGroupItem alloc] initWithTabGroup:group];
+      TabStripItemIdentifier* group_item_identifier =
+          [TabStripItemIdentifier groupIdentifier:group_item];
+      [items addObject:group_item_identifier];
+    }
     web::WebState* web_state = web_state_list->GetWebStateAt(i);
-    [items
-        addObject:[[WebStateTabSwitcherItem alloc] initWithWebState:web_state]];
+    TabSwitcherItem* tab_item =
+        [[WebStateTabSwitcherItem alloc] initWithWebState:web_state];
+    TabStripItemIdentifier* tab_item_identifier =
+        [TabStripItemIdentifier tabIdentifier:tab_item];
+    [items addObject:tab_item_identifier];
   }
   return items;
 }
@@ -130,16 +146,61 @@ NSArray<TabSwitcherItem*>* CreateItems(WebStateList* web_state_list) {
   }
 
   switch (change.type()) {
-    case WebStateListChange::Type::kStatusOnly:
+    case WebStateListChange::Type::kStatusOnly: {
       // The activation is handled after this switch statement.
+      const WebStateListChangeStatusOnly& statusOnlyChange =
+          change.As<WebStateListChangeStatusOnly>();
+      if (statusOnlyChange.new_group()) {
+        [self populateConsumerItems];
+      }
       break;
-    case WebStateListChange::Type::kDetach:
-    case WebStateListChange::Type::kInsert:
-      [self populateConsumerItems];
+    }
+    case WebStateListChange::Type::kDetach: {
+      const WebStateListChangeDetach& detachChange =
+          change.As<WebStateListChangeDetach>();
+      web::WebState* detachedWebState = detachChange.detached_web_state();
+      TabStripItemIdentifier* item = [TabStripItemIdentifier
+          tabIdentifier:[[WebStateTabSwitcherItem alloc]
+                            initWithWebState:detachedWebState]];
+      [self.consumer removeItems:@[ item ]];
       break;
-    case WebStateListChange::Type::kMove:
-      [self populateConsumerItems];
+    }
+    case WebStateListChange::Type::kInsert: {
+      const WebStateListChangeInsert& insertChange =
+          change.As<WebStateListChangeInsert>();
+      web::WebState* insertedWebState = insertChange.inserted_web_state();
+      TabStripItemIdentifier* item = [TabStripItemIdentifier
+          tabIdentifier:[[WebStateTabSwitcherItem alloc]
+                            initWithWebState:insertedWebState]];
+
+      if (webStateList->ContainsIndex(insertChange.index() + 1)) {
+        web::WebState* destinationWebState =
+            webStateList->GetWebStateAt(insertChange.index() + 1);
+        TabStripItemIdentifier* destinationItem = [TabStripItemIdentifier
+            tabIdentifier:[[WebStateTabSwitcherItem alloc]
+                              initWithWebState:destinationWebState]];
+        [self.consumer insertItems:@[ item ] beforeItem:destinationItem];
+      } else {
+        [self.consumer insertItems:@[ item ] beforeItem:nil];
+      }
       break;
+    }
+    case WebStateListChange::Type::kMove: {
+      const WebStateListChangeMove& moveChange =
+          change.As<WebStateListChangeMove>();
+      TabSwitcherItem* item = [[WebStateTabSwitcherItem alloc]
+          initWithWebState:moveChange.moved_web_state()];
+      if (moveChange.moved_to_index() == 0) {
+        [_consumer moveItem:item afterItem:nil];
+      } else {
+        web::WebState* destinationWebState =
+            _webStateList->GetWebStateAt(moveChange.moved_to_index() - 1);
+        TabSwitcherItem* destinationItem = [[WebStateTabSwitcherItem alloc]
+            initWithWebState:destinationWebState];
+        [_consumer moveItem:item afterItem:destinationItem];
+      }
+      break;
+    }
     case WebStateListChange::Type::kReplace: {
       const WebStateListChangeReplace& replaceChange =
           change.As<WebStateListChangeReplace>();
@@ -253,6 +314,20 @@ NSArray<TabSwitcherItem*>* CreateItems(WebStateList* web_state_list) {
       WebStateList::CLOSE_USER_ACTION);
 }
 
+- (void)createNewGroupWithItem:(TabSwitcherItem*)item {
+  if (!self.webStateList) {
+    return;
+  }
+  const WebStateSearchCriteria indexToAddToNewGroupSearchCriteria(
+      item.identifier);
+  const int indexToAddToNewGroup =
+      GetWebStateIndex(self.webStateList, indexToAddToNewGroupSearchCriteria);
+  self.webStateList->CreateGroup(
+      {indexToAddToNewGroup},
+      tab_groups::TabGroupVisualData{u"Temporary Group Name",
+                                     tab_groups::TabGroupColorId::kGrey});
+}
+
 #pragma mark - CRWWebStateObserver
 
 - (void)webStateDidStartLoading:(web::WebState*)webState {
@@ -262,19 +337,19 @@ NSArray<TabSwitcherItem*>* CreateItems(WebStateList* web_state_list) {
 
   TabSwitcherItem* item =
       [[WebStateTabSwitcherItem alloc] initWithWebState:webState];
-  [self.consumer reloadItem:item];
+  [self.consumer reloadItem:[TabStripItemIdentifier tabIdentifier:item]];
 }
 
 - (void)webStateDidStopLoading:(web::WebState*)webState {
   TabSwitcherItem* item =
       [[WebStateTabSwitcherItem alloc] initWithWebState:webState];
-  [self.consumer reloadItem:item];
+  [self.consumer reloadItem:[TabStripItemIdentifier tabIdentifier:item]];
 }
 
 - (void)webStateDidChangeTitle:(web::WebState*)webState {
   TabSwitcherItem* item =
       [[WebStateTabSwitcherItem alloc] initWithWebState:webState];
-  [self.consumer reloadItem:item];
+  [self.consumer reloadItem:[TabStripItemIdentifier tabIdentifier:item]];
 }
 
 #pragma mark - WebStateFaviconDriverObserver
@@ -283,7 +358,7 @@ NSArray<TabSwitcherItem*>* CreateItems(WebStateList* web_state_list) {
     didUpdateFaviconForWebState:(web::WebState*)webState {
   TabSwitcherItem* item =
       [[WebStateTabSwitcherItem alloc] initWithWebState:webState];
-  [self.consumer reloadItem:item];
+  [self.consumer reloadItem:[TabStripItemIdentifier tabIdentifier:item]];
 }
 
 #pragma mark - TabCollectionDragDropHandler
@@ -297,13 +372,10 @@ NSArray<TabSwitcherItem*>* CreateItems(WebStateList* web_state_list) {
 }
 
 - (void)dragWillBeginForItem:(TabSwitcherItem*)item {
-  base::UmaHistogramEnumeration(kUmaTabStripViewDragDropTabs,
-                                DragDropTabs::kDragBegin);
   _dragItemID = item.identifier;
 }
 
 - (void)dragSessionDidEnd {
-  // TODO(crbug.com/1515507): Record metrics.
   _dragItemID = web::WebStateID();
 }
 
@@ -417,7 +489,7 @@ NSArray<TabSwitcherItem*>* CreateItems(WebStateList* web_state_list) {
 
 // Updates the consumer with the list of all items and the selected one.
 - (void)populateConsumerItems {
-  if (!_webStateList || _webStateList->count() == 0) {
+  if (!_webStateList) {
     return;
   }
   TabSwitcherItem* item;

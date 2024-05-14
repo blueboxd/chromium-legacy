@@ -108,7 +108,7 @@ InterpolationValue CSSSizeListInterpolationType::MaybeConvertNeutral(
   const auto& underlying_list =
       To<NonInterpolableList>(*underlying.non_interpolable_value);
   conversion_checkers.push_back(
-      std::make_unique<UnderlyingSizeListChecker>(underlying_list));
+      MakeGarbageCollected<UnderlyingSizeListChecker>(underlying_list));
   return ListInterpolationFunctions::CreateList(
       underlying_list.length(), [&underlying_list](wtf_size_t index) {
         return SizeInterpolationFunctions::CreateNeutralValue(
@@ -130,7 +130,7 @@ InterpolationValue CSSSizeListInterpolationType::MaybeConvertInherit(
     ConversionCheckers& conversion_checkers) const {
   SizeList inherited_size_list = SizeListPropertyFunctions::GetSizeList(
       CssProperty(), *state.ParentStyle());
-  conversion_checkers.push_back(std::make_unique<InheritedSizeListChecker>(
+  conversion_checkers.push_back(MakeGarbageCollected<InheritedSizeListChecker>(
       CssProperty(), inherited_size_list));
   return ConvertSizeList(inherited_size_list,
                          state.StyleBuilder().EffectiveZoom());
@@ -149,7 +149,7 @@ PairwiseInterpolationValue CSSSizeListInterpolationType::MaybeMergeSingles(
   return ListInterpolationFunctions::MaybeMergeSingles(
       std::move(start), std::move(end),
       ListInterpolationFunctions::LengthMatchingStrategy::kLowestCommonMultiple,
-      WTF::BindRepeating(SizeInterpolationFunctions::MaybeMergeSingles));
+      SizeInterpolationFunctions::MaybeMergeSingles);
 }
 
 InterpolationValue
@@ -168,11 +168,9 @@ void CSSSizeListInterpolationType::Composite(
   ListInterpolationFunctions::Composite(
       underlying_value_owner, underlying_fraction, *this, value,
       ListInterpolationFunctions::LengthMatchingStrategy::kLowestCommonMultiple,
-      WTF::BindRepeating(
-          ListInterpolationFunctions::InterpolableValuesKnownCompatible),
-      WTF::BindRepeating(
-          SizeInterpolationFunctions::NonInterpolableValuesAreCompatible),
-      WTF::BindRepeating(SizeInterpolationFunctions::Composite));
+      ListInterpolationFunctions::InterpolableValuesKnownCompatible,
+      SizeInterpolationFunctions::NonInterpolableValuesAreCompatible,
+      SizeInterpolationFunctions::Composite);
 }
 
 void CSSSizeListInterpolationType::ApplyStandardPropertyValue(

@@ -15,6 +15,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.lifetime.Destroyable;
+import org.chromium.base.supplier.LazyOneshotSupplier;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
@@ -34,6 +36,7 @@ import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_management.ColorPickerCoordinator.ColorPickerLayoutType;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
@@ -83,6 +86,7 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
             @NonNull Supplier<DynamicResourceLoader> dynamicResourceLoaderSupplier,
             @NonNull SnackbarManager snackbarManager,
             @NonNull ModalDialogManager modalDialogManager,
+            @NonNull BottomSheetController bottomSheetController,
             @NonNull OneshotSupplier<IncognitoReauthController> incognitoReauthControllerSupplier,
             @Nullable BackPressManager backPressManager,
             @Nullable OneshotSupplier<LayoutStateProvider> layoutStateProviderSupplier) {
@@ -104,6 +108,7 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
                 dynamicResourceLoaderSupplier,
                 snackbarManager,
                 modalDialogManager,
+                bottomSheetController,
                 incognitoReauthControllerSupplier,
                 backPressManager,
                 layoutStateProviderSupplier);
@@ -159,6 +164,7 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
             @NonNull ScrimCoordinator rootUiScrimCoordinator,
             @NonNull SnackbarManager snackbarManager,
             @NonNull ModalDialogManager modalDialogManager,
+            @NonNull BottomSheetController bottomSheetController,
             @Nullable OneshotSupplier<IncognitoReauthController> incognitoReauthControllerSupplier,
             @NonNull OnClickListener newTabButtonOnClickListener,
             boolean isIncognito,
@@ -177,7 +183,8 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
                         multiWindowModeStateDispatcher,
                         rootUiScrimCoordinator,
                         snackbarManager,
-                        modalDialogManager);
+                        modalDialogManager,
+                        bottomSheetController);
         TabSwitcherPaneBase pane;
         if (isIncognito) {
             Supplier<TabModelFilter> incongitorTabModelFilterSupplier =
@@ -208,12 +215,25 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
     }
 
     @Override
-    public TabGroupCreationDialog createTabGroupCreationDialogDelegate(
+    public Pane createTabGroupsPane(
+            @NonNull Context context,
+            @NonNull TabModelSelector tabModelSelector,
+            @NonNull DoubleConsumer onToolbarAlphaChange) {
+        LazyOneshotSupplier<TabModelFilter> tabModelFilterSupplier =
+                LazyOneshotSupplier.fromSupplier(
+                        () ->
+                                tabModelSelector
+                                        .getTabModelFilterProvider()
+                                        .getTabModelFilter(false));
+        return new TabGroupsPane(context, tabModelFilterSupplier, onToolbarAlphaChange);
+    }
+
+    @Override
+    public Destroyable createTabGroupCreationDialogManager(
             @NonNull Activity activity,
             @NonNull ModalDialogManager modalDialogManager,
-            @NonNull ObservableSupplier<TabModelSelector> tabModelSelectorSupplier) {
-        return new TabGroupCreationDialogDelegate(
-                activity, modalDialogManager, tabModelSelectorSupplier);
+            @NonNull TabModelSelector tabModelSelector) {
+        return new TabGroupCreationDialogManager(activity, modalDialogManager, tabModelSelector);
     }
 
     @Override
@@ -222,8 +242,16 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
             @NonNull List<Integer> colors,
             @NonNull @LayoutRes int colorPickerLayout,
             @NonNull @ColorPickerType int colorPickerType,
-            @NonNull boolean isIncognito) {
+            @NonNull boolean isIncognito,
+            @NonNull @ColorPickerLayoutType int layoutType,
+            @Nullable Runnable onColorItemClicked) {
         return new ColorPickerCoordinator(
-                context, colors, colorPickerLayout, colorPickerType, isIncognito);
+                context,
+                colors,
+                colorPickerLayout,
+                colorPickerType,
+                isIncognito,
+                layoutType,
+                onColorItemClicked);
     }
 }

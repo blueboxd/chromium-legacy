@@ -63,6 +63,7 @@ import org.chromium.chrome.browser.omnibox.status.StatusCoordinator;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownScrollListener;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.chrome.browser.toolbar.ButtonData;
@@ -1248,7 +1249,6 @@ public class ToolbarPhone extends ToolbarLayout
                                 mUrlFocusChangeFraction));
 
                 updateModernLocationBarCorners();
-                updateToolbarLayoutForUrlFocusChangeAnimation();
             }
         }
 
@@ -1257,27 +1257,6 @@ public class ToolbarPhone extends ToolbarLayout
         mLocationBar.getPhoneCoordinator().invalidate();
         invalidate();
         TraceEvent.end("ToolbarPhone.updateLocationBarLayoutForExpansionAnimation");
-    }
-
-    /** Updates the toolbar height and bottom padding during URL focus changing. */
-    private void updateToolbarLayoutForUrlFocusChangeAnimation() {
-        // With the smallest margins variant enabled, we still increase the height of the location
-        // bar bg but don't increase the height of the toolbar.
-        if (!OmniboxFeatures.shouldShowModernizeVisualUpdate(getContext())
-                || OmniboxFeatures.shouldShowSmallestMargins(getContext())) {
-            return;
-        }
-
-        int heightIncrease = calculateOnFocusHeightIncrease();
-
-        var layoutParams = getLayoutParams();
-        layoutParams.height =
-                getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
-                        + heightIncrease;
-        setLayoutParams(layoutParams);
-
-        // Apply extra bottom padding.
-        setPaddingRelative(getPaddingStart(), getPaddingTop(), getPaddingEnd(), heightIncrease);
     }
 
     /**
@@ -1841,7 +1820,9 @@ public class ToolbarPhone extends ToolbarLayout
         } else {
             PhoneCaptureStateToken newSnapshotState = generateToolbarSnapshotState();
             @ToolbarSnapshotDifference
-            int snapshotDifference = newSnapshotState.getAnyDifference(mPhoneCaptureStateToken);
+            int snapshotDifference =
+                    PhoneCaptureStateToken.getAnyDifference(
+                            mPhoneCaptureStateToken, newSnapshotState);
             if (snapshotDifference == ToolbarSnapshotDifference.NONE) {
                 return CaptureReadinessResult.notReady(TopToolbarBlockCaptureReason.SNAPSHOT_SAME);
             } else {
@@ -2864,7 +2845,10 @@ public class ToolbarPhone extends ToolbarLayout
             View optionalButton = optionalButtonStub.inflate();
 
             UserEducationHelper userEducationHelper =
-                    new UserEducationHelper((Activity) getContext(), new Handler());
+                    new UserEducationHelper(
+                            (Activity) getContext(),
+                            ProfileManager.getLastUsedRegularProfile(),
+                            new Handler());
 
             BooleanSupplier isAnimationAllowedPredicate =
                     new BooleanSupplier() {
@@ -2885,7 +2869,7 @@ public class ToolbarPhone extends ToolbarLayout
                         }
                     };
 
-            Profile profile = Profile.getLastUsedRegularProfile();
+            Profile profile = ProfileManager.getLastUsedRegularProfile();
             Tracker featureEngagementTracker = TrackerFactory.getTrackerForProfile(profile);
             mOptionalButtonCoordinator =
                     new OptionalButtonCoordinator(

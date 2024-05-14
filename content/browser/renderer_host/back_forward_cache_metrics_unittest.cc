@@ -246,6 +246,7 @@ TEST_F(BackForwardCacheMetricsTest, AllFeaturesCovered) {
       /* WebSchedulerTrackedFeature::kUnloadEventListener =*/9,
       /* WebSchedulerTrackedFeature::kFreezeEventListener =*/10,
       /* WebSchedulerTrackedFeature::kResumeEventListener =*/11,
+      /* WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet =*/14,
       /* WebSchedulerTrackedFeature::kServiceWorkerControlledPage =*/16,
       /* WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction =*/17,
       /* WebSchedulerTrackedFeature::kHasScriptableFramesInMultipleTabs =*/18,
@@ -257,6 +258,8 @@ TEST_F(BackForwardCacheMetricsTest, AllFeaturesCovered) {
       /* WebSchedulerTrackedFeature::kWakeLock =*/35,
       /* WebSchedulerTrackedFeature::kWebFileSystem =*/39,
       /* WebSchedulerTrackedFeature::kAppBanner =*/42,
+      /* WebSchedulerTrackedFeature::kPortal =*/46,
+      /* WebSchedulerTrackedFeature::kSpeechSynthesis =*/50,
       /* WebSchedulerTrackedFeature::kMediaSessionImplOnServiceCreated =*/56};
 
   for (BackForwardCacheImpl::CacheControlNoStoreContext ccns_context :

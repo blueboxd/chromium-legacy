@@ -5,9 +5,9 @@
 #include <set>
 #include <string>
 
-#include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/testing_pref_store.h"
@@ -25,6 +25,11 @@
 namespace {
 
 using ::testing::Optional;
+
+enum class RemoveForceAppliedYoutubeRestrictPolicyState : int {
+  kEnabled = 0,
+  kDisabled = 1,
+};
 
 class SupervisedUserPrefStoreFixture : public PrefStore::Observer {
  public:
@@ -73,11 +78,15 @@ void SupervisedUserPrefStoreFixture::OnInitializationCompleted(bool succeeded) {
 
 }  // namespace
 
-class SupervisedUserPrefStoreTest : public ::testing::Test {
+class SupervisedUserPrefStoreTest
+    : public ::testing::Test,
+      public testing::WithParamInterface<
+          RemoveForceAppliedYoutubeRestrictPolicyState> {
  public:
-  SupervisedUserPrefStoreTest() {}
+  SupervisedUserPrefStoreTest() = default;
   void SetUp() override;
   void TearDown() override;
+  bool RemoveForceAppliedYoutubeRestrictPolicyEnabled();
 
  protected:
   supervised_user::SupervisedUserSettingsService service_;
@@ -93,7 +102,21 @@ void SupervisedUserPrefStoreTest::TearDown() {
   service_.Shutdown();
 }
 
-TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
+bool SupervisedUserPrefStoreTest::
+    RemoveForceAppliedYoutubeRestrictPolicyEnabled() {
+  return GetParam() == RemoveForceAppliedYoutubeRestrictPolicyState::kEnabled;
+}
+
+TEST_P(SupervisedUserPrefStoreTest, ConfigureSettings) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  if (RemoveForceAppliedYoutubeRestrictPolicyEnabled()) {
+    scoped_feature_list.InitAndEnableFeature(
+        supervised_user::kRemoveForceAppliedYoutubeRestrictPolicy);
+  } else {
+    scoped_feature_list.InitAndDisableFeature(
+        supervised_user::kRemoveForceAppliedYoutubeRestrictPolicy);
+  }
+
   SupervisedUserPrefStoreFixture fixture(&service_);
   EXPECT_FALSE(fixture.initialization_completed());
 
@@ -115,28 +138,27 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
   EXPECT_FALSE(fixture.changed_prefs()->FindDictByDottedPath(
       prefs::kSupervisedUserManualHosts));
 
-  // kForceGoogleSafeSearch defaults to true if the relevant feature flag is
-  // enabled.
-  if (base::FeatureList::IsEnabled(
-          supervised_user::kForceGoogleSafeSearchForSupervisedUsers)) {
-    EXPECT_THAT(fixture.changed_prefs()->FindBoolByDottedPath(
-                    policy::policy_prefs::kForceGoogleSafeSearch),
-                Optional(true));
-  } else {
-    EXPECT_FALSE(
-        fixture.changed_prefs()
-            ->FindBoolByDottedPath(policy::policy_prefs::kForceGoogleSafeSearch)
-            .has_value());
-  }
+  EXPECT_FALSE(
+      fixture.changed_prefs()
+          ->FindBoolByDottedPath(policy::policy_prefs::kForceGoogleSafeSearch)
+          .has_value());
 
   // kForceYouTubeRestrict defaults to 'moderate' for supervised users on
   // Android and ChromeOS only.
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
-  int force_youtube_restrict =
-      fixture.changed_prefs()
-          ->FindIntByDottedPath(policy::policy_prefs::kForceYouTubeRestrict)
-          .value_or(safe_search_api::YOUTUBE_RESTRICT_OFF);
-  EXPECT_EQ(force_youtube_restrict, safe_search_api::YOUTUBE_RESTRICT_MODERATE);
+  if (RemoveForceAppliedYoutubeRestrictPolicyEnabled()) {
+    EXPECT_FALSE(
+        fixture.changed_prefs()
+            ->FindIntByDottedPath(policy::policy_prefs::kForceYouTubeRestrict)
+            .has_value());
+  } else {
+    EXPECT_EQ(
+        fixture.changed_prefs()
+            ->FindIntByDottedPath(policy::policy_prefs::kForceYouTubeRestrict)
+            .value(),
+        safe_search_api::YOUTUBE_RESTRICT_MODERATE);
+  }
+
 #else
   EXPECT_FALSE(
       fixture.changed_prefs()
@@ -175,31 +197,6 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
           prefs::kSupervisedUserManualHosts);
   ASSERT_TRUE(manual_hosts);
   EXPECT_TRUE(*manual_hosts == hosts);
-
-  // kForceGoogleSafeSearch can be configured by the custodian, overriding the
-  // hardcoded default.
-  fixture.changed_prefs()->clear();
-  service_.SetLocalSetting(supervised_user::kForceSafeSearch,
-                           base::Value(false));
-  EXPECT_EQ(1u, fixture.changed_prefs()->size());
-  EXPECT_THAT(fixture.changed_prefs()->FindBoolByDottedPath(
-                  policy::policy_prefs::kForceGoogleSafeSearch),
-              Optional(false));
-
-  // kForceYouTubeRestrict can be configured by the custodian on Android and
-  // ChromeOS only.
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
-  force_youtube_restrict =
-      fixture.changed_prefs()
-          ->FindIntByDottedPath(policy::policy_prefs::kForceYouTubeRestrict)
-          .value_or(safe_search_api::YOUTUBE_RESTRICT_MODERATE);
-  EXPECT_EQ(force_youtube_restrict, safe_search_api::YOUTUBE_RESTRICT_OFF);
-#else
-  EXPECT_FALSE(
-      fixture.changed_prefs()
-          ->FindIntByDottedPath(policy::policy_prefs::kForceYouTubeRestrict)
-          .has_value());
-#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // The custodian can allow sites and apps to request permissions.
@@ -246,7 +243,7 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
 #endif
 }
 
-TEST_F(SupervisedUserPrefStoreTest, ActivateSettingsBeforeInitialization) {
+TEST_P(SupervisedUserPrefStoreTest, ActivateSettingsBeforeInitialization) {
   SupervisedUserPrefStoreFixture fixture(&service_);
   EXPECT_FALSE(fixture.initialization_completed());
 
@@ -259,7 +256,7 @@ TEST_F(SupervisedUserPrefStoreTest, ActivateSettingsBeforeInitialization) {
   EXPECT_EQ(0u, fixture.changed_prefs()->size());
 }
 
-TEST_F(SupervisedUserPrefStoreTest, CreatePrefStoreAfterInitialization) {
+TEST_P(SupervisedUserPrefStoreTest, CreatePrefStoreAfterInitialization) {
   pref_store_->SetInitializationCompleted();
   service_.SetActive(true);
 
@@ -267,3 +264,15 @@ TEST_F(SupervisedUserPrefStoreTest, CreatePrefStoreAfterInitialization) {
   EXPECT_TRUE(fixture.initialization_completed());
   EXPECT_EQ(0u, fixture.changed_prefs()->size());
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SupervisedUserPrefStoreTest,
+    testing::Values(RemoveForceAppliedYoutubeRestrictPolicyState::kEnabled,
+                    RemoveForceAppliedYoutubeRestrictPolicyState::kDisabled),
+    [](const auto& info) {
+      return std::string(
+          info.param == RemoveForceAppliedYoutubeRestrictPolicyState::kEnabled
+              ? "Enabled"
+              : "Disabled");
+    });

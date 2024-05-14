@@ -42,7 +42,6 @@ align-content: normal
 align-items: normal
 align-self: auto
 alignment-baseline: auto
-anchor-default: implicit
 anchor-name: none
 animation-composition: replace
 animation-delay: 0s
@@ -293,11 +292,12 @@ pointer-events: auto
 popover-hide-delay: infinity * 1s
 popover-show-delay: 0.5s
 position: static
-position-fallback: none
+position-anchor: implicit
 position-fallback-bounds: normal
 position-try-options: none
 position-try-order: normal
 r: 0px
+reading-order-items: normal
 resize: none
 right: auto
 rotate: none
@@ -349,6 +349,7 @@ text-align: start
 text-align-last: auto
 text-anchor: start
 text-autospace: normal
+text-box-edge: leading
 text-box-trim: none
 text-decoration: none solid rgb(0, 0, 0)
 text-decoration-color: rgb(0, 0, 0)

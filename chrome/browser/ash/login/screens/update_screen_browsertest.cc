@@ -10,6 +10,8 @@
 #include "ash/constants/ash_features.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
+#include "base/metrics/histogram_base.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -844,9 +846,7 @@ IN_PROC_BROWSER_TEST_P(UpdateScreenTest, TestInitialLowBatteryStatus) {
   test::OobeJS().ExpectVisiblePath(kLowBatteryWarningMessage);
 }
 
-// TODO(crbug.com/1324627): Fix this test.
-IN_PROC_BROWSER_TEST_P(UpdateScreenTest,
-                       DISABLED_TestBatteryWarningDuringUpdateStages) {
+IN_PROC_BROWSER_TEST_P(UpdateScreenTest, TestBatteryWarningDuringUpdateStages) {
   base::ScopedMockTimeMessageLoopTaskRunner mocked_task_runner;
   SetTickClockAndDefaultDelaysForTesting(
       mocked_task_runner->GetMockTickClock());
@@ -960,9 +960,7 @@ IN_PROC_BROWSER_TEST_P(UpdateScreenTest,
   test::OobeJS().ExpectHiddenPath(kLowBatteryWarningMessage);
 }
 
-// TODO(crbug.com/1324627): Fix this test.
-IN_PROC_BROWSER_TEST_P(UpdateScreenTest,
-                       DISABLED_TestUpdateCompletedRebootNeeded) {
+IN_PROC_BROWSER_TEST_P(UpdateScreenTest, TestUpdateCompletedRebootNeeded) {
   base::ScopedMockTimeMessageLoopTaskRunner mocked_task_runner;
   SetTickClockAndDefaultDelaysForTesting(
       mocked_task_runner->GetMockTickClock());
@@ -995,8 +993,7 @@ IN_PROC_BROWSER_TEST_P(UpdateScreenTest,
   test::OobeJS().ExpectVisiblePath(kBetterUpdateCompletedDialog);
 }
 
-// TODO(crbug.com/1324627): Fix this test.
-IN_PROC_BROWSER_TEST_P(UpdateScreenTest, DISABLED_UpdateScreenSteps) {
+IN_PROC_BROWSER_TEST_P(UpdateScreenTest, UpdateScreenSteps) {
   base::ScopedMockTimeMessageLoopTaskRunner mocked_task_runner;
   SetTickClockAndDefaultDelaysForTesting(
       mocked_task_runner->GetMockTickClock());
@@ -1097,8 +1094,7 @@ IN_PROC_BROWSER_TEST_P(UpdateScreenTest, DISABLED_UpdateScreenSteps) {
   test::OobeJS().ExpectVisiblePath(kBetterUpdateCompletedDialog);
 }
 
-// TODO(crbug.com/1324627): Fix this test.
-IN_PROC_BROWSER_TEST_P(UpdateScreenTest, DISABLED_UpdateOverCellularShown) {
+IN_PROC_BROWSER_TEST_P(UpdateScreenTest, UpdateOverCellularShown) {
   base::ScopedMockTimeMessageLoopTaskRunner mocked_task_runner;
   SetTickClockAndDefaultDelaysForTesting(
       mocked_task_runner->GetMockTickClock());

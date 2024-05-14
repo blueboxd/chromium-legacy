@@ -68,7 +68,8 @@
 #endif
 
 #if BUILDFLAG(IS_WIN)
-#include "components/app_launch_prefetch/app_launch_prefetch.h"
+#include "content/browser/child_process_launcher_helper.h"
+#include "content/public/common/prefetch_type_win.h"
 #include "media/capture/capture_switches.h"
 #include "services/audio/public/mojom/audio_service.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -111,20 +112,19 @@ base::ScopedFD PassNetworkContextParentDirs(
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_WIN)
-base::CommandLine::StringPieceType UtilityToAppLaunchPrefetchArg(
+std::string_view UtilityToAppLaunchPrefetchArg(
     const std::string& utility_type) {
   // Set the default prefetch type for utility processes.
-  app_launch_prefetch::SubprocessType prefetch_type =
-      app_launch_prefetch::SubprocessType::kUtilityOther;
+  AppLaunchPrefetchType prefetch_type = AppLaunchPrefetchType::kUtilityOther;
 
   if (utility_type == network::mojom::NetworkService::Name_) {
-    prefetch_type = app_launch_prefetch::SubprocessType::kUtilityNetworkService;
+    prefetch_type = AppLaunchPrefetchType::kUtilityNetworkService;
   } else if (utility_type == storage::mojom::StorageService::Name_) {
-    prefetch_type = app_launch_prefetch::SubprocessType::kUtilityStorage;
+    prefetch_type = AppLaunchPrefetchType::kUtilityStorage;
   } else if (utility_type == audio::mojom::AudioService::Name_) {
-    prefetch_type = app_launch_prefetch::SubprocessType::kUtilityAudio;
+    prefetch_type = AppLaunchPrefetchType::kUtilityAudio;
   }
-  return app_launch_prefetch::GetPrefetchSwitch(prefetch_type);
+  return internal::ChildProcessLauncherHelper::GetPrefetchSwitch(prefetch_type);
 }
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -151,6 +151,7 @@ UtilityProcessHost::UtilityProcessHost(std::unique_ptr<Client> client)
       name_(u"utility process"),
       file_data_(std::make_unique<ChildProcessLauncherFileData>()),
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+      allowed_gpu_(false),
       gpu_client_(nullptr, base::OnTaskRunnerDeleter(nullptr)),
 #endif
       client_(std::move(client)) {
@@ -231,6 +232,12 @@ void UtilityProcessHost::SetPinUser32() {
   pin_user32_ = true;
 }
 #endif  // BUILDFLAG(IS_WIN)
+
+void UtilityProcessHost::SetAllowGpuClient() {
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+  allowed_gpu_ = true;
+#endif
+}
 
 #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
 void UtilityProcessHost::AddFileToPreload(
@@ -319,7 +326,7 @@ bool UtilityProcessHost::StartProcess() {
     cmd_line->AppendSwitchASCII(switches::kLang, locale);
 
 #if BUILDFLAG(IS_WIN)
-    cmd_line->AppendArgNative(UtilityToAppLaunchPrefetchArg(metrics_name_));
+    cmd_line->AppendArg(UtilityToAppLaunchPrefetchArg(metrics_name_));
 #endif  // BUILDFLAG(IS_WIN)
 
     sandbox::policy::SetCommandLineFlagsForSandboxType(cmd_line.get(),
@@ -343,11 +350,9 @@ bool UtilityProcessHost::StartProcess() {
 #endif
       switches::kEnableBackgroundThreadPool,
       switches::kEnableExperimentalCookieFeatures,
-      switches::kEnableLogging,
       switches::kForceTextDirection,
       switches::kForceUIDirection,
       switches::kIgnoreCertificateErrors,
-      switches::kLoggingLevel,
       switches::kOverrideUseSoftwareGLForTests,
       switches::kOverrideEnabledCdmInterfaceVersion,
       switches::kProxyServer,
@@ -361,8 +366,6 @@ bool UtilityProcessHost::StartProcess() {
       switches::kUtilityStartupDialog,
       switches::kUseANGLE,
       switches::kUseGL,
-      switches::kV,
-      switches::kVModule,
       switches::kEnableExperimentalWebPlatformFeatures,
       // These flags are used by the audio service:
       switches::kAudioBufferSize,

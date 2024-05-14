@@ -6,21 +6,27 @@
 #define ASH_PICKER_VIEWS_PICKER_SEARCH_RESULTS_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "ash/picker/model/picker_search_results.h"
+#include "ash/picker/model/picker_search_results_section.h"
+#include "ash/picker/views/picker_page_view.h"
+#include "ash/picker/views/picker_preview_bubble_controller.h"
 #include "base/containers/span.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
-#include "ui/views/view.h"
+
+namespace views {
+class View;
+}
 
 namespace ash {
 
 class PickerAssetFetcher;
 class PickerSearchResult;
+class PickerSectionListView;
 class PickerSectionView;
 
-class ASH_EXPORT PickerSearchResultsView : public views::View {
-  METADATA_HEADER(PickerSearchResultsView, views::View)
+class ASH_EXPORT PickerSearchResultsView : public PickerPageView {
+  METADATA_HEADER(PickerSearchResultsView, PickerPageView)
 
  public:
   // Indicates the user has selected a result.
@@ -36,8 +42,24 @@ class ASH_EXPORT PickerSearchResultsView : public views::View {
   PickerSearchResultsView& operator=(const PickerSearchResultsView&) = delete;
   ~PickerSearchResultsView() override;
 
-  // Replaces the current search results with `results`.
-  void SetSearchResults(const PickerSearchResults& results);
+  // PickerPageView:
+  bool DoPseudoFocusedAction() override;
+  bool MovePseudoFocusUp() override;
+  bool MovePseudoFocusDown() override;
+  bool MovePseudoFocusLeft() override;
+  bool MovePseudoFocusRight() override;
+  void AdvancePseudoFocus(PseudoFocusDirection direction) override;
+
+  // Clears the search results.
+  void ClearSearchResults();
+
+  // Append `section` to the current set of search results.
+  // TODO: b/325840864 - Merge with existing sections if needed.
+  void AppendSearchResults(PickerSearchResultsSection section);
+
+  PickerSectionListView* section_list_view_for_testing() {
+    return section_list_view_;
+  }
 
   base::span<const raw_ptr<PickerSectionView>> section_views_for_testing()
       const {
@@ -54,17 +76,26 @@ class ASH_EXPORT PickerSearchResultsView : public views::View {
   void AddResultToSection(const PickerSearchResult& result,
                           PickerSectionView* section_view);
 
-  // Width of the containing PickerView.
-  int picker_view_width_ = 0;
+  void SetPseudoFocusedView(views::View* view);
+
+  void ScrollPseudoFocusedViewToVisible();
 
   SelectSearchResultCallback select_search_result_callback_;
-  PickerSearchResults search_results_;
 
   // `asset_fetcher` outlives `this`.
   raw_ptr<PickerAssetFetcher> asset_fetcher_ = nullptr;
 
-  // The views for each section of results.
+  // The section list view, contains the section views.
+  raw_ptr<PickerSectionListView> section_list_view_ = nullptr;
+
+  // Used to track the views for each section of results.
   std::vector<raw_ptr<PickerSectionView>> section_views_;
+
+  // The currently pseudo focused view, which responds to user actions that
+  // trigger `DoPseudoFocusedAction`.
+  raw_ptr<views::View> pseudo_focused_view_ = nullptr;
+
+  PickerPreviewBubbleController preview_bubble_controller_;
 };
 
 }  // namespace ash

@@ -37,9 +37,10 @@ constexpr char kTabsTypeName[] = "tabs";
 constexpr char kSavedTabGroupsTypeName[] = "savedTabGroups";
 constexpr char kSharedTabGroupDataTypeName[] = "sharedTabGroupData";
 constexpr char kPaymentsTypeName[] = "payments";
+constexpr char kCompareTypeName[] = "compare";
 
 UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
-  static_assert(49 == syncer::GetNumModelTypes(),
+  static_assert(52 == syncer::GetNumModelTypes(),
                 "Almost always when adding a new ModelType, you must tie it to "
                 "a UserSelectableType below (new or existing) so the user can "
                 "disable syncing of that data. Today you must also update the "
@@ -90,15 +91,19 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
     case UserSelectableType::kSavedTabGroups:
       return {kSavedTabGroupsTypeName, SAVED_TAB_GROUP, {SAVED_TAB_GROUP}};
     case UserSelectableType::kSharedTabGroupData:
+      // Note: COLLABORATION_GROUP might be re-used for other features. If this
+      // happens, it should probably be in AlwaysPreferredUserTypes().
       return {kSharedTabGroupDataTypeName,
               SHARED_TAB_GROUP_DATA,
-              {SHARED_TAB_GROUP_DATA}};
+              {SHARED_TAB_GROUP_DATA, COLLABORATION_GROUP}};
     case UserSelectableType::kPayments:
       return {kPaymentsTypeName,
               AUTOFILL_WALLET_DATA,
               {AUTOFILL_WALLET_CREDENTIAL, AUTOFILL_WALLET_DATA,
                AUTOFILL_WALLET_METADATA, AUTOFILL_WALLET_OFFER,
                AUTOFILL_WALLET_USAGE}};
+    case UserSelectableType::kCompare:
+      return {kCompareTypeName, COMPARE, {COMPARE}};
   }
   NOTREACHED();
   return {nullptr, UNSPECIFIED, {}};
@@ -174,6 +179,9 @@ std::optional<UserSelectableType> GetUserSelectableTypeFromString(
   }
   if (type == kSharedTabGroupDataTypeName) {
     return UserSelectableType::kSharedTabGroupData;
+  }
+  if (type == kCompareTypeName) {
+    return UserSelectableType::kCompare;
   }
   return std::nullopt;
 }

@@ -31,7 +31,7 @@ public class OmniboxFeatures {
             ChromeFeatureList.newBooleanCachedFieldTrialParameter(
                     ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE,
                     "enable_modernize_visual_update_on_tablet",
-                    false);
+                    true);
 
     public static final BooleanCachedFieldTrialParameter
             MODERNIZE_VISUAL_UPDATE_ACTIVE_COLOR_ON_OMNIBOX =
@@ -39,12 +39,6 @@ public class OmniboxFeatures {
                             ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE,
                             "modernize_visual_update_active_color_on_omnibox",
                             true);
-
-    public static final BooleanCachedFieldTrialParameter MODERNIZE_VISUAL_UPDATE_SMALLEST_MARGINS =
-            ChromeFeatureList.newBooleanCachedFieldTrialParameter(
-                    ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE,
-                    "modernize_visual_update_smallest_margins",
-                    true);
 
     public static final BooleanCachedFieldTrialParameter QUERY_TILES_SHOW_AS_CAROUSEL =
             ChromeFeatureList.newBooleanCachedFieldTrialParameter(
@@ -67,15 +61,6 @@ public class OmniboxFeatures {
      */
     public static boolean shouldShowActiveColorOnOmnibox() {
         return MODERNIZE_VISUAL_UPDATE_ACTIVE_COLOR_ON_OMNIBOX.getValue();
-    }
-
-    /**
-     * Returns whether even smaller vertical and horizontal margins should be used in the visual
-     * update.
-     */
-    public static boolean shouldShowSmallestMargins(Context context) {
-        return shouldShowModernizeVisualUpdate(context)
-                && MODERNIZE_VISUAL_UPDATE_SMALLEST_MARGINS.getValue();
     }
 
     /**
@@ -158,9 +143,49 @@ public class OmniboxFeatures {
         return ChromeFeatureList.sVisibleUrlTruncationV2.isEnabled();
     }
 
+    /**
+     * Returns if we should omit calculating the visible hint if the TLD is different than the
+     * previous call to setText().
+     */
+    public static boolean shouldOmitVisibleHintCalculationForDifferentTLD() {
+        return ChromeFeatureList.sNoVisibleHintForDifferentTLD.isEnabled();
+    }
+
     /** Returns whether to show the incognito status for tablet. */
     public static boolean showIncognitoStatusForTablet() {
         return ChromeFeatureList.sTabletToolbarIncognitoStatus.isEnabled()
-                || ChromeFeatureList.sDynamicTopChrome.isEnabled();
+                || (ChromeFeatureList.sDynamicTopChrome.isEnabled()
+                        && !ChromeFeatureList.sTabStripLayoutOptimization.isEnabled());
+    }
+
+    /** Returns whether answer suggestions should be annotated with attached action chips. */
+    public static boolean shouldShowAnswerActions() {
+        return ChromeFeatureList.sOmniboxAnswerActions.isEnabled();
+    }
+
+    /** Returns whether answers with actions should be re-ordered to just above the keyboard */
+    public static boolean shouldShowAnswerWithActionsAboveKeyboard() {
+        return shouldShowAnswerActions()
+                && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                        ChromeFeatureList.OMNIBOX_ANSWER_ACTIONS,
+                        "AnswerActionsShowAboveKeyboard",
+                        false);
+    }
+
+    /**
+     * Returns whether answers with actions should be displayed if there are url suggestions
+     * present.
+     */
+    public static boolean shouldShowAnswerWithActionsIfUrlsPresent() {
+        return shouldShowAnswerActions()
+                && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                        ChromeFeatureList.OMNIBOX_ANSWER_ACTIONS, "ShowIfUrlsPresent", false);
+    }
+
+    /** Returns whether answers with actions should be presented as a rich card */
+    public static boolean shouldShowRichAnswerCard() {
+        return shouldShowAnswerActions()
+                && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                        ChromeFeatureList.OMNIBOX_ANSWER_ACTIONS, "ShowRichCard", false);
     }
 }

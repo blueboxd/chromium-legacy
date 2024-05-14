@@ -40,10 +40,6 @@ class LocalPasswordsMigrationWarningUtilTest : public testing::Test {
   base::test::TaskEnvironment* task_env() { return &task_env_; }
 
   void SetUp() override {
-    pref_service()->SetInteger(
-        password_manager::prefs::kPasswordsUseUPMLocalAndSeparateStores,
-        static_cast<int>(
-            password_manager::prefs::UseUpmLocalAndSeparateStoresState::kOff));
     fake_sync_service_ = static_cast<syncer::TestSyncService*>(
         SyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile(), base::BindRepeating(&TestingSyncFactoryFunction)));
@@ -65,28 +61,27 @@ TEST_F(LocalPasswordsMigrationWarningUtilTest,
   EXPECT_FALSE(local_password_migration::ShouldShowWarning(profile()));
 }
 
-TEST_F(LocalPasswordsMigrationWarningUtilTest,
-       TestShouldShowWhenMoreThanAMonth) {
+TEST_F(LocalPasswordsMigrationWarningUtilTest, TestShouldShowWhenMoreThanADay) {
   base::test::ScopedFeatureList scoped_feature_list(
       password_manager::features::
           kUnifiedPasswordManagerLocalPasswordsMigrationWarning);
   pref_service()->SetTime(
       password_manager::prefs::kLocalPasswordsMigrationWarningShownTimestamp,
       base::Time::Now());
-  task_env()->FastForwardBy(base::Days(31));
+  task_env()->FastForwardBy(base::Hours(25));
   sync_service()->SetHasSyncConsent(false);
   EXPECT_TRUE(local_password_migration::ShouldShowWarning(profile()));
 }
 
 TEST_F(LocalPasswordsMigrationWarningUtilTest,
-       TestShouldNotShowWhenLessThanAMonth) {
+       TestShouldNotShowWhenLessThanADay) {
   base::test::ScopedFeatureList scoped_feature_list(
       password_manager::features::
           kUnifiedPasswordManagerLocalPasswordsMigrationWarning);
   pref_service()->SetTime(
       password_manager::prefs::kLocalPasswordsMigrationWarningShownTimestamp,
       base::Time::Now());
-  task_env()->FastForwardBy(base::Days(29));
+  task_env()->FastForwardBy(base::Hours(23));
   sync_service()->SetHasSyncConsent(false);
   EXPECT_FALSE(local_password_migration::ShouldShowWarning(profile()));
 }
@@ -161,4 +156,35 @@ TEST_F(LocalPasswordsMigrationWarningUtilTest,
       static_cast<int>(
           password_manager::prefs::UseUpmLocalAndSeparateStoresState::kOn));
   EXPECT_FALSE(local_password_migration::ShouldShowWarning(profile()));
+}
+
+TEST_F(LocalPasswordsMigrationWarningUtilTest,
+       ShouldNotShowPostPasswordMigrationSheetWhenThePrefIsFalse) {
+  // ShouldShowPostPasswordMigrationSheetAtStartup is set to false in the test
+  // setup.
+  EXPECT_FALSE(
+      local_password_migration::ShouldShowPostMigrationSheet(profile()));
+}
+
+TEST_F(LocalPasswordsMigrationWarningUtilTest,
+       ShouldNotShowPostPasswordMigrationSheetInIncognito) {
+  pref_service()->SetBoolean(
+      password_manager::prefs::kShouldShowPostPasswordMigrationSheetAtStartup,
+      true);
+  TestingProfile::Builder off_the_record_builder;
+  Profile* off_the_record_profile =
+      off_the_record_builder.BuildIncognito(profile());
+
+  EXPECT_FALSE(local_password_migration::ShouldShowPostMigrationSheet(
+      off_the_record_profile));
+}
+
+TEST_F(LocalPasswordsMigrationWarningUtilTest,
+       ShouldShowPostPasswordMigrationSheetWithAllPreconditionsTrue) {
+  pref_service()->SetBoolean(
+      password_manager::prefs::kShouldShowPostPasswordMigrationSheetAtStartup,
+      true);
+
+  EXPECT_TRUE(
+      local_password_migration::ShouldShowPostMigrationSheet(profile()));
 }

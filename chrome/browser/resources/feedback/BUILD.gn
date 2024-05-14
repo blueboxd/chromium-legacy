@@ -12,13 +12,10 @@ build_webui("build") {
   grd_prefix = "feedback"
 
   static_files = [
-    "css/about_sys.css",
     "css/feedback_shared_styles.css",
     "css/feedback_shared_vars.css",
-    "css/logs_map_page.css",
     "feedback.html",
     "html/autofill_metadata_info.html",
-    "html/sys_info.html",
     "images/2x/button_butter_bar_close_hover.png",
     "images/2x/button_butter_bar_close.png",
     "images/2x/button_butter_bar_close_pressed.png",
@@ -27,28 +24,23 @@ build_webui("build") {
     "images/button_butter_bar_close_pressed.png",
   ]
 
-  if (is_chromeos_ash) {
-    static_files += [
-      "css/logs_info.css",
-      "html/assistant_logs_info.html",
-      "html/bluetooth_logs_info.html",
-    ]
-  }
-
-  web_component_files = [ "app.ts" ]
+  web_component_files = [
+    "app.ts",
+    "autofill_metadata_app.ts",
+  ]
 
   non_web_component_files = [
-    "js/autofill_metadata.ts",
     "js/feedback_browser_proxy.ts",
     "js/feedback_regexes.ts",
     "js/feedback_util.ts",
     "js/logs_map_page.ts",
     "js/questionnaire.ts",
-    "js/sys_info.ts",
     "js/take_screenshot.ts",
   ]
 
   css_files = [
+    "css/about_sys.css",
+    "css/logs_map_page.css",
     "feedback_shared_styles.css",
     "feedback_shared_vars.css",
   ]

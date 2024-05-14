@@ -104,7 +104,7 @@ using FieldRendererIdType = ::base::IdTypeU64<class FieldRendererIdMarker>;
 //
 // As a sentinel value, the FormRendererId of a synthetic form converts to
 // `false` (== is_null()). A synthetic form is the collection of form fields
-// outside of the scope of any <form> tag in a page.
+// outside of the scope of any <form> tag in a document.
 //
 // Since each page can trigger an overflow, security must not rely on their
 // uniqueness.
@@ -135,10 +135,10 @@ struct GlobalId {
     return static_cast<bool>(renderer_id);
   }
 
-  friend constexpr auto operator<=>(const GlobalId<RendererId>& lhs,
-                                    const GlobalId<RendererId>& rhs) = default;
-  friend constexpr bool operator==(const GlobalId<RendererId>& lhs,
-                                   const GlobalId<RendererId>& rhs) = default;
+  friend auto operator<=>(const GlobalId<RendererId>& lhs,
+                          const GlobalId<RendererId>& rhs) = default;
+  friend bool operator==(const GlobalId<RendererId>& lhs,
+                         const GlobalId<RendererId>& rhs) = default;
 };
 
 }  // namespace internal

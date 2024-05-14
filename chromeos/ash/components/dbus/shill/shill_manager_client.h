@@ -274,6 +274,18 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillManagerClient {
                               base::OnceClosure callback,
                               ErrorCallback error_callback) = 0;
 
+  // Creates a P2P group that uses WiFi direct as the underlying medium.
+  virtual void CreateP2PGroup(
+      const base::Value::Dict& properties,
+      base::OnceCallback<void(base::Value::Dict result)> callback,
+      ErrorCallback error_callback) = 0;
+
+  // Connects to a P2P group
+  virtual void ConnectToP2PGroup(
+      const base::Value::Dict& properties,
+      base::OnceCallback<void(base::Value::Dict result)> callback,
+      ErrorCallback error_callback) = 0;
+
   // Returns an interface for testing (stub only), or returns null.
   virtual TestInterface* GetTestInterface() = 0;
 

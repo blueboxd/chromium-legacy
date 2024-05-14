@@ -4,23 +4,29 @@
 
 package org.chromium.chrome.browser.touch_to_fill.payments;
 
+import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import static org.chromium.base.test.util.CriteriaHelper.pollUiThread;
+import static org.chromium.chrome.browser.autofill.AutofillTestHelper.createClickActionWithFlags;
 import static org.chromium.chrome.browser.autofill.AutofillTestHelper.createCreditCard;
 import static org.chromium.chrome.browser.autofill.AutofillTestHelper.createLocalCreditCard;
 import static org.chromium.chrome.browser.autofill.AutofillTestHelper.createVirtualCreditCard;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardProperties.DISMISS_HANDLER;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardProperties.ItemType.CREDIT_CARD;
+import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardProperties.ItemType.FILL_BUTTON;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardProperties.SHEET_ITEMS;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardProperties.VISIBLE;
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
+import android.view.MotionEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.TextView;
 
@@ -41,7 +47,9 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DoNotBatch;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.touch_to_fill.common.FillableItemCollectionInfo;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -311,6 +319,43 @@ public class TouchToFillCreditCardViewTest {
 
     @Test
     @MediumTest
+    @EnableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_SECURITY_TOUCH_EVENT_FILTERING_ANDROID})
+    public void testCreditCardViewFiltersTouchEvents() {
+        runOnUiThreadBlocking(
+                () -> {
+                    PropertyModel cardModel =
+                            createCardModel(NICKNAMED_VISA, mItemCollectionInfo, () -> fail());
+                    mTouchToFillCreditCardModel
+                            .get(SHEET_ITEMS)
+                            .add(new ListItem(CREDIT_CARD, cardModel));
+                    mTouchToFillCreditCardModel
+                            .get(SHEET_ITEMS)
+                            .add(new ListItem(FILL_BUTTON, cardModel));
+                    mTouchToFillCreditCardModel.set(VISIBLE, true);
+                });
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        // Make sure touch events are ignored if something is drawn on top the the bottom sheet.
+        onView(withText(NICKNAMED_VISA.getCardNameForAutofillDisplay()))
+                .perform(createClickActionWithFlags(MotionEvent.FLAG_WINDOW_IS_OBSCURED));
+        onView(withText(NICKNAMED_VISA.getCardNameForAutofillDisplay()))
+                .perform(createClickActionWithFlags(MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED));
+        onView(
+                        withText(
+                                mActivityTestRule
+                                        .getActivity()
+                                        .getString(R.string.autofill_credit_card_continue_button)))
+                .perform(createClickActionWithFlags(MotionEvent.FLAG_WINDOW_IS_OBSCURED));
+        onView(
+                        withText(
+                                mActivityTestRule
+                                        .getActivity()
+                                        .getString(R.string.autofill_credit_card_continue_button)))
+                .perform(createClickActionWithFlags(MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED));
+    }
+
+    @Test
+    @MediumTest
     public void testCardNameContentLabelForNicknamedCardContainsANetworkName() {
         runOnUiThreadBlocking(
                 () -> {
@@ -461,6 +506,11 @@ public class TouchToFillCreditCardViewTest {
 
     private static PropertyModel createCardModel(
             CreditCard card, FillableItemCollectionInfo collectionInfo) {
+        return createCardModel(card, collectionInfo, () -> {});
+    }
+
+    private static PropertyModel createCardModel(
+            CreditCard card, FillableItemCollectionInfo collectionInfo, Runnable actionCallback) {
         PropertyModel.Builder creditCardModelBuilder =
                 new PropertyModel.Builder(
                                 TouchToFillCreditCardProperties.CreditCardProperties.ALL_KEYS)
@@ -473,7 +523,11 @@ public class TouchToFillCreditCardViewTest {
                         .with(
                                 TouchToFillCreditCardProperties.CreditCardProperties
                                         .ITEM_COLLECTION_INFO,
-                                collectionInfo);
+                                collectionInfo)
+                        .with(
+                                TouchToFillCreditCardProperties.CreditCardProperties
+                                        .ON_CLICK_ACTION,
+                                actionCallback);
         if (!card.getBasicCardIssuerNetwork()
                 .equals(card.getCardNameForAutofillDisplay().toLowerCase())) {
             creditCardModelBuilder.with(

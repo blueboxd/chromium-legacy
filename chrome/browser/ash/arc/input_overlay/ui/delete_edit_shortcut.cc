@@ -40,7 +40,8 @@ DeleteEditShortcut::DeleteEditShortcut(DisplayOverlayController* controller,
                                        ActionViewListItem* anchor_view)
     : views::BubbleDialogDelegateView(anchor_view,
                                       views::BubbleBorder::LEFT_CENTER,
-                                      views::BubbleBorder::DIALOG_SHADOW),
+                                      // TODO(b/329895423): Add shadow.
+                                      views::BubbleBorder::NO_SHADOW),
       controller_(controller) {
   set_margins(gfx::Insets(12));
   set_corner_radius(20);
@@ -130,8 +131,10 @@ DeleteEditShortcut::CreateNonClientFrameView(views::Widget* widget) {
 
   auto frame =
       views::BubbleDialogDelegateView::CreateNonClientFrameView(widget);
-  static_cast<views::BubbleFrameView*>(frame.get())
-      ->SetBubbleBorder(std::move(bubble_border));
+  if (auto* frame_view =
+          views::AsViewClass<views::BubbleFrameView>(frame.get())) {
+    frame_view->SetBubbleBorder(std::move(bubble_border));
+  }
   return frame;
 }
 

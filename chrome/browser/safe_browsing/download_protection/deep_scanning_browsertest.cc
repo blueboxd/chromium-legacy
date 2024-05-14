@@ -322,7 +322,8 @@ class DownloadDeepScanningBrowserTestBase
     return last_request_;
   }
 
-  const base::flat_set<download::DownloadItem*>& download_items() {
+  const base::flat_set<raw_ptr<download::DownloadItem, CtnExperimental>>&
+  download_items() {
     return download_items_;
   }
 
@@ -492,7 +493,8 @@ class DownloadDeepScanningBrowserTestBase
   base::OnceClosure waiting_for_upload_closure_;
   base::OnceClosure waiting_for_metadata_closure_;
 
-  base::flat_set<download::DownloadItem*> download_items_;
+  base::flat_set<raw_ptr<download::DownloadItem, CtnExperimental>>
+      download_items_;
 
   std::unique_ptr<policy::MockCloudPolicyClient> client_;
   std::unique_ptr<signin::IdentityTestEnvironment> identity_test_environment_;
@@ -1313,7 +1315,7 @@ IN_PROC_BROWSER_TEST_F(SavePackageDeepScanningBrowserTest, Blocked) {
       /*username*/ kUserName,
       /*profile_identifier*/ GetProfileIdentifier(),
       /*scan_id*/ last_request().request_token(),
-      /*content_transfer_method*/ absl::nullopt);
+      /*content_transfer_method*/ std::nullopt);
 
   SendFcmMessage(response);
   run_loop.Run();
@@ -1385,7 +1387,7 @@ IN_PROC_BROWSER_TEST_F(SavePackageDeepScanningBrowserTest, KeepAfterWarning) {
       /*username*/ kUserName,
       /*profile_identifier*/ GetProfileIdentifier(),
       /*scan_id*/ last_request().request_token(),
-      /*content_transfer_method*/ absl::nullopt);
+      /*content_transfer_method*/ std::nullopt);
 
   SendFcmMessage(response);
   validator_run_loop.Run();
@@ -1423,7 +1425,7 @@ IN_PROC_BROWSER_TEST_F(SavePackageDeepScanningBrowserTest, KeepAfterWarning) {
       /*username*/ kUserName,
       /*profile_identifier*/ GetProfileIdentifier(),
       /*scan_id*/ last_request().request_token(),
-      /*content_transfer_method*/ absl::nullopt);
+      /*content_transfer_method*/ std::nullopt);
 
   DownloadItemModel model(item);
   DownloadCommands(model.GetWeakPtr()).ExecuteCommand(DownloadCommands::KEEP);
@@ -1495,7 +1497,7 @@ IN_PROC_BROWSER_TEST_F(SavePackageDeepScanningBrowserTest,
       /*username*/ kUserName,
       /*profile_identifier*/ GetProfileIdentifier(),
       /*scan_id*/ last_request().request_token(),
-      /*content_transfer_method*/ absl::nullopt);
+      /*content_transfer_method*/ std::nullopt);
 
   SendFcmMessage(response);
   validator_run_loop.Run();
@@ -1598,7 +1600,7 @@ IN_PROC_BROWSER_TEST_F(SavePackageDeepScanningBrowserTest, OpenNow) {
       /*username*/ kUserName,
       /*profile_identifier*/ GetProfileIdentifier(),
       /*scan_id*/ last_request().request_token(),
-      /*content_transfer_method*/ absl::nullopt);
+      /*content_transfer_method*/ std::nullopt);
 
   SendFcmMessage(response);
   validator_run_loop.Run();

@@ -119,6 +119,8 @@ using base::Feature;
 using testing::_;
 using testing::ElementsAre;
 using testing::Field;
+using testing::Pair;
+using testing::SizeIs;
 
 namespace password_manager {
 namespace {
@@ -874,12 +876,14 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "document.getElementById('password_field').value = 'random';"
       "document.getElementById('submit_button').click();";
   ASSERT_TRUE(content::ExecJs(WebContents(), fill_and_submit));
+  // This forces layout update.
+  RunUntilInputProcessed(RenderFrameHost()->GetRenderWidgetHost());
+
   std::string message;
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"FETCH_FINISHED\"")
       break;
   }
-
   EXPECT_TRUE(prompt_observer.IsSavePromptShownAutomatically());
 }
 
@@ -904,12 +908,14 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "document.getElementById('confirmation_password_field').value = 'random';"
       "document.getElementById('signup_submit_button').click();";
   ASSERT_TRUE(content::ExecJs(WebContents(), fill_and_submit));
+  // This forces layout update.
+  RunUntilInputProcessed(RenderFrameHost()->GetRenderWidgetHost());
   std::string message;
+
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"FETCH_FINISHED\"")
       break;
   }
-
   EXPECT_TRUE(prompt_observer.IsSavePromptShownAutomatically());
 }
 
@@ -930,12 +936,14 @@ IN_PROC_BROWSER_TEST_F(
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('submit_button').click();";
   ASSERT_TRUE(content::ExecJs(WebContents(), fill_and_submit));
+  // This forces layout update.
+  RunUntilInputProcessed(RenderFrameHost()->GetRenderWidgetHost());
+
   std::string message;
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"FETCH_FINISHED\"")
       break;
   }
-
   EXPECT_FALSE(prompt_observer.IsSavePromptShownAutomatically());
 }
 
@@ -956,12 +964,14 @@ IN_PROC_BROWSER_TEST_F(
       "document.getElementById('signup_username_field').value = 'temp';"
       "document.getElementById('signup_submit_button').click();";
   ASSERT_TRUE(content::ExecJs(WebContents(), fill_and_submit));
+  // This forces layout update.
+  RunUntilInputProcessed(RenderFrameHost()->GetRenderWidgetHost());
+
   std::string message;
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"FETCH_FINISHED\"")
       break;
   }
-
   EXPECT_FALSE(prompt_observer.IsSavePromptShownAutomatically());
 }
 
@@ -1792,10 +1802,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   // Migration updates should touch the password store.
   WaitForPasswordStore();
   // Only HTTPS passwords should be present.
-  EXPECT_TRUE(
-      password_store->stored_passwords().at(http_origin.spec()).empty());
-  EXPECT_FALSE(
-      password_store->stored_passwords().at(https_origin.spec()).empty());
+  EXPECT_THAT(password_store->stored_passwords(),
+              ElementsAre(Pair(https_origin.spec(), SizeIs(1))));
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,

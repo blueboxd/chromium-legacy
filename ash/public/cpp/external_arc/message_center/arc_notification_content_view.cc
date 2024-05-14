@@ -536,8 +536,11 @@ void ArcNotificationContentView::UpdateSnapshot() {
 void ArcNotificationContentView::AttachSurface() {
   DCHECK(!native_view());
 
-  if (!GetWidget())
+  // If the view is hidden, we attach the surface in
+  // `ArcNotificationContentView::SetVisible()` when it gets visible.
+  if (!GetVisible() || !GetWidget()) {
     return;
+  }
 
   UpdatePreferredSize();
   surface_->Attach(this);
@@ -552,6 +555,15 @@ void ArcNotificationContentView::AttachSurface() {
   MaybeCreateFloatingControlButtons();
 
   UpdateMask(false /* force_update */);
+}
+
+void ArcNotificationContentView::SetVisible(bool visible) {
+  NativeViewHost::SetVisible(visible);
+  if (visible) {
+    EnsureSurfaceAttached();
+  } else {
+    EnsureSurfaceDetached();
+  }
 }
 
 void ArcNotificationContentView::EnsureSurfaceAttached() {

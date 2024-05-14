@@ -5,11 +5,12 @@
 #include "android_webview/browser/network_service/aw_proxying_url_loader_factory.h"
 
 #include <memory>
+#include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
-#include <optional>
 #include "android_webview/browser/android_protocol_handler.h"
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
@@ -822,7 +823,7 @@ void InterceptedRequest::OnURLLoaderError(uint32_t custom_reason,
       SendErrorCallback(safe_browsing::kNetErrorCodeForSafeBrowsing, true);
     } else {
       int parsed_error_code;
-      if (base::StringToInt(base::StringPiece(description),
+      if (base::StringToInt(std::string_view(description),
                             &parsed_error_code)) {
         SendErrorCallback(parsed_error_code, false);
       }

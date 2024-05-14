@@ -39,7 +39,8 @@ class HapticsTrackingTestInputController : public ui::InputController {
                          const base::TimeDelta& interval) override;
   void GetAutoRepeatRate(base::TimeDelta* delay,
                          base::TimeDelta* interval) override;
-  void SetCurrentLayoutByName(const std::string& layout_name) override;
+  void SetCurrentLayoutByName(const std::string& layout_name,
+                              base::OnceCallback<void(bool)> callback) override;
   void SetKeyboardKeyBitsMapping(
       base::flat_map<int, std::vector<uint64_t>> key_bits_mapping) override;
   std::vector<uint64_t> GetKeyboardKeyBits(int id) override;
@@ -107,6 +108,8 @@ class HapticsTrackingTestInputController : public ui::InputController {
           receiver) override;
   bool AreAnyKeysPressed() override;
   void BlockModifiersOnDevices(std::vector<int> device_ids) override;
+  bool AreInputDevicesEnabled() const override;
+  std::unique_ptr<ui::ScopedDisableInputDevices> DisableInputDevices() override;
 
   // Returns haptic count for effect/strength combination for testing.
   int GetSentHapticCount(ui::HapticTouchpadEffect effect,

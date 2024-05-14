@@ -42,6 +42,10 @@ generate_jni_registration("cronet_jni_registration") {
 
   # JNI generated is used for test and non-test apks.
   include_testonly = true
+
+  _subdir = rebase_path(target_gen_dir, root_gen_dir)
+  cpp_codegen_output =
+      "$jni_headers_dir/$_subdir/cronet_jni_registration_generated.h"
 }
 
 android_library("cronet_jni_registration_java") {
@@ -351,6 +355,7 @@ android_library("cronet_stats_log_java") {
   sources = [ "java/src/org/chromium/net/telemetry/CronetStatsLog.java" ]
   alternative_android_sdk_dep =
       "//third_party/android_sdk:public_framework_system_java"
+  deps = [ "//third_party/androidx:androidx_annotation_annotation_java" ]
 }
 
 cronet_impl_common_java_srcjar_deps = [
@@ -1163,7 +1168,6 @@ android_library("cronet_test_apk_java") {
     "//base:base_java_test_support",
     "//build/android:build_java",
     "//net/android:net_java_test_support",
-    "//third_party/android_sdk:android_test_base_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/google-truth:google_truth_java",
     "//third_party/jni_zero:jni_zero_java",
@@ -1214,7 +1218,6 @@ android_library("cronet_common_javatests") {
            "//base:base_java",
            "//base:base_java_test_support",
            "//build/android:build_java",
-           "//third_party/android_sdk:android_test_base_java",
            "//third_party/androidx:androidx_core_core_java",
            "//third_party/google-truth:google_truth_java",
            "//third_party/jni_zero:jni_zero_java",
@@ -1245,7 +1248,6 @@ android_library("cronet_fake_javatests") {
            ":cronet_test_apk_java",
            "//base:base_java_test_support",
            "//third_party/android_deps:guava_android_java",
-           "//third_party/android_sdk:android_test_base_java",
            "//third_party/google-truth:google_truth_java",
            "//third_party/junit",
          ] + cronet_tests_androidx_common_srcs
@@ -1322,7 +1324,9 @@ android_library("cronet_javatests") {
     "test/javatests/src/org/chromium/net/httpflags/BaseFeatureTest.java",
     "test/javatests/src/org/chromium/net/httpflags/HttpFlagsLoaderTest.java",
     "test/javatests/src/org/chromium/net/httpflags/ResolvedFlagsTest.java",
+    "test/javatests/src/org/chromium/net/impl/AndroidBidirectionalStreamWrapperTest.java",
     "test/javatests/src/org/chromium/net/impl/AndroidHttpEngineBuilderWrapperTest.java",
+    "test/javatests/src/org/chromium/net/impl/AndroidUrlRequestWrapperTest.java",
     "test/javatests/src/org/chromium/net/impl/CronetLoggerTest.java",
     "test/javatests/src/org/chromium/net/impl/CronetManifestTest.java",
     "test/javatests/src/org/chromium/net/telemetry/CronetLoggerImplTest.java",
@@ -1350,7 +1354,6 @@ android_library("cronet_javatests") {
     ":cronet_urlconnection_impl_java",
     "//third_party/android_deps:guava_android_java",
     "//third_party/android_deps:protobuf_lite_runtime_java",
-    "//third_party/android_sdk:android_test_base_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_test_core_java",
     "//third_party/androidx:androidx_test_ext_junit_java",
@@ -1398,7 +1401,6 @@ instrumentation_test_apk("cronet_test_instrumentation_apk") {
            "//build/android:build_java",
            "//net/android:net_java",
            "//net/android:net_java_test_support",
-           "//third_party/android_sdk:android_test_base_java",
            "//third_party/android_sdk:android_test_mock_java",
            "//third_party/google-truth:google_truth_java",
            "//third_party/hamcrest:hamcrest_core_java",
@@ -1445,7 +1447,6 @@ instrumentation_test_apk(
            ":cronet_impl_platform_java",
            ":cronet_test_apk_resources",
            "//base:base_java_test_support",
-           "//third_party/android_sdk:android_test_base_java",
            "//third_party/android_sdk:android_test_mock_java",
            "//third_party/google-truth:google_truth_java",
            "//third_party/junit",
@@ -1484,7 +1485,6 @@ instrumentation_test_apk(
            "//base:base_java",
            "//base:base_java_test_support",
            "//build/android:build_java",
-           "//third_party/android_sdk:android_test_base_java",
            "//third_party/android_sdk:android_test_mock_java",
            "//third_party/google-truth:google_truth_java",
            "//third_party/jni_zero:jni_zero_java",
@@ -1536,7 +1536,6 @@ instrumentation_test_apk("cronet_smoketests_apk") {
            "//base:base_java",
            "//base:base_java_test_support",
            "//build/android:build_java",
-           "//third_party/android_sdk:android_test_base_java",
            "//third_party/android_sdk:android_test_mock_java",
            "//third_party/google-truth:google_truth_java",
            "//third_party/junit",
@@ -1688,6 +1687,9 @@ generate_jni_registration("cronet_tests_jni_registration") {
   manual_jni_registration = true
   testonly = true
   module_name = "cronet_tests"
+  _subdir = rebase_path(target_gen_dir, root_gen_dir)
+  cpp_codegen_output =
+      "$jni_headers_dir/$_subdir/cronet_tests_jni_registration_generated.h"
 }
 android_library("cronet_tests_jni_registration_java") {
   srcjar_deps = [ ":cronet_tests_jni_registration" ]
@@ -2020,6 +2022,20 @@ action("api_static_checks") {
   ]
 }
 
+action("gn2bp_check") {
+  script = "//components/cronet/gn2bp/validate_gn2bp.py"
+  sources = [
+    "$_gn_path",
+    "//components/cronet/gn2bp/gen_android_bp.py",
+    "//tools/mb/mb.py",
+  ]
+  outputs = [ "$target_gen_dir/$target_name.stamp" ]
+  args = [
+    "--stamp",
+    rebase_path(outputs[0], root_build_dir),
+  ]
+}
+
 action("dependencies_checks") {
   script = "//components/cronet/tools/check_cronet_dependencies.py"
   inputs = [ "//components/cronet/android/dependencies.txt" ]
@@ -2114,6 +2130,11 @@ group("cronet_package_android") {
     ":generate_javadoc",
     ":generate_licenses",
   ]
+}
+
+# Everything added here will be executed in the CI.
+group("cronet_package_ci") {
+  deps = [ ":gn2bp_check" ]
 }
 
 group("cronet_android_mainline") {

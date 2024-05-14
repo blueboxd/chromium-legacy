@@ -20,12 +20,14 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/features.h"
+#include "net/base/ip_address.h"
 #include "net/cert/cert_net_fetcher.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/crl_set.h"
 #include "net/cert/x509_util.h"
 #include "net/net_buildflags.h"
 #include "services/cert_verifier/cert_net_url_loader/cert_net_fetcher_url_loader.h"
+#include "services/cert_verifier/cert_verifier_creation.h"
 #include "services/cert_verifier/cert_verifier_service.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -70,28 +72,8 @@ internal::CertVerifierServiceImpl* GetNewCertVerifierImpl(
   // Populate initial instance params from creation params.
   net::CertVerifyProc::InstanceParams instance_params;
   if (creation_params->initial_additional_certificates) {
-    instance_params
-        .additional_trust_anchors = net::x509_util::ParseAllValidCerts(
-        net::x509_util::ConvertToX509CertificatesIgnoreErrors(
-            creation_params->initial_additional_certificates->trust_anchors));
-
-    instance_params.additional_untrusted_authorities =
-        net::x509_util::ParseAllValidCerts(
-            net::x509_util::ConvertToX509CertificatesIgnoreErrors(
-                creation_params->initial_additional_certificates
-                    ->all_certificates));
-
-    instance_params.additional_trust_anchors_with_enforced_constraints =
-        net::x509_util::ParseAllValidCerts(
-            net::x509_util::ConvertToX509CertificatesIgnoreErrors(
-                creation_params->initial_additional_certificates
-                    ->trust_anchors_with_enforced_constraints));
-
-    instance_params.additional_distrusted_spkis =
-        creation_params->initial_additional_certificates->distrusted_spkis;
-    instance_params.include_system_trust_store =
-        creation_params->initial_additional_certificates
-            ->include_system_trust_store;
+    UpdateCertVerifierInstanceParams(
+        creation_params->initial_additional_certificates, &instance_params);
   }
 
   std::unique_ptr<net::CertVerifierWithUpdatableProc> cert_verifier =
@@ -335,13 +317,14 @@ void CertVerifierServiceFactoryImpl::GetChromeRootStoreInfo(
   mojom::ChromeRootStoreInfoPtr info_ptr = mojom::ChromeRootStoreInfo::New();
   if (proc_params_.root_store_data) {
     info_ptr->version = proc_params_.root_store_data->version();
-    for (auto cert : proc_params_.root_store_data->anchors()) {
+    for (const auto& anchor : proc_params_.root_store_data->anchors()) {
+      const bssl::ParsedCertificate* cert = anchor.certificate.get();
       info_ptr->root_cert_info.push_back(
           mojom::ChromeRootCertInfo::New(GetName(*cert), GetHash(*cert)));
     }
   } else {
     info_ptr->version = net::CompiledChromeRootStoreVersion();
-    for (auto cert : net::CompiledChromeRootStoreAnchors()) {
+    for (const auto& cert : net::CompiledChromeRootStoreAnchors()) {
       info_ptr->root_cert_info.push_back(
           mojom::ChromeRootCertInfo::New(GetName(*cert), GetHash(*cert)));
     }

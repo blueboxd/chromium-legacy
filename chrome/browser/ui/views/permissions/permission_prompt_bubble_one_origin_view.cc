@@ -9,6 +9,7 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
@@ -23,10 +24,12 @@
 #include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_widget_sublevel.h"
+#include "chrome/browser/ui/views/media_preview/media_preview_metrics.h"
 #include "chrome/browser/ui/views/title_origin_label.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/media_effects/media_device_info.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_uma_util.h"
@@ -36,6 +39,7 @@
 #include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
 #include "extensions/common/constants.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
@@ -248,13 +252,24 @@ void PermissionPromptBubbleOneOriginView::AddRequestLine(
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetMultiLine(true);
 
+#if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_FUCHSIA)
+  if (request->request_type() == permissions::RequestType::kMicStream) {
+    mic_permission_label_ = label;
+  } else if (request->request_type() ==
+             permissions::RequestType::kCameraStream) {
+    camera_permission_label_ = label;
+  }
+#endif
+
   if (features::IsChromeRefresh2023()) {
     label->SetTextStyle(views::style::STYLE_BODY_3);
     label->SetEnabledColorId(kColorPermissionPromptRequestText);
 
-    constexpr int kPermissionBodyTopMargin = 10;
-    line_container->SetProperty(
-        views::kMarginsKey, gfx::Insets().set_top(kPermissionBodyTopMargin));
+    if (index == 0u) {
+      constexpr int kPermissionBodyTopMargin = 10;
+      line_container->SetProperty(
+          views::kMarginsKey, gfx::Insets().set_top(kPermissionBodyTopMargin));
+    }
   }
 }
 
@@ -263,7 +278,7 @@ void PermissionPromptBubbleOneOriginView::MaybeAddMediaPreview(
     std::vector<std::string> requested_video_capture_device_ids,
     size_t index) {
 #if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_FUCHSIA)
-  if (!base::FeatureList::IsEnabled(features::kCameraMicPreview)) {
+  if (!base::FeatureList::IsEnabled(blink::features::kCameraMicPreview)) {
     return;
   }
 
@@ -273,6 +288,17 @@ void PermissionPromptBubbleOneOriginView::MaybeAddMediaPreview(
     return;
   }
 
+  auto* cached_device_info = media_effects::MediaDeviceInfo::GetInstance();
+  devices_observer_.Observe(cached_device_info);
+  if (camera_permission_label_) {
+    // Initialize camera label with the current number of cached video devices.
+    OnVideoDevicesChanged(cached_device_info->GetVideoDeviceInfos());
+  }
+  if (mic_permission_label_) {
+    // Initialize mic label with the current number of cached audio devices.
+    OnAudioDevicesChanged(cached_device_info->GetAudioDeviceInfos());
+  }
+
   media_preview_coordinator_.emplace(
       view_type.value(),
       *scroll_media_preview::CreateScrollViewAndGetContents(*this, index),
@@ -280,6 +306,47 @@ void PermissionPromptBubbleOneOriginView::MaybeAddMediaPreview(
       MediaCoordinator::EligibleDevices{
           /*cameras=*/requested_video_capture_device_ids,
           /*mics=*/requested_audio_capture_device_ids},
-      *browser_->profile()->GetPrefs());
+      *browser_->profile()->GetPrefs(),
+      /*allow_device_selection=*/true,
+      media_preview_metrics::Context(
+          media_preview_metrics::UiLocation::kPermissionPrompt));
 #endif
 }
+
+#if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_FUCHSIA)
+void PermissionPromptBubbleOneOriginView::OnAudioDevicesChanged(
+    const std::optional<std::vector<media::AudioDeviceDescription>>&
+        device_infos) {
+  if (!mic_permission_label_ || !device_infos) {
+    return;
+  }
+
+  const auto real_device_names =
+      media_effects::GetRealAudioDeviceNames(device_infos.value());
+
+  mic_permission_label_->SetText(l10n_util::GetStringFUTF16(
+      IDS_MEDIA_CAPTURE_AUDIO_ONLY_PERMISSION_FRAGMENT_WITH_COUNT,
+      base::NumberToString16(real_device_names.size())));
+
+  mic_permission_label_->SetTooltipText(
+      base::UTF8ToUTF16(base::JoinString(real_device_names, "\n")));
+}
+
+void PermissionPromptBubbleOneOriginView::OnVideoDevicesChanged(
+    const std::optional<std::vector<media::VideoCaptureDeviceInfo>>&
+        device_infos) {
+  if (!camera_permission_label_ || !device_infos) {
+    return;
+  }
+
+  const auto real_device_names =
+      media_effects::GetRealVideoDeviceNames(device_infos.value());
+
+  camera_permission_label_->SetText(l10n_util::GetStringFUTF16(
+      IDS_MEDIA_CAPTURE_VIDEO_ONLY_PERMISSION_FRAGMENT_WITH_COUNT,
+      base::NumberToString16(real_device_names.size())));
+
+  camera_permission_label_->SetTooltipText(
+      base::UTF8ToUTF16(base::JoinString(real_device_names, "\n")));
+}
+#endif

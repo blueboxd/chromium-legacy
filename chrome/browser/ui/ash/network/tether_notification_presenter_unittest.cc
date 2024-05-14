@@ -42,8 +42,6 @@ class TetherNotificationPresenterTest : public BrowserWithTestWindowTest {
 
     // NetworkConnect:
     void DisconnectFromNetworkId(const std::string& network_id) override {}
-    void SetTechnologyEnabled(const NetworkTypePattern& technology,
-                              bool enabled_state) override {}
     void ShowMobileSetup(const std::string& network_id) override {}
     void ShowCarrierAccountDetail(const std::string& network_id) override {}
     void ShowCarrierUnlockNotification() override {}
@@ -82,7 +80,7 @@ class TetherNotificationPresenterTest : public BrowserWithTestWindowTest {
     }
 
    private:
-    raw_ptr<Profile> last_profile_ = nullptr;
+    raw_ptr<Profile, DanglingUntriaged> last_profile_ = nullptr;
     std::string last_settings_subpage_;
   };
 

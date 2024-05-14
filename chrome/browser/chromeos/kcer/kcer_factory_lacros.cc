@@ -14,6 +14,23 @@
 #include "content/public/browser/browser_thread.h"
 
 namespace kcer {
+namespace {
+
+// Returns the currently valid ChapsService. Might return a nullptr during early
+// initialization and after shutdown.
+crosapi::mojom::ChapsService* GetChapsService() {
+  crosapi::mojom::ChapsService* chaps_service = nullptr;
+  chromeos::LacrosService* service = chromeos::LacrosService::Get();
+  if (service && service->IsAvailable<crosapi::mojom::ChapsService>()) {
+    chaps_service = service->GetRemote<crosapi::mojom::ChapsService>().get();
+  }
+  if (!chaps_service) {
+    LOG(ERROR) << "ChapsService mojo interface is not available";
+  }
+  return chaps_service;
+}
+
+}  // namespace
 
 // static
 void KcerFactoryLacros::EnsureFactoryBuilt() {
@@ -44,8 +61,8 @@ void KcerFactoryLacros::StartInitializingKcerWithoutNss(
   if (!IsPrimaryContext(context) || !lacros_service ||
       !lacros_service->IsAvailable<crosapi::mojom::CertDatabase>()) {
     return KcerFactory::InitializeKcerInstanceWithoutNss(
-        kcer_service, /*user_token_id=*/absl::nullopt,
-        /*device_token_id=*/absl::nullopt);
+        kcer_service, /*user_token_id=*/std::nullopt,
+        /*device_token_id=*/std::nullopt);
   }
 
   // `Unretained` is safe, the factory is never destroyed.
@@ -64,10 +81,10 @@ void KcerFactoryLacros::OnCertDbInfoReceived(
     return;
   }
 
-  absl::optional<SessionChapsClient::SlotId> user_token_id(
+  std::optional<SessionChapsClient::SlotId> user_token_id(
       cert_db_info->private_slot_id);
 
-  absl::optional<SessionChapsClient::SlotId> device_token_id;
+  std::optional<SessionChapsClient::SlotId> device_token_id;
   if (cert_db_info->enable_system_slot) {
     device_token_id = SessionChapsClient::SlotId(cert_db_info->system_slot_id);
   }
@@ -76,30 +93,35 @@ void KcerFactoryLacros::OnCertDbInfoReceived(
                                                 device_token_id);
 }
 
-// This method can in theory fail, but this shouldn't happen. In Lacros, by the
-// time this is used in production, the minimal supported version of Ash should
-// also always have the interface.
 bool KcerFactoryLacros::EnsureHighLevelChapsClientInitialized() {
   if (session_chaps_client_ && high_level_chaps_client_) {
     return true;
   }
 
-  crosapi::mojom::ChapsService* chaps_service = nullptr;
-  chromeos::LacrosService* service = chromeos::LacrosService::Get();
-  if (service && service->IsAvailable<crosapi::mojom::ChapsService>()) {
-    chaps_service = service->GetRemote<crosapi::mojom::ChapsService>().get();
-  }
-  if (!chaps_service) {
-    LOG(ERROR) << "ChapsService mojo interface is not available";
-    return false;
-  }
-
-  session_chaps_client_ =
-      std::make_unique<SessionChapsClientImpl>(chaps_service);
+  session_chaps_client_ = std::make_unique<SessionChapsClientImpl>(
+      base::BindRepeating(&GetChapsService));
   high_level_chaps_client_ =
       std::make_unique<HighLevelChapsClientImpl>(session_chaps_client_.get());
 
   return (session_chaps_client_ && high_level_chaps_client_);
+}
+
+void KcerFactoryLacros::RecordPkcs12CertDualWrittenImpl() {
+  chromeos::LacrosService* service = chromeos::LacrosService::Get();
+  if (!service) {
+    LOG(ERROR) << "Failed to notify PKCS#12 Dual Write, no lacros service";
+    return;
+  }
+
+  int cert_db_version =
+      service->GetInterfaceVersion<crosapi::mojom::CertDatabase>();
+  if (cert_db_version < int{crosapi::mojom::CertDatabase::MethodMinVersions::
+                                kOnPkcs12CertDualWrittenMinVersion}) {
+    LOG(ERROR) << "Failed to notify PKCS#12 Dual Write, Ash is too old";
+    return;
+  }
+
+  service->GetRemote<crosapi::mojom::CertDatabase>()->OnPkcs12CertDualWritten();
 }
 
 }  // namespace kcer

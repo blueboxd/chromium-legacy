@@ -471,7 +471,8 @@ int QuicChromiumClientSession::Handle::RequestStream(
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(!stream_request_);
 
-  if (!session_) {
+  // TODO(crbug.com/41491379): Add a regression test.
+  if (!session_ || session_->going_away_) {
     return ERR_CONNECTION_CLOSED;
   }
 
@@ -908,6 +909,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     int cert_verify_flags,
     const quic::QuicConfig& config,
     std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config,
+    const char* const connection_description,
     base::TimeTicks dns_resolution_start_time,
     base::TimeTicks dns_resolution_end_time,
     const base::TickClock* tick_clock,
@@ -949,6 +951,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::QUIC_SESSION)),
       logger_(std::make_unique<QuicConnectionLogger>(
           this,
+          connection_description,
           std::move(socket_performance_watcher),
           net_log_)),
       http3_logger_(std::make_unique<QuicHttp3Logger>(net_log_)),
@@ -1220,6 +1223,12 @@ int QuicChromiumClientSession::TryCreateStream(StreamRequest* request) {
         CreateOutgoingReliableStreamImpl(request->traffic_annotation())
             ->CreateHandle();
     return OK;
+  }
+
+  // Calling CanOpenNextOutgoingBidirectionalStream() could close the
+  // connection.
+  if (!connection()->connected()) {
+    return ERR_CONNECTION_CLOSED;
   }
 
   request->pending_start_time_ = tick_clock_->NowTicks();
@@ -1737,6 +1746,10 @@ void QuicChromiumClientSession::OnConnectionClosed(
   }
   if (const quic::QuicConnection::MultiPortStats* multi_port_stats =
           connection()->multi_port_stats()) {
+    UMA_HISTOGRAM_COUNTS_1000("Net.QuicMultiPort.NumProbeAttempts",
+                              multi_port_stats->num_client_probing_attempts);
+    UMA_HISTOGRAM_COUNTS_1000("Net.QuicMultiPort.NumSuccessfulProbes",
+                              multi_port_stats->num_successful_probes);
     UMA_HISTOGRAM_COUNTS_1000(
         "Net.QuicMultiPort.NumMultiPortFailureWhenPathNotDegrading",
         multi_port_stats
@@ -2071,9 +2084,13 @@ int QuicChromiumClientSession::HandleWriteError(
   // Post a task to migrate the session onto a new network.
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&QuicChromiumClientSession::MigrateSessionOnWriteError,
-                     weak_factory_.GetWeakPtr(), error_code,
-                     connection()->writer()));
+      base::BindOnce(
+          &QuicChromiumClientSession::MigrateSessionOnWriteError,
+          weak_factory_.GetWeakPtr(), error_code,
+          // UnsafeDanglingUntriaged triggered by test:
+          // QuicSessionPoolTest.MigrateSessionOnSyncWriteErrorPauseBeforeConnected
+          // TODO(https://crbug.com/1380714): Remove `UnsafeDanglingUntriaged`
+          base::UnsafeDanglingUntriaged(connection()->writer())));
 
   ignore_read_error_ = true;
 

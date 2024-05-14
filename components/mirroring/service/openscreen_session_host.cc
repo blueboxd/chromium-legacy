@@ -244,6 +244,7 @@ class OpenscreenSessionHost::AudioCapturingCallback final
   // Called on audio thread.
   void Capture(const media::AudioBus* audio_bus,
                base::TimeTicks audio_capture_time,
+               const media::AudioGlitchInfo& glitch_info,
                double volume,
                bool key_pressed) override {
     // TODO(crbug.com/1015467): Don't copy the audio data. Instead, send
@@ -470,9 +471,9 @@ void OpenscreenSessionHost::OnNegotiated(
     audio_capturing_callback_ = std::make_unique<AudioCapturingCallback>(
         base::BindPostTaskToCurrentDefault(base::BindRepeating(
             &AudioRtpStream::InsertAudio, audio_stream_->AsWeakPtr())),
-        base::BindOnce(&OpenscreenSessionHost::ReportAndLogError,
-                       weak_factory_.GetWeakPtr(),
-                       SessionError::AUDIO_CAPTURE_ERROR));
+        base::BindPostTaskToCurrentDefault(base::BindOnce(
+            &OpenscreenSessionHost::ReportAndLogError,
+            weak_factory_.GetWeakPtr(), SessionError::AUDIO_CAPTURE_ERROR)));
     audio_input_device_ = new media::AudioInputDevice(
         std::make_unique<CapturedAudioInput>(base::BindRepeating(
             &OpenscreenSessionHost::CreateAudioStream, base::Unretained(this))),

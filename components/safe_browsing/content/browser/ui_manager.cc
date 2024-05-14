@@ -252,10 +252,12 @@ bool SafeBrowsingUIManager::ShouldSendHitReport(HitReport* hit_report,
 }
 
 bool SafeBrowsingUIManager::ShouldSendClientSafeBrowsingWarningShownReport(
-    ClientSafeBrowsingReportRequest* report,
     WebContents* web_contents) {
+  if (!web_contents || !web_contents->GetBrowserContext()) {
+    return false;
+  }
   const auto& prefs = *delegate_->GetPrefs(web_contents->GetBrowserContext());
-  return web_contents && GetExtendedReportingLevel(prefs) != SBER_LEVEL_OFF &&
+  return GetExtendedReportingLevel(prefs) != SBER_LEVEL_OFF &&
          !web_contents->GetBrowserContext()->IsOffTheRecord();
 }
 
@@ -278,7 +280,8 @@ void SafeBrowsingUIManager::MaybeReportSafeBrowsingHit(
 
   DVLOG(1) << "ReportSafeBrowsingHit: " << hit_report->malicious_url << " "
            << hit_report->page_url << " " << hit_report->referrer_url << " "
-           << hit_report->is_subresource << " " << hit_report->threat_type;
+           << hit_report->is_subresource << " "
+           << static_cast<int>(hit_report->threat_type);
   delegate_->GetPingManager(web_contents->GetBrowserContext())
       ->ReportSafeBrowsingHit(std::move(hit_report));
 }
@@ -289,8 +292,7 @@ void SafeBrowsingUIManager::MaybeSendClientSafeBrowsingWarningShownReport(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Send report if user opted-in to extended reporting and is not in incognito
   // mode.
-  if (ShouldSendClientSafeBrowsingWarningShownReport(report.get(),
-                                                     web_contents)) {
+  if (ShouldSendClientSafeBrowsingWarningShownReport(web_contents)) {
     SendThreatDetails(web_contents->GetBrowserContext(), std::move(report));
   }
 }
@@ -304,41 +306,42 @@ void SafeBrowsingUIManager::CreateAllowlistForTesting(
 // static
 std::string SafeBrowsingUIManager::GetThreatTypeStringForInterstitial(
     safe_browsing::SBThreatType threat_type) {
+  using enum SBThreatType;
+
   switch (threat_type) {
-    case safe_browsing::SB_THREAT_TYPE_URL_PHISHING:
-    case safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING:
+    case SB_THREAT_TYPE_URL_PHISHING:
+    case SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING:
       return "SOCIAL_ENGINEERING";
-    case safe_browsing::SB_THREAT_TYPE_URL_MALWARE:
+    case SB_THREAT_TYPE_URL_MALWARE:
       return "MALWARE";
-    case safe_browsing::SB_THREAT_TYPE_URL_UNWANTED:
+    case SB_THREAT_TYPE_URL_UNWANTED:
       return "UNWANTED_SOFTWARE";
-    case safe_browsing::SB_THREAT_TYPE_BILLING:
+    case SB_THREAT_TYPE_BILLING:
       return "THREAT_TYPE_UNSPECIFIED";
-    case safe_browsing::SB_THREAT_TYPE_MANAGED_POLICY_WARN:
+    case SB_THREAT_TYPE_MANAGED_POLICY_WARN:
       return "MANAGED_POLICY_WARN";
-    case safe_browsing::SB_THREAT_TYPE_MANAGED_POLICY_BLOCK:
+    case SB_THREAT_TYPE_MANAGED_POLICY_BLOCK:
       return "MANAGED_POLICY_BLOCK";
-    case safe_browsing::SB_THREAT_TYPE_UNUSED:
-    case safe_browsing::SB_THREAT_TYPE_SAFE:
-    case safe_browsing::SB_THREAT_TYPE_URL_BINARY_MALWARE:
-    case safe_browsing::SB_THREAT_TYPE_EXTENSION:
-    case safe_browsing::SB_THREAT_TYPE_BLOCKLISTED_RESOURCE:
-    case safe_browsing::SB_THREAT_TYPE_API_ABUSE:
-    case safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER:
-    case safe_browsing::SB_THREAT_TYPE_CSD_ALLOWLIST:
-    case safe_browsing::
-        DEPRECATED_SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING:
-    case safe_browsing::DEPRECATED_SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE:
-    case safe_browsing::SB_THREAT_TYPE_SAVED_PASSWORD_REUSE:
-    case safe_browsing::SB_THREAT_TYPE_SIGNED_IN_SYNC_PASSWORD_REUSE:
-    case safe_browsing::SB_THREAT_TYPE_SIGNED_IN_NON_SYNC_PASSWORD_REUSE:
-    case safe_browsing::SB_THREAT_TYPE_AD_SAMPLE:
-    case safe_browsing::SB_THREAT_TYPE_BLOCKED_AD_POPUP:
-    case safe_browsing::SB_THREAT_TYPE_BLOCKED_AD_REDIRECT:
-    case safe_browsing::SB_THREAT_TYPE_SUSPICIOUS_SITE:
-    case safe_browsing::SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE:
-    case safe_browsing::SB_THREAT_TYPE_APK_DOWNLOAD:
-    case safe_browsing::SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST:
+    case SB_THREAT_TYPE_UNUSED:
+    case SB_THREAT_TYPE_SAFE:
+    case SB_THREAT_TYPE_URL_BINARY_MALWARE:
+    case SB_THREAT_TYPE_EXTENSION:
+    case SB_THREAT_TYPE_BLOCKLISTED_RESOURCE:
+    case SB_THREAT_TYPE_API_ABUSE:
+    case SB_THREAT_TYPE_SUBRESOURCE_FILTER:
+    case SB_THREAT_TYPE_CSD_ALLOWLIST:
+    case DEPRECATED_SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING:
+    case DEPRECATED_SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE:
+    case SB_THREAT_TYPE_SAVED_PASSWORD_REUSE:
+    case SB_THREAT_TYPE_SIGNED_IN_SYNC_PASSWORD_REUSE:
+    case SB_THREAT_TYPE_SIGNED_IN_NON_SYNC_PASSWORD_REUSE:
+    case SB_THREAT_TYPE_AD_SAMPLE:
+    case SB_THREAT_TYPE_BLOCKED_AD_POPUP:
+    case SB_THREAT_TYPE_BLOCKED_AD_REDIRECT:
+    case SB_THREAT_TYPE_SUSPICIOUS_SITE:
+    case SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE:
+    case SB_THREAT_TYPE_APK_DOWNLOAD:
+    case SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST:
       NOTREACHED();
       break;
   }
@@ -411,7 +414,7 @@ void SafeBrowsingUIManager::OnBlockingPageDone(
   if (proceed && !resources.empty()) {
 #if !BUILDFLAG(IS_ANDROID)
     if (resources[0].threat_type ==
-        safe_browsing::SB_THREAT_TYPE_MANAGED_POLICY_WARN) {
+        SBThreatType::SB_THREAT_TYPE_MANAGED_POLICY_WARN) {
       delegate_->TriggerUrlFilteringInterstitialExtensionEventIfDesired(
           web_contents, main_frame_url, "ENTERPRISE_WARNED_BYPASS",
           resources[0].rt_lookup_response);

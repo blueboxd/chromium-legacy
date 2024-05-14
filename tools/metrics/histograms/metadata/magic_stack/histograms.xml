@@ -27,14 +27,98 @@ chromium-metrics-reviews@google.com.
   <variant name="StartSurface"/>
 </variants>
 
+<variants name="ModulePosition">
+  <variant name="0"/>
+  <variant name="1"/>
+  <variant name="2"/>
+  <variant name="3"/>
+  <variant name="4"/>
+</variants>
+
 <variants name="ModuleType">
   <variant name="PriceChange"/>
   <variant name="SingleTab"/>
+  <variant name="TabResumption"/>
 </variants>
+
+<variants name="ScrollState">
+  <variant name="NotScrolled"/>
+  <variant name="Scrolled"/>
+</variants>
+
+<variants name="ToggleState">
+  <variant name="TurnOffModule"/>
+  <variant name="TurnOnModule"/>
+</variants>
+
+<histogram name="MagicStack.Clank.Settings.{ToggleState}" enum="ModuleType"
+    expires_after="2024-06-20">
+  <owner>hanxi@chromium.org</owner>
+  <owner>xinyiji@chromium.org</owner>
+  <summary>
+    Records when a module is activated or deactivated in the configuration page
+    of the magic stack. The resulting histogram, which is enumerated, tallies
+    the total number of these actions across various module types. The histogram
+    is logged whenever the state of a module is toggled in configuration page
+    when the magic stack is customizable, Android-only.
+  </summary>
+  <token key="ToggleState" variants="ToggleState"/>
+</histogram>
+
+<histogram name="MagicStack.Clank.TabResumption.ClickInfo"
+    enum="MagicStack.Clank.TabResumption.ClickInfo" expires_after="2024-09-01">
+  <owner>huangs@google.com</owner>
+  <owner>hanxi@google.com</owner>
+  <summary>
+    Records the index and the configuration of a clicked tab on the Tab
+    Resumption Module. Android-only.
+  </summary>
+</histogram>
+
+<histogram name="MagicStack.Clank.TabResumption.ModuleNotShownReason"
+    enum="MagicStack.Clank.TabResumption.ModuleNotShownReason"
+    expires_after="2024-09-01">
+  <owner>huangs@google.com</owner>
+  <owner>hanxi@google.com</owner>
+  <summary>
+    Records reasons as to why the Tab Resumption Module is not initially shown.
+    This is logged when the decision is made to not show the module, which can
+    happen early (rejected by Magic Stack based on settings) or late (module is
+    enabled by settings, but stable suggestions are empty). This is not logged
+    on subsequent events that causes the module to hide, e.g., user settings
+    change. Android-only.
+  </summary>
+</histogram>
+
+<histogram name="MagicStack.Clank.TabResumption.ModuleShowConfig"
+    enum="MagicStack.Clank.TabResumption.ModuleShowConfig"
+    expires_after="2024-09-01">
+  <owner>huangs@google.com</owner>
+  <owner>hanxi@google.com</owner>
+  <summary>
+    Records the configuration of the Tab Resumption Module if it is shown. This
+    is logged when the module is shown with non-empty suggestions that are
+    deemed stable. Android-only.
+  </summary>
+</histogram>
+
+<histogram name="MagicStack.Clank.TabResumption.StabilityDelay" units="ms"
+    expires_after="2024-09-01">
+  <owner>huangs@google.com</owner>
+  <owner>hanxi@google.com</owner>
+  <summary>
+    Records the duration between when Tab Resumption Module first loads and when
+    stable results are obtained and used (to compute suggestions, which is then
+    used to render tiles if non-empty, or trigger module hide if empty). The
+    duration incorporates network delay, computation, and rendering. The metric
+    excludes the case where the module quickly renders suggestions from cached
+    data. Android-only.
+  </summary>
+</histogram>
 
 <histogram
     name="MagicStack.Clank.{ModuleDelegateHost}.ContextMenu.OpenCustomizeSettings"
-    enum="ModuleType" expires_after="2024-06-20">
+    enum="ModuleType" expires_after="2024-08-25">
   <owner>hanxi@chromium.org</owner>
   <owner>xinyiji@chromium.org</owner>
   <summary>
@@ -70,20 +154,39 @@ chromium-metrics-reviews@google.com.
   <token key="ModuleDelegateHost" variants="ModuleDelegateHost"/>
 </histogram>
 
-<histogram name="MagicStack.Clank.{ModuleDelegateHost}.Module.Click"
-    enum="ModuleType" expires_after="2024-06-20">
+<histogram
+    name="MagicStack.Clank.{ModuleDelegateHost}.Module.Build.{ModuleType}.{ModulePosition}"
+    units="count" expires_after="2024-06-20">
   <owner>hanxi@chromium.org</owner>
   <owner>xinyiji@chromium.org</owner>
   <summary>
-    Record the total count of clicks on different modules of the magic stack on
-    the {ModuleDelegateHost}. The histogram is logged on Android-only.
+    Records the type and position of the module when the home modules are added
+    to the magic stack. The histogram is logged when showing the magic stack on
+    {ModuleDelegateHost}, Android-only.
   </summary>
+  <token key="ModuleType" variants="ModuleType"/>
+  <token key="ModulePosition" variants="ModulePosition"/>
+  <token key="ModuleDelegateHost" variants="ModuleDelegateHost"/>
+</histogram>
+
+<histogram
+    name="MagicStack.Clank.{ModuleDelegateHost}.Module.Click.{ModuleType}.{ModulePosition}"
+    units="count" expires_after="2024-06-20">
+  <owner>hanxi@chromium.org</owner>
+  <owner>xinyiji@chromium.org</owner>
+  <summary>
+    Records the type and position of the module when the home modules are
+    clicked. The histogram is logged when showing the magic stack on
+    {ModuleDelegateHost}, Android-only.
+  </summary>
+  <token key="ModuleType" variants="ModuleType"/>
+  <token key="ModulePosition" variants="ModulePosition"/>
   <token key="ModuleDelegateHost" variants="ModuleDelegateHost"/>
 </histogram>
 
 <histogram
     name="MagicStack.Clank.{ModuleDelegateHost}.Module.FetchDataDurationMs.{ModuleType}"
-    units="ms" expires_after="2024-06-20">
+    units="ms" expires_after="2024-08-25">
   <owner>hanxi@chromium.org</owner>
   <owner>xinyiji@chromium.org</owner>
   <summary>
@@ -97,7 +200,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="MagicStack.Clank.{ModuleDelegateHost}.Module.FetchDataFailedDurationMs.{ModuleType}"
-    units="ms" expires_after="2024-06-20">
+    units="ms" expires_after="2024-08-25">
   <owner>hanxi@chromium.org</owner>
   <owner>xinyiji@chromium.org</owner>
   <summary>
@@ -138,7 +241,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="MagicStack.Clank.{ModuleDelegateHost}.Module.FirstModuleShownDurationMs"
-    units="ms" expires_after="2024-06-20">
+    units="ms" expires_after="2024-08-25">
   <owner>hanxi@chromium.org</owner>
   <owner>xinyiji@chromium.org</owner>
   <summary>
@@ -172,6 +275,32 @@ chromium-metrics-reviews@google.com.
     a {ModuleDelegateHost}. The histogram is logged on Android-only.
   </summary>
   <token key="ModuleDelegateHost" variants="ModuleDelegateHost"/>
+</histogram>
+
+<histogram name="MagicStack.Clank.{ModuleDelegateHost}.NotScrollable"
+    units="count" expires_after="2024-06-20">
+  <owner>hanxi@chromium.org</owner>
+  <owner>xinyiji@chromium.org</owner>
+  <summary>
+    Records the total count of times that magic stack is not scrollable. The
+    histogram is logged when showing the magic stack on {ModuleDelegateHost},
+    Android-only.
+  </summary>
+  <token key="ModuleDelegateHost" variants="ModuleDelegateHost"/>
+</histogram>
+
+<histogram
+    name="MagicStack.Clank.{ModuleDelegateHost}.Scrollable.{ScrollState}"
+    units="count" expires_after="2024-06-20">
+  <owner>hanxi@chromium.org</owner>
+  <owner>xinyiji@chromium.org</owner>
+  <summary>
+    Records the total count of times that magic stack is scrollable and the
+    number of times it has been scrolled or not. The histogram is logged when
+    showing the magic stack on {ModuleDelegateHost}, Android-only.
+  </summary>
+  <token key="ModuleDelegateHost" variants="ModuleDelegateHost"/>
+  <token key="ScrollState" variants="ScrollState"/>
 </histogram>
 
 <histogram

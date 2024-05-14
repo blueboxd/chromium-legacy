@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/test/views/chrome_views_test_base.h"
@@ -14,9 +15,11 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
@@ -45,6 +48,15 @@ const TitleSubtitlePair kTitleSubtitlePairs[] = {
     {u"If you're happy and you know it, and you really want to show it,",
      u"If you're happy and you know it, clap your hands!", true},
 };
+
+// Returns the accessible name of `button`.
+std::u16string GetAccessibleName(HoverButton& button) {
+  ui::AXNodeData data;
+  button.GetAccessibleNodeData(&data);
+  return data.GetString16Attribute(ax::mojom::StringAttribute::kName);
+}
+
+}  // namespace
 
 class HoverButtonTest : public ChromeViewsTestBase {
  public:
@@ -80,25 +92,6 @@ class HoverButtonTest : public ChromeViewsTestBase {
   std::unique_ptr<ui::test::EventGenerator> generator_;
 };
 
-// Double check the length of the strings used for testing are either over or
-// under the width used for the following tests.
-TEST_F(HoverButtonTest, ValidateTestData) {
-  auto get_width = [](const std::u16string& text) {
-    return views::Label(text).GetPreferredSize().width();
-  };
-  EXPECT_GT(kButtonWidth, get_width(kTitleSubtitlePairs[0].title));
-  EXPECT_GT(kButtonWidth, get_width(kTitleSubtitlePairs[0].subtitle));
-
-  EXPECT_LT(kButtonWidth, get_width(kTitleSubtitlePairs[1].title));
-  EXPECT_GT(kButtonWidth, get_width(kTitleSubtitlePairs[1].subtitle));
-
-  EXPECT_GT(kButtonWidth, get_width(kTitleSubtitlePairs[2].title));
-  EXPECT_LT(kButtonWidth, get_width(kTitleSubtitlePairs[2].subtitle));
-
-  EXPECT_LT(kButtonWidth, get_width(kTitleSubtitlePairs[3].title));
-  EXPECT_LT(kButtonWidth, get_width(kTitleSubtitlePairs[3].subtitle));
-}
-
 // Tests whether the HoverButton has the correct tooltip and accessible name.
 TEST_F(HoverButtonTest, TooltipAndAccessibleName) {
   for (size_t i = 0; i < std::size(kTitleSubtitlePairs); ++i) {
@@ -110,21 +103,53 @@ TEST_F(HoverButtonTest, TooltipAndAccessibleName) {
                                       CreateIcon(), pair.title, pair.subtitle);
     button->SetSize(gfx::Size(kButtonWidth, 40));
 
-    ui::AXNodeData data;
-    button->GetAccessibleNodeData(&data);
-    std::u16string accessible_name;
-    data.GetString16Attribute(ax::mojom::StringAttribute::kName,
-                              &accessible_name);
-
     // The accessible name should always be the title and subtitle concatenated
     // by \n.
     const std::u16string expected =
-        base::JoinString({pair.title, pair.subtitle}, u"\n");
-    EXPECT_EQ(expected, accessible_name);
+        base::StrCat({pair.title, u"\n", pair.subtitle});
+    EXPECT_EQ(expected, GetAccessibleName(*button));
 
     EXPECT_EQ(pair.tooltip ? expected : std::u16string(),
               button->GetTooltipText(gfx::Point()));
   }
+}
+
+TEST_F(HoverButtonTest, TooltipAndAccessibleName_DynamicTextUpdate) {
+  std::u16string original_title = u"Title";
+  std::u16string original_subtitle = u"Subtitle";
+
+  auto button = std::make_unique<HoverButton>(views::Button::PressedCallback(),
+                                              CreateIcon(), original_title,
+                                              original_subtitle);
+  button->SetSize(gfx::Size(kButtonWidth, 40));
+
+  // Verify accessible has the original title and subtitle text, and tooltip is
+  // empty since text fits in the button.
+  std::u16string expected =
+      base::StrCat({original_title, u"\n", original_subtitle});
+  EXPECT_EQ(expected, GetAccessibleName(*button));
+  EXPECT_EQ(std::u16string(), button->GetTooltipText());
+
+  // Update the title with text that still fits in the button.
+  std::u16string updated_title = u"New title";
+  button->title()->SetText(updated_title);
+
+  // Verify accessible name has the updated title, and tooltip is still empty
+  // since text fits in the button.
+  expected = base::StrCat({updated_title, u"\n", original_subtitle});
+  EXPECT_EQ(expected, GetAccessibleName(*button));
+  EXPECT_EQ(std::u16string(), button->GetTooltipText());
+
+  // Update the subtitle with text that doesn't fit in the button.
+  std::u16string updated_subtitle =
+      u"A very long new subtitle that should not fit in the button";
+  button->subtitle()->SetText(updated_subtitle);
+
+  // Verify both accessible name and tooltip have the updated title and
+  // subtitle.
+  expected = base::StrCat({updated_title, u"\n", updated_subtitle});
+  EXPECT_EQ(expected, GetAccessibleName(*button));
+  EXPECT_EQ(expected, button->GetTooltipText());
 }
 
 // Tests that a button with a subtitle and icons can be instantiated without a
@@ -201,5 +226,3 @@ TEST_F(HoverButtonTest, TapGestureThatDeletesTheButton) {
 }
 
 #endif  // !BUILDFLAG(IS_MAC) || defined(USE_AURA)
-
-}  // namespace

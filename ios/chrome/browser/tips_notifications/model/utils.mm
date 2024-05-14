@@ -30,6 +30,8 @@ ContentIDs ContentIDsForType(TipsNotificationType type) {
     case TipsNotificationType::kSignin:
       return {IDS_IOS_NOTIFICATIONS_TIPS_SIGNIN_TITLE,
               IDS_IOS_NOTIFICATIONS_TIPS_SIGNIN_BODY};
+    case TipsNotificationType::kError:
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -79,6 +81,7 @@ UNNotificationContent* ContentForTipsNotificationType(
   content.title = l10n_util::GetNSString(content_ids.title);
   content.body = l10n_util::GetNSString(content_ids.body);
   content.userInfo = UserInfoForTipsNotificationType(type);
+  content.sound = UNNotificationSound.defaultSound;
   return content;
 }
 

@@ -94,7 +94,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Notifications.Actions" enum="NotificationActionType"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>dewittj@chromium.org</owner>
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -115,15 +115,101 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Notifications.Android.JobStartDelay" units="ms"
-    expires_after="M96">
+<histogram name="Notifications.Android.JobIsAlreadyPending{IntentAction}"
+    enum="Boolean" expires_after="M127">
   <owner>peter@chromium.org</owner>
-  <owner>knollr@chromium.org</owner>
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    Recorded before a call to JobScheduler.schedule() in response to a
+    notification intent, and indicates whether there was a job already pending
+    with the same ID.
+  </summary>
+  <token key="IntentAction">
+    <variant name="" summary="Counts intents with every action."/>
+    <variant name=".PreUnsubscribe"
+        summary="Counts only intents with action PRE_UNSUBSCRIBE."/>
+  </token>
+</histogram>
+
+<histogram name="Notifications.Android.JobNativeStartupDuration{IntentAction}"
+    units="ms" expires_after="M127">
+  <owner>peter@chromium.org</owner>
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    Records how long native start-up took before dispatching a notification
+    event to the NotificationPlatformBridge. For completeness, a sample is
+    recorded also when native start-up was already partially or fully complete,
+    in which cases significantly shorter durations are expected. Only measured
+    on Android N and above.
+  </summary>
+  <token key="IntentAction">
+    <variant name="" summary="Counts intents with every action."/>
+    <variant name=".PreUnsubscribe"
+        summary="Counts only intents with action PRE_UNSUBSCRIBE."/>
+  </token>
+</histogram>
+
+<histogram name="Notifications.Android.JobPendingReason{IntentAction}"
+    enum="NotificationPendingJobReason" expires_after="M127">
+  <owner>peter@chromium.org</owner>
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    After a call to JobScheduler.schedule() to handle a notification click,
+    records whether the job ends up pending, and if so, the reason why. Recorded
+    only in Android U and later.
+  </summary>
+  <token key="IntentAction">
+    <variant name="" summary="Counts intents with every action."/>
+    <variant name=".PreUnsubscribe"
+        summary="Counts only intents with action PRE_UNSUBSCRIBE."/>
+  </token>
+</histogram>
+
+<histogram name="Notifications.Android.JobScheduleResult{IntentAction}"
+    enum="BooleanSuccess" expires_after="M127">
+  <owner>peter@chromium.org</owner>
+  <owner>engey@chromium.org</owner>
+  <summary>
+    Records wheher JobScheduler.schedule() succeeds when it is called to
+    schedule a job with the JobScheduler to handle a notification click.
+  </summary>
+  <token key="IntentAction">
+    <variant name="" summary="Counts intents with every action."/>
+    <variant name=".PreUnsubscribe"
+        summary="Counts only intents with action PRE_UNSUBSCRIBE."/>
+  </token>
+</histogram>
+
+<histogram name="Notifications.Android.JobStage{IntentAction}"
+    enum="NotificationJobStage" expires_after="M127">
+  <owner>peter@chromium.org</owner>
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    After a call to JobScheduler.schedule() to handle a notification click,
+    records a sample into a specific bucket whenever the job reaches a specific
+    stage.
+  </summary>
+  <token key="IntentAction">
+    <variant name="" summary="Counts intents with every action."/>
+    <variant name=".PreUnsubscribe"
+        summary="Counts only intents with action PRE_UNSUBSCRIBE."/>
+  </token>
+</histogram>
+
+<histogram name="Notifications.Android.JobStartDelay{IntentAction}" units="ms"
+    expires_after="M127">
+  <owner>peter@chromium.org</owner>
+  <owner>engedy@chromium.org</owner>
   <summary>
     Records the delay between scheduling a job with the JobScheduler (with a
     desired latency of 0ms, in response to a notification click) and receiving
     the onStartJob callback. Only measured on Android N and above.
   </summary>
+  <token key="IntentAction">
+    <variant name="" summary="Counts intents with every action."/>
+    <variant name=".PreUnsubscribe"
+        summary="Counts only intents with action PRE_UNSUBSCRIBE."/>
+  </token>
 </histogram>
 
 <histogram name="Notifications.Android.SitesChannel" enum="BooleanUsage"
@@ -482,7 +568,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.NonPersistentNotificationThirdPartyCount"
-    enum="Boolean" expires_after="2024-03-17">
+    enum="Boolean" expires_after="2025-02-08">
   <owner>awillia@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -701,7 +787,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.PersistentNotificationActionCount"
-    units="buttons" expires_after="2024-06-30">
+    units="buttons" expires_after="2024-09-01">
   <owner>peter@chromium.org</owner>
   <summary>
     The number of action buttons the developer provided for a persistent Web
@@ -720,7 +806,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.PersistentNotificationThirdPartyCount"
-    enum="Boolean" expires_after="2024-08-04">
+    enum="Boolean" expires_after="2025-02-08">
   <owner>awillia@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>

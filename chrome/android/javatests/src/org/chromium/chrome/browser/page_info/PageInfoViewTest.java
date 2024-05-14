@@ -8,6 +8,7 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.ViewMatchers.Visibility.GONE;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.hasSibling;
@@ -71,7 +72,7 @@ import org.chromium.chrome.browser.history.StubbedHistoryProvider;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
@@ -240,7 +241,7 @@ public class PageInfoViewTest {
                                     tab,
                                     ChromePageInfoHighlight.forPermission(highlightedPermission));
                 });
-        onViewWaiting(allOf(withId(R.id.page_info_url_wrapper), isDisplayed()));
+        onViewWaiting(allOf(withId(R.id.page_info_url_wrapper), isDisplayed()), true);
     }
 
     private View getPageInfoView() {
@@ -254,7 +255,7 @@ public class PageInfoViewTest {
     private void setThirdPartyCookieBlocking(@CookieControlsMode int value) {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    UserPrefs.get(Profile.getLastUsedRegularProfile())
+                    UserPrefs.get(ProfileManager.getLastUsedRegularProfile())
                             .setInteger(COOKIE_CONTROLS_MODE, value);
                 });
     }
@@ -262,7 +263,7 @@ public class PageInfoViewTest {
     private void enableTrackingProtection() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    UserPrefs.get(Profile.getLastUsedRegularProfile())
+                    UserPrefs.get(ProfileManager.getLastUsedRegularProfile())
                             .setBoolean(Pref.TRACKING_PROTECTION3PCD_ENABLED, true);
                 });
     }
@@ -270,7 +271,7 @@ public class PageInfoViewTest {
     private void blockAll3PC() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    UserPrefs.get(Profile.getLastUsedRegularProfile())
+                    UserPrefs.get(ProfileManager.getLastUsedRegularProfile())
                             .setBoolean(Pref.BLOCK_ALL3PC_TOGGLE_ENABLED, true);
                 });
     }
@@ -297,13 +298,13 @@ public class PageInfoViewTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     WebsitePreferenceBridge.setContentSettingDefaultScope(
-                            Profile.getLastUsedRegularProfile(),
+                            ProfileManager.getLastUsedRegularProfile(),
                             ContentSettingsType.GEOLOCATION,
                             url,
                             url,
                             ContentSettingValues.ALLOW);
                     WebsitePreferenceBridge.setContentSettingDefaultScope(
-                            Profile.getLastUsedRegularProfile(),
+                            ProfileManager.getLastUsedRegularProfile(),
                             ContentSettingsType.NOTIFICATIONS,
                             url,
                             url,
@@ -323,7 +324,7 @@ public class PageInfoViewTest {
                             expectBlock,
                             WebsitePreferenceBridgeJni.get()
                                     .getPermissionSettingForOrigin(
-                                            Profile.getLastUsedRegularProfile(),
+                                            ProfileManager.getLastUsedRegularProfile(),
                                             ContentSettingsType.NOTIFICATIONS,
                                             url,
                                             url));
@@ -331,7 +332,7 @@ public class PageInfoViewTest {
                             expectAllow,
                             WebsitePreferenceBridgeJni.get()
                                     .getPermissionSettingForOrigin(
-                                            Profile.getLastUsedRegularProfile(),
+                                            ProfileManager.getLastUsedRegularProfile(),
                                             ContentSettingsType.GEOLOCATION,
                                             url,
                                             "*"));
@@ -343,13 +344,13 @@ public class PageInfoViewTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     WebsitePreferenceBridge.setContentSettingDefaultScope(
-                            Profile.getLastUsedRegularProfile(),
+                            ProfileManager.getLastUsedRegularProfile(),
                             ContentSettingsType.MEDIASTREAM_MIC,
                             url,
                             url,
                             ContentSettingValues.DEFAULT);
                     WebsitePreferenceBridge.setContentSettingDefaultScope(
-                            Profile.getLastUsedRegularProfile(),
+                            ProfileManager.getLastUsedRegularProfile(),
                             ContentSettingsType.MEDIASTREAM_CAMERA,
                             url,
                             url,
@@ -361,7 +362,7 @@ public class PageInfoViewTest {
         CallbackHelper helper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    BrowsingDataBridge.getForProfile(Profile.getLastUsedRegularProfile())
+                    BrowsingDataBridge.getForProfile(ProfileManager.getLastUsedRegularProfile())
                             .clearBrowsingData(
                                     helper::notifyCalled,
                                     new int[] {BrowsingDataType.SITE_SETTINGS},
@@ -378,7 +379,7 @@ public class PageInfoViewTest {
                             new ArrayList<ContentSettingException>();
                     WebsitePreferenceBridgeJni.get()
                             .getContentSettingsExceptions(
-                                    Profile.getLastUsedRegularProfile(), type, exceptions);
+                                    ProfileManager.getLastUsedRegularProfile(), type, exceptions);
                     Iterator<ContentSettingException> exceptionIt = exceptions.iterator();
                     while (exceptionIt.hasNext()) {
                         ContentSettingException exception = exceptionIt.next();
@@ -619,7 +620,7 @@ public class PageInfoViewTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     WebsitePreferenceBridge.setContentSettingDefaultScope(
-                            Profile.getLastUsedRegularProfile(),
+                            ProfileManager.getLastUsedRegularProfile(),
                             ContentSettingsType.SOUND,
                             url,
                             url,
@@ -641,12 +642,12 @@ public class PageInfoViewTest {
                 () -> {
                     WebsitePreferenceBridgeJni.get()
                             .setEphemeralGrantForTesting(
-                                    Profile.getLastUsedRegularProfile(),
+                                    ProfileManager.getLastUsedRegularProfile(),
                                     ContentSettingsType.GEOLOCATION,
                                     url,
                                     url);
                     WebsitePreferenceBridge.setContentSettingDefaultScope(
-                            Profile.getLastUsedRegularProfile(),
+                            ProfileManager.getLastUsedRegularProfile(),
                             ContentSettingsType.MEDIASTREAM_CAMERA,
                             url,
                             url,
@@ -676,7 +677,7 @@ public class PageInfoViewTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     assertTrue(
-                            UserPrefs.get(Profile.getLastUsedRegularProfile())
+                            UserPrefs.get(ProfileManager.getLastUsedRegularProfile())
                                     .getBoolean(IN_CONTEXT_COOKIE_CONTROLS_OPENED));
                 });
         mRenderTestRule.render(getPageInfoView(), "PageInfo_CookiesSubpage_Toggle_Off");
@@ -704,7 +705,7 @@ public class PageInfoViewTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     assertTrue(
-                            UserPrefs.get(Profile.getLastUsedRegularProfile())
+                            UserPrefs.get(ProfileManager.getLastUsedRegularProfile())
                                     .getBoolean(IN_CONTEXT_COOKIE_CONTROLS_OPENED));
                 });
         mRenderTestRule.render(getPageInfoView(), "PageInfo_TrackingProtectionSubpage_Toggle_Off");
@@ -731,7 +732,7 @@ public class PageInfoViewTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     assertTrue(
-                            UserPrefs.get(Profile.getLastUsedRegularProfile())
+                            UserPrefs.get(ProfileManager.getLastUsedRegularProfile())
                                     .getBoolean(IN_CONTEXT_COOKIE_CONTROLS_OPENED));
                 });
         mRenderTestRule.render(
@@ -857,7 +858,7 @@ public class PageInfoViewTest {
         expectHasPermissions(url, true);
         // Go to permissions subpage.
         openPageInfo(PageInfoController.NO_HIGHLIGHTED_PERMISSION);
-        onView(withId(R.id.page_info_permissions_row)).perform(click());
+        onView(withId(R.id.page_info_permissions_row)).inRoot(isDialog()).perform(click());
         // Clear permissions in page info.
         onViewWaiting(allOf(withText("Reset permissions"), isDisplayed())).perform(click());
         onView(withText("Reset")).perform(click());
@@ -942,7 +943,7 @@ public class PageInfoViewTest {
                             pageInfoControllerDelegate,
                             ChromePageInfoHighlight.noHighlight());
                 });
-        onViewWaiting(allOf(withText(R.string.page_info_connection_paint_preview), isDisplayed()));
+        onViewWaiting(allOf(withText(R.string.page_info_connection_paint_preview), isDisplayed()), true);
     }
 
     /** Tests PageInfo on a website with permissions and no particular row highlight. */
@@ -954,6 +955,7 @@ public class PageInfoViewTest {
                 mTestServerRule.getServer().getURL(sSimpleHtml),
                 PageInfoController.NO_HIGHLIGHTED_PERMISSION);
         onView(withId(R.id.page_info_permissions_row))
+                .inRoot(isDialog())
                 .check(matches(not(hasBackgroundColor(R.color.iph_highlight_blue))));
     }
 
@@ -1084,7 +1086,9 @@ public class PageInfoViewTest {
     public void testShowAdPersonalizationInfoSubPageV4() throws IOException {
         loadUrlAndOpenPageInfo(
                 mTestServerRule.getServer().getURLWithHostName("example.com", sSimpleHtml));
-        onView(withId(PageInfoAdPersonalizationController.ROW_ID)).perform(click());
+        onView(withId(PageInfoAdPersonalizationController.ROW_ID))
+                .inRoot(isDialog())
+                .perform(click());
         onViewWaiting(
                 allOf(
                         withText(R.string.page_info_ad_privacy_subpage_manage_button),

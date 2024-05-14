@@ -13,6 +13,11 @@ class WithOpt : public GarbageCollected<WithOpt> {
  private:
   absl::optional<Base> optional_field_;  // Optional fields are disallowed.
   std::optional<Base> optional_field2_;
+  absl::optional<Traceable>
+      optional_field3_;  // Optional fields are disallowed.
+  std::optional<Traceable> optional_field4_;
+  base::raw_ptr<Base> raw_ptr_field_;
+  base::raw_ptr<Traceable> raw_ptr_field2_;
 };
 
 void DisallowedUseOfOptional() {
@@ -23,8 +28,14 @@ void DisallowedUseOfOptional() {
     absl::optional<Derived> optional_derived;  // Must also be okay.
     (void)optional_derived;
 
+    absl::optional<Traceable> optional_traceable;  // Must also be okay.
+    (void)optional_traceable;
+
     new absl::optional<Base>;  // New expression with gced optionals are not
                                // allowed.
+
+    new absl::optional<Traceable>;  // New expression with traceable optionals
+                                    // are not allowed.
   }
 
   {
@@ -34,9 +45,55 @@ void DisallowedUseOfOptional() {
     std::optional<Derived> optional_derived;  // Must also be okay.
     (void)optional_derived;
 
+    std::optional<Traceable> optional_traceable;  // Must also be okay.
+    (void)optional_traceable;
+
     new std::optional<Base>;  // New expression with gced optionals are not
                                // allowed.
+
+    new std::optional<Traceable>;  // New expression with traceable optionals
+                                   // are not allowed.
+  }
+
+  {
+    base::raw_ptr<Base> raw_ptr_base;  // Must be okay.
+    (void)raw_ptr_base;
+
+    base::raw_ptr<Derived> raw_ptr_derived;  // Must also be okay.
+    (void)raw_ptr_derived;
+
+    base::raw_ptr<Traceable> raw_ptr_traceable;  // Must also be okay.
+    (void)raw_ptr_traceable;
+
+    new base::raw_ptr<Base>;  // New expression with gced raw_ptrs are not
+                              // allowed.
+
+    new base::raw_ptr<Traceable>;  // New expression with traceable raw_ptrs
+                                   // are not allowed.
   }
 }
+
+class OnStack {
+  STACK_ALLOCATED();
+
+ public:
+  OnStack() {
+    (void)optional_field_;
+    (void)optional_field2_;
+    (void)optional_field3_;
+    (void)optional_field4_;
+    (void)raw_ptr_field_;
+    (void)raw_ptr_field2_;
+  }
+
+ private:
+  // All fields are ok since the class is stack allocated.
+  absl::optional<Base> optional_field_;
+  std::optional<Base> optional_field2_;
+  absl::optional<Traceable> optional_field3_;
+  std::optional<Traceable> optional_field4_;
+  base::raw_ptr<Base> raw_ptr_field_;
+  base::raw_ptr<Traceable> raw_ptr_field2_;
+};
 
 }  // namespace blink

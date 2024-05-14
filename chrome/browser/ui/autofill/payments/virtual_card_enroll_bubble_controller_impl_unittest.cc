@@ -172,7 +172,7 @@ class VirtualCardEnrollBubbleControllerImplBubbleViewTest
   }
 
   AutofillBubbleBase* GetBubbleViews() {
-    return controller()->GetVirtualCardEnrollBubbleView();
+    return controller()->GetVirtualCardBubbleView();
   }
 
   const VirtualCardEnrollmentFields& virtual_card_enrollment_fields() const {
@@ -191,34 +191,52 @@ class VirtualCardEnrollBubbleControllerImplBubbleViewTest
   VirtualCardEnrollmentFields virtual_card_enrollment_fields_;
 };
 
-// Ensures that bubble acceptance is recorded after bubble is shown and
-// accepted.
+// Ensures that bubble acceptance and loading shown metrics are recorded after
+// bubble is shown and accepted .
 TEST_F(VirtualCardEnrollBubbleControllerImplBubbleViewTest, ShowBubble) {
   base::HistogramTester histogram_tester;
   ShowBubble();
   EXPECT_NE(GetBubbleViews(), nullptr);
-  controller()->OnAcceptButton();
+  controller()->OnAcceptButton(/*did_switch_to_loading_state=*/false);
+
+  // Metric should not be recorded from the accept button.
+  histogram_tester.ExpectTotalCount(
+      "Autofill.VirtualCardEnrollBubble.Result.Upstream.FirstShow", 0);
+
+  controller()->OnBubbleClosed(PaymentsBubbleClosedReason::kAccepted);
   controller()->HideIconAndBubble();
   histogram_tester.ExpectUniqueSample(
       "Autofill.VirtualCardEnrollBubble.Result.Upstream.FirstShow",
       VirtualCardEnrollmentBubbleResult::
           VIRTUAL_CARD_ENROLLMENT_BUBBLE_ACCEPTED,
       1);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.VirtualCardEnrollBubble.LoadingShown", false, 1);
 }
 
-// Ensures that bubble acceptance is recorded when bubble gets closed from the
-// loading state.
+// Ensures that bubble acceptance, loading shown, and loading result metrics are
+// recorded when the bubble gets closed from the loading state.
 TEST_F(VirtualCardEnrollBubbleControllerImplBubbleViewTest,
        ShowBubbleInLoadingState) {
   base::HistogramTester histogram_tester;
   ShowBubble();
   EXPECT_NE(GetBubbleViews(), nullptr);
   controller()->OnAcceptButton(/*did_switch_to_loading_state=*/true);
-  controller()->HideIconAndBubble();
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.VirtualCardEnrollBubble.LoadingShown", true, 1);
+
+  // Metric should be recorded from the accept button.
   histogram_tester.ExpectUniqueSample(
       "Autofill.VirtualCardEnrollBubble.Result.Upstream.FirstShow",
       VirtualCardEnrollmentBubbleResult::
           VIRTUAL_CARD_ENROLLMENT_BUBBLE_ACCEPTED,
+      1);
+
+  controller()->OnBubbleClosed(PaymentsBubbleClosedReason::kClosed);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.VirtualCardEnrollBubble.LoadingResult",
+      VirtualCardEnrollmentBubbleResult::VIRTUAL_CARD_ENROLLMENT_BUBBLE_CLOSED,
       1);
 }
 
@@ -250,11 +268,37 @@ TEST_F(VirtualCardEnrollBubbleControllerImplBubbleViewTest,
   EXPECT_NE(GetBubbleViews(), nullptr);
   EXPECT_TRUE(controller()->IsIconVisible());
 
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.VirtualCardEnrollBubble.ConfirmationShown.CardEnrolled", true,
+      1);
+
   controller()->OnBubbleClosed(PaymentsBubbleClosedReason::kClosed);
   // Expect the metric for virtual card enroll bubble to not change after
   // showing the confirmation bubble.
   histogram_tester.ExpectTotalCount(
       "Autofill.VirtualCardEnrollBubble.Result.Upstream.FirstShow", 1);
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.VirtualCardEnrollBubble.ConfirmationResult.CardEnrolled",
+      VirtualCardEnrollmentBubbleResult::VIRTUAL_CARD_ENROLLMENT_BUBBLE_CLOSED,
+      1);
+}
+
+// Tests that the correct confirmation result metric is logged when the
+// confirmation bubble is closed after the card is not enrolled.
+TEST_F(VirtualCardEnrollBubbleControllerImplBubbleViewTest,
+       Metric_CloseConfirmationBubble_CardNotEnrolled) {
+  base::HistogramTester histogram_tester;
+
+  ShowBubble();
+  controller()->OnAcceptButton(/*did_switch_to_loading_state=*/true);
+  controller()->ShowConfirmationBubbleView(/*is_vcn_enrolled=*/false);
+  controller()->OnBubbleClosed(PaymentsBubbleClosedReason::kClosed);
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.VirtualCardEnrollBubble.ConfirmationResult.CardNotEnrolled",
+      VirtualCardEnrollmentBubbleResult::VIRTUAL_CARD_ENROLLMENT_BUBBLE_CLOSED,
+      1);
 }
 }  // namespace
 }  // namespace autofill

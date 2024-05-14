@@ -5,6 +5,7 @@
 #include "ui/views/controls/combobox/combobox.h"
 
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -23,6 +24,7 @@
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/combobox_model_observer.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/base/models/simple_combobox_model.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
@@ -550,8 +552,11 @@ TEST_F(ComboboxTest, SelectValue) {
 TEST_F(ComboboxTest, ListenerHandlesDelete) {
   auto evil_listener = std::make_unique<EvilListener>();
   ASSERT_TRUE(evil_listener->combobox());
-  ASSERT_NO_FATAL_FAILURE(
-      ComboboxTestApi(evil_listener->combobox()).PerformActionAt(2));
+  ASSERT_NO_FATAL_FAILURE({
+    ui::MenuModel* model =
+        ComboboxTestApi(evil_listener->combobox()).menu_model();
+    model->ActivatedAt(2);
+  });
   EXPECT_FALSE(evil_listener->combobox());
 }
 
@@ -888,7 +893,7 @@ TEST_F(ComboboxTest, SetTooltipTextNotifiesAccessibilityEvent) {
   EXPECT_EQ(1, counter.GetCount(ax::mojom::Event::kTextChanged,
                                 ax::mojom::Role::kButton));
   EXPECT_EQ(1, counter.GetCount(ax::mojom::Event::kTextChanged,
-                                ax::mojom::Role::kPopUpButton));
+                                ax::mojom::Role::kComboBoxSelect));
   EXPECT_EQ(test_tooltip_text, combobox()->GetAccessibleName());
   ui::AXNodeData data;
   combobox()->GetAccessibleNodeData(&data);
@@ -907,6 +912,13 @@ TEST_F(ComboboxTest, NoCrashWhenComboboxOutlivesModel) {
 }
 
 namespace {
+
+std::string GetComboboxA11yValue(Combobox* combobox) {
+  const std::optional<size_t>& selected_index = combobox->GetSelectedIndex();
+  return selected_index ? base::UTF16ToUTF8(combobox->GetModel()->GetItemAt(
+                              selected_index.value()))
+                        : std::string();
+}
 
 using ComboboxDefaultTest = ViewsTestBase;
 
@@ -1008,6 +1020,40 @@ TEST_F(ComboboxDefaultTest, SetOwnedModelOverwriteOwned) {
     ASSERT_FALSE(destroyed_second);
   }
   EXPECT_TRUE(destroyed_second);
+}
+
+TEST_F(ComboboxDefaultTest, InteractionWithEmptyModel) {
+  ui::AXNodeData node_data;
+
+  // Empty model.
+  // Verify `GetAccessibleNodeData()` doesn't crash when interacting with empty
+  // model.
+  auto simple_model = std::make_unique<ui::SimpleComboboxModel>(
+      std::vector<ui::SimpleComboboxModel::Item>());
+  auto combobox = std::make_unique<Combobox>(simple_model.get());
+  combobox->GetAccessibleNodeData(&node_data);
+  EXPECT_EQ(0u, combobox->GetModel()->GetItemCount());
+  EXPECT_EQ(std::nullopt, combobox->GetSelectedIndex());
+  EXPECT_EQ(GetComboboxA11yValue(combobox.get()),
+            node_data.GetStringAttribute(ax::mojom::StringAttribute::kValue));
+
+  // Non-empty model.
+  simple_model->UpdateItemList({ui::SimpleComboboxModel::Item(u"item")});
+  combobox->GetAccessibleNodeData(&node_data);
+  EXPECT_EQ(1u, combobox->GetModel()->GetItemCount());
+  EXPECT_EQ(0u, combobox->GetSelectedIndex());
+  EXPECT_EQ(GetComboboxA11yValue(combobox.get()),
+            node_data.GetStringAttribute(ax::mojom::StringAttribute::kValue));
+
+  // Empty model.
+  // Verify `OnComboboxModelChanged()` doesn't crash when interacting with empty
+  // model.
+  simple_model->UpdateItemList({});
+  combobox->GetAccessibleNodeData(&node_data);
+  EXPECT_EQ(0u, combobox->GetModel()->GetItemCount());
+  EXPECT_EQ(std::nullopt, combobox->GetSelectedIndex());
+  EXPECT_EQ(GetComboboxA11yValue(combobox.get()),
+            node_data.GetStringAttribute(ax::mojom::StringAttribute::kValue));
 }
 
 }  // namespace views

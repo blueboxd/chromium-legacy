@@ -6,10 +6,11 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_TEST_WEB_APP_TEST_UTILS_H_
 
 #include <stdint.h>
+
 #include <memory>
 #include <string>
+#include <string_view>
 
-#include "base/strings/string_piece.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_sub_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -33,18 +34,7 @@ namespace web_app {
 
 class WebApp;
 
-// Intended to be used for parameterizing tests that involve OS integration.
-enum class OsIntegrationSubManagersState {
-  kSaveStateToDB = 0,
-  kSaveStateAndExecute = 1,
-  kDisabled = 2,
-  kMaxValue = kDisabled
-};
-
 namespace test {
-
-std::string GetOsIntegrationSubManagersTestName(
-    const ::testing::TestParamInfo<OsIntegrationSubManagersState>& info);
 
 // Do not use this for installation! Instead, use the utilities in
 // web_app_install_test_util.h.
@@ -78,7 +68,7 @@ void CheckServiceWorkerStatus(const GURL& url,
                               content::StoragePartition* storage_partition,
                               content::ServiceWorkerCapability status);
 
-void SetWebAppSettingsListPref(Profile* profile, base::StringPiece pref);
+void SetWebAppSettingsListPref(Profile* profile, std::string_view pref);
 
 void AddInstallUrlData(PrefService* pref_service,
                        WebAppSyncBridge* sync_bridge,

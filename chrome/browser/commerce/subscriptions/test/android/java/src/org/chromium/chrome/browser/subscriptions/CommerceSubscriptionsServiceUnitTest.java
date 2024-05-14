@@ -31,7 +31,6 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.FeatureList;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Features;
@@ -46,6 +45,7 @@ import org.chromium.chrome.browser.price_tracking.PriceDropNotificationManagerFa
 import org.chromium.chrome.browser.price_tracking.PriceDropNotificationManagerImpl;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.components.browser_ui.notifications.MockNotificationManagerProxy;
@@ -85,7 +85,6 @@ public class CommerceSubscriptionsServiceUnitTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        UmaRecorderHolder.resetForTesting();
 
         doNothing().when(mActivityLifecycleDispatcher).register(any());
         mSharedPreferencesManager = ChromeSharedPreferences.getInstance();
@@ -108,7 +107,7 @@ public class CommerceSubscriptionsServiceUnitTest {
         PriceDropNotificationManagerImpl.setNotificationManagerForTesting(mMockNotificationManager);
 
         mJniMocker.mock(UserPrefsJni.TEST_HOOKS, mUserPrefsJni);
-        Profile.setLastUsedProfileForTesting(mProfile);
+        ProfileManager.setLastUsedProfileForTesting(mProfile);
         when(mUserPrefsJni.get(mProfile)).thenReturn(mPrefService);
 
         mPriceDropNotificationManager = PriceDropNotificationManagerFactory.create();

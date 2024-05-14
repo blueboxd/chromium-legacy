@@ -22,7 +22,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.InstalledWebappPermissionManager;
-import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTabsFragment;
+import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxBridge;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxSnackbarController;
 import org.chromium.chrome.browser.privacy_sandbox.TrackingProtectionBridge;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.quick_delete.QuickDeleteController;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.FaviconLoader;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
@@ -40,13 +41,13 @@ import org.chromium.chrome.browser.tab.RequestDesktopUtils;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
+import org.chromium.components.browser_ui.site_settings.BrowsingDataInfo;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsDelegate;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.favicon.LargeIconBridge;
-import org.chromium.components.permissions.PermissionsAndroidFeatureList;
-import org.chromium.components.permissions.PermissionsAndroidFeatureMap;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.BrowserContextHandle;
@@ -56,6 +57,7 @@ import org.chromium.content_public.common.ContentFeatures;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.url.GURL;
 
+import java.util.Map;
 import java.util.Set;
 
 /** A SiteSettingsDelegate instance that contains Chrome-specific Site Settings logic. */
@@ -140,9 +142,6 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
                 return ContentFeatureMap.isEnabled(ContentFeatures.FED_CM);
             case SiteSettingsCategory.Type.NFC:
                 return ContentFeatureMap.isEnabled(ContentFeatureList.WEB_NFC);
-            case SiteSettingsCategory.Type.STORAGE_ACCESS:
-                return PermissionsAndroidFeatureMap.isEnabled(
-                        PermissionsAndroidFeatureList.PERMISSION_STORAGE_ACCESS);
             case SiteSettingsCategory.Type.ZOOM:
                 return ContentFeatureMap.isEnabled(ContentFeatureList.ACCESSIBILITY_PAGE_ZOOM)
                         && ContentFeatureMap.isEnabled(
@@ -319,8 +318,16 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
 
     @Override
     public void launchClearBrowsingDataDialog(Activity currentActivity) {
-        new SettingsLauncherImpl()
-                .launchSettingsActivity(currentActivity, ClearBrowsingDataTabsFragment.class);
+        if (QuickDeleteController.isQuickDeleteFollowupEnabled()) {
+            new SettingsLauncherImpl()
+                    .launchSettingsActivity(
+                            currentActivity,
+                            SettingsLauncher.SettingsFragment.CLEAR_BROWSING_DATA_ADVANCED_PAGE);
+        } else {
+            new SettingsLauncherImpl()
+                    .launchSettingsActivity(
+                            currentActivity, SettingsLauncher.SettingsFragment.CLEAR_BROWSING_DATA);
+        }
     }
 
     @Override
@@ -335,5 +342,11 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
         return ChromeFeatureList.isEnabled(
                         ChromeFeatureList.TRACKING_PROTECTION_SETTINGS_PAGE_ROLLBACK_NOTICE)
                 && TrackingProtectionBridge.isOffboarded();
+    }
+
+    @Override
+    public void fetchBrowsingDataInfo(
+            Callback<Map<org.chromium.url.Origin, BrowsingDataInfo>> callback) {
+        BrowsingDataBridge.getForProfile(mProfile).fetchBrowsingDataInfo(callback);
     }
 }

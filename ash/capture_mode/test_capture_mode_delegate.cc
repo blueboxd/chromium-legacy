@@ -39,6 +39,8 @@ TestCaptureModeDelegate::TestCaptureModeDelegate()
   DCHECK(created_dir);
   created_dir = fake_linux_files_path_.CreateUniqueTempDir();
   DCHECK(created_dir);
+  created_dir = fake_one_drive_mount_path_.CreateUniqueTempDir();
+  DCHECK(created_dir);
 }
 
 TestCaptureModeDelegate::~TestCaptureModeDelegate() = default;
@@ -91,6 +93,9 @@ base::FilePath TestCaptureModeDelegate::GetUserDefaultDownloadsFolder() const {
 }
 
 void TestCaptureModeDelegate::ShowScreenCaptureItemInFolder(
+    const base::FilePath& file_path) {}
+
+void TestCaptureModeDelegate::OpenScreenCaptureItem(
     const base::FilePath& file_path) {}
 
 void TestCaptureModeDelegate::OpenScreenshotInImageEditor(
@@ -172,6 +177,15 @@ base::FilePath TestCaptureModeDelegate::GetAndroidFilesPath() const {
 
 base::FilePath TestCaptureModeDelegate::GetLinuxFilesPath() const {
   return fake_linux_files_path_.GetPath();
+}
+
+base::FilePath TestCaptureModeDelegate::GetOneDriveMountPointPath() const {
+  return fake_one_drive_mount_path_.GetPath();
+}
+
+TestCaptureModeDelegate::PolicyCapturePath
+TestCaptureModeDelegate::GetPolicyCapturePath() const {
+  return policy_capture_path_;
 }
 
 std::unique_ptr<RecordingOverlayView>

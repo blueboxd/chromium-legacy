@@ -529,6 +529,11 @@ struct AutocompleteMatch {
   // providers.
   bool IsOnDeviceSearchSuggestion() const;
 
+  // Returns the top-level sorting order of the suggestion.
+  // Suggestions should be sorted by this value first, and by Relevance score
+  // next.
+  int GetSortingOrder() const;
+
   // Returns true if the match is eligible to be re-scored by ML Url scoring.
   bool IsUrlScoringEligible() const;
 
@@ -709,6 +714,10 @@ struct AutocompleteMatch {
   // Providers may manually set it to avoid the default
   // `ComputeStrippedDestinationURL()` computation.
   GURL stripped_destination_url;
+
+  // Extra headers to add to the navigation. See `NavigateParams::extra_headers`
+  // for how headers should be represented.
+  std::string extra_headers;
 
   // Optional image information. Used for entity suggestions. The dominant color
   // can be used to paint the image placeholder while fetching the image.

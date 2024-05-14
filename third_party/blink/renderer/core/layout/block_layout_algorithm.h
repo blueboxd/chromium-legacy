@@ -85,6 +85,7 @@ class CORE_EXPORT BlockLayoutAlgorithm
       const InlineNode& child);
 
   NOINLINE const LayoutResult* RelayoutIgnoringLineClamp();
+  NOINLINE const LayoutResult* RelayoutForTextBoxTrimEnd();
 
   inline const LayoutResult* Layout(
       InlineChildLayoutContext* inline_child_layout_context);
@@ -396,6 +397,14 @@ class CORE_EXPORT BlockLayoutAlgorithm
 
   const ColumnSpannerPath* column_spanner_path_ = nullptr;
 
+  // The last non-empty inflow child. Currently this is used only when
+  // `should_text_box_trim_end_` and when the last child was empty. Thus this is
+  // updated only in that case.
+  LayoutInputNode last_non_empty_inflow_child_ = nullptr;
+
+  // `text-box-trim: end` should be applied to this child.
+  LayoutInputNode override_text_box_trim_end_child_ = nullptr;
+
   // Intrinsic block size based on child layout and containment.
   LayoutUnit intrinsic_block_size_;
 
@@ -426,6 +435,10 @@ class CORE_EXPORT BlockLayoutAlgorithm
   // this). It is used to check if we're at a valid class A or B breakpoint
   // (between block-level siblings or line box siblings).
   bool has_break_opportunity_before_next_child_ : 1;
+
+  // If the `text-box-trim` is effective for block-start/end edges.
+  bool should_text_box_trim_start_ : 1;
+  bool should_text_box_trim_end_ : 1;
 
   // If true, ignore the line-clamp property as truncation wont be required.
   bool ignore_line_clamp_ : 1;

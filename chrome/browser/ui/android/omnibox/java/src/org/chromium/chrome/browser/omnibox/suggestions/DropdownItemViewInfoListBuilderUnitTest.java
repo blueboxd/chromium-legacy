@@ -41,9 +41,10 @@ import org.mockito.junit.MockitoRule;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.EnableFeatures;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.suggestions.groupseparator.GroupSeparatorProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.header.HeaderProcessor;
-import org.chromium.chrome.browser.omnibox.suggestions.history_clusters.HistoryClustersProcessor;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteMatchBuilder;
 import org.chromium.components.omnibox.AutocompleteResult;
@@ -60,6 +61,7 @@ import java.util.List;
 
 /** Tests for {@link DropdownItemViewInfoListBuilder}. */
 @RunWith(BaseRobolectricTestRunner.class)
+@EnableFeatures(ChromeFeatureList.OMNIBOX_SUGGESTION_GROUPING_FOR_NON_ZPS)
 public class DropdownItemViewInfoListBuilderUnitTest {
     public @Rule TestRule mProcessor = new Features.JUnitProcessor();
     public @Rule MockitoRule mockitoRule = MockitoJUnit.rule();
@@ -69,7 +71,6 @@ public class DropdownItemViewInfoListBuilderUnitTest {
     private @Mock AutocompleteController mAutocompleteController;
     private @Mock SuggestionProcessor mMockSuggestionProcessor;
     private @Spy HeaderProcessor mMockHeaderProcessor = new HeaderProcessor(mContext);
-    private @Mock HistoryClustersProcessor.OpenHistoryClustersDelegate mOpenHistoryClustersDelegate;
 
     private GroupSeparatorProcessor mGroupSeparatorProcessor =
             new GroupSeparatorProcessor(mContext);
@@ -81,9 +82,7 @@ public class DropdownItemViewInfoListBuilderUnitTest {
                 .thenAnswer((mock) -> new PropertyModel(SuggestionCommonProperties.ALL_KEYS));
         when(mMockSuggestionProcessor.getViewTypeId()).thenReturn(OmniboxSuggestionUiType.DEFAULT);
 
-        mBuilder =
-                new DropdownItemViewInfoListBuilder(
-                        () -> null, (url) -> false, mOpenHistoryClustersDelegate);
+        mBuilder = new DropdownItemViewInfoListBuilder(() -> null, (url) -> false);
         mBuilder.registerSuggestionProcessor(mMockSuggestionProcessor);
         mBuilder.setGroupSeparatorProcessorForTest(mGroupSeparatorProcessor);
         mBuilder.setHeaderProcessorForTest(mMockHeaderProcessor);

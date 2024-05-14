@@ -6,12 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_INSET_AREA_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/anchor_evaluator.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
-class Length;
 class WritingDirectionMode;
 
 // Possible region end points for a computed <inset-area-span>
@@ -36,11 +36,6 @@ enum class InsetAreaRegion {
   kYSelfStart,
   kYSelfEnd,
 };
-
-CORE_EXPORT extern const Length& g_anchor_top_length;
-CORE_EXPORT extern const Length& g_anchor_bottom_length;
-CORE_EXPORT extern const Length& g_anchor_left_length;
-CORE_EXPORT extern const Length& g_anchor_right_length;
 
 // Represents the computed value for the inset-area property. Each span is
 // represented by two end points in the spec order for that axis. That is:
@@ -88,13 +83,14 @@ class CORE_EXPORT InsetArea {
       const WritingDirectionMode& container_writing_direction,
       const WritingDirectionMode& self_writing_direction) const;
 
-  // Return Lengths to override auto inset values according to the resolved
-  // inset-area. May only be called on InsetAreas returned from ToPhysical()
-  // which ensures physical vertical / horizontal areas.
-  const Length& UsedTop() const;
-  const Length& UsedBottom() const;
-  const Length& UsedLeft() const;
-  const Length& UsedRight() const;
+  // Return anchor() functions to override auto inset values according to the
+  // resolved inset-area. May only be called on InsetAreas returned from
+  // ToPhysical() which ensures physical vertical / horizontal areas.
+  // A return value of nullopt represents 0px rather than an anchor() function.
+  std::optional<AnchorQuery> UsedTop() const;
+  std::optional<AnchorQuery> UsedBottom() const;
+  std::optional<AnchorQuery> UsedLeft() const;
+  std::optional<AnchorQuery> UsedRight() const;
 
   // Anchored elements using inset area align towards the unused area through
   // different 'normal' behavior for align-self and justify-self. Compute the
@@ -103,15 +99,11 @@ class CORE_EXPORT InsetArea {
   std::pair<ItemPosition, ItemPosition> AlignJustifySelfFromPhysical(
       WritingDirectionMode container_writing_direction) const;
 
-  // To be called from CoreInitializer only. Initializes global Length constants
-  // at startup used by the methods above.
-  static void InitializeAnchorLengths();
-
   // Made public because they are used in unit test expectations.
-  static const Length& AnchorTop() { return g_anchor_top_length; }
-  static const Length& AnchorBottom() { return g_anchor_bottom_length; }
-  static const Length& AnchorLeft() { return g_anchor_left_length; }
-  static const Length& AnchorRight() { return g_anchor_right_length; }
+  static AnchorQuery AnchorTop();
+  static AnchorQuery AnchorBottom();
+  static AnchorQuery AnchorLeft();
+  static AnchorQuery AnchorRight();
 
  private:
   InsetAreaRegion span1_start_ = InsetAreaRegion::kNone;

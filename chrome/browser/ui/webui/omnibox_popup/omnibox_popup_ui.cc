@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
-#include "chrome/browser/ui/webui/realbox/realbox_handler.h"
 #include "chrome/browser/ui/webui/sanitized_image_source.h"
+#include "chrome/browser/ui/webui/searchbox/realbox_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/omnibox_popup_resources.h"
@@ -58,7 +58,7 @@ void OmniboxPopupUI::BindInterface(
     base::StringPiece spec(url.query_piece());
     url::Component query, key, value;
     query.len = static_cast<int>(spec.size());
-    while (url::ExtractQueryKeyValue(spec.data(), &query, &key, &value)) {
+    while (url::ExtractQueryKeyValue(spec, &query, &key, &value)) {
       if (key.is_nonempty() && value.is_nonempty()) {
         const base::StringPiece key_piece = spec.substr(key.begin, key.len);
         constexpr char kSessionIdKey[] = "session_id";

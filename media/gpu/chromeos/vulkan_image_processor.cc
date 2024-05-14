@@ -767,7 +767,8 @@ VulkanImageProcessor::~VulkanImageProcessor() {
       ->PerformImmediateCleanup();
 }
 
-std::unique_ptr<VulkanImageProcessor> VulkanImageProcessor::Create() {
+std::unique_ptr<VulkanImageProcessor> VulkanImageProcessor::Create(
+    TiledImageFormat format) {
   auto vulkan_implementation = gpu::CreateVulkanImplementation(
       /*use_swiftshader=*/false, /*allow_protected_memory=*/false);
 
@@ -790,7 +791,9 @@ std::unique_ptr<VulkanImageProcessor> VulkanImageProcessor::Create() {
   }
 
   auto render_pass = VulkanRenderPass::Create(
-      VK_FORMAT_B8G8R8A8_UNORM, vulkan_device_queue->GetVulkanDevice());
+      format == kMM21 ? VK_FORMAT_B8G8R8A8_UNORM
+                      : VK_FORMAT_A2R10G10B10_UNORM_PACK32,
+      vulkan_device_queue->GetVulkanDevice());
   if (!render_pass) {
     return nullptr;
   }
@@ -814,9 +817,15 @@ std::unique_ptr<VulkanImageProcessor> VulkanImageProcessor::Create() {
   if (!vert_shader) {
     return nullptr;
   }
-  auto frag_shader =
-      VulkanShader::Create(kMM21ShaderFrag, sizeof(kMM21ShaderFrag),
-                           vulkan_device_queue->GetVulkanDevice());
+
+  std::unique_ptr<VulkanShader> frag_shader = nullptr;
+  if (format == kMT2T) {
+    frag_shader = VulkanShader::Create(kMT2TShaderFrag, sizeof(kMT2TShaderFrag),
+                                       vulkan_device_queue->GetVulkanDevice());
+  } else {
+    frag_shader = VulkanShader::Create(kMM21ShaderFrag, sizeof(kMM21ShaderFrag),
+                                       vulkan_device_queue->GetVulkanDevice());
+  }
   if (!frag_shader) {
     return nullptr;
   }
@@ -824,7 +833,7 @@ std::unique_ptr<VulkanImageProcessor> VulkanImageProcessor::Create() {
   auto pipeline = VulkanPipeline::Create(
       binding_descriptions, attribute_descriptions, descriptor_bindings,
       std::move(vert_shader), std::move(frag_shader),
-      {4 * 2 * sizeof(float), 2 * 2 * sizeof(int)}, render_pass->Get(),
+      {4 * 2 * sizeof(float), 4 * 2 * sizeof(int)}, render_pass->Get(),
       vulkan_device_queue->GetVulkanDevice());
   if (!pipeline) {
     return nullptr;
@@ -918,13 +927,15 @@ void VulkanImageProcessor::Process(gpu::VulkanImage& in_image,
       vertex_push_constants[6] = x_end;
       vertex_push_constants[7] = y_end;
       break;
+    case gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL_CLOCKWISE_90:
+    case gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL_CLOCKWISE_270:
     default:
       LOG(ERROR) << "Unsupported rotation requested for VulkanImageProcessor.";
       return;
   }
 
   auto out_texture = VulkanTextureImage::Create(
-      out_image, {VK_FORMAT_B8G8R8A8_UNORM}, {output_resolution},
+      out_image, {out_image.format()}, {output_resolution},
       {VK_IMAGE_ASPECT_COLOR_BIT},
       /*is_framebuffer=*/true, render_pass_->Get(),
       vulkan_device_queue_->GetVulkanDevice());
@@ -1017,9 +1028,23 @@ void VulkanImageProcessor::Process(gpu::VulkanImage& in_image,
                        VK_SHADER_STAGE_VERTEX_BIT, 0,
                        sizeof(vertex_push_constants), vertex_push_constants);
 
-    int dims_push_constants[4] = {
-        input_coded_size.width(), input_coded_size.height(),
-        input_visible_size.width(), input_visible_size.height()};
+    // We want to run these computations as doubles and then truncate down the
+    // single precision float to make sure this value is as accurate as
+    // possible. For 4K resolution, 23 bits of mantissa should be sufficient,
+    // but depending on how the floating point is actually computed, the
+    // inaccuracy can cause issues. This is also why we compute this value on
+    // the CPU rather than the GPU.
+    float inverseWidth = 1.0 / double(input_coded_size.width());
+    float inverseUVWidth = 2.0 / double(input_coded_size.width());
+    // We mostly only care that the bytes get to the GPU unscathed. The actual
+    // datatype is irrelevant, as long as they occupy the same memory. So, we
+    // push these floating point values by just reinterpret casting them as int.
+    int dims_push_constants[6] = {input_coded_size.width(),
+                                  input_coded_size.height(),
+                                  input_visible_size.width(),
+                                  input_visible_size.height(),
+                                  *reinterpret_cast<int*>(&inverseWidth),
+                                  *reinterpret_cast<int*>(&inverseUVWidth)};
     vkCmdPushConstants(record.handle(), pipeline_->GetPipelineLayout(),
                        VK_SHADER_STAGE_FRAGMENT_BIT,
                        sizeof(vertex_push_constants),

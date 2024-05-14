@@ -89,6 +89,7 @@ class Background;
 class Border;
 class ContextMenuController;
 class DragController;
+class FillLayout;
 class FocusManager;
 class FocusTraversable;
 class LayoutProvider;
@@ -118,9 +119,9 @@ struct VIEWS_EXPORT ViewHierarchyChangedDetails {
       : is_add(is_add), parent(parent), child(child), move_view(move_view) {}
   const bool is_add;
   // New parent if |is_add| is true, old parent if |is_add| is false.
-  const raw_ptr<View, DanglingUntriaged> parent;
+  const raw_ptr<View> parent;
   // The view being added or removed.
-  const raw_ptr<View, DanglingUntriaged> child;
+  const raw_ptr<View> child;
   // If this is a move (reparent), meaning AddChildViewAt() is invoked with an
   // existing parent, then a notification for the remove is sent first,
   // followed by one for the add.  This case can be distinguished by a
@@ -129,7 +130,7 @@ struct VIEWS_EXPORT ViewHierarchyChangedDetails {
   // being removed.
   // For the add part of move, |move_view| is the old parent of the View being
   // added.
-  const raw_ptr<View, DanglingUntriaged> move_view;
+  const raw_ptr<View> move_view;
 };
 
 using PropertyChangedCallback = ui::metadata::PropertyChangedCallback;
@@ -1537,10 +1538,16 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // will work.
   void SetAccessibleName(View* naming_view);
 
+  // DEPRECATED: Use ViewAccessibility::SetRole instead.
+  // See https://crbug.com/324485311.
+  //
   // Sets/gets the accessible role.
   void SetAccessibleRole(const ax::mojom::Role role);
   ax::mojom::Role GetAccessibleRole() const;
 
+  // DEPRECATED: Use ViewAccessibility::SetRole instead.
+  // See https://crbug.com/324485311.
+  //
   // Sets the accessible role along with a customized string to be used by
   // assistive technologies to present the role. When there is no role
   // description provided, assisitive technologies will use either the default
@@ -1937,21 +1944,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   FRIEND_TEST_ALL_PREFIXES(ViewTest, PaintWithUnknownInvalidation);
   FRIEND_TEST_ALL_PREFIXES(ViewTest, PauseAccessibilityEvents);
 
-  // This is the default view layout. It is a very simple version of FillLayout,
-  // which merely sets the bounds of the children to the content bounds. The
-  // actual FillLayout isn't used here because it supports a couple of features
-  // not used in the vast majority of instances. It also descends from
-  // LayoutManagerBase which adds some extra overhead not needed here.
-
-  class DefaultFillLayout : public LayoutManager {
-   public:
-    DefaultFillLayout();
-    ~DefaultFillLayout() override;
-    void Layout(View* host) override;
-    gfx::Size GetPreferredSize(const View* host) const override;
-    int GetPreferredHeightForWidth(const View* host, int width) const override;
-  };
-
   // Painting  -----------------------------------------------------------------
 
   // Responsible for propagating SchedulePaint() to the view's layer. If there
@@ -2063,6 +2055,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Non-templatized backend for SetLayoutManager().
   void SetLayoutManagerImpl(std::unique_ptr<LayoutManager> layout);
 
+  void SetToDefaultFillLayout();
+
   // Transformations -----------------------------------------------------------
 
   // Returns in |transform| the transform to get from coordinates of |ancestor|
@@ -2173,7 +2167,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Implementation of synchronous layout. DeprecatedLayoutImmediately() is a
   // temporary public accessor to this; this is the access point for the few
   // blessed uses.
-  void LayoutImmediately(bool collect_trace = true);
+  void LayoutImmediately();
 
   // Input ---------------------------------------------------------------------
 
@@ -2332,6 +2326,17 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Whether the view needs to be laid out.
   bool needs_layout_ = true;
 
+  // Used to generate an UMA metric for the maximum reentrant call depth seen
+  // during layout. Normally the metric value will be one (Layout() was not
+  // reentered). But, we know Layout() is reentered at least sometimes and
+  // want to measure how often that is. We also want to know if it is ever
+  // reentered more than two deep.
+  int max_layout_call_depth_ = 0;
+
+  // Current Layout() reentrant call depth (used to help determine the
+  // max_layout_call_depth_, above).
+  int current_layout_call_depth_ = 0;
+
   // Whether Layout() access is currently legal. This is used to prevent calls
   // to LayoutSuperclass() outside the implementation of Layout().
   bool layout_allowed_ = false;
@@ -2340,14 +2345,32 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // painted. This is used to compute metrics around unnecessary layout calls.
   int layouts_since_last_paint_ = 0;
 
+  // How many times InvalidateLayout() is called during a Layout() call.
+  // This should never be necessary, but we don't yet know how often
+  // it is happening.
+  int invalidates_during_layout_ = 0;
+
+  // Whether this view is in the middle of InvalidateLayout().
+  bool invalidating_ = false;
+
   // The View's LayoutManager defines the sizing heuristics applied to child
   // Views. The default is absolute positioning according to bounds_.
   std::unique_ptr<LayoutManager> layout_manager_;
 
-  // The default "fill" layout manager. This is set only if |layout_manager_|
-  // isn't set and SetUseDefaultFillLayout(true) is called or
-  // |kUseDefaultFillLayout| is true.
-  std::optional<DefaultFillLayout> default_fill_layout_;
+  // Having UseDefaultFillLayout true by default wreaks a bit of havoc right
+  // now, so it is false for the time being. Once the various sites which
+  // currently use FillLayout are converted to using this and the other places
+  // that either override Layout() or do nothing are also validated, this can
+  // be switched to true.
+  static constexpr bool kUseDefaultFillLayout = false;
+
+  // Is the default "fill" layout manager active? Setting this to true via
+  // SetUseDefaultFillLayout() will set |layout_manager_| to a FillLayout. Call
+  // SetLayoutManager(layout_manager) to override. If this is true and
+  // SetLayoutManager(nullptr) is called, |layout_manager_| be set back to a
+  // FillLayout.
+  bool use_default_fill_layout_ = kUseDefaultFillLayout;
+  bool has_default_fill_layout_ = false;
 
   // Whether this View's layer should be snapped to the pixel boundary.
   bool snap_layer_to_pixel_boundary_ = false;

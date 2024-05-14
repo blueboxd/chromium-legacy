@@ -639,14 +639,14 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
     static_assert(
         raw_ptr_traits::IsPtrArithmeticAllowed(Traits),
         "cannot increment raw_ptr unless AllowPtrArithmetic trait is present.");
-    wrapped_ptr_ = Impl::Advance(wrapped_ptr_, 1);
+    wrapped_ptr_ = Impl::Advance(wrapped_ptr_, 1, true);
     return *this;
   }
   PA_ALWAYS_INLINE constexpr raw_ptr& operator--() {
     static_assert(
         raw_ptr_traits::IsPtrArithmeticAllowed(Traits),
         "cannot decrement raw_ptr unless AllowPtrArithmetic trait is present.");
-    wrapped_ptr_ = Impl::Retreat(wrapped_ptr_, 1);
+    wrapped_ptr_ = Impl::Retreat(wrapped_ptr_, 1, true);
     return *this;
   }
   PA_ALWAYS_INLINE constexpr raw_ptr operator++(int /* post_increment */) {
@@ -672,7 +672,7 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
     static_assert(
         raw_ptr_traits::IsPtrArithmeticAllowed(Traits),
         "cannot increment raw_ptr unless AllowPtrArithmetic trait is present.");
-    wrapped_ptr_ = Impl::Advance(wrapped_ptr_, delta_elems);
+    wrapped_ptr_ = Impl::Advance(wrapped_ptr_, delta_elems, true);
     return *this;
   }
   template <
@@ -682,7 +682,7 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
     static_assert(
         raw_ptr_traits::IsPtrArithmeticAllowed(Traits),
         "cannot decrement raw_ptr unless AllowPtrArithmetic trait is present.");
-    wrapped_ptr_ = Impl::Retreat(wrapped_ptr_, delta_elems);
+    wrapped_ptr_ = Impl::Retreat(wrapped_ptr_, delta_elems, true);
     return *this;
   }
 
@@ -698,7 +698,7 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
     // Call SafelyUnwrapPtrForDereference() to simulate what GetForDereference()
     // does, but without creating a temporary.
     return *Impl::SafelyUnwrapPtrForDereference(
-        Impl::Advance(wrapped_ptr_, delta_elems));
+        Impl::Advance(wrapped_ptr_, delta_elems, false));
   }
 
   // Do not disable operator+() and operator-().
@@ -717,10 +717,13 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
   template <typename Z>
   PA_ALWAYS_INLINE friend constexpr raw_ptr operator+(const raw_ptr& p,
                                                       Z delta_elems) {
-    // Don't check for AllowPtrArithmetic here, as operator+= already does that,
-    // and we'd get double errors.
-    raw_ptr result = p;
-    return result += delta_elems;
+    // Don't check `is_offset_type<Z>` here, as existence of `Advance` is
+    // already gated on that, and we'd get double errors.
+    static_assert(
+        raw_ptr_traits::IsPtrArithmeticAllowed(Traits),
+        "cannot add to raw_ptr unless AllowPtrArithmetic trait is present.");
+    raw_ptr result = Impl::Advance(p.wrapped_ptr_, delta_elems, false);
+    return result;
   }
   template <typename Z>
   PA_ALWAYS_INLINE friend constexpr raw_ptr operator+(Z delta_elems,
@@ -730,10 +733,13 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
   template <typename Z>
   PA_ALWAYS_INLINE friend constexpr raw_ptr operator-(const raw_ptr& p,
                                                       Z delta_elems) {
-    // Don't check for AllowPtrArithmetic here, as operator-= already does that,
-    // and we'd get double errors.
-    raw_ptr result = p;
-    return result -= delta_elems;
+    // Don't check `is_offset_type<Z>` here, as existence of `Retreat` is
+    // already gated on that, and we'd get double errors.
+    static_assert(raw_ptr_traits::IsPtrArithmeticAllowed(Traits),
+                  "cannot subtract from raw_ptr unless AllowPtrArithmetic "
+                  "trait is present.");
+    raw_ptr result = Impl::Retreat(p.wrapped_ptr_, delta_elems, false);
+    return result;
   }
 
   // The "Do not disable operator+() and operator-()" comment above doesn't
@@ -1047,12 +1053,13 @@ using base::raw_ptr;
 //
 // When using it, please provide a justification about what guarantees that it
 // will never be dereferenced after becoming dangling.
-constexpr auto DisableDanglingPtrDetection = base::RawPtrTraits::kMayDangle;
+constexpr inline auto DisableDanglingPtrDetection =
+    base::RawPtrTraits::kMayDangle;
 
 // See `docs/dangling_ptr.md`
 // Annotates known dangling raw_ptr. Those haven't been triaged yet. All the
 // occurrences are meant to be removed. See https://crbug.com/1291138.
-constexpr auto DanglingUntriaged = base::RawPtrTraits::kMayDangle;
+constexpr inline auto DanglingUntriaged = base::RawPtrTraits::kMayDangle;
 
 // Unlike DanglingUntriaged, this annotates raw_ptrs that are known to
 // dangle only occasionally on the CQ.
@@ -1061,18 +1068,20 @@ constexpr auto DanglingUntriaged = base::RawPtrTraits::kMayDangle;
 // https://docs.google.com/spreadsheets/d/1k12PQOG4y1-UEV9xDfP1F8FSk4cVFywafEYHmzFubJ8/
 //
 // This is not meant to be added manually. You can ignore this flag.
-constexpr auto FlakyDanglingUntriaged = base::RawPtrTraits::kMayDangle;
+constexpr inline auto FlakyDanglingUntriaged = base::RawPtrTraits::kMayDangle;
 
 // Dangling raw_ptr that is more likely to cause UAF: its memory was freed in
 // one task, and the raw_ptr was released in a different one.
 //
 // This is not meant to be added manually. You can ignore this flag.
-constexpr auto AcrossTasksDanglingUntriaged = base::RawPtrTraits::kMayDangle;
+constexpr inline auto AcrossTasksDanglingUntriaged =
+    base::RawPtrTraits::kMayDangle;
 
 // The use of pointer arithmetic with raw_ptr is strongly discouraged and
 // disabled by default. Usually a container like span<> should be used
 // instead of the raw_ptr.
-constexpr auto AllowPtrArithmetic = base::RawPtrTraits::kAllowPtrArithmetic;
+constexpr inline auto AllowPtrArithmetic =
+    base::RawPtrTraits::kAllowPtrArithmetic;
 
 // The use of uninitialized pointers is strongly discouraged. raw_ptrs will
 // be initialized to nullptr by default in all cases when building against
@@ -1084,7 +1093,8 @@ constexpr auto AllowPtrArithmetic = base::RawPtrTraits::kAllowPtrArithmetic;
 // Note that opting out may not always be effective, given that algorithms
 // like BackupRefPtr require nullptr initializaion for correctness and thus
 // silently enforce it.
-constexpr auto AllowUninitialized = base::RawPtrTraits::kAllowUninitialized;
+constexpr inline auto AllowUninitialized =
+    base::RawPtrTraits::kAllowUninitialized;
 
 // This flag is used to tag a subset of dangling pointers. Similarly to
 // DanglingUntriaged, those pointers are known to be dangling. However, we also
@@ -1093,14 +1103,7 @@ constexpr auto AllowUninitialized = base::RawPtrTraits::kAllowUninitialized;
 // pressure on the BRP quarantine.
 //
 // This is not meant to be added manually. You can ignore this flag.
-constexpr auto LeakedDanglingUntriaged = base::RawPtrTraits::kMayDangle;
-
-// Temporary annotation for new pointers added during the renderer rewrite.
-// TODO(crbug.com/1444624): Find pre-existing dangling pointers and remove
-// this annotation.
-//
-// DO NOT ADD new occurrences of this.
-constexpr auto ExperimentalRenderer = base::RawPtrTraits::kMayDangle;
+constexpr inline auto LeakedDanglingUntriaged = base::RawPtrTraits::kMayDangle;
 
 // Temporary introduced alias in the context of rewriting std::vector<T*> into
 // std::vector<raw_ptr<T>> and in order to temporarily bypass the dangling ptr
@@ -1113,6 +1116,12 @@ constexpr inline auto VectorExperimental = base::RawPtrTraits::kMayDangle;
 // checks on the CQ. This alias will be removed gradually after the rewrite cl
 // lands and will be replaced by DanglingUntriaged where necessary.
 constexpr inline auto SetExperimental = base::RawPtrTraits::kMayDangle;
+
+// Temporary alias introduced in the context of rewriting more containers and in
+// order to temporarily bypass the dangling ptr checks on the CQ. This alias
+// will be removed gradually after the rewrite cl lands and will be replaced by
+// DanglingUntriaged where necessary.
+constexpr inline auto CtnExperimental = base::RawPtrTraits::kMayDangle;
 
 // Temporary workaround needed when using vector<raw_ptr<T, VectorExperimental>
 // in Mocked method signatures as the macros don't allow commas within.
@@ -1151,6 +1160,15 @@ struct less<raw_ptr<T, Traits>> {
   bool operator()(const raw_ptr<T, Traits>& lhs, T* rhs) const {
     Impl::IncrementLessCountForTest();
     return lhs < rhs;
+  }
+};
+
+template <typename T, base::RawPtrTraits Traits>
+struct hash<raw_ptr<T, Traits>> {
+  typedef raw_ptr<T, Traits> argument_type;
+  typedef std::size_t result_type;
+  result_type operator()(argument_type const& ptr) const {
+    return hash<T*>()(ptr.get());
   }
 };
 

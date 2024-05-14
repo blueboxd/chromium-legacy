@@ -11,6 +11,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/ranges/algorithm.h"
 #include "base/trace_event/trace_event.h"
+#include "third_party/blink/renderer/core/dom/text_diff_range.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/block_break_token.h"
 #include "third_party/blink/renderer/core/layout/constraint_space.h"
@@ -61,6 +62,47 @@
 namespace blink {
 
 namespace {
+
+template <typename Span1, typename Span2>
+unsigned MismatchInternal(const Span1& span1, const Span2& span2) {
+  const auto old_new = base::ranges::mismatch(span1, span2);
+  return static_cast<unsigned>(old_new.first - span1.begin());
+}
+
+unsigned Mismatch(const String& old_text, const String& new_text) {
+  if (old_text.Is8Bit()) {
+    const auto old_span8 = old_text.Span8();
+    if (new_text.Is8Bit()) {
+      return MismatchInternal(old_span8, new_text.Span8());
+    }
+    return MismatchInternal(old_span8, new_text.Span16());
+  }
+  const auto old_span16 = old_text.Span16();
+  if (new_text.Is8Bit()) {
+    return MismatchInternal(old_span16, new_text.Span8());
+  }
+  return MismatchInternal(old_span16, new_text.Span16());
+}
+
+template <typename Span1, typename Span2>
+unsigned MismatchFromEnd(const Span1& span1, const Span2& span2) {
+  const auto old_new =
+      base::ranges::mismatch(base::Reversed(span1), base::Reversed(span2));
+  return static_cast<unsigned>(old_new.first - span1.rbegin());
+}
+
+unsigned MismatchFromEnd(StringView old_text, StringView new_text) {
+  if (old_text.Is8Bit()) {
+    if (new_text.Is8Bit()) {
+      return MismatchFromEnd(old_text.Span8(), new_text.Span8());
+    }
+    return MismatchFromEnd(old_text.Span8(), new_text.Span16());
+  }
+  if (new_text.Is8Bit()) {
+    return MismatchFromEnd(old_text.Span16(), new_text.Span8());
+  }
+  return MismatchFromEnd(old_text.Span16(), new_text.Span16());
+}
 
 // Returns sum of |ShapeResult::Width()| in |data.items|. Note: All items
 // should be text item other type of items are not allowed.
@@ -551,7 +593,7 @@ void InlineNode::PrepareLayout(InlineNodeData* previous_data) const {
   InlineNodeData* data = MutableData();
   DCHECK(data);
   CollectInlines(data, previous_data);
-  SegmentText(data);
+  SegmentText(data, previous_data);
   ShapeTextIncludingFirstLine(
       data, previous_data ? &previous_data->text_content : nullptr, nullptr);
 
@@ -595,7 +637,7 @@ class InlineNodeDataEditor final {
 
   // Note: We can't use |Position| for |layout_text_.GetNode()| because |Text|
   // node is already changed.
-  InlineNodeData* Prepare(unsigned offset, unsigned length) {
+  InlineNodeData* Prepare() {
     if (!block_flow_ || block_flow_->NeedsCollectInlines() ||
         block_flow_->NeedsLayout() ||
         block_flow_->GetDocument().NeedsLayoutTreeUpdate() ||
@@ -638,19 +680,15 @@ class InlineNodeDataEditor final {
 
   void Run() {
     const InlineNodeData& new_data = *block_flow_->GetInlineNodeData();
-    const unsigned old_length = data_->text_content.length();
-    const unsigned new_length = new_data.text_content.length();
-    const unsigned start_offset = Mismatch(*data_, new_data);
-    //  * "ab cd ef" => delete "cd" => "ab ef"
-    //    We should not reuse " " before "ef"
-    //  * "a bc" => delete "bc" => "a"
-    //    There are no spaces after "a".
-    const unsigned matched_length = MismatchFromEnd(
-        *data_, new_data,
-        std::min(old_length - start_offset, new_length - start_offset));
-    DCHECK_LE(start_offset, old_length - matched_length);
-    DCHECK_LE(start_offset, new_length - matched_length);
-    const unsigned end_offset = old_length - matched_length;
+    const String& old_text = data_->text_content;
+    const String& new_text = new_data.text_content;
+    const auto [start_offset, end_match_length] =
+        MatchedLengths(old_text, new_text);
+    const unsigned old_length = old_text.length();
+    const unsigned new_length = new_text.length();
+    DCHECK_LE(start_offset, old_length - end_match_length);
+    DCHECK_LE(start_offset, new_length - end_match_length);
+    const unsigned end_offset = old_length - end_match_length;
     DCHECK_LE(start_offset, end_offset);
     HeapVector<InlineItem> items;
     ClearCollectionScope clear_scope(&items);
@@ -661,16 +699,12 @@ class InlineNodeDataEditor final {
     // Copy items before replaced range
     auto const* end = data_->items.end();
     auto* it = data_->items.begin();
-    while (it != end && it->end_offset_ < start_offset) {
+    for (; it != end && it->end_offset_ < start_offset; ++it) {
       DCHECK(it != data_->items.end());
       items.push_back(*it);
-      ++it;
     }
 
-    for (;;) {
-      if (it == end)
-        break;
-
+    while (it != end) {
       // Copy part of item before replaced range.
       if (it->start_offset_ < start_offset) {
         const InlineItem& new_item = CopyItemBefore(*it, start_offset);
@@ -733,21 +767,30 @@ class InlineNodeDataEditor final {
   }
 
  private:
+  // Find the number of characters that match in the two strings, from the start
+  // and from the end.
+  std::pair<unsigned, unsigned> MatchedLengths(const String& old_text,
+                                               const String& new_text) const {
+    // Find how many characters match from the start.
+    const unsigned start_match_length = Mismatch(old_text, new_text);
+
+    // Find from the end, excluding the `start_match_length` characters.
+    const unsigned old_length = old_text.length();
+    const unsigned new_length = new_text.length();
+    const unsigned max_end_length = std::min(old_length - start_match_length,
+                                             new_length - start_match_length);
+    const unsigned end_match_length =
+        MismatchFromEnd(StringView(old_text, old_length - max_end_length),
+                        StringView(new_text, new_length - max_end_length));
+    DCHECK_LE(start_match_length, old_length - end_match_length);
+    DCHECK_LE(start_match_length, new_length - end_match_length);
+    return {start_match_length, end_match_length};
+  }
+
   static unsigned AdjustOffset(unsigned offset, int delta) {
     if (delta > 0)
       return offset + delta;
     return offset - (-delta);
-  }
-
-  static unsigned ConvertDOMOffsetToTextContent(
-      base::span<const OffsetMappingUnit> units,
-      unsigned offset) {
-    auto it =
-        base::ranges::find_if(units, [offset](const OffsetMappingUnit& unit) {
-          return unit.DOMStart() <= offset && offset <= unit.DOMEnd();
-        });
-    DCHECK(it != units.end());
-    return it->ConvertDOMOffsetToTextContent(offset);
   }
 
   // Returns copy of |item| after |start_offset| (inclusive).
@@ -826,64 +869,6 @@ class InlineNodeDataEditor final {
                                                                skip);
   }
 
-  template <typename Span1, typename Span2>
-  static unsigned MismatchInternal(const Span1& span1, const Span2& span2) {
-    const auto old_new = base::ranges::mismatch(span1, span2);
-    return static_cast<unsigned>(old_new.first - span1.begin());
-  }
-
-  static unsigned Mismatch(const InlineItemsData& old_data,
-                           const InlineItemsData& new_data) {
-    const String& old_text = old_data.text_content;
-    const String& new_text = new_data.text_content;
-    if (old_text.Is8Bit()) {
-      const auto old_span8 = old_text.Span8();
-      if (new_text.Is8Bit())
-        return MismatchInternal(old_span8, new_text.Span8());
-      return MismatchInternal(old_span8, new_text.Span16());
-    }
-    const auto old_span16 = old_text.Span16();
-    if (new_text.Is8Bit())
-      return MismatchInternal(old_span16, new_text.Span8());
-    return MismatchInternal(old_span16, new_text.Span16());
-  }
-
-  template <typename Span1, typename Span2>
-  static unsigned MismatchFromEnd(const Span1& span1, const Span2& span2) {
-    const auto old_new =
-        base::ranges::mismatch(base::Reversed(span1), base::Reversed(span2));
-    return static_cast<unsigned>(old_new.first - span1.rbegin());
-  }
-
-  static unsigned MismatchFromEnd(const InlineItemsData& old_data,
-                                  const InlineItemsData& new_data,
-                                  unsigned max_length) {
-    const String& old_text = old_data.text_content;
-    const String& new_text = new_data.text_content;
-    const unsigned old_length = old_text.length();
-    const unsigned new_length = new_text.length();
-    DCHECK_LE(max_length, old_length);
-    DCHECK_LE(max_length, new_length);
-    const unsigned old_start = old_length - max_length;
-    const unsigned new_start = new_length - max_length;
-    if (old_text.Is8Bit()) {
-      const auto old_span8 = old_text.Span8().subspan(old_start, max_length);
-      if (new_text.Is8Bit()) {
-        return MismatchFromEnd(old_span8,
-                               new_text.Span8().subspan(new_start, max_length));
-      }
-      return MismatchFromEnd(old_span8,
-                             new_text.Span16().subspan(new_start, max_length));
-    }
-    const auto old_span16 = old_text.Span16().subspan(old_start, max_length);
-    if (new_text.Is8Bit()) {
-      return MismatchFromEnd(old_span16,
-                             new_text.Span8().subspan(new_start, max_length));
-    }
-    return MismatchFromEnd(old_span16,
-                           new_text.Span16().subspan(new_start, max_length));
-  }
-
   static void ShiftItem(InlineItem* item, int delta) {
     if (delta == 0)
       return;
@@ -922,21 +907,20 @@ class InlineNodeDataEditor final {
 
 // static
 bool InlineNode::SetTextWithOffset(LayoutText* layout_text,
-                                   String new_text_in,
-                                   unsigned offset,
-                                   unsigned length) {
+                                   String new_text,
+                                   const TextDiffRange& diff) {
   if (!layout_text->HasValidInlineItems() ||
       !layout_text->IsInLayoutNGInlineFormattingContext())
     return false;
   const String old_text = layout_text->TransformedText();
-  if (offset == 0 && length == old_text.length()) {
+  if (diff.offset == 0 && diff.old_size == old_text.length()) {
     // We'll run collect inline items since whole text of |layout_text| is
     // changed.
     return false;
   }
 
   InlineNodeDataEditor editor(*layout_text);
-  InlineNodeData* const previous_data = editor.Prepare(offset, length);
+  InlineNodeData* const previous_data = editor.Prepare();
   if (!previous_data)
     return false;
 
@@ -944,14 +928,13 @@ bool InlineNode::SetTextWithOffset(LayoutText* layout_text,
   // while shaping.
   FontCachePurgePreventer font_cache_purge_preventer;
 
-  String new_text(std::move(new_text_in));
   TextOffsetMap offset_map;
   new_text = layout_text->TransformAndSecureText(new_text, offset_map);
   if (!offset_map.IsEmpty()) {
     return false;
   }
   layout_text->SetTextInternal(new_text);
-  layout_text->SetHasVariableLengthTransform(false);
+  layout_text->ClearHasVariableLengthTransform();
 
   InlineNode node(editor.GetLayoutBlockFlow());
   InlineNodeData* data = node.MutableData();
@@ -964,7 +947,7 @@ bool InlineNode::SetTextWithOffset(LayoutText* layout_text,
   builder.DidFinishCollectInlines(data);
   // Relocates |ShapeResult| in |previous_data| after |offset|+|length|
   editor.Run();
-  node.SegmentText(data);
+  node.SegmentText(data, nullptr);
   node.ShapeTextIncludingFirstLine(data, &previous_data->text_content,
                                    &previous_data->items);
   node.AssociateItemsWithInlines(data);
@@ -1136,20 +1119,47 @@ const SvgTextChunkOffsets* InlineNode::FindSvgTextChunks(
              : nullptr;
 }
 
-void InlineNode::SegmentText(InlineNodeData* data) const {
+void InlineNode::SegmentText(InlineNodeData* data,
+                             InlineNodeData* previous_data) const {
   SegmentBidiRuns(data);
-  SegmentScriptRuns(data);
+  SegmentScriptRuns(data, previous_data);
   SegmentFontOrientation(data);
   if (data->segments)
     data->segments->ComputeItemIndex(data->items);
 }
 
 // Segment InlineItem by script, Emoji, and orientation using RunSegmenter.
-void InlineNode::SegmentScriptRuns(InlineNodeData* data) const {
+void InlineNode::SegmentScriptRuns(InlineNodeData* data,
+                                   InlineNodeData* previous_data) const {
   String& text_content = data->text_content;
   if (text_content.empty()) {
     data->segments = nullptr;
     return;
+  }
+
+  if (RuntimeEnabledFeatures::LayoutSegmentationCacheEnabled() &&
+      previous_data && text_content == previous_data->text_content) {
+    if (!previous_data->segments) {
+      const auto it = base::ranges::find_if(
+          previous_data->items,
+          [](const auto& item) { return item.Type() == InlineItem::kText; });
+      if (it != previous_data->items.end()) {
+        unsigned previous_packed_segment = it->segment_data_;
+        for (auto& item : data->items) {
+          if (item.Type() == InlineItem::kText) {
+            item.segment_data_ = previous_packed_segment;
+          }
+        }
+        data->segments = nullptr;
+        return;
+      }
+    } else if (GetLayoutBlockFlow()->IsHorizontalWritingMode()) {
+      // We can reuse InlineNodeData::segments only in horizontal writing modes
+      // because we might update it by SegmentFontOrientation() in vertical
+      // writing modes.
+      data->segments = std::move(previous_data->segments);
+      return;
+    }
   }
 
   if (text_content.Is8Bit() && !data->is_bidi_enabled_) {

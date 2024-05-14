@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_SOFT_NAVIGATION_HEURISTICS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_SOFT_NAVIGATION_HEURISTICS_H_
 
+#include <optional>
+
 #include "base/containers/enum_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/stack_allocated.h"
@@ -51,6 +53,8 @@ class CORE_EXPORT SoftNavigationHeuristics
     : public GarbageCollected<SoftNavigationHeuristics>,
       public Supplement<LocalDOMWindow>,
       public scheduler::TaskAttributionTracker::Observer {
+  USING_PRE_FINALIZER(SoftNavigationHeuristics, Dispose);
+
  public:
   FRIEND_TEST_ALL_PREFIXES(SoftNavigationHeuristicsTest,
                            EarlyReturnOnInvalidPendingInteractionTimestamp);
@@ -72,10 +76,11 @@ class CORE_EXPORT SoftNavigationHeuristics
    private:
     friend class SoftNavigationHeuristics;
 
-    explicit EventScope(SoftNavigationHeuristics*);
+    EventScope(SoftNavigationHeuristics*, scheduler::TaskAttributionTracker*);
 
     SoftNavigationHeuristics* heuristics_;
-    bool nested_ = false;
+    std::optional<scheduler::TaskAttributionTracker::ObserverScope>
+        observer_scope_;
   };
 
   // Supplement boilerplate.
@@ -87,6 +92,8 @@ class CORE_EXPORT SoftNavigationHeuristics
   // GarbageCollected boilerplate.
   void Trace(Visitor*) const override;
 
+  void Dispose();
+
   // The class's API.
   void SameDocumentNavigationStarted();
   void SameDocumentNavigationCommitted(const String& url);
@@ -95,7 +102,6 @@ class CORE_EXPORT SoftNavigationHeuristics
 
   // TaskAttributionTracker::Observer's implementation.
   void OnCreateTaskScope(scheduler::TaskAttributionInfo&) override;
-  ExecutionContext* GetExecutionContext() override;
 
   void RecordPaint(LocalFrame*,
                    uint64_t painted_area,
@@ -145,6 +151,7 @@ class CORE_EXPORT SoftNavigationHeuristics
   };
 
   void ReportSoftNavigationToMetrics(LocalFrame* frame) const;
+  void RecordUmaForNonSoftNavigationInteractions() const;
   void CheckSoftNavigationConditions(const PerInteractionData& data);
   void SetIsTrackingSoftNavigationHeuristicsOnDocument(bool value) const;
 
@@ -157,9 +164,6 @@ class CORE_EXPORT SoftNavigationHeuristics
   void CommitPreviousPaints(LocalFrame*);
   void EmitSoftNavigationEntryIfAllConditionsMet(LocalFrame*);
   LocalFrame* GetLocalFrameIfNotDetached() const;
-  void InteractionCallbackCalled(const scheduler::TaskAttributionInfo& task,
-                                 EventScope::Type,
-                                 bool is_new_interaction);
   void UserInitiatedInteraction();
   void SetCurrentTimeAsStartTime();
   void OnSoftNavigationEventScopeDestroyed();
@@ -202,7 +206,6 @@ class CORE_EXPORT SoftNavigationHeuristics
   // Used to synchronize resetting the heuristic when
   // `potential_soft_navigation_tasks_` becomes empty during GC.
   bool has_potential_soft_navigation_task_ = false;
-  bool seen_first_observer_ = false;
 };
 
 }  // namespace blink

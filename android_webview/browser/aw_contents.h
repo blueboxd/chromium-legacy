@@ -103,7 +103,7 @@ class AwContents : public FindHelper::Listener,
   base::android::ScopedJavaLocalRef<jobject> GetBrowserContext(JNIEnv* env);
   void SetCompositorFrameConsumer(JNIEnv* env, jlong compositor_frame_consumer);
   base::android::ScopedJavaLocalRef<jobject> GetRenderProcess(JNIEnv* env);
-
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
   void Destroy(JNIEnv* env);
   void DocumentHasImages(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& message);
@@ -188,13 +188,11 @@ class AwContents : public FindHelper::Listener,
       JNIEnv* env,
       const base::android::JavaParamRef<jstring>& js_object_name);
 
-  base::android::ScopedJavaLocalRef<jobjectArray> GetWebMessageListenerInfos(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jclass>& clazz);
+  std::vector<jni_zero::ScopedJavaLocalRef<jobject>> GetWebMessageListenerInfos(
+      JNIEnv* env);
 
-  base::android::ScopedJavaLocalRef<jobjectArray> GetDocumentStartupJavascripts(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jclass>& clazz);
+  std::vector<jni_zero::ScopedJavaLocalRef<jobject>>
+  GetDocumentStartupJavascripts(JNIEnv* env);
 
   bool GetViewTreeForceDarkState() { return view_tree_force_dark_state_; }
 
@@ -290,7 +288,7 @@ class AwContents : public FindHelper::Listener,
   void OnInputEvent(JNIEnv* env);
 
   // Sets the java client
-  void SetAwAutofillClient(const base::android::JavaRef<jobject>& client);
+  void SetAndroidAutofillClient(const base::android::JavaRef<jobject>& client);
 
   void SetJsOnlineProperty(JNIEnv* env, jboolean network_up);
   void TrimMemory(JNIEnv* env, jint level, jboolean visible);

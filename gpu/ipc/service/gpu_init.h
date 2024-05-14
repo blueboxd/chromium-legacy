@@ -6,6 +6,7 @@
 #define GPU_IPC_SERVICE_GPU_INIT_H_
 
 #include <optional>
+
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/config/device_perf_info.h"
@@ -15,6 +16,7 @@
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "gpu/vulkan/buildflags.h"
+#include "skia/buildflags.h"
 #include "ui/gfx/gpu_extra_info.h"
 
 namespace base {
@@ -27,6 +29,7 @@ class GLSurface;
 
 namespace gpu {
 
+class DawnContextProvider;
 class VulkanImplementation;
 
 class GPU_IPC_SERVICE_EXPORT GpuSandboxHelper {
@@ -77,6 +80,11 @@ class GPU_IPC_SERVICE_EXPORT GpuInit {
   std::unique_ptr<GpuWatchdogThread> TakeWatchdogThread() {
     return std::move(watchdog_thread_);
   }
+#if BUILDFLAG(SKIA_USE_DAWN)
+  std::unique_ptr<DawnContextProvider> TakeDawnContextProvider() {
+    return std::move(dawn_context_provider_);
+  }
+#endif
   scoped_refptr<gl::GLSurface> TakeDefaultOffscreenSurface();
   bool init_successful() const { return init_successful_; }
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -88,11 +96,17 @@ class GPU_IPC_SERVICE_EXPORT GpuInit {
 #endif
 
  private:
+  bool InitializeDawn();
   bool InitializeVulkan();
 
   raw_ptr<GpuSandboxHelper> sandbox_helper_ = nullptr;
   bool gl_use_swiftshader_ = false;
   std::unique_ptr<GpuWatchdogThread> watchdog_thread_;
+
+#if BUILDFLAG(SKIA_USE_DAWN)
+  std::unique_ptr<DawnContextProvider> dawn_context_provider_;
+#endif
+
   GPUInfo gpu_info_;
   GpuFeatureInfo gpu_feature_info_;
   GpuPreferences gpu_preferences_;

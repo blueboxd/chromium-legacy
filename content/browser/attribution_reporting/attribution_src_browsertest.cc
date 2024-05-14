@@ -36,7 +36,6 @@
 #include "content/browser/attribution_reporting/test/mock_attribution_host.h"
 #include "content/browser/attribution_reporting/test/mock_attribution_manager.h"
 #include "content/browser/attribution_reporting/test/mock_content_browser_client.h"
-#include "content/browser/attribution_reporting/test/mock_data_host.h"
 #include "content/browser/attribution_reporting/test/source_observer.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -744,7 +743,7 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcBrowserTest,
       browser_client,
       GetAttributionSupport(
           ContentBrowserClient::AttributionReportingOsApiState::kDisabled,
-          testing::_))
+          /*client_os_disabled=*/false))
       .WillRepeatedly(
           testing::Return(network::mojom::AttributionSupport::kNone));
 
@@ -1482,15 +1481,12 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcCrossAppWebEnabledBrowserTest,
         CreateAttributionTestHttpsServer();
 
     base::RunLoop run_loop;
-    const auto on_registration = base::BarrierClosure(
-        test_case.expected_os_registrations.size(), run_loop.QuitClosure());
-    for (auto item : test_case.expected_os_registrations) {
-      EXPECT_CALL(mock_attribution_manager(),
-                  HandleOsRegistration(AllOf(
-                      Field(&OsRegistration::registration_url, item.url))))
-          .Times(1)
-          .WillOnce([&on_registration]() { on_registration.Run(); });
-    }
+    EXPECT_CALL(
+        mock_attribution_manager(),
+        HandleOsRegistration(Field(&OsRegistration::registration_items,
+                                   test_case.expected_os_registrations)))
+        .Times(1)
+        .WillOnce([&run_loop]() { run_loop.Quit(); });
 
     auto register_response =
         std::make_unique<net::test_server::ControllableHttpResponse>(
@@ -1517,6 +1513,43 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcCrossAppWebEnabledBrowserTest,
         R"("https://r1.test/x", "https://r2.test/y"; debug-reporting)");
     register_response->Send(http_response->ToResponseString());
     register_response->Done();
+
+    run_loop.Run();
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(AttributionSrcCrossAppWebEnabledBrowserTest,
+                       WebAndOsHeadersAndPreferOs_OsRegistered) {
+  AttributionOsLevelManager::ScopedApiStateForTesting scoped_api_state_setting(
+      AttributionOsLevelManager::ApiState::kEnabled);
+
+  const char* kTestCases[] = {
+      "/register_source_headers_preferred_os.html",
+      "/register_trigger_headers_preferred_os.html",
+  };
+
+  GURL page_url =
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html");
+
+  for (const char* path : kTestCases) {
+    SCOPED_TRACE(path);
+
+    EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+    GURL register_url = https_server()->GetURL("c.test", path);
+
+    base::RunLoop run_loop;
+    EXPECT_CALL(
+        mock_attribution_manager(),
+        HandleOsRegistration(Field(
+            &OsRegistration::registration_items,
+            ElementsAre(Field(&attribution_reporting::OsRegistrationItem::url,
+                              GURL("https://r.test"))))))
+        .Times(1)
+        .WillOnce([&run_loop]() { run_loop.Quit(); });
+
+    EXPECT_TRUE(ExecJs(web_contents(), JsReplace("createAttributionSrcImg($1);",
+                                                 register_url)));
 
     run_loop.Run();
   }

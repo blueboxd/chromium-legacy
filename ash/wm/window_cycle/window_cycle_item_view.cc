@@ -16,12 +16,15 @@
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_constants.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/aura/window.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
+#include "ui/gfx/geometry/rrect_f.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 
@@ -54,6 +57,8 @@ WindowCycleItemView::WindowCycleItemView(aura::Window* window)
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 }
+
+WindowCycleItemView::~WindowCycleItemView() = default;
 
 void WindowCycleItemView::OnMouseEntered(const ui::MouseEvent& event) {
   window_cycle_controller_->SetFocusedWindow(source_window());
@@ -107,6 +112,29 @@ void WindowCycleItemView::Layout(PassKey) {
   const gfx::Rect preview_area_bounds = preview_view()->bounds();
   SetBackdropVisibility(preview_max_bounds.size() !=
                         preview_area_bounds.size());
+
+  if (!chromeos::features::IsRoundedWindowsEnabled()) {
+    return;
+  }
+
+  if (!layer_tree_synchronizer_) {
+    layer_tree_synchronizer_ = std::make_unique<ScopedLayerTreeSynchronizer>(
+        layer(), /*restore_tree=*/false);
+  }
+
+  // In order to draw the final result without requiring the rendering of
+  // surfaces, the rounded corners bounds of the layer tree, that is rooted at
+  // WindowCycleItemView, are synchronized.
+  // Since the rounded corners of the WindowPreviewView layer may overlap with
+  // those of the mirrored window (as well as its mirrored transient windows),
+  // and the overlapping corners might have different radii, the use of render
+  // surfaces would be necessary. However, by matching (synchronizing) the
+  // radii, the need for render surfaces is eliminated.
+  layer_tree_synchronizer_->SynchronizeRoundedCorners(
+      layer(),
+      gfx::RRectF(gfx::RectF(preview_max_bounds),
+                  window_util::GetMiniWindowRoundedCorners(
+                      source_window(), /*include_header_rounding=*/false)));
 }
 
 gfx::Size WindowCycleItemView::CalculatePreferredSize() const {
@@ -147,7 +175,7 @@ bool WindowCycleItemView::HandleAccessibleAction(
 void WindowCycleItemView::RefreshItemVisuals() {
   header_view()->UpdateIconView(source_window());
   RefreshHeaderViewRoundedCorners();
-  RefreshPreviewRoundedCorners(/*show=*/true);
+  RefreshPreviewRoundedCorners();
   RefreshFocusRingVisuals();
 }
 
@@ -202,15 +230,13 @@ void GroupContainerCycleView::SetShowPreview(bool show) {
 
 void GroupContainerCycleView::RefreshItemVisuals() {
   if (mini_views_.size() == 2u) {
-    mini_views_[0]->SetRoundedCornersRadius(gfx::RoundedCornersF(
-        /*upper_left=*/kWindowMiniViewCornerRadius,
-        /*upper_right=*/0, /*lower_right=*/0,
-        /*lower_left=*/kWindowMiniViewCornerRadius));
-    mini_views_[1]->SetRoundedCornersRadius(gfx::RoundedCornersF(
-        /*upper_left=*/0,
-        /*upper_right=*/kWindowMiniViewCornerRadius,
-        /*lower_right=*/kWindowMiniViewCornerRadius,
-        /*lower_left=*/0));
+    mini_views_[0]->SetRoundedCornersRadius(
+        window_util::GetMiniWindowRoundedCorners(
+            mini_views_[0]->source_window(), /*include_header_rounding=*/true));
+    mini_views_[1]->SetRoundedCornersRadius(
+        window_util::GetMiniWindowRoundedCorners(
+            mini_views_[1]->source_window(),
+            /*include_header_rounding=*/true));
   }
 
   for (ash::WindowCycleItemView* mini_view : mini_views_) {

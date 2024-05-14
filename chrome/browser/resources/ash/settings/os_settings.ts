@@ -108,6 +108,8 @@ export {LocalizedLinkElement} from 'chrome://resources/ash/common/cr_elements/lo
 export {CrPolicyIndicatorElement} from 'chrome://resources/ash/common/cr_elements/policy/cr_policy_indicator.js';
 export {CrTooltipIconElement} from 'chrome://resources/ash/common/cr_elements/policy/cr_tooltip_icon.js';
 export {ApnDetailDialog} from 'chrome://resources/ash/common/network/apn_detail_dialog.js';
+export {ApnSelectionDialog} from 'chrome://resources/ash/common/network/apn_selection_dialog.js';
+export {ApnSelectionDialogListItem} from 'chrome://resources/ash/common/network/apn_selection_dialog_list_item.js';
 export {CrPolicyNetworkBehaviorMojo} from 'chrome://resources/ash/common/network/cr_policy_network_behavior_mojo.js';
 export {SettingsPrefsElement} from 'chrome://resources/cr_components/settings_prefs/prefs.js';
 export {CrSettingsPrefs} from 'chrome://resources/cr_components/settings_prefs/prefs_types.js';
@@ -244,7 +246,7 @@ export {OsSettingsMenuElement} from './os_settings_menu/os_settings_menu.js';
 export {OsSettingsSubpageElement} from './os_settings_page/os_settings_subpage.js';
 export {SettingsCardElement} from './os_settings_page/settings_card.js';
 export {SettingsIdleLoadElement} from './os_settings_page/settings_idle_load.js';
-export {OsSettingsRoutes} from './os_settings_routes.js';
+export {createRoutes as createRoutesForTesting, OsSettingsRoutes} from './os_settings_routes.js';
 export {OsSettingsSearchBoxElement} from './os_settings_search_box/os_settings_search_box.js';
 export {OsSettingsSearchBoxBrowserProxy, OsSettingsSearchBoxBrowserProxyImpl} from './os_settings_search_box/os_settings_search_box_browser_proxy.js';
 export {OsSettingsHatsBrowserProxy, OsSettingsHatsBrowserProxyImpl} from './os_settings_ui/os_settings_hats_browser_proxy.js';

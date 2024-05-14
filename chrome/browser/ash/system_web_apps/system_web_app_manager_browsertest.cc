@@ -38,6 +38,7 @@
 #include "chrome/browser/ash/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ash/extensions/default_app_order.h"
 #include "chrome/browser/ash/file_manager/file_manager_test_util.h"
+#include "chrome/browser/ash/file_manager/volume.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/ash/system_web_apps/test_support/system_web_app_browsertest_base.h"
 #include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_installation.h"
@@ -85,6 +86,7 @@
 #include "extensions/browser/browsertest_util.h"
 #include "extensions/common/constants.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
 #include "ui/base/idle/idle.h"
 #include "ui/base/idle/scoped_set_idle_state.h"
 #include "ui/display/display.h"
@@ -1785,10 +1787,10 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppAccessibilityTest,
 
   // Launcher-B to find minimize button.
   speech_monitor_.Call([&]() {
-    // F6 to switch pane.
+    // Search+B to switch pane.
     ui::test::EventGenerator generator(app_window->GetRootWindow());
-    generator.PressAndReleaseKey(ui::VKEY_B,
-                                 ui::EF_COMMAND_DOWN | ui::EF_FINAL);
+    generator.PressAndReleaseKeyAndModifierKeys(
+        ui::VKEY_B, ui::EF_COMMAND_DOWN | ui::EF_FINAL);
   });
   speech_monitor_.ExpectSpeech("Minimize");
   speech_monitor_.ExpectSpeech("Button");

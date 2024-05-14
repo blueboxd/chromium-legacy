@@ -143,11 +143,9 @@ HttpStreamFactory::Job::Job(
           is_websocket_ && origin_url_.SchemeIs(url::kWssScheme) &&
           // TODO(https://crbug.com/1277306): Remove the proxy check.
           proxy_info_.is_direct()),
-      // Don't use IP connection pooling for HTTP over HTTPS proxies. It doesn't
-      // get us much, and testing it is more effort than its worth.
+      // Only support IP-based pooling for non-proxied streams.
       enable_ip_based_pooling_(enable_ip_based_pooling &&
-                               !(proxy_info_.is_secure_http_like() &&
-                                 origin_url_.SchemeIs(url::kHttpScheme))),
+                               proxy_info.is_direct()),
       delegate_(delegate),
       job_type_(job_type),
       using_ssl_(origin_url_.SchemeIs(url::kHttpsScheme) ||
@@ -424,7 +422,7 @@ bool HttpStreamFactory::Job::ShouldForceQuic(
   }
   // If a QUIC proxy is being used then a tunnel will be needed, and those are
   // handled by the socket pools, using an HttpProxyConnectJob.
-  if (proxy_info.is_quic()) {
+  if (!proxy_info.is_direct() && proxy_info.proxy_chain().Last().is_quic()) {
     return false;
   }
   return OriginToForceQuicOn(*session->context().quic_context->params(),
@@ -498,9 +496,19 @@ bool HttpStreamFactory::Job::CanUseExistingSpdySession() const {
   // We need to make sure that if a HTTP/2 session was created for
   // https://somehost/ then we do not use that session for http://somehost:443/.
   // The only time we can use an existing session is if the request URL is
-  // https (the normal case) or if we are connecting to a HTTP/2 proxy.
-  // https://crbug.com/133176
-  return origin_url_.SchemeIs(url::kHttpsScheme) || (proxy_info_.is_https());
+  // https (the normal case) or if we are connecting to an HTTPS proxy to make
+  // a GET request for an HTTP destination. https://crbug.com/133176
+  if (origin_url_.SchemeIs(url::kHttpsScheme)) {
+    return true;
+  }
+  if (!proxy_info_.is_empty()) {
+    const ProxyChain& proxy_chain = proxy_info_.proxy_chain();
+    if (!proxy_chain.is_direct() && proxy_chain.is_get_to_proxy_allowed() &&
+        proxy_chain.Last().is_https()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void HttpStreamFactory::Job::OnStreamReadyCallback() {
@@ -778,7 +786,8 @@ int HttpStreamFactory::Job::DoInitConnection() {
 int HttpStreamFactory::Job::DoInitConnectionImpl() {
   DCHECK(!connection_->is_initialized());
 
-  if (using_quic_ && !proxy_info_.is_quic() && !proxy_info_.is_direct()) {
+  if (using_quic_ && !proxy_info_.is_direct() &&
+      !proxy_info_.proxy_chain().Last().is_quic()) {
     // QUIC can not be spoken to non-QUIC proxies.  This error should not be
     // user visible, because the non-alternative Job should be resumed.
     return ERR_NO_SUPPORTED_PROXIES;
@@ -855,9 +864,7 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
     }
   }
 
-  if (proxy_info_.is_http_like()) {
-    establishing_tunnel_ = !UsingHttpProxyWithoutTunnel();
-  }
+  establishing_tunnel_ = !UsingHttpProxyWithoutTunnel();
 
   if (job_type_ == PRECONNECT) {
     DCHECK(!is_websocket_);
@@ -910,11 +917,11 @@ int HttpStreamFactory::Job::DoInitConnectionImplQuic(
   // supported, but when it is we can remove this CHECK.
   CHECK(proxy_info_.proxy_chain().is_direct());
 
-  absl::optional<NetworkTrafficAnnotationTag> traffic_annotation =
+  std::optional<NetworkTrafficAnnotationTag> traffic_annotation =
       proxy_info_.traffic_annotation().is_valid()
-          ? absl::make_optional<NetworkTrafficAnnotationTag>(
+          ? std::make_optional<NetworkTrafficAnnotationTag>(
                 proxy_info_.traffic_annotation())
-          : absl::nullopt;
+          : std::nullopt;
   int rv = quic_request_.Request(
       destination_, quic_version_, proxy_info_.proxy_chain(),
       std::move(traffic_annotation), SessionUsage::kDestination,
@@ -1007,8 +1014,12 @@ int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
       }
     } else if (connection_->socket()->GetNegotiatedProtocol() !=
                kProtoUnknown) {
-      // Only connections that use TLS can negotiate ALPN.
-      DCHECK(using_ssl_ || proxy_info_.is_secure_http_like());
+      // Only connections that use TLS (either to the origin or via a GET to a
+      // secure proxy) can negotiate ALPN.
+      bool get_to_secure_proxy =
+          IsGetToProxy(proxy_info_.proxy_chain(), origin_url_) &&
+          proxy_info_.proxy_chain().Last().is_secure_http_like();
+      DCHECK(using_ssl_ || get_to_secure_proxy);
       negotiated_protocol_ = connection_->socket()->GetNegotiatedProtocol();
       net_log_.AddEvent(NetLogEventType::HTTP_STREAM_REQUEST_PROTO, [&] {
         return NetLogHttpStreamProtoParams(negotiated_protocol_);
@@ -1031,7 +1042,8 @@ int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
     }
   }
 
-  if (proxy_info_.is_quic() && using_quic_ && result < 0) {
+  if (using_quic_ && result < 0 && !proxy_info_.is_direct() &&
+      proxy_info_.proxy_chain().Last().is_quic()) {
     return ReconsiderProxyAfterError(result);
   }
 

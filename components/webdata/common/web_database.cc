@@ -16,11 +16,27 @@
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See `WebDatabaseMigrationTest::kCurrentTestedVersionNumber`.
 // static
-const int WebDatabase::kCurrentVersionNumber = 125;
+const int WebDatabase::kCurrentVersionNumber = 127;
 
-// TODO(crbug.com/324468207): Decide and document a process for updating this
-// number, i.e. what our deprecation strategy is for older versions of the
-// database.
+// To support users who are upgrading from older versions of Chrome, we enable
+// migrating from any database version newer than `kDeprecatedVersionNumber`.
+// If an upgrading user has a database version of `kDeprecatedVersionNumber` or
+// lower, their database will be fully deleted and recreated instead (losing all
+// data previously in it).
+//
+// To determine this migration window, we support the same Chrome versions that
+// Chrome Sync does. Any database version that was added before the oldest
+// Chrome version that sync supports can be dropped from the Chromium codebase
+// (i.e., increment `kDeprecatedVersionNumber` and remove related tests +
+// support files).
+//
+// Note the difference between database version and Chrome version! To determine
+// the database version for a given Chrome version, check out the git branch for
+// the Chrome version, and look at `kCurrentVersionNumber` in that branch.
+//
+// To determine the versions of Chrome that Chrome Sync supports, see
+// `max_client_version_to_reject` in server_chrome_sync_config.proto (internal
+// only).
 const int WebDatabase::kDeprecatedVersionNumber = 82;
 
 const base::FilePath::CharType WebDatabase::kInMemoryPath[] =
@@ -48,9 +64,9 @@ void LogInitResult(WebDatabaseInitResult result) {
   base::UmaHistogramEnumeration("WebDatabase.InitResult", result);
 }
 
-// Version 125 deletes the 'unmasked_credit_cards' table, and thus is no longer
-// compatible with version 124.
-const int kCompatibleVersionNumber = 125;
+// Version 127 changes the primary key of 'plus_addresses', and thus is no
+// longer compatible with version 126.
+const int kCompatibleVersionNumber = 127;
 
 // Change the version number and possibly the compatibility version of
 // |meta_table_|.

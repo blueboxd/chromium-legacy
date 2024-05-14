@@ -26,7 +26,6 @@
 #include "pdf/pdf_accessibility_image_fetcher.h"
 #include "pdf/pdf_features.h"
 #include "third_party/blink/public/strings/grit/blink_accessibility_strings.h"
-#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -47,11 +46,11 @@
 #include <tuple>
 
 #include "base/containers/queue.h"
-#include "components/services/screen_ai/public/mojom/screen_ai_service.mojom.h"  // nogncheck crbug.com/1125897
-#include "components/services/screen_ai/public/test/fake_screen_ai_annotator.h"
-#include "components/services/screen_ai/screen_ai_ax_tree_serializer.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/screen_ai/public/mojom/screen_ai_service.mojom.h"  // nogncheck crbug.com/1125897
+#include "services/screen_ai/public/test/fake_screen_ai_annotator.h"
+#include "services/screen_ai/screen_ai_ax_tree_serializer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -298,7 +297,10 @@ class TestPdfAccessibilityTree : public PdfAccessibilityTree {
       content::RenderFrame* render_frame,
       chrome_pdf::PdfAccessibilityActionHandler* action_handler,
       chrome_pdf::PdfAccessibilityImageFetcher* image_fetcher)
-      : PdfAccessibilityTree(render_frame, action_handler, image_fetcher) {}
+      : PdfAccessibilityTree(render_frame,
+                             action_handler,
+                             image_fetcher,
+                             /*plugincontainer=*/nullptr) {}
 
   ~TestPdfAccessibilityTree() override = default;
   TestPdfAccessibilityTree(const TestPdfAccessibilityTree&) = delete;
@@ -2244,9 +2246,9 @@ TEST_F(PdfAccessibilityTreeTest, TestSelectionActionDataConversion) {
   // Verify selection offsets in tree data.
   ui::AXTreeData tree_data;
   pdf_accessibility_tree_->GetTreeData(&tree_data);
-  EXPECT_EQ(10, tree_data.sel_anchor_object_id);
+  EXPECT_EQ(static_text_nodes1[0]->id(), tree_data.sel_anchor_object_id);
   EXPECT_EQ(0, tree_data.sel_anchor_offset);
-  EXPECT_EQ(10, tree_data.sel_focus_object_id);
+  EXPECT_EQ(static_text_nodes1[0]->id(), tree_data.sel_focus_object_id);
   EXPECT_EQ(0, tree_data.sel_focus_offset);
 
   pdf_anchor_action_target =
@@ -2306,7 +2308,9 @@ TEST_F(PdfAccessibilityTreeTest, TestShowContextMenuAction) {
   {
     ui::AXActionData action_data;
     action_data.action = ax::mojom::Action::kShowContextMenu;
-    EXPECT_TRUE(pdf_action_target->PerformAction(action_data));
+
+    // This renderer is not actually attached to a real plugin.
+    EXPECT_FALSE(pdf_action_target->PerformAction(action_data));
   }
 }
 
@@ -2486,9 +2490,11 @@ TEST_F(PdfAccessibilityTreeTest, CheckUMAMetricsWithoutScreenReader) {
                               /*expected_count=*/1);
 }
 
-// TODO(crbug.com/1442928): Remove the test case below once PDF OCR is launched
-// on Windows, Linux, and macOS as this test will be replaced with the other
-// existing test, `PdfOcrTest.CheckLiveRegionPoliteStatus`.
+// TODO(crbug.com/1442928): Remove `CheckLiveRegionPoliteStatus` and
+// `CheckLiveRegionNotSetWhenInBackground` below once PDF OCR is launched
+// on Windows, Linux, and macOS as these tests will be replaced with
+// `PdfOcrTest.CheckLiveRegionPoliteStatus` and
+// `PdfOcrTest.CheckLiveRegionNotSetWhenInBackground`, respectively.
 #if !BUILDFLAG(IS_CHROMEOS)
 TEST_F(PdfAccessibilityTreeTest, CheckLiveRegionPoliteStatus) {
   CreatePdfAccessibilityTree(/*enable_screen_reader=*/false);
@@ -2583,6 +2589,44 @@ TEST_F(PdfAccessibilityTreeTest, CheckLiveRegionPoliteStatus) {
   const ui::AXNode* image_node = paragraph_node->GetChildAtIndex(0);
   ASSERT_NE(nullptr, image_node);
 }
+
+TEST_F(PdfAccessibilityTreeTest, CheckLiveRegionNotSetWhenInBackground) {
+  CreatePdfAccessibilityTree(/*enable_screen_reader=*/false);
+  // Simulate going to the background.
+  pdf_accessibility_tree_->WasHidden();
+
+  page_objects_.images.push_back(CreateMockInaccessibleImage());
+  pdf_accessibility_tree_->SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree_->SetAccessibilityDocInfo(doc_info_);
+  WaitForThreadTasks();
+
+  const ui::AXNode* root_node = pdf_accessibility_tree_->GetRoot();
+  ASSERT_NE(nullptr, root_node);
+  EXPECT_EQ(ax::mojom::Role::kPdfRoot, root_node->GetRole());
+  ASSERT_EQ(1u, root_node->GetChildCount());
+
+  const ui::AXNode* status_wrapper_node = root_node->GetChildAtIndex(0);
+  ASSERT_NE(nullptr, status_wrapper_node);
+  EXPECT_EQ(ax::mojom::Role::kBanner, status_wrapper_node->GetRole());
+  ASSERT_EQ(1u, status_wrapper_node->GetChildCount());
+
+  const ui::AXNode* status_node = status_wrapper_node->GetChildAtIndex(0);
+  ASSERT_NE(nullptr, status_node);
+  EXPECT_EQ(ax::mojom::Role::kStatus, status_node->GetRole());
+  EXPECT_EQ(1u, status_node->GetChildCount());
+  EXPECT_FALSE(
+      status_node->HasBoolAttribute(ax::mojom::BoolAttribute::kLiveAtomic));
+  EXPECT_FALSE(status_node->HasStringAttribute(
+      ax::mojom::StringAttribute::kLiveRelevant));
+  EXPECT_FALSE(
+      status_node->HasStringAttribute(ax::mojom::StringAttribute::kLiveStatus));
+  EXPECT_FALSE(status_node->HasBoolAttribute(
+      ax::mojom::BoolAttribute::kContainerLiveAtomic));
+  EXPECT_FALSE(status_node->HasStringAttribute(
+      ax::mojom::StringAttribute::kContainerLiveRelevant));
+  EXPECT_FALSE(status_node->HasStringAttribute(
+      ax::mojom::StringAttribute::kContainerLiveStatus));
+}
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -2653,7 +2697,10 @@ class PdfOcrServiceTest
 
     ui::AXNode* paragraph_node = page_node->GetChildAtIndex(0);
     ASSERT_NE(nullptr, paragraph_node);
-    ASSERT_EQ(ax::mojom::Role::kParagraph, paragraph_node->GetRole());
+    ASSERT_EQ((is_ocr_service_started_before_pdf_loads && !create_empty_results)
+                  ? ax::mojom::Role::kGenericContainer
+                  : ax::mojom::Role::kParagraph,
+              paragraph_node->GetRole());
     ASSERT_EQ(2u, paragraph_node->GetChildCount());
 
     ui::AXNode* first_node = paragraph_node->GetChildAtIndex(0);
@@ -3133,6 +3180,44 @@ TEST_F(PdfOcrTest, CheckLiveRegionPoliteStatus) {
                          status_node->data().child_ids[0])));
 }
 
+TEST_F(PdfOcrTest, CheckLiveRegionNotSetWhenInBackground) {
+  CreatePdfAccessibilityTree(/*enable_screen_reader=*/false);
+  // Simulate going to the background.
+  pdf_accessibility_tree_->WasHidden();
+
+  page_objects_.images.push_back(CreateMockInaccessibleImage());
+  pdf_accessibility_tree_->SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree_->SetAccessibilityDocInfo(doc_info_);
+  WaitForThreadTasks();
+
+  const ui::AXNode* root_node = pdf_accessibility_tree_->GetRoot();
+  ASSERT_NE(nullptr, root_node);
+  EXPECT_EQ(ax::mojom::Role::kPdfRoot, root_node->GetRole());
+  ASSERT_EQ(1u, root_node->GetChildCount());
+
+  const ui::AXNode* status_wrapper_node = root_node->GetChildAtIndex(0);
+  ASSERT_NE(nullptr, status_wrapper_node);
+  EXPECT_EQ(ax::mojom::Role::kBanner, status_wrapper_node->GetRole());
+  ASSERT_EQ(1u, status_wrapper_node->GetChildCount());
+
+  const ui::AXNode* status_node = status_wrapper_node->GetChildAtIndex(0);
+  ASSERT_NE(nullptr, status_node);
+  EXPECT_EQ(ax::mojom::Role::kStatus, status_node->GetRole());
+  EXPECT_EQ(1u, status_node->GetChildCount());
+  EXPECT_FALSE(
+      status_node->HasBoolAttribute(ax::mojom::BoolAttribute::kLiveAtomic));
+  EXPECT_FALSE(status_node->HasStringAttribute(
+      ax::mojom::StringAttribute::kLiveRelevant));
+  EXPECT_FALSE(
+      status_node->HasStringAttribute(ax::mojom::StringAttribute::kLiveStatus));
+  EXPECT_FALSE(status_node->HasBoolAttribute(
+      ax::mojom::BoolAttribute::kContainerLiveAtomic));
+  EXPECT_FALSE(status_node->HasStringAttribute(
+      ax::mojom::StringAttribute::kContainerLiveRelevant));
+  EXPECT_FALSE(status_node->HasStringAttribute(
+      ax::mojom::StringAttribute::kContainerLiveStatus));
+}
+
 TEST_F(PdfOcrTest, TestTransformFromOnOcrDataReceived) {
   // Assume `image` contains some text that will be extracted by OCR. `image`
   // will be passed to the function that creates a transform, which will be
@@ -3256,7 +3341,7 @@ TEST_F(PdfOcrTest, TestTransformFromOnOcrDataReceived) {
 
   paragraph_node = page_node->GetChildAtIndex(0);
   ASSERT_TRUE(paragraph_node);
-  EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->GetRole());
+  EXPECT_EQ(ax::mojom::Role::kGenericContainer, paragraph_node->GetRole());
   ASSERT_EQ(1u, paragraph_node->GetChildCount());
 
   ui::AXNode* region_node = paragraph_node->GetChildAtIndex(0);

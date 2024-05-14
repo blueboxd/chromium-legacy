@@ -167,4 +167,23 @@ void SendKeyUntilOverviewItemIsFocused(ui::KeyboardCode key) {
   } while (!GetOverviewFocusedWindow());
 }
 
+void WaitForOcclusionStateChange(aura::Window* window,
+                                 aura::Window::OcclusionState target_state) {
+  while (window->GetOcclusionState() != target_state) {
+    base::RunLoop().RunUntilIdle();
+  }
+}
+
+bool IsWindowInItsCorrespondingOverviewGrid(aura::Window* window) {
+  const auto& overview_items =
+      GetOverviewGridForRoot(window->GetRootWindow())->window_list();
+  for (auto& overview_item : overview_items) {
+    if (overview_item->Contains(window)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 }  // namespace ash

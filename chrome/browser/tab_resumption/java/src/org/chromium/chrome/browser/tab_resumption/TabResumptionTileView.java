@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.chrome.browser.tab_resumption.TabResumptionModuleMetricsUtils.ClickInfo;
 import org.chromium.chrome.browser.tab_resumption.TabResumptionModuleUtils.SuggestionClickCallback;
 import org.chromium.url.GURL;
 
@@ -42,7 +43,7 @@ public class TabResumptionTileView extends RelativeLayout {
         ((TextView) findViewById(R.id.tile_pre_info_text)).setText(preInfoText);
         ((TextView) findViewById(R.id.tile_display_text)).setText(displayText);
         ((TextView) findViewById(R.id.tile_post_info_text)).setText(postInfoText);
-        setContentDescription(displayText);
+        setContentDescription(preInfoText + ", " + displayText + ", " + postInfoText);
     }
 
     /**
@@ -54,7 +55,7 @@ public class TabResumptionTileView extends RelativeLayout {
     public void setSuggestionTextsMulti(String displayText, String infoText) {
         ((TextView) findViewById(R.id.tile_display_text)).setText(displayText);
         ((TextView) findViewById(R.id.tile_info_text)).setText(infoText);
-        setContentDescription(displayText);
+        setContentDescription(displayText + ", " + infoText);
     }
 
     /** Assigns the main URL image. */
@@ -63,8 +64,16 @@ public class TabResumptionTileView extends RelativeLayout {
     }
 
     /** Binds the click handler with an associated URL. */
-    public void bindSuggestionClickCallback(SuggestionClickCallback callback, GURL url) {
-        setOnClickListener(v -> callback.onSuggestionClick(url));
+    public void bindSuggestionClickCallback(
+            SuggestionClickCallback callback, GURL url, int tileCount, int tileIndex) {
+        setOnClickListener(
+                v -> {
+                    @ClickInfo
+                    int clickInfo =
+                            TabResumptionModuleMetricsUtils.computeClickInfo(tileCount, tileIndex);
+                    TabResumptionModuleMetricsUtils.recordClickInfo(clickInfo);
+                    callback.onSuggestionClick(url);
+                });
         // Handle and return false to avoid obstructing long click handling of containing Views.
         setOnLongClickListener(v -> false);
     }

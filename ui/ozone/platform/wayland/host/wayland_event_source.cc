@@ -4,12 +4,13 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <optional>
+#include <tuple>
 
 #include "base/check.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
@@ -88,11 +89,7 @@ EventTarget* GetRootTarget(EventTarget* target) {
 }
 
 gfx::Point GetOriginInScreen(WaylandWindow* target) {
-  // The origin for located events and positions of popup windows is the window
-  // geometry.
-  // See https://crbug.com/1292486
-  gfx::Point origin = target->GetBoundsInDIP().origin() -
-                      target->GetWindowGeometryOffsetInDIP();
+  gfx::Point origin = target->GetBoundsInDIP().origin();
   auto* parent = static_cast<WaylandWindow*>(target->GetParentTarget());
   while (parent) {
     origin += parent->GetBoundsInDIP().origin().OffsetFromOrigin();
@@ -301,6 +298,14 @@ uint32_t WaylandEventSource::OnKeyboardKeyEvent(
   return DispatchEvent(&event);
 }
 
+void WaylandEventSource::OnSynthesizedKeyPressEvent(DomCode dom_code,
+                                                    base::TimeTicks timestamp) {
+  std::ignore =
+      OnKeyboardKeyEvent(ET_KEY_PRESSED, dom_code, /*repeat=*/false,
+                         /*serial=*/std::nullopt, timestamp,
+                         /*device_id=*/0, WaylandKeyboard::KeyEventKind::kKey);
+}
+
 void WaylandEventSource::OnPointerFocusChanged(
     WaylandWindow* window,
     const gfx::PointF& location,
@@ -476,6 +481,12 @@ void WaylandEventSource::DumpState(std::ostream& out) const {
     scroll_data.DumpState(out);
     out << std::endl;
   }
+}
+
+void WaylandEventSource::ResetStateForTesting() {
+  event_watcher_->Flush();
+  event_watcher_->RoundTripQueue();
+  event_watcher_->StopProcessingEvents();
 }
 
 const gfx::PointF& WaylandEventSource::GetPointerLocation() const {

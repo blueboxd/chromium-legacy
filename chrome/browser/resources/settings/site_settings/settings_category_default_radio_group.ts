@@ -15,6 +15,7 @@ import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import type {SettingsRadioGroupElement} from '../controls/settings_radio_group.js';
 import {loadTimeData} from '../i18n_setup.js';
 import type {SettingsCollapseRadioButtonElement} from '../privacy_page/collapse_radio_button.js';
 
@@ -36,6 +37,7 @@ export interface SettingsCategoryDefaultRadioGroupElement {
   $: {
     enabledRadioOption: SettingsCollapseRadioButtonElement,
     disabledRadioOption: SettingsCollapseRadioButtonElement,
+    settingsCategoryDefaultRadioGroup: SettingsRadioGroupElement,
   };
 }
 
@@ -125,6 +127,7 @@ export class SettingsCategoryDefaultRadioGroupElement extends
   private getAllowOptionForCategory_(): ContentSetting {
     switch (this.category) {
       case ContentSettingsTypes.ADS:
+      case ContentSettingsTypes.AUTOMATIC_FULLSCREEN:
       case ContentSettingsTypes.BACKGROUND_SYNC:
       case ContentSettingsTypes.FEDERATED_IDENTITY_API:
       case ContentSettingsTypes.IMAGES:

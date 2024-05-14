@@ -10,7 +10,6 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
-#import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/common/bookmark_pref_names.h"
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/feature_constants.h"
@@ -26,11 +25,14 @@
 #import "components/reading_list/ios/reading_list_model_bridge_observer.h"
 #import "components/supervised_user/core/browser/supervised_user_preferences.h"
 #import "components/supervised_user/core/common/features.h"
+#import "components/supervised_user/core/common/supervised_user_constants.h"
 #import "components/sync/service/sync_service.h"
 #import "components/translate/core/browser/translate_manager.h"
 #import "components/translate/core/browser/translate_prefs.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_model_bridge_observer.h"
+#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
 #import "ios/chrome/browser/commerce/model/push_notification/push_notification_feature.h"
+#import "ios/chrome/browser/default_browser/model/default_browser_interest_signals.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/find_in_page/model/abstract_find_tab_helper.h"
 #import "ios/chrome/browser/follow/model/follow_browser_agent.h"
@@ -68,13 +70,13 @@
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/translate/model/chrome_ios_translate_client.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/policy/user_policy_util.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/destination_usage_history/constants.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/destination_usage_history/destination_usage_history.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_constants.h"
+#import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_metrics.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_orderer.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_swift.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
@@ -110,6 +112,9 @@ namespace {
 NSString* const kMostRecentTimestampBlueDotPromoShownInOverflowMenu =
     @"MostRecentTimestampBlueDotPromoShownInOverflowMenu";
 
+// Approximate number of visible page actions by default.
+const unsigned int kDefaultVisiblePageActionCount = 3u;
+
 typedef void (^Handler)(void);
 
 OverflowMenuFooter* CreateOverflowMenuManagedFooter(
@@ -127,13 +132,24 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
                                           handler:handler];
 }
 
+// Uses `IsBookmarked` to check whether `url` is bookmarked in any of the
+// provided bookmark models. `account_model` can be null.
+bool IsBookmarked(const GURL& url,
+                  LegacyBookmarkModel* local_model,
+                  LegacyBookmarkModel* account_model) {
+  CHECK(local_model);
+  if (local_model->IsBookmarked(url)) {
+    return true;
+  }
+  return account_model && account_model->IsBookmarked(url);
+}
+
 }  // namespace
 
 @interface OverflowMenuMediator () <BookmarkModelBridgeObserver,
                                     CRWWebStateObserver,
                                     FollowMenuUpdater,
                                     IOSLanguageDetectionTabHelperObserving,
-                                    OverflowMenuActionProvider,
                                     OverflowMenuDestinationProvider,
                                     OverlayPresenterObserving,
                                     PrefObserverDelegate,
@@ -352,7 +368,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 }
 
 - (void)setLocalOrSyncableBookmarkModel:
-    (bookmarks::BookmarkModel*)localOrSyncableBookmarkModel {
+    (LegacyBookmarkModel*)localOrSyncableBookmarkModel {
   _localOrSyncableBookmarkModelBridge.reset();
 
   _localOrSyncableBookmarkModel = localOrSyncableBookmarkModel;
@@ -365,8 +381,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
   [self updateModel];
 }
 
-- (void)setAccountBookmarkModel:
-    (bookmarks::BookmarkModel*)accountBookmarkModel {
+- (void)setAccountBookmarkModel:(LegacyBookmarkModel*)accountBookmarkModel {
   _accountBookmarkModelBridge.reset();
 
   _accountBookmarkModel = accountBookmarkModel;
@@ -649,6 +664,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
                                  handler:^{
                                    [weakSelf beginCustomization];
                                  }];
+  self.editActionsAction.automaticallyUnhighlight = NO;
   self.editActionsAction.useButtonStyling = YES;
 
   // The app actions vary based on page state, so they are set in
@@ -1023,6 +1039,8 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 
     [weakSelf.menuOrderer recordClickForDestination:destination];
 
+    [weakSelf logFeatureEngagementEventForClickOnDestination:destination];
+
     handler();
   };
 
@@ -1081,13 +1099,9 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
                      accessibilityID:(NSString*)accessibilityID
                         hideItemText:(NSString*)hideItemText
                              handler:(Handler)handler {
-  __weak __typeof(self) weakSelf = self;
-  Handler newHandler = ^{
-    if (weakSelf.menuHasBeenDismissed) {
-      return;
-    }
-    handler();
-  };
+  Handler newHandler =
+      [self fullOverflowMenuActionHandlerForActionType:actionType
+                                               handler:handler];
 
   OverflowMenuAction* action =
       [[OverflowMenuAction alloc] initWithName:name
@@ -1134,6 +1148,20 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
                                 accessibilityID:accessibilityID
                                    hideItemText:hideItemText
                                         handler:handler];
+}
+
+// Adds any necessary additions to the handler for any specific action.
+- (Handler)fullOverflowMenuActionHandlerForActionType:
+               (overflow_menu::ActionType)actionType
+                                              handler:(Handler)handler {
+  __weak __typeof(self) weakSelf = self;
+  return ^{
+    if (weakSelf.menuHasBeenDismissed) {
+      return;
+    }
+    [weakSelf logFeatureEngagementEventForClickOnAction:actionType];
+    handler();
+  };
 }
 
 // Returns the LongPress items for the given action and hide item text. Can
@@ -1268,8 +1296,9 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
         @"overflow_menu_footer_managed", ^{
           [self enterpriseLearnMore];
         });
-  } else if (chrome_browser_state && supervised_user::IsChildAccount(
-                                         *chrome_browser_state->GetPrefs())) {
+  } else if (chrome_browser_state &&
+             supervised_user::IsSubjectToParentalControls(
+                 *chrome_browser_state->GetPrefs())) {
     self.helpActionsGroup.footer = CreateOverflowMenuManagedFooter(
         IDS_IOS_TOOLS_MENU_PARENT_MANAGED, IDS_IOS_TOOLS_MENU_PARENT_LEARN_MORE,
         kTextMenuFamilyLinkInfo, @"overflow_menu_footer_family_link", ^{
@@ -1484,6 +1513,37 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
   [self.popupMenuHandler dismissPopupMenuAnimated:YES];
 }
 
+// Possibly logs a feature engagement tracker event when the user clicks on a
+// destination.
+- (void)logFeatureEngagementEventForClickOnDestination:
+    (overflow_menu::Destination)destination {
+  if (DestinationWasInitiallyVisible(
+          destination, self.model.destinations,
+          self.menuOrderer.visibleDestinationsCount)) {
+    return;
+  }
+
+  if (self.engagementTracker) {
+    self.engagementTracker->NotifyEvent(
+        feature_engagement::events::kIOSOverflowMenuOffscreenItemUsed);
+  }
+}
+
+// Possibly logs a feature engagement tracker event when the user clicks on an
+// action.
+- (void)logFeatureEngagementEventForClickOnAction:
+    (overflow_menu::ActionType)action {
+  if (ActionWasInitiallyVisible(action, self.pageActionsGroup.actions,
+                                kDefaultVisiblePageActionCount)) {
+    return;
+  }
+
+  if (self.engagementTracker) {
+    self.engagementTracker->NotifyEvent(
+        feature_engagement::events::kIOSOverflowMenuOffscreenItemUsed);
+  }
+}
+
 #pragma mark - CRWWebStateObserver
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
@@ -1557,33 +1617,33 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 
 // If an added or removed bookmark is the same as the current url, update the
 // toolbar so the star highlight is kept in sync.
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+- (void)bookmarkModel:(LegacyBookmarkModel*)model
     didChangeChildrenForNode:(const bookmarks::BookmarkNode*)bookmarkNode {
   [self updateModel];
 }
 
 // If all bookmarks are removed, update the toolbar so the star highlight is
 // kept in sync.
-- (void)bookmarkModelRemovedAllNodes:(bookmarks::BookmarkModel*)model {
+- (void)bookmarkModelRemovedAllNodes:(LegacyBookmarkModel*)model {
   [self updateModel];
 }
 
 // In case we are on a bookmarked page before the model is loaded.
-- (void)bookmarkModelLoaded:(bookmarks::BookmarkModel*)model {
+- (void)bookmarkModelLoaded:(LegacyBookmarkModel*)model {
   [self updateModel];
 }
 
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+- (void)bookmarkModel:(LegacyBookmarkModel*)model
         didChangeNode:(const bookmarks::BookmarkNode*)bookmarkNode {
   [self updateModel];
 }
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+- (void)bookmarkModel:(LegacyBookmarkModel*)model
           didMoveNode:(const bookmarks::BookmarkNode*)bookmarkNode
            fromParent:(const bookmarks::BookmarkNode*)oldParent
              toParent:(const bookmarks::BookmarkNode*)newParent {
   // No-op -- required by BookmarkModelBridgeObserver but not used.
 }
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+- (void)bookmarkModel:(LegacyBookmarkModel*)model
         didDeleteNode:(const bookmarks::BookmarkNode*)node
            fromFolder:(const bookmarks::BookmarkNode*)folder {
   [self updateModel];
@@ -1612,9 +1672,13 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
     self.followAction.name = l10n_util::GetNSStringF(
         IDS_IOS_TOOLS_MENU_UNFOLLOW, base::SysNSStringToUTF16(domainName));
     self.followAction.symbolName = kXMarkSymbol;
-    self.followAction.handler = ^{
-      [weakSelf unfollowWebPage:webPageURLs];
-    };
+    self.followAction.handler = [self
+        fullOverflowMenuActionHandlerForActionType:overflow_menu::ActionType::
+                                                       Follow
+                                           handler:^{
+                                             [weakSelf
+                                                 unfollowWebPage:webPageURLs];
+                                           }];
     if (IsOverflowMenuCustomizationEnabled()) {
       NSString* hideItemText =
           l10n_util::GetNSStringF(IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_UNFOLLOW,
@@ -1628,9 +1692,13 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
     self.followAction.name = l10n_util::GetNSStringF(
         IDS_IOS_TOOLS_MENU_FOLLOW, base::SysNSStringToUTF16(domainName));
     self.followAction.symbolName = kPlusSymbol;
-    self.followAction.handler = ^{
-      [weakSelf followWebPage:webPageURLs];
-    };
+    self.followAction.handler = [self
+        fullOverflowMenuActionHandlerForActionType:overflow_menu::ActionType::
+                                                       Follow
+                                           handler:^{
+                                             [weakSelf
+                                                 followWebPage:webPageURLs];
+                                           }];
     if (IsOverflowMenuCustomizationEnabled()) {
       NSString* hideItemText =
           l10n_util::GetNSStringF(IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_FOLLOW,
@@ -1721,7 +1789,8 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
       return self.settingsDestination;
     case overflow_menu::Destination::WhatsNew:
       // Set the new label badge.
-      if (!WasWhatsNewUsed() && self.engagementTracker &&
+      if (self.whatsNewDestination.badge == BadgeTypeNone &&
+          !WasWhatsNewUsed() && self.engagementTracker &&
           self.engagementTracker->ShouldTriggerHelpUI(
               feature_engagement::kIPHWhatsNewUpdatedFeature)) {
         // Highlight What's New with a badge if it was never used before.
@@ -1821,9 +1890,9 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
       return self.followAction;
     }
     case overflow_menu::ActionType::Bookmark: {
-      BOOL pageIsBookmarked =
-          self.webState && self.localOrSyncableBookmarkModel &&
-          bookmark_utils_ios::IsBookmarked(self.webState->GetVisibleURL(),
+      BOOL pageIsBookmarked = self.webState &&
+                              self.localOrSyncableBookmarkModel &&
+                              IsBookmarked(self.webState->GetVisibleURL(),
                                            self.localOrSyncableBookmarkModel,
                                            self.accountBookmarkModel);
       return (pageIsBookmarked) ? self.editBookmarkAction
@@ -1969,7 +2038,6 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
   // there.
   web::WebState* currentWebState = self.webState;
   [self dismissMenu];
-  LogBookmarkUseForDefaultBrowserPromo();
   if (!currentWebState) {
     return;
   }
@@ -2047,6 +2115,9 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 
 // Begins the action edit flow.
 - (void)beginCustomization {
+  // Clear the new badge if it's active.
+  self.editActionsAction.displayNewLabelIcon = NO;
+  self.editActionsAction.highlighted = NO;
   [self.overflowMenuCustomizationHandler showMenuCustomization];
 }
 
@@ -2083,7 +2154,6 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 // Dismisses the menu and opens bookmarks.
 - (void)openBookmarks {
   [self dismissMenu];
-  LogBookmarkUseForDefaultBrowserPromo();
   [self.browserCoordinatorHandler showBookmarksManager];
 }
 
@@ -2186,8 +2256,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 
 - (void)parentLearnMore {
   [self dismissMenu];
-  GURL familyLinkURL =
-      GURL(supervised_user::kManagedByParentUiMoreInfoUrl.Get());
+  GURL familyLinkURL = GURL(supervised_user::kManagedByParentUiMoreInfoUrl);
   [self.applicationHandler
       openURLInNewTab:[OpenNewTabCommand
                           commandWithURLFromChrome:familyLinkURL]];

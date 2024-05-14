@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <optional>
 
 #include "base/files/file.h"
 #include "base/memory/raw_ptr.h"
@@ -34,6 +35,8 @@ class FilePath;
 }  // namespace base
 
 namespace display {
+class GammaCurve;
+struct ColorCalibration;
 struct ColorTemperatureAdjustment;
 struct GammaAdjustment;
 }  // namespace display
@@ -163,7 +166,7 @@ class DrmThread : public base::Thread,
   void RemoveGraphicsDevice(const base::FilePath& path) override;
   void ConfigureNativeDisplays(
       const std::vector<display::DisplayConfigurationParams>& config_requests,
-      uint32_t modeset_flag,
+      display::ModesetFlags modeset_flags,
       ConfigureNativeDisplaysCallback callback) override;
   void SetHdcpKeyProp(int64_t display_id,
                       const std::string& key,
@@ -181,11 +184,24 @@ class DrmThread : public base::Thread,
   void SetColorTemperatureAdjustment(
       int64_t display_id,
       const display::ColorTemperatureAdjustment& cta) override;
+  void SetColorCalibration(
+      int64_t display_id,
+      const display::ColorCalibration& calibration) override;
   void SetGammaAdjustment(int64_t display_id,
                           const display::GammaAdjustment& adjustment) override;
+  void SetColorMatrix(int64_t display_id,
+                      const std::vector<float>& color_matrix) override;
+  void SetGammaCorrection(int64_t display_id,
+                          const display::GammaCurve& degamma,
+                          const display::GammaCurve& gamma) override;
   void SetPrivacyScreen(int64_t display_id,
                         bool enabled,
                         base::OnceCallback<void(bool)> callback) override;
+  void GetSeamlessRefreshRates(
+      int64_t display_id,
+      base::OnceCallback<void(const std::optional<display::RefreshRange>&)>
+          callback) override;
+
   void GetDeviceCursor(
       mojo::PendingAssociatedReceiver<ozone::mojom::DeviceCursor> receiver)
       override;

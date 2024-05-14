@@ -666,7 +666,8 @@ void ClipboardOzone::WritePortableAndPlatformRepresentations(
     ClipboardBuffer buffer,
     const ObjectMap& objects,
     std::vector<Clipboard::PlatformRepresentation> platform_representations,
-    std::unique_ptr<DataTransferEndpoint> data_src) {
+    std::unique_ptr<DataTransferEndpoint> data_src,
+    uint32_t privacy_types) {
   DCHECK(CalledOnValidThread());
 
   async_clipboard_ozone_->PrepareForWriting();
@@ -753,6 +754,18 @@ void ClipboardOzone::WriteData(const ClipboardFormatType& format,
                                size_t data_len) {
   std::vector<uint8_t> data(data_data, data_data + data_len);
   async_clipboard_ozone_->InsertData(std::move(data), {format.GetName()});
+}
+
+void ClipboardOzone::WriteClipboardHistory() {
+  // TODO(crbug.com/40945200): Add support for this.
+}
+
+void ClipboardOzone::WriteUploadCloudClipboard() {
+  // TODO(crbug.com/40945200): Add support for this.
+}
+
+void ClipboardOzone::WriteConfidentialDataForPassword() {
+  // TODO(crbug.com/40945200): Add support for this.
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

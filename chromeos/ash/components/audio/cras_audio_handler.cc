@@ -25,6 +25,7 @@
 #include "base/system/system_monitor.h"
 #include "base/task/single_thread_task_runner.h"
 #include "chromeos/ash/components/audio/audio_device.h"
+#include "chromeos/ash/components/audio/audio_device_encoding.h"
 #include "chromeos/ash/components/audio/audio_devices_pref_handler_stub.h"
 #include "chromeos/ash/components/dbus/audio/cras_audio_client.h"
 #include "chromeos/ash/components/dbus/audio/fake_cras_audio_client.h"
@@ -203,8 +204,15 @@ void CrasAudioHandler::AudioObserver::OnSpeakOnMuteDetected() {}
 void CrasAudioHandler::AudioObserver::OnNumStreamIgnoreUiGainsChanged(
     int32_t num) {}
 
+void CrasAudioHandler::AudioObserver::OnNumberOfArcStreamsChanged(int32_t num) {
+}
+
 void CrasAudioHandler::NumberOfNonChromeOutputStreamsChanged() {
   GetNumberOfNonChromeOutputStreams();
+}
+
+void CrasAudioHandler::NumberOfArcStreamsChanged() {
+  GetNumberOfArcStreams();
 }
 
 // static
@@ -568,6 +576,29 @@ void CrasAudioHandler::GetAudioDevices(AudioDeviceList* device_list) const {
     const AudioDevice& device = item.second;
     device_list->push_back(device);
   }
+}
+
+// static.
+AudioDeviceList CrasAudioHandler::GetSimpleUsageAudioDevices(
+    const AudioDeviceMap& audio_devices,
+    bool is_input) {
+  AudioDeviceList device_list;
+  for (const auto& item : audio_devices) {
+    const AudioDevice& device = item.second;
+    // Do not count non simple usage devices.
+    if (!device.is_for_simple_usage()) {
+      continue;
+    }
+    if (device.is_input == is_input) {
+      device_list.push_back(device);
+    }
+  }
+  return device_list;
+}
+
+const AudioDeviceMap& CrasAudioHandler::GetAudioDevicesMapForTesting(
+    bool is_current_device) const {
+  return is_current_device ? audio_devices_ : previous_audio_devices_;
 }
 
 bool CrasAudioHandler::GetPrimaryActiveOutputDevice(AudioDevice* device) const {
@@ -1162,8 +1193,9 @@ void CrasAudioHandler::ResetSystemSwitchTimestamp(bool is_input) {
   }
 }
 
-void CrasAudioHandler::MaybeRecordSystemSwitchDecision(bool is_input,
-                                                       bool is_switched) {
+void CrasAudioHandler::MaybeRecordSystemSwitchDecisionAndContext(
+    bool is_input,
+    bool is_switched) {
   if (is_input) {
     // Do not record if there is only one audio device since it will definitely
     // be activated. The metric aims to measure how well the system selection
@@ -1177,6 +1209,35 @@ void CrasAudioHandler::MaybeRecordSystemSwitchDecision(bool is_input,
     }
 
     base::UmaHistogramBoolean(kSystemSwitchInputAudio, is_switched);
+
+    AudioDeviceList input_devices =
+        GetSimpleUsageAudioDevices(audio_devices_, /*is_input=*/true);
+    // Record the number of audio devices at the moment.
+    base::UmaHistogramExactLinear(is_switched
+                                      ? kSystemSwitchInputAudioDeviceCount
+                                      : kSystemNotSwitchInputAudioDeviceCount,
+                                  input_devices.size(), kMaxAudioDevicesCount);
+
+    // Record the encoded device set.
+    base::UmaHistogramSparse(is_switched ? kSystemSwitchInputAudioDeviceSet
+                                         : kSystemNotSwitchInputAudioDeviceSet,
+                             EncodeAudioDeviceSet(input_devices));
+
+    AudioDeviceList previous_input_devices =
+        GetSimpleUsageAudioDevices(previous_audio_devices_, /*is_input=*/true);
+    // Record the before and after encoded device sets.
+    base::UmaHistogramSparse(
+        is_switched ? kSystemSwitchInputBeforeAndAfterAudioDeviceSet
+                    : kSystemNotSwitchInputBeforeAndAfterAudioDeviceSet,
+        EncodeBeforeAndAfterAudioDeviceSets(previous_input_devices,
+                                            input_devices));
+
+    // Record chrome restarts related metrics.
+    audio_device_metrics_handler_
+        .RecordAudioSelectionMetricsSeparatedByChromeRestarts(
+            /*is_input=*/true, is_switched, is_chrome_restarts_,
+            /*previous_device_list=*/previous_input_devices,
+            /*current_device_list=*/input_devices);
 
     // Set up timestamp. Make sure setting one timestamp will reset the other,
     // since only one decision can be made either switching or not switching.
@@ -1194,6 +1255,35 @@ void CrasAudioHandler::MaybeRecordSystemSwitchDecision(bool is_input,
 
     base::UmaHistogramBoolean(kSystemSwitchOutputAudio, is_switched);
 
+    AudioDeviceList output_devices =
+        GetSimpleUsageAudioDevices(audio_devices_, /*is_input=*/false);
+    // Record the number of audio devices at the moment.
+    base::UmaHistogramExactLinear(is_switched
+                                      ? kSystemSwitchOutputAudioDeviceCount
+                                      : kSystemNotSwitchOutputAudioDeviceCount,
+                                  output_devices.size(), kMaxAudioDevicesCount);
+
+    // Record the encoded device set.
+    base::UmaHistogramSparse(is_switched ? kSystemSwitchOutputAudioDeviceSet
+                                         : kSystemNotSwitchOutputAudioDeviceSet,
+                             EncodeAudioDeviceSet(output_devices));
+    AudioDeviceList previous_output_devices =
+        GetSimpleUsageAudioDevices(previous_audio_devices_, /*is_input=*/false);
+
+    // Record the before and after encoded device sets.
+    base::UmaHistogramSparse(
+        is_switched ? kSystemSwitchOutputBeforeAndAfterAudioDeviceSet
+                    : kSystemNotSwitchOutputBeforeAndAfterAudioDeviceSet,
+        EncodeBeforeAndAfterAudioDeviceSets(previous_output_devices,
+                                            output_devices));
+
+    // Record chrome restarts related metrics.
+    audio_device_metrics_handler_
+        .RecordAudioSelectionMetricsSeparatedByChromeRestarts(
+            /*is_input=*/false, is_switched, is_chrome_restarts_,
+            /*previous_device_list=*/previous_output_devices,
+            /*current_device_list=*/output_devices);
+
     // Set up timestamp. Make sure setting one timestamp will reset the other,
     // same as above.
     output_switched_by_system_at_ =
@@ -1209,8 +1299,8 @@ void CrasAudioHandler::SetActiveDevice(const AudioDevice& active_device,
   if (activate_by == ACTIVATE_BY_USER) {
     RecordUserSwitchAudioDevice(active_device.is_input);
   } else {
-    MaybeRecordSystemSwitchDecision(active_device.is_input,
-                                    /*is_switched=*/true);
+    MaybeRecordSystemSwitchDecisionAndContext(active_device.is_input,
+                                              /*is_switched=*/true);
   }
 
   // Update *_selected_by_user_.
@@ -1714,6 +1804,7 @@ void CrasAudioHandler::InitializeAudioAfterCrasServiceAvailable(
   GetNumberOfNonChromeOutputStreams();
   GetNumberOfInputStreamsWithPermissionInternal();
   GetNumStreamIgnoreUiGains();
+  GetNumberOfArcStreams();
   CrasAudioClient::Get()->SetFixA2dpPacketSize(
       base::FeatureList::IsEnabled(features::kBluetoothFixA2dpPacketSize));
 
@@ -1905,7 +1996,8 @@ void CrasAudioHandler::SwitchToDevice(const AudioDevice& device,
   if (!ChangeActiveDevice(device)) {
     // Record the decision of system not switching active device.
     if (activate_by != ACTIVATE_BY_USER) {
-      MaybeRecordSystemSwitchDecision(device.is_input, /*is_switched=*/false);
+      MaybeRecordSystemSwitchDecisionAndContext(device.is_input,
+                                                /*is_switched=*/false);
     }
     return;
   }
@@ -2091,38 +2183,40 @@ void CrasAudioHandler::HandleNonHotplugNodesChange(
     return;
   }
 
-  if (hotplug_devices.empty()) {
-    if (has_device_removed) {
-      if (!active_device_removed && has_current_active_node) {
-        // Removed a non-active device, keep the current active device.
-        // Record the decision of system not switching active device.
-        MaybeRecordSystemSwitchDecision(is_input, /*is_switched=*/false);
-        return;
-      }
-
-      if (active_device_removed) {
-        // Pauses active streams when the active output device is
-        // removed.
-        if (!is_input) {
-          PauseAllStreams();
-        }
-
-        // Unplugged the current active device.
-        SwitchToTopPriorityDevice(devices);
-
-        return;
-      }
-    }
-
-    // Some unexpected error happens on cras side. See crbug.com/586026.
-    // Either cras sent stale nodes to chrome again or cras triggered some
-    // error. Restore the previously selected active.
-    VLOG(1) << "Odd case from cras, the active node is lost unexpectedly.";
-    SwitchToPreviousActiveDeviceIfAvailable(is_input, devices);
-  } else {
+  if (!hotplug_devices.empty()) {
     // Looks like a new chrome session starts.
     SwitchToPreviousActiveDeviceIfAvailable(is_input, devices);
+    return;
   }
+
+  if (has_device_removed) {
+    if (!active_device_removed && has_current_active_node) {
+      // Removed a non-active device, keep the current active device.
+      // Record the decision of system not switching active device.
+      MaybeRecordSystemSwitchDecisionAndContext(is_input,
+                                                /*is_switched=*/false);
+      return;
+    }
+
+    if (active_device_removed) {
+      // Pauses active streams when the active output device is
+      // removed.
+      if (!is_input) {
+        PauseAllStreams();
+      }
+
+      // Unplugged the current active device.
+      SwitchToTopPriorityDevice(devices);
+
+      return;
+    }
+  }
+
+  // Some unexpected error happens on cras side. See crbug.com/586026.
+  // Either cras sent stale nodes to chrome again or cras triggered some
+  // error. Restore the previously selected active.
+  VLOG(1) << "Odd case from cras, the active node is lost unexpectedly.";
+  SwitchToPreviousActiveDeviceIfAvailable(is_input, devices);
 }
 
 bool CrasAudioHandler::ShouldSwitchToHotPlugDevice(
@@ -2170,8 +2264,8 @@ void CrasAudioHandler::HandleHotPlugDeviceByUserPriority(
     return;
   } else {
     // Record the decision of system not switching active device.
-    MaybeRecordSystemSwitchDecision(hotplug_device.is_input,
-                                    /*is_switched=*/false);
+    MaybeRecordSystemSwitchDecisionAndContext(hotplug_device.is_input,
+                                              /*is_switched=*/false);
   }
 
   // Do not active the hotplug device. The hotplug device is not the top
@@ -2252,6 +2346,10 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
   audio_pref_handler_->DropLeastRecentlySeenDevices(devices,
                                                     kMaxDeviceStoredInPref);
 
+  // Before audio_devices_ is cleared, saves all audio device types to
+  // previous_audio_devices_.
+  previous_audio_devices_ = audio_devices_;
+
   audio_devices_.clear();
   has_alternative_input_ = false;
   has_alternative_output_ = false;
@@ -2282,6 +2380,10 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
   HandleAudioDeviceChange(true, input_devices, hotplug_input_devices,
                           input_devices_changed, has_input_removed,
                           active_input_removed);
+
+  // At this moment, system has already made the switching or not switching
+  // decision, set this flag to false.
+  is_chrome_restarts_ = false;
 
   // content::MediaStreamManager listens to
   // base::SystemMonitor::DevicesChangedObserver for audio devices,
@@ -2777,6 +2879,29 @@ void CrasAudioHandler::HandleGetNumStreamIgnoreUiGains(
   num_stream_ignore_ui_gains_ = *new_stream_ignore_ui_gains_count;
 }
 
+void CrasAudioHandler::GetNumberOfArcStreams() {
+  CrasAudioClient::Get()->GetNumberOfArcStreams(
+      base::BindOnce(&CrasAudioHandler::HandleGetNumberOfArcStreams,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrasAudioHandler::HandleGetNumberOfArcStreams(
+    std::optional<int32_t> new_num_arc_streams) {
+  if (!new_num_arc_streams.has_value()) {
+    LOG(ERROR) << "Failed to retrieve number of active ARC streams.";
+    return;
+  }
+  DCHECK_GE(*new_num_arc_streams, 0);
+
+  if (*new_num_arc_streams != num_arc_streams_) {
+    for (auto& observer : observers_) {
+      observer.OnNumberOfArcStreamsChanged(*new_num_arc_streams);
+    }
+  }
+
+  num_arc_streams_ = *new_num_arc_streams;
+}
+
 ScopedCrasAudioHandlerForTesting::ScopedCrasAudioHandlerForTesting() {
   CHECK(!CrasAudioClient::Get())
       << "ScopedCrasAudioHandlerForTesting expects that there is no "
@@ -2801,6 +2926,14 @@ int32_t CrasAudioHandler::NumberOfNonChromeOutputStreams() const {
 
 int32_t CrasAudioHandler::NumberOfChromeOutputStreams() const {
   return num_active_output_streams_;
+}
+
+int32_t CrasAudioHandler::NumberOfArcStreams() const {
+  return num_arc_streams_;
+}
+
+void CrasAudioHandler::SetNumberOfArcStreamsForTesting(int32_t num) {
+  num_arc_streams_ = num;
 }
 
 }  // namespace ash

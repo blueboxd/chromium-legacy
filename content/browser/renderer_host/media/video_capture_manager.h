@@ -31,11 +31,11 @@
 #include "content/public/browser/screenlock_observer.h"
 #include "media/base/video_facing.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
+#include "media/capture/mojom/video_effects_manager.mojom-forward.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_device_info.h"
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/video_capture/public/mojom/video_effects_manager.mojom-forward.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -307,12 +307,11 @@ class CONTENT_EXPORT VideoCaptureManager
   // posts a
   // request to start the device on the device thread unless there is
   // another request pending start.
-  void QueueStartDevice(
-      const media::VideoCaptureSessionId& session_id,
-      VideoCaptureController* controller,
-      const media::VideoCaptureParams& params,
-      mojo::PendingRemote<video_capture::mojom::VideoEffectsManager>
-          video_effects_manager);
+  void QueueStartDevice(const media::VideoCaptureSessionId& session_id,
+                        VideoCaptureController* controller,
+                        const media::VideoCaptureParams& params,
+                        mojo::PendingRemote<media::mojom::VideoEffectsManager>
+                            video_effects_manager);
   void DoStopDevice(VideoCaptureController* controller);
   void ProcessDeviceStartRequestQueue();
 
@@ -335,7 +334,8 @@ class CONTENT_EXPORT VideoCaptureManager
   void EmitLogMessage(const std::string& message, int verbose_log_level);
 
   // Only accessed on Browser::IO thread.
-  base::ObserverList<MediaStreamProviderListener>::Unchecked listeners_;
+  base::ObserverList<MediaStreamProviderListener>::UncheckedAndDanglingUntriaged
+      listeners_;
 
   // An entry is kept in this map for every session that has been created via
   // the Open() entry point. The keys are session_id's. This map is used to
@@ -363,7 +363,8 @@ class CONTENT_EXPORT VideoCaptureManager
   const std::unique_ptr<VideoCaptureProvider> video_capture_provider_;
   base::RepeatingCallback<void(const std::string&)> emit_log_message_cb_;
 
-  base::ObserverList<media::VideoCaptureObserver>::Unchecked capture_observers_;
+  base::ObserverList<media::VideoCaptureObserver>::UncheckedAndDanglingUntriaged
+      capture_observers_;
 
   // Local cache of the enumerated DeviceInfos. GetDeviceSupportedFormats() will
   // use this list if the device is not started, otherwise it will retrieve the

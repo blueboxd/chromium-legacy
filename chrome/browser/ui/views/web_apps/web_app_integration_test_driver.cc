@@ -72,7 +72,6 @@
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_toolbar_button_container.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/window_controls_overlay_toggle_button.h"
-#include "chrome/browser/ui/views/web_apps/pwa_confirmation_bubble_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_link_capturing_test_utils.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/sub_apps_install_dialog_controller.h"
@@ -86,6 +85,8 @@
 #include "chrome/browser/web_applications/app_service/web_app_publisher_helper.h"
 #include "chrome/browser/web_applications/commands/run_on_os_login_command.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_source.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
 #include "chrome/browser/web_applications/isolated_web_apps/test/test_signed_web_bundle_builder.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
@@ -128,6 +129,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -1339,7 +1341,7 @@ void WebAppIntegrationTestDriver::InstallMenuOption(InstallableSite site) {
   WebAppTestInstallWithOsHooksObserver install_observer(profile());
   install_observer.BeginListening();
   auto dont_close_bubble_on_deactivate =
-      PWAConfirmationBubbleView::SetDontCloseOnDeactivateForTesting();
+      web_app::SetDontCloseOnDeactivateForTesting();
 
   CHECK(chrome::ExecuteCommand(browser(), IDC_INSTALL_PWA));
 
@@ -1402,7 +1404,7 @@ void WebAppIntegrationTestDriver::InstallOmniboxIcon(InstallableSite site) {
       }));
 
   auto dont_close_bubble_on_deactivate =
-      PWAConfirmationBubbleView::SetDontCloseOnDeactivateForTesting();
+      web_app::SetDontCloseOnDeactivateForTesting();
 
   BrowserAddedWaiter browser_added_waiter;
   ASSERT_TRUE(pwa_install_view()->GetVisible());
@@ -1495,12 +1497,18 @@ void WebAppIntegrationTestDriver::InstallIsolatedApp(Site site) {
       IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(bundle.id);
   webapps::AppId app_id = url_info.app_id();
 
+  SetTrustedWebBundleIdsForTesting({bundle.id});
+
   {
     base::test::TestFuture<base::expected<InstallIsolatedWebAppCommandSuccess,
                                           InstallIsolatedWebAppCommandError>>
         future;
     provider()->scheduler().InstallIsolatedWebApp(
-        url_info, InstalledBundle{.path = bundle_path}, base::Version("1.0.0"),
+        url_info,
+        IsolatedWebAppInstallSource::FromGraphicalInstaller(
+            IwaSourceBundleProdModeWithFileOp(
+                bundle_path, IwaSourceBundleProdFileOp::kCopy)),
+        base::Version("1.0.0"),
         /*optional_keep_alive=*/nullptr,
         /*optional_profile_keep_alive=*/nullptr, future.GetCallback());
     auto install_result = future.Take();

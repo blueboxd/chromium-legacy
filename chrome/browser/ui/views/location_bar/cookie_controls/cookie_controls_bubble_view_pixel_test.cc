@@ -4,6 +4,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/time/time_override.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -110,9 +111,9 @@ class CookieControlsBubbleViewPixelTest
     auto expiration = days_to_expiration
                           ? base::Time::Now() + base::Days(days_to_expiration)
                           : base::Time();
-    view_controller()->OnStatusChanged(
-        CookieControlsStatus::kUninitialized, controls_visible, protections_on,
-        enforcement, blocking_status, expiration);
+    view_controller()->OnStatusChanged(controls_visible, protections_on,
+                                       enforcement, blocking_status,
+                                       expiration);
   }
 
   static base::Time GetReferenceTime() {
@@ -202,7 +203,6 @@ class CookieControlsBubbleViewPixelTest
   raw_ptr<CookieControlsBubbleCoordinator> cookie_controls_coordinator_;
 };
 
-// TODO(b/317975095): Set `protections_on_` to false for this test.
 IN_PROC_BROWSER_TEST_P(CookieControlsBubbleViewPixelTest,
                        InvokeUi_CookiesBlocked) {
   ShowAndVerifyUi();

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.history;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,12 +21,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.tabs.TabLayout;
 
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.IntentUtils;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -42,7 +44,6 @@ import org.chromium.components.browser_ui.widget.selectable_list.SelectableListT
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate.SelectionObserver;
 import org.chromium.components.prefs.PrefService;
-import org.chromium.components.profile_metrics.BrowserProfileType;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.base.Clipboard;
@@ -74,6 +75,7 @@ public class HistoryManager
     private final Activity mActivity;
     private final boolean mIsIncognito;
     private final boolean mIsSeparateActivity;
+    private final HistoryUmaRecorder mUmaRecorder;
     private ViewGroup mRootView;
     private ViewGroup mContentView;
     @Nullable private final SelectableListLayout<HistoryItem> mSelectableListLayout;
@@ -108,8 +110,10 @@ public class HistoryManager
      * @param tabSupplier Supplies the current tab, null if the history UI will be shown in a
      *     separate activity.
      * @param historyProvider Provider of methods for querying and managing browsing history.
+     * @param umaRecorder Records UMA user action/histograms.
      * @param clientPackageName Package name of the client the history UI is launched on top of.
      * @param shouldShowClearData Whether the 'Clear browsing data' button should be shown.
+     * @param appSpecificHistory Whether app specific history features should be used.
      */
     @SuppressWarnings("unchecked") // mSelectableListLayout
     public HistoryManager(
@@ -119,19 +123,22 @@ public class HistoryManager
             @NonNull Profile profile,
             @Nullable Supplier<Tab> tabSupplier,
             HistoryProvider historyProvider,
+            @NonNull HistoryUmaRecorder umaRecorder,
             @Nullable String clientPackageName,
-            boolean shouldShowClearData) {
+            boolean shouldShowClearData,
+            boolean appSpecificHistory) {
         mActivity = activity;
         mIsSeparateActivity = isSeparateActivity;
         mSnackbarManager = snackbarManager;
         assert profile != null;
         mProfile = profile;
         mIsIncognito = profile.isOffTheRecord();
+        mUmaRecorder = umaRecorder;
 
         mPrefService = UserPrefs.get(mProfile);
         mBackPressStateSupplier.set(false);
 
-        recordUserAction("Show");
+        mUmaRecorder.recordOpenHistory();
         // If incognito placeholder is shown, we don't need to create History UI elements.
         if (mIsIncognito) {
             mSelectableListLayout = null;
@@ -164,7 +171,8 @@ public class HistoryManager
                         mSelectionDelegate,
                         tabSupplier,
                         historyProvider,
-                        clientPackageName);
+                        clientPackageName,
+                        appSpecificHistory);
         mSelectableListLayout.initializeRecyclerView(
                 mContentManager.getAdapter(), mContentManager.getRecyclerView());
 
@@ -178,7 +186,9 @@ public class HistoryManager
                         mSelectableListLayout.initializeToolbar(
                                 R.layout.history_toolbar,
                                 mSelectionDelegate,
-                                R.string.menu_history,
+                                appSpecificHistory
+                                        ? R.string.menu_web_history
+                                        : R.string.menu_history,
                                 R.id.normal_menu_group,
                                 R.id.selection_mode_menu_group,
                                 this,
@@ -230,7 +240,7 @@ public class HistoryManager
             openItemsInNewTabs(mSelectionDelegate.getSelectedItemsAsList(), false);
             return true;
         } else if (item.getItemId() == R.id.selection_mode_copy_link) {
-            recordUserActionWithOptionalSearch("CopyLink");
+            mUmaRecorder.recordCopyLink(mIsSearching);
             Clipboard.getInstance()
                     .setText(mSelectionDelegate.getSelectedItemsAsList().get(0).getUrl().getSpec());
             mSelectionDelegate.clearSelection();
@@ -246,7 +256,7 @@ public class HistoryManager
             openItemsInNewTabs(mSelectionDelegate.getSelectedItemsAsList(), true);
             return true;
         } else if (item.getItemId() == R.id.selection_mode_delete_menu_id) {
-            recordUserActionWithOptionalSearch("RemoveSelected");
+            mUmaRecorder.recordRemoveSelected(mIsSearching);
 
             int numItemsRemoved = 0;
             HistoryItem lastItemRemoved = null;
@@ -276,7 +286,7 @@ public class HistoryManager
             mToolbar.showSearchView(true);
             String searchEmptyString = getSearchEmptyString();
             mSelectableListLayout.onStartSearch(searchEmptyString);
-            recordUserAction("Search");
+            mUmaRecorder.recordSearchHistory();
             mIsSearching = true;
             return true;
         } else if (item.getItemId() == R.id.info_menu_id) {
@@ -386,7 +396,7 @@ public class HistoryManager
     }
 
     private void openItemsInNewTabs(List<HistoryItem> items, boolean isIncognito) {
-        recordUserActionWithOptionalSearch("OpenSelected" + (isIncognito ? "Incognito" : ""));
+        mUmaRecorder.recordOpenInTabs(mIsSearching, isIncognito);
         mContentManager.openItemsInNewTab(items, isIncognito);
     }
 
@@ -402,30 +412,6 @@ public class HistoryManager
             return false;
         }
         return mSelectableListLayout.onBackPressed();
-    }
-
-    /**
-     * @param action The user action string to record.
-     */
-    static void recordUserAction(String action) {
-        RecordUserAction.record(METRICS_PREFIX + action);
-    }
-
-    /**
-     * Records the user action with "Search" prepended if the user is currently searching.
-     * @param action The user action string to record.
-     */
-    void recordUserActionWithOptionalSearch(String action) {
-        recordUserAction((mIsSearching ? "Search." : "") + action);
-    }
-
-    private void recordClearBrowsingDataMetric() {
-        @BrowserProfileType
-        int type = mIsIncognito ? BrowserProfileType.INCOGNITO : BrowserProfileType.REGULAR;
-        RecordHistogram.recordEnumeratedHistogram(
-                METRICS_PREFIX + "ClearBrowsingData.PerProfileType",
-                type,
-                BrowserProfileType.MAX_VALUE + 1);
     }
 
     /**
@@ -455,6 +441,10 @@ public class HistoryManager
         return mContentManager.getShouldShowPrivacyDisclaimersIfAvailable();
     }
 
+    void recordSelectionEstablished() {
+        mUmaRecorder.recordSelectionEstablished(mIsSearching);
+    }
+
     @Override
     public void onSelectionStateChange(List<HistoryItem> selectedItems) {
         mContentManager.setSelectionActive(mSelectionDelegate.isSelectionEnabled());
@@ -477,20 +467,20 @@ public class HistoryManager
         // otherwise hide info button.
         mToolbar.updateInfoMenuItem(shouldShowInfoButton(), shouldShowInfoHeaderIfAvailable());
         if (loadedMore) {
-            recordUserActionWithOptionalSearch("LoadMoreOnScroll");
+            mUmaRecorder.recordLoadMoreOnScroll(mIsSearching);
         }
     }
 
     // HistoryContentManager.Observer
     @Override
     public void onItemClicked(HistoryItem item) {
-        recordUserActionWithOptionalSearch("OpenItem");
+        mUmaRecorder.recordOpenItem(mIsSearching);
     }
 
     // HistoryContentManager.Observer
     @Override
     public void onItemRemoved(HistoryItem item) {
-        recordUserActionWithOptionalSearch("RemoveItem");
+        mUmaRecorder.recordRemoveItem(mIsSearching);
         if (mSelectionDelegate.isItemSelected(item)) {
             mSelectionDelegate.toggleSelectionForItem(item);
         }
@@ -499,9 +489,8 @@ public class HistoryManager
     // HistoryContentManager.Observer
     @Override
     public void onClearBrowsingDataClicked() {
+        mUmaRecorder.recordClearBrowsingData(mIsIncognito);
         // Opens the clear browsing data preference.
-        recordUserAction("ClearBrowsingData");
-        recordClearBrowsingDataMetric();
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
         settingsLauncher.launchSettingsActivity(
                 mActivity, SettingsLauncher.SettingsFragment.CLEAR_BROWSING_DATA_ADVANCED_PAGE);
@@ -514,6 +503,16 @@ public class HistoryManager
         mShouldShowPrivacyDisclaimerSupplier.set(
                 mContentManager.getShouldShowPrivacyDisclaimersIfAvailable()
                         && mContentManager.hasPrivacyDisclaimers());
+    }
+
+    @Override
+    public void onOpenFullChromeHistoryClicked() {
+        Intent fullHistoryIntent = new Intent(Intent.ACTION_MAIN);
+        fullHistoryIntent.setClass(mActivity, ChromeLauncherActivity.class);
+        fullHistoryIntent.putExtra(IntentHandler.EXTRA_OPEN_HISTORY, true);
+        IntentUtils.addTrustedIntentExtras(fullHistoryIntent);
+        mActivity.startActivity(fullHistoryIntent);
+        mUmaRecorder.recordOpenFullHistory();
     }
 
     // HistoryContentManager.Observer

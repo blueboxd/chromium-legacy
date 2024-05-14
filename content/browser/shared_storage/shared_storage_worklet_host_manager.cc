@@ -73,9 +73,9 @@ void SharedStorageWorkletHostManager::CreateWorkletHost(
   auto worklet_hosts_it =
       attached_shared_storage_worklet_hosts_.find(document_service);
 
-  // A document can only create multiple worklets with `kSharedStorageAPIM123`
+  // A document can only create multiple worklets with `kSharedStorageAPIM124`
   // enabled.
-  if (!base::FeatureList::IsEnabled(blink::features::kSharedStorageAPIM123)) {
+  if (!base::FeatureList::IsEnabled(blink::features::kSharedStorageAPIM124)) {
     CHECK(worklet_hosts_it == attached_shared_storage_worklet_hosts_.end());
   }
 
@@ -107,7 +107,7 @@ void SharedStorageWorkletHostManager::RemoveSharedStorageObserver(
 
 void SharedStorageWorkletHostManager::NotifySharedStorageAccessed(
     SharedStorageObserverInterface::AccessType type,
-    const std::string& main_frame_id,
+    int main_frame_id,
     const std::string& owner_origin,
     const SharedStorageEventParams& params) {
   // Don't bother getting the time if there are no observers.

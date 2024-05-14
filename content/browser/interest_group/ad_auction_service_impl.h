@@ -195,6 +195,8 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
 
   url::Origin GetTopWindowOrigin() const;
 
+  AdAuctionPageData* GetAdAuctionPageData();
+
   // To avoid race conditions associated with top frame navigations (mentioned
   // in document_service.h), we need to save the values of the main frame
   // URL and origin in the constructor.
@@ -214,10 +216,9 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
   // worklets it manages.
   AuctionWorkletManager auction_worklet_manager_;
 
-  // Manages auction nonces issued by prior calls to
-  // CreateAuctionNonce, which are used by subsequent calls to
-  // RunAdAuction.
-  AuctionNonceManager auction_nonce_manager_;
+  // Manages auction nonces issued by prior calls to CreateAuctionNonce,
+  // which are used by subsequent calls to RunAdAuction.
+  std::unique_ptr<AuctionNonceManager> auction_nonce_manager_;
 
   // Use a map instead of a list so can remove entries without destroying them.
   // TODO(mmenke): Switch to std::set() and use extract() once that's allowed.

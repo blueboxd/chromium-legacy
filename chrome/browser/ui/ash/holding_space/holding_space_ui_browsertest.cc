@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <set>
+#include <tuple>
 #include <unordered_map>
 #include <vector>
 
@@ -43,6 +44,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_locale.h"
 #include "base/uuid.h"
@@ -80,6 +82,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
@@ -402,10 +405,11 @@ class DropTargetView : public views::WidgetDelegateView {
   void PerformDrop(const ui::DropTargetEvent& event,
                    ui::mojom::DragOperation& output_drag_op,
                    std::unique_ptr<ui::LayerTreeOwner> drag_image_layer_owner) {
-    std::vector<ui::FileInfo> files;
-    EXPECT_TRUE(event.data().GetFilenames(&files));
-    ASSERT_EQ(1u, files.size());
-    copied_file_path_ = files[0].path;
+    std::optional<std::vector<ui::FileInfo>> files =
+        event.data().GetFilenames();
+    ASSERT_TRUE(files.has_value());
+    ASSERT_EQ(1u, files.value().size());
+    copied_file_path_ = files.value()[0].path;
     output_drag_op = ui::mojom::DragOperation::kCopy;
   }
 
@@ -624,8 +628,8 @@ class HoldingSpaceUiDragAndDropBrowserTest
     return GetStorageLocationFlags() & flag;
   }
 
-  raw_ptr<DropSenderView> drop_sender_view_ = nullptr;
-  raw_ptr<DropTargetView> drop_target_view_ = nullptr;
+  raw_ptr<DropSenderView, DanglingUntriaged> drop_sender_view_ = nullptr;
+  raw_ptr<DropTargetView, DanglingUntriaged> drop_target_view_ = nullptr;
 };
 
 // Verifies that drag-and-drop of holding space items works.
@@ -1998,20 +2002,33 @@ class HoldingSpaceUiInProgressDownloadsBrowserTestBase
 };
 
 // Base class for tests that require in-progress downloads integration,
-// parameterized by use of Ash or Lacros downloads.
+// parameterized by:
+// 1. Use of Ash or Lacros downloads.
+// 2. The enabling of the downloads integration v2 feature.
 class HoldingSpaceUiInProgressDownloadsBrowserTest
     : public HoldingSpaceUiInProgressDownloadsBrowserTestBase,
-      public testing::WithParamInterface<DownloadTypeToUse> {
+      public testing::WithParamInterface<
+          std::tuple<DownloadTypeToUse,
+                     /*is_downloads_integration_v2_enabled=*/bool>> {
  public:
   HoldingSpaceUiInProgressDownloadsBrowserTest()
       : HoldingSpaceUiInProgressDownloadsBrowserTestBase(
-            /*download_type_to_use=*/GetParam()) {}
+            /*download_type_to_use=*/std::get<0>(GetParam())) {
+    scoped_feature_list_.InitWithFeatureState(
+        features::kSysUiDownloadsIntegrationV2,
+        /*enabled=*/std::get<1>(GetParam()));
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         HoldingSpaceUiInProgressDownloadsBrowserTest,
-                         testing::ValuesIn({DownloadTypeToUse::kAsh,
-                                            DownloadTypeToUse::kLacros}));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    HoldingSpaceUiInProgressDownloadsBrowserTest,
+    testing::Combine(testing::Values(DownloadTypeToUse::kAsh,
+                                     DownloadTypeToUse::kLacros),
+                     /*is_downloads_integration_v2_enabled=*/testing::Bool()));
 
 // Verifies that primary, secondary, and accessible text work as intended.
 IN_PROC_BROWSER_TEST_P(HoldingSpaceUiInProgressDownloadsBrowserTest,
@@ -2035,8 +2052,17 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiInProgressDownloadsBrowserTest,
   test_api().Show();
   ASSERT_TRUE(test_api().IsShowing());
 
-  // Verify the existence of a single download chip.
   std::vector<views::View*> download_chips = test_api().GetDownloadChips();
+  if (features::IsSysUiDownloadsIntegrationV2Enabled() &&
+      GetDownloadTypeToUse() == DownloadTypeToUse::kLacros) {
+    // When the downloads integration V2 feature is enabled, the holding space
+    // downloads delegate handles Ash downloads only. Lacros downloads are
+    // handled in a different code path.
+    EXPECT_TRUE(download_chips.empty());
+    return;
+  }
+
+  // Verify the existence of a single download chip.
   ASSERT_EQ(download_chips.size(), 1u);
 
   // Wait for the download chip to be drawn with an indeterminate progress ring
@@ -2412,8 +2438,17 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiInProgressDownloadsBrowserTest,
   test_api().Show();
   ASSERT_TRUE(test_api().IsShowing());
 
-  // Expect two download chips, one for each created download item.
   std::vector<views::View*> download_chips = test_api().GetDownloadChips();
+  if (features::IsSysUiDownloadsIntegrationV2Enabled() &&
+      GetDownloadTypeToUse() == DownloadTypeToUse::kLacros) {
+    // When the downloads integration V2 feature is enabled, the holding space
+    // downloads delegate handles Ash downloads only. Lacros downloads are
+    // handled in a different code path.
+    EXPECT_TRUE(download_chips.empty());
+    return;
+  }
+
+  // Expect two download chips, one for each created download item.
   ASSERT_EQ(download_chips.size(), 2u);
 
   // Cache download chips. NOTE: Chips are displayed in reverse order of their
@@ -2493,8 +2528,17 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiInProgressDownloadsBrowserTest,
   test_api().Show();
   ASSERT_TRUE(test_api().IsShowing());
 
-  // Expect two download chips, one for each created download item.
   std::vector<views::View*> download_chips = test_api().GetDownloadChips();
+  if (features::IsSysUiDownloadsIntegrationV2Enabled() &&
+      GetDownloadTypeToUse() == DownloadTypeToUse::kLacros) {
+    // When the downloads integration V2 feature is enabled, the holding space
+    // downloads delegate handles Ash downloads only. Lacros downloads are
+    // handled in a different code path.
+    EXPECT_TRUE(download_chips.empty());
+    return;
+  }
+
+  // Expect two download chips, one for each created download item.
   ASSERT_EQ(download_chips.size(), 2u);
 
   // Cache download chips. NOTE: Chips are displayed in reverse order of their
@@ -2582,8 +2626,17 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiInProgressDownloadsBrowserTest,
   test_api().Show();
   ASSERT_TRUE(test_api().IsShowing());
 
-  // Expect a single download chip.
   std::vector<views::View*> download_chips = test_api().GetDownloadChips();
+  if (features::IsSysUiDownloadsIntegrationV2Enabled() &&
+      GetDownloadTypeToUse() == DownloadTypeToUse::kLacros) {
+    // When the downloads integration V2 feature is enabled, the holding space
+    // downloads delegate handles Ash downloads only. Lacros downloads are
+    // handled in a different code path.
+    EXPECT_TRUE(download_chips.empty());
+    return;
+  }
+
+  // Expect a single download chip.
   ASSERT_EQ(download_chips.size(), 1u);
 
   // Cache pointers to the `primary_label` and `secondary_label`.
@@ -2651,8 +2704,17 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiInProgressDownloadsBrowserTest,
   test_api().Show();
   ASSERT_TRUE(test_api().IsShowing());
 
-  // Expect two download chips, one for each created download item.
   std::vector<views::View*> download_chips = test_api().GetDownloadChips();
+  if (features::IsSysUiDownloadsIntegrationV2Enabled() &&
+      GetDownloadTypeToUse() == DownloadTypeToUse::kLacros) {
+    // When the downloads integration V2 feature is enabled, the holding space
+    // downloads delegate handles Ash downloads only. Lacros downloads are
+    // handled in a different code path.
+    EXPECT_TRUE(download_chips.empty());
+    return;
+  }
+
+  // Expect two download chips, one for each created download item.
   ASSERT_EQ(download_chips.size(), 2u);
 
   // Cache download chips. NOTE: Chips are displayed in reverse order of their
@@ -2727,35 +2789,46 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiInProgressDownloadsBrowserTest,
   ASSERT_TRUE(SelectMenuItemWithCommandId(HoldingSpaceCommandId::kRemoveItem));
 }
 
-// Base class for tests of the pause or resume commands, parameterized by use of
-// Ash or Lacros downloads and by which command to use. This will either be
-// `kPauseItem` or `kResumeItem`.
+// Base class for tests of the pause or resume commands, parameterized by:
+// 1. Use of Ash or Lacros downloads.
+// 2. The command to use. This will either be `kPauseItem` or `kResumeItem`.
+// 3. The enabling of the downloads integration v2 feature.
 class HoldingSpaceUiPauseOrResumeBrowserTest
     : public HoldingSpaceUiInProgressDownloadsBrowserTestBase,
       public testing::WithParamInterface<
-          std::tuple<DownloadTypeToUse, HoldingSpaceCommandId>> {
+          std::tuple<DownloadTypeToUse,
+                     HoldingSpaceCommandId,
+                     /*is_downloads_integration_v2_enabled=*/bool>> {
  public:
   HoldingSpaceUiPauseOrResumeBrowserTest()
       : HoldingSpaceUiInProgressDownloadsBrowserTestBase(
-            /*use_ash_or_lacros_downloads=*/std::get<0>(GetParam())) {
+            /*download_type_to_use=*/std::get<0>(GetParam())) {
     const HoldingSpaceCommandId command_id(GetPauseOrResumeCommandId());
     EXPECT_TRUE(command_id == HoldingSpaceCommandId::kPauseItem ||
                 command_id == HoldingSpaceCommandId::kResumeItem);
+
+    scoped_feature_list_.InitWithFeatureState(
+        features::kSysUiDownloadsIntegrationV2,
+        /*enabled=*/std::get<2>(GetParam()));
   }
 
   // Returns either `kPauseItem` or `kResumeItem` depending on parameterization.
   HoldingSpaceCommandId GetPauseOrResumeCommandId() const {
     return std::get<1>(GetParam());
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     HoldingSpaceUiPauseOrResumeBrowserTest,
-    testing::Combine(testing::ValuesIn({DownloadTypeToUse::kAsh,
-                                        DownloadTypeToUse::kLacros}),
+    testing::Combine(testing::Values(DownloadTypeToUse::kAsh,
+                                     DownloadTypeToUse::kLacros),
                      testing::ValuesIn({HoldingSpaceCommandId::kPauseItem,
-                                        HoldingSpaceCommandId::kResumeItem})));
+                                        HoldingSpaceCommandId::kResumeItem}),
+                     /*is_downloads_integration_v2_enabled=*/testing::Bool()));
 
 // Verifies that pausing or resuming holding space items works as intended.
 IN_PROC_BROWSER_TEST_P(HoldingSpaceUiPauseOrResumeBrowserTest,
@@ -2777,8 +2850,17 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiPauseOrResumeBrowserTest,
   test_api().Show();
   ASSERT_TRUE(test_api().IsShowing());
 
-  // Expect two download chips, one for each created download item.
   std::vector<views::View*> download_chips = test_api().GetDownloadChips();
+  if (features::IsSysUiDownloadsIntegrationV2Enabled() &&
+      GetDownloadTypeToUse() == DownloadTypeToUse::kLacros) {
+    // When the downloads integration V2 feature is enabled, the holding space
+    // downloads delegate handles Ash downloads only. Lacros downloads are
+    // handled in a different code path.
+    EXPECT_TRUE(download_chips.empty());
+    return;
+  }
+
+  // Expect two download chips, one for each created download item.
   ASSERT_EQ(download_chips.size(), 2u);
 
   // Cache download chips. NOTE: Chips are displayed in reverse order of their
@@ -2861,8 +2943,17 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiPauseOrResumeBrowserTest,
   test_api().Show();
   ASSERT_TRUE(test_api().IsShowing());
 
-  // Expect two download chips, one for each created download item.
   std::vector<views::View*> download_chips = test_api().GetDownloadChips();
+  if (features::IsSysUiDownloadsIntegrationV2Enabled() &&
+      GetDownloadTypeToUse() == DownloadTypeToUse::kLacros) {
+    // When the downloads integration V2 feature is enabled, the holding space
+    // downloads delegate handles Ash downloads only. Lacros downloads are
+    // handled in a different code path.
+    EXPECT_TRUE(download_chips.empty());
+    return;
+  }
+
+  // Expect two download chips, one for each created download item.
   ASSERT_EQ(download_chips.size(), 2u);
 
   // Cache download chips. NOTE: Chips are displayed in reverse order of their

@@ -141,7 +141,7 @@ TEST_F(AuctionMetricsRecorderTest, NumInterestGroups) {
       /*sample=*/42, /*expected_bucket_count=*/1);
 }
 
-TEST_F(AuctionMetricsRecorderTest, NumOwnersWithInterestGroupsName) {
+TEST_F(AuctionMetricsRecorderTest, NumOwnersWithInterestGroups) {
   recorder().SetNumOwnersWithInterestGroups(62);
   recorder().OnAuctionEnd(AuctionResult::kSuccess);
 
@@ -152,10 +152,12 @@ TEST_F(AuctionMetricsRecorderTest, NumOwnersWithInterestGroupsName) {
       /*sample=*/62, /*expected_bucket_count=*/1);
 }
 
-TEST_F(AuctionMetricsRecorderTest, NumOwnersExcluded) {
+TEST_F(AuctionMetricsRecorderTest, NumOwnersWithoutInterestGroups) {
   recorder().SetNumOwnersWithoutInterestGroups(62);
   recorder().OnAuctionEnd(AuctionResult::kSuccess);
 
+  // 62 becomes 58 because of bucketing
+  EXPECT_EQ(GetMetricValue(UkmEntry::kNumOwnersWithoutInterestGroupsName), 58);
   histogram_tester().ExpectUniqueSample(
       /*name=*/"Ads.InterestGroup.Auction.NumOwnersWithoutInterestGroups",
       /*sample=*/62, /*expected_bucket_count=*/1);
@@ -664,6 +666,17 @@ TEST_F(AuctionMetricsRecorderTest,
       GetMetricValue(
           UkmEntry::kNumInterestGroupsWithSeparateBidsForKAnonAndNonKAnonName),
       17);
+}
+
+TEST_F(AuctionMetricsRecorderTest, NumInterestGroupsWithOtherMultiBid) {
+  for (size_t i = 0; i < 30; ++i) {
+    recorder().RecordInterestGroupWithOtherMultiBid();
+  }
+  recorder().OnAuctionEnd(AuctionResult::kSuccess);
+
+  // 30 becomes 29 because of bucketing
+  EXPECT_EQ(GetMetricValue(UkmEntry::kNumInterestGroupsWithOtherMultiBidName),
+            29);
 }
 
 TEST_F(AuctionMetricsRecorderTest,
@@ -1810,6 +1823,28 @@ TEST_F(AuctionMetricsRecorderTest,
   EXPECT_FALSE(HasMetric(
       UkmEntry::
           kMeanScoreAdTrustedScoringSignalsCriticalPathLatencyInMillisName));
+}
+
+TEST_F(AuctionMetricsRecorderTest, MultiBidCount) {
+  recorder().RecordNumberOfBidsFromGenerateBid(4, 10);
+  recorder().RecordNumberOfBidsFromGenerateBid(2, 2);
+  recorder().OnAuctionEnd(AuctionResult::kSuccess);
+
+  histogram_tester().ExpectBucketCount(
+      /*name=*/"Ads.InterestGroup.Auction.NumBidsGeneratedAtOnce",
+      /*sample=*/10, /*expected_count=*/1);
+
+  histogram_tester().ExpectBucketCount(
+      /*name=*/"Ads.InterestGroup.Auction.NumBidsGeneratedAtOnce",
+      /*sample=*/2, /*expected_count=*/1);
+
+  histogram_tester().ExpectTotalCount(
+      /*name=*/"Ads.InterestGroup.Auction.NumBidsGeneratedAtOnce", 2);
+
+  // 6/12 are k-Anon
+  histogram_tester().ExpectUniqueSample(
+      /*name=*/"Ads.InterestGroup.Auction.PercentBidsKAnon",
+      /*sample=*/50, /*expected_bucket_count=*/1);
 }
 
 }  // namespace

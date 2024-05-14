@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './icons.html.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../../history_clusters/page_favicon.js';
@@ -12,16 +11,16 @@ import type {DomRepeatEvent} from 'chrome://resources/polymer/v3_0/polymer/polym
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import type {Tab} from '../../../history_types.mojom-webui.js';
-import {DeviceType} from '../../../history_types.mojom-webui.js';
 import {I18nMixin, loadTimeData} from '../../../i18n_setup.js';
-import type {InfoDialogElement} from '../../info_dialog';
+import type {InfoDialogElement} from '../../info_dialog.js';
 import {ModuleDescriptor} from '../../module_descriptor.js';
-import type {MenuItem, ModuleHeaderElementV2} from '../module_header';
+import type {MenuItem, ModuleHeaderElementV2} from '../module_header.js';
 
 import {getTemplate} from './module.html.js';
 import {TabResumptionProxyImpl} from './tab_resumption_proxy.js';
 
-export const MAX_TABS = 5;
+export const MAX_TABS =
+    !loadTimeData.getBoolean('modulesRedesignedEnabled') ? 3 : 5;
 
 export interface TabResumptionModuleElement {
   $: {
@@ -138,17 +137,21 @@ tabs:
   private onDismissButtonClick_() {
     const urls = this.tabs.map((tab: Tab) => tab.url);
     TabResumptionProxyImpl.getInstance().handler.dismissModule(urls);
-    this.dispatchEvent(new CustomEvent('dismiss-module-instance', {
-      bubbles: true,
-      composed: true,
-      detail: {
-        message: loadTimeData.getStringF(
-            'dismissModuleToastMessage',
-            loadTimeData.getString('modulesTabResumptionSentence')),
-        restoreCallback: () =>
-            TabResumptionProxyImpl.getInstance().handler.restoreModule(),
-      },
-    }));
+    this.dispatchEvent(new CustomEvent(
+        loadTimeData.getBoolean('modulesRedesignedEnabled') ?
+            'dismiss-module-instance' :
+            'dismiss-module',
+        {
+          bubbles: true,
+          composed: true,
+          detail: {
+            message: loadTimeData.getStringF(
+                'dismissModuleToastMessage',
+                loadTimeData.getString('modulesTabResumptionSentence')),
+            restoreCallback: () =>
+                TabResumptionProxyImpl.getInstance().handler.restoreModule(),
+          },
+        }));
   }
 
   private computeDomain_(tab: Tab): string {
@@ -157,21 +160,18 @@ tabs:
     return domain;
   }
 
-  private computeIcon_(tab: Tab): string {
-    switch (tab.deviceType) {
-      case DeviceType.kDesktop:
-        return 'tab_resumption:computer';
-      case DeviceType.kPhone:
-        return 'tab_resumption:phone';
-      case DeviceType.kTablet:
-        return 'tab_resumption:tablet';
-      default:
-        return 'tab_resumption:globe';
-    }
+  private computeDeviceName_(tab: Tab): string {
+    return loadTimeData.getBoolean('modulesRedesignedEnabled') ?
+        tab.sessionName :
+        this.i18n('modulesTabResumptionDevicePrefix') + ` ${tab.sessionName}`;
   }
 
   private computeIsSingleTab_(): boolean {
     return this.tabs && this.tabs.length === 1;
+  }
+
+  private computeFaviconSize_(): number {
+    return loadTimeData.getBoolean('modulesRedesignedEnabled') ? 18 : 19;
   }
 }
 

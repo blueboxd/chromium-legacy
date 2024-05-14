@@ -12,6 +12,7 @@ import './screens/common/app_downloading.js';
 import './screens/common/app_launch_splash.js';
 import './screens/common/assistant_optin.js';
 import './screens/common/autolaunch.js';
+import './screens/common/categories_selection.js';
 import './screens/common/choobe.js';
 import './screens/common/consolidated_consent.js';
 import './screens/common/device_disabled.js';
@@ -30,7 +31,6 @@ import './screens/common/local_state_error.js';
 import './screens/common/managed_terms_of_service.js';
 import './screens/common/marketing_opt_in.js';
 import './screens/common/multidevice_setup.js';
-import './screens/common/offline_ad_login.js';
 import './screens/common/online_authentication_screen.js';
 import './screens/common/oobe_reset.js';
 import './screens/common/os_install.js';
@@ -82,19 +82,12 @@ import './screens/oobe/oobe_network.js';
 import './screens/oobe/packaged_license.js';
 import './screens/oobe/update.js';
 
-//TODO(b/324392321) Move type definition to oobe_types after its TS migration
-export interface OobeScreen {
-  tag: string;
-  id: string;
-  condition?: string;
-  extra_classes?: string[];
-}
-export interface ScreensList extends Array<OobeScreen>{}
+import {OobeTypes} from './components/oobe_types.js';
 
 /**
  * List of screens that are used for both `oobe` and `login` flows.
  */
-export const commonScreensList: ScreensList = [
+export const commonScreensList: OobeTypes.ScreensList = [
   {tag: 'adb-sideloading-element', id: 'adb-sideloading'},
   {tag: 'add-child-element', id: 'add-child'},
   {tag: 'app-downloading-element', id: 'app-downloading'},
@@ -109,6 +102,11 @@ export const commonScreensList: ScreensList = [
     id: 'apply-online-password',
   },
   {tag: 'autolaunch-element', id: 'autolaunch'},
+  {
+    tag: 'categories-selection-element',
+    id: 'categories-selection',
+    condition: 'isPersonalizedOnboarding',
+  },
   {
     tag: 'choobe-element',
     id: 'choobe',
@@ -157,7 +155,6 @@ export const commonScreensList: ScreensList = [
   {tag: 'managed-terms-of-service-element', id: 'terms-of-service'},
   {tag: 'marketing-opt-in-element', id: 'marketing-opt-in'},
   {tag: 'multidevice-setup-element', id: 'multidevice-setup-screen'},
-  {tag: 'offline-ad-login-element', id: 'offline-ad-login'},
   {
     tag: 'online-authentication-screen-element',
     id: 'online-authentication-screen',
@@ -209,7 +206,7 @@ export const commonScreensList: ScreensList = [
 /**
  * List of screens that are used during the `login` flow only.
  */
-export const loginScreensList: ScreensList = [
+export const loginScreensList: OobeTypes.ScreensList = [
   {
     tag: 'arc-vm-data-migration-element',
     id: 'arc-vm-data-migration',
@@ -240,7 +237,7 @@ export const loginScreensList: ScreensList = [
 /**
  * List of screens that are used during the `oobe` flow only.
  */
-export const oobeScreensList: ScreensList = [
+export const oobeScreensList: OobeTypes.ScreensList = [
   {tag: 'auto-enrollment-check-element', id: 'auto-enrollment-check'},
   {
     tag: 'consumer-update-element',

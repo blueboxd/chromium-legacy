@@ -411,53 +411,60 @@ void AutofillDriverRouter::JavaScriptChangedAutofilledValue(
 
 base::flat_set<FieldGlobalId> AutofillDriverRouter::ApplyFormAction(
     AutofillDriver* source,
-    mojom::ActionType action_type,
+    mojom::FormActionType action_type,
     mojom::ActionPersistence action_persistence,
     const FormData& data,
     const url::Origin& triggered_origin,
     const base::flat_map<FieldGlobalId, FieldType>& field_type_map,
     void (*callback)(AutofillDriver* target,
-                     mojom::ActionType action_type,
+                     mojom::FormActionType action_type,
                      mojom::ActionPersistence action_persistence,
-                     const FormData::FillData& form)) {
+                     const std::vector<FormFieldData::FillData>& fields)) {
   // Since Undo only affects fields that were already filled, and only sets
   // values to fields to something that already existed in it prior to the
   // filling, it is okay to bypass the filling security checks and hence passing
   // `TrustAllOrigins()`.
   internal::FormForest::RendererForms renderer_forms =
       form_forest_.GetRendererFormsOfBrowserForm(
-          data, action_type == mojom::ActionType::kUndo
+          data, action_type == mojom::FormActionType::kUndo
                     ? internal::FormForest::SecurityOptions::TrustAllOrigins()
                     : internal::FormForest::SecurityOptions(&triggered_origin,
                                                             &field_type_map));
+  // Collect the fields per frame and emit a single fill operation per frame,
+  // even if multiple renderer forms belong to the same iframe due to
+  // flattening.
+  base::flat_map<AutofillDriver*, std::vector<FormFieldData::FillData>>
+      fields_of_driver;
   for (FormData& renderer_form : renderer_forms.renderer_forms) {
     if (auto* target = DriverOfFrame(renderer_form.host_frame)) {
-      // Remove unsafe fields from the list to be sent to the renderer.
-      std::erase_if(
-          renderer_form.fields, [&renderer_forms](const FormFieldData& field) {
-            return !renderer_forms.safe_fields.contains(field.global_id());
-          });
-      callback(target, action_type, action_persistence,
-               FormData::FillData(renderer_form));
+      for (const FormFieldData& field : renderer_form.fields) {
+        // Skip unsafe fields so that they do not get filled in the renderer.
+        if (renderer_forms.safe_fields.contains(field.global_id())) {
+          fields_of_driver[target].emplace_back(field);
+        }
+      }
     }
+  }
+  for (const auto& [target, fields] : fields_of_driver) {
+    CHECK(!fields.empty());
+    callback(target, action_type, action_persistence, fields);
   }
   return renderer_forms.safe_fields;
 }
 
 void AutofillDriverRouter::ApplyFieldAction(
     AutofillDriver* source,
+    mojom::FieldActionType action_type,
     mojom::ActionPersistence action_persistence,
-    mojom::TextReplacement text_replacement,
     const FieldGlobalId& field,
     const std::u16string& value,
     void (*callback)(AutofillDriver* target,
+                     mojom::FieldActionType action_type,
                      mojom::ActionPersistence action_persistence,
-                     mojom::TextReplacement text_replacement,
                      const FieldRendererId& field,
                      const std::u16string& value)) {
   if (auto* target = DriverOfFrame(field.frame_token)) {
-    callback(target, action_persistence, text_replacement, field.renderer_id,
-             value);
+    callback(target, action_type, action_persistence, field.renderer_id, value);
   }
 }
 
@@ -593,26 +600,6 @@ void AutofillDriverRouter::RendererShouldSetSuggestionAvailability(
   if (auto* target = DriverOfFrame(field.frame_token)) {
     callback(target, field.renderer_id, suggestion_availability);
   }
-}
-
-void AutofillDriverRouter::OnContextMenuShownInField(
-    AutofillDriver* source,
-    const FormGlobalId& form_global_id,
-    const FieldGlobalId& field_global_id,
-    void (*callback)(AutofillDriver* target,
-                     const FormGlobalId& form_global_id,
-                     const FieldGlobalId& field_global_id)) {
-  TriggerFormExtractionExcept(source);
-
-  // Even though we have the `form_global_id` of a renderer form, we cannot call
-  // `form_forest_.GetBrowserForm()` because this is admissible only after a
-  // `form_forest_.UpdateTreeOfRendererForm()` for the same form, but there's no
-  // guarantee this ever happened (e.g., because of race conditions or because
-  // the form is too large; see
-  // https://crrev.com/c/3865860/comment/eddfd61f_dadb4918/ for details).
-  ForEachFrame(form_forest_, [&](AutofillDriver* some_driver) {
-    callback(some_driver, form_global_id, field_global_id);
-  });
 }
 
 std::vector<FormData> AutofillDriverRouter::GetRendererForms(

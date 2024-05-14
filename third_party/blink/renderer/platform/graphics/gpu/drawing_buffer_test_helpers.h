@@ -88,6 +88,8 @@ class WebGraphicsContext3DProviderForTests
     return 0;
   }
 
+  gpu::GpuFeatureInfo& GetMutableGpuFeatureInfo() { return gpu_feature_info_; }
+
  private:
   cc::StubDecodeCache image_decode_cache_;
   std::unique_ptr<gpu::gles2::GLES2Interface> gl_;
@@ -477,7 +479,7 @@ class DrawingBufferForTests : public DrawingBuffer {
         ContextProvider()->SharedImageInterface());
   }
 
-  raw_ptr<bool, ExperimentalRenderer> live_;
+  raw_ptr<bool> live_;
 
   int RecycledBitmapCount() { return recycled_bitmaps_.size(); }
 };

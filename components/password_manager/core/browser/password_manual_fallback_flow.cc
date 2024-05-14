@@ -4,7 +4,11 @@
 
 #include "components/password_manager/core/browser/password_manual_fallback_flow.h"
 
+#include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_ui_utils.h"
 
 namespace password_manager {
 
@@ -25,9 +29,7 @@ PasswordManualFallbackFlow::PasswordManualFallbackFlow(
 }
 
 PasswordManualFallbackFlow::~PasswordManualFallbackFlow() {
-  if (deletion_callback_) {
-    std::move(deletion_callback_).Run();
-  }
+  CancelBiometricReauthIfOngoing();
 }
 
 // static
@@ -59,8 +61,10 @@ void PasswordManualFallbackFlow::OnSavedPasswordsChanged(
 }
 
 void PasswordManualFallbackFlow::RunFlow(
+    autofill::FieldRendererId field_id,
     const gfx::RectF& bounds,
     base::i18n::TextDirection text_direction) {
+  saved_field_id_ = field_id;
   if (flow_state_ != FlowState::kPasswordsRetrived) {
     flow_state_ = FlowState::kInvokedWithoutPasswords;
     saved_bounds_ = bounds;
@@ -68,6 +72,11 @@ void PasswordManualFallbackFlow::RunFlow(
     return;
   }
   RunFlowImpl(bounds, text_direction);
+}
+
+absl::variant<autofill::AutofillDriver*, PasswordManagerDriver*>
+PasswordManualFallbackFlow::GetDriver() {
+  return password_manager_driver_.get();
 }
 
 void PasswordManualFallbackFlow::OnPopupShown() {}
@@ -83,7 +92,8 @@ void PasswordManualFallbackFlow::DidSelectSuggestion(
       // suggestions.
       break;
     case autofill::PopupItemId::kPasswordFieldByFieldFilling:
-      // TODO(b/321678448): Implement username preview.
+      password_manager_driver_->PreviewField(saved_field_id_,
+                                             suggestion.main_text.value);
       break;
     case autofill::PopupItemId::kFillPassword:
     case autofill::PopupItemId::kViewPasswordDetails:
@@ -105,22 +115,30 @@ void PasswordManualFallbackFlow::DidAcceptSuggestion(
       // TODO(b/321678448): Fill password form for acceptable suggestions.
       break;
     case autofill::PopupItemId::kPasswordFieldByFieldFilling:
+      password_manager_driver_->FillField(saved_field_id_,
+                                          suggestion.main_text.value);
       // TODO(b/321678448): Fill username.
       break;
     case autofill::PopupItemId::kFillPassword:
-      // TODO(b/324241248): Conditionally trigger concent dialog and fill
-      // password.
+      FillPasswordSuggestion(
+          suggestion.GetPayload<Suggestion::ValueToFill>().value());
       break;
     case autofill::PopupItemId::kViewPasswordDetails:
       // TODO(b/324242001): Trigger password details dialog.
       break;
     case autofill::PopupItemId::kAllSavedPasswordsEntry:
-      // TODO(b/321678448): Open password settings.
+      password_client_->NavigateToManagePasswordsPage(
+          ManagePasswordsReferrer::kPasswordDropdown);
+      metrics_util::LogPasswordDropdownItemSelected(
+          metrics_util::PasswordDropdownSelectedOption::kShowAll,
+          password_client_->IsOffTheRecord());
       break;
     default:
       // Other suggestion types are not supported.
       NOTREACHED_NORETURN();
   }
+  autofill_client_->HideAutofillPopup(
+      autofill::PopupHidingReason::kAcceptSuggestion);
 }
 
 void PasswordManualFallbackFlow::DidPerformButtonActionForSuggestion(
@@ -145,30 +163,71 @@ autofill::FillingProduct PasswordManualFallbackFlow::GetMainFillingProduct()
   return autofill::FillingProduct::kPassword;
 }
 
-int32_t PasswordManualFallbackFlow::GetWebContentsPopupControllerAxId() const {
-  // TODO: Needs to be implemented when we step up accessibility features in the
-  // future.
-  // See http://crbug.com/991253
-  NOTIMPLEMENTED_LOG_ONCE();
-  return 0;
-}
-
-void PasswordManualFallbackFlow::RegisterDeletionCallback(
-    base::OnceClosure deletion_callback) {
-  deletion_callback_ = std::move(deletion_callback);
-}
-
 void PasswordManualFallbackFlow::RunFlowImpl(
     const gfx::RectF& bounds,
     base::i18n::TextDirection text_direction) {
   std::vector<Suggestion> suggestions =
       suggestion_generator_.GetManualFallbackSuggestions(
           passwords_presenter_->GetSavedPasswords());
+  // TODO(crbug.com/991253): Set the right `form_control_ax_id`.
   autofill::AutofillClient::PopupOpenArgs open_args(
       bounds, text_direction, std::move(suggestions),
-      autofill::AutofillSuggestionTriggerSource::kManualFallbackPasswords);
+      autofill::AutofillSuggestionTriggerSource::kManualFallbackPasswords,
+      /*form_control_ax_id=*/0);
   autofill_client_->ShowAutofillPopup(open_args,
                                       weak_ptr_factory_.GetWeakPtr());
+}
+
+void PasswordManualFallbackFlow::FillPasswordSuggestion(
+    const std::u16string& password) {
+  // TODO(b/324241248): Conditionally trigger consent dialog and fill
+  // password.
+  CancelBiometricReauthIfOngoing();
+  std::unique_ptr<device_reauth::DeviceAuthenticator> authenticator =
+      password_client_->GetDeviceAuthenticator();
+  // Note: this is currently only implemented on Android, Mac and Windows.
+  // For other platforms, the `authenticator` will be null.
+  if (!password_client_->CanUseBiometricAuthForFilling(authenticator.get())) {
+    password_manager_driver_->FillField(saved_field_id_, password);
+  } else {
+    authenticator_ = std::move(authenticator);
+
+    std::u16string message;
+    auto on_reath_complete =
+        base::BindOnce(&PasswordManualFallbackFlow::OnBiometricReauthCompleted,
+                       weak_ptr_factory_.GetWeakPtr(), password);
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+    const std::u16string origin = base::UTF8ToUTF16(GetShownOrigin(
+        url::Origin::Create(password_manager_driver_->GetLastCommittedURL())));
+    message =
+        l10n_util::GetStringFUTF16(IDS_PASSWORD_MANAGER_FILLING_REAUTH, origin);
+#endif
+    authenticator_->AuthenticateWithMessage(
+        message, metrics_util::TimeCallback(
+                     std::move(on_reath_complete),
+                     "PasswordManager.PasswordFilling.AuthenticationTime"));
+  }
+}
+
+void PasswordManualFallbackFlow::OnBiometricReauthCompleted(
+    const std::u16string& password,
+    bool auth_succeeded) {
+  authenticator_.reset();
+  base::UmaHistogramBoolean(
+      "PasswordManager.PasswordFilling.AuthenticationResult", auth_succeeded);
+  if (!auth_succeeded) {
+    return;
+  }
+  password_manager_driver_->FillField(saved_field_id_, password);
+}
+
+void PasswordManualFallbackFlow::CancelBiometricReauthIfOngoing() {
+  if (!authenticator_) {
+    return;
+  }
+  authenticator_->Cancel();
+  authenticator_.reset();
 }
 
 }  // namespace password_manager

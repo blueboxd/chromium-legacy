@@ -32,7 +32,7 @@ InterpolationValue CSSLengthListInterpolationType::MaybeConvertNeutral(
   wtf_size_t underlying_length =
       UnderlyingLengthChecker::GetUnderlyingLength(underlying);
   conversion_checkers.push_back(
-      std::make_unique<UnderlyingLengthChecker>(underlying_length));
+      MakeGarbageCollected<UnderlyingLengthChecker>(underlying_length));
 
   if (underlying_length == 0)
     return nullptr;
@@ -94,8 +94,9 @@ InterpolationValue CSSLengthListInterpolationType::MaybeConvertInherit(
   Vector<Length> inherited_length_list;
   bool success = LengthListPropertyFunctions::GetLengthList(
       CssProperty(), *state.ParentStyle(), inherited_length_list);
-  conversion_checkers.push_back(std::make_unique<InheritedLengthListChecker>(
-      CssProperty(), inherited_length_list));
+  conversion_checkers.push_back(
+      MakeGarbageCollected<InheritedLengthListChecker>(CssProperty(),
+                                                       inherited_length_list));
   if (!success)
     return nullptr;
   return MaybeConvertLengthList(inherited_length_list,
@@ -123,12 +124,11 @@ PairwiseInterpolationValue CSSLengthListInterpolationType::MaybeMergeSingles(
   return ListInterpolationFunctions::MaybeMergeSingles(
       std::move(start), std::move(end),
       ListInterpolationFunctions::LengthMatchingStrategy::kLowestCommonMultiple,
-      WTF::BindRepeating(
-          [](InterpolationValue&& start_item, InterpolationValue&& end_item) {
-            return InterpolableLength::MergeSingles(
-                std::move(start_item.interpolable_value),
-                std::move(end_item.interpolable_value));
-          }));
+      [](InterpolationValue&& start_item, InterpolationValue&& end_item) {
+        return InterpolableLength::MergeSingles(
+            std::move(start_item.interpolable_value),
+            std::move(end_item.interpolable_value));
+      });
 }
 
 InterpolationValue
@@ -149,17 +149,14 @@ void CSSLengthListInterpolationType::Composite(
   ListInterpolationFunctions::Composite(
       underlying_value_owner, underlying_fraction, *this, value,
       ListInterpolationFunctions::LengthMatchingStrategy::kLowestCommonMultiple,
-      WTF::BindRepeating(
-          ListInterpolationFunctions::InterpolableValuesKnownCompatible),
-      WTF::BindRepeating(
-          ListInterpolationFunctions::VerifyNoNonInterpolableValues),
-      WTF::BindRepeating([](UnderlyingValue& underlying_value,
-                            double underlying_fraction,
-                            const InterpolableValue& interpolable_value,
-                            const NonInterpolableValue*) {
+      ListInterpolationFunctions::InterpolableValuesKnownCompatible,
+      ListInterpolationFunctions::VerifyNoNonInterpolableValues,
+      [](UnderlyingValue& underlying_value, double underlying_fraction,
+         const InterpolableValue& interpolable_value,
+         const NonInterpolableValue*) {
         underlying_value.MutableInterpolableValue().ScaleAndAdd(
             underlying_fraction, interpolable_value);
-      }));
+      });
 }
 
 void CSSLengthListInterpolationType::ApplyStandardPropertyValue(

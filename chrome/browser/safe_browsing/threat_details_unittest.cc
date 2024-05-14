@@ -229,6 +229,11 @@ class MockReferrerChainProvider : public ReferrerChainProvider {
                                      outermost_event_main_frame_id,
                                  int user_gesture_count_limit,
                                  ReferrerChain* out_referrer_chain));
+  MOCK_METHOD4(IdentifyReferrerChainByEventURL,
+               AttributionResult(const GURL& event_url,
+                                 SessionID event_tab_id,
+                                 int user_gesture_count_limit,
+                                 ReferrerChain* out_referrer_chain));
   MOCK_METHOD3(IdentifyReferrerChainByPendingEventURL,
                AttributionResult(const GURL& event_url,
                                  int user_gesture_count_limit,
@@ -273,6 +278,8 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
   bool ReportWasSent() { return ui_manager_->ReportWasSent(); }
 
  protected:
+  using enum SBThreatType;
+
   TestingProfile::TestingFactories GetTestingFactories() const override {
     return {{HistoryServiceFactory::GetInstance(),
              HistoryServiceFactory::GetDefaultFactory()}};

@@ -43,6 +43,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/time/default_tick_clock.h"
 #include "base/types/optional_util.h"
+#include "base/uuid.h"
 #include "build/chromeos_buildflags.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/client_hints.h"
@@ -164,7 +165,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/task_attribution_tracker.h"
 #include "third_party/blink/renderer/platform/storage/blink_storage_key.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -290,6 +291,7 @@ struct SameSizeAsDocumentLoader
   scoped_refptr<SharedBuffer> data_buffer;
   Vector<DocumentLoader::DecodedBodyData> decoded_data_buffer_;
   base::UnguessableToken devtools_navigation_token;
+  base::Uuid base_auction_nonce;
   LoaderFreezeMode defers_loading;
   bool last_navigation_had_transient_user_activation;
   bool had_sticky_activation;
@@ -318,6 +320,7 @@ struct SameSizeAsDocumentLoader
   bool origin_agent_cluster;
   bool origin_agent_cluster_left_as_default;
   bool is_cross_site_cross_browsing_context_group;
+  bool should_have_sticky_user_activation;
   WebVector<WebHistoryItem> navigation_api_back_entries;
   WebVector<WebHistoryItem> navigation_api_forward_entries;
   Member<HistoryItem> navigation_api_previous_entry;
@@ -388,6 +391,21 @@ void WarnIfSandboxIneffective(LocalDOMWindow* window) {
   // Note: It would be interesting to add additional warning. For instance,
   // Firefox warn that "allow-top-navigation-by-user-activation" is useless if
   // "allow-top-navigation" is set.
+}
+
+bool ShouldEmitNewNavigationHistogram(WebNavigationType navigation_type) {
+  switch (navigation_type) {
+    case kWebNavigationTypeBackForward:
+    case kWebNavigationTypeReload:
+    case kWebNavigationTypeRestore:
+    case kWebNavigationTypeFormResubmittedBackForward:
+    case kWebNavigationTypeFormResubmittedReload:
+      return false;
+    case kWebNavigationTypeLinkClicked:
+    case kWebNavigationTypeFormSubmitted:
+    case kWebNavigationTypeOther:
+      return true;
+  }
 }
 
 }  // namespace
@@ -505,6 +523,7 @@ DocumentLoader::DocumentLoader(
       in_commit_data_(false),
       data_buffer_(SharedBuffer::Create()),
       devtools_navigation_token_(params_->devtools_navigation_token),
+      base_auction_nonce_(params_->base_auction_nonce),
       last_navigation_had_transient_user_activation_(
           params_->had_transient_user_activation),
       had_sticky_activation_(params_->is_user_activated),
@@ -527,6 +546,8 @@ DocumentLoader::DocumentLoader(
           params_->origin_agent_cluster_left_as_default),
       is_cross_site_cross_browsing_context_group_(
           params_->is_cross_site_cross_browsing_context_group),
+      should_have_sticky_user_activation_(
+          params_->should_have_sticky_user_activation),
       navigation_api_back_entries_(params_->navigation_api_back_entries),
       navigation_api_forward_entries_(params_->navigation_api_forward_entries),
       navigation_api_previous_entry_(params_->navigation_api_previous_entry),
@@ -539,6 +560,8 @@ DocumentLoader::DocumentLoader(
       modified_runtime_features_(std::move(params_->modified_runtime_features)),
       cookie_deprecation_label_(params_->cookie_deprecation_label),
       content_settings_(std::move(params_->content_settings)) {
+  TRACE_EVENT_WITH_FLOW0("loading", "DocumentLoader::DocumentLoader",
+                         TRACE_ID_LOCAL(this), TRACE_EVENT_FLAG_FLOW_OUT);
   DCHECK(frame_);
   DCHECK(params_);
 
@@ -661,6 +684,7 @@ DocumentLoader::CreateWebNavigationParamsToCloneDocument() {
   params->service_worker_network_provider =
       std::move(service_worker_network_provider_);
   params->devtools_navigation_token = devtools_navigation_token_;
+  params->base_auction_nonce = base_auction_nonce_;
   params->is_user_activated = had_sticky_activation_;
   params->had_transient_user_activation =
       last_navigation_had_transient_user_activation_;
@@ -669,6 +693,9 @@ DocumentLoader::CreateWebNavigationParamsToCloneDocument() {
   params->document_ukm_source_id = ukm_source_id_;
   params->is_cross_site_cross_browsing_context_group =
       is_cross_site_cross_browsing_context_group_;
+  // Required for javascript: URL commits to propagate sticky user activation.
+  params->should_have_sticky_user_activation =
+      frame_->HasStickyUserActivation() && !frame_->IsMainFrame();
   params->has_text_fragment_token = has_text_fragment_token_;
   // Origin trials must still work on the cloned document.
   params->initiator_origin_trial_features =
@@ -709,6 +736,8 @@ LocalFrameClient& DocumentLoader::GetLocalFrameClient() const {
 }
 
 DocumentLoader::~DocumentLoader() {
+  TRACE_EVENT_WITH_FLOW0("loading", "DocumentLoader::~DocumentLoader",
+                         TRACE_ID_LOCAL(this), TRACE_EVENT_FLAG_FLOW_IN);
   DCHECK(!frame_);
   DCHECK_EQ(state_, kSentDidFinishLoad);
 }
@@ -1020,9 +1049,8 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
     // If `heuristics` exists, it means we're in an outermost main frame; if
     // `soft_navigation_heuristics_task_id` exists, it means the task state
     // being propagated was captured in a main world history API call.
-    CHECK(ThreadScheduler::Current());
-    if (auto* tracker =
-            ThreadScheduler::Current()->GetTaskAttributionTracker()) {
+    if (auto* tracker = scheduler::TaskAttributionTracker::From(
+            frame_->DomWindow()->GetIsolate())) {
       // Get the TaskId from tracker. We're passing that to dispatchEvent
       // further down, but regardless, we want to get it and previous tasks out
       // of the tracker's task queue, to enable them to get garbage collected if
@@ -1175,7 +1203,9 @@ DocumentLoader::TakeProcessBackgroundDataCallback() {
 }
 
 void DocumentLoader::BodyDataReceivedImpl(BodyData& data) {
-  TRACE_EVENT0("loading", "DocumentLoader::BodyDataReceived");
+  TRACE_EVENT_WITH_FLOW0("loading", "DocumentLoader::BodyDataReceivedImpl",
+                         TRACE_ID_LOCAL(this),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   base::span<const char> encoded_data = data.EncodedData();
   if (encoded_data.size()) {
     GetFrameLoader().Progress().IncrementProgress(main_resource_identifier_,
@@ -1185,8 +1215,10 @@ void DocumentLoader::BodyDataReceivedImpl(BodyData& data) {
                           encoded_data.size());
   }
 
-  TRACE_EVENT1("loading", "DocumentLoader::HandleData", "length",
-               encoded_data.size());
+  TRACE_EVENT_WITH_FLOW1("loading", "DocumentLoader::HandleData",
+                         TRACE_ID_LOCAL(this),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "length", encoded_data.size());
 
   DCHECK(!frame_->GetPage()->Paused());
   time_of_last_data_received_ = clock_->NowTicks();
@@ -1209,7 +1241,9 @@ void DocumentLoader::BodyLoadingFinished(
     int64_t total_encoded_body_length,
     int64_t total_decoded_body_length,
     const std::optional<WebURLError>& error) {
-  TRACE_EVENT0("loading", "DocumentLoader::BodyLoadingFinished");
+  TRACE_EVENT_WITH_FLOW0("loading", "DocumentLoader::BodyLoadingFinished",
+                         TRACE_ID_LOCAL(this),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   DCHECK(frame_);
   if (!error) {
@@ -1293,6 +1327,9 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
 }
 
 void DocumentLoader::FinishedLoading(base::TimeTicks finish_time) {
+  TRACE_EVENT_WITH_FLOW0("loading", "DocumentLoader::FinishedLoading",
+                         TRACE_ID_LOCAL(this),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   body_loader_.reset();
   virtual_time_pauser_.UnpauseVirtualTime();
 
@@ -1448,8 +1485,10 @@ void DocumentLoader::HandleResponse() {
 }
 
 void DocumentLoader::CommitData(BodyData& data) {
-  TRACE_EVENT1("loading", "DocumentLoader::CommitData", "length",
-               data.EncodedData().size());
+  TRACE_EVENT_WITH_FLOW1("loading", "DocumentLoader::CommitData",
+                         TRACE_ID_LOCAL(this),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "length", data.EncodedData().size());
 
   // This can happen if document.close() is called by an event handler while
   // there's still pending incoming data.
@@ -1874,6 +1913,9 @@ void DocumentLoader::StartLoadingInternal() {
 }
 
 void DocumentLoader::StartLoadingResponse() {
+  TRACE_EVENT_WITH_FLOW0("loading", "DocumentLoader::StartLoadingResponse",
+                         TRACE_ID_LOCAL(this),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   // TODO(dcheng): Clean up the null checks in this helper.
   if (!frame_)
     return;
@@ -1949,6 +1991,9 @@ void DocumentLoader::StartLoadingResponse() {
 }
 
 void DocumentLoader::DidInstallNewDocument(Document* document) {
+  TRACE_EVENT_WITH_FLOW0("loading", "DocumentLoader::DidInstallNewDocument",
+                         TRACE_ID_LOCAL(this),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   // This was called already during `InitializeWindow`, but it could be that we
   // didn't have a Document then (which happens when `InitializeWindow` reuses
   // the window and calls `LocalDOMWindow::ClearForReuse()`). This is
@@ -2171,6 +2216,26 @@ scoped_refptr<SecurityOrigin> DocumentLoader::CalculateOrigin(
     debug_info_builder.Append(", url=");
     debug_info_builder.Append(owner_document->Url().BaseAsString());
     debug_info_builder.Append(")");
+  } else if (url_.IsAboutSrcdocURL()) {
+    // If there's no owner_document and this is a srcdoc load, then get the
+    // origin from the remote parent. A srcdoc navigation with no owner_document
+    // can only happen if the iframe is sandboxed and isolated sandboxed frames
+    // is enabled In that case, copy the origin from the remote parent
+    // here—though this origin will only be used to derive the actual opaque
+    // origin later.
+    // TODO(https://crbug.com/328279696): this block can be removed once the
+    // about:srcdoc navigation blocking finishes rolling out, as then the
+    // initiator can never be cross-origin to the parent.
+    debug_info_builder.Append("about_srcdoc_with_remote_parent");
+    // Verify this is a sandboxed srcdoc frame.
+    CHECK((policy_container_->GetPolicies().sandbox_flags &
+           network::mojom::blink::WebSandboxFlags::kOrigin) !=
+          network::mojom::blink::WebSandboxFlags::kNone);
+    origin = frame_->Tree()
+                 .Parent()
+                 ->GetSecurityContext()
+                 ->GetSecurityOrigin()
+                 ->IsolatedCopy();
   } else {
     debug_info_builder.Append("use_url_with_precursor");
     // Otherwise, create an origin that propagates precursor information
@@ -2332,6 +2397,9 @@ bool DocumentLoader::IsSameOriginInitiator() const {
 }
 
 void DocumentLoader::InitializeWindow(Document* owner_document) {
+  TRACE_EVENT_WITH_FLOW0("loading", "DocumentLoader::InitializeWindow",
+                         TRACE_ID_LOCAL(this),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   // Javascript URLs and XSLT committed document must not pass a new
   // policy_container_, since they must keep the previous document one.
   DCHECK((commit_reason_ != CommitReason::kJavascriptUrl &&
@@ -2569,6 +2637,10 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
 }
 
 void DocumentLoader::CommitNavigation() {
+  TRACE_EVENT_WITH_FLOW0("loading", "DocumentLoader::CommitNavigation",
+                         TRACE_ID_LOCAL(this),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+  base::ElapsedTimer timer;
   DCHECK_LT(state_, kCommitted);
   DCHECK(frame_->GetPage());
   DCHECK(!frame_->GetDocument() || !frame_->GetDocument()->IsActive());
@@ -2598,8 +2670,8 @@ void DocumentLoader::CommitNavigation() {
 
   // Previous same-document navigation tasks are not relevant once a
   // cross-document navigation has happened.
-  CHECK(ThreadScheduler::Current());
-  if (auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker()) {
+  if (auto* tracker = scheduler::TaskAttributionTracker::From(
+          frame_->DomWindow()->GetIsolate())) {
     tracker->ResetSameDocumentNavigationTasks();
   }
 
@@ -2673,7 +2745,8 @@ void DocumentLoader::CommitNavigation() {
           .WithSrcdocDocument(loading_srcdoc_)
           .WithJavascriptURL(commit_reason_ == CommitReason::kJavascriptUrl)
           .WithFallbackBaseURL(fallback_base_url_)
-          .WithUkmSourceId(ukm_source_id_));
+          .WithUkmSourceId(ukm_source_id_)
+          .WithBaseAuctionNonce(base_auction_nonce_));
 
   RecordUseCountersForCommit();
   RecordConsoleMessagesForCommit();
@@ -2686,10 +2759,19 @@ void DocumentLoader::CommitNavigation() {
 
   frame_->ClearScrollSnapshotClients();
 
-  // Clear the user activation state.
+  // Determine whether to give the frame sticky user activation. These checks
+  // mirror the check in Navigator::DidNavigate(). Main frame navigations and
+  // cross-site navigations should not hold on to the sticky user activation
+  // state of the previously navigated page. Same-site navigations should retain
+  // the previous document's sticky user activation state, regardless of whether
+  // the navigation resulted in a new process being created.
+  // See: crbug.com/41493458
   // TODO(crbug.com/736415): Clear this bit unconditionally for all frames.
-  if (frame_->IsMainFrame())
+  if (!should_have_sticky_user_activation_) {
     frame_->ClearUserActivation();
+  } else {
+    frame_->SetStickyUserActivationState();
+  }
 
   // The DocumentLoader was flagged as activated if it needs to notify the frame
   // that it was activated before navigation. Update the frame state based on
@@ -2879,11 +2961,23 @@ void DocumentLoader::CommitNavigation() {
   // is available by tracking the execution context's lifetime.
   ProfilerGroup::InitializeIfEnabled(frame_->DomWindow());
 
+  if (Url().ProtocolIsInHTTPFamily() && frame_->IsOutermostMainFrame() &&
+      ShouldEmitNewNavigationHistogram(navigation_type_)) {
+    base::UmaHistogramTimes(
+        "Blink.DocumentLoader.CommitNavigationToStartLoadingResponse.Time"
+        ".OutermostMainFrame.NewNavigation.IsHTTPOrHTTPS",
+        timer.Elapsed());
+  }
+
   // Load the document if needed.
   StartLoadingResponse();
 }
 
 void DocumentLoader::CreateParserPostCommit() {
+  TRACE_EVENT_WITH_FLOW0("loading", "DocumentLoader::CreateParserPostCommit",
+                         TRACE_ID_LOCAL(this),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+  base::ElapsedTimer timer;
   SpeculationRulesHeader::ProcessHeadersForDocumentResponse(
       response_, *frame_->DomWindow());
 
@@ -2996,6 +3090,14 @@ void DocumentLoader::CreateParserPostCommit() {
 
   // The parser may have collected preloads in the background, flush them now.
   parser_->FlushPendingPreloads();
+
+  if (Url().ProtocolIsInHTTPFamily() && frame_->IsOutermostMainFrame() &&
+      ShouldEmitNewNavigationHistogram(navigation_type_)) {
+    base::UmaHistogramTimes(
+        "Blink.DocumentLoader.CreateParserPostCommit.Time"
+        ".OutermostMainFrame.NewNavigation.IsHTTPOrHTTPS",
+        timer.Elapsed());
+  }
 }
 
 const AtomicString& DocumentLoader::MimeType() const {
@@ -3109,6 +3211,10 @@ void DocumentLoader::RecordParentAndChildContentLanguageMetric() {
 }
 
 void DocumentLoader::RecordUseCountersForCommit() {
+  TRACE_EVENT_WITH_FLOW0("loading",
+                         "DocumentLoader::RecordUseCountersForCommit",
+                         TRACE_ID_LOCAL(this),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   // Pre-commit state, count usage the use counter associated with "this"
   // (provisional document loader) instead of frame_'s document loader.
   if (response_.DidServiceWorkerNavigationPreload())

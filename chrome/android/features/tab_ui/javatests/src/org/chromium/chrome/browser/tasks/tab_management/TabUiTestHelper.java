@@ -37,6 +37,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.core.view.ViewCompat;
@@ -65,7 +66,6 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.hub.HubFieldTrial;
 import org.chromium.chrome.browser.hub.HubLayout;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider.LayoutStateObserver;
@@ -75,10 +75,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
-import org.chromium.chrome.features.start_surface.TabSwitcherAndStartSurfaceLayout;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -93,7 +91,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
 
 /** Utilities helper class for tab grid/group tests. */
 public class TabUiTestHelper {
@@ -448,29 +445,7 @@ public class TabUiTestHelper {
             return R.id.tab_switcher_view_holder;
         }
 
-        if (getIsStartSurfaceEnabledFromUIThread(context)
-                && !getIsStartSurfaceRefactorEnabledFromUIThread(context)) {
-            return R.id.tasks_surface_body;
-        }
-
         return R.id.compositor_view_holder;
-    }
-
-    private static boolean getIsStartSurfaceEnabledFromUIThread(Context context) {
-        AtomicReference<Boolean> isStartSurfaceEnabled = new AtomicReference<>();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> isStartSurfaceEnabled.set(ReturnToChromeUtil.isStartSurfaceEnabled(context)));
-        return isStartSurfaceEnabled.get();
-    }
-
-    public static boolean getIsStartSurfaceRefactorEnabledFromUIThread(Context context) {
-        AtomicReference<Boolean> isStartSurfaceRefactorEnabled = new AtomicReference<>();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    isStartSurfaceRefactorEnabled.set(
-                            ReturnToChromeUtil.isStartSurfaceRefactorEnabled(context));
-                });
-        return isStartSurfaceRefactorEnabled.get();
     }
 
     /**
@@ -901,73 +876,44 @@ public class TabUiTestHelper {
      * Verifies whether the correct layout is created for the tab switcher in LayoutManagerChrome.
      */
     public static void verifyTabSwitcherLayoutType(ChromeTabbedActivity cta) {
-        boolean isStartSurfaceRefactorEnabled = ChromeFeatureList.sStartSurfaceRefactor.isEnabled();
-        getTabSwitcherLayoutAndVerify(cta, isStartSurfaceRefactorEnabled);
+        getTabSwitcherLayoutAndVerify(cta);
     }
 
     /**
      * Gets the tab switcher layout depends on whether the refactoring is enabled and verifies its
      * type. If refactoring is enabled this will trigger lazy init of the tab switcher layout.
      */
-    public static Layout getTabSwitcherLayoutAndVerify(
-            ChromeTabbedActivity cta, boolean isStartSurfaceRefactorEnabled) {
+    public static Layout getTabSwitcherLayoutAndVerify(ChromeTabbedActivity cta) {
         final LayoutManagerChrome layoutManager = cta.getLayoutManager();
-        Layout layout;
-        if (isStartSurfaceRefactorEnabled) {
-            layout = layoutManager.getTabSwitcherLayoutForTesting();
-            if (layout == null) {
-                TestThreadUtils.runOnUiThreadBlocking(
-                        () -> {
-                            layoutManager.initTabSwitcherLayoutForTesting();
-                        });
-            }
-            layout = layoutManager.getTabSwitcherLayoutForTesting();
-            if (HubFieldTrial.isHubEnabled()) {
-                assertTrue(layout instanceof HubLayout);
-            } else {
-                assertTrue(layout instanceof TabSwitcherLayout);
-            }
+        Layout layout = layoutManager.getTabSwitcherLayoutForTesting();
+        if (layout == null) {
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> {
+                        layoutManager.initTabSwitcherLayoutForTesting();
+                    });
+        }
+        layout = layoutManager.getTabSwitcherLayoutForTesting();
+        if (HubFieldTrial.isHubEnabled()) {
+            assertTrue(layout instanceof HubLayout);
         } else {
-            layout = layoutManager.getOverviewLayout();
-            assertTrue(layout instanceof TabSwitcherAndStartSurfaceLayout);
+            assertTrue(layout instanceof TabSwitcherLayout);
         }
         return layout;
     }
 
     /**
      * Presses the back button on the Tab switcher.
-     * @param isStartSurfaceRefactorEnabled Whether Start surface refactoring is enabled.
-     * @param tabSwitcherLayout The {@link TabSwitcherLayout} when the refactoring is enabled.
-     * @param tabSwitcherAndStartSurfaceLayout The {@link TabSwitcherAndStartSurfaceLayout} which
-     *                                         handles the back operations of Tab switcher before
-     *                                         the refactoring is enabled.
+     *
+     * @param tabSwitcherLayout The {@link TabSwitcherLayout}.
      */
-    public static void pressBackOnTabSwitcher(
-            boolean isStartSurfaceRefactorEnabled,
-            @Nullable TabSwitcherLayout tabSwitcherLayout,
-            @Nullable TabSwitcherAndStartSurfaceLayout tabSwitcherAndStartSurfaceLayout)
+    public static void pressBackOnTabSwitcher(@NonNull TabSwitcherLayout tabSwitcherLayout)
             throws InterruptedException {
-        if (isStartSurfaceRefactorEnabled) {
-            assert tabSwitcherLayout != null;
-            Thread.sleep(1000);
-            TestThreadUtils.runOnUiThreadBlocking(
-                    () -> {
-                        tabSwitcherLayout
-                                .getTabSwitcherForTesting()
-                                .getController()
-                                .onBackPressed();
-                    });
-            Thread.sleep(1000);
-        } else {
-            assert tabSwitcherAndStartSurfaceLayout != null;
-            Thread.sleep(1000);
-            TestThreadUtils.runOnUiThreadBlocking(
-                    () -> {
-                        tabSwitcherAndStartSurfaceLayout
-                                .getStartSurfaceForTesting()
-                                .onBackPressed();
-                    });
-            Thread.sleep(1000);
-        }
+        assert tabSwitcherLayout != null;
+        Thread.sleep(1000);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    tabSwitcherLayout.getTabSwitcherForTesting().getController().onBackPressed();
+                });
+        Thread.sleep(1000);
     }
 }

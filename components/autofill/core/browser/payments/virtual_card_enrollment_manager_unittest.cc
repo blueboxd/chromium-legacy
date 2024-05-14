@@ -8,7 +8,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -51,24 +50,16 @@ const std::string kTestRiskData = "risk_data";
 class VirtualCardEnrollmentManagerTest : public testing::Test {
  public:
   void SetUp() override {
-    feature_list_.InitAndEnableFeature(
-        features::kAutofillEnableUpdateVirtualCardEnrollment);
     autofill_client_ = std::make_unique<TestAutofillClient>();
     autofill_client_->SetPrefs(test::PrefServiceForTesting());
-    personal_data_manager().Init(
-        /*profile_database=*/nullptr,
-        /*account_database=*/nullptr,
-        /*pref_service=*/autofill_client_->GetPrefs(),
-        /*local_state=*/autofill_client_->GetPrefs(),
-        /*identity_manager=*/nullptr,
-        /*history_service=*/nullptr,
-        /*sync_service=*/&sync_service_,
-        /*strike_database=*/nullptr,
-        /*image_fetcher=*/nullptr, /*shared_storage_handler=*/nullptr);
-    autofill_client_->set_test_payments_network_interface(
-        std::make_unique<payments::TestPaymentsNetworkInterface>(
-            autofill_client_->GetURLLoaderFactory(),
-            autofill_client_->GetIdentityManager(), &personal_data_manager()));
+    personal_data_manager().SetPrefService(autofill_client_->GetPrefs());
+    personal_data_manager().SetSyncServiceForTest(&sync_service_);
+    autofill_client_->GetPaymentsAutofillClient()
+        ->set_test_payments_network_interface(
+            std::make_unique<payments::TestPaymentsNetworkInterface>(
+                autofill_client_->GetURLLoaderFactory(),
+                autofill_client_->GetIdentityManager(),
+                &personal_data_manager()));
     autofill_client_->set_test_strike_database(
         std::make_unique<TestStrikeDatabase>());
     virtual_card_enrollment_manager_ =
@@ -86,12 +77,8 @@ class VirtualCardEnrollmentManagerTest : public testing::Test {
   }
 
   void SetValidCardArtImageForCard(const CreditCard& card) {
-    std::unique_ptr<CreditCardArtImage> credit_card_art_image =
-        std::make_unique<CreditCardArtImage>(card.card_art_url(),
-                                             gfx::test::CreateImage(40, 24));
-    std::vector<std::unique_ptr<CreditCardArtImage>> images;
-    images.push_back(std::move(credit_card_art_image));
-    personal_data_manager().OnCardArtImagesFetched(std::move(images));
+    personal_data_manager().AddCardArtImage(card.card_art_url(),
+                                            gfx::test::CreateImage(40, 24));
   }
 
   void SetNetworkImageInResourceBundle(ui::MockResourceBundleDelegate* delegate,
@@ -133,6 +120,9 @@ class VirtualCardEnrollmentManagerTest : public testing::Test {
     return response;
   }
 
+  // TODO(b/303715506): This part does not test the desired behavior on iOS as
+  // the virtual card enrollment strikedatabase on iOS is not initialized
+  // (guarded by the feature flag).
   void SetUpStrikeDatabaseTest() {
     VirtualCardEnrollmentProcessState* state =
         virtual_card_enrollment_manager_
@@ -156,15 +146,14 @@ class VirtualCardEnrollmentManagerTest : public testing::Test {
 
  protected:
   payments::TestPaymentsNetworkInterface& payments_network_interface() {
-    return *static_cast<payments::TestPaymentsNetworkInterface*>(
-        autofill_client_->GetPaymentsNetworkInterface());
+    return *autofill_client_->GetPaymentsAutofillClient()
+                ->GetPaymentsNetworkInterface();
   }
   TestPersonalDataManager& personal_data_manager() {
     return *autofill_client_->GetPersonalDataManager();
   }
   PrefService* user_prefs() { return autofill_client_->GetPrefs(); }
 
-  base::test::ScopedFeatureList feature_list_;
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   syncer::TestSyncService sync_service_;

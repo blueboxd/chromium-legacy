@@ -8,6 +8,7 @@
 #include <string_view>
 #include <vector>
 
+#include "android_webview/common/aw_features.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/common/mojom/frame.mojom.h"
 #include "android_webview/common/url_constants.h"
@@ -187,6 +188,15 @@ void AwContentRendererClient::
           autofill::features::kAutofillSharedAutofill)) {
     blink::WebRuntimeFeatures::EnableSharedAutofill(true);
   }
+
+  if (base::FeatureList::IsEnabled(
+          features::kWebViewMediaIntegrityApiBlinkExtension) &&
+      !base::FeatureList::IsEnabled(features::kWebViewMediaIntegrityApi)) {
+    // Enable the overall android.webview namespace.
+    blink::WebRuntimeFeatures::EnableBlinkExtensionWebView(true);
+    // Enable the android.webview.getExperimentalMediaIntegrityProvider API.
+    blink::WebRuntimeFeatures::EnableBlinkExtensionWebViewMediaIntegrity(true);
+  }
 }
 
 void AwContentRendererClient::WebViewCreated(
@@ -225,10 +235,12 @@ void AwContentRendererClient::RunScriptsAtDocumentStart(
   communication->RunScriptsAtDocumentStart();
 }
 
-void AwContentRendererClient::GetSupportedKeySystems(
+std::unique_ptr<media::KeySystemSupportObserver>
+AwContentRendererClient::GetSupportedKeySystems(
     media::GetSupportedKeySystemsCB cb) {
   // WebView always allows persisting data.
-  cdm::GetSupportedKeySystemsUpdates(/*can_persist_data=*/true, std::move(cb));
+  return cdm::GetSupportedKeySystemsUpdates(/*can_persist_data=*/true,
+                                            std::move(cb));
 }
 
 std::unique_ptr<blink::WebSocketHandshakeThrottleProvider>

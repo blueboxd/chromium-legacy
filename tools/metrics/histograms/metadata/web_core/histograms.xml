@@ -679,10 +679,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebCore.Scripts.Async.NotStreamingReason"
-    enum="NotStreamingReason" expires_after="2023-12-10">
+    enum="NotStreamingReason" expires_after="2024-09-18">
   <owner>leszeks@chromium.org</owner>
   <owner>v8-runtime@google.com</owner>
-  <summary>Reason for not streaming an async script.</summary>
+  <summary>
+    Reason for not streaming an async script.
+
+    Warning: This histogram was expired from 2023-12-10 to 2024-03-19. Data may
+    be missing.
+  </summary>
 </histogram>
 
 <histogram name="WebCore.Scripts.Async.StartedStreaming" enum="BooleanStreamed"
@@ -693,10 +698,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebCore.Scripts.Deferred.NotStreamingReason"
-    enum="NotStreamingReason" expires_after="2023-12-10">
+    enum="NotStreamingReason" expires_after="2024-09-18">
   <owner>leszeks@chromium.org</owner>
   <owner>v8-runtime@google.com</owner>
-  <summary>Reason for not streaming a deferred script.</summary>
+  <summary>
+    Reason for not streaming a deferred script.
+
+    Warning: This histogram was expired from 2023-12-10 to 2024-03-19. Data may
+    be missing.
+  </summary>
 </histogram>
 
 <histogram name="WebCore.Scripts.Deferred.StartedStreaming"
@@ -731,12 +741,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebCore.Scripts.Other.NotStreamingReason"
-    enum="NotStreamingReason" expires_after="2023-12-10">
+    enum="NotStreamingReason" expires_after="2024-09-18">
   <owner>leszeks@chromium.org</owner>
   <owner>v8-runtime@google.com</owner>
   <summary>
     Reason for not streaming an other (not async, deferred or parser blocking)
     script.
+
+    Warning: This histogram was expired from 2023-12-10 to 2024-03-19. Data may
+    be missing.
   </summary>
 </histogram>
 
@@ -751,10 +764,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebCore.Scripts.ParsingBlocking.NotStreamingReason"
-    enum="NotStreamingReason" expires_after="2023-10-08">
+    enum="NotStreamingReason" expires_after="2024-09-18">
   <owner>leszeks@chromium.org</owner>
   <owner>v8-runtime@google.com</owner>
-  <summary>Reason for not streaming a parsing blocking script.</summary>
+  <summary>
+    Reason for not streaming a parsing blocking script.
+
+    Warning: This histogram was expired from 2023-10-08 to 2024-03-19. Data may
+    be missing.
+  </summary>
 </histogram>
 
 <histogram name="WebCore.Scripts.ParsingBlocking.StartedStreaming"
@@ -765,7 +783,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebCore.Scripts.V8CompileHintsStatus"
-    enum="V8CompileHintsStatus" expires_after="2024-03-12">
+    enum="V8CompileHintsStatus" expires_after="2024-06-12">
   <owner>marja@chromium.org</owner>
   <owner>v8-loading@google.com</owner>
   <owner>chrome-intelligence-core@google.com</owner>
@@ -783,6 +801,17 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
     Whether we got a V8CompileHints model and whether it was good quality.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.Scripts.V8LocalCompileHintsGenerated"
+    enum="V8LocalCompileHintsGenerated" expires_after="2024-06-11">
+  <owner>marja@chromium.org</owner>
+  <owner>v8-runtime@google.com</owner>
+  <summary>
+    Whether we produced the non-final or the final version of local compile
+    hints. This can be used for approximating how often we end up not generating
+    compile hints if we wait too long for the final compile hints generation.
   </summary>
 </histogram>
 

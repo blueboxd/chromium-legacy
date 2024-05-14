@@ -6,10 +6,10 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
 #include "content/browser/indexed_db/indexed_db_bucket_context.h"
-#include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
@@ -70,6 +70,7 @@ class IndexedDBBucketContextTest : public testing::Test {
 };
 
 TEST_F(IndexedDBBucketContextTest, CanUseDiskSpaceQueuing) {
+  base::HistogramTester tester;
   // Request space 3 times consecutively. The requests should coalesce.
   SetQuotaLeft(100);
 
@@ -92,6 +93,8 @@ TEST_F(IndexedDBBucketContextTest, CanUseDiskSpaceQueuing) {
   ASSERT_TRUE(success_future3.IsReady());
   EXPECT_TRUE(success_future2.Get());
   EXPECT_FALSE(success_future3.Get());
+
+  tester.ExpectTotalCount("IndexedDB.QuotaCheckTime.Success", 1);
 }
 
 TEST_F(IndexedDBBucketContextTest, CanUseDiskSpaceCaching) {

@@ -54,11 +54,12 @@ class VirtualCardEnrollBubbleControllerImpl
   const VirtualCardEnrollUiModel& GetUiModel() const override;
   VirtualCardEnrollmentBubbleSource GetVirtualCardEnrollmentBubbleSource()
       const override;
-  AutofillBubbleBase* GetVirtualCardEnrollBubbleView() const override;
+  AutofillBubbleBase* GetVirtualCardBubbleView() const override;
 
 #if !BUILDFLAG(IS_ANDROID)
   void HideIconAndBubble() override;
   bool IsEnrollmentInProgress() const override;
+  bool IsEnrollmentComplete() const override;
   virtual void ShowConfirmationBubbleView(bool is_vcn_enrolled);
 #endif
 
@@ -102,6 +103,9 @@ class VirtualCardEnrollBubbleControllerImpl
 #else
   // Returns whether the web content associated with this controller is active.
   virtual bool IsWebContentsActive();
+
+  // Resets bubble to its initial state.
+  void ResetBubble();
 
   // Represents the current status of virtual card enrollment.
   EnrollmentStatus enrollment_status_ = EnrollmentStatus::kNone;

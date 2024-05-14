@@ -99,9 +99,8 @@ std::string GetProfileInfoFromAddressField(const AutofillProfile profile,
 // Adds waiting capabilities to BrowserAutofillManager.
 class TestAutofillManager : public autofill::BrowserAutofillManager {
  public:
-  TestAutofillManager(autofill::ContentAutofillDriver* driver,
-                      autofill::AutofillClient* client)
-      : BrowserAutofillManager(driver, client, "en-US") {}
+  explicit TestAutofillManager(autofill::ContentAutofillDriver* driver)
+      : BrowserAutofillManager(driver, "en-US") {}
 
   static TestAutofillManager& GetForRenderFrameHost(
       content::RenderFrameHost* rfh) {
@@ -610,7 +609,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsAutofillTest, AutofillInOOPIFs) {
               OnBeforeAskForValuesToFill(_, form.global_id(),
                                          form.fields[0].global_id(), _));
 
-  std::vector<const FormFieldData* const> filled_fields_by_autofill = {
+  const std::vector<const FormFieldData*> filled_fields_by_autofill = {
       {&form.fields[0], &form.fields[1]}};
   web_contents()->ForEachRenderFrameHost([&](content::RenderFrameHost* rfh) {
     // Call the driver of the field host iframe.
@@ -657,7 +656,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsAutofillTest, AddressFormFilledInOOPIFs) {
   AutofillProfile profile = CreateTestProfile();
   FormData form =
       main_autofill_manager().form_structures().begin()->second->ToFormData();
-  std::vector<const FormFieldData* const> filled_fields_by_autofill = {
+  const std::vector<const FormFieldData*> filled_fields_by_autofill = {
       {&form.fields[0], &form.fields[1]}};
   main_autofill_manager().NotifyObservers(
       &autofill::AutofillManager::Observer::OnFillOrPreviewDataModelForm,
@@ -669,5 +668,51 @@ IN_PROC_BROWSER_TEST_F(DevToolsAutofillTest, AddressFormFilledInOOPIFs) {
   EXPECT_EQ(notification.FindListByDottedPath("filledFields")->size(), 6u);
   EXPECT_FALSE(HasExistingNotification("Autofill.addressFormFilled"))
       << "The other handler should not handle `OnFillOrPreviewDataModelForm`";
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsAutofillTest,
+                       AutofillManagerEventsAfterNavigation) {
+  embedded_test_server()->ServeFilesFromSourceDirectory(
+      "chrome/test/data/autofill");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("a.com", "/autofill_test_form.html")));
+  ASSERT_TRUE(content::WaitForLoadStop(web_contents()));
+  EXPECT_TRUE(main_autofill_manager().WaitForFormWithNFields(9));
+
+  Attach();
+  SendCommandSync("Autofill.enable");
+
+  AutofillProfile profile_a = CreateTestProfile();
+  FormData form_a =
+      main_autofill_manager().form_structures().begin()->second->ToFormData();
+  const std::vector<const FormFieldData*> filled_fields_by_autofill_a = {
+      {&form_a.fields[0], &form_a.fields[1]}};
+  main_autofill_manager().NotifyObservers(
+      &autofill::AutofillManager::Observer::OnFillOrPreviewDataModelForm,
+      form_a.global_id(), autofill::mojom::ActionPersistence::kFill,
+      filled_fields_by_autofill_a, &profile_a);
+
+  WaitForNotification("Autofill.addressFormFilled", /*allow_existing=*/true);
+
+  // Navigating from "a.com" to "b.com".
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("b.com", "/autofill_test_form.html")));
+  ASSERT_TRUE(content::WaitForLoadStop(web_contents()));
+  EXPECT_TRUE(main_autofill_manager().WaitForFormWithNFields(9));
+
+  AutofillProfile profile_b = CreateTestProfile();
+  FormData form_b =
+      main_autofill_manager().form_structures().begin()->second->ToFormData();
+  const std::vector<const FormFieldData*> filled_fields_by_autofill_b = {
+      {&form_b.fields[0], &form_b.fields[1]}};
+  main_autofill_manager().NotifyObservers(
+      &autofill::AutofillManager::Observer::OnFillOrPreviewDataModelForm,
+      form_b.global_id(), autofill::mojom::ActionPersistence::kFill,
+      filled_fields_by_autofill_b, &profile_b);
+  WaitForNotification("Autofill.addressFormFilled", /*allow_existing=*/true);
 }
 }  // namespace autofill

@@ -13,7 +13,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner.h"
-#include "base/values.h"
 #include "chrome/browser/policy/messaging_layer/upload/file_upload_job.h"
 #include "chrome/browser/policy/messaging_layer/upload/server_uploader.h"
 #include "components/reporting/proto/synced/record.pb.h"
@@ -30,7 +29,7 @@ class RecordHandlerImpl : public ServerUploader::RecordHandler {
  public:
   RecordHandlerImpl(
       scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner,
-      base::RepeatingCallback<std::unique_ptr<FileUploadJob::Delegate>()>
+      base::RepeatingCallback<FileUploadJob::Delegate::SmartPtr()>
           delegate_factory);
   ~RecordHandlerImpl() override;
 
@@ -43,16 +42,6 @@ class RecordHandlerImpl : public ServerUploader::RecordHandler {
       CompletionCallback upload_complete,
       EncryptionKeyAttachedCallback encryption_key_attached_cb) override;
 
- protected:
-  // Uses `SequenceInformationValueToProto` for testing.
-  friend class FakeUploadClient;
-
-  // Helper function for converting a base::Value representation of
-  // SequenceInformation into a proto. Will return an INVALID_ARGUMENT error
-  // if the base::Value is not convertible.
-  static StatusOr<SequenceInformation> SequenceInformationValueToProto(
-      const base::Value::Dict& value);
-
  private:
   // Helper `ReportUploader` class handles events being uploaded.
   class ReportUploader;
@@ -60,7 +49,7 @@ class RecordHandlerImpl : public ServerUploader::RecordHandler {
   const scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
   // Factory is only used for LOG_UPLOAD events.
-  const base::RepeatingCallback<std::unique_ptr<FileUploadJob::Delegate>()>
+  const base::RepeatingCallback<FileUploadJob::Delegate::SmartPtr()>
       delegate_factory_;
 };
 

@@ -5,20 +5,24 @@
 #include "chromeos/ash/components/emoji/emoji_search.h"
 
 #include <memory>
+#include <string>
 #include <string_view>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
-#include "base/containers/cxx20_erase.h"
+#include "base/check_is_test.h"
 #include "base/containers/span.h"
 #include "base/i18n/case_conversion.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
+#include "base/ranges/functional.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/ash/components/emoji/emoji_search.mojom.h"
 #include "chromeos/ash/components/emoji/grit/emoji.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -60,8 +64,14 @@ void AddDataFromFileToMap(
   std::string json_string =
       ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
           file_id_in_resources);
+  // Can be empty in certain test environments.
+  if (json_string.empty()) {
+    CHECK_IS_TEST();
+    return;
+  }
+
   // TODO(b/309343774): switch to JSON reading service
-  absl::optional<base::Value> json = base::JSONReader::Read(json_string);
+  std::optional<base::Value> json = base::JSONReader::Read(json_string);
   CHECK(json) << "parse failed for " << file_id_in_resources << ":"
               << json_string << "EOF";
   base::Value::List groups = std::move(*json).TakeList();
@@ -127,7 +137,7 @@ std::unordered_map<std::string, double> GetResultsFromASingleWordQuery(
   return scored_emoji;
 }
 
-std::vector<std::string> GetResultsFromMap(
+std::vector<EmojiSearchEntry> GetResultsFromMap(
     const std::map<std::string, std::vector<EmojiSearchEntry>, std::less<>>&
         map,
     const std::string_view query) {
@@ -153,20 +163,26 @@ std::vector<std::string> GetResultsFromMap(
     }
   }
   std::erase_if(scored_emoji, [](auto elem) { return elem.second == 0.0; });
-  std::vector<std::string> ret;
-  for (const auto& emoji : scored_emoji) {
-    ret.push_back(emoji.first);
+  std::vector<EmojiSearchEntry> ret;
+  for (const auto& [emoji, weighting] : scored_emoji) {
+    ret.push_back({weighting, emoji});
   }
-  // TODO(b/309343774): Sort first then project rather than project then sort
-  // which should be faster.
-  std::sort(ret.begin(), ret.end(),
-            [&scored_emoji](const std::string& a, const std::string& b) {
-              return scored_emoji.at(a) > scored_emoji.at(b);
-            });
+  base::ranges::sort(
+      ret, base::ranges::greater(),
+      [](const EmojiSearchEntry& entry) { return entry.weighting; });
   return ret;
 }
 
 }  // namespace
+
+EmojiSearchResult::EmojiSearchResult(std::vector<EmojiSearchEntry> emojis,
+                                     std::vector<EmojiSearchEntry> symbols,
+                                     std::vector<EmojiSearchEntry> emoticons)
+    : emojis(std::move(emojis)),
+      symbols(std::move(symbols)),
+      emoticons(std::move(emoticons)) {}
+
+EmojiSearchResult::~EmojiSearchResult() = default;
 
 EmojiSearch::EmojiSearch() {
   AddDataFromFileToMap(IDR_EMOJI_PICKER_EMOJI_15_0_ORDERING_JSON_REMAINING,
@@ -174,33 +190,28 @@ EmojiSearch::EmojiSearch() {
   AddDataFromFileToMap(IDR_EMOJI_PICKER_EMOJI_15_0_ORDERING_JSON_START,
                        emojis_);
   AddDataFromFileToMap(IDR_EMOJI_PICKER_SYMBOL_ORDERING_JSON, symbols_);
-  AddDataFromFileToMap(IDR_EMOJI_PICKER_EMOTICON_ORDERING_JSON, symbols_);
+  AddDataFromFileToMap(IDR_EMOJI_PICKER_EMOTICON_ORDERING_JSON, emoticons_);
 }
 
 EmojiSearch::~EmojiSearch() = default;
 
-void EmojiSearch::SearchEmoji(
-    const std::string_view query,
-    emoji_search::mojom::EmojiSearch::SearchEmojiCallback callback) {
-  std::move(callback).Run(emoji_search::mojom::SearchResults::New(
-                              GetResultsFromMap(emojis_, query)),
-                          emoji_search::mojom::SearchResults::New(
-                              GetResultsFromMap(symbols_, query)),
-                          emoji_search::mojom::SearchResults::New(
-                              GetResultsFromMap(emoticons_, query)));
+EmojiSearchResult EmojiSearch::SearchEmoji(const std::string_view query) {
+  return EmojiSearchResult(GetResultsFromMap(emojis_, query),
+                           GetResultsFromMap(symbols_, query),
+                           GetResultsFromMap(emoticons_, query));
 }
 
 std::vector<std::string> EmojiSearch::AllResultsForTesting(
     const std::string& query) {
   std::vector<std::string> ret;
-  for (std::string& r : GetResultsFromMap(emojis_, query)) {
-    ret.push_back(std::move(r));
+  for (EmojiSearchEntry& r : GetResultsFromMap(emojis_, query)) {
+    ret.push_back(std::move(r).emoji_string);
   }
-  for (std::string& r : GetResultsFromMap(emoticons_, query)) {
-    ret.push_back(std::move(r));
+  for (EmojiSearchEntry& r : GetResultsFromMap(emoticons_, query)) {
+    ret.push_back(std::move(r).emoji_string);
   }
-  for (std::string& r : GetResultsFromMap(symbols_, query)) {
-    ret.push_back(std::move(r));
+  for (EmojiSearchEntry& r : GetResultsFromMap(symbols_, query)) {
+    ret.push_back(std::move(r).emoji_string);
   }
   return ret;
 }

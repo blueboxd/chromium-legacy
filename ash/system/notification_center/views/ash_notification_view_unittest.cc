@@ -168,9 +168,8 @@ class MockAshNotificationDragDropDelegate
       if (data->HasHtml()) {
         HandleHtmlData();
       } else {
-        std::vector<ui::FileInfo> files;
-        data->GetFilenames(&files);
-        HandleFilePathData(files[0].path);
+        std::optional<std::vector<ui::FileInfo>> files = data->GetFilenames();
+        HandleFilePathData(files.value()[0].path);
       }
     }
   }
@@ -885,8 +884,7 @@ TEST_F(AshNotificationViewTest, ExpandCollapseAnimationsRecordSmoothness) {
 }
 
 // TODO(crbug.com/1522231): Re-enable this test
-TEST_F(AshNotificationViewTest,
-       DISABLED_ImageExpandCollapseAnimationsRecordSmoothness) {
+TEST_F(AshNotificationViewTest, ImageExpandCollapseAnimationsRecordSmoothness) {
   // Enable animations.
   ui::ScopedAnimationDurationScaleMode duration(
       ui::ScopedAnimationDurationScaleMode::FAST_DURATION);
@@ -951,9 +949,7 @@ TEST_F(AshNotificationViewTest,
                           "ScaleAndTranslate.AnimationSmoothness");
 }
 
-// TODO(crbug.com/1520190): Re-enable when flakiness is resolved.
-TEST_F(AshNotificationViewTest,
-       DISABLED_GroupExpandCollapseAnimationsRecordSmoothness) {
+TEST_F(AshNotificationViewTest, GroupExpandCollapseAnimationsRecordSmoothness) {
   base::HistogramTester histograms;
 
   // Enable animations.
@@ -1094,16 +1090,7 @@ TEST_F(AshNotificationViewTest, InlineReplyAnimationsRecordSmoothness) {
       "Ash.NotificationView.InlineReply.FadeOut.AnimationSmoothness");
 }
 
-// TODO(crbug.com/1518434): Flaky on ChromeOS.
-#if BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_InlineSettingsAnimationsRecordSmoothness \
-  DISABLED_InlineSettingsAnimationsRecordSmoothness
-#else
-#define MAYBE_InlineSettingsAnimationsRecordSmoothness \
-  InlineSettingsAnimationsRecordSmoothness
-#endif
-TEST_F(AshNotificationViewTest,
-       MAYBE_InlineSettingsAnimationsRecordSmoothness) {
+TEST_F(AshNotificationViewTest, InlineSettingsAnimationsRecordSmoothness) {
   base::HistogramTester histograms;
 
   // Enable animations.

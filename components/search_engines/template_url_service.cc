@@ -990,17 +990,19 @@ void TemplateURLService::SetUserSelectedDefaultSearchProvider(
     } else {
       // When we are setting the search engine choice from choice screens,
       // the DSP source is expected to allow the search engine to be changed by
-      // the user. So we are guaranteed to not drop one of the choices coming
-      // from these screens here.
-      // TODO(crbug.com/323905627): Remove milestone if no hits by then.
+      // the user. But theoretically there is a possibility that a policy
+      // kicked in after a choice screen was shown, that could be a way to
+      // enter this state
+      // TODO(crbug.com/328041262): Investigate mitigation options.
       CHECK_NE(choice_made_location, search_engines::ChoiceMadeLocation::kOther,
-               base::NotFatalUntil::M124);
+               base::NotFatalUntil::M127);
     }
   } else {
     // We rely on the DefaultSearchManager to call ApplyDefaultSearchChange if,
     // in fact, the effective DSE changes.
     if (url) {
-      default_search_manager_.SetUserSelectedDefaultSearchEngine(url->data());
+      default_search_manager_.SetUserSelectedDefaultSearchEngine(
+          url->data(), choice_made_location);
       selection_added = true;
     } else {
       default_search_manager_.ClearUserSelectedDefaultSearchEngine();
@@ -1970,7 +1972,8 @@ void TemplateURLService::ApplyInitializersForTesting(
 
     // Set the first provided identifier to be the default.
     if (i == 0) {
-      default_search_manager_.SetUserSelectedDefaultSearchEngine(data);
+      default_search_manager_.SetUserSelectedDefaultSearchEngine(
+          data, search_engines::ChoiceMadeLocation::kOther);
     }
   }
 }
@@ -2157,7 +2160,7 @@ void TemplateURLService::MaybeUpdateDSEViaPrefs(TemplateURL* synced_turl) {
   if (prefs_ && (synced_turl->sync_guid() ==
                  GetDefaultSearchProviderPrefValue(*prefs_))) {
     default_search_manager_.SetUserSelectedDefaultSearchEngine(
-        synced_turl->data());
+        synced_turl->data(), search_engines::ChoiceMadeLocation::kOther);
   }
 }
 
@@ -2737,8 +2740,10 @@ void TemplateURLService::OnDefaultSearchProviderGUIDChanged() {
   }
 
   const TemplateURL* turl = GetTemplateURLForGUID(new_guid);
-  if (turl)
-    default_search_manager_.SetUserSelectedDefaultSearchEngine(turl->data());
+  if (turl) {
+    default_search_manager_.SetUserSelectedDefaultSearchEngine(
+        turl->data(), search_engines::ChoiceMadeLocation::kOther);
+  }
 }
 
 void TemplateURLService::MaybeSetIsActiveSearchEngines(

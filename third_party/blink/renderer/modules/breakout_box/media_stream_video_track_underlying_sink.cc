@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "media/base/video_types.h"
@@ -64,7 +65,7 @@ class TransferringOptimizer : public WritableStreamTransferringOptimizer {
 
  private:
   const scoped_refptr<PushableMediaStreamVideoSource::Broker> source_broker_;
-  gpu::GpuMemoryBufferManager* const gmb_manager_ = nullptr;
+  const raw_ptr<gpu::GpuMemoryBufferManager> gmb_manager_ = nullptr;
 };
 
 gpu::GpuMemoryBufferManager* GetGmbManager() {
@@ -118,17 +119,17 @@ MediaStreamVideoTrackUnderlyingSink::MediaStreamVideoTrackUnderlyingSink(
 MediaStreamVideoTrackUnderlyingSink::~MediaStreamVideoTrackUnderlyingSink() =
     default;
 
-ScriptPromise MediaStreamVideoTrackUnderlyingSink::start(
+ScriptPromiseTyped<IDLUndefined> MediaStreamVideoTrackUnderlyingSink::start(
     ScriptState* script_state,
     WritableStreamDefaultController* controller,
     ExceptionState& exception_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   source_broker_->OnClientStarted();
   is_connected_ = true;
-  return ScriptPromise::CastUndefined(script_state);
+  return ToResolvedUndefinedPromise(script_state);
 }
 
-ScriptPromise MediaStreamVideoTrackUnderlyingSink::write(
+ScriptPromiseTyped<IDLUndefined> MediaStreamVideoTrackUnderlyingSink::write(
     ScriptState* script_state,
     ScriptValue chunk,
     WritableStreamDefaultController* controller,
@@ -138,13 +139,13 @@ ScriptPromise MediaStreamVideoTrackUnderlyingSink::write(
       V8VideoFrame::ToWrappable(script_state->GetIsolate(), chunk.V8Value());
   if (!video_frame) {
     exception_state.ThrowTypeError("Null video frame.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   auto media_frame = video_frame->frame();
   if (!media_frame) {
     exception_state.ThrowTypeError("Empty video frame.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
   // Invalidate the JS |video_frame|. Otherwise, the media frames might not be
   // released, which would leak resources and also cause some MediaStream
@@ -154,7 +155,7 @@ ScriptPromise MediaStreamVideoTrackUnderlyingSink::write(
   if (!source_broker_->IsRunning()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Stream closed");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   base::TimeTicks estimated_capture_time = base::TimeTicks::Now();
@@ -172,24 +173,24 @@ ScriptPromise MediaStreamVideoTrackUnderlyingSink::write(
 
   source_broker_->PushFrame(std::move(media_frame), estimated_capture_time);
 
-  return ScriptPromise::CastUndefined(script_state);
+  return ToResolvedUndefinedPromise(script_state);
 }
 
-ScriptPromise MediaStreamVideoTrackUnderlyingSink::abort(
+ScriptPromiseTyped<IDLUndefined> MediaStreamVideoTrackUnderlyingSink::abort(
     ScriptState* script_state,
     ScriptValue reason,
     ExceptionState& exception_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Disconnect();
-  return ScriptPromise::CastUndefined(script_state);
+  return ToResolvedUndefinedPromise(script_state);
 }
 
-ScriptPromise MediaStreamVideoTrackUnderlyingSink::close(
+ScriptPromiseTyped<IDLUndefined> MediaStreamVideoTrackUnderlyingSink::close(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Disconnect();
-  return ScriptPromise::CastUndefined(script_state);
+  return ToResolvedUndefinedPromise(script_state);
 }
 
 std::unique_ptr<WritableStreamTransferringOptimizer>
@@ -223,7 +224,7 @@ void MediaStreamVideoTrackUnderlyingSink::CreateAcceleratedFramePool(
   }
 }
 
-std::optional<ScriptPromise>
+std::optional<ScriptPromiseTyped<IDLUndefined>>
 MediaStreamVideoTrackUnderlyingSink::MaybeConvertToNV12GMBVideoFrame(
     ScriptState* script_state,
     scoped_refptr<media::VideoFrame> video_frame,
@@ -269,8 +270,9 @@ MediaStreamVideoTrackUnderlyingSink::MaybeConvertToNV12GMBVideoFrame(
   }
   DCHECK(accelerated_frame_pool_);
 
-  auto resolver =
-      WrapPersistent(MakeGarbageCollected<ScriptPromiseResolver>(script_state));
+  auto resolver = WrapPersistent(
+      MakeGarbageCollected<ScriptPromiseResolverTyped<IDLUndefined>>(
+          script_state));
   auto convert_done_callback = WTF::BindOnce(
       &MediaStreamVideoTrackUnderlyingSink::ConvertDone, WrapPersistent(this),
       resolver, video_frame, estimated_capture_time);
@@ -288,7 +290,7 @@ MediaStreamVideoTrackUnderlyingSink::MaybeConvertToNV12GMBVideoFrame(
 }
 
 void MediaStreamVideoTrackUnderlyingSink::ConvertDone(
-    Persistent<ScriptPromiseResolver> resolver,
+    ScriptPromiseResolverTyped<IDLUndefined>* resolver,
     scoped_refptr<media::VideoFrame> orig_video_frame,
     base::TimeTicks estimated_capture_time,
     scoped_refptr<media::VideoFrame> converted_video_frame) {

@@ -6,9 +6,8 @@
 
 #include <tuple>
 
-#include "base/containers/cxx20_erase.h"
-#include "base/debug/dump_without_crashing.h"
 #include "build/build_config.h"
+#include "media/base/cdm_context.h"
 #include "media/cdm/cdm_helpers.h"
 #include "media/mojo/services/mojo_cdm_allocator.h"
 #include "media/mojo/services/mojo_cdm_file_io.h"
@@ -114,7 +113,7 @@ void MojoCdmHelper::GetStorageId(uint32_t version, StorageIdCB callback) {
 
 void MojoCdmHelper::CloseCdmFileIO(MojoCdmFileIO* cdm_file_io) {
   DVLOG(3) << __func__ << ": cdm_file_io = " << cdm_file_io;
-  base::EraseIf(cdm_file_io_set_,
+  std::erase_if(cdm_file_io_set_,
                 [cdm_file_io](const std::unique_ptr<MojoCdmFileIO>& ptr) {
                   return ptr.get() == cdm_file_io;
                 });
@@ -122,14 +121,6 @@ void MojoCdmHelper::CloseCdmFileIO(MojoCdmFileIO* cdm_file_io) {
 
 void MojoCdmHelper::ReportFileReadSize(int file_size_bytes) {
   DVLOG(3) << __func__ << ": file_size_bytes = " << file_size_bytes;
-
-  // TODO(crbug.com/325331239): Unusually large file sizes detected only in
-  // beta so report crashes to get more information; make sure to revert before
-  // commit reaches stable.
-  if (file_size_bytes / 1024 > 40) {
-    base::debug::DumpWithoutCrashing();
-  }
-
   if (file_read_cb_)
     file_read_cb_.Run(file_size_bytes);
 }

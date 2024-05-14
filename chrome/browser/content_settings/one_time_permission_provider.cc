@@ -119,7 +119,8 @@ bool OneTimePermissionProvider::SetWebsiteSetting(
     return false;
   }
 
-  if (constraints.session_model() != content_settings::SessionModel::OneTime) {
+  if (constraints.session_model() !=
+      content_settings::mojom::SessionModel::ONE_TIME) {
     if (content_setting == CONTENT_SETTING_ALLOW) {
       // Transition from Allow once to Allow. Delete setting and let the pref
       // provider handle it.
@@ -136,7 +137,7 @@ bool OneTimePermissionProvider::SetWebsiteSetting(
 
   base::Time now = clock_->Now();
   content_settings::RuleMetaData metadata;
-  metadata.set_session_model(content_settings::SessionModel::OneTime);
+  metadata.set_session_model(content_settings::mojom::SessionModel::ONE_TIME);
   metadata.set_last_modified(now);
   if (base::FeatureList::IsEnabled(
           content_settings::features::kActiveContentSettingExpiry)) {
@@ -148,9 +149,14 @@ bool OneTimePermissionProvider::SetWebsiteSetting(
       content_settings_type,
       permissions::OneTimePermissionEvent::GRANTED_ONE_TIME);
 
-  base::AutoLock lock(value_map_.GetLock());
-  value_map_.SetValue(primary_pattern, secondary_pattern, content_settings_type,
-                      std::move(value), metadata);
+  {
+    base::AutoLock lock(value_map_.GetLock());
+    value_map_.SetValue(primary_pattern, secondary_pattern,
+                        content_settings_type, std::move(value), metadata);
+  }
+
+  NotifyObservers(primary_pattern, secondary_pattern, content_settings_type,
+                  nullptr);
 
   // We need to handle transitions from Allow to Allow Once gracefully.
   // In that case we add the Allow Once setting in this provider, but also

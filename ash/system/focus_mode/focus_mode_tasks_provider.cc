@@ -5,13 +5,13 @@
 #include "ash/system/focus_mode/focus_mode_tasks_provider.h"
 
 #include <optional>
+#include <vector>
 
 #include "ash/api/tasks/tasks_types.h"
-#include "base/containers/cxx20_erase_vector.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/gurl.h"
 
 namespace ash {
 
@@ -93,7 +93,7 @@ std::unique_ptr<api::Task> GetTaskFromDummyTask(
       task_data.completed,
       /*has_subtasks=*/false,
       /*has_email_link=*/false,
-      /*has_notes=*/false, update_date);
+      /*has_notes=*/false, update_date, /*web_view_link=*/GURL());
 }
 
 }  // namespace
@@ -121,9 +121,10 @@ void FocusModeTasksProvider::AddTask(const std::string& title,
                                      OnTaskSavedCallback callback) {
   std::unique_ptr<api::Task> task = std::make_unique<api::Task>(
       /*id=*/base::NumberToString(task_id_++), title,
-      /*due=*/absl::nullopt, /*completed=*/false, /*has_subtasks=*/false,
+      /*due=*/std::nullopt, /*completed=*/false, /*has_subtasks=*/false,
       /*has_email_link=*/false,
-      /*has_notes=*/false, /*updated=*/base::Time::Now());
+      /*has_notes=*/false, /*updated=*/base::Time::Now(),
+      /*web_view_link=*/GURL());
 
   api::Task* task_ptr = task.get();
   InsertTask(std::move(task));
@@ -145,7 +146,7 @@ void FocusModeTasksProvider::UpdateTaskTitle(const std::string& task_id,
 }
 
 void FocusModeTasksProvider::MarkAsCompleted(const std::string& task_id) {
-  base::EraseIf(tasks_data_,
+  std::erase_if(tasks_data_,
                 [task_id](const auto& task) { return task->id == task_id; });
 }
 

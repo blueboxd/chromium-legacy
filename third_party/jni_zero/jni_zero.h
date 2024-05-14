@@ -9,6 +9,7 @@
 
 #include <atomic>
 #include <string>
+#include <vector>
 
 #include "third_party/jni_zero/logging.h"
 #include "third_party/jni_zero/jni_export.h"
@@ -75,6 +76,10 @@ inline jint as_jint(const JniIntWrapper& wrapper) {
 #endif  // NDEBUG
 
 namespace jni_zero {
+
+// Commonly needed jclasses:
+extern JNI_ZERO_COMPONENT_BUILD_EXPORT jclass g_object_class;
+extern JNI_ZERO_COMPONENT_BUILD_EXPORT jclass g_string_class;
 
 // Creates a new local reference frame, in which at least a given number of
 // local references can be created. Note that local references already created
@@ -652,30 +657,20 @@ JNI_ZERO_COMPONENT_BUILD_EXPORT ScopedJavaLocalRef<jclass> GetClass(
     JNIEnv* env,
     const char* class_name);
 
-// The method will initialize |atomic_class_id| to contain a global ref to the
-// class. And will return that ref on subsequent calls.  It's the caller's
-// responsibility to release the ref when it is no longer needed.
-// The caller is responsible to zero-initialize |atomic_method_id|.
-// It's fine to simultaneously call this on multiple threads referencing the
-// same |atomic_method_id|.
-JNI_ZERO_COMPONENT_BUILD_EXPORT jclass
-LazyGetClass(JNIEnv* env,
-             const char* class_name,
-             const char* split_name,
-             std::atomic<jclass>* atomic_class_id);
-
-JNI_ZERO_COMPONENT_BUILD_EXPORT jclass
-LazyGetClass(JNIEnv* env,
-             const char* class_name,
-             std::atomic<jclass>* atomic_class_id);
-
 // Primary templates for non-Array conversion fuctions. Embedding application
 // can specialize these functions for their own custom types in order to use
 // custom types in @JniType.
 template <typename O>
-O ConvertType(JNIEnv*, const JavaRef<jobject>&);
+O FromJniType(JNIEnv*, const JavaRef<jobject>&);
 template <typename O>
-O ConvertType(JNIEnv*, const JavaRef<jstring>&);
+O FromJniType(JNIEnv*, const JavaRef<jstring>&);
+
+template <typename O>
+ScopedJavaLocalRef<jobject> ToJniType(JNIEnv*, const O&);
+
+// Special case std::string to return jstring, not jobject.
+template <typename, typename T>
+ScopedJavaLocalRef<jstring> ToJniType(JNIEnv*, const std::basic_string<T>&);
 
 // Primary template for Array conversion.
 // This is in a struct so that we are able to write a default implementation for
@@ -684,34 +679,109 @@ O ConvertType(JNIEnv*, const JavaRef<jstring>&);
 // functions inside a struct are.
 template <typename O>
 struct ConvertArray {
-  static O Convert(JNIEnv*, const JavaRef<jobjectArray>&);
+  static O FromJniType(JNIEnv*, const JavaRef<jobjectArray>&);
+  static ScopedJavaLocalRef<jobjectArray> ToJniType(JNIEnv*, const O&, jclass);
 };
 
 template <template <typename, typename...> typename IterableType, typename O>
 struct ConvertArray<IterableType<O>> {
-  static IterableType<O> Convert(JNIEnv*, const JavaRef<jobjectArray>&);
+  static IterableType<O> FromJniType(JNIEnv*, const JavaRef<jobjectArray>&);
+  static ScopedJavaLocalRef<jobjectArray> ToJniType(JNIEnv*,
+                                                    const IterableType<O>&,
+                                                    jclass);
 };
 
+// Partial specialization for converting java arrays into std::vector
 template <typename O>
 struct ConvertArray<std::vector<O>> {
   template <typename JArrayElementType = jobject>
-  static std::vector<O> Convert(JNIEnv* env,
-                                const JavaRef<jobjectArray>& j_array) {
-    if (!j_array) {
-      return {};
-    }
-    jsize jlength = env->GetArrayLength(j_array.obj());
-    size_t length = static_cast<size_t>(jlength);
+  static std::vector<O> FromJniType(JNIEnv* env,
+                                    const JavaRef<jobjectArray>& j_array) {
+    jsize array_jsize = env->GetArrayLength(j_array.obj());
+    size_t array_size = static_cast<size_t>(array_jsize);
+
     std::vector<O> ret;
-    ret.reserve(length);
-    for (jsize i = 0; i < jlength; ++i) {
-      O element = ConvertType<O>(
+    ret.reserve(array_size);
+    for (jsize i = 0; i < array_jsize; ++i) {
+      O element = jni_zero::FromJniType<O>(
           env, jni_zero::ScopedJavaLocalRef<JArrayElementType>::Adopt(
                    env, static_cast<JArrayElementType>(
                             env->GetObjectArrayElement(j_array.obj(), i))));
       ret.push_back(std::move(element));
     }
     return ret;
+  }
+
+  static ScopedJavaLocalRef<jobjectArray> ToJniType(JNIEnv* env,
+                                                    const std::vector<O>& vec,
+                                                    jclass clazz) {
+    size_t array_size = vec.size();
+    jsize array_jsize = static_cast<jsize>(array_size);
+    jobjectArray joa = env->NewObjectArray(array_jsize, clazz, nullptr);
+    CheckException(env);
+
+    for (size_t i = 0; i < array_size; ++i) {
+      ScopedJavaLocalRef<jobject> element = jni_zero::ToJniType<O>(env, vec[i]);
+      env->SetObjectArrayElement(joa, static_cast<jsize>(i), element.obj());
+    }
+    return ScopedJavaLocalRef<jobjectArray>(env, joa);
+  }
+};
+
+// Specialization for int array.
+template <>
+struct ConvertArray<std::vector<int32_t>> {
+  static std::vector<int32_t> FromJniType(JNIEnv* env,
+                                          const JavaRef<jintArray>& j_array) {
+    jsize array_jsize = env->GetArrayLength(j_array.obj());
+    size_t array_size = static_cast<size_t>(array_jsize);
+    std::vector<int32_t> ret;
+    ret.resize(array_size);
+    env->GetIntArrayRegion(j_array.obj(), 0, array_jsize, &ret[0]);
+    return ret;
+  }
+
+  static ScopedJavaLocalRef<jintArray> ToJniType(
+      JNIEnv* env,
+      const std::vector<int32_t>& vec) {
+    jsize array_jsize = static_cast<jsize>(vec.size());
+    jintArray jia = env->NewIntArray(array_jsize);
+    CheckException(env);
+    env->SetIntArrayRegion(jia, 0, array_jsize, &vec[0]);
+    return ScopedJavaLocalRef<jintArray>(env, jia);
+  }
+};
+
+// Do not call ToJniType for jobject->jobject.
+template <>
+struct ConvertArray<std::vector<ScopedJavaLocalRef<jobject>>> {
+  static std::vector<ScopedJavaLocalRef<jobject>> FromJniType(
+      JNIEnv* env,
+      const JavaRef<jobjectArray>& j_array) {
+    jsize array_jsize = env->GetArrayLength(j_array.obj());
+    size_t array_size = static_cast<size_t>(array_jsize);
+
+    std::vector<ScopedJavaLocalRef<jobject>> ret;
+    ret.reserve(array_size);
+    for (jsize i = 0; i < array_jsize; ++i) {
+      ret.emplace_back(env, env->GetObjectArrayElement(j_array.obj(), i));
+    }
+    return ret;
+  }
+
+  static ScopedJavaLocalRef<jobjectArray> ToJniType(
+      JNIEnv* env,
+      const std::vector<ScopedJavaLocalRef<jobject>>& vec,
+      jclass clazz) {
+    size_t array_size = vec.size();
+    jsize array_jsize = static_cast<jsize>(array_size);
+    jobjectArray joa = env->NewObjectArray(array_jsize, clazz, nullptr);
+    CheckException(env);
+
+    for (size_t i = 0; i < array_size; ++i) {
+      env->SetObjectArrayElement(joa, static_cast<jsize>(i), vec[i].obj());
+    }
+    return ScopedJavaLocalRef<jobjectArray>(env, joa);
   }
 };
 

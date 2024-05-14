@@ -15,6 +15,19 @@ source_set("public") {
   ]
 }
 
+source_set("commerce_info_cache") {
+  sources = [
+    "commerce_info_cache.cc",
+    "commerce_info_cache.h",
+  ]
+
+  deps = [
+    ":commerce_types",
+    "//base",
+    "//url",
+  ]
+}
+
 source_set("feature_list") {
   sources = [
     "commerce_feature_list.cc",
@@ -31,6 +44,19 @@ source_set("feature_list") {
     "//components/search",
     "//third_party/re2:re2",
     "//url:url",
+  ]
+}
+
+source_set("feature_utils") {
+  sources = [
+    "feature_utils.cc",
+    "feature_utils.h",
+  ]
+  deps = [
+    ":account_checker",
+    ":feature_list",
+    ":pref_names",
+    "//components/prefs",
   ]
 }
 
@@ -206,8 +232,8 @@ static_library("shopping_service") {
   ]
 
   deps = [
-    ":account_checker",
     ":commerce_constants",
+    ":commerce_info_cache",
     ":commerce_subscription_db_content_proto",
     ":discounts_db_content_proto",
     ":feature_list",
@@ -220,6 +246,7 @@ static_library("shopping_service") {
     "//components/bookmarks/browser",
     "//components/commerce/core/compare",
     "//components/commerce/core/parcel:parcel",
+    "//components/commerce/core/product_specifications:product_specifications",
     "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/leveldb_proto",
@@ -242,7 +269,9 @@ static_library("shopping_service") {
   ]
 
   public_deps = [
+    ":account_checker",
     ":commerce_types",
+    ":feature_utils",
     "//components/commerce/core/subscriptions:subscriptions",
     "//services/data_decoder/public/cpp",
   ]
@@ -273,6 +302,7 @@ source_set("shopping_service_test_support") {
 
   # Expose all deps for test support.
   public_deps = [
+    ":commerce_info_cache",
     ":feature_list",
     ":pref_names",
     ":shopping_service",
@@ -303,6 +333,7 @@ source_set("shopping_service_unit_tests") {
 
   sources = [
     "bookmark_update_manager_unittest.cc",
+    "commerce_info_cache_unittest.cc",
     "discounts_storage_unittest.cc",
     "metrics/scheduled_metrics_manager_unittest.cc",
     "pdp_metrics_unittest.cc",
@@ -315,6 +346,7 @@ source_set("shopping_service_unit_tests") {
 
   deps = [
     ":account_checker_test_support",
+    ":commerce_info_cache",
     ":discounts_db_content_proto",
     ":metrics",
     ":pref_names",
@@ -379,6 +411,7 @@ source_set("account_checker_test_support") {
   deps = [
     ":account_checker",
     "//base",
+    "//components/prefs",
     "//services/network/public/cpp:cpp",
     "//testing/gmock",
   ]

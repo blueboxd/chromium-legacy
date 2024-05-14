@@ -14,9 +14,13 @@
 
 namespace autofill {
 
+struct AutofillErrorDialogContext;
+enum class AutofillProgressDialogType;
 class MigratableCreditCard;
 
 namespace payments {
+
+class PaymentsNetworkInterface;
 
 // A payments-specific client interface that handles dependency injection, and
 // its implementations serve as the integration for platform-specific code. One
@@ -79,6 +83,31 @@ class PaymentsAutofillClient : public RiskDataLoader {
   // the desktop codebase. If iOS is not using it to do anything, please keep
   // this function for desktop.
   virtual void CreditCardUploadCompleted(bool card_saved);
+
+  // Returns true if save card offer or confirmation prompt is visible.
+  virtual bool IsSaveCardPromptVisible() const;
+
+  // Hides save card offer or confirmation prompt.
+  virtual void HideSaveCardPromptPrompt();
+
+  // Show/dismiss the progress dialog which contains a throbber and a text
+  // message indicating that something is in progress.
+  virtual void ShowAutofillProgressDialog(
+      AutofillProgressDialogType autofill_progress_dialog_type,
+      base::OnceClosure cancel_callback);
+  virtual void CloseAutofillProgressDialog(
+      bool show_confirmation_before_closing,
+      base::OnceClosure no_interactive_authentication_callback);
+
+  // Gets the payments::PaymentsNetworkInterface instance owned by the client.
+  virtual PaymentsNetworkInterface* GetPaymentsNetworkInterface();
+
+  // Shows an error dialog when card retrieval errors happen. The type of error
+  // dialog that is shown will match the `type` in `context`. If the
+  // `server_returned_title` and `server_returned_description` in `context` are
+  // both set, the error dialog that is displayed will have these fields
+  // displayed for the title and description, respectively.
+  virtual void ShowAutofillErrorDialog(AutofillErrorDialogContext context);
 };
 
 }  // namespace payments

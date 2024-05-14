@@ -52,7 +52,7 @@ class CONTENT_EXPORT SharedStorageDocumentServiceImpl final
 
   const url::Origin& main_frame_origin() const { return main_frame_origin_; }
 
-  std::string main_frame_id() const { return main_frame_id_; }
+  int main_frame_id() const { return main_frame_id_; }
 
   void Bind(mojo::PendingAssociatedReceiver<
             blink::mojom::SharedStorageDocumentService> receiver);
@@ -66,6 +66,8 @@ class CONTENT_EXPORT SharedStorageDocumentServiceImpl final
       mojo::PendingAssociatedReceiver<blink::mojom::SharedStorageWorkletHost>
           worklet_host,
       CreateWorkletCallback callback) override;
+  void SharedStorageGet(const std::u16string& key,
+                        SharedStorageGetCallback callback) override;
   void SharedStorageSet(const std::u16string& key,
                         const std::u16string& value,
                         bool ignore_if_present,
@@ -106,9 +108,9 @@ class CONTENT_EXPORT SharedStorageDocumentServiceImpl final
   // save the value of the main frame origin in the constructor.
   const url::Origin main_frame_origin_;
 
-  // The DevTools frame token for the main frame, to be used by notifications
-  // to DevTools.
-  const std::string main_frame_id_;
+  // The FrameTreeNodeId for the main frame, to be used by notifications
+  // to DevTools. (DevTools will convert this to a DevTools frame token.)
+  const int main_frame_id_;
 
   DOCUMENT_USER_DATA_KEY_DECL();
 

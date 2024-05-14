@@ -166,15 +166,15 @@ static_assert(sizeof(void*) == 8);
 
 // If memory tagging is enabled with BRP in "previous slot" mode, the MTE tag
 // and BRP ref count will cause a race (crbug.com/1445816). To prevent this, the
-// ref_count_size is increased to the MTE granule size and is excluded from MTE
-// tagging.
+// in_slot_metadata_size is increased to the MTE granule size and is excluded
+// from MTE tagging.
 //
 // The settings has MAYBE_ in the name, because the final decision to enable is
 // based on whether both MTE and BRP are enabled, and also on BRP mode.
 #if BUILDFLAG(HAS_MEMORY_TAGGING) && BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
-#define PA_CONFIG_MAYBE_INCREASE_REF_COUNT_SIZE_FOR_MTE() 1
+#define PA_CONFIG_MAYBE_INCREASE_IN_SLOT_METADATA_SIZE_FOR_MTE() 1
 #else
-#define PA_CONFIG_MAYBE_INCREASE_REF_COUNT_SIZE_FOR_MTE() 0
+#define PA_CONFIG_MAYBE_INCREASE_IN_SLOT_METADATA_SIZE_FOR_MTE() 0
 #endif  // BUILDFLAG(HAS_MEMORY_TAGGING) &&
         // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
@@ -264,7 +264,7 @@ constexpr bool kUseLazyCommit = false;
 // raw_ptr at the same time.
 // TODO(crbug.com/1511221): Allow in the "same slot" mode. It should work just
 // fine, because it's either-or. A slot never hosts both at the same time.
-#define PA_CONFIG_REF_COUNT_CHECK_COOKIE()        \
+#define PA_CONFIG_IN_SLOT_METADATA_CHECK_COOKIE() \
   (!(BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS) && \
      BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)) && \
    (BUILDFLAG(PA_DCHECK_IS_ON) ||                 \
@@ -272,18 +272,18 @@ constexpr bool kUseLazyCommit = false;
 
 // Use available space in the reference count to store the initially requested
 // size from the application. This is used for debugging.
-#if !PA_CONFIG(REF_COUNT_CHECK_COOKIE) && \
+#if !PA_CONFIG(IN_SLOT_METADATA_CHECK_COOKIE) && \
     !BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS)
 // Set to 1 when needed.
-#define PA_CONFIG_REF_COUNT_STORE_REQUESTED_SIZE() 0
+#define PA_CONFIG_IN_SLOT_METADATA_STORE_REQUESTED_SIZE() 0
 #else
 // You probably want it at 0, outside of local testing, or else
 // PartitionRefCount will grow past 8B.
-#define PA_CONFIG_REF_COUNT_STORE_REQUESTED_SIZE() 0
+#define PA_CONFIG_IN_SLOT_METADATA_STORE_REQUESTED_SIZE() 0
 #endif
 
-#if PA_CONFIG(REF_COUNT_STORE_REQUESTED_SIZE) && \
-    PA_CONFIG(REF_COUNT_CHECK_COOKIE)
+#if PA_CONFIG(IN_SLOT_METADATA_STORE_REQUESTED_SIZE) && \
+    PA_CONFIG(IN_SLOT_METADATA_CHECK_COOKIE)
 #error "Cannot use a cookie *and* store the allocation size"
 #endif
 
@@ -295,9 +295,9 @@ constexpr bool kUseLazyCommit = false;
 // This is intended to roll out more broadly, but only enabled on Linux for now
 // to get performance bot and real-world data pre-A/B experiment.
 //
-// Also enabled on ARM64 macOS, as the 16kiB pages on this platform lead to
-// larger slot spans.
-#if BUILDFLAG(IS_LINUX) || (BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64))
+// Also enabled on ARM64 macOS and iOS, as the 16kiB pages on this platform lead
+// to larger slot spans.
+#if BUILDFLAG(IS_LINUX) || (BUILDFLAG(IS_APPLE) && defined(ARCH_CPU_ARM64))
 #define PA_CONFIG_PREFER_SMALLER_SLOT_SPANS() 1
 #else
 #define PA_CONFIG_PREFER_SMALLER_SLOT_SPANS() 0
@@ -353,5 +353,11 @@ constexpr bool kUseLazyCommit = false;
 #else
 #define PA_CONFIG_IS_NONCLANG_MSVC() 0
 #endif
+
+// Set GN build override 'assert_cpp_20' to false to disable assertion.
+#if BUILDFLAG(ASSERT_CPP_20)
+static_assert(__cplusplus >= 202002L,
+              "PartitionAlloc targets C++20 or higher.");
+#endif  // BUILDFLAG(ASSERT_CPP_20)
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_CONFIG_H_

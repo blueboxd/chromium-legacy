@@ -201,12 +201,6 @@ bool ClipboardMac::IsMarkedByOriginatorAsConfidential() const {
   return false;
 }
 
-void ClipboardMac::MarkAsConfidential() {
-  DCHECK(CalledOnValidThread());
-
-  [GetPasteboard() setData:nil forType:kUTTypeConfidentialData];
-}
-
 void ClipboardMac::Clear(ClipboardBuffer buffer) {
   ClearInternal(buffer, GetPasteboard());
 }
@@ -434,10 +428,11 @@ void ClipboardMac::WritePortableAndPlatformRepresentations(
     ClipboardBuffer buffer,
     const ObjectMap& objects,
     std::vector<Clipboard::PlatformRepresentation> platform_representations,
-    std::unique_ptr<DataTransferEndpoint> data_src) {
+    std::unique_ptr<DataTransferEndpoint> data_src,
+    uint32_t privacy_types) {
   WritePortableAndPlatformRepresentationsInternal(
       buffer, objects, std::move(platform_representations), std::move(data_src),
-      GetPasteboard());
+      GetPasteboard(), privacy_types);
 }
 
 void ClipboardMac::WritePortableAndPlatformRepresentationsInternal(
@@ -445,7 +440,8 @@ void ClipboardMac::WritePortableAndPlatformRepresentationsInternal(
     const ObjectMap& objects,
     std::vector<Clipboard::PlatformRepresentation> platform_representations,
     std::unique_ptr<DataTransferEndpoint> data_src,
-    NSPasteboard* pasteboard) {
+    NSPasteboard* pasteboard,
+    uint32_t privacy_types) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
 

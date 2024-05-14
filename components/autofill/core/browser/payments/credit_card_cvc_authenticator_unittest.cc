@@ -77,29 +77,20 @@ class CreditCardCvcAuthenticatorTest : public testing::Test {
 
   void SetUp() override {
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
-    personal_data_manager_.Init(/*profile_database=*/database_,
-                                /*account_database=*/nullptr,
-                                /*pref_service=*/autofill_client_.GetPrefs(),
-                                /*local_state=*/autofill_client_.GetPrefs(),
-                                /*identity_manager=*/nullptr,
-                                /*history_service=*/nullptr,
-                                /*sync_service=*/nullptr,
-                                /*strike_database=*/nullptr,
-                                /*image_fetcher=*/nullptr,
-                                /*shared_storage_handler=*/nullptr);
     personal_data_manager_.SetPrefService(autofill_client_.GetPrefs());
 
     requester_ = std::make_unique<TestAuthenticationRequester>();
-    autofill_driver_ =
-        std::make_unique<testing::NiceMock<TestAutofillDriver>>();
+    autofill_driver_ = std::make_unique<testing::NiceMock<TestAutofillDriver>>(
+        &autofill_client_);
 
     payments::TestPaymentsNetworkInterface* payments_network_interface =
         new payments::TestPaymentsNetworkInterface(
             autofill_client_.GetURLLoaderFactory(),
             autofill_client_.GetIdentityManager(), &personal_data_manager_);
-    autofill_client_.set_test_payments_network_interface(
-        std::unique_ptr<payments::TestPaymentsNetworkInterface>(
-            payments_network_interface));
+    autofill_client_.GetPaymentsAutofillClient()
+        ->set_test_payments_network_interface(
+            std::unique_ptr<payments::TestPaymentsNetworkInterface>(
+                payments_network_interface));
     cvc_authenticator_ =
         std::make_unique<CreditCardCvcAuthenticator>(&autofill_client_);
   }
@@ -110,7 +101,7 @@ class CreditCardCvcAuthenticatorTest : public testing::Test {
     autofill_driver_.reset();
 
     personal_data_manager_.SetPrefService(nullptr);
-    personal_data_manager_.ClearCreditCards();
+    personal_data_manager_.test_payments_data_manager().ClearCreditCards();
   }
 
   CreditCard CreateServerCard(std::string guid, std::string number) {
@@ -122,7 +113,7 @@ class CreditCardCvcAuthenticatorTest : public testing::Test {
     masked_server_card.set_record_type(
         CreditCard::RecordType::kMaskedServerCard);
 
-    personal_data_manager_.ClearCreditCards();
+    personal_data_manager_.test_payments_data_manager().ClearCreditCards();
     personal_data_manager_.AddServerCreditCard(masked_server_card);
 
     return masked_server_card;
@@ -159,7 +150,6 @@ class CreditCardCvcAuthenticatorTest : public testing::Test {
       variations::VariationsIdsProvider::Mode::kUseSignedInState};
   TestAutofillClient autofill_client_;
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
-  scoped_refptr<AutofillWebDataService> database_;
   TestPersonalDataManager personal_data_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<CreditCardCvcAuthenticator> cvc_authenticator_;

@@ -11,10 +11,7 @@ import("//third_party/protobuf/proto_library.gni")
 
 buildflag_header("buildflags") {
   header = "buildflags.h"
-  flags = [
-    "BUILD_WEBNN_WITH_XNNPACK=$build_webnn_with_xnnpack",
-    "BUILD_WEBNN_WITH_TFLITE_MODEL_LOADER=$build_webnn_with_tflite_model_loader",
-  ]
+  flags = [ "BUILD_WEBNN_WITH_XNNPACK=$build_webnn_with_xnnpack" ]
 }
 
 blink_modules_sources("ml") {
@@ -33,10 +30,20 @@ blink_modules_sources("ml") {
     "navigator_ml.h",
     "webnn/ml_activation.cc",
     "webnn/ml_activation.h",
+    "webnn/ml_buffer.cc",
+    "webnn/ml_buffer.h",
+    "webnn/ml_buffer_mojo.cc",
+    "webnn/ml_buffer_mojo.h",
+    "webnn/ml_error_mojo.cc",
+    "webnn/ml_error_mojo.h",
     "webnn/ml_graph.cc",
     "webnn/ml_graph.h",
     "webnn/ml_graph_builder.cc",
     "webnn/ml_graph_builder.h",
+    "webnn/ml_graph_mojo.cc",
+    "webnn/ml_graph_mojo.h",
+    "webnn/ml_graph_type_converter.cc",
+    "webnn/ml_graph_type_converter.h",
     "webnn/ml_graph_utils.cc",
     "webnn/ml_graph_utils.h",
     "webnn/ml_operand.cc",
@@ -61,37 +68,6 @@ blink_modules_sources("ml") {
 
     deps += [ "//third_party/xnnpack" ]
   }
-
-  if (build_webnn_with_tflite_model_loader) {
-    sources += [
-      "webnn/ml_graph_model_loader.cc",
-      "webnn/ml_graph_model_loader.h",
-      "webnn/ml_graph_tflite_converter.cc",
-      "webnn/ml_graph_tflite_converter.h",
-    ]
-
-    deps += [
-      "//third_party/flatbuffers:flatbuffers",
-      "//third_party/tflite:tflite_public_headers",
-    ]
-  }
-
-  if (!is_chromeos) {
-    sources += [
-      # Platform independent sources which packages the model information
-      # into a neutral struct types, it will be built and executed with hardware
-      # accelerated OS machine learning API in WebNN Service which run out of
-      # renderer process.
-      "webnn/ml_context_mojo.cc",
-      "webnn/ml_context_mojo.h",
-      "webnn/ml_error_mojo.cc",
-      "webnn/ml_error_mojo.h",
-      "webnn/ml_graph_mojo.cc",
-      "webnn/ml_graph_mojo.h",
-      "webnn/ml_graph_type_converter.cc",
-      "webnn/ml_graph_type_converter.h",
-    ]
-  }
 }
 
 source_set("unit_tests") {
@@ -105,6 +81,7 @@ source_set("unit_tests") {
     "webnn/ml_graph_builder_test.h",
     "webnn/ml_graph_builder_utils.cc",
     "webnn/ml_graph_builder_utils.h",
+    "webnn/ml_graph_mojo_test.cc",
     "webnn/ml_graph_test_base.cc",
     "webnn/ml_graph_test_base.h",
   ]
@@ -112,7 +89,7 @@ source_set("unit_tests") {
   deps = [
     ":buildflags",
     "//components/ml/mojom:mojom_blink",
-    "//components/ml/webnn:features",
+    "//components/ml/webnn",
     "//services/webnn/public/mojom:mojom_blink",
     "//testing/gtest",
     "//third_party/blink/public:test_headers",
@@ -130,20 +107,6 @@ source_set("unit_tests") {
       "webnn/ml_graph_xnnpack_test.cc",
     ]
     deps += [ "//third_party/xnnpack" ]
-  }
-
-  if (build_webnn_with_tflite_model_loader && current_cpu == "x64") {
-    sources += [
-      "webnn/ml_graph_test.cc",
-      "webnn/ml_graph_test_model_loader.cc",
-      "webnn/ml_graph_test_model_loader.h",
-    ]
-    deps += [ "//third_party/tflite" ]
-  }
-
-  if (!is_chromeos) {
-    sources += [ "webnn/ml_graph_mojo_test.cc" ]
-    deps += [ "//components/ml/webnn" ]
   }
 }
 
@@ -163,6 +126,7 @@ if (use_fuzzing_engine_with_lpm) {
     ]
     deps = [
       ":webnn_proto",
+      "//third_party/blink/renderer/controller:blink_bindings_test_sources",
       "//third_party/blink/renderer/core:testing",
       "//third_party/blink/renderer/modules:modules",
       "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
@@ -180,6 +144,7 @@ if (use_fuzzing_engine_with_lpm) {
     ]
     deps = [
       ":webnn_proto",
+      "//third_party/blink/renderer/controller:blink_bindings_test_sources",
       "//third_party/blink/renderer/core:testing",
       "//third_party/blink/renderer/modules:modules",
       "//third_party/blink/renderer/platform:blink_fuzzer_test_support",

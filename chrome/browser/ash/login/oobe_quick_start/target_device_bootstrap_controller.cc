@@ -91,9 +91,10 @@ void TargetDeviceBootstrapController::StartAdvertisingAndMaybeGetQRCode() {
   CHECK(connection_broker_->GetFeatureSupportStatus() ==
         TargetDeviceConnectionBroker::FeatureSupportStatus::kSupported);
   CHECK_EQ(status_.step, Step::NONE);
+  session_context_.FillOrResetSession();
 
   bool use_pin_authentication =
-      accessibility_manager_wrapper_->IsSpokenFeedbackEnabled();
+      !accessibility_manager_wrapper_->AllowQRCodeUX();
 
   if (use_pin_authentication || session_context_.is_resume_after_update()) {
     status_.step = Step::ADVERTISING_WITHOUT_QR_CODE;
@@ -344,7 +345,6 @@ void TargetDeviceBootstrapController::AttemptGoogleAccountTransfer() {
 
 void TargetDeviceBootstrapController::Cleanup() {
   status_ = Status();
-  session_context_.ResetSession();
   CleanupIfNeeded();
 }
 
@@ -438,6 +438,7 @@ void TargetDeviceBootstrapController::OnAuthCodeReceived(
             GaiaCredentials gaia_creds;
             gaia_creds.auth_code = res.auth_code;
             gaia_creds.email = fido_assertion_.email;
+            gaia_creds.gaia_id = res.gaia_id;
             UpdateStatus(/*step=*/Step::TRANSFERRED_GOOGLE_ACCOUNT_DETAILS,
                          /*payload=*/gaia_creds);
             is_error = false;

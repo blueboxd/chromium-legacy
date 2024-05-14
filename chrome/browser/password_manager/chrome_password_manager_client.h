@@ -149,6 +149,8 @@ class ChromePasswordManagerClient
       bool is_webauthn_form) override;
 #endif
 
+  bool CanUseBiometricAuthForFilling(
+      device_reauth::DeviceAuthenticator* authenticator) override;
   // Returns a pointer to the DeviceAuthenticator which is created on demand.
   // This is currently only implemented for Android, Mac and Windows. On all
   // other platforms this will always be null.
@@ -174,16 +176,14 @@ class ChromePasswordManagerClient
 #endif
   void UpdateCredentialCache(
       const url::Origin& origin,
-      const std::vector<raw_ptr<const password_manager::PasswordForm,
-                                VectorExperimental>>& best_matches,
+      base::span<const password_manager::PasswordForm> best_matches,
       bool is_blocklisted) override;
   void AutomaticPasswordSave(
       std::unique_ptr<password_manager::PasswordFormManagerForUI>
           saved_form_manager,
       bool is_update_confirmation) override;
   void PasswordWasAutofilled(
-      const std::vector<raw_ptr<const password_manager::PasswordForm,
-                                VectorExperimental>>& best_matches,
+      base::span<const password_manager::PasswordForm> best_matches,
       const url::Origin& origin,
       const std::vector<raw_ptr<const password_manager::PasswordForm,
                                 VectorExperimental>>* federated_matches,
@@ -204,7 +204,7 @@ class ChromePasswordManagerClient
   PrefService* GetPrefs() const override;
   PrefService* GetLocalStatePrefs() const override;
   const syncer::SyncService* GetSyncService() const override;
-  password_manager::AffiliationService* GetAffiliationService() override;
+  affiliations::AffiliationService* GetAffiliationService() override;
   password_manager::PasswordStoreInterface* GetProfilePasswordStore()
       const override;
   password_manager::PasswordStoreInterface* GetAccountPasswordStore()
@@ -396,6 +396,10 @@ class ChromePasswordManagerClient
   // it calls the launcher to do so. This results in passwords being fetched
   // from the store as that is a prerequisite for showing the warning.
   void TryToShowLocalPasswordMigrationWarning();
+
+  // Called on startup. It will show the post password migration sheet if
+  // needed.
+  void TryToShowPostPasswordMigrationSheet();
 
   password_manager::CredManController* GetOrCreateCredManController();
 

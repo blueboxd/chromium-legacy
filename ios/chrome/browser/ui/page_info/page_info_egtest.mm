@@ -6,10 +6,17 @@
 #import <XCTest/XCTest.h>
 
 #import "base/ios/ios_util.h"
+#import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "components/content_settings/core/browser/content_settings_uma_util.h"
+#import "components/content_settings/core/common/content_settings_types.h"
+#import "components/optimization_guide/core/optimization_guide_switches.h"
+#import "components/page_info/core/page_info_action.h"
 #import "components/strings/grit/components_branded_strings.h"
+#import "ios/chrome/browser/metrics/model/metrics_app_interface.h"
 #import "ios/chrome/browser/overlays/model/public/web_content_area/alert_constants.h"
 #import "ios/chrome/browser/ui/page_info/features.h"
+#import "ios/chrome/browser/ui/page_info/page_info_app_interface.h"
 #import "ios/chrome/browser/ui/page_info/page_info_constants.h"
 #import "ios/chrome/browser/ui/permissions/permissions_app_interface.h"
 #import "ios/chrome/browser/ui/permissions/permissions_constants.h"
@@ -42,6 +49,58 @@ id<GREYMatcher> MicrophonePermissionsSwitch(BOOL isOn) {
       kPageInfoMicrophoneSwitchAccessibilityIdentifier, isOn);
 }
 
+// Matcher for Security help center link in footer.
+id<GREYMatcher> SecurityHelpCenterLink() {
+  return grey_allOf(
+      // The link is within the security footer with ID
+      // `kPageInfoSecurityFooterAccessibilityIdentifier`.
+      grey_ancestor(
+          grey_accessibilityID(kPageInfoSecurityFooterAccessibilityIdentifier)),
+      // UIKit instantiates a `UIAccessibilityLinkSubelement` for the link
+      // element in the label with attributed string.
+      grey_kindOfClassName(@"UIAccessibilityLinkSubelement"),
+      grey_accessibilityTrait(UIAccessibilityTraitLink), nil);
+}
+
+void AddAboutThisSiteHint(GURL url) {
+  [PageInfoAppInterface
+      addAboutThisSiteHintForURL:
+          [NSString stringWithCString:url.spec().c_str()
+                             encoding:[NSString defaultCStringEncoding]]
+                     description:
+                         @"A domain used in illustrative examples in documents"
+                aboutThisSiteURL:@"https://diner.com"];
+}
+
+void ExpectPageInfoActionHistograms(page_info::PageInfoAction action) {
+  GREYAssertNil(
+      [MetricsAppInterface
+           expectCount:1
+             forBucket:action
+          forHistogram:base::SysUTF8ToNSString(
+                           page_info::kWebsiteSettingsActionHistogram)],
+      @"WebsiteSettings.Action histogram not logged.");
+}
+
+void ExpectPermissionChangedHistograms(ContentSettingsType type) {
+  int bucket =
+      content_settings_uma_util::ContentSettingTypeToHistogramValue(type);
+  GREYAssertNil([MetricsAppInterface
+                     expectCount:1
+                       forBucket:bucket
+                    forHistogram:base::SysUTF8ToNSString(
+                                     kOriginInfoPermissionChangedHistogram)],
+                @"PermissionChanged histogram not logged.");
+  GREYAssertNil(
+      [MetricsAppInterface
+           expectCount:1
+             forBucket:bucket
+          forHistogram:base::SysUTF8ToNSString(
+                           kOriginInfoPermissionChangedBlockedHistogram)],
+      @"PermissionChanged.Blocked histogram not logged.");
+  ExpectPageInfoActionHistograms(page_info::PAGE_INFO_CHANGED_PERMISSION);
+}
+
 }  // namespace
 
 @interface PageInfoTestCase : ChromeTestCase
@@ -58,7 +117,23 @@ id<GREYMatcher> MicrophonePermissionsSwitch(BOOL isOn) {
   } else {
     config.features_enabled.push_back(kRevampPageInfoIos);
   }
+  config.additional_args.push_back(
+      std::string("-") +
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   return config;
+}
+
+- (void)setUp {
+  [super setUp];
+  [ChromeEarlGrey clearBrowsingHistory];
+  GREYAssertNil([MetricsAppInterface setupHistogramTester],
+                @"Failed to set up histogram tester.");
+}
+
+- (void)tearDown {
+  [super tearDown];
+  GREYAssertNil([MetricsAppInterface releaseHistogramTester],
+                @"Cannot reset histogram tester.");
 }
 
 // Checks that if the alert for site permissions pops up, and allow it.
@@ -124,6 +199,8 @@ id<GREYMatcher> MicrophonePermissionsSwitch(BOOL isOn) {
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
   [ChromeEarlGreyUI openPageInfo];
 
+  ExpectPageInfoActionHistograms(page_info::PAGE_INFO_OPENED);
+
   // Checks that the page info view has appeared.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kPageInfoViewAccessibilityIdentifier)]
@@ -168,10 +245,14 @@ id<GREYMatcher> MicrophonePermissionsSwitch(BOOL isOn) {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
   [ChromeEarlGreyUI openPageInfo];
-  // Checks that permission header is not visible.
+  // Checks that no permissions are not visible.
   [[EarlGrey
-      selectElementWithMatcher:grey_text(l10n_util::GetNSString(
-                                   IDS_IOS_PAGE_INFO_PERMISSIONS_HEADER))]
+      selectElementWithMatcher:grey_anyOf(CameraPermissionsSwitch(YES),
+                                          CameraPermissionsSwitch(NO), nil)]
+      assertWithMatcher:grey_notVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_anyOf(MicrophonePermissionsSwitch(YES),
+                                          MicrophonePermissionsSwitch(NO), nil)]
       assertWithMatcher:grey_notVisible()];
 }
 
@@ -193,14 +274,9 @@ id<GREYMatcher> MicrophonePermissionsSwitch(BOOL isOn) {
       loadURL:self.testServer->GetURL("/permissions/microphone_only.html")];
   [self checkAndAllowPermissionAlerts];
 
-  // Check that permission header is visible.
-  [ChromeEarlGreyUI openPageInfo];
-  [[EarlGrey
-      selectElementWithMatcher:grey_text(l10n_util::GetNSString(
-                                   IDS_IOS_PAGE_INFO_PERMISSIONS_HEADER))]
-      assertWithMatcher:grey_sufficientlyVisible()];
   // Check that camera permission item is hidden, and in accordance with the
   // web state permission states.
+  [ChromeEarlGreyUI openPageInfo];
   [self checkStatesForPermissions:@{
     @(web::PermissionCamera) : @(web::PermissionStateNotAccessible),
     @(web::PermissionMicrophone) : @(web::PermissionStateAllowed)
@@ -220,6 +296,10 @@ id<GREYMatcher> MicrophonePermissionsSwitch(BOOL isOn) {
     @(web::PermissionCamera) : @(web::PermissionStateNotAccessible),
     @(web::PermissionMicrophone) : @(web::PermissionStateBlocked)
   }];
+
+  // Check that the correct histograms are logged when a camera permission is
+  // changed via Page Info.
+  ExpectPermissionChangedHistograms(ContentSettingsType::MEDIASTREAM_MIC);
 }
 
 // Tests that two accessible permissions are shown in Permissions section with
@@ -240,13 +320,8 @@ id<GREYMatcher> MicrophonePermissionsSwitch(BOOL isOn) {
                               "/permissions/camera_and_microphone.html")];
   [self checkAndAllowPermissionAlerts];
 
-  // Check that permission header is visible.
-  [ChromeEarlGreyUI openPageInfo];
-  [[EarlGrey
-      selectElementWithMatcher:grey_text(l10n_util::GetNSString(
-                                   IDS_IOS_PAGE_INFO_PERMISSIONS_HEADER))]
-      assertWithMatcher:grey_sufficientlyVisible()];
   // Check that switchs for both permissions are visible.
+  [ChromeEarlGreyUI openPageInfo];
   [self checkStatesForPermissions:@{
     @(web::PermissionCamera) : @(web::PermissionStateAllowed),
     @(web::PermissionMicrophone) : @(web::PermissionStateAllowed)
@@ -265,6 +340,10 @@ id<GREYMatcher> MicrophonePermissionsSwitch(BOOL isOn) {
     @(web::PermissionCamera) : @(web::PermissionStateBlocked),
     @(web::PermissionMicrophone) : @(web::PermissionStateAllowed)
   }];
+
+  // Check that the correct histograms are logged when a camera permission is
+  // changed via Page Info.
+  ExpectPermissionChangedHistograms(ContentSettingsType::MEDIASTREAM_CAMERA);
 }
 
 // Tests that rotating the device will not dismiss the navigation bar.
@@ -277,6 +356,19 @@ id<GREYMatcher> MicrophonePermissionsSwitch(BOOL isOn) {
   [[EarlGrey selectElementWithMatcher:
                  grey_accessibilityID(
                      kPageInfoViewNavigationBarAccessibilityIdentifier)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Check that the navigation bar has both the page info's page title and the
+  // page URL.
+  [[EarlGrey selectElementWithMatcher:grey_text(l10n_util::GetNSString(
+                                          IDS_IOS_PAGE_INFO_SITE_INFORMATION))]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:
+                 grey_text([NSString
+                     stringWithCString:[ChromeEarlGrey webStateVisibleURL]
+                                           .host()
+                                           .c_str()
+                              encoding:[NSString defaultCStringEncoding]])]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Rotate to landscape mode and check the navigation bar is still visible.
@@ -316,6 +408,16 @@ id<GREYMatcher> MicrophonePermissionsSwitch(BOOL isOn) {
       selectElementWithMatcher:
           grey_accessibilityID(kPageInfoSecurityFooterAccessibilityIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap on the Learn more link.
+  [[EarlGrey selectElementWithMatcher:SecurityHelpCenterLink()]
+      performAction:grey_tap()];
+
+  // Check that the help center article was opened.
+  GREYAssertEqual(std::string("support.google.com"),
+                  [ChromeEarlGrey webStateVisibleURL].host(),
+                  @"Did not navigate to the help center article.");
+  ExpectPageInfoActionHistograms(page_info::PAGE_INFO_CONNECTION_HELP_OPENED);
 }
 
 // Tests the security section by checking that the correct connection label is
@@ -351,6 +453,51 @@ id<GREYMatcher> MicrophonePermissionsSwitch(BOOL isOn) {
       selectElementWithMatcher:
           grey_accessibilityID(kPageInfoSecurityViewAccessibilityIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
+
+  ExpectPageInfoActionHistograms(page_info::PAGE_INFO_SECURITY_DETAILS_OPENED);
+}
+
+// Most of the tests for AboutThisSite section are in chrome-internal
+// (chrome/test/external_url/external_url_ssl_app_interface.mm).
+// It seems that https pages in egtests always have an invalid certificate,
+// NET::ERR_CERT_AUTHORITY_INVALID, which makes the page unsecure. The
+// AboutThisSite section should only be available for secure pages. Tests in
+// chrome-internal can use real pages and so we are able to test Page Info with
+// secure pages.
+
+// Tests that the AboutThisSite section does not appear even if optimization
+// guide returns a hint but the connection is HTTP. The AboutThisSite section
+// should only appear for secure pages.
+- (void)testAboutThisSiteSectionWithHttp {
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  GURL url = self.testServer->GetURL("/");
+
+  AddAboutThisSiteHint(url);
+  [ChromeEarlGrey loadURL:url];
+  [ChromeEarlGreyUI openPageInfo];
+
+  // Check that AboutThisSite section is not displayed.
+  [[EarlGrey selectElementWithMatcher:grey_text(l10n_util::GetNSString(
+                                          IDS_IOS_PAGE_INFO_ABOUT_THIS_PAGE))]
+      assertWithMatcher:grey_nil()];
+}
+
+// Tests that the AboutThisSite section does not appear even if the connection
+// is HTTPs and optimization guide returns a hint but the certificate is not
+// valid. The AboutThisSite section should only appear for secure pages.
+- (void)testAboutThisSiteSectionWithHttpsInvalidCert {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  GREYAssertTrue(https_server.Start(), @"Test server failed to start.");
+  GURL url = https_server.GetURL("/");
+
+  AddAboutThisSiteHint(url);
+  [ChromeEarlGrey loadURL:url];
+  [ChromeEarlGreyUI openPageInfo];
+
+  // Check that AboutThisSite section is not displayed.
+  [[EarlGrey selectElementWithMatcher:grey_text(l10n_util::GetNSString(
+                                          IDS_IOS_PAGE_INFO_ABOUT_THIS_PAGE))]
+      assertWithMatcher:grey_nil()];
 }
 
 // Tests that we don't crash when showing the page info twice (prevent

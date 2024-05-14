@@ -12,17 +12,16 @@
 
 #include "base/base64.h"
 #include "base/check_op.h"
-#include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
 #include "base/pickle.h"
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill/core/browser/webdata/payments/payments_sync_bridge_util.h"
 #include "components/autofill/core/browser/webdata/autofill_sync_metadata_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/payments/payments_autofill_table.h"
+#include "components/autofill/core/browser/webdata/payments/payments_sync_bridge_util.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/sync/base/model_type.h"
@@ -569,7 +568,7 @@ void AutofillWalletMetadataSyncBridge::GetDataImpl(
   for (const auto& [storage_key, metadata] : cache_) {
     TypeAndMetadataId parsed_storage_key =
         ParseWalletMetadataStorageKey(storage_key);
-    if (!storage_keys_set || base::Contains(*storage_keys_set, storage_key)) {
+    if (!storage_keys_set || storage_keys_set->contains(storage_key)) {
       batch->Put(storage_key, CreateEntityDataFromAutofillMetadata(
                                   parsed_storage_key.type, metadata));
     }

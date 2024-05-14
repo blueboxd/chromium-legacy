@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
@@ -33,27 +34,33 @@
 #include "chrome/browser/pdf/pdf_extension_test_base.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
-#include "components/services/screen_ai/buildflags/buildflags.h"
+#include "components/prefs/pref_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/ax_inspect_factory.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/context_menu_interceptor.h"
+#include "content/public/test/scoped_accessibility_mode_override.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "pdf/pdf_features.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/screen_ai/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/context_menu_data/untrustworthy_context_menu_params.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_features.mojom-features.h"
+#include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -79,8 +86,8 @@
 #include "chrome/browser/screen_ai/screen_ai_service_router.h"
 #include "chrome/browser/screen_ai/screen_ai_service_router_factory.h"
 #include "chrome/common/pref_names.h"
-#include "components/services/screen_ai/public/cpp/utilities.h"
 #include "components/strings/grit/components_strings.h"
+#include "services/screen_ai/public/cpp/utilities.h"
 #include "ui/base/l10n/l10n_util.h"
 #endif  // defined(PDF_OCR_INTEGRATION_TEST_ENABLED)
 
@@ -200,12 +207,13 @@ constexpr char kExpectedHelloWorldPDFAXTreeWithOcrResults[] =
     "      staticText 'This PDF is inaccessible. Text extracted, powered by "
     "Google AI'\n"
     "  region 'Page 1'\n"
-    "    paragraph\n"
+    "    genericContainer\n"
     "      region\n"
     "        banner\n"
     "          staticText 'Start of extracted text'\n"
-    "        staticText 'Hello, world!'\n"
-    "          inlineTextBox 'Hello, world! '\n"
+    "        paragraph\n"
+    "          staticText 'Hello, world!'\n"
+    "            inlineTextBox 'Hello, world! '\n"
     "        contentInfo\n"
     "          staticText 'End of extracted text'\n";
 
@@ -218,7 +226,11 @@ constexpr char kExpectedHelloWorldPDFAXTreeWithoutOcrResults[] =
     "\"extract text from PDF\"'\n"
     "  region 'Page 1'\n"
     "    paragraph\n"
+#if BUILDFLAG(IS_WIN)
+    "      image 'Unlabeled graphic'\n";
+#else   // BUILDFLAG(IS_WIN)
     "      image 'Unlabeled image'\n";
+#endif  // BUILDFLAG(IS_WIN)
 
 constexpr char kExpectedBlankPDFAXTreeWithPdfOcr[] =
     "pdfRoot 'PDF document containing 1 page'\n"
@@ -227,7 +239,11 @@ constexpr char kExpectedBlankPDFAXTreeWithPdfOcr[] =
     "      staticText 'This PDF is inaccessible. No text extracted'\n"
     "  region 'Page 1'\n"
     "    paragraph\n"
+#if BUILDFLAG(IS_WIN)
+    "      image 'Unlabeled graphic'\n";
+#else   // BUILDFLAG(IS_WIN)
     "      image 'Unlabeled image'\n";
+#endif  // BUILDFLAG(IS_WIN)
 
 constexpr char kExpectedBlankPDFAXTreeWithoutOcrResults[] =
     "pdfRoot 'PDF document containing 1 page'\n"
@@ -238,7 +254,11 @@ constexpr char kExpectedBlankPDFAXTreeWithoutOcrResults[] =
     "\"extract text from PDF\"'\n"
     "  region 'Page 1'\n"
     "    paragraph\n"
+#if BUILDFLAG(IS_WIN)
+    "      image 'Unlabeled graphic'\n";
+#else   // BUILDFLAG(IS_WIN)
     "      image 'Unlabeled image'\n";
+#endif  // BUILDFLAG(IS_WIN)
 
 #endif  // defined(PDF_OCR_INTEGRATION_TEST_ENABLED)
 
@@ -292,10 +312,9 @@ class PDFExtensionAccessibilityTestWithOopifOverride
   bool UseOopif() const override { return GetParam(); }
 };
 
-// Flaky, see crbug.com/1477361
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
-                       DISABLED_PdfAccessibility) {
-  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+                       PdfAccessibility) {
+  content::ScopedAccessibilityModeOverride mode_override(ui::kAXModeComplete);
 
   ASSERT_TRUE(
       LoadPdf(embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf")));
@@ -310,16 +329,15 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
   ASSERT_MULTILINE_STREQ(kExpectedPDFAXTree, ax_tree_dump);
 }
 
-// Flaky, see crbug.com/1477361
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
-                       DISABLED_PdfAccessibilityEnableLater) {
+                       PdfAccessibilityEnableLater) {
   // In this test, load the PDF file first, with accessibility off.
   ASSERT_TRUE(
       LoadPdf(embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf")));
 
   // Now enable accessibility globally, and assert that the PDF
   // accessibility tree loads.
-  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+  content::ScopedAccessibilityModeOverride mode_override(ui::kAXModeComplete);
 
   WebContents* contents = GetActiveWebContents();
   WaitForAccessibilityTreeToContainNodeWithName(contents,
@@ -330,10 +348,9 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
   ASSERT_MULTILINE_STREQ(kExpectedPDFAXTree, ax_tree_dump);
 }
 
-// Flaky, see crbug.com/1477361
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
-                       DISABLED_PdfAccessibilityInIframe) {
-  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+                       PdfAccessibilityInIframe) {
+  content::ScopedAccessibilityModeOverride mode_override(ui::kAXModeComplete);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/pdf/test-iframe.html")));
 
@@ -349,7 +366,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
                        PdfAccessibilityInOOPIF) {
-  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+  content::ScopedAccessibilityModeOverride mode_override(ui::kAXModeComplete);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
       embedded_test_server()->GetURL("/pdf/test-cross-site-iframe.html")));
@@ -373,7 +390,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
 #endif
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
                        MAYBE_PdfAccessibilityWordBoundaries) {
-  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+  content::ScopedAccessibilityModeOverride mode_override(ui::kAXModeComplete);
   ASSERT_TRUE(
       LoadPdf(embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf")));
 
@@ -404,9 +421,13 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
   ASSERT_TRUE(found);
 }
 
-// Flaky, see crbug.com/1477361
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
-                       DISABLED_PdfAccessibilitySelection) {
+                       PdfAccessibilitySelection) {
+  // TODO(crbug.com/324636880): Remove this once the test passes for OOPIF PDF.
+  if (UseOopif()) {
+    GTEST_SKIP();
+  }
+
   ASSERT_TRUE(
       LoadPdf(embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf")));
 
@@ -416,9 +437,9 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
                       "document.getElementsByTagName('embed')[0].postMessage("
                       "{type: 'selectAll'});"));
 
-  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
-  WaitForAccessibilityTreeToContainNodeWithName(contents,
-                                                "1 First Section\r\n");
+  content::ScopedAccessibilityModeOverride mode_override(ui::kAXModeComplete);
+  WaitForAccessibilityTreeToContainSelection(contents, "1 First Section\r\n",
+                                             "3");
   ui::AXTreeUpdate ax_tree_update =
       GetAccessibilityTreeSnapshotForPdf(contents);
   ui::AXTree ax_tree(ax_tree_update);
@@ -452,9 +473,21 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
   EXPECT_EQ(ax::mojom::Role::kRegion, region->GetRole());
 }
 
-// Flaky, see crbug.com/1477361
+// TODO(crbug.com/330202391): Fix the flakiness on Windows.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_PdfAccessibilityContextMenuAction \
+  DISABLED_PdfAccessibilityContextMenuAction
+#else
+#define MAYBE_PdfAccessibilityContextMenuAction \
+  PdfAccessibilityContextMenuAction
+#endif  // BUILDFLAG(IS_WIN)
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
-                       DISABLED_PdfAccessibilityContextMenuAction) {
+                       MAYBE_PdfAccessibilityContextMenuAction) {
+  // TODO(crbug.com/324636880): Remove this once the test passes for OOPIF PDF.
+  if (UseOopif()) {
+    GTEST_SKIP();
+  }
+
   // Validate the context menu arguments for PDF selection when context menu is
   // invoked via accessibility tree.
   const char kExepectedPDFSelection[] =
@@ -480,9 +513,9 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
                       "document.getElementsByTagName('embed')[0].postMessage("
                       "{type: 'selectAll'});"));
 
-  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
-  WaitForAccessibilityTreeToContainNodeWithName(contents,
-                                                "1 First Section\r\n");
+  content::ScopedAccessibilityModeOverride mode_override(ui::kAXModeComplete);
+  WaitForAccessibilityTreeToContainSelection(contents, "1 First Section\r\n",
+                                             "3");
 
   // Find pdfRoot node in the accessibility tree.
   content::FindAccessibilityNodeCriteria find_criteria;
@@ -512,17 +545,16 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
   EXPECT_EQ(kExepectedPDFSelection, selected_text);
 }
 
-// Flaky, see crbug.com/1477361
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
-                       DISABLED_RecordHasAccessibleTextToUmaWithAccessiblePdf) {
+                       RecordHasAccessibleTextToUmaWithAccessiblePdf) {
+  base::HistogramTester histograms;
+  content::ScopedAccessibilityModeOverride mode_override(ui::kAXModeComplete);
   ASSERT_TRUE(
       LoadPdf(embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf")));
 
   WebContents* contents = GetActiveWebContents();
   ASSERT_TRUE(contents);
 
-  base::HistogramTester histograms;
-  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   WaitForAccessibilityTreeToContainNodeWithName(contents,
                                                 "1 First Section\r\n");
 
@@ -533,22 +565,21 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
                               /*expected_count=*/1);
 }
 
-// Flaky, see crbug.com/1477361
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
-                       DISABLED_RecordInaccessiblePdfUKM) {
-  ASSERT_TRUE(LoadPdf(embedded_test_server()->GetURL(
-      "/pdf/accessibility/hello-world-in-image.pdf")));
-
-  WebContents* contents = GetActiveWebContents();
-  ASSERT_TRUE(contents);
-
+                       RecordInaccessiblePdfUKM) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   base::test::TestFuture<void> ukm_recorded;
   ukm_recorder.SetOnAddEntryCallback(
       ukm::builders::Accessibility_InaccessiblePDFs::kEntryName,
       ukm_recorded.GetRepeatingCallback());
 
-  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+  content::ScopedAccessibilityModeOverride mode_override(ui::kAXModeComplete);
+  ASSERT_TRUE(LoadPdf(embedded_test_server()->GetURL(
+      "/pdf/accessibility/hello-world-in-image.pdf")));
+
+  WebContents* contents = GetActiveWebContents();
+  ASSERT_TRUE(contents);
+
   // This string is defined as `IDS_AX_UNLABELED_IMAGE_ROLE_DESCRIPTION` in
   // blink_accessibility_strings.grd.
 #if BUILDFLAG(IS_WIN)
@@ -561,17 +592,17 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
   ASSERT_TRUE(ukm_recorded.Wait());
 }
 
-// Flaky, see crbug.com/1477361
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
-                       DISABLED_RecordHasAccessibleTextToUmaWithInaccessible) {
+                       RecordHasAccessibleTextToUmaWithInaccessible) {
+  base::HistogramTester histograms;
+  content::ScopedAccessibilityModeOverride mode_override(ui::kAXModeComplete);
+
   ASSERT_TRUE(LoadPdf(embedded_test_server()->GetURL(
       "/pdf/accessibility/hello-world-in-image.pdf")));
 
   WebContents* contents = GetActiveWebContents();
   ASSERT_TRUE(contents);
 
-  base::HistogramTester histograms;
-  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   // This string is defined as `IDS_AX_UNLABELED_IMAGE_ROLE_DESCRIPTION` in
   // blink_accessibility_strings.grd.
 #if BUILDFLAG(IS_WIN)
@@ -593,7 +624,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
 // when accessibility is enabled.  (http://crbug.com/668724)
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTestWithOopifOverride,
                        PdfAccessibilityTextRunCrash) {
-  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+  content::ScopedAccessibilityModeOverride mode_override(ui::kAXModeComplete);
   ASSERT_TRUE(LoadPdf(embedded_test_server()->GetURL(
       "/pdf_private/accessibility_crash_2.pdf")));
 
@@ -646,7 +677,7 @@ class PDFExtensionAccessibilityTextExtractionTest
     ASSERT_TRUE(expected_lines) << "Couldn't load expectation file.";
 
     // Enable accessibility and load the test file.
-    content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+    content::ScopedAccessibilityModeOverride mode_override(ui::kAXModeComplete);
     const GURL test_file_url = embedded_test_server()->GetURL(base::StrCat(
         {"/", file_dir, "/", test_file_path.BaseName().MaybeAsASCII()}));
     ASSERT_TRUE(LoadPdf(test_file_url));
@@ -927,7 +958,7 @@ class PDFExtensionAccessibilityTreeDumpTest
     }
 
     // Enable accessibility and load the test file.
-    content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+    content::ScopedAccessibilityModeOverride mode_override(ui::kAXModeComplete);
     const GURL test_file_url = embedded_test_server()->GetURL(base::StrCat(
         {"/", file_dir, "/", test_file_path.BaseName().MaybeAsASCII()}));
     ASSERT_TRUE(LoadPdf(test_file_url));
@@ -1142,7 +1173,7 @@ using PDFExtensionAccessibilityNavigationTest =
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityNavigationTest,
                        MAYBE_LinkNavigation) {
   // Enable accessibility and load the test file.
-  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+  content::ScopedAccessibilityModeOverride mode_override(ui::kAXModeComplete);
   ASSERT_TRUE(LoadPdf(
       embedded_test_server()->GetURL("/pdf/accessibility/weblinks.pdf")));
 
@@ -1274,28 +1305,41 @@ INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionAccessibilityPdfOcrTest);
 
 class PDFOCRIntegrationTest
     : public PDFExtensionAccessibilityTest,
-      public ::testing::WithParamInterface<bool> /*kScreenAIOCREnabled*/ {
+      public screen_ai::ScreenAIInstallState::Observer,
+      public ::testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   PDFOCRIntegrationTest() = default;
   ~PDFOCRIntegrationTest() override = default;
+
+  bool IsOcrServiceEnabled() const { return std::get<0>(GetParam()); }
+  bool IsLibraryAvailable() const { return std::get<1>(GetParam()); }
+  bool IsOcrAvailable() const {
+    return IsOcrServiceEnabled() && IsLibraryAvailable();
+  }
 
   // PDFExtensionAccessibilityTest:
   void SetUpOnMainThread() override {
     PDFExtensionAccessibilityTest::SetUpOnMainThread();
 
-    screen_ai::ScreenAIInstallState::GetInstance()->SetComponentFolder(
-        screen_ai::GetLatestComponentBinaryPath().DirName());
+    if (IsLibraryAvailable()) {
+      screen_ai::ScreenAIInstallState::GetInstance()->SetComponentFolder(
+          screen_ai::GetComponentBinaryPathForTests().DirName());
+    } else {
+      // Set an observer to mark download as failed when requested.
+      component_download_observer_.Observe(
+          screen_ai::ScreenAIInstallState::GetInstance());
+    }
 
-    content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+    mode_override_.emplace(ui::kAXModeComplete);
     EnableScreenReader(true);
   }
 
   void TearDownOnMainThread() override {
+    component_download_observer_.Reset();
     EnableScreenReader(false);
+    mode_override_.reset();
     PDFExtensionAccessibilityTest::TearDownOnMainThread();
   }
-
-  bool IsOcrServiceAvailable() const { return GetParam(); }
 
   void WaitForTreeStatus(int status_message_id) {
     WebContents* contents = GetActiveWebContents();
@@ -1305,12 +1349,24 @@ class PDFOCRIntegrationTest
     WaitForAccessibilityTreeToContainNodeWithName(contents, expected_message);
   }
 
+  // ScreenAIInstallState::Observer:
+  void StateChanged(screen_ai::ScreenAIInstallState::State state) override {
+    if (state == screen_ai::ScreenAIInstallState::State::kDownloading &&
+        !IsLibraryAvailable()) {
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, base::BindOnce([]() {
+            screen_ai::ScreenAIInstallState::GetInstance()->SetState(
+                screen_ai::ScreenAIInstallState::State::kDownloadFailed);
+          }));
+    }
+  }
+
  protected:
   std::vector<base::test::FeatureRef> GetEnabledFeatures() const override {
     auto enabled = PDFExtensionAccessibilityTest::GetEnabledFeatures();
     enabled.push_back(::features::kPdfOcr);
     enabled.push_back(::features::kScreenAITestMode);
-    if (IsOcrServiceAvailable()) {
+    if (IsOcrServiceEnabled()) {
       enabled.push_back(ax::mojom::features::kScreenAIOCREnabled);
     }
     return enabled;
@@ -1321,7 +1377,7 @@ class PDFOCRIntegrationTest
     // disabled features. Now that `::features::kPdfOcr` is used in this test,
     // parent disabled features should not be used.
     std::vector<base::test::FeatureRef> disabled;
-    if (!IsOcrServiceAvailable()) {
+    if (!IsOcrServiceEnabled()) {
       disabled.push_back(ax::mojom::features::kScreenAIOCREnabled);
     }
     return disabled;
@@ -1337,6 +1393,12 @@ class PDFOCRIntegrationTest
           ->RemoveAccessibilityModeFlags(ui::AXMode::kScreenReader);
     }
   }
+
+ private:
+  std::optional<content::ScopedAccessibilityModeOverride> mode_override_;
+  base::ScopedObservation<screen_ai::ScreenAIInstallState,
+                          screen_ai::ScreenAIInstallState::Observer>
+      component_download_observer_{this};
 };
 
 IN_PROC_BROWSER_TEST_P(PDFOCRIntegrationTest, EnsureScreenAIInitializes) {
@@ -1357,18 +1419,21 @@ IN_PROC_BROWSER_TEST_P(PDFOCRIntegrationTest, EnsureScreenAIInitializes) {
             EXPECT_EQ(expected_result, successful);
             run_loop->Quit();
           },
-          &run_loop, IsOcrServiceAvailable()));
+          &run_loop, IsOcrAvailable()));
   run_loop.Run();
 
-  // If OCR service is not available, PdfOcrController sets the pref to false.
+  // If OCR is not available, PdfOcrController sets the pref to false.
   EXPECT_EQ(browser()->profile()->GetPrefs()->GetBoolean(
                 prefs::kAccessibilityPdfOcrAlwaysActive),
-            IsOcrServiceAvailable());
+            IsOcrAvailable());
 
-  // The library should be downloaded anyway since the kill switch only applies
-  // to OCR and not other functionalities.
-  auto state = screen_ai::ScreenAIInstallState::GetInstance()->get_state();
-  EXPECT_TRUE(state == screen_ai::ScreenAIInstallState::State::kDownloaded);
+  // Library download state should not depend on OcrService availability.
+  screen_ai::ScreenAIInstallState::State expected_state =
+      IsLibraryAvailable()
+          ? screen_ai::ScreenAIInstallState::State::kDownloaded
+          : screen_ai::ScreenAIInstallState::State::kDownloadFailed;
+  EXPECT_EQ(expected_state,
+            screen_ai::ScreenAIInstallState::GetInstance()->get_state());
 }
 
 IN_PROC_BROWSER_TEST_P(PDFOCRIntegrationTest, HelloWorld) {
@@ -1379,16 +1444,16 @@ IN_PROC_BROWSER_TEST_P(PDFOCRIntegrationTest, HelloWorld) {
   EXPECT_TRUE(LoadPdf(embedded_test_server()->GetURL(
       "/pdf/accessibility/hello-world-in-image.pdf")));
 
-  WaitForTreeStatus(IsOcrServiceAvailable() ? IDS_PDF_OCR_COMPLETED
-                                            : IDS_PDF_OCR_FEATURE_ALERT);
+  WaitForTreeStatus(IsOcrAvailable() ? IDS_PDF_OCR_COMPLETED
+                                     : IDS_PDF_OCR_FEATURE_ALERT);
 
   ui::AXTreeUpdate ax_tree =
       GetAccessibilityTreeSnapshotForPdf(GetActiveWebContents());
   std::string ax_tree_dump =
       DumpPdfAccessibilityTree(ax_tree, /*skip_status_subtree=*/false);
   const char* expected_tree_dump =
-      IsOcrServiceAvailable() ? kExpectedHelloWorldPDFAXTreeWithOcrResults
-                              : kExpectedHelloWorldPDFAXTreeWithoutOcrResults;
+      IsOcrAvailable() ? kExpectedHelloWorldPDFAXTreeWithOcrResults
+                       : kExpectedHelloWorldPDFAXTreeWithoutOcrResults;
   ASSERT_MULTILINE_STREQ(expected_tree_dump, ax_tree_dump);
 }
 
@@ -1422,8 +1487,8 @@ IN_PROC_BROWSER_TEST_P(PDFOCRIntegrationTest, NoOcrResultOnBlankImagePdf) {
       embedded_test_server()->GetURL("/pdf/accessibility/blank_image.pdf")));
 
   // "/pdf/accessibility/blank_image.pdf" has a blank image.
-  WaitForTreeStatus(IsOcrServiceAvailable() ? IDS_PDF_OCR_NO_RESULT
-                                            : IDS_PDF_OCR_FEATURE_ALERT);
+  WaitForTreeStatus(IsOcrAvailable() ? IDS_PDF_OCR_NO_RESULT
+                                     : IDS_PDF_OCR_FEATURE_ALERT);
 
   ui::AXTreeUpdate ax_tree =
       GetAccessibilityTreeSnapshotForPdf(GetActiveWebContents());
@@ -1431,11 +1496,19 @@ IN_PROC_BROWSER_TEST_P(PDFOCRIntegrationTest, NoOcrResultOnBlankImagePdf) {
       DumpPdfAccessibilityTree(ax_tree, /*skip_status_subtree=*/false);
 
   const char* expected_tree_dump =
-      IsOcrServiceAvailable() ? kExpectedBlankPDFAXTreeWithPdfOcr
-                              : kExpectedBlankPDFAXTreeWithoutOcrResults;
+      IsOcrAvailable() ? kExpectedBlankPDFAXTreeWithPdfOcr
+                       : kExpectedBlankPDFAXTreeWithoutOcrResults;
   ASSERT_MULTILINE_STREQ(expected_tree_dump, ax_tree_dump);
 }
 
-INSTANTIATE_TEST_SUITE_P(All, PDFOCRIntegrationTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    PDFOCRIntegrationTest,
+    ::testing::Combine(testing::Bool(), testing::Bool()),
+    [](const testing::TestParamInfo<std::tuple<bool, bool>>& info) {
+      return base::StringPrintf(
+          "OCR_%s_Library_%s", std::get<0>(info.param) ? "Enabled" : "Disabled",
+          std::get<1>(info.param) ? "Available" : "Unavailable");
+    });
 
 #endif  // defined(PDF_OCR_INTEGRATION_TEST_ENABLED)

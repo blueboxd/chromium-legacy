@@ -26,7 +26,7 @@ BirchFileSuggestProvider::BirchFileSuggestProvider(Profile* profile)
 
 BirchFileSuggestProvider::~BirchFileSuggestProvider() = default;
 
-void BirchFileSuggestProvider::RequestDataFetch() {
+void BirchFileSuggestProvider::RequestBirchDataFetch() {
   file_suggest_service_->GetSuggestFileData(
       FileSuggestionType::kDriveFile,
       base::BindOnce(&BirchFileSuggestProvider::OnSuggestedFileDataUpdated,
@@ -38,12 +38,15 @@ void BirchFileSuggestProvider::OnFileSuggestionUpdated(
   weak_factory_.InvalidateWeakPtrs();
 
   if (type == FileSuggestionType::kDriveFile) {
-    RequestDataFetch();
+    RequestBirchDataFetch();
   }
 }
 
 void BirchFileSuggestProvider::OnSuggestedFileDataUpdated(
-    const absl::optional<std::vector<FileSuggestData>>& suggest_results) {
+    const std::optional<std::vector<FileSuggestData>>& suggest_results) {
+  if (!Shell::HasInstance()) {
+    return;
+  }
   if (!suggest_results) {
     Shell::Get()->birch_model()->SetFileSuggestItems({});
     return;
@@ -55,7 +58,9 @@ void BirchFileSuggestProvider::OnSuggestedFileDataUpdated(
         suggestion.timestamp
             ? *suggestion.timestamp
             : suggestion.secondary_timestamp.value_or(base::Time());
-    file_items.emplace_back(suggestion.file_path, timestamp);
+    file_items.emplace_back(suggestion.file_path,
+                            suggestion.prediction_reason.value_or(u""),
+                            timestamp);
   }
   Shell::Get()->birch_model()->SetFileSuggestItems(std::move(file_items));
 }

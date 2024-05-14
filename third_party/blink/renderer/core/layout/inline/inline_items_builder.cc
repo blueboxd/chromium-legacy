@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/layout/inline/transformed_string.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_offset_map.h"
@@ -525,17 +526,19 @@ void InlineItemsBuilderTemplate<MappingBuilder>::AppendText(
     AppendText(TransformedString(layout_text->TransformedText()), *layout_text);
     return;
   }
-  String original = layout_text->OriginalText();
-  TextOffsetMap offset_map;
-  String transformed =
-      layout_text->TransformAndSecureText(original, offset_map);
-  CHECK_EQ(layout_text->TransformedText().length(), transformed.length());
+  // Do not use LayoutText::OriginalText() here.  This code is used when
+  // OriginalText() was updated but TransformedText() is not updated yet, and we
+  // need to use TransformedText() in that case.  It is required to make
+  // InlineNode::SetTextWithOffset() workable.
+  auto [original_length, offset_map] =
+      layout_text->GetVariableLengthTransformResult();
+  String transformed = layout_text->TransformedText();
   const Vector<unsigned> length_map = TransformedString::CreateLengthMap(
-      original.length(), transformed.length(), offset_map);
+      original_length, transformed.length(), offset_map);
   CHECK(transformed.length() == length_map.size() || length_map.size() == 0);
-  AppendText(TransformedString(layout_text->TransformedText(),
-                               {length_map.data(), length_map.size()}),
-             *layout_text);
+  AppendText(
+      TransformedString(transformed, {length_map.data(), length_map.size()}),
+      *layout_text);
 }
 
 template <typename MappingBuilder>
@@ -1407,20 +1410,34 @@ void InlineItemsBuilderTemplate<MappingBuilder>::EnterInline(
     }
   }
 
+  has_ruby_ = has_ruby_ || node->IsInlineRubyText();
+  if (node->IsInlineRubyText() && !node->Parent()->IsInlineRuby()) {
+    // This creates a ruby column with no ruby-base items.
+    AppendOpaque(InlineItem::kOpenRubyColumn,
+                 IsLtr(style->Direction()) ? kLeftToRightIsolateCharacter
+                                           : kRightToLeftIsolateCharacter,
+                 nullptr);
+  }
   AppendOpaque(InlineItem::kOpenTag, node);
 
-  if (!NeedsBoxInfo())
-    return;
-
-  // Set |ShouldCreateBoxFragment| of the parent box if needed.
-  BoxInfo* current_box =
-      &boxes_.emplace_back(items_->size() - 1, items_->back());
-  if (boxes_.size() > 1) {
-    BoxInfo* parent_box = std::prev(current_box);
-    if (!parent_box->should_create_box_fragment &&
-        parent_box->ShouldCreateBoxFragmentForChild(*current_box)) {
-      parent_box->SetShouldCreateBoxFragment(items_);
+  if (NeedsBoxInfo()) {
+    // Set |ShouldCreateBoxFragment| of the parent box if needed.
+    BoxInfo* current_box =
+        &boxes_.emplace_back(items_->size() - 1, items_->back());
+    if (boxes_.size() > 1) {
+      BoxInfo* parent_box = std::prev(current_box);
+      if (!parent_box->should_create_box_fragment &&
+          parent_box->ShouldCreateBoxFragmentForChild(*current_box)) {
+        parent_box->SetShouldCreateBoxFragment(items_);
+      }
     }
+  }
+
+  if (node->IsInlineRuby()) {
+    AppendOpaque(InlineItem::kOpenRubyColumn,
+                 IsLtr(style->Direction()) ? kLeftToRightIsolateCharacter
+                                           : kRightToLeftIsolateCharacter,
+                 node);
   }
 }
 
@@ -1438,6 +1455,11 @@ template <typename MappingBuilder>
 void InlineItemsBuilderTemplate<MappingBuilder>::ExitInline(
     LayoutObject* node) {
   DCHECK(node);
+
+  if (node->IsInlineRuby()) {
+    AppendOpaque(InlineItem::kCloseRubyColumn, kPopDirectionalIsolateCharacter,
+                 node);
+  }
 
   if (NeedsBoxInfo()) {
     BoxInfo* current_box = &boxes_.back();
@@ -1479,6 +1501,24 @@ void InlineItemsBuilderTemplate<MappingBuilder>::ExitInline(
   }
 
   AppendOpaque(InlineItem::kCloseTag, node);
+
+  if (node->IsInlineRubyText()) {
+    if (node->Parent()->IsInlineRuby()) {
+      LayoutObject* ruby_container = node->Parent();
+      AppendOpaque(InlineItem::kCloseRubyColumn,
+                   kPopDirectionalIsolateCharacter, ruby_container);
+      // This produces empty ruby-columns if </ruby> follows.  LineBreaker
+      // should ignore such ruby-columns.
+      AppendOpaque(InlineItem::kOpenRubyColumn,
+                   IsLtr(node->Parent()->Style()->Direction())
+                       ? kLeftToRightIsolateCharacter
+                       : kRightToLeftIsolateCharacter,
+                   ruby_container);
+    } else {
+      AppendOpaque(InlineItem::kCloseRubyColumn,
+                   kPopDirectionalIsolateCharacter, nullptr);
+    }
+  }
 
   Exit(node);
 }

@@ -1373,6 +1373,8 @@ static bool HorizontalViewportSegmentsMediaFeatureEval(
     const MediaQueryExpValue& value,
     MediaQueryOperator op,
     const MediaValues& media_values) {
+  UseCounter::Count(media_values.GetDocument(),
+                    WebFeature::kViewportSegmentsMediaFeature);
   int horizontal_viewport_segments =
       media_values.GetHorizontalViewportSegments();
 
@@ -1395,6 +1397,8 @@ static bool VerticalViewportSegmentsMediaFeatureEval(
     const MediaQueryExpValue& value,
     MediaQueryOperator op,
     const MediaValues& media_values) {
+  UseCounter::Count(media_values.GetDocument(),
+                    WebFeature::kViewportSegmentsMediaFeature);
   int vertical_viewport_segments = media_values.GetVerticalViewportSegments();
 
   MaybeRecordMediaFeatureValue(
@@ -1460,6 +1464,8 @@ static bool OverflowBlockMediaFeatureEval(const MediaQueryExpValue& value,
 static bool DevicePostureMediaFeatureEval(const MediaQueryExpValue& value,
                                           MediaQueryOperator,
                                           const MediaValues& media_values) {
+  UseCounter::Count(media_values.GetDocument(),
+                    WebFeature::kDevicePostureMediaFeature);
   // isValid() is false if there is no parameter. Without parameter we should
   // return true to indicate that device posture is enabled in the
   // browser.
@@ -1754,9 +1760,9 @@ KleeneValue MediaQueryEvaluator::EvalStyleFeature(
 
   const CSSValue* computed_value =
       CustomProperty(property_name, *media_values_->GetDocument())
-          .CSSValueFromComputedStyle(container->ComputedStyleRef(),
-                                     nullptr /* layout_object */,
-                                     false /* allow_visited_style */);
+          .CSSValueFromComputedStyle(
+              container->ComputedStyleRef(), nullptr /* layout_object */,
+              false /* allow_visited_style */, CSSValuePhase::kComputedValue);
   if (base::ValuesEquivalent(query_value, computed_value) == explicit_value) {
     return KleeneValue::kTrue;
   }

@@ -9,6 +9,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 
 #include "base/functional/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
@@ -80,7 +81,13 @@ class FakeWebContentsManager : public WebContentsManager {
     // An empty url is considered an absent url.
     GURL manifest_url;
     bool valid_manifest_for_web_app = false;
-    blink::mojom::ManifestPtr opt_manifest;
+    // Manifests always go through default processing (e.g. start_url defaulting
+    // to the document_url, and manifest_id defaulting to start_url). This fake
+    // system will ensure that `CheckInstallabilityAndRetrieveManifest` this
+    // behavior is replicated before the manifest is returned for
+    // `CheckInstallabilityAndRetrieveManifest`.
+    blink::mojom::ManifestPtr manifest_before_default_processing;
+
     webapps::InstallableStatusCode error_code =
         webapps::InstallableStatusCode::NO_ERROR_DETECTED;
     GURL favicon_url;
@@ -122,10 +129,11 @@ class FakeWebContentsManager : public WebContentsManager {
       const GURL& install_url,
       const GURL& manifest_url,
       const GURL& start_url,
-      base::StringPiece16 name = u"Basic app name");
+      std::u16string_view name = u"Basic app name");
   void SetPageState(const GURL& gurl, FakePageState page_state);
   FakePageState& GetOrCreatePageState(const GURL& gurl);
   void DeletePageState(const GURL& gurl);
+  bool HasPageState(const GURL& gurl);
 
   using LoadUrlTracker = base::RepeatingCallback<void(
       content::NavigationController::LoadURLParams& load_url_params,

@@ -37,11 +37,11 @@ class FormTrackerTest : public test::AutofillRendererTest,
       scoped_feature_list_.InitWithFeatures(
           /*enabled_features=*/
           {features::kAutofillReplaceCachedWebElementsByRendererIds,
-           features::kAutofillImproveSubmissionDetection},
+           features::kAutofillReplaceFormElementObserver},
           /*disabled_features=*/{});
     } else {
       scoped_feature_list_.InitAndDisableFeature(
-          features::kAutofillImproveSubmissionDetection);
+          features::kAutofillReplaceFormElementObserver);
     }
   }
   blink::WebFormControlElement GetFormControlById(const std::string& id) {
@@ -88,6 +88,7 @@ TEST_P(FormTrackerTest, FormlessXHRThenHide) {
   ExecuteJavaScriptForTests(
       R"(document.getElementById('input1').style.display = 'none';
          document.getElementById('input2').style.display = 'none';)");
+  ForceLayoutUpdate();
 }
 
 // Check that submission is detected on a page with no <form> when in sequence:
@@ -111,6 +112,7 @@ TEST_P(FormTrackerTest, FormlessHideThenXhr) {
   ExecuteJavaScriptForTests(
       "document.getElementById('input1').style.display = 'none';"
       "document.getElementById('input2').style.display = 'none';");
+  ForceLayoutUpdate();
   task_environment_.RunUntilIdle();
   // FormTracker should not think there is a submission because the page has not
   // done any XHRs.

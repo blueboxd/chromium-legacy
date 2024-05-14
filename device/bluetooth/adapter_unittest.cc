@@ -13,8 +13,12 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_future.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
+#include "device/bluetooth/gatt_service.h"
+#include "device/bluetooth/public/mojom/adapter.mojom.h"
+#include "device/bluetooth/test/fake_local_gatt_service.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_advertisement.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
@@ -83,6 +87,11 @@ class AdapterTest : public testing::Test {
   AdapterTest& operator=(const AdapterTest&) = delete;
 
   void SetUp() override {
+    fake_local_gatt_service_ = std::make_unique<FakeLocalGattService>(
+        /*service_id=*/kServiceId,
+        /*service_uuid=*/device::BluetoothUUID(kServiceId),
+        /*is_primary=*/false);
+
     mock_bluetooth_adapter_ = base::MakeRefCounted<
         NiceMock<MockBluetoothAdapterWithAdvertisements>>();
     ON_CALL(*mock_bluetooth_adapter_, IsPresent()).WillByDefault(Return(true));
@@ -108,6 +117,10 @@ class AdapterTest : public testing::Test {
     // via GetDevice(), not |mock_unknown_bluetooth_device_|.
     ON_CALL(*mock_bluetooth_adapter_, GetDevice(kKnownDeviceAddress))
         .WillByDefault(Return(mock_known_bluetooth_device_.get()));
+    ON_CALL(*mock_bluetooth_adapter_, GetGattService)
+        .WillByDefault(testing::Return(nullptr));
+    ON_CALL(*mock_bluetooth_adapter_, CreateLocalGattService)
+        .WillByDefault(Invoke(this, &AdapterTest::CreateLocalGattService));
 
     mock_bluetooth_socket_ =
         base::MakeRefCounted<NiceMock<device::MockBluetoothSocket>>();
@@ -115,10 +128,20 @@ class AdapterTest : public testing::Test {
     adapter_ = std::make_unique<Adapter>(mock_bluetooth_adapter_);
   }
 
+  base::WeakPtr<device::BluetoothLocalGattService> CreateLocalGattService(
+      const device::BluetoothUUID& uuid,
+      bool is_primary,
+      device::BluetoothLocalGattService::Delegate* delegate) {
+    return fake_local_gatt_service_->GetWeakPtr();
+  }
+
  protected:
-  void RegisterAdvertisement(bool should_succeed, bool use_scan_data) {
+  void RegisterAdvertisement(bool should_succeed,
+                             bool use_scan_data,
+                             bool connectable) {
     mock_bluetooth_adapter_->should_advertisement_registration_succeed_ =
         should_succeed;
+    last_set_connectable_ = connectable;
 
     auto service_data = GetByteVector(kDeviceServiceDataStr);
     mojo::Remote<mojom::Advertisement> advertisement;
@@ -126,7 +149,8 @@ class AdapterTest : public testing::Test {
     base::RunLoop run_loop;
     adapter_->RegisterAdvertisement(
         device::BluetoothUUID(kServiceId), service_data,
-        /*use_scan_data=*/use_scan_data,
+        /*use_scan_response=*/use_scan_data,
+        /*connectable=*/connectable,
         base::BindLambdaForTesting([&](mojo::PendingRemote<mojom::Advertisement>
                                            pending_advertisement) {
           EXPECT_EQ(should_succeed, pending_advertisement.is_valid());
@@ -141,6 +165,7 @@ class AdapterTest : public testing::Test {
         mock_bluetooth_adapter_->last_advertisement_data_->service_uuids();
     EXPECT_EQ(1u, uuid_list->size());
     EXPECT_EQ(kServiceId, (*uuid_list)[0]);
+    VerifyAdvertisementConnectable(last_set_connectable_);
     auto last_service_data =
         mock_bluetooth_adapter_->last_advertisement_data_->service_data();
     EXPECT_EQ(service_data, last_service_data->at(kServiceId));
@@ -154,6 +179,7 @@ class AdapterTest : public testing::Test {
         mock_bluetooth_adapter_->last_advertisement_data_->service_uuids();
     EXPECT_EQ(1u, uuid_list->size());
     EXPECT_EQ(kServiceId, (*uuid_list)[0]);
+    VerifyAdvertisementConnectable(last_set_connectable_);
     EXPECT_FALSE(
         mock_bluetooth_adapter_->last_advertisement_data_->service_data());
     auto last_scan_response_data =
@@ -168,8 +194,21 @@ class AdapterTest : public testing::Test {
               std::vector<uint8_t>(raw_data.begin() + 2, raw_data.end()));
   }
 
+  void VerifyAdvertisementConnectable(bool connectable) {
+    auto type = mock_bluetooth_adapter_->last_advertisement_data_->type();
+    if (connectable) {
+      EXPECT_EQ(type, device::BluetoothAdvertisement::AdvertisementType::
+                          ADVERTISEMENT_TYPE_PERIPHERAL);
+    } else {
+      EXPECT_EQ(type, device::BluetoothAdvertisement::AdvertisementType::
+                          ADVERTISEMENT_TYPE_BROADCAST);
+    }
+  }
+
+  device::BluetoothUUID bluetooth_service_id_{kServiceId};
   scoped_refptr<NiceMock<MockBluetoothAdapterWithAdvertisements>>
       mock_bluetooth_adapter_;
+  std::unique_ptr<FakeLocalGattService> fake_local_gatt_service_;
   std::unique_ptr<NiceMock<device::MockBluetoothDevice>>
       mock_known_bluetooth_device_;
   std::unique_ptr<NiceMock<device::MockBluetoothDevice>>
@@ -179,21 +218,37 @@ class AdapterTest : public testing::Test {
 
  private:
   base::test::TaskEnvironment task_environment_;
+  bool last_set_connectable_ = false;
 };
 
 TEST_F(AdapterTest, TestRegisterAdvertisement_Success) {
-  RegisterAdvertisement(/*should_succeed=*/true, /*use_scan_data=*/false);
+  RegisterAdvertisement(/*should_succeed=*/true, /*use_scan_data=*/false,
+                        /*connectable=*/false);
   VerifyAdvertisement();
 }
 
 TEST_F(AdapterTest, TestRegisterAdvertisement_Error) {
-  RegisterAdvertisement(/*should_succeed=*/false, /*use_scan_data=*/false);
+  RegisterAdvertisement(/*should_succeed=*/false, /*use_scan_data=*/false,
+                        /*connectable=*/false);
   VerifyAdvertisement();
 }
 
 TEST_F(AdapterTest, TestRegisterAdvertisement_ScanResponseData) {
-  RegisterAdvertisement(/*should_succeed=*/true, /*use_scan_data=*/true);
+  RegisterAdvertisement(/*should_succeed=*/true, /*use_scan_data=*/true,
+                        /*connectable=*/false);
   VerifyAdvertisementWithScanData();
+}
+
+TEST_F(AdapterTest, TestRegisterAdvertisement_NotConnectable) {
+  RegisterAdvertisement(/*should_succeed=*/true, /*use_scan_data=*/false,
+                        /*connectable=*/false);
+  VerifyAdvertisement();
+}
+
+TEST_F(AdapterTest, TestRegisterAdvertisement_Connectable) {
+  RegisterAdvertisement(/*should_succeed=*/true, /*use_scan_data=*/false,
+                        /*connectable=*/true);
+  VerifyAdvertisement();
 }
 
 TEST_F(AdapterTest, TestConnectToServiceInsecurely_DisallowedUuid) {
@@ -438,6 +493,15 @@ TEST_F(AdapterTest, TestConnectToServiceInsecurely_HalfPaired) {
       base::BindLambdaForTesting(
           [&](mojom::ConnectToServiceResultPtr connect_to_service_result) {}));
 }
+
+TEST_F(AdapterTest, CreateLocalGattService) {
+  mojo::PendingRemote<mojom::GattServiceObserver> observer;
+  base::test::TestFuture<mojo::PendingRemote<mojom::GattService>> future;
+  adapter_->CreateLocalGattService(bluetooth_service_id_, std::move(observer),
+                                   future.GetCallback());
+  EXPECT_TRUE(future.Take());
+}
+
 #endif
 
 TEST_F(AdapterTest, TestCreateRfcommServiceInsecurely_DisallowedUuid) {

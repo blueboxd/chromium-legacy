@@ -53,7 +53,8 @@ void PasswordSettingsUpdaterAndroidReceiverBridgeImpl::SetConsumer(
 void PasswordSettingsUpdaterAndroidReceiverBridgeImpl::OnSettingValueFetched(
     JNIEnv* env,
     jint setting,
-    jboolean setting_value) {
+    jboolean setting_value,
+    jboolean is_part_of_migration) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
   if (!consumer_)
     return;
@@ -63,7 +64,8 @@ void PasswordSettingsUpdaterAndroidReceiverBridgeImpl::OnSettingValueFetched(
 
 void PasswordSettingsUpdaterAndroidReceiverBridgeImpl::OnSettingValueAbsent(
     JNIEnv* env,
-    jint setting) {
+    jint setting,
+    jboolean is_part_of_migration) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
   if (!consumer_)
     return;
@@ -74,24 +76,34 @@ void PasswordSettingsUpdaterAndroidReceiverBridgeImpl::OnSettingFetchingError(
     JNIEnv* env,
     jint setting,
     jint error,
-    jint api_error_code) {
+    jint api_error_code,
+    jboolean is_part_of_migration) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
-  // TODO(crbug.com/1289700): Notify a consumer/record metrics.
+  consumer_->OnSettingFetchingError(
+      static_cast<PasswordManagerSetting>(setting),
+      static_cast<AndroidBackendAPIErrorCode>(api_error_code));
 }
 
 void PasswordSettingsUpdaterAndroidReceiverBridgeImpl::
-    OnSuccessfulSettingChange(JNIEnv* env, jint setting) {
+    OnSuccessfulSettingChange(JNIEnv* env,
+                              jint setting,
+                              jboolean is_part_of_migration) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
-  // TODO(crbug.com/1289700): Notify a consumer/record metrics.
+  // TODO(crbug.com/1289700): Record metrics.
+  consumer_->OnSuccessfulSettingChange(
+      static_cast<PasswordManagerSetting>(setting));
 }
 
 void PasswordSettingsUpdaterAndroidReceiverBridgeImpl::OnFailedSettingChange(
     JNIEnv* env,
     jint setting,
     jint error,
-    jint api_error_code) {
+    jint api_error_code,
+    jboolean is_part_of_migration) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
-  // TODO(crbug.com/1289700): Notify a consumer/record metrics.
+  consumer_->OnFailedSettingChange(
+      static_cast<PasswordManagerSetting>(setting),
+      static_cast<AndroidBackendAPIErrorCode>(api_error_code));
 }
 
 }  // namespace password_manager

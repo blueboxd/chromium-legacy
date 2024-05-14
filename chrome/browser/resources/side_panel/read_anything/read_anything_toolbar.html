@@ -104,13 +104,14 @@
       <cr-icon-button
         class="toolbar-button audio-controls"
         id="play-pause"
+        disabled="[[!hasContent]]"
         title$="[[playPauseButtonAriaLabel_(paused)]]"
         aria-label$="[[playPauseButtonAriaLabel_(paused)]]"
         aria-keyshortcuts="k"
         aria-description="$i18n{playDescription}"
         iron-icon$="[[playPauseButtonIronIcon_(paused)]]"
         tabindex="0"
-        on-click="onPlayPauseClick">
+        on-click="onPlayPauseClick_">
       </cr-icon-button>
       <span id="granularity-container" hidden="[[paused]]">
         <cr-icon-button
@@ -147,6 +148,7 @@
       id="voiceSelectionMenu"
       selected-voice="[[selectedVoice]]"
       available-voices="[[availableVoices]]"
+      locale-to-display-name="[[localeToDisplayName]]"
       paused="[[paused]]"
       preview-voice-playing="[[previewVoicePlaying]]">
     </voice-selection-menu>
@@ -199,8 +201,8 @@
     class="toolbar-button"
     disabled="[[!paused]]"
     id="[[item.id]]"
-      aria-label="[[item.ariaLabel]]"
-      title="[[item.ariaLabel]]"
+      aria-label="[[item.title]]"
+      title="[[item.title]]"
       iron-icon="[[item.icon]]"
       on-click="onToggleButtonClick_">
     </cr-icon-button>

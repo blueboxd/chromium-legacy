@@ -23,6 +23,7 @@
 #include "base/types/optional_util.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/generated_icon_fix_util.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom-shared.h"
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
 #include "chrome/browser/web_applications/proto/web_app_proto_package.pb.h"
@@ -719,6 +720,10 @@ void WebApp::SetSupportedLinksOfferDismissCount(int dismiss_count) {
   supported_links_offer_dismiss_count_ = dismiss_count;
 }
 
+void WebApp::SetIsDiyApp(bool is_diy_app) {
+  is_diy_app_ = is_diy_app;
+}
+
 void WebApp::AddPlaceholderInfoToManagementExternalConfigMap(
     WebAppManagement::Type type,
     bool is_placeholder) {
@@ -851,15 +856,15 @@ base::Value::Dict WebApp::ExternalManagementConfig::AsDebugValue() const {
   return root;
 }
 
-WebApp::IsolationData::IsolationData(IsolatedWebAppLocation location,
+WebApp::IsolationData::IsolationData(IsolatedWebAppStorageLocation location,
                                      base::Version version)
     : location(location), version(std::move(version)) {}
 WebApp::IsolationData::IsolationData(
-    IsolatedWebAppLocation location,
+    IsolatedWebAppStorageLocation location,
     base::Version version,
     const std::set<std::string>& controlled_frame_partitions,
     const std::optional<PendingUpdateInfo>& pending_update_info)
-    : location(location),
+    : location(std::move(location)),
       version(std::move(version)),
       controlled_frame_partitions(controlled_frame_partitions) {
   SetPendingUpdateInfo(pending_update_info);
@@ -885,8 +890,7 @@ bool WebApp::IsolationData::operator!=(
 
 base::Value WebApp::IsolationData::AsDebugValue() const {
   auto value = base::Value::Dict()
-                   .Set("isolated_web_app_location",
-                        IsolatedWebAppLocationAsDebugValue(location))
+                   .Set("isolated_web_app_location", location.ToDebugValue())
                    .Set("version", version.GetString());
   base::Value::List* partitions =
       value.EnsureList("controlled_frame_partitions (on-disk)");
@@ -900,7 +904,7 @@ base::Value WebApp::IsolationData::AsDebugValue() const {
 }
 
 WebApp::IsolationData::PendingUpdateInfo::PendingUpdateInfo(
-    IsolatedWebAppLocation location,
+    IsolatedWebAppStorageLocation location,
     base::Version version)
     : location(std::move(location)), version(std::move(version)) {}
 WebApp::IsolationData::PendingUpdateInfo::~PendingUpdateInfo() = default;
@@ -913,8 +917,7 @@ WebApp::IsolationData::PendingUpdateInfo::operator=(const PendingUpdateInfo&) =
 
 base::Value WebApp::IsolationData::PendingUpdateInfo::AsDebugValue() const {
   auto value = base::Value::Dict()
-                   .Set("isolated_web_app_location",
-                        IsolatedWebAppLocationAsDebugValue(location))
+                   .Set("isolated_web_app_location", location.ToDebugValue())
                    .Set("version", version.GetString());
   return base::Value(std::move(value));
 }
@@ -922,7 +925,7 @@ base::Value WebApp::IsolationData::PendingUpdateInfo::AsDebugValue() const {
 void WebApp::IsolationData::SetPendingUpdateInfo(
     const std::optional<PendingUpdateInfo>& pending_update_info) {
   if (pending_update_info.has_value()) {
-    CHECK_EQ(pending_update_info->location.index(), location.index());
+    CHECK_EQ(pending_update_info->location.dev_mode(), location.dev_mode());
   }
   pending_update_info_ = pending_update_info;
 }
@@ -1013,7 +1016,8 @@ bool WebApp::operator==(const WebApp& other) const {
         app.latest_install_time_,
         app.generated_icon_fix_,
         app.supported_links_offer_ignore_count_,
-        app.supported_links_offer_dismiss_count_
+        app.supported_links_offer_dismiss_count_,
+        app.is_diy_app_
         // clang-format on
     );
   };
@@ -1240,6 +1244,8 @@ base::Value WebApp::AsDebugValueWithOnlyPlatformAgnosticFields() const {
            supported_links_offer_ignore_count_);
   root.Set("supported_links_offer_dismiss_count",
            supported_links_offer_dismiss_count_);
+
+  root.Set("is_diy_app", is_diy_app_);
 
   return base::Value(std::move(root));
 }

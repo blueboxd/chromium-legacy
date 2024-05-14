@@ -10,6 +10,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -21,7 +22,6 @@
 #include "base/ranges/algorithm.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/base_tracing.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 
@@ -208,12 +208,12 @@ void MessagePumpEpoll::UnregisterInterest(
 
   const int fd = interest->params().fd;
   auto entry_it = entries_.find(fd);
-  DCHECK(entry_it != entries_.end());
+  CHECK(entry_it != entries_.end(), base::NotFatalUntil::M125);
 
   EpollEventEntry& entry = entry_it->second;
   auto& interests = entry.interests;
   auto* it = ranges::find(interests, interest);
-  DCHECK(it != interests.end());
+  CHECK(it != interests.end(), base::NotFatalUntil::M125);
   interests.erase(it);
 
   if (interests.empty()) {

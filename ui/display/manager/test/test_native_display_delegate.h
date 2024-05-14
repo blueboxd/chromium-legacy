@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "ui/display/manager/test/action_logger.h"
 #include "ui/display/manager/test/action_logger_util.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/display/types/native_display_delegate.h"
 
 namespace display {
@@ -84,7 +85,7 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
   void Configure(
       const std::vector<display::DisplayConfigurationParams>& config_requests,
       ConfigureCallback callback,
-      uint32_t modeset_flag) override;
+      display::ModesetFlags modeset_flags) override;
   void SetHdcpKeyProp(int64_t display_id,
                       const std::string& key,
                       SetHdcpKeyPropCallback callback) override;
@@ -109,6 +110,10 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
   void SetPrivacyScreen(int64_t display_id,
                         bool enabled,
                         SetPrivacyScreenCallback callback) override;
+  void GetSeamlessRefreshRates(
+      int64_t display_id,
+      GetSeamlessRefreshRatesCallback callback) const override;
+
   void AddObserver(NativeDisplayObserver* observer) override;
   void RemoveObserver(NativeDisplayObserver* observer) override;
   FakeDisplayController* GetFakeDisplayController() override;

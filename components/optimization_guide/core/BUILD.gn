@@ -25,22 +25,6 @@ static_library("bloomfilter") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
-static_library("entities") {
-  sources = [
-    "batch_entity_metadata_task.cc",
-    "batch_entity_metadata_task.h",
-    "entity_metadata.cc",
-    "entity_metadata.h",
-    "entity_metadata_provider.h",
-  ]
-  public_deps = [
-    "//base",
-    "//third_party/abseil-cpp:absl",
-  ]
-  deps = [ ":features" ]
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
-}
-
 static_library("model_executor") {
   sources = [
     "execution_status.cc",
@@ -62,8 +46,6 @@ static_library("model_executor") {
       "model_execution_timeout_watchdog.h",
       "page_visibility_model_executor.cc",
       "page_visibility_model_executor.h",
-      "text_embedding_model_executor.cc",
-      "text_embedding_model_executor.h",
       "tflite_model_executor.h",
     ]
   }
@@ -130,6 +112,7 @@ if (build_with_tflite_lib) {
       "//components/optimization_guide:machine_learning_tflite_buildflags",
       "//third_party/tensorflow_models:tflite_custom_ops",
       "//third_party/tflite",
+      "//third_party/tflite:buildflags",
       "//third_party/tflite:tflite_public_headers",
     ]
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -148,8 +131,6 @@ component("features") {
     "optimization_guide_prefs.h",
     "optimization_guide_switches.cc",
     "optimization_guide_switches.h",
-    "page_content_annotation_type.cc",
-    "page_content_annotation_type.h",
   ]
   public_deps = [ "//base" ]
   deps = [
@@ -223,10 +204,6 @@ static_library("core") {
     "optimization_metadata.cc",
     "optimization_metadata.h",
     "optimization_target_model_observer.h",
-    "page_content_annotation_job.cc",
-    "page_content_annotation_job.h",
-    "page_content_annotations_common.cc",
-    "page_content_annotations_common.h",
     "prediction_model_fetcher.h",
     "prediction_model_fetcher_impl.cc",
     "prediction_model_fetcher_impl.h",
@@ -262,6 +239,8 @@ static_library("core") {
       "model_execution/on_device_model_execution_proto_descriptors.h",
       "model_execution/on_device_model_execution_proto_value_utils.cc",
       "model_execution/on_device_model_execution_proto_value_utils.h",
+      "model_execution/on_device_model_feature_adapter.cc",
+      "model_execution/on_device_model_feature_adapter.h",
       "model_execution/on_device_model_service_controller.cc",
       "model_execution/on_device_model_service_controller.h",
       "model_execution/optimization_guide_model_execution_error.cc",
@@ -274,6 +253,8 @@ static_library("core") {
       "model_execution/session_impl.h",
       "model_execution/settings_enabled_observer.cc",
       "model_execution/settings_enabled_observer.h",
+      "model_execution/substitution.cc",
+      "model_execution/substitution.h",
       output_proto_descriptors_cc_file,
     ]
   }
@@ -283,27 +264,10 @@ static_library("core") {
       "bert_model_handler.h",
       "model_validator.cc",
       "model_validator.h",
-      "page_content_annotation_job_executor.cc",
-      "page_content_annotation_job_executor.h",
-      "page_entities_model_handler.cc",
-      "page_entities_model_handler.h",
-      "page_visibility_model_handler.cc",
-      "page_visibility_model_handler.h",
-      "text_embedding_model_handler.cc",
-      "text_embedding_model_handler.h",
     ]
-    if (build_with_internal_optimization_guide) {
-      sources += [
-        "entity_annotator_native_library.cc",
-        "entity_annotator_native_library.h",
-        "page_entities_model_handler_impl.cc",
-        "page_entities_model_handler_impl.h",
-      ]
-    }
   }
 
   public_deps = [
-    ":entities",
     ":features",
     ":model_executor",
     "//components/leveldb_proto",
@@ -348,13 +312,6 @@ static_library("core") {
   }
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
-
-  if (!is_android && build_with_tflite_lib &&
-      build_with_internal_optimization_guide) {
-    data_deps = [
-      "//components/optimization_guide/internal:optimization_guide_internal",
-    ]
-  }
 }
 
 static_library("prediction") {
@@ -448,8 +405,6 @@ if (is_ios) {
       "optimization_guide_switches.h",
       "optimization_guide_test_util.cc",
       "optimization_guide_test_util.h",
-      "page_content_annotation_type.cc",
-      "page_content_annotation_type.h",
     ]
     deps = [
       "//base",
@@ -463,7 +418,6 @@ if (is_ios) {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "batch_entity_metadata_task_unittest.cc",
     "bloom_filter_unittest.cc",
     "command_line_top_host_provider_unittest.cc",
     "hint_cache_unittest.cc",
@@ -488,7 +442,6 @@ source_set("unit_tests") {
     "optimization_guide_util_unittest.cc",
     "optimization_hints_component_update_listener_unittest.cc",
     "optimization_metadata_unittest.cc",
-    "page_content_annotation_job_unittest.cc",
     "prediction_manager_unittest.cc",
     "prediction_model_download_manager_unittest.cc",
     "prediction_model_fetch_timer_unittest.cc",
@@ -512,6 +465,7 @@ source_set("unit_tests") {
       "model_execution/optimization_guide_model_execution_error_unittest.cc",
       "model_execution/redactor_unittest.cc",
       "model_execution/repetition_checker_unittest.cc",
+      "model_execution/substitution_unittest.cc",
       "model_execution/test_on_device_model_component.cc",
       "model_execution/test_on_device_model_component.h",
     ]
@@ -520,18 +474,8 @@ source_set("unit_tests") {
     sources += [
       "bert_model_executor_unittest.cc",
       "model_validator_unittest.cc",
-      "page_content_annotation_job_executor_unittest.cc",
-      "page_visibility_model_handler_unittest.cc",
-      "text_embedding_model_executor_unittest.cc",
-      "text_embedding_model_handler_unittest.cc",
       "tflite_model_executor_unittest.cc",
     ]
-    if (build_with_internal_optimization_guide) {
-      sources += [
-        "entity_annotator_native_library_unittest.cc",
-        "page_entities_model_handler_impl_unittest.cc",
-      ]
-    }
   }
 
   if (build_with_mediapipe_lib) {
@@ -543,7 +487,6 @@ source_set("unit_tests") {
   deps = [
     ":bloomfilter",
     ":core",
-    ":entities",
     ":prediction",
     ":test_support",
     ":unit_tests_bundle_data",

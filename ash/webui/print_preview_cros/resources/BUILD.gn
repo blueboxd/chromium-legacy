@@ -13,13 +13,32 @@ build_webui("build") {
     "index.html",
   ]
 
-  web_component_files = [ "js/print_preview_cros_app.ts" ]
+  non_web_component_files = [
+    "js/data/destination_manager.ts",
+    "js/data/print_ticket_manager.ts",
+    "js/destination_dropdown_controller.ts",
+    "js/destination_select_controller.ts",
+    "js/summary_panel_controller.ts",
+    "js/fakes/fake_print_preview_page_handler.ts",
+    "js/utils/event_utils.ts",
+    "js/utils/mojo_data_providers.ts",
+    "js/utils/print_preview_cros_app_types.ts",
+  ]
+
+  web_component_files = [
+    "js/destination_dropdown.ts",
+    "js/destination_select.ts",
+    "js/print_preview_cros_app.ts",
+    "js/summary_panel.ts",
+  ]
 
   ts_composite = true
 
   ts_deps = [
     "//ash/webui/common/resources:build_ts",
+    "//third_party/cros-components:cros_components_ts",
     "//third_party/polymer/v3_0:library",
+    "//ui/webui/resources/cr_components/color_change_listener:build_ts",
     "//ui/webui/resources/js:build_ts",
     "//ui/webui/resources/mojo:build_ts",
   ]

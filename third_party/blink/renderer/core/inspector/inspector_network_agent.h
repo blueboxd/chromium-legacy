@@ -245,7 +245,10 @@ class CORE_EXPORT InspectorNetworkAgent final
       double latency,
       double download_throughput,
       double upload_throughput,
-      Maybe<String> connection_type) override;
+      Maybe<String> connection_type,
+      Maybe<double> packet_loss,
+      Maybe<int> packet_queue_length,
+      Maybe<bool> packet_reordering) override;
   protocol::Response setCacheDisabled(bool) override;
   protocol::Response setBypassServiceWorker(bool) override;
   protocol::Response getCertificate(
@@ -272,6 +275,11 @@ class CORE_EXPORT InspectorNetworkAgent final
                             bool* loadingFailed);
   String NavigationInitiatorInfo(LocalFrame*);
 
+  static std::unique_ptr<protocol::Network::Initiator> BuildInitiatorObject(
+      Document*,
+      const FetchInitiatorInfo&,
+      int max_async_depth);
+
  private:
   String RequestId(DocumentLoader*, uint64_t identifier);
   void Enable();
@@ -288,10 +296,6 @@ class CORE_EXPORT InspectorNetworkAgent final
                            std::unique_ptr<GetResponseBodyCallback>);
   ExecutionContext* GetTargetExecutionContext() const;
 
-  static std::unique_ptr<protocol::Network::Initiator> BuildInitiatorObject(
-      Document*,
-      const FetchInitiatorInfo&,
-      int max_async_depth);
   static bool IsNavigation(DocumentLoader*, uint64_t identifier);
 
   // This is null while inspecting workers.

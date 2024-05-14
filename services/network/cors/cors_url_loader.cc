@@ -24,7 +24,6 @@
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/cors/cors_util.h"
 #include "services/network/cors/preflight_controller.h"
-#include "services/network/masked_domain_list/network_service_resource_block_list.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service_memory_cache.h"
 #include "services/network/private_network_access_checker.h"
@@ -350,6 +349,8 @@ CorsURLLoader::CorsURLLoader(
       context_(context),
       shared_dictionary_storage_(std::move(shared_dictionary_storage)),
       shared_dictionary_observer_(shared_dictionary_observer) {
+  TRACE_EVENT("loading", "CorsURLLoader::CorsURLLoader",
+              perfetto::Flow::ProcessScoped(net_log_.source().id));
   CHECK(url_loader_network_service_observer_ != nullptr);
   if (ignore_isolated_world_origin)
     request_.isolated_world_origin = std::nullopt;
@@ -392,12 +393,16 @@ CorsURLLoader::CorsURLLoader(
 }
 
 CorsURLLoader::~CorsURLLoader() {
+  TRACE_EVENT("loading", "CorsURLLoader::~CorsURLLoader",
+              perfetto::Flow::ProcessScoped(net_log_.source().id));
   // Reset pipes first to ignore possible subsequent callback invocations
   // caused by `network_loader_`
   network_client_receiver_.reset();
 }
 
 void CorsURLLoader::Start() {
+  TRACE_EVENT("loading", "CorsURLLoader::Start",
+              perfetto::Flow::ProcessScoped(net_log_.source().id));
   if (fetch_cors_flag_ && IsCorsEnabledRequestMode(request_.mode)) {
     // Username and password should be stripped in a CORS-enabled request.
     if (request_.url.has_username() || request_.url.has_password()) {
@@ -413,17 +418,6 @@ void CorsURLLoader::Start() {
   net_log_.BeginEvent(net::NetLogEventType::CORS_REQUEST,
                       [&] { return NetLogCorsURLLoaderStartParams(request_); });
   StartRequest();
-}
-
-bool CorsURLLoader::ShouldBlockRequestForAfpExperiment(GURL request_url) {
-  if (context_ && context_->AfpBlockListExperimentEnabled() &&
-      context_->network_service() &&
-      context_->network_service()->network_service_resource_block_list()) {
-    return context_->network_service()
-        ->network_service_resource_block_list()
-        ->Matches(request_url, isolation_info_);
-  }
-  return false;
 }
 
 void CorsURLLoader::FollowRedirect(
@@ -496,11 +490,6 @@ void CorsURLLoader::FollowRedirect(
 
   if (!AreRequestHeadersSafe(request_.headers)) {
     HandleComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
-    return;
-  }
-
-  if (ShouldBlockRequestForAfpExperiment(redirect_info_.new_url)) {
-    HandleComplete(URLLoaderCompletionStatus(net::ERR_BLOCKED_BY_CLIENT));
     return;
   }
 
@@ -717,6 +706,7 @@ void CorsURLLoader::OnReceiveRedirect(const net::RedirectInfo& redirect_info,
 
   if (request_.redirect_mode == mojom::RedirectMode::kManual) {
     CheckTainted(redirect_info);
+    redirect_info_ = redirect_info;
     deferred_redirect_url_ = std::make_unique<GURL>(redirect_info.new_url);
     forwarding_client_->OnReceiveRedirect(redirect_info,
                                           std::move(response_head));
@@ -819,6 +809,8 @@ void CorsURLLoader::OnComplete(const URLLoaderCompletionStatus& status) {
 }
 
 void CorsURLLoader::StartRequest() {
+  TRACE_EVENT("loading", "CorsURLLoader::StartRequest",
+              perfetto::Flow::ProcessScoped(net_log_.source().id));
   // All results should be reported to `forwarding_client_` as part of a
   // `URLResponseHead`, then `pna_preflight_result_` reset to `kNone`.
   CHECK_EQ(pna_preflight_result_,
@@ -950,8 +942,8 @@ void CorsURLLoader::ReportCorsErrorToDevTools(const CorsErrorStatus& status,
       CloneClientSecurityState(), request_.url, status, is_warning);
 }
 
-void CorsURLLoader::ReportCorbErrorToDevTools() {
-  devtools_observer_->OnCorbError(request_.devtools_request_id, request_.url);
+void CorsURLLoader::ReportOrbErrorToDevTools() {
+  devtools_observer_->OnOrbError(request_.devtools_request_id, request_.url);
 }
 
 std::optional<URLLoaderCompletionStatus> CorsURLLoader::ConvertPreflightResult(
@@ -1060,6 +1052,8 @@ void CorsURLLoader::OnPreflightRequestComplete(
 }
 
 void CorsURLLoader::StartNetworkRequest() {
+  TRACE_EVENT("loading", "CorsURLLoader::StartNetworkRequest",
+              perfetto::Flow::ProcessScoped(net_log_.source().id));
   // Here we overwrite the credentials mode sent to URLLoader because
   // network::URLLoader doesn't understand |kSameOrigin|.
   // TODO(crbug.com/943939): Fix this.
@@ -1137,13 +1131,13 @@ void CorsURLLoader::HandleComplete(URLLoaderCompletionStatus status) {
   if (devtools_observer_ && status.cors_error_status) {
     ReportCorsErrorToDevTools(*status.cors_error_status);
   }
-  // ORB "v0.1" (and earlier) signal CORB/ORB-related errors with a flag.
+  // ORB "v0.1" (and earlier) signal ORB-related errors with a flag.
   // ORB "v0.2" (and later) use a network error code. We should always report
   // the error-code style error to DevTools, since it has a less spammy
   // way of displaying them compared to just dumping them on the console.
   if (devtools_observer_ && (status.should_report_orb_blocking ||
                              status.error_code == net::ERR_BLOCKED_BY_ORB)) {
-    ReportCorbErrorToDevTools();
+    ReportOrbErrorToDevTools();
   }
 
   // If we detect a private network access when we were not expecting one, we

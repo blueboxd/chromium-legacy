@@ -25,6 +25,8 @@ class BookmarkSpecifics;
 class ClientConfigParams;
 class ClientToServerMessage;
 class ClientToServerResponse;
+class CollaborationGroupSpecifics;
+class CompareSpecifics;
 class ContactInfoSpecifics;
 class CrossUserSharingPublicKey;
 class DebugEventInfo;
@@ -50,6 +52,7 @@ class PasswordSpecifics;
 class PasswordSpecificsData;
 class PaymentInstrument;
 class PaymentsCustomerData;
+class PlusAddressSpecifics;
 class PowerBookmarkSpecifics;
 class PreferenceSpecifics;
 class PrinterPPDReference;
@@ -134,6 +137,12 @@ base::Value BookmarkSpecificsToValue(
 
 base::Value ClientConfigParamsToValue(const sync_pb::ClientConfigParams& proto);
 
+base::Value CollaborationGroupSpecificsToValue(
+    const sync_pb::CollaborationGroupSpecifics& proto);
+
+base::Value CompareSpecificsToValue(
+    const sync_pb::CompareSpecifics& compare_specifics);
+
 base::Value ContactInfoSpecificsToValue(
     const sync_pb::ContactInfoSpecifics& proto);
 
@@ -196,14 +205,17 @@ base::Value PasswordSpecificsToValue(
 base::Value PasswordSpecificsDataToValue(
     const sync_pb::PasswordSpecificsData& password_specifics_data);
 
-base::Value PowerBookmarkSpecificsToValue(
-    const sync_pb::PowerBookmarkSpecifics& power_bookmark_specifics);
-
 base::Value PaymentInstrumentToValue(
     const sync_pb::PaymentInstrument& payment_instrument);
 
 base::Value PaymentsCustomerDataToValue(
     const sync_pb::PaymentsCustomerData& payments_customer_data);
+
+base::Value PlusAddressSpecificsToValue(
+    const sync_pb::PlusAddressSpecifics& plus_address_specifics);
+
+base::Value PowerBookmarkSpecificsToValue(
+    const sync_pb::PowerBookmarkSpecifics& power_bookmark_specifics);
 
 base::Value PreferenceSpecificsToValue(
     const sync_pb::PreferenceSpecifics& password_specifics);

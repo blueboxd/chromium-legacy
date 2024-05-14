@@ -6,10 +6,11 @@
 #define IOS_CHROME_BROWSER_CONTEXTUAL_PANEL_MODEL_CONTEXTUAL_PANEL_BROWSER_AGENT_H_
 
 #import "base/scoped_observation.h"
+#import "ios/chrome/browser/contextual_panel/model/contextual_panel_item_configuration.h"
 #import "ios/chrome/browser/shared/model/browser/browser_user_data.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer.h"
 
-#import <UIKit/UIkit.h>
+#import <UIKit/UIKit.h>
 
 class Browser;
 class WebStateList;
@@ -27,6 +28,10 @@ class ContextualPanelBrowserAgent
 
   ~ContextualPanelBrowserAgent() override;
 
+  // GetEntrypointConfiguration allows to get the appropriate configuration for
+  // entrypoint that should currently be shown.
+  ContextualPanelItemConfiguration GetEntrypointConfiguration();
+
  private:
   friend class BrowserUserData<ContextualPanelBrowserAgent>;
   BROWSER_USER_DATA_KEY_DECL();
@@ -43,6 +48,9 @@ class ContextualPanelBrowserAgent
   // ScopedObservation for WebStateList.
   base::ScopedObservation<WebStateList, WebStateListObserver>
       web_state_list_observation_{this};
+
+  // The owning Browser.
+  raw_ptr<Browser> browser_;
 };
 
 #endif  // IOS_CHROME_BROWSER_CONTEXTUAL_PANEL_MODEL_CONTEXTUAL_PANEL_BROWSER_AGENT_H_

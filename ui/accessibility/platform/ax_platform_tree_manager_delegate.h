@@ -15,6 +15,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace content {
+class WebContentsAccessibility;
+}
+
 namespace ui {
 
 // Pure abstract class that is used by `AXPlatformTreeManager` to gather
@@ -110,6 +114,23 @@ class COMPONENT_EXPORT(AX_PLATFORM) AXPlatformTreeManagerDelegate {
                               AXNodeID hit_node_id)> opt_callback) = 0;
 
   virtual gfx::NativeWindow GetTopLevelNativeWindow() = 0;
+
+  virtual bool CanFireAccessibilityEvents() const = 0;
+
+  // These methods are all specific to Web content, and should be removed from
+  // here and into the content layer if and when possible. These were
+  // moved into AXPlatformTreeManagerDelegate as part of the refactor
+  // to move BrowserAccessibility* into the ui/ layer to support their reuse
+  // in views. crbug.com/327499435
+  virtual bool AccessibilityIsRootFrame() const = 0;
+
+  // On Mac, VoiceOver moves focus to the web content when it receives an
+  // AXLoadComplete event. On chrome's new tab page, focus should stay
+  // in the omnibox, so we purposefully do not fire the AXLoadComplete
+  // event in this case.
+  virtual bool ShouldSuppressAXLoadComplete() = 0;
+  virtual content::WebContentsAccessibility*
+  AccessibilityGetWebContentsAccessibility() = 0;
 
  protected:
   AXPlatformTreeManagerDelegate() = default;

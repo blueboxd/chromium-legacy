@@ -182,6 +182,7 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kCastStreamingAv1);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(
     kCastStreamingExponentialVideoBitrateAlgorithm);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kCastStreamingPerformanceOverlay);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kCastStreamingVp8);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kCastStreamingVp9);
 #if BUILDFLAG(IS_MAC)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kCastStreamingMacHardwareH264);
@@ -228,7 +229,6 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kDocumentPictureInPictureCapture);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kEnableTabMuting);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kExposeSwDecodersToWebRTC);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kExternalClearKeyForTesting);
-MEDIA_EXPORT BASE_DECLARE_FEATURE(kFFmpegDecodeOpaqueVP8);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kFailUrlProvisionFetcherForTesting);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kFallbackAfterDecodeError);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kGlobalMediaControls);
@@ -294,7 +294,9 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kMemoryPressureBasedSourceBufferGC);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseWritePixelsYUV);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseMultiPlaneFormatForHardwareVideo);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseMultiPlaneFormatForSoftwareVideo);
+#if BUILDFLAG(IS_ANDROID)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kRasterInterfaceInVideoResourceUpdater);
+#endif
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMultiPlaneSoftwareVideoSharedImages);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMultiPlaneVideoCaptureSharedImages);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kOverlayFullscreenVideo);
@@ -351,7 +353,7 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kVaapiVp8TemporalLayerHWEncoding);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kVaapiVp9SModeHWEncoding);
 #endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
-MEDIA_EXPORT BASE_DECLARE_FEATURE(kV4L2FlatStatelessVideoDecoder);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kV4L2FlatVideoDecoder);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kV4L2FlatStatefulVideoDecoder);
 #endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kVideoBlitColorAccuracy);
@@ -404,8 +406,6 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kBuiltInHlsMP4);
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kChromeOSHWAV1Decoder);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kChromeOSHWVBREncoding);
-MEDIA_EXPORT BASE_DECLARE_FEATURE(
-    kUseDedicatedDecoderThreadInVideoDecoderProcess);
 #if !BUILDFLAG(USE_VAAPI)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseChromeOSDirectVideoDecoder);
 #endif  // !BUILDFLAG(USE_VAAPI)
@@ -415,6 +415,7 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kUSeSequencedTaskRunnerForVEA);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseGLForScaling);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kPreferGLImageProcessor);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kPreferSoftwareMT21);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kEnableProtectedVulkanDetiling);
 #endif  // defined(ARCH_CPU_ARM_FAMILY)
 #if BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(USE_VAAPI)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseAlternateVideoDecoderImplementation);
@@ -475,13 +476,19 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kExposeOutOfProcessVideoDecodingToLacros);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kBackgroundListening);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
-// Note: please use IsOutOfProcessVideoDecodingEnabled() to determine if OOP-VD
-// is enabled instead of directly checking this feature flag. The reason is that
+// Note: please use GetOutOfProcessVideoDecodingMode() to determine if OOP-VD is
+// enabled instead of directly checking this feature flag. The reason is that
 // that function may perform checks beyond the feature flag.
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseOutOfProcessVideoDecoding);
+
+// Note: please use GetOutOfProcessVideoDecodingMode() to determine if GTFO
+// OOP-VD is enabled instead of directly checking this feature flag. The reason
+// is that that function may perform checks beyond the feature flag.
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseGTFOOutOfProcessVideoDecoding);
 #endif  // BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -508,17 +515,15 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaLogToConsole);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kLibvpxUseChromeThreads);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kLibaomUseChromeThreads);
 
-#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-MEDIA_EXPORT BASE_DECLARE_FEATURE(kTheoraVideoCodec);
-
-#if BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS) && BUILDFLAG(IS_CHROMEOS)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kCrOSLegacyMediaFormats);
-#endif
 #endif
 
 #if BUILDFLAG(IS_WIN)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kD3D12VideoDecoder);
 #endif
+
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaSharedBitmapToSharedImage);
 
 // Based on a |command_line| and the current platform, returns the effective
 // autoplay policy. In other words, it will take into account the default policy
@@ -540,7 +545,12 @@ MEDIA_EXPORT bool IsMediaFoundationD3D11VideoCaptureEnabled();
 #endif
 
 #if BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
-MEDIA_EXPORT bool IsOutOfProcessVideoDecodingEnabled();
+enum class OOPVDMode {
+  kDisabled,
+  kEnabledWithGpuProcessAsProxy,     // AKA "regular" OOP-VD; go/oop-vd-dd.
+  kEnabledWithoutGpuProcessAsProxy,  // AKA GTFO OOP-VD; go/oopvd-gtfo-dd.
+};
+MEDIA_EXPORT OOPVDMode GetOutOfProcessVideoDecodingMode();
 #endif  // BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
 
 // Return bitmask of audio formats supported by EDID.

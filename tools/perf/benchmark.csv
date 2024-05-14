@@ -70,6 +70,7 @@ speedometer-future,"cbruni@chromium.org, vahl@chromium.org",Blink>JavaScript,htt
 speedometer2,"cbruni@chromium.org, vahl@chromium.org",Blink>JavaScript,https://browserbench.org/Speedometer2.1,all
 speedometer2-future,"cbruni@chromium.org, vahl@chromium.org",Blink>JavaScript,https://browserbench.org/Speedometer2.1,all
 speedometer2-nominorms,omerkatz@chromium.org,Blink>JavaScript>GarbageCollection,https://browserbench.org/Speedometer2.1,all
+speedometer2-predictable,"agarwaltushar@google.com, wnwen@google.com",Blink>JavaScript,https://browserbench.org/Speedometer2.1,all
 speedometer3,"cbruni@chromium.org, vahl@chromium.org",Blink>JavaScript,https://github.com/WebKit/Speedometer,all
 speedometer3-future,"cbruni@chromium.org, vahl@chromium.org",Blink>JavaScript,https://github.com/WebKit/Speedometer,all
 speedometer3-nominorms,omerkatz@chromium.org,Blink>JavaScript>GarbageCollection,https://github.com/WebKit/Speedometer,all

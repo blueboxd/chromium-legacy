@@ -12,14 +12,23 @@ import argparse
 import logging
 import sys
 
+import builders
 import cipd
+import recipe
 
 
 def add_common_args(parser):
   parser.add_argument('--verbose',
                       '-v',
+                      dest='verbosity',
+                      default=0,
+                      action='count',
+                      help='Enable additional runtime logging. Pass multiple '
+                      'times for increased logging.')
+  parser.add_argument('--force',
+                      '-f',
                       action='store_true',
-                      help='Enable additional runtime logging.')
+                      help='Skip all prompts about config mismatches.')
   parser.add_argument('--test',
                       '-t',
                       nargs='+',
@@ -80,11 +89,38 @@ def parse_args():
 
 def main():
   args = parse_args()
-  logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARN)
+  logging.basicConfig(level=logging.DEBUG if args.verbosity else logging.INFO,
+                      format='%(message)s')
 
-  cipd.fetch_recipe_bundle(args.verbose)
+  if not recipe.check_rdb_auth():
+    return 1
 
-  # TODO(crbug.com/41492688): Draw the rest of the owl.
+  bundle_root = cipd.fetch_recipe_bundle(args.verbosity)
+  builder_props, swarming_server = builders.find_builder_props(
+      args.bucket, args.builder)
+  if not builder_props:
+    return 1
+
+  skip_compile = args.run_mode == 'test'
+  skip_test = args.run_mode == 'compile'
+  recipe_runner = recipe.LegacyRunner(
+      bundle_root,
+      builder_props,
+      args.bucket,
+      args.builder,
+      swarming_server,
+      args.test,
+      skip_compile,
+      skip_test,
+      args.force,
+      args.build_dir,
+  )
+  exit_code, error_msg = recipe_runner.run_recipe(
+      filter_stdout=args.verbosity < 2)
+  if error_msg:
+    logging.error('\nUTR failure:')
+    logging.error(error_msg)
+  return exit_code
 
 
 if __name__ == '__main__':

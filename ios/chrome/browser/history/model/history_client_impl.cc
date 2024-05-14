@@ -81,32 +81,42 @@ HistoryClientImpl::CreateBackendClient() {
 
 void HistoryClientImpl::UpdateBookmarkLastUsedTime(int64_t bookmark_node_id,
                                                    base::Time time) {
-  // TODO(crbug.com/1511291): Implement this method when iOS is migrated to use
-  //                          single BookmarkModel instance.
-  NOTIMPLEMENTED();
+  if (!local_or_syncable_bookmark_model_ || account_bookmark_model_) {
+    return;
+  }
+
+  // If there is a single BookmarkModel, the node ID is guaranteed to
+  // correspond to this model.
+  const bookmarks::BookmarkNode* node =
+      GetBookmarkNodeByID(local_or_syncable_bookmark_model_, bookmark_node_id);
+
+  // This call is async so the BookmarkNode could have already been deleted.
+  if (!node) {
+    return;
+  }
+
+  local_or_syncable_bookmark_model_->UpdateLastUsedTime(node, time,
+                                                        /*just_opened=*/true);
 }
 
 void HistoryClientImpl::BookmarkModelChanged() {
 }
 
-void HistoryClientImpl::BookmarkModelBeingDeleted(
-    bookmarks::BookmarkModel* model) {
+void HistoryClientImpl::BookmarkModelBeingDeleted() {
   StopObservingBookmarkModels();
 }
 
 void HistoryClientImpl::BookmarkNodeRemoved(
-    bookmarks::BookmarkModel* model,
     const bookmarks::BookmarkNode* parent,
     size_t old_index,
     const bookmarks::BookmarkNode* node,
     const std::set<GURL>& no_longer_bookmarked) {
-  HandleBookmarksRemovedFromModel(model, no_longer_bookmarked);
+  HandleBookmarksRemovedFromModel(no_longer_bookmarked);
 }
 
 void HistoryClientImpl::BookmarkAllUserNodesRemoved(
-    bookmarks::BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
-  HandleBookmarksRemovedFromModel(model, removed_urls);
+  HandleBookmarksRemovedFromModel(removed_urls);
 }
 
 void HistoryClientImpl::OnFaviconsChanged(const std::set<GURL>& page_urls,
@@ -121,27 +131,23 @@ void HistoryClientImpl::OnFaviconsChanged(const std::set<GURL>& page_urls,
 }
 
 void HistoryClientImpl::HandleBookmarksRemovedFromModel(
-    bookmarks::BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
-  CHECK(model == local_or_syncable_bookmark_model_ ||
-        model == account_bookmark_model_);
-
   if (!on_bookmarks_removed_) {
     return;
   }
 
   // Only notify when bookmarks are removed from both models.
-  bookmarks::BookmarkModel* other_model =
-      model == local_or_syncable_bookmark_model_
-          ? account_bookmark_model_.get()
-          : local_or_syncable_bookmark_model_.get();
-  CHECK_NE(model, other_model);
-  // Compute URLs that were removed from `model` and are not bookmarked in
-  // `other_model`.
+  // TODO(crbug.com/326185948): This verification shouldn't be needed when there
+  // is exactly one BookmarkModel instance per BrowserState.
+
+  // Compute URLs that were removed from `model` and are not bookmarked by
+  // either of the models.
   std::set<GURL> removed_from_both_models = removed_urls;
-  if (other_model) {
-    std::erase_if(removed_from_both_models, [other_model](const GURL& url) {
-      return other_model->IsBookmarked(url);
+  if (account_bookmark_model_ != nullptr &&
+      local_or_syncable_bookmark_model_ != nullptr) {
+    std::erase_if(removed_from_both_models, [this](const GURL& url) {
+      return account_bookmark_model_->IsBookmarked(url) ||
+             local_or_syncable_bookmark_model_->IsBookmarked(url);
     });
   }
 

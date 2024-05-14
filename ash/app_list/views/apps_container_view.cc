@@ -232,7 +232,7 @@ class AppsContainerView::ContinueContainer : public views::View {
   raw_ptr<views::Separator, DanglingUntriaged> separator_ = nullptr;
 };
 
-BEGIN_METADATA(AppsContainerView, ContinueContainer, views::View)
+BEGIN_METADATA(AppsContainerView, ContinueContainer)
 END_METADATA
 
 const int AppsContainerView::kHorizontalMargin = 24;
@@ -562,6 +562,12 @@ void AppsContainerView::SelectedPageChanged(int old_selected,
   separator_->layer()->SetTransform(transform);
   if (toast_container_)
     toast_container_->layer()->SetTransform(transform);
+
+  if (new_selected == apps_grid_view_->pagination_model()->total_pages() - 1) {
+    RecordLauncherWorkflowMetrics(
+        AppListUserAction::kNavigatedToBottomOfAppList,
+        /*is_tablet_mode = */ true, std::nullopt);
+  }
 }
 
 void AppsContainerView::TransitionChanged() {

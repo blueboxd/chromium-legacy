@@ -25,6 +25,7 @@
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_data_exchange_delegate.h"
 #include "components/exo/test/test_data_offer_delegate.h"
+#include "components/exo/test/test_security_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -92,31 +93,33 @@ class TestDataTransferPolicyController : ui::DataTransferPolicyController {
 
 bool ReadString(base::ScopedFD fd, std::string* out) {
   std::array<char, 128> buffer;
-  char* it = buffer.begin();
-  while (it != buffer.end()) {
-    int result = read(fd.get(), it, buffer.end() - it);
+  char* it = buffer.data();
+  char* end = it + buffer.size();
+  while (it != end) {
+    int result = read(fd.get(), it, end - it);
     PCHECK(-1 != result);
     if (result == 0)
       break;
     it += result;
   }
   *out = std::string(reinterpret_cast<char*>(buffer.data()),
-                     (it - buffer.begin()) / sizeof(char));
+                     (it - buffer.data()) / sizeof(char));
   return true;
 }
 
 bool ReadString16(base::ScopedFD fd, std::u16string* out) {
   std::array<char, 128> buffer;
-  char* it = buffer.begin();
-  while (it != buffer.end()) {
-    int result = read(fd.get(), it, buffer.end() - it);
+  char* it = buffer.data();
+  char* end = it + buffer.size();
+  while (it != it + buffer.size()) {
+    int result = read(fd.get(), it, end - it);
     PCHECK(-1 != result);
     if (result == 0)
       break;
     it += result;
   }
   *out = std::u16string(reinterpret_cast<char16_t*>(buffer.data()),
-                        (it - buffer.begin()) / sizeof(char16_t));
+                        (it - buffer.data()) / sizeof(char16_t));
   return true;
 }
 
@@ -350,7 +353,7 @@ TEST_F(DataOfferTest, ReceiveUriListFromPickle_ReceiveBeforeUrlIsResolved) {
   std::vector<GURL> urls;
   urls.push_back(
       GURL("content://org.chromium.arc.chromecontentprovider/path/to/file1"));
-  data_exchange_delegate.RunSendPickleCallback(urls);
+  delegate.GetSecurityDelegate()->RunSendPickleCallback(urls);
 
   std::string result1;
   ASSERT_TRUE(ReadString(std::move(read_pipe1), &result1));
@@ -389,7 +392,7 @@ TEST_F(DataOfferTest,
   // Run callback with an empty URL.
   std::vector<GURL> urls;
   urls.push_back(GURL(""));
-  data_exchange_delegate.RunSendPickleCallback(urls);
+  delegate.GetSecurityDelegate()->RunSendPickleCallback(urls);
 
   std::u16string result;
   ASSERT_TRUE(ReadString16(std::move(read_pipe), &result));
@@ -739,9 +742,10 @@ TEST_F(DataOfferTest, SetClipboardDataHTML) {
       &data_exchange_delegate, *ui::Clipboard::GetForCurrentThread(),
       data_exchange_delegate.GetDataTransferEndpointType(window));
 
-  EXPECT_EQ(2u, delegate.mime_types().size());
+  EXPECT_EQ(3u, delegate.mime_types().size());
   EXPECT_EQ(1u, delegate.mime_types().count("text/html;charset=utf-8"));
   EXPECT_EQ(1u, delegate.mime_types().count("text/html;charset=utf-16"));
+  EXPECT_EQ(1u, delegate.mime_types().count("text/html"));
 
   base::ScopedFD read_pipe;
   base::ScopedFD write_pipe;
@@ -757,6 +761,11 @@ TEST_F(DataOfferTest, SetClipboardDataHTML) {
   std::u16string result16;
   ASSERT_TRUE(ReadString16(std::move(read_pipe), &result16));
   EXPECT_EQ("Test data", base::UTF16ToUTF8(result16));
+
+  ASSERT_TRUE(base::CreatePipe(&read_pipe, &write_pipe));
+  data_offer.Receive("text/html", std::move(write_pipe));
+  ASSERT_TRUE(ReadString(std::move(read_pipe), &result));
+  EXPECT_EQ("Test data", result);
 }
 
 TEST_F(DataOfferTest, SetClipboardDataRTF) {

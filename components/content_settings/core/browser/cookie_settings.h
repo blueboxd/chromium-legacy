@@ -110,10 +110,12 @@ class CookieSettings
 
   // Returns whether a cookie access is allowed for the `TPCD_METADATA_GRANTS`
   // content settings type, scoped on the provided `url` and `first_party_url`.
+  // Also updates `out_info` with the `SettingInfo`.
   //
   // This may be called on any thread.
   bool IsAllowedByTpcdMetadataGrant(const GURL& url,
-                                    const GURL& first_party_url) const;
+                                    const GURL& first_party_url,
+                                    SettingInfo* out_info = nullptr) const;
 
   // Sets the `TPCD_HEURISTICS_GRANTS` setting for the given (`url`,
   // `first_party_url`) pair, for the provided `ttl`. By default, the patterns
@@ -156,10 +158,14 @@ class CookieSettings
       const ContentSettingsForOneType settings) {
     base::AutoLock lock(tpcd_lock_);
     if (base::FeatureList::IsEnabled(features::kHostIndexedMetadataGrants)) {
-      auto indices = HostIndexedContentSettings::Create(settings);
-      // All 3pcd metadata grants should use the same source attribute.
-      CHECK_EQ(indices.size(), 1u);
-      settings_for_3pcd_metadata_grants_ = std::move(indices.front());
+      if (settings.empty()) {
+        settings_for_3pcd_metadata_grants_ = HostIndexedContentSettings();
+      } else {
+        auto indices = HostIndexedContentSettings::Create(settings);
+        // All 3pcd metadata grants should use the same source attribute.
+        CHECK_EQ(indices.size(), 1u);
+        settings_for_3pcd_metadata_grants_ = std::move(indices.front());
+      }
     } else {
       settings_for_3pcd_metadata_grants_ = settings;
     }

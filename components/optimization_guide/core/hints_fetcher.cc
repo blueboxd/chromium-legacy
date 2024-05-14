@@ -66,6 +66,8 @@ std::string GetStringNameForRequestContext(
       return "PageInsightsHub";
     case proto::RequestContext::CONTEXT_NON_PERSONALIZED_PAGE_INSIGHTS_HUB:
       return "NonPersonalizedPageInsightsHub";
+    case proto::RequestContext::CONTEXT_SHOPPING:
+      return "Shopping";
   }
   NOTREACHED();
   return std::string();
@@ -182,7 +184,7 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
     const std::string& access_token,
     bool skip_cache,
     HintsFetchedCallback hints_fetched_callback,
-    proto::RequestContextMetadata* request_context_metadata) {
+    std::optional<proto::RequestContextMetadata> request_context_metadata) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GT(optimization_types.size(), 0u);
   request_context_ = request_context;
@@ -340,10 +342,10 @@ void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
   std::unique_ptr<proto::GetHintsResponse> get_hints_response =
       std::make_unique<proto::GetHintsResponse>();
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.Status",
-      static_cast<net::HttpStatusCode>(response_code),
-      net::HTTP_VERSION_NOT_SUPPORTED);
+  if (response_code >= 0) {
+    base::UmaHistogramSparse(
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", response_code);
+  }
   // Net error codes are negative but histogram enums must be positive.
   base::UmaHistogramSparse(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode",

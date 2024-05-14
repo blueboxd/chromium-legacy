@@ -52,6 +52,13 @@ chromium-metrics-reviews@google.com.
   <int value="4" label="No data received and capture stopped within 500ms"/>
 </enum>
 
+<enum name="AudioDeviceConnectionStatus">
+  <int value="0" label="Disconnected"/>
+  <int value="1" label="Connecting"/>
+  <int value="2" label="Connected"/>
+  <int value="3" label="Disconnecting"/>
+</enum>
+
 <enum name="AudioGlitchResult">
   <int value="0" label="No audio glitches"/>
   <int value="1" label="Audio glitches"/>
@@ -1191,13 +1198,6 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="MEDIA_REQUEST_IOC_REINIT"/>
 </enum>
 
-<enum name="MediaLauncherActivityMediaType">
-  <int value="0" label="Audio"/>
-  <int value="1" label="Image"/>
-  <int value="2" label="Video"/>
-  <int value="3" label="Unknown"/>
-</enum>
-
 <enum name="MediaLicenseStorageHostOpenError">
   <int value="0" label="InvalidBucket"/>
   <int value="1" label="kNoFileSpecified"/>
@@ -1247,6 +1247,12 @@ chromium-metrics-reviews@google.com.
   <int value="0" label="Non-HLS"/>
   <int value="1" label="HLS audio-only"/>
   <int value="2" label="HLS video"/>
+</enum>
+
+<enum name="MediaPreviewDeviceSelectionUserAction">
+  <int value="0" label="User did not interact with the combobox"/>
+  <int value="1" label="User opened the combobox"/>
+  <int value="2" label="User opened the combobox and chose a different device"/>
 </enum>
 
 <enum name="MediaRecorderCodec">

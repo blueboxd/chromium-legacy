@@ -218,8 +218,7 @@ bool VaapiVideoEncodeAccelerator::Initialize(
   }
 
   native_input_mode_ =
-      config.storage_type.value_or(Config::StorageType::kShmem) ==
-      Config::StorageType::kGpuMemoryBuffer;
+      config.storage_type == Config::StorageType::kGpuMemoryBuffer;
   if (native_input_mode_ && config.input_format != PIXEL_FORMAT_NV12) {
     // TODO(crbug.com/894381): Support other formats.
     MEDIA_LOG(ERROR, media_log.get())
@@ -287,10 +286,12 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
         return;
     }
 
-    vaapi_wrapper_ = VaapiWrapper::CreateForVideoCodec(
-        mode, config.output_profile, EncryptionScheme::kUnencrypted,
-        base::BindRepeating(&ReportVaapiErrorToUMA,
-                            "Media.VaapiVideoEncodeAccelerator.VAAPIError"));
+    vaapi_wrapper_ =
+        VaapiWrapper::CreateForVideoCodec(
+            mode, config.output_profile, EncryptionScheme::kUnencrypted,
+            base::BindRepeating(&ReportVaapiErrorToUMA,
+                                "Media.VaapiVideoEncodeAccelerator.VAAPIError"))
+            .value_or(nullptr);
 
     if (!vaapi_wrapper_) {
       NotifyError({EncoderStatus::Codes::kEncoderInitializationError,
@@ -732,11 +733,14 @@ scoped_refptr<VaapiWrapper>
 VaapiVideoEncodeAccelerator::CreateVppVaapiWrapper() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
   DCHECK(!vpp_vaapi_wrapper_);
-  auto vpp_vaapi_wrapper = VaapiWrapper::Create(
-      VaapiWrapper::kVideoProcess, VAProfileNone,
-      EncryptionScheme::kUnencrypted,
-      base::BindRepeating(&ReportVaapiErrorToUMA,
-                          "Media.VaapiVideoEncodeAccelerator.Vpp.VAAPIError"));
+  auto vpp_vaapi_wrapper =
+      VaapiWrapper::Create(
+          VaapiWrapper::kVideoProcess, VAProfileNone,
+          EncryptionScheme::kUnencrypted,
+          base::BindRepeating(
+              &ReportVaapiErrorToUMA,
+              "Media.VaapiVideoEncodeAccelerator.Vpp.VAAPIError"))
+          .value_or(nullptr);
   if (!vpp_vaapi_wrapper) {
     NotifyError({EncoderStatus::Codes::kEncoderUnsupportedConfig,
                  "Failed to initialize VppVaapiWrapper"});

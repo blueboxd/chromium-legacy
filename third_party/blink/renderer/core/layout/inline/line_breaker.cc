@@ -691,6 +691,7 @@ void LineBreaker::PrepareNextLine(LineInfo* line_info) {
   }
 
   line_info->SetStart(current_);
+  line_info->SetIsFirstFormattedLine(is_first_formatted_line_);
   line_info->SetLineStyle(node_, items_data_, use_first_line_style_);
 
   DCHECK(!line_info->TextIndent());
@@ -1380,7 +1381,8 @@ LineBreaker::BreakResult LineBreaker::BreakText(
                            const ShapeResult* result)
         : ShapingLineBreaker(result,
                              &line_breaker->break_iterator_,
-                             line_breaker->hyphenation_),
+                             line_breaker->hyphenation_,
+                             &item->Style()->GetFont()),
           line_breaker_(line_breaker),
           item_(item) {}
 

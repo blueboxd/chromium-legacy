@@ -49,7 +49,6 @@ All changes to this list should go through Blink's feature review process: http:
     align-self
     alignment-baseline
     all
-    anchor-default
     anchor-name
     animation-composition
     animation-delay
@@ -310,12 +309,13 @@ All changes to this list should go through Blink's feature review process: http:
     popover-hide-delay
     popover-show-delay
     position
-    position-fallback
+    position-anchor
     position-fallback-bounds
     position-try-options
     position-try-order
     quotes
     r
+    reading-order-items
     resize
     right
     rotate
@@ -379,6 +379,7 @@ All changes to this list should go through Blink's feature review process: http:
     text-align-last
     text-anchor
     text-autospace
+    text-box-edge
     text-box-trim
     text-combine-upright
     text-decoration-color
@@ -756,6 +757,9 @@ All changes to this list should go through Blink's feature review process: http:
     place-self
         align-self
         justify-self
+    position-try
+        position-try-options
+        position-try-order
     scroll-margin
         scroll-margin-bottom
         scroll-margin-left

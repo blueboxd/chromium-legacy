@@ -200,6 +200,9 @@ AppShimController::AppShimController(const Params& params)
     notification_service_ =
         std::make_unique<mac_notifications::MacNotificationServiceUN>(
             std::move(notification_action_handler_remote_),
+            base::BindRepeating(
+                &AppShimController::NotificationPermissionStatusChanged,
+                base::Unretained(this)),
             UNUserNotificationCenter.currentNotificationCenter);
   }
 }
@@ -277,7 +280,8 @@ void AppShimController::PreInitFeatureState(
        "DcheckIsFatal", "MojoBindingsInlineSLS", "MojoInlineMessagePayloads",
        "MojoIpcz", "MojoTaskPerMessage", "StandardCompliantHostCharacters",
        "StandardCompliantNonSpecialSchemeURLParsing",
-       "UseAdHocSigningForWebAppShims", "UseIDNA2008NonTransitional"});
+       "UseAdHocSigningForWebAppShims", "UseIDNA2008NonTransitional",
+       "SonomaAccessibilityActivationRefinements"});
 }
 
 // static
@@ -578,11 +582,12 @@ void AppShimController::SendBootstrapOnShimConnected(
   // automatically launch the app as well. So do a kRegisterOnly launch
   // instead.
   app_shim_info->launch_type =
-      (launched_by_notification_action_ ||
-       (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            app_mode::kLaunchedByChromeProcessId) &&
-        !base::CommandLine::ForCurrentProcess()->HasSwitch(
-            app_mode::kIsNormalLaunch)))
+      launched_by_notification_action_
+          ? chrome::mojom::AppShimLaunchType::kNotificationAction
+      : (base::CommandLine::ForCurrentProcess()->HasSwitch(
+             app_mode::kLaunchedByChromeProcessId) &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             app_mode::kIsNormalLaunch))
           ? chrome::mojom::AppShimLaunchType::kRegisterOnly
           : chrome::mojom::AppShimLaunchType::kNormal;
   app_shim_info->files = launch_files_;
@@ -800,6 +805,9 @@ void AppShimController::BindNotificationService(
       notification_service_ =
           std::make_unique<mac_notifications::MacNotificationServiceUN>(
               std::move(notification_action_handler_remote_),
+              base::BindRepeating(
+                  &AppShimController::NotificationPermissionStatusChanged,
+                  base::Unretained(this)),
               UNUserNotificationCenter.currentNotificationCenter);
     }
     // Note that `handler` as passed in to this method is ignored. Notification
@@ -825,6 +833,11 @@ AppShimController::notification_service_un() {
   }
   return static_cast<mac_notifications::MacNotificationServiceUN*>(
       notification_service_.get());
+}
+
+void AppShimController::NotificationPermissionStatusChanged(
+    mac_notifications::mojom::PermissionStatus status) {
+  host_->NotificationPermissionStatusChanged(status);
 }
 
 void AppShimController::SetUserAttention(

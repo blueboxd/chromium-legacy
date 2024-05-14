@@ -5,6 +5,7 @@
 #include "components/optimization_guide/core/hints_manager.h"
 
 #include <cstddef>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -309,6 +310,8 @@ bool ShouldContextResponsePopulateHintCache(
       return false;
     case proto::RequestContext::CONTEXT_NON_PERSONALIZED_PAGE_INSIGHTS_HUB:
       return false;
+    case proto::RequestContext::CONTEXT_SHOPPING:
+      return false;
   }
   NOTREACHED();
   return false;
@@ -568,9 +571,12 @@ void HintsManager::ProcessOptimizationFilterSet(
 void HintsManager::OnHintCacheInitialized() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  OPTIMIZATION_GUIDE_LOGGER(optimization_guide_common::mojom::LogSource::HINTS,
-                            optimization_guide_logger_)
-      << "Hint cache initialized";
+  if (optimization_guide_logger_->ShouldEnableDebugLogs()) {
+    OPTIMIZATION_GUIDE_LOGGER(
+        optimization_guide_common::mojom::LogSource::HINTS,
+        optimization_guide_logger_)
+        << "Hint cache initialized";
+  }
 
   if (push_notification_manager_) {
     push_notification_manager_->OnDelegateReady();
@@ -806,7 +812,7 @@ void HintsManager::FetchHintsForActiveTabs() {
                      weak_ptr_factory_.GetWeakPtr(), top_hosts_set,
                      base::flat_set<GURL>(active_tab_urls_to_refresh.begin(),
                                           active_tab_urls_to_refresh.end())),
-      nullptr);
+      std::nullopt);
 }
 
 void HintsManager::OnHintsForActiveTabsFetched(
@@ -985,7 +991,7 @@ void HintsManager::FetchHintsForURLs(const std::vector<GURL>& urls,
               const GURL&,
               const base::flat_map<proto::OptimizationType,
                                    OptimizationGuideDecisionWithMetadata>&)>()),
-      nullptr);
+      std::nullopt);
 }
 
 void HintsManager::OnHintLoaded(base::OnceClosure callback,
@@ -1108,7 +1114,7 @@ void HintsManager::CanApplyOptimizationOnDemand(
     const base::flat_set<proto::OptimizationType>& optimization_types,
     proto::RequestContext request_context,
     OnDemandOptimizationGuideDecisionRepeatingCallback callback,
-    proto::RequestContextMetadata* request_context_metadata) {
+    std::optional<proto::RequestContextMetadata> request_context_metadata) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   InsertionOrderedSet<GURL> urls_to_fetch;
@@ -1122,13 +1128,12 @@ void HintsManager::CanApplyOptimizationOnDemand(
                              urls_to_fetch.vector(), hosts_to_fetch.vector(),
                              optimization_guide_logger_);
 
-  if (request_context_metadata != nullptr) {
+  if (request_context_metadata != std::nullopt) {
     if (request_context != proto::RequestContext::CONTEXT_PAGE_INSIGHTS_HUB ||
         !request_context_metadata->has_page_insights_hub_metadata()) {
-      request_context_metadata = nullptr;
+      request_context_metadata = std::nullopt;
     }
   }
-
   if (allowed_contexts_for_personalized_metadata_.Has(request_context)) {
     // Request the token before fetching the hints.
     RequestAccessToken(
@@ -1153,11 +1158,10 @@ void HintsManager::FetchOptimizationGuideServiceBatchHints(
         optimization_types,
     optimization_guide::proto::RequestContext request_context,
     OnDemandOptimizationGuideDecisionRepeatingCallback callback,
-    proto::RequestContextMetadata* request_context_metadata,
+    std::optional<proto::RequestContextMetadata> request_context_metadata,
     const std::string& access_token) {
   std::pair<int32_t, HintsFetcher*> request_id_and_fetcher =
       CreateAndTrackBatchUpdateHintsFetcher();
-
   request_id_and_fetcher.second->FetchOptimizationGuideServiceHints(
       hosts.vector(), urls.vector(), optimization_types, request_context,
       application_locale_, access_token, /*skip_cache=*/true,
@@ -1722,7 +1726,7 @@ void HintsManager::MaybeFetchHintsForNavigation(
                      navigation_data->GetWeakPtr(), url,
                      base::flat_set<GURL>(urls.begin(), urls.end()),
                      base::flat_set<std::string>(hosts.begin(), hosts.end())),
-      nullptr);
+      std::nullopt);
   if (fetch_attempted) {
     navigation_data->set_hints_fetch_start(base::TimeTicks::Now());
 

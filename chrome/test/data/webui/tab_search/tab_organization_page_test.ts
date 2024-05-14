@@ -4,8 +4,8 @@
 
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {mojoString16ToString, stringToMojoString16} from 'chrome://resources/js/mojo_type_util.js';
-import type {SyncInfo, Tab, TabOrganizationPageElement, TabOrganizationResultsElement, TabOrganizationSession} from 'chrome://tab-search.top-chrome/tab_search.js';
+import {stringToMojoString16} from 'chrome://resources/js/mojo_type_util.js';
+import type {CrInputElement, SyncInfo, Tab, TabOrganizationPageElement, TabOrganizationResultsElement, TabOrganizationSession} from 'chrome://tab-search.top-chrome/tab_search.js';
 import {TabOrganizationError, TabOrganizationState, TabSearchApiProxyImpl, TabSearchSyncBrowserProxyImpl} from 'chrome://tab-search.top-chrome/tab_search.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
@@ -52,9 +52,8 @@ suite('TabOrganizationPageTest', () => {
     TabSearchSyncBrowserProxyImpl.setInstance(testSyncProxy);
 
     tabOrganizationResults = document.createElement('tab-organization-results');
-    tabOrganizationResults.name =
-        mojoString16ToString(session.organizations[0]!.name);
-    tabOrganizationResults.tabs = session.organizations[0]!.tabs;
+    tabOrganizationResults.multiTabOrganization = false;
+    tabOrganizationResults.session = session;
 
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
     document.body.appendChild(tabOrganizationResults);
@@ -67,6 +66,7 @@ suite('TabOrganizationPageTest', () => {
           active: false,
           alertStates: [],
           index: -1,
+          faviconUrl: null,
           tabId: -1,
           groupId: -1,
           pinned: false,
@@ -100,6 +100,42 @@ suite('TabOrganizationPageTest', () => {
         override);
   }
 
+  function createMultiOrganizationSession(
+      count: number, override: Partial<TabOrganizationSession> = {}) {
+    const organizations: Object[] = [];
+    for (let i = 0; i < count; i++) {
+      organizations.push(
+          {
+            organizationId: i,
+            name: stringToMojoString16('Organization ' + i),
+            tabs: [
+              createTab({
+                title: 'Tab 1 Organization ' + i,
+                url: {url: 'https://tab-1.com/'},
+              }),
+              createTab({
+                title: 'Tab 2 Organization ' + i,
+                url: {url: 'https://tab-2.com/'},
+              }),
+              createTab({
+                title: 'Tab 3 Organization ' + i,
+                url: {url: 'https://tab-3.com/'},
+              }),
+            ],
+          },
+      );
+    }
+
+    return Object.assign(
+        {
+          sessionId: 1,
+          state: TabOrganizationState.kSuccess,
+          organizations: organizations,
+          error: TabOrganizationError.kNone,
+        },
+        override);
+  }
+
   test('Organize tabs starts request', async () => {
     await tabOrganizationPageSetup();
     assertEquals(0, testApiProxy.getCallCount('requestTabOrganization'));
@@ -116,16 +152,54 @@ suite('TabOrganizationPageTest', () => {
     assertEquals(1, testApiProxy.getCallCount('requestTabOrganization'));
   });
 
-  test('Input blurs on enter', async () => {
+  test('Single organization input blurs on enter', async () => {
     await tabOrganizationResultsSetup();
-    const input = tabOrganizationResults.$.input;
+    const group = tabOrganizationResults.shadowRoot!.querySelector(
+        'tab-organization-group');
+    assertTrue(!!group);
+    const input = group.shadowRoot!.querySelector<CrInputElement>(
+        '#singleOrganizationInput');
+    assertTrue(!!input);
     assertFalse(input.hasAttribute('focused_'));
 
     input.focus();
+    await input.updateComplete;
     assertTrue(input.hasAttribute('focused_'));
 
     input.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}));
+    await input.updateComplete;
     assertFalse(input.hasAttribute('focused_'));
+  });
+
+  test('Multi organization input toggles on enter/edit', async () => {
+    await tabOrganizationResultsSetup();
+    tabOrganizationResults.multiTabOrganization = true;
+    await flushTasks();
+
+    const group = tabOrganizationResults.shadowRoot!.querySelector(
+        'tab-organization-group');
+    assertTrue(!!group);
+    const input =
+        group.shadowRoot!.querySelector<HTMLElement>('#multiOrganizationInput');
+    assertTrue(!!input);
+
+    assertTrue(isVisible(input));
+
+    input.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}));
+    await flushTasks();
+
+    assertFalse(isVisible(input));
+
+    const editButton =
+        group.shadowRoot!.querySelector<HTMLElement>('.icon-edit');
+    assertTrue(!!editButton);
+    assertTrue(isVisible(editButton));
+
+    editButton.click();
+    await flushTasks();
+
+    assertTrue(isVisible(input));
+    assertFalse(isVisible(editButton));
   });
 
   test('Tab close removes from tab list', async () => {
@@ -138,10 +212,12 @@ suite('TabOrganizationPageTest', () => {
     const results = tabOrganizationPage.shadowRoot!.querySelector(
         'tab-organization-results');
     assertTrue(!!results);
+    const group = results.shadowRoot!.querySelector('tab-organization-group');
+    assertTrue(!!group);
 
     assertEquals(0, testApiProxy.getCallCount('removeTabFromOrganization'));
 
-    const tabRows = results.shadowRoot!.querySelectorAll('tab-search-item');
+    const tabRows = group.shadowRoot!.querySelectorAll('tab-search-item');
     assertTrue(!!tabRows);
     assertEquals(3, tabRows.length);
 
@@ -156,8 +232,10 @@ suite('TabOrganizationPageTest', () => {
   test('Arrow keys traverse focus in results list', async () => {
     await tabOrganizationResultsSetup();
 
-    const tabRows =
-        tabOrganizationResults.shadowRoot!.querySelectorAll('tab-search-item');
+    const group = tabOrganizationResults.shadowRoot!.querySelector(
+        'tab-organization-group');
+    assertTrue(!!group);
+    const tabRows = group.shadowRoot!.querySelectorAll('tab-search-item');
     assertTrue(!!tabRows);
     assertEquals(3, tabRows.length);
 
@@ -177,14 +255,14 @@ suite('TabOrganizationPageTest', () => {
     assertFalse(closeButton1.matches(':focus'));
     assertFalse(closeButton2.matches(':focus'));
 
-    tabOrganizationResults.$.selector.dispatchEvent(
+    group.$.selector.dispatchEvent(
         new KeyboardEvent('keydown', {key: 'ArrowUp'}));
 
     assertFalse(closeButton0.matches(':focus'));
     assertFalse(closeButton1.matches(':focus'));
     assertTrue(closeButton2.matches(':focus'));
 
-    tabOrganizationResults.$.selector.dispatchEvent(
+    group.$.selector.dispatchEvent(
         new KeyboardEvent('keydown', {key: 'ArrowDown'}));
 
     assertTrue(closeButton0.matches(':focus'));
@@ -222,7 +300,7 @@ suite('TabOrganizationPageTest', () => {
     assertFalse(focusableElement2.matches(':focus'));
   });
 
-  test('Create group accepts organization', async () => {
+  test('Single organization create group accepts organization', async () => {
     await tabOrganizationPageSetup();
 
     testApiProxy.getCallbackRouterRemote().tabOrganizationSessionUpdated(
@@ -233,7 +311,12 @@ suite('TabOrganizationPageTest', () => {
     const results = tabOrganizationPage.shadowRoot!.querySelector(
         'tab-organization-results');
     assertTrue(!!results);
-    const createGroupButton = results.shadowRoot!.querySelector('cr-button');
+    const group = results.shadowRoot!.querySelector('tab-organization-group');
+    assertTrue(!!group);
+    const actions =
+        group.shadowRoot!.querySelector('tab-organization-results-actions');
+    assertTrue(!!actions);
+    const createGroupButton = actions.shadowRoot!.querySelector('cr-button');
     assertTrue(!!createGroupButton);
     createGroupButton.click();
     await flushTasks();
@@ -241,12 +324,42 @@ suite('TabOrganizationPageTest', () => {
     assertEquals(1, testApiProxy.getCallCount('acceptTabOrganization'));
   });
 
-  test('Refresh rejects organization', async () => {
-    const rejectFinalSuggestion = 'Clear';
+  test(
+      'Multi organization create groups accepts all organizations',
+      async () => {
+        loadTimeData.overrideValues({
+          multiTabOrganizationEnabled: true,
+        });
 
+        await tabOrganizationPageSetup();
+
+        const organizationCount = 3;
+        testApiProxy.getCallbackRouterRemote().tabOrganizationSessionUpdated(
+            createMultiOrganizationSession(organizationCount));
+        await flushTasks();
+
+        assertEquals(0, testApiProxy.getCallCount('acceptTabOrganization'));
+
+        const results = tabOrganizationPage.shadowRoot!.querySelector(
+            'tab-organization-results');
+        assertTrue(!!results);
+        const actions = results.shadowRoot!.querySelector(
+            'tab-organization-results-actions');
+        assertTrue(!!actions);
+        const createGroupsButton =
+            actions.shadowRoot!.querySelector<HTMLElement>('#createButton');
+        assertTrue(!!createGroupsButton);
+        createGroupsButton.click();
+        await flushTasks();
+
+        assertEquals(
+            organizationCount,
+            testApiProxy.getCallCount('acceptTabOrganization'));
+      });
+
+  test('Group cancel button rejects organization', async () => {
     loadTimeData.overrideValues({
-      tabOrganizationRefreshButtonEnabled: true,
-      rejectFinalSuggestion: rejectFinalSuggestion,
+      multiTabOrganizationEnabled: true,
     });
 
     await tabOrganizationPageSetup();
@@ -260,64 +373,44 @@ suite('TabOrganizationPageTest', () => {
     const results = tabOrganizationPage.shadowRoot!.querySelector(
         'tab-organization-results');
     assertTrue(!!results);
-    const refreshButton = results.shadowRoot!.querySelector('cr-button');
-    assertTrue(!!refreshButton);
-    assertTrue(refreshButton.innerHTML.includes(rejectFinalSuggestion));
-    refreshButton.click();
+    const group = results.shadowRoot!.querySelector('tab-organization-group');
+    assertTrue(!!group);
+    const cancelButton =
+        group.shadowRoot!.querySelector<HTMLElement>('#rejectButton');
+    assertTrue(!!cancelButton);
+    cancelButton.click();
     await flushTasks();
 
     assertEquals(1, testApiProxy.getCallCount('rejectTabOrganization'));
   });
 
-  test(
-      'Refresh button has different label for multiple suggestions',
-      async () => {
-        const rejectSuggestion = 'Refresh';
+  test('Clear rejects session', async () => {
+    loadTimeData.overrideValues({
+      multiTabOrganizationEnabled: true,
+    });
 
-        loadTimeData.overrideValues({
-          tabOrganizationRefreshButtonEnabled: true,
-          rejectSuggestion: rejectSuggestion,
-        });
+    await tabOrganizationPageSetup();
 
-        await tabOrganizationPageSetup();
+    testApiProxy.getCallbackRouterRemote().tabOrganizationSessionUpdated(
+        createSession({state: TabOrganizationState.kSuccess}));
+    await flushTasks();
 
-        const multiOrganizationSession = {
-          sessionId: 1,
-          state: TabOrganizationState.kSuccess,
-          organizations: [
-            {
-              organizationId: 1,
-              name: stringToMojoString16('foo'),
-              tabs: [
-                createTab({title: 'Tab 1', url: {url: 'https://tab-1.com/'}}),
-                createTab({title: 'Tab 2', url: {url: 'https://tab-2.com/'}}),
-                createTab({title: 'Tab 3', url: {url: 'https://tab-3.com/'}}),
-              ],
-            },
-            {
-              organizationId: 2,
-              name: stringToMojoString16('bar'),
-              tabs: [
-                createTab({title: 'Tab 4', url: {url: 'https://tab-4.com/'}}),
-                createTab({title: 'Tab 5', url: {url: 'https://tab-5.com/'}}),
-                createTab({title: 'Tab 6', url: {url: 'https://tab-6.com/'}}),
-              ],
-            },
-          ],
-          error: TabOrganizationError.kNone,
-        };
+    assertEquals(0, testApiProxy.getCallCount('rejectSession'));
 
-        testApiProxy.getCallbackRouterRemote().tabOrganizationSessionUpdated(
-            multiOrganizationSession);
-        await flushTasks();
+    const results = tabOrganizationPage.shadowRoot!.querySelector(
+        'tab-organization-results');
+    assertTrue(!!results);
+    const actions =
+        results.shadowRoot!.querySelector('tab-organization-results-actions');
+    assertTrue(!!actions);
+    const clearButton =
+        actions.shadowRoot!.querySelector<HTMLElement>('#clearButton');
+    assertTrue(!!clearButton);
+    clearButton.click();
+    await flushTasks();
 
-        const results = tabOrganizationPage.shadowRoot!.querySelector(
-            'tab-organization-results');
-        assertTrue(!!results);
-        const refreshButton = results.shadowRoot!.querySelector('cr-button');
-        assertTrue(!!refreshButton);
-        assertTrue(refreshButton.innerHTML.includes(rejectSuggestion));
-      });
+    assertEquals(1, testApiProxy.getCallCount('rejectSession'));
+  });
 
   test('Sync required for organization', async () => {
     const syncInfo: SyncInfo = {

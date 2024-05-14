@@ -177,12 +177,6 @@ std::vector<std::string> GenerateUpgradeProps(
         "%s.arc.lmk.perceptible_min_state_update=1", prefix.c_str()));
   }
 
-  if (GetArcAndroidSdkVersionAsInt() >= kArcVersionT &&
-      upgrade_params.force_post_boot_dex_opt) {
-    result.push_back(
-        base::StringPrintf("%s.force_post_boot_dexopt=1", prefix.c_str()));
-  }
-
   if (GetArcAndroidSdkVersionAsInt() == kArcVersionT &&
       upgrade_params.skip_dexopt_cache) {
     result.push_back(
@@ -837,9 +831,6 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     }
 
     std::vector<std::string> environment;
-    if (start_params_.disable_ureadahead) {
-      environment.emplace_back("DISABLE_UREADAHEAD=1");
-    }
     std::deque<JobDesc> jobs{
         // Note: the first Upstart job is a task, and the callback for the start
         // request won't be called until the task finishes. When the callback is

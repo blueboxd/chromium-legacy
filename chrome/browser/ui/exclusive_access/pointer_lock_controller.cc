@@ -126,11 +126,17 @@ bool PointerLockController::HandleUserPressedEscape() {
   return false;
 }
 
-void PointerLockController::ExitExclusiveAccessToPreviousState() {
-  // Nothing to do for pointer lock.
+void PointerLockController::HandleUserHeldEscape() {
+  HandleUserPressedEscape();
 }
 
-void PointerLockController::LostPointerLock() {
+void PointerLockController::HandleUserReleasedEscapeEarly() {}
+
+bool PointerLockController::RequiresPressAndHoldEscToExit() const {
+  return false;
+}
+
+void PointerLockController::ExitExclusiveAccessToPreviousState() {
   if (lock_state_callback_for_test_)
     std::move(lock_state_callback_for_test_).Run();
 

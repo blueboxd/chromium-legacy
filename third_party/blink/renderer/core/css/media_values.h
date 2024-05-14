@@ -138,6 +138,7 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues>,
   virtual Scripting GetScripting() const = 0;
 
   // CSSLengthResolver override.
+  void ReferenceTreeScope() const override {}
   void ReferenceAnchor() const override {}
 
  protected:

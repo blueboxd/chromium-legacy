@@ -18,11 +18,14 @@ namespace focus_mode_util {
 
 constexpr base::TimeDelta kMinimumDuration = base::Minutes(1);
 constexpr base::TimeDelta kMaximumDuration = base::Minutes(300);
-constexpr base::TimeDelta kEndingMomentDuration = base::Seconds(6);
+constexpr base::TimeDelta kEndingMomentDuration = base::Seconds(9);
 
 // The amount of time to extend the focus session duration by during a currently
 // active focus session.
 constexpr base::TimeDelta kExtendDuration = base::Minutes(10);
+
+constexpr char kFocusModeEndingMomentNudgeId[] =
+    "focus_mode_ending_moment_nudge";
 
 // Adaptation of `base::TimeDurationFormat`. This helper function
 // takes a `TimeDelta` and returns the time formatted according to

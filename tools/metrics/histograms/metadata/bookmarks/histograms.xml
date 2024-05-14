@@ -22,6 +22,12 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<variants name="BookmarksFileType">
+  <variant name=".Account" summary="JSON file containing account bookmarks."/>
+  <variant name=".LocalOrSyncable"
+      summary="JSON file containing local-or-syncable bookmarks."/>
+</variants>
+
 <histogram name="BookmarkManager.CommandExecuted" enum="BookmarkManagerCommand"
     expires_after="never">
 <!-- expires-never: part of top-line metric (internal: go/chrome-browser-nsm) -->
@@ -91,7 +97,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.AverageNodeSize" units="Bytes"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>wylieb@chromium.org</owner>
   <owner>chrome-collections@google.com</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
@@ -128,7 +134,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Bookmarks.BookmarkBar.NavigationOrActivationToFirstContentfulPaint"
-    units="ms" expires_after="2024-06-30">
+    units="ms" expires_after="2024-09-01">
   <owner>robertlin@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -153,7 +159,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Bookmarks.BookmarkBar.NavigationOrActivationToLargestContentfulPaint"
-    units="ms" expires_after="2024-06-30">
+    units="ms" expires_after="2024-09-01">
   <owner>robertlin@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -175,7 +181,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.BookmarkBar.Shown" enum="BooleanShown"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>amelies@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -184,7 +190,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.BookmarksBar.DragDropType"
-    enum="BookmarkBarDragDropType" expires_after="2024-06-30">
+    enum="BookmarkBarDragDropType" expires_after="2024-09-01">
   <owner>dfried@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -239,7 +245,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.EditLocation" enum="BookmarkLaunchLocation"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>dfried@chromium.org</owner>
   <owner>mickeyburks@chromium.org</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
@@ -267,10 +273,21 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.EntryPoint" enum="BookmarksEntryPoint"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>ianwen@chromium.org</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
   <summary>How users add a new bookmark.</summary>
+</histogram>
+
+<histogram name="Bookmarks.IdsReassigned.OnProfileLoad{BookmarksFileType}"
+    enum="BooleanReassigned" expires_after="2024-07-01">
+  <owner>mastiz@chromium.org</owner>
+  <owner>arthurmilchior@chromium.org</owner>
+  <component>UI&gt;Browser&gt;Bookmarks</component>
+  <summary>
+    Logs whether or not bookmark node IDs were reassigned when loading the
+    {BookmarksFileType}. Recorded on profile load.
+  </summary>
 </histogram>
 
 <histogram name="Bookmarks.LaunchLocation" enum="BookmarkLaunchLocation"
@@ -360,7 +377,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.OpenBookmarkManager.PerProfileType"
-    enum="BrowserProfileType" expires_after="2024-06-30">
+    enum="BrowserProfileType" expires_after="2024-09-01">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
@@ -471,7 +488,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.RemovedLocation" enum="BookmarkLaunchLocation"
-    expires_after="2024-04-28">
+    expires_after="2024-09-01">
   <owner>dfried@chromium.org</owner>
   <owner>mickeyburks@chromium.org</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
@@ -526,26 +543,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Bookmarks.Storage.TimeToLoadAtStartup2{StorageState}"
-    units="ms" expires_after="2024-07-28">
+<histogram name="Bookmarks.Storage.TimeToLoadAtStartup2" units="ms"
+    expires_after="2024-07-28">
   <owner>wylieb@chromium.org</owner>
   <owner>chrome-collections@google.com</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
   <summary>
-    Duration of loading the bookmarks file, recorded when the bookmark model is
-    loaded {StorageState}.
+    Duration of loading bookmarks from disk, recorded when the bookmark model is
+    loaded.
 
     Opening a guest session (guest profile) also causes an emit to this
     histogram even though guest sessions don't typically allow bookmarks. (The
     value emitted is typically zero.) Under certain enterpise configuration,
     guest sessions can have bookmarks.
   </summary>
-  <token key="StorageState">
-    <variant name="" summary="irrespective of storage state"/>
-    <variant name=".AccountStorage" summary="with account storage"/>
-    <variant name=".LocalStorage" summary="with local storage not syncing"/>
-    <variant name=".LocalStorageSyncing" summary="with local storage syncing"/>
-  </token>
 </histogram>
 
 <histogram name="Bookmarks.Times.OnProfileLoad.MostRecentlyAddedFolderInDays"

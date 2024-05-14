@@ -13,7 +13,7 @@
 #include "base/scoped_observation.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
-#include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
+#include "components/subresource_filter/core/browser/verified_ruleset_dealer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -133,7 +133,9 @@ class ContentSubresourceFilterWebContentsHelper
   // Keep track of all active throttle managers. Unowned as a throttle manager
   // will notify this class when it's destroyed so we can remove it from this
   // set.
-  base::flat_set<ContentSubresourceFilterThrottleManager*> throttle_managers_;
+  base::flat_set<
+      raw_ptr<ContentSubresourceFilterThrottleManager, CtnExperimental>>
+      throttle_managers_;
 };
 
 // Returns true if the navigation is happening in the main frame of a page

@@ -94,7 +94,8 @@ public class PageInfoHistoryController
                         /* selectionDelegate= */ null,
                         mTabSupplier,
                         new BrowsingHistoryBridge(profile),
-                        null);
+                        null,
+                        /* appSpecificHistory= */ false);
         mContentManager.startLoadingItems();
         return mContentManager.getRecyclerView();
     }
@@ -210,6 +211,10 @@ public class PageInfoHistoryController
         // change the name of the current clear browsing data button.
         return;
     }
+
+    // HistoryContentManager.Observer
+    @Override
+    public void onOpenFullChromeHistoryClicked() {}
 
     // HistoryContentManager.Observer
     @Override

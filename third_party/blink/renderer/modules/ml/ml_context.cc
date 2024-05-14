@@ -4,21 +4,61 @@
 
 #include "third_party/blink/renderer/modules/ml/ml_context.h"
 
+#include "base/notreached.h"
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_context_options.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/ml/ml.h"
-#include "third_party/blink/renderer/modules/ml/ml_model_loader.h"
+#include "third_party/blink/renderer/modules/ml/ml_trace.h"
+#include "third_party/blink/renderer/modules/ml/webnn/ml_buffer_mojo.h"
+#include "third_party/blink/renderer/modules/ml/webnn/ml_error_mojo.h"
+#include "third_party/blink/renderer/modules/ml/webnn/ml_graph_mojo.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 
+namespace {
+
+webnn::mojom::blink::PowerPreference ConvertBlinkPowerPreferenceToMojo(
+    const V8MLPowerPreference& power_preference_blink) {
+  switch (power_preference_blink.AsEnum()) {
+    case V8MLPowerPreference::Enum::kAuto:
+      return webnn::mojom::blink::PowerPreference::kDefault;
+    case V8MLPowerPreference::Enum::kLowPower:
+      return webnn::mojom::blink::PowerPreference::kLowPower;
+    case V8MLPowerPreference::Enum::kHighPerformance:
+      return webnn::mojom::blink::PowerPreference::kHighPerformance;
+  }
+}
+
+}  // namespace
+
 // static
-MLContext* MLContext::ValidateAndCreateSync(MLContextOptions* options, ML* ml) {
-  return MakeGarbageCollected<MLContext>(
+void MLContext::ValidateAndCreate(
+    ScriptPromiseResolverTyped<MLContext>* resolver,
+    MLContextOptions* options,
+    ML* ml) {
+  ScopedMLTrace scoped_trace("MLContext::ValidateAndCreate");
+  auto* context = MakeGarbageCollected<MLContext>(
       options->devicePreference(), options->deviceType(),
       options->powerPreference(), options->modelFormat(), options->numThreads(),
       ml);
+
+  // TODO: crbug.com/325612086 - The WebNN Service supports CPU execution via
+  // TFLite, but that code path is currently only hit when asking a "gpu"
+  // context for the sake of testing. This should be fixed.
+  if (options->deviceType() == V8MLDeviceType::Enum::kGpu) {
+    auto options_mojo = webnn::mojom::blink::CreateContextOptions::New(
+        ConvertBlinkPowerPreferenceToMojo(options->powerPreference()));
+    ml->CreateWebNNContext(
+        std::move(options_mojo),
+        WTF::BindOnce(&MLContext::OnCreateWebNNContext, WrapPersistent(context),
+                      std::move(scoped_trace), WrapPersistent(resolver)));
+    return;
+  }
+
+  resolver->Resolve(context);
 }
 
 MLContext::MLContext(const V8MLDevicePreference device_preference,
@@ -32,7 +72,8 @@ MLContext::MLContext(const V8MLDevicePreference device_preference,
       power_preference_(power_preference),
       model_format_(model_format),
       num_threads_(num_threads),
-      ml_(ml) {}
+      ml_(ml),
+      remote_context_(ml->GetExecutionContext()) {}
 
 MLContext::~MLContext() = default;
 
@@ -70,36 +111,29 @@ ML* MLContext::GetML() {
   return ml_.Get();
 }
 
-MLModelLoader* MLContext::GetModelLoaderForWebNN(ScriptState* script_state) {
-  if (!ml_model_loader_) {
-    ExecutionContext* execution_context = ExecutionContext::From(script_state);
-    ml_model_loader_ =
-        MakeGarbageCollected<MLModelLoader>(execution_context, this);
-  }
-  return ml_model_loader_.Get();
-}
-
 void MLContext::Trace(Visitor* visitor) const {
   visitor->Trace(ml_);
-  visitor->Trace(ml_model_loader_);
+  visitor->Trace(remote_context_);
 
   ScriptWrappable::Trace(visitor);
 }
 
-ScriptPromise MLContext::compute(ScriptState* script_state,
-                                 MLGraph* graph,
-                                 const MLNamedArrayBufferViews& inputs,
-                                 const MLNamedArrayBufferViews& outputs,
-                                 ExceptionState& exception_state) {
+ScriptPromiseTyped<MLComputeResult> MLContext::compute(
+    ScriptState* script_state,
+    MLGraph* graph,
+    const MLNamedArrayBufferViews& inputs,
+    const MLNamedArrayBufferViews& outputs,
+    ExceptionState& exception_state) {
   ScopedMLTrace scoped_trace("MLContext::compute");
   if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Invalid script state");
-    return ScriptPromise();
+    return ScriptPromiseTyped<MLComputeResult>();
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<MLComputeResult>>(
+          script_state, exception_state.GetContext());
   auto promise = resolver->Promise();
 
   if (graph->Context() != this) {
@@ -107,54 +141,87 @@ ScriptPromise MLContext::compute(ScriptState* script_state,
         DOMExceptionCode::kDataError,
         "The graph isn't built within this context."));
   } else {
-    graph->ComputeAsync(std::move(scoped_trace), inputs, outputs, resolver,
-                        exception_state);
+    graph->Compute(std::move(scoped_trace), inputs, outputs, resolver,
+                   exception_state);
   }
 
   return promise;
 }
 
-void MLContext::computeSync(MLGraph* graph,
-                            const MLNamedArrayBufferViews& inputs,
-                            const MLNamedArrayBufferViews& outputs,
-                            ExceptionState& exception_state) {
-  ScopedMLTrace scoped_trace("MLContext::computeSync");
-  if (graph->Context() != this) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kDataError,
-        "The graph isn't built within this context.");
+void MLContext::CreateWebNNGraph(
+    webnn::mojom::blink::GraphInfoPtr graph_info,
+    webnn::mojom::blink::WebNNContext::CreateGraphCallback callback) {
+  if (!remote_context_.is_bound()) {
+    std::move(callback).Run(webnn::mojom::blink::CreateGraphResult::NewError(
+        webnn::mojom::blink::Error::New(
+            webnn::mojom::blink::Error::Code::kUnknownError,
+            "Invalid script state.")));
     return;
   }
-  graph->ComputeSync(inputs, outputs, exception_state);
+
+  remote_context_->CreateGraph(std::move(graph_info),
+                               WTF::BindOnce(std::move(callback)));
 }
 
-void MLContext::CreateAsync(ScopedMLTrace scoped_trace,
-                            ScriptPromiseResolver* resolver,
-                            MLContextOptions* options) {
-  CreateAsyncImpl(std::move(scoped_trace), resolver, options);
+void MLContext::OnCreateWebNNContext(
+    ScopedMLTrace scoped_trace,
+    ScriptPromiseResolverTyped<MLContext>* resolver,
+    webnn::mojom::blink::CreateContextResultPtr result) {
+  ScriptState* script_state = resolver->GetScriptState();
+  if (!script_state) {
+    return;
+  }
+
+  if (result->is_error()) {
+    const auto& create_context_error = result->get_error();
+    resolver->RejectWithDOMException(
+        ConvertWebNNErrorCodeToDOMExceptionCode(create_context_error->code),
+        create_context_error->message);
+    return;
+  }
+
+  remote_context_.Bind(std::move(result->get_context_remote()),
+                       ExecutionContext::From(script_state)
+                           ->GetTaskRunner(TaskType::kMiscPlatformAPI));
+
+  resolver->Resolve(this);
 }
 
-MLContext* MLContext::CreateSync(ScriptState* script_state,
-                                 MLContextOptions* options,
-                                 ExceptionState& exception_state) {
-  return CreateSyncImpl(script_state, options, exception_state);
+void MLContext::CreateWebNNBuffer(
+    mojo::PendingReceiver<webnn::mojom::blink::WebNNBuffer> receiver,
+    webnn::mojom::blink::BufferInfoPtr buffer_info,
+    const base::UnguessableToken& buffer_handle) {
+  // Remote context gets automatically unbound when the execution context
+  // destructs.
+  if (!remote_context_.is_bound()) {
+    return;
+  }
+
+  // Use `WebNNContext` to create `WebNNBuffer` message pipe.
+  remote_context_->CreateBuffer(std::move(receiver), std::move(buffer_info),
+                                buffer_handle);
 }
 
-void MLContext::CreateAsyncImpl(ScopedMLTrace scoped_trace,
-                                ScriptPromiseResolver* resolver,
-                                MLContextOptions* options) {
-  // TODO(crbug.com/1273291): Remove when async creation gets implemented for
-  // all context types.
-  NOTIMPLEMENTED();
-}
+MLBuffer* MLContext::createBuffer(ScriptState* script_state,
+                                  const MLBufferDescriptor* descriptor,
+                                  ExceptionState& exception_state) {
+  ScopedMLTrace scoped_trace("MLContext::createBuffer");
+  if (!script_state->ContextIsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Invalid script state");
+    return nullptr;
+  }
 
-MLContext* MLContext::CreateSyncImpl(ScriptState* script_state,
-                                     MLContextOptions* options,
-                                     ExceptionState& exception_state) {
-  // TODO(crbug.com/1273291): Remove when sync creation gets implemented for
-  // all context types.
-  NOTIMPLEMENTED();
+  // TODO: crbug.com/325612086 - The WebNN Service supports CPU execution via
+  // TFLite, but that code path is currently only hit when asking a "gpu"
+  // context for the sake of testing. This should be fixed.
+  if (device_type_ == V8MLDeviceType::Enum::kGpu) {
+    return MLBufferMojo::Create(std::move(scoped_trace), script_state, this,
+                                descriptor, exception_state);
+  }
+
+  exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                    "Not implemented");
   return nullptr;
 }
-
 }  // namespace blink

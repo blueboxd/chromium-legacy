@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninPreferencesManager;
 import org.chromium.chrome.browser.ui.signin.SyncConsentDelegate;
 import org.chromium.chrome.browser.ui.signin.SyncConsentFragmentBase;
@@ -40,19 +41,20 @@ public class SyncConsentFirstRunFragment extends SyncConsentFragmentBase
     public SyncConsentFirstRunFragment() {
         mSyncConsentDelegate =
                 new SyncConsentDelegate() {
-                    @NonNull
+                    @Nullable
                     @Override
                     public WindowAndroid getWindowAndroid() {
-                        return getPageDelegate().getWindowAndroid();
+                        FirstRunPageDelegate delegate = getPageDelegate();
+                        if (delegate == null) return null;
+                        return delegate.getWindowAndroid();
                     }
 
-                    @NonNull
+                    @Nullable
                     @Override
                     public Profile getProfile() {
-                        return getPageDelegate()
-                                .getProfileProviderSupplier()
-                                .get()
-                                .getOriginalProfile();
+                        FirstRunPageDelegate delegate = getPageDelegate();
+                        if (delegate == null) return null;
+                        return delegate.getProfileProviderSupplier().get().getOriginalProfile();
                     }
                 };
     }
@@ -85,7 +87,8 @@ public class SyncConsentFirstRunFragment extends SyncConsentFragmentBase
     }
 
     @Override
-    protected void onSyncAccepted(String accountName, boolean settingsClicked, Runnable callback) {
+    protected void onSyncAccepted(
+            String accountName, boolean settingsClicked, SigninManager.SignInCallback callback) {
         // TODO(crbug.com/1302635): Once ENABLE_SYNC_IMMEDIATELY_IN_FRE launches, move these metrics
         // elsewhere, so onSyncAccepted() is replaced with signinAndEnableSync() (common code).
         getPageDelegate().recordFreProgressHistogram(MobileFreProgress.SYNC_CONSENT_ACCEPTED);
@@ -127,7 +130,7 @@ public class SyncConsentFirstRunFragment extends SyncConsentFragmentBase
 
                             // SigninChecker enabled sync already. Just open settings if needed.
                             closeAndMaybeOpenSyncSettings(settingsClicked);
-                            callback.run();
+                            callback.onSignInComplete();
                         });
     }
 

@@ -15,6 +15,7 @@
 <translation id="1423007117030725713">Keresés indítása új Chromium-lapon.</translation>
 <translation id="1431818719585918472">Az inkognitó lapok zárolásának engedélyezése a Chromium számára.</translation>
 <translation id="1472013873724362412">Fiókja nem működik a Chromium rendszeren. Lépjen kapcsolatba domainrendszergazdájával, vagy használjon normál Google-fiókot a bejelentkezéshez.</translation>
+<translation id="1503199973012840174">Az Ön által használt Chromium elavult. A biztonság megőrzése érdekében frissítse.</translation>
 <translation id="1507010443238049608">Segítség a Chromium funkcióinak és teljesítményének javítása érdekében</translation>
 <translation id="1513122820609681462">A Chromium beállítása alapértelmezett böngészőként</translation>
 <translation id="1531155317299575425">Értesítéseket jelenít meg a Chromiumba való bejelentkezéshez</translation>
@@ -50,6 +51,7 @@
 <translation id="22313767259766852">Ezt a címet jelenleg a Chromiumba menti a rendszer. Ha szeretné más Google-termékekben is használni, mentse saját Google-fiókjába (<ph name="USER_EMAIL" />).</translation>
 <translation id="2236584955986023187">Ez azt jelenti, hogy a Chromium mindig az asztali webhelyet kéri majd.</translation>
 <translation id="2313870531055795960">Ellenőrzi az URL-eket a Chromiumban a nem biztonságos webhelyekről tárolt lista alapján. Ha valamelyik webhely megpróbálja ellopni az Ön jelszavát, illetve ha Ön kártékony fájlt tölt le, akkor a Chromium elküldheti az URL-eket is (az oldal tartalmának részeivel együtt) a Biztonságos Böngészésnek.</translation>
+<translation id="231828342043114302">Ha személyre szabott tartalmakat szeretne kapni az érdeklődési körei alapján, jelentkezzen be a Chromiumba.</translation>
 <translation id="2374627437126809292">A Chromium a Google Térkép segítségével útvonalterveket és helyi információkat jeleníthessen meg az észlelt címekkel kapcsolatban.</translation>
 <translation id="2386292341327187942">Írja be a Modulok keresése mezőbe azt, hogy Chromium.</translation>
 <translation id="2426113998523353159">Szervezete megköveteli a bejelentkezést a Chromium használatához.</translation>
@@ -78,7 +80,6 @@ Az adatokat a Chromium-élmény javítására használó további beállítások
 <translation id="3219277919172823720">Hangalapú keresés a Chromiumban</translation>
 <translation id="3228349498066165585">A Chromium egyes adatait még nem mentette a rendszer a Google-fiókjába.
         A kijelentkezés előtt várjon néhány percet. Ha most jelentkezik ki, akkor ezek az adatok törlődnek.</translation>
-<translation id="3256316712990552818">A Chromiumra másolva</translation>
 <translation id="328933489847748230">{count,plural, =1{Jelenleg 1 Chromium-ablak látható}other{Jelenleg {count} Chromium-ablak látható}}</translation>
 <translation id="3344973607274501920">A Chromium nem tudta ellenőrizni a jelszavakat. Ellenőrizze az internetkapcsolatot.</translation>
 <translation id="3366305173356742781">A fiókjában lévő Chromium-adatok</translation>
@@ -116,6 +117,7 @@ Adatai az összetett jelszavával vannak titkosítva. Adja meg, ha Google-fiókj
 <translation id="4195557071150719219">Legutóbbi Chromium-lapok megtekintése</translation>
 <translation id="4200712796753248893">Chromium-műveletek használata iOS rendszeren</translation>
 <translation id="420541179527342563">Ha le szeretné tiltani a Lezárás módot a Chromiumban, kapcsolja ki iPad eszközén.</translation>
+<translation id="427331839909790668">Kapcsolja össze a Chromiumot az egyéb Google-szolgáltatásokkal, ha szeretné, hogy az adatok kölcsönös megosztása alapján szabják személyre a felhasználói élményt</translation>
 <translation id="4408912345039114853">A Chromium biztonsági ellenőrzésének futtatása</translation>
 <translation id="4432744876818348753">Jelentkezzen be, hogy a legtöbbet hozhassa ki a Chromiumból.</translation>
 <translation id="4445228361214254027">Szervezete letiltotta a Chromium-adatok Google-fiókban való használatát és mentését. Az új könyvjelzők, jelszavak és egyebek csak erre az eszközre lesznek mentve.</translation>
@@ -217,6 +219,7 @@ Csak az Ön összetett jelszava ismeretében tudja bárki is megtekinteni a titk
 <translation id="6852799557929001644">Hozzáférhet Chromium-jelszavaihoz és még sok máshoz az erre az eszközre telepített más alkalmazásokban.</translation>
 <translation id="6887138405044152640">Ha szeretné elküldeni ezt a lapot egy másik eszközre, jelentkezzen be a Chromiumba az adott eszközön.</translation>
 <translation id="6911341667534646387">Továbbra is használhatja a Google-fiókjában lévő Chromium-adatokat</translation>
+<translation id="7002548535535009764">A leginkább személyre szabott élmény érdekében vegye fel a Chromiumot itt: <ph name="FEATURE_NAME_1" /> és itt: <ph name="FEATURE_NAME_2" /></translation>
 <translation id="7006920032187763988">A Jelszókezelőbe mentett jelszavakat használhatja más alkalmazásokban iPad eszközén.</translation>
 <translation id="7018284295775193585">Nem lehet frissíteni a Chromiumot</translation>
 <translation id="7045244423563602563">Tegye személyessé a Chromiumot</translation>
@@ -312,7 +315,6 @@ Adatai az összetett jelszavával lettek titkosítva a következő időpontban: 
 <translation id="9059693977935746710">Nem kell emlékeznie erre a jelszóra. Elmenti a rendszer a fiókhoz (<ph name="EMAIL" />) kapcsolt Jelszókezelőbe.</translation>
 <translation id="9089354809943900324">A Chromium elavult</translation>
 <translation id="9110075932708282655">A Chromium alapértelmezett használata</translation>
-<translation id="9137114218472648150">Az Ön által használt Chromium elavult. A biztonság megőrzése érdekében frissítse a legújabb verzióra.</translation>
 <translation id="921174536258924340">A Chromium nem tudta ellenőrizni az összes jelszót. Próbálja újra holnap, vagy <ph name="BEGIN_LINK" />ellenőrizze jelszavait a Google-fiókjában<ph name="END_LINK" />.</translation>
 <translation id="971488683725792095">Beállíthatja, hogy a rendszer automatikusan a Chromiumot használja, amikor üzenetekben, dokumentumokban és más alkalmazásokban található linkekre kattint.</translation>
 <translation id="981812233959540767">A Chromium dinós játékának elindítása</translation>

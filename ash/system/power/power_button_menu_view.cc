@@ -74,9 +74,10 @@ PowerButtonMenuView::PowerButtonMenuView(
     layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
     layer()->SetBackdropFilterQuality(ColorProvider::kBackgroundBlurQuality);
   }
-  GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenu);
-  GetViewAccessibility().OverrideName(
-      l10n_util::GetStringUTF16(IDS_ASH_POWER_BUTTON_MENU_ACCESSIBLE));
+  GetViewAccessibility().SetRole(ax::mojom::Role::kMenu);
+  GetViewAccessibility().SetName(
+      l10n_util::GetStringUTF16(IDS_ASH_POWER_BUTTON_MENU_ACCESSIBLE),
+      ax::mojom::NameFrom::kAttribute);
   RecreateItems();
 
   // Create a system shadow for current view.

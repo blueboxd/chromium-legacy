@@ -35,6 +35,7 @@
 
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_event.h"
+#include "components/viz/common/frame_timing_details.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
@@ -175,8 +176,10 @@ bool IsEventTypeForInteractionId(const AtomicString& type) {
          type == event_type_names::kPointerup ||
          type == event_type_names::kClick ||
          type == event_type_names::kKeydown ||
+         type == event_type_names::kKeypress ||
          type == event_type_names::kKeyup ||
          type == event_type_names::kCompositionstart ||
+         type == event_type_names::kCompositionupdate ||
          type == event_type_names::kCompositionend ||
          type == event_type_names::kInput;
 }
@@ -410,7 +413,10 @@ void WindowPerformance::RegisterEventTiming(const Event& event,
   const PointerEvent* pointer_event = DynamicTo<PointerEvent>(event);
   if (event_type == event_type_names::kPointermove) {
     // A trusted pointermove must be a PointerEvent.
-    DCHECK(event.IsPointerEvent());
+    if (!event.IsPointerEvent()) {
+      return;
+    }
+
     NotifyPotentialDrag(pointer_event->pointerId());
     SetCurrentEventTimingEvent(nullptr);
     return;
@@ -459,7 +465,9 @@ void WindowPerformance::RegisterEventTiming(const Event& event,
 //                            due to no frame updates.
 void WindowPerformance::OnPresentationPromiseResolved(
     uint64_t presentation_index,
-    base::TimeTicks presentation_timestamp) {
+    const viz::FrameTimingDetails& presentation_details) {
+  base::TimeTicks presentation_timestamp =
+      presentation_details.presentation_feedback.timestamp;
   if (!DomWindow() || !DomWindow()->document()) {
     return;
   }
@@ -516,7 +524,7 @@ void WindowPerformance::ReportEvent(InteractiveDetector* interactive_detector,
   std::optional<int> key_code = event_data->GetKeyCode();
   std::optional<PointerId> pointer_id = event_data->GetPointerId();
 
-  absl::optional<base::TimeTicks> fallback_time =
+  std::optional<base::TimeTicks> fallback_time =
       GetFallbackTime(entry, event_timestamp, presentation_timestamp);
 
   base::TimeTicks entry_end_timetick =
@@ -616,7 +624,7 @@ void WindowPerformance::NotifyAndAddEventTimingBuffer(
   }
 }
 
-absl::optional<base::TimeTicks> WindowPerformance::GetFallbackTime(
+std::optional<base::TimeTicks> WindowPerformance::GetFallbackTime(
     PerformanceEventTiming* entry,
     base::TimeTicks event_timestamp,
     base::TimeTicks presentation_timestamp) {
@@ -677,7 +685,7 @@ absl::optional<base::TimeTicks> WindowPerformance::GetFallbackTime(
   } else if (fallback_end_time_to_processing_end) {
     return processing_end_timetick;
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 bool WindowPerformance::SetInteractionIdAndRecordLatency(

@@ -219,8 +219,7 @@ class SyncServiceImpl : public SyncService,
   void OnFirstSetupCompletePrefChange(
       bool is_initial_sync_feature_setup_complete) override;
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-  void OnSelectedTypesPrefChange(
-      bool payments_integration_enabled_changed) override;
+  void OnSelectedTypesPrefChange() override;
 
   // KeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).
@@ -404,6 +403,8 @@ class SyncServiceImpl : public SyncService,
   ModelTypeDownloadStatus GetDownloadStatusForImpl(
       ModelType type,
       const std::string& waiting_for_updates_histogram_name) const;
+
+  void OnPasswordSyncAllowedChanged();
 
   // This profile's SyncClient, which abstracts away non-Sync dependencies and
   // the Sync API component factory.

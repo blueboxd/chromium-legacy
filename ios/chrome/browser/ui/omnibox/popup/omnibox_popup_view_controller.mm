@@ -566,6 +566,10 @@ BOOL ShouldDismissKeyboardOnScroll() {
     path = [NSIndexPath indexPathForRow:path.row - 1 inSection:path.section];
   }
 
+  [self.tableView scrollToRowAtIndexPath:path
+                        atScrollPosition:UITableViewScrollPositionTop
+                                animated:NO];
+
   self.highlightedIndexPath = path;
 }
 
@@ -604,6 +608,10 @@ BOOL ShouldDismissKeyboardOnScroll() {
   } else {
     path = [NSIndexPath indexPathForRow:path.row + 1 inSection:path.section];
   }
+
+  [self.tableView scrollToRowAtIndexPath:path
+                        atScrollPosition:UITableViewScrollPositionBottom
+                                animated:NO];
 
   // There is a row below, move highlight there.
   self.highlightedIndexPath = path;
@@ -706,8 +714,11 @@ BOOL ShouldDismissKeyboardOnScroll() {
     // semantic content attribute reset before the cell is displayed (and before
     // this method is called).
     rowCell.omniboxSemanticContentAttribute = self.semanticContentAttribute;
-
     rowCell.accessibilityIdentifier = [OmniboxPopupAccessibilityIdentifierHelper
+        accessibilityIdentifierForRowAtIndexPath:indexPath];
+  } else if ([cell.contentConfiguration
+                 isKindOfClass:OmniboxPopupRowContentConfiguration.class]) {
+    cell.accessibilityIdentifier = [OmniboxPopupAccessibilityIdentifierHelper
         accessibilityIdentifierForRowAtIndexPath:indexPath];
   }
 }

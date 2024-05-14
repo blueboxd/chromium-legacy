@@ -38,7 +38,8 @@ class FakeModelQualityLogEntry
  public:
   FakeModelQualityLogEntry()
       : optimization_guide::ModelQualityLogEntry(
-            std::make_unique<optimization_guide::proto::LogAiDataRequest>()) {}
+            std::make_unique<optimization_guide::proto::LogAiDataRequest>(),
+            nullptr) {}
 };
 
 }  // anonymous namespace
@@ -112,7 +113,7 @@ class TabOrganizationTest : public testing::Test {
   }
 
   std::unique_ptr<TabOrganizationSession> CreateSessionWithValidOrganization(
-      TabOrganizationEntryPoint entrypoint = TabOrganizationEntryPoint::NONE) {
+      TabOrganizationEntryPoint entrypoint = TabOrganizationEntryPoint::kNone) {
     std::unique_ptr<TabOrganizationRequest> request =
         std::make_unique<TabOrganizationRequest>();
     TabOrganizationRequest* request_ptr = request.get();
@@ -1180,6 +1181,54 @@ TEST_F(TabOrganizationTest, TabOrganizationSessionRequestOnLogResultsCalled) {
   EXPECT_EQ(log_callback_called_times, 1);
 }
 
+TEST_F(TabOrganizationTest, ActiveTabExcludesOrganizationsWithoutIt) {
+  std::unique_ptr<TabOrganizationRequest> request =
+      std::make_unique<TabOrganizationRequest>();
+  TabOrganizationRequest* request_ptr = request.get();
+
+  std::vector<TabOrganizationResponse::Organization> response_organizations;
+
+  std::vector<TabData::TabID> ids_to_group_with_active_tab;
+  auto* const active_tab_web_contents = AddTab();
+  request->AddTabData(
+      std::make_unique<TabData>(tab_strip_model(), active_tab_web_contents));
+  const auto base_tab_id = request->tab_datas()[0]->tab_id();
+  request->SetBaseTabID(base_tab_id);
+  ids_to_group_with_active_tab.emplace_back(base_tab_id);
+  for (int i = 0; i < 2; i++) {
+    TabData* tab_to_group_data = request->AddTabData(
+        std::make_unique<TabData>(tab_strip_model(), AddTab()));
+    ids_to_group_with_active_tab.emplace_back(tab_to_group_data->tab_id());
+  }
+  TabOrganizationResponse::Organization organization_1(
+      u"label1", std::move(ids_to_group_with_active_tab));
+  response_organizations.emplace_back(std::move(organization_1));
+
+  std::vector<TabData::TabID> ids_to_group_without_active_tab;
+  for (int i = 0; i < 2; i++) {
+    TabData* tab_to_group_data = request->AddTabData(
+        std::make_unique<TabData>(tab_strip_model(), AddTab()));
+    ids_to_group_without_active_tab.emplace_back(tab_to_group_data->tab_id());
+  }
+  TabOrganizationResponse::Organization organization_2(
+      u"label2", std::move(ids_to_group_without_active_tab));
+  response_organizations.emplace_back(std::move(organization_2));
+
+  std::unique_ptr<TabOrganizationResponse> response =
+      std::make_unique<TabOrganizationResponse>(response_organizations);
+
+  std::unique_ptr<TabOrganizationSession> session =
+      std::make_unique<TabOrganizationSession>(
+          std::move(request), TabOrganizationEntryPoint::kNone);
+
+  session->StartRequest();
+  request_ptr->CompleteRequestForTesting(std::move(response));
+
+  EXPECT_EQ(1u, session->tab_organizations().size());
+  EXPECT_EQ(active_tab_web_contents,
+            session->tab_organizations()[0]->tab_datas()[0]->web_contents());
+}
+
 // Logging Util
 
 TEST_F(TabOrganizationTest, LoggingUtilAddOrganizationsToModelQuality) {
@@ -1422,7 +1471,7 @@ TEST_F(TabOrganizationTest,
   base::HistogramTester histogram_tester;
   std::unique_ptr<TabOrganizationSession> session =
       CreateSessionWithValidOrganization(
-          TabOrganizationEntryPoint::TAB_CONTEXT_MENU);
+          TabOrganizationEntryPoint::kTabContextMenu);
 
   ASSERT_NE(session->GetNextTabOrganization(), nullptr);
   session->GetNextTabOrganization()->Accept();
@@ -1442,7 +1491,7 @@ TEST_F(TabOrganizationTest,
   base::HistogramTester histogram_tester;
   std::unique_ptr<TabOrganizationSession> session =
       CreateSessionWithValidOrganization(
-          TabOrganizationEntryPoint::THREE_DOT_MENU);
+          TabOrganizationEntryPoint::kThreeDotMenu);
 
   ASSERT_NE(session->GetNextTabOrganization(), nullptr);
   session->GetNextTabOrganization()->Reject();
@@ -1461,7 +1510,7 @@ TEST_F(TabOrganizationTest,
        HistogramLogNoChoiceOrganizationProactiveEntryPoint) {
   base::HistogramTester histogram_tester;
   std::unique_ptr<TabOrganizationSession> session =
-      CreateSessionWithValidOrganization(TabOrganizationEntryPoint::PROACTIVE);
+      CreateSessionWithValidOrganization(TabOrganizationEntryPoint::kProactive);
   ASSERT_NE(session->GetNextTabOrganization(), nullptr);
 
   session.reset();

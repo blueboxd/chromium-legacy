@@ -34,9 +34,10 @@
 + (BOOL)settingsRegisteredKeyboardCommands;
 
 // Override the default search engine with the given search engine URL.
-+ (void)overrideSearchEngineURL:(NSString*)searchEngineURL;
++ (void)overrideSearchEngineWithURL:(NSString*)searchEngineURL;
 
-// Resets the default search engine to Google.
+// Restores the default search engine to Google, and wipes search engine choice
+// prefs.
 + (void)resetSearchEngine;
 
 // Adds a URL rewriter to replace all requests having their host containing a
@@ -44,6 +45,16 @@
 // 127.0.0.1:<port>/<host>.
 + (void)addURLRewriterForHosts:(NSArray<NSString*>*)hosts
                         onPort:(NSString*)port;
+
+// Returns the Yahoo search engine name for France.
+// TODO(b/326560103): Improve the APIs to get the search engine names.
++ (NSString*)frYahooSearchEngineName;
+
+// Returns the Yahoo search engine name for USA.
++ (NSString*)usYahooSearchEngineName;
+
+// Returns the Yahoo search engine name.
++ (NSString*)googleSearchEngineName;
 
 @end
 

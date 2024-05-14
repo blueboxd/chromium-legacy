@@ -760,11 +760,66 @@ TEST_F(GameDashboardCaptureModeTest, NoDimmingOfGameDashboardWidgets) {
       game_dashboard_menu_widget->GetNativeWindow()));
 
   // Finally, the toolbar widget should also not be dimmed.
-  context_test_api.OpenTheToolbar();
   auto* game_dashboard_toolbar_widget = context_test_api.GetToolbarWidget();
   ASSERT_TRUE(game_dashboard_toolbar_widget);
   EXPECT_FALSE(recording_watcher->IsWindowDimmedForTesting(
       game_dashboard_toolbar_widget->GetNativeWindow()));
+}
+
+TEST_F(GameDashboardCaptureModeTest, AvoidToolbarAndCameraPreviewIntersection) {
+  UpdateDisplay("1200x1100");
+  AddDefaultCamera();
+
+  // Make the game window large enough to show a camera preview.
+  game_window()->SetBounds({50, 50, 1100, 1000});
+
+  auto* controller = CaptureModeController::Get();
+  controller->StartRecordingInstantlyForGameDashboard(game_window());
+
+  auto* camera_controller = controller->camera_controller();
+  ASSERT_TRUE(camera_controller->should_show_preview());
+
+  // The window that hosts the game dashboard button should not be dimmed.
+  GameDashboardContextTestApi context_test_api{
+      GameDashboardController::Get()->GetGameDashboardContext(game_window()),
+      GetEventGenerator()};
+
+  auto* game_dashboard_toolbar_widget = context_test_api.GetToolbarWidget();
+  ASSERT_TRUE(game_dashboard_toolbar_widget);
+
+  const auto* camera_preview_widget =
+      camera_controller->camera_preview_widget();
+  ASSERT_TRUE(camera_preview_widget);
+
+  auto* preview_window = camera_preview_widget->GetNativeWindow();
+  auto* toolbar_window = game_dashboard_toolbar_widget->GetNativeWindow();
+
+  // Verify that the toolbar and camera preview do not overlap initially.
+  EXPECT_FALSE(preview_window->GetBoundsInScreen().Intersects(
+      toolbar_window->GetBoundsInScreen()));
+
+  // Drag the camera preview widget and drop it on the toolbar, it should find a
+  // different place to exist.
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(
+      preview_window->GetBoundsInScreen().CenterPoint());
+  event_generator->DragMouseTo(
+      toolbar_window->GetBoundsInScreen().CenterPoint());
+  EXPECT_FALSE(preview_window->GetBoundsInScreen().Intersects(
+      toolbar_window->GetBoundsInScreen()));
+
+  // Now drag the toolbar and drop it on top of the camera preview. The camera
+  // preview should move out of the way.
+  auto preview_bounds_before_dragging_toolbar =
+      preview_window->GetBoundsInScreen();
+  event_generator->MoveMouseTo(
+      toolbar_window->GetBoundsInScreen().CenterPoint());
+  event_generator->DragMouseTo(
+      preview_window->GetBoundsInScreen().CenterPoint());
+  EXPECT_FALSE(preview_window->GetBoundsInScreen().Intersects(
+      toolbar_window->GetBoundsInScreen()));
+  EXPECT_NE(preview_window->GetBoundsInScreen(),
+            preview_bounds_before_dragging_toolbar);
 }
 
 TEST_F(GameDashboardCaptureModeTest, CursorAndClickBehaviorWhenAnchored) {

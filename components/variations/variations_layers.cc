@@ -8,10 +8,13 @@
 #include <stdint.h>
 #include <cstdint>
 #include <memory>
+#include <optional>
+#include <type_traits>
 
 #include "base/check_op.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/checked_math.h"
 #include "components/variations/entropy_provider.h"
 
 namespace variations {
@@ -125,36 +128,12 @@ NormalizedMurmurHashEntropyProvider ComputeRemainderEntropy(
   return NormalizedMurmurHashEntropyProvider(remainder);
 }
 
-bool ValidSlotBounds(const Layer& layer_proto) {
-  // Since num_slots divides LES range, we know it is small enough that
-  // num_slots + 1 does not overflow.
-  DCHECK_LE(layer_proto.num_slots(), layer_proto.num_slots() + 1);
-  for (const auto& member : layer_proto.members()) {
-    uint32_t next_slot_after_processed_ranges = 0;
-    for (const auto& range : member.slots()) {
-      // Ranges should be non-overlapping. We also require them to be in
-      // increasing order so that we can easily validate that they are not
-      // overlapping.
-      if (range.start() < next_slot_after_processed_ranges) {
-        return false;
-      }
-      // start and end are both unsigned (uint32_t) so no need to check that
-      // they are non-negative.
-      if (range.end() >= layer_proto.num_slots())
-        return false;
-      if (range.start() > range.end()) {
-        return false;
-      }
-      next_slot_after_processed_ranges = range.end() + 1;
-    }
-  }
-  return true;
-}
-
-// Selects the entropy provider based on the entropy mode of the layer. Note
-// that the caller bears the responsibility of checking with a limited entropy
-// provider exists before calling this function.
-const base::FieldTrial::EntropyProvider& SelectEntropyProvider(
+// Selects the entropy provider for slot randomization based on the entropy
+// mode of the layer. This must be called after checking whether a limited
+// entropy provider exists (`entropy_providers.has_limited_entropy()`). The
+// caller should mark any limited layer as invalid if the limited entropy
+// provider doesn't exist so that this function can never select that provider.
+const base::FieldTrial::EntropyProvider& SelectEntropyProviderForSlot(
     const EntropyProviders& entropy_providers,
     const Layer::EntropyMode& entropy_mode) {
   if (entropy_mode == Layer::LIMITED) {
@@ -173,8 +152,9 @@ VariationsLayers::VariationsLayers(const VariationsSeed& seed,
     : nil_entropy({0, 1}) {
   // Don't activate any layer-constrained studies in benchmarking mode to
   // maintain deterministic behavior.
-  if (entropy_providers.benchmarking_enabled())
+  if (entropy_providers.benchmarking_enabled()) {
     return;
+  }
 
   std::map<uint32_t, int> counts_by_id;
   for (const Layer& layer_proto : seed.layers()) {
@@ -202,6 +182,126 @@ VariationsLayers::VariationsLayers(const VariationsSeed& seed,
 VariationsLayers::VariationsLayers() : nil_entropy({0, 1}) {}
 
 VariationsLayers::~VariationsLayers() = default;
+
+// static
+bool VariationsLayers::AreSlotBoundsValid(const Layer& layer_proto) {
+  for (const auto& member : layer_proto.members()) {
+    uint32_t next_slot_after_processed_ranges = 0;
+    for (const auto& range : member.slots()) {
+      // Ranges should be non-overlapping. We also require them to be in
+      // increasing order so that we can easily validate that they are not
+      // overlapping.
+      if (range.start() < next_slot_after_processed_ranges) {
+        return false;
+      }
+
+      static_assert(std::is_same<decltype(range.start()), uint32_t>::value,
+                    "range start of a layer member must be an unsigned number");
+      static_assert(std::is_same<decltype(range.end()), uint32_t>::value,
+                    "range end of a layer member must be an unsigned number");
+      // Since `range.start()` and `range.end()` are both unsigned (uint32_t),
+      // there is no need to check that they are non-negative.
+      if (range.end() >= layer_proto.num_slots()) {
+        return false;
+      }
+      if (range.start() > range.end()) {
+        return false;
+      }
+
+      // Note this won't overflow because the above if-clauses ensures
+      // `range.end() < layer_proto.num_slots()`. Therefore `range.end()` is not
+      // the max representable uint32_t. Will CHECK if it expectedly overflows.
+      next_slot_after_processed_ranges =
+          base::CheckAdd(range.end(), 1).ValueOrDie();
+    }
+  }
+  return true;
+}
+
+// static
+bool VariationsLayers::AllowsHighEntropy(const Study& study) {
+  // This should be kept in sync with the server-side layer validation
+  // code: go/chrome-variations-layer-validation
+  for (const auto& experiment : study.experiment()) {
+    if (experiment.has_google_web_experiment_id() ||
+        experiment.has_google_web_trigger_experiment_id() ||
+        experiment.has_chrome_sync_experiment_id()) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool VariationsLayers::IsLayerActive(uint32_t layer_id) const {
+  return FindActiveLayer(layer_id) != nullptr;
+}
+
+bool VariationsLayers::IsLayerMemberActive(uint32_t layer_id,
+                                           uint32_t member_id) const {
+  const auto* layer_info = FindActiveLayer(layer_id);
+  if (layer_info == nullptr) {
+    return false;
+  }
+  return layer_info->active_member_id &&
+         member_id == layer_info->active_member_id;
+}
+
+bool VariationsLayers::ActiveLayerMemberDependsOnHighEntropy(
+    uint32_t layer_id) const {
+  const auto* layer_info = FindActiveLayer(layer_id);
+  return layer_info && layer_info->entropy_mode == Layer::DEFAULT;
+}
+
+base::optional_ref<const base::FieldTrial::EntropyProvider>
+VariationsLayers::SelectEntropyProviderForStudy(
+    const ProcessedStudy& processed_study,
+    const EntropyProviders& entropy_providers) const {
+  const Study& study = *processed_study.study();
+
+  if (!study.has_consistency() ||
+      study.consistency() != Study_Consistency_PERMANENT ||
+      // If all assignments are to a single group, no need to enable one time
+      // randomization (which is more expensive to compute), since the result
+      // will be the same.
+      processed_study.all_assignments_to_one_group()) {
+    return entropy_providers.session_entropy();
+  }
+
+  // Next check whether the study should use the limited entropy provider. This
+  // needs to follow the session consistency criteria but supersedes anything
+  // else.
+  if (study.has_layer()) {
+    auto entropy_mode = GetEntropyMode(study.layer().layer_id());
+    if (!entropy_mode.has_value()) {
+      // The caller of this function should have already checked that the layer
+      // referenced is active. Otherwise, this study should not be randomized.
+      // Returning an empty optional for the caller to drop this study.
+      return std::nullopt;
+    }
+    if (entropy_mode.value() == Layer::LIMITED) {
+      // This confirms that the study is constrained to an *active* limited
+      // layer (see documentation of `GetEntropyMode`), the existence of which
+      // implies that there is a limited entropy provider. Therefore the study
+      // can and must use the limited entropy provider.
+      return entropy_providers.limited_entropy();
+    }
+  }
+
+  if (entropy_providers.default_entropy_is_high_entropy() &&
+      AllowsHighEntropy(study)) {
+    // We can use the high entropy source to randomize this study, which will
+    // be uniform even if the study is conditioned on layer membership.
+    return entropy_providers.default_entropy();
+  }
+
+  // At this point a low entropy provider must be used. If it's layer
+  // constrained the study needs to be randomized with the remainder entropy
+  // from the slot randomization.
+  if (study.has_layer()) {
+    return GetRemainderEntropy(study.layer().layer_id());
+  }
+  return entropy_providers.low_entropy();
+}
 
 void VariationsLayers::ConstructLayer(const EntropyProviders& entropy_providers,
                                       const Layer& layer_proto) {
@@ -252,13 +352,13 @@ void VariationsLayers::ConstructLayer(const EntropyProviders& entropy_providers,
     return;
   }
 
-  if (!ValidSlotBounds(layer_proto)) {
+  if (!AreSlotBoundsValid(layer_proto)) {
     LogInvalidLayerReason(InvalidLayerReason::kInvalidSlotBounds);
     return;
   }
 
-  const auto& entropy_provider =
-      SelectEntropyProvider(entropy_providers, layer_proto.entropy_mode());
+  const auto& entropy_provider = SelectEntropyProviderForSlot(
+      entropy_providers, layer_proto.entropy_mode());
   uint32_t salt = layer_proto.salt() ? layer_proto.salt() : layer_proto.id();
   ValueInRange pseudorandom = {
       .value = entropy_provider.GetPseudorandomValue(salt, range),
@@ -291,25 +391,6 @@ const VariationsLayers::LayerInfo* VariationsLayers::FindActiveLayer(
   return &(layer_iter->second);
 }
 
-bool VariationsLayers::IsLayerMemberActive(uint32_t layer_id,
-                                           uint32_t member_id) const {
-  const auto* layer_info = FindActiveLayer(layer_id);
-  if (layer_info == nullptr) {
-    return false;
-  }
-  return layer_info->active_member_id &&
-         member_id == layer_info->active_member_id;
-}
-
-bool VariationsLayers::ActiveLayerMemberDependsOnHighEntropy(
-    uint32_t layer_id) const {
-  const auto* layer_info = FindActiveLayer(layer_id);
-  if (layer_info == nullptr) {
-    return false;
-  }
-  return layer_info->entropy_mode == Layer::DEFAULT;
-}
-
 const base::FieldTrial::EntropyProvider& VariationsLayers::GetRemainderEntropy(
     uint32_t layer_id) const {
   const auto* layer_info = FindActiveLayer(layer_id);
@@ -320,6 +401,15 @@ const base::FieldTrial::EntropyProvider& VariationsLayers::GetRemainderEntropy(
     return nil_entropy;
   }
   return layer_info->remainder_entropy;
+}
+
+std::optional<Layer::EntropyMode> VariationsLayers::GetEntropyMode(
+    uint32_t layer_id) const {
+  const auto* layer_info = FindActiveLayer(layer_id);
+  if (layer_info == nullptr) {
+    return std::nullopt;
+  }
+  return layer_info->entropy_mode;
 }
 
 }  // namespace variations

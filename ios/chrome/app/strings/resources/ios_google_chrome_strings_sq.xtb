@@ -13,6 +13,7 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="1180362651362502943">Vazhdo të përdorësh të dhënat e Chrome në "Llogarinë tënde të Google".</translation>
 <translation id="1200396280085622191">Përdor Chrome sa herë që troket te lidhjet në mesazhe dhe aplikacione të tjera.</translation>
 <translation id="1229222343402087523">Kërko ${searchPhrase} në Chrome</translation>
+<translation id="124228879633599436">Chrome është i papërditësuar. Përditësoje për të qëndruar i sigurt.</translation>
 <translation id="1282031177488366470">Ndihmo në përmirësimin e veçorive dhe cilësisë së funksionimit të Chrome</translation>
 <translation id="1320619893013575407">Ke çaktivizuar identifikimin në Chrome.</translation>
 <translation id="1333745675627230582">Luaj lojën Chrome Dino</translation>
@@ -21,6 +22,7 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="1436059927646026729">Hap skedën time të fundit në Chrome</translation>
 <translation id="1449241544691504574">Shto faqeshënuesit te Chrome</translation>
 <translation id="1462727070346936664">Identifikohu për të përfituar sa më shumë nga Chrome.</translation>
+<translation id="1462833127986525564">Lidh Chrome dhe shërbimet e tjera të Google nëse dëshiron që ta personalizojnë përvojën tënde duke përdorur të dhënat nga njëra-tjetra</translation>
 <translation id="1491435845014430217">Aktivizo “Kyç skedat 'e fshehta' kur mbyll Chrome”.</translation>
 <translation id="1493827051843127077">Caktoje Chrome si parazgjedhje për të sinkronizuar skedat, fjalëkalimet dhe informacionet e pagesës në të gjitha pajisjet e tua</translation>
 <translation id="1504372625950710826">Chrome nuk mund të kontrollonte për përditësime. Provo të kontrollosh lidhjen e internetit.</translation>
@@ -140,6 +142,7 @@ Vetëm dikush me frazën tënde të kalimit mund të lexojë të dhënat e tua t
 <translation id="4834499902900503484">Kur je i identifikuar në Chrome, fjalëkalimet që ruan do të shkojnë te "Llogaria jote e Google". Për ta çaktivizuar këtë, <ph name="BEGIN_LINK" />shko te cilësimet<ph name="END_LINK" />.</translation>
 <translation id="484033449593719797">Nuk mbështetet në Chrome Beta</translation>
 <translation id="4840404732697892756">"Menaxheri i fjalëkalimeve i Google" mund t'i kontrollojë fjalëkalimet e tua kur të identifikohesh me "Llogarinë tënde të Google".</translation>
+<translation id="4856636171409137183">Për të marrë përvojën më të personalizuar, përfshi Chrome tek "<ph name="FEATURE_NAME_1" />" dhe "<ph name="FEATURE_NAME_2" />"</translation>
 <translation id="4860330141789125848">{COUNT,plural, =1{Chrome mund të të ndihmojë ta gjurmosh këtë paketë në faqen e skedës së re.}other{Chrome mund të të ndihmojë t'i gjurmosh këto paketa në faqen e skedës së re.}}</translation>
 <translation id="4903674399067644695">Kjo kartë të shfaq sugjerime se si të përfitosh sa më shumë nga Chrome.</translation>
 <translation id="49200511069271369">Organizata jote, <ph name="DOMAIN" />, menaxhon llogarinë ku je identifikuar dhe se si mund të përdoret Chrome. Administratori yt mund të konfigurojë ose të kufizojë veçori të caktuara.</translation>
@@ -194,10 +197,8 @@ Vetëm dikush me frazën tënde të kalimit mund të lexojë të dhënat e tua t
 <translation id="6484712497741564393">Identifikuar si <ph name="EMAIL" />.
 
 Të dhënat e tua janë të enkriptuara me frazën tënde të kalimit. Fute atë për të përdorur dhe ruajtur të dhënat e Chrome në "Llogarinë tënde të Google".</translation>
-<translation id="6497850081273517953">Chrome është i papërditësuar, përditësoje me versionin më të fundit për të qëndruar i sigurt.</translation>
 <translation id="6540120577248033958">Vizito një sajt dhe kliko "Ndiq" në "Menynë e Chrome"</translation>
 <translation id="6545449117344801102">Chrome zbulon adresat dhe përdor Google Maps për të të dhënë udhëzime dhe informacione lokale.</translation>
-<translation id="6600954340915313787">Kopjuar në Chrome</translation>
 <translation id="6634107063912726160">Kur të dalësh, Chrome nuk do të sinkronizojë asnjë nga të dhënat e tua të reja me "Llogarinë tënde të Google". Të dhënat e sinkronizuara më herët qëndrojnë në llogari.</translation>
 <translation id="6646696210740573446">Dërgon një pjesë të pakuptueshme të URL-së te Google nëpërmjet një serveri të privatësisë që e fsheh adresën tënde IP. Nëse një sajt përpiqet të vjedhë fjalëkalimin tënd ose kur shkarkon një skedar të dëmshëm, Chrome mund t'i dërgojë gjithashtu URL-të, duke përfshirë pjesë të përmbajtjes së faqeve, te Google.</translation>
 <translation id="6648150602980899529">Po identifikohesh me një llogari të menaxhuar nga <ph name="DOMAIN" /> dhe po i jep administratorit të saj kontroll mbi të dhënat e tua të Chrome. Duke dalë nga Chrome do të fshihen të dhënat e tua nga kjo pajisje, por do të mbeten të ruajtura në llogarinë tënde të Google.</translation>
@@ -230,6 +231,7 @@ Për më shumë cilësime që përdorin të dhënat për të përmirësuar përv
 <translation id="7261678641327190792">Chrome nuk mund t'i kontrollojë fjalëkalimet e tua</translation>
 <translation id="7272930098487145294">Për të ruajtur imazhet, trokit te "Cilësimet" për të lejuar që Chrome të shtojë te fotografitë e tua</translation>
 <translation id="7275945473750112644">Llogaria jote menaxhohet nga <ph name="HOSTED_DOMAIN" />, prandaj të dhënat e tua të Chrome do të fshihen nga kjo pajisje</translation>
+<translation id="7304491752269485262">Pamja e zgjeruar për plotësimin automatik në Chrome</translation>
 <translation id="7349129508108954623">Lejo që Chrome të përdorë Google Maps për të të dhënë udhëzime dhe informacione lokale për adresat e zbuluara.</translation>
 <translation id="7394108421562933108">Maps në Chrome</translation>
 <translation id="7400722733683201933">Informacion për Google Chrome</translation>
@@ -292,6 +294,7 @@ Të dhënat e tua janë enkriptuar me frazën tënde të kalimit më <ph name="T
 <translation id="8788269841521769222">Nuk është nevoja ta kujtosh këtë fjalëkalim. Ai do të ruhet në "Menaxherin e fjalëkalimeve të Google" për <ph name="EMAIL" /></translation>
 <translation id="878917453316810648">Këshillë për Chrome: Përdor Chrome si parazgjedhje</translation>
 <translation id="8808828119384186784">Cilësimet e Chrome</translation>
+<translation id="8850736900032787670">Për të marrë përmbajtje të personalizuara bazuar në interesat e tu, identifikohu në Chrome.</translation>
 <translation id="8855781063981781621">Për të çaktivizuar Lockdown Mode në Chrome, çaktivizoje atë në iPad.</translation>
 <translation id="8856877214925961642">Enkriptimi me frazën e kalimit nuk përfshin mënyrat e pagesës dhe adresat.
 

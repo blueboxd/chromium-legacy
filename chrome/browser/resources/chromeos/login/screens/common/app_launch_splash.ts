@@ -9,19 +9,20 @@
 import '//resources/js/action_link.js';
 import '../../components/throbber_notice.js';
 
+import {assert} from '//resources/js/assert.js';
 import {ensureTransitionEndEvent} from '//resources/js/util.js';
 import {PolymerElementProperties} from '//resources/polymer/v3_0/polymer/interfaces.js';
 import {mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.js';
-import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.js';
-import {OOBE_UI_STATE} from '../../components/display_manager_types.js';
+import {OobeI18nMixin, OobeI18nMixinInterface} from '../../components/mixins/oobe_i18n_mixin.js';
+import {OobeUiState} from '../../components/display_manager_types.js';
 
 import {getTemplate} from './app_launch_splash.html.js';
 
 const AppLaunchSplashBase =
-    mixinBehaviors([OobeI18nBehavior, LoginScreenBehavior], PolymerElement) as {
-      new (): PolymerElement & OobeI18nBehaviorInterface &
+    mixinBehaviors([LoginScreenBehavior], OobeI18nMixin(PolymerElement)) as {
+      new (): PolymerElement & OobeI18nMixinInterface &
           LoginScreenBehaviorInterface,
     };
 
@@ -89,8 +90,8 @@ class AppLaunchSplash extends AppLaunchSplashBase {
 
   /** Initial UI State for screen */
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  override getOobeUIInitialState(): OOBE_UI_STATE {
-    return OOBE_UI_STATE.KIOSK;
+  override getOobeUIInitialState(): OobeUiState {
+    return OobeUiState.KIOSK;
   }
 
   private onConfigNetwork(): void {
@@ -108,13 +109,18 @@ class AppLaunchSplash extends AppLaunchSplashBase {
    * Event handler that is invoked just before the frame is shown.
    * @param data Screen init payload.
    */
-  onBeforeShow(data: AppLaunchSplashScreenData): void {
-    this.shadowRoot!.getElementById('configNetwork')!.hidden = true;
+  onBeforeShow(data?: AppLaunchSplashScreenData): void {
+    assert(this.shadowRoot);
+    this.shadowRoot.getElementById('configNetwork')!.hidden = true;
     this.toggleNetworkConfig(false);
-    this.updateApp(data['appInfo']);
-
-    this.shadowRoot!.getElementById('shortcutInfo')!.hidden =
-        !data['shortcutEnabled'];
+    // If the screen is reshown from the ErrorScreen using the default callback
+    // data might be undefined.
+    if (data) {
+      this.updateApp(data['appInfo']);
+      const shortcutInfo = this.shadowRoot.getElementById('shortcutInfo');
+      assert(shortcutInfo instanceof HTMLElement);
+      shortcutInfo.hidden = !data['shortcutEnabled'];
+    }
   }
 
   /**
@@ -125,7 +131,7 @@ class AppLaunchSplash extends AppLaunchSplashBase {
     const currVisible =
         !this.shadowRoot!.getElementById('configNetworkContainer')!.classList
              .contains('faded');
-    if (currVisible == visible) {
+    if (currVisible === visible) {
       return;
     }
 

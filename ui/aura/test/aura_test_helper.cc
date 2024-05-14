@@ -30,6 +30,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/test_context_factories.h"
 #include "ui/display/screen.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/wm/core/cursor_loader.h"
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/default_screen_position_client.h"
@@ -90,6 +91,8 @@ AuraTestHelper::AuraTestHelper(ui::ContextFactory* context_factory) {
   else
     env_ = Env::CreateInstance();
   Env* env = GetEnv();
+  CHECK(env) << "No Aura env is set - confirm your test system is set up to "
+                "display graphics";
 
   if (!context_factory) {
     context_factories_ = std::make_unique<ui::TestContextFactories>(false);
@@ -107,6 +110,16 @@ AuraTestHelper::AuraTestHelper(ui::ContextFactory* context_factory) {
   // This must be reset before creating TestScreen, which sets up the display
   // scale factor for this test iteration.
   display::Display::ResetForceDeviceScaleFactorForTesting();
+
+  auto* platform_event_source = ui::PlatformEventSource::GetInstance();
+  if (platform_event_source) {
+    // The previous test (if any) may have left the Wayland event source in
+    // "watching" state even though its message pump was already destroyed.
+    // Reset its state now so that when the current test creates the
+    // WindowTreeHost, Wayland event processing can restart in the new message
+    // pump.
+    platform_event_source->ResetStateForTesting();
+  }
 }
 
 AuraTestHelper::~AuraTestHelper() {

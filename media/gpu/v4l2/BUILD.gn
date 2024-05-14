@@ -28,8 +28,6 @@ source_set("v4l2") {
     "stateless/stateless_decode_surface_handler.h",
     "stateless/stateless_device.cc",
     "stateless/stateless_device.h",
-    "stateless/utils.cc",
-    "stateless/utils.h",
     "stateless/v4l2_stateless_video_decoder.cc",
     "stateless/v4l2_stateless_video_decoder.h",
     "stateless/vp8_delegate.cc",
@@ -75,6 +73,8 @@ source_set("v4l2") {
 
   if (enable_hevc_parser_and_hw_decoder) {
     sources += [
+      "stateless/h265_delegate.cc",
+      "stateless/h265_delegate.h",
       "v4l2_video_decoder_delegate_h265.cc",
       "v4l2_video_decoder_delegate_h265.h",
     ]
@@ -226,13 +226,14 @@ executable("v4l2_stateless_decoder") {
 
 test("v4l2_unittest") {
   testonly = true
-  sources = [ "test/v4l2_unittest.cc" ]
+  sources = [ "v4l2_unittest.cc" ]
 
   deps = [
     ":v4l2",
     "//base/test:test_support",
     "//build/config/linux/libdrm",
     "//media:test_support",
+    "//media/gpu/chromeos:chromeos",
     "//testing/gtest",
     "//ui/gfx/linux:gbm",
   ]

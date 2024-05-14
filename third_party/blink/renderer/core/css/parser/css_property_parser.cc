@@ -58,8 +58,8 @@ bool IsPropertyAllowedInRule(const CSSProperty& property,
       return true;
     case StyleRule::kKeyframe:
       return property.IsValidForKeyframe();
-    case StyleRule::kTry:
-      return property.IsValidForPositionFallback();
+    case StyleRule::kPositionTry:
+      return property.IsValidForPositionTry();
     default:
       NOTREACHED();
       return false;
@@ -405,8 +405,9 @@ bool CSSPropertyParser::ConsumeCSSWideKeyword(CSSPropertyID unresolved_property,
   }
 
   if (value->IsRevertValue() || value->IsRevertLayerValue()) {
-    // Declarations in @try are not cascaded and cannot be reverted.
-    if (rule_type == StyleRule::kTry) {
+    // Declarations in @position-try are not cascaded and cannot be
+    // reverted.
+    if (rule_type == StyleRule::kPositionTry) {
       return false;
     }
   }

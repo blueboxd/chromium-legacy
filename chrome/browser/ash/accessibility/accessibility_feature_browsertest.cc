@@ -5,8 +5,10 @@
 #include "chrome/browser/ash/accessibility/accessibility_feature_browsertest.h"
 
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/crosapi/mojom/crosapi.mojom.h"
 
 namespace ash {
 

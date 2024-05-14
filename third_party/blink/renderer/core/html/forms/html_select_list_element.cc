@@ -264,8 +264,7 @@ HTMLSelectListElement::HTMLSelectListElement(Document& document)
   DCHECK(RuntimeEnabledFeatures::HTMLSelectListElementEnabled());
   UseCounter::Count(document, WebFeature::kSelectListElement);
 
-  EnsureUserAgentShadowRoot().SetSlotAssignmentMode(
-      SlotAssignmentMode::kManual);
+  EnsureUserAgentShadowRoot(SlotAssignmentMode::kManual);
   select_mutation_callback_ =
       MakeGarbageCollected<HTMLSelectListElement::SelectMutationCallback>(
           *this);
@@ -473,11 +472,11 @@ String HTMLSelectListElement::value() const {
 void HTMLSelectListElement::setValueForBinding(const String& value) {
   String old_value = this->value();
   bool was_autofilled = IsAutofilled();
+  bool value_changed = old_value != value;
   setValue(value, /*send_events=*/false,
-           !was_autofilled || value != old_value
-               ? WebAutofillState::kNotFilled
-               : WebAutofillState::kAutofilled);
-  if (Page* page = GetDocument().GetPage()) {
+           was_autofilled && !value_changed ? WebAutofillState::kAutofilled
+                                            : WebAutofillState::kNotFilled);
+  if (Page* page = GetDocument().GetPage(); page && value_changed) {
     page->GetChromeClient().JavaScriptChangedValue(*this, old_value,
                                                    was_autofilled);
   }

@@ -62,7 +62,7 @@ import org.chromium.chrome.browser.password_manager.settings.ManualCallbackDelay
 import org.chromium.chrome.browser.password_manager.settings.PasswordListObserver;
 import org.chromium.chrome.browser.password_manager.settings.PasswordManagerHandlerProvider;
 import org.chromium.chrome.browser.password_manager.settings.ReauthenticationManager;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningCoordinator;
 import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningTriggers;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
@@ -113,7 +113,7 @@ public class PasswordMigrationWarningExportFlowTest {
                     mCoordinator =
                             new PasswordMigrationWarningCoordinator(
                                     context,
-                                    Profile.getLastUsedRegularProfile(),
+                                    ProfileManager.getLastUsedRegularProfile(),
                                     bottomSheetController,
                                     SyncConsentActivityLauncherImpl.get(),
                                     new SettingsLauncherImpl(),
@@ -188,7 +188,8 @@ public class PasswordMigrationWarningExportFlowTest {
             onViewWaiting(
                             allOf(
                                     withText(R.string.password_settings_export_action_title),
-                                    isCompletelyDisplayed()))
+                                    isCompletelyDisplayed()),
+                            /* checkRootDialog= */ true)
                     .perform(click());
 
             // Assert that the expected intent was detected.
@@ -224,7 +225,8 @@ public class PasswordMigrationWarningExportFlowTest {
         onViewWaiting(
                         allOf(
                                 withText(R.string.exported_passwords_delete_button),
-                                isCompletelyDisplayed()))
+                                isCompletelyDisplayed()),
+                        /* checkRootDialog= */ true)
                 .perform(click());
 
         verify(mPasswordStoreBridge).clearAllPasswords();

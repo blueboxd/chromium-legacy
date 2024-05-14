@@ -89,8 +89,6 @@ BASE_DECLARE_FEATURE(kSuggestionAnswersColorReverse);
 BASE_DECLARE_FEATURE(kMostVisitedTilesHorizontalRenderGroup);
 BASE_DECLARE_FEATURE(kRichAutocompletion);
 BASE_DECLARE_FEATURE(kNtpRealboxPedals);
-BASE_DECLARE_FEATURE(kOmniboxActionsUISimplification);
-BASE_DECLARE_FEATURE(kOmniboxKeywordModeRefresh);
 BASE_DECLARE_FEATURE(kOmniboxMatchToolbarAndStatusBarColor);
 BASE_DECLARE_FEATURE(kSearchReadyOmniboxAllowQueryEdit);
 BASE_DECLARE_FEATURE(kSquareSuggestIcons);
@@ -131,6 +129,7 @@ extern const char kDefaultTypedNavigationsToHttpsTimeoutParam[];
 
 // Omnibox ML scoring.
 BASE_DECLARE_FEATURE(kLogUrlScoringSignals);
+BASE_DECLARE_FEATURE(kMlUrlScoreCaching);
 BASE_DECLARE_FEATURE(kMlUrlScoring);
 BASE_DECLARE_FEATURE(kMlUrlSearchBlending);
 BASE_DECLARE_FEATURE(kUrlScoringModel);
@@ -141,6 +140,9 @@ BASE_DECLARE_FEATURE(kInspireMe);
 // Actions in Suggest - Action Chips for Entity Suggestions.
 // Data driven feature; flag helps tune behavior.
 BASE_DECLARE_FEATURE(kActionsInSuggest);
+
+// Action Chips for Answer Suggestions.
+BASE_DECLARE_FEATURE(kOmniboxAnswerActions);
 
 // Adds support for categorical suggestion type.
 BASE_DECLARE_FEATURE(kCategoricalSuggestions);
@@ -159,9 +161,6 @@ BASE_DECLARE_FEATURE(kOmniboxTouchDownTriggerForPrefetch);
 BASE_DECLARE_FEATURE(kSiteSearchSettingsPolicy);
 BASE_DECLARE_FEATURE(kPolicyIndicationForManagedDefaultSearch);
 BASE_DECLARE_FEATURE(kStarterPackExpansion);
-
-// Kill switch for use of the new SQL recovery module in `ShortcutsDatabase`.
-BASE_DECLARE_FEATURE(kShortcutsDatabaseUseBuiltInRecoveryIfSupported);
 
 BASE_DECLARE_FEATURE(kAblateSearchProviderWarmup);
 

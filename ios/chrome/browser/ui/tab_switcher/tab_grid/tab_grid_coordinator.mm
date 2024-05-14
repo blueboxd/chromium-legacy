@@ -12,14 +12,13 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/time/time.h"
-#import "components/bookmarks/browser/bookmark_model.h"
+#import "components/bookmarks/browser/core_bookmark_model.h"
 #import "components/feature_engagement/public/feature_constants.h"
 #import "components/feature_engagement/public/tracker.h"
 #import "components/search_engines/template_url_service.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/supervised_user/core/browser/supervised_user_utils.h"
-#import "ios/chrome/browser/bookmarks/model/account_bookmark_model_factory.h"
-#import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_model_factory.h"
 #import "ios/chrome/browser/bring_android_tabs/model/bring_android_tabs_to_ios_service.h"
 #import "ios/chrome/browser/bring_android_tabs/model/bring_android_tabs_to_ios_service_factory.h"
 #import "ios/chrome/browser/favicon/model/ios_chrome_favicon_loader_factory.h"
@@ -66,7 +65,6 @@
 #import "ios/chrome/browser/tabs/model/inactive_tabs/features.h"
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_popup_coordinator.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/bookmarks/home/bookmarks_coordinator.h"
 #import "ios/chrome/browser/ui/bring_android_tabs/bring_android_tabs_prompt_coordinator.h"
 #import "ios/chrome/browser/ui/bring_android_tabs/tab_list_from_android_coordinator.h"
@@ -95,6 +93,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/regular/regular_grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/inactive_tabs/inactive_tabs_button_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/inactive_tabs/inactive_tabs_coordinator.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/inactive_tabs/inactive_tabs_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/inactive_tabs/inactive_tabs_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_context_menu_helper.h"
@@ -407,6 +406,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
   }
 
   __weak __typeof(self) weakSelf = self;
+  __weak UIWindow* sceneWindow = sceneState.window;
 
   ProceduralBlock transitionCompletionBlock = ^{
     __typeof(self) strongSelf = weakSelf;
@@ -420,6 +420,8 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
     if (shouldDisplayBringAndroidTabsPrompt) {
       [strongSelf displayBringAndroidTabsPrompt];
     }
+
+    sceneWindow.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
   };
 
   ProceduralBlock transitionBlock = ^{
@@ -427,6 +429,8 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
     if (!strongSelf) {
       return;
     }
+
+    strongSelf.baseViewController.childViewControllerForStatusBarStyle = nil;
 
     if (IsNewTabGridTransitionsEnabled()) {
       [self
@@ -441,12 +445,6 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
                                                      completion:
                                                          transitionCompletionBlock];
     }
-    // On iOS 15+, snapshotting views with afterScreenUpdates:YES waits 0.5s
-    // for the status bar style to update. Work around that delay by taking
-    // the snapshot first (during
-    // `transitionFromBrowser:toTabGrid:activePage:withCompletion`) and then
-    // updating the status bar style afterwards.
-    strongSelf.baseViewController.childViewControllerForStatusBarStyle = nil;
   };
 
   // If a BVC is currently being presented, dismiss it.  This will trigger any
@@ -481,6 +479,10 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
     base::UmaHistogramLongTimes("IOS.TabSwitcher.TimeSpent", duration);
     self.tabGridEnterTime = base::TimeTicks();
   }
+
+  SceneState* sceneState = self.regularBrowser->GetSceneState();
+  sceneState.window.overrideUserInterfaceStyle =
+      UIUserInterfaceStyleUnspecified;
 
   // If another BVC is already being presented, swap this one into the
   // container.
@@ -535,6 +537,9 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
     self.firstPresentation = NO;
   };
 
+  self.baseViewController.childViewControllerForStatusBarStyle =
+      self.bvcContainer.currentBVC;
+
   [self.baseViewController contentWillDisappearAnimated:animated];
 
   if (IsNewTabGridTransitionsEnabled()) {
@@ -548,14 +553,6 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
                                                      completion:
                                                          extendedCompletion];
   }
-
-  // On iOS 15+, snapshotting views with afterScreenUpdates:YES waits 0.5s for
-  // the status bar style to update. Work around that delay by taking the
-  // snapshot first (during
-  // `transitionFromTabGrid:toBrowser:activePage:withCompletion`) and then
-  // updating the status bar style afterwards.
-  self.baseViewController.childViewControllerForStatusBarStyle =
-      self.bvcContainer.currentBVC;
 }
 
 #pragma mark - Private
@@ -1098,7 +1095,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 - (void)showTabGroupCreationWithWithIdentifiers:
             (const std::set<web::WebStateID>&)identifiers
                                       incognito:(BOOL)incognito {
-  CHECK(base::FeatureList::IsEnabled(kTabGroupsInGrid))
+  CHECK(IsTabGroupInGridEnabled())
       << "You should not be able to create a new tab group outside the Tab "
          "Groups experiment.";
   if (incognito) {
@@ -1316,14 +1313,10 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 }
 
 - (void)bookmarkURL:(const GURL&)URL title:(NSString*)title {
-  bookmarks::BookmarkModel* localOrSyncableBookmarkModel =
-      ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
+  bookmarks::CoreBookmarkModel* bookmarkModel =
+      ios::BookmarkModelFactory::GetForBrowserState(
           self.regularBrowser->GetBrowserState());
-  bookmarks::BookmarkModel* accountBookmarkModel =
-      ios::AccountBookmarkModelFactory::GetForBrowserState(
-          self.regularBrowser->GetBrowserState());
-  if (bookmark_utils_ios::IsBookmarked(URL, localOrSyncableBookmarkModel,
-                                       accountBookmarkModel)) {
+  if (bookmarkModel->IsBookmarked(URL)) {
     [self editBookmarkWithURL:URL];
   } else {
     base::RecordAction(base::UserMetricsAction(
@@ -1348,7 +1341,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 
 - (void)createNewTabGroupWithIdentifier:(web::WebStateID)identifier
                               incognito:(BOOL)incognito {
-  CHECK(base::FeatureList::IsEnabled(kTabGroupsInGrid))
+  CHECK(IsTabGroupInGridEnabled())
       << "You should not be able to create a new tab group outside the Tab "
          "Groups experiment.";
   // TODO(crbug.com/1501837): Display the tab group creation view.

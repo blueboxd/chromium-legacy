@@ -118,7 +118,7 @@ class MinimumSizableView : public views::View {
   const gfx::Size min_size_;
 };
 
-BEGIN_METADATA(MinimumSizableView, views::View)
+BEGIN_METADATA(MinimumSizableView)
 END_METADATA
 
 }  // namespace
@@ -144,15 +144,16 @@ HoldingSpaceItemView::HoldingSpaceItemView(HoldingSpaceViewDelegate* delegate,
   SetNotifyEnterExitOnChild(true);
 
   // Accessibility.
-  GetViewAccessibility().OverrideRole(ax::mojom::Role::kListItem);
-  GetViewAccessibility().OverrideName(item->GetAccessibleName());
+  GetViewAccessibility().SetRole(ax::mojom::Role::kListItem);
+  GetViewAccessibility().SetName(item->GetAccessibleName(),
+                                 ax::mojom::NameFrom::kAttribute);
 
   // When the description is not specified, tooltip text will be used.
   // That text is redundant to the name, but different enough that it is
   // still exposed to assistive technologies which may then present both.
   // To avoid that redundant presentation, set the description explicitly
   // to the empty string. See crrev.com/c/3218112.
-  GetViewAccessibility().OverrideDescription(
+  GetViewAccessibility().SetDescription(
       std::u16string(), ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty);
 
   // Background.
@@ -294,7 +295,8 @@ void HoldingSpaceItemView::OnHoldingSpaceItemUpdated(
 
   // Accessibility.
   if (updated_fields.previous_accessible_name) {
-    GetViewAccessibility().OverrideName(item_->GetAccessibleName());
+    GetViewAccessibility().SetName(item_->GetAccessibleName(),
+                                   ax::mojom::NameFrom::kAttribute);
     NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
   }
 
@@ -533,7 +535,7 @@ void HoldingSpaceItemView::UpdatePrimaryAction() {
   OnPrimaryActionVisibilityChanged(primary_action_container_->GetVisible());
 }
 
-BEGIN_METADATA(HoldingSpaceItemView, views::View)
+BEGIN_METADATA(HoldingSpaceItemView)
 END_METADATA
 
 }  // namespace ash

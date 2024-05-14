@@ -13,10 +13,12 @@
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/typed_macros.h"
+#include "chromeos/ash/components/mojo_service_manager/connection.h"
 #include "chromeos/utils/pdf_conversion.h"
 #include "components/onc/onc_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/url_util.h"
+#include "third_party/cros_system_api/mojo/service_constants.h"
 #include "ui/aura/window.h"
 #include "ui/display/screen.h"
 #include "ui/display/tablet_state.h"
@@ -202,9 +204,11 @@ CameraAppHelperImpl::CameraAppHelperImpl(
   DCHECK(window);
   window->SetProperty(kCanConsumeSystemKeysKey, true);
   ScreenBacklight::Get()->AddObserver(this);
+  ash::SessionManagerClient::Get()->AddObserver(this);
 }
 
 CameraAppHelperImpl::~CameraAppHelperImpl() {
+  ash::SessionManagerClient::Get()->RemoveObserver(this);
   ScreenBacklight::Get()->RemoveObserver(this);
 
   if (pending_intent_id_.has_value()) {
@@ -578,6 +582,50 @@ void CameraAppHelperImpl::OpenWifiDialog(
     camera_app::mojom::WifiConfigPtr wifi_config) {
   camera_app_ui_->delegate()->OpenWifiDialog(
       FromMojoWifiConfig(std::move(wifi_config)));
+}
+
+void CameraAppHelperImpl::SetLidStateMonitor(
+    mojo::PendingRemote<LidStateMonitor> monitor,
+    SetLidStateMonitorCallback callback) {
+  CHECK(ash::mojo_service_manager::IsServiceManagerBound());
+  lid_callback_ = std::move(callback);
+  lid_state_monitor_ = mojo::Remote<LidStateMonitor>(std::move(monitor));
+  ash::mojo_service_manager::GetServiceManagerProxy()->Request(
+      /*service_name=*/chromeos::mojo_services::kCrosSystemEventMonitor,
+      std::nullopt, monitor_.BindNewPipeAndPassReceiver().PassPipe());
+  monitor_->AddLidObserver(lid_observer_receiver_.BindNewPipeAndPassRemote());
+}
+
+void CameraAppHelperImpl::OnLidStateChanged(cros::mojom::LidState state) {
+  if (!lid_callback_.is_null()) {
+    std::move(lid_callback_).Run(state);
+  } else if (lid_state_monitor_.is_bound()) {
+    lid_state_monitor_->Update(state);
+  }
+}
+
+void CameraAppHelperImpl::GetEventsSender(GetEventsSenderCallback callback) {
+  if (!events_sender_) {
+    auto system_language = camera_app_ui_->delegate()->GetSystemLanguage();
+    events_sender_ = std::make_unique<CameraAppEventsSender>(system_language);
+  }
+  std::move(callback).Run(events_sender_->CreateConnection());
+}
+
+void CameraAppHelperImpl::SetScreenLockedMonitor(
+    mojo::PendingRemote<ScreenLockedMonitor> monitor,
+    SetScreenLockedMonitorCallback callback) {
+  screen_locked_monitor_ =
+      mojo::Remote<ScreenLockedMonitor>(std::move(monitor));
+  std::move(callback).Run(ash::SessionManagerClient::Get()->IsScreenLocked());
+}
+
+void CameraAppHelperImpl::ScreenLockedStateUpdated() {
+  if (!screen_locked_monitor_.is_bound()) {
+    return;
+  }
+  screen_locked_monitor_->Update(
+      ash::SessionManagerClient::Get()->IsScreenLocked());
 }
 
 }  // namespace ash

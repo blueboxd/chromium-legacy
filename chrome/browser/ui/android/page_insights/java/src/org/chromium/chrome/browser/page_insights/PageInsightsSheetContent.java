@@ -24,6 +24,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.page_insights.SheetStateTranslator.PageInsightsSheetState;
 import org.chromium.chrome.browser.page_insights.proto.IntentParams.PageInsightsIntentParams;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
@@ -175,10 +176,13 @@ public class PageInsightsSheetContent implements BottomSheetContent, View.OnLayo
         return true;
     }
 
+    /**
+     * Use custom scrim lifecycle so that the scrim is displayed between {@link
+     * PageInsightsSheetState.PEEK} and {@link PageInsightsSheetState.EXPANDED} states.
+     */
     @Override
     public boolean hasCustomScrimLifecycle() {
-        // We use the standard scrim that open when going beyond the peeking state.
-        return false;
+        return true;
     }
 
     @Override
@@ -213,6 +217,11 @@ public class PageInsightsSheetContent implements BottomSheetContent, View.OnLayo
         mLayoutView.removeOnLayoutChangeListener(this);
         mCurrentRecyclerView = null;
         mShouldHavePeekState = false;
+        // Remove expensive XSurface views from hierarchy.
+        ((ViewGroup) mSheetContentView.findViewById(R.id.page_insights_feed_content))
+                .removeAllViews();
+        ((ViewGroup) mSheetContentView.findViewById(R.id.page_insights_child_content))
+                .removeAllViews();
     }
 
     @Override

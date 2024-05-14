@@ -37,6 +37,8 @@ class BinderRegistryWithArgs;
 using BinderRegistry = BinderRegistryWithArgs<>;
 }  // namespace service_manager
 
+class Profile;
+
 namespace extensions {
 
 BASE_DECLARE_FEATURE(kStopUsingRenderProcessHostPrivilege);
@@ -68,9 +70,6 @@ class ChromeContentBrowserClientExtensionsPart
   static bool DoesSiteRequireDedicatedProcess(
       content::BrowserContext* browser_context,
       const GURL& effective_site_url);
-  static bool ShouldAllowCrossProcessSandboxedFrameForPrecursor(
-      content::BrowserContext* browser_context,
-      const GURL& precursor);
   static bool CanCommitURL(content::RenderProcessHost* process_host,
                            const GURL& url);
   static bool IsSuitableHost(Profile* profile,
@@ -149,8 +148,7 @@ class ChromeContentBrowserClientExtensionsPart
           additional_backends) override;
   void AppendExtraRendererCommandLineSwitches(
       base::CommandLine* command_line,
-      content::RenderProcessHost* process,
-      Profile* profile) override;
+      content::RenderProcessHost& process) override;
   void ExposeInterfacesToRenderer(
       service_manager::BinderRegistry* registry,
       blink::AssociatedInterfaceRegistry* associated_registry,

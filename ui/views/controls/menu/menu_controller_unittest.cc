@@ -2373,6 +2373,17 @@ TEST_F(MenuControllerTest, AsynchronousCancelEvent) {
   EXPECT_EQ(MenuController::ExitType::kAll, menu_controller()->exit_type());
 }
 
+TEST_F(MenuControllerTest, WidgetStateChangeCancelsMenu) {
+  ExitMenuRun();
+  menu_controller()->Run(owner(), nullptr, menu_item(), gfx::Rect(),
+                         MenuAnchorPosition::kTopLeft, false, false);
+  EXPECT_TRUE(showing());
+  EXPECT_EQ(MenuController::ExitType::kNone, menu_controller()->exit_type());
+  owner()->SetFullscreen(true);
+  EXPECT_FALSE(showing());
+  EXPECT_EQ(MenuController::ExitType::kAll, menu_controller()->exit_type());
+}
+
 // TODO(pkasting): The test below fails most of the time on Wayland; not clear
 // it's important to support this case.
 #if BUILDFLAG(ENABLE_DESKTOP_AURA) && !BUILDFLAG(IS_OZONE_WAYLAND)
@@ -2868,7 +2879,7 @@ TEST_F(MenuControllerTest, SetSelectionIndices_NestedButtons) {
 
   // This simulates how buttons are nested in views in the main app menu.
   auto* const container_view = item4->AddChildView(std::make_unique<View>());
-  container_view->GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenu);
+  container_view->GetViewAccessibility().SetRole(ax::mojom::Role::kMenu);
 
   // There's usually a label before the traversable elements.
   container_view->AddChildView(std::make_unique<Label>());
@@ -2877,10 +2888,10 @@ TEST_F(MenuControllerTest, SetSelectionIndices_NestedButtons) {
   auto* const button1 =
       container_view->AddChildView(std::make_unique<LabelButton>());
   button1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
-  button1->GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenuItem);
+  button1->GetViewAccessibility().SetRole(ax::mojom::Role::kMenuItem);
   auto* const button2 =
       container_view->AddChildView(std::make_unique<LabelButton>());
-  button2->GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenuItem);
+  button2->GetViewAccessibility().SetRole(ax::mojom::Role::kMenuItem);
   button2->SetFocusBehavior(View::FocusBehavior::ALWAYS);
 
   OpenMenu(menu_item());

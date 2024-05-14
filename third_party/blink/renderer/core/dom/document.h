@@ -40,6 +40,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/uuid.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink-forward.h"
@@ -55,6 +56,8 @@
 #include "third_party/blink/public/mojom/permissions_policy/document_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink-forward.h"
 #include "third_party/blink/public/web/web_form_related_change_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
@@ -227,8 +230,6 @@ class RootScrollerController;
 class SVGDocumentExtensions;
 class SVGUseElement;
 class ScriptElementBase;
-class ScriptPromise;
-class ScriptPromiseResolver;
 class ScriptRegexp;
 class ScriptRunner;
 class ScriptRunnerDelayer;
@@ -266,6 +267,7 @@ struct AnnotatedRegionValue;
 struct FocusParams;
 struct IconURL;
 struct PhysicalOffset;
+struct TextDiffRange;
 struct WebPrintPageDescription;
 
 using MouseEventWithHitTestResults = EventWithHitTestResults<WebMouseEvent>;
@@ -569,6 +571,13 @@ class CORE_EXPORT Document : public ContainerNode,
   const ListedElement::List& UnassociatedListedElements() const;
   void MarkUnassociatedListedElementsDirty();
 
+  // Returns all `HTMLFormElement`s that have no shadow-including
+  // `HTMLFormElement` ancestor. Note that the form elements are returned in BFS
+  // order.
+  const HeapVector<Member<HTMLFormElement>>& GetTopLevelForms();
+  // Invalidates the cache for top level form elements.
+  void MarkTopLevelFormsDirty();
+
   // "defaultView" attribute defined in HTML spec.
   DOMWindow* defaultView() const;
 
@@ -764,9 +773,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // size and margins in pixels, assuming 96 pixels per inch. The size and
   // margins must be initialized to the default values that are used if auto is
   // specified. Updates layout as needed to get the description.
-  void GetPageDescription(uint32_t page_index, WebPrintPageDescription*);
-  void GetPageDescriptionNoLifecycleUpdate(const ComputedStyle&,
-                                           WebPrintPageDescription*);
+  WebPrintPageDescription GetPageDescription(uint32_t page_index);
+  WebPrintPageDescription GetPageDescriptionNoLifecycleUpdate(
+      const ComputedStyle&);
 
   ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
 
@@ -1022,9 +1031,9 @@ class CORE_EXPORT Document : public ContainerNode,
     return user_action_elements_;
   }
 
-  ExplicitlySetAttrElementsMap* GetExplicitlySetAttrElementsMap(Element*);
+  ExplicitlySetAttrElementsMap* GetExplicitlySetAttrElementsMap(const Element*);
   void MoveElementExplicitlySetAttrElementsMapToNewDocument(
-      Element*,
+      const Element*,
       Document& new_document);
 
   CachedAttrAssociatedElementsMap* GetCachedAttrAssociatedElementsMap(Element*);
@@ -1201,6 +1210,8 @@ class CORE_EXPORT Document : public ContainerNode,
       mojo::PendingRemote<network::mojom::blink::RestrictedCookieManager>
           cookie_manager);
 
+  const base::Uuid& base_auction_nonce();
+
   const AtomicString& referrer() const;
 
   String domain() const;
@@ -1237,10 +1248,12 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Storage Access API methods to check for or request access to storage that
   // may otherwise be blocked.
-  ScriptPromise hasStorageAccess(ScriptState* script_state);
-  ScriptPromise requestStorageAccess(ScriptState* script_state);
-  ScriptPromise requestStorageAccessFor(ScriptState* script_state,
-                                        const AtomicString& site);
+  ScriptPromiseTyped<IDLBoolean> hasStorageAccess(ScriptState* script_state);
+  ScriptPromiseTyped<IDLUndefined> requestStorageAccess(
+      ScriptState* script_state);
+  ScriptPromiseTyped<IDLUndefined> requestStorageAccessFor(
+      ScriptState* script_state,
+      const AtomicString& site);
 
   // Fragment directive API, currently used to feature detect text-fragments.
   // https://wicg.github.io/scroll-to-text-fragment/#feature-detectability
@@ -1251,20 +1264,21 @@ class CORE_EXPORT Document : public ContainerNode,
   // with the top-level origin would exceed the top-level origin's limit on the
   // number of associated issuers) or on other internal errors (e.g. the network
   // service is unavailable).
-  ScriptPromise hasPrivateToken(ScriptState* script_state,
-                                const String& issuer,
-                                ExceptionState&);
+  ScriptPromiseTyped<IDLBoolean> hasPrivateToken(ScriptState* script_state,
+                                                 const String& issuer,
+                                                 ExceptionState&);
 
   // Sends a query via Mojo to ask whether the user has a redemption record.
   // This can reject on permissions errors (e.g. associating |issuer| with the
   // top-level origin would exceed the top-level origin's limit on the number of
   // associated issuers) or on other internal errors (e.g. the network service
   // is unavailable).
-  ScriptPromise hasRedemptionRecord(ScriptState* script_state,
-                                    const String& issuer,
-                                    ExceptionState&);
+  ScriptPromiseTyped<IDLBoolean> hasRedemptionRecord(ScriptState* script_state,
+                                                     const String& issuer,
+                                                     ExceptionState&);
 
-  void ariaNotify(const String announcement, const AriaNotificationOptions*);
+  void ariaNotify(const String& announcement,
+                  const AriaNotificationOptions* options);
 
   // The following implements the rule from HTML 4 for what valid names are.
   // To get this right for all the XML cases, we probably have to improve this
@@ -1490,9 +1504,12 @@ class CORE_EXPORT Document : public ContainerNode,
   void EnqueueVisualViewportScrollEvent();
   void EnqueueVisualViewportScrollEndEvent();
   void EnqueueVisualViewportResizeEvent();
-  void EnqueueSnapChangedEvent(Node* target, HeapVector<Member<Node>>& targets);
+  void EnqueueSnapChangedEvent(Node* target,
+                               Member<Node>& block_target,
+                               Member<Node>& inline_target);
   void EnqueueSnapChangingEvent(Node* target,
-                                HeapVector<Member<Node>>& targets);
+                                Member<Node>& block_target,
+                                Member<Node>& inline_target);
 
   void DispatchEventsForPrinting();
 
@@ -1682,6 +1699,7 @@ class CORE_EXPORT Document : public ContainerNode,
   CheckPseudoHasCacheScope* GetCheckPseudoHasCacheScope() const {
     return check_pseudo_has_cache_scope_;
   }
+  bool InPseudoHasChecking() const { return in_pseudo_has_checking_; }
 
   CanvasFontCache* GetCanvasFontCache();
 
@@ -1749,7 +1767,8 @@ class CORE_EXPORT Document : public ContainerNode,
   ukm::SourceId UkmSourceID() const;
 
   // Tracks and reports UKM metrics of the number of attempted font family match
-  // attempts (both successful and not successful) by the page.
+  // attempts (both successful and not successful) by the page. This will return
+  // null if the document is stopped.
   FontMatchingMetrics* GetFontMatchingMetrics();
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType);
@@ -1809,8 +1828,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void IncrementNumberOfCanvases();
   unsigned GetNumberOfCanvases() const { return num_canvases_; }
 
-  void ProcessJavaScriptUrl(const KURL&,
-                            scoped_refptr<const DOMWrapperWorld> world);
+  void ProcessJavaScriptUrl(const KURL&, const DOMWrapperWorld* world);
 
   DisplayLockDocumentState& GetDisplayLockDocumentState() const;
 
@@ -1912,9 +1930,7 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 
   void NotifyUpdateCharacterData(CharacterData* character_data,
-                                 unsigned offset,
-                                 unsigned old_length,
-                                 unsigned new_length);
+                                 const TextDiffRange&);
   void NotifyChangeChildren(const ContainerNode& container,
                             const ContainerNode::ChildrenChange& change);
   void NotifyAttributeChanged(const Element& element,
@@ -2053,6 +2069,11 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetLcpElementFoundInHtml(bool found);
   bool IsLcpElementFoundInHtml();
 
+  // Adds/removes an element to the set of elements that need shadow tree
+  // creation on the next layout.
+  void ScheduleShadowTreeCreation(HTMLInputElement& element);
+  void UnscheduleShadowTreeCreation(HTMLInputElement& element);
+
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
 
@@ -2113,6 +2134,20 @@ class CORE_EXPORT Document : public ContainerNode,
     bool dirty_ = false;
   };
 
+  // Helper class to cache the top level <form> elements of a document.
+  class TopLevelFormsList {
+    DISALLOW_NEW();
+
+   public:
+    void MarkDirty();
+    const HeapVector<Member<HTMLFormElement>>& Get(Document& owner);
+    void Trace(Visitor*) const;
+
+   private:
+    HeapVector<Member<HTMLFormElement>> list_;
+    bool dirty_ = false;
+  };
+
   friend class AXContext;
   void AddAXContext(AXContext*);
   void RemoveAXContext(AXContext*);
@@ -2132,6 +2167,10 @@ class CORE_EXPORT Document : public ContainerNode,
   bool HasPendingVisualUpdate() const {
     return lifecycle_.GetState() == DocumentLifecycle::kVisualUpdatePending;
   }
+
+  // Calls EnsureShadowSubtree() on all Elements added via
+  // ScheduleShadowTreeCreation().
+  void ProcessScheduledShadowTreeCreationsNow();
 
   bool ShouldScheduleLayoutTreeUpdate() const;
   void ScheduleLayoutTreeUpdate();
@@ -2231,6 +2270,13 @@ class CORE_EXPORT Document : public ContainerNode,
     check_pseudo_has_cache_scope_ = check_pseudo_has_cache_scope;
   }
 
+  // See CheckPseudoHasCacheScope constructor.
+  void EnterPseudoHasChecking() {
+    DCHECK(!in_pseudo_has_checking_);
+    in_pseudo_has_checking_ = true;
+  }
+  void LeavePseudoHasChecking() { in_pseudo_has_checking_ = false; }
+
   void UpdateActiveState(bool is_active, bool update_active_chain, Element*);
   void UpdateHoverState(Element*);
 
@@ -2261,7 +2307,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // Attempt permission checks for unpartitioned storage access and enable
   // unpartitioned cookie access based on success if
   // `request_unpartitioned_cookie_access` is true.
-  ScriptPromise RequestStorageAccessImpl(
+  ScriptPromiseTyped<IDLUndefined> RequestStorageAccessImpl(
       ScriptState* script_state,
       bool request_unpartitioned_cookie_access);
 
@@ -2269,14 +2315,14 @@ class CORE_EXPORT Document : public ContainerNode,
   // otherwise, and consumes user activation. Enables unpartitioned cookie
   // access if `request_unpartitioned_cookie_access` is true.
   void ProcessStorageAccessPermissionState(
-      ScriptPromiseResolver* resolver,
+      ScriptPromiseResolverTyped<IDLUndefined>* resolver,
       bool request_unpartitioned_cookie_access,
       mojom::blink::PermissionStatus status);
 
   // Similar to `ProcessStorageAccessPermissionState`, but for the top-level
   // variant. Notably, does not modify the per-frame storage access bit.
   void ProcessTopLevelStorageAccessPermissionState(
-      ScriptPromiseResolver* resolver,
+      ScriptPromiseResolverTyped<IDLUndefined>* resolver,
       mojom::blink::PermissionStatus status);
 
   // Fetch the compression dictionary sent in the response header after the
@@ -2356,8 +2402,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // this currently is only used when NewBaseUrlInheritanceBehavior is enabled.
   KURL fallback_base_url_;
 
-  KURL base_element_url_;   // The URL set by the <base> element.
-  KURL cookie_url_;         // The URL to use for cookie access.
+  KURL base_element_url_;  // The URL set by the <base> element.
+  KURL cookie_url_;        // The URL to use for cookie access.
 
   AtomicString base_target_;
 
@@ -2378,18 +2424,19 @@ class CORE_EXPORT Document : public ContainerNode,
 
   TaskHandle execute_scripts_waiting_for_resources_task_handle_;
   TaskHandle javascript_url_task_handle_;
-  struct PendingJavascriptUrl {
+  class PendingJavascriptUrl final
+      : public GarbageCollected<PendingJavascriptUrl> {
    public:
-    PendingJavascriptUrl(const KURL& input_url,
-                         scoped_refptr<const DOMWrapperWorld> world);
+    PendingJavascriptUrl(const KURL& input_url, const DOMWrapperWorld* world);
     ~PendingJavascriptUrl();
 
-    KURL url;
+    void Trace(Visitor* visitor) const;
 
+    KURL url;
     // The world in which the navigation to |url| initiated. Non-null.
-    scoped_refptr<const DOMWrapperWorld> world;
+    Member<const DOMWrapperWorld> world;
   };
-  Vector<PendingJavascriptUrl> pending_javascript_urls_;
+  HeapVector<Member<PendingJavascriptUrl>> pending_javascript_urls_;
 
   // https://html.spec.whatwg.org/C/#autofocus-processed-flag
   bool autofocus_processed_flag_ = false;
@@ -2534,6 +2581,8 @@ class CORE_EXPORT Document : public ContainerNode,
   GC_PLUGIN_IGNORE("https://crbug.com/669058")
   CheckPseudoHasCacheScope* check_pseudo_has_cache_scope_ = nullptr;
 
+  bool in_pseudo_has_checking_ = false;
+
   DocumentClassFlags document_classes_;
 
   bool is_view_source_;
@@ -2650,6 +2699,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   UnassociatedListedElementsList unassociated_listed_elements_;
 
+  TopLevelFormsList top_level_forms_;
+
   // |ukm_recorder_| and |source_id_| will allow objects that are part of
   // the document to record UKM.
   std::unique_ptr<ukm::UkmRecorder> ukm_recorder_;
@@ -2709,13 +2760,16 @@ class CORE_EXPORT Document : public ContainerNode,
   // Used for document.cookie. May be null.
   Member<CookieJar> cookie_jar_;
 
+  // Seed for all PAAPI Auction Nonces generated for this document.
+  base::Uuid base_auction_nonce_;
+
   bool toggle_during_parsing_ = false;
 
   bool is_for_markup_sanitization_ = false;
 
   Member<FragmentDirective> fragment_directive_;
 
-  HeapHashMap<WeakMember<Element>, Member<ExplicitlySetAttrElementsMap>>
+  HeapHashMap<WeakMember<const Element>, Member<ExplicitlySetAttrElementsMap>>
       element_explicitly_set_attr_elements_map_;
   HeapHashMap<WeakMember<Element>, Member<CachedAttrAssociatedElementsMap>>
       element_cached_attr_associated_elements_map_;
@@ -2789,6 +2843,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // access-controlled media to not load when it is the top-level URL when
   // third-party cookie blocking is enabled.
   bool override_site_for_cookies_for_csp_media_ = false;
+
+  // See description in ScheduleShadowTreeCreation().
+  HeapHashSet<Member<HTMLInputElement>> elements_needing_shadow_tree_;
 
   // If you want to add new data members to blink::Document, please reconsider
   // if the members really should be in blink::Document.  document.h is a very

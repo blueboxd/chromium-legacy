@@ -37,10 +37,11 @@ import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcherProvider;
 import org.chromium.chrome.browser.metrics.SimpleStartupForegroundSessionDetector;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcherImpl;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
@@ -57,7 +58,7 @@ import org.chromium.ui.display.DisplayUtil;
  * An activity that talks with application and activity level delegates for async initialization.
  */
 public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatActivity
-        implements ChromeActivityNativeDelegate, BrowserParts {
+        implements ChromeActivityNativeDelegate, BrowserParts, ActivityLifecycleDispatcherProvider {
     @VisibleForTesting
     public static final String FIRST_DRAW_COMPLETED_TIME_MS_UMA = "FirstDrawCompletedTime";
 
@@ -268,7 +269,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
             if (!IntentHandler.hasAnyIncognitoExtra(intent.getExtras())) {
                 WarmupManager.getInstance()
                         .maybePreconnectUrlAndSubResources(
-                                Profile.getLastUsedRegularProfile(), url);
+                                ProfileManager.getLastUsedRegularProfile(), url);
             }
         } finally {
             TraceEvent.end("maybePreconnect");
@@ -623,6 +624,13 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
         mLifecycleDispatcher.dispatchOnStopWithNative();
     }
 
+    @CallSuper
+    @Override
+    protected void onUserLeaveHint() {
+        super.onUserLeaveHint();
+        mLifecycleDispatcher.dispatchOnUserLeaveHint();
+    }
+
     @Override
     public boolean isActivityFinishingOrDestroyed() {
         return mDestroyed || isFinishing();
@@ -768,6 +776,14 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
         Thread.dumpStack();
     }
 
+    @CallSuper
+    @Override
+    public void onTopResumedActivityChanged(boolean isTopResumedActivity) {
+        super.onTopResumedActivityChanged(isTopResumedActivity);
+
+        mLifecycleDispatcher.dispatchOnTopResumedActivityChanged(isTopResumedActivity);
+    }
+
     /**
      * @return Whether the activity is running in tablet mode.
      */
@@ -859,6 +875,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     /**
      * @return {@link ActivityLifecycleDispatcher} associated with this activity.
      */
+    @Override
     public ActivityLifecycleDispatcher getLifecycleDispatcher() {
         return mLifecycleDispatcher;
     }

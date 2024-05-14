@@ -49,8 +49,10 @@ using base::Time;
 using sync_pb::EntitySpecifics;
 using sync_pb::ModelTypeState;
 using sync_pb::SyncEntity;
+using testing::ElementsAre;
 using testing::IsNull;
 using testing::NotNull;
+using testing::SizeIs;
 using testing::UnorderedElementsAre;
 
 namespace syncer {
@@ -116,9 +118,14 @@ CreateIncomingPasswordSharingInvitation(const std::string& invitation_guid,
 
   // Set the encrypted fields and the encryption key version:
   sync_pb::PasswordSharingInvitationData password_data;
-  password_data.mutable_password_data()->set_signon_realm(signon_realm);
-  password_data.mutable_password_data()->set_username_value(username_value);
-  password_data.mutable_password_data()->set_password_value(password_value);
+  password_data.mutable_password_group_data()->set_username_value(
+      username_value);
+  password_data.mutable_password_group_data()->set_password_value(
+      password_value);
+  password_data.mutable_password_group_data()
+      ->add_element_data()
+      ->set_signon_realm(signon_realm);
+
   std::string serialized_data;
   bool success = password_data.SerializeToString(&serialized_data);
   CHECK(success);
@@ -1677,12 +1684,12 @@ TEST_F(ModelTypeWorkerTest, ShouldKeepGcDirectiveDuringSyncCycle) {
 
   // The first GetUpdates returns entities with GC directive for download-only
   // data types.
-  server()->SetReturnGcDirective(true);
+  server()->SetReturnGcDirectiveVersionWatermark(true);
   TriggerPartialUpdateFromServer(/*version_offset=*/10, kTag1, kValue1);
 
   // Simulate another GetUpdates response without entities and without GC
   // directive.
-  server()->SetReturnGcDirective(false);
+  server()->SetReturnGcDirectiveVersionWatermark(false);
   TriggerEmptyUpdateFromServer();
 
   ASSERT_EQ(1u, processor()->GetNumUpdateResponses());
@@ -1702,11 +1709,11 @@ TEST_F(ModelTypeWorkerTest, ShouldCleanUpPendingUpdatesOnGcDirective) {
 
   // The first GetUpdates returns entities with GC directive for download-only
   // data types.
-  server()->SetReturnGcDirective(true);
+  server()->SetReturnGcDirectiveVersionWatermark(true);
   TriggerPartialUpdateFromServer(/*version_offset=*/10, kTag1, kValue1);
 
   // Simulate another GetUpdates response with new entities and GC directive.
-  server()->SetReturnGcDirective(true);
+  server()->SetReturnGcDirectiveVersionWatermark(true);
   TriggerPartialUpdateFromServer(/*version_offset=*/10, kTag2, kValue2, kTag3,
                                  kValue3);
 
@@ -3070,7 +3077,7 @@ TEST_F(ModelTypeWorkerTest, ShouldEncryptOutgoingPasswordSharingInvitation) {
   EntitySpecifics specifics;
   specifics.mutable_outgoing_password_sharing_invitation()
       ->mutable_client_only_unencrypted_data()
-      ->mutable_password_data()
+      ->mutable_password_group_data()
       ->set_password_value("password");
   processor()->SetCommitRequest(GenerateCommitRequest(kHash1, specifics));
   DoSuccessfulCommit();
@@ -3144,11 +3151,13 @@ TEST_F(ModelTypeWorkerIncomingPasswordSharingInvitationTest,
       invitation_with_unencrypted_data.has_client_only_unencrypted_data());
   const sync_pb::PasswordSharingInvitationData& received_password_data =
       invitation_with_unencrypted_data.client_only_unencrypted_data();
-  EXPECT_EQ(received_password_data.password_data().username_value(),
+  EXPECT_EQ(received_password_data.password_group_data().username_value(),
             kUsernameValue);
-  EXPECT_EQ(received_password_data.password_data().password_value(),
+  EXPECT_EQ(received_password_data.password_group_data().password_value(),
             kPasswordValue);
-  EXPECT_EQ(received_password_data.password_data().signon_realm(),
+  EXPECT_EQ(received_password_data.password_group_data()
+                .element_data(0)
+                .signon_realm(),
             kSignonRealm);
 }
 
@@ -3519,6 +3528,68 @@ TEST_F(ModelTypeWorkerHistoryTest, KeepsInitialSyncMarkedAsDone) {
   EXPECT_EQ(processor()->GetNthUpdateState(3).initial_sync_state(),
             sync_pb::ModelTypeState_InitialSyncState_INITIAL_SYNC_DONE);
   EXPECT_TRUE(worker()->IsInitialSyncEnded());
+}
+
+// Analogous test fixture to ModelTypeWorkerTest but uses SHARED_TAB_GROUP_DATA
+// instead of PREFERENCES, in order to test special shared types behavior.
+class ModelTypeWorkerSharedTabGroupDataTest : public ModelTypeWorkerTest {
+ protected:
+  ModelTypeWorkerSharedTabGroupDataTest()
+      : ModelTypeWorkerTest(SHARED_TAB_GROUP_DATA,
+                            /*is_encrypted_type=*/false) {
+    CHECK(SharedTypes().Has(SHARED_TAB_GROUP_DATA));
+  }
+};
+
+TEST_F(ModelTypeWorkerSharedTabGroupDataTest,
+       ShouldClearUpdatesForInactiveCollaborationsDuringSyncCycle) {
+  NormalInitialize();
+
+  // Simulate multiple GetUpdates requests when a collaboration becomes inactive
+  // during the second GetUpdates.
+  server()->AddCollaboration("inactive_collaboration");
+  server()->AddCollaboration("active_collaboration");
+
+  EntitySpecifics specifics;
+  specifics.mutable_shared_tab_group_data()->set_guid("guid");
+  SyncEntity entity_inactive = server()->UpdateFromServer(
+      /*version_offset=*/10,
+      ClientTagHash::FromUnhashed(SHARED_TAB_GROUP_DATA, "client_tag_2"),
+      specifics, "inactive_collaboration");
+  SyncEntity entity_active = server()->UpdateFromServer(
+      /*version_offset=*/10,
+      ClientTagHash::FromUnhashed(SHARED_TAB_GROUP_DATA, "client_tag_1"),
+      specifics, "active_collaboration");
+
+  worker()->ProcessGetUpdatesResponse(
+      server()->GetProgress(), server()->GetContext(),
+      {&entity_inactive, &entity_active}, status_controller());
+  ASSERT_EQ(processor()->GetNumUpdateResponses(), 0u);
+
+  // The next GetUpdates does not return new entities but returns only one
+  // collaboration.
+  server()->RemoveCollaboration("inactive_collaboration");
+  worker()->ProcessGetUpdatesResponse(
+      server()->GetProgress(), server()->GetContext(),
+      /*applicable_updates=*/{}, status_controller());
+  ASSERT_EQ(processor()->GetNumUpdateResponses(), 0u);
+
+  worker()->ApplyUpdates(status_controller(), /*cycle_done=*/true);
+
+  // Only of of the two updates should arrive to the processor, from the active
+  // collaboration.
+  ASSERT_EQ(processor()->GetNumUpdateResponses(), 1u);
+  ASSERT_THAT(processor()->GetNthUpdateResponse(0), SizeIs(1));
+  EXPECT_EQ(
+      processor()->GetNthUpdateResponse(0).front()->entity.collaboration_id,
+      "active_collaboration");
+
+  // Verify also that the last GC directive is propagated to the processor.
+  EXPECT_THAT(processor()
+                  ->GetNthGcDirective(0)
+                  .collaboration_gc()
+                  .active_collaboration_ids(),
+              ElementsAre("active_collaboration"));
 }
 
 }  // namespace syncer

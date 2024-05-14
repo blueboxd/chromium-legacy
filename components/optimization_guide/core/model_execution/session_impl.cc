@@ -4,6 +4,8 @@
 
 #include "components/optimization_guide/core/model_execution/session_impl.h"
 
+#include <optional>
+
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
@@ -11,7 +13,7 @@
 #include "base/uuid.h"
 #include "components/optimization_guide/core/model_execution/model_execution_util.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_access_controller.h"
-#include "components/optimization_guide/core/model_execution/on_device_model_execution_config_interpreter.h"
+#include "components/optimization_guide/core/model_execution/on_device_model_feature_adapter.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_service_controller.h"
 #include "components/optimization_guide/core/model_execution/redactor.h"
 #include "components/optimization_guide/core/model_execution/repetition_checker.h"
@@ -103,12 +105,12 @@ class SessionImpl::ContextProcessor
     if (!session_->ShouldUseOnDeviceModel()) {
       return;
     }
+    auto options = on_device_model::mojom::InputOptions::New();
+    options->text = input_;
+    options->max_tokens = num_tokens;
+    options->token_offset = tokens_processed_;
     session_->GetOrCreateSession().AddContext(
-        on_device_model::mojom::InputOptions::New(
-            input_, num_tokens, tokens_processed_, /*ignore_context=*/false,
-            /*max_output_tokens=*/std::nullopt,
-            /*safety_interval=*/std::nullopt),
-        client_.BindNewPipeAndPassRemote());
+        std::move(options), client_.BindNewPipeAndPassRemote());
   }
 
   raw_ref<SessionImpl> session_;
@@ -125,20 +127,32 @@ SessionImpl::SessionImpl(
     StartSessionFn start_session_fn,
     proto::ModelExecutionFeature feature,
     std::optional<proto::OnDeviceModelVersions> on_device_model_versions,
-    const OnDeviceModelExecutionConfigInterpreter* config_interpreter,
+    scoped_refptr<const OnDeviceModelFeatureAdapter> adapter,
     base::WeakPtr<OnDeviceModelServiceController> controller,
     const std::optional<proto::FeatureTextSafetyConfiguration>& safety_config,
     ExecuteRemoteFn execute_remote_fn,
-    OptimizationGuideLogger* optimization_guide_logger)
+    OptimizationGuideLogger* optimization_guide_logger,
+    base::WeakPtr<ModelQualityLogsUploaderService>
+        model_quality_uploader_service,
+    const std::optional<SessionConfigParams>& config_params)
     : controller_(controller),
       feature_(feature),
       on_device_model_versions_(on_device_model_versions),
       safety_config_(safety_config),
       execute_remote_fn_(std::move(execute_remote_fn)),
-      optimization_guide_logger_(optimization_guide_logger) {
+      optimization_guide_logger_(optimization_guide_logger),
+      model_quality_uploader_service_(model_quality_uploader_service),
+      sampling_params_(
+          config_params.value_or(SessionConfigParams())
+              .sampling_params.value_or(SamplingParams{
+                  .top_k = static_cast<uint32_t>(
+                      features::GetOnDeviceModelDefaultTopK()),
+                  .temperature = static_cast<float>(
+                      features::GetOnDeviceModelDefaultTemperature()),
+              })) {
   if (controller_ && controller_->ShouldStartNewSession()) {
     on_device_state_.emplace(std::move(start_session_fn), this);
-    on_device_state_->config_interpreter = config_interpreter;
+    on_device_state_->adapter = std::move(adapter);
     // Prewarm the initial session to make sure the service is started.
     GetOrCreateSession();
   }
@@ -186,8 +200,8 @@ SessionImpl::AddContextResult SessionImpl::AddContextImpl(
   }
 
   on_device_state_->add_context_before_execute = false;
-  auto input = on_device_state_->config_interpreter->ConstructInputString(
-      feature_, *context_, /*want_input_context=*/true);
+  auto input = on_device_state_->adapter->ConstructInputString(
+      *context_, /*want_input_context=*/true);
   if (!input) {
     // Use server if can't construct input.
     DestroyOnDeviceState();
@@ -263,8 +277,8 @@ void SessionImpl::ExecuteModel(
     CHECK(!on_device_state_->add_context_before_execute);
   }
 
-  auto input = on_device_state_->config_interpreter->ConstructInputString(
-      feature_, *last_message_, /*want_input_context=*/false);
+  auto input = on_device_state_->adapter->ConstructInputString(
+      *last_message_, /*want_input_context=*/false);
   if (!input) {
     // Use server if can't construct input.
     on_device_state_->histogram_logger = std::move(logger);
@@ -337,6 +351,8 @@ void SessionImpl::ExecuteModel(
   options->max_tokens = features::GetOnDeviceModelMaxTokensForExecute();
   options->ignore_context = input->should_ignore_input_context;
   options->max_output_tokens = features::GetOnDeviceModelMaxTokensForOutput();
+  options->top_k = sampling_params_.top_k;
+  options->temperature = sampling_params_.temperature;
   if (safety_config_) {
     options->safety_interval =
         features::GetOnDeviceModelTextSafetyTokenInterval();
@@ -466,7 +482,7 @@ void SessionImpl::CancelPendingResponse(ExecuteModelResult result,
     std::unique_ptr<ModelQualityLogEntry> log_entry = nullptr;
     if (og_error.ShouldLogModelQuality()) {
       log_entry = std::make_unique<ModelQualityLogEntry>(
-          std::move(log_ai_data_request));
+          std::move(log_ai_data_request), model_quality_uploader_service_);
       log_entry->set_model_execution_id(GenerateExecutionId());
     }
     callback.Run(OptimizationGuideModelStreamingExecutionResult(
@@ -488,32 +504,19 @@ void SessionImpl::SendResponse(ResponseType response_type) {
   std::string current_response = on_device_state_->current_response;
   logged_response->set_output_string(current_response);
 
-  if (auto* redactor =
-          on_device_state_->config_interpreter->GetRedactorForFeature(
-              feature_)) {
-    auto redact_string_input =
-        on_device_state_->config_interpreter->GetStringToCheckForRedacting(
-            feature_, *last_message_);
-    base::ElapsedTimer elapsed_timer;
-    auto redact_result =
-        redactor->Redact(redact_string_input, current_response);
-    base::UmaHistogramMicrosecondsTimes(
-        base::StrCat(
-            {"OptimizationGuide.ModelExecution.TimeToProcessRedactions.",
-             GetStringNameForModelExecutionFeature(feature_)}),
-        elapsed_timer.Elapsed());
-    if (redact_result == RedactResult::kReject) {
-      if (on_device_state_->histogram_logger) {
-        on_device_state_->histogram_logger->set_result(
-            ExecuteModelResult::kContainedPII);
-        on_device_state_->histogram_logger.reset();
-      }
-      logged_response->set_status(
-          proto::ON_DEVICE_MODEL_SERVICE_RESPONSE_STATUS_RETRACTED);
-      CancelPendingResponse(ExecuteModelResult::kUsedOnDeviceOutputUnsafe,
-                            ModelExecutionError::kFiltered);
-      return;
+  auto redact_result =
+      on_device_state_->adapter->Redact(*last_message_, current_response);
+  if (redact_result == RedactResult::kReject) {
+    if (on_device_state_->histogram_logger) {
+      on_device_state_->histogram_logger->set_result(
+          ExecuteModelResult::kContainedPII);
+      on_device_state_->histogram_logger.reset();
     }
+    logged_response->set_status(
+        proto::ON_DEVICE_MODEL_SERVICE_RESPONSE_STATUS_RETRACTED);
+    CancelPendingResponse(ExecuteModelResult::kUsedOnDeviceOutputUnsafe,
+                          ModelExecutionError::kFiltered);
+    return;
   }
 
   const bool is_complete = response_type != ResponseType::kPartial;
@@ -541,8 +544,8 @@ void SessionImpl::SendResponse(ResponseType response_type) {
     }
   }
 
-  auto output = on_device_state_->config_interpreter->ConstructOutputMetadata(
-      feature_, current_response);
+  auto output =
+      on_device_state_->adapter->ConstructOutputMetadata(current_response);
   if (!output) {
     if (on_device_state_->histogram_logger) {
       on_device_state_->histogram_logger->set_result(
@@ -594,7 +597,8 @@ void SessionImpl::SendResponse(ResponseType response_type) {
       logged_response->set_status(
           proto::ON_DEVICE_MODEL_SERVICE_RESPONSE_STATUS_SUCCESS);
       log_entry = std::make_unique<ModelQualityLogEntry>(
-          std::move(on_device_state_->log_ai_data_request));
+          std::move(on_device_state_->log_ai_data_request),
+          model_quality_uploader_service_);
       log_entry->set_model_execution_id(GenerateExecutionId());
       on_device_state_->log_ai_data_request.reset();
     }

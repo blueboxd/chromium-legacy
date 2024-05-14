@@ -18,14 +18,18 @@ CameraCoordinator::CameraCoordinator(
     views::View& parent_view,
     bool needs_borders,
     const std::vector<std::string>& eligible_camera_ids,
-    PrefService& prefs)
+    PrefService& prefs,
+    bool allow_device_selection,
+    media_preview_metrics::Context metrics_context)
     : camera_mediator_(
           prefs,
           base::BindRepeating(&CameraCoordinator::OnVideoSourceInfosReceived,
                               base::Unretained(this))),
       combobox_model_({}),
       eligible_camera_ids_(eligible_camera_ids),
-      prefs_(&prefs) {
+      prefs_(&prefs),
+      allow_device_selection_(allow_device_selection),
+      metrics_context_(metrics_context) {
   auto* camera_view = parent_view.AddChildView(std::make_unique<MediaView>());
   camera_view_tracker_.SetView(camera_view);
   // Safe to use base::Unretained() because `this` owns / outlives
@@ -33,18 +37,25 @@ CameraCoordinator::CameraCoordinator(
   camera_view_tracker_.SetIsDeletingCallback(base::BindOnce(
       &CameraCoordinator::ResetViewController, base::Unretained(this)));
 
+  metrics_context_.preview_type = media_preview_metrics::PreviewType::kCamera;
+
   // Safe to use base::Unretained() because `this` owns / outlives
   // `camera_view_controller_`.
   camera_view_controller_.emplace(
-      *camera_view, needs_borders, combobox_model_,
+      *camera_view, needs_borders, combobox_model_, allow_device_selection_,
       base::BindRepeating(&CameraCoordinator::OnVideoSourceChanged,
-                          base::Unretained(this)));
+                          base::Unretained(this)),
+      metrics_context_);
 
   video_stream_coordinator_.emplace(
-      camera_view_controller_->GetLiveFeedContainer());
+      camera_view_controller_->GetLiveFeedContainer(), metrics_context_);
 }
 
 CameraCoordinator::~CameraCoordinator() {
+  if (allow_device_selection_) {
+    RecordDeviceSelectionTotalDevices(metrics_context_,
+                                      eligible_device_infos_.size());
+  }
   // As to guarantee that VideoSourceProvider outlive its VideoSource
   // connection, it is passed in here to protect from destruction.
   video_stream_coordinator_->StopAndCleanup(
@@ -89,8 +100,8 @@ void CameraCoordinator::OnVideoSourceChanged(
   mojo::Remote<video_capture::mojom::VideoSource> video_source;
   camera_mediator_.BindVideoSource(active_device_id_,
                                    video_source.BindNewPipeAndPassReceiver());
-  video_stream_coordinator_->ConnectToDevice(std::move(video_source),
-                                             device_info.supported_formats);
+  video_stream_coordinator_->ConnectToDevice(device_info,
+                                             std::move(video_source));
 }
 
 void CameraCoordinator::UpdateDevicePreferenceRanking() {

@@ -123,6 +123,7 @@ interface HTMLElement : Element {
   readonly attribute DOMString accessKeyLabel;
   [CEReactions] attribute boolean draggable;
   [CEReactions] attribute boolean spellcheck;
+  [CEReactions] attribute DOMString writingSuggestions;
   [CEReactions] attribute DOMString autocapitalize;
 
   [CEReactions] attribute [LegacyNullToEmptyString] DOMString innerText;
@@ -1243,6 +1244,7 @@ interface HTMLTemplateElement : HTMLElement {
   readonly attribute DocumentFragment content;
   [CEReactions] attribute DOMString shadowRootMode;
   [CEReactions] attribute boolean shadowRootDelegatesFocus;
+  [CEReactions] attribute boolean shadowRootClonable;
 };
 
 [Exposed=Window]
@@ -2061,6 +2063,18 @@ dictionary HashChangeEventInit : EventInit {
 };
 
 [Exposed=Window]
+interface PageSwapEvent : Event {
+  constructor(DOMString type, optional PageSwapEventInit eventInitDict = {});
+  readonly attribute NavigationActivation? activation;
+  readonly attribute ViewTransition? viewTransition;
+};
+
+dictionary PageSwapEventInit : EventInit {
+  NavigationActivation? activation = null;
+  ViewTransition? viewTransition = null;
+};
+
+[Exposed=Window]
 interface PageRevealEvent : Event {
   constructor(DOMString type, optional PageRevealEventInit eventInitDict = {});
   readonly attribute ViewTransition? viewTransition;
@@ -2084,6 +2098,23 @@ dictionary PageTransitionEventInit : EventInit {
 [Exposed=Window]
 interface BeforeUnloadEvent : Event {
   attribute DOMString returnValue;
+};
+
+[Exposed=Window]
+interface NotRestoredReasonDetails {
+  readonly attribute DOMString reason;
+  [Default] object toJSON();
+};
+
+[Exposed=Window]
+interface NotRestoredReasons {
+  readonly attribute DOMString? src;
+  readonly attribute DOMString? id;
+  readonly attribute DOMString? name;
+  readonly attribute DOMString? url;
+  readonly attribute FrozenArray<NotRestoredReasonDetails>? reasons;
+  readonly attribute FrozenArray<NotRestoredReasons>? children;
+  [Default] object toJSON();
 };
 
 [Exposed=*]
@@ -2221,6 +2252,7 @@ interface mixin WindowEventHandlers {
   attribute EventHandler onpagehide;
   attribute EventHandler onpagereveal;
   attribute EventHandler onpageshow;
+  attribute EventHandler onpageswap;
   attribute EventHandler onpopstate;
   attribute EventHandler onrejectionhandled;
   attribute EventHandler onstorage;

@@ -163,6 +163,13 @@ void ExternalTextureCache::ExpireTask() {
 void ExternalTextureCache::ReferenceUntilGPUIsFinished(
     scoped_refptr<WebGPUMailboxTexture> mailbox_texture) {
   CHECK(mailbox_texture);
+  ExecutionContext* execution_context = device()->GetExecutionContext();
+
+  // If device has no valid execution context. Release
+  // the mailbox immediately.
+  if (!execution_context) {
+    return;
+  }
 
   // Keep mailbox texture alive until callback returns.
   auto* callback = BindWGPUOnceCallback(
@@ -175,7 +182,7 @@ void ExternalTextureCache::ReferenceUntilGPUIsFinished(
                                                 callback->AsUserdata());
 
   // Ensure commands are flushed.
-  device()->EnsureFlush(ToEventLoop(device()->GetExecutionContext()));
+  device()->EnsureFlush(ToEventLoop(execution_context));
 }
 
 // static
@@ -238,7 +245,7 @@ GPUExternalTexture* GPUExternalTexture::CreateImpl(
           cache, external_texture.wgpu_external_texture,
           external_texture.mailbox_texture, external_texture.is_zero_copy,
           media_video_frame->metadata().read_lock_fences_enabled,
-          media_video_frame_unique_id);
+          media_video_frame_unique_id, webgpu_desc->label());
 
   return gpu_external_texture;
 }
@@ -273,7 +280,7 @@ GPUExternalTexture* GPUExternalTexture::CreateExpired(
               cache->device()->GetHandle()),
           nullptr /*mailbox_texture*/, false /*is_zero_copy*/,
           false /*read_lock_fences_enabled*/,
-          std::nullopt /*media_video_frame_unique_id*/);
+          std::nullopt /*media_video_frame_unique_id*/, webgpu_desc->label());
 
   return external_texture;
 }
@@ -349,8 +356,9 @@ GPUExternalTexture::GPUExternalTexture(
     scoped_refptr<WebGPUMailboxTexture> mailbox_texture,
     bool is_zero_copy,
     bool read_lock_fences_enabled,
-    std::optional<media::VideoFrame::ID> media_video_frame_unique_id)
-    : DawnObject<WGPUExternalTexture>(cache->device(), external_texture),
+    std::optional<media::VideoFrame::ID> media_video_frame_unique_id,
+    const String& label)
+    : DawnObject<WGPUExternalTexture>(cache->device(), external_texture, label),
       mailbox_texture_(std::move(mailbox_texture)),
       is_zero_copy_(is_zero_copy),
       read_lock_fences_enabled_(read_lock_fences_enabled),

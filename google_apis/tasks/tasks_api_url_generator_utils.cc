@@ -4,9 +4,9 @@
 
 #include "google_apis/tasks/tasks_api_url_generator_utils.h"
 
+#include <optional>
 #include <string>
 
-#include <optional>
 #include "base/check.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -29,8 +29,8 @@ constexpr char kTaskListsListRequestedFields[] =
 
 constexpr char kTasksListUrlTemplate[] = "tasks/v1/lists/$1/tasks";
 constexpr char kTasksListRequestedFields[] =
-    "kind,items(id,title,status,parent,position,due,links(type),notes,updated),"
-    "nextPageToken";
+    "kind,items(id,title,status,parent,position,due,links(type),notes,updated,"
+    "webViewLink),nextPageToken";
 
 constexpr char kTaskUrlTemplate[] = "tasks/v1/lists/$1/tasks/$2";
 

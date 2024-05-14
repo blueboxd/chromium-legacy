@@ -6,11 +6,13 @@
 #include "base/memory/scoped_refptr.h"
 
 #include <memory>
+
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/actions/chrome_action_id.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/performance_controls/tab_resource_usage_tab_helper.h"
@@ -35,10 +37,10 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/performance_manager/public/features.h"
 #include "components/vector_icons/vector_icons.h"
 #include "components/version_info/channel.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ui/actions/actions.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -188,6 +190,64 @@ TEST_P(BrowserViewTest, BrowserView) {
     manager.GetActions(actions);
     EXPECT_EQ(actions.size(), non_browser_scoped_actions);
   }
+}
+
+namespace {
+// A thin wrapper around `Browser` to ensure that it's destructed in the right
+// order.
+class ScopedBrowser {
+ public:
+  explicit ScopedBrowser(Profile* profile) {
+    Browser::CreateParams params(profile, true);
+    browser_view_ =
+        BrowserView::GetBrowserViewForBrowser(Browser::Create(params));
+  }
+  ScopedBrowser(const ScopedBrowser&) = delete;
+  ScopedBrowser& operator=(const ScopedBrowser&) = delete;
+  ~ScopedBrowser() {
+    browser_view_->browser()->tab_strip_model()->CloseAllTabs();
+    browser_view_.ExtractAsDangling()->GetWidget()->CloseNow();
+    content::RunAllTasksUntilIdle();
+  }
+
+  Browser* browser() { return browser_view_->browser(); }
+
+ private:
+  raw_ptr<BrowserView> browser_view_;
+};
+}  // namespace
+
+// TODO(crbug.com/326199292): Flaky on Linux.
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_UpdateActiveBrowser DISABLED_UpdateActiveBrowser
+#else
+#define MAYBE_UpdateActiveBrowser UpdateActiveBrowser
+#endif
+
+// Test that calling `BrowserView::Activate()` or `BrowserView::Show()` sets
+// the last active browser synchronously.
+TEST_P(BrowserViewTest, MAYBE_UpdateActiveBrowser) {
+  // On platforms like Ash-Chrome, for `BrowserView::Activate()` to actually
+  // activate the browser, it has to be made visible first. Thus
+  // `BrowserView::Show()` has to be called first.
+  ScopedBrowser scoped_browser(profile());
+  Browser* browser2 = scoped_browser.browser();
+  EXPECT_EQ(2u, BrowserList::GetInstance()->size());
+  EXPECT_EQ(browser(), BrowserList::GetInstance()->GetLastActive());
+
+  browser2->window()->Show();
+  EXPECT_EQ(browser2, BrowserList::GetInstance()->GetLastActive());
+
+  browser()->window()->Show();
+  EXPECT_EQ(browser(), BrowserList::GetInstance()->GetLastActive());
+
+  browser2->window()->Activate();
+  EXPECT_EQ(browser2, BrowserList::GetInstance()->GetLastActive());
+
+  browser()->window()->Activate();
+  EXPECT_EQ(browser(), BrowserList::GetInstance()->GetLastActive());
+
+  browser2 = nullptr;
 }
 
 // Test layout of the top-of-window UI.
@@ -484,17 +544,13 @@ TEST_P(BrowserViewTest, WindowTitleOmitsLowMemoryUsage) {
   memory_usage.tab_resource_usage = tab_resource_usage_;
 
   AddTab(browser(), GURL("about:blank"));
-  Tab* tab = browser_view()->tabstrip()->tab_at(0);
+  Tab* const tab = browser_view()->tabstrip()->tab_at(0);
   tab->SetData(std::move(memory_usage));
 
   // Expect that low memory usage isn't in the window title.
   EXPECT_EQ(SubBrowserName("about:blank - %s"),
             browser_view()->GetAccessibleWindowTitle());
-  uint64_t memory_used =
-      static_cast<uint64_t>(
-          performance_manager::features::
-              kMemoryUsageInHovercardsHighThresholdBytes.Get()) +
-      1;
+  uint64_t memory_used = TabResourceUsage::kHighMemoryUsageThresholdBytes + 1;
   tab_resource_usage_->SetMemoryUsageInBytes(memory_used);
 
   // Expect that high memory usage is in the window title.

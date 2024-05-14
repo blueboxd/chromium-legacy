@@ -5,12 +5,15 @@
 import 'chrome://customize-chrome-side-panel.top-chrome/chrome_colors.js';
 
 import type {ChromeColorsElement} from 'chrome://customize-chrome-side-panel.top-chrome/chrome_colors.js';
+import {CustomizeChromeAction} from 'chrome://customize-chrome-side-panel.top-chrome/common.js';
 import {ThemeColorPickerBrowserProxy} from 'chrome://resources/cr_components/theme_color_picker/browser_proxy.js';
 import type {ThemeColorElement} from 'chrome://resources/cr_components/theme_color_picker/theme_color.js';
 import type {ChromeColor, Theme, ThemeColorPickerClientRemote} from 'chrome://resources/cr_components/theme_color_picker/theme_color_picker.mojom-webui.js';
 import {ThemeColorPickerClientCallbackRouter, ThemeColorPickerHandlerRemote} from 'chrome://resources/cr_components/theme_color_picker/theme_color_picker.mojom-webui.js';
 import {BrowserColorVariant} from 'chrome://resources/mojo/ui/base/mojom/themes.mojom-webui.js';
 import {assertDeepEquals, assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import type {MetricsTracker} from 'chrome://webui-test/metrics_test_support.js';
+import {fakeMetricsPrivate} from 'chrome://webui-test/metrics_test_support.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import type {TestMock} from 'chrome://webui-test/test_mock.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
@@ -21,12 +24,12 @@ function createTheme(): Theme {
   return {
     hasBackgroundImage: false,
     hasThirdPartyTheme: false,
-    backgroundImageMainColor: undefined,
+    backgroundImageMainColor: null,
     isDarkMode: false,
     seedColor: {value: 0xff0000ff},
     seedColorHue: 0,
     backgroundColor: {value: 0xffff0000},
-    foregroundColor: undefined,
+    foregroundColor: null,
     colorPickerIconColor: {value: 0xffff0000},
     colorsManagedByPolicy: false,
     isGreyBaseline: false,
@@ -39,6 +42,7 @@ suite('ChromeColorsTest', () => {
   let chromeColorsElement: ChromeColorsElement;
   let handler: TestMock<ThemeColorPickerHandlerRemote>;
   let callbackRouter: ThemeColorPickerClientRemote;
+  let metrics: MetricsTracker;
 
   setup(async () => {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
@@ -49,6 +53,7 @@ suite('ChromeColorsTest', () => {
                 mock, new ThemeColorPickerClientCallbackRouter()));
     callbackRouter = ThemeColorPickerBrowserProxy.getInstance()
                          .callbackRouter.$.bindNewPipeAndPassRemote();
+    metrics = fakeMetricsPrivate();
   });
 
   async function setInitialSettings(numColors: number): Promise<void> {
@@ -135,7 +140,7 @@ suite('ChromeColorsTest', () => {
     const theme = createTheme();
 
     // Set default color.
-    theme.foregroundColor = undefined;
+    theme.foregroundColor = null;
     callbackRouter.setTheme(theme);
     await callbackRouter.$.flushForTesting();
     await waitAfterNextRender(chromeColorsElement);
@@ -189,5 +194,56 @@ suite('ChromeColorsTest', () => {
     checkedColors =
         chromeColorsElement.shadowRoot!.querySelectorAll('[checked]');
     assertEquals(0, checkedColors.length);
+  });
+
+  suite('Metrics', () => {
+    test('Clicking default color sets metric', async () => {
+      await setInitialSettings(1);
+
+      chromeColorsElement.$.defaultColor.click();
+      await callbackRouter.$.flushForTesting();
+      await waitAfterNextRender(chromeColorsElement);
+
+      assertEquals(
+          1, metrics.count('NewTabPage.CustomizeChromeSidePanelAction'));
+      assertEquals(
+          1,
+          metrics.count(
+              'NewTabPage.CustomizeChromeSidePanelAction',
+              CustomizeChromeAction.DEFAULT_COLOR_CLICKED));
+    });
+
+    test('Clicking Chrome color sets metric', async () => {
+      await setInitialSettings(1);
+
+      chromeColorsElement.shadowRoot!
+          .querySelector<ThemeColorElement>('.chrome-color')!.click();
+      await callbackRouter.$.flushForTesting();
+      await waitAfterNextRender(chromeColorsElement);
+
+      assertEquals(
+          1, metrics.count('NewTabPage.CustomizeChromeSidePanelAction'));
+      assertEquals(
+          1,
+          metrics.count(
+              'NewTabPage.CustomizeChromeSidePanelAction',
+              CustomizeChromeAction.CHROME_COLOR_CLICKED));
+    });
+
+    test('Clicking custom color sets metric', async () => {
+      await setInitialSettings(1);
+
+      chromeColorsElement.$.customColor.click();
+      await callbackRouter.$.flushForTesting();
+      await waitAfterNextRender(chromeColorsElement);
+
+      assertEquals(
+          1, metrics.count('NewTabPage.CustomizeChromeSidePanelAction'));
+      assertEquals(
+          1,
+          metrics.count(
+              'NewTabPage.CustomizeChromeSidePanelAction',
+              CustomizeChromeAction.CUSTOM_COLOR_CLICKED));
+    });
   });
 });

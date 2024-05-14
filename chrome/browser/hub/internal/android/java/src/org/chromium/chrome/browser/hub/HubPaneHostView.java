@@ -56,6 +56,7 @@ public class HubPaneHostView extends FrameLayout {
         }
 
         if (oldRootView != null && newRootView != null) {
+            newRootView.setAlpha(0);
             tryAddViewToFrame(newRootView);
 
             Animator fadeOut = ObjectAnimator.ofFloat(oldRootView, View.ALPHA, 1, 0);
@@ -71,6 +72,7 @@ public class HubPaneHostView extends FrameLayout {
                         @Override
                         public void onAnimationEnd(Animator animation) {
                             mPaneFrame.removeView(oldRootView);
+                            oldRootView.setAlpha(1);
                             mCurrentAnimator = null;
                         }
                     });

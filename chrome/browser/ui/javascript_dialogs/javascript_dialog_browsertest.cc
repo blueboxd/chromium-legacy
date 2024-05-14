@@ -343,7 +343,8 @@ IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest,
                        DismissalCausePromptBrowserSwitched) {
   JavaScriptDialogDismissalCauseTester tester(this);
   tester.PopupDialog(content::JAVASCRIPT_DIALOG_TYPE_PROMPT);
-  chrome::NewEmptyWindow(browser()->profile());
+  ui_test_utils::OpenNewEmptyWindowAndWaitUntilSetAsLastActive(
+      browser()->profile());
   EXPECT_EQ(DismissalCause::kBrowserSwitched, tester.GetLastDismissalCause());
 }
 

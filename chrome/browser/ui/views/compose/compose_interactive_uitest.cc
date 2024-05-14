@@ -31,6 +31,7 @@
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/unified_consent/pref_names.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/fenced_frame_test_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/default_handlers.h"
@@ -241,7 +242,7 @@ class MAYBE_ComposeInteractiveUiTest : public InteractiveBrowserTest {
     ON_CALL(*mock_optimization_guide_keyed_service_,
             ShouldFeatureBeCurrentlyEnabledForUser)
         .WillByDefault(Return(true));
-    ON_CALL(*mock_optimization_guide_keyed_service_, StartSession(_))
+    ON_CALL(*mock_optimization_guide_keyed_service_, StartSession(_, _))
         .WillByDefault(
             [&] { return std::make_unique<MockSessionWrapper>(session()); });
     ON_CALL(session(), ExecuteModel(_, _))
@@ -258,7 +259,8 @@ class MAYBE_ComposeInteractiveUiTest : public InteractiveBrowserTest {
                           std::make_unique<
                               optimization_guide::ModelQualityLogEntry>(
                               std::make_unique<optimization_guide::proto::
-                                                   LogAiDataRequest>()))));
+                                                   LogAiDataRequest>(),
+                              nullptr))));
             })));
   }
 

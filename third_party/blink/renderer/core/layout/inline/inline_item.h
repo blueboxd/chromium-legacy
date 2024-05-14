@@ -40,7 +40,11 @@ class CORE_EXPORT InlineItem {
     kOutOfFlowPositioned,
     kInitialLetterBox,
     kListMarker,
-    kBidiControl
+    kBidiControl,
+    // k*RubyColumn is produced only if RubyLineBreakable flag is enabled.
+    // They help to pair ruby-base items and ruby-text items in LineBreaker.
+    kOpenRubyColumn,
+    kCloseRubyColumn
   };
 
   enum CollapseType {
@@ -271,7 +275,8 @@ class CORE_EXPORT InlineItem {
 
   unsigned start_offset_;
   unsigned end_offset_;
-  Member<const ShapeResult> shape_result_;
+  Member<const ShapeResult> shape_result_{
+      nullptr, Member<const ShapeResult>::AtomicInitializerTag{}};
   Member<LayoutObject> layout_object_;
 
   InlineItemType type_;

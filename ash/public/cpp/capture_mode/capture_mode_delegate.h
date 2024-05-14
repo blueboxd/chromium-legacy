@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "base/files/file_path.h"
 #include "base/functional/callback.h"
 #include "base/unguessable_token.h"
 #include "chromeos/crosapi/mojom/video_conference.mojom-shared.h"
@@ -18,10 +19,6 @@
 namespace aura {
 class Window;
 }  // namespace aura
-
-namespace base {
-class FilePath;
-}  // namespace base
 
 namespace gfx {
 class Rect;
@@ -64,6 +61,19 @@ using OnGotDriveFsFreeSpace =
 // the instance of this delegate.
 class ASH_PUBLIC_EXPORT CaptureModeDelegate {
  public:
+  enum class CapturePathEnforcement {
+    kNone,
+    kManaged,
+    kRecommended,
+  };
+
+  // Contains the path to which capture should be saved if enforced or
+  // recommended by admin policy.
+  struct PolicyCapturePath {
+    base::FilePath path;
+    CapturePathEnforcement enforcement = CapturePathEnforcement::kNone;
+  };
+
   virtual ~CaptureModeDelegate() = default;
 
   // Returns the path to the default downloads directory of the currently active
@@ -73,6 +83,9 @@ class ASH_PUBLIC_EXPORT CaptureModeDelegate {
   // Shows the screenshot or screen recording item in the screen capture folder.
   virtual void ShowScreenCaptureItemInFolder(
       const base::FilePath& file_path) = 0;
+
+  // Opens the screenshot or screen recording item with the default handler.
+  virtual void OpenScreenCaptureItem(const base::FilePath& file_path) = 0;
 
   // Opens the screenshot item in an image editor.
   virtual void OpenScreenshotInImageEditor(const base::FilePath& file_path) = 0;
@@ -154,6 +167,12 @@ class ASH_PUBLIC_EXPORT CaptureModeDelegate {
 
   // Returns the absolute path for the user's Linux Files.
   virtual base::FilePath GetLinuxFilesPath() const = 0;
+
+  // Gets the OneDrive mount point. Returns empty if OneDrive is not mounted.
+  virtual base::FilePath GetOneDriveMountPointPath() const = 0;
+
+  // Returns the path to save files if policy set by admin.
+  virtual PolicyCapturePath GetPolicyCapturePath() const = 0;
 
   // Creates and returns the view that will be used as the contents view of the
   // overlay widget, which is added as a child of the recorded surface to host

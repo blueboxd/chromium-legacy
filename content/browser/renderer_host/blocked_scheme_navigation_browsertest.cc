@@ -34,7 +34,6 @@
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "pdf/buildflags.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "storage/common/file_system/file_system_mount_option.h"
 #include "storage/common/file_system/file_system_types.h"
@@ -690,8 +689,15 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest, HTML_Download) {
 
 // Tests that navigating the main frame to a blocked scheme with HTML mimetype
 // from a subframe is blocked.
+// TODO: crbug.com/40943572 - Fix and re-enable the flaky test.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_HTML_NavigationFromFrame_Block \
+  DISABLED_HTML_NavigationFromFrame_Block
+#else
+#define MAYBE_HTML_NavigationFromFrame_Block HTML_NavigationFromFrame_Block
+#endif
 IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
-                       HTML_NavigationFromFrame_Block) {
+                       MAYBE_HTML_NavigationFromFrame_Block) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("a.com", "/simple_page.html")));
   AddIFrame(
@@ -707,7 +713,7 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
 
 // Tests that opening a new window with a blocked scheme from a subframe is
 // blocked.
-// TODO(crbug.com/1503148): Enable the flaky test.
+// TODO: crbug.com/40943572 - Fix and re-enable the flaky test.
 #if BUILDFLAG(IS_FUCHSIA)
 #define MAYBE_HTML_WindowOpenFromFrame_Block \
   DISABLED_HTML_WindowOpenFromFrame_Block
@@ -814,9 +820,17 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
 
 // Tests that navigating the top frame to a blocked scheme with HTML mimetype is
 // blocked even if the top frame already has a blocked scheme.
+// TODO: crbug.com/40943572 - Fix and re-enable the flaky test.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_HTML_NavigationFromFrame_TopFrameHasBlockedScheme_Block \
+  DISABLED_HTML_NavigationFromFrame_TopFrameHasBlockedScheme_Block
+#else
+#define MAYBE_HTML_NavigationFromFrame_TopFrameHasBlockedScheme_Block \
+  HTML_NavigationFromFrame_TopFrameHasBlockedScheme_Block
+#endif
 IN_PROC_BROWSER_TEST_P(
     BlockedSchemeNavigationBrowserTest,
-    HTML_NavigationFromFrame_TopFrameHasBlockedScheme_Block) {
+    MAYBE_HTML_NavigationFromFrame_TopFrameHasBlockedScheme_Block) {
   EXPECT_TRUE(NavigateToURL(shell(), CreateEmptyURLWithBlockedScheme()));
   AddIFrame(shell()->web_contents()->GetPrimaryMainFrame(), GetTestURL());
 
@@ -1128,7 +1142,7 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
   const GURL kPDFUrl(CreateURLWithBlockedScheme(
       "test.pdf", IsDataURLTest() ? pdf_base64 : kPDF, "application/pdf"));
 
-#if BUILDFLAG(ENABLE_PDF)
+#if BUILDFLAG(ENABLE_PLUGINS)
   TestNavigationObserver observer(shell()->web_contents());
   EXPECT_TRUE(NavigateToURL(shell(), kPDFUrl));
   EXPECT_EQ(kPDFUrl, observer.last_navigation_url());
@@ -1146,7 +1160,7 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
                        PDF_WindowOpen_Block) {
   Navigate(GetTestURL());
 
-#if BUILDFLAG(ENABLE_PDF)
+#if BUILDFLAG(ENABLE_PLUGINS)
   ExecuteScriptAndCheckWindowOpen(
       shell()->web_contents()->GetPrimaryMainFrame(), GetParam(),
       "document.getElementById('window-open-pdf').click()", NAVIGATION_BLOCKED);
@@ -1174,7 +1188,7 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
                        PDF_Navigation_Block) {
   Navigate(GetTestURL());
 
-#if BUILDFLAG(ENABLE_PDF)
+#if BUILDFLAG(ENABLE_PLUGINS)
   ExecuteScriptAndCheckPDFNavigation(
       shell()->web_contents()->GetPrimaryMainFrame(), GetParam(),
       "document.getElementById('navigate-top-frame-to-pdf').click()",
@@ -1202,7 +1216,7 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
 IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest, PDF_FormPost_Block) {
   Navigate(GetTestURL());
 
-#if BUILDFLAG(ENABLE_PDF)
+#if BUILDFLAG(ENABLE_PLUGINS)
   ExecuteScriptAndCheckPDFNavigation(
       shell()->web_contents()->GetPrimaryMainFrame(), GetParam(),
       "document.getElementById('form-post-to-pdf').click()",
@@ -1227,8 +1241,15 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest, PDF_FormPost_Block) {
 
 // Tests that navigating the main frame to a blocked scheme with PDF mimetype
 // from a subframe is blocked, or is downloaded on Android.
+// TODO: crbug.com/40943572 - Fix and re-enable the flaky test.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_PDF_NavigationFromFrame_Block \
+  DISABLED_PDF_NavigationFromFrame_Block
+#else
+#define MAYBE_PDF_NavigationFromFrame_Block PDF_NavigationFromFrame_Block
+#endif
 IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
-                       PDF_NavigationFromFrame_Block) {
+                       MAYBE_PDF_NavigationFromFrame_Block) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("a.com", "/simple_page.html")));
   AddIFrame(
@@ -1236,7 +1257,7 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
       embedded_test_server()->GetURL(
           "b.com", base::StringPrintf("/%s_url_navigations.html", GetParam())));
 
-#if BUILDFLAG(ENABLE_PDF)
+#if BUILDFLAG(ENABLE_PLUGINS)
   TestPDFNavigationFromFrame(
       GetParam(),
       "document.getElementById('navigate-top-frame-to-pdf').click()",
@@ -1274,7 +1295,7 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
             embedded_test_server()->GetURL(
                 base::StringPrintf("/%s_url_navigations.html", GetParam())));
 
-#if BUILDFLAG(ENABLE_PDF)
+#if BUILDFLAG(ENABLE_PLUGINS)
   TestWindowOpenFromFrame(GetParam(),
                           "document.getElementById('window-open-pdf').click()",
                           NAVIGATION_BLOCKED);
@@ -1308,7 +1329,7 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), CreateEmptyURLWithBlockedScheme()));
   AddIFrame(shell()->web_contents()->GetPrimaryMainFrame(), GetTestURL());
 
-#if BUILDFLAG(ENABLE_PDF)
+#if BUILDFLAG(ENABLE_PLUGINS)
   TestPDFNavigationFromFrame(
       GetParam(),
       "document.getElementById('navigate-top-frame-to-pdf').click()",
@@ -1343,7 +1364,7 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), CreateEmptyURLWithBlockedScheme()));
   AddIFrame(shell()->web_contents()->GetPrimaryMainFrame(), GetTestURL());
 
-#if BUILDFLAG(ENABLE_PDF)
+#if BUILDFLAG(ENABLE_PLUGINS)
   TestWindowOpenFromFrame(GetParam(),
                           "document.getElementById('window-open-pdf').click()",
                           NAVIGATION_BLOCKED);

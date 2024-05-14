@@ -143,6 +143,7 @@ linux_memory_builder(
     gn_args = gn_args.config(
         configs = [
             "tsan",
+            "fail_on_san_warnings",
             "release_builder",
             "reclient",
         ],
@@ -373,6 +374,7 @@ linux_memory_builder(
         category = "linux|msan",
         short_name = "bld",
     ),
+    siso_enabled = True,
 )
 
 linux_memory_builder(

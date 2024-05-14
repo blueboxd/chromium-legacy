@@ -115,6 +115,18 @@ webnn::ReduceKind MojoReduceTypeToComponent(mojom::Reduce::Kind kind) {
   NOTREACHED_NORETURN();
 }
 
+webnn::RecurrentNetworkDirection MojoRecurrentNetworkDirectionToComponent(
+    mojom::RecurrentNetworkDirection direction) {
+  switch (direction) {
+    case mojom::RecurrentNetworkDirection::kForward:
+      return webnn::RecurrentNetworkDirection::kForward;
+    case mojom::RecurrentNetworkDirection::kBackward:
+      return webnn::RecurrentNetworkDirection::kBackward;
+    case mojom::RecurrentNetworkDirection::kBoth:
+      return webnn::RecurrentNetworkDirection::kBoth;
+  }
+}
+
 bool ValidateClampAttributes(const mojom::ClampPtr& clamp) {
   if (std::isnan(clamp->min_value) || std::isnan(clamp->max_value)) {
     // The min or max value are nan.
@@ -259,8 +271,80 @@ webnn::Conv2dAttributes ConvertToConv2dAttributes(
     const IdToOperandMap& id_to_operand_map,
     const webnn::mojom::Conv2dPtr& conv2d,
     std::optional<Operand> bias_operand) {
-  return ConvertToConv2dAttributes<webnn::Conv2dAttributes>(
-      id_to_operand_map, conv2d, std::move(bias_operand));
+  auto component_attributes =
+      ConvertToConv2dAttributes<webnn::Conv2dAttributes>(
+          id_to_operand_map, conv2d, std::move(bias_operand));
+  switch (conv2d->input_layout) {
+    case webnn::mojom::InputOperandLayout::kChannelsFirst:
+      // "channelsFirst": [batches, input_channels, height, width]
+      component_attributes.filter_layout = Conv2dFilterOperandLayout::kOihw;
+      break;
+    case webnn::mojom::InputOperandLayout::kChannelsLast:
+      // "channelsLast": [batches, height, width, input_channels]
+      // For regular conv2d, ohwi filter layout is expected by default.
+      // For depthwise conv2d, ihwo filter layout is expected by default.
+      const auto* const input =
+          GetMojoOperand(id_to_operand_map, conv2d->input_operand_id);
+      CHECK(input);
+      const auto& input_shape = input->dimensions;
+      CHECK_EQ(input_shape.size(), 4u);
+      const uint32_t input_channels = input_shape[3];
+      const auto* const output =
+          GetMojoOperand(id_to_operand_map, conv2d->output_operand_id);
+      CHECK(output);
+      const auto& output_shape = output->dimensions;
+      CHECK_EQ(output_shape.size(), 4u);
+      const uint32_t output_channels = output_shape[3];
+      // Depthwise conv2d is "options.groups == input_channels ==
+      // output_channels".
+      const bool depthwise = webnn::IsDepthwiseConv2d(
+          input_channels, output_channels, conv2d->groups);
+      component_attributes.filter_layout =
+          depthwise ? Conv2dFilterOperandLayout::kIhwo
+                    : Conv2dFilterOperandLayout::kOhwi;
+      break;
+  }
+  return component_attributes;
+}
+
+webnn::LstmAttributes ConvertToLstmAttributes(
+    const IdToOperandMap& id_to_operand_map,
+    const webnn::mojom::LstmPtr& lstm) {
+  webnn::LstmAttributes attributes;
+  attributes.return_sequence = lstm->return_sequence;
+  attributes.direction =
+      MojoRecurrentNetworkDirectionToComponent(lstm->direction);
+  attributes.activation_count = lstm->activations.size();
+
+  if (lstm->bias_operand_id.has_value()) {
+    const auto* bias =
+        GetMojoOperand(id_to_operand_map, lstm->bias_operand_id.value());
+    attributes.bias = ConvertToComponentOperand(bias);
+  }
+  if (lstm->recurrent_bias_operand_id.has_value()) {
+    const auto* recurrent_bias = GetMojoOperand(
+        id_to_operand_map, lstm->recurrent_bias_operand_id.value());
+    attributes.recurrent_bias = ConvertToComponentOperand(recurrent_bias);
+  }
+  if (lstm->peephole_weight_operand_id.has_value()) {
+    const auto* peephole_weight = GetMojoOperand(
+        id_to_operand_map, lstm->peephole_weight_operand_id.value());
+    attributes.peephole_weight = ConvertToComponentOperand(peephole_weight);
+  }
+  if (lstm->initial_hidden_state_operand_id.has_value()) {
+    const auto* initial_hidden_state = GetMojoOperand(
+        id_to_operand_map, lstm->initial_hidden_state_operand_id.value());
+    attributes.initial_hidden_state =
+        ConvertToComponentOperand(initial_hidden_state);
+  }
+  if (lstm->initial_cell_state_operand_id.has_value()) {
+    const auto* initial_cell_state = GetMojoOperand(
+        id_to_operand_map, lstm->initial_cell_state_operand_id.value());
+    attributes.initial_cell_state =
+        ConvertToComponentOperand(initial_cell_state);
+  }
+
+  return attributes;
 }
 
 webnn::ConvTranspose2dAttributes ConvertToConvTranspose2dAttributes(
@@ -361,6 +445,36 @@ webnn::GemmAttributes ConvertToGemmAttributes(
   component_attributes.beta = gemm->beta;
   component_attributes.a_transpose = gemm->a_transpose;
   component_attributes.b_transpose = gemm->b_transpose;
+  return component_attributes;
+}
+
+webnn::GruAttributes ConvertToGruAttributes(
+    const IdToOperandMap& id_to_operand_map,
+    const webnn::mojom::GruPtr& gru) {
+  webnn::GruAttributes component_attributes;
+  if (gru->bias_operand_id.has_value()) {
+    const auto* bias =
+        GetMojoOperand(id_to_operand_map, gru->bias_operand_id.value());
+    component_attributes.bias = ConvertToComponentOperand(bias);
+  }
+  if (gru->recurrent_bias_operand_id.has_value()) {
+    const auto* recurrent_bias = GetMojoOperand(
+        id_to_operand_map, gru->recurrent_bias_operand_id.value());
+    component_attributes.recurrent_bias =
+        ConvertToComponentOperand(recurrent_bias);
+  }
+  if (gru->initial_hidden_state_operand_id.has_value()) {
+    const auto* initial_hidden_state = GetMojoOperand(
+        id_to_operand_map, gru->initial_hidden_state_operand_id.value());
+    component_attributes.initial_hidden_state =
+        ConvertToComponentOperand(initial_hidden_state);
+  }
+
+  component_attributes.return_sequence = gru->return_sequence;
+  component_attributes.direction =
+      MojoRecurrentNetworkDirectionToComponent(gru->direction);
+  component_attributes.activation_count = gru->activations.size();
+
   return component_attributes;
 }
 
@@ -571,8 +685,11 @@ bool ValidateConv2d(const IdToOperandMap& id_to_operand_map,
     // The conv2d operator is invalid.
     return false;
   }
-  if (output->dimensions.size() != 4) {
-    // The element of output dimensions should be 4.
+
+  // The input and output rank need to be validated before converting to
+  // `webnn::Conv2dAttributes`.
+  if (input->dimensions.size() != 4 || output->dimensions.size() != 4) {
+    // The element of input and output dimensions should be 4.
     return false;
   }
 
@@ -597,8 +714,8 @@ bool ValidateConv2d(const IdToOperandMap& id_to_operand_map,
   }
 
   std::optional<base::expected<Operand, std::string>> validated_output;
-  switch (conv2d->type) {
-    case mojom::Conv2d_Type::kDirect: {
+  switch (conv2d->kind) {
+    case mojom::Conv2d::Kind::kDirect: {
       validated_output = ValidateConv2dAndInferOutput(
           ConvertToComponentOperand(input), ConvertToComponentOperand(filter),
           ConvertToConv2dAttributes(id_to_operand_map, conv2d,
@@ -606,7 +723,7 @@ bool ValidateConv2d(const IdToOperandMap& id_to_operand_map,
       break;
     }
 
-    case mojom::Conv2d_Type::kTransposed: {
+    case mojom::Conv2d::Kind::kTransposed: {
       validated_output = ValidateConvTranspose2dAndInferOutput(
           ConvertToComponentOperand(input), ConvertToComponentOperand(filter),
           ConvertToConvTranspose2dAttributes(id_to_operand_map, conv2d,
@@ -723,9 +840,9 @@ bool ValidateElementWiseUnary(const IdToOperandMap& id_to_operand_map,
   if (operation->kind == mojom::ElementWiseUnary::Kind::kCast) {
     return ValidateCastOperation(id_to_operand_map, operation);
   }
-  const auto* constraints_iterator =
+  const auto constraints_iterator =
       kUnaryOperatorConstraints.find(operation->kind);
-  CHECK_NE(constraints_iterator, kUnaryOperatorConstraints.end());
+  CHECK(constraints_iterator != kUnaryOperatorConstraints.end());
   return ValidateUnaryOperation(id_to_operand_map, operation,
                                 constraints_iterator->second);
 }
@@ -799,6 +916,77 @@ bool ValidateGemm(const IdToOperandMap& id_to_operand_map,
   }
   if (validated_output != ConvertToComponentOperand(output)) {
     return false;
+  }
+
+  return true;
+}
+
+bool ValidateGru(const IdToOperandMap& id_to_operand_map,
+                 const mojom::GruPtr& gru) {
+  const auto* input = GetMojoOperand(id_to_operand_map, gru->input_operand_id);
+  const auto* weight =
+      GetMojoOperand(id_to_operand_map, gru->weight_operand_id);
+  const auto* recurrent_weight =
+      GetMojoOperand(id_to_operand_map, gru->recurrent_weight_operand_id);
+  if (!input || !weight || !recurrent_weight) {
+    return false;
+  }
+
+  const auto& bias_operand_id = gru->bias_operand_id;
+  if (bias_operand_id.has_value() &&
+      !id_to_operand_map.contains(bias_operand_id.value())) {
+    return false;
+  }
+  const auto& recurrent_bias_operand_id = gru->recurrent_bias_operand_id;
+  if (recurrent_bias_operand_id.has_value() &&
+      !id_to_operand_map.contains(recurrent_bias_operand_id.value())) {
+    return false;
+  }
+  const auto& initial_hidden_state_operand_id =
+      gru->initial_hidden_state_operand_id;
+  if (initial_hidden_state_operand_id.has_value() &&
+      !id_to_operand_map.contains(initial_hidden_state_operand_id.value())) {
+    return false;
+  }
+
+  for (uint64_t output_operand_id : gru->output_operand_ids) {
+    if (output_operand_id == gru->input_operand_id ||
+        output_operand_id == gru->weight_operand_id ||
+        output_operand_id == gru->recurrent_weight_operand_id) {
+      return false;
+    }
+    if (bias_operand_id == output_operand_id ||
+        recurrent_bias_operand_id == output_operand_id ||
+        initial_hidden_state_operand_id == output_operand_id) {
+      return false;
+    }
+  }
+
+  const auto validated_outputs = ValidateGruAndInferOutput(
+      ConvertToComponentOperand(input), ConvertToComponentOperand(weight),
+      ConvertToComponentOperand(recurrent_weight), gru->steps, gru->hidden_size,
+      ConvertToGruAttributes(id_to_operand_map, gru));
+  if (!validated_outputs.has_value()) {
+    return false;
+  }
+  if (gru->output_operand_ids.size() != validated_outputs->size()) {
+    return false;
+  }
+  for (size_t i = 0; i < validated_outputs->size(); ++i) {
+    const auto* output =
+        GetMojoOperand(id_to_operand_map, gru->output_operand_ids[i]);
+    if (!output) {
+      return false;
+    }
+    if (validated_outputs->at(i) != ConvertToComponentOperand(output)) {
+      return false;
+    }
+  }
+
+  for (const auto& activation : gru->activations) {
+    if (!ValidateActivation(activation)) {
+      return false;
+    }
   }
 
   return true;
@@ -879,6 +1067,89 @@ bool ValidateLinear(const IdToOperandMap& id_to_operand_map,
   }
   if (!ValidateLinearAttributes(linear)) {
     return false;
+  }
+
+  return true;
+}
+
+bool ValidateLstm(const IdToOperandMap& id_to_operand_map,
+                  const mojom::LstmPtr& lstm) {
+  const auto* input = GetMojoOperand(id_to_operand_map, lstm->input_operand_id);
+  const auto* weight =
+      GetMojoOperand(id_to_operand_map, lstm->weight_operand_id);
+  const auto* recurrent_weight =
+      GetMojoOperand(id_to_operand_map, lstm->recurrent_weight_operand_id);
+  if (!input || !weight || !recurrent_weight) {
+    return false;
+  }
+
+  const auto& bias_operand_id = lstm->bias_operand_id;
+  if (bias_operand_id.has_value() &&
+      !id_to_operand_map.contains(bias_operand_id.value())) {
+    return false;
+  }
+  const auto& recurrent_bias_operand_id = lstm->recurrent_bias_operand_id;
+  if (recurrent_bias_operand_id.has_value() &&
+      !id_to_operand_map.contains(recurrent_bias_operand_id.value())) {
+    return false;
+  }
+  const auto& peephole_weight_operand_id = lstm->peephole_weight_operand_id;
+  if (peephole_weight_operand_id.has_value() &&
+      !id_to_operand_map.contains(peephole_weight_operand_id.value())) {
+    return false;
+  }
+  const auto& initial_hidden_state_operand_id =
+      lstm->initial_hidden_state_operand_id;
+  if (initial_hidden_state_operand_id.has_value() &&
+      !id_to_operand_map.contains(initial_hidden_state_operand_id.value())) {
+    return false;
+  }
+  const auto& initial_cell_state_operand_id =
+      lstm->initial_cell_state_operand_id;
+  if (initial_cell_state_operand_id.has_value() &&
+      !id_to_operand_map.contains(initial_cell_state_operand_id.value())) {
+    return false;
+  }
+
+  for (uint64_t output_operand_id : lstm->output_operand_ids) {
+    if (output_operand_id == lstm->input_operand_id ||
+        output_operand_id == lstm->weight_operand_id ||
+        output_operand_id == lstm->recurrent_weight_operand_id) {
+      return false;
+    }
+    if ((initial_hidden_state_operand_id.has_value() &&
+         initial_hidden_state_operand_id.value() == output_operand_id) ||
+        (initial_cell_state_operand_id.has_value() &&
+         initial_cell_state_operand_id.value() == output_operand_id)) {
+      return false;
+    }
+  }
+
+  const auto validated_outputs = ValidateLstmAndInferOutput(
+      ConvertToComponentOperand(input), ConvertToComponentOperand(weight),
+      ConvertToComponentOperand(recurrent_weight), lstm->steps,
+      lstm->hidden_size, ConvertToLstmAttributes(id_to_operand_map, lstm));
+  if (!validated_outputs.has_value()) {
+    return false;
+  }
+  if (lstm->output_operand_ids.size() != validated_outputs->size()) {
+    return false;
+  }
+  for (size_t i = 0; i < validated_outputs->size(); ++i) {
+    const auto* output =
+        GetMojoOperand(id_to_operand_map, lstm->output_operand_ids[i]);
+    if (!output) {
+      return false;
+    }
+    if (validated_outputs->at(i) != ConvertToComponentOperand(output)) {
+      return false;
+    }
+  }
+
+  for (const auto& activation : lstm->activations) {
+    if (!ValidateActivation(activation)) {
+      return false;
+    }
   }
 
   return true;
@@ -1205,6 +1476,28 @@ bool ValidateTranspose(const IdToOperandMap& id_to_operand_map,
   return true;
 }
 
+bool ValidateTriangular(const IdToOperandMap& id_to_operand_map,
+                        const mojom::TriangularPtr& triangular) {
+  auto* input = GetMojoOperand(id_to_operand_map, triangular->input_operand_id);
+  auto* output =
+      GetMojoOperand(id_to_operand_map, triangular->output_operand_id);
+  if (!input || !output || output == input) {
+    // The triangular operator is invalid.
+    return false;
+  }
+
+  base::expected<Operand, std::string> validated_output =
+      ValidateTriangularAndInferOutput(ConvertToComponentOperand(input));
+  if (!validated_output.has_value()) {
+    return false;
+  }
+  if (validated_output != ConvertToComponentOperand(output)) {
+    return false;
+  }
+
+  return true;
+}
+
 bool ValidateWhere(const IdToOperandMap& id_to_operand_map,
                    const mojom::WherePtr& where) {
   auto* condition =
@@ -1304,6 +1597,8 @@ bool ValidateOperation(const IdToOperandMap& id_to_operand_map,
       return ValidateGather(id_to_operand_map, operation->get_gather());
     case mojom::Operation::Tag::kGemm:
       return ValidateGemm(id_to_operand_map, operation->get_gemm());
+    case mojom::Operation::Tag::kGru:
+      return ValidateGru(id_to_operand_map, operation->get_gru());
     case mojom::Operation::Tag::kHardSigmoid:
       return ValidateHardSigmoid(id_to_operand_map,
                                  operation->get_hard_sigmoid());
@@ -1321,6 +1616,8 @@ bool ValidateOperation(const IdToOperandMap& id_to_operand_map,
       return ValidateLeakyRelu(id_to_operand_map, operation->get_leaky_relu());
     case mojom::Operation::Tag::kLinear:
       return ValidateLinear(id_to_operand_map, operation->get_linear());
+    case mojom::Operation::Tag::kLstm:
+      return ValidateLstm(id_to_operand_map, operation->get_lstm());
     case mojom::Operation::Tag::kMatmul:
       return ValidateMatmul(id_to_operand_map, operation->get_matmul());
     case mojom::Operation::Tag::kPad:
@@ -1358,6 +1655,8 @@ bool ValidateOperation(const IdToOperandMap& id_to_operand_map,
                                     DataTypeConstraint::kFloat);
     case mojom::Operation::Tag::kTranspose:
       return ValidateTranspose(id_to_operand_map, operation->get_transpose());
+    case mojom::Operation::Tag::kTriangular:
+      return ValidateTriangular(id_to_operand_map, operation->get_triangular());
     case mojom::Operation::Tag::kWhere:
       return ValidateWhere(id_to_operand_map, operation->get_where());
   }

@@ -215,13 +215,6 @@ gn_args.config(
 )
 
 gn_args.config(
-    name = "cast_os",
-    args = {
-        "is_castos": True,
-    },
-)
-
-gn_args.config(
     name = "cast_receiver",
     args = {
         "enable_cast_receiver": True,
@@ -1148,6 +1141,13 @@ gn_args.config(
     name = "strip_debug_info",
     args = {
         "strip_debug_info": True,
+    },
+)
+
+gn_args.config(
+    name = "full_mte",
+    args = {
+        "use_full_mte": True,
     },
 )
 

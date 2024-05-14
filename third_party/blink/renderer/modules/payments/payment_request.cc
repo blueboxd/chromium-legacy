@@ -868,32 +868,34 @@ PaymentRequest* PaymentRequest::Create(
 
 PaymentRequest::~PaymentRequest() = default;
 
-ScriptPromise PaymentRequest::show(ScriptState* script_state,
-                                   ExceptionState& exception_state) {
+ScriptPromiseTyped<PaymentResponse> PaymentRequest::show(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   return show(script_state, ScriptPromise(), exception_state);
 }
 
-ScriptPromise PaymentRequest::show(ScriptState* script_state,
-                                   ScriptPromise details_promise,
-                                   ExceptionState& exception_state) {
+ScriptPromiseTyped<PaymentResponse> PaymentRequest::show(
+    ScriptState* script_state,
+    ScriptPromise details_promise,
+    ExceptionState& exception_state) {
   if (!script_state->ContextIsValid() || !LocalDOMWindow::From(script_state) ||
       !LocalDOMWindow::From(script_state)->GetFrame()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kAbortError,
                                       "Cannot show the payment request");
-    return ScriptPromise();
+    return ScriptPromiseTyped<PaymentResponse>();
   }
 
   if (!not_supported_for_invalid_origin_or_ssl_error_.empty()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         not_supported_for_invalid_origin_or_ssl_error_);
-    return ScriptPromise();
+    return ScriptPromiseTyped<PaymentResponse>();
   }
 
   if (!payment_provider_.is_bound() || accept_resolver_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Already called show() once");
-    return ScriptPromise();
+    return ScriptPromiseTyped<PaymentResponse>();
   }
 
   LocalFrame* local_frame = DomWindow()->GetFrame();
@@ -937,7 +939,7 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state,
             mojom::blink::ConsoleMessageSource::kJavaScript,
             mojom::blink::ConsoleMessageLevel::kWarning, message));
     exception_state.ThrowSecurityError(message);
-    return ScriptPromise();
+    return ScriptPromiseTyped<PaymentResponse>();
   }
 
   VLOG(2) << "Renderer: PaymentRequest (" << id_.Utf8() << "): show()";
@@ -962,53 +964,56 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state,
                 this, UpdatePaymentDetailsFunction::ResolveType::kReject)));
   }
 
-  accept_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
+  accept_resolver_ =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<PaymentResponse>>(
+          script_state, exception_state.GetContext());
   return accept_resolver_->Promise();
 }
 
-ScriptPromise PaymentRequest::abort(ScriptState* script_state,
-                                    ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLUndefined> PaymentRequest::abort(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Cannot abort payment");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   if (abort_resolver_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Cannot abort() again until the previous "
                                       "abort() has resolved or rejected");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   if (!GetPendingAcceptPromiseResolver()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "No show() or retry() in progress, so nothing to abort");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   VLOG(2) << "Renderer: PaymentRequest (" << id_.Utf8() << "): abort()";
 
-  abort_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
+  abort_resolver_ =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<IDLUndefined>>(
+          script_state, exception_state.GetContext());
   payment_provider_->Abort();
   return abort_resolver_->Promise();
 }
 
-ScriptPromise PaymentRequest::canMakePayment(ScriptState* script_state,
-                                             ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLBoolean> PaymentRequest::canMakePayment(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   if (!not_supported_for_invalid_origin_or_ssl_error_.empty()) {
-    return ScriptPromise::Cast(
-        script_state, v8::Boolean::New(script_state->GetIsolate(), false));
+    return ToResolvedPromise<IDLBoolean>(script_state, false);
   }
 
   if (!payment_provider_.is_bound() || GetPendingAcceptPromiseResolver() ||
       can_make_payment_resolver_ || !script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Cannot query payment request");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLBoolean>();
   }
 
   VLOG(2) << "Renderer: PaymentRequest (" << id_.Utf8()
@@ -1016,24 +1021,24 @@ ScriptPromise PaymentRequest::canMakePayment(ScriptState* script_state,
 
   payment_provider_->CanMakePayment();
 
-  can_make_payment_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
+  can_make_payment_resolver_ =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<IDLBoolean>>(
+          script_state, exception_state.GetContext());
   return can_make_payment_resolver_->Promise();
 }
 
-ScriptPromise PaymentRequest::hasEnrolledInstrument(
+ScriptPromiseTyped<IDLBoolean> PaymentRequest::hasEnrolledInstrument(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   if (!not_supported_for_invalid_origin_or_ssl_error_.empty()) {
-    return ScriptPromise::Cast(
-        script_state, v8::Boolean::New(script_state->GetIsolate(), false));
+    return ToResolvedPromise<IDLBoolean>(script_state, false);
   }
 
   if (!payment_provider_.is_bound() || GetPendingAcceptPromiseResolver() ||
       has_enrolled_instrument_resolver_ || !script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Cannot query payment request");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLBoolean>();
   }
 
   VLOG(2) << "Renderer: PaymentRequest (" << id_.Utf8()
@@ -1042,8 +1047,8 @@ ScriptPromise PaymentRequest::hasEnrolledInstrument(
   payment_provider_->HasEnrolledInstrument();
 
   has_enrolled_instrument_resolver_ =
-      MakeGarbageCollected<ScriptPromiseResolver>(script_state,
-                                                  exception_state.GetContext());
+      MakeGarbageCollected<ScriptPromiseResolverTyped<IDLBoolean>>(
+          script_state, exception_state.GetContext());
   return has_enrolled_instrument_resolver_->Promise();
 }
 
@@ -1061,41 +1066,42 @@ ExecutionContext* PaymentRequest::GetExecutionContext() const {
   return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
-ScriptPromise PaymentRequest::Retry(ScriptState* script_state,
-                                    const PaymentValidationErrors* errors,
-                                    ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLUndefined> PaymentRequest::Retry(
+    ScriptState* script_state,
+    const PaymentValidationErrors* errors,
+    ExceptionState& exception_state) {
   if (!script_state->ContextIsValid() || !LocalDOMWindow::From(script_state) ||
       !LocalDOMWindow::From(script_state)->GetFrame()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kAbortError,
                                       "Cannot retry the payment request");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   if (complete_resolver_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "Cannot call retry() because already called complete()");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   if (retry_resolver_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Cannot call retry() again until "
                                       "the previous retry() is finished");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   if (!payment_provider_.is_bound()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Payment request terminated");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   String error_message;
   if (!PaymentsValidators::IsValidPaymentValidationErrorsFormat(
           errors, &error_message)) {
     exception_state.ThrowTypeError(error_message);
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   if (!options_->requestPayerName() && errors->hasPayer() &&
@@ -1143,46 +1149,48 @@ ScriptPromise PaymentRequest::Retry(ScriptState* script_state,
   payment_provider_->Retry(
       payments::mojom::blink::PaymentValidationErrors::From(*errors));
 
-  retry_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
+  retry_resolver_ =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<IDLUndefined>>(
+          script_state, exception_state.GetContext());
 
   return retry_resolver_->Promise();
 }
 
-ScriptPromise PaymentRequest::Complete(ScriptState* script_state,
-                                       PaymentComplete result,
-                                       ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLUndefined> PaymentRequest::Complete(
+    ScriptState* script_state,
+    PaymentComplete result,
+    ExceptionState& exception_state) {
   if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Cannot complete payment");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   if (complete_resolver_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Already called complete() once");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   if (retry_resolver_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "Cannot call complete() before retry() is finished");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   if (!complete_timer_.IsActive()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "Timed out after 60 seconds, complete() called too late");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   // User has cancelled the transaction while the website was processing it.
   if (!payment_provider_.is_bound()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kAbortError,
                                       "Request cancelled");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   UseCounter::Count(GetExecutionContext(), WebFeature::kPaymentRequestComplete);
@@ -1192,8 +1200,9 @@ ScriptPromise PaymentRequest::Complete(ScriptState* script_state,
   // The payment provider should respond in PaymentRequest::OnComplete().
   payment_provider_->Complete(payments::mojom::blink::PaymentComplete(result));
 
-  complete_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
+  complete_resolver_ =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<IDLUndefined>>(
+          script_state, exception_state.GetContext());
   return complete_resolver_->Promise();
 }
 
@@ -1264,8 +1273,8 @@ void PaymentRequest::OnUpdatePaymentDetailsFailure(const String& error) {
         DOMExceptionCode::kAbortError, error));
   }
   if (complete_resolver_) {
-    complete_resolver_->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kAbortError, error));
+    complete_resolver_->RejectWithDOMException(DOMExceptionCode::kAbortError,
+                                               error);
   }
   ClearResolversAndCloseMojoConnection();
 }
@@ -1651,8 +1660,7 @@ void PaymentRequest::OnError(PaymentErrorReason error,
   }
 
   if (abort_resolver_) {
-    abort_resolver_->Reject(
-        MakeGarbageCollected<DOMException>(exception_code, error_message));
+    abort_resolver_->RejectWithDOMException(exception_code, error_message);
   }
 
   if (can_make_payment_resolver_) {
@@ -1687,8 +1695,8 @@ void PaymentRequest::OnAbort(bool aborted_successfully) {
   DCHECK(GetPendingAcceptPromiseResolver());
 
   if (!aborted_successfully) {
-    abort_resolver_->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kInvalidStateError, "Unable to abort the payment"));
+    abort_resolver_->RejectWithDOMException(
+        DOMExceptionCode::kInvalidStateError, "Unable to abort the payment");
     abort_resolver_.Clear();
     return;
   }
@@ -1804,7 +1812,10 @@ void PaymentRequest::ClearResolversAndCloseMojoConnection() {
 }
 
 ScriptPromiseResolver* PaymentRequest::GetPendingAcceptPromiseResolver() const {
-  return retry_resolver_ ? retry_resolver_.Get() : accept_resolver_.Get();
+  if (retry_resolver_) {
+    return retry_resolver_.Get();
+  }
+  return accept_resolver_.Get();
 }
 
 void PaymentRequest::DispatchPaymentRequestUpdateEvent(

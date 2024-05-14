@@ -274,7 +274,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) TSFTextStore
   bool MaybeSendOnUrlChanged();
 
   // Sets the flag to indicate TSF support for empty text stores.
-  void SetUseEmptyTextStore(bool isEnabled);
+  void UseEmptyTextStore(bool is_enabled);
 
  private:
   friend class TSFTextStoreTest;
@@ -327,9 +327,6 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) TSFTextStore
 
   // Returns if current input method is an IME.
   bool IsInputIME() const;
-
-  // Returns if the active input processor does not support vertical wrirting.
-  bool IsInputProcessorWithoutVerticalWriting() const;
 
   // Gets the style information from the display attribute for the actively
   // composed text.

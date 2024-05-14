@@ -4,8 +4,17 @@
 
 #include "chrome/browser/ui/autofill/payments/chrome_payments_autofill_client.h"
 
+#include "base/check_deref.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/autofill/payments/view_factory.h"
 #include "chrome/browser/ui/autofill/risk_util.h"
+#include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/core/browser/metrics/payments/risk_data_metrics.h"
+#include "components/autofill/core/browser/payments/autofill_error_dialog_context.h"
+#include "components/autofill/core/browser/payments/payments_network_interface.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/ui/payments/autofill_error_dialog_controller_impl.h"
+#include "components/autofill/core/browser/ui/payments/autofill_progress_dialog_controller_impl.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -21,9 +30,9 @@
 namespace autofill::payments {
 
 ChromePaymentsAutofillClient::ChromePaymentsAutofillClient(
-    content::WebContents* web_contents) {
-  content::WebContentsObserver::Observe(web_contents);
-}
+    ContentAutofillClient* client)
+    : content::WebContentsObserver(&client->GetWebContents()),
+      client_(CHECK_DEREF(client)) {}
 
 ChromePaymentsAutofillClient::~ChromePaymentsAutofillClient() = default;
 
@@ -97,6 +106,71 @@ void ChromePaymentsAutofillClient::CreditCardUploadCompleted(bool card_saved) {
     controller->ShowConfirmationBubbleView(card_saved);
   }
 #endif
+}
+
+bool ChromePaymentsAutofillClient::IsSaveCardPromptVisible() const {
+#if !BUILDFLAG(IS_ANDROID)
+  SaveCardBubbleControllerImpl* controller =
+      SaveCardBubbleControllerImpl::FromWebContents(web_contents());
+  return controller && controller->IsIconVisible();
+#else
+  return false;
+#endif
+}
+
+void ChromePaymentsAutofillClient::HideSaveCardPromptPrompt() {
+#if !BUILDFLAG(IS_ANDROID)
+  SaveCardBubbleControllerImpl* controller =
+      SaveCardBubbleControllerImpl::FromWebContents(web_contents());
+  if (controller) {
+    controller->HideSaveCardBubble();
+  }
+#endif
+}
+
+void ChromePaymentsAutofillClient::ShowAutofillProgressDialog(
+    AutofillProgressDialogType autofill_progress_dialog_type,
+    base::OnceClosure cancel_callback) {
+  autofill_progress_dialog_controller_ =
+      std::make_unique<AutofillProgressDialogControllerImpl>(
+          autofill_progress_dialog_type, std::move(cancel_callback));
+  autofill_progress_dialog_controller_->ShowDialog(
+      base::BindOnce(&CreateAndShowProgressDialog,
+                     autofill_progress_dialog_controller_->GetWeakPtr(),
+                     base::Unretained(web_contents())));
+}
+
+void ChromePaymentsAutofillClient::CloseAutofillProgressDialog(
+    bool show_confirmation_before_closing,
+    base::OnceClosure no_interactive_authentication_callback) {
+  DCHECK(autofill_progress_dialog_controller_);
+  autofill_progress_dialog_controller_->DismissDialog(
+      show_confirmation_before_closing,
+      std::move(no_interactive_authentication_callback));
+}
+
+PaymentsNetworkInterface*
+ChromePaymentsAutofillClient::GetPaymentsNetworkInterface() {
+  if (!payments_network_interface_) {
+    payments_network_interface_ =
+        std::make_unique<payments::PaymentsNetworkInterface>(
+            Profile::FromBrowserContext(web_contents()->GetBrowserContext())
+                ->GetURLLoaderFactory(),
+            client_->GetIdentityManager(), client_->GetPersonalDataManager(),
+            Profile::FromBrowserContext(web_contents()->GetBrowserContext())
+                ->IsOffTheRecord());
+  }
+  return payments_network_interface_.get();
+}
+
+void ChromePaymentsAutofillClient::ShowAutofillErrorDialog(
+    AutofillErrorDialogContext context) {
+  autofill_error_dialog_controller_ =
+      std::make_unique<AutofillErrorDialogControllerImpl>(std::move(context));
+  autofill_error_dialog_controller_->Show(
+      base::BindOnce(&CreateAndShowAutofillErrorDialog,
+                     base::Unretained(autofill_error_dialog_controller_.get()),
+                     base::Unretained(web_contents())));
 }
 
 }  // namespace autofill::payments

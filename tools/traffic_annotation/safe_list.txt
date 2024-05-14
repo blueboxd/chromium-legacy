@@ -24,6 +24,8 @@ all,chrome/browser/apps/app_discovery_service/recommended_arc_apps/recommend_app
 all,chrome/browser/ash/app_list/search/arc/recommend_apps_fetcher_impl.cc
 all,chrome/browser/ui/ash/projector/screencast_manager.cc
 all,chrome/services/cups_proxy/socket_manager.cc
+missing,ash/birch/birch_item.cc
+missing,components/manta/mahi_provider.cc
 missing,components/manta/orca_provider.cc
 missing,components/manta/snapper_provider.cc
 
@@ -70,6 +72,7 @@ missing_new_fields,components/variations/android/java/src/org/chromium/component
 missing_new_fields,ash/ambient/ambient_photo_cache.cc
 missing_new_fields,ash/ambient/ambient_weather_controller.cc
 missing_new_fields,ash/assistant/assistant_controller_impl.cc
+missing_new_fields,ash/birch/birch_weather_provider.cc
 missing_new_fields,ash/quick_pair/repository/fast_pair/device_metadata_fetcher.cc
 missing_new_fields,ash/quick_pair/repository/fast_pair/fast_pair_image_decoder_impl.cc
 missing_new_fields,ash/webui/projector_app/projector_xhr_sender.cc
@@ -102,7 +105,6 @@ missing_new_fields,chrome/browser/devtools/device/adb/adb_client_socket.cc
 missing_new_fields,chrome/browser/devtools/device/android_device_manager.cc
 missing_new_fields,chrome/browser/devtools/device/android_web_socket.cc
 missing_new_fields,chrome/browser/devtools/device/port_forwarding_controller.cc
-missing_new_fields,chrome/browser/devtools/devtools_ui_bindings.cc
 missing_new_fields,chrome/browser/download/bubble/download_bubble_ui_controller.cc
 missing_new_fields,chrome/browser/extensions/api/downloads/downloads_api.cc
 missing_new_fields,chrome/browser/extensions/api/image_writer_private/write_from_url_operation.cc
@@ -177,6 +179,7 @@ missing_new_fields,chromeos/ash/components/fwupd/firmware_update_manager.cc
 missing_new_fields,chromeos/ash/components/login/auth/recovery/cryptohome_recovery_service_client.cc
 missing_new_fields,chromeos/ash/components/timezone/timezone_request.cc
 missing_new_fields,chromeos/components/quick_answers/result_loader.cc
+missing_new_fields,components/affiliations/core/browser/hash_affiliation_fetcher.cc
 missing_new_fields,components/assist_ranker/ranker_url_fetcher.cc
 missing_new_fields,components/autofill/core/browser/payments/payments_network_interface.cc
 missing_new_fields,components/captive_portal/content/captive_portal_service.cc
@@ -193,7 +196,6 @@ missing_new_fields,components/feed/core/v2/feed_network_impl.cc
 missing_new_fields,components/feed/core/v2/image_fetcher.cc
 missing_new_fields,components/invalidation/impl/per_user_topic_subscription_request.cc
 missing_new_fields,components/media_router/common/providers/cast/channel/cast_socket.cc
-missing_new_fields,components/metrics/net/net_metrics_log_uploader.cc
 missing_new_fields,components/mirroring/service/udp_socket_client.cc
 missing_new_fields,components/network_time/network_time_tracker.cc
 missing_new_fields,components/ntp_tiles/icon_cacher_impl.cc
@@ -210,7 +212,6 @@ missing_new_fields,components/openscreen_platform/udp_socket.cc
 missing_new_fields,components/optimization_guide/core/hints_fetcher.cc
 missing_new_fields,components/optimization_guide/core/prediction_model_download_manager.cc
 missing_new_fields,components/optimization_guide/core/prediction_model_fetcher_impl.cc
-missing_new_fields,components/password_manager/core/browser/affiliation/hash_affiliation_fetcher.cc
 missing_new_fields,components/password_manager/core/browser/generation/password_requirements_spec_fetcher_impl.cc
 missing_new_fields,components/password_manager/core/browser/well_known_change_password_state.cc
 missing_new_fields,components/payments/core/payment_manifest_downloader.cc

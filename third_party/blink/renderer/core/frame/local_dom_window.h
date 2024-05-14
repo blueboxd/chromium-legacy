@@ -373,7 +373,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(orientationchange, kOrientationchange)
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(pageconceal, kPageconceal)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(pageswap, kPageswap)
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(pagereveal, kPagereveal)
 
@@ -539,6 +539,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // given window, it cannot be taken away.
   void SetHasStorageAccess();
 
+  // https://html.spec.whatwg.org/multipage/browsing-the-web.html#has-been-revealed
+  bool HasBeenRevealed() const { return has_been_revealed_; }
+  void SetHasBeenRevealed(bool revealed);
+
  protected:
   // EventTarget overrides.
   void AddedEventListener(const AtomicString& event_type,
@@ -608,7 +612,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   Member<Event> current_event_;
 
   // Store TrustedTypesPolicyFactory, per DOMWrapperWorld.
-  mutable HeapHashMap<scoped_refptr<const DOMWrapperWorld>,
+  mutable HeapHashMap<Member<const DOMWrapperWorld>,
                       Member<TrustedTypePolicyFactory>>
       trusted_types_map_;
 
@@ -691,6 +695,9 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // TODO(crbug.com/1439565): Move this bit to a new payments-specific
   // per-LocalDOMWindow class in the payments module.
   bool had_activationless_payment_request_ = false;
+
+  // https://html.spec.whatwg.org/multipage/browsing-the-web.html#has-been-revealed
+  bool has_been_revealed_ = false;
 };
 
 template <>

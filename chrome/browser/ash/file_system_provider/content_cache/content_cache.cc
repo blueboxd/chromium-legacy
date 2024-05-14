@@ -6,7 +6,8 @@
 
 namespace ash::file_system_provider {
 
-ContentCache::ContentCache() = default;
+ContentCache::ContentCache(const base::FilePath& root_dir)
+    : root_dir_(root_dir) {}
 
 ContentCache::~ContentCache() = default;
 

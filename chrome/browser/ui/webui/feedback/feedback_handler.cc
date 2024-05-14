@@ -6,8 +6,10 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/functional/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -27,7 +29,7 @@
 namespace {
 
 void ShowChildPage(Profile* profile,
-                   const FeedbackDialog* dialog,
+                   const base::WeakPtr<FeedbackDialog>& dialog,
                    const GURL& url,
                    const std::u16string& title,
                    const std::string& args = "",
@@ -35,6 +37,11 @@ void ShowChildPage(Profile* profile,
                    int dialog_height = 400,
                    bool can_resize = true,
                    bool can_minimize = true) {
+  CHECK(profile);
+  if (!dialog) {
+    return;
+  }
+
   const bool is_parent_modal = dialog->GetWidget()->IsModal();
 
   auto delegate = std::make_unique<ui::WebDialogDelegate>();
@@ -61,8 +68,8 @@ GURL ChildPageURL(const std::string& child_page) {
 }
 }  // namespace
 
-FeedbackHandler::FeedbackHandler(const FeedbackDialog* dialog)
-    : dialog_(dialog) {}
+FeedbackHandler::FeedbackHandler(base::WeakPtr<FeedbackDialog> dialog)
+    : dialog_(std::move(dialog)) {}
 
 FeedbackHandler::~FeedbackHandler() = default;
 
@@ -74,10 +81,6 @@ void FeedbackHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "showAssistantLogsInfo",
       base::BindRepeating(&FeedbackHandler::HandleShowAssistantLogsInfo,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "showBluetoothLogsInfo",
-      base::BindRepeating(&FeedbackHandler::HandleShowBluetoothLogsInfo,
                           base::Unretained(this)));
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
@@ -95,7 +98,9 @@ void FeedbackHandler::RegisterMessages() {
 }
 
 void FeedbackHandler::HandleShowDialog(const base::Value::List& args) {
-  dialog_->Show();
+  if (dialog_) {
+    dialog_->Show();
+  }
 }
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -105,14 +110,6 @@ void FeedbackHandler::HandleShowAssistantLogsInfo(
                 ChildPageURL("html/assistant_logs_info.html"), std::u16string(),
                 std::string(),
                 /*dialog_width=*/400, /*dialog_height=*/120,
-                /*can_resize=*/false, /*can_minimize=*/false);
-}
-void FeedbackHandler::HandleShowBluetoothLogsInfo(
-    const base::Value::List& args) {
-  ShowChildPage(Profile::FromWebUI(web_ui()), dialog_,
-                ChildPageURL("html/bluetooth_logs_info.html"), std::u16string(),
-                std::string(),
-                /*dialog_width=*/400, /*dialog_height=*/190,
                 /*can_resize=*/false, /*can_minimize=*/false);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS)
@@ -129,7 +126,7 @@ void FeedbackHandler::HandleShowAutofillMetadataInfo(
 
 void FeedbackHandler::HandleShowSystemInfo(const base::Value::List& args) {
   ShowChildPage(Profile::FromWebUI(web_ui()), dialog_,
-                ChildPageURL("html/sys_info.html"),
+                GURL(chrome::kChromeUIFeedbackSystemInfoUrl),
                 l10n_util::GetStringUTF16(IDS_FEEDBACK_SYSINFO_PAGE_TITLE));
 }
 

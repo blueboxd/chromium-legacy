@@ -89,13 +89,15 @@ PA_ALWAYS_INLINE void SlotSpanMetadata::RegisterEmpty() {
 
   ToSuperPageExtent()->DecrementNumberOfNonemptySlotSpans();
 
-  // If the slot span is already registered as empty, give it another life.
+  // If the slot span is already registered as empty, don't do anything. This
+  // prevents continually reusing a slot span from decommitting a bunch of other
+  // slot spans.
   if (in_empty_cache_) {
-    PA_DCHECK(empty_cache_index_ < kMaxFreeableSpans);
-    PA_DCHECK(root->global_empty_slot_span_ring[empty_cache_index_] == this);
-    root->global_empty_slot_span_ring[empty_cache_index_] = nullptr;
+    return;
   }
 
+  PA_DCHECK(root->global_empty_slot_span_ring_index <
+            root->global_empty_slot_span_ring_size);
   int16_t current_index = root->global_empty_slot_span_ring_index;
   SlotSpanMetadata* slot_span_to_decommit =
       root->global_empty_slot_span_ring[current_index];
@@ -104,6 +106,10 @@ PA_ALWAYS_INLINE void SlotSpanMetadata::RegisterEmpty() {
   if (slot_span_to_decommit) {
     slot_span_to_decommit->DecommitIfPossible(root);
   }
+
+  // There should not be a slot span in the buffer at the position this is
+  // going into.
+  PA_DCHECK(!root->global_empty_slot_span_ring[current_index]);
 
   // We put the empty slot span on our global list of "slot spans that were once
   // empty", thus providing it a bit of breathing room to get re-used before we
@@ -248,6 +254,7 @@ void SlotSpanMetadata::DecommitIfPossible(PartitionRoot* root) {
   if (is_empty()) {
     Decommit(root);
   }
+  root->global_empty_slot_span_ring[empty_cache_index_] = nullptr;
 }
 
 void SlotSpanMetadata::SortFreelist() {

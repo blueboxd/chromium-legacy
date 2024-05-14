@@ -6,14 +6,14 @@
 
 load("@stdlib//internal/graph.star", "graph")
 load("@stdlib//internal/luci/common.star", "keys", "kinds", "triggerer")
+load("//project.star", "settings")
 load("./args.star", "args")
 load("./builder_url.star", "linkify_builder")
-load("./sheriff_rotations.star", "get_sheriff_rotations")
 load("./chrome_settings.star", "per_builder_outputs_config")
 load("./nodes.star", "nodes")
+load("./sheriff_rotations.star", "get_sheriff_rotations")
 load("./structs.star", "structs")
 load("./targets.star", "get_targets_spec_generator", "register_targets")
-load("//project.star", "settings")
 
 def _enum(**kwargs):
     """Create an enum struct.
@@ -186,19 +186,19 @@ def _skylab_upload_location(*, gs_bucket, gs_extra = None):
 def _clusterfuzz_archive(
         *,
         gs_bucket,
-        gs_acl = None,
         archive_name_prefix,
+        gs_acl = None,
         archive_subdir = None):
     """The details for configuring clusterfuzz archiving.
 
     Args:
         gs_bucket: (str) The name of the Google Cloud Storage bucket to upload
             the archive to.
-        gs_acl: (str) The name of a Google Cloud Storage canned ACL to apply to
-            the uploaded archive.
         archive_name_prefix: (str) The prefix of the archive's name. The name of
             the archive will contain additional details such as platform and
             target among others.
+        gs_acl: (str) The name of a Google Cloud Storage canned ACL to apply to
+            the uploaded archive.
         archive_subdir: (str) An optional additional subdirectory within the
             platform/target directory to upload the archive to.
     """
@@ -234,9 +234,9 @@ def _bisect_archive(
 
 def _builder_spec(
         *,
-        execution_mode = _execution_mode.COMPILE_AND_TEST,
         gclient_config,
         chromium_config,
+        execution_mode = _execution_mode.COMPILE_AND_TEST,
         android_config = None,
         android_version_file = None,
         clobber = None,
@@ -250,9 +250,9 @@ def _builder_spec(
     """Details for configuring execution for a single builder.
 
     Args:
-        execution_mode: (execution_mode) The execution mode of the builder.
         gclient_config: (gclient_config) The gclient config for the builder.
         chromium_config: (chromium_config) The chromium config for the builder.
+        execution_mode: (execution_mode) The execution mode of the builder.
         android_config: (android_config) The android config for the builder.
         android_version_file: (str) A path relative to the checkout to a file
             containing the Chrome version information for Android.
@@ -313,6 +313,23 @@ def _builder_spec(
         skylab_upload_location = skylab_upload_location,
         clusterfuzz_archive = clusterfuzz_archive,
         bisect_archive = bisect_archive,
+    )
+
+def _ci_settings(
+        *,
+        retry_failed_shards = None):
+    """Settings specific to CI builders.
+
+    Args:
+        retry_failed_shards: (bool) Whether or not failing shards of a test will
+            be retried. If retries for all failed shards of a test succeed, the
+            test will be considered to have passed.
+
+    Returns:
+        A struct that can be passed to the `ci_settings` argument of the builder.
+    """
+    return struct(
+        retry_failed_shards = retry_failed_shards,
     )
 
 def _try_settings(
@@ -403,6 +420,7 @@ builder_config = struct(
     android_config = _android_config,
 
     # Function for defining try-specific settings
+    ci_settings = _ci_settings,
     try_settings = _try_settings,
 )
 
@@ -436,7 +454,7 @@ def register_builder_config(
         builder_group,
         builder_spec,
         mirrors,
-        try_settings,
+        settings,
         targets,
         additional_exclusions):
     """Registers the builder config so the properties can be computed.
@@ -450,15 +468,16 @@ def register_builder_config(
         builder_group: The name of the group the builder belongs to.
         builder_spec: The spec describing the configuration for the builder.
         mirrors: References to the builders that the builder should mirror.
-        try_settings: The object determining the try-specific settings.
+        settings: The object determining the additional settings applied to
+            builder_config.
         targets: The targets to be built/run by the builder.
         additional_exclusions: A list of paths that are excluded when analyzing
             the change to determine affected targets. The paths should be
             relative to the per-builder output root dir.
     """
     if not builder_spec and not mirrors:
-        if try_settings:
-            fail("try_settings specified without builder_spec or mirrors")
+        if settings:
+            fail("settings specified without builder_spec or mirrors")
 
         # TODO(gbeaty) Eventually make this a failure for the chromium
         # family of recipes
@@ -471,13 +490,23 @@ def register_builder_config(
     if targets and not builder_spec:
         fail("builder_spec must be set to set targets")
 
-    if not try_settings:
-        try_settings = _try_settings(include_all_triggered_testers = not mirrors)
+    include_all_triggered_testers = None
+    settings_fields = {}
+    if settings:
+        settings_fields = structs.to_proto_properties(settings)
+        include_all_triggered_testers = settings_fields.pop(
+            "include_all_triggered_testers",
+            None,
+        )
+    if include_all_triggered_testers == None:
+        include_all_triggered_testers = not mirrors
+
     builder_config_key = _BUILDER_CONFIG.add(bucket, name, props = dict(
         builder_group = builder_group,
         builder_spec = builder_spec,
         mirrors = mirrors,
-        try_settings = try_settings,
+        include_all_triggered_testers = include_all_triggered_testers,
+        settings_fields = settings_fields,
         additional_exclusions = additional_exclusions,
     ))
 
@@ -531,7 +560,7 @@ def _get_mirroring_builders(bc_state, node):
     parent = bc_state.parent(node)
     if parent:
         for m in _get_mirroring_nodes(bc_state, parent):
-            if m.props.try_settings.include_all_triggered_testers:
+            if m.props.include_all_triggered_testers:
                 nodes.append(m)
 
     return nodes
@@ -603,7 +632,7 @@ def _check_specs_for_consistency(bucket_name, builder_name, entries):
                 bucket_name,
                 builder_name,
                 "".join(
-                    ["\n  {}".format(l) for l in failure_output],
+                    ["\n  {}".format(o) for o in failure_output],
                 ),
             ))
 
@@ -726,7 +755,7 @@ def _set_builder_config_property(ctx):
                     if parent:
                         add(parent)
                     add(m, parent)
-                    if node.props.try_settings.include_all_triggered_testers:
+                    if node.props.include_all_triggered_testers:
                         for child in bc_state.children(m):
                             add(child, m)
 
@@ -747,7 +776,7 @@ def _set_builder_config_property(ctx):
                     entries = sorted(entries, key = lambda e: _builder_id_sort_key(e["builder_id"])),
                 ),
                 builder_ids = sorted(builder_ids, key = _builder_id_sort_key),
-                **structs.to_proto_properties(node.props.try_settings)
+                **node.props.settings_fields
             )
             if node.props.additional_exclusions:
                 builder_config["additional_exclusions"] = [
@@ -757,7 +786,6 @@ def _set_builder_config_property(ctx):
                     )
                     for exclusion in node.props.additional_exclusions
                 ]
-            builder_config.pop("include_all_triggered_testers", None)
 
             if builder_ids_in_scope_for_testing:
                 builder_config["builder_ids_in_scope_for_testing"] = (
@@ -828,6 +856,11 @@ def _set_builder_config_property(ctx):
             # mega CQ.
             if not mirrors:
                 continue
+            allowed_trybot_recipes = [
+                "chromium_trybot",
+                "chromium_trybot_internal",
+                "chromium/orchestrator",
+            ]
             is_excluded = False
             all_mirror_rotations = []
             for m in mirrors:
@@ -836,7 +869,7 @@ def _set_builder_config_property(ctx):
                 all_mirror_rotations += mirror_rotations
                 if not mirror_rotations:
                     is_excluded = True
-                if json.decode(builder.properties)["recipe"] not in ["chromium_trybot", "chromium/orchestrator"]:
+                if json.decode(builder.properties)["recipe"] not in allowed_trybot_recipes:
                     is_excluded = True
                 if mirror_id["builder"] in excluded_builders:
                     is_excluded = True

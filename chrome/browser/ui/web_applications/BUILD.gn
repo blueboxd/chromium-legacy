@@ -56,6 +56,10 @@ source_set("browser_tests") {
     "web_app_uninstall_browsertest.cc",
   ]
 
+  if (is_chromeos) {
+    sources += [ "sub_apps_admin_policy_browsertest.cc" ]
+  }
+
   if (!is_chromeos_lacros) {
     sources += [
       # Tests are not valid on Lacros as web apps are only enabled in the main
@@ -96,6 +100,7 @@ source_set("browser_tests") {
     "//chrome/test:test_support_ui",
     "//components/embedder_support",
     "//components/metrics/structured:structured_events",
+    "//components/metrics/structured:test_support",
     "//components/page_load_metrics/browser:test_support",
     "//components/services/app_service",
     "//components/site_engagement/content",
@@ -105,6 +110,7 @@ source_set("browser_tests") {
 
   if (is_chromeos_ash) {
     deps += [
+      "//chrome/browser/ash",
       "//chrome/browser/ash:test_support",
       "//chrome/browser/ash/system_web_apps/test_support",
       "//chrome/browser/ui/ash/system_web_apps",

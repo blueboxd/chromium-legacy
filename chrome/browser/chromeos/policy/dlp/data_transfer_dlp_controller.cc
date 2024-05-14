@@ -239,10 +239,10 @@ bool DataTransferDlpController::IsClipboardReadAllowed(
   // data.
   base::optional_ref<const ui::DataTransferEndpoint> source =
       data_src.has_value() && !data_src->off_the_record() ? data_src
-                                                          : absl::nullopt;
+                                                          : std::nullopt;
   base::optional_ref<const ui::DataTransferEndpoint> destination =
       data_dst.has_value() && !data_dst->off_the_record() ? data_dst
-                                                          : absl::nullopt;
+                                                          : std::nullopt;
 
   std::string src_pattern;
   std::string dst_pattern;
@@ -321,10 +321,10 @@ void DataTransferDlpController::PasteIfAllowed(
   // data.
   base::optional_ref<const ui::DataTransferEndpoint> source =
       data_src.has_value() && !data_src->off_the_record() ? data_src
-                                                          : absl::nullopt;
+                                                          : std::nullopt;
   base::optional_ref<const ui::DataTransferEndpoint> destination =
       data_dst.has_value() && !data_dst->off_the_record() ? data_dst
-                                                          : absl::nullopt;
+                                                          : std::nullopt;
 
   if (absl::holds_alternative<std::vector<base::FilePath>>(pasted_content) &&
       !IsFilesApp(destination)) {
@@ -368,10 +368,11 @@ void DataTransferDlpController::DropIfAllowed(
   if (drag_data->HasFile() && !IsFilesApp(destination)) {
     auto* files_controller = dlp_rules_manager_->GetDlpFilesController();
     if (files_controller) {
-      std::vector<ui::FileInfo> dropped_files;
-      drag_data->GetFilenames(&dropped_files);
+      std::optional<std::vector<ui::FileInfo>> dropped_files =
+          drag_data->GetFilenames();
       files_controller->CheckIfPasteOrDropIsAllowed(
-          GetFilePathsFromFileInfos(dropped_files), destination.as_ptr(),
+          GetFilePathsFromFileInfos(dropped_files.value()),
+          destination.as_ptr(),
           base::BindOnce(
               [](base::OnceClosure drop_cb, bool is_allowed) {
                 if (is_allowed) {

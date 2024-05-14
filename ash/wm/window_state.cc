@@ -5,6 +5,7 @@
 #include "ash/wm/window_state.h"
 
 #include <absl/cleanup/cleanup.h>
+
 #include <optional>
 #include <utility>
 
@@ -43,6 +44,7 @@
 #include "base/containers/fixed_flat_map.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/types/cxx23_to_underlying.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
 #include "chromeos/ui/frame/frame_utils.h"
@@ -211,15 +213,6 @@ WMEventType WMEventTypeFromShowState(ui::WindowShowState requested_show_state) {
   return WM_EVENT_NORMAL;
 }
 
-// Returns true if the split view divider exits which should be taken into
-// consideration when calculating the snap ratio.
-bool ShouldConsiderDivider(aura::Window* window) {
-  SplitViewController* split_view_controller =
-      SplitViewController::Get(window->GetRootWindow());
-  return split_view_controller->InSplitViewMode() &&
-         split_view_controller->split_view_divider()->divider_widget();
-}
-
 // Returns the snap ratio for the given `window` and `snap_event`.
 // - In tablet mode, window will snap to the prefixed snap ratios and some
 // adjustments will be made to account for window minimum size if needed. See
@@ -255,10 +248,10 @@ float AdjustCurrentSnapRatio(aura::Window* window,
       ShouldConsiderDivider(window) ? kSplitviewDividerShortSideLength / 2 : 0;
   if (IsLayoutHorizontal(window)) {
     return static_cast<float>(target_bounds.width() + divider_delta) /
-           static_cast<float>(maximized_bounds.width());
+           maximized_bounds.width();
   }
   return static_cast<float>(target_bounds.height() + divider_delta) /
-         static_cast<float>(maximized_bounds.height());
+         maximized_bounds.height();
 }
 
 // Move all transient children to |dst_root|, including the ones in the child
@@ -750,14 +743,6 @@ std::unique_ptr<PresentationTimeRecorder> WindowState::OnDragStarted(
     int window_component) {
   DCHECK(drag_details_);
 
-  SplitViewController* split_view_controller(
-      SplitViewController::Get(Shell::GetPrimaryRootWindow()));
-  DCHECK(split_view_controller);
-
-  if (split_view_controller->IsWindowInSplitView(window_)) {
-    split_view_controller->MaybeDetachWindow(window_);
-  }
-
   if (delegate_) {
     return delegate_->OnDragStarted(window_component);
   }
@@ -1106,6 +1091,9 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds,
                                       *float_state);
     return;
   }
+
+  SCOPED_CRASH_KEY_NUMBER("333095196", "state_type",
+                          base::to_underlying(GetStateType()));
 
   CrossFadeAnimation(window_, std::move(old_layer_owner));
 }

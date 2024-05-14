@@ -415,10 +415,11 @@ TEST_P(WaylandDataDragControllerTest, ReceiveDrag) {
 
   ASSERT_EQ(drag_controller(), data_device()->drag_delegate_);
 
-  std::u16string str16;
   EXPECT_TRUE(drop_handler_->dropped_data()->HasString());
-  EXPECT_TRUE(drop_handler_->dropped_data()->GetString(&str16));
-  EXPECT_EQ(kSampleTextForDragAndDrop16, str16);
+  std::optional<std::u16string> result =
+      drop_handler_->dropped_data()->GetString();
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ(kSampleTextForDragAndDrop16, result.value());
 
   // In 2x window scale, we expect received coordinates still be in DIP.
   EXPECT_CALL(*drop_handler_,
@@ -608,11 +609,13 @@ TEST_P(WaylandDataDragControllerTest, ValidateDroppedUriList) {
       EXPECT_FALSE(drop_handler_->dropped_data()->HasFile());
     } else {
       EXPECT_TRUE(drop_handler_->dropped_data()->HasFile());
-      std::vector<FileInfo> filenames;
-      EXPECT_TRUE(drop_handler_->dropped_data()->GetFilenames(&filenames));
-      EXPECT_EQ(filenames.size(), kCase.expected_uris.size());
-      for (const auto& filename : filenames)
+      std::optional<std::vector<FileInfo>> filenames =
+          drop_handler_->dropped_data()->GetFilenames();
+      ASSERT_TRUE(filenames.has_value());
+      EXPECT_EQ(filenames->size(), kCase.expected_uris.size());
+      for (const auto& filename : filenames.value()) {
         EXPECT_EQ(kCase.expected_uris.count(filename.path.AsUTF8Unsafe()), 1U);
+      }
     }
 
     EXPECT_CALL(*drop_handler_, OnDragLeave()).Times(AtMost(1));
@@ -673,12 +676,11 @@ TEST_P(WaylandDataDragControllerTest, ValidateDroppedXMozUrl) {
       EXPECT_FALSE(dropped_data->HasURL(kFilenameToURLPolicy));
     } else {
       EXPECT_TRUE(dropped_data->HasURL(kFilenameToURLPolicy));
-      GURL url;
-      std::u16string title;
-      EXPECT_TRUE(
-          dropped_data->GetURLAndTitle(kFilenameToURLPolicy, &url, &title));
-      EXPECT_EQ(url.spec(), kCase.expected_url);
-      EXPECT_EQ(title, kCase.expected_title);
+      std::optional<ui::OSExchangeData::UrlInfo> url_info =
+          dropped_data->GetURLAndTitle(kFilenameToURLPolicy);
+      EXPECT_TRUE(url_info.has_value());
+      EXPECT_EQ(url_info->url.spec(), kCase.expected_url);
+      EXPECT_EQ(url_info->title, kCase.expected_title);
     }
 
     EXPECT_CALL(*drop_handler_, OnDragLeave()).Times(AtMost(1));
@@ -974,11 +976,10 @@ TEST_P(WaylandDataDragControllerTest, AsyncNoopStartDrag) {
   SendPointerButton(window_.get(), &delegate_, BTN_LEFT, /*pressed=*/false);
 
   // Attempt to start drag session and ensure it fails.
-  bool result_1 = window_->StartDrag(
+  ASSERT_FALSE(window_->StartDrag(
       os_exchange_data, DragDropTypes::DRAG_COPY, DragEventSource::kMouse,
       /*cursor=*/{},
-      /*can_grab_pointer=*/true, drag_finished_callback_->callback(), nullptr);
-  EXPECT_FALSE(result_1);
+      /*can_grab_pointer=*/true, drag_finished_callback_->callback(), nullptr));
   Mock::VerifyAndClearExpectations(drop_handler_.get());
   EXPECT_FALSE(drag_controller()->origin_window_);
   EXPECT_FALSE(drag_controller()->nested_dispatcher_);
@@ -987,6 +988,11 @@ TEST_P(WaylandDataDragControllerTest, AsyncNoopStartDrag) {
     // Drag mustn't be started. Availability of data_source can be used to
     // determine if the client has initiated a drag session.
     ASSERT_FALSE(server->data_device_manager()->data_source());
+
+    ASSERT_TRUE(server->data_device_manager()->data_device());
+    server->data_device_manager()
+        ->data_device()
+        ->disable_auto_send_start_drag_events();
   });
 
   // 2. Send wl_pointer.button release just after drag start.
@@ -999,22 +1005,55 @@ TEST_P(WaylandDataDragControllerTest, AsyncNoopStartDrag) {
     EXPECT_CALL(*drag_finished_callback_,
                 OnDragFinished(Eq(DragOperation::kNone)))
         .Times(1);
+
     SendPointerButton(window_.get(), &delegate_, BTN_LEFT, /*pressed=*/false);
   }));
 
-  bool result_2 = window_->StartDrag(
+  bool result = window_->StartDrag(
       os_exchange_data, DragDropTypes::DRAG_COPY, DragEventSource::kMouse,
       /*cursor=*/{},
       /*can_grab_pointer=*/true, drag_finished_callback_->callback(), nullptr);
+
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
     // Drag must be started. Availability of data_source can be used to
     // determine if the client has initiated a drag session.
     ASSERT_TRUE(server->data_device_manager()->data_source());
   });
+
   // TODO(crbug.com/1022722): Double-check if this should return false instead.
-  EXPECT_TRUE(result_2);
+  EXPECT_TRUE(result);
+
   Mock::VerifyAndClearExpectations(drop_handler_.get());
   Mock::VerifyAndClearExpectations(drag_finished_callback_.get());
+  EXPECT_FALSE(drag_controller()->origin_window_);
+  EXPECT_FALSE(drag_controller()->nested_dispatcher_);
+}
+
+TEST_P(WaylandDataDragControllerTest, SuppressPointerButtonReleasesAfterEnter) {
+  OSExchangeData os_exchange_data;
+  os_exchange_data.SetString(sample_text_for_dnd());
+
+  // Press left pointer button and request to start a drag session.
+  FocusAndPressLeftPointerButton(window_.get(), &delegate_);
+  drag_controller()->StartSession(os_exchange_data, DragDropTypes::DRAG_COPY,
+                                  DragEventSource::kMouse);
+
+  // Ensure start_drag request is processed at compositor side and a first enter
+  // is received by the client. From that point onwards, any pointer button
+  // event must be no-op.
+  wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
+  ASSERT_TRUE(drag_controller()->has_received_enter_);
+
+  // Emulates a spurious pointer button release and ensure it is no-op.
+  EXPECT_CALL(*drop_handler_, OnDragLeave).Times(0);
+  SendPointerButton(window_.get(), &delegate_, BTN_LEFT, /*pressed=*/false);
+  Mock::VerifyAndClearExpectations(drop_handler_.get());
+  Mock::VerifyAndClearExpectations(drag_finished_callback_.get());
+  EXPECT_TRUE(drag_controller()->data_source_);
+
+  // Ok, we're done.
+  SendDndDrop();
+  EXPECT_FALSE(drag_controller()->data_source_);
   EXPECT_FALSE(drag_controller()->origin_window_);
   EXPECT_FALSE(drag_controller()->nested_dispatcher_);
 }

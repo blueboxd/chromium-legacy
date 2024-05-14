@@ -44,6 +44,7 @@
 #include "build/build_config.h"
 #include "sql/database_memory_dump_provider.h"
 #include "sql/initialization.h"
+#include "sql/internal_api_token.h"
 #include "sql/meta_table.h"
 #include "sql/sqlite_result_code.h"
 #include "sql/sqlite_result_code_values.h"
@@ -219,6 +220,11 @@ base::FilePath Database::SharedMemoryFilePath(const base::FilePath& db_path) {
   return base::FilePath(db_path.value() + FILE_PATH_LITERAL("-shm"));
 }
 
+base::WeakPtr<Database> Database::GetWeakPtr(InternalApiToken) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return weak_factory_.GetWeakPtr();
+}
+
 Database::StatementRef::StatementRef(Database* database,
                                      sqlite3_stmt* stmt,
                                      bool was_valid)
@@ -325,7 +331,7 @@ bool Database::Open(const base::FilePath& path) {
   DCHECK_NE(path_string, kSqliteOpenInMemoryPath)
       << "Path conflicts with SQLite magic identifier";
 
-  if (OpenInternal(path_string, OpenMode::kNone)) {
+  if (OpenInternal(path_string)) {
     return true;
   }
   // OpenInternal() may have run the error callback before returning false. If
@@ -333,7 +339,7 @@ bool Database::Open(const base::FilePath& path) {
   // razed, so a second attempt may succeed.
   if (poisoned_) {
     Close();
-    return OpenInternal(path_string, OpenMode::kNone);
+    return OpenInternal(path_string);
   }
   // Otherwise, do not attempt to reopen.
   return false;
@@ -345,18 +351,19 @@ bool Database::OpenInMemory() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   in_memory_ = true;
-  return OpenInternal(kSqliteOpenInMemoryPath, OpenMode::kInMemory);
+  return OpenInternal(kSqliteOpenInMemoryPath);
 }
 
-bool Database::OpenTemporary(base::PassKey<Recovery>) {
-  TRACE_EVENT0("sql", "Database::OpenTemporary");
-
+void Database::DetachFromSequence() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return OpenInternal(std::string(), OpenMode::kTemporary);
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 void Database::CloseInternal(bool forced) {
   TRACE_EVENT0("sql", "Database::CloseInternal");
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // TODO(shess): Calling "PRAGMA journal_mode = DELETE" at this point
   // will delete the -journal file.  For ChromiumOS or other more
   // embedded systems, this is probably not appropriate, whereas on
@@ -411,6 +418,12 @@ void Database::CloseInternal(bool forced) {
     DCHECK_EQ(sqlite_result_code, SqliteResultCode::kOk)
         << "sqlite3_close() failed in an unexpected way: "
         << sqlite3_errmsg(raw_db);
+
+    // Closing a SQLite database connection implicitly rolls back transactions.
+    // (See https://www.sqlite.org/c3ref/close.html for details.) Callers need
+    // not call `RollbackAllTransactions()`, but we still must account for the
+    // implicit rollback in our internal bookkeeping.
+    transaction_nesting_ = 0;
   }
 }
 
@@ -452,12 +465,9 @@ void Database::Preload() {
   // SQLite block on reading from disk has a high impact on Chrome startup cost
   // for the databases that are on the critical path to startup. So, the limit
   // must exceed the expected sizes of databases on the critical path.
-  //
-  // On Windows 7, base::PreReadFile() falls back to a synchronous read, and
-  // blocks until the entire file is read into memory. This is a minor factor at
-  // this point, because Chrome has very limited support for Windows 7.
   constexpr int kPreReadSize = 128 * 1024 * 1024;  // 128 MB
-  base::PreReadFile(DbPath(), /*is_executable=*/false, kPreReadSize);
+  base::PreReadFile(DbPath(), /*is_executable=*/false, /*sequential=*/false,
+                    kPreReadSize);
 }
 
 // SQLite keeps unused pages associated with a database in a cache.  It asks
@@ -971,6 +981,8 @@ void Database::TrimMemory() {
 bool Database::Raze() {
   TRACE_EVENT0("sql", "Database::Raze");
 
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   std::optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
@@ -1131,7 +1143,6 @@ void Database::Poison() {
     return;
   }
 
-  RollbackAllTransactions();
   CloseInternal(true);
 
   // Mark the database so that future API calls fail appropriately,
@@ -1275,8 +1286,7 @@ void Database::RollbackAllTransactions() {
 }
 
 bool Database::AttachDatabase(const base::FilePath& other_db_path,
-                              base::StringPiece attachment_point,
-                              InternalApiToken) {
+                              base::StringPiece attachment_point) {
   TRACE_EVENT0("sql", "Database::AttachDatabase");
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1292,8 +1302,7 @@ bool Database::AttachDatabase(const base::FilePath& other_db_path,
   return statement.Run();
 }
 
-bool Database::DetachDatabase(base::StringPiece attachment_point,
-                              InternalApiToken) {
+bool Database::DetachDatabase(base::StringPiece attachment_point) {
   TRACE_EVENT0("sql", "Database::DetachDatabase");
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1780,21 +1789,9 @@ const char* Database::GetErrorMessage() const {
   return sqlite3_errmsg(db_);
 }
 
-bool Database::OpenInternal(const std::string& db_file_path,
-                            Database::OpenMode mode) {
+bool Database::OpenInternal(const std::string& db_file_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT1("sql", "Database::OpenInternal", "path", db_file_path);
-
-  DCHECK(mode != OpenMode::kTemporary || db_file_path.empty())
-      << "Temporary databases should be open with an empty file path";
-
-  if (mode == OpenMode::kInMemory) {
-    DCHECK_EQ(db_file_path, kSqliteOpenInMemoryPath)
-        << "In-memory databases should be open with the magic :memory: path";
-  } else {
-    DCHECK_NE(db_file_path, kSqliteOpenInMemoryPath)
-        << "Database file path conflicts with SQLite magic identifier";
-  }
 
   if (is_open()) {
     DLOG(FATAL) << "sql::Database is already open.";
@@ -1827,7 +1824,8 @@ bool Database::OpenInternal(const std::string& db_file_path,
   std::string uri_file_path = db_file_path;
   if (options_.exclusive_database_file_lock) {
 #if BUILDFLAG(IS_WIN)
-    if (mode == OpenMode::kNone) {
+    const bool in_memory = db_file_path == kSqliteOpenInMemoryPath;
+    if (!in_memory) {
       // Do not allow query injection.
       if (base::Contains(db_file_path, '?')) {
         return false;

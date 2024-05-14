@@ -5,8 +5,11 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "third_party/skia/include/core/SkRegion.h"
 
 namespace extensions {
 

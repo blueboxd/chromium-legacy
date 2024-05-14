@@ -37,6 +37,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/paint/skia_paint_canvas.h"
+#include "components/custom_handlers/protocol_handler_registry.h"
+#include "components/custom_handlers/simple_protocol_handler_registry_factory.h"
 #include "content/browser/aggregation_service/aggregation_service.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/renderer_host/frame_tree.h"
@@ -719,7 +721,8 @@ void WebTestControlHost::ResetBrowserAfterWebTest() {
   pixel_dump_.reset();
   actual_pixel_hash_ = "";
   waiting_for_pixel_results_ = false;
-  composite_all_frames_node_queue_ = std::queue<Node*>();
+  composite_all_frames_node_queue_ =
+      std::queue<raw_ptr<Node, CtnExperimental>>();
   composite_all_frames_node_storage_.clear();
   next_pointer_lock_action_ = NextPointerLockAction::kWillSucceed;
 
@@ -727,10 +730,12 @@ void WebTestControlHost::ResetBrowserAfterWebTest() {
   SetBluetoothManualChooser(false);
   SetDatabaseQuota(content::kDefaultDatabaseQuota);
 
+  ShellBrowserContext* browser_context =
+      ShellContentBrowserClient::Get()->browser_context();
+  browser_context->ResetFederatedPermissionContext();
+
   // Delete all cookies, Attribution Reporting data and Aggregation service data
   {
-    BrowserContext* browser_context =
-        ShellContentBrowserClient::Get()->browser_context();
     StoragePartition* storage_partition =
         browser_context->GetDefaultStoragePartition();
     storage_partition->GetCookieManagerForBrowserProcess()->DeleteCookies(
@@ -1194,8 +1199,11 @@ void WebTestControlHost::HandleNewRenderFrameHost(RenderFrameHost* frame) {
   if (test_phase_ != DURING_TEST)
     return;
 
+  // Consider a prerender as main window as well since it may be activated to
+  // become the main window.
   const bool main_window =
-      FrameTreeNode::From(frame)->frame_tree().is_primary() &&
+      (FrameTreeNode::From(frame)->frame_tree().is_primary() ||
+       FrameTreeNode::From(frame)->frame_tree().is_prerendering()) &&
       WebContents::FromRenderFrameHost(frame) == main_window_->web_contents();
 
   RenderProcessHost* process_host = frame->GetProcess();
@@ -1829,6 +1837,30 @@ void WebTestControlHost::SetLCPPNavigationHint(
   lcpp_hint_ = *hint.get();
 }
 
+void WebTestControlHost::SetRegisterProtocolHandlerMode(
+    mojom::WebTestControlHost::AutoResponseMode mode) {
+  custom_handlers::ProtocolHandlerRegistry* registry =
+      custom_handlers::SimpleProtocolHandlerRegistryFactory::
+          GetForBrowserContext(web_contents()->GetBrowserContext(), true);
+  CHECK(registry);
+
+  switch (mode) {
+    case WebTestControlHost::AutoResponseMode::kNone:
+      registry->SetRphRegistrationMode(
+          custom_handlers::RphRegistrationMode::kNone);
+      return;
+    case WebTestControlHost::AutoResponseMode::kAutoAccept:
+      registry->SetRphRegistrationMode(
+          custom_handlers::RphRegistrationMode::kAutoAccept);
+      return;
+    case WebTestControlHost::AutoResponseMode::kAutoReject:
+      registry->SetRphRegistrationMode(
+          custom_handlers::RphRegistrationMode::kAutoReject);
+      return;
+  }
+  NOTREACHED_NORETURN();
+}
+
 void WebTestControlHost::GoToOffset(int offset) {
   main_window_->GoBackOrForward(offset);
 }
@@ -1847,6 +1879,25 @@ void WebTestControlHost::SetMainWindowHidden(bool hidden) {
     main_window_->web_contents()->WasHidden();
   else
     main_window_->web_contents()->WasShown();
+}
+
+void WebTestControlHost::SetFrameWindowHidden(
+    const blink::LocalFrameToken& frame_token,
+    bool hidden) {
+  if (hidden) {
+    GetWebContentsFromCurrentContext(frame_token)->WasHidden();
+  } else {
+    GetWebContentsFromCurrentContext(frame_token)->WasShown();
+  }
+}
+
+WebContents* WebTestControlHost::GetWebContentsFromCurrentContext(
+    const blink::LocalFrameToken& frame_token) {
+  const int render_process_id = receiver_bindings_.current_context();
+  auto* rfh =
+      RenderFrameHostImpl::FromFrameToken(render_process_id, frame_token);
+  CHECK(rfh);
+  return WebContents::FromRenderFrameHost(rfh);
 }
 
 void WebTestControlHost::CheckForLeakedWindows() {

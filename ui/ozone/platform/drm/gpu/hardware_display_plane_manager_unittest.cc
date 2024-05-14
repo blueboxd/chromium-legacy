@@ -17,6 +17,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/types/display_color_management.h"
 #include "ui/gfx/gpu_fence.h"
@@ -74,6 +75,18 @@ class HardwareDisplayPlaneManagerTest
   void PerformFailingPageFlip(size_t crtc_idx,
                               HardwareDisplayPlaneList* state,
                               DrmOverlayPlaneList& assigns);
+
+  uint32_t AddConnector(MockDrmDevice::MockDrmState& drm_state,
+                        uint32_t possible_crtcs) {
+    MockDrmDevice::EncoderProperties& encoder = drm_state.AddEncoder();
+    encoder.possible_crtcs = possible_crtcs;
+    const uint32_t encoder_id = encoder.id;
+
+    MockDrmDevice::ConnectorProperties& connector = drm_state.AddConnector();
+    connector.connection = true;
+    connector.encoders = std::vector<uint32_t>{encoder_id};
+    return connector.id;
+  }
 
   void SetUp() override;
 
@@ -1044,9 +1057,47 @@ TEST_P(HardwareDisplayPlaneManagerTest, ColorManagement_Temperature) {
     PerformPageFlip(/*crtc_idx=*/0, &state);
     EXPECT_EQ(2, fake_drm_->get_commit_count());
     EXPECT_NE(0u, GetCrtcPropertyValue(fake_drm_->crtc_property(0).id, "CTM"));
-    EXPECT_NE(
+    EXPECT_EQ(
         0u, GetCrtcPropertyValue(fake_drm_->crtc_property(0).id, "GAMMA_LUT"));
     EXPECT_EQ(0u, GetCrtcPropertyValue(fake_drm_->crtc_property(0).id,
+                                       "DEGAMMA_LUT"));
+  } else {
+    EXPECT_EQ(3, fake_drm_->get_set_object_property_count());
+  }
+}
+
+TEST_P(HardwareDisplayPlaneManagerTest, ColorManagement_Profile) {
+  auto drm_state = MockDrmDevice::MockDrmState::CreateStateWithDefaultObjects(
+      /*crtc_count=*/1, /*planes_per_crtc=*/1);
+
+  // This test has full CTM, DEGAMMA, and GAMMA.
+  drm_state.crtc_properties[0].properties.push_back(
+      {.id = kCtmPropId, .value = 0});
+  drm_state.crtc_properties[0].properties.push_back(
+      {.id = kDegammaLutSizePropId, .value = 1});
+  drm_state.crtc_properties[0].properties.push_back(
+      {.id = kDegammaLutPropId, .value = 0});
+  drm_state.crtc_properties[0].properties.push_back(
+      {.id = kGammaLutSizePropId, .value = 1});
+  drm_state.crtc_properties[0].properties.push_back(
+      {.id = kGammaLutPropId, .value = 0});
+
+  // Color profile change will set all properties.
+  fake_drm_->InitializeState(drm_state, use_atomic_);
+  display::ColorCalibration calibration;
+  calibration.srgb_to_linear = display::GammaCurve::MakeGamma(2.2f);
+  calibration.linear_to_device = display::GammaCurve::MakeGamma(1.f / 2.2);
+  fake_drm_->plane_manager()->SetColorCalibration(
+      fake_drm_->crtc_property(0).id, calibration);
+
+  if (use_atomic_) {
+    HardwareDisplayPlaneList state;
+    PerformPageFlip(/*crtc_idx=*/0, &state);
+    EXPECT_EQ(2, fake_drm_->get_commit_count());
+    EXPECT_NE(0u, GetCrtcPropertyValue(fake_drm_->crtc_property(0).id, "CTM"));
+    EXPECT_NE(
+        0u, GetCrtcPropertyValue(fake_drm_->crtc_property(0).id, "GAMMA_LUT"));
+    EXPECT_NE(0u, GetCrtcPropertyValue(fake_drm_->crtc_property(0).id,
                                        "DEGAMMA_LUT"));
   } else {
     EXPECT_EQ(3, fake_drm_->get_set_object_property_count());
@@ -1485,6 +1536,58 @@ TEST_F(HardwareDisplayPlaneManagerPlanesReadyTest,
   task_env_.RunUntilIdle();
 
   EXPECT_TRUE(callback_called);
+}
+
+TEST_P(HardwareDisplayPlaneManagerTest, GetPossibleCrtcsBitmaskForConnector) {
+  auto drm_state = MockDrmDevice::MockDrmState::CreateStateWithAllProperties();
+  drm_state.AddCrtc();
+  drm_state.AddCrtc();
+  drm_state.AddCrtc();
+
+  const uint32_t connector_1_id =
+      AddConnector(drm_state, /*possible_crtcs=*/0b101u);
+  const uint32_t connector_2_id =
+      AddConnector(drm_state, /*possible_crtcs=*/0b110u);
+  const uint32_t connector_3_id =
+      AddConnector(drm_state, /*possible_crtcs=*/0b011u);
+
+  fake_drm_->InitializeState(drm_state, use_atomic_);
+
+  fake_drm_->plane_manager()->ResetConnectorsCacheAndGetValidIds(
+      fake_drm_->GetResources());
+
+  EXPECT_EQ(fake_drm_->plane_manager()->GetPossibleCrtcsBitmaskForConnector(
+                connector_1_id),
+            0b101u);
+  EXPECT_EQ(fake_drm_->plane_manager()->GetPossibleCrtcsBitmaskForConnector(
+                connector_2_id),
+            0b110u);
+  EXPECT_EQ(fake_drm_->plane_manager()->GetPossibleCrtcsBitmaskForConnector(
+                connector_3_id),
+            0b011u);
+}
+
+TEST_P(HardwareDisplayPlaneManagerTest,
+       GetPossibleCrtcsBitmaskForConnectorInvalidConnector) {
+  auto drm_state = MockDrmDevice::MockDrmState::CreateStateWithAllProperties();
+  drm_state.AddCrtc();
+  MockDrmDevice::EncoderProperties& encoder = drm_state.AddEncoder();
+  encoder.possible_crtcs = 0b1;
+  const uint32_t encoder_id = encoder.id;
+
+  MockDrmDevice::ConnectorProperties& connector = drm_state.AddConnector();
+  connector.connection = true;
+  connector.encoders = std::vector<uint32_t>{encoder_id};
+  const uint32_t connector_id = connector.id;
+
+  fake_drm_->InitializeState(drm_state, use_atomic_);
+
+  fake_drm_->plane_manager()->ResetConnectorsCacheAndGetValidIds(
+      fake_drm_->GetResources());
+
+  EXPECT_EQ(fake_drm_->plane_manager()->GetPossibleCrtcsBitmaskForConnector(
+                connector_id + 1),
+            0u);
 }
 
 TEST_P(HardwareDisplayPlaneManagerAtomicTest, OriginalModifiersSupportOnly) {

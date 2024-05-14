@@ -10,9 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/overview/overview_observer.h"
-#include "ash/wm/wm_metrics.h"
 #include "base/containers/flat_map.h"
-#include "base/observer_list.h"
 #include "ui/display/display_observer.h"
 
 namespace aura {
@@ -33,15 +31,6 @@ class SnapGroup;
 class ASH_EXPORT SnapGroupController : public OverviewObserver,
                                        public display::DisplayObserver {
  public:
-  class Observer : public base::CheckedObserver {
-   public:
-    // Called to notify with the creation of snap group.
-    virtual void OnSnapGroupCreated() = 0;
-
-    // Called to notify the removal of `snap_group`.
-    virtual void OnSnapGroupRemoved(SnapGroup* snap_group) = 0;
-  };
-
   using SnapGroups = std::vector<std::unique_ptr<SnapGroup>>;
   using WindowToSnapGroupMap = base::flat_map<aura::Window*, SnapGroup*>;
 
@@ -82,9 +71,6 @@ class ASH_EXPORT SnapGroupController : public OverviewObserver,
   // clamshell.
   bool CanEnterOverview() const;
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-
   // Minimizes the most recently used and unminimized snap groups.
   void MinimizeTopMostSnapGroup();
 
@@ -97,6 +83,7 @@ class ASH_EXPORT SnapGroupController : public OverviewObserver,
   void RestoreTopmostSnapGroup();
 
   // OverviewObserver:
+  void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
 
   // display::DisplayObserver:
@@ -126,6 +113,9 @@ class ASH_EXPORT SnapGroupController : public OverviewObserver,
   // Restore the snap state of the windows in the given `snap_group`.
   void RestoreSnapState(SnapGroup* snap_group);
 
+  // Called when the display tablet state is changed.
+  void OnTabletModeStarted();
+
   // Contains all the `SnapGroup`(s), we will have one `SnapGroup` globally for
   // the first iteration but will have multiple in the future iteration.
   SnapGroups snap_groups_;
@@ -134,8 +124,6 @@ class ASH_EXPORT SnapGroupController : public OverviewObserver,
   // `SnapGroup` with the `aura::Window*` and can also be used to decide if a
   // window is in a `SnapGroup` or not.
   WindowToSnapGroupMap window_to_snap_group_map_;
-
-  base::ObserverList<Observer> observers_;
 
   display::ScopedDisplayObserver display_observer_{this};
 

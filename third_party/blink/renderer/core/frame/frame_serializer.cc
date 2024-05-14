@@ -390,7 +390,7 @@ void FrameSerializer::SerializeCSSStyleSheet(CSSStyleSheet& style_sheet,
     css_text.Append("\";\n\n");
 
     for (unsigned i = 0; i < style_sheet.length(); ++i) {
-      CSSRule* rule = style_sheet.item(i);
+      CSSRule* rule = style_sheet.ItemInternal(i);
       String item_text = rule->cssText();
       if (!item_text.empty()) {
         css_text.Append(item_text);
@@ -412,7 +412,7 @@ void FrameSerializer::SerializeCSSStyleSheet(CSSStyleSheet& style_sheet,
   // Sub resources need to be serialized even if the CSS definition doesn't
   // need to be.
   for (unsigned i = 0; i < style_sheet.length(); ++i)
-    SerializeCSSRule(style_sheet.item(i));
+    SerializeCSSRule(style_sheet.ItemInternal(i));
 }
 
 void FrameSerializer::SerializeCSSRule(CSSRule* rule) {
@@ -470,9 +470,8 @@ void FrameSerializer::SerializeCSSRule(CSSRule* rule) {
     case CSSRule::kNamespaceRule:
     case CSSRule::kViewportRule:
     case CSSRule::kLayerStatementRule:
-    case CSSRule::kPositionFallbackRule:
-    case CSSRule::kTryRule:
     case CSSRule::kViewTransitionRule:
+    case CSSRule::kPositionTryRule:
       break;
   }
 }

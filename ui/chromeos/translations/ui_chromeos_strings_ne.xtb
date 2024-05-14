@@ -9,7 +9,7 @@
 <translation id="1056898198331236512">चेतावनी</translation>
 <translation id="1060368002126861100"><ph name="APP_NAME" /> मार्फत फाइलहरू खोल्न सर्वप्रथम ती फाइलहरू सारेर 'Windows फाइलहरू' फोल्डरमा लैजानुहोस्।</translation>
 <translation id="1062407476771304334">बदल्नुहोस्</translation>
-<translation id="1119383441774809183">टेक्स्ट म्यासेजहरू देखाइयोस्</translation>
+<translation id="1119383441774809183">टेक्स्ट म्यासेजहरू देखाउनुहोस्</translation>
 <translation id="1119447706177454957">आन्तरिक त्रुटि</translation>
 <translation id="1120073797882051782">हंगुल रोमाजा</translation>
 <translation id="112387589102719461">अङ्ग्रेजी (सं. रा. अमेरिकी) प्रोग्रामर ड्भोराक किबोर्ड</translation>
@@ -377,7 +377,7 @@
 <translation id="3999574733850440202">हालसालै खोलिएका Microsoft फाइलहरू सारेर OneDrive मा लगिएका छन्</translation>
 <translation id="4002066346123236978">शीर्षक</translation>
 <translation id="4017788180641807848">अङ्ग्रेजी (सं. रा. अमेरिकी) वर्कमेन किबोर्ड</translation>
-<translation id="4019998208269143058">"क्विक फाइलहरू" मा पिन गरियोस्</translation>
+<translation id="4019998208269143058">"क्विक फाइलहरू" मा पिन गर्नुहोस्</translation>
 <translation id="4040753847560036377">PUK मिलेन</translation>
 <translation id="4057991113334098539">सक्रिय गरिँदै छ…</translation>
 <translation id="4092890906744441904">आइरिस</translation>
@@ -693,7 +693,7 @@
 <translation id="6320212353742551423"><ph name="ARCHIVE_TYPE" /> अभिलेख</translation>
 <translation id="6321303798550928047">हात हल्लाउँदै</translation>
 <translation id="6327785803543103246">वेब प्रोक्सीको स्वत:खोज</translation>
-<translation id="6337014272874260727">"क्विक फाइलहरू" बाट अनपिन गरियोस्</translation>
+<translation id="6337014272874260727">"क्विक फाइलहरू" बाट अनपिन गर्नुहोस्</translation>
 <translation id="6339145975392024142">अमेरिकी अन्तर्राष्ट्रिय (PC)</translation>
 <translation id="6356685157277930264">फाइलहरूसम्बन्धी प्रतिक्रिया दिने विन्डो</translation>
 <translation id="6358884629796491903">ड्रागन</translation>
@@ -852,6 +852,7 @@
 <translation id="7589661784326793847">केवल एक सेकेन्ड प्रतिक्षा गर्नुहोस्</translation>
 <translation id="7600126690270271294">सर्बियाली</translation>
 <translation id="7603724359189955920">ग्रिडहरू</translation>
+<translation id="7624010287655004652">अर्को मोबाइल सेवा प्रदायकले लक गरेको छ</translation>
 <translation id="7627790789328695202">ओहो, <ph name="FILE_NAME" /> पहिले नै विद्यमान छ। यसलाई अर्को नाम दिनुहोस् र पुन: प्रयास गर्नुहोस्।</translation>
 <translation id="7628656427739290098"><ph name="PERCENT" />% पूरा भयो।</translation>
 <translation id="7649070708921625228">मद्दत</translation>
@@ -1018,7 +1019,6 @@
 <translation id="8698877009525468705">यो गोप्य फाइल हो र एड्मिनले तोकेको नीतिअनुसार यसमाथि प्रतिबन्ध लगाइन सक्छ।</translation>
 <translation id="8712637175834984815">भयो</translation>
 <translation id="8713112442029511308">माल्टिज</translation>
-<translation id="8714138378966541668">प्रदायकले लक गरेको छ</translation>
 <translation id="8714406895390098252">साइकल</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> चयन गरियो।</translation>
 <translation id="872537912056138402">क्रोएसियाली</translation>

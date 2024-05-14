@@ -242,7 +242,7 @@ std::unique_ptr<Config> IosModuleRanker::GetConfig() {
   }
   bool serve_default_config = base::GetFieldTrialParamByFeatureAsBool(
       features::kSegmentationPlatformIosModuleRanker, kDefaultModelEnabledParam,
-      false);
+      true);
   auto config = std::make_unique<Config>();
   config->segmentation_key = kIosModuleRankerKey;
   config->segmentation_uma_name = kIosModuleRankerUmaName;
@@ -264,8 +264,7 @@ IosModuleRanker::GetModelConfig() {
   metadata.set_upload_tensors(true);
 
   // Set output config.
-  writer.AddOutputConfigForMultiClassClassifier(kIosModuleLabels.begin(),
-                                                kIosModuleLabels.size(),
+  writer.AddOutputConfigForMultiClassClassifier(kIosModuleLabels,
                                                 kIosModuleLabels.size(),
                                                 /*threshold=*/-99999.0);
   writer.AddPredictedResultTTLInOutputConfig(

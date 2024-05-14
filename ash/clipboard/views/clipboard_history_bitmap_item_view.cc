@@ -150,7 +150,7 @@ class FadeImageView : public views::ImageView,
   base::CallbackListSubscription display_image_updated_subscription_;
 };
 
-BEGIN_METADATA(FadeImageView, views::ImageView)
+BEGIN_METADATA(FadeImageView)
 END_METADATA
 
 }  // namespace
@@ -167,11 +167,8 @@ class ClipboardHistoryBitmapItemView::BitmapContentsView
       : container_(container) {
     views::Builder<views::View>(this)
         .SetLayoutManager(std::make_unique<views::FillLayout>())
-        .AddChild(
-            views::Builder<views::ImageView>(BuildImageView())
-                .CopyAddressTo(&image_view_)
-                .SetPreferredSize(gfx::Size(
-                    INT_MAX, ClipboardHistoryViews::kImageViewPreferredHeight)))
+        .AddChild(views::Builder<views::ImageView>(BuildImageView())
+                      .CopyAddressTo(&image_view_))
         .BuildChildren();
 
     if (chromeos::features::IsClipboardHistoryRefreshEnabled()) {
@@ -248,6 +245,10 @@ class ClipboardHistoryBitmapItemView::BitmapContentsView
         .detach();
   }
 
+  int GetHeightForWidth(int width) const override {
+    return ClipboardHistoryViews::kImageViewPreferredHeight;
+  }
+
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
     SetClipPath(GetClipPath());
     UpdateImageViewSize();
@@ -315,7 +316,7 @@ class ClipboardHistoryBitmapItemView::BitmapContentsView
   raw_ptr<views::ImageView> image_view_ = nullptr;
 };
 
-BEGIN_METADATA(ClipboardHistoryBitmapItemView, BitmapContentsView, ContentsView)
+BEGIN_METADATA(ClipboardHistoryBitmapItemView, BitmapContentsView)
 END_METADATA
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -327,6 +328,7 @@ ClipboardHistoryBitmapItemView::ClipboardHistoryBitmapItemView(
     views::MenuItemView* container)
     : ClipboardHistoryItemView(item_id, clipboard_history, container),
       data_format_(GetClipboardHistoryItem()->main_format()) {
+  SetID(clipboard_history_util::kBitmapItemView);
   switch (data_format_) {
     case ui::ClipboardInternalFormat::kHtml:
       SetAccessibleName(
@@ -348,7 +350,7 @@ ClipboardHistoryBitmapItemView::CreateContentsView() {
   return std::make_unique<BitmapContentsView>(this);
 }
 
-BEGIN_METADATA(ClipboardHistoryBitmapItemView, ClipboardHistoryItemView)
+BEGIN_METADATA(ClipboardHistoryBitmapItemView)
 END_METADATA
 
 }  // namespace ash

@@ -10,7 +10,6 @@ import '//resources/ash/common/cr_elements/cros_color_overrides.css.js';
 import '//resources/ash/common/cr_elements/cr_input/cr_input.js';
 import '//resources/js/action_link.js';
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
-import {GaiaDialog} from '../../components/gaia_dialog.js';
 import '../../components/oobe_icons.html.js';
 import '../../components/common_styles/oobe_common_styles.css.js';
 import '../../components/common_styles/oobe_dialog_host_styles.css.js';
@@ -19,8 +18,6 @@ import '../../components/dialogs/oobe_loading_dialog.js';
 import '../../components/buttons/oobe_back_button.js';
 import '../../components/buttons/oobe_next_button.js';
 import '../../components/buttons/oobe_text_button.js';
-import {OobeModalDialog} from '../../components/dialogs/oobe_modal_dialog.js';
-import {OfflineAdLogin} from '../common/offline_ad_login.js';
 
 import {Authenticator, AuthFlow, AuthMode, AuthParams} from '//oobe/gaia_auth_host/authenticator.js';
 import {assert} from '//resources/js/assert.js';
@@ -31,24 +28,23 @@ import {mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/p
 
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.js';
 import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.js';
-import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.js';
-import {OOBE_UI_STATE} from '../../components/display_manager_types.js';
+import {OobeI18nMixin, OobeI18nMixinInterface} from '../../components/mixins/oobe_i18n_mixin.js';
+import {OobeModalDialog} from '../../components/dialogs/oobe_modal_dialog.js';
+import {OobeUiState} from '../../components/display_manager_types.js';
+import {GaiaDialog} from '../../components/gaia_dialog.js';
 import {InjectedKeyboardUtils} from '../../components/keyboard_utils.js';
 import {globalOobeKeyboard, KEYBOARD_UTILS_FOR_INJECTION} from '../../components/keyboard_utils_oobe.js';
 import {OobeTypes} from '../../components/oobe_types.js';
 import {Oobe} from '../../cr_ui.js';
 import * as OobeDebugger from '../../debug/debug.js';
-import {invokePolymerMethod} from '../../display_manager.js';
-import type {ActiveDirectoryErrorState, JoinConfigType} from '../common/offline_ad_login.js';
-import {ADLoginStep} from '../common/offline_ad_login.js';
 
 import {getTemplate} from './enterprise_enrollment.html.js';
 
 const EnterpriseEnrollmentElementBase =
     mixinBehaviors(
-        [OobeI18nBehavior, LoginScreenBehavior, MultiStepBehavior],
-        PolymerElement) as {
-      new (): PolymerElement & OobeI18nBehaviorInterface &
+        [LoginScreenBehavior, MultiStepBehavior],
+        OobeI18nMixin(PolymerElement)) as {
+      new (): PolymerElement & OobeI18nMixinInterface &
           LoginScreenBehaviorInterface & MultiStepBehaviorInterface,
     };
 
@@ -69,21 +65,6 @@ interface EnterpriseEnrollmentScreenData {
   management_domain: string|undefined;
   email: string|undefined;
   webviewPartitionName: string|undefined;
-}
-
-declare global {
-  interface HTMLElementEventMap {
-    'authCompletedAd': CustomEvent<{
-      'distinguished_name': string,
-      'username': string,
-      'password': string,
-      'machine_name': string,
-      'encryption_types': string,
-    }>;
-    'unlockPasswordEntered': CustomEvent<{
-      'unlock_password': string,
-    }>;
-  }
 }
 
 export class EnterpriseEnrollmentElement extends
@@ -215,7 +196,7 @@ export class EnterpriseEnrollmentElement extends
         type: Boolean,
         value() {
           return loadTimeData.valueExists('deviceFlowType') &&
-              (loadTimeData.getString('deviceFlowType') == 'meet');
+              (loadTimeData.getString('deviceFlowType') === 'meet');
         },
         readOnly: true,
       },
@@ -253,8 +234,6 @@ export class EnterpriseEnrollmentElement extends
   override get EXTERNAL_API(): string[] {
     return [
       'doReload',
-      'setAdJoinConfiguration',
-      'setAdJoinParams',
       'setEnterpriseDomainInfo',
       'showAttributePromptStep',
       'showError',
@@ -277,13 +256,6 @@ export class EnterpriseEnrollmentElement extends
         this.shadowRoot?.querySelector<GaiaDialog>('#step-signin');
     assert(gaiaDialog instanceof GaiaDialog);
     return gaiaDialog;
-  }
-
-  private getOfflineAdLogin(): OfflineAdLogin {
-    const offlineAdLogin =
-        this.shadowRoot?.querySelector<OfflineAdLogin>('#step-ad-join');
-    assert(offlineAdLogin instanceof OfflineAdLogin);
-    return offlineAdLogin;
   }
 
   private getSkipConfirmationDialog(): OobeModalDialog {
@@ -317,35 +289,6 @@ export class EnterpriseEnrollmentElement extends
       }
     });
 
-    const offlineAdLogin = this.getOfflineAdLogin();
-    offlineAdLogin.addEventListener(
-        'authCompletedAd', (e: CustomEvent<{
-                             'distinguished_name': string,
-                             'username': string,
-                             'password': string,
-                             'machine_name': string,
-                             'encryption_types': string,
-                           }>) => {
-          offlineAdLogin.disabled = true;
-          offlineAdLogin.loading = true;
-          chrome.send('oauthEnrollAdCompleteLogin', [
-            e.detail.machine_name,
-            e.detail.distinguished_name,
-            e.detail.encryption_types,
-            e.detail.username,
-            e.detail.password,
-          ]);
-        });
-
-    offlineAdLogin.addEventListener(
-        'unlockPasswordEntered', (e: CustomEvent<{
-                                   'unlock_password': string,
-                                 }>) => {
-          offlineAdLogin.disabled = true;
-          chrome.send(
-              'oauthEnrollAdUnlockConfiguration', [e.detail.unlock_password]);
-        });
-
     assert(this.authenticator);
     this.authenticator.insecureContentBlockedCallback = (url: string) => {
       this.showError(
@@ -366,8 +309,7 @@ export class EnterpriseEnrollmentElement extends
 
   /**
    * Event handler that is invoked just before the frame is shown.
-   * @param data Screen init payload,
-   * contains the signin frame URL.
+   * @param data Screen init payload, contains the signin frame URL.
    */
   onBeforeShow(data?: EnterpriseEnrollmentScreenData): void {
     if (data === undefined) {
@@ -429,13 +371,12 @@ export class EnterpriseEnrollmentElement extends
       if (data.gaia_buttons_type) {
         this.gaiaDialogButtonsType = data.gaia_buttons_type;
       }
-      if (this.gaiaDialogButtonsType ==
+      if (this.gaiaDialogButtonsType ===
           OobeTypes.GaiaDialogButtonsType.KIOSK_PREFERRED) {
         this.licenseType = OobeTypes.LicenseType.KIOSK;
       }
     }
 
-    invokePolymerMethod(this.getOfflineAdLogin(), 'onBeforeShow');
     if (!this.uiStep) {
       this.showStep(
           this.isAutoEnroll ? OobeTypes.EnrollmentStep.WORKING :
@@ -447,13 +388,12 @@ export class EnterpriseEnrollmentElement extends
    * Initial UI State for screen
    */
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  override getOobeUIInitialState(): OOBE_UI_STATE {
-    return OOBE_UI_STATE.ENROLLMENT_CANCEL_DISABLED;
+  override getOobeUIInitialState(): OobeUiState {
+    return OobeUiState.ENROLLMENT_CANCEL_DISABLED;
   }
 
   /**
-   * Shows attribute-prompt step with pre-filled asset ID and
-   * location.
+   * Shows attribute-prompt step with pre-filled asset ID and location.
    */
   showAttributePromptStep(annotatedAssetId: string, annotatedLocation: string):
       void {
@@ -464,7 +404,6 @@ export class EnterpriseEnrollmentElement extends
 
   /**
    * Sets the type of the device and the enterprise domain to be shown.
-   *
    */
   setEnterpriseDomainInfo(manager: string, deviceType: string): void {
     this.domainManager = manager;
@@ -503,15 +442,8 @@ export class EnterpriseEnrollmentElement extends
    */
   showStep(step: OobeTypes.EnrollmentStep): void {
     this.setUIStep(step);
-    if (step === OobeTypes.EnrollmentStep.AD_JOIN) {
-      const offlineAdLogin = this.getOfflineAdLogin();
-      offlineAdLogin.disabled = false;
-      offlineAdLogin.loading = false;
-      offlineAdLogin.focus();
-    }
     this.isCancelDisabled = (step === OobeTypes.EnrollmentStep.SIGNIN &&
                              !this.isManualEnrollment) ||
-        step === OobeTypes.EnrollmentStep.AD_JOIN ||
         step === OobeTypes.EnrollmentStep.WORKING ||
         step === OobeTypes.EnrollmentStep.CHECKING ||
         step === OobeTypes.EnrollmentStep.TPM_CHECKING ||
@@ -521,13 +453,12 @@ export class EnterpriseEnrollmentElement extends
     // otherwise the manual fallback button does nothing.
     if (this.isCancelDisabled ||
         step === OobeTypes.EnrollmentStep.ATTRIBUTE_PROMPT) {
-      Oobe.getInstance().setOobeUIState(
-          OOBE_UI_STATE.ENROLLMENT_CANCEL_DISABLED);
+      Oobe.getInstance().setOobeUiState(OobeUiState.ENROLLMENT_CANCEL_DISABLED);
     } else {
-      Oobe.getInstance().setOobeUIState(
+      Oobe.getInstance().setOobeUiState(
           step === OobeTypes.EnrollmentStep.SUCCESS ?
-              OOBE_UI_STATE.ENROLLMENT_SUCCESS :
-              OOBE_UI_STATE.ENROLLMENT_CANCEL_ENABLED);
+              OobeUiState.ENROLLMENT_SUCCESS :
+              OobeUiState.ENROLLMENT_CANCEL_ENABLED);
     }
   }
 
@@ -536,44 +467,12 @@ export class EnterpriseEnrollmentElement extends
     this.authenticator.reload();
   }
 
-  /**
-   * Sets Active Directory join screen params.
-   * @param showUnlockConfig true if there is an encrypted
-   * configuration (and not unlocked yet).
-   */
-  setAdJoinParams(
-      machineName: string, userName: string,
-      errorState: ActiveDirectoryErrorState, showUnlockConfig: boolean): void {
-    const offlineAdLogin = this.getOfflineAdLogin();
-    offlineAdLogin.disabled = false;
-    offlineAdLogin.machineName = machineName;
-    offlineAdLogin.userName = userName;
-    offlineAdLogin.errorState = errorState;
-    if (showUnlockConfig) {
-      offlineAdLogin.setUIStep(ADLoginStep.UNLOCK);
-    } else {
-      offlineAdLogin.setUIStep(ADLoginStep.CREDS);
-    }
-  }
-
-  /**
-   * Sets Active Directory join screen with the unlocked configuration.
-   */
-  setAdJoinConfiguration(options: JoinConfigType[]): void {
-    const offlineAdLogin = this.getOfflineAdLogin();
-    offlineAdLogin.disabled = false;
-    offlineAdLogin.setJoinConfigurationOptions(options);
-    offlineAdLogin.setUIStep(ADLoginStep.CREDS);
-    offlineAdLogin.focus();
-  }
-
   clickPrimaryButtonForTesting(): void {
     this.getGaiaDialog().clickPrimaryButtonForTesting();
   }
 
   /**
-   * Skips the device attribute update,
-   * shows the successful enrollment step.
+   * Skips the device attribute update, shows the successful enrollment step.
    */
   private skipAttributes(): void {
     this.showStep(OobeTypes.EnrollmentStep.SUCCESS);
@@ -618,7 +517,8 @@ export class EnterpriseEnrollmentElement extends
   /**
    * Generates message on the success screen.
    */
-  private successText(locale: string, device: string, domain: string): string {
+  private successText(locale: string, device: string, domain: string):
+      TrustedHTML {
     return this.i18nAdvancedDynamic(
         locale, 'oauthEnrollAbeSuccessDomain',
         {substitutions: [device, domain]});
@@ -634,11 +534,11 @@ export class EnterpriseEnrollmentElement extends
       this.showError(loadTimeData.getString('fatalEnrollmentError'), false);
       return;
     }
-    if (this.licenseType == OobeTypes.LicenseType.ENTERPRISE) {
+    if (this.licenseType === OobeTypes.LicenseType.ENTERPRISE) {
       chrome.send(
           'oauthEnrollCompleteLogin',
           [detail.email, OobeTypes.LicenseType.ENTERPRISE]);
-    } else if (this.licenseType == OobeTypes.LicenseType.EDUCATION) {
+    } else if (this.licenseType === OobeTypes.LicenseType.EDUCATION) {
       chrome.send(
           'oauthEnrollCompleteLogin',
           [detail.email, OobeTypes.LicenseType.EDUCATION]);
@@ -649,10 +549,10 @@ export class EnterpriseEnrollmentElement extends
   }
 
   private onReady(): void {
-    if (this.uiStep == OobeTypes.EnrollmentStep.LOADING) {
+    if (this.uiStep === OobeTypes.EnrollmentStep.LOADING) {
       this.showStep(OobeTypes.EnrollmentStep.SIGNIN);
     }
-    if (this.uiStep != OobeTypes.EnrollmentStep.SIGNIN) {
+    if (this.uiStep !== OobeTypes.EnrollmentStep.SIGNIN) {
       return;
     }
     this.isCancelDisabled = false;
@@ -716,8 +616,6 @@ export class EnterpriseEnrollmentElement extends
 
     if (this.uiStep === OobeTypes.EnrollmentStep.ATTRIBUTE_PROMPT) {
       this.showStep(OobeTypes.EnrollmentStep.ATTRIBUTE_PROMPT_ERROR);
-    } else if (this.uiStep === OobeTypes.EnrollmentStep.AD_JOIN) {
-      this.showStep(OobeTypes.EnrollmentStep.ACTIVE_DIRECTORY_JOIN_ERROR);
     } else {
       this.showStep(OobeTypes.EnrollmentStep.ERROR);
     }
@@ -749,10 +647,10 @@ export class EnterpriseEnrollmentElement extends
    * Return title for enrollment in progress screen.
    */
   private getWorkingTitleKey(licenseType: OobeTypes.LicenseType): string {
-    if (licenseType == OobeTypes.LicenseType.ENTERPRISE) {
+    if (licenseType === OobeTypes.LicenseType.ENTERPRISE) {
       return 'oauthEnrollScreenTitle';
     }
-    if (licenseType == OobeTypes.LicenseType.EDUCATION) {
+    if (licenseType === OobeTypes.LicenseType.EDUCATION) {
       return 'oauthEducationEnrollScreenTitle';
     }
     return 'oauthEnrollKioskEnrollmentWorkingTitle';
@@ -762,10 +660,10 @@ export class EnterpriseEnrollmentElement extends
    * Returns icon for enrollment steps.
    */
   private getIcon(licenseType: OobeTypes.LicenseType): string {
-    if (licenseType == OobeTypes.LicenseType.ENTERPRISE) {
+    if (licenseType === OobeTypes.LicenseType.ENTERPRISE) {
       return 'oobe-32:enterprise';
     }
-    if (licenseType == OobeTypes.LicenseType.EDUCATION) {
+    if (licenseType === OobeTypes.LicenseType.EDUCATION) {
       return 'oobe-32:enterprise';
     }
     return 'oobe-32:kiosk';
@@ -776,10 +674,10 @@ export class EnterpriseEnrollmentElement extends
    */
   private getSuccessTitle(locale: string, licenseType: OobeTypes.LicenseType):
       string {
-    if (licenseType == OobeTypes.LicenseType.ENTERPRISE) {
+    if (licenseType === OobeTypes.LicenseType.ENTERPRISE) {
       return this.i18nDynamic(locale, 'oauthEnrollSuccessTitle');
     }
-    if (licenseType == OobeTypes.LicenseType.EDUCATION) {
+    if (licenseType === OobeTypes.LicenseType.EDUCATION) {
       return this.i18nDynamic(locale, 'oauthEnrollEducationSuccessTitle');
     }
     return this.i18nDynamic(locale, 'oauthEnrollKioskEnrollmentSuccessTitle');
@@ -790,7 +688,7 @@ export class EnterpriseEnrollmentElement extends
    */
   private getErrorTitle(locale: string, licenseType: OobeTypes.LicenseType):
       string {
-    if (licenseType == OobeTypes.LicenseType.EDUCATION) {
+    if (licenseType === OobeTypes.LicenseType.EDUCATION) {
       return this.i18nDynamic(locale, 'oauthEducationEnrollErrorTitle');
     }
     return this.i18nDynamic(locale, 'oauthEnrollErrorTitle');
@@ -818,14 +716,6 @@ export class EnterpriseEnrollmentElement extends
     chrome.send('oauthEnrollRetry');
   }
 
-  /**
-   *  Event handler for the 'Try again' button that is shown upon an error
-   *  during ActiveDirectory join.
-   */
-  private onAdJoinErrorRetry(): void {
-    this.showStep(OobeTypes.EnrollmentStep.AD_JOIN);
-  }
-
   /*
    * Whether authFlow is the SAML.
    */
@@ -847,7 +737,7 @@ export class EnterpriseEnrollmentElement extends
    */
   private getSkipConfirmationTitle(
       locale: string, licenseType: OobeTypes.LicenseType): string {
-    if (licenseType == OobeTypes.LicenseType.EDUCATION) {
+    if (licenseType === OobeTypes.LicenseType.EDUCATION) {
       return this.i18nDynamic(locale, 'skipConfirmationDialogEducationTitle');
     }
     return this.i18nDynamic(locale, 'skipConfirmationDialogTitle');
@@ -858,7 +748,7 @@ export class EnterpriseEnrollmentElement extends
    */
   private getSkipConfirmationText(
       locale: string, licenseType: OobeTypes.LicenseType): string {
-    if (licenseType == OobeTypes.LicenseType.EDUCATION) {
+    if (licenseType === OobeTypes.LicenseType.EDUCATION) {
       return this.i18nDynamic(locale, 'skipConfirmationDialogEducationText');
     }
     return this.i18nDynamic(locale, 'skipConfirmationDialogText');

@@ -80,6 +80,10 @@ namespace ui {
 class Cursor;
 }
 
+namespace viz {
+struct FrameTimingDetails;
+}
+
 namespace blink {
 
 class ColorChooser;
@@ -521,6 +525,8 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   // Called when the value of `element` has been changed by JavaScript.
   // `old_value` contains the value before being changed.
   // `was_autofilled` is the state of the field prior to the JS change.
+  // Only called if there is an observable change in the actual value, i.e.
+  // JavaScript setting it to the current value will not trigger this.
   virtual void JavaScriptChangedValue(HTMLFormControlElement&,
                                       const String& old_value,
                                       bool was_autofilled) {}
@@ -559,7 +565,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   // the frame to be presented, the `callback` will run with the time of the
   // failure.
   using ReportTimeCallback =
-      WTF::CrossThreadOnceFunction<void(base::TimeTicks)>;
+      WTF::CrossThreadOnceFunction<void(const viz::FrameTimingDetails&)>;
   virtual void NotifyPresentationTime(LocalFrame& frame,
                                       ReportTimeCallback callback) {}
 

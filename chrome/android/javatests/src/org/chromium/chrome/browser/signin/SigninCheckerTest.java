@@ -26,7 +26,7 @@ import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -77,7 +77,7 @@ public class SigninCheckerTest {
                 .thenReturn(newAccountEmail);
         final CoreAccountInfo expectedPrimaryAccount = mSigninTestRule.addAccount(newAccountEmail);
 
-        mSigninTestRule.removeAccountAndWaitForSeeding(oldAccount.getEmail());
+        mSigninTestRule.removeAccountAndWaitForSeeding(oldAccount.getId());
 
         CriteriaHelper.pollUiThread(
                 () -> {
@@ -97,12 +97,12 @@ public class SigninCheckerTest {
         when(mAccountRenameCheckerDelegateMock.getNewNameOfRenamedAccount(oldAccount.getEmail()))
                 .thenReturn(newAccountEmail);
 
-        mSigninTestRule.removeAccountAndWaitForSeeding(oldAccount.getEmail());
+        mSigninTestRule.removeAccountAndWaitForSeeding(oldAccount.getId());
 
         CriteriaHelper.pollUiThread(
                 () -> {
                     return !IdentityServicesProvider.get()
-                            .getIdentityManager(Profile.getLastUsedRegularProfile())
+                            .getIdentityManager(ProfileManager.getLastUsedRegularProfile())
                             .hasPrimaryAccount(ConsentLevel.SYNC);
                 });
         Assert.assertNull(mSigninTestRule.getPrimaryAccount(ConsentLevel.SYNC));
@@ -116,12 +116,12 @@ public class SigninCheckerTest {
         mSigninTestRule.addAccountAndWaitForSeeding("the.second.account@gmail.com");
         final CoreAccountInfo oldAccount = mSigninTestRule.addTestAccountThenSigninAndEnableSync();
 
-        mSigninTestRule.removeAccountAndWaitForSeeding(oldAccount.getEmail());
+        mSigninTestRule.removeAccountAndWaitForSeeding(oldAccount.getId());
 
         CriteriaHelper.pollUiThread(
                 () -> {
                     return !IdentityServicesProvider.get()
-                            .getIdentityManager(Profile.getLastUsedRegularProfile())
+                            .getIdentityManager(ProfileManager.getLastUsedRegularProfile())
                             .hasPrimaryAccount(ConsentLevel.SYNC);
                 });
         Assert.assertNull(mSigninTestRule.getPrimaryAccount(ConsentLevel.SYNC));
@@ -135,12 +135,12 @@ public class SigninCheckerTest {
         mSigninTestRule.addAccountAndWaitForSeeding("the.second.account@gmail.com");
         final CoreAccountInfo oldAccount = mSigninTestRule.addTestAccountThenSignin();
 
-        mSigninTestRule.removeAccountAndWaitForSeeding(oldAccount.getEmail());
+        mSigninTestRule.removeAccountAndWaitForSeeding(oldAccount.getId());
 
         CriteriaHelper.pollUiThread(
                 () -> {
                     return !IdentityServicesProvider.get()
-                            .getIdentityManager(Profile.getLastUsedRegularProfile())
+                            .getIdentityManager(ProfileManager.getLastUsedRegularProfile())
                             .hasPrimaryAccount(ConsentLevel.SIGNIN);
                 });
     }

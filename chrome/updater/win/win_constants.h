@@ -49,6 +49,7 @@ extern const wchar_t kRegValueBrandCode[];
 extern const wchar_t kRegValueAP[];
 extern const wchar_t kRegValueDateOfLastActivity[];
 extern const wchar_t kRegValueDateOfLastRollcall[];
+extern const wchar_t kRegValueDayOfInstall[];
 extern const wchar_t kRegValueName[];
 
 // Values created under `UPDATER_KEY`.
@@ -103,6 +104,7 @@ extern const wchar_t kRegValueEnrollmentMandatory[];
 
 // Registry for DM token.
 extern const wchar_t kRegKeyCompanyEnrollment[];
+extern const wchar_t kRegKeyCompanyLegacyEnrollment[];  // Path is in HKLM64.
 extern const wchar_t kRegValueDmToken[];
 
 extern const wchar_t kWindowsServiceName[];

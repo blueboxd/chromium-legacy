@@ -785,10 +785,6 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
   DCHECK(!model_error_);
   DCHECK(!model_type_state.progress_marker().has_gc_directive());
 
-  const bool is_initial_sync = !IsTrackingMetadata();
-  LogUpdatesReceivedByProcessorHistogram(type_, is_initial_sync,
-                                         updates.size());
-
   if (!ValidateUpdate(model_type_state, updates, gc_directive)) {
     return;
   }
@@ -802,13 +798,15 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
   // always clear all data. We do this to allow the server to replace all data
   // on the client, without having to know exactly which entities the client
   // has.
+  const bool is_initial_sync = !IsTrackingMetadata();
   const bool treating_as_full_update =
       is_initial_sync || HasClearAllDirective(gc_directive);
   if (treating_as_full_update) {
     error = OnFullUpdateReceived(model_type_state, std::move(updates),
                                  std::move(gc_directive));
   } else {
-    error = OnIncrementalUpdateReceived(model_type_state, std::move(updates));
+    error = OnIncrementalUpdateReceived(model_type_state, std::move(updates),
+                                        std::move(gc_directive));
   }
 
   if (error) {
@@ -1019,7 +1017,8 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
 std::optional<ModelError>
 ClientTagBasedModelTypeProcessor::OnIncrementalUpdateReceived(
     const sync_pb::ModelTypeState& model_type_state,
-    UpdateResponseDataList updates) {
+    UpdateResponseDataList updates,
+    std::optional<sync_pb::GarbageCollectionDirective> gc_directive) {
   DCHECK(model_ready_to_sync_);
   DCHECK(IsInitialSyncDone(model_type_state.initial_sync_state()) ||
          (ApplyUpdatesImmediatelyTypes().Has(type_) &&
@@ -1031,8 +1030,8 @@ ClientTagBasedModelTypeProcessor::OnIncrementalUpdateReceived(
                                                     entity_tracker_.get());
   base::AutoReset<bool> auto_reset_processing_updates(
       &processing_incremental_updates_, true);
-  return updates_handler.ProcessIncrementalUpdate(model_type_state,
-                                                  std::move(updates));
+  return updates_handler.ProcessIncrementalUpdate(
+      model_type_state, std::move(updates), std::move(gc_directive));
 }
 
 void ClientTagBasedModelTypeProcessor::OnPendingDataLoaded(

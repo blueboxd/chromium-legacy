@@ -4,11 +4,13 @@
 
 import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
+import("//skia/features.gni")
 import("//testing/test.gni")
 if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
 }
 import("//third_party/dawn/scripts/dawn_features.gni")
+import("//ui/gl/features.gni")
 
 declare_args() {
   subpixel_font_rendering_disabled = false
@@ -39,7 +41,6 @@ component("service") {
     "image_decode_accelerator_stub.h",
     "image_decode_accelerator_worker.h",
     "image_transport_surface.h",
-    "image_transport_surface_delegate.h",
     "raster_command_buffer_stub.cc",
     "raster_command_buffer_stub.h",
     "shared_image_stub.cc",
@@ -164,6 +165,16 @@ component("service") {
   }
   if (enable_vulkan) {
     deps += [ "//gpu/vulkan/init" ]
+  }
+
+  if (use_dawn || skia_use_dawn) {
+    deps += [
+      "//third_party/dawn/src/dawn:proc",
+      "//third_party/dawn/src/dawn/native",
+    ]
+  }
+  if (skia_use_dawn) {
+    deps += [ "//third_party/dawn/src/dawn:cpp" ]
   }
 }
 

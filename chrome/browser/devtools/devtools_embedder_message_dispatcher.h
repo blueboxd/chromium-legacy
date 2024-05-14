@@ -46,6 +46,7 @@ class DevToolsEmbedderMessageDispatcher {
     virtual void InspectedURLChanged(const std::string& url) = 0;
     virtual void SetIsDocked(DispatchCallback callback, bool is_docked) = 0;
     virtual void OpenInNewTab(const std::string& url) = 0;
+    virtual void OpenSearchResultsInNewTab(const std::string& query) = 0;
     virtual void ShowItemInFolder(const std::string& file_system_path) = 0;
     virtual void SaveToFile(const std::string& url,
                             const std::string& content,
@@ -128,7 +129,9 @@ class DevToolsEmbedderMessageDispatcher {
     virtual void CanShowSurvey(DispatchCallback callback,
                                const std::string& trigger) = 0;
     virtual void DoAidaConversation(DispatchCallback callback,
-                                    const std::string& request) = 0;
+                                    const std::string& request,
+                                    int stream_id) = 0;
+    virtual void RegisterAidaClientEvent(const std::string& request) = 0;
   };
 
   using DispatchCallback = Delegate::DispatchCallback;

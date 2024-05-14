@@ -87,6 +87,11 @@ bool HardwareDisplayPlaneManager::Initialize() {
   has_universal_planes_ =
       drm_->GetCapability(DRM_CLIENT_CAP_UNIVERSAL_PLANES, &value) && value;
 
+  // Mediatek drivers produce broken results when given negative values. It
+  // is suspected that this is due to incorrect parsing of the CTM blob.
+  // TODO(b/324594144): Address clamping in the driver/kernel
+  ctm_negative_values_broken_ = drm_->GetDriverName() == "mediatek";
+
   // This is to test whether or not it is safe to remove non-universal planes
   // supporting code in a following CL. See crbug.com/1129546 for more details.
   CHECK(has_universal_planes_);
@@ -292,6 +297,11 @@ HardwareDisplayPlaneManager::ResetConnectorsCacheAndGetValidIds(
     GetDrmPropertyForName(drm_, props.get(), "link-status",
                           &state_props.link_status);
 
+    const std::vector<uint32_t> possible_encoder_ids(
+        connector->encoders, connector->encoders + connector->count_encoders);
+    state_props.possible_crtcs_bitmask =
+        GetPossibleCrtcsBitmaskFromEncoders(*drm_, possible_encoder_ids);
+
     connectors_props_.emplace_back(std::move(state_props));
     valid_ids.emplace(connector_id);
   }
@@ -306,6 +316,16 @@ void HardwareDisplayPlaneManager::SetColorTemperatureAdjustment(
   DCHECK(crtc_index.has_value());
   CrtcState* crtc_state = &crtc_state_[*crtc_index];
   crtc_state->color_temperature_adjustment = cta;
+  UpdateAndCommitCrtcState(crtc_id, crtc_state);
+}
+
+void HardwareDisplayPlaneManager::SetColorCalibration(
+    uint32_t crtc_id,
+    const display::ColorCalibration& calibration) {
+  const auto crtc_index = LookupCrtcIndex(crtc_id);
+  DCHECK(crtc_index.has_value());
+  CrtcState* crtc_state = &crtc_state_[*crtc_index];
+  crtc_state->color_calibration = calibration;
   UpdateAndCommitCrtcState(crtc_id, crtc_state);
 }
 
@@ -500,6 +520,22 @@ HardwareCapabilities HardwareDisplayPlaneManager::GetHardwareCapabilities(
   return hc;
 }
 
+uint32_t HardwareDisplayPlaneManager::GetPossibleCrtcsBitmaskForConnector(
+    uint32_t connector_id) const {
+  const auto& connector_prop =
+      std::find_if(connectors_props_.begin(), connectors_props_.end(),
+                   [connector_id](const ConnectorProperties& prop) {
+                     return prop.id == connector_id;
+                   });
+  if (connector_prop == connectors_props_.end()) {
+    LOG(WARNING) << __func__
+                 << ": Failed to retrieve connector property for id "
+                 << connector_id;
+    return {};
+  }
+  return connector_prop->possible_crtcs_bitmask;
+}
+
 void HardwareDisplayPlaneManager::UpdateAndCommitCrtcState(
     uint32_t crtc_id,
     CrtcState* crtc_state) {
@@ -513,19 +549,29 @@ void HardwareDisplayPlaneManager::UpdateAndCommitCrtcState(
       &crtc_state->color_calibration.srgb_to_device_matrix,
       &crtc_state->color_temperature_adjustment.srgb_matrix);
   if (crtc_state->properties.ctm.id) {
-    ScopedDrmColorCtmPtr ctm_blob_data = CreateCTMBlob(ctm);
+    ScopedDrmColorCtmPtr ctm_blob_data =
+        CreateCTMBlob(ctm, ctm_negative_values_broken_);
     crtc_state->pending_ctm_blob =
         drm_->CreatePropertyBlob(ctm_blob_data.get(), sizeof(drm_color_ctm));
   }
 
-  // Do not set DEGAMMA curve, because many devices have broken implementations.
-  // Only enable the DEGAMMA curve on devices known to have functional
-  // implementations.
-  // See https://crbug.com/41393617#comment32 for an example of banding.
-  // See https://crbug.com/1505062#comment17 for an example of corruption.
+  // Set the DEGAMMA curve to the one specified in the color profile, only if
+  // we will also be setting the GAMMA curve.
+  // TODO(https://crbug.com/1505062): This always has to be the identity because
+  // many devices have broken implementations. Identitify devices where this
+  // functionality is not broken.
   if (crtc_props->gamma_lut.id && crtc_props->gamma_lut_size.id &&
       crtc_props->degamma_lut.id && crtc_props->degamma_lut_size.id) {
-    crtc_state->pending_degamma_lut_blob = nullptr;
+    const auto& degamma_curve = crtc_state->color_calibration.srgb_to_linear;
+    if (degamma_curve.IsDefaultIdentity()) {
+      crtc_state->pending_degamma_lut_blob = nullptr;
+    } else {
+      ScopedDrmColorLutPtr degamma_blob_data =
+          CreateLutBlob(degamma_curve, crtc_props->degamma_lut_size.value);
+      crtc_state->pending_degamma_lut_blob = drm_->CreatePropertyBlob(
+          degamma_blob_data.get(),
+          sizeof(drm_color_lut) * crtc_props->degamma_lut_size.value);
+    }
   }
 
   // Set the GAMMA curve to the concatenation of the color profile with the
@@ -535,11 +581,15 @@ void HardwareDisplayPlaneManager::UpdateAndCommitCrtcState(
       crtc_state->color_calibration.linear_to_device,
       crtc_state->gamma_adjustment.curve);
   if (crtc_props->gamma_lut.id && crtc_props->gamma_lut_size.id) {
-    ScopedDrmColorLutPtr gamma_blob_data =
-        CreateLutBlob(gamma_curve, crtc_props->gamma_lut_size.value);
-    crtc_state->pending_gamma_lut_blob = drm_->CreatePropertyBlob(
-        gamma_blob_data.get(),
-        sizeof(drm_color_lut) * crtc_props->gamma_lut_size.value);
+    if (gamma_curve.IsDefaultIdentity()) {
+      crtc_state->pending_gamma_lut_blob = nullptr;
+    } else {
+      ScopedDrmColorLutPtr gamma_blob_data =
+          CreateLutBlob(gamma_curve, crtc_props->gamma_lut_size.value);
+      crtc_state->pending_gamma_lut_blob = drm_->CreatePropertyBlob(
+          gamma_blob_data.get(),
+          sizeof(drm_color_lut) * crtc_props->gamma_lut_size.value);
+    }
   } else {
     // Fall back to legacy gamma if needed.
     drm_->SetGammaRamp(crtc_id, gamma_curve);

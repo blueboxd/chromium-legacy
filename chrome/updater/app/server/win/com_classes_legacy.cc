@@ -11,11 +11,13 @@
 
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -42,6 +44,7 @@
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/registration_data.h"
 #include "chrome/updater/update_service.h"
+#include "chrome/updater/update_usage_stats_task.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util/progress_sampler.h"
@@ -1022,10 +1025,9 @@ STDMETHODIMP LegacyProcessLauncherImpl::LaunchCmdElevated(
   return S_OK;
 }
 
-// Launches a process at medium integrity.
-// TODO(crbug.com/1523813): the `server_proc_id`, `proc_handle`, and
-// `stdout_handle` provided by the caller are not populated on return, so the
-// caller will not be able to monitor the progress.
+// Launches a process at medium integrity. The `server_proc_id`, `proc_handle`,
+// and `stdout_handle` provided by the caller are not populated on return, so
+// the caller will not be able to monitor the progress. See crbug.com/1523813.
 STDMETHODIMP LegacyProcessLauncherImpl::LaunchCmdLineEx(
     const WCHAR* cmd_line,
     DWORD* /*server_proc_id*/,
@@ -1042,11 +1044,13 @@ HRESULT LegacyAppCommandWebImpl::RuntimeClassInitialize(
     UpdaterScope scope,
     const std::wstring& app_id,
     const std::wstring& command_id,
-    bool send_pings) {
+    PingSender ping_sender) {
   app_command_runner_ =
       AppCommandRunner::LoadAppCommand(scope, app_id, command_id);
+  scope_ = scope;
   app_id_ = base::WideToUTF8(app_id);
-  send_pings_ = send_pings;
+  command_id_ = base::WideToUTF8(command_id);
+  ping_sender_ = std::move(ping_sender);
   return app_command_runner_.error_or(S_OK);
 }
 
@@ -1084,52 +1088,6 @@ STDMETHODIMP LegacyAppCommandWebImpl::get_output(BSTR* output) {
 
 namespace {
 
-void SendPing(const std::string& app_id, HRESULT hr, int event_type) {
-  struct SendPingResult : public base::RefCountedThreadSafe<SendPingResult> {
-    base::WaitableEvent completion_event;
-
-   private:
-    friend class base::RefCountedThreadSafe<SendPingResult>;
-    virtual ~SendPingResult() = default;
-  };
-
-  auto result = base::MakeRefCounted<SendPingResult>();
-  AppServerWin::PostRpcTask(base::BindOnce(
-      [](const std::string& app_id, const HRESULT hr, int event_type,
-         scoped_refptr<SendPingResult> result) {
-        const base::ScopedClosureRunner signal_event(base::BindOnce(
-            [](scoped_refptr<SendPingResult> result) {
-              result->completion_event.Signal();
-            },
-            result));
-
-        scoped_refptr<Configurator> config =
-            GetAppServerWinInstance()->config();
-        scoped_refptr<PersistedData> persisted_data =
-            config->GetUpdaterPersistedData();
-        if (!persisted_data->GetUsageStatsEnabled()) {
-          return;
-        }
-
-        update_client::CrxComponent app_command_data;
-        app_command_data.ap = persisted_data->GetAP(app_id);
-        app_command_data.app_id = app_id;
-        app_command_data.brand = persisted_data->GetBrandCode(app_id);
-        app_command_data.requires_network_encryption = false;
-        app_command_data.version = persisted_data->GetProductVersion(app_id);
-
-        update_client::UpdateClientFactory(config)->SendPing(
-            app_command_data,
-            {.event_type = event_type,
-             .result = SUCCEEDED(hr),
-             .error_code = hr,
-             .extra_code1 = 0},
-            base::DoNothing());
-      },
-      app_id, hr, event_type, result));
-
-  result->completion_event.TimedWait(base::Seconds(60));
-}
 
 }  // namespace
 
@@ -1143,6 +1101,9 @@ STDMETHODIMP LegacyAppCommandWebImpl::execute(VARIANT substitution1,
                                               VARIANT substitution8,
                                               VARIANT substitution9) {
   CHECK(app_command_runner_.has_value());
+  if (process_.IsValid()) {
+    return E_UNEXPECTED;
+  }
 
   std::vector<std::wstring> substitutions;
   for (const VARIANT& substitution :
@@ -1161,11 +1122,78 @@ STDMETHODIMP LegacyAppCommandWebImpl::execute(VARIANT substitution1,
   }
 
   const HRESULT hr = app_command_runner_->Run(substitutions, process_);
-  if (send_pings_) {
-    SendPing(app_id_, hr,
-             update_client::protocol_request::kEventAppCommandBegin);
+  if (FAILED(hr)) {
+    VLOG(2) << __func__ << ": AppCommand failed to launch: " << hr;
+    ping_sender_.Run(scope_, app_id_, command_id_,
+                     {
+                         .error_code = hr,
+                         .extra_code1 = kErrorAppCommandLaunchFailed,
+                     });
+    return hr;
   }
+
+  base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::WithBaseSyncPrimitives()})
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(
+                     [](base::Process process) -> ErrorParams {
+                       int exit_code = -1;
+                       if (process.WaitForExitWithTimeout(kWaitForAppInstaller,
+                                                          &exit_code)) {
+                         VLOG(2) << "AppCommand completed: " << exit_code;
+                         return {
+                             .error_code = exit_code,
+                             .extra_code1 = 0,
+                         };
+                       }
+                       VLOG(2) << "AppCommand timed out.";
+                       return {
+                           .error_code = HRESULT_FROM_WIN32(ERROR_TIMEOUT),
+                           .extra_code1 = kErrorAppCommandTimedOut,
+                       };
+                     },
+                     process_.Duplicate())
+                     .Then(base::BindOnce(ping_sender_, scope_, app_id_,
+                                          command_id_)));
   return hr;
+}
+
+void LegacyAppCommandWebImpl::SendPing(UpdaterScope scope,
+                                       const std::string& app_id,
+                                       const std::string& command_id,
+                                       ErrorParams error_params) {
+  AppServerWin::PostRpcTask(base::BindOnce(
+      [](UpdaterScope scope, const std::string& app_id,
+         const std::string& command_id, ErrorParams error_params) {
+        scoped_refptr<Configurator> config =
+            GetAppServerWinInstance()->config();
+        scoped_refptr<PersistedData> persisted_data =
+            config->GetUpdaterPersistedData();
+        if (!persisted_data->GetUsageStatsEnabled() &&
+            !AreRawUsageStatsEnabled(scope)) {
+          return;
+        }
+
+        update_client::CrxComponent app_command_data;
+        app_command_data.ap = persisted_data->GetAP(app_id);
+        app_command_data.app_id = app_id;
+        app_command_data.brand = persisted_data->GetBrandCode(app_id);
+        app_command_data.name = command_id;
+        app_command_data.requires_network_encryption = false;
+        app_command_data.version = persisted_data->GetProductVersion(app_id);
+
+        update_client::UpdateClientFactory(config)->SendPing(
+            app_command_data,
+            {.event_type =
+                 update_client::protocol_request::kEventAppCommandComplete,
+             .result = SUCCEEDED(error_params.error_code),
+             .error_code = error_params.error_code,
+             .extra_code1 = error_params.extra_code1},
+            base::BindOnce([](update_client::Error error) {
+              VLOG(1) << "App command ping completed: " << error;
+            }));
+      },
+      scope, app_id, command_id, error_params));
 }
 
 PolicyStatusImpl::PolicyStatusImpl()

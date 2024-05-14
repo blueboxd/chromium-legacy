@@ -395,6 +395,7 @@ struct FormFieldData {
 struct FormFieldData_FillData {
   mojo_base.mojom.String16 value;
   FieldRendererId renderer_id;
+  FormRendererId host_form_id;
   bool is_autofilled;
   Section section;
   bool force_override;
@@ -420,13 +421,6 @@ struct FormData {
   array<FormFieldData> fields;
   array<FieldRendererId> username_predictions;
   bool is_gaia_with_skip_save_password_form;
-};
-
-// autofill::FormData::FillData
-// (components/autofill/core/common/form_filling_data.h)
-struct FormData_FillData {
-  FormRendererId renderer_id;
-  array<FormFieldData_FillData> fields;
 };
 
 // autofill::FormFieldDataPredictions
@@ -543,15 +537,16 @@ enum ActionPersistence {
 };
 
 // The possible actions that Autofill can perform on forms.
-enum ActionType {
+enum FormActionType {
   kFill,  // Autofill should fill the form.
   kUndo,  // Autofill should undo some previous fill operation on the form.
 };
 
-// Indicates which part of a text field's value Autofill replaces.
-enum TextReplacement {
+// The possible actions that Autofill can perform on fields.
+enum FieldActionType {
   kReplaceAll,        // Replace the field's current value.
   kReplaceSelection,  // Replace only the currently selected text.
+  kSelectAll,         // Selects all the text within this field.
 };
 
 // Describes which action triggered Autofill suggestions. This has implications
@@ -614,9 +609,15 @@ enum AutofillSuggestionTriggerSource {
   // Suggestions triggered by selecting the Autofill password manager manual
   // fallback entry from the Chrome context menu.
   kManualFallbackPasswords,
+  // Suggestions triggered by selecting the Plus Address manual fallback entry
+  // from the Chrome context menu.
+  kManualFallbackPlusAddresses,
   // Suggestions are triggered after the user the user closed a dialog. For
   // example, this can be profile edit or delete dialog. This trigger source
   // is used only if the suggestions were triggered manually via the Chrome
   // context menu.
   kShowPromptAfterDialogClosedNonManualFallback,
+  // The compose saved state notification is triggered when the compose dialog
+  // loses focus and is closed.
+  kComposeDialogLostFocus,
 };

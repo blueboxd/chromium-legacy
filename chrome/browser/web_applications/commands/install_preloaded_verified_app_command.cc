@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/check_is_test.h"
@@ -45,12 +46,12 @@ namespace {
 // TODO(crbug.com/1457430): Find a better way to do Lacros testing so that we
 // don't have to pass localhost into the allowlist. Allowlisted host must be
 // from a Google server.
-constexpr auto kHostAllowlist = base::MakeFixedFlatSet<base::StringPiece>(
+constexpr auto kHostAllowlist = base::MakeFixedFlatSet<std::string_view>(
     {"googleusercontent.com", "gstatic.com", "youtube.com",
      "127.0.0.1" /*FOR TESTING*/});
 
 bool HasRequiredManifestFields(const blink::mojom::ManifestPtr& manifest) {
-  if (manifest->start_url.is_empty()) {
+  if (!manifest->has_valid_specified_start_url) {
     return false;
   }
 

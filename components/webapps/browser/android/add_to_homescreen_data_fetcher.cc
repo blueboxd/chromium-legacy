@@ -207,8 +207,9 @@ void AddToHomescreenDataFetcher::OnDidGetInstallableData(
   if (!web_contents_)
     return;
 
-  RecordMobileCapableUserActions(data.web_page_metadata->mobile_capable,
-                                 !blink::IsEmptyManifest(*data.manifest));
+  RecordMobileCapableUserActions(
+      data.web_page_metadata->mobile_capable,
+      /*has_manifest=*/!data.manifest_url->is_empty());
 
   shortcut_info_.UpdateFromWebPageMetadata(*data.web_page_metadata);
   shortcut_info_.UpdateFromManifest(*data.manifest);
@@ -263,23 +264,26 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
     return;
   }
 
+  shortcut_info_.UpdateDisplayMode(webapk_compatible);
+
+  AddToHomescreenParams::AppType app_type =
+      data.manifest_url->is_empty() ? AddToHomescreenParams::AppType::WEBAPK_DIY
+                                    : AddToHomescreenParams::AppType::WEBAPK;
+
   observer_->OnUserTitleAvailable(
       webapk_compatible ? shortcut_info_.name : shortcut_info_.user_title,
-      shortcut_info_.url, webapk_compatible);
-
-  shortcut_info_.UpdateDisplayMode(webapk_compatible);
+      shortcut_info_.url, app_type);
 
   // WebAPKs should always use the raw icon for the launcher whether or not
   // that icon is maskable.
   primary_icon_ = raw_primary_icon_;
-  observer_->OnDataAvailable(shortcut_info_, primary_icon_,
-                             AddToHomescreenParams::AppType::WEBAPK,
+  observer_->OnDataAvailable(shortcut_info_, primary_icon_, app_type,
                              installable_status_code_);
 }
 
 void AddToHomescreenDataFetcher::PrepareToAddShortcut(bool fetch_favicon) {
   observer_->OnUserTitleAvailable(shortcut_info_.user_title, shortcut_info_.url,
-                                  /*is_webapk_compatible=*/false);
+                                  AddToHomescreenParams::AppType::SHORTCUT);
   StopTimer();
   if (fetch_favicon) {
     FetchFavicon();

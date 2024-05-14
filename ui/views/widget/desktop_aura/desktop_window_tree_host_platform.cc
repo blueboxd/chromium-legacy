@@ -459,8 +459,10 @@ void DesktopWindowTreeHostPlatform::Show(ui::WindowShowState show_state,
   }
 
   if (native_widget_delegate_->CanActivate()) {
-    if (show_state != ui::SHOW_STATE_INACTIVE)
+    if (show_state != ui::SHOW_STATE_INACTIVE &&
+        show_state != ui::SHOW_STATE_MINIMIZED) {
       Activate();
+    }
 
     // SetInitialFocus() should be always be called, even for
     // SHOW_STATE_INACTIVE. If the window has to stay inactive, the method will
@@ -874,6 +876,26 @@ gfx::Rect DesktopWindowTreeHostPlatform::GetBoundsInDIP() const {
   return platform_window()->GetBoundsInDIP();
 }
 
+void DesktopWindowTreeHostPlatform::OnCompositorVisibilityChanging(
+    ui::Compositor* compositor,
+    bool visible) {
+  // Make sure to show the content window before the compositor has become
+  // visible.
+  if (visible) {
+    GetContentWindow()->Show();
+  }
+}
+
+void DesktopWindowTreeHostPlatform::OnCompositorVisibilityChanged(
+    ui::Compositor* compositor,
+    bool visible) {
+  // Make sure to hide the content window after the compositor has become
+  // not visible.
+  if (!visible) {
+    GetContentWindow()->Hide();
+  }
+}
+
 void DesktopWindowTreeHostPlatform::OnClosed() {
   open_windows().remove(GetAcceleratedWidget());
   wm::SetWindowMoveClient(window(), nullptr);
@@ -897,9 +919,7 @@ void DesktopWindowTreeHostPlatform::OnWindowStateChanged(
       is_minimized != was_minimized) {
     if (is_minimized) {
       SetVisible(false);
-      GetContentWindow()->Hide();
     } else {
-      GetContentWindow()->Show();
       SetVisible(true);
     }
   }

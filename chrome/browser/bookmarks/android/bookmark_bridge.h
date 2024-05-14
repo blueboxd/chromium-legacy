@@ -24,13 +24,19 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/reading_list/android/reading_list_manager.h"
+#include "chrome/browser/reading_list/android/reading_list_manager_impl.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
 #include "components/bookmarks/common/android/bookmark_id.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
+#include "components/page_image_service/image_service.h"
 #include "components/power_bookmarks/core/power_bookmark_utils.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/reading_list/core/dual_reading_list_model.h"
+#include "components/reading_list/core/reading_list_model.h"
+#include "components/reading_list/core/reading_list_model_observer.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "url/android/gurl_android.h"
 
 class BookmarkBridgeTest;
@@ -44,16 +50,18 @@ class BookmarkBridge : public ProfileObserver,
                        public bookmarks::BaseBookmarkModelObserver,
                        public PartnerBookmarksShim::Observer,
                        public ReadingListManager::Observer,
+                       public ReadingListModelObserver,
+                       public signin::IdentityManager::Observer,
                        public base::SupportsUserData::Data {
  public:
-  BookmarkBridge(
-      Profile* profile,
-      bookmarks::BookmarkModel* model,
-      bookmarks::ManagedBookmarkService* managed_bookmark_service,
-      PartnerBookmarksShim* partner_bookmarks_shim,
-      std::unique_ptr<ReadingListManager> local_or_synable_reading_list_manager,
-      std::unique_ptr<ReadingListManager> account_reading_list_manager,
-      page_image_service::ImageService* image_service);
+  // All of the injected pointers must be non-null and must outlive `this`.
+  BookmarkBridge(Profile* profile,
+                 bookmarks::BookmarkModel* model,
+                 bookmarks::ManagedBookmarkService* managed_bookmark_service,
+                 page_image_service::ImageService* image_service,
+                 reading_list::DualReadingListModel* dual_reading_list_model,
+                 PartnerBookmarksShim* partner_bookmarks_shim,
+                 signin::IdentityManager* identity_manager);
 
   BookmarkBridge(const BookmarkBridge&) = delete;
   BookmarkBridge& operator=(const BookmarkBridge&) = delete;
@@ -67,10 +75,18 @@ class BookmarkBridge : public ProfileObserver,
   const bookmarks::BookmarkNode* GetParentNode(
       const bookmarks::BookmarkNode* node);
 
+  jboolean AreAccountBookmarkFoldersActive(JNIEnv* env);
+
   void GetImageUrlForBookmark(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& j_url,
+      bool is_account_bookmark,
       const base::android::JavaParamRef<jobject>& j_callback);
+
+  void GetImageUrlForBookmarkImpl(
+      const GURL& url,
+      bool is_account_bookmark,
+      page_image_service::ImageService::ResultCallback callback);
 
   base::android::ScopedJavaLocalRef<jobject>
   GetMostRecentlyAddedUserBookmarkIdForUrl(
@@ -120,6 +136,8 @@ class BookmarkBridge : public ProfileObserver,
   base::android::ScopedJavaLocalRef<jobject> GetAccountReadingListFolder(
       JNIEnv* env);
   base::android::ScopedJavaLocalRef<jobject> GetDefaultReadingListFolder(
+      JNIEnv* env);
+  base::android::ScopedJavaLocalRef<jobject> GetDefaultBookmarkFolder(
       JNIEnv* env);
 
   base::android::ScopedJavaLocalRef<jstring> GetBookmarkGuidByIdForTesting(
@@ -249,6 +267,7 @@ class BookmarkBridge : public ProfileObserver,
   void SetReadStatus(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& j_id,
                      jboolean j_read);
+  void SetReadStatusImpl(const GURL& url, bool read);
 
   jint GetUnreadCount(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& j_id);
@@ -270,6 +289,9 @@ class BookmarkBridge : public ProfileObserver,
 
   // ProfileObserver override
   void OnProfileWillBeDestroyed(Profile* profile) override;
+
+  ReadingListManager* GetLocalOrSyncableReadingListManagerForTesting();
+  ReadingListManager* GetAccountReadingListManagerIfAvailableForTesting();
 
  private:
   base::android::ScopedJavaLocalRef<jobject> CreateJavaBookmark(
@@ -310,39 +332,35 @@ class BookmarkBridge : public ProfileObserver,
       const bookmarks::BookmarkNode* new_parent_node,
       int parent_type,
       int index);
+  bool IsPermanentFolderVisible(bool ignore_visibility,
+                                const bookmarks::BookmarkNode* folder);
+  const bookmarks::BookmarkNode* GetCorrespondingAccountFolder(
+      const bookmarks::BookmarkNode* folder);
 
   // Override bookmarks::BaseBookmarkModelObserver.
   // Called when there are changes to the bookmark model that don't trigger
   // any of the other callback methods. For example, this is called when
   // partner bookmarks change.
   void BookmarkModelChanged() override;
-  void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
-                           bool ids_reassigned) override;
-  void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override;
-  void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
-                         const bookmarks::BookmarkNode* old_parent,
+  void BookmarkModelLoaded(bool ids_reassigned) override;
+  void BookmarkModelBeingDeleted() override;
+  void BookmarkNodeMoved(const bookmarks::BookmarkNode* old_parent,
                          size_t old_index,
                          const bookmarks::BookmarkNode* new_parent,
                          size_t new_index) override;
-  void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
-                         const bookmarks::BookmarkNode* parent,
+  void BookmarkNodeAdded(const bookmarks::BookmarkNode* parent,
                          size_t index,
                          bool added_by_user) override;
-  void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
-                           const bookmarks::BookmarkNode* parent,
+  void BookmarkNodeRemoved(const bookmarks::BookmarkNode* parent,
                            size_t old_index,
                            const bookmarks::BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
-  void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
-                                   const std::set<GURL>& removed_urls) override;
-  void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
-                           const bookmarks::BookmarkNode* node) override;
+  void BookmarkAllUserNodesRemoved(const std::set<GURL>& removed_urls) override;
+  void BookmarkNodeChanged(const bookmarks::BookmarkNode* node) override;
   void BookmarkNodeChildrenReordered(
-      bookmarks::BookmarkModel* model,
       const bookmarks::BookmarkNode* node) override;
-  void ExtensiveBookmarkChangesBeginning(
-      bookmarks::BookmarkModel* model) override;
-  void ExtensiveBookmarkChangesEnded(bookmarks::BookmarkModel* model) override;
+  void ExtensiveBookmarkChangesBeginning() override;
+  void ExtensiveBookmarkChangesEnded() override;
 
   // Override PartnerBookmarksShim::Observer
   void PartnerShimChanged(PartnerBookmarksShim* shim) override;
@@ -353,12 +371,32 @@ class BookmarkBridge : public ProfileObserver,
   void ReadingListLoaded() override;
   void ReadingListChanged() override;
 
-  void DestroyJavaObject();
+  // Override ReadingListModelObserver
+  void ReadingListModelLoaded(const ReadingListModel* model) override;
+  void ReadingListModelCompletedBatchUpdates(
+      const ReadingListModel* model) override;
 
-  raw_ptr<Profile> profile_;  // weak
+  // signin::IdentityManager::Observer implementation:
+  void OnPrimaryAccountChanged(
+      const signin::PrimaryAccountChangeEvent& event_details) override;
+
+  void DestroyJavaObject();
+  void CreateOrDestroyAccountReadingListManagerIfNeeded();
+
+  const raw_ptr<Profile> profile_;  // weak
   base::android::ScopedJavaGlobalRef<jobject> java_bookmark_model_;
-  raw_ptr<bookmarks::BookmarkModel> bookmark_model_;                     // weak
-  raw_ptr<bookmarks::ManagedBookmarkService> managed_bookmark_service_;  // weak
+  const raw_ptr<bookmarks::BookmarkModel> bookmark_model_;  // weak
+  const raw_ptr<bookmarks::ManagedBookmarkService>
+      managed_bookmark_service_;  // weak
+
+  const raw_ptr<page_image_service::ImageService> image_service_;  // weak
+  const raw_ptr<reading_list::DualReadingListModel>
+      dual_reading_list_model_;  // weak
+  const ReadingListManagerImpl::IdGenerationFunction id_gen_func_;
+  // Holds reading list data as an in-memory BookmarkNode tree.
+  const std::unique_ptr<ReadingListManager>
+      local_or_syncable_reading_list_manager_;
+
   std::unique_ptr<bookmarks::ScopedGroupBookmarkActions>
       grouped_bookmark_actions_;
   PrefChangeRegistrar pref_change_registrar_;
@@ -367,14 +405,12 @@ class BookmarkBridge : public ProfileObserver,
   // This is owned by profile.
   raw_ptr<PartnerBookmarksShim> partner_bookmarks_shim_;
 
-  // Holds reading list data as an in-memory BookmarkNode tree.
-  const std::unique_ptr<ReadingListManager>
-      local_or_syncable_reading_list_manager_;
   // Holds account reading list data, similar to above. Only non-null if the
   // account reading list is available.
-  const std::unique_ptr<ReadingListManager> account_reading_list_manager_;
+  std::unique_ptr<ReadingListManager> account_reading_list_manager_;
 
-  raw_ptr<page_image_service::ImageService> image_service_;  // weak
+  raw_ptr<ReadingListModel> account_reading_list_model_;  // weak
+  raw_ptr<signin::IdentityManager> identity_manager_;  // weak
 
   // Observes the profile destruction and creation.
   base::ScopedObservation<Profile, ProfileObserver> profile_observation_{this};
@@ -386,6 +422,12 @@ class BookmarkBridge : public ProfileObserver,
   base::ScopedMultiSourceObservation<ReadingListManager,
                                      ReadingListManager::Observer>
       reading_list_manager_observations_{this};
+  base::ScopedObservation<reading_list::DualReadingListModel,
+                          ReadingListModelObserver>
+      dual_reading_list_model_observation_{this};
+  base::ScopedObservation<signin::IdentityManager,
+                          signin::IdentityManager::Observer>
+      identity_manager_observation_{this};
 
   bool suppress_observer_notifications_ = false;
 

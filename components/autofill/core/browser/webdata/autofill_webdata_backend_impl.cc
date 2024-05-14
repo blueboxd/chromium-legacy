@@ -18,6 +18,7 @@
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/autofill_wallet_usage_data.h"
+#include "components/autofill/core/browser/data_model/bank_account.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/credit_card_benefit.h"
 #include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
@@ -113,7 +114,9 @@ enum class Result {
   kClearLocalCvcs_Failure = 273,
   kUpdateServerIbanMetadata_Success = 274,
   kUpdateServerIbanMetadata_Failure = 275,
-  kMaxValue = kUpdateServerIbanMetadata_Failure,
+  kClearAllCreditCardBenefits_Success = 276,
+  kClearAllCreditCardBenefits_Failure = 277,
+  kMaxValue = kClearAllCreditCardBenefits_Failure,
 };
 
 // Reports the success or failure of various operations on the database via UMA.
@@ -597,18 +600,6 @@ WebDatabase::State AutofillWebDataBackendImpl::UnmaskServerCreditCard(
   return WebDatabase::COMMIT_NOT_NEEDED;
 }
 
-WebDatabase::State AutofillWebDataBackendImpl::MaskServerCreditCard(
-    const std::string& id,
-    WebDatabase* db) {
-  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-  if (PaymentsAutofillTable::FromWebDatabase(db)->MaskServerCreditCard(id)) {
-    ReportResult(Result::kMaskServerCreditCard_Success);
-    return WebDatabase::COMMIT_NEEDED;
-  }
-  ReportResult(Result::kMaskServerCreditCard_Failure);
-  return WebDatabase::COMMIT_NOT_NEEDED;
-}
-
 WebDatabase::State AutofillWebDataBackendImpl::UpdateServerCardMetadata(
     const CreditCard& card,
     WebDatabase* db) {
@@ -874,9 +865,19 @@ AutofillWebDataBackendImpl::GetCreditCardBenefits(WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   std::vector<CreditCardBenefit> credit_card_benefits;
   PaymentsAutofillTable::FromWebDatabase(db)->GetAllCreditCardBenefits(
-      &credit_card_benefits);
+      credit_card_benefits);
   return std::make_unique<WDResult<std::vector<CreditCardBenefit>>>(
       CREDIT_CARD_BENEFIT_RESULT, std::move(credit_card_benefits));
+}
+
+std::unique_ptr<WDTypedResult>
+AutofillWebDataBackendImpl::GetMaskedBankAccounts(WebDatabase* db) {
+  CHECK(owning_task_runner()->RunsTasksInCurrentSequence());
+  std::vector<std::unique_ptr<BankAccount>> masked_bank_accounts;
+  PaymentsAutofillTable::FromWebDatabase(db)->GetMaskedBankAccounts(
+      masked_bank_accounts);
+  return std::make_unique<WDResult<std::vector<std::unique_ptr<BankAccount>>>>(
+      MASKED_BANK_ACCOUNTS_RESULT, std::move(masked_bank_accounts));
 }
 
 WebDatabase::State AutofillWebDataBackendImpl::ClearAllServerData(
@@ -960,6 +961,18 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveOriginURLsModifiedBetween(
   // changes, e.g. by calling the Refresh() method of PersonalDataManager.
   ReportResult(Result::kRemoveOriginURLsModifiedBetween_Success);
   return WebDatabase::COMMIT_NEEDED;
+}
+
+WebDatabase::State AutofillWebDataBackendImpl::ClearAllCreditCardBenefits(
+    WebDatabase* db) {
+  CHECK(owning_task_runner()->RunsTasksInCurrentSequence());
+  if (PaymentsAutofillTable::FromWebDatabase(db)
+          ->ClearAllCreditCardBenefits()) {
+    ReportResult(Result::kClearAllCreditCardBenefits_Success);
+    return WebDatabase::COMMIT_NEEDED;
+  }
+  ReportResult(Result::kClearAllCreditCardBenefits_Failure);
+  return WebDatabase::COMMIT_NOT_NEEDED;
 }
 
 }  // namespace autofill

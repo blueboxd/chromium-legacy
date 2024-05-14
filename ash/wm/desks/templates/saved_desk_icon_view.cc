@@ -125,7 +125,7 @@ END_METADATA
 // SavedDeskRegularIconView:
 SavedDeskRegularIconView::SavedDeskRegularIconView(
     const ui::ColorProvider* incognito_window_color_provider,
-    const std::string& icon_identifier,
+    const SavedDeskIconIdentifier& icon_identifier,
     const std::string& app_title,
     int count,
     size_t sorting_key,
@@ -204,11 +204,12 @@ void SavedDeskRegularIconView::CreateChildViews(
   auto* delegate = Shell::Get()->saved_desk_delegate();
   std::optional<gfx::ImageSkia> chrome_icon =
       delegate->MaybeRetrieveIconForSpecialIdentifier(
-          icon_identifier_, incognito_window_color_provider);
+          icon_identifier_.url_or_id, incognito_window_color_provider);
 
-  icon_view_->GetViewAccessibility().OverrideRole(ax::mojom::Role::kImage);
+  icon_view_->GetViewAccessibility().SetRole(ax::mojom::Role::kImage);
   if (!app_title.empty())
-    icon_view_->GetViewAccessibility().OverrideName(app_title);
+    icon_view_->GetViewAccessibility().SetName(app_title,
+                                               ax::mojom::NameFrom::kAttribute);
 
   // PWAs (e.g. Messages) should use icon identifier as they share the same app
   // id as Chrome and would return short name for app id as "Chromium" (see
@@ -222,18 +223,19 @@ void SavedDeskRegularIconView::CreateChildViews(
   }
 
   // It's not a special value so `icon_identifier_` is either a favicon or an
-  // app id. If `icon_identifier_` is not a valid url then it's an app id.
-  GURL potential_url{icon_identifier_};
+  // app id. If `icon_identifier_.url_or_id` is not a valid url then it's an app
+  // id.
+  GURL potential_url{icon_identifier_.url_or_id};
   if (!potential_url.is_valid()) {
     delegate->GetIconForAppId(
-        icon_identifier_, kAppIdImageSize,
+        icon_identifier_.url_or_id, kAppIdImageSize,
         base::BindOnce(&SavedDeskRegularIconView::OnIconLoaded,
                        weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
   delegate->GetFaviconForUrl(
-      icon_identifier_,
+      icon_identifier_.url_or_id, icon_identifier_.lacros_profile_id,
       base::BindOnce(&SavedDeskRegularIconView::OnIconLoaded,
                      weak_ptr_factory_.GetWeakPtr()),
       &cancelable_task_tracker_);

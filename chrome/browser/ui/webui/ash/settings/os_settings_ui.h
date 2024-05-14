@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/public/mojom/hid_preserving_bluetooth_state_controller.mojom-forward.h"
 #include "ash/webui/common/mojom/shortcut_input_provider.mojom.h"
 #include "ash/webui/personalization_app/search/search.mojom-forward.h"
 #include "base/time/time.h"
@@ -32,6 +33,7 @@
 #include "chromeos/ash/services/connectivity/public/mojom/passpoint.mojom-forward.h"
 #include "chromeos/ash/services/hotspot_config/public/mojom/cros_hotspot_config.mojom-forward.h"
 #include "chromeos/ash/services/nearby/public/mojom/nearby_share_settings.mojom.h"
+#include "chromeos/components/in_session_auth/mojom/in_session_auth.mojom.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 #include "content/public/browser/webui_config.h"
 #include "content/public/common/url_constants.h"
@@ -185,6 +187,11 @@ class OSSettingsUI : public ui::MojoWebUIController {
   void BindInterface(
       mojo::PendingReceiver<auth::mojom::PasswordFactorEditor> receiver);
 
+  // Binds to the in session auth service, for authenticating sensitive
+  // operations.
+  void BindInterface(
+      mojo::PendingReceiver<chromeos::auth::mojom::InSessionAuth> receiver);
+
   // Binds to the Jelly dynamic color Mojo
   void BindInterface(
       mojo::PendingReceiver<color_change_listener::mojom::PageHandler>
@@ -201,6 +208,11 @@ class OSSettingsUI : public ui::MojoWebUIController {
   // Binds to the cros Passpoint service.
   void BindInterface(
       mojo::PendingReceiver<chromeos::connectivity::mojom::PasspointService>
+          receiver);
+
+  // Binds HidPreservingBluetoothStateController service.
+  void BindInterface(
+      mojo::PendingReceiver<ash::mojom::HidPreservingBluetoothStateController>
           receiver);
 
  private:

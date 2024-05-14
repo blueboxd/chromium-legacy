@@ -97,7 +97,7 @@ bool IsNodeRendered(const Node& node) {
   return layout_object->Style()->Visibility() == EVisibility::kVisible;
 }
 
-bool IsInline(const Node* node) {
+bool IsInlineElement(const Node* node) {
   if (!node)
     return false;
 
@@ -105,6 +105,21 @@ bool IsInline(const Node* node) {
   // Should we apply IsDisplayInlineType()?
   return style && (style->Display() == EDisplay::kInline ||
                    style->Display() == EDisplay::kRuby);
+}
+
+bool IsInlineNode(const Node* node) {
+  if (!node) {
+    return false;
+  }
+
+  if (IsInlineElement(node)) {
+    return true;
+  }
+
+  if (LayoutObject* layout_object = node->GetLayoutObject()) {
+    return layout_object->IsInline();
+  }
+  return false;
 }
 
 // FIXME: This method should not need to call
@@ -623,9 +638,10 @@ void DispatchInputEventEditableContentChanged(
 SelectionInDOMTree CorrectedSelectionAfterCommand(
     const SelectionForUndoStep& passed_selection,
     const Document* document) {
-  if (!passed_selection.Base().IsValidFor(*document) ||
-      !passed_selection.Extent().IsValidFor(*document))
+  if (!passed_selection.Anchor().IsValidFor(*document) ||
+      !passed_selection.Focus().IsValidFor(*document)) {
     return SelectionInDOMTree();
+  }
   return passed_selection.AsSelection();
 }
 

@@ -23,7 +23,7 @@ import {mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/p
 
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.js';
 import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.js';
-import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.js';
+import {OobeI18nMixin, OobeI18nMixinInterface} from '../../components/mixins/oobe_i18n_mixin.js';
 
 import {getTemplate} from './enable_debugging.html.js';
 
@@ -43,9 +43,9 @@ enum EnableDebuggingState {
 
 const EnableDebuggingBase =
     mixinBehaviors(
-        [OobeI18nBehavior, LoginScreenBehavior, MultiStepBehavior],
-        PolymerElement) as {
-      new (): PolymerElement & OobeI18nBehaviorInterface &
+        [LoginScreenBehavior, MultiStepBehavior],
+        OobeI18nMixin(PolymerElement)) as {
+      new (): PolymerElement & OobeI18nMixinInterface &
           LoginScreenBehaviorInterface & MultiStepBehaviorInterface,
     };
 
@@ -106,13 +106,13 @@ export class EnableDebugging extends EnableDebuggingBase {
    * Returns a control which should receive an initial focus.
    */
   override get defaultControl(): HTMLElement|null {
-    if (this.uiStep == EnableDebuggingState.REMOVE_PROTECTION) {
+    if (this.uiStep === EnableDebuggingState.REMOVE_PROTECTION) {
       return this.shadowRoot!.querySelector('#removeProtectionProceedButton');
-    } else if (this.uiStep == EnableDebuggingState.SETUP) {
+    } else if (this.uiStep === EnableDebuggingState.SETUP) {
       return this.shadowRoot!.querySelector('#password');
-    } else if (this.uiStep == EnableDebuggingState.DONE) {
+    } else if (this.uiStep === EnableDebuggingState.DONE) {
       return this.shadowRoot!.querySelector('#okButton');
-    } else if (this.uiStep == EnableDebuggingState.ERROR) {
+    } else if (this.uiStep === EnableDebuggingState.ERROR) {
       return this.shadowRoot!.querySelector('#errorOkButton');
     } else {
       return null;
@@ -140,8 +140,8 @@ export class EnableDebugging extends EnableDebuggingBase {
   }
 
   private computePasswordsMatch_(password: string, password2: string): boolean {
-    return (password.length == 0 && password2.length == 0) ||
-        (password == password2 && password.length >= 4);
+    return (password.length === 0 && password2.length === 0) ||
+        (password === password2 && password.length >= 4);
   }
 
   private onHelpLinkClicked_(): void {

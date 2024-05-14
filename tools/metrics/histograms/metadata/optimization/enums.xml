@@ -52,6 +52,9 @@ chromium-metrics-reviews@google.com.
   <int value="5"
       label="Returned result as not enabled because model execution
              capability was disabled for the user account"/>
+  <int value="6"
+      label="Returned result as enabled because the feature has graduated
+             from experimental AI settings"/>
 </enum>
 
 <enum name="FeaturesSettingsVisibilityResult">
@@ -66,6 +69,7 @@ chromium-metrics-reviews@google.com.
   <int value="6"
       label="Not visible because model execution capability was disabled for
              the user account"/>
+  <int value="7" label="Not visible because the feature is already graduated"/>
 </enum>
 
 <enum name="HintCacheStoreEntryType">
@@ -114,34 +118,6 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="User not signed-in"/>
   <int value="3" label="Failed with transient error"/>
   <int value="4" label="Failed with persistent error"/>
-</enum>
-
-<enum name="OptimizationGuideEntityAnnotatorCreationStatus">
-  <int value="0" label="Unknown"/>
-  <int value="1" label="Success"/>
-  <int value="2" label="Native library invalid"/>
-  <int value="3" label="Missing model metadata">
-    The entity annotator was requested to be created but no metadata for how to
-    create it was present.
-  </int>
-  <int value="4" label="Missing entities model metadata">
-    The entity annotator was requested to be created but the metadata specific
-    to this model was not present.
-  </int>
-  <int value="5" label="Missing slices in entities model metaata">
-    The entity annotator was requested to be created but no slices were
-    specified in the entities model metadata.
-  </int>
-  <int value="6" label="Missing entities model metadata file path"/>
-  <int value="7" label="Missing word embeddings file path"/>
-  <int value="8" label="Missing names filter file path"/>
-  <int value="9" label="Missing names table file path"/>
-  <int value="10" label="Missing prefix filter file path"/>
-  <int value="11" label="Missing metadata table file path"/>
-  <int value="12" label="Initialization failure">
-    All required files were present but the creation failed for a different
-    reason
-  </int>
 </enum>
 
 <enum name="OptimizationGuideExecutionStatus">
@@ -471,23 +447,6 @@ chromium-metrics-reviews@google.com.
   </int>
 </enum>
 
-<enum name="OptimizationGuidePageContentAnnotationsStorageStatus">
-  <int value="0" label="Unknown"/>
-  <int value="1" label="Success">
-    The specific visit that we wanted to annotate content for was found in the
-    History Service and the content annotations for the visit were required to
-    be stored in the History Service.
-  </int>
-  <int value="2" label="No visits for URL found">
-    There were no visits found in the History Service for the URL that the
-    content annotations are associated with.
-  </int>
-  <int value="3" label="Specific visit for URL not found">
-    Visits for the URL the content annotations are for were found, but not the
-    specific visit we were annotating for.
-  </int>
-</enum>
-
 <enum name="OptimizationGuidePageTopicsOverrideListFileLoadResult">
   <int value="0" label="Unknown"/>
   <int value="1" label="Success"/>
@@ -637,8 +596,8 @@ chromium-metrics-reviews@google.com.
 
 <enum name="OptimizationGuideUserFeedback">
   <int value="0" label="Unknown"/>
-  <int value="1" label="Thumbs Up"/>
-  <int value="2" label="Thumbs Down"/>
+  <int value="1" label="Thumbs Down"/>
+  <int value="2" label="Thumbs Up"/>
 </enum>
 
 <enum name="OptimizationType">
@@ -691,6 +650,23 @@ chromium-metrics-reviews@google.com.
   <int value="46" label="CAPITAL_ONE_CREDIT_CARD_STREAMING_BENEFITS"/>
   <int value="47" label="AMERICAN_EXPRESS_CREDIT_CARD_FLIGHT_BENEFITS"/>
   <int value="48" label="AMERICAN_EXPRESS_CREDIT_CARD_SUBSCRIPTION_BENEFITS"/>
+</enum>
+
+<enum name="PageContentAnnotationsStorageStatus">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Success">
+    The specific visit that we wanted to annotate content for was found in the
+    History Service and the content annotations for the visit were required to
+    be stored in the History Service.
+  </int>
+  <int value="2" label="No visits for URL found">
+    There were no visits found in the History Service for the URL that the
+    content annotations are associated with.
+  </int>
+  <int value="3" label="Specific visit for URL not found">
+    Visits for the URL the content annotations are for were found, but not the
+    specific visit we were annotating for.
+  </int>
 </enum>
 
 </enums>

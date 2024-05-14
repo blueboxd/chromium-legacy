@@ -317,7 +317,7 @@ bool H264Decoder::CalculatePicOrderCounts(scoped_refptr<H264Picture> pic) {
       if (pic->nal_ref_idc == 0 && abs_frame_num > 0)
         --abs_frame_num;
 
-      int expected_pic_order_cnt = 0;
+      base::CheckedNumeric<int> expected_pic_order_cnt = 0;
       if (abs_frame_num > 0) {
         if (sps->num_ref_frames_in_pic_order_cnt_cycle == 0) {
           DVLOG(1) << "Invalid num_ref_frames_in_pic_order_cnt_cycle "
@@ -330,8 +330,10 @@ bool H264Decoder::CalculatePicOrderCounts(scoped_refptr<H264Picture> pic) {
         int frame_num_in_pic_order_cnt_cycle =
             (abs_frame_num - 1) % sps->num_ref_frames_in_pic_order_cnt_cycle;
 
-        expected_pic_order_cnt = pic_order_cnt_cycle_cnt *
-                                 sps->expected_delta_per_pic_order_cnt_cycle;
+        expected_pic_order_cnt =
+            base::CheckedNumeric<int>(pic_order_cnt_cycle_cnt) *
+            base::CheckedNumeric<int>(
+                sps->expected_delta_per_pic_order_cnt_cycle);
         // frame_num_in_pic_order_cnt_cycle is verified < 255 in parser
         for (int i = 0; i <= frame_num_in_pic_order_cnt_cycle; ++i)
           expected_pic_order_cnt += sps->offset_for_ref_frame[i];
@@ -340,8 +342,15 @@ bool H264Decoder::CalculatePicOrderCounts(scoped_refptr<H264Picture> pic) {
       if (!pic->nal_ref_idc)
         expected_pic_order_cnt += sps->offset_for_non_ref_pic;
 
+      if (!expected_pic_order_cnt.IsValid()) {
+        DVLOG(1) << "Invalid expected_pic_order_cnt for stream.";
+        return false;
+      }
+
       pic->top_field_order_cnt =
-          expected_pic_order_cnt + pic->delta_pic_order_cnt0;
+          (expected_pic_order_cnt +
+           base::CheckedNumeric<int>(pic->delta_pic_order_cnt0))
+              .ValueOrDie();
       pic->bottom_field_order_cnt = pic->top_field_order_cnt +
                                     sps->offset_for_top_to_bottom_field +
                                     pic->delta_pic_order_cnt1;
@@ -777,13 +786,6 @@ H264Decoder::H264Accelerator::Status H264Decoder::StartNewFrame(
       return H264Accelerator::Status::kFail;
   }
 
-  if (recovery_frame_cnt_ && *recovery_frame_cnt_ >= max_frame_num_) {
-    DVLOG(1) << "Invalid recovery_frame_cnt=" << *recovery_frame_cnt_
-             << " (it must be less or equal to max_frame_num-1=" << max_frame_num_ - 1
-             << ")";
-    return H264Accelerator::Status::kFail;
-  }
-
   if (!InitCurrPicture(slice_hdr))
     return H264Accelerator::Status::kFail;
 
@@ -1007,11 +1009,19 @@ bool H264Decoder::FinishPicture(scoped_refptr<H264Picture> pic) {
   DVLOG(4) << "Finishing picture frame_num: " << pic->frame_num
            << ", entries in DPB: " << dpb_.size();
   if (recovery_frame_cnt_) {
-    // This is the first picture after the recovery point SEI message. Computes
-    // the frame_num of the frame that should be output from (Spec D.2.8).
+    // This is the first picture after the recovery point SEI message. Validate
+    // `recovery_frame_cnt_` now that we are certain to have max_frame_num_.
+    if (*recovery_frame_cnt_ >= max_frame_num_) {
+      DVLOG(1) << "Invalid recovery_frame_cnt=" << *recovery_frame_cnt_
+               << " (must be less than or equal to max_frame_num-1="
+               << (max_frame_num_ - 1) << ")";
+      return false;
+    }
+
+    // Compute the frame_num of the first frame that should be output (D.2.8).
     recovery_frame_num_ =
         (*recovery_frame_cnt_ + pic->frame_num) % max_frame_num_;
-    DVLOG(3) << "recovery_frame_num_" << *recovery_frame_num_;
+    DVLOG(3) << "recovery_frame_num_=" << *recovery_frame_num_;
     recovery_frame_cnt_.reset();
   }
 

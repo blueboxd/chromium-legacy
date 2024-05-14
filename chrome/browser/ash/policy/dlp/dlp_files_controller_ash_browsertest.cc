@@ -26,6 +26,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/enterprise/data_controls/dlp_policy_event.pb.h"
 #include "content/public/browser/file_select_listener.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/test/browser_test.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "ui/shell_dialogs/fake_select_file_dialog.h"
@@ -190,8 +191,8 @@ IN_PROC_BROWSER_TEST_F(DlpFilesControllerAshBrowserTest,
   ASSERT_EQ(events.size(), 1u);
 
   auto event_builder = data_controls::DlpPolicyEventBuilder::Event(
-      kExampleUrl, rule_name, rule_id, DlpRulesManager::Restriction::kFiles,
-      DlpRulesManager::Level::kBlock);
+      GURL(kExampleUrl).spec(), rule_name, rule_id,
+      DlpRulesManager::Restriction::kFiles, DlpRulesManager::Level::kBlock);
 
   event_builder->SetDestinationComponent(data_controls::Component::kOneDrive);
   event_builder->SetContentName(base::FilePath(file_path).BaseName().value());

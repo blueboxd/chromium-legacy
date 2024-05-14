@@ -512,7 +512,7 @@ void CloudBinaryUploadService::OnGetRequestData(Request::Id request_id,
       GetTrafficAnnotationTag(IsConsumerScanRequest(*request));
   auto callback = base::BindOnce(&CloudBinaryUploadService::OnUploadComplete,
                                  weakptr_factory_.GetWeakPtr(), request_id);
-  std::unique_ptr<MultipartUploadRequest> upload_request;
+  std::unique_ptr<ConnectorUploadRequest> upload_request;
   if (request->IsAuthRequest() || !data.contents.empty()) {
     upload_request = MultipartUploadRequest::CreateStringRequest(
         url_loader_factory_, std::move(url), metadata, data.contents,
@@ -716,10 +716,51 @@ void CloudBinaryUploadService::RecordRequestMetrics(Request::Id request_id,
                                                     Result result) {
   base::UmaHistogramEnumeration("SafeBrowsingBinaryUploadRequest.Result",
                                 result);
-  base::UmaHistogramCustomTimes(
-      "SafeBrowsingBinaryUploadRequest.Duration",
-      base::TimeTicks::Now() - start_times_[request_id], base::Milliseconds(1),
-      base::Minutes(6), 50);
+
+  auto duration = base::TimeTicks::Now() - start_times_[request_id];
+  base::UmaHistogramCustomTimes("SafeBrowsingBinaryUploadRequest.Duration",
+                                duration, base::Milliseconds(1),
+                                base::Minutes(6), 50);
+
+  Request* request = GetRequest(request_id);
+  if (request && !IsConsumerScanRequest(*request)) {
+    std::string request_type;
+    switch (request->analysis_connector()) {
+      case enterprise_connectors::FILE_DOWNLOADED:
+      case enterprise_connectors::FILE_ATTACHED:
+      case enterprise_connectors::FILE_TRANSFER:
+        request_type = "File";
+        break;
+      case enterprise_connectors::BULK_DATA_ENTRY:
+        request_type = "Text";
+        break;
+      case enterprise_connectors::PRINT:
+        request_type = "Print";
+        break;
+      case enterprise_connectors::ANALYSIS_CONNECTOR_UNSPECIFIED:
+        break;
+    }
+    if (request_type.empty()) {
+      return;
+    }
+
+    // TODO(b/322006583): Add logic so this can be "Resumable" depending on the
+    // request that was made.
+    std::string protocol = "Multipart";
+
+    // Example values:
+    //   "Enterprise.ResumableRequest.Print.Duration
+    //   "Enterprise.MultipartRequest.Text.Duration
+    //   "Enterprise.ResumableRequest.File.Result
+    base::UmaHistogramCustomTimes(
+        base::StrCat(
+            {"Enterprise.", protocol, "Request.", request_type, ".Duration"}),
+        duration, base::Milliseconds(1), base::Minutes(6), 50);
+    base::UmaHistogramEnumeration(
+        base::StrCat(
+            {"Enterprise.", protocol, "Request.", request_type, ".Result"}),
+        result);
+  }
 }
 
 void CloudBinaryUploadService::RecordRequestMetrics(

@@ -41,6 +41,14 @@ public class DseNewTabUrlManager {
             ChromeFeatureList.newBooleanCachedFieldTrialParameter(
                     ChromeFeatureList.NEW_TAB_SEARCH_ENGINE_URL_ANDROID,
                     EEA_COUNTRY_ONLY_PARAM,
+                    true);
+
+    // A parameter of whether to skip the check for users in EEA countries only.
+    private static final String SKIP_EEA_COUNTRY_CHECK_PARAM = "skip_eea_country_check";
+    public static final BooleanCachedFieldTrialParameter SKIP_EEA_COUNTRY_CHECK =
+            ChromeFeatureList.newBooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.NEW_TAB_SEARCH_ENGINE_URL_ANDROID,
+                    SKIP_EEA_COUNTRY_CHECK_PARAM,
                     false);
 
     public DseNewTabUrlManager(ObservableSupplier<Profile> profileSupplier) {
@@ -108,9 +116,20 @@ public class DseNewTabUrlManager {
     /** Returns whether the feature NewTabSearchEngineUrlAndroid is enabled. */
     public static boolean isNewTabSearchEngineUrlAndroidEnabled() {
         return ChromeFeatureList.sNewTabSearchEngineUrlAndroid.isEnabled()
-                && (!EEA_COUNTRY_ONLY.getValue()
-                        || ChromeSharedPreferences.getInstance()
-                                .readBoolean(ChromePreferenceKeys.IS_EEA_CHOICE_COUNTRY, false));
+                && (SKIP_EEA_COUNTRY_CHECK.getValue()
+                        || (EEA_COUNTRY_ONLY.getValue()
+                                && ChromeSharedPreferences.getInstance()
+                                        .readBoolean(
+                                                ChromePreferenceKeys.IS_EEA_CHOICE_COUNTRY,
+                                                false)));
+    }
+
+    /**
+     * Returns whether the parameter SWAP_OUT_NTP is enabled. Note: this method only checks parts of
+     * isNewTabSearchEngineUrlAndroidEnabled(), i.e., it doesn't check country code.
+     */
+    public static boolean isSwapOutNtpFlagEnabled() {
+        return ChromeFeatureList.sTabResumptionModuleAndroid.isEnabled() && SWAP_OUT_NTP.getValue();
     }
 
     /**
@@ -154,7 +173,6 @@ public class DseNewTabUrlManager {
     void onProfileAvailable(Profile profile) {
         mTemplateUrlService = TemplateUrlServiceFactory.getForProfile(profile);
         mTemplateUrlService.addObserver(this::onTemplateURLServiceChanged);
-
         onTemplateURLServiceChanged();
         mProfileSupplier.removeObserver(mProfileCallback);
         mProfileCallback = null;
@@ -184,5 +202,14 @@ public class DseNewTabUrlManager {
 
     public TemplateUrlService getTemplateUrlServiceForTesting() {
         return mTemplateUrlService;
+    }
+
+    public static void setIsEeaChoiceCountryForTesting(boolean isEeaChoiceCountry) {
+        ChromeSharedPreferences.getInstance()
+                .writeBoolean(ChromePreferenceKeys.IS_EEA_CHOICE_COUNTRY, isEeaChoiceCountry);
+    }
+
+    public static void resetIsEeaChoiceCountryForTesting() {
+        ChromeSharedPreferences.getInstance().removeKey(ChromePreferenceKeys.IS_EEA_CHOICE_COUNTRY);
     }
 }

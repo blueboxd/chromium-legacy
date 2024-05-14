@@ -145,6 +145,9 @@ api::tab_groups::Color ColorIdToColor(
       return api::tab_groups::Color::kCyan;
     case tab_groups::TabGroupColorId::kOrange:
       return api::tab_groups::Color::kOrange;
+    case tab_groups::TabGroupColorId::kNumEntries:
+      NOTREACHED() << "kNumEntries is not a support color enum.";
+      return api::tab_groups::Color::kGrey;
   }
 
   NOTREACHED();
@@ -187,8 +190,9 @@ bool IsGroupSaved(tab_groups::TabGroupId tab_group_id,
   }
 
   // If the service failed to start, then there are no saved tab groups.
-  SavedTabGroupKeyedService* saved_tab_group_service =
-      SavedTabGroupServiceFactory::GetForProfile(tab_strip_model->profile());
+  tab_groups::SavedTabGroupKeyedService* saved_tab_group_service =
+      tab_groups::SavedTabGroupServiceFactory::GetForProfile(
+          tab_strip_model->profile());
   if (!saved_tab_group_service) {
     return false;
   }

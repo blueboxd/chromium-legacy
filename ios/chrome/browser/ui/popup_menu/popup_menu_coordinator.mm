@@ -355,6 +355,7 @@ using base::UserMetricsAction;
 
     _overflowMenuOrderer.model = _overflowMenuModel;
     mediator.model = _overflowMenuModel;
+    self.popupMenuHelpCoordinator.actionProvider = mediator;
 
     self.overflowMenuMediator = mediator;
 
@@ -393,7 +394,7 @@ using base::UserMetricsAction;
                      animated:YES
                    completion:^{
                      [weakSelf.popupMenuHelpCoordinator
-                         showHistoryOnOverflowMenuIPHInViewController:menu];
+                         showIPHAfterOpenOfOverflowMenu:menu];
                    }];
     return;
   }
@@ -575,6 +576,7 @@ using base::UserMetricsAction;
 
 - (void)showMenuCustomization {
   _event.Put(OverflowMenuVisitedEventFields::kUserStartedCustomization);
+  [self logFeatureEngagementCustomizationStarted];
   [_overflowMenuModel
       startCustomizationWithActions:_overflowMenuOrderer
                                         .actionCustomizationModel
@@ -723,6 +725,22 @@ using base::UserMetricsAction;
 
   tracker->NotifyEvent(
       feature_engagement::events::kOverflowMenuNoHorizontalScrollOrAction);
+}
+
+- (void)logFeatureEngagementCustomizationStarted {
+  ChromeBrowserState* browserState = self.browser->GetBrowserState();
+  if (!browserState) {
+    return;
+  }
+
+  feature_engagement::Tracker* tracker =
+      feature_engagement::TrackerFactory::GetForBrowserState(browserState);
+  if (!tracker) {
+    return;
+  }
+
+  tracker->NotifyEvent(
+      feature_engagement::events::kIOSOverflowMenuCustomizationUsed);
 }
 
 - (void)setupSheetForMenu:(UIViewController*)menu

@@ -267,18 +267,25 @@ UserSelectableTypeSet SyncPrefs::GetSelectedTypesForAccount(
                  type == UserSelectableType::kSharedTabGroupData) {
         // History, Tabs, and Shared Tab Group Data are disabled by default.
         type_enabled = false;
-      } else if (type == UserSelectableType::kPasswords) {
+      } else if (type == UserSelectableType::kPasswords ||
+                 type == UserSelectableType::kAutofill) {
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
         type_enabled = true;
 #else
-        // kPasswords is only on by default if there was an explicit sign in
-        // recordedand the `switches::kUnoDesktop` is enabled.
-        // Otherwise the type requires a dedicated opt-in. Note: If
-        // this changes, also update the migration logic in
+        // kPasswords and kAutofill are only on by default if there was an
+        // explicit sign in recorded and
+        // `IsExplicitBrowserSigninUIOnDesktopEnabled()` is true.
+        // Otherwise:
+        // - kPasswords requires a dedicated opt-in.
+        // - kAutofill cannot be enabled.
+        // Note: If this changes, also update the migration logic in
         // MigrateGlobalDataTypePrefsToAccount().
+        switches::ExplicitBrowserSigninPhase phase =
+            type == UserSelectableType::kPasswords
+                ? switches::ExplicitBrowserSigninPhase::kExperimental
+                : switches::ExplicitBrowserSigninPhase::kFull;
         type_enabled =
-            switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
-                switches::ExplicitBrowserSigninPhase::kExperimental) &&
+            switches::IsExplicitBrowserSigninUIOnDesktopEnabled(phase) &&
             pref_service_->GetBoolean(::prefs::kExplicitBrowserSignin);
 #endif
       } else if (type == UserSelectableType::kBookmarks ||
@@ -313,6 +320,10 @@ UserSelectableTypeSet SyncPrefs::GetSelectedTypesForAccount(
     }
   }
 
+  if (!password_sync_allowed_) {
+    selected_types.Remove(UserSelectableType::kPasswords);
+  }
+
   return selected_types;
 }
 
@@ -333,6 +344,10 @@ UserSelectableTypeSet SyncPrefs::GetSelectedTypesForSyncingUser() const {
       // individual prefs.
       selected_types.Put(type);
     }
+  }
+
+  if (!password_sync_allowed_) {
+    selected_types.Remove(UserSelectableType::kPasswords);
   }
 
   return selected_types;
@@ -389,10 +404,8 @@ void SyncPrefs::SetSelectedTypesForSyncingUser(
     }
   }
 
-  // Payments integration might have changed, so report as true.
   for (SyncPrefObserver& observer : sync_pref_observers_) {
-    observer.OnSelectedTypesPrefChange(
-        /*payments_integration_enabled_changed=*/true);
+    observer.OnSelectedTypesPrefChange();
   }
 }
 
@@ -499,9 +512,7 @@ void SyncPrefs::SetSelectedOsTypes(bool sync_all_os_types,
     }
   }
   for (SyncPrefObserver& observer : sync_pref_observers_) {
-    // Payments is a browser type (not an OS type) so can't have changed here.
-    observer.OnSelectedTypesPrefChange(
-        /*payments_integration_enabled_changed=*/false);
+    observer.OnSelectedTypesPrefChange();
   }
 }
 
@@ -669,6 +680,8 @@ const char* SyncPrefs::GetPrefNameForType(UserSelectableType type) {
       return prefs::internal::kSyncSharedTabGroupData;
     case UserSelectableType::kPayments:
       return prefs::internal::kSyncPayments;
+    case UserSelectableType::kCompare:
+      return prefs::internal::kSyncCompare;
   }
   NOTREACHED();
   return nullptr;
@@ -734,6 +747,8 @@ bool SyncPrefs::IsTypeSupportedInTransportMode(UserSelectableType type) {
     case UserSelectableType::kHistory:
     case UserSelectableType::kTabs:
       return base::FeatureList::IsEnabled(kReplaceSyncPromosWithSignInPromos);
+    case UserSelectableType::kCompare:
+      return base::FeatureList::IsEnabled(kReplaceSyncPromosWithSignInPromos);
     case syncer::UserSelectableType::kSharedTabGroupData:
       return base::FeatureList::IsEnabled(
           kSyncSharedTabGroupDataInTransportMode);
@@ -765,13 +780,8 @@ void SyncPrefs::OnSelectedTypesPrefChanged(const std::string& pref_name) {
     return;
   }
 
-  // Note: If `kSelectedTypesPerAccount` gets changed, this potentially
-  // over-notifies that "payments integration enabled" may have changed.
-  bool payments_integration_enabled_changed =
-      pref_name == GetPrefNameForType(UserSelectableType::kPayments) ||
-      pref_name == prefs::internal::kSelectedTypesPerAccount;
   for (SyncPrefObserver& observer : sync_pref_observers_) {
-    observer.OnSelectedTypesPrefChange(payments_integration_enabled_changed);
+    observer.OnSelectedTypesPrefChange();
   }
 }
 
@@ -1151,6 +1161,17 @@ void SyncPrefs::MarkPartialSyncToSigninMigrationFullyDone() {
       kMigratedPart1ButNot2) {
     pref_service_->SetInteger(kSyncToSigninMigrationState,
                               kMigratedPart2AndFullyDone);
+  }
+}
+
+void SyncPrefs::SetPasswordSyncAllowed(bool allowed) {
+  if (password_sync_allowed_ == allowed) {
+    return;
+  }
+
+  password_sync_allowed_ = allowed;
+  for (SyncPrefObserver& observer : sync_pref_observers_) {
+    observer.OnSelectedTypesPrefChange();
   }
 }
 

@@ -10,11 +10,13 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/notreached.h"
 #import "components/google/core/common/google_util.h"
+#import "components/search_engines/template_url_service.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_service_utils.h"
 #import "components/sync/service/sync_user_settings.h"
+#import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
 #import "ios/chrome/browser/shared/coordinator/alert/alert_coordinator.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
@@ -43,12 +45,14 @@
 #import "ios/chrome/browser/ui/authentication/signout_action_sheet/signout_action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/settings/google_services/bulk_upload/bulk_upload_coordinator.h"
 #import "ios/chrome/browser/ui/settings/google_services/bulk_upload/bulk_upload_coordinator_delegate.h"
+#import "ios/chrome/browser/ui/settings/google_services/features.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_accounts/accounts_coordinator.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_accounts/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/google_services/personalize_google_services_coordinator.h"
 #import "ios/chrome/browser/ui/settings/google_services/sync_error_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
@@ -65,6 +69,7 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
     BulkUploadCoordinatorDelegate,
     ManageSyncSettingsCommandHandler,
     ManageSyncSettingsTableViewControllerPresentationDelegate,
+    PersonalizeGoogleServicesCoordinatorDelegate,
     SettingsNavigationControllerDelegate,
     SignoutActionSheetCoordinatorDelegate,
     SyncErrorSettingsCommandHandler,
@@ -109,6 +114,8 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
   // The navigation controller to use only when presenting the
   // ManageSyncSettings modally.
   SettingsNavigationController* _navigationControllerInModalView;
+  // The coordinator for the Personalize Google Services view.
+  PersonalizeGoogleServicesCoordinator* _personalizeGoogleServicesCoordinator;
 }
 
 @synthesize baseNavigationController = _baseNavigationController;
@@ -169,15 +176,16 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
   self.mediator.forcedSigninEnabled =
       self.authService->GetServiceStatus() ==
       AuthenticationService::ServiceStatus::SigninForcedByPolicy;
+  if (IsLinkedServicesSettingIosEnabled()) {
+    self.mediator.isEEAAccount =
+        ios::TemplateURLServiceFactory::GetForBrowserState(
+            self.browser->GetBrowserState())
+            ->IsEeaChoiceCountry();
+  }
 
-  // For kSignedIn state the view will include the account details item with a
-  // transparent background, InsetGrouped should be used in this case to prevent
-  // grey lines from showing around this item with large fonts.
-  UITableViewStyle style = _accountState == SyncSettingsAccountState::kSignedIn
-                               ? UITableViewStyleInsetGrouped
-                               : ChromeTableViewStyle();
   ManageSyncSettingsTableViewController* viewController =
-      [[ManageSyncSettingsTableViewController alloc] initWithStyle:style];
+      [[ManageSyncSettingsTableViewController alloc]
+          initWithStyle:ChromeTableViewStyle()];
   self.viewController = viewController;
 
   NSString* title = self.mediator.overrideViewControllerTitle;
@@ -233,6 +241,8 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
   _syncObserver.reset();
   [self.signoutActionSheetCoordinator stop];
   _signoutActionSheetCoordinator = nil;
+
+  [self stopPersonalizedGoogleServicesCoordinator];
 }
 
 #pragma mark - Properties
@@ -275,6 +285,11 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
   _bulkUploadCoordinator = nil;
 }
 
+- (void)stopPersonalizedGoogleServicesCoordinator {
+  [_personalizeGoogleServicesCoordinator stop];
+  _personalizeGoogleServicesCoordinator = nil;
+}
+
 // Closes the Manage sync settings view controller.
 - (void)closeManageSyncSettings {
   if (_settingsAreDismissed) {
@@ -303,9 +318,15 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
 
     if (_baseNavigationController) {
       if (self.viewController.presentedViewController) {
-        [self.viewController.presentedViewController
-            dismissViewControllerAnimated:YES
-                               completion:nil];
+        if ([self.viewController.presentedViewController
+                isKindOfClass:[SettingsNavigationController class]]) {
+          [self.viewController.presentedViewController
+              performSelector:@selector(closeSettings)];
+        } else {
+          [self.viewController.presentedViewController.presentingViewController
+              dismissViewControllerAnimated:YES
+                                 completion:nil];
+        }
       }
       [self.baseNavigationController popToViewController:self.viewController
                                                 animated:NO];
@@ -326,6 +347,14 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
     (ManageSyncSettingsTableViewController*)controller {
   DCHECK_EQ(self.viewController, controller);
   [self.delegate manageSyncSettingsCoordinatorWasRemoved:self];
+}
+
+#pragma mark - PersonalizeGoogleServicesCoordinatorDelegate
+
+- (void)personalizeGoogleServicesCoordinatorWasRemoved:
+    (PersonalizeGoogleServicesCoordinator*)coordinator {
+  CHECK_EQ(_personalizeGoogleServicesCoordinator, coordinator);
+  [self stopPersonalizedGoogleServicesCoordinator];
 }
 
 #pragma mark - ManageSyncSettingsCommandHandler
@@ -350,6 +379,20 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
           ->GetSystemIdentityManager()
           ->PresentWebAndAppSettingDetailsController(identity,
                                                      self.viewController, YES);
+}
+
+- (void)openPersonalizeGoogleServices {
+  CHECK(!_personalizeGoogleServicesCoordinator);
+
+  base::RecordAction(base::UserMetricsAction(
+      "Signin_AccountSettings_PersonalizeGoogleServicesClicked"));
+
+  _personalizeGoogleServicesCoordinator = [[PersonalizeGoogleServicesCoordinator
+      alloc]
+      initWithBaseNavigationController:self.navigationControllerForChildPages
+                               browser:self.browser];
+  _personalizeGoogleServicesCoordinator.delegate = self;
+  [_personalizeGoogleServicesCoordinator start];
 }
 
 - (void)openDataFromChromeSyncWebPage {
@@ -421,9 +464,9 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
 
 - (void)showAccountsPage {
   AccountsCoordinator* accountsCoordinator = [[AccountsCoordinator alloc]
-      initWithBaseNavigationController:self.navigationControllerForChildPages
-                               browser:self.browser
-             closeSettingsOnAddAccount:NO];
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+       closeSettingsOnAddAccount:NO];
   accountsCoordinator.signoutDismissalByParentCoordinator = YES;
   _accountsCoordinator = accountsCoordinator;
   [accountsCoordinator start];

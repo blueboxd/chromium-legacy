@@ -114,7 +114,8 @@ class CORE_EXPORT WebFrameWidgetImpl
  public:
   struct PromiseCallbacks {
     base::OnceCallback<void(base::TimeTicks)> swap_time_callback;
-    base::OnceCallback<void(base::TimeTicks)> presentation_time_callback;
+    base::OnceCallback<void(const viz::FrameTimingDetails&)>
+        presentation_time_callback;
 #if BUILDFLAG(IS_APPLE)
     base::OnceCallback<void(gfx::CALayerResult)>
         core_animation_error_code_callback;
@@ -226,7 +227,8 @@ class CORE_EXPORT WebFrameWidgetImpl
   void RequestDecode(const cc::PaintImage&,
                      base::OnceCallback<void(bool)>) override;
   void NotifyPresentationTimeInBlink(
-      base::OnceCallback<void(base::TimeTicks)> presentation_callback) final;
+      base::OnceCallback<void(const viz::FrameTimingDetails&)>
+          presentation_callback) final;
   void RequestBeginMainFrameNotExpected(bool request) final;
   int GetLayerTreeId() final;
   const cc::LayerTreeSettings* GetLayerTreeSettings() final;
@@ -240,7 +242,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   mojom::blink::DisplayMode DisplayMode() const override;
   ui::WindowShowState WindowShowState() const override;
   bool Resizable() const override;
-  const WebVector<gfx::Rect>& WindowSegments() const override;
+  const WebVector<gfx::Rect>& ViewportSegments() const override;
   void SetDelegatedInkMetadata(
       std::unique_ptr<gfx::DelegatedInkMetadata> metadata) final;
   void DidOverscroll(const gfx::Vector2dF& overscroll_delta,
@@ -354,7 +356,8 @@ class CORE_EXPORT WebFrameWidgetImpl
   void ApplyViewportIntersectionForTesting(
       mojom::blink::ViewportIntersectionStatePtr intersection_state);
   void NotifyPresentationTime(
-      base::OnceCallback<void(base::TimeTicks)> callback) override;
+      base::OnceCallback<void(const viz::FrameTimingDetails&)>
+          presentation_callback) override;
 #if BUILDFLAG(IS_APPLE)
   void NotifyCoreAnimationErrorCode(
       base::OnceCallback<void(gfx::CALayerResult)> callback) override;
@@ -456,6 +459,7 @@ class CORE_EXPORT WebFrameWidgetImpl
                          ui::mojom::blink::DragOperation,
                          base::OnceClosure callback) override;
   void OnStartStylusWriting(OnStartStylusWritingCallback callback) override;
+  void NotifyClearedDisplayedGraphics() override;
 
   // mojom::blink::FrameWidgetInputHandler overrides:
   void HandleStylusWritingGestureAction(
@@ -664,7 +668,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   void OverrideDevicePostureForEmulation(
       mojom::blink::DevicePostureType device_posture_param);
   void DisableDevicePostureOverrideForEmulation();
-  void SetWindowSegments(const std::vector<gfx::Rect>& window_segments);
+  void SetViewportSegments(const std::vector<gfx::Rect>& viewport_segments);
   viz::FrameSinkId GetFrameSinkIdAtPoint(const gfx::PointF& point,
                                          gfx::PointF* local_point);
 
@@ -890,7 +894,8 @@ class CORE_EXPORT WebFrameWidgetImpl
   WebInputEventResult HandleCapturedMouseEvent(const WebCoalescedInputEvent&);
   void MouseContextMenu(const WebMouseEvent&);
   void CancelDrag();
-  void PresentationCallbackForMeaningfulLayout(base::TimeTicks);
+  void PresentationCallbackForMeaningfulLayout(
+      const viz::FrameTimingDetails& first_paint_details);
 
   void ForEachRemoteFrameControlledByWidget(
       base::FunctionRef<void(RemoteFrame*)> callback);
@@ -1058,7 +1063,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   ui::WindowShowState window_show_state_;
   bool resizable_;
 
-  WebVector<gfx::Rect> window_segments_;
+  WebVector<gfx::Rect> viewport_segments_;
 
   // This is owned by the LayerTreeHostImpl, and should only be used on the
   // compositor thread, so we keep the TaskRunner where you post tasks to

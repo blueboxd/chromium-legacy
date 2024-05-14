@@ -52,12 +52,13 @@ chromium-metrics-reviews@google.com.
   <int value="6" label="DEFAULT_NTP"/>
 </enum>
 
-<enum name="IOSDefaultBrowserPromoSource">
+<enum name="IOSDefaultBrowserSettingsPageSource">
   <int value="0" label="Settings"/>
   <int value="1" label="Omnibox"/>
   <int value="2" label="External Intent"/>
   <int value="3" label="Set Up List"/>
   <int value="4" label="External Action"/>
+  <int value="5" label="Tips Notification"/>
 </enum>
 
 <enum name="LockScreenProgress">

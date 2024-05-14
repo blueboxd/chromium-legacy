@@ -20,6 +20,9 @@ declare_args() {
   # Controls whether fast_app_terminate_buildflags is enabled
   # (see crbug.com/1328891 for details).
   fast_app_terminate_enabled = -1
+
+  # Path to a PrivacyInfo.xcprivacy file to be included in the application.
+  ios_chrome_privacy_manifest = ""
 }
 
 # If fast_app_terminate_enabled is not enabled, default to true,
@@ -95,6 +98,7 @@ source_set("unit_tests") {
     "//ios/chrome/app/application_delegate:test_support",
     "//ios/chrome/app/application_delegate:url_opener_params",
     "//ios/chrome/browser/bookmarks/model",
+    "//ios/chrome/browser/bookmarks/model:test_support",
     "//ios/chrome/browser/metrics/model",
     "//ios/chrome/browser/promos_manager/model",
     "//ios/chrome/browser/promos_manager/model:constants",
@@ -230,6 +234,7 @@ source_set("app_metrics_app_state_agent") {
   ]
   deps = [
     "//base",
+    "//ios/chrome/app",
     "//ios/chrome/app:tests_hook",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
     "//ios/chrome/app/application_delegate:observing_app_state_agent",
@@ -338,8 +343,10 @@ source_set("first_run_app_state_agent") {
     "//ios/chrome/browser/geolocation/model",
     "//ios/chrome/browser/shared/coordinator/scene:observing_scene_agent",
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
+    "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/public/commands:commands",
     "//ios/chrome/browser/shared/public/features",
+    "//ios/chrome/browser/signin/model",
     "//ios/chrome/browser/ui/blocking_overlay",
     "//ios/chrome/browser/ui/browser_view",
     "//ios/chrome/browser/ui/first_run",
@@ -362,6 +369,9 @@ source_set("docking_promo_app_agent") {
     "//ios/chrome/browser/docking_promo/model:utils",
     "//ios/chrome/browser/promos_manager/model",
     "//ios/chrome/browser/promos_manager/model:constants",
+    "//ios/chrome/browser/promos_manager/model:factory",
+    "//ios/chrome/browser/shared/model/application_context",
+    "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/ui/start_surface",
   ]
@@ -527,6 +537,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/browser_state/model",
     "//ios/chrome/browser/browsing_data/model",
     "//ios/chrome/browser/commerce/model/push_notification",
+    "//ios/chrome/browser/content_settings/model",
     "//ios/chrome/browser/crash_report/model",
     "//ios/chrome/browser/crash_report/model:model_internal",
     "//ios/chrome/browser/crash_report/model/breadcrumbs",
@@ -546,6 +557,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/main/model",
     "//ios/chrome/browser/memory/model",
     "//ios/chrome/browser/metrics/model",
+    "//ios/chrome/browser/metrics/model:metrics_browser_agent",
     "//ios/chrome/browser/metrics/model:metrics_internal",
     "//ios/chrome/browser/omaha/model",
     "//ios/chrome/browser/passwords/model",
@@ -566,6 +578,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/model/paths",
+    "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/model/web_state_list",
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/shared/public/features",
@@ -600,6 +613,7 @@ source_set("app_internal") {
     "//ios/net",
     "//ios/public/provider/chrome/browser/app_distribution:app_distribution_api",
     "//ios/public/provider/chrome/browser/overrides:overrides_api",
+    "//ios/public/provider/chrome/browser/raccoon:raccoon_api",
     "//ios/public/provider/chrome/browser/signin:choice_api",
     "//ios/public/provider/chrome/browser/ui_utils:ui_utils_api",
     "//ios/public/provider/chrome/browser/user_feedback:user_feedback_api",
@@ -660,6 +674,9 @@ source_set("main") {
     "//ios/chrome/common",
     "//ios/public/provider/chrome/browser/primes:primes_api",
   ]
+  if (ios_chrome_privacy_manifest != "") {
+    deps += [ ":privacy_manifest" ]
+  }
   if (ios_enable_sandbox_dump) {
     deps += [ "//ios/chrome/app/startup:sandbox_dump" ]
   }
@@ -676,6 +693,13 @@ source_set("main") {
       "//ios/third_party/material_components_ios:material_components_ios+bundle",
       "//ios/third_party/material_components_ios:material_components_ios+link",
     ]
+  }
+}
+
+if (ios_chrome_privacy_manifest != "") {
+  bundle_data("privacy_manifest") {
+    sources = [ ios_chrome_privacy_manifest ]
+    outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
   }
 }
 

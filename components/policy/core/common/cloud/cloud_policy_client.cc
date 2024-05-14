@@ -68,6 +68,22 @@ DeviceMode TranslateProtobufDeviceMode(
   return DEVICE_MODE_NOT_SET;
 }
 
+// Translates the DeviceRegisterResponse::ThirdPartyIdentityType |identity_type|
+// to the enum used internally to represent different third party identity
+// types.
+ThirdPartyIdentityType TranslateProtobufThirdPartyIdentityType(
+    em::DeviceRegisterResponse::ThirdPartyIdentityType identity_type) {
+  switch (identity_type) {
+    case em::DeviceRegisterResponse::NONE:
+      return NO_THIRD_PARTY_MANAGEMENT;
+    case em::DeviceRegisterResponse::DASHER_BASED:
+      return OIDC_MANAGEMENT_DASHER_BASED;
+    case em::DeviceRegisterResponse::DASHERLESS:
+      return OIDC_MANAGEMENT_DASHERLESS;
+  }
+  return NO_THIRD_PARTY_MANAGEMENT;
+}
+
 bool IsChromePolicy(const std::string& type) {
   return type == dm_protocol::kChromeDevicePolicyType ||
          type == dm_protocol::kChromeUserPolicyType ||
@@ -862,7 +878,7 @@ void CloudPolicyClient::UploadSecurityEventReport(
   CreateNewRealtimeReportingJob(
       std::move(report),
       service()->configuration()->GetReportingConnectorServerUrl(context),
-      include_device_info, add_connector_url_params_, std::move(callback));
+      include_device_info, std::move(callback));
 }
 
 void CloudPolicyClient::UploadAppInstallReport(base::Value::Dict report,
@@ -878,8 +894,7 @@ void CloudPolicyClient::UploadAppInstallReport(base::Value::Dict report,
   app_install_report_request_job_ = CreateNewRealtimeReportingJob(
       std::move(report),
       service()->configuration()->GetRealtimeReportingServerUrl(),
-      /* include_device_info */ true, /* add_connector_url_params=*/false,
-      std::move(callback));
+      /* include_device_info */ true, std::move(callback));
   DCHECK(app_install_report_request_job_);
 }
 
@@ -936,11 +951,10 @@ DeviceManagementService::Job* CloudPolicyClient::CreateNewRealtimeReportingJob(
     base::Value::Dict report,
     const std::string& server_url,
     bool include_device_info,
-    bool add_connector_url_params,
     ResultCallback callback) {
   std::unique_ptr<RealtimeReportingJobConfiguration> config =
       std::make_unique<RealtimeReportingJobConfiguration>(
-          this, server_url, include_device_info, add_connector_url_params,
+          this, server_url, include_device_info,
           base::BindOnce(&CloudPolicyClient::OnRealtimeReportUploadCompleted,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 
@@ -1161,6 +1175,10 @@ void CloudPolicyClient::UploadCertificate(
     const std::string& certificate_data,
     em::DeviceCertUploadRequest::CertificateType certificate_type,
     CloudPolicyClient::ResultCallback callback) {
+  if (!is_registered()) {
+    std::move(callback).Run(CloudPolicyClient::Result(NotRegistered()));
+    return;
+  }
   std::unique_ptr<DMServerJobConfiguration> config =
       CreateCertUploadJobConfiguration(std::move(callback));
   PrepareCertUploadRequest(config.get(), certificate_data, certificate_type);
@@ -1254,9 +1272,23 @@ void CloudPolicyClient::OnRegisterCompleted(DMServerJobResult result) {
           result.response.register_response().enrollment_type());
     }
 
+    third_party_identity_type_ = NO_THIRD_PARTY_MANAGEMENT;
+    if (result.response.register_response().has_third_party_identity_type()) {
+      third_party_identity_type_ = TranslateProtobufThirdPartyIdentityType(
+          result.response.register_response().third_party_identity_type());
+    }
+
     user_affiliation_ids_ = std::vector<std::string>(
         result.response.register_response().user_affiliation_ids().begin(),
         result.response.register_response().user_affiliation_ids().end());
+
+    if (result.response.register_response().has_user_display_name()) {
+      oidc_user_display_name_ =
+          result.response.register_response().user_display_name();
+    }
+    if (result.response.register_response().has_user_email()) {
+      oidc_user_email_ = result.response.register_response().user_email();
+    }
 
     if (device_dm_token_callback_) {
       device_dm_token_ = device_dm_token_callback_.Run(user_affiliation_ids_);

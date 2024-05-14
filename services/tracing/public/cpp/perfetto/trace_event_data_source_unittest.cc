@@ -933,7 +933,15 @@ std::optional<base::Value::Dict> AddJsonMetadataGenerator() {
   return metadata;
 }
 
-TEST_F(TraceEventDataSourceTest, MetadataGeneratorBeforeTracing) {
+// TODO: crbug.com/328036618 - Very flaky on Android.
+// TODO(crbug.com/328832459): Flaky on Fuchsia.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_MetadataGeneratorBeforeTracing \
+  DISABLED_MetadataGeneratorBeforeTracing
+#else
+#define MAYBE_MetadataGeneratorBeforeTracing MetadataGeneratorBeforeTracing
+#endif
+TEST_F(TraceEventDataSourceTest, MAYBE_MetadataGeneratorBeforeTracing) {
   auto* metadata_source = TraceEventMetadataSource::GetInstance();
   metadata_source->AddGeneratorFunction(
       base::BindRepeating(&AddJsonMetadataGenerator));
@@ -1056,7 +1064,14 @@ TEST_F(TraceEventDataSourceTest,
 }
 #endif  // BUILDFLAG(IS_ANDROID) && !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
-TEST_F(TraceEventDataSourceTest, BasicTraceEvent) {
+// TODO: crbug.com/328036618 - Very flaky on Android.
+// TODO(crbug.com/328832459): Flaky on Fuchsia.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_BasicTraceEvent DISABLED_BasicTraceEvent
+#else
+#define MAYBE_BasicTraceEvent BasicTraceEvent
+#endif
+TEST_F(TraceEventDataSourceTest, MAYBE_BasicTraceEvent) {
   StartTraceEventDataSource();
 
   TRACE_EVENT_BEGIN0(kCategoryGroup, "bar");
@@ -1077,7 +1092,14 @@ TEST_F(TraceEventDataSourceTest, BasicTraceEvent) {
 #endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 }
 
-TEST_F(TraceEventDataSourceTest, ActiveProcessesMetadata) {
+// TODO: crbug.com/328036618 - Very flaky on Android.
+// TODO(crbug.com/328832459): Flaky on Fuchsia.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_ActiveProcessesMetadata DISABLED_ActiveProcessesMetadata
+#else
+#define MAYBE_ActiveProcessesMetadata ActiveProcessesMetadata
+#endif
+TEST_F(TraceEventDataSourceTest, MAYBE_ActiveProcessesMetadata) {
   CustomEventRecorder::GetInstance()->SetActiveProcessesCallback(
       base::BindRepeating(&TraceEventDataSourceTest::ActiveProcessesCallback,
                           base::Unretained(this)));
@@ -1141,7 +1163,15 @@ TEST_F(TraceEventDataSourceTest, InstantTraceEvent) {
   ExpectInternedEventNames(e_packet, {{1u, "bar"}});
 }
 
-TEST_F(TraceEventDataSourceTest, InstantTraceEventOnOtherThread) {
+// The test fails on fuchsia during thread pool initialization because
+// base::SysInfo::NumberOfEfficientProcessorsImpl() is not implemented.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_InstantTraceEventOnOtherThread \
+  DISABLED_InstantTraceEventOnOtherThread
+#else
+#define MAYBE_InstantTraceEventOnOtherThread InstantTraceEventOnOtherThread
+#endif
+TEST_F(TraceEventDataSourceTest, MAYBE_InstantTraceEventOnOtherThread) {
   StartTraceEventDataSource();
 
   INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP(
@@ -1168,7 +1198,14 @@ TEST_F(TraceEventDataSourceTest, InstantTraceEventOnOtherThread) {
   ExpectInternedEventNames(e_packet, {{1u, "bar"}});
 }
 
-TEST_F(TraceEventDataSourceTest, EventWithStringArgs) {
+// TODO: crbug.com/328036618 - Very flaky on Android.
+// TODO(crbug.com/328832459): Flaky on Fuchsia.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_EventWithStringArgs DISABLED_EventWithStringArgs
+#else
+#define MAYBE_EventWithStringArgs EventWithStringArgs
+#endif
+TEST_F(TraceEventDataSourceTest, MAYBE_EventWithStringArgs) {
   StartTraceEventDataSource();
 
   TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD,
@@ -1193,7 +1230,14 @@ TEST_F(TraceEventDataSourceTest, EventWithStringArgs) {
                                      {{1u, "arg1_name"}, {2u, "arg2_name"}});
 }
 
-TEST_F(TraceEventDataSourceTest, EventWithCopiedStrings) {
+// TODO: crbug.com/328036618 - Very flaky on Android.
+// TODO(crbug.com/328832459): Flaky on Fuchsia.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_EventWithCopiedStrings DISABLED_EventWithCopiedStrings
+#else
+#define MAYBE_EventWithCopiedStrings EventWithCopiedStrings
+#endif
+TEST_F(TraceEventDataSourceTest, MAYBE_EventWithCopiedStrings) {
   StartTraceEventDataSource();
 
   TRACE_EVENT_COPY_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD,
@@ -1254,7 +1298,14 @@ TEST_F(TraceEventDataSourceTest, EventWithIntArgs) {
   EXPECT_EQ(annotations[1].int_value(), 4242);
 }
 
-TEST_F(TraceEventDataSourceTest, EventWithBoolArgs) {
+// TODO: crbug.com/328036618 - Very flaky on Android.
+// TODO(crbug.com/328832459): Flaky on Fuchsia.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_EventWithBoolArgs DISABLED_EventWithBoolArgs
+#else
+#define MAYBE_EventWithBoolArgs EventWithBoolArgs
+#endif
+TEST_F(TraceEventDataSourceTest, MAYBE_EventWithBoolArgs) {
   StartTraceEventDataSource();
 
   TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD, "foo",
@@ -1274,7 +1325,14 @@ TEST_F(TraceEventDataSourceTest, EventWithBoolArgs) {
   EXPECT_EQ(annotations[1].bool_value(), false);
 }
 
-TEST_F(TraceEventDataSourceTest, EventWithDoubleArgs) {
+// TODO: crbug.com/328036618 - Very flaky on Android.
+// TODO(crbug.com/328832459): Flaky on Fuchsia.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_EventWithDoubleArgs DISABLED_EventWithDoubleArgs
+#else
+#define MAYBE_EventWithDoubleArgs EventWithDoubleArgs
+#endif
+TEST_F(TraceEventDataSourceTest, MAYBE_EventWithDoubleArgs) {
   StartTraceEventDataSource();
 
   TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD, "foo",
@@ -1292,7 +1350,14 @@ TEST_F(TraceEventDataSourceTest, EventWithDoubleArgs) {
   EXPECT_EQ(annotations[1].double_value(), 4242.42);
 }
 
-TEST_F(TraceEventDataSourceTest, EventWithPointerArgs) {
+// TODO: crbug.com/328036618 - Very flaky on Android.
+// TODO(crbug.com/328832459): Flaky on Fuchsia.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_EventWithPointerArgs DISABLED_EventWithPointerArgs
+#else
+#define MAYBE_EventWithPointerArgs EventWithPointerArgs
+#endif
+TEST_F(TraceEventDataSourceTest, MAYBE_EventWithPointerArgs) {
   StartTraceEventDataSource();
 
   TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD, "foo",
@@ -1311,7 +1376,14 @@ TEST_F(TraceEventDataSourceTest, EventWithPointerArgs) {
   EXPECT_EQ(annotations[1].pointer_value(), static_cast<uintptr_t>(0xF00D));
 }
 
-TEST_F(TraceEventDataSourceTest, EventWithConvertableArgs) {
+// TODO: crbug.com/328036618 - Very flaky on Android.
+// TODO(crbug.com/328832459): Flaky on Fuchsia.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_EventWithConvertableArgs DISABLED_EventWithConvertableArgs
+#else
+#define MAYBE_EventWithConvertableArgs EventWithConvertableArgs
+#endif
+TEST_F(TraceEventDataSourceTest, MAYBE_EventWithConvertableArgs) {
   StartTraceEventDataSource();
 
   static const char kArgValue1[] = "\"conv_value1\"";
@@ -1509,7 +1581,16 @@ TEST_F(TraceEventDataSourceTest, TaskExecutionEvent) {
   EXPECT_EQ(e_packet2->interned_data().source_locations().size(), 0);
 }
 
-TEST_F(TraceEventDataSourceTest, TaskExecutionEventWithoutFunction) {
+// TODO: crbug.com/328036618 - Very flaky on Android.
+// TODO(crbug.com/328832459): Flaky on Fuchsia.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_TaskExecutionEventWithoutFunction \
+  DISABLED_TaskExecutionEventWithoutFunction
+#else
+#define MAYBE_TaskExecutionEventWithoutFunction \
+  TaskExecutionEventWithoutFunction
+#endif
+TEST_F(TraceEventDataSourceTest, MAYBE_TaskExecutionEventWithoutFunction) {
   StartTraceEventDataSource(/*privacy_filtering_enabled=*/false, "toplevel");
 
   base::TaskAnnotator task_annotator;
@@ -1565,7 +1646,15 @@ TEST_F(TraceEventDataSourceTest, TaskExecutionEventWithoutFunction) {
   EXPECT_FALSE(locations[0].has_function_name());
 }
 
-TEST_F(TraceEventDataSourceTest, UpdateDurationOfCompleteEvent) {
+// The test fails on fuchsia during thread pool initialization because
+// base::SysInfo::NumberOfEfficientProcessorsImpl() is not implemented.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_UpdateDurationOfCompleteEvent \
+  DISABLED_UpdateDurationOfCompleteEvent
+#else
+#define MAYBE_UpdateDurationOfCompleteEvent UpdateDurationOfCompleteEvent
+#endif
+TEST_F(TraceEventDataSourceTest, MAYBE_UpdateDurationOfCompleteEvent) {
   StartTraceEventDataSource();
 
   static const char kEventName[] = "bar";
@@ -1888,7 +1977,14 @@ TEST_F(TraceEventDataSourceTest, DISABLED_TrackSupportWithLambda) {
 
 // TODO(eseckler): Add a test with multiple events + same strings with reset.
 
-TEST_F(TraceEventDataSourceTest, InternedStrings) {
+// TODO: crbug.com/328036618 - Very flaky on Android.
+// TODO(crbug.com/328832459): Flaky on Fuchsia.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_InternedStrings DISABLED_InternedStrings
+#else
+#define MAYBE_InternedStrings InternedStrings
+#endif
+TEST_F(TraceEventDataSourceTest, MAYBE_InternedStrings) {
   StartTraceEventDataSource(/*privacy_filtering_enabled=*/false,
                             "browser,ui,-*");
 
@@ -2287,7 +2383,14 @@ TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnBegin) {
   EXPECT_EQ(e_packet->track_event().log_message().body_iid(), 42u);
 }
 
-TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnEnd) {
+// TODO: crbug.com/328036618 - Very flaky on Android.
+// TODO(crbug.com/328832459): Flaky on Fuchsia.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_TypedArgumentsTracingOnEnd DISABLED_TypedArgumentsTracingOnEnd
+#else
+#define MAYBE_TypedArgumentsTracingOnEnd TypedArgumentsTracingOnEnd
+#endif
+TEST_F(TraceEventDataSourceTest, MAYBE_TypedArgumentsTracingOnEnd) {
   StartTraceEventDataSource();
 
   bool end_called = false;
@@ -2338,7 +2441,15 @@ TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnBeginAndEnd) {
   EXPECT_EQ(e_packet->track_event().log_message().body_iid(), 84u);
 }
 
-TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnInstant) {
+// TODO: crbug.com/328036618 - Very flaky on Android.
+// TODO(crbug.com/328832459): Flaky on Fuchsia.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_TypedArgumentsTracingOnInstant \
+  DISABLED_TypedArgumentsTracingOnInstant
+#else
+#define MAYBE_TypedArgumentsTracingOnInstant TypedArgumentsTracingOnInstant
+#endif
+TEST_F(TraceEventDataSourceTest, MAYBE_TypedArgumentsTracingOnInstant) {
   StartTraceEventDataSource();
 
   TRACE_EVENT_INSTANT("browser", "bar", [&](perfetto::EventContext ctx) {
@@ -2461,7 +2572,15 @@ TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnScopedMultipleEvents) {
   EXPECT_FALSE(e_packet->track_event().has_log_message());
 }
 
-TEST_F(TraceEventDataSourceTest, HistogramSampleTraceConfigEmpty) {
+// TODO: crbug.com/328036618 - Very flaky on Android.
+// TODO(crbug.com/328832459): Flaky on Fuchsia.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_HistogramSampleTraceConfigEmpty \
+  DISABLED_HistogramSampleTraceConfigEmpty
+#else
+#define MAYBE_HistogramSampleTraceConfigEmpty HistogramSampleTraceConfigEmpty
+#endif
+TEST_F(TraceEventDataSourceTest, MAYBE_HistogramSampleTraceConfigEmpty) {
   StartTraceEventDataSource(/*privacy_filtering_enabled=*/false,
                             "-*,disabled-by-default-histogram_samples");
 
@@ -2568,7 +2687,14 @@ struct InternedLogMessageBody
 
 }  // namespace
 
-TEST_F(TraceEventDataSourceTest, TypedEventInterning) {
+// TODO: crbug.com/328036618 - Very flaky on Android.
+// TODO(crbug.com/328832459): Flaky on Fuchsia.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_TypedEventInterning DISABLED_TypedEventInterning
+#else
+#define MAYBE_TypedEventInterning TypedEventInterning
+#endif
+TEST_F(TraceEventDataSourceTest, MAYBE_TypedEventInterning) {
   StartTraceEventDataSource();
 
   {
@@ -2590,7 +2716,17 @@ TEST_F(TraceEventDataSourceTest, TypedEventInterning) {
             e_packet->interned_data().log_message_body()[0].body());
 }
 
-TEST_F(TraceEventDataSourceTest, TypedAndUntypedEventsWithDebugAnnotations) {
+// TODO: crbug.com/328036618 - Very flaky on Android.
+// TODO(crbug.com/328832459): Flaky on Fuchsia.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_TypedAndUntypedEventsWithDebugAnnotations \
+  DISABLED_TypedAndUntypedEventsWithDebugAnnotations
+#else
+#define MAYBE_TypedAndUntypedEventsWithDebugAnnotations \
+  TypedAndUntypedEventsWithDebugAnnotations
+#endif
+TEST_F(TraceEventDataSourceTest,
+       MAYBE_TypedAndUntypedEventsWithDebugAnnotations) {
   StartTraceEventDataSource();
 
   TRACE_EVENT_INSTANT1("browser", "Event1", TRACE_EVENT_SCOPE_THREAD, "arg1",
@@ -2610,7 +2746,14 @@ TEST_F(TraceEventDataSourceTest, TypedAndUntypedEventsWithDebugAnnotations) {
   ExpectInternedDebugAnnotationNames(e_packet2, {{2u, "arg2"}});
 }
 
-TEST_F(TraceEventDataSourceTest, EmptyPacket) {
+// TODO: crbug.com/328036618 - Very flaky on Android.
+// TODO(crbug.com/328832459): Flaky on Fuchsia.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_EmptyPacket DISABLED_EmptyPacket
+#else
+#define MAYBE_EmptyPacket EmptyPacket
+#endif
+TEST_F(TraceEventDataSourceTest, MAYBE_EmptyPacket) {
   StartTraceEventDataSource();
 
   TRACE_EVENT_INSTANT("browser", "Event");

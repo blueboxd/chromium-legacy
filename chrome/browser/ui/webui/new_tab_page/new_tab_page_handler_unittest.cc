@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
+
 #include <array>
 #include <optional>
 #include <string>
@@ -37,7 +39,6 @@
 #include "chrome/browser/ui/hats/mock_hats_service.h"
 #include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_tab_helper.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
-#include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_section.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
@@ -103,6 +104,7 @@ class MockPage : public new_tab_page::mojom::Page {
   MOCK_METHOD(void, SetCustomizeChromeSidePanelVisibility, (bool));
   MOCK_METHOD(void, SetPromo, (new_tab_page::mojom::PromoPtr));
   MOCK_METHOD(void, ShowWebstoreToast, ());
+  MOCK_METHOD(void, SetWallpaperSearchButtonVisibility, (bool));
 
   mojo::Receiver<new_tab_page::mojom::Page> receiver_{this};
 };
@@ -513,8 +515,12 @@ TEST_P(NewTabPageHandlerThemeTest, SetTheme) {
   ASSERT_TRUE(theme->most_visited);
   // TODO (crbug/1519999): The following needs to be reviewed. See the
   //                       referenced bug for details.
-  EXPECT_EQ(SkColorSetRGB(0, 0, CustomizeChromeSidePanel() ? 6 : 8),
-            theme->most_visited->background_color);
+  if (features::IsChromeRefresh2023()) {
+    EXPECT_EQ(SkColorSetRGB(0, 0, CustomizeChromeSidePanel() ? 6 : 8),
+              theme->most_visited->background_color);
+  } else {
+    EXPECT_EQ(SkColorSetRGB(0, 0, 8), theme->most_visited->background_color);
+  }
   EXPECT_TRUE(theme->most_visited->use_white_tile_icon);
   EXPECT_EQ(false, theme->most_visited->is_dark);
 }

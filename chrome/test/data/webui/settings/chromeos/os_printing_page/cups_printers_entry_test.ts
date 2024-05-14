@@ -13,10 +13,11 @@ import {isVisible} from 'chrome://webui-test/test_util.js';
 
 import {FakeMetricsPrivate} from '../fake_metrics_private.js';
 
-function createPrinterEntry(printerType: PrinterType): PrinterListEntry {
+function createPrinterEntry(
+    printerType: PrinterType, isManaged: boolean = true): PrinterListEntry {
   return {
     printerInfo: {
-      isManaged: true,
+      isManaged: isManaged,
       ppdManufacturer: '',
       ppdModel: '',
       printerAddress: 'test:123',
@@ -181,25 +182,25 @@ suite('<settings-cups-printers-entry>', () => {
     assertEquals('', printerSubtext.textContent?.trim());
   });
 
-  // Verify the printer icon is visible based on the printer's type.
-  test('visiblePrinterIconByPrinterType', () => {
-    printerEntryTestElement.printerEntry =
-        createPrinterEntry(PrinterType.ENTERPRISE);
+  // Verify the printer icon is visible based on the printer's isManaged info.
+  test('visiblePrinterIconByPrinterInfo', () => {
+    printerEntryTestElement.printerEntry = createPrinterEntry(
+        /*printerType=*/ PrinterType.ENTERPRISE, /*isManaged=*/ true);
     assertFalse(isVisible(printerEntryTestElement.shadowRoot!.querySelector(
         '#printerStatusIcon')));
 
-    printerEntryTestElement.printerEntry =
-        createPrinterEntry(PrinterType.DISCOVERED);
+    printerEntryTestElement.printerEntry = createPrinterEntry(
+        /*printerType=*/ PrinterType.DISCOVERED, /*isManaged=*/ false);
     assertTrue(isVisible(printerEntryTestElement.shadowRoot!.querySelector(
         '#printerStatusIcon')));
 
-    printerEntryTestElement.printerEntry =
-        createPrinterEntry(PrinterType.AUTOMATIC);
+    printerEntryTestElement.printerEntry = createPrinterEntry(
+        /*printerType=*/ PrinterType.AUTOMATIC, /*isManaged=*/ false);
     assertTrue(isVisible(printerEntryTestElement.shadowRoot!.querySelector(
         '#printerStatusIcon')));
 
-    printerEntryTestElement.printerEntry =
-        createPrinterEntry(PrinterType.SAVED);
+    printerEntryTestElement.printerEntry = createPrinterEntry(
+        /*printerType=*/ PrinterType.SAVED, /*isManaged=*/ false);
     assertTrue(isVisible(printerEntryTestElement.shadowRoot!.querySelector(
         '#printerStatusIcon')));
   });
@@ -264,29 +265,8 @@ suite('<settings-cups-printers-entry>', () => {
             .querySelector<HTMLElement>('#entry')!.ariaLabel!.trim());
   });
 
-  // Verify the correct button label is shown for discovered printers when the
-  // "print-preview-discovered-printers" flag is disabled.
-  test('discoveredPrintersButtonLabel_flagOff', () => {
-    loadTimeData.overrideValues({
-      isPrintPreviewDiscoveredPrintersEnabled: false,
-    });
-    initializePrinterEntryTestElement();
-    printerEntryTestElement.printerEntry =
-        createPrinterEntry(PrinterType.DISCOVERED);
-    flush();
-    assertEquals(
-        loadTimeData.getString('setupPrinter'),
-        printerEntryTestElement.shadowRoot!
-            .querySelector<HTMLElement>(
-                '#setupPrinterButton')!.textContent!.trim());
-  });
-
-  // Verify the correct button label is shown for discovered printers when the
-  // "print-preview-discovered-printers" flag is enabled.
-  test('discoveredPrintersButtonLabel_flagOn', () => {
-    loadTimeData.overrideValues({
-      isPrintPreviewDiscoveredPrintersEnabled: true,
-    });
+  // Verify the correct button label is shown for discovered printers.
+  test('discoveredPrintersButtonLabel', () => {
     initializePrinterEntryTestElement();
 
     printerEntryTestElement.printerEntry =

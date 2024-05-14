@@ -11,6 +11,7 @@
 namespace {
 
 using CapabilityResult = SystemIdentityManager::CapabilityResult;
+using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
 
 // Helper function used to extract the capability from `capabilities` in
 // `CanShowHistorySyncOptInsWithoutMinorModeRestrictions()` and

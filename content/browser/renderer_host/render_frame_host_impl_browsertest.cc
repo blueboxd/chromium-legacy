@@ -56,6 +56,7 @@
 #include "content/public/browser/document_user_data.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/origin_trials_controller_delegate.h"
+#include "content/public/browser/page_user_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -185,19 +186,23 @@ class FirstPartySchemeContentBrowserClient
     return scheme == "trustme";
   }
 
-  void RegisterNonNetworkNavigationURLLoaderFactories(
-      int frame_tree_node_id,
-      NonNetworkURLLoaderFactoryMap* factories) override {
-    mojo::PendingRemote<network::mojom::URLLoaderFactory> trustme_remote;
-    trustme_factory_->Clone(trustme_remote.InitWithNewPipeAndPassReceiver());
-    factories->emplace("trustme", std::move(trustme_remote));
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+  CreateNonNetworkNavigationURLLoaderFactory(const std::string& scheme,
+                                             int frame_tree_node_id) override {
+    if (scheme == "trustme") {
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> trustme_remote;
+      trustme_factory_->Clone(trustme_remote.InitWithNewPipeAndPassReceiver());
+      return trustme_remote;
+    }
 
-    mojo::PendingRemote<network::mojom::URLLoaderFactory>
-        trustmeifembeddingsecure_remote;
-    trustmeifembeddingsecure_factory_->Clone(
-        trustmeifembeddingsecure_remote.InitWithNewPipeAndPassReceiver());
-    factories->emplace("trustmeifembeddingsecure",
-                       std::move(trustmeifembeddingsecure_remote));
+    if (scheme == "trustmeifembeddingsecure") {
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          trustmeifembeddingsecure_remote;
+      trustmeifembeddingsecure_factory_->Clone(
+          trustmeifembeddingsecure_remote.InitWithNewPipeAndPassReceiver());
+      return trustmeifembeddingsecure_remote;
+    }
+    return {};
   }
 
  private:
@@ -5364,10 +5369,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                                 "/set-header?"
                                 "Cross-Origin-Opener-Policy: same-origin&"
                                 "Cross-Origin-Embedder-Policy: require-corp")));
-  // Status can be kIsolated or kMaybeIsolated.
-  EXPECT_LT(WebExposedIsolationLevel::kNotIsolated,
-            root_frame_host()->GetWebExposedIsolationLevel());
-  EXPECT_GT(WebExposedIsolationLevel::kMaybeIsolatedApplication,
+  // Status is kIsolated.
+  EXPECT_EQ(WebExposedIsolationLevel::kIsolated,
             root_frame_host()->GetWebExposedIsolationLevel());
 }
 
@@ -5446,7 +5449,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTestWithRestrictedApis,
                              "Cross-Origin-Embedder-Policy: require-corp&"
                              "Cross-Origin-Resource-Policy: cross-origin");
   EXPECT_TRUE(NavigateToURL(shell(), non_app_url));
-  EXPECT_EQ(WebExposedIsolationLevel::kMaybeIsolated,
+  EXPECT_EQ(WebExposedIsolationLevel::kIsolated,
             root_frame_host()->GetProcess()->GetWebExposedIsolationLevel());
   EXPECT_EQ(WebExposedIsolationLevel::kIsolated,
             root_frame_host()->GetWebExposedIsolationLevel());
@@ -5464,7 +5467,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTestWithRestrictedApis,
   )";
   EXPECT_TRUE(ExecJs(shell(), JsReplace(create_iframe, non_app_url, "")));
   RenderFrameHost* non_app_child_frame = ChildFrameAt(root_frame_host(), 0);
-  EXPECT_EQ(WebExposedIsolationLevel::kMaybeIsolated,
+  EXPECT_EQ(WebExposedIsolationLevel::kIsolated,
             non_app_child_frame->GetProcess()->GetWebExposedIsolationLevel());
   EXPECT_EQ(WebExposedIsolationLevel::kIsolated,
             non_app_child_frame->GetWebExposedIsolationLevel());
@@ -5474,7 +5477,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTestWithRestrictedApis,
   EXPECT_TRUE(ExecJs(shell(), JsReplace(create_iframe, non_app_url,
                                         "cross-origin-isolated 'none'")));
   non_app_child_frame = ChildFrameAt(root_frame_host(), 1);
-  EXPECT_EQ(WebExposedIsolationLevel::kMaybeIsolated,
+  EXPECT_EQ(WebExposedIsolationLevel::kIsolated,
             non_app_child_frame->GetProcess()->GetWebExposedIsolationLevel());
   EXPECT_EQ(WebExposedIsolationLevel::kNotIsolated,
             non_app_child_frame->GetWebExposedIsolationLevel());
@@ -5492,7 +5495,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTestWithRestrictedApis,
       /*site_instance=*/nullptr, gfx::Size());
   EXPECT_TRUE(NavigateToURL(app_shell, app_url));
   RenderFrameHost* app_frame = app_shell->web_contents()->GetPrimaryMainFrame();
-  EXPECT_EQ(WebExposedIsolationLevel::kMaybeIsolatedApplication,
+  EXPECT_EQ(WebExposedIsolationLevel::kIsolatedApplication,
             app_frame->GetProcess()->GetWebExposedIsolationLevel());
   EXPECT_EQ(WebExposedIsolationLevel::kIsolatedApplication,
             app_frame->GetWebExposedIsolationLevel());
@@ -5502,7 +5505,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTestWithRestrictedApis,
   EXPECT_TRUE(ExecJs(
       app_shell, JsReplace(create_iframe, app_url, "cross-origin-isolated")));
   RenderFrameHost* app_child_frame = ChildFrameAt(app_frame, 0);
-  EXPECT_EQ(WebExposedIsolationLevel::kMaybeIsolatedApplication,
+  EXPECT_EQ(WebExposedIsolationLevel::kIsolatedApplication,
             app_child_frame->GetProcess()->GetWebExposedIsolationLevel());
   EXPECT_EQ(WebExposedIsolationLevel::kIsolatedApplication,
             app_child_frame->GetWebExposedIsolationLevel());
@@ -5512,7 +5515,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTestWithRestrictedApis,
   EXPECT_TRUE(ExecJs(app_shell, JsReplace(create_iframe, app_url,
                                           "cross-origin-isolated 'none'")));
   app_child_frame = ChildFrameAt(app_frame, 1);
-  EXPECT_EQ(WebExposedIsolationLevel::kMaybeIsolatedApplication,
+  EXPECT_EQ(WebExposedIsolationLevel::kIsolatedApplication,
             app_child_frame->GetProcess()->GetWebExposedIsolationLevel());
   EXPECT_EQ(WebExposedIsolationLevel::kNotIsolated,
             app_child_frame->GetWebExposedIsolationLevel());
@@ -5525,7 +5528,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTestWithRestrictedApis,
   EXPECT_TRUE(ExecJs(app_shell, JsReplace(create_iframe, non_app_url,
                                           "cross-origin-isolated")));
   non_app_child_frame = ChildFrameAt(app_frame, 2);
-  EXPECT_EQ(WebExposedIsolationLevel::kMaybeIsolated,
+  EXPECT_EQ(WebExposedIsolationLevel::kIsolated,
             non_app_child_frame->GetProcess()->GetWebExposedIsolationLevel());
   EXPECT_EQ(WebExposedIsolationLevel::kIsolated,
             non_app_child_frame->GetWebExposedIsolationLevel());
@@ -5535,7 +5538,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTestWithRestrictedApis,
   EXPECT_TRUE(ExecJs(app_shell, JsReplace(create_iframe, non_app_url,
                                           "cross-origin-isolated 'none'")));
   non_app_child_frame = ChildFrameAt(app_frame, 3);
-  EXPECT_EQ(WebExposedIsolationLevel::kMaybeIsolated,
+  EXPECT_EQ(WebExposedIsolationLevel::kIsolated,
             non_app_child_frame->GetProcess()->GetWebExposedIsolationLevel());
   EXPECT_EQ(WebExposedIsolationLevel::kNotIsolated,
             non_app_child_frame->GetWebExposedIsolationLevel());
@@ -6487,6 +6490,88 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_TRUE(child_frame_wrapper.IsDestroyed());
   EXPECT_TRUE(document_service_was_destroyed);
   EXPECT_TRUE(document_user_data_was_destroyed);
+}
+
+class DestructorLifetimePageUserData
+    : public PageUserData<DestructorLifetimePageUserData> {
+ public:
+  explicit DestructorLifetimePageUserData(Page& page, bool& was_destroyed)
+      : PageUserData<DestructorLifetimePageUserData>(page),
+        page_(page.GetWeakPtr()),
+        was_destroyed_(was_destroyed) {}
+
+  ~DestructorLifetimePageUserData() override {
+    *was_destroyed_ = true;
+
+    // The destructor should run before WeakPtr<Page> is invalidated.
+    EXPECT_TRUE(page_);
+    if (!page_) {
+      return;
+    }
+    // Check Page is still accessible through RenderFrameHost::GetPage. Such
+    // access can happen in PageUserData implementations with a complicated
+    // destructor.
+    auto& render_frame_host = page_->GetMainDocument();
+    auto& page = render_frame_host.GetPage();
+    // Check returned Page reference is valid.
+    EXPECT_EQ(page_.get(), &page);
+    // The page is considered as primary if its RenderFrameHost is active. This
+    // will be true unless we changed RenderFrameHosts.
+    EXPECT_EQ(page.IsPrimary(), !ShouldCreateNewHostForAllFrames());
+    if (ShouldCreateNewHostForAllFrames()) {
+      EXPECT_EQ(render_frame_host.GetLifecycleState(),
+                RenderFrameHost::LifecycleState::kPendingDeletion);
+    }
+  }
+
+ private:
+  friend PageUserData;
+  PAGE_USER_DATA_KEY_DECL();
+
+  const base::WeakPtr<Page> page_;
+  const raw_ref<bool> was_destroyed_;
+};
+
+PAGE_USER_DATA_KEY_IMPL(DestructorLifetimePageUserData);
+
+// Tests that when DocumentAssociatedData is destroyed, destructors of
+// PageUserData run while Page and DocumentAssociatedData are still in a
+// reasonable state.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       PageUserDataDestructorLifetime) {
+  // The test assumes that the Page will get destructed after navigation.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+
+  RenderFrameHostImpl* main_frame = web_contents()->GetPrimaryMainFrame();
+  ASSERT_TRUE(main_frame);
+
+  bool page_user_data_was_destroyed = false;
+
+  DestructorLifetimePageUserData::CreateForPage(main_frame->GetPage(),
+                                                page_user_data_was_destroyed);
+
+  RenderFrameHostWrapper main_frame_wrapper(main_frame);
+  ASSERT_FALSE(main_frame_wrapper.IsDestroyed());
+
+  // Perform a same-site navigation in the main frame.
+  EXPECT_TRUE(NavigateToURLFromRenderer(
+      main_frame, embedded_test_server()->GetURL("a.com", "/title2.html")));
+
+  // The navigation should reuse the same RenderFrameHost, except when
+  // RenderDocument is enabled.
+  if (ShouldCreateNewHostForAllFrames()) {
+    EXPECT_TRUE(main_frame_wrapper.WaitUntilRenderFrameDeleted());
+  } else {
+    EXPECT_EQ(web_contents()->GetPrimaryMainFrame(), main_frame_wrapper.get());
+  }
+
+  // The destructor of DestructorLifetimePageUserData also perform googletest
+  // assertions to validate invariants.
+  EXPECT_TRUE(page_user_data_was_destroyed);
 }
 
 class RenderFrameHostImplCredentiallessIframeBrowserTest
@@ -7787,6 +7872,7 @@ class RenderFrameHostImplBrowserTestWithBFCacheAndViewTransition
             /*ignore_outstanding_network_request=*/false);
     enabled_features.push_back(
         {blink::features::kViewTransitionOnNavigation, {{}}});
+    enabled_features.push_back({blink::features::kPageSwapEvent, {{}}});
     enabled_features.push_back(
         {features::kInvalidateLocalSurfaceIdPreCommit, {{}}});
     scoped_feature_list_.InitWithFeaturesAndParameters(
@@ -7885,6 +7971,10 @@ IN_PROC_BROWSER_TEST_F(
   // `RenderWidgetHostImpl::ForceFirstFrameAfterNavigationTimeout()`. Deflake
   // the tests.
   rwhi_red->SetNewContentRenderingTimeoutForTesting(base::TimeDelta::Max());
+
+  // Ensure the first frame in the green page is rendered, so that the
+  // transition is not skipped.
+  WaitForCopyableViewInWebContents(web_contents());
 
   // Navigate back to Red.
   ASSERT_TRUE(HistoryGoBack(web_contents()));

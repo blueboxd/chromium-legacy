@@ -31,9 +31,6 @@ BASE_DECLARE_FEATURE(kJourneysImages);
 // Enables images to cover the full container for Journeys in UI.
 extern const base::FeatureParam<bool> kJourneysImagesCover;
 
-// Enables persisting and using persisted clusters.
-BASE_DECLARE_FEATURE(kPersistedClusters);
-
 // Enables the Journeys Omnibox Action chip. `kJourneys` must also be enabled
 // for this to take effect.
 BASE_DECLARE_FEATURE(kOmniboxAction);
@@ -98,9 +95,6 @@ BASE_DECLARE_FEATURE(kJourneysZeroStateFiltering);
 BASE_DECLARE_FEATURE(kSidePanelJourneys);
 extern const base::FeatureParam<bool> kSidePanelJourneysOpensFromOmnibox;
 BASE_DECLARE_FEATURE(kSidePanelJourneysQueryless);
-
-// Enables renaming Journeys in the UI.
-BASE_DECLARE_FEATURE(kRenameJourneys);
 
 // Enables Side Panel Grouped History and WebUI Grouped History to find
 // ungrouped visits as well when the user has typed a search query.

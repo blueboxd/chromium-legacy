@@ -136,7 +136,13 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
   void RemoveWGPUTextureFromCache(wgpu::Device device, wgpu::Texture texture);
   void DestroyWGPUTextureIfNotCached(wgpu::Device device,
                                      wgpu::Texture texture);
+
+  void AddWGPUDeviceWithPendingCommands(wgpu::Device device);
+  void WaitForDawnCommandsToBeScheduled(const wgpu::Device& device_to_exclude);
 #endif
+
+  void AddEGLDisplayWithPendingCommands(gl::GLDisplayEGL* display);
+  void WaitForANGLECommandsToBeScheduled();
 
   std::unique_ptr<gfx::GpuFence> GetLastWriteGpuFence();
   void SetReleaseFence(gfx::GpuFenceHandle release_fence);
@@ -197,7 +203,9 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
       IOSurfaceBackingEGLState* egl_state,
       bool have_context) override;
 
+  // Updates the read and write accesses tracker variables on BeginAccess.
   bool BeginAccess(bool readonly);
+  // Updates the read and write accesses tracker variables on EndAccess.
   void EndAccess(bool readonly);
 
   void AddSharedEventForEndAccess(id<MTLSharedEvent> shared_event,
@@ -209,8 +217,6 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
   // Updates the read and write accesses tracker variables on BeginAccess and
   // waits on `release_fence_` if fence is not null.
   bool HandleBeginAccessSync(bool readonly);
-  // Updates the read and write accesses tracker variables on EndAccess.
-  void HandleEndAccessSync(bool readonly);
 
   bool IsPassthrough() const { return true; }
 
@@ -244,6 +250,27 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
   // TODO(crbug.com/1493854): Dawn should expose a unique ID per-Device, which
   // this cache should use as keys rather than raw pointers.
   base::flat_map<WGPUDevice, SharedTextureData> shared_texture_data_cache_;
+
+  // Tracks the number of currently-ongoing accesses to a given WGPU texture.
+  base::flat_map<WGPUTexture, int> wgpu_texture_ongoing_accesses_;
+
+  // Tracks the devices to invoke waitUntilScheduled.
+  // TODO(dawn:2453): The below comparator should be implemented in
+  // wgpu::Device itself.
+  struct WGPUDeviceCompare {
+    bool operator()(const wgpu::Device& lhs, const wgpu::Device& rhs) const {
+      return lhs.Get() < rhs.Get();
+    }
+  };
+  base::flat_set<wgpu::Device, WGPUDeviceCompare> wgpu_devices_pending_flush_;
+
+  // Returns the number of ongoing accesses that were already present on this
+  // texture prior to beginning this access.
+  int TrackBeginAccessToWGPUTexture(wgpu::Texture texture);
+
+  // Returns the number of ongoing accesses that will still be present on this
+  // texture after ending this access.
+  int TrackEndAccessToWGPUTexture(wgpu::Texture texture);
 
   // Returns a pointer to the WGPUTextureCache instance for this device, or
   // nullptr if there is no instance.
@@ -282,6 +309,9 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
   // If this backing was displayed as an overlay, this fence may be set.
   // Wait on this fence before allowing another access.
   gfx::GpuFenceHandle release_fence_;
+
+  // Tracks the displays to invoke eglWaitUntilWorkScheduledANGLE().
+  base::flat_set<gl::GLDisplayEGL*> egl_displays_pending_flush_;
 
   using ScopedMLTSharedEvent =
       base::apple::scoped_nsprotocol<id<MTLSharedEvent>>;

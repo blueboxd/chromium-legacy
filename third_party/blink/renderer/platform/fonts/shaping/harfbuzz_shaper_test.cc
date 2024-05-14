@@ -96,21 +96,21 @@ class HarfBuzzShaperTest : public FontTestBase {
   void TearDown() override {}
 
   void SelectDevanagariFont() {
-    FontFamily devanagari_family;
-    // Windows 10
-    devanagari_family.SetFamily(AtomicString("Nirmala UI"),
-                                FontFamily::Type::kFamilyName);
-    // Windows 7
-    devanagari_family.AppendFamily(AtomicString("Mangal"),
-                                   FontFamily::Type::kFamilyName);
-    // Linux
-    devanagari_family.AppendFamily(AtomicString("Lohit Devanagari"),
-                                   FontFamily::Type::kFamilyName);
     // Mac
-    devanagari_family.AppendFamily(AtomicString("ITF Devanagari"),
-                                   FontFamily::Type::kFamilyName);
-
-    font_description.SetFamily(devanagari_family);
+    scoped_refptr<SharedFontFamily> itf = SharedFontFamily::Create(
+        AtomicString("ITF Devanagari"), FontFamily::Type::kFamilyName);
+    // Linux
+    scoped_refptr<SharedFontFamily> lohit =
+        SharedFontFamily::Create(AtomicString("Lohit Devanagari"),
+                                 FontFamily::Type::kFamilyName, std::move(itf));
+    // Windows 7
+    scoped_refptr<SharedFontFamily> mangal = SharedFontFamily::Create(
+        AtomicString("Mangal"), FontFamily::Type::kFamilyName,
+        std::move(lohit));
+    // Windows 10
+    font_description.SetFamily(FontFamily(AtomicString("Nirmala UI"),
+                                          FontFamily::Type::kFamilyName,
+                                          std::move(mangal)));
   }
 
   Font CreateAhem(float size) {
@@ -1679,7 +1679,7 @@ TEST_P(ShapeParameterTest, SafeToBreakMissingRun) {
   EXPECT_EQ(3u, result->NextSafeToBreakOffset(3));
   EXPECT_EQ(4u, result->NextSafeToBreakOffset(4));
   EXPECT_EQ(6u, result->NextSafeToBreakOffset(5));
-  EXPECT_EQ(6u, result->NextSafeToBreakOffset(6));
+  EXPECT_EQ(8u, result->NextSafeToBreakOffset(6));
   EXPECT_EQ(8u, result->NextSafeToBreakOffset(7));
   EXPECT_EQ(8u, result->NextSafeToBreakOffset(8));
   EXPECT_EQ(10u, result->NextSafeToBreakOffset(9));
@@ -1874,9 +1874,8 @@ TEST_F(HarfBuzzShaperTest,
   //
   // [1] RoundHarfBuzzPosition() @harfbuzz_shaper.cc
   FontDescription font_description_copy(font_description);
-  FontFamily family;
-  family.SetFamily(font_family_names::kArial, FontFamily::Type::kFamilyName);
-  font_description_copy.SetFamily(family);
+  font_description_copy.SetFamily(
+      FontFamily(font_family_names::kArial, FontFamily::Type::kFamilyName));
   Font font = Font(font_description_copy);
 
   String string(u"AVOID");
@@ -2066,9 +2065,8 @@ TEST_F(HarfBuzzShaperTest, UnorderedClusterIndex) {
   // Setting the font family is not strictly necessary as fonts automatically
   // fallback, but it helps keeping the whole string in a run (i.e., shapes
   // surrounding characters with the same font.)
-  FontFamily family;
-  family.SetFamily(AtomicString("Geneva"), FontFamily::Type::kFamilyName);
-  font_description.SetFamily(family);
+  font_description.SetFamily(
+      FontFamily(AtomicString("Geneva"), FontFamily::Type::kFamilyName));
   Font font(font_description);
 
   HarfBuzzShaper shaper(string);

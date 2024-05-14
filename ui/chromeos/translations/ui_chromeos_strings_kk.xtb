@@ -416,7 +416,7 @@
 <translation id="434941167647142660">Бастапқы орны</translation>
 <translation id="4363958938297989186">Орыс (фонетикалық пернетақтамен)</translation>
 <translation id="4364327530094270451">Қауын</translation>
-<translation id="4378551569595875038">Қосылуда…</translation>
+<translation id="4378551569595875038">Қосылып жатыр…</translation>
 <translation id="4380245540200674032"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> желі, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, сигнал күші: <ph name="SIGNAL_STRENGTH" />%, әкімшіңіз басқарады, мәліметтер</translation>
 <translation id="4387004326333427325">Аутентификация сертификаты қашықтағы негізде қабылданбады</translation>
 <translation id="4394214039309501350">Сыртқы сілтеме</translation>
@@ -852,6 +852,7 @@
 <translation id="7589661784326793847">Күте тұрыңыз</translation>
 <translation id="7600126690270271294">Серб</translation>
 <translation id="7603724359189955920">Торлар</translation>
+<translation id="7624010287655004652">Басқа мобильдік провайдер құлыптаған</translation>
 <translation id="7627790789328695202"><ph name="FILE_NAME" /> бұрыннан бар. Оның атын өзгертіп, әрекетті қайталап көріңіз.</translation>
 <translation id="7628656427739290098"><ph name="PERCENT" />% аяқталды.</translation>
 <translation id="7649070708921625228">Анықтама</translation>
@@ -982,7 +983,7 @@
 <translation id="8456681095658380701">Жарамсыз атау</translation>
 <translation id="8457767749626250697">SIM картаңыз құлыптаулы.</translation>
 <translation id="8459404855768962328">Егер бұл элементті көшірсеңіз, ол "<ph name="DESTINATION_NAME" />" ортақ қалтасын көре алатын кез келген адаммен бөлісіледі.</translation>
-<translation id="8461914792118322307">Прокси</translation>
+<translation id="8461914792118322307">Прокси-сервер</translation>
 <translation id="8463494891489624050">Вьетнам (VIQR)</translation>
 <translation id="8475647382427415476">Google Drive дәл қазір "<ph name="FILENAME" />" синхрондай алмады. Google Drive кейін қайта тырысып көреді.</translation>
 <translation id="8477649328507734757">Шеңбер</translation>
@@ -1018,7 +1019,6 @@
 <translation id="8698877009525468705">Бұл файл құпия және әкімші саясатымен шектеледі.</translation>
 <translation id="8712637175834984815">Түсінікті</translation>
 <translation id="8713112442029511308">Мальта</translation>
-<translation id="8714138378966541668">Провайдер құлыптады</translation>
 <translation id="8714406895390098252">Велосипед</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> таңдалды.</translation>
 <translation id="872537912056138402">хорват</translation>

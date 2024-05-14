@@ -20,16 +20,20 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.profiles.ProfileProvider;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab.TitleProvider;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.TabListCoordinator.TabListMode;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator.SystemUiScrimDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -50,6 +54,7 @@ public class TabSwitcherPaneCoordinatorFactory {
     private final SnackbarManager mSnackbarManager;
     private final ModalDialogManager mModalDialogManager;
     private final @TabListMode int mMode;
+    private final @NonNull BottomSheetController mBottomSheetController;
 
     /**
      * @param activity The {@link Activity} that hosts the pane.
@@ -64,6 +69,7 @@ public class TabSwitcherPaneCoordinatorFactory {
      *     unused as the root UI's scrim coordinator is used for the show/hide animation.
      * @param snackbarManager The activity level snackbar manager.
      * @param modalDialogManager The modal dialog manager for the activity.
+     * @param bottomSheetController The {@link BottomSheetController} for the current activity.
      */
     TabSwitcherPaneCoordinatorFactory(
             @NonNull Activity activity,
@@ -76,7 +82,8 @@ public class TabSwitcherPaneCoordinatorFactory {
             @NonNull MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
             @NonNull ScrimCoordinator rootUiScrimCoordinator,
             @NonNull SnackbarManager snackbarManager,
-            @NonNull ModalDialogManager modalDialogManager) {
+            @NonNull ModalDialogManager modalDialogManager,
+            @NonNull BottomSheetController bottomSheetController) {
         mActivity = activity;
         mLifecycleDispatcher = lifecycleDispatcher;
         mProfileProviderSupplier = profileProviderSupplier;
@@ -91,6 +98,7 @@ public class TabSwitcherPaneCoordinatorFactory {
                         : rootUiScrimCoordinator;
         mSnackbarManager = snackbarManager;
         mModalDialogManager = modalDialogManager;
+        mBottomSheetController = bottomSheetController;
         mMode =
                 TabUiFeatureUtilities.shouldUseListMode()
                         ? TabListCoordinator.TabListMode.LIST
@@ -130,6 +138,7 @@ public class TabSwitcherPaneCoordinatorFactory {
                 mScrimCoordinator,
                 mSnackbarManager,
                 mModalDialogManager,
+                mBottomSheetController,
                 parentView,
                 resetHandler,
                 isVisibleSupplier,
@@ -150,11 +159,19 @@ public class TabSwitcherPaneCoordinatorFactory {
 
     /** Returns the title of a tab or tab group for display in the tab switcher. */
     @VisibleForTesting
-    String getTitle(@NonNull Context context, @NonNull PseudoTab tab) {
-        int numRelatedTabs = PseudoTab.getRelatedTabs(context, tab, mTabModelSelector).size();
-        if (numRelatedTabs == 1) return tab.getTitle();
+    String getTitle(@NonNull Context context, @NonNull PseudoTab pseudoTab) {
+        assert mTabModelSelector.isTabStateInitialized();
+        TabGroupModelFilter filter =
+                (TabGroupModelFilter)
+                        mTabModelSelector
+                                .getTabModelFilterProvider()
+                                .getTabModelFilter(pseudoTab.isIncognito());
+        Tab tab = TabModelUtils.getTabById(filter.getTabModel(), pseudoTab.getId());
+        assert tab != null;
+        if (!filter.isTabInTabGroup(tab)) return tab.getTitle();
 
-        return TabGroupTitleEditor.getDefaultTitle(context, numRelatedTabs);
+        return TabGroupTitleEditor.getDefaultTitle(
+                context, filter.getRelatedTabCountForRootId(tab.getRootId()));
     }
 
     /** Returns a scrim coordinator to use for tab grid dialog on LFF devices. */

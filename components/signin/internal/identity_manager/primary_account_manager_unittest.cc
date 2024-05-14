@@ -205,8 +205,7 @@ TEST_F(PrimaryAccountManagerTest, SignOut) {
   CheckSigninMetrics({.sign_in = AccessPoint::ACCESS_POINT_UNKNOWN,
                       .sync_opt_in = AccessPoint::ACCESS_POINT_UNKNOWN});
 
-  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest,
-                                signin_metrics::SignoutDelete::kIgnoreMetric);
+  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest);
   EXPECT_EQ(1, num_successful_signouts_);
   EXPECT_FALSE(manager_->HasPrimaryAccount(ConsentLevel::kSync));
   EXPECT_TRUE(
@@ -245,8 +244,7 @@ TEST_F(PrimaryAccountManagerTest, SignOutRevoke) {
   EXPECT_EQ(main_account_id,
             manager_->GetPrimaryAccountId(ConsentLevel::kSync));
 
-  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest,
-                                signin_metrics::SignoutDelete::kIgnoreMetric);
+  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest);
   CheckSigninMetrics({.sign_in = AccessPoint::ACCESS_POINT_UNKNOWN,
                       .sync_opt_in = AccessPoint::ACCESS_POINT_UNKNOWN,
                       .sign_out = signin_metrics::ProfileSignout::kTest,
@@ -275,8 +273,7 @@ TEST_F(PrimaryAccountManagerTest, SignOutWhileProhibited) {
 
   signin_client()->set_is_clear_primary_account_allowed_for_testing(
       SigninClient::SignoutDecision::CLEAR_PRIMARY_ACCOUNT_DISALLOWED);
-  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest,
-                                signin_metrics::SignoutDelete::kIgnoreMetric);
+  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest);
   EXPECT_EQ(0, num_successful_signouts_);
   EXPECT_TRUE(manager_->HasPrimaryAccount(ConsentLevel::kSync));
   CheckSigninMetrics({.sign_in = AccessPoint::ACCESS_POINT_UNKNOWN,
@@ -284,8 +281,7 @@ TEST_F(PrimaryAccountManagerTest, SignOutWhileProhibited) {
 
   signin_client()->set_is_clear_primary_account_allowed_for_testing(
       SigninClient::SignoutDecision::REVOKE_SYNC_DISALLOWED);
-  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest,
-                                signin_metrics::SignoutDelete::kIgnoreMetric);
+  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest);
   EXPECT_EQ(0, num_successful_signouts_);
   EXPECT_TRUE(manager_->HasPrimaryAccount(ConsentLevel::kSync));
   CheckSigninMetrics({.sign_in = AccessPoint::ACCESS_POINT_UNKNOWN,
@@ -293,8 +289,7 @@ TEST_F(PrimaryAccountManagerTest, SignOutWhileProhibited) {
 
   signin_client()->set_is_clear_primary_account_allowed_for_testing(
       SigninClient::SignoutDecision::ALLOW);
-  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest,
-                                signin_metrics::SignoutDelete::kIgnoreMetric);
+  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest);
   EXPECT_EQ(1, num_successful_signouts_);
   EXPECT_FALSE(manager_->HasPrimaryAccount(ConsentLevel::kSync));
   CheckSigninMetrics({.sign_in = AccessPoint::ACCESS_POINT_UNKNOWN,
@@ -320,15 +315,13 @@ TEST_F(PrimaryAccountManagerTest, UnconsentedSignOutWhileProhibited) {
 
   signin_client()->set_is_clear_primary_account_allowed_for_testing(
       SigninClient::SignoutDecision::CLEAR_PRIMARY_ACCOUNT_DISALLOWED);
-  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest,
-                                signin_metrics::SignoutDelete::kIgnoreMetric);
+  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest);
   EXPECT_TRUE(manager_->HasPrimaryAccount(ConsentLevel::kSignin));
   CheckSigninMetrics({.sign_in = AccessPoint::ACCESS_POINT_UNKNOWN});
 
   signin_client()->set_is_clear_primary_account_allowed_for_testing(
       SigninClient::SignoutDecision::ALLOW);
-  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest,
-                                signin_metrics::SignoutDelete::kIgnoreMetric);
+  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest);
   EXPECT_FALSE(manager_->HasPrimaryAccount(ConsentLevel::kSignin));
   CheckSigninMetrics({.sign_in = AccessPoint::ACCESS_POINT_UNKNOWN,
                       .sign_out = signin_metrics::ProfileSignout::kTest});
@@ -353,8 +346,7 @@ TEST_F(PrimaryAccountManagerTest, RevokeSyncConsentAllowedSignoutProhibited) {
 
   signin_client()->set_is_clear_primary_account_allowed_for_testing(
       SigninClient::SignoutDecision::CLEAR_PRIMARY_ACCOUNT_DISALLOWED);
-  manager_->RevokeSyncConsent(signin_metrics::ProfileSignout::kTest,
-                              signin_metrics::SignoutDelete::kIgnoreMetric);
+  manager_->RevokeSyncConsent(signin_metrics::ProfileSignout::kTest);
   CheckSigninMetrics({.sign_in = AccessPoint::ACCESS_POINT_UNKNOWN,
                       .sync_opt_in = AccessPoint::ACCESS_POINT_UNKNOWN,
                       .turn_off_sync = signin_metrics::ProfileSignout::kTest});
@@ -367,8 +359,7 @@ TEST_F(PrimaryAccountManagerTest, RevokeSyncConsentAllowedSignoutProhibited) {
   EXPECT_TRUE(manager_->HasPrimaryAccount(ConsentLevel::kSignin));
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest,
-                                signin_metrics::SignoutDelete::kIgnoreMetric);
+  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest);
   EXPECT_TRUE(manager_->HasPrimaryAccount(ConsentLevel::kSignin));
   CheckSigninMetrics({.sign_in = AccessPoint::ACCESS_POINT_UNKNOWN,
                       .sync_opt_in = AccessPoint::ACCESS_POINT_UNKNOWN,
@@ -389,8 +380,7 @@ TEST_F(PrimaryAccountManagerTest, NoopSignOutDoesNotNotifyObservers) {
   EXPECT_TRUE(manager_->HasPrimaryAccount(ConsentLevel::kSignin));
   EXPECT_FALSE(manager_->HasPrimaryAccount(ConsentLevel::kSync));
 
-  manager_->RevokeSyncConsent(signin_metrics::ProfileSignout::kTest,
-                              signin_metrics::SignoutDelete::kIgnoreMetric);
+  manager_->RevokeSyncConsent(signin_metrics::ProfileSignout::kTest);
 
   // Since there was no sync consent, observers shouldn't be notified.
   EXPECT_EQ(0, num_successful_signouts_);
@@ -622,8 +612,7 @@ TEST_F(PrimaryAccountManagerTest, RevokeSyncConsent) {
                                   AccessPoint::ACCESS_POINT_UNKNOWN);
   EXPECT_TRUE(manager_->HasPrimaryAccount(ConsentLevel::kSync));
 
-  manager_->RevokeSyncConsent(signin_metrics::ProfileSignout::kTest,
-                              signin_metrics::SignoutDelete::kIgnoreMetric);
+  manager_->RevokeSyncConsent(signin_metrics::ProfileSignout::kTest);
   EXPECT_EQ(1, num_successful_signouts_);
   EXPECT_FALSE(manager_->HasPrimaryAccount(ConsentLevel::kSync));
   EXPECT_TRUE(manager_->HasPrimaryAccount(ConsentLevel::kSignin));
@@ -640,8 +629,7 @@ TEST_F(PrimaryAccountManagerTest, ClearPrimaryAccount) {
                                   AccessPoint::ACCESS_POINT_UNKNOWN);
   EXPECT_TRUE(manager_->HasPrimaryAccount(ConsentLevel::kSync));
 
-  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest,
-                                signin_metrics::SignoutDelete::kIgnoreMetric);
+  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest);
   EXPECT_EQ(1, num_successful_signouts_);
   EXPECT_FALSE(manager_->HasPrimaryAccount(ConsentLevel::kSync));
   EXPECT_FALSE(manager_->HasPrimaryAccount(ConsentLevel::kSignin));
@@ -875,8 +863,7 @@ TEST_F(PrimaryAccountManagerTest, ExplicitSigninPref) {
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   // Clearing signin.
-  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest,
-                                signin_metrics::SignoutDelete::kIgnoreMetric);
+  manager_->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest);
 
   EXPECT_FALSE(prefs()->GetBoolean(prefs::kExplicitBrowserSignin));
 #endif
@@ -925,4 +912,43 @@ TEST_F(PrimaryAccountManagerTest, ExplicitSigninFollowedByUnknownSignin) {
 
   // The explicit sign in pref should be cleared.
   EXPECT_FALSE(prefs()->GetBoolean(prefs::kExplicitBrowserSignin));
+}
+
+TEST_F(PrimaryAccountManagerTest, ExplicitSigninFollowedByWebSignin) {
+  // Web signin can trigger automatic sign in if the user previously enabled
+  // automatic sign in. Signing in thgouh WEB_SIGNIN should have no effect on
+  // the `prefs::kExplicitBrowserSignin` pref.
+  base::test::ScopedFeatureList feature{
+      switches::kExplicitBrowserSigninUIOnDesktop};
+
+  CreatePrimaryAccountManager();
+  CoreAccountId account_id =
+      AddToAccountTracker("account_id", "user@gmail.com");
+
+  ASSERT_FALSE(prefs()->GetBoolean(prefs::kExplicitBrowserSignin));
+
+  // Simulate an explicit signin through the Chrome Signin Intercept bubble.
+  manager_->SetPrimaryAccountInfo(
+      account_tracker()->GetAccountInfo(account_id),
+      signin::ConsentLevel::kSignin,
+      signin_metrics::AccessPoint::ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE);
+
+  bool explicit_browser_signin =
+      prefs()->GetBoolean(prefs::kExplicitBrowserSignin);
+  EXPECT_TRUE(explicit_browser_signin);
+
+  // Creating a second account.
+  CoreAccountId account_id2 =
+      AddToAccountTracker("account_id2", "user2@gmail.com");
+
+  // Simulating an sign in from a web signin access point without prior sign
+  // out.
+  manager_->SetPrimaryAccountInfo(
+      account_tracker()->GetAccountInfo(account_id2),
+      signin::ConsentLevel::kSignin,
+      signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN);
+
+  // The explicit sign in pref should remain.
+  EXPECT_EQ(prefs()->GetBoolean(prefs::kExplicitBrowserSignin),
+            explicit_browser_signin);
 }

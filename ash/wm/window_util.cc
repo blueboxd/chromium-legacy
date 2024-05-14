@@ -17,7 +17,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
 #include "ash/root_window_controller.h"
-#include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -35,12 +34,14 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/wm_constants.h"
 #include "ash/wm/wm_event.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/chromeos_ui_constants.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
@@ -63,11 +64,13 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
+#include "ui/wm/core/scoped_animation_disabler.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -168,6 +171,46 @@ aura::Window* FindTopMostChild(aura::Window* parent,
 }
 
 }  // namespace
+
+int GetMiniWindowRoundedCornerRadius() {
+  return chromeos::features::IsRoundedWindowsEnabled()
+             ? chromeos::features::RoundedWindowsRadius()
+             : kWindowMiniViewCornerRadius;
+}
+
+gfx::RoundedCornersF GetMiniWindowRoundedCorners(const aura::Window* window,
+                                                 bool include_header_rounding,
+                                                 std::optional<float> scale) {
+  const int corner_radius = window_util::GetMiniWindowRoundedCornerRadius();
+  const float scaled_corner_radius = corner_radius / scale.value_or(1.0f);
+
+  if (SnapGroupController* snap_group_controller = SnapGroupController::Get()) {
+    if (SnapGroup* snap_group =
+            snap_group_controller->GetSnapGroupForGivenWindow(window)) {
+      return window == snap_group->window1()
+                 ? gfx::RoundedCornersF(
+                       /*upper_left=*/include_header_rounding
+                           ? scaled_corner_radius
+                           : 0,
+                       /*upper_right=*/0, /*lower_right=*/0,
+                       /*lower_left=*/
+                       scaled_corner_radius)
+                 : gfx::RoundedCornersF(
+                       /*upper_left=*/0,
+                       /*upper_right=*/
+                       include_header_rounding ? scaled_corner_radius : 0,
+                       /*lower_right=*/
+                       scaled_corner_radius,
+                       /*lower_left=*/0);
+    }
+  }
+
+  return gfx::RoundedCornersF(
+      /*upper_left=*/include_header_rounding ? scaled_corner_radius : 0,
+      /*upper_right=*/include_header_rounding ? scaled_corner_radius : 0,
+      /*lower_right=*/scaled_corner_radius,
+      /*lower_left=*/scaled_corner_radius);
+}
 
 aura::Window* GetActiveWindow() {
   if (auto* activation_client =
@@ -423,7 +466,7 @@ void EnsureTransientRoots(
 void MinimizeAndHideWithoutAnimation(
     const std::vector<raw_ptr<aura::Window, VectorExperimental>>& windows) {
   for (aura::Window* window : windows) {
-    ScopedAnimationDisabler disable(window);
+    wm::ScopedAnimationDisabler disable(window);
 
     // ARC windows are minimized asynchronously, so we hide them after
     // minimization. We minimize ARC windows first so they receive occlusion
@@ -754,6 +797,12 @@ bool IsInFasterSplitScreenSetupSession() {
     }
   }
   return false;
+}
+
+gfx::Rect GetTargetScreenBounds(aura::Window* window) {
+  gfx::Rect bounds_in_screen(window->GetTargetBounds());
+  wm::ConvertRectToScreen(window->parent(), &bounds_in_screen);
+  return bounds_in_screen;
 }
 
 }  // namespace ash::window_util

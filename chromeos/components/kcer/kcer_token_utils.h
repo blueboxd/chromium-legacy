@@ -13,21 +13,6 @@
 
 namespace kcer::internal {
 
-// Adds an attribute with the given `type` to `attr_list` and sets the value to
-// `data`.
-void AddAttribute(chaps::AttributeList& attr_list,
-                  chromeos::PKCS11_CK_ATTRIBUTE_TYPE type,
-                  base::span<const uint8_t> data);
-
-// Reinterprets the `value` as a sequence of bytes and returns it as a span.
-// `T` must be a simple type, i.e. no internal pointers, etc.
-// `value` must outlive the returned span.
-template <typename T>
-base::span<const uint8_t> MakeSpan(T* value) {
-  static_assert(std::is_integral_v<T>);
-  return base::as_bytes(base::span<T>(value, /*count=*/1u));
-}
-
 // Calculate PKCS#11 id (see CKA_ID) from the bytes of the public key. Designed
 // to be backwards compatible with ids produced by NSS.
 Pkcs11Id MakePkcs11Id(base::span<const uint8_t> public_key_data);
@@ -79,6 +64,8 @@ class KcerTokenUtils {
                   Pkcs11Id pkcs11_id,
                   std::string nickname,
                   CertDer cert_der,
+                  bool is_hardware_backed,
+                  bool mark_as_migrated,
                   base::OnceCallback<void(std::optional<Error> kcer_error,
                                           ObjectHandle cert_handle,
                                           uint32_t result_code)> callback);
@@ -86,11 +73,16 @@ class KcerTokenUtils {
   // Imports an EVP_KEY into Chaps as a pair of public and private objects.
   // Skips the actual import if the key already exists.
   struct ImportKeyTask {
-    ImportKeyTask(KeyData in_key_data, Kcer::GenerateKeyCallback in_callback);
+    ImportKeyTask(KeyData in_key_data,
+                  bool in_hardware_backed,
+                  bool in_mark_as_migrated,
+                  Kcer::GenerateKeyCallback in_callback);
     ImportKeyTask(ImportKeyTask&& other);
     ~ImportKeyTask();
 
     KeyData key_data;
+    const bool hardware_backed;
+    const bool mark_as_migrated;
     Kcer::GenerateKeyCallback callback;
     int attemps_left = 5;
   };

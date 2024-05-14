@@ -21,6 +21,7 @@
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/global_routing_id.h"
 #include "device/fido/cable/cable_discovery_data.h"
+#include "device/fido/discoverable_credential_metadata.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/fido_types.h"
@@ -42,6 +43,7 @@ class PublicKeyCredentialDescriptor;
 class PublicKeyCredentialUserEntity;
 enum class FidoRequestType : uint8_t;
 namespace enclave {
+struct ClaimedPIN;
 struct CredentialRequest;
 }
 }  // namespace device
@@ -260,19 +262,28 @@ class ChromeAuthenticatorRequestDelegate
 
   std::optional<device::FidoTransportProtocol> GetLastTransportUsed() const;
 
-  // Called each time `enclave_manager_` has finished processing all pending
-  // actions.
-  void OnEnclaveManagerIdle();
+  // Called when the EnclaveManager has finished loading its state from the
+  // disk.
+  void OnEnclaveLoaded();
+
+  // Called when MagicArch has provided keys to the EnclaveManager.
+  void OnKeysStored();
+
+  // Called when the current device has been added to the security domain.
+  void OnDeviceAdded(bool success);
 
   // Called when the user selects an account from modal or conditional UI.
   // Stores the credential ID in `preselected_cred_id_` then forwards to the
   // `AccountPreselectedCallback` that was passed to
   // `RegisterActionCallbacks`.
-  void OnAccountPreselected(device::PublicKeyCredentialDescriptor);
+  void OnAccountPreselected(device::DiscoverableCredentialMetadata);
 
   // Called to start fetching the state of the primary account from the
   // trusted vault service.
   void DownloadAccountState();
+
+  // Tell `dialog_model_` that the enclave manager is ready.
+  void SetAccountStateReady();
 
   // Called when the state of the trusted vault has been determined by
   // `DownloadAccountState`.
@@ -282,8 +293,14 @@ class ChromeAuthenticatorRequestDelegate
           result);
 
   // Called when the UI has reached a state where it needs to do an enclave
-  // operation and an OAuth token for the enclave has been fetched.
-  void StartEnclaveTransaction(std::optional<std::string> token);
+  // operation, and an OAuth token for the enclave has been fetched.
+  void MaybeHashPinAndStartEnclaveTransaction(std::optional<std::string> token);
+
+  // Called when the UI has reached a state where it needs to do an enclave
+  // operation, an OAuth token for the enclave has been fetched, and any PIN
+  // hashing has been completed.
+  void StartEnclaveTransaction(std::optional<std::string> token,
+                               std::unique_ptr<device::enclave::ClaimedPIN>);
 
   // ShouldPermitCableExtension returns true if the given |origin| may set a
   // caBLE extension. This extension contains website-chosen BLE pairing
@@ -389,14 +406,14 @@ class ChromeAuthenticatorRequestDelegate
   std::unique_ptr<device::FidoRequestHandlerBase::TransportAvailabilityInfo>
       pending_transport_availability_info_;
 
-  absl::optional<device::FidoRequestType> request_type_;
+  std::optional<device::FidoRequestType> request_type_;
 
   std::optional<device::UserVerificationRequirement>
       user_verification_requirement_;
 
   // The set of pertinent synced passkeys for this request. Persisted here
   // so that a consistent set of passkeys is used throughout the transaction.
-  absl::optional<std::vector<sync_pb::WebauthnCredentialSpecifics>>
+  std::optional<std::vector<sync_pb::WebauthnCredentialSpecifics>>
       gpm_credentials_;
 
   // The pending request to fetch the state of the trusted vault.
@@ -415,6 +432,15 @@ class ChromeAuthenticatorRequestDelegate
   // The credential ID of the last credential to be selected by the user in
   // modal or conditional UI.
   std::optional<std::vector<uint8_t>> preselected_cred_id_;
+
+  // Contains the bytes of a WrappedPIN structure, downloaded from the security
+  // domain service.
+  std::optional<std::string> serialized_wrapped_pin_;
+
+  // Hold the GPM PIN in the special case where we prompt for a PIN to add one
+  // to the account, but then immediately need it in order to satisfy UV for
+  // the request.
+  std::optional<std::string> gpm_pin_stashed_;
 
   base::WeakPtrFactory<ChromeAuthenticatorRequestDelegate> weak_ptr_factory_{
       this};

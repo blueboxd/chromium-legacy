@@ -20,7 +20,6 @@
 #import "components/feature_engagement/public/tracker.h"
 #import "components/sync/service/sync_service.h"
 #import "ios/chrome/app/tests_hook.h"
-#import "ios/chrome/browser/credential_provider_promo/model/features.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/docking_promo/ui/docking_promo_display_handler.h"
 #import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
@@ -242,7 +241,7 @@
 
     [handler handleDisplay];
 
-    [self.mediator recordImpression:handler.config.identifier];
+    [self.mediator deregisterAfterDisplay:handler.config.identifier];
 
     base::UmaHistogramEnumeration("IOS.PromosManager.Promo", promo);
     base::UmaHistogramEnumeration("IOS.PromosManager.Promo.Type",
@@ -268,7 +267,7 @@
                                           animated:YES
                                         completion:nil];
 
-    [self.mediator recordImpression:provider.config.identifier];
+    [self.mediator deregisterAfterDisplay:provider.config.identifier];
 
     base::UmaHistogramEnumeration("IOS.PromosManager.Promo", promo);
     base::UmaHistogramEnumeration(
@@ -295,7 +294,7 @@
                                           animated:YES
                                         completion:nil];
 
-    [self.mediator recordImpression:banneredProvider.config.identifier];
+    [self.mediator deregisterAfterDisplay:banneredProvider.config.identifier];
 
     base::UmaHistogramEnumeration("IOS.PromosManager.Promo", promo);
     base::UmaHistogramEnumeration(
@@ -363,7 +362,7 @@
                                           animated:YES
                                         completion:nil];
 
-    [self.mediator recordImpression:alertProvider.config.identifier];
+    [self.mediator deregisterAfterDisplay:alertProvider.config.identifier];
 
     base::UmaHistogramEnumeration("IOS.PromosManager.Promo", promo);
     base::UmaHistogramEnumeration(

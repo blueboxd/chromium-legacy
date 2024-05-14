@@ -31,6 +31,7 @@
 #include "base/timer/timer.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
+#include "ui/events/ozone/evdev/heatmap_palm_detector.h"
 #include "ui/events/ozone/evdev/touch_evdev_debug_buffer.h"
 #include "ui/events/ozone/evdev/touch_filter/palm_detection_filter.h"
 #include "ui/events/types/event_type.h"
@@ -315,6 +316,9 @@ class COMPONENT_EXPORT(EVDEV) TouchEventConverterEvdev
 
   // Not owned!
   const raw_ptr<SharedPalmDetectionFilterState> shared_palm_state_;
+
+  // Whether device supports hidraw spi and heatmap palm detection.
+  bool support_heatmap_palm_detection_ = false;
 
   base::WeakPtrFactory<TouchEventConverterEvdev> weak_factory_{this};
 };

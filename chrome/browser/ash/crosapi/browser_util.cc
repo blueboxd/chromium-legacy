@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/crosapi/browser_util.h"
+
 #include <string>
+#include <string_view>
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
@@ -62,7 +64,7 @@ BASE_FEATURE(kLacrosLaunchAtLoginScreen,
 
 BASE_FEATURE(kLacrosForkZygotesAtLoginScreen,
              "LacrosForkZygotesAtLoginScreen",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 namespace {
 
@@ -87,7 +89,7 @@ constexpr char kLacrosMetadataVersionKey[] = "version";
 // The conversion map for LacrosDataBackwardMigrationMode policy data. The
 // values must match the ones from LacrosDataBackwardMigrationMode.yaml.
 constexpr auto kLacrosDataBackwardMigrationModeMap =
-    base::MakeFixedFlatMap<base::StringPiece, LacrosDataBackwardMigrationMode>({
+    base::MakeFixedFlatMap<std::string_view, LacrosDataBackwardMigrationMode>({
         {kLacrosDataBackwardMigrationModePolicyNone,
          LacrosDataBackwardMigrationMode::kNone},
         {kLacrosDataBackwardMigrationModePolicyKeepNone,
@@ -101,7 +103,7 @@ constexpr auto kLacrosDataBackwardMigrationModeMap =
 // The conversion map for LacrosSelection policy data. The values must match
 // the ones from LacrosSelection.yaml.
 constexpr auto kLacrosSelectionPolicyMap =
-    base::MakeFixedFlatMap<base::StringPiece, LacrosSelectionPolicy>({
+    base::MakeFixedFlatMap<std::string_view, LacrosSelectionPolicy>({
         {"user_choice", LacrosSelectionPolicy::kUserChoice},
         {"rootfs", LacrosSelectionPolicy::kRootfs},
     });
@@ -247,7 +249,7 @@ namespace {
 //   2. From the current ash channel.
 Channel GetStatefulLacrosChannel() {
   static constexpr auto kStabilitySwitchToChannelMap =
-      base::MakeFixedFlatMap<base::StringPiece, Channel>({
+      base::MakeFixedFlatMap<std::string_view, Channel>({
           {kLacrosStabilityChannelCanary, Channel::CANARY},
           {kLacrosStabilityChannelDev, Channel::DEV},
           {kLacrosStabilityChannelBeta, Channel::BETA},
@@ -257,7 +259,7 @@ Channel GetStatefulLacrosChannel() {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           kLacrosStabilitySwitch);
   if (!stability_switch_value.empty()) {
-    if (auto* it = kStabilitySwitchToChannelMap.find(stability_switch_value);
+    if (auto it = kStabilitySwitchToChannelMap.find(stability_switch_value);
         it != kStabilitySwitchToChannelMap.end()) {
       return it->second;
     }
@@ -526,7 +528,7 @@ void CacheLacrosAvailability(const policy::PolicyMap& map) {
       map.GetValue(policy::key::kLacrosAvailability, base::Value::Type::STRING);
   g_lacros_availability_cache =
       ash::standalone_browser::DetermineLacrosAvailabilityFromPolicyValue(
-          GetPrimaryUser(), value ? value->GetString() : base::StringPiece());
+          GetPrimaryUser(), value ? value->GetString() : std::string_view());
 }
 
 void CacheLacrosDataBackwardMigrationMode(const policy::PolicyMap& map) {
@@ -540,7 +542,7 @@ void CacheLacrosDataBackwardMigrationMode(const policy::PolicyMap& map) {
   const base::Value* value = map.GetValue(
       policy::key::kLacrosDataBackwardMigrationMode, base::Value::Type::STRING);
   g_lacros_data_backward_migration_mode = ParseLacrosDataBackwardMigrationMode(
-      value ? value->GetString() : base::StringPiece());
+      value ? value->GetString() : std::string_view());
 }
 
 void CacheLacrosSelection(const policy::PolicyMap& map) {
@@ -562,7 +564,7 @@ void CacheLacrosSelection(const policy::PolicyMap& map) {
   const base::Value* value =
       map.GetValue(policy::key::kLacrosSelection, base::Value::Type::STRING);
   g_lacros_selection_cache = ParseLacrosSelectionPolicy(
-      value ? value->GetString() : base::StringPiece());
+      value ? value->GetString() : std::string_view());
 }
 
 LacrosSelectionPolicy GetCachedLacrosSelectionPolicy() {
@@ -597,9 +599,8 @@ std::optional<LacrosSelection> DetermineLacrosSelection() {
 
 ComponentInfo GetLacrosComponentInfoForChannel(version_info::Channel channel) {
   // We default to the Dev component for UNKNOWN channels.
-  // TODO(crbug.com/1513684): Convert to MakeFixedFlatMap().
-  static const auto kChannelToComponentInfoMap =
-      base::MakeFixedFlatMapNonConsteval<Channel, const ComponentInfo*>({
+  static constexpr auto kChannelToComponentInfoMap =
+      base::MakeFixedFlatMap<Channel, const ComponentInfo*>({
           {Channel::UNKNOWN, &kLacrosDogfoodDevInfo},
           {Channel::CANARY, &kLacrosDogfoodCanaryInfo},
           {Channel::DEV, &kLacrosDogfoodDevInfo},
@@ -677,12 +678,12 @@ void ClearLacrosSelectionCacheForTest() {
   g_lacros_selection_cache.reset();
 }
 
-void RecordMigrationStatus() {
+std::optional<MigrationStatus> GetMigrationStatus() {
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state) {
     // This can happen in tests.
     CHECK_IS_TEST();
-    return;
+    return std::nullopt;
   }
 
   const auto* user = GetPrimaryUser();
@@ -690,16 +691,14 @@ void RecordMigrationStatus() {
     // The function is intended to be run after primary user is initialized.
     // The function might be run in tests without primary user being set.
     CHECK_IS_TEST();
-    return;
+    return std::nullopt;
   }
 
-  const MigrationStatus status = GetMigrationStatus(local_state, user);
-
-  UMA_HISTOGRAM_ENUMERATION(kLacrosMigrationStatus, status);
+  return GetMigrationStatusForUser(local_state, user);
 }
 
-MigrationStatus GetMigrationStatus(PrefService* local_state,
-                                   const user_manager::User* user) {
+MigrationStatus GetMigrationStatusForUser(PrefService* local_state,
+                                          const user_manager::User* user) {
   if (!crosapi::browser_util::IsLacrosEnabledForMigration(
           user, crosapi::browser_util::PolicyInitState::kAfterInit)) {
     return MigrationStatus::kLacrosNotEnabled;
@@ -796,8 +795,8 @@ LacrosLaunchSwitchSource GetLacrosLaunchSwitchSource() {
 }
 
 std::optional<LacrosSelectionPolicy> ParseLacrosSelectionPolicy(
-    base::StringPiece value) {
-  auto* it = kLacrosSelectionPolicyMap.find(value);
+    std::string_view value) {
+  auto it = kLacrosSelectionPolicyMap.find(value);
   if (it != kLacrosSelectionPolicyMap.end())
     return it->second;
 
@@ -806,8 +805,8 @@ std::optional<LacrosSelectionPolicy> ParseLacrosSelectionPolicy(
 }
 
 std::optional<LacrosDataBackwardMigrationMode>
-ParseLacrosDataBackwardMigrationMode(base::StringPiece value) {
-  auto* it = kLacrosDataBackwardMigrationModeMap.find(value);
+ParseLacrosDataBackwardMigrationMode(std::string_view value) {
+  auto it = kLacrosDataBackwardMigrationModeMap.find(value);
   if (it != kLacrosDataBackwardMigrationModeMap.end())
     return it->second;
 
@@ -818,7 +817,7 @@ ParseLacrosDataBackwardMigrationMode(base::StringPiece value) {
   return std::nullopt;
 }
 
-base::StringPiece GetLacrosDataBackwardMigrationModeName(
+std::string_view GetLacrosDataBackwardMigrationModeName(
     LacrosDataBackwardMigrationMode value) {
   for (const auto& entry : kLacrosDataBackwardMigrationModeMap) {
     if (entry.second == value)
@@ -826,10 +825,10 @@ base::StringPiece GetLacrosDataBackwardMigrationModeName(
   }
 
   NOTREACHED();
-  return base::StringPiece();
+  return std::string_view();
 }
 
-base::StringPiece GetLacrosSelectionPolicyName(LacrosSelectionPolicy value) {
+std::string_view GetLacrosSelectionPolicyName(LacrosSelectionPolicy value) {
   for (const auto& entry : kLacrosSelectionPolicyMap) {
     if (entry.second == value) {
       return entry.first;
@@ -837,7 +836,7 @@ base::StringPiece GetLacrosSelectionPolicyName(LacrosSelectionPolicy value) {
   }
 
   NOTREACHED();
-  return base::StringPiece();
+  return std::string_view();
 }
 
 bool IsAshBrowserSyncEnabled() {

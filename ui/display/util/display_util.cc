@@ -170,6 +170,7 @@ gfx::ColorSpace GetColorSpaceFromEdid(const display::EdidParser& edid_parser) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       if (base::FeatureList::IsEnabled(
               display::features::kEnableExternalDisplayHDR10Mode) &&
+          edid_parser.is_external_display() &&
           base::Contains(
               edid_parser.supported_color_primary_matrix_ids(),
               EdidParser::PrimaryMatrixPair(gfx::ColorSpace::PrimaryID::BT2020,
@@ -337,6 +338,8 @@ gfx::DisplayColorSpaces CreateDisplayColorSpaces(
     // 10-bit buffer.
     display_color_spaces = gfx::DisplayColorSpaces(
         gfx::ColorSpace::CreateHDR10(), gfx::BufferFormat::RGBA_1010102);
+    // TODO(b/165822222): Set initial luminance values based on display
+    // brightness
     display_color_spaces.SetHDRMaxLuminanceRelative(
         hdr_static_metadata->max /
         display_color_spaces.GetSDRMaxLuminanceNits());

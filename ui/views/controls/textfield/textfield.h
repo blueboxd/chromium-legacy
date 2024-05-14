@@ -44,6 +44,7 @@
 #include "ui/views/selection_controller_delegate.h"
 #include "ui/views/touchui/touch_selection_controller.h"
 #include "ui/views/view.h"
+#include "ui/views/view_observer.h"
 #include "ui/views/word_lookup_client.h"
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -74,7 +75,8 @@ class VIEWS_EXPORT Textfield : public View,
                                public WordLookupClient,
                                public SelectionControllerDelegate,
                                public ui::TouchEditable,
-                               public ui::TextInputClient {
+                               public ui::TextInputClient,
+                               public views::ViewObserver {
   METADATA_HEADER(Textfield, View)
 
  public:
@@ -207,6 +209,11 @@ class VIEWS_EXPORT Textfield : public View,
   SkColor GetBackgroundColor() const;
   void SetBackgroundColor(SkColor color);
 
+  // Getter/Setter methods for `is_background_enabled_` which controls
+  // whether a background is drawn for this view.
+  bool GetBackgroundEnabled() const;
+  void SetBackgroundEnabled(bool enabled);
+
   // Gets/sets the selection text color to be used when painting the Textfield.
   SkColor GetSelectionTextColor() const;
   void SetSelectionTextColor(SkColor color);
@@ -319,7 +326,7 @@ class VIEWS_EXPORT Textfield : public View,
   // updating the cursor position and visibility.
   void FitToLocalBounds();
 
-  // Getter/Setter methods for |use_default_border_|.
+  // Getter/Setter methods for `use_default_border_`.
   bool GetUseDefaultBorder() const;
   void SetUseDefaultBorder(bool use_default_border);
 
@@ -480,6 +487,9 @@ class VIEWS_EXPORT Textfield : public View,
       const std::u16string& active_composition_text,
       bool is_composition_committed) override;
 #endif
+
+  // ViewObserver overrides:
+  void OnViewFocused(views::View* observed_view) override;
 
   [[nodiscard]] base::CallbackListSubscription AddTextChangedCallback(
       views::PropertyChangedCallback callback);
@@ -896,6 +906,11 @@ class VIEWS_EXPORT Textfield : public View,
   // border.
   bool use_default_border_ = true;
 
+  // Flag to set whether a background is created for this view.
+  bool is_background_enabled_ = true;
+
+  bool is_processing_focus_ = false;
+
   // Holds the subscription object for the enabled changed callback.
   base::CallbackListSubscription enabled_changed_subscription_ =
       AddEnabledChangedCallback(
@@ -911,6 +926,7 @@ class VIEWS_EXPORT Textfield : public View,
 
 BEGIN_VIEW_BUILDER(VIEWS_EXPORT, Textfield, View)
 VIEW_BUILDER_PROPERTY(SkColor, BackgroundColor)
+VIEW_BUILDER_PROPERTY(bool, BackgroundEnabled)
 VIEW_BUILDER_PROPERTY(TextfieldController*, Controller)
 VIEW_BUILDER_PROPERTY(bool, CursorEnabled)
 VIEW_BUILDER_PROPERTY(int, DefaultWidthInChars)

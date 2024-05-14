@@ -370,8 +370,7 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
     // When the user has an unrecoverable error, they first have to sign out and
     // then sign in again.
     identity_manager->GetPrimaryAccountMutator()->RevokeSyncConsent(
-        signin_metrics::ProfileSignout::kRevokeSyncFromSettings,
-        signin_metrics::SignoutDelete::kIgnoreMetric);
+        signin_metrics::ProfileSignout::kRevokeSyncFromSettings);
   }
 
   // If the identity manager already has a primary account, this is a
@@ -680,27 +679,35 @@ void PeopleHandler::HandleSignout(const base::Value::List& args) {
     return;
   }
 
-  signin_metrics::SignoutDelete delete_metric =
-      delete_profile ? signin_metrics::SignoutDelete::kDeleted
-                     : signin_metrics::SignoutDelete::kKeeping;
-
   if (is_syncing && !is_clear_primary_account_allowed) {
     DCHECK(signin_client->IsRevokeSyncConsentAllowed());
     identity_manager->GetPrimaryAccountMutator()->RevokeSyncConsent(
-        signin_metrics::ProfileSignout::kRevokeSyncFromSettings, delete_metric);
+        signin_metrics::ProfileSignout::kRevokeSyncFromSettings);
   } else {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     identity_manager->GetPrimaryAccountMutator()->ClearPrimaryAccount(
-        signin_metrics::ProfileSignout::kUserClickedSignoutSettings,
-        delete_metric);
+        signin_metrics::ProfileSignout::kUserClickedSignoutSettings);
 #else
     Browser* browser = chrome::FindBrowserWithTab(web_ui()->GetWebContents());
     if (browser) {
+      // Clearing the primary account isn't sufficient to signout SAML accounts,
+      // see http://crbug.com/1114646.
       browser->signin_view_controller()->ShowGaiaLogoutTab(
           signin_metrics::SourceForRefreshTokenOperation::kSettings_Signout);
     }
 
-    if (identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
+    if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
+            switches::ExplicitBrowserSigninPhase::kFull) &&
+        identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
+      // In Uno, Gaia logout tab invalidating the account will lead to a sign in
+      // paused state. Unset the primary account to ensure it is removed from
+      // chrome. The `AccountReconcilor` will revoke refresh tokens for accounts
+      // not in the Gaia cookie on next reconciliation.
+      identity_manager->GetPrimaryAccountMutator()
+          ->RemovePrimaryAccountButKeepTokens(
+              signin_metrics::ProfileSignout::kUserClickedSignoutSettings);
+    } else if (identity_manager->HasPrimaryAccount(
+                   signin::ConsentLevel::kSync)) {
       // Only revoke the sync consent.
       // * If the primary account is still valid, then it will be removed by
       // the Gaia logout tab (see http://crbug.com/1068978).
@@ -711,8 +718,7 @@ void PeopleHandler::HandleSignout(const base::Value::List& args) {
       // This operation may delete the current browser that owns |this| if force
       // signin is enabled (see https://crbug.com/1153120).
       identity_manager->GetPrimaryAccountMutator()->RevokeSyncConsent(
-          signin_metrics::ProfileSignout::kRevokeSyncFromSettings,
-          delete_metric);
+          signin_metrics::ProfileSignout::kRevokeSyncFromSettings);
     }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   }
@@ -804,8 +810,7 @@ void PeopleHandler::CloseSyncSetup() {
       // initial setup or close sync setup without confirming sync.
       IdentityManagerFactory::GetForProfile(profile_)
           ->GetPrimaryAccountMutator()
-          ->RevokeSyncConsent(signin_metrics::ProfileSignout::kAbortSignin,
-                              signin_metrics::SignoutDelete::kIgnoreMetric);
+          ->RevokeSyncConsent(signin_metrics::ProfileSignout::kAbortSignin);
     }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 

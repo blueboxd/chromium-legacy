@@ -14,10 +14,9 @@ import static org.junit.Assert.assertTrue;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
-import junit.framework.Assert;
-
 import org.hamcrest.Matchers;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -31,7 +30,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tab.TabStateExtractor;
@@ -89,7 +88,7 @@ public class BrowsingDataBridgeTest {
 
     private BrowsingDataBridge getBrowsingDataBridge() {
         return ThreadUtils.runOnUiThreadBlockingNoException(
-                () -> BrowsingDataBridge.getForProfile(Profile.getLastUsedRegularProfile()));
+                () -> BrowsingDataBridge.getForProfile(ProfileManager.getLastUsedRegularProfile()));
     }
 
     /** Test no clear browsing data calls. */
@@ -117,7 +116,7 @@ public class BrowsingDataBridgeTest {
                     getBrowsingDataBridge()
                             .clearBrowsingData(
                                     mListener,
-                                    new int[] {BrowsingDataType.COOKIES},
+                                    new int[] {BrowsingDataType.SITE_DATA},
                                     TimePeriod.LAST_HOUR);
                 });
         mCallbackHelper.waitForCallback(0);
@@ -236,7 +235,7 @@ public class BrowsingDataBridgeTest {
                                     mListener,
                                     new int[] {
                                         BrowsingDataType.CACHE,
-                                        BrowsingDataType.COOKIES,
+                                        BrowsingDataType.SITE_DATA,
                                         BrowsingDataType.FORM_DATA,
                                         BrowsingDataType.HISTORY,
                                         BrowsingDataType.PASSWORDS,
@@ -390,7 +389,7 @@ public class BrowsingDataBridgeTest {
                                     mListener,
                                     new int[] {
                                         org.chromium.chrome.browser.browsing_data.BrowsingDataType
-                                                .COOKIES,
+                                                .SITE_DATA,
                                     },
                                     TimePeriod.LAST_WEEK);
                 });

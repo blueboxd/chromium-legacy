@@ -14,8 +14,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <optional>
 #include <utility>
 
+#include "base/containers/span.h"
 #include "base/cpu.h"
 #include "base/files/dir_reader_posix.h"
 #include "base/files/file_util.h"
@@ -25,7 +27,6 @@
 #include "base/numerics/clamped_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/internal_linux.h"
-#include "base/process/process_metrics_iocounters.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -36,7 +37,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/strings/ascii.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 
@@ -58,24 +58,26 @@ uint64_t ReadFileToUint64(const FilePath& file) {
 }
 #endif
 
-// Get the total CPU from a proc stat buffer.  Return value is number of jiffies
-// on success or 0 if parsing failed.
-int64_t ParseTotalCPUTimeFromStats(const std::vector<std::string>& proc_stats) {
-  return internal::GetProcStatsFieldAsInt64(proc_stats, internal::VM_UTIME) +
-         internal::GetProcStatsFieldAsInt64(proc_stats, internal::VM_STIME);
-}
-
-// Get the total CPU of a single process.  Return value is number of jiffies
-// on success or -1 on error.
-int64_t GetProcessCPU(pid_t pid) {
-  std::string buffer;
-  std::vector<std::string> proc_stats;
-  if (!internal::ReadProcStats(pid, &buffer) ||
-      !internal::ParseProcStats(buffer, &proc_stats)) {
-    return -1;
+// Get the total CPU from a proc stat buffer.  Return value is a TimeDelta
+// converted from a number of jiffies on success or nullopt if parsing failed.
+std::optional<TimeDelta> ParseTotalCPUTimeFromStats(
+    base::span<const std::string> proc_stats) {
+  const std::optional<int64_t> utime =
+      internal::GetProcStatsFieldAsOptionalInt64(proc_stats,
+                                                 internal::VM_UTIME);
+  if (utime.value_or(-1) < 0) {
+    return std::nullopt;
   }
-
-  return ParseTotalCPUTimeFromStats(proc_stats);
+  const std::optional<int64_t> stime =
+      internal::GetProcStatsFieldAsOptionalInt64(proc_stats,
+                                                 internal::VM_STIME);
+  if (stime.value_or(-1) < 0) {
+    return std::nullopt;
+  }
+  const TimeDelta cpu_time = internal::ClockTicksToTimeDelta(
+      base::ClampAdd(utime.value(), stime.value()));
+  CHECK(!cpu_time.is_negative());
+  return std::optional(cpu_time);
 }
 
 }  // namespace
@@ -91,8 +93,15 @@ size_t ProcessMetrics::GetResidentSetSize() const {
          checked_cast<size_t>(getpagesize());
 }
 
-TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
-  return internal::ClockTicksToTimeDelta(GetProcessCPU(process_));
+std::optional<TimeDelta> ProcessMetrics::GetCumulativeCPUUsage() {
+  std::string buffer;
+  std::vector<std::string> proc_stats;
+  if (!internal::ReadProcStats(process_, &buffer) ||
+      !internal::ParseProcStats(buffer, &proc_stats)) {
+    return std::nullopt;
+  }
+
+  return ParseTotalCPUTimeFromStats(proc_stats);
 }
 
 bool ProcessMetrics::GetCumulativeCPUUsagePerThread(
@@ -111,43 +120,14 @@ bool ProcessMetrics::GetCumulativeCPUUsagePerThread(
           return;
         }
 
-        TimeDelta thread_time = internal::ClockTicksToTimeDelta(
-            ParseTotalCPUTimeFromStats(proc_stats));
-        cpu_per_thread.emplace_back(tid, thread_time);
+        const std::optional<TimeDelta> thread_time =
+            ParseTotalCPUTimeFromStats(proc_stats);
+        if (thread_time.has_value()) {
+          cpu_per_thread.emplace_back(tid, thread_time.value());
+        }
       });
 
   return !cpu_per_thread.empty();
-}
-
-// For the /proc/self/io file to exist, the Linux kernel must have
-// CONFIG_TASK_IO_ACCOUNTING enabled.
-bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
-  StringPairs pairs;
-  if (!internal::ReadProcFileToTrimmedStringPairs(process_, "io", &pairs)) {
-    return false;
-  }
-
-  io_counters->OtherOperationCount = 0;
-  io_counters->OtherTransferCount = 0;
-
-  for (const auto& pair : pairs) {
-    const std::string& key = pair.first;
-    const std::string& value_str = pair.second;
-    uint64_t* target_counter = nullptr;
-    if (key == "syscr")
-      target_counter = &io_counters->ReadOperationCount;
-    else if (key == "syscw")
-      target_counter = &io_counters->WriteOperationCount;
-    else if (key == "rchar")
-      target_counter = &io_counters->ReadTransferCount;
-    else if (key == "wchar")
-      target_counter = &io_counters->WriteTransferCount;
-    if (!target_counter)
-      continue;
-    bool converted = StringToUint64(value_str, target_counter);
-    DCHECK(converted);
-  }
-  return true;
 }
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
@@ -799,7 +779,7 @@ bool GetSwapInfoImpl(SwapInfo* swap_info) {
   // Since ZRAM update, it shows the usage data in different places.
   // If file "/sys/block/zram0/mm_stat" exists, use the new way, otherwise,
   // use the old way.
-  static absl::optional<bool> use_new_zram_interface;
+  static std::optional<bool> use_new_zram_interface;
   FilePath zram_mm_stat_file("/sys/block/zram0/mm_stat");
   if (!use_new_zram_interface.has_value()) {
     use_new_zram_interface = PathExists(zram_mm_stat_file);

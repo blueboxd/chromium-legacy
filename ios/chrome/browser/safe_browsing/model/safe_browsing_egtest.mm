@@ -7,15 +7,14 @@
 #import "base/strings/string_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#import "components/bookmarks/common/storage_type.h"
 #import "components/safe_browsing/core/common/features.h"
 #import "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_model_type.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_constants.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/app_launch_configuration.h"
@@ -506,9 +505,8 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
 // kSafeBrowsingProceedAnywayDisabled is enabled.
 - (void)testProceedAlwaysDisabled {
   // Enable the pref.
-  NSString* prefName =
-      base::SysUTF8ToNSString(prefs::kSafeBrowsingProceedAnywayDisabled);
-  [ChromeEarlGreyAppInterface setBoolValue:YES forUserPref:prefName];
+  [ChromeEarlGrey setBoolValue:YES
+                   forUserPref:prefs::kSafeBrowsingProceedAnywayDisabled];
 
   // Load the a malware safe browsing error page.
   [ChromeEarlGrey loadURL:_malwareURL];
@@ -530,7 +528,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       [ElementSelector selectorWithScript:selector
                       selectorDescription:description];
   GREYAssert(
-      [ChromeEarlGreyAppInterface webStateContainsElement:proceedLink],
+      [ChromeEarlGrey webStateContainsElement:proceedLink],
       @"Proceed anyway link shown despite kSafeBrowsingProceedAnywayDisabled");
 }
 
@@ -589,14 +587,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
 // Tests that performing session restoration to a Safe Browsing warning page
 // preserves navigation history.
 // TODO(crbug.com/1516583):  Test is flaky on device. Re-enable the test.
-#if !TARGET_OS_SIMULATOR
-#define MAYBE_testRestoreToWarningPagePreservesHistory \
-  FLAKY_testRestoreToWarningPagePreservesHistory
-#else
-#define MAYBE_testRestoreToWarningPagePreservesHistory \
-  testRestoreToWarningPagePreservesHistory
-#endif
-- (void)MAYBE_testRestoreToWarningPagePreservesHistory {
+- (void)testRestoreToWarningPagePreservesHistory {
   // Build up navigation history that consists of a safe URL, a warning page,
   // and another safe URL.
   [ChromeEarlGrey loadURL:_safeURL1];
@@ -734,7 +725,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
   [BookmarkEarlGrey
       addBookmarkWithTitle:phishingTitle
                        URL:base::SysUTF8ToNSString(_realTimePhishingURL.spec())
-                 inStorage:bookmarks::StorageType::kLocalOrSyncable];
+                 inStorage:BookmarkModelType::kLocalOrSyncable];
   // Opt-in to real-time checks.
   [ChromeEarlGrey setURLKeyedAnonymizedDataCollectionEnabled:YES];
 

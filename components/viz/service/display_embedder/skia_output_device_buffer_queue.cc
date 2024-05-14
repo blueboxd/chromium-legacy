@@ -12,7 +12,6 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
@@ -41,6 +40,10 @@
 #endif  // BUILDFLAG(IS_OZONE)
 
 namespace {
+BASE_FEATURE(kRestartReadAccessForConcurrentReadWrite,
+             "RestartReadAccessForConcurrentReadWrite",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 base::TimeTicks g_last_reshape_failure = base::TimeTicks();
 
 NOINLINE void CheckForLoopFailuresBufferQueue() {
@@ -114,6 +117,19 @@ class SkiaOutputDeviceBufferQueue::OverlayData {
     } else if (ref_ == 1) {
       DCHECK(!IsInUseByWindowServer());
       Reset();
+    }
+  }
+
+  void OnReuse() {
+    // This is a proxy check for single-buffered overlay.
+    if ((representation_->usage() &
+         gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE) &&
+        base::FeatureList::IsEnabled(
+            kRestartReadAccessForConcurrentReadWrite)) {
+      // If this is a single-buffered overlay, want to restart read access to
+      // pick up any new write fences for this frame.
+      scoped_read_access_.reset();
+      scoped_read_access_ = representation_->BeginScopedReadAccess();
     }
   }
 
@@ -208,6 +224,7 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
     capabilities_.pending_swap_params.max_pending_swaps_120hz = 4;
   }
 #endif
+
   DCHECK_LT(capabilities_.pending_swap_params.max_pending_swaps,
             capabilities_.number_of_buffers);
   DCHECK_LT(
@@ -221,6 +238,11 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
 
   if (capabilities_.supports_post_sub_buffer)
     capabilities_.supports_target_damage = true;
+
+#if BUILDFLAG(IS_MAC)
+  presenter_->SetMaxPendingSwaps(
+      capabilities_.pending_swap_params.max_pending_swaps);
+#endif
 }
 
 SkiaOutputDeviceBufferQueue::~SkiaOutputDeviceBufferQueue() {
@@ -362,6 +384,7 @@ SkiaOutputDeviceBufferQueue::GetOrCreateOverlayData(const gpu::Mailbox& mailbox,
     // added to keep it alive. This ref will be removed, when the overlay is
     // replaced by a new frame.
     it->Ref();
+    it->OnReuse();
     if (is_existing)
       *is_existing = true;
     return &*it;
@@ -689,6 +712,8 @@ gfx::Size SkiaOutputDeviceBufferQueue::GetSwapBuffersSize() {
   switch (overlay_transform_) {
     case gfx::OVERLAY_TRANSFORM_ROTATE_CLOCKWISE_90:
     case gfx::OVERLAY_TRANSFORM_ROTATE_CLOCKWISE_270:
+    case gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL_CLOCKWISE_90:
+    case gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL_CLOCKWISE_270:
       return gfx::Size(image_size_.height(), image_size_.width());
     case gfx::OVERLAY_TRANSFORM_INVALID:
     case gfx::OVERLAY_TRANSFORM_NONE:

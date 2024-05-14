@@ -85,6 +85,7 @@ class AddressEditorMediator {
     private final Delegate mDelegate;
     private final IdentityManager mIdentityManager;
     private final @Nullable SyncService mSyncService;
+    private final PersonalDataManager mPersonalDataManager;
     private final AutofillProfile mProfileToEdit;
     private final AutofillAddress mAddressToEdit;
     private final @UserFlow int mUserFlow;
@@ -117,10 +118,9 @@ class AddressEditorMediator {
 
     // TODO(crbug.com/1432505): remove temporary unsupported countries filtering.
     private static List<DropdownKeyValue> getSupportedCountries(
-            boolean filterOutUnsupportedCountries) {
+            PersonalDataManager personalDataManager, boolean filterOutUnsupportedCountries) {
         List<DropdownKeyValue> supportedCountries = AutofillProfileBridge.getSupportedCountries();
         if (filterOutUnsupportedCountries) {
-            PersonalDataManager personalDataManager = PersonalDataManager.getInstance();
             supportedCountries.removeIf(
                     entry ->
                             !personalDataManager.isCountryEligibleForAccountStorage(
@@ -135,6 +135,7 @@ class AddressEditorMediator {
             Delegate delegate,
             IdentityManager identityManager,
             @Nullable SyncService syncService,
+            PersonalDataManager personalDataManager,
             AutofillAddress addressToEdit,
             @UserFlow int userFlow,
             boolean saveToDisk) {
@@ -142,6 +143,7 @@ class AddressEditorMediator {
         mDelegate = delegate;
         mIdentityManager = identityManager;
         mSyncService = syncService;
+        mPersonalDataManager = personalDataManager;
         mProfileToEdit = addressToEdit.getProfile();
         mAddressToEdit = addressToEdit;
         mUserFlow = userFlow;
@@ -154,10 +156,14 @@ class AddressEditorMediator {
                         .with(
                                 DROPDOWN_KEY_VALUE_LIST,
                                 getSupportedCountries(
+                                        mPersonalDataManager,
                                         isAccountAddressProfile()
                                                 && mUserFlow != CREATE_NEW_ADDRESS_PROFILE))
                         .with(IS_REQUIRED, false)
-                        .with(VALUE, AutofillAddress.getCountryCode(mProfileToEdit))
+                        .with(
+                                VALUE,
+                                AutofillAddress.getCountryCode(
+                                        mProfileToEdit, mPersonalDataManager))
                         .build();
 
         // Phone number is present for all countries.
@@ -239,7 +245,8 @@ class AddressEditorMediator {
                         .with(
                                 EDITOR_FIELDS,
                                 buildEditorFieldList(
-                                        AutofillAddress.getCountryCode(mProfileToEdit),
+                                        AutofillAddress.getCountryCode(
+                                                mProfileToEdit, mPersonalDataManager),
                                         mProfileToEdit.getLanguageCode()))
                         .with(DONE_RUNNABLE, this::onCommitChanges)
                         // If the user clicks [Cancel], send |toEdit| address back to the caller,
@@ -372,7 +379,7 @@ class AddressEditorMediator {
         String country = mCountryField.get(VALUE);
         if (willBeSavedInAccount()
                 && mUserFlow == CREATE_NEW_ADDRESS_PROFILE
-                && PersonalDataManager.getInstance().isCountryEligibleForAccountStorage(country)) {
+                && mPersonalDataManager.isCountryEligibleForAccountStorage(country)) {
             profile.setSource(Source.ACCOUNT);
         }
         // Country code and phone number are always required and are always collected from the
@@ -398,7 +405,7 @@ class AddressEditorMediator {
 
         // Save the edited autofill profile locally.
         if (mSaveToDisk) {
-            profile.setGUID(PersonalDataManager.getInstance().setProfileToLocal(mProfileToEdit));
+            profile.setGUID(mPersonalDataManager.setProfileToLocal(mProfileToEdit));
         }
 
         if (profile.getGUID().isEmpty()) {
@@ -419,7 +426,7 @@ class AddressEditorMediator {
             case SAVE_NEW_ADDRESS_PROFILE:
                 return mProfileToEdit.getSource() == Source.ACCOUNT;
             case CREATE_NEW_ADDRESS_PROFILE:
-                return PersonalDataManager.getInstance().isEligibleForAddressAccountStorage();
+                return mPersonalDataManager.isEligibleForAddressAccountStorage();
         }
         assert false : String.format(Locale.US, "Missing account target for flow %d", mUserFlow);
         return false;

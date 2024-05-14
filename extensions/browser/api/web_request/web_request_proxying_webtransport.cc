@@ -5,6 +5,7 @@
 #include "extensions/browser/api/web_request/web_request_proxying_webtransport.h"
 
 #include <optional>
+
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "content/public/browser/render_process_host.h"
@@ -80,7 +81,7 @@ class WebTransportHandshakeProxy : public WebRequestAPI::Proxy,
                 &redirect_url_, &should_collapse_initiator);
     // It doesn't make sense to collapse WebTransport requests since they won't
     // be associated with a DOM element.
-    DCHECK(!should_collapse_initiator);
+    CHECK(!should_collapse_initiator);
 
     if (result == net::ERR_IO_PENDING)
       return;
@@ -155,6 +156,9 @@ class WebTransportHandshakeProxy : public WebRequestAPI::Proxy,
     pending_client_ = std::move(client);
     initial_stats_ = std::move(initial_stats);
     response_headers_ = response_headers;
+
+    bool should_collapse_initiator = false;
+
     // Since WebTransport doesn't support redirect, 'redirect_url' is ignored
     // even if extensions assigned it.
     const int result =
@@ -164,7 +168,12 @@ class WebTransportHandshakeProxy : public WebRequestAPI::Proxy,
                 base::BindOnce(
                     &WebTransportHandshakeProxy::OnHeadersReceivedCompleted,
                     base::Unretained(this)),
-                response_headers_.get(), &override_headers_, &redirect_url_);
+                response_headers_.get(), &override_headers_, &redirect_url_,
+                &should_collapse_initiator);
+
+    // It doesn't make sense to collapse WebTransport requests since they won't
+    // be associated with a DOM element.
+    CHECK(!should_collapse_initiator);
 
     if (result == net::ERR_IO_PENDING)
       return;
@@ -237,6 +246,11 @@ class WebTransportHandshakeProxy : public WebRequestAPI::Proxy,
   }
 
  private:
+  // WebRequestAPI::Proxy:
+  void OnDNRExtensionUnloaded(const Extension* extension) override {
+    info_.EraseDNRActionsForExtension(extension->id());
+  }
+
   mojo::PendingRemote<WebTransportHandshakeClient> handshake_client_;
   // Weak reference to the ProxySet. This is safe as `proxies_` owns this
   // object.

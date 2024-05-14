@@ -54,9 +54,9 @@ config("no_asm_config") {
 # TODO(crbug.com/1496373): having the headers in all_sources is hacky and should
 # be fixed. It is caused by issues with the fuzzer target.
 all_sources = crypto_sources + ssl_sources + pki_sources + pki_internal_headers
-all_headers = crypto_headers + ssl_headers + pki_internal_headers
+all_headers = crypto_headers + ssl_headers + pki_headers + pki_internal_headers
 
-if (enable_rust_boringssl) {
+if (enable_rust) {
   rust_bindgen("raw_bssl_sys_bindings") {
     header = "src/rust/bssl-sys/wrapper.h"
     deps = [ ":boringssl" ]
@@ -73,8 +73,8 @@ if (enable_rust_boringssl) {
       "blocklist-function=OPENSSL_vasprintf",
       "rustified-enum=point_conversion_form_t",
       "allowlist-file=.*[[:punct:]]include[[:punct:]]openssl[[:punct:]].*\\.h",
-      "allowlist-file=.*[[:punct:]]rust_wrapper\\.h",
     ]
+    wrap_static_fns = true
     visibility = [ ":*" ]  # private, should only be exposed through bssl_crypto
   }
 
@@ -87,6 +87,7 @@ if (enable_rust_boringssl) {
     deps = [
       ":boringssl",
       ":raw_bssl_sys_bindings",
+      ":raw_bssl_sys_bindings_static_fns",
     ]
 
     visibility = [

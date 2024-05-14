@@ -11,6 +11,7 @@
 #import "components/policy/policy_constants.h"
 #import "components/prefs/pref_service.h"
 #import "components/signin/ios/browser/features.h"
+#import "components/signin/public/identity_manager/tribool.h"
 #import "components/sync/base/features.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
@@ -23,6 +24,7 @@
 #import "ios/chrome/browser/signin/model/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/model/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/model/signin_util.h"
 #import "ios/chrome/browser/signin/model/system_identity.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_coordinator.h"
@@ -90,6 +92,7 @@ base::TimeDelta GetWaitThresholdForCapabilities() {
 }
 
 bool ShouldPresentUserSigninUpgrade(ChromeBrowserState* browser_state,
+                                    PrefService* local_state,
                                     const base::Version& current_version) {
   DCHECK(browser_state);
   DCHECK(current_version.IsValid());
@@ -144,6 +147,12 @@ bool ShouldPresentUserSigninUpgrade(ChromeBrowserState* browser_state,
       case HistorySyncSkipReason::kDeclinedTooOften:
         return false;
     }
+  }
+
+  // Avoid showing the upgrade sign-in promo when the device restore sign-in
+  // promo should be shown instead.
+  if (GetPreRestoreIdentity(local_state).has_value()) {
+    return false;
   }
 
   // Don't show the promo if there are no identities. This should be tested
@@ -276,6 +285,18 @@ IdentitySigninState GetPrimaryIdentitySigninState(
   } else {
     return IdentitySigninStateSignedOut;
   }
+}
+
+Tribool TriboolFromCapabilityResult(SystemIdentityCapabilityResult result) {
+  switch (result) {
+    case SystemIdentityCapabilityResult::kTrue:
+      return Tribool::kTrue;
+    case SystemIdentityCapabilityResult::kFalse:
+      return Tribool::kFalse;
+    case SystemIdentityCapabilityResult::kUnknown:
+      return Tribool::kUnknown;
+  }
+  NOTREACHED_NORETURN();
 }
 
 }  // namespace signin

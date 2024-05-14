@@ -88,33 +88,8 @@ struct Config {
   // Whether the image covers the whole icon container.
   bool images_cover = true;
 
-  // The `kPersistedClusters` feature and child params.
-
-  // If enabled, updating clusters will persist the results to the history DB
-  // and accessing clusters will retrieve them from the history DB. If disabled,
-  // updating clusters is a no-op and accessing clusters will generate and
-  // return new clusters without persisting them.
-  bool persist_clusters_in_history_db = true;
-
-  // No effect if `persist_clusters_in_history_db` is disabled. Determines how
-  // soon to update clusters after startup in minutes. E.g., by default, will
-  // update clusters 5 minutes after startup.
-  int persist_clusters_in_history_db_after_startup_delay_minutes = 1;
-
-  // No effect if `persist_clusters_in_history_db` is disabled. Determines how
-  // often to update clusters in minutes. E.g., by default, will update clusters
-  // every 1 hour.
+  // Determines the minimum period to update clusters in minutes.
   int persist_clusters_in_history_db_period_minutes = 1;
-
-  // No effect if `persist_clusters_in_history_db` is disabled. If disabled,
-  // persistence occurs on a timer (see the above 2 params). If enabled, will
-  // instead occur on query like refreshing the keyword cache does. This may
-  // help bound the number of persistence requests. If enabled, will continue to
-  // also be capped to at most 1 request per
-  // `persist_clusters_in_history_db_period_minutes`, but
-  // `persist_clusters_in_history_db_after_startup_delay_minutes` will be
-  // unused.
-  bool persist_on_query = true;
 
   // Hard cap on max clusters to fetch after exhausting unclustered visits and
   // fetching persisted clusters for the get most recent flow. Doesn't affect
@@ -247,38 +222,6 @@ struct Config {
   // The max time a host should be stored in the engagement score cache.
   base::TimeDelta engagement_score_cache_refresh_duration = base::Minutes(120);
 
-  // The `kOnDeviceClusteringContentClustering` feature and child params.
-
-  // Returns whether content clustering is enabled and
-  // should be performed by the clustering backend.
-  bool content_clustering_enabled = false;
-
-  // Returns whether content clustering should only be done across clusters that
-  // contain a search.
-  bool content_clustering_search_visits_only = false;
-
-  // Returns the similarity threshold, between 0 and 1, used to determine if
-  // two clusters are similar enough to be combined into
-  // a single cluster.
-  float content_clustering_similarity_threshold = 0.2;
-
-  // Returns whether we should exclude entities that do not have associated
-  // collections from content clustering.
-  bool exclude_entities_that_have_no_collections_from_content_clustering = true;
-
-  // The set of collections to block from being content clustered.
-  base::flat_set<std::string> collections_to_block_from_content_clustering = {
-      "/collection/it_glossary", "/collection/periodicals",
-      "/collection/software", "/collection/tv_networks",
-      "/collection/websites"};
-
-  // Whether to merge similar clusters using pairwise merge.
-  bool use_pairwise_merge = false;
-
-  // The maximum number of iterations to run for the convergence of pairwise
-  // merging of similar clusters.
-  int max_pairwise_merge_iterations = 40;
-
   // The `kHistoryClustersVisitDeduping` feature and child params.
 
   // Use host instead of heavily-stripped URL as URL for deduping.
@@ -386,17 +329,6 @@ struct Config {
   Config(const Config& other);
   ~Config();
 };
-
-// Returns the set of collections that should not be included for content
-// clustering. If the experiment string is empty or malformed, `default_value`
-// will be used.
-base::flat_set<std::string> JourneysCollectionContentClusteringBlocklist(
-    const base::flat_set<std::string>& default_value);
-
-// Returns the set of mids that should be blocked from being used by the
-// clustering backend, particularly for potential keywords used for omnibox
-// triggering.
-base::flat_set<std::string> JourneysMidBlocklist();
 
 // Returns true if |application_locale| is supported by Journeys.
 // This is a costly check: Should be called only if

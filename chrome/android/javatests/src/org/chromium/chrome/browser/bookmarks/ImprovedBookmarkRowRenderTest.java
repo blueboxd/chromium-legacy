@@ -88,7 +88,7 @@ public class ImprovedBookmarkRowRenderTest {
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus()
-                    .setRevision(5)
+                    .setRevision(6)
                     .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_BOOKMARKS)
                     .build();
 
@@ -202,6 +202,17 @@ public class ImprovedBookmarkRowRenderTest {
     @Feature({"RenderTest"})
     public void testNormal() throws IOException {
         mRenderTestRule.render(mContentView, "normal");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testDisabled() throws IOException {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    mModel.set(ImprovedBookmarkRowProperties.ENABLED, false);
+                });
+        mRenderTestRule.render(mContentView, "disabled");
     }
 
     @Test

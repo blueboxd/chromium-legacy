@@ -83,6 +83,9 @@ class AppListToastContainerView : public views::View {
   // Creates a reorder nudge view in the container.
   void CreateReorderNudgeView();
 
+  // Creates a tutorial nudge view in the container.
+  void CreateTutorialNudgeView();
+
   // Removes the reorder nudge view if the nudge view is showing.
   void RemoveReorderNudgeView();
 
@@ -178,7 +181,7 @@ class AppListToastContainerView : public views::View {
   bool committing_sort_order_ = false;
 
   // The amount of horizontal space available for the toast container.
-  absl::optional<int> available_width_;
+  std::optional<int> available_width_;
 
   // The abort handle for the `toast_view_` fade out animation.
   std::unique_ptr<views::AnimationAbortHandle>

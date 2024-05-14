@@ -10,10 +10,9 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
-import static junit.framework.Assert.assertFalse;
-
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
@@ -40,7 +39,6 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
@@ -125,7 +123,6 @@ public class LocationBarTest {
                             .when(mSearchEngineUtils)
                             .getSearchEngineLogo(anyInt());
                 });
-        UmaRecorderHolder.resetForTesting();
         // Prevents recreating Chrome when the default search engine is changed.
         ToolbarManager.setSkipRecreateActivityWhenStartSurfaceEnabledStateChangesForTesting(true);
     }

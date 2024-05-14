@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metrics/power/power_metrics_reporter.h"
 
+#include <optional>
 #include <vector>
 
 #include "base/functional/bind.h"
@@ -11,6 +12,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "base/trace_event/named_trigger.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
@@ -113,6 +115,10 @@ void PowerMetricsReporter::OnFirstBatteryStateSampled(
 }
 
 void PowerMetricsReporter::StartNextLongInterval() {
+  // TODO(fdoray): Remove when no longer referenced by server-side trace
+  // configs, planned for 06/2024.
+  base::trace_event::EmitNamedTrigger("power-metrics-interval-start");
+
   interval_timer_.Start(FROM_HERE, kLongPowerMetricsIntervalDuration,
                         base::BindOnce(&PowerMetricsReporter::OnLongIntervalEnd,
                                        base::Unretained(this)));
@@ -249,7 +255,10 @@ void PowerMetricsReporter::ReportBatteryUKMs(
     DCHECK(battery_discharge.rate_relative.has_value());
     builder.SetBatteryDischargeRate(*battery_discharge.rate_relative);
   }
-  builder.SetCPUTimeMs(metrics.cpu_usage * interval_duration.InMilliseconds());
+  if (metrics.cpu_usage.has_value()) {
+    builder.SetCPUTimeMs(metrics.cpu_usage.value() *
+                         interval_duration.InMilliseconds());
+  }
 #if BUILDFLAG(IS_MAC)
   builder.SetIdleWakeUps(metrics.idle_wakeups);
   builder.SetPackageExits(metrics.package_idle_wakeups);

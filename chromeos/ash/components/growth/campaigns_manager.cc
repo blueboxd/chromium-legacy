@@ -104,11 +104,12 @@ void CampaignsManager::SetPrefs(PrefService* prefs) {
   matcher_.SetPrefs(prefs);
 }
 
-void CampaignsManager::LoadCampaigns(base::OnceClosure load_callback) {
+void CampaignsManager::LoadCampaigns(base::OnceClosure load_callback,
+                                     bool in_oobe) {
   campaigns_download_start_time_ = base::TimeTicks::Now();
-  client_->LoadCampaignsComponent(
-      base::BindOnce(&CampaignsManager::OnCampaignsComponentLoaded,
-                     weak_factory_.GetWeakPtr(), std::move(load_callback)));
+  client_->LoadCampaignsComponent(base::BindOnce(
+      &CampaignsManager::OnCampaignsComponentLoaded, weak_factory_.GetWeakPtr(),
+      std::move(load_callback), in_oobe));
 }
 
 const Campaign* CampaignsManager::GetCampaignBySlot(Slot slot) const {
@@ -128,11 +129,50 @@ const Campaign* CampaignsManager::GetCampaignBySlot(Slot slot) const {
   return match_result;
 }
 
+void CampaignsManager::SetOpenedApp(const std::string& app_id) {
+  matcher_.SetOpenedApp(app_id);
+}
+
+void CampaignsManager::PerformAction(const Action* action) {
+  CHECK(action);
+
+  auto* params = action->GetParams();
+  auto action_type = action->GetActionType();
+  if (!action_type || !params) {
+    // TODO(b/306023057): Record invalid action error.
+    return;
+  }
+
+  auto& action_performer = actions_map_.at(action_type.value());
+  if (!action_performer) {
+    // TODO(b/306023057): Record unrecognized action error.
+    return;
+  }
+
+  action_performer->Run(
+      params,
+      base::BindOnce(
+          [](growth::ActionType action_type, growth::ActionResult result,
+             std::optional<growth::ActionResultReason> reason) {
+            if (result == growth::ActionResult::kSuccess) {
+              return;
+            }
+
+            // TODO(b/306023057) Record perform action fail error.
+            LOG(ERROR) << "Error running action. Action type: "
+                       << int(action_type) << ". Error code:"
+                       << static_cast<int>(reason.value_or(
+                              growth::ActionResultReason::kUnknown));
+          },
+          action_type.value()));
+}
+
 void CampaignsManager::OnCampaignsComponentLoaded(
     base::OnceClosure load_callback,
+    bool in_oobe,
     const std::optional<const base::FilePath>& path) {
-  RecordCampaignsComponentDownloadDuration(base::TimeTicks::Now() -
-                                           campaigns_download_start_time_);
+  RecordCampaignsComponentDownloadDuration(
+      base::TimeTicks::Now() - campaigns_download_start_time_, in_oobe);
   if (!path.has_value()) {
     LOG(ERROR) << "Failed to load campaign component.";
     RecordCampaignsManagerError(

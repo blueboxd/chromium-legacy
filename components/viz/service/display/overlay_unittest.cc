@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/containers/cxx20_erase_vector.h"
 #include "base/containers/flat_map.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -91,7 +90,7 @@ const gfx::Rect kOverlayClipRect(0, 0, 128, 128);
 const gfx::PointF kUVTopLeft(0.1f, 0.2f);
 const gfx::PointF kUVBottomRight(1.0f, 1.0f);
 const gfx::BufferFormat kDefaultBufferFormat = gfx::BufferFormat::RGBA_8888;
-constexpr OverlayCandidateFactory::OverlayContext kTestOverlayContext = {};
+const OverlayCandidateFactory::OverlayContext kTestOverlayContext;
 
 class TimeTicksOverride {
  public:
@@ -433,7 +432,7 @@ class AllowCandidateWithMasksSortedMultiOverlayProcessor
       std::vector<OverlayProposedCandidate>* proposed_candidates) override {
     // After sort we should only be left with candidates with rounded-display
     // masks.
-    base::EraseIf(*proposed_candidates, [](OverlayProposedCandidate& cand) {
+    std::erase_if(*proposed_candidates, [](OverlayProposedCandidate& cand) {
       return !cand.candidate.has_rounded_display_masks;
     });
 
@@ -549,7 +548,7 @@ static ResourceId CreateResourceInLayerTree(
 
 ResourceId CreateResource(DisplayResourceProvider* parent_resource_provider,
                           ClientResourceProvider* child_resource_provider,
-                          ContextProvider* child_context_provider,
+                          RasterContextProvider* child_context_provider,
                           const gfx::Size& size,
                           bool is_overlay_candidate,
                           SharedImageFormat format,
@@ -580,7 +579,7 @@ ResourceId CreateResource(DisplayResourceProvider* parent_resource_provider,
 
 ResourceId CreateResource(DisplayResourceProvider* parent_resource_provider,
                           ClientResourceProvider* child_resource_provider,
-                          ContextProvider* child_context_provider,
+                          RasterContextProvider* child_context_provider,
                           const gfx::Size& size,
                           bool is_overlay_candidate) {
   return CreateResource(parent_resource_provider, child_resource_provider,
@@ -602,7 +601,7 @@ SolidColorDrawQuad* CreateSolidColorQuadAt(
 TextureDrawQuad* CreateCandidateQuadAt(
     DisplayResourceProvider* parent_resource_provider,
     ClientResourceProvider* child_resource_provider,
-    ContextProvider* child_context_provider,
+    RasterContextProvider* child_context_provider,
     const SharedQuadState* shared_quad_state,
     AggregatedRenderPass* render_pass,
     const gfx::Rect& rect,
@@ -633,7 +632,7 @@ TextureDrawQuad* CreateCandidateQuadAt(
 TextureDrawQuad* CreateCandidateQuadAt(
     DisplayResourceProvider* parent_resource_provider,
     ClientResourceProvider* child_resource_provider,
-    ContextProvider* child_context_provider,
+    RasterContextProvider* child_context_provider,
     const SharedQuadState* shared_quad_state,
     AggregatedRenderPass* render_pass,
     const gfx::Rect& rect,
@@ -649,7 +648,7 @@ TextureDrawQuad* CreateCandidateQuadAt(
 TextureDrawQuad* CreateCandidateQuadAt(
     DisplayResourceProvider* parent_resource_provider,
     ClientResourceProvider* child_resource_provider,
-    ContextProvider* child_context_provider,
+    RasterContextProvider* child_context_provider,
     const SharedQuadState* shared_quad_state,
     AggregatedRenderPass* render_pass,
     const gfx::Rect& rect,
@@ -692,7 +691,7 @@ VideoHoleDrawQuad* CreateVideoHoleDrawQuadAt(
 TextureDrawQuad* CreateTransparentCandidateQuadAt(
     DisplayResourceProvider* parent_resource_provider,
     ClientResourceProvider* child_resource_provider,
-    ContextProvider* child_context_provider,
+    RasterContextProvider* child_context_provider,
     const SharedQuadState* shared_quad_state,
     AggregatedRenderPass* render_pass,
     const gfx::Rect& rect) {
@@ -720,7 +719,7 @@ TextureDrawQuad* CreateTransparentCandidateQuadAt(
 TextureDrawQuad* CreateFullscreenCandidateQuad(
     DisplayResourceProvider* parent_resource_provider,
     ClientResourceProvider* child_resource_provider,
-    ContextProvider* child_context_provider,
+    RasterContextProvider* child_context_provider,
     const SharedQuadState* shared_quad_state,
     AggregatedRenderPass* render_pass) {
   return CreateCandidateQuadAt(
@@ -731,7 +730,7 @@ TextureDrawQuad* CreateFullscreenCandidateQuad(
 TextureDrawQuad* CreateQuadWithRoundedDisplayMasksAt(
     DisplayResourceProvider* parent_resource_provider,
     ClientResourceProvider* child_resource_provider,
-    ContextProvider* child_context_provider,
+    RasterContextProvider* child_context_provider,
     const SharedQuadState* shared_quad_state,
     AggregatedRenderPass* render_pass,
     bool is_overlay_candidate,
@@ -760,7 +759,7 @@ TextureDrawQuad* CreateQuadWithRoundedDisplayMasksAt(
 TextureDrawQuad* CreateFullscreenQuadWithRoundedDisplayMasks(
     DisplayResourceProvider* parent_resource_provider,
     ClientResourceProvider* child_resource_provider,
-    ContextProvider* child_context_provider,
+    RasterContextProvider* child_context_provider,
     const SharedQuadState* shared_quad_state,
     AggregatedRenderPass* render_pass,
     bool is_overlay_candidate,
@@ -5018,7 +5017,7 @@ TEST_F(UnderlayTest, ProtectedVideoOverlayScaling) {
 TileDrawQuad* CreateTileCandidateQuadAt(
     DisplayResourceProvider* parent_resource_provider,
     ClientResourceProvider* child_resource_provider,
-    ContextProvider* child_context_provider,
+    RasterContextProvider* child_context_provider,
     const SharedQuadState* shared_quad_state,
     AggregatedRenderPass* render_pass,
     const gfx::Rect& rect) {
@@ -5525,10 +5524,11 @@ TEST_F(DelegatedTest, NonAxisAlignedCandidateStatus) {
   auto color_mat = GetIdentityColorMatrix();
   OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
 
+  OverlayCandidateFactory::OverlayContext context;
+  context.is_delegated_context = true;
   auto candidate_factory = OverlayCandidateFactory(
       pass.get(), resource_provider_.get(), &surface_damage_rect_list,
-      &color_mat, gfx::RectF(pass->output_rect), &render_pass_filters,
-      OverlayCandidateFactory::OverlayContext{.is_delegated_context = true});
+      &color_mat, gfx::RectF(pass->output_rect), &render_pass_filters, context);
 
   pass->shared_quad_state_list.back()->quad_to_target_transform =
       MakePerspectiveTransform();

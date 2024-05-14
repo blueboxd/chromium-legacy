@@ -27,30 +27,40 @@ class CRYPTO_EXPORT FakeAppleKeychainV2 : public AppleKeychainV2 {
   FakeAppleKeychainV2& operator=(const FakeAppleKeychainV2&) = delete;
   ~FakeAppleKeychainV2() override;
 
-  // FakeAppleKeychainV2:
+  const std::vector<base::apple::ScopedCFTypeRef<CFDictionaryRef>>& items() {
+    return items_;
+  }
+
+  void set_secure_enclave_available(bool is_secure_enclave_available) {
+    is_secure_enclave_available_ = is_secure_enclave_available;
+  }
+
+  // AppleKeychainV2:
+  NSArray* GetTokenIDs() override;
   base::apple::ScopedCFTypeRef<SecKeyRef> KeyCreateRandomKey(
       CFDictionaryRef params,
       CFErrorRef* error) override;
+  base::apple::ScopedCFTypeRef<CFDictionaryRef> KeyCopyAttributes(
+      SecKeyRef key) override;
   OSStatus ItemCopyMatching(CFDictionaryRef query, CFTypeRef* result) override;
   OSStatus ItemDelete(CFDictionaryRef query) override;
   OSStatus ItemUpdate(CFDictionaryRef query,
-                      base::apple::ScopedCFTypeRef<CFMutableDictionaryRef>
-                          keychain_data) override;
+                      CFDictionaryRef keychain_data) override;
+#if !BUILDFLAG(IS_IOS)
+  base::apple::ScopedCFTypeRef<CFTypeRef> TaskCopyValueForEntitlement(
+      SecTaskRef task,
+      CFStringRef entitlement,
+      CFErrorRef* error) override;
+#endif  // !BUILDFLAG(IS_IOS)
 
  private:
+  bool is_secure_enclave_available_ = true;
+
   // items_ contains the keychain items created by `KeyCreateRandomKey`.
   std::vector<base::apple::ScopedCFTypeRef<CFDictionaryRef>> items_;
   // keychain_access_group_ is the value of `kSecAttrAccessGroup` that this
   // keychain expects to operate on.
   base::apple::ScopedCFTypeRef<CFStringRef> keychain_access_group_;
-};
-
-// ScopedFakeAppleKeychainV2 installs itself as testing override for
-// `AppleKeychainV2::GetInstance()`.
-class CRYPTO_EXPORT ScopedFakeAppleKeychainV2 : public FakeAppleKeychainV2 {
- public:
-  explicit ScopedFakeAppleKeychainV2(const std::string& keychain_access_group);
-  ~ScopedFakeAppleKeychainV2() override;
 };
 
 }  // namespace crypto

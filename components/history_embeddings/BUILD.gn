@@ -8,13 +8,26 @@ static_library("history_embeddings") {
     "history_embeddings_features.h",
     "history_embeddings_service.cc",
     "history_embeddings_service.h",
+    "passages_util.cc",
+    "passages_util.h",
+    "sql_database.cc",
+    "sql_database.h",
     "vector_database.cc",
     "vector_database.h",
   ]
 
   deps = [
     "//base",
+    "//components/history/core/browser",
+    "//components/history_embeddings/proto:history_embeddings_proto",
     "//components/keyed_service/core",
+    "//components/os_crypt/sync",
+    "//content/public/browser",
+    "//content/public/common",
+    "//mojo/public/cpp/bindings",
+    "//services/service_manager",
+    "//sql",
+    "//third_party/zlib/google:compression_utils",
     "//url",
   ]
 }
@@ -23,11 +36,18 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "history_embeddings_service_unittest.cc",
+    "passages_util_unittest.cc",
+    "sql_database_unittest.cc",
     "vector_database_unittest.cc",
   ]
   deps = [
     ":history_embeddings",
     "//base/test:test_support",
+    "//components/history/core/browser",
+    "//components/history/core/test",
+    "//components/history_embeddings/proto:history_embeddings_proto",
+    "//components/os_crypt/sync",
+    "//components/os_crypt/sync:test_support",
     "//testing/gtest",
   ]
 }

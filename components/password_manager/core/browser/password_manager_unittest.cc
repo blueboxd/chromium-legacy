@@ -24,6 +24,7 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
+#include "components/affiliations/core/browser/fake_affiliation_service.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -33,7 +34,6 @@
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/affiliation/affiliated_match_helper.h"
-#include "components/password_manager/core/browser/affiliation/fake_affiliation_service.h"
 #include "components/password_manager/core/browser/affiliation/mock_affiliated_match_helper.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/field_info_manager.h"
@@ -768,7 +768,7 @@ class PasswordManagerTestBase : public testing::Test {
   const std::string test_signon_realm_ = "https://www.google.com/";
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::TimeSource::MOCK_TIME};
-  FakeAffiliationService fake_affiliation_service_;
+  affiliations::FakeAffiliationService fake_affiliation_service_;
   scoped_refptr<TestPasswordStore> store_;
   scoped_refptr<TestPasswordStore> account_store_;
   raw_ptr<MockAffiliatedMatchHelper> mock_match_helper_ = nullptr;
@@ -1280,6 +1280,69 @@ TEST_P(PasswordManagerTest, FormSubmitWhenPasswordsCannotBeSaved) {
   // destroy the manager prior to store destruction.
   manager_.reset();
   store->ShutdownOnUIThread();
+}
+
+// Checks that credentials on the submitted form are not checked for leak when
+// the password store is broken. Broken password store makes it unable to mute
+// the leak notification.
+TEST_P(PasswordManagerTest, BrokenPasswordStorePreventsMutingCredentials) {
+  auto mock_factory =
+      std::make_unique<testing::StrictMock<MockLeakDetectionCheckFactory>>();
+  MockLeakDetectionCheckFactory* weak_factory = mock_factory.get();
+  manager()->set_leak_factory(std::move(mock_factory));
+  auto store = base::MakeRefCounted<PasswordStore>(
+      std::make_unique<FailingPasswordStoreBackend>());
+  store->Init(/*prefs=*/nullptr, /*affiliated_match_helper=*/nullptr);
+  ON_CALL(client_, GetProfilePasswordStore())
+      .WillByDefault(Return(store.get()));
+
+  const FormData form_data = MakeSimpleFormData();
+  std::vector<FormData> observed = {form_data};
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed);
+  task_environment_.RunUntilIdle();
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled).WillRepeatedly(Return(true));
+  OnPasswordFormSubmitted(form_data);
+
+  // Expect no automatic save/update prompt and no leak check if password store
+  // is not available.
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePassword).Times(0);
+  EXPECT_CALL(*weak_factory, TryCreateLeakCheck).Times(0);
+
+  // Now the password manager waits for the navigation to complete.
+  observed.clear();
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed);
+  task_environment_.RunUntilIdle();
+  // Objects owned by the manager may keep references to the store - therefore
+  // destroy the manager prior to store destruction.
+  manager_.reset();
+  store->ShutdownOnUIThread();
+}
+
+// Checks that submitted form manager is cleared when saving was disabled at the
+// time of submission.
+TEST_P(PasswordManagerTest, ClearSubmittedManagerIfSavingIsDisabled) {
+  const FormData form_data = MakeSimpleFormData();
+  std::vector<FormData> observed = {form_data};
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed);
+  task_environment_.RunUntilIdle();
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled).WillRepeatedly(Return(false));
+  OnPasswordFormSubmitted(form_data);
+
+  // Expect no automatic save/update prompt because saving is disabled.
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePassword).Times(0);
+
+  // Now the password manager waits for the navigation to complete.
+  observed.clear();
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed);
+
+  // Form manager is deleted after successful form submission.
+  EXPECT_TRUE(manager()->form_managers().empty());
 }
 
 // This test verifies a fix for http://crbug.com/236673
@@ -2276,8 +2339,7 @@ TEST_P(PasswordManagerTest, PasswordGenerationPresavePassword) {
   // The user removes the generated password.
   manager()->OnPasswordNoLongerGenerated(&driver_, updated_form.form_data);
   task_environment_.RunUntilIdle();
-  EXPECT_THAT(store_->stored_passwords(),
-              ElementsAre(Pair(form.signon_realm, testing::IsEmpty())));
+  EXPECT_THAT(store_->stored_passwords(), testing::IsEmpty());
 }
 
 TEST_P(PasswordManagerTest, PasswordGenerationPresavePassword_NoFormManager) {
@@ -2697,8 +2759,7 @@ TEST_P(PasswordManagerTest, ManualFallbackForSaving_GeneratedPassword) {
   manager()->HideManualFallbackForSaving();
   task_environment_.RunUntilIdle();
 
-  EXPECT_THAT(store_->stored_passwords(),
-              ElementsAre(Pair(form.signon_realm, testing::IsEmpty())));
+  EXPECT_THAT(store_->stored_passwords(), testing::IsEmpty());
 }
 #endif  // !BUILDFLAG(IS_IOS)
 
@@ -3503,53 +3564,9 @@ TEST_P(PasswordManagerTest, FillingAndSavingFallbacksOnNonPasswordForm) {
   task_environment_.RunUntilIdle();
 }
 
-// Check that on a credit card form, there is no password filling (can be
-// overwritten with a server override, but it is not tested in this test). For
-// saving, only the fallback is available.
+// Checks that filling and saving fallbacks are available on forms that are
+// suspected to be credit card forms by client-side heuristics.
 TEST_P(PasswordManagerTest, FillingAndSavingFallbacksOnCreditCardForm) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      password_manager::features::kDisablePasswordsDropdownForCvcFields);
-  PasswordFormManager::set_wait_for_server_predictions_for_filling(false);
-  EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
-      .WillRepeatedly(Return(true));
-
-  PasswordForm saved_match(MakeSimpleForm());
-  store_->AddLogin(saved_match);
-  PasswordForm credit_card_form(MakeSimpleCreditCardForm());
-  credit_card_form.only_for_fallback = true;
-
-  PasswordFormFillData form_data;
-  // No filling fallback in order to let non-password Autofill to handle the
-  // form.
-  EXPECT_CALL(driver_, SetPasswordFillData).Times(0);
-
-  manager()->OnPasswordFormsParsed(&driver_, {credit_card_form.form_data});
-  task_environment_.RunUntilIdle();
-
-  // Check that saving fallback is available.
-  std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
-  EXPECT_CALL(client_, ShowManualFallbackForSaving(_, false, false))
-      .WillOnce(MoveArg<0>(&form_manager_to_save));
-  manager()->OnInformAboutUserInput(&driver_, credit_card_form.form_data);
-  ASSERT_TRUE(form_manager_to_save);
-  EXPECT_THAT(form_manager_to_save->GetPendingCredentials(),
-              FormMatches(credit_card_form));
-
-  // Check that no automatic save prompt is shown.
-  OnPasswordFormSubmitted(credit_card_form.form_data);
-  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePassword).Times(0);
-  manager()->DidNavigateMainFrame(true);
-  manager()->OnPasswordFormsRendered(&driver_, {});
-  task_environment_.RunUntilIdle();
-}
-
-// TODO(crbug.com/1425028): Remove the test once
-// |kDisablePasswordsDropdownForCvcFields| is launched.
-// Same as |FillingAndSavingFallbacksOnCreditCardForm|, but password filling is
-// suggested because |kDisablePasswordsDropdownForCvcFields| is disabled.
-TEST_P(PasswordManagerTest,
-       FillingAndSavingFallbacksOnCreditCardForm_OldBehavior) {
   PasswordFormManager::set_wait_for_server_predictions_for_filling(false);
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(Return(true));
@@ -5366,6 +5383,7 @@ class PasswordManagerWithOtpVariationsTest
 // Tests that only filling and saving fallbacks are available for a field
 // classified as an OTP field. The test is similar to non-parametrized
 // FillingAndSavingFallbacksOnOtpForm*, but tries many different circumstances.
+// TODO: b/40262430 - Simplify or rewrite the test.
 TEST_P(PasswordManagerWithOtpVariationsTest,
        FillingAndSavingFallbacksOnOtpForm) {
   auto [saved_form_username, saved_form_password, another_saved_form_password,
@@ -5454,8 +5472,12 @@ TEST_P(PasswordManagerWithOtpVariationsTest,
   manager()->OnPasswordFormsParsed(&driver_, {one_time_code_form.form_data});
   task_environment_.RunUntilIdle();
 
-  // Check that manual filling fallback available.
-  if (another_saved_form.has_value()) {
+  // Unless the source of classification is a server prediction, manual filling
+  // fallback must be available.
+  if (prediction_type == PredictionSource::SERVER) {
+    EXPECT_THAT(form_data.preferred_login.username_value, IsEmpty());
+    EXPECT_THAT(form_data.preferred_login.password_value, IsEmpty());
+  } else if (another_saved_form.has_value()) {
     // Two credentials are present, one of them is picked.
     if (saved_form.value().username_value ==
         form_data.preferred_login.username_value) {
@@ -5480,11 +5502,20 @@ TEST_P(PasswordManagerWithOtpVariationsTest,
   // Check that no automatic filling available.
   EXPECT_TRUE(form_data.username_element_renderer_id.is_null());
   EXPECT_TRUE(form_data.password_element_renderer_id.is_null());
-  // Check that saving fallback is available.
+  // Check that saving fallback is available, unless the source of
+  // classification is a server prediction.
   std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
-  EXPECT_CALL(client_, ShowManualFallbackForSaving)
-      .WillOnce(MoveArg<0>(&form_manager_to_save));
+  if (prediction_type == PredictionSource::SERVER) {
+    EXPECT_CALL(client_, ShowManualFallbackForSaving).Times(0);
+  } else {
+    EXPECT_CALL(client_, ShowManualFallbackForSaving)
+        .WillOnce(MoveArg<0>(&form_manager_to_save));
+  }
   manager()->OnInformAboutUserInput(&driver_, one_time_code_form.form_data);
+  if (prediction_type == PredictionSource::SERVER) {
+    ASSERT_FALSE(form_manager_to_save);
+    return;
+  }
   ASSERT_TRUE(form_manager_to_save);
 
   PasswordForm expected_pending_form;

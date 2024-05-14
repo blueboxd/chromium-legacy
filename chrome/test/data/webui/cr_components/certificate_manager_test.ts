@@ -16,6 +16,7 @@ import 'chrome://resources/cr_components/certificate_manager/certificate_passwor
 import 'chrome://resources/cr_components/certificate_manager/certificate_manager.js';
 import 'chrome://resources/cr_components/certificate_manager/certificate_subentry.js';
 
+import type {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import type {CaTrustEditDialogElement} from 'chrome://resources/cr_components/certificate_manager/ca_trust_edit_dialog.js';
 import type {CertificateDeleteConfirmationDialogElement} from 'chrome://resources/cr_components/certificate_manager/certificate_delete_confirmation_dialog.js';
 import type {CertificateListElement} from 'chrome://resources/cr_components/certificate_manager/certificate_list.js';
@@ -184,10 +185,12 @@ function createSampleCertificateSubnode(): CertificateSubnode {
  * Triggers an 'input' event on the given text input field (which triggers
  * validation to occur for password fields being tested in this file).
  */
-function triggerInputEvent(element: HTMLElement) {
+async function triggerInputEvent(element: CrInputElement) {
+  await element.updateComplete;
   // The actual key code is irrelevant for tests.
   const kSpaceBar = 32;
   keyEventOn(element, 'input', kSpaceBar);
+  await element.updateComplete;
 }
 
 suite('CaTrustEditDialogTests', function() {
@@ -358,16 +361,16 @@ suite('CertificatePasswordEncryptionDialogTests', function() {
 
     // Test that the 'OK' button is disabled when the password fields are
     // empty (even though they both have the same value).
-    triggerInputEvent(passwordInputElement);
+    await triggerInputEvent(passwordInputElement);
     assertTrue(dialog.$.ok.disabled);
 
     // Test that the 'OK' button is disabled until the two password fields
     // match.
     passwordInputElement.value = 'foopassword';
-    triggerInputEvent(passwordInputElement);
+    await triggerInputEvent(passwordInputElement);
     assertTrue(dialog.$.ok.disabled);
     confirmPasswordInputElement.value = passwordInputElement.value;
-    triggerInputEvent(confirmPasswordInputElement);
+    await triggerInputEvent(confirmPasswordInputElement);
     assertFalse(dialog.$.ok.disabled);
 
     // Simulate clicking 'OK'.
@@ -390,7 +393,7 @@ suite('CertificatePasswordEncryptionDialogTests', function() {
 
     passwordInputElement.value = 'foopassword';
     confirmPasswordInputElement.value = passwordInputElement.value;
-    triggerInputEvent(passwordInputElement);
+    await triggerInputEvent(passwordInputElement);
 
     const whenErrorEventFired = eventToPromise('certificates-error', dialog);
     dialog.$.ok.click();
@@ -429,6 +432,7 @@ suite('CertificatePasswordDecryptionDialogTests', function() {
     assertFalse(dialog.$.ok.disabled);
 
     passwordInputElement.value = 'foopassword';
+    await passwordInputElement.updateComplete;
     assertFalse(dialog.$.ok.disabled);
 
     // Simulate clicking 'OK'.
@@ -446,7 +450,7 @@ suite('CertificatePasswordDecryptionDialogTests', function() {
     const passwordInputElement = dialog.$.dialog.querySelector('cr-input');
     assertTrue(!!passwordInputElement);
     passwordInputElement.value = 'foopassword';
-    triggerInputEvent(passwordInputElement);
+    await triggerInputEvent(passwordInputElement);
 
     const whenErrorEventFired = eventToPromise('certificates-error', dialog);
     dialog.$.ok.click();
@@ -617,36 +621,36 @@ suite('CertificateManagerTests', function() {
    */
   test('Initialization', async function() {
     // Trigger all category tabs to be added to the DOM.
-    const paperTabsElement = page.shadowRoot!.querySelector('cr-tabs');
-    assertTrue(!!paperTabsElement);
-    paperTabsElement.selected = CertificateCategoryIndex.PERSONAL;
-    flush();
-    paperTabsElement.selected = CertificateCategoryIndex.SERVER;
-    flush();
-    paperTabsElement.selected = CertificateCategoryIndex.CA;
-    flush();
-    paperTabsElement.selected = CertificateCategoryIndex.OTHER;
-    flush();
+    const crTabsElement = page.shadowRoot!.querySelector('cr-tabs');
+    assertTrue(!!crTabsElement);
+    crTabsElement.selected = CertificateCategoryIndex.PERSONAL;
+    await crTabsElement.updateComplete;
+    crTabsElement.selected = CertificateCategoryIndex.SERVER;
+    await crTabsElement.updateComplete;
+    crTabsElement.selected = CertificateCategoryIndex.CA;
+    await crTabsElement.updateComplete;
+    crTabsElement.selected = CertificateCategoryIndex.OTHER;
+    await crTabsElement.updateComplete;
     const certificateLists =
         page.shadowRoot!.querySelectorAll('certificate-list');
     assertEquals(4, certificateLists.length);
 
-    function assertCertificateListLength(
+    async function assertCertificateListLength(
         listIndex: CertificateCategoryIndex, expectedSize: number) {
       // Need to switch to the corresponding tab before querying the DOM.
-      assertTrue(!!paperTabsElement);
-      paperTabsElement.selected = listIndex;
-      flush();
+      assertTrue(!!crTabsElement);
+      crTabsElement.selected = listIndex;
+      await crTabsElement.updateComplete;
       const certificateEntries =
           certificateLists[listIndex]!.shadowRoot!.querySelectorAll(
               'certificate-entry');
       assertEquals(expectedSize, certificateEntries.length);
     }
 
-    assertCertificateListLength(CertificateCategoryIndex.PERSONAL, 0);
-    assertCertificateListLength(CertificateCategoryIndex.SERVER, 0);
-    assertCertificateListLength(CertificateCategoryIndex.CA, 0);
-    assertCertificateListLength(CertificateCategoryIndex.OTHER, 0);
+    await assertCertificateListLength(CertificateCategoryIndex.PERSONAL, 0);
+    await assertCertificateListLength(CertificateCategoryIndex.SERVER, 0);
+    await assertCertificateListLength(CertificateCategoryIndex.CA, 0);
+    await assertCertificateListLength(CertificateCategoryIndex.OTHER, 0);
 
     await browserProxy.whenCalled('refreshCertificates');
     // Simulate response for personal and CA certificates.
@@ -731,14 +735,19 @@ suite('CertificateManagerTests', function() {
   });
 
   // <if expr="chromeos_ash">
+
+  async function renderTabContents() {
+    const crTabs = page.shadowRoot!.querySelector('cr-tabs');
+    assertTrue(!!crTabs);
+    crTabs.selected = CertificateCategoryIndex.PERSONAL;
+    await crTabs.updateComplete;
+    crTabs.selected = CertificateCategoryIndex.CA;
+    await crTabs.updateComplete;
+  }
+
   // Test that import buttons are hidden by default.
-  test('ImportButton_Default', function() {
-    const paperTabsElement = page.shadowRoot!.querySelector('cr-tabs');
-    assertTrue(!!paperTabsElement);
-    paperTabsElement.selected = CertificateCategoryIndex.PERSONAL;
-    flush();
-    paperTabsElement.selected = CertificateCategoryIndex.CA;
-    flush();
+  test('ImportButton_Default', async function() {
+    await renderTabContents();
     const certificateLists =
         page.shadowRoot!.querySelectorAll('certificate-list');
     const clientImportButton = certificateLists[0]!.$.import;
@@ -752,12 +761,7 @@ suite('CertificateManagerTests', function() {
   // Test that ClientCertificateManagementAllowed policy is applied to the
   // UI when management is allowed.
   test('ImportButton_ClientPolicyAllowed', async function() {
-    const paperTabsElement = page.shadowRoot!.querySelector('cr-tabs');
-    assertTrue(!!paperTabsElement);
-    paperTabsElement.selected = CertificateCategoryIndex.PERSONAL;
-    flush();
-    paperTabsElement.selected = CertificateCategoryIndex.CA;
-    flush();
+    await renderTabContents();
     const certificateLists =
         page.shadowRoot!.querySelectorAll('certificate-list');
 
@@ -779,12 +783,7 @@ suite('CertificateManagerTests', function() {
   // Test that ClientCertificateManagementAllowed policy is applied to the
   // UI when management is not allowed.
   test('ImportButton_ClientPolicyDisallowed', async function() {
-    const paperTabsElement = page.shadowRoot!.querySelector('cr-tabs');
-    assertTrue(!!paperTabsElement);
-    paperTabsElement.selected = CertificateCategoryIndex.PERSONAL;
-    flush();
-    paperTabsElement.selected = CertificateCategoryIndex.CA;
-    flush();
+    await renderTabContents();
     const certificateLists =
         page.shadowRoot!.querySelectorAll('certificate-list');
 
@@ -806,12 +805,7 @@ suite('CertificateManagerTests', function() {
   // Test that CACertificateManagementAllowed policy is applied to the
   // UI when management is allowed.
   test('ImportButton_CAPolicyAllowed', async function() {
-    const paperTabsElement = page.shadowRoot!.querySelector('cr-tabs');
-    assertTrue(!!paperTabsElement);
-    paperTabsElement.selected = CertificateCategoryIndex.PERSONAL;
-    flush();
-    paperTabsElement.selected = CertificateCategoryIndex.CA;
-    flush();
+    await renderTabContents();
     const certificateLists =
         page.shadowRoot!.querySelectorAll('certificate-list');
 
@@ -832,12 +826,7 @@ suite('CertificateManagerTests', function() {
   // Test that CACertificateManagementAllowed policy is applied to the
   // UI when management is not allowed.
   test('ImportButton_CAPolicyDisallowed', async function() {
-    const paperTabsElement = page.shadowRoot!.querySelector('cr-tabs');
-    assertTrue(!!paperTabsElement);
-    paperTabsElement.selected = CertificateCategoryIndex.PERSONAL;
-    flush();
-    paperTabsElement.selected = CertificateCategoryIndex.CA;
-    flush();
+    await renderTabContents();
     const certificateLists =
         page.shadowRoot!.querySelectorAll('certificate-list');
 

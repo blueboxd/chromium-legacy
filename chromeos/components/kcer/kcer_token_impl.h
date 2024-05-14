@@ -56,6 +56,7 @@ class COMPONENT_EXPORT(KCER) KcerTokenImpl : public KcerToken {
   void ImportPkcs12Cert(Pkcs12Blob pkcs12_blob,
                         std::string password,
                         bool hardware_backed,
+                        bool mark_as_migrated,
                         Kcer::StatusCallback callback) override;
   void ExportPkcs12Cert(scoped_refptr<const Cert> cert,
                         Kcer::ExportPkcs12Callback callback) override;
@@ -202,6 +203,22 @@ class COMPONENT_EXPORT(KCER) KcerTokenImpl : public KcerToken {
                                           std::vector<ObjectHandle> handles,
                                           uint32_t result_code);
   void DidRemoveKeyAndCerts(RemoveKeyAndCertsTask task, uint32_t result_code);
+
+  struct RemoveCertTask {
+    RemoveCertTask(scoped_refptr<const Cert> in_cert,
+                   Kcer::StatusCallback in_callback);
+    RemoveCertTask(RemoveCertTask&& other);
+    ~RemoveCertTask();
+
+    const scoped_refptr<const Cert> cert;
+    Kcer::StatusCallback callback;
+    int attemps_left = kDefaultAttempts;
+  };
+  void RemoveCertImpl(RemoveCertTask task);
+  void RemoveCertWithHandles(RemoveCertTask task,
+                             std::vector<ObjectHandle> handles,
+                             uint32_t result_code);
+  void DidRemoveCert(RemoveCertTask task, uint32_t result_code);
 
   struct ListKeysTask {
     explicit ListKeysTask(TokenListKeysCallback in_callback);
@@ -444,7 +461,7 @@ class COMPONENT_EXPORT(KCER) KcerTokenImpl : public KcerToken {
       SessionChapsClient::SlotId(0xFFFFFFFF);
   // Indicates whether PSS signatures are supported. This variable caches the
   // value from Chaps, if it's empty, it needs to be retrieved first.
-  absl::optional<bool> token_supports_pss_;
+  std::optional<bool> token_supports_pss_;
 
   // Queue for the tasks that were received while the tast queue was blocked.
   std::deque<base::OnceClosure> task_queue_;

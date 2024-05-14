@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
@@ -47,8 +48,11 @@
 #include "components/user_education/common/feature_promo_specification.h"
 #include "components/user_education/common/help_bubble_factory_registry.h"
 #include "components/user_education/common/help_bubble_params.h"
+#include "components/user_education/common/new_badge_specification.h"
 #include "components/user_education/common/tutorial_description.h"
 #include "components/user_education/common/tutorial_registry.h"
+#include "components/user_education/common/user_education_features.h"
+#include "components/user_education/common/user_education_metadata.h"
 #include "components/user_education/views/help_bubble_delegate.h"
 #include "components/user_education/views/help_bubble_factory_views.h"
 #include "components/user_education/webui/help_bubble_handler.h"
@@ -185,6 +189,20 @@ void MaybeRegisterChromeFeaturePromos(
                     .SetBubbleArrow(HelpBubbleArrow::kLeftCenter)
                     .SetMetadata(115, "vykochko@google.com",
                                  "Triggered after autofill popup appears.")));
+
+  // kIPHAutofillVirtualCardSuggestionFeature:
+  registry.RegisterFeature(std::move(
+      FeaturePromoSpecification::CreateForToastPromo(
+          feature_engagement::kIPHAutofillManualFallbackFeature,
+          kAutofillManualFallbackElementId, IDS_AUTOFILL_IPH_MANUAL_FALLBACK,
+          IDS_AUTOFILL_IPH_MANUAL_FALLBACK_SCREENREADER,
+          FeaturePromoSpecification::AcceleratorInfo())
+          .SetBubbleArrow(HelpBubbleArrow::kTopRight)
+          .SetMetadata(
+              123, "theocristea@google.com",
+              "User focuses a field, but autofill cannot be triggered "
+              "automatically because the field has autocomplete=garbage. In "
+              "this case, autofill can be triggered from the context menu.")));
 
   // kIPHAutofillVirtualCardCVCSuggestionFeature:
   registry.RegisterFeature(std::move(
@@ -331,7 +349,8 @@ void MaybeRegisterChromeFeaturePromos(
           .SetBubbleTitleText(IDS_IPH_EXPERIMENTAL_AI_PROMO)
           .SetCustomActionDismissText(IDS_NO_THANKS)
           .SetBubbleArrow(HelpBubbleArrow::kTopRight)
-          .SetCustomActionIsDefault(true)));
+          .SetCustomActionIsDefault(true)
+          .OverrideFocusOnShow(false)));
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // kIPHExtensionsMenuFeature:
@@ -825,6 +844,23 @@ void MaybeRegisterChromeFeaturePromos(
                       .SetBubbleArrow(HelpBubbleArrow::kBottomRight)));
   }
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
+
+  // kIPHDeepScanPromptRemovalFeature
+  registry.RegisterFeature(std::move(
+      FeaturePromoSpecification::CreateForCustomAction(
+          feature_engagement::kIPHDeepScanPromptRemovalFeature,
+          kToolbarDownloadButtonElementId, IDS_DEEP_SCANNING_PROMPT_REMOVAL_IPH,
+          IDS_DEEP_SCANNING_PROMPT_REMOVAL_IPH_ACTION,
+          base::BindRepeating(
+              [](ui::ElementContext ctx,
+                 user_education::FeaturePromoHandle promo_handle) {
+                auto* browser = chrome::FindBrowserWithUiElementContext(ctx);
+                if (!browser) {
+                  return;
+                }
+                chrome::ShowSafeBrowsingEnhancedProtection(browser);
+              }))
+          .SetBubbleArrow(HelpBubbleArrow::kTopRight)));
 }
 
 void MaybeRegisterChromeTutorials(
@@ -1131,4 +1167,57 @@ void MaybeRegisterChromeTutorials(
               .SetBubbleTitleText(IDS_TUTORIAL_GENERIC_SUCCESS_TITLE)
               .SetBubbleBodyText(IDS_TUTORIAL_PASSWORD_MANAGER_SUCCESS_BODY)
               .SetBubbleArrow(HelpBubbleArrow::kNone)));
+}
+
+void MaybeRegisterNewBadges(user_education::NewBadgeRegistry& registry) {
+  if (registry.IsFeatureRegistered(
+          user_education::features::kNewBadgeTestFeature)) {
+    return;
+  }
+
+  registry.RegisterFeature(user_education::NewBadgeSpecification(
+      user_education::features::kNewBadgeTestFeature,
+      user_education::Metadata(124, "Frizzle Team",
+                               "Used to test \"New\" Badge logic.")));
+
+  registry.RegisterFeature(user_education::NewBadgeSpecification(
+      compose::features::kEnableCompose, user_education::Metadata()));
+  registry.RegisterFeature(user_education::NewBadgeSpecification(
+      compose::features::kEnableComposeNudge, user_education::Metadata()));
+}
+
+std::unique_ptr<BrowserFeaturePromoController> CreateUserEducationResources(
+    BrowserView* browser_view) {
+  Profile* const profile = browser_view->GetProfile();
+
+  // Get the user education service.
+  if (!UserEducationServiceFactory::ProfileAllowsUserEducation(profile)) {
+    return nullptr;
+  }
+  UserEducationService* const user_education_service =
+      UserEducationServiceFactory::GetForBrowserContext(profile);
+  if (!user_education_service) {
+    return nullptr;
+  }
+
+  // Consider registering factories, etc.
+  RegisterChromeHelpBubbleFactories(
+      user_education_service->help_bubble_factory_registry());
+  MaybeRegisterChromeFeaturePromos(
+      user_education_service->feature_promo_registry());
+  MaybeRegisterChromeTutorials(user_education_service->tutorial_registry());
+  CHECK(user_education_service->new_badge_registry());
+
+  MaybeRegisterNewBadges(*user_education_service->new_badge_registry());
+  user_education_service->new_badge_controller()->InitData();
+
+  return std::make_unique<BrowserFeaturePromoController>(
+      browser_view,
+      feature_engagement::TrackerFactory::GetForBrowserContext(profile),
+      &user_education_service->feature_promo_registry(),
+      &user_education_service->help_bubble_factory_registry(),
+      &user_education_service->feature_promo_storage_service(),
+      &user_education_service->feature_promo_session_policy(),
+      &user_education_service->tutorial_service(),
+      &user_education_service->product_messaging_controller());
 }

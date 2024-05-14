@@ -36,6 +36,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "base/uuid.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -735,6 +736,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   const base::UnguessableToken devtools_navigation_token_;
 
+  const base::Uuid base_auction_nonce_;
+
   LoaderFreezeMode freeze_mode_ = LoaderFreezeMode::kNone;
 
   // Whether the last navigation (cross-document or same-document) that
@@ -804,6 +807,10 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // Whether this load request is from a cross-site navigation that swaps
   // BrowsingContextGroup.
   bool is_cross_site_cross_browsing_context_group_ = false;
+
+  // Whether the new document should start with sticky user activation, because
+  // the previously committed document did, and the navigation was same-site.
+  bool should_have_sticky_user_activation_ = false;
 
   WebVector<WebHistoryItem> navigation_api_back_entries_;
   WebVector<WebHistoryItem> navigation_api_forward_entries_;

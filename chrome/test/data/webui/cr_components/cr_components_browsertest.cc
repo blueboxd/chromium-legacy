@@ -5,7 +5,9 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/web_ui_mocha_browser_test.h"
 #include "components/history_clusters/core/features.h"
+#include "components/history_embeddings/history_embeddings_features.h"
 #include "content/public/test/browser_test.h"
+#include "crypto/crypto_buildflags.h"
 
 typedef WebUIMochaBrowserTest CrComponentsTest;
 
@@ -55,6 +57,29 @@ IN_PROC_BROWSER_TEST_F(CrComponentsTest, HorizontalCarousel) {
           "mocha.run()");
 }
 
+class CrComponentsHistoryEmbeddingsTest : public WebUIMochaBrowserTest {
+ protected:
+  CrComponentsHistoryEmbeddingsTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        history_embeddings::kHistoryEmbeddings);
+    set_test_loader_host(chrome::kChromeUIHistoryHost);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(CrComponentsHistoryEmbeddingsTest, HistoryEmbeddings) {
+  RunTest("cr_components/history_embeddings/history_embeddings_test.js",
+          "mocha.run()");
+}
+
+IN_PROC_BROWSER_TEST_F(CrComponentsHistoryEmbeddingsTest,
+                       HistoryEmbeddingsFilterChips) {
+  RunTest("cr_components/history_embeddings/filter_chips_test.js",
+          "mocha.run()");
+}
+
 IN_PROC_BROWSER_TEST_F(CrComponentsTest, ManagedDialog) {
   RunTest("cr_components/managed_dialog_test.js", "mocha.run()");
 }
@@ -73,6 +98,16 @@ typedef WebUIMochaBrowserTest CrComponentsOmniboxTest;
 IN_PROC_BROWSER_TEST_F(CrComponentsOmniboxTest, RealboxMatchTest) {
   set_test_loader_host(chrome::kChromeUINewTabPageHost);
   RunTest("cr_components/omnibox/realbox_match_test.js", "mocha.run()");
+}
+
+IN_PROC_BROWSER_TEST_F(CrComponentsOmniboxTest, RealboxTest) {
+  set_test_loader_host(chrome::kChromeUINewTabPageHost);
+  RunTest("cr_components/omnibox/realbox_test.js", "mocha.run()");
+}
+
+IN_PROC_BROWSER_TEST_F(CrComponentsOmniboxTest, RealboxLensTest) {
+  set_test_loader_host(chrome::kChromeUINewTabPageHost);
+  RunTest("cr_components/omnibox/realbox_lens_test.js", "mocha.run()");
 }
 
 IN_PROC_BROWSER_TEST_F(CrComponentsTest, SettingsPrefs) {

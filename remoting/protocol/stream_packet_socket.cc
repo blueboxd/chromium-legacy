@@ -113,15 +113,7 @@ bool StreamPacketSocket::Init(std::unique_ptr<net::StreamSocket> socket,
 bool StreamPacketSocket::InitClientTcp(
     const rtc::SocketAddress& local_address,
     const rtc::SocketAddress& remote_address,
-    const rtc::ProxyInfo& proxy_info,
-    const std::string& user_agent,
     const rtc::PacketSocketTcpOptions& tcp_options) {
-  if (proxy_info.type != rtc::PROXY_NONE) {
-    // TODO(yuweih): Add support for proxied connections.
-    NOTIMPLEMENTED();
-    return false;
-  }
-
   int tls_opts =
       tcp_options.opts & (rtc::PacketSocketFactory::OPT_TLS |
                           rtc::PacketSocketFactory::OPT_TLS_FAKE |
@@ -275,6 +267,10 @@ int StreamPacketSocket::SetOption(rtc::Socket::Option option, int value) {
 
     case rtc::Socket::OPT_RTP_SENDTIME_EXTN_ID:
       NOTIMPLEMENTED();
+      return -1;
+
+    default:
+      NOTIMPLEMENTED() << "Unexpected socket option: " << option;
       return -1;
   }
 

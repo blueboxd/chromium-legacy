@@ -155,8 +155,8 @@ enum Role {
   kDateTime = 28,
   kDefinition = 29,
   kDescriptionList = 30,
-  kDescriptionListDetail = 31,
-  kDescriptionListTerm = 32,
+  kDescriptionListDetailDeprecated = 31, // Replaced with kDefinition.
+  kDescriptionListTermDeprecated = 32,  // Replaced with kTerm.
   kDesktop = 33,  // internal
   kDetails = 34,
   kDialog = 35,
@@ -571,8 +571,8 @@ enum Mutation {
   kSubtreeUpdateEnd,
 };
 
-// Next version: 4
-// Next value: 36
+// Next version: 5
+// Next value: 38
 [Extensible, Stable, Uuid="e5a4cd0c-3152-4427-93d5-35ff7d0f1ae8"]
 enum StringAttribute {
   [Default]kNone = 0,
@@ -585,6 +585,11 @@ enum StringAttribute {
   kAutoComplete = 4,
   [MinVersion=2] kAriaBrailleLabel = 33,
   [MinVersion=2] kAriaBrailleRoleDescription = 34,
+  // Deprecated - Do not use.
+  // These attributes are replaced by its `StringListAttribute` equivalents to
+  // support multiple contiguous calls to `ariaNotify`.
+  [MinVersion=4] kAriaNotificationAnnouncementDeprecated = 36,
+  [MinVersion=4] kAriaNotificationIdDeprecated = 37,
   kCheckedStateDescription = 5,
   kChildTreeId = 6,
   kChildTreeNodeAppId = 7,
@@ -624,8 +629,8 @@ enum StringAttribute {
   kVirtualContent = 30,
 };
 
-// Next version: 3
-// Next value: 64
+// Next version: 4
+// Next value: 66
 [Extensible, Stable, Uuid="c350e50f-5177-405d-b155-79868449ba7b"]
 enum IntAttribute {
   [Default]kNone = 0,
@@ -772,6 +777,12 @@ enum IntAttribute {
   [MinVersion=1] kIsPopup = 61,
   [MinVersion=2] kNextWindowFocusId = 62,
   [MinVersion=2] kPreviousWindowFocusId = 63,
+
+  // Deprecated - Do not use.
+  // These attributes are replaced by its `IntListAttribute` equivalents to
+  // support multiple contiguous calls to `ariaNotify`.
+  [MinVersion=3] kAriaNotificationInterruptDeprecated = 64,
+  [MinVersion=3] kAriaNotificationPriorityDeprecated = 65,
 };
 
 // Next version: 2
@@ -893,8 +904,11 @@ enum BoolAttribute {
   [MinVersion=2] kHasHiddenOffscreenNodes,
 };
 
-// Next version: 6
-// Next value: 27
+// Next version: 7
+// Next value: 29
+// Note: if changing an IntListAttribute property that stores a relation where
+// the reverse should be computed, be sure to also update
+// kReverseRelationIntListAttributes in AXTree.
 [Extensible, Stable, Uuid="6d1f823f-28a9-4263-bc4a-69fb19a4ef46"]
 enum IntListAttribute {
   [Default]kNone = 0,
@@ -965,12 +979,20 @@ enum IntListAttribute {
   [MinVersion=4] kTextOperationEndAnchorIds = 23,
   [MinVersion=4] kTextOperationEndOffsets = 24,
   [MinVersion=4] kTextOperations = 25,
+
+  // List of `AriaNotificationInterrupt` and `AriaNotificationPriority`
+  // properties for their respective ARIA notifications.
+  [MinVersion=6] kAriaNotificationInterruptProperties = 27,
+  [MinVersion=6] kAriaNotificationPriorityProperties = 28,
 };
 
-// Next value: 2
+// Next version: 2
+// Next value: 4
 [Extensible, Stable, Uuid="b3b576a7-9335-4f79-bc8c-595fd9346d81"]
 enum StringListAttribute {
   [Default]kNone = 0,
+  [MinVersion=1] kAriaNotificationAnnouncements = 2,
+  [MinVersion=1] kAriaNotificationIds = 3,
   // Descriptions for custom actions. This must be aligned with
   // custom_action_ids.
   kCustomActionDescriptions = 1,
@@ -1453,4 +1475,15 @@ enum Dropeffect {
   kLink,
   kMove,
   kPopup,
+};
+
+enum AriaNotificationInterrupt {
+  kNone,
+  kAll,
+  kPending,
+};
+
+enum AriaNotificationPriority {
+  kNone,
+  kImportant,
 };

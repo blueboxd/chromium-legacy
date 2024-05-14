@@ -8,13 +8,13 @@
 #include <bitset>
 #include <memory>
 #include <optional>
+#include <string_view>
 #include <vector>
 
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "base/strings/string_piece.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_sub_manager.h"
 #include "chrome/browser/web_applications/os_integration/url_handler_manager.h"
 #include "chrome/browser/web_applications/os_integration/web_app_file_handler_manager.h"
@@ -38,16 +38,6 @@ namespace web_app {
 
 class FakeOsIntegrationManager;
 class WebAppProvider;
-
-// Returns if the sub-manager architecture is enabled. This means that they are
-// writing the expected os integration state to disk. See
-// `AreSubManagersExecuteEnabled` to check if they are also executing.
-bool AreOsIntegrationSubManagersEnabled();
-
-// Returns if the sub-manager architecture is enabled AND the "execute"
-// architecture is enabled. This causes os integration execution to happen from
-// the sub-managers and not the OsIntegrationManager.
-bool AreSubManagersExecuteEnabled();
 
 // OsHooksErrors contains the result of all Os hook deployments.
 // If a bit is set to `true`, then an error did occur.
@@ -98,6 +88,7 @@ class OsIntegrationManager : public WebAppRegistrarObserver {
     ScopedSuppressForTesting();
     ~ScopedSuppressForTesting();
   };
+  static bool AreOsHooksSuppressedForTesting();
 
   explicit OsIntegrationManager(
       Profile* profile,
@@ -158,7 +149,7 @@ class OsIntegrationManager : public WebAppRegistrarObserver {
   // virtual for testing
   virtual void UpdateOsHooks(
       const webapps::AppId& app_id,
-      base::StringPiece old_name,
+      std::string_view old_name,
       FileHandlerUpdateAction file_handlers_need_os_update,
       const WebAppInstallInfo& web_app_info,
       UpdateOsHooksCallback callback);
@@ -223,7 +214,7 @@ class OsIntegrationManager : public WebAppRegistrarObserver {
                                       base::OnceClosure callback);
 
   virtual void UpdateShortcuts(const webapps::AppId& app_id,
-                               base::StringPiece old_name,
+                               std::string_view old_name,
                                ResultCallback callback);
 
   // WebAppRegistrarObserver:

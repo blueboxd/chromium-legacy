@@ -214,18 +214,6 @@ void HTMLFormControlElement::SetAutofillState(WebAutofillState autofill_state) {
   PseudoStateChanged(CSSSelector::kPseudoAutofillPreviewed);
 }
 
-void HTMLFormControlElement::SetPreventHighlightingOfAutofilledFields(
-    bool prevent_highlighting) {
-  if (prevent_highlighting == prevent_highlighting_of_autofilled_fields_)
-    return;
-
-  prevent_highlighting_of_autofilled_fields_ = prevent_highlighting;
-  PseudoStateChanged(CSSSelector::kPseudoAutofill);
-  PseudoStateChanged(CSSSelector::kPseudoWebKitAutofill);
-  PseudoStateChanged(CSSSelector::kPseudoAutofillSelected);
-  PseudoStateChanged(CSSSelector::kPseudoAutofillPreviewed);
-}
-
 void HTMLFormControlElement::SetAutofillSection(const WebString& section) {
   autofill_section_ = section;
 }
@@ -380,7 +368,7 @@ HTMLFormControlElement::popoverTargetElement() {
   if (!target_element && RuntimeEnabledFeatures::StylableSelectEnabled()) {
     if (auto* button = DynamicTo<HTMLButtonElement>(this)) {
       if (auto* select = button->OwnerSelect()) {
-        if (auto* datalist = select->SlottedDatalist()) {
+        if (auto* datalist = select->FirstChildDatalist()) {
           target_element = datalist;
         }
       }
@@ -402,14 +390,14 @@ HTMLFormControlElement::popoverTargetElement() {
     action = PopoverTriggerAction::kShow;
   } else if (action_value == "hide") {
     action = PopoverTriggerAction::kHide;
-  } else if (RuntimeEnabledFeatures::HTMLPopoverHintEnabled() &&
+  } else if (RuntimeEnabledFeatures::HTMLPopoverActionHoverEnabled() &&
              action_value == "hover") {
     action = PopoverTriggerAction::kHover;
   }
   return PopoverTargetElement{.popover = target_popover, .action = action};
 }
 
-HTMLElement* HTMLFormControlElement::invokeTargetElement() {
+Element* HTMLFormControlElement::invokeTargetElement() {
   if (!IsInTreeScope() || IsDisabledFormControl() ||
       (Form() && IsSuccessfulSubmitButton())) {
     return nullptr;
@@ -419,8 +407,17 @@ HTMLElement* HTMLFormControlElement::invokeTargetElement() {
     return nullptr;
   }
 
-  return DynamicTo<HTMLElement>(
-      GetElementAttribute(html_names::kInvoketargetAttr));
+  return GetElementAttribute(html_names::kInvoketargetAttr);
+}
+
+Element* HTMLFormControlElement::interestTargetElement() {
+  CHECK(RuntimeEnabledFeatures::HTMLInterestTargetAttributeEnabled());
+
+  if (!IsInTreeScope() || IsDisabledFormControl()) {
+    return nullptr;
+  }
+
+  return GetElementAttribute(html_names::kInteresttargetAttr);
 }
 
 AtomicString HTMLFormControlElement::popoverTargetAction() const {
@@ -433,7 +430,7 @@ AtomicString HTMLFormControlElement::popoverTargetAction() const {
              attribute_value == keywords::kShow ||
              attribute_value == keywords::kHide) {
     return attribute_value;  // ReflectOnly
-  } else if (RuntimeEnabledFeatures::HTMLPopoverHintEnabled() &&
+  } else if (RuntimeEnabledFeatures::HTMLPopoverActionHoverEnabled() &&
              attribute_value == keywords::kHover) {
     return attribute_value;  // ReflectOnly (with HTMLPopoverHint enabled)
   } else {
@@ -452,10 +449,18 @@ AtomicString HTMLFormControlElement::invokeAction() const {
       !attribute_value.empty()) {
     return attribute_value;
   }
-  return keywords::kAuto;
+  return g_empty_atom;
 }
-void HTMLFormControlElement::setInvokeAction(const AtomicString& value) {
-  setAttribute(html_names::kInvokeactionAttr, value);
+
+AtomicString HTMLFormControlElement::interestAction() const {
+  DCHECK(RuntimeEnabledFeatures::HTMLInterestTargetAttributeEnabled());
+  const AtomicString& attribute_value =
+      FastGetAttribute(html_names::kInterestactionAttr);
+  if (attribute_value && !attribute_value.IsNull() &&
+      !attribute_value.empty()) {
+    return attribute_value;
+  }
+  return g_empty_atom;
 }
 
 void HTMLFormControlElement::DefaultEventHandler(Event& event) {
@@ -516,7 +521,7 @@ void HTMLFormControlElement::DefaultEventHandler(Event& event) {
           action = keywords::kHidePopover;
           break;
         case PopoverTriggerAction::kHover:
-          CHECK(RuntimeEnabledFeatures::HTMLPopoverHintEnabled());
+          CHECK(RuntimeEnabledFeatures::HTMLPopoverActionHoverEnabled());
           action = keywords::kShowPopover;
           break;
         case PopoverTriggerAction::kNone:
@@ -545,7 +550,7 @@ void HTMLFormControlElement::HandlePopoverInvokerHovered(bool hovered) {
   if (!target_popover || target_info.action != PopoverTriggerAction::kHover) {
     return;
   }
-  CHECK(RuntimeEnabledFeatures::HTMLPopoverHintEnabled());
+  CHECK(RuntimeEnabledFeatures::HTMLPopoverActionHoverEnabled());
 
   if (hovered) {
     // If we've just hovered an element (or the descendant of an element), see
@@ -639,24 +644,13 @@ void HTMLFormControlElement::AssociateWith(HTMLFormElement* form) {
 
 int32_t HTMLFormControlElement::GetAxId() const {
   Document& document = GetDocument();
-  if (!document.IsActive() || !document.View())
+  if (!document.IsActive() || !document.View()) {
     return 0;
-  // TODO(accessibility) Simplify this once AXIDs use DOMNodeIds. At that
-  // point it will be safe to get the AXID at any time.
-  if (AXObjectCache* cache = document.ExistingAXObjectCache()) {
-    LocalFrameView* local_frame_view = document.View();
-    if (local_frame_view->IsUpdatingLifecycle()) {
-      // Autofill (the caller of this code) can end up making calls to get AXIDs
-      // of form elements during, e.g. resize observer callbacks, which are
-      // in the middle up updating the document lifecycle. In these cases, just
-      // return the existing AXID of the element.
-      return cache->GetExistingAXID(const_cast<HTMLFormControlElement*>(this));
-    }
-
-    return cache->GetAXID(const_cast<HTMLFormControlElement*>(this));
   }
-
-  return 0;
+  // The AXId is the same as the DOM node id.
+  int32_t result = DOMNodeIds::ExistingIdForNode(this);
+  CHECK(result) << "May need to call GetDomNodeId() from a non-const function";
+  return result;
 }
 
 }  // namespace blink

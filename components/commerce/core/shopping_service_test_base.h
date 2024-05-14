@@ -7,11 +7,13 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
+#include "components/commerce/core/commerce_info_cache.h"
 #include "components/commerce/core/shopping_service.h"
 #include "components/commerce/core/web_extractor.h"
 #include "components/commerce/core/web_wrapper.h"
@@ -80,7 +82,8 @@ class MockOptGuideDecider
       const base::flat_set<OptimizationType>& optimization_types,
       RequestContext request_context,
       OnDemandOptimizationGuideDecisionRepeatingCallback callback,
-      RequestContextMetadata* request_context_metadata = nullptr) override;
+      std::optional<RequestContextMetadata> request_context_metadata =
+          std::nullopt) override;
 
   void AddOnDemandShoppingResponse(const GURL& url,
                                    const OptimizationGuideDecision decision,
@@ -227,6 +230,9 @@ class ShoppingServiceTestBase : public testing::Test {
 
   // Get the item in the product info cache if it exists.
   const ProductInfo* GetFromProductInfoCache(const GURL& url);
+
+  // Gets a handle to the cache.
+  CommerceInfoCache& GetCache();
 
  protected:
   base::test::TaskEnvironment task_environment_{

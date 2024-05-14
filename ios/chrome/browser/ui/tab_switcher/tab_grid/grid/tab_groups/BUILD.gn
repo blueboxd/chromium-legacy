@@ -10,6 +10,7 @@ source_set("tab_groups") {
     "tab_group_mediator.mm",
   ]
   deps = [
+    ":presentation",
     ":tab_group_consumer",
     ":tab_group_mutator",
     ":tab_groups_commands",
@@ -22,6 +23,7 @@ source_set("tab_groups") {
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/ui/tab_switcher",
+    "//ios/chrome/browser/ui/tab_switcher:group_utils",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid:grid_mediator",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid:grid_ui",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid:grid_utils",
@@ -68,8 +70,10 @@ source_set("tab_groups_ui") {
     "//base",
     "//base:i18n",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/shared/model/web_state_list",
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/shared/ui/symbols",
+    "//ios/chrome/browser/ui/menu",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid:tab_grid_paging",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid:grid_ui",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid:grid_ui_constants",
@@ -83,10 +87,9 @@ source_set("tab_group_creation_ui") {
   sources = [
     "create_tab_group_view_controller.h",
     "create_tab_group_view_controller.mm",
-    "tab_group_snapshots_view.h",
-    "tab_group_snapshots_view.mm",
   ]
   deps = [
+    ":snapshots_view",
     ":tab_group_consumer",
     ":tab_group_mutator",
     ":tab_groups_commands",
@@ -96,12 +99,51 @@ source_set("tab_group_creation_ui") {
     "//components/strings",
     "//components/tab_groups",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/shared/model/web_state_list",
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/shared/ui/elements",
     "//ios/chrome/browser/shared/ui/symbols",
+    "//ios/chrome/browser/shared/ui/util",
+    "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid:group_tab_info",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/util",
     "//ui/base",
+  ]
+}
+
+source_set("snapshots_view") {
+  sources = [
+    "group_tab_view.h",
+    "group_tab_view.mm",
+    "tab_group_snapshots_view.h",
+    "tab_group_snapshots_view.mm",
+  ]
+  deps = [
+    ":tab_groups_constant",
+    "//base",
+    "//ios/chrome/browser/shared/public/features",
+    "//ios/chrome/browser/shared/ui/elements",
+    "//ios/chrome/browser/shared/ui/util",
+    "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid:grid_ui_constants",
+    "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid:group_tab_info",
+    "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/elements",
+    "//ios/chrome/common/ui/util",
+  ]
+}
+
+source_set("presentation") {
+  sources = [
+    "tab_group_presentation_controller.h",
+    "tab_group_presentation_controller.mm",
+    "tab_group_transition_animator.h",
+    "tab_group_transition_animator.mm",
+    "tab_group_transition_delegate.h",
+    "tab_group_transition_delegate.mm",
+  ]
+  deps = [
+    ":tab_groups_constant",
+    ":tab_groups_ui",
   ]
 }
 
@@ -143,8 +185,11 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//ios/chrome/browser/shared/model/browser/test:test_support",
     "//ios/chrome/browser/shared/model/browser_state:test_support",
+    "//ios/chrome/browser/shared/model/web_state_list",
+    "//ios/chrome/browser/shared/model/web_state_list/test:test_support",
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/shared/public/features",
+    "//ios/chrome/browser/snapshots/model",
     "//ios/web/public/test/fakes",
     "//testing/gtest",
     "//third_party/ocmock",

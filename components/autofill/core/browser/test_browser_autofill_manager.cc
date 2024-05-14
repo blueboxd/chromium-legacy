@@ -25,9 +25,8 @@
 
 namespace autofill {
 
-TestBrowserAutofillManager::TestBrowserAutofillManager(AutofillDriver* driver,
-                                                       AutofillClient* client)
-    : BrowserAutofillManager(driver, client, "en-US") {
+TestBrowserAutofillManager::TestBrowserAutofillManager(AutofillDriver* driver)
+    : BrowserAutofillManager(driver, "en-US") {
   test_api(*this).set_form_filler(
       std::make_unique<TestFormFiller>(*this, log_manager(), "en-US"));
 }
@@ -250,7 +249,9 @@ void TestBrowserAutofillManager::SetAutofillPaymentMethodsEnabled(
   autofill_payment_methods_enabled_ = autofill_payment_methods_enabled;
   if (!autofill_payment_methods_enabled) {
     // Credit card data is refreshed when this pref is changed.
-    client.GetPersonalDataManager()->ClearCreditCards();
+    client.GetPersonalDataManager()
+        ->test_payments_data_manager()
+        .ClearCreditCards();
   }
 }
 

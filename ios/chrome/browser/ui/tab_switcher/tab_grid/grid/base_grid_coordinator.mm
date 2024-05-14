@@ -6,10 +6,12 @@
 
 #import "base/check.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
+#import "ios/chrome/browser/shared/model/web_state_list/tab_group.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/create_tab_group_coordinator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_group_coordinator.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_group_view_controller.h"
 #import "ios/web/public/web_state.h"
 
 @implementation BaseGridCoordinator {
@@ -69,8 +71,8 @@
 
 #pragma mark - TabGroupsCommands
 
-- (void)showTabGroupWithID {
-  CHECK(base::FeatureList::IsEnabled(kTabGroupsInGrid))
+- (void)showTabGroup:(const TabGroup*)tabGroup {
+  CHECK(IsTabGroupInGridEnabled())
       << "You should not be able to show a tab group UI outside the "
          "Tab Groups experiment.";
   CHECK(!_tabGroupCoordinator) << "There is an atemps to display a tab group "
@@ -80,7 +82,8 @@
   // controller.
   _tabGroupCoordinator = [[TabGroupCoordinator alloc]
       initWithBaseViewController:self.baseViewController
-                         browser:self.browser];
+                         browser:self.browser
+                        tabGroup:tabGroup];
   [_tabGroupCoordinator start];
 }
 
@@ -91,7 +94,7 @@
 
 - (void)showTabGroupCreationForTabs:
     (const std::set<web::WebStateID>&)identifiers {
-  CHECK(base::FeatureList::IsEnabled(kTabGroupsInGrid))
+  CHECK(IsTabGroupInGridEnabled())
       << "You should not be able to create a tab group outside the Tab Groups "
          "experiment.";
   CHECK(!_tabGroupCreator) << "There is an atemps to create a tab group when a "
@@ -101,15 +104,36 @@
   // when the base grid coordinator will have access to the grid view
   // controller.
   _tabGroupCreator = [[CreateTabGroupCoordinator alloc]
-      initWithBaseViewController:self.baseViewController
-                         browser:self.browser
-                    selectedTabs:identifiers];
+      initTabGroupCreationWithBaseViewController:self.baseViewController
+                                         browser:self.browser
+                                    selectedTabs:identifiers];
   [_tabGroupCreator start];
 }
 
 - (void)hideTabGroupCreation {
   [_tabGroupCreator stop];
   _tabGroupCreator = nil;
+}
+
+- (void)showTabGroupEditionForGroup:(const TabGroup*)tabGroup {
+  CHECK(IsTabGroupInGridEnabled())
+      << "You should not be able to edit a tab group outside the Tab Groups "
+         "experiment.";
+  CHECK(!_tabGroupCreator) << "There is an atemps to edit a tab group when a "
+                              "creation process is still running.";
+  CHECK(tabGroup) << "To edit a tab group you should pass a group.";
+
+  // TODO(crbug.com/1501837): Replace base view controller by view controller
+  // when the base grid coordinator will have access to the grid view
+  // controller.
+  UIViewController* backgroundView = _tabGroupCoordinator
+                                         ? _tabGroupCoordinator.viewController
+                                         : self.baseViewController;
+  _tabGroupCreator = [[CreateTabGroupCoordinator alloc]
+      initTabGroupEditionWithBaseViewController:backgroundView
+                                        browser:self.browser
+                                       tabGroup:tabGroup];
+  [_tabGroupCreator start];
 }
 
 @end

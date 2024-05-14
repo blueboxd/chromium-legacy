@@ -22,6 +22,7 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/optimization_guide/browser_test_util.h"
 #include "chrome/browser/optimization_guide/chrome_hints_manager.h"
+#include "chrome/browser/optimization_guide/chrome_model_quality_logs_uploader_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -338,6 +339,13 @@ class OptimizationGuideKeyedServiceBrowserTest
     return consumer_->last_can_apply_optimization_decision();
   }
 
+  OptimizationGuideKeyedService* ogks() {
+    auto* profile = browser()->profile();
+    OptimizationGuideKeyedService* ogks =
+        OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
+    return ogks;
+  }
+
   std::unique_ptr<optimization_guide::ModelQualityLogEntry>
   GetModelQualityLogEntryForCompose() {
     std::unique_ptr<optimization_guide::proto::LogAiDataRequest>
@@ -346,7 +354,10 @@ class OptimizationGuideKeyedServiceBrowserTest
     *(log_ai_data_request->mutable_compose()) = compose_logging_data;
 
     return std::make_unique<optimization_guide::ModelQualityLogEntry>(
-        std::move(log_ai_data_request));
+        std::move(log_ai_data_request),
+        ogks()
+            ->GetChromeModelQualityLogsUploaderServiceForTesting()
+            ->GetWeakPtr());
   }
 
   GURL url_with_hints() { return url_with_hints_; }
@@ -1129,7 +1140,7 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
           optimization_guide::prefs::FeatureOptInState::kDisabled));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(1, wallpaper_search_observer.count_feature_enabled_state_changes_);
+  EXPECT_EQ(0, wallpaper_search_observer.count_feature_enabled_state_changes_);
   EXPECT_EQ(2, compose_observer.count_feature_enabled_state_changes_);
   EXPECT_FALSE(compose_observer.is_currently_enabled_);
   EXPECT_EQ(2, tab_observer.count_feature_enabled_state_changes_);
@@ -1146,6 +1157,12 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
       optimization_guide::proto::ModelExecutionFeature::
           MODEL_EXECUTION_FEATURE_COMPOSE));
+  EXPECT_EQ(optimization_guide::prefs::FeatureOptInState::kNotInitialized,
+            static_cast<optimization_guide::prefs::FeatureOptInState>(
+                prefs->GetInteger(
+                    optimization_guide::prefs::GetSettingEnabledPrefName(
+                        optimization_guide::proto::ModelExecutionFeature::
+                            MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH))));
 }
 
 // Verifies that Model Execution Features Controller returns null for incognito
@@ -1453,7 +1470,7 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
 
   // Upload shouldn't be blocked by metrics consent.
   histogram_tester()->ExpectBucketCount(
-      "OptimizationGuide.ModelQualityLogsUploadService.UploadStatus.Compose",
+      "OptimizationGuide.ModelQualityLogsUploaderService.UploadStatus.Compose",
       optimization_guide::ModelQualityLogsUploadStatus::kNoMetricsConsent, 0);
 
   // Disable metrics consent.
@@ -1471,8 +1488,50 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   // Upload should be disabled as there is no metrics consent, so total
   // histogram bucket count will be 1.
   histogram_tester()->ExpectBucketCount(
-      "OptimizationGuide.ModelQualityLogsUploadService.UploadStatus.Compose",
+      "OptimizationGuide.ModelQualityLogsUploaderService.UploadStatus.Compose",
       optimization_guide::ModelQualityLogsUploadStatus::kNoMetricsConsent, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
+                       CheckUploadWithoutMetricsConsent) {
+  auto* profile = browser()->profile();
+  OptimizationGuideKeyedService* ogks =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
+
+  // Disable metrics consent.
+  SetMetricsConsent(false);
+  ASSERT_FALSE(
+      g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven());
+
+  EXPECT_FALSE(
+      ogks->GetChromeModelQualityLogsUploaderServiceForTesting()->CanUploadLogs(
+          optimization_guide::proto::MODEL_EXECUTION_FEATURE_COMPOSE));
+
+  // Upload should be disabled as there is no metrics consent, so total
+  // histogram bucket count will be 1.
+  histogram_tester()->ExpectBucketCount(
+      "OptimizationGuide.ModelQualityLogsUploaderService.UploadStatus.Compose",
+      optimization_guide::ModelQualityLogsUploadStatus::kNoMetricsConsent, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
+                       CheckUploadOnDestructionWithoutMetricsConsent) {
+  // Disable metrics consent.
+  SetMetricsConsent(false);
+  ASSERT_FALSE(
+      g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven());
+
+  // Create a new ModelQualityLogEntry for compose.
+  std::unique_ptr<optimization_guide::ModelQualityLogEntry> log_entry =
+      GetModelQualityLogEntryForCompose();
+
+  // Destruct the log entry, this should trigger uploading the logs.
+  log_entry.reset();
+  base::RunLoop().RunUntilIdle();
+
+  // Upload should be stopped on destruction as there is no metrics consent.
+  histogram_tester()->ExpectUniqueSample(
+      "OptimizationGuide.ModelQualityLogEntry.UploadedOnDestruction", false, 1);
 }
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
@@ -1570,6 +1629,10 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceEnterpriseBrowserTest,
 
   EXPECT_TRUE(ogks->ShouldFeatureBeCurrentlyAllowedForLogging(compose_feature));
 
+  EXPECT_TRUE(
+      ogks->GetChromeModelQualityLogsUploaderServiceForTesting()->CanUploadLogs(
+          optimization_guide::proto::MODEL_EXECUTION_FEATURE_COMPOSE));
+
   // Create a new ModelQualityLogEntry and pass it to the
   // UploadModelQualityLogs.
   std::unique_ptr<optimization_guide::ModelQualityLogEntry> log_entry_3 =
@@ -1580,10 +1643,148 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceEnterpriseBrowserTest,
   // Upload should be disabled twice when logging is disabled via enterprise
   // policy, total count should be 2.
   histogram_tester()->ExpectBucketCount(
-      "OptimizationGuide.ModelQualityLogsUploadService.UploadStatus.Compose",
+      "OptimizationGuide.ModelQualityLogsUploaderService.UploadStatus.Compose",
       optimization_guide::ModelQualityLogsUploadStatus::
           kDisabledDueToEnterprisePolicy,
       2);
+}
+
+IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceEnterpriseBrowserTest,
+                       CheckCanUploadLogsWithEnterprisePolicy) {
+  // Enable metrics consent and sign in.
+  SetMetricsConsent(true);
+  EnableSignIn();
+
+  auto* profile = browser()->profile();
+  OptimizationGuideKeyedService* ogks =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
+  auto compose_feature = optimization_guide::proto::ModelExecutionFeature::
+      MODEL_EXECUTION_FEATURE_COMPOSE;
+  auto* prefs = profile->GetPrefs();
+  prefs->SetInteger(
+      optimization_guide::prefs::GetSettingEnabledPrefName(compose_feature),
+      static_cast<int>(optimization_guide::prefs::FeatureOptInState::kEnabled));
+  base::RunLoop().RunUntilIdle();
+
+  policy::PolicyMap policies;
+
+  // Disable logging via via the enterprise policy to state
+  // kAllowWithoutLogging this should return
+  // ChromeModelQualityLogsUploaderService::CanUploadLogs to false.
+  policies.Set(
+      policy::key::kHelpMeWriteSettings, policy::POLICY_LEVEL_MANDATORY,
+      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+      base::Value(static_cast<int>(
+          optimization_guide::model_execution::prefs::
+              ModelExecutionEnterprisePolicyValue::kAllowWithoutLogging)),
+      nullptr);
+  policy_provider_.UpdateChromePolicy(policies);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(
+      ogks->ShouldFeatureBeCurrentlyAllowedForLogging(compose_feature));
+
+  EXPECT_FALSE(
+      ogks->GetChromeModelQualityLogsUploaderServiceForTesting()->CanUploadLogs(
+          optimization_guide::proto::MODEL_EXECUTION_FEATURE_COMPOSE));
+
+  // Disable logging via via the enterprise policy to kDisable state this should
+  // return ChromeModelQualityLogsUploaderService::CanUploadLogs to false.
+  policies.Set(policy::key::kHelpMeWriteSettings,
+               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+               policy::POLICY_SOURCE_CLOUD,
+               base::Value(static_cast<int>(
+                   optimization_guide::model_execution::prefs::
+                       ModelExecutionEnterprisePolicyValue::kDisable)),
+               nullptr);
+  policy_provider_.UpdateChromePolicy(policies);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(
+      ogks->ShouldFeatureBeCurrentlyAllowedForLogging(compose_feature));
+
+  EXPECT_FALSE(
+      ogks->GetChromeModelQualityLogsUploaderServiceForTesting()->CanUploadLogs(
+          optimization_guide::proto::MODEL_EXECUTION_FEATURE_COMPOSE));
+
+  // Enable logging via via the enterprise policy to state kAllow this shouldn't
+  // stop upload and should return
+  // ChromeModelQualityLogsUploaderService::CanUploadLogs to true.
+  policies.Set(policy::key::kHelpMeWriteSettings,
+               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+               policy::POLICY_SOURCE_CLOUD,
+               base::Value(static_cast<int>(
+                   optimization_guide::model_execution::prefs::
+                       ModelExecutionEnterprisePolicyValue::kAllow)),
+               nullptr);
+  policy_provider_.UpdateChromePolicy(policies);
+  prefs->SetInteger(
+      optimization_guide::prefs::GetSettingEnabledPrefName(compose_feature),
+      static_cast<int>(optimization_guide::prefs::FeatureOptInState::kEnabled));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(ogks->ShouldFeatureBeCurrentlyAllowedForLogging(compose_feature));
+
+  EXPECT_TRUE(
+      ogks->GetChromeModelQualityLogsUploaderServiceForTesting()->CanUploadLogs(
+          optimization_guide::proto::MODEL_EXECUTION_FEATURE_COMPOSE));
+
+  // Upload should be disabled twice when logging is disabled via enterprise
+  // policy, total count should be 2.
+  histogram_tester()->ExpectBucketCount(
+      "OptimizationGuide.ModelQualityLogsUploaderService.UploadStatus.Compose",
+      optimization_guide::ModelQualityLogsUploadStatus::
+          kDisabledDueToEnterprisePolicy,
+      2);
+}
+
+IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceEnterpriseBrowserTest,
+                       CheckModelQualityLogsUploadOnDestruction) {
+  // Enable metrics consent and sign in.
+  SetMetricsConsent(true);
+  EnableSignIn();
+
+  auto* profile = browser()->profile();
+  OptimizationGuideKeyedService* ogks =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
+  auto compose_feature = optimization_guide::proto::ModelExecutionFeature::
+      MODEL_EXECUTION_FEATURE_COMPOSE;
+  auto* prefs = profile->GetPrefs();
+  policy::PolicyMap policies;
+
+  // Enable logging via via the enterprise policy to state kAllow this shouldn't
+  // stop upload and should return
+  // ChromeModelQualityLogsUploaderService::CanUploadLogs to true.
+  policies.Set(policy::key::kHelpMeWriteSettings,
+               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+               policy::POLICY_SOURCE_CLOUD,
+               base::Value(static_cast<int>(
+                   optimization_guide::model_execution::prefs::
+                       ModelExecutionEnterprisePolicyValue::kAllow)),
+               nullptr);
+  policy_provider_.UpdateChromePolicy(policies);
+  prefs->SetInteger(
+      optimization_guide::prefs::GetSettingEnabledPrefName(compose_feature),
+      static_cast<int>(optimization_guide::prefs::FeatureOptInState::kEnabled));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(ogks->ShouldFeatureBeCurrentlyAllowedForLogging(compose_feature));
+
+  EXPECT_TRUE(
+      ogks->GetChromeModelQualityLogsUploaderServiceForTesting()->CanUploadLogs(
+          optimization_guide::proto::MODEL_EXECUTION_FEATURE_COMPOSE));
+
+  // Create a new ModelQualityLogEntry for compose.
+  std::unique_ptr<optimization_guide::ModelQualityLogEntry> log_entry =
+      GetModelQualityLogEntryForCompose();
+
+  // Destruct the log entry, this should upload the logs.
+  log_entry.reset();
+  base::RunLoop().RunUntilIdle();
+
+  // Logs should be uploaded on destruction.
+  histogram_tester()->ExpectUniqueSample(
+      "OptimizationGuide.ModelQualityLogEntry.UploadedOnDestruction", true, 1);
 }
 
 #endif  //  !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)

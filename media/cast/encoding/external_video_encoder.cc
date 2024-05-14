@@ -151,9 +151,10 @@ class ExternalVideoEncoder::VEAClientImpl final
     const media::Bitrate bitrate = media::Bitrate::ConstantBitrate(
         base::saturated_cast<uint32_t>(start_bit_rate));
     media::VideoEncodeAccelerator::Config config(
-        media::PIXEL_FORMAT_I420, frame_size, codec_profile, bitrate);
-    config.content_type =
-        media::VideoEncodeAccelerator::Config::ContentType::kDisplay;
+        media::PIXEL_FORMAT_I420, frame_size, codec_profile, bitrate,
+        static_cast<uint32_t>(max_frame_rate_ + 0.5),
+        media::VideoEncodeAccelerator::Config::StorageType::kShmem,
+        media::VideoEncodeAccelerator::Config::ContentType::kDisplay);
     config.drop_frame_thresh_percentage = GetEncoderDropFrameThreshold();
     encoder_active_ = video_encode_accelerator_->Initialize(
         config, this, std::make_unique<media::NullMediaLog>());
@@ -241,6 +242,8 @@ class ExternalVideoEncoder::VEAClientImpl final
     if (video_frame->coded_size() != frame_coded_size_ ||
         video_frame->storage_type() !=
             media::VideoFrame::StorageType::STORAGE_SHMEM) {
+      TRACE_EVENT1("media", "VideoFrame copy", "coded size",
+                   video_frame->coded_size().ToString());
       const int index = free_input_buffer_index_.back();
       auto& mapped_region = input_buffers_[index];
       DCHECK(mapped_region.IsValid());

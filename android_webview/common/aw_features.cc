@@ -5,6 +5,7 @@
 #include "android_webview/common/aw_features.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "services/network/public/cpp/features.h"
 
 namespace android_webview {
 namespace features {
@@ -57,6 +58,16 @@ BASE_FEATURE(kWebViewHitTestInBlinkOnTouchStart,
              "WebViewHitTestInBlinkOnTouchStart",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Feature parameter for `network::features::kMaskedDomainList` that sets the
+// exclusion criteria for defining which domains are excluded from the
+// Masked Domain List for WebView.
+//
+// Exclusion criteria can assume values from `WebviewExclusionPolicy`.
+const base::FeatureParam<int> kWebViewIpProtectionExclusionCriteria{
+    &network::features::kMaskedDomainList,
+    "WebViewIpProtectionExclusionCriteria",
+    /*WebviewExclusionPolicy::kNone*/ 0};
+
 // Enable display cutout support for Android P and above.
 BASE_FEATURE(kWebViewDisplayCutout,
              "WebViewDisplayCutout",
@@ -72,6 +83,12 @@ BASE_FEATURE(kWebViewEmptyComponentLoaderPolicy,
 // This feature requires `kWebViewInjectPlatformJsApis` to be enabled as well.
 BASE_FEATURE(kWebViewMediaIntegrityApi,
              "WebViewMediaIntegrityApi",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable the WebView Media Integrity API as a Blink extension.
+// This feature requires `kWebViewMediaIntegrityApi` to be disabled.
+BASE_FEATURE(kWebViewMediaIntegrityApiBlinkExtension,
+             "WebViewMediaIntegrityApiBlinkExtension",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, passive mixed content (Audio/Video/Image subresources loaded
@@ -215,9 +232,25 @@ BASE_FEATURE(kWebViewUmaUploadQualityOfServiceSetToDefault,
              "WebViewUmaUploadQualityOfServiceSetToDefault",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Whether to use initial network state during initialization to speed up
+// startup.
+BASE_FEATURE(kWebViewUseInitialNetworkStateAtStartup,
+             "WebViewUseInitialNetworkStateAtStartup",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // This enables zoom keyboard shortcuts for zoom-in, zoom-out and zoom reset.
 BASE_FEATURE(kWebViewZoomKeyboardShortcuts,
              "WebViewZoomKeyboardShortcuts",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// This enables reducing webview user-agent android version and device model.
+BASE_FEATURE(kWebViewReduceUAAndroidVersionDeviceModel,
+             "WebViewReduceUAAndroidVersionDeviceModel",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// This enables WebView crashes.
+BASE_FEATURE(kWebViewEnableCrash,
+             "WebViewEnableCrash",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features

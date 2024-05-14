@@ -4,13 +4,13 @@
 
 #include "base/json/json_reader.h"
 
+#include <string_view>
 #include <utility>
 
 #include "base/features.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rust_buildflags.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(BUILD_RUST_JSON_READER)
 #include "base/strings/string_piece_rust.h"
@@ -81,7 +81,7 @@ void DictSetValue(ContextPointer& ctx, rust::Str key, T v) {
   dict.Set(base::RustStrToStringPiece(key), base::Value(As{v}));
 }
 
-JSONReader::Result DecodeJSONInRust(const base::StringPiece& json,
+JSONReader::Result DecodeJSONInRust(std::string_view json,
                                     int options,
                                     size_t max_depth) {
   const serde_json_lenient::JsonOptions rust_options = {
@@ -134,15 +134,15 @@ JSONReader::Result DecodeJSONInRust(const base::StringPiece& json,
 #endif  // BUILDFLAG(BUILD_RUST_JSON_READER)
 
 // static
-absl::optional<Value> JSONReader::Read(StringPiece json,
-                                       int options,
-                                       size_t max_depth) {
+std::optional<Value> JSONReader::Read(std::string_view json,
+                                      int options,
+                                      size_t max_depth) {
 #if BUILDFLAG(BUILD_RUST_JSON_READER)
   SCOPED_UMA_HISTOGRAM_TIMER_MICROS(kSecurityJsonParsingTime);
   if (UsingRust()) {
     JSONReader::Result result = DecodeJSONInRust(json, options, max_depth);
     if (!result.has_value()) {
-      return absl::nullopt;
+      return std::nullopt;
     }
     return std::move(*result);
   } else {
@@ -156,19 +156,20 @@ absl::optional<Value> JSONReader::Read(StringPiece json,
 }
 
 // static
-absl::optional<Value::Dict> JSONReader::ReadDict(StringPiece json,
-                                                 int options,
-                                                 size_t max_depth) {
-  absl::optional<Value> value = Read(json, options, max_depth);
+std::optional<Value::Dict> JSONReader::ReadDict(std::string_view json,
+                                                int options,
+                                                size_t max_depth) {
+  std::optional<Value> value = Read(json, options, max_depth);
   if (!value || !value->is_dict()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   return std::move(*value).TakeDict();
 }
 
 // static
-JSONReader::Result JSONReader::ReadAndReturnValueWithError(StringPiece json,
-                                                           int options) {
+JSONReader::Result JSONReader::ReadAndReturnValueWithError(
+    std::string_view json,
+    int options) {
 #if BUILDFLAG(BUILD_RUST_JSON_READER)
   SCOPED_UMA_HISTOGRAM_TIMER_MICROS(kSecurityJsonParsingTime);
   if (UsingRust()) {

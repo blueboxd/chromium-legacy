@@ -96,6 +96,9 @@ COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_SETTINGS)
 extern const char kDeviceChannelDowngradeBehavior[];
 
 COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_SETTINGS)
+extern const char kDeviceExtendedAutoUpdateEnabled[];
+
+COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_SETTINGS)
 extern const char kDeviceSystemAecEnabled[];
 
 COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_SETTINGS)
@@ -324,9 +327,6 @@ extern const char kPluginVmAllowed[];
 
 COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_SETTINGS)
 extern const char kDeviceRebootOnUserSignout[];
-
-COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_SETTINGS)
-extern const char kDeviceWilcoDtcAllowed[];
 
 COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_SETTINGS)
 extern const char kDeviceDockMacAddressSource[];

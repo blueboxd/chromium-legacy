@@ -363,13 +363,13 @@ chromium_strings.grd. -->
           Chrome - <ph name="PAGE_TITLE">$1<ex>Google</ex></ph>
         </message>
       </if>
-      <if expr="not chromeos_ash and not is_macosx">
+      <if expr="not is_chromeos and not is_macosx">
         <!-- Captive Portal Browser Window Title Format -->
         <message name="IDS_CAPTIVE_PORTAL_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for titles displayed in captive portal popup windows">
           <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - Network Sign-in - Chrome
         </message>
       </if>
-      <if expr="chromeos_ash">
+      <if expr="is_chromeos">
         <!-- Captive Portal Browser Window Title Format -->
         <message name="IDS_CAPTIVE_PORTAL_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for titles displayed in captive portal popup windows">
           Chrome - Network Sign-in - <ph name="PAGE_TITLE">$1<ex>Google</ex></ph>
@@ -644,6 +644,9 @@ Permissions you've already given to websites and apps may apply to this account.
       <message name="IDS_DEFAULT_BROWSER_INFOBAR_TEXT" desc="Text to show in an infobar when Google Chrome is not the current default browser.">
         Google Chrome isn't your default browser
       </message>
+      <message name="IDS_DEFAULT_BROWSER_INFOBAR_REFRESH_TEXT" desc="Text to show in an infobar when Google Chrome is not the current default browser.">
+        Google recommends setting Chrome as default
+      </message>
       <if expr="is_win">
         <!-- Try Chrome Toast Dialog -->
         <message name="IDS_TRY_TOAST_HEADING" desc="Top line of the try-chrome-again dialog">
@@ -664,21 +667,9 @@ Permissions you've already given to websites and apps may apply to this account.
       </if>
 
       <!-- Download Bubble Items -->
-      <message name="IDS_DOWNLOAD_BUBBLE_DANGEROUS_FILE"
-               desc="Message shown to the user to validate the download of a dangerous file.">
-        Chrome blocked this file because this type of file is dangerous
-      </message>
-      <message name="IDS_DOWNLOAD_BUBBLE_MALICIOUS_URL_BLOCKED"
-               desc="Message shown to the user to validate the download when the download url is classified to lead to malware by the safebrowsing database.">
-        Chrome blocked this file because it is dangerous
-      </message>
       <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_UNKNOWN_SOURCE"
                desc="Summary of dangerous warning for a file (like an extension) from an unknown source.">
         Extensions, apps, and themes from unknown sources can harm your device. Chrome recommends only installing them from the Chrome Web Store
-      </message>
-      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_MALWARE"
-               desc="Subpage summary for malware warning for the user.">
-        Chrome blocked this file because it has malware
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_WARNING_BLOCKED_LEARN_MORE_LINK"
                desc="Text for the link to the help page about why Chrome blocks some downloaded files.">
@@ -1064,6 +1055,33 @@ Permissions you've already given to websites and apps may apply to this account.
             ChromeOS could not sync your data due to an error signing in.
           </message>
         </if>
+      </if>
+
+      <!-- Profile Menu -->
+      <message name="IDS_PROFILE_MENU_SIGNIN_PROMO_BUTTON" desc="Text for the button in the sign-in promo in the profile menu when the used is signed out.">
+        Sign in to Chrome
+      </message>
+      <if expr="not use_titlecase">
+        <message name="IDS_PROFILE_MENU_CUSTOMIZE_PROFILE_BUTTON" desc="The text label of the Customize Chrome button in the Profile Menu.">
+          Customize your Chrome
+        </message>
+        <message name="IDS_PROFILE_MENU_PROFILES_LIST_TITLE" desc="Title in the profile menu for the list of 'other Chrome profiles'.">
+          Other Chrome profiles
+        </message>
+        <message name="IDS_PROFILE_MENU_MANAGE_PROFILES" desc="The text label of the Manage Chrome Profiles item in the Profile Menu.">
+          Manage Chrome profiles
+        </message>
+      </if>
+      <if expr="use_titlecase">
+        <message name="IDS_PROFILE_MENU_CUSTOMIZE_PROFILE_BUTTON" desc="The text label of the Customize Chrome button in the Profile Menu.">
+          Customize Your Chrome
+        </message>
+        <message name="IDS_PROFILE_MENU_PROFILES_LIST_TITLE" desc="Title in the profile menu for the list of 'other  profiles'.">
+          Other Chrome Profiles
+        </message>
+        <message name="IDS_PROFILE_MENU_MANAGE_PROFILES" desc="The text label of the Manage Chrome Profiles item in the Profile Menu.">
+          Manage Chrome Profiles
+        </message>
       </if>
 
       <!-- App list -->
@@ -1875,7 +1893,7 @@ Permissions you've already given to websites and apps may apply to this account.
         <!--Network errors.-->
         <message name="IDS_NO_NETWORK_PRESENT_ERROR"
                  desc="Error message displayed in the main dialog when the Updater is unable to connect to the network.">
-          Unable to connect to the Internet. If you use a firewall, please allowlist <ph name="PRODUCT_EXE_NAME">$1<ex>GoogleUpdater.exe</ex></ph>.
+          Unable to connect to the Internet. If you use a firewall, please ensure <ph name="PRODUCT_EXE_NAME">$1<ex>GoogleUpdater.exe</ex></ph> is in the allowlist.
         </message>
         <message name="IDS_ERROR_HTTPSTATUS_UNAUTHORIZED"
                  desc="Error message displayed in the main dialog when an update check or download fails due to unauthorized access, usually due to proxy problems.">
@@ -1977,17 +1995,7 @@ Permissions you've already given to websites and apps may apply to this account.
       </if>
       <!-- Memory Saver Chip strings -->
       <if expr="not is_android">
-        <if expr="use_titlecase">
-          <message name="IDS_MEMORY_SAVER_DIALOG_TITLE" desc="In Title Case: Title text for a dialog describing that the Memory Saver setting is enabled">
-            Memory Saver Made Chrome Faster
-          </message>
-        </if>
-        <if expr="not use_titlecase">
-          <message name="IDS_MEMORY_SAVER_DIALOG_TITLE" desc="Title text for a dialog describing that the Memory Saver setting is enabled">
-            Memory Saver made Chrome faster
-          </message>
-        </if>
-        <message name="IDS_MEMORY_SAVER_DIALOG_BODY_V2" desc="Body text for a dialog describing that Memory Saver mode will use less memory.">
+        <message name="IDS_MEMORY_SAVER_DIALOG_BODY" desc="Body text for a dialog describing that Memory Saver mode will use less memory.">
           While this tab was inactive, memory was freed up to keep Chrome fast. You can choose to always exclude this site from being inactive.
         </message>
       </if>

@@ -45,6 +45,9 @@
 #if BUILDFLAG(IS_ANDROID)
 #include "partition_alloc/partition_alloc_base/files/file_path.h"
 #include "partition_alloc/partition_alloc_base/native_library.h"
+#if BUILDFLAG(HAS_MEMORY_TAGGING)
+#include <malloc.h>
+#endif  // BUILDFLAGS(HAS_MEMORY_TAGGING)
 #endif  // BUILDFLAG(IS_ANDROID)
 
 namespace partition_alloc {
@@ -77,7 +80,7 @@ void ChangeMemoryTaggingModeForCurrentThread(TagViolationReportingMode m) {
 namespace internal {
 
 #if BUILDFLAG(IS_ANDROID)
-void ChangeMemoryTaggingModeForAllThreadsPerProcess(
+bool ChangeMemoryTaggingModeForAllThreadsPerProcess(
     TagViolationReportingMode m) {
 #if BUILDFLAG(HAS_MEMORY_TAGGING)
   // In order to support Android NDK API level below 26, we need to call
@@ -109,7 +112,9 @@ void ChangeMemoryTaggingModeForAllThreadsPerProcess(
     status = mallopt_fnptr(M_BIONIC_SET_HEAP_TAGGING_LEVEL,
                            M_HEAP_TAGGING_LEVEL_NONE);
   }
-  PA_CHECK(status);
+  return status != 0;
+#else
+  return false;
 #endif  // BUILDFLAG(HAS_MEMORY_TAGGING)
 }
 #endif  // BUILDFLAG(IS_ANDROID)

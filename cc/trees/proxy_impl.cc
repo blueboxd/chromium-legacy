@@ -617,11 +617,11 @@ void ProxyImpl::DidPresentCompositorFrameOnImplThread(
       details);
 
   MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&ProxyMain::DidPresentCompositorFrame,
-                                proxy_main_weak_ptr_, frame_token,
-                                std::move(activated.main_callbacks),
-                                std::move(activated.main_successful_callbacks),
-                                details.presentation_feedback));
+      FROM_HERE,
+      base::BindOnce(&ProxyMain::DidPresentCompositorFrame,
+                     proxy_main_weak_ptr_, frame_token,
+                     std::move(activated.main_callbacks),
+                     std::move(activated.main_successful_callbacks), details));
   if (scheduler_)
     scheduler_->DidPresentCompositorFrame(frame_token, details);
 }
@@ -731,6 +731,7 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(
       FROM_HERE,
       base::BindOnce(&ProxyMain::BeginMainFrame, proxy_main_weak_ptr_,
                      std::move(begin_main_frame_state)));
+  host_impl_->DidSendBeginMainFrame(args);
   devtools_instrumentation::DidRequestMainThreadFrame(layer_tree_host_id_);
 }
 

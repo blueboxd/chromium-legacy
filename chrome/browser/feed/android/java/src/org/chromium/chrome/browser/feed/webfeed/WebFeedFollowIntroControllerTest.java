@@ -114,7 +114,7 @@ public final class WebFeedFollowIntroControllerTest {
         mJniMocker.mock(WebFeedBridge.getTestHooksForTesting(), mWebFeedBridgeJniMock);
         mJniMocker.mock(UserPrefsJni.TEST_HOOKS, mUserPrefsJniMock);
 
-        Profile.setLastUsedProfileForTesting(mProfile);
+        Mockito.when(mProfile.getOriginalProfile()).thenReturn(mProfile);
         Mockito.when(mUserPrefsJniMock.get(mProfile)).thenReturn(mPrefService);
 
         // Required for resolving an attribute used in AppMenuItemText.
@@ -157,6 +157,7 @@ public final class WebFeedFollowIntroControllerTest {
         mWebFeedFollowIntroController =
                 new WebFeedFollowIntroController(
                         mActivity,
+                        mProfile,
                         mAppMenuHandler,
                         mTabSupplier,
                         new View(mActivity),

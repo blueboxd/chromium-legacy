@@ -14,6 +14,7 @@
 #include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/window_mini_view_header_view.h"
 #include "ash/wm/window_preview_view.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/wm_constants.h"
 #include "base/containers/contains.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -176,29 +177,31 @@ gfx::Size OverviewItemView::GetPreviewViewSize() const {
 }
 
 void OverviewItemView::RefreshItemVisuals() {
+  // `overview_item_` may get reset in `OnOverviewItemWindowRestoring()` since
+  // the corresponding `item_widget_` may outlive its corresponding
+  // `overview_item_`, we want to avoid `overview_item_` from being accessed
+  // again.
+  if (!overview_item_) {
+    return;
+  }
+
   // Set the rounded corners to accommodate for the customized rounded corners
   // needed for the overview group item.
   if (SnapGroupController* snap_group_controller = SnapGroupController::Get()) {
     const aura::Window* window = overview_item_->GetWindow();
     if (SnapGroup* snap_group =
             snap_group_controller->GetSnapGroupForGivenWindow(window)) {
-      SetRoundedCornersRadius(
-          window == snap_group->window1()
-              ? gfx::RoundedCornersF(
-                    /*upper_left=*/kWindowMiniViewCornerRadius,
-                    /*upper_right=*/0, /*lower_right=*/0,
-                    /*lower_left=*/kWindowMiniViewCornerRadius)
-              : gfx::RoundedCornersF(
-                    /*upper_left=*/0,
-                    /*upper_right=*/kWindowMiniViewCornerRadius,
-                    /*lower_right=*/kWindowMiniViewCornerRadius,
-                    /*lower_left=*/0));
+      SetRoundedCornersRadius(window_util::GetMiniWindowRoundedCorners(
+          window, /*include_header_rounding=*/true));
+
+      // `SetRoundedCornersRadius()` will trigger rounded corners update for
+      // header view, preview view and focus ring automatically. Early return to
+      // avoid duplicate updates.
+      return;
     }
   }
 
-  RefreshHeaderViewRoundedCorners();
-  RefreshPreviewRoundedCorners(/*show=*/true);
-  RefreshFocusRingVisuals();
+  ResetRoundedCorners();
 }
 
 views::View* OverviewItemView::GetView() {

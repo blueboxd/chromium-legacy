@@ -15,6 +15,7 @@
 <translation id="1423007117030725713">ເລີ່ມການຊອກຫາໃນແຖບ Chromium ໃໝ່.</translation>
 <translation id="1431818719585918472">ອະນຸຍາດໃຫ້ Chromium ລັອກແຖບບໍ່ເປີດເຜີຍຕົວຕົນຂອງທ່ານ.</translation>
 <translation id="1472013873724362412">ບັນຊີຂອງທ່ານໃຊ້ບໍ່ໄດ້ຢູ່ໃນ Chromium. ກະລຸນາຕິດຕໍ່ຜູ້ເບິ່ງແຍງໂດເມນຂອງທ່ານ ຫຼືໃຊ້ບັນຊີ Google ປົກກະຕິ ເພື່ອເຂົ້າສູ່ລະບົບ.</translation>
+<translation id="1503199973012840174">Chromium ຂອງທ່ານເປັນເວີຊັນເກົ່າ. ກະລຸນາອັບເດດເພື່ອຄວາມປອດໄພ.</translation>
 <translation id="1507010443238049608">ຊ່ວຍປັບປຸງຄຸນສົມບັດ ແລະ ປະສິດທິພາບຂອງ Chromium</translation>
 <translation id="1513122820609681462">ຕັ້ງຄ່າ Chromium ເປັນໂປຣແກຣມທ່ອງເວັບເລີ່ມຕົ້ນ</translation>
 <translation id="1531155317299575425">ສະແດງຂໍ້ຄວາມເພື່ອເຂົ້າສູ່ລະບົບຫາ Chromium.</translation>
@@ -50,6 +51,7 @@
 <translation id="22313767259766852">ປັດຈຸບັນທີ່ຢູ່ນີ້ຖືກບັນທຶກໄປໃສ່ Chromium ແລ້ວ. ເພື່ອໃຊ້ທີ່ຢູ່ໃນທົ່ວທຸກຜະລິດຕະພັນ Google, ໃຫ້ບັນທຶກໃສ່ໃນບັນຊີ Google ຂອງທ່ານ, <ph name="USER_EMAIL" />.</translation>
 <translation id="2236584955986023187">ນີ້ໝາຍຄວາມວ່າ Chromium ຈະຮ້ອງຂໍເວັບໄຊເດັສທັອບທຸກເທື່ອ.</translation>
 <translation id="2313870531055795960">ກວດສອບ URL ກັບລາຍຊື່ເວັບໄຊທີ່ບໍ່ປອດໄພທີ່ຈັດເກັບໄວ້ໃນ Chromium. ຖ້າມີເວັບໄຊໃດໜຶ່ງພະຍາຍາມລັກເອົາລະຫັດຜ່ານຂອງທ່ານ ຫຼື ເມື່ອທ່ານດາວໂຫຼດໄຟລ໌ອັນຕະລາຍ, Chromium ອາດສົ່ງ URL, ຮວມທັງເນື້ອຫາບາງສ່ວນຂອງໜ້າໄປໃຫ້ Safe Browsing.</translation>
+<translation id="231828342043114302">ເພື່ອຮັບເນື້ອຫາແບບປັບແຕ່ງສ່ວນຕົວໂດຍອີງຕາມຄວາມສົນໃຈຂອງທ່ານ, ໃຫ້ເຂົ້າສູ່ລະບົບ Chromium.</translation>
 <translation id="2374627437126809292">Chromium ໃຊ້ Google ແຜນທີ່ເພື່ອບອກເສັ້ນທາງ ແລະ ຂໍ້ມູນໃນທ້ອງຖິ່ນໃຫ້ທ່ານຢູ່ທີ່ຢູ່ທີ່ກວດພົບ.</translation>
 <translation id="2386292341327187942">ໃນຊ່ອງວິດເຈັດຊອກຫາ, ໃຫ້ລະບຸ Chromium</translation>
 <translation id="2426113998523353159">ອົງການຂອງທ່ານຕ້ອງການໃຫ້ທ່ານເຂົ້າສູ່ລະບົບເພື່ອໃຊ້ Chromium.</translation>
@@ -78,7 +80,6 @@
 <translation id="3219277919172823720">ຊອກຫາດ້ວຍສຽງໃນ Chromium</translation>
 <translation id="3228349498066165585">ຂໍ້ມູນ Chromium ບາງສ່ວນຂອງທ່ານຍັງບໍ່ໄດ້ຖືກບັນທຶກໄປໃສ່ໃນບັນຊີ Google ຂອງທ່ານເທື່ອ.
         ກະລຸນາລໍຖ້າສອງສາມນາທີກ່ອນອອກຈາກລະບົບ. ຫາກທ່ານອອກຈາກລະບົບຕອນນີ້, ຂໍ້ມູນນີ້ຈະຖືກລຶບ.</translation>
-<translation id="3256316712990552818">ອັດ​ສຳ​ເນົາ​ໄປ​ໃສ່ Chromium ແລ້ວ</translation>
 <translation id="328933489847748230">{count,plural, =1{ຕອນນີ້ກຳລັງສະແດງໜ້າຈໍ Chromium 1 ໜ້າຈໍ}other{ຕອນນີ້ກຳລັງສະແດງໜ້າຈໍ Chromium {count} ໜ້າຈໍ}}</translation>
 <translation id="3344973607274501920">Chromium ບໍ່ສາມາດກວດລະຫັດຜ່ານຂອງທ່ານໄດ້. ລອງກວດເບິ່ງການເຊື່ອມຕໍ່ອິນເຕີເນັດຂອງທ່ານ.</translation>
 <translation id="3366305173356742781">ຂໍ້ມູນ Chromium ໃນບັນຊີຂອງທ່ານ</translation>
@@ -116,6 +117,7 @@
 <translation id="4195557071150719219">ເບິ່ງແຖບຫຼ້າສຸດໃນ Chromium</translation>
 <translation id="4200712796753248893">ໃຊ້ຄຳສັ່ງ Chromium ຢູ່ iOS</translation>
 <translation id="420541179527342563">ເພື່ອປິດການນຳໃຊ້ໂໝດການລັອກດາວໃນ Chromium ໃຫ້ປິດມັນຢູ່ iPad ຂອງທ່ານ.</translation>
+<translation id="427331839909790668">ລິ້ງ Chromium ແລະ ບໍລິການອື່ນໆຂອງ Google ຫາກທ່ານຕ້ອງການປັບແຕ່ງປະສົບການຂອງທ່ານໃຫ້ເປັນແບບສ່ວນຕົວໂດຍໃຊ້ຂໍ້ມູນຈາກບໍລິການທີ່ລິ້ງດັ່ງກ່າວ</translation>
 <translation id="4408912345039114853">ເອີ້ນໃຊ້ການກວດສອບຄວາມປອດໄພ Chromium</translation>
 <translation id="4432744876818348753">ເຂົ້າສູ່ລະບົບເພື່ອໃຊ້ປະໂຫຍດສູງສຸດຈາກ Chromium.</translation>
 <translation id="4445228361214254027">ອົງກອນຂອງທ່ານໄດ້ປິດຄວາມສາມາດໃນການໃຊ້ ແລະ ບັນທຶກຂໍ້ມູນ Chromium ໃນບັນຊີ Google ຂອງທ່ານໄວ້ແລ້ວ. ບຸກມາກ, ລະຫັດຜ່ານ ແລະ ຂໍ້ມູນອື່ນໆຈະຖືກບັນທຶກໄປໃສ່ອຸປະກອນນີ້ເທົ່ານັ້ນ.</translation>
@@ -216,6 +218,7 @@
 <translation id="6852799557929001644">ເຂົ້າເຖິງລະຫັດຜ່ານ Chromium ຂອງທ່ານ ແລະ ອື່ນໆໃນທົ່ວແອັບຕ່າງໆຢູ່ອຸປະກອນນີ້.</translation>
 <translation id="6887138405044152640">ເພື່ອສົ່ງແຖບນີ້ໄປຫາອຸປະກອນອື່ນ, ໃຫ້ເຂົ້າສູ່ລະບົບຫາ Chromium ຢູ່ບ່ອນນັ້ນ.</translation>
 <translation id="6911341667534646387">ໃຊ້ຂໍ້ມູນ Chromium ໃນບັນຊີ Google ຂອງທ່ານຕໍ່ໄປ</translation>
+<translation id="7002548535535009764">ເພື່ອຮັບປະສົບການໃນການໃຊ້ທີ່ປັບແຕ່ງສ່ວນຕົວຫຼາຍທີ່ສຸດ, ໃຫ້ຮວມ Chromium ໄວ້ໃນ <ph name="FEATURE_NAME_1" /> ແລະ <ph name="FEATURE_NAME_2" /></translation>
 <translation id="7006920032187763988">ທ່ານສາມາດໃຊ້ລະຫັດຜ່ານທີ່ທ່ານບັນທຶກໄປໃສ່ຕົວຈັດການລະຫັດຜ່ານໃນແອັບອື່ນຢູ່ iPad ຂອງທ່ານໄດ້.</translation>
 <translation id="7018284295775193585">Chromium ບໍ່ສາມາດອັບເດດໄດ້</translation>
 <translation id="7045244423563602563">ຕັ້ງຄ່າ Chromium ແບບກຳນົດເອງ</translation>
@@ -312,7 +315,6 @@
 <translation id="9059693977935746710">ທ່ານບໍ່ຈຳເປັນຕ້ອງຈື່ລະຫັດຜ່ານນີ້. ມັນຈະຖືກບັນທຶກໄປໃສ່ຕົວຈັດການລະຫັດຜ່ານສຳລັບ <ph name="EMAIL" /></translation>
 <translation id="9089354809943900324">Chromium ຫຼ້າສະໄໝແລ້ວ</translation>
 <translation id="9110075932708282655">ໃຊ້ Chromium ເປັນຄ່າເລີ່ມຕົ້ນ</translation>
-<translation id="9137114218472648150">Chromium ເກົ່າແລ້ວ, ກະລຸນາອັບເດດເປັນເວີຊັນຫຼ້າສຸດເພື່ອຄວາມປອດໄພ.</translation>
 <translation id="921174536258924340">Chromium ບໍ່ສາມາດກວດລະຫັດຜ່ານທັງໝົດໄດ້. ລອງໃໝ່ໃນມື້ອື່ນ ຫຼື <ph name="BEGIN_LINK" />ກວດລະຫັດຜ່ານໃນບັນຊີ Google ຂອງທ່ານ.<ph name="END_LINK" /></translation>
 <translation id="971488683725792095">ນຳໃຊ້ Chromium ໂດຍອັດຕະໂນມັດເມື່ອທ່ານແຕະລິ້ງໃນຂໍ້ຄວາມ, ເອກະສານ ແລະ ແອັບອື່ນໆ.</translation>
 <translation id="981812233959540767">ຫຼິ້ນເກມ Chromium Dino</translation>

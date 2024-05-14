@@ -263,8 +263,7 @@ struct VideoCaptureImpl::BufferContext
   // The following is for |buffer_type == GPU_MEMORY_BUFFER_HANDLE|.
 
   // Uses to create SharedImage from |gpu_memory_buffer_|.
-  raw_ptr<media::GpuVideoAcceleratorFactories, ExperimentalRenderer>
-      gpu_factories_ = nullptr;
+  raw_ptr<media::GpuVideoAcceleratorFactories> gpu_factories_ = nullptr;
   // The task runner that |gpu_factories_| runs on.
   const scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
 
@@ -275,9 +274,7 @@ struct VideoCaptureImpl::BufferContext
 struct VideoCaptureImpl::VideoFrameInitData {
   media::mojom::blink::ReadyBufferPtr ready_buffer;
   scoped_refptr<BufferContext> buffer_context;
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
   bool is_webgpu_compatible = false;
-#endif
   absl::variant<scoped_refptr<media::VideoFrame>,
                 std::unique_ptr<gfx::GpuMemoryBuffer>>
       frame_or_buffer;
@@ -472,11 +469,12 @@ VideoCaptureImpl::CreateVideoFrameInitData(
 #if BUILDFLAG(IS_CHROMEOS)
       video_frame_init_data.is_webgpu_compatible =
           buffer_handle.native_pixmap_handle.supports_zero_copy_webgpu_import;
-#endif
-
-#if BUILDFLAG(IS_MAC)
+#elif BUILDFLAG(IS_MAC)
       video_frame_init_data.is_webgpu_compatible =
           media::IOSurfaceIsWebGPUCompatible(buffer_handle.io_surface.get());
+#elif BUILDFLAG(IS_WIN)
+      video_frame_init_data.is_webgpu_compatible =
+          buffer_handle.type == gfx::GpuMemoryBufferType::DXGI_SHARED_HANDLE;
 #endif
       // No need to propagate shared memory region further as it's already
       // exposed by |buffer_context->data()|.
@@ -572,10 +570,9 @@ bool VideoCaptureImpl::BindVideoFrameOnMediaTaskRunner(
 
   std::vector<gfx::BufferPlane> planes;
 
-  // The SharedImages here are used to back VideoFrames. They may be read by
-  // the raster interface for format conversion, which will entail GLES2_READ
-  // if OOP-R is not enabled.
-  // NOTE: GLES2_READ can be removed once OOP-R ships definitively.
+  // The SharedImages here are used to back VideoFrames. They may be read by the
+  // raster interface for format conversion (e.g., for 2-copy import into WebGL)
+  // as well as by the GLES2 interface for one-copy import into WebGL.
   uint32_t usage =
       gpu::SHARED_IMAGE_USAGE_GLES2_READ | gpu::SHARED_IMAGE_USAGE_RASTER_READ |
       gpu::SHARED_IMAGE_USAGE_DISPLAY_READ | gpu::SHARED_IMAGE_USAGE_SCANOUT;
@@ -583,8 +580,8 @@ bool VideoCaptureImpl::BindVideoFrameOnMediaTaskRunner(
   usage |= gpu::SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX;
 #endif
 #if BUILDFLAG(IS_CHROMEOS)
-  usage |= gpu::SHARED_IMAGE_USAGE_WEBGPU_READ |
-           gpu::SHARED_IMAGE_USAGE_WEBGPU_WRITE;
+  // These SharedImages may be used for zero-copy of VideoFrames into WebGPU.
+  usage |= gpu::SHARED_IMAGE_USAGE_WEBGPU_READ;
 #endif
 
   // The feature flags here are a little subtle:
@@ -650,10 +647,10 @@ bool VideoCaptureImpl::BindVideoFrameOnMediaTaskRunner(
       scoped_refptr<gpu::ClientSharedImage> client_shared_image;
       if (create_multiplanar_image) {
         client_shared_image = sii->CreateSharedImage(
-            multiplanar_si_format, gpu_memory_buffer->GetSize(),
-            video_frame_init_data.ready_buffer->info->color_space,
-            kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
-            "VideoCaptureFrameBuffer", gpu_memory_buffer->CloneHandle());
+            {multiplanar_si_format, gpu_memory_buffer->GetSize(),
+             video_frame_init_data.ready_buffer->info->color_space, usage,
+             "VideoCaptureFrameBuffer"},
+            gpu_memory_buffer->CloneHandle());
 
       } else {
         client_shared_image = sii->CreateSharedImage(
@@ -661,9 +658,9 @@ bool VideoCaptureImpl::BindVideoFrameOnMediaTaskRunner(
             video_frame_init_data.buffer_context->gpu_factories()
                 ->GpuMemoryBufferManager(),
             planes[plane],
-            video_frame_init_data.ready_buffer->info->color_space,
-            kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
-            "VideoCaptureFrameBuffer");
+            {video_frame_init_data.ready_buffer->info->color_space,
+             kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
+             "VideoCaptureFrameBuffer"});
       }
       CHECK(client_shared_image);
       video_frame_init_data.buffer_context->gmb_resources()
@@ -680,17 +677,25 @@ bool VideoCaptureImpl::BindVideoFrameOnMediaTaskRunner(
 
   const unsigned texture_target =
 #if BUILDFLAG(IS_LINUX)
-      // Explicitly set GL_TEXTURE_EXTERNAL_OES as the
+      // Explicitly set GL_TEXTURE_EXTERNAL_OES if necessary:
       // `media::VideoFrame::RequiresExternalSampler()` requires it for NV12
-      // format, while the `ImageTextureTarget()` will return GL_TEXTURE_2D.
-      (video_frame_init_data.ready_buffer->info->pixel_format ==
-       media::PIXEL_FORMAT_NV12)
+      // format, while `ClientSharedImage::GetTextureTarget(BufferUsage,
+      // BufferFormat)` will return GL_TEXTURE_2D if it is not backed by
+      // ClientSharedImage::GetTextureTarget() (which by design handles this
+      // case correctly).
+      // TODO(crbug.com/41494843): Eliminate this client-side check post-rollout
+      // of ClientSharedImage::GetTextureTarget().
+      (!base::FeatureList::IsEnabled(
+           gpu::kUseUniversalGetTextureTargetFunction) &&
+       (video_frame_init_data.ready_buffer->info->pixel_format ==
+        media::PIXEL_FORMAT_NV12))
           ? GL_TEXTURE_EXTERNAL_OES
           :
 #endif
-          video_frame_init_data.buffer_context->gpu_factories()
-              ->ImageTextureTarget(gpu_memory_buffer->GetFormat());
-
+          video_frame_init_data.buffer_context->gmb_resources()
+              ->shared_images[0]
+              ->GetTextureTarget(gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
+                                 gpu_memory_buffer->GetFormat());
   const gpu::SyncToken sync_token = sii->GenVerifiedSyncToken();
 
   gpu::MailboxHolder mailbox_holder_array[media::VideoFrame::kMaxPlanes];
@@ -729,10 +734,8 @@ bool VideoCaptureImpl::BindVideoFrameOnMediaTaskRunner(
 
   frame->metadata().allow_overlay = true;
   frame->metadata().read_lock_fences_enabled = true;
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
   frame->metadata().is_webgpu_compatible =
       video_frame_init_data.is_webgpu_compatible;
-#endif
   video_frame_init_data.frame_or_buffer = frame;
   return true;
 }

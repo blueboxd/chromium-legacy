@@ -24,11 +24,11 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/affiliations/core/browser/affiliation_utils.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/unique_ids.h"
-#include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/field_info_manager.h"
@@ -305,6 +305,20 @@ bool PasswordFormManager::DoesManage(
   return observed_form()->renderer_id == form_renderer_id;
 }
 
+bool PasswordFormManager::DoesManage(
+    autofill::FieldRendererId field_renderer_id,
+    const PasswordManagerDriver* driver) const {
+  if (driver != driver_.get()) {
+    return false;
+  }
+  CHECK(observed_form());
+  return base::ranges::any_of(
+      observed_form()->fields,
+      [field_renderer_id](const autofill::FormFieldData& field) {
+        return field.renderer_id == field_renderer_id;
+      });
+}
+
 bool PasswordFormManager::IsEqualToSubmittedForm(
     const autofill::FormData& form) const {
   if (!is_submitted_)
@@ -341,8 +355,7 @@ const GURL& PasswordFormManager::GetURL() const {
   return observed_form() ? observed_form()->url : observed_digest()->url;
 }
 
-const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
-PasswordFormManager::GetBestMatches() const {
+base::span<const PasswordForm> PasswordFormManager::GetBestMatches() const {
   return form_fetcher_->GetBestMatches();
 }
 
@@ -402,9 +415,9 @@ bool PasswordFormManager::IsMovableToAccountStore() const {
   const std::u16string& password = GetPendingCredentials().password_value;
   // If no match in the profile store with the same username and password exist,
   // then there is nothing to move.
-  auto is_movable = [&](const PasswordForm* match) {
-    return !match->IsUsingAccountStore() && match->username_value == username &&
-           match->password_value == password;
+  auto is_movable = [&username, &password](const PasswordForm& match) {
+    return !match.IsUsingAccountStore() && match.username_value == username &&
+           match.password_value == password;
   };
   return base::ranges::any_of(form_fetcher_->GetBestMatches(), is_movable) &&
          !form_fetcher_->IsMovingBlocked(GaiaIdHash::FromGaiaId(gaia_id),
@@ -431,6 +444,26 @@ void PasswordFormManager::Update(const PasswordForm& credentials_to_update) {
   password_save_manager_->Update(credentials_to_update, observed_form(),
                                  *parsed_submitted_form_);
   client_->UpdateFormManagers();
+}
+
+bool PasswordFormManager::IsUpdateAffectingPasswordsStoredInTheGoogleAccount()
+    const {
+  signin::IdentityManager* identity_manager = client_->GetIdentityManager();
+  DCHECK(identity_manager);
+  const std::string gaia_id =
+      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin)
+          .gaia;
+
+  const std::u16string& username = GetPendingCredentials().username_value;
+  //  If no match in the account store with the same username exists, then there
+  //  is nothing to update in this store.
+  auto same_username_in_account_store = [&](const PasswordForm& match) {
+    return match.IsUsingAccountStore() && match.username_value == username;
+  };
+  return base::ranges::any_of(form_fetcher_->GetBestMatches(),
+                              same_username_in_account_store) &&
+         !form_fetcher_->IsMovingBlocked(GaiaIdHash::FromGaiaId(gaia_id),
+                                         username);
 }
 
 void PasswordFormManager::OnUpdateUsernameFromPrompt(
@@ -1065,8 +1098,8 @@ void PasswordFormManager::FillNow() {
   SendFillInformationToRenderer(
       client_, driver_.get(), *observed_password_form.get(),
       form_fetcher_->GetBestMatches(), form_fetcher_->GetFederatedMatches(),
-      form_fetcher_->GetPreferredMatch(), form_fetcher_->IsBlocklisted(),
-      metrics_recorder_.get(), WebAuthnCredentialsAvailable());
+      form_fetcher_->GetPreferredMatch(), metrics_recorder_.get(),
+      WebAuthnCredentialsAvailable());
 }
 
 void PasswordFormManager::OnGeneratedPasswordAccepted(
@@ -1637,8 +1670,8 @@ bool HasObservedFormChanged(const FormData& form_data,
 base::flat_set<std::u16string> PasswordFormManager::GetStoredUsernames() const {
   base::flat_set<std::u16string> stored_usernames =
       base::MakeFlatSet<std::u16string>(
-          GetBestMatches(), {}, [](const PasswordForm* password_form) {
-            return base::i18n::ToLower(password_form->username_value);
+          GetBestMatches(), {}, [](const PasswordForm& password_form) {
+            return base::i18n::ToLower(password_form.username_value);
           });
   if (stored_usernames.contains(u"")) {
     stored_usernames.erase(u"");

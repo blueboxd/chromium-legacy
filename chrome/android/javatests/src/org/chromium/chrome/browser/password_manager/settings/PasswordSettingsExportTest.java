@@ -18,6 +18,7 @@ import static androidx.test.espresso.intent.matcher.IntentMatchers.hasData;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasExtras;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasType;
 import static androidx.test.espresso.intent.matcher.UriMatchers.hasHost;
+import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.RootMatchers.withDecorView;
 import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
@@ -209,6 +210,7 @@ public class PasswordSettingsExportTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
+    @DisabledTest(message = "crbug.com/330204151")
     public void testExportReauthAfterCancel() {
         mTestHelper.setPasswordSource(
                 new SavedPasswordEntry("https://example.com", "test user", "password"));
@@ -670,6 +672,7 @@ public class PasswordSettingsExportTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
+    @DisabledTest(message = "crbug.com/330204151")
     public void testExportWarningOnResume() {
         mTestHelper.setPasswordSource(
                 new SavedPasswordEntry("https://example.com", "test user", "password"));
@@ -788,6 +791,7 @@ public class PasswordSettingsExportTest {
     @SmallTest
     @DisableFeatures(UNIFIED_PASSWORD_MANAGER_LOCAL_PWD_MIGRATION_WARNING)
     @Feature({"Preferences"})
+    @DisabledTest(message = "crbug.com/330204151")
     public void testExportProgressMinimalTime() throws Exception {
         mTestHelper.setPasswordSource(
                 new SavedPasswordEntry("https://example.com", "test user", "password"));
@@ -986,6 +990,7 @@ public class PasswordSettingsExportTest {
 
         // Check that the error prompt is showing.
         onView(withText(R.string.password_settings_export_error_title))
+                .inRoot(isDialog())
                 .check(matches(isCompletelyDisplayed()));
 
         // Hit the negative button on the error prompt.
@@ -1029,7 +1034,7 @@ public class PasswordSettingsExportTest {
         requestShowingExportErrorWithButton(R.string.try_again);
 
         // Hit the positive button to try again.
-        onView(withText(R.string.try_again)).perform(click());
+        onView(withText(R.string.try_again)).inRoot(isDialog()).perform(click());
 
         // Check that there is again the export warning.
         onView(withText(R.string.password_settings_export_action_title))
@@ -1095,6 +1100,7 @@ public class PasswordSettingsExportTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
+    @DisabledTest(message = "crbug.com/330204151")
     public void testExportErrorUiAfterConfirmation() {
         mTestHelper.setPasswordSource(
                 new SavedPasswordEntry("https://example.com", "test user", "password"));

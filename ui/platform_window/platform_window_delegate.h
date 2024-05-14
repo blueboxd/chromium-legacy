@@ -272,6 +272,9 @@ class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowDelegate {
   // coordinate.
   virtual gfx::PointF ConvertScreenPointToLocalDIP(
       const gfx::Point& screen_in_pixels) const;
+
+  // Disables native window occlusion.
+  virtual void DisableNativeWindowOcclusion();
 };
 
 }  // namespace ui

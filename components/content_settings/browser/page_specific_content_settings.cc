@@ -789,6 +789,21 @@ void PageSpecificContentSettings::TopicAccessed(
 }
 
 // static
+void PageSpecificContentSettings::NotificationsAccessed(
+    content::RenderFrameHost* rfh,
+    bool blocked) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  PageSpecificContentSettings* settings = GetForFrame(rfh);
+  if (settings) {
+    if (blocked) {
+      settings->OnContentBlocked(ContentSettingsType::NOTIFICATIONS);
+    } else {
+      settings->OnContentAllowed(ContentSettingsType::NOTIFICATIONS);
+    }
+  }
+}
+
+// static
 content::WebContentsObserver*
 PageSpecificContentSettings::GetWebContentsObserverForTest(
     content::WebContents* web_contents) {
@@ -797,9 +812,6 @@ PageSpecificContentSettings::GetWebContentsObserverForTest(
 
 bool PageSpecificContentSettings::IsContentBlocked(
     ContentSettingsType content_type) const {
-  DCHECK_NE(ContentSettingsType::NOTIFICATIONS, content_type)
-      << "Notifications settings handled by "
-      << "ContentSettingsNotificationsImageModel";
   DCHECK_NE(ContentSettingsType::AUTOMATIC_DOWNLOADS, content_type)
       << "Automatic downloads handled by DownloadRequestLimiter";
   CHECK_NE(ContentSettingsType::STORAGE_ACCESS, content_type)
@@ -817,7 +829,8 @@ bool PageSpecificContentSettings::IsContentBlocked(
       content_type == ContentSettingsType::SOUND ||
       content_type == ContentSettingsType::CLIPBOARD_READ_WRITE ||
       content_type == ContentSettingsType::SENSORS ||
-      content_type == ContentSettingsType::GEOLOCATION) {
+      content_type == ContentSettingsType::GEOLOCATION ||
+      content_type == ContentSettingsType::NOTIFICATIONS) {
     const auto& it = content_settings_status_.find(content_type);
     if (it != content_settings_status_.end()) {
       return it->second.blocked;
@@ -842,7 +855,8 @@ bool PageSpecificContentSettings::IsContentAllowed(
       content_type != ContentSettingsType::MIDI_SYSEX &&
       content_type != ContentSettingsType::CLIPBOARD_READ_WRITE &&
       content_type != ContentSettingsType::SENSORS &&
-      content_type != ContentSettingsType::GEOLOCATION) {
+      content_type != ContentSettingsType::GEOLOCATION &&
+      content_type != ContentSettingsType::NOTIFICATIONS) {
     return false;
   }
 
@@ -859,10 +873,24 @@ PageSpecificContentSettings::GetTwoSiteRequests(
   return content_settings_two_site_requests_[content_type];
 }
 
+void PageSpecificContentSettings::
+    SetNotificationsWasDeniedBecauseOfSystemPermission() {
+  if (notifications_was_denied_because_of_system_permission_) {
+    return;
+  }
+  notifications_was_denied_because_of_system_permission_ = true;
+  MaybeUpdateLocationBar();
+}
+
 void PageSpecificContentSettings::OnContentBlocked(ContentSettingsType type) {
   DCHECK(type != ContentSettingsType::MEDIASTREAM_MIC &&
          type != ContentSettingsType::MEDIASTREAM_CAMERA)
       << "Media stream settings handled by OnMediaStreamPermissionSet";
+
+  if (freeze_indicators_) {
+    return;
+  }
+
   if (!content_settings::ContentSettingsRegistry::GetInstance()->Get(type)) {
     return;
   }
@@ -1171,6 +1199,15 @@ void PageSpecificContentSettings::OnMediaStreamPermissionSet(
     const GURL& request_origin,
     MicrophoneCameraState new_microphone_camera_state) {
   DCHECK(!IsEmbeddedPage());
+
+  // Camera and/or Mic permission request could auto-ignore in case of a page
+  // refresh. In this case `OnMediaStreamPermissionSet` should not store media
+  // stream state and it should not update activity indicators.
+  if (freeze_indicators_ && (new_microphone_camera_state.HasAny(
+                                {kMicrophoneBlocked, kCameraBlocked}))) {
+    return;
+  }
+
   media_stream_access_origin_ = request_origin;
 
   if (new_microphone_camera_state.Has(kMicrophoneAccessed)) {
@@ -1198,7 +1235,6 @@ void PageSpecificContentSettings::OnMediaStreamPermissionSet(
   }
 
   if (microphone_camera_state_ != new_microphone_camera_state) {
-    microphone_camera_state_ = new_microphone_camera_state;
     if (!is_updating_synced_pscs_) {
       base::AutoReset<bool> auto_reset(&is_updating_synced_pscs_, true);
       if (auto* synced_pccs = MaybeGetSyncedSettingsForPictureInPicture()) {
@@ -1206,6 +1242,21 @@ void PageSpecificContentSettings::OnMediaStreamPermissionSet(
                                                 new_microphone_camera_state);
       }
     }
+
+    if (base::FeatureList::IsEnabled(
+            content_settings::features::kLeftHandSideActivityIndicators)) {
+      // Microphone and Camera share an activity indicator view. If a blocked
+      // indicator is displayed, there is no need to re-show it and it will be
+      // reset automatically. An in-use indicator will be shown/hidden in
+      // `OnCapturingStateChanged`.
+      if (microphone_camera_state_.HasAny(
+              {kCameraAccessed, kMicrophoneAccessed})) {
+        return;
+      }
+    }
+
+    microphone_camera_state_ = new_microphone_camera_state;
+
     MaybeUpdateLocationBar();
   }
 
@@ -1299,6 +1350,9 @@ void PageSpecificContentSettings::OnContentSettingChanged(
 
       [[fallthrough]];
     }
+    case ContentSettingsType::NOTIFICATIONS:
+      MaybeUpdateLocationBar();
+      [[fallthrough]];
     case ContentSettingsType::IMAGES:
     case ContentSettingsType::JAVASCRIPT:
     case ContentSettingsType::COOKIES:
@@ -1507,6 +1561,16 @@ void PageSpecificContentSettings::OnCapturingStateChangedInternal(
   if (is_capturing) {
     microphone_camera_state_.Put(state);
     in_use_.insert(type);
+
+    // Camera and Microphone share the same activity indicator view. If one of
+    // them is in use, reset a blocked state for another as we cannot display
+    // in-use and blocked indicator at once.
+    auto t = type == ContentSettingsType::MEDIASTREAM_CAMERA
+                 ? ContentSettingsType::MEDIASTREAM_MIC
+                 : ContentSettingsType::MEDIASTREAM_CAMERA;
+    if (media_blocked_indicator_timer_.contains(t)) {
+      ResetMediaBlockedState(t, /*update_indicators=*/false);
+    }
   } else {
     microphone_camera_state_.Remove(state);
     in_use_.erase(type);
@@ -1591,12 +1655,14 @@ void PageSpecificContentSettings::StartBlockedIndicatorTimer(
   }
   media_blocked_indicator_timer_[type].Start(
       FROM_HERE, blocked_indicator_delay,
-      base::BindOnce(&PageSpecificContentSettings::HideMediaBlockedIndicator,
-                     weak_factory_.GetWeakPtr(), type));
+      base::BindOnce(&PageSpecificContentSettings::ResetMediaBlockedState,
+                     weak_factory_.GetWeakPtr(), type,
+                     /*update_indicators=*/true));
 }
 
-void PageSpecificContentSettings::HideMediaBlockedIndicator(
-    ContentSettingsType type) {
+void PageSpecificContentSettings::ResetMediaBlockedState(
+    ContentSettingsType type,
+    bool update_indicators) {
   media_blocked_indicator_timer_.erase(type);
 
   if (type == ContentSettingsType::MEDIASTREAM_MIC) {
@@ -1608,7 +1674,9 @@ void PageSpecificContentSettings::HideMediaBlockedIndicator(
     microphone_camera_state_.Remove(kCameraAccessed);
   }
 
-  MaybeUpdateLocationBar();
+  if (update_indicators) {
+    MaybeUpdateLocationBar();
+  }
 }
 
 void PageSpecificContentSettings::MaybeNotifySiteDataObservers(

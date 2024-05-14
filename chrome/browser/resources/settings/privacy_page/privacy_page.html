@@ -206,7 +206,7 @@
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/adPrivacy/interests/manage"
-          no-search="[[shouldShowManageTopics_(
+          no-search="[[!shouldShowManageTopics_(
             isProactiveTopicsBlockingEnabled_, isPrivacySandboxRestricted_)]]">
         <settings-subpage id="privacy-sandbox-manage-topics"
             page-title="$i18n{manageTopicsHeading}"
@@ -478,7 +478,7 @@
           <div class="content-settings-header secondary">
             $i18n{siteSettingsLocationDescription}
           </div>
-          <div class="radio-group">
+          <div id="locationRadioGroup" class="radio-group">
             <template is="dom-if" if="[[!showDedicatedCpssSetting_]]">
               <settings-category-default-radio-group
                   category="[[contentSettingsTypesEnum_.GEOLOCATION]]"
@@ -713,12 +713,6 @@
             search-label="$i18n{siteSettingsAllSitesSearch}"
             search-term="{{searchFilter_}}">
           <div id="notificationRadioGroup" class="radio-group">
-            <template is="dom-if"
-                if="[[!safetyCheckNotificationPermissionsEnabled_]]">
-              <div class="secondary">
-                $i18n{siteSettingsNotificationsDescription}
-              </div>
-            </template>
             <template is="dom-if" if="[[showNotificationPermissionsReview_]]">
               <template is="dom-if" if="[[enableSafetyHub_]]">
                 <h2>$i18n{safetyHub}</h2>
@@ -740,7 +734,7 @@
             <h2>$i18n{siteSettingsDefaultBehavior}</h2>
             <div id="notificationSubHeading"
               class="secondary radio-sub-heading">
-              [[notificationsDefaultBehaviorLabel_]]
+              $i18n{siteSettingsNotificationsDefaultBehaviorDescription}
             </div>
 
             <template is="dom-if" if="[[!showDedicatedCpssSetting_]]">
@@ -1288,40 +1282,38 @@
           </category-setting-exceptions>
         </settings-subpage>
       </template>
-      <template is="dom-if" if="[[enablePermissionStorageAccessApi_]]">
-        <template is="dom-if" route-path="/content/storageAccess" no-search>
-          <settings-subpage page-title="$i18n{siteSettingsStorageAccess}"
-              search-label="$i18n{siteSettingsAllSitesSearch}"
-              search-term="{{searchFilter_}}">
-            <div class="content-settings-header secondary">
-              $i18n{storageAccessDescription}
+      <template is="dom-if" route-path="/content/storageAccess" no-search>
+        <settings-subpage page-title="$i18n{siteSettingsStorageAccess}"
+            search-label="$i18n{siteSettingsAllSitesSearch}"
+            search-term="{{searchFilter_}}">
+          <div class="content-settings-header secondary">
+            $i18n{storageAccessDescription}
+          </div>
+          <settings-category-default-radio-group
+              category="[[contentSettingsTypesEnum_.STORAGE_ACCESS]]"
+              allow-option-label="$i18n{storageAccessAllowed}"
+              allow-option-icon="settings:storage-access"
+              block-option-label="$i18n{storageAccessBlocked}"
+              block-option-icon="settings:storage-access-off">
+          </settings-category-default-radio-group>
+          <!-- Exceptions section. -->
+          <div class="content-settings-header">
+            <h2>$i18n{siteSettingsCustomizedBehaviors}</h2>
+            <div class="cr-secondary-text">
+              $i18n{siteSettingsCustomizedBehaviorsDescription}
             </div>
-            <settings-category-default-radio-group
-                category="[[contentSettingsTypesEnum_.STORAGE_ACCESS]]"
-                allow-option-label="$i18n{storageAccessAllowed}"
-                allow-option-icon="settings:storage-access"
-                block-option-label="$i18n{storageAccessBlocked}"
-                block-option-icon="settings:storage-access-off">
-            </settings-category-default-radio-group>
-            <!-- Exceptions section. -->
-            <div class="content-settings-header">
-              <h2>$i18n{siteSettingsCustomizedBehaviors}</h2>
-              <div class="cr-secondary-text">
-                $i18n{siteSettingsCustomizedBehaviorsDescription}
-              </div>
-            </div>
-            <storage-access-site-list
-                category-subtype="[[contentSettingEnum_.BLOCK]]"
-                category-header="$i18n{storageAccessBlockedExceptions}"
-                search-filter="[[searchFilter_]]">
-            </storage-access-site-list>
-            <storage-access-site-list
-                category-subtype="[[contentSettingEnum_.ALLOW]]"
-                category-header="$i18n{storageAccessAllowedExceptions}"
-                search-filter="[[searchFilter_]]">
-            </storage-access-site-list>
-          </settings-subpage>
-        </template>
+          </div>
+          <storage-access-site-list
+              category-subtype="[[contentSettingEnum_.BLOCK]]"
+              category-header="$i18n{storageAccessBlockedExceptions}"
+              search-filter="[[searchFilter_]]">
+          </storage-access-site-list>
+          <storage-access-site-list
+              category-subtype="[[contentSettingEnum_.ALLOW]]"
+              category-header="$i18n{storageAccessAllowedExceptions}"
+              search-filter="[[searchFilter_]]">
+          </storage-access-site-list>
+        </settings-subpage>
       </template>
       <template is="dom-if" if="[[autoPictureInPictureEnabled_]]">
         <template is="dom-if" route-path="/content/autoPictureInPicture" no-search>
@@ -1349,5 +1341,29 @@
             </category-setting-exceptions>
           </settings-subpage>
        </template>
+      </template>
+      <template is="dom-if" if="[[enableAutomaticFullscreenContentSetting_]]">
+        <template is="dom-if" route-path="/content/automaticFullscreen"
+            no-search>
+          <settings-subpage
+              page-title="$i18n{siteSettingsCategoryAutomaticFullscreen}"
+              search-label="$i18n{siteSettingsAllSitesSearch}"
+              search-term="{{searchFilter_}}">
+            <div class="content-settings-header secondary">
+              $i18n{siteSettingsAutomaticFullscreenDescription}
+            </div>
+            <div id="automaticFullscreenBlock" class="cr-row first secondary">
+              $i18n{siteSettingsAutomaticFullscreenBlock}
+            </div>
+            <category-setting-exceptions read-only-list
+                category="[[contentSettingsTypesEnum_.AUTOMATIC_FULLSCREEN]]"
+                allow-header=
+                    "$i18n{siteSettingsAutomaticFullscreenAllowedExceptions}"
+                block-header=
+                    "$i18n{siteSettingsAutomaticFullscreenBlockedExceptions}"
+                search-filter="[[searchFilter_]]">
+            </category-setting-exceptions>
+          </settings-subpage>
+        </template>
       </template>
     </settings-animated-pages>

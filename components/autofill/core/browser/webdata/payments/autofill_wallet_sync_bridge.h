@@ -12,6 +12,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
+#include "components/autofill/core/browser/data_model/credit_card_benefit.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
@@ -98,6 +99,11 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   bool SetWalletCards(std::vector<CreditCard> wallet_cards,
                       bool notify_webdata_backend);
 
+  // Sets `card_benefits` to this client and returns whether any change has
+  // been applied (i.e., whether `card_benefits` was different from the local
+  // data).
+  bool SetCardBenefits(std::vector<CreditCardBenefit> card_benefits);
+
   // Sets `wallet_ibans` to this client and returns whether any change has been
   // applied (i.e., whether `wallet_ibans` was different from local data). If
   // `notify_webdata_backend` is true, it also notifies via WebDataBackend about
@@ -110,6 +116,10 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   // data).
   bool SetCreditCardCloudTokenData(
       const std::vector<CreditCardCloudTokenData>& cloud_token_data);
+
+  // Checks whether `bank_accounts` returned by the server are different from
+  // local data and if so, writes the server data to the local database.
+  bool SetBankAccountsData(const std::vector<BankAccount>& bank_accounts);
 
   // Returns the table associated with the |web_data_backend_|.
   PaymentsAutofillTable* GetAutofillTable();

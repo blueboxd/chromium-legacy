@@ -114,10 +114,13 @@ class ContentSettingBubbleDialogTest
                       GetPopupNavigationDelegateFactoryForTesting(),
                   &CreateTestPopupNavigationDelegate) {
     scoped_feature_list_.InitWithFeatures(
-        {features::kQuietNotificationPrompts,
-         permissions::features::kPermissionStorageAccessAPI},
+        {features::kQuietNotificationPrompts},
         // Cookies icon intentionally does not show when 3PC are blocked.
-        {content_settings::features::kTrackingProtection3pcd});
+        {content_settings::features::kTrackingProtection3pcd,
+         // `kLeftHandSideActivityIndicators` should be disabled as it changes
+         // the UI of the camera/mic activity indicator. The new UI will be
+         // tested separately.
+         content_settings::features::kLeftHandSideActivityIndicators});
   }
 
   ContentSettingBubbleDialogTest(const ContentSettingBubbleDialogTest&) =
@@ -321,7 +324,7 @@ void ContentSettingBubbleDialogTest::ShowUi(const std::string& name) {
       reason = QuietUiReason::kServicePredictedVeryUnlikelyGrant;
     }
     TriggerQuietNotificationPermissionRequest(reason);
-    ShowDialogBubble(ImageType::NOTIFICATIONS_QUIET_PROMPT);
+    ShowDialogBubble(ImageType::NOTIFICATIONS);
     return;
   }
 

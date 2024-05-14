@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/types/optional_ref.h"
 #include "components/variations/client_filterable_state.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/processed_study.h"
@@ -49,17 +50,17 @@ void RegisterExperimentParams(const Study& study,
 // trigger experiment ID.
 std::optional<IDCollectionKey> GetKeyForWebExperiment(
     const Study::Experiment& experiment) {
+  if (!VariationsSeedProcessor::HasGoogleWebExperimentId(experiment)) {
+    return std::nullopt;
+  }
   bool has_web_experiment_id = experiment.has_google_web_experiment_id();
   bool has_web_trigger_experiment_id =
       experiment.has_google_web_trigger_experiment_id();
 
-  if (!has_web_experiment_id && !has_web_trigger_experiment_id)
-    return std::nullopt;
-
   // An experiment cannot have both |google_web_experiment_id| and
   // |google_trigger_web_experiment_id|. This is enforced by the variations
   // server before generating a variations seed.
-  DCHECK(!(has_web_experiment_id && has_web_trigger_experiment_id));
+  CHECK(!(has_web_experiment_id && has_web_trigger_experiment_id));
 
   Study::GoogleWebVisibility visibility = experiment.google_web_visibility();
   if (visibility == Study::FIRST_PARTY) {
@@ -87,6 +88,7 @@ void RegisterVariationIds(const Study::Experiment& experiment,
   if (!key.has_value())
     return;
 
+  CHECK(VariationsSeedProcessor::HasGoogleWebExperimentId(experiment));
   // An experiment cannot have both |google_web_experiment_id| and
   // |google_trigger_web_experiment_id|. See GetKeyForWebExperiment() for more
   // details.
@@ -240,6 +242,13 @@ void CreateTrialWithFeatureConflictGroup(const Study& study) {
 
 }  // namespace
 
+// static
+bool VariationsSeedProcessor::HasGoogleWebExperimentId(
+    const Study::Experiment& experiment) {
+  return experiment.has_google_web_experiment_id() ||
+         experiment.has_google_web_trigger_experiment_id();
+}
+
 VariationsSeedProcessor::VariationsSeedProcessor() = default;
 
 VariationsSeedProcessor::~VariationsSeedProcessor() = default;
@@ -249,10 +258,10 @@ void VariationsSeedProcessor::CreateTrialsFromSeed(
     const ClientFilterableState& client_state,
     const UIStringOverrideCallback& override_callback,
     const EntropyProviders& entropy_providers,
+    const VariationsLayers& layers,
     base::FeatureList* feature_list) {
   base::UmaHistogramCounts1000("Variations.AppliedSeed.StudyCount",
                                seed.study().size());
-  VariationsLayers layers(seed, entropy_providers);
   std::vector<ProcessedStudy> filtered_studies =
       FilterAndValidateStudies(seed, client_state, layers);
   SetSeedVersion(seed.version());
@@ -352,13 +361,18 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
   if (processed_study.total_probability() <= 0)
     return;
 
-  const auto& entropy_provider =
-      processed_study.SelectEntropyProviderForStudy(entropy_providers, layers);
+  base::optional_ref<const base::FieldTrial::EntropyProvider> entropy_provider =
+      layers.SelectEntropyProviderForStudy(processed_study, entropy_providers);
+  if (!entropy_provider.has_value()) {
+    // Do not randomize because no suitable entropy provider can be applied to
+    // the study.
+    return;
+  }
 
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
           study.name(), processed_study.total_probability(),
-          processed_study.GetDefaultExperimentName(), entropy_provider,
+          processed_study.GetDefaultExperimentName(), entropy_provider.value(),
           study.randomization_seed(), StudyIsLowAnonymity(study)));
 
   bool has_overrides = false;

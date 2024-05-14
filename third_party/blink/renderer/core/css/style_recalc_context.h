@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class AnchorEvaluator;
 class ComputedStyle;
 class Element;
 class HTMLSlotElement;
@@ -62,6 +63,13 @@ class CORE_EXPORT StyleRecalcContext {
   // ::slotted() and ::part() rule matching. Otherwise nullptr.
   Element* style_container = nullptr;
 
+  // Used to evaluate anchor() and anchor-size() queries.
+  //
+  // For normal (non-interleaved) style recalcs, this will be nullptr.
+  // For interleaved style updates from out-of-flow layout, this is
+  // an instance of AnchorEvaluatorImpl.
+  AnchorEvaluator* anchor_evaluator = nullptr;
+
   StyleScopeFrame* style_scope_frame = nullptr;
 
   // The style for the element at the start of the lifecycle update, or the
@@ -98,10 +106,11 @@ class CORE_EXPORT StyleRecalcContext {
   bool is_outside_flat_tree = false;
 
   // True when we're computing style interleaved from OOF-layout. This can
-  // happen when e.g. position-fallback is used.
+  // happen when e.g. position-try-options is used.
   //
-  // Note however that declarations from @try styles may still be included
-  // when this flag is false (see OutOfFlowData, "speculative @try styling").
+  // Note however that declarations from @position-try styles may still be
+  // included when this flag is false (see OutOfFlowData, "speculative
+  // @position-try styling").
   bool is_interleaved_oof = false;
 };
 

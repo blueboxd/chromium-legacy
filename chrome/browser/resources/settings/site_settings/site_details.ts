@@ -135,6 +135,12 @@ export class SiteDetailsElement extends SiteDetailsElementBase {
         value: () => loadTimeData.getBoolean('autoPictureInPictureEnabled'),
       },
 
+      enableAutomaticFullscreenContentSetting_: {
+        type: Boolean,
+        value: () =>
+            loadTimeData.getBoolean('enableAutomaticFullscreenContentSetting'),
+      },
+
       contentSettingsTypesEnum_: {
         type: Object,
         value: ContentSettingsTypes,
@@ -157,6 +163,7 @@ export class SiteDetailsElement extends SiteDetailsElementBase {
   private enableExperimentalWebPlatformFeatures_: boolean;
   private enableWebBluetoothNewPermissionsBackend_: boolean;
   private autoPictureInPictureEnabled_: boolean;
+  private enableAutomaticFullscreenContentSetting_: boolean;
   private websiteUsageProxy_: WebsiteUsageBrowserProxy =
       WebsiteUsageBrowserProxyImpl.getInstance();
 
@@ -186,10 +193,8 @@ export class SiteDetailsElement extends SiteDetailsElementBase {
     if (route !== routes.SITE_SETTINGS_SITE_DETAILS) {
       return;
     }
-    const site = Router.getInstance().getQueryParameters().get('site');
-    if (!site) {
-      return;
-    }
+
+    const site = Router.getInstance().getQueryParameters().get('site') ?? '';
     this.origin_ = site;
     this.browserProxy.isOriginValid(this.origin_).then((valid) => {
       if (!valid) {

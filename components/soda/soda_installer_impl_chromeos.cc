@@ -6,8 +6,9 @@
 
 #include <string>
 
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/containers/contains.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
@@ -41,35 +42,74 @@ SodaInstallerImplChromeOS::SodaInstallerImplChromeOS() {
   available_languages_ = ConstructAvailableLanguages();
 }
 
+void SodaInstallerImplChromeOS::InitLanguages(PrefService* profile_prefs,
+                                              PrefService* global_prefs) {
+  if (global_prefs->GetList(prefs::kSodaRegisteredLanguagePacks).empty()) {
+    // TODO(crbug.com/1200667): Register the default language used by
+    // Dictation on ChromeOS.
+    std::string projector_language_code =
+        profile_prefs->GetString(ash::prefs::kProjectorCreationFlowLanguage);
+    RegisterLanguage(projector_language_code, global_prefs);
+
+    RegisterLanguage(prefs::GetLiveCaptionLanguageCode(profile_prefs),
+                     global_prefs);
+  }
+
+  for (const auto& language :
+       global_prefs->GetList(prefs::kSodaRegisteredLanguagePacks)) {
+    SodaInstaller::GetInstance()->InstallLanguage(language.GetString(),
+                                                  global_prefs);
+  }
+}
+
 base::flat_map<std::string, SodaInstallerImplChromeOS::LanguageInfo>
 SodaInstallerImplChromeOS::ConstructAvailableLanguages() const {
   base::flat_map<std::string, LanguageInfo> available_languages;
   // Defaults checked in.
-  available_languages.insert(
-      {kUsEnglishLocale, {kSodaEnglishUsDlcName, LanguageCode::kEnUs}});
   if (!base::FeatureList::IsEnabled(kCrosExpandSodaLanguages)) {
+    available_languages.insert(
+        {kUsEnglishLocale, {kSodaEnglishUsDlcName, LanguageCode::kEnUs}});
     return available_languages;
   }
-
-  available_languages.insert({"ja-JP", {"", LanguageCode::kJaJp}});
-  available_languages.insert({"de-DE", {"", LanguageCode::kDeDe}});
+  available_languages.insert(
+      {kUsEnglishLocale, {"libsoda-model-en-us-df23d1", LanguageCode::kEnUs}});
+  available_languages.insert(
+      {"ja-JP", {"libsoda-model-ja-jp-df23d1", LanguageCode::kJaJp}});
+  available_languages.insert(
+      {"de-DE", {"libsoda-model-de-de-df23d1", LanguageCode::kDeDe}});
   available_languages.insert({"es-ES", {"", LanguageCode::kEsEs}});
-  available_languages.insert({"fr-FR", {"", LanguageCode::kFrFr}});
-  available_languages.insert({"it-IT", {"", LanguageCode::kItIt}});
-  available_languages.insert({"en-CA", {"", LanguageCode::kEnCa}});
-  available_languages.insert({"en-AU", {"", LanguageCode::kEnAu}});
-  available_languages.insert({"en-GB", {"", LanguageCode::kEnGb}});
-  available_languages.insert({"en-IE", {"", LanguageCode::kEnIe}});
-  available_languages.insert({"en-SG", {"", LanguageCode::kEnSg}});
-  available_languages.insert({"fr-BE", {"", LanguageCode::kFrBe}});
-  available_languages.insert({"fr-FR", {"", LanguageCode::kFrFr}});
-  available_languages.insert({"fr-CH", {"", LanguageCode::kFrCh}});
-  available_languages.insert({"en-IN", {"", LanguageCode::kEnIn}});
-  available_languages.insert({"it-CH", {"", LanguageCode::kItCh}});
-  available_languages.insert({"de-AT", {"", LanguageCode::kDeAt}});
-  available_languages.insert({"de-BE", {"", LanguageCode::kDeBe}});
-  available_languages.insert({"de-CH", {"", LanguageCode::kDeCh}});
-  available_languages.insert({"es-US", {"", LanguageCode::kEsUs}});
+  available_languages.insert(
+      {"fr-FR", {"libsoda-model-fr-fr-df23d1", LanguageCode::kFrFr}});
+  available_languages.insert(
+      {"it-IT", {"libsoda-model-it-it-df23d1", LanguageCode::kItIt}});
+  available_languages.insert(
+      {"en-CA", {"libsoda-model-en-ca-df23d1", LanguageCode::kEnCa}});
+  available_languages.insert(
+      {"en-AU", {"libsoda-model-en-au-df23d1", LanguageCode::kEnAu}});
+  available_languages.insert(
+      {"en-GB", {"libsoda-model-en-gb-df23d1", LanguageCode::kEnGb}});
+  available_languages.insert(
+      {"en-IE", {"libsoda-model-en-ie-df23d1", LanguageCode::kEnIe}});
+  available_languages.insert(
+      {"en-SG", {"libsoda-model-en-sg-df23d1", LanguageCode::kEnSg}});
+  available_languages.insert(
+      {"fr-BE", {"libsoda-model-fr-be-df23d1", LanguageCode::kFrBe}});
+  available_languages.insert(
+      {"fr-FR", {"libsoda-model-fr-fr-df23d1", LanguageCode::kFrFr}});
+  available_languages.insert(
+      {"fr-CH", {"libsoda-model-fr-ch-df23d1", LanguageCode::kFrCh}});
+  available_languages.insert(
+      {"en-IN", {"libsoda-model-en-in-df23d1", LanguageCode::kEnIn}});
+  available_languages.insert(
+      {"it-CH", {"libsoda-model-it-ch-df23d1", LanguageCode::kItCh}});
+  available_languages.insert(
+      {"de-AT", {"libsoda-model-de-at-df23d1", LanguageCode::kDeAt}});
+  available_languages.insert(
+      {"de-BE", {"libsoda-model-de-be-df23d1", LanguageCode::kDeBe}});
+  available_languages.insert(
+      {"de-CH", {"libsoda-model-de-ch-df23d1", LanguageCode::kDeCh}});
+  available_languages.insert(
+      {"es-US", {"libsoda-model-en-us-df23d1", LanguageCode::kEsUs}});
   available_languages.insert({"da-DK", {"", LanguageCode::kDaDk}});
   available_languages.insert({"fr-CA", {"", LanguageCode::kFrCa}});
   available_languages.insert({"hi-IN", {"", LanguageCode::kHiIn}});
@@ -86,7 +126,8 @@ SodaInstallerImplChromeOS::ConstructAvailableLanguages() const {
   available_languages.insert({"zh-CN", {"", LanguageCode::kZhCn}});
 
   // Add in from feature flags. the value is of the format:
-  // "en-AU:libsoda-modelname,de-CH:libsoda-pizzaface"
+  // "en-AU:libsoda-modelname,fr-CA:,de-CH:libsoda-pizzaface,"
+  // Note that fr-CA is removed explicitly in example.
   std::vector<std::string> langs =
       base::SplitString(base::GetFieldTrialParamValueByFeature(
                             kCrosExpandSodaLanguages, "available_languages"),
@@ -101,7 +142,8 @@ SodaInstallerImplChromeOS::ConstructAvailableLanguages() const {
                   << unparsed_pair;
       continue;
     }
-    if (lang_model_pair[1].rfind("libsoda", 0) == std::string::npos) {
+    if (lang_model_pair[1].rfind("libsoda", 0) == std::string::npos &&
+        !lang_model_pair[1].empty()) {
       LOG(ERROR) << "Incorrect prefix for " << lang_model_pair[0]
                  << " given, is: " << lang_model_pair[1] << " and ignoring.";
       continue;

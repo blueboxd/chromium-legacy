@@ -8,6 +8,7 @@ import android.content.Context;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 
+import androidx.test.annotation.UiThreadTest;
 import androidx.test.filters.MediumTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -18,9 +19,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.R;
@@ -50,7 +51,7 @@ public class OmniboxUrlEmphasizerTest {
     public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    mProfile = Profile.getLastUsedRegularProfile();
+                    mProfile = ProfileManager.getLastUsedRegularProfile();
                     mChromeAutocompleteSchemeClassifier =
                             new ChromeAutocompleteSchemeClassifier(mProfile);
                     mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();

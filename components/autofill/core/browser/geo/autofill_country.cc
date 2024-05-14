@@ -168,6 +168,11 @@ AutofillCountry::address_format_extensions() const {
         .placed_after = FieldType::ADDRESS_HOME_DEPENDENT_LOCALITY,
         .separator_before_label = "\n",
         .large_sized = true}}};
+  static constexpr std::array<AddressFormatExtension, 1> de_extensions{
+      {{.type = FieldType::ADDRESS_HOME_STATE,
+        .label_id = IDS_LIBADDRESSINPUT_STATE,
+        .placed_after = FieldType::ADDRESS_HOME_CITY,
+        .separator_before_label = " "}}};
 
   std::vector<std::pair<std::string, base::span<const AddressFormatExtension>>>
       overrides = {{"FR", fr_extensions}, {"GB", gb_extensions}};
@@ -175,6 +180,9 @@ AutofillCountry::address_format_extensions() const {
   if (base::FeatureList::IsEnabled(
           features::kAutofillEnableSupportForAdminLevel2)) {
     overrides.emplace_back("MX", mx_extensions);
+  }
+  if (base::FeatureList::IsEnabled(features::kAutofillUseDEAddressModel)) {
+    overrides.emplace_back("DE", de_extensions);
   }
 
   auto extensions =
@@ -201,7 +209,7 @@ bool AutofillCountry::IsAddressFieldSettingAccessible(
 }
 
 bool AutofillCountry::IsAddressFieldRequired(FieldType field_type) const {
-  auto* mapping_it = kRequiredFieldMapping.find(field_type);
+  auto mapping_it = kRequiredFieldMapping.find(field_type);
   return mapping_it != kRequiredFieldMapping.end() &&
          (required_fields_for_address_import_ & mapping_it->second);
 }

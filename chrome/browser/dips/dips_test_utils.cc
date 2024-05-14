@@ -10,6 +10,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -54,10 +55,14 @@ void AccessCookieViaJSIn(content::WebContents* web_contents,
 bool NavigateToSetCookie(content::WebContents* web_contents,
                          const net::EmbeddedTestServer* server,
                          base::StringPiece host,
-                         bool is_secure_cookie_set) {
+                         bool is_secure_cookie_set,
+                         bool is_ad_tagged) {
   std::string relative_url = "/set-cookie?name=value";
   if (is_secure_cookie_set) {
     relative_url += ";Secure;SameSite=None";
+  }
+  if (is_ad_tagged) {
+    relative_url += "&isad=1";
   }
   const auto url = server->GetURL(host, relative_url);
 
@@ -290,4 +295,13 @@ void OpenedWindowObserver::DidOpenRequestedURL(
     window_ = new_contents;
     run_loop_.Quit();
   }
+}
+
+void SimulateMouseClickAndWait(WebContents* web_contents) {
+  content::WaitForHitTestData(web_contents->GetPrimaryMainFrame());
+  UserActivationObserver observer(web_contents,
+                                  web_contents->GetPrimaryMainFrame());
+  content::SimulateMouseClick(web_contents, 0,
+                              blink::WebMouseEvent::Button::kLeft);
+  observer.Wait();
 }

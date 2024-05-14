@@ -11,10 +11,9 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/scoped_feature_list.h"
 #import "base/time/default_clock.h"
-#import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/browser/bookmark_utils.h"
+#import "components/bookmarks/browser/core_bookmark_model.h"
 #import "components/bookmarks/common/bookmark_pref_names.h"
-#import "components/bookmarks/test/bookmark_test_helpers.h"
 #import "components/feature_engagement/test/mock_tracker.h"
 #import "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #import "components/language/ios/browser/language_detection_java_script_feature.h"
@@ -27,6 +26,10 @@
 #import "components/translate/core/browser/translate_pref_names.h"
 #import "components/translate/core/browser/translate_prefs.h"
 #import "components/translate/core/language_detection/language_detection_model.h"
+#import "ios/chrome/browser/bookmarks/model/account_bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
+#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model_test_helpers.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/overlays/model/public/overlay_presenter.h"
 #import "ios/chrome/browser/overlays/model/public/overlay_request.h"
@@ -69,8 +72,6 @@
 #import "third_party/ocmock/gtest_support.h"
 #import "ui/base/device_form_factor.h"
 
-using bookmarks::BookmarkModel;
-
 @interface FakePopupMenuConsumer : NSObject <PopupMenuConsumer>
 @property(nonatomic, strong)
     NSArray<NSArray<TableViewItem<PopupMenuItem>*>*>* popupMenuItems;
@@ -105,6 +106,11 @@ class PopupMenuMediatorTest : public PlatformTest {
     PlatformTest::SetUp();
 
     TestChromeBrowserState::Builder builder;
+    builder.AddTestingFactory(
+        ios::AccountBookmarkModelFactory::GetInstance(),
+        ios::AccountBookmarkModelFactory::GetDefaultFactory());
+    builder.AddTestingFactory(ios::BookmarkModelFactory::GetInstance(),
+                              ios::BookmarkModelFactory::GetDefaultFactory());
     builder.AddTestingFactory(
         ios::LocalOrSyncableBookmarkModelFactory::GetInstance(),
         ios::LocalOrSyncableBookmarkModelFactory::GetDefaultFactory());
@@ -158,7 +164,10 @@ class PopupMenuMediatorTest : public PlatformTest {
         /*security_origin=*/url);
     main_frame->set_browser_state(browser_state_.get());
     frames_manager->AddWebFrame(std::move(main_frame));
-    web_state_->SetWebFramesManager(std::move(frames_manager));
+    web::ContentWorld content_world =
+        language::LanguageDetectionJavaScriptFeature::GetInstance()
+            ->GetSupportedContentWorld();
+    web_state_->SetWebFramesManager(content_world, std::move(frames_manager));
 
     browser_->GetWebStateList()->InsertWebState(
         std::move(test_web_state), WebStateList::InsertionParams::AtIndex(0));
@@ -218,7 +227,7 @@ class PopupMenuMediatorTest : public PlatformTest {
         ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
             browser_state_.get());
     DCHECK(bookmark_model_);
-    bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_);
+    WaitForLegacyBookmarkModelToLoad(bookmark_model_);
     mediator_.bookmarkModel = bookmark_model_;
   }
 
@@ -232,7 +241,10 @@ class PopupMenuMediatorTest : public PlatformTest {
         /*security_origin=*/url);
     main_frame->set_browser_state(browser_state_.get());
     frames_manager->AddWebFrame(std::move(main_frame));
-    web_state->SetWebFramesManager(std::move(frames_manager));
+    web::ContentWorld content_world =
+        language::LanguageDetectionJavaScriptFeature::GetInstance()
+            ->GetSupportedContentWorld();
+    web_state_->SetWebFramesManager(content_world, std::move(frames_manager));
 
     browser_->GetWebStateList()->InsertWebState(
         std::move(web_state), WebStateList::InsertionParams::AtIndex(index));
@@ -302,7 +314,7 @@ class PopupMenuMediatorTest : public PlatformTest {
 
   FakeOverlayPresentationContext presentation_context_;
   PopupMenuMediator* mediator_;
-  raw_ptr<BookmarkModel> bookmark_model_;
+  raw_ptr<LegacyBookmarkModel> bookmark_model_;
   raw_ptr<ReadingListModel> reading_list_model_;
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
   raw_ptr<web::FakeWebState> web_state_;
@@ -527,8 +539,9 @@ TEST_F(PopupMenuMediatorTest, TestBookmarksToolsMenuButtons) {
                  /*trigger_incognito_hint=*/NO);
   CreatePrefs();
   SetUpBookmarks();
-  bookmarks::AddIfNotBookmarked(bookmark_model_, url,
-                                base::SysNSStringToUTF16(@"Test bookmark"));
+
+  bookmark_model_->AddNewURL(bookmark_model_->mobile_node(), 0,
+                             base::SysNSStringToUTF16(@"Test bookmark"), url);
   mediator_.webStateList = browser_->GetWebStateList();
   FakePopupMenuConsumer* consumer = [[FakePopupMenuConsumer alloc] init];
   mediator_.popupMenu = consumer;
@@ -540,7 +553,15 @@ TEST_F(PopupMenuMediatorTest, TestBookmarksToolsMenuButtons) {
   EXPECT_FALSE(HasItem(consumer, kToolsMenuAddToBookmarks, /*enabled=*/YES));
   EXPECT_TRUE(HasItem(consumer, kToolsMenuEditBookmark, /*enabled=*/YES));
 
-  bookmark_model_->RemoveAllUserBookmarks();
+  // `RemoveAllUserBookmarks()` requires that the underlying model is loaded.
+  // There is currently no clean way to achieve this using CoreBookmarkModel,
+  // so a workaround is to ensure that the account bookmarks have also loaded,
+  // as the test fixture takes care of waiting for the local-or-syncable ones.
+  WaitForLegacyBookmarkModelToLoad(
+      ios::AccountBookmarkModelFactory::GetForBrowserState(
+          browser_state_.get()));
+  ios::BookmarkModelFactory::GetForBrowserState(browser_state_.get())
+      ->RemoveAllUserBookmarks();
   EXPECT_TRUE(HasItem(consumer, kToolsMenuAddToBookmarks, /*enabled=*/YES));
   EXPECT_FALSE(HasItem(consumer, kToolsMenuEditBookmark, /*enabled=*/YES));
 }

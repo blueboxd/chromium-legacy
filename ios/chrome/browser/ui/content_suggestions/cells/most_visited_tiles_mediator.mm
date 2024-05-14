@@ -9,6 +9,7 @@
 #import "base/apple/foundation_util.h"
 #import "base/ios/ios_util.h"
 #import "base/metrics/user_metrics.h"
+#import "base/strings/sys_string_conversions.h"
 #import "base/values.h"
 #import "components/ntp_tiles/features.h"
 #import "components/ntp_tiles/metrics.h"
@@ -31,7 +32,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_consumer.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_delegate.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_menu_provider.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack/most_visited_tiles_config.h"
@@ -49,10 +49,7 @@ namespace {
 // Maximum number of most visited tiles fetched.
 const NSInteger kMaxNumMostVisitedTiles = 4;
 
-// Size of the favicon returned by the provider for the most visited items.
-const CGFloat kMostVisitedFaviconSize = 48;
 // Size below which the provider returns a colored tile instead of an image.
-const CGFloat kMostVisitedFaviconMinimalSize = 32;
 const CGFloat kMagicStackMostVisitedFaviconMinimalSize = 18;
 
 }  // namespace
@@ -89,11 +86,8 @@ const CGFloat kMagicStackMostVisitedFaviconMinimalSize = 18;
     _URLLoadingBrowserAgent = URLLoadingBrowserAgent;
     _incognitoAvailable = !IsIncognitoModeDisabled(prefService);
     _mostVisitedAttributesProvider = [[FaviconAttributesProvider alloc]
-        initWithFaviconSize:IsMagicStackEnabled() ? kMagicStackFaviconWidth
-                                                  : kMostVisitedFaviconSize
-             minFaviconSize:IsMagicStackEnabled()
-                                ? kMagicStackMostVisitedFaviconMinimalSize
-                                : kMostVisitedFaviconMinimalSize
+        initWithFaviconSize:kMagicStackFaviconWidth
+             minFaviconSize:kMagicStackMostVisitedFaviconMinimalSize
            largeIconService:largeIconService];
     // Set a cache only for the Most Visited provider, as the cache is
     // overwritten for every new results and the size of the favicon fetched for
@@ -140,7 +134,7 @@ const CGFloat kMagicStackMostVisitedFaviconMinimalSize = 18;
   _freshMostVisitedItems = [NSMutableArray array];
   int index = 0;
   for (const ntp_tiles::NTPTile& tile : mostVisited) {
-    ContentSuggestionsMostVisitedItem* item = ConvertNTPTile(tile);
+    ContentSuggestionsMostVisitedItem* item = [self convertNTPTile:tile];
     item.commandHandler = self;
     item.incognitoAvailable = _incognitoAvailable;
     item.index = index;
@@ -326,10 +320,8 @@ const CGFloat kMagicStackMostVisitedFaviconMinimalSize = 18;
 
 // Replaces the Most Visited items currently displayed by the most recent ones.
 - (void)useFreshMostVisited {
-  if (IsMagicStackEnabled()) {
     const base::Value::List& oldMostVisitedSites =
-        GetApplicationContext()->GetLocalState()->GetList(
-            prefs::kIosLatestMostVisitedSites);
+        _prefService->GetList(prefs::kIosLatestMostVisitedSites);
     base::Value::List freshMostVisitedSites;
     for (ContentSuggestionsMostVisitedItem* item in _freshMostVisitedItems) {
       freshMostVisitedSites.Append(item.URL.spec());
@@ -342,9 +334,8 @@ const CGFloat kMagicStackMostVisitedFaviconMinimalSize = 18;
       [self lookForNewMostVisitedSite:freshMostVisitedSites
                   oldMostVisitedSites:oldMostVisitedSites];
     }
-    GetApplicationContext()->GetLocalState()->SetList(
-        prefs::kIosLatestMostVisitedSites, std::move(freshMostVisitedSites));
-  }
+    _prefService->SetList(prefs::kIosLatestMostVisitedSites,
+                          std::move(freshMostVisitedSites));
 
   _mostVisitedConfig = [[MostVisitedTilesConfig alloc] init];
   _mostVisitedConfig.imageDataSource = self;
@@ -446,6 +437,21 @@ const CGFloat kMagicStackMostVisitedFaviconMinimalSize = 18;
       return;
     }
   }
+}
+
+// Converts a ntp_tiles::NTPTile `tile` to a ContentSuggestionsMostVisitedItem
+// with a `sectionInfo`.
+- (ContentSuggestionsMostVisitedItem*)convertNTPTile:
+    (const ntp_tiles::NTPTile&)tile {
+  ContentSuggestionsMostVisitedItem* suggestion =
+      [[ContentSuggestionsMostVisitedItem alloc] init];
+
+  suggestion.title = base::SysUTF16ToNSString(tile.title);
+  suggestion.URL = tile.url;
+  suggestion.source = tile.source;
+  suggestion.titleSource = tile.title_source;
+
+  return suggestion;
 }
 
 @end

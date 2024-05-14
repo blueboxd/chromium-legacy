@@ -121,7 +121,7 @@ BrowsingHistoryService::HistoryEntry::HistoryEntry(
     const GURL& remote_icon_url_for_uma,
     int visit_count,
     int typed_count,
-    absl::optional<std::string> app_id)
+    std::optional<std::string> app_id)
     : entry_type(entry_type),
       url(url),
       title(title),
@@ -261,7 +261,10 @@ void BrowsingHistoryService::QueryHistoryInternal(
   }
 
   WebHistoryService* web_history = driver_->GetWebHistoryService();
-  if (web_history) {
+  // Run WebHistory query for full history. App-specific history uses the
+  // results from the local database only, since the legacy json API service
+  // WebHistory relies on can't be updated to process app_id.
+  if (web_history && state->original_options.app_id == kNoAppIdFilter) {
     if (state->remote_results.size() < desired_count &&
         state->remote_status != REACHED_BEGINNING) {
       // Start a timer with timeout before we make the actual query, otherwise
@@ -734,7 +737,7 @@ void BrowsingHistoryService::WebHistoryQueryComplete(
               HistoryEntry::REMOTE_ENTRY, gurl, title, time, client_id,
               !state->search_text.empty(), std::u16string(),
               /* blocked_visit */ false, GURL(favicon_url), 0, 0,
-              /*app_id= */ absl::nullopt));
+              /*app_id= */ std::nullopt));
         }
       }
     }

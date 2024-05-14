@@ -119,7 +119,8 @@ const base::FeatureParam<int> kMaskedDomainListExperimentGroup{
     /*default_value=*/0};
 
 // Used to build the MDL component's installer attributes and possibly control
-// which release version is retrieved. Does not have any effect for WebView.
+// which release version is retrieved.
+// Altering this value via Finch does not have any effect for WebView.
 const base::FeatureParam<std::string> kMaskedDomainListExperimentalVersion{
     &kMaskedDomainList, /*name=*/"MaskedDomainListExperimentalVersion",
     /*default_value=*/""};
@@ -384,6 +385,13 @@ BASE_FEATURE(kPrefetchNoVarySearch,
 
 const base::FeatureParam<bool> kPrefetchNoVarySearchShippedByDefault{
     &kPrefetchNoVarySearch, "shipped_by_default", true};
+
+// If enabled, then the network service will parse the Cookie-Indices header.
+// This does not currently control changing cache behavior according to the
+// value of this header.
+BASE_FEATURE(kCookieIndicesHeader,
+             "CookieIndicesHeader",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the backend of the compression dictionary transport feature.
 // When this feature is enabled, the following will happen:

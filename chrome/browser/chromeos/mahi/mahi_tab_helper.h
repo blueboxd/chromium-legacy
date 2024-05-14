@@ -31,6 +31,8 @@ class MahiTabHelper : public content::WebContentsUserData<MahiTabHelper>,
   // content::WebContentObserver:
   void OnWebContentsFocused(
       content::RenderWidgetHost* render_widget_host) override;
+  void OnWebContentsLostFocus(
+      content::RenderWidgetHost* render_widget_host) override;
   void DocumentOnLoadCompletedInPrimaryMainFrame() override;
 
  private:
@@ -40,9 +42,9 @@ class MahiTabHelper : public content::WebContentsUserData<MahiTabHelper>,
   // WebContentsUserData.
   explicit MahiTabHelper(content::WebContents* web_contents);
 
-  // Default pages are all skipped including "about::blank" and
-  // "chrome://newtab/".
-  bool ShouldSkip();
+  // Boolean to indicate if this web contents get focused. Only one web content
+  // can get focused at the same time.
+  bool focused_ = false;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

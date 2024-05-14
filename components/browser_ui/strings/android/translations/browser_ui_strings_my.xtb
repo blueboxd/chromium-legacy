@@ -5,6 +5,7 @@
 <translation id="1036348656032585052">ပိတ်ရန်</translation>
 <translation id="1044891598689252897">ဝဘ်ဆိုက်များ ပုံမှန်အလုပ်လုပ်ပါမည်</translation>
 <translation id="1073417869336441572">ပြင်ပကုမ္ပဏီ၏ကွတ်ကီးများကို ဘာကြောင့် သင်ခွင့်ပြုထားကြောင်း ပြောပြခြင်းဖြင့် Chrome ပိုကောင်းအောင် ကူညီပါ။ <ph name="BEGIN_LINK" />အကြံပြုချက် ပို့ရန်<ph name="END_LINK" /></translation>
+<translation id="1113435009358629918">လျှော့ဈေးကတ်ကို ဖျောက်ရန်</translation>
 <translation id="1178581264944972037">ဆိုင်းငံ့ထားရန်</translation>
 <translation id="1181037720776840403">ဖယ်ရှားရန်</translation>
 <translation id="1192844206376121885"><ph name="ORIGIN" /> က သိမ်းထားသည့် ဒေတာနှင့် ကွတ်ကီးအားလုံးကို ဖျက်လိုက်ပါမည်။</translation>
@@ -21,7 +22,6 @@
 <translation id="1383876407941801731">ရှာဖွေမှု</translation>
 <translation id="1384959399684842514">ဒေါင်းလုဒ်လုပ်မှု ဆိုင်းငံ့ထားသည်</translation>
 <translation id="1415402041810619267">URL ကို ဖြတ်လိုက်သည်</translation>
-<translation id="1434873037477293673">လျှော့ဈေးကတ်</translation>
 <translation id="1448064542941920355">ဇူးမ်ချုံ့ရန်</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{ဝဘ်ဆိုက် <ph name="SITE_COUNT" /> ခု}other{ဝဘ်ဆိုက် <ph name="SITE_COUNT" /> ခု}}</translation>
 <translation id="1510341833810331442">ဝဘ်ဆိုက်များကို သင့်စက်တွင် ဒေတာသိမ်းရန် ခွင့်ပြုမထားပါ</translation>
@@ -93,12 +93,14 @@
 <translation id="2498359688066513246">အကူအညီ &amp; အကြံပြုချက်</translation>
 <translation id="2501278716633472235">နောက်သို့ ပြန်ရန်</translation>
 <translation id="2546283357679194313">ကူကီးများ နှင့် ဆိုက် ဒေတာ</translation>
+<translation id="2550801787432930915">လျှော့ဈေးကတ်</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{ကွတ်ကီး ၁ ခု ကို ပိတ်ထားသည်}other{ကွတ်ကီး # ခု ကို ပိတ်ထားသည်}}</translation>
 <translation id="2570922361219980984">ဤစက်ပစ္စည်းအတွက်လည်း တည်နေရာ အသုံးပြုခွင့်ကို ပိတ်ထားသည်။ <ph name="BEGIN_LINK" />Android ဆက်တင်များ<ph name="END_LINK" /> တွင် ၎င်းကို ဖွင့်ပါ။</translation>
 <translation id="257931822824936280">ချဲ့ထား၏ - ခေါက်သိမ်းရန် နှိပ်ပါ</translation>
 <translation id="2586657967955657006">ကလစ်ဘုတ်</translation>
 <translation id="2597457036804169544">ဝဘ်ဆိုက်များကို အမှောင်နောက်ခံသို့ မပြောင်းပါနှင့်</translation>
 <translation id="2606760465469169465">အော်တို အတည်ပြုခြင်း</translation>
+<translation id="2613007545732217283"><ph name="HOST_NAME" /> <ph name="SEPARATOR" /> <ph name="RECENCY" /></translation>
 <translation id="2621115761605608342">တိကျသည့်ဆိုက်အတွက် JavaScript ကိုခွင့်ပြုပါ။</translation>
 <translation id="2653659639078652383">ပေးပို့ရန်</translation>
 <translation id="2677748264148917807">ထွက်ခွာရန်</translation>
@@ -121,7 +123,6 @@
 <translation id="2979365474350987274">ပြင်ပကုမ္ပဏီ၏ကွတ်ကီးများကို ကန့်သတ်ထားသည်</translation>
 <translation id="3008272652534848354">ခွင့်ပြုချက်များကို ပြင်ဆင်သတ်မှတ်ရန်</translation>
 <translation id="301521992641321250">အလိုအလျောက် ပိတ်ထားသည်</translation>
-<translation id="3025010840409371499"><ph name="RECENCY" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="3069226013421428034">သတ်မှတ်ဝဘ်ဆိုက်အတွက် ပြင်ပအဖွဲ့အစည်းသို့ လက်မှတ်ထိုးဝင်ခြင်းကို ခွင့်ပြုနိုင်သည်။</translation>
 <translation id="3082992102194421695">{COUNT,plural, =1{မနက်ဖြန် သက်တမ်းကုန်မည်}other{# ရက်အတွင်း သက်တမ်းကုန်မည်}}</translation>
 <translation id="310297983047869047">ယခင်ဆလိုက်</translation>
@@ -188,7 +189,6 @@
 <translation id="4149994727733219643">ဝဘ်စာမျက်နှာများအတွက် ရိုးရှင်းသည့်မြင်ကွင်း</translation>
 <translation id="4151930093518524179">မူရင်းဇူးမ်</translation>
 <translation id="4165986682804962316">ဝက်ဆိုက် ဆက်တင်များ</translation>
-<translation id="4169019654293892025"><ph name="TITLE_OF_MODULE" /> ကို ဖျောက်ပါ</translation>
 <translation id="4169549551965910670">USB ကိရိယာသို့ ချိတ်ဆက်ပြီး</translation>
 <translation id="4194328954146351878">NFC စက်ပစ္စည်းများရှိ အချက်အလက်များကို ဝဘ်ဆိုက်များအား ကြည့်ခွင့်နှင့် ပြောင်းလဲခွင့်မပေးမီ ဦးစွာမေးမြန်းပါ (အကြံပြုထားသည်)</translation>
 <translation id="4200726100658658164">'တည်နေရာပြဆက်တင်များ' ကို ဖွင့်ပါ</translation>
@@ -213,6 +213,7 @@
 <translation id="4566417217121906555">မိုက်ခရိုဖုန်းကို အသံပိတ်ရန်</translation>
 <translation id="4570913071927164677">အသေးစိတ်</translation>
 <translation id="4598549027014564149">ရုပ်ဖျက်မုဒ် ဖွင့်ထားချိန်၌ ဝဘ်ဆိုက်များသည် ဆက်စပ်သည့်ဝဘ်ဆိုက်များအပါအဝင် ဝဘ်ဆိုက်များရှိ သင့်ကြည့်ရှုမှုများကို ကြည့်ရန် သင်၏ကွတ်ကီးများအား အသုံးမပြုနိုင်ပါ။ သင့်ကြည့်ရှုမှုများကို ကြော်ငြာများ ပုဂ္ဂိုလ်ရေးသီးသန့်ပြုလုပ်ခြင်းကဲ့သို့ အရာများအတွက် အသုံးမပြုပါ။ ဝဘ်ဆိုက်အချို့ရှိ ဝန်ဆောင်မှုများ အလုပ်မလုပ်နိုင်ပါ။</translation>
+<translation id="4619615317237390068">အခြားစက်ပစ္စည်းများမှ တဘ်များ</translation>
 <translation id="4644713492825682049">ဖျက်ပြီး ပြင်ဆင်သတ်မှတ်ရန်</translation>
 <translation id="4645575059429386691">သင့်မိဘမှ စီမံသည်</translation>
 <translation id="4670064810192446073">ပကတိအသွင်</translation>
@@ -344,6 +345,7 @@
 <translation id="6612358246767739896">ကာကွယ်ထားသည့် အကြောင်းအရာ</translation>
 <translation id="662080504995468778">နေပါ</translation>
 <translation id="6653342741369270081">ဖန်သားပြင်အပြည့်မှ ထွက်ရန် နောက်သို့ပြန်သည့် ခလုတ်ကိုနှိပ်ပါ။</translation>
+<translation id="6670377348676659110">{TILE_COUNT,plural, =1{‘ဤတဘ်ဖြင့် ရှေ့ဆက်ရန်’ ကိုဖျောက်ပါ}other{‘ဤတဘ်များဖြင့် ရှေ့ဆက်ရန်’ ကိုဖျောက်ပါ}}</translation>
 <translation id="6689172468748959065">ပရိုဖိုင် ဓာတ်ပုံများ</translation>
 <translation id="6697925417670533197">လက်ရှိ ဒေါင်းလုဒ်များ</translation>
 <translation id="6722828510648505498">အထောက်အထားဆိုင်ရာ ဝန်ဆောင်မှုများမှ လက်မှတ်ထိုးဝင်မှုဆိုင်ရာ အတည်ပြုစနစ်ကို ပိတ်နိုင်သည်။</translation>
@@ -366,6 +368,7 @@
 <translation id="702275896380648118">ဤဝဘ်ဆိုက်က သင်နှစ်သက်နိုင်သည့်အရာများအား ဆုံးဖြတ်ပြီး အခြားဝဘ်ဆိုက်များကို ကြော်ငြာများ အကြံပြုသည်။ ပိုမိုသက်ဆိုင်သော ကြော်ငြာများပြရန် ဤဝဘ်ဆိုက်က သင့်ကြော်ငြာအကြောင်းအရာများကိုလည်း Chrome ထံမှ ရယူသည်။</translation>
 <translation id="7053983685419859001">ပိတ်ဆို့ရန်</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ခု ရွေးထားသည်}other{# ခု ရွေးထားသည်}}</translation>
+<translation id="708014373017851679">‘<ph name="APP_NAME" />’ သည် ဟောင်းနေသည်။ အက်ပ်ကို အပ်ဒိတ်လုပ်ပါ။</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ခု ရွေးထားသည်။ မျက်နှာပြင်၏ ထိပ်နားတွင် ရွေးချယ်စရာများ ရှိသည်</translation>
 <translation id="7141896414559753902">ပေါ့ပ်အပ်နှင့် တစ်ဆင့်ပြန်ညွှန်ချက်များကို မဖော်ပြနိုင်စေရန် ဝဘ်ဆိုက်များအား ပိတ်ပါ (အကြံပြုထားသည်)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>

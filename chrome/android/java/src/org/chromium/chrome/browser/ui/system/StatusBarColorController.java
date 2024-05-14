@@ -34,12 +34,10 @@ import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiThemeUtil;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.features.start_surface.StartSurface;
-import org.chromium.chrome.features.start_surface.StartSurfaceState;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
 import org.chromium.ui.UiUtils;
@@ -115,7 +113,6 @@ public class StatusBarColorController
     private OneshotSupplier<StartSurface> mStartSurfaceSupplier;
     private StartSurface mStartSurface;
     private StartSurface.StateObserver mStartSurfaceStateObserver;
-    private @StartSurfaceState int mStartSurfaceState = StartSurfaceState.NOT_SHOWN;
 
     // Tab strip transition states.
     private boolean mTabStripHiddenOnTablet;
@@ -277,14 +274,7 @@ public class StatusBarColorController
                     }
                 };
 
-        // TODO(https://crbug.com/1315679): Remove mStartSurfaceSupplier after the refactor is
-        // enabled by default. If Start surface refactor is enabled, we can observe layout state
-        // change to see if the Start surface is showing. If disabled, we have to observe the
-        // StartSurfaceState provided by mStartSurfaceSupplier.
-        if (ReturnToChromeUtil.isStartSurfaceEnabled(context)
-                && !ReturnToChromeUtil.isStartSurfaceRefactorEnabled(context)) {
-            mStartSurfaceSupplier.onAvailable(this::onStartSurfaceAvailable);
-        } else if (layoutManagerSupplier != null) {
+        if (layoutManagerSupplier != null) {
             // LayoutState is observed when the feature "Start surface refactor" is enabled or Start
             // surface is disabled.
             layoutManagerSupplier.addObserver(
@@ -314,35 +304,9 @@ public class StatusBarColorController
     private boolean shouldUpdateStatusBarColorForHomeSurface() {
         return mIsSurfacePolishEnabled
                 && !mIsIncognito
+                && mStartSurfaceSupplier != null
                 && mStartSurfaceSupplier.hasValue()
                 && mStartSurfaceSupplier.get().isHomepageShown();
-    }
-
-    private void onStartSurfaceAvailable(StartSurface startSurface) {
-        mStartSurface = startSurface;
-        if (mStartSurface.getStartSurfaceState() != mStartSurfaceState) {
-            onStartSurfaceStateChanged(mStartSurface.getStartSurfaceState());
-        }
-        mStartSurfaceStateObserver =
-                (newState, shouldShowToolbar) -> {
-                    if (mStartSurfaceState != newState) {
-                        onStartSurfaceStateChanged(newState);
-                    }
-                };
-        // TODO(https://crbug.com/1315679): Remove |mStartSurfaceSupplier|,
-        // |mStartSurfaceState| and |mStartSurfaceStateObserver| after the refactor is
-        // enabled by default.
-        mStartSurface.addStateChangeObserver(mStartSurfaceStateObserver);
-    }
-
-    private void onStartSurfaceStateChanged(@StartSurfaceState int newState) {
-        mStartSurfaceState = newState;
-        if (mStartSurfaceState == StartSurfaceState.NOT_SHOWN) {
-            mIsInOverviewMode = false;
-        } else {
-            mIsInOverviewMode = true;
-        }
-        updateStatusBarColor();
     }
 
     // DestroyObserver implementation.
@@ -360,11 +324,6 @@ public class StatusBarColorController
             mCallbackController = null;
         }
         if (mStartSurfaceSupplier != null) {
-            if (mStartSurface != null) {
-                mStartSurface.removeStateChangeObserver(mStartSurfaceStateObserver);
-                mStartSurface = null;
-                mStartSurfaceStateObserver = null;
-            }
             mStartSurfaceSupplier = null;
         }
     }
@@ -515,9 +474,15 @@ public class StatusBarColorController
         }
 
         if (mIsTablet) {
+            // When applicable, the status bar should use the focused activity tab strip color
+            // (default), and should not be affected by an activity focus change.
+            // TODO (crbug.com/326290073): Use another boolean to allow using the default color spec
+            // even when the activity is not in focus, to avoid any confusion stemming from why
+            // |isActivityFocused| is always true in this invocation here.
             return mTabStripHiddenOnTablet
                     ? mToolbarColor
-                    : TabUiThemeUtil.getTabStripBackgroundColor(mWindow.getContext(), mIsIncognito);
+                    : TabUiThemeUtil.getTabStripBackgroundColor(
+                            mWindow.getContext(), mIsIncognito, /* isActivityFocused= */ true);
         }
 
         // When Omnibox gains focus, we want to clear the status bar theme color.

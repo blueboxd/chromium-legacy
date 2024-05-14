@@ -50,7 +50,8 @@ const int kDefaultCursorSize = 64;
 std::vector<sk_sp<SkSurface>> GetCursorBuffers(
     const scoped_refptr<MockDrmDevice> drm) {
   std::vector<sk_sp<SkSurface>> cursor_buffers;
-  for (const auto& cursor_buffer : drm->buffers()) {
+  for (const auto& pair : drm->buffers()) {
+    const auto& cursor_buffer = pair.second;
     if (cursor_buffer && cursor_buffer->width() == kDefaultCursorSize &&
         cursor_buffer->height() == kDefaultCursorSize) {
       cursor_buffers.push_back(cursor_buffer);
@@ -135,12 +136,13 @@ void MAYBE_DrmWindowTest::SetUp() {
   connector_id_ = drm_->connector_property(0).id;
 
   screen_manager_->AddDisplayController(drm_, crtc_id_, connector_id_);
-  std::vector<ScreenManager::ControllerConfigParams> controllers_to_enable;
+  std::vector<ControllerConfigParams> controllers_to_enable;
   controllers_to_enable.emplace_back(
       1 /*display_id*/, drm_, crtc_id_, connector_id_, gfx::Point(),
       std::make_unique<drmModeModeInfo>(kDefaultMode));
   screen_manager_->ConfigureDisplayControllers(
-      controllers_to_enable, display::kTestModeset | display::kCommitModeset);
+      controllers_to_enable, {display::ModesetFlag::kTestModeset,
+                              display::ModesetFlag::kCommitModeset});
 
   drm_device_manager_ = std::make_unique<DrmDeviceManager>(nullptr);
 
@@ -177,9 +179,9 @@ TEST_F(MAYBE_DrmWindowTest, SetCursorImage) {
   std::vector<sk_sp<SkSurface>> cursor_buffers = GetCursorBuffers(drm_);
   EXPECT_EQ(2u, cursor_buffers.size());
 
-  // Buffers 1 is the cursor backbuffer we just drew in.
-  cursor.allocPixels(cursor_buffers[1]->getCanvas()->imageInfo());
-  EXPECT_TRUE(cursor_buffers[1]->getCanvas()->readPixels(cursor, 0, 0));
+  // Buffers 0 is the cursor backbuffer we just drew in.
+  cursor.allocPixels(cursor_buffers[0]->getCanvas()->imageInfo());
+  EXPECT_TRUE(cursor_buffers[0]->getCanvas()->readPixels(cursor, 0, 0));
 
   // Check that the frontbuffer is displaying the right image as set above.
   for (int i = 0; i < cursor.height(); ++i) {
@@ -206,13 +208,14 @@ TEST_F(MAYBE_DrmWindowTest, CheckCursorSurfaceAfterChangingDevice) {
 
   screen_manager_->AddDisplayController(drm, crtc_id_, connector_id_);
 
-  std::vector<ScreenManager::ControllerConfigParams> controllers_to_enable;
+  std::vector<ControllerConfigParams> controllers_to_enable;
   controllers_to_enable.emplace_back(
       /*display_id=*/2, drm, crtc_id_, connector_id_,
       gfx::Point(0, kDefaultMode.vdisplay),
       std::make_unique<drmModeModeInfo>(kDefaultMode));
   screen_manager_->ConfigureDisplayControllers(
-      controllers_to_enable, display::kTestModeset | display::kCommitModeset);
+      controllers_to_enable, {display::ModesetFlag::kTestModeset,
+                              display::ModesetFlag::kCommitModeset});
 
   // Move window to the display on the new device.
   screen_manager_->GetWindow(kDefaultWidgetHandle)

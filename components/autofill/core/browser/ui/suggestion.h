@@ -141,6 +141,8 @@ struct Suggestion {
 #if DCHECK_IS_ON()
   bool Invariant() const {
     switch (popup_item_id) {
+      case PopupItemId::kFillPassword:
+        return absl::holds_alternative<ValueToFill>(payload);
       case PopupItemId::kSeePromoCodeDetails:
         return absl::holds_alternative<GURL>(payload);
       case PopupItemId::kIbanEntry:
@@ -234,11 +236,6 @@ struct Suggestion {
   // Whether the user is able to preview the suggestion by hovering on it or
   // accept it by clicking on it.
   bool is_acceptable = true;
-
-  // Denotes whether this suggestion was hidden prior to the effects caused by
-  // kAutofillUseAddressRewriterInProfileSubsetComparison.
-  // TODO(crbug.com/1439742): Remove when the feature launches.
-  bool hidden_prior_to_address_rewriter_usage = false;
 };
 
 std::string_view ConvertIconToPrintableString(Suggestion::Icon icon);

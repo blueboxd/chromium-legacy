@@ -48,6 +48,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/features_generated.h"
 #include "third_party/blink/public/common/interest_group/ad_auction_currencies.h"
 #include "third_party/blink/public/common/interest_group/ad_display_size.h"
 #include "third_party/blink/public/common/interest_group/ad_display_size_utils.h"
@@ -285,6 +286,7 @@ bool IsValidBid(double bid) {
 //  'trustedScoringSignalsURL': ...,
 //  'interestGroupBuyers': ['https://www.example-dsp.com', 'https://buyer2.com',
 //  ...], 'auctionSignals': {...}, 'sellerSignals': {...}, 'sellerTimeout': 100,
+//  `reportingTimeout`: 600,
 //  'perBuyerSignals': {'https://www.example-dsp.com': {...},
 //                      'https://www.another-buyer.com': {...},
 //                       ...},
@@ -390,6 +392,30 @@ bool AppendAuctionConfig(
     return false;
   }
 
+  DCHECK(!auction_ad_config_non_shared_params.deprecated_render_url_replacements
+              .is_promise());
+
+  if (!auction_ad_config_non_shared_params.deprecated_render_url_replacements
+           .value()
+           .empty()) {
+    v8::Local<v8::Object> deprecated_render_url_replacements =
+        v8::Object::New(isolate);
+    for (const auto& kv : auction_ad_config_non_shared_params
+                              .deprecated_render_url_replacements.value()) {
+      v8::Local<v8::String> v8_replacement;
+      if (!v8_helper->CreateUtf8String(kv.replacement)
+               .ToLocal(&v8_replacement)) {
+        return false;
+      }
+      if (!v8_helper->InsertValue(kv.match, v8_replacement,
+                                  deprecated_render_url_replacements)) {
+        return false;
+      }
+    }
+    auction_config_dict.Set("deprecatedRenderURLReplacements",
+                            deprecated_render_url_replacements);
+  }
+
   if (auction_ad_config_non_shared_params.seller_timeout.has_value() &&
       !v8_helper->InsertJsonValue(
           context, "sellerTimeout",
@@ -435,6 +461,19 @@ bool AppendAuctionConfig(
   if (!per_buyer_cumulative_timeouts.IsEmpty()) {
     auction_config_dict.Set("perBuyerCumulativeTimeouts",
                             per_buyer_cumulative_timeouts);
+  }
+
+  base::TimeDelta reporting_timeout =
+      auction_ad_config_non_shared_params.reporting_timeout.has_value()
+          ? *auction_ad_config_non_shared_params.reporting_timeout
+          : AuctionV8Helper::kScriptTimeout;
+
+  if (base::FeatureList::IsEnabled(blink::features::kFledgeReportingTimeout) &&
+      !v8_helper->InsertJsonValue(
+          context, "reportingTimeout",
+          base::NumberToString(reporting_timeout.InMilliseconds()),
+          auction_config_value)) {
+    return false;
   }
 
   v8::Local<v8::Object> per_buyer_currencies;
@@ -763,6 +802,8 @@ void SellerWorklet::ScoreAd(
         trusted_signals_request_manager_->RequestScoringSignals(
             browser_signal_render_url,
             score_ad_task->browser_signal_ad_components,
+            score_ad_task->auction_ad_config_non_shared_params
+                .max_trusted_scoring_signals_url_length,
             base::BindOnce(&SellerWorklet::OnTrustedScoringSignalsDownloaded,
                            base::Unretained(this), score_ad_task));
     return;
@@ -966,6 +1007,15 @@ void SellerWorklet::V8State::ScoreAd(
   // Don't need to run `cleanup_score_ad_task` if this method is invoked;
   // it's bound to the closure to clean things up if this method got cancelled.
   cleanup_score_ad_task.ReplaceClosure(base::OnceClosure());
+
+  // We may not be allowed any time to run.
+  if (seller_timeout.has_value() && !seller_timeout->is_positive()) {
+    PostScoreAdCallbackToUserThreadOnError(
+        std::move(callback),
+        /*scoring_latency=*/base::TimeDelta(),
+        /*errors=*/{"scoreAd() aborted due to zero timeout."});
+    return;
+  }
 
   AuctionV8Helper::FullIsolateScope isolate_scope(v8_helper_.get());
   v8::Isolate* isolate = v8_helper_->isolate();
@@ -1442,6 +1492,19 @@ void SellerWorklet::V8State::ReportResult(
   TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "post_v8_task", trace_id);
   base::ElapsedTimer elapsed_timer;
 
+  // We may not be allowed any time to run.
+  if (auction_ad_config_non_shared_params.reporting_timeout.has_value() &&
+      !auction_ad_config_non_shared_params.reporting_timeout->is_positive()) {
+    PostReportResultCallbackToUserThread(
+        std::move(callback),
+        /*signals_for_winner=*/std::nullopt,
+        /*report_url=*/std::nullopt,
+        /*ad_beacon_map=*/{},
+        /*pa_requests=*/{}, base::TimeDelta(),
+        /*errors=*/{"reportResult() aborted due to zero timeout."});
+    return;
+  }
+
   AuctionV8Helper::FullIsolateScope isolate_scope(v8_helper_.get());
   v8::Isolate* isolate = v8_helper_->isolate();
 
@@ -1572,8 +1635,11 @@ void SellerWorklet::V8State::ReportResult(
   v8::Local<v8::UnboundScript> unbound_worklet_script =
       worklet_script_.Get(isolate);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "report_result", trace_id);
+
   std::unique_ptr<AuctionV8Helper::TimeLimit> total_timeout =
-      v8_helper_->CreateTimeLimit(/*script_timeout=*/std::nullopt);
+      v8_helper_->CreateTimeLimit(
+          /*script_timeout=*/auction_ad_config_non_shared_params
+              .reporting_timeout);
   bool success =
       v8_helper_->RunScript(context, unbound_worklet_script, debug_id_.get(),
                             total_timeout.get(), errors_out);

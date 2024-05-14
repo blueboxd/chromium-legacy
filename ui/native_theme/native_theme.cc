@@ -12,6 +12,7 @@
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "ui/base/ui_base_switches.h"
@@ -24,6 +25,11 @@
 #include "ui/native_theme/native_theme_utils.h"
 
 namespace ui {
+
+namespace {
+static constexpr base::TimeDelta kDefaultCaretBlinkInterval =
+    base::Milliseconds(500);
+}
 
 NativeTheme::MenuListExtraParams::MenuListExtraParams() = default;
 NativeTheme::TextFieldExtraParams::TextFieldExtraParams() = default;
@@ -178,22 +184,27 @@ float NativeTheme::AdjustBorderRadiusByZoom(Part part,
   return border_radius;
 }
 
+base::TimeDelta NativeTheme::GetCaretBlinkInterval() const {
+  if (caret_blink_interval_.has_value()) {
+    return caret_blink_interval_.value();
+  }
+  std::optional<base::TimeDelta> platform_interval =
+      GetPlatformCaretBlinkInterval();
+  if (platform_interval.has_value()) {
+    return platform_interval.value();
+  }
+  return kDefaultCaretBlinkInterval;
+}
+
 NativeTheme::NativeTheme(bool should_use_dark_colors,
-                         ui::SystemTheme system_theme,
-                         NativeTheme* theme_to_update)
-    : color_scheme_observer_(theme_to_update),
-      should_use_dark_colors_(should_use_dark_colors || IsForcedDarkMode()),
+                         ui::SystemTheme system_theme)
+    : should_use_dark_colors_(should_use_dark_colors || IsForcedDarkMode()),
       system_theme_(system_theme),
       forced_colors_(IsForcedHighContrast()),
       prefers_reduced_transparency_(false),
       inverted_colors_(false),
       preferred_color_scheme_(CalculatePreferredColorScheme()),
-      preferred_contrast_(CalculatePreferredContrast()) {
-  if (theme_to_update && !IsForcedDarkMode() && !IsForcedHighContrast() &&
-      base::SequencedTaskRunner::HasCurrentDefault()) {
-    theme_observation_.Observe(this);
-  }
-}
+      preferred_contrast_(CalculatePreferredContrast()) {}
 
 NativeTheme::~NativeTheme() = default;
 
@@ -227,6 +238,11 @@ NativeTheme::PreferredColorScheme NativeTheme::CalculatePreferredColorScheme()
     const {
   return ShouldUseDarkColors() ? NativeTheme::PreferredColorScheme::kDark
                                : NativeTheme::PreferredColorScheme::kLight;
+}
+
+std::optional<base::TimeDelta> NativeTheme::GetPlatformCaretBlinkInterval()
+    const {
+  return std::nullopt;
 }
 
 NativeTheme::PreferredColorScheme NativeTheme::GetPreferredColorScheme() const {
@@ -300,10 +316,7 @@ void NativeTheme::set_system_colors(
   system_colors_ = colors;
 }
 
-bool NativeTheme::UpdateSystemColorInfo(
-    bool is_dark_mode,
-    bool forced_colors,
-    const base::flat_map<SystemThemeColor, uint32_t>& colors) {
+bool NativeTheme::UpdateSystemColorInfo(bool is_dark_mode, bool forced_colors) {
   bool did_system_color_info_change = false;
   if (is_dark_mode != ShouldUseDarkColors()) {
     did_system_color_info_change = true;
@@ -312,12 +325,6 @@ bool NativeTheme::UpdateSystemColorInfo(
   if (forced_colors != InForcedColorsMode()) {
     did_system_color_info_change = true;
     set_forced_colors(forced_colors);
-  }
-  for (const auto& color : colors) {
-    if (color.second != GetSystemThemeColor(color.first)) {
-      did_system_color_info_change = true;
-      system_colors_[color.first] = color.second;
-    }
   }
   return did_system_color_info_change;
 }
@@ -340,6 +347,8 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
       observed_theme->GetPreferredColorScheme();
   PreferredContrast preferred_contrast = observed_theme->GetPreferredContrast();
   bool inverted_colors = observed_theme->GetInvertedColors();
+  base::TimeDelta caret_blink_interval =
+      observed_theme->GetCaretBlinkInterval();
   bool notify_observers = false;
 
   const auto default_page_colors =
@@ -398,12 +407,8 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
     theme_to_update_->set_inverted_colors(inverted_colors);
     notify_observers = true;
   }
-
-  // TODO(samomekarajr): Take this out when fully migrated to the color
-  // pipeline.
-  const auto& system_colors = observed_theme->GetSystemColors();
-  if (theme_to_update_->HasDifferentSystemColors(system_colors)) {
-    theme_to_update_->set_system_colors(system_colors);
+  if (theme_to_update_->GetCaretBlinkInterval() != caret_blink_interval) {
+    theme_to_update_->set_caret_blink_interval(caret_blink_interval);
     notify_observers = true;
   }
 

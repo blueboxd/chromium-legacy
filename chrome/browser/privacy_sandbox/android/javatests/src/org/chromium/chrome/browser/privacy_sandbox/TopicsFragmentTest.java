@@ -31,6 +31,7 @@ import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
 import android.view.View;
 
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Matcher;
@@ -43,11 +44,14 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.UserActionTester;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -98,7 +102,8 @@ public final class TopicsFragmentTest {
     public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    PrefService prefService = UserPrefs.get(Profile.getLastUsedRegularProfile());
+                    PrefService prefService =
+                            UserPrefs.get(ProfileManager.getLastUsedRegularProfile());
                     prefService.clearPref(Pref.PRIVACY_SANDBOX_M1_TOPICS_ENABLED);
                 });
 
@@ -123,11 +128,14 @@ public final class TopicsFragmentTest {
     }
 
     private View getTopicsRootView() {
+        if (ChromeFeatureList.isEnabled(
+                ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING))
+            return getRootViewSanitized(R.string.settings_topics_page_toggle_sub_label_v2);
         return getRootViewSanitized(R.string.settings_topics_page_toggle_sub_label);
     }
 
     private View getBlockedTopicsRootView() {
-        return getRootViewSanitized(R.string.settings_topics_page_blocked_topics_sub_page_title);
+        return getRootViewSanitized(R.string.settings_topics_page_blocked_topics_heading_new);
     }
 
     private View getLearnMoreRootView() {
@@ -138,17 +146,20 @@ public final class TopicsFragmentTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () ->
                         TopicsFragment.setTopicsPrefEnabled(
-                                Profile.getLastUsedRegularProfile(), isEnabled));
+                                ProfileManager.getLastUsedRegularProfile(), isEnabled));
     }
 
     private boolean isTopicsPrefEnabled() {
         return TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> TopicsFragment.isTopicsPrefEnabled(Profile.getLastUsedRegularProfile()));
+                () ->
+                        TopicsFragment.isTopicsPrefEnabled(
+                                ProfileManager.getLastUsedRegularProfile()));
     }
 
     @Test
     @SmallTest
     @Feature({"RenderTest"})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
     public void testRenderTopicsOff() throws IOException {
         setTopicsPrefEnabled(false);
         startTopicsSettings();
@@ -158,6 +169,7 @@ public final class TopicsFragmentTest {
     @Test
     @SmallTest
     @Feature({"RenderTest"})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
     public void testRenderTopicsEmpty() throws IOException {
         setTopicsPrefEnabled(true);
         startTopicsSettings();
@@ -167,6 +179,7 @@ public final class TopicsFragmentTest {
     @Test
     @SmallTest
     @Feature({"RenderTest"})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
     public void testRenderTopicsPopulated() throws IOException {
         setTopicsPrefEnabled(true);
         mFakePrivacySandboxBridge.setCurrentTopTopics(TOPIC_NAME_1, TOPIC_NAME_2);
@@ -177,31 +190,40 @@ public final class TopicsFragmentTest {
     @Test
     @SmallTest
     @Feature({"RenderTest"})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
     public void testRenderBlockedTopicsEmpty() throws IOException {
-        setTopicsPrefEnabled(false);
+        setTopicsPrefEnabled(true);
         startTopicsSettings();
-        onView(withText(R.string.settings_topics_page_blocked_topics_heading)).perform(click());
+        onView(withText(R.string.settings_topics_page_blocked_topics_heading_new)).perform(click());
         mRenderTestRule.render(getBlockedTopicsRootView(), "blocked_topics_page_empty");
     }
 
     @Test
     @SmallTest
     @Feature({"RenderTest"})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
     public void testRenderBlockedTopicsPopulated() throws IOException {
-        setTopicsPrefEnabled(false);
+        setTopicsPrefEnabled(true);
         mFakePrivacySandboxBridge.setBlockedTopics(TOPIC_NAME_1, TOPIC_NAME_2);
         startTopicsSettings();
-        onView(withText(R.string.settings_topics_page_blocked_topics_heading)).perform(click());
+        onView(withText(R.string.settings_topics_page_blocked_topics_heading_new)).perform(click());
         mRenderTestRule.render(getBlockedTopicsRootView(), "blocked_topics_page_populated");
     }
 
     @Test
     @SmallTest
     @Feature({"RenderTest"})
+    @DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
     public void testRenderLearnMore() throws IOException {
         setTopicsPrefEnabled(true);
         mFakePrivacySandboxBridge.setCurrentTopTopics(TOPIC_NAME_1, TOPIC_NAME_2);
         startTopicsSettings();
+        TopicsFragment fragment = mSettingsActivityTestRule.getFragment();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    RecyclerView recyclerView = fragment.getView().findViewById(R.id.recycler_view);
+                    recyclerView.scrollToPosition(recyclerView.getAdapter().getItemCount() - 1);
+                });
         onView(withText(containsString("Learn more"))).perform(clickOnClickableSpan(0));
         mRenderTestRule.render(getLearnMoreRootView(), "topics_learn_more");
     }
@@ -224,6 +246,7 @@ public final class TopicsFragmentTest {
 
     @Test
     @SmallTest
+    @DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
     public void testTurnTopicsOnWhenTopicListEmpty() {
         setTopicsPrefEnabled(false);
         startTopicsSettings();
@@ -232,6 +255,28 @@ public final class TopicsFragmentTest {
         assertTrue(mFakePrivacySandboxBridge.getLastTopicsToggleValue());
         assertTrue(isTopicsPrefEnabled());
         onViewWaiting(withText(R.string.settings_topics_page_current_topics_description_empty))
+                .check(matches(isDisplayed()));
+        onView(withText(R.string.settings_topics_page_current_topics_description_disabled))
+                .check(doesNotExist());
+
+        assertThat(
+                mUserActionTester.getActions(), hasItems("Settings.PrivacySandbox.Topics.Enabled"));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
+    public void testTurnTopicsOnWhenTopicListEmptyV2() {
+        setTopicsPrefEnabled(false);
+        startTopicsSettings();
+        onView(getTopicsToggleMatcher()).perform(click());
+
+        assertTrue(mFakePrivacySandboxBridge.getLastTopicsToggleValue());
+        assertTrue(isTopicsPrefEnabled());
+        onViewWaiting(
+                        withText(
+                                R.string
+                                        .settings_topics_page_current_topics_description_empty_text_v2))
                 .check(matches(isDisplayed()));
         onView(withText(R.string.settings_topics_page_current_topics_description_disabled))
                 .check(doesNotExist());
@@ -266,6 +311,7 @@ public final class TopicsFragmentTest {
 
     @Test
     @SmallTest
+    @DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
     public void testTurnTopicsOff() {
         setTopicsPrefEnabled(true);
         startTopicsSettings();
@@ -276,6 +322,24 @@ public final class TopicsFragmentTest {
         onViewWaiting(withText(R.string.settings_topics_page_current_topics_description_disabled))
                 .check(matches(isDisplayed()));
         onView(withText(R.string.settings_topics_page_current_topics_description_empty))
+                .check(doesNotExist());
+
+        assertThat(
+                mUserActionTester.getActions(),
+                hasItems("Settings.PrivacySandbox.Topics.Disabled"));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
+    public void testTurnTopicsOffV2() {
+        setTopicsPrefEnabled(true);
+        startTopicsSettings();
+        onView(getTopicsToggleMatcher()).perform(click());
+        assertFalse(mFakePrivacySandboxBridge.getLastTopicsToggleValue());
+
+        assertFalse(isTopicsPrefEnabled());
+        onView(withText(R.string.settings_topics_page_current_topics_description_empty_text_v2))
                 .check(doesNotExist());
 
         assertThat(
@@ -296,6 +360,7 @@ public final class TopicsFragmentTest {
 
     @Test
     @SmallTest
+    @DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
     public void testBlockedTopicsAppearWhenTopicOff() {
         setTopicsPrefEnabled(false);
         mFakePrivacySandboxBridge.setBlockedTopics(TOPIC_NAME_1, TOPIC_NAME_2);
@@ -313,6 +378,7 @@ public final class TopicsFragmentTest {
 
     @Test
     @SmallTest
+    @DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
     public void testBlockedTopicsAppearWhenTopicOn() {
         setTopicsPrefEnabled(true);
         mFakePrivacySandboxBridge.setBlockedTopics(TOPIC_NAME_1, TOPIC_NAME_2);
@@ -330,6 +396,25 @@ public final class TopicsFragmentTest {
 
     @Test
     @SmallTest
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
+    public void testBlockedTopicsAppearWhenTopicOnV2() {
+        setTopicsPrefEnabled(true);
+        mFakePrivacySandboxBridge.setBlockedTopics(TOPIC_NAME_1, TOPIC_NAME_2);
+        startTopicsSettings();
+        onView(withText(R.string.settings_topics_page_blocked_topics_heading_new)).perform(click());
+
+        onViewWaiting(withText(R.string.settings_topics_page_blocked_topics_heading_new));
+        onView(withText(TOPIC_NAME_1)).check(matches(isDisplayed()));
+        onView(withText(TOPIC_NAME_2)).check(matches(isDisplayed()));
+
+        assertThat(
+                mUserActionTester.getActions(),
+                hasItems("Settings.PrivacySandbox.Topics.BlockedTopicsOpened"));
+    }
+
+    @Test
+    @SmallTest
+    @DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
     public void testBlockTopics() {
         setTopicsPrefEnabled(true);
         mFakePrivacySandboxBridge.setCurrentTopTopics(TOPIC_NAME_1, TOPIC_NAME_2);
@@ -369,6 +454,47 @@ public final class TopicsFragmentTest {
 
     @Test
     @SmallTest
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
+    public void testBlockTopicsV2() {
+        setTopicsPrefEnabled(true);
+        mFakePrivacySandboxBridge.setCurrentTopTopics(TOPIC_NAME_1, TOPIC_NAME_2);
+        startTopicsSettings();
+
+        // Remove the first Topic from the list.
+        clickImageButtonNextToText(TOPIC_NAME_1);
+        onView(withText(TOPIC_NAME_1)).check(doesNotExist());
+        onView(withText(R.string.settings_topics_page_block_topic_snackbar))
+                .check(matches(isDisplayed()));
+
+        // Remove the second Topic from the list.
+        clickImageButtonNextToText(TOPIC_NAME_2);
+        onView(withText(TOPIC_NAME_2)).check(doesNotExist());
+        onView(withText(R.string.settings_topics_page_block_topic_snackbar))
+                .check(matches(isDisplayed()));
+
+        // Check that the empty state UI is displayed when the Topic list is empty.
+        onView(withText(R.string.settings_topics_page_current_topics_description_empty_text_v2))
+                .check(matches(isDisplayed()));
+
+        // Open the blocked topics sub-page
+        onView(withText(R.string.settings_topics_page_blocked_topics_heading_new)).perform(click());
+        onViewWaiting(withText(R.string.settings_topics_page_blocked_topics_heading_new));
+
+        // Verify that the topics are blocked
+        onView(withText(TOPIC_NAME_1)).check(matches(isDisplayed()));
+        onView(withText(TOPIC_NAME_2)).check(matches(isDisplayed()));
+
+        // Verify that actions are reported
+        assertThat(
+                mUserActionTester.getActions(),
+                hasItems(
+                        "Settings.PrivacySandbox.Topics.BlockedTopicsOpened",
+                        "Settings.PrivacySandbox.Topics.TopicRemoved"));
+    }
+
+    @Test
+    @SmallTest
+    @DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
     public void testUnblockTopics() {
         setTopicsPrefEnabled(true);
         mFakePrivacySandboxBridge.setBlockedTopics(TOPIC_NAME_1, TOPIC_NAME_2);
@@ -412,6 +538,46 @@ public final class TopicsFragmentTest {
 
     @Test
     @SmallTest
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
+    public void testUnblockTopicsV2() {
+        setTopicsPrefEnabled(true);
+        mFakePrivacySandboxBridge.setBlockedTopics(TOPIC_NAME_1, TOPIC_NAME_2);
+        startTopicsSettings();
+
+        // Open the blocked Topics sub-page
+        onView(withText(R.string.settings_topics_page_blocked_topics_heading_new)).perform(click());
+        onViewWaiting(withText(R.string.settings_topics_page_blocked_topics_heading_new));
+
+        // Unblock the first Topic
+        clickImageButtonNextToText(TOPIC_NAME_1);
+        onView(withText(TOPIC_NAME_1)).check(doesNotExist());
+
+        // Unblock the second Topic
+        clickImageButtonNextToText(TOPIC_NAME_2);
+        onView(withText(TOPIC_NAME_2)).check(doesNotExist());
+
+        // Check that the empty state UI is displayed when the Topic list is empty.
+        onView(withText(R.string.settings_topics_page_blocked_topics_description_empty_text_v2))
+                .check(matches(isDisplayed()));
+
+        // Go back to the main Topics fragment
+        pressBack();
+        onViewWaiting(withText(R.string.settings_topics_page_toggle_sub_label_v2));
+
+        // Verify that the Topics are unblocked
+        onView(withText(TOPIC_NAME_1)).check(matches(isDisplayed()));
+        onView(withText(TOPIC_NAME_2)).check(matches(isDisplayed()));
+
+        // Verify that actions are sent
+        assertThat(
+                mUserActionTester.getActions(),
+                hasItems(
+                        "Settings.PrivacySandbox.Topics.BlockedTopicsOpened",
+                        "Settings.PrivacySandbox.Topics.TopicAdded"));
+    }
+
+    @Test
+    @SmallTest
     @Policies.Add({
         @Policies.Item(key = "PrivacySandboxAdTopicsEnabled", string = "false"),
         @Policies.Item(key = "PrivacySandboxPromptEnabled", string = "false")
@@ -432,8 +598,15 @@ public final class TopicsFragmentTest {
 
     @Test
     @SmallTest
+    @DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
     public void testLearnMoreLink() {
         startTopicsSettings();
+        TopicsFragment fragment = mSettingsActivityTestRule.getFragment();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    RecyclerView recyclerView = fragment.getView().findViewById(R.id.recycler_view);
+                    recyclerView.scrollToPosition(recyclerView.getAdapter().getItemCount() - 1);
+                });
         // Open the Topics learn more activity
         onView(withText(containsString("Learn more"))).perform(clickOnClickableSpan(0));
         onViewWaiting(withText(R.string.settings_topics_page_learn_more_heading))
@@ -452,8 +625,14 @@ public final class TopicsFragmentTest {
         setTopicsPrefEnabled(true);
         mFakePrivacySandboxBridge.setCurrentTopTopics(TOPIC_NAME_1, TOPIC_NAME_2);
         startTopicsSettings();
+        TopicsFragment fragment = mSettingsActivityTestRule.getFragment();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    RecyclerView recyclerView = fragment.getView().findViewById(R.id.recycler_view);
+                    recyclerView.scrollToPosition(recyclerView.getAdapter().getItemCount() - 1);
+                });
         // Open a Fledge settings activity.
-        onView(withText(containsString("Site-suggested ads"))).perform(clickOnClickableSpan(0));
+        onView(withText(containsString("suggested ads"))).perform(clickOnClickableSpan(0));
         onViewWaiting(withText(R.string.settings_fledge_page_toggle_sub_label))
                 .check(matches(isDisplayed()));
         // Close the additional activity by navigating back.
@@ -466,6 +645,12 @@ public final class TopicsFragmentTest {
         setTopicsPrefEnabled(true);
         mFakePrivacySandboxBridge.setCurrentTopTopics(TOPIC_NAME_1, TOPIC_NAME_2);
         startTopicsSettings();
+        TopicsFragment fragment = mSettingsActivityTestRule.getFragment();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    RecyclerView recyclerView = fragment.getView().findViewById(R.id.recycler_view);
+                    recyclerView.scrollToPosition(recyclerView.getAdapter().getItemCount() - 1);
+                });
         // Open a CookieSettings activity.
         onView(withText(containsString("cookie settings"))).perform(clickOnClickableSpan(1));
         onViewWaiting(withText(R.string.third_party_cookies_page_title))

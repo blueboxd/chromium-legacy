@@ -151,7 +151,6 @@ void CreateBrowserWithProfile(
     const ui::WindowShowState show_state,
     crosapi::mojom::DeskTemplateStatePtr additional_state,
     Profile* profile) {
-  profile = ProfileManager::MaybeForceOffTheRecordMode(profile);
   if (!profile) {
     // If we failed to load the profile, we should not try to proceed.
     return;
@@ -194,9 +193,36 @@ void CreateBrowserWithProfile(
   SetPinnedTabs(additional_state->first_non_pinned_index, browser);
 
   if (show_state == ui::SHOW_STATE_MINIMIZED) {
-    browser->window()->Minimize();
+    // TODO(crbug.com/329800621): This behavior difference between `Show()` and
+    // `ShowInactive()` is confusing and should be fixed.
+    // Calling `Show()` for a widget created as a minimized widget keeps the
+    // widget minimized the first time `Show()` is called. However calling
+    // `ShowInactive()` results in the browser window getting unminimized. So
+    // use `Show()` instead of `ShowInactive()`.
+    browser->window()->Show();
   } else {
     browser->window()->ShowInactive();
+  }
+}
+
+// This helper will attempt to load a specific profile if `profile_id` is
+// non-zero.  Otherwise, the main profile is loaded. The loaded profile (or
+// null) is passed to the callback.
+void LoadSpecificOrMainProfile(uint64_t profile_id,
+                               bool can_trigger_fre,
+                               base::OnceCallback<void(Profile*)> callback) {
+  auto on_load = [](base::OnceCallback<void(Profile*)> callback,
+                    Profile* profile) {
+    std::move(callback).Run(
+        ProfileManager::MaybeForceOffTheRecordMode(profile));
+  };
+
+  if (profile_id) {
+    LoadProfileWithId(base::BindOnce(on_load, std::move(callback)),
+                      can_trigger_fre, profile_id);
+  } else {
+    LoadMainProfile(base::BindOnce(on_load, std::move(callback)),
+                    can_trigger_fre);
   }
 }
 
@@ -217,17 +243,11 @@ void DeskTemplateClientLacros::CreateBrowserWithRestoredData(
     const gfx::Rect& bounds,
     const ui::WindowShowState show_state,
     crosapi::mojom::DeskTemplateStatePtr additional_state) {
-  if (additional_state->lacros_profile_id) {
-    uint64_t profile_id = additional_state->lacros_profile_id;
-    LoadProfileWithId(base::BindOnce(&CreateBrowserWithProfile, bounds,
-                                     show_state, std::move(additional_state)),
-                      /*can_trigger_fre=*/false, profile_id);
-    return;
-  }
-
-  LoadMainProfile(base::BindOnce(&CreateBrowserWithProfile, bounds, show_state,
-                                 std::move(additional_state)),
-                  /*can_trigger_fre=*/false);
+  LoadSpecificOrMainProfile(
+      additional_state->lacros_profile_id,
+      /*can_trigger_fre=*/false,
+      base::BindOnce(&CreateBrowserWithProfile, bounds, show_state,
+                     std::move(additional_state)));
 }
 
 void DeskTemplateClientLacros::GetBrowserInformation(
@@ -280,11 +300,25 @@ void DeskTemplateClientLacros::GetBrowserInformation(
 
 void DeskTemplateClientLacros::GetFaviconImage(
     const GURL& url,
+    std::optional<uint64_t> profile_id,
     GetFaviconImageCallback callback) {
+  LoadSpecificOrMainProfile(
+      profile_id.value_or(0), /*can_trigger_fre=*/false,
+      base::BindOnce(&DeskTemplateClientLacros::GetFaviconImageWithProfile,
+                     base::Unretained(this), url, std::move(callback)));
+}
+
+void DeskTemplateClientLacros::GetFaviconImageWithProfile(
+    const GURL& url,
+    GetFaviconImageCallback callback,
+    Profile* profile) {
+  if (!profile) {
+    std::move(callback).Run(gfx::ImageSkia());
+  }
+
   favicon::FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(
-          ProfileManager::GetActiveUserProfile(),
-          ServiceAccessType::EXPLICIT_ACCESS);
+      FaviconServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
 
   favicon_service->GetRawFaviconForPageURL(
       url, {favicon_base::IconType::kFavicon}, 0,

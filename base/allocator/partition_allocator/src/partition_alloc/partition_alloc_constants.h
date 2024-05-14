@@ -111,8 +111,7 @@ PartitionPageShift() {
   return 18;  // 256 KiB
 }
 #elif (BUILDFLAG(IS_APPLE) && defined(ARCH_CPU_64_BITS)) || \
-    (BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_ARM64)) ||   \
-    (BUILDFLAG(IS_LINUX) && defined(ARCH_CPU_ARM64))
+    defined(PARTITION_ALLOCATOR_CONSTANTS_POSIX_NONCONST_PAGE_SIZE)
 PA_ALWAYS_INLINE PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR size_t
 PartitionPageShift() {
   return PageAllocationGranularityShift() + 2;
@@ -468,10 +467,22 @@ constexpr size_t kBitsPerSizeT = sizeof(void*) * CHAR_BIT;
 // PurgeFlags::kDecommitEmptySlotSpans flag will eagerly decommit all entries
 // in the ring buffer, so with periodic purge enabled, this typically happens
 // every few seconds.
-constexpr size_t kEmptyCacheIndexBits = 7;
+#if BUILDFLAG(USE_LARGE_EMPTY_SLOT_SPAN_RING)
+// USE_LARGE_EMPTY_SLOT_SPAN_RING results in two size. kMaxEmptyCacheIndexBits,
+// which is used when the renderer is in the foreground, and
+// kMinEmptyCacheIndexBits which is used when the renderer is in the background.
+constexpr size_t kMaxEmptyCacheIndexBits = 10;
+constexpr size_t kMinEmptyCacheIndexBits = 7;
+#else
+constexpr size_t kMaxEmptyCacheIndexBits = 7;
+constexpr size_t kMinEmptyCacheIndexBits = 7;
+#endif
+static_assert(kMinEmptyCacheIndexBits <= kMaxEmptyCacheIndexBits,
+              "min size must be <= max size");
 // kMaxFreeableSpans is the buffer size, but is never used as an index value,
 // hence <= is appropriate.
-constexpr size_t kMaxFreeableSpans = 1 << kEmptyCacheIndexBits;
+constexpr size_t kMaxFreeableSpans = 1 << kMaxEmptyCacheIndexBits;
+constexpr size_t kMinFreeableSpans = 1 << kMinEmptyCacheIndexBits;
 constexpr size_t kDefaultEmptySlotSpanRingSize = 16;
 
 // If the total size in bytes of allocated but not committed pages exceeds this

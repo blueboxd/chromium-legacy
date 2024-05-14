@@ -177,7 +177,7 @@ void StorageFrontend::DisableStorageForTesting(
 void StorageFrontend::OnSettingsChanged(
     const ExtensionId& extension_id,
     StorageAreaNamespace storage_area,
-    absl::optional<api::storage::AccessLevel> session_access_level,
+    std::optional<api::storage::AccessLevel> session_access_level,
     base::Value changes) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT1("browser", "SettingsObserver:OnSettingsChanged", "extension_id",
@@ -203,9 +203,9 @@ void StorageFrontend::OnSettingsChanged(
   bool has_area_changed_event_listener =
       event_router->ExtensionHasEventListener(extension_id, area_event_name);
 
-  // Restrict event to blessed context if session access level is set only to
+  // Restrict event to privileged context if session access level is set only to
   // trusted contexts.
-  absl::optional<mojom::ContextType> restrict_to_context_type = absl::nullopt;
+  std::optional<mojom::ContextType> restrict_to_context_type = std::nullopt;
   if (storage_area == StorageAreaNamespace::kSession) {
     CHECK(session_access_level.has_value());
     if (session_access_level.value() ==

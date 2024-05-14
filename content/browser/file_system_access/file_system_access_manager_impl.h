@@ -40,9 +40,9 @@
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_access_handle_host.mojom.h"
-#include "third_party/blink/public/mojom/file_system_access/file_system_access_capacity_allocation_host.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_data_transfer_token.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_file_delegate_host.mojom.h"
+#include "third_party/blink/public/mojom/file_system_access/file_system_access_file_modification_host.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_file_writer.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_manager.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_observer_host.mojom.h"
@@ -269,9 +269,8 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
       const storage::FileSystemURL& url,
       mojo::PendingReceiver<blink::mojom::FileSystemAccessFileDelegateHost>
           file_delegate_receiver,
-      mojo::PendingReceiver<
-          blink::mojom::FileSystemAccessCapacityAllocationHost>
-          capacity_allocation_host_receiver,
+      mojo::PendingReceiver<blink::mojom::FileSystemAccessFileModificationHost>
+          file_modification_host_receiver,
       int64_t file_size,
       scoped_refptr<FileSystemAccessLockManager::LockHandle> lock,
       base::ScopedClosureRunner on_close_callback);
@@ -486,14 +485,23 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
       ChooseEntriesCallback callback,
       std::vector<FileSystemChooser::ResultEntry> entries,
       FileSystemAccessPermissionContext::SensitiveEntryResult result);
-  void DidCreateAndTruncateSaveFile(const BindingContext& binding_context,
-                                    const FileSystemChooser::ResultEntry& entry,
-                                    const storage::FileSystemURL& url,
-                                    ChooseEntriesCallback callback,
-                                    bool success);
+  void OnCheckPathsAgainstEnterprisePolicy(
+      const BindingContext& binding_context,
+      const FileSystemChooser::Options& options,
+      const std::string& starting_directory_id,
+      bool request_directory_write_access,
+      ChooseEntriesCallback callback,
+      std::vector<FileSystemAccessPermissionContext::PathInfo> entries);
+
+  void DidCreateAndTruncateSaveFile(
+      const BindingContext& binding_context,
+      const FileSystemAccessPermissionContext::PathInfo& entry,
+      const storage::FileSystemURL& url,
+      ChooseEntriesCallback callback,
+      bool success);
   void DidChooseDirectory(
       const BindingContext& binding_context,
-      const FileSystemChooser::ResultEntry& entry,
+      const FileSystemAccessPermissionContext::PathInfo& entry,
       ChooseEntriesCallback callback,
       const SharedHandleState& shared_handle_state,
       FileSystemAccessPermissionGrant::PermissionRequestOutcome outcome);
@@ -528,7 +536,7 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
       mojo::PendingReceiver<blink::mojom::FileSystemAccessTransferToken> token,
       const storage::FileSystemURL& url);
 
-  // FileSystemAccessCapacityAllocationHosts may reserve too much capacity
+  // FileSystemAccessFileModificationHosts may reserve too much capacity
   // from the quota system. This function determines the file's actual size
   // and corrects its capacity usage in the quota system.
   void CleanupAccessHandleCapacityAllocation(const storage::FileSystemURL& url,

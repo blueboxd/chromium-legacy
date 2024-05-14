@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/types/pass_key.h"
+#include "content/browser/preloading/prefetch/no_vary_search_helper.h"
 #include "content/browser/preloading/prerender/prerender_attributes.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/renderer_host/frame_tree.h"
@@ -181,8 +182,31 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
   // be ready for activation.
   void DidFinishNavigation(NavigationHandle* navigation_handle);
 
+  // Called from PrerenderHostRegistry::ReadyToCommitNavigation().
+  // Check to see if this is the initial navigation, then if there is a
+  // No-Vary-Search header store it.
+  void ReadyToCommitNavigation(NavigationHandle* navigation_handle);
+
   // Activates the prerendered page and returns StoredPage containing the page.
   // This must be called after this host gets ready for activation.
+  //
+  // After this method runs, the outermost RenderFrameHost of the prerendered
+  // page will be moved to the root FrameTreeNode of the primary FrameTree. More
+  // precisely,
+  //
+  // - Let `rfh_a` (respectively `rfh_b`) be the primary (resp. prerendered)
+  //   RenderFrameHost just before this method is called.
+  // - Let `ftn_root_a` (resp. `ftn_root_b`) be the root FrameTreeNode which
+  //   `rfh_a` (resp. `rfh_b`) is attached to.
+  // - Let `stored_page` be the return value.
+  //
+  // After this method is called, the following holds true:
+  //
+  // - `stored_page` holds `rfh_b`.
+  // - `rfh_b` and `ftn_root_a` are associated with each other.
+  // - Subframe nodes of `ftn_root_b` now also belong to the primary FrameTree,
+  //   since the root `rfh_b` is part of the primary FrameTree.
+  // - `ftn_root_b` shutdown.
   std::unique_ptr<StoredPage> Activate(NavigationRequest& navigation_request);
 
   // Returns true if the navigation params that were used in the initial
@@ -296,6 +320,12 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
 
   base::WeakPtr<PreloadingAttempt> preloading_attempt() { return attempt_; }
 
+  const std::optional<net::HttpNoVarySearchData>& no_vary_search() const {
+    return no_vary_search_;
+  }
+
+  bool IsInitialNavigation(const NavigationRequest& navigation_request) const;
+
  private:
   void RecordFailedFinalStatusImpl(const PrerenderCancellationReason& reason);
 
@@ -315,6 +345,8 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
   ActivationNavigationParamsMatch
   AreCommonNavigationParamsCompatibleWithNavigation(
       const blink::mojom::CommonNavigationParams& potential_activation);
+
+  void SetNoVarySearch(net::HttpNoVarySearchData no_vary_search);
 
   const PrerenderAttributes attributes_;
 
@@ -366,6 +398,10 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
   // out from |frame_tree_| and moved over to |web_contents_|'s primary frame
   // tree, while |frame_tree_| will be deleted.
   std::unique_ptr<FrameTree> frame_tree_;
+
+  // No-Vary-Search header information for the main frame of the prerendered
+  // page.
+  std::optional<net::HttpNoVarySearchData> no_vary_search_;
 };
 
 }  // namespace content

@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/allocator/allocator_extension.h"
 #include "base/allocator/partition_alloc_support.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
@@ -111,6 +110,7 @@
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_switches.h"
+#include "gpu/ipc/client/client_shared_image_interface.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "ipc/ipc_channel_handle.h"
@@ -1067,20 +1067,25 @@ RenderThreadImpl::GetVideoFrameCompositorContextProvider(
 
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
       EstablishGpuChannelSync();
-  if (!gpu_channel_host)
+  if (!gpu_channel_host) {
     return nullptr;
+  }
 
   // This context is only used to create textures and mailbox them, so
   // use lower limits than the default.
   gpu::SharedMemoryLimits limits = gpu::SharedMemoryLimits::ForMailboxContext();
 
   bool support_locking = false;
-  bool support_gles2_interface = true;
+#if BUILDFLAG(IS_ANDROID)
   // Use RasterInterface if kRasterInterfaceInVideoResourceUpdater is enabled.
+  bool support_gles2_interface = true;
   if (base::FeatureList::IsEnabled(
           media::kRasterInterfaceInVideoResourceUpdater)) {
     support_gles2_interface = false;
   }
+#else
+  bool support_gles2_interface = false;
+#endif
   bool support_raster_interface = true;
   bool support_oop_rasterization = false;
   bool support_grcontext = false;
@@ -1092,6 +1097,27 @@ RenderThreadImpl::GetVideoFrameCompositorContextProvider(
       viz::command_buffer_metrics::ContextType::RENDER_COMPOSITOR,
       kGpuStreamIdMedia, kGpuStreamPriorityMedia);
   return video_frame_compositor_context_provider_;
+}
+
+scoped_refptr<gpu::ClientSharedImageInterface>
+RenderThreadImpl::GetVideoFrameCompositorSharedImageInterface() {
+  if (shared_image_interface_ &&
+      !shared_image_interface_->gpu_channel()->IsLost()) {
+    return shared_image_interface_;
+  }
+
+  shared_image_interface_.reset();
+
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
+      EstablishGpuChannelSync();
+  if (!gpu_channel_host) {
+    return nullptr;
+  }
+
+  shared_image_interface_ =
+      gpu_channel_host->CreateClientSharedImageInterface();
+
+  return shared_image_interface_;
 }
 
 scoped_refptr<viz::ContextProviderCommandBuffer>
@@ -1501,21 +1527,10 @@ void RenderThreadImpl::OnSystemColorsChanged(int32_t aqua_color_variant) {
 
 void RenderThreadImpl::UpdateSystemColorInfo(
     mojom::UpdateSystemColorInfoParamsPtr params) {
-  bool color_providers_changed =
-      blink_platform_impl_->ThemeEngine()->UpdateColorProviders(
-          params->light_colors, params->dark_colors, params->forced_colors_map);
-  if (color_providers_changed) {
-    // Notify blink that the global ColorProvider instances for this renderer
-    // have changed. These color providers are only used to paint native
-    // controls and only require us to invalidate paint for local frames in this
-    // renderer.
-    blink::ColorProvidersChanged();
-  }
-
   auto* native_theme = ui::NativeTheme::GetInstanceForWeb();
 
   bool did_system_color_info_change = native_theme->UpdateSystemColorInfo(
-      params->is_dark_mode, params->forced_colors, params->colors);
+      params->is_dark_mode, params->forced_colors);
 
   did_system_color_info_change |=
       native_theme->user_color() != params->accent_color;
@@ -1683,6 +1698,7 @@ void RenderThreadImpl::OnRendererBackgrounded() {
   main_thread_scheduler_->SetRendererBackgrounded(true);
   discardable_memory_allocator_->OnBackgrounded();
   base::allocator::PartitionAllocSupport::Get()->OnBackgrounded();
+  blink::OnProcessBackgrounded();
 }
 
 void RenderThreadImpl::OnRendererForegrounded() {
@@ -1691,12 +1707,12 @@ void RenderThreadImpl::OnRendererForegrounded() {
   discardable_memory_allocator_->OnForegrounded();
   base::allocator::PartitionAllocSupport::Get()->OnForegrounded(
       MainFrameCounter::has_main_frame());
+  blink::OnProcessForegrounded();
   process_foregrounded_count_++;
 }
 
 void RenderThreadImpl::ReleaseFreeMemory() {
   TRACE_EVENT0("blink", "RenderThreadImpl::ReleaseFreeMemory()");
-  base::allocator::ReleaseFreeMemory();
   discardable_memory_allocator_->ReleaseFreeMemory();
 
   // Do not call into blink if it is not initialized.

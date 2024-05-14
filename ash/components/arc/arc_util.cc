@@ -31,6 +31,7 @@
 #include "chromeos/version/version_loader.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -216,18 +217,6 @@ bool IsArcVmUseHugePages() {
 bool IsArcVmDevConfIgnored() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ash::switches::kIgnoreArcVmDevConf);
-}
-
-// TODO(b/315507371): Remove after deprecated switches are not in use
-bool IsUreadaheadDisabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ash::switches::kArcDisableUreadahead);
-}
-
-// TODO(b/315507371): Remove after deprecated switches are not in use
-bool IsHostUreadaheadGeneration() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ash::switches::kArcHostUreadaheadGeneration);
 }
 
 bool IsArcUseDevCaches() {
@@ -687,6 +676,63 @@ void EnsureStaleArcVmAndArcVmUpstartJobsStopped(
   ConfigureUpstartJobs(std::move(jobs),
                        base::BindOnce(&OnStaleArcVmUpstartJobsStopped,
                                       user_id_hash, std::move(callback)));
+}
+
+bool ShouldAlwaysMountAndroidVolumesInFilesForTesting() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ash::switches::kArcForceMountAndroidVolumesInFiles);
+}
+
+bool ShouldDeferArcActivationUntilUserSessionStartUpTaskCompletion(
+    const PrefService* prefs) {
+  if (!base::FeatureList::IsEnabled(
+          kDeferArcActivationUntilUserSessionStartUpTaskCompletion)) {
+    return false;
+  }
+
+  const int max_window_size = kDeferArcActivationHistoryWindow.Get();
+  const int threshold = kDeferArcActivationHistoryThreshold.Get();
+  if (max_window_size < 0 || threshold < 0) {
+    LOG(ERROR) << "Unexpected negative value(s): " << max_window_size << ", "
+               << threshold;
+    return false;
+  }
+
+  // Look at recent (at most) `histogram_window` sessions, and if ARC is
+  // activated during user session start up tasks more than or equals to
+  // `history_threshold` times, we'll immediately activate ARC.
+  // I.e., if ARC is activated during user session start up tasks less than
+  // `history_threshold` times, we'll defer the ARC activation until
+  // the user session start up task completion.
+  const auto& history =
+      prefs->GetList(prefs::kArcFirstActivationDuringUserSessionStartUpHistory);
+  const size_t window_size = std::min<size_t>(history.size(), max_window_size);
+  base::span<const base::Value> history_window(history.end() - window_size,
+                                               history.end());
+  return base::ranges::count(history_window, base::Value(true)) < threshold;
+}
+
+void RecordFirstActivationDuringUserSessionStartUp(PrefService* prefs,
+                                                   bool value) {
+  if (!base::FeatureList::IsEnabled(
+          kDeferArcActivationUntilUserSessionStartUpTaskCompletion)) {
+    return;
+  }
+
+  const int window_size = kDeferArcActivationHistoryWindow.Get();
+  if (window_size < 0) {
+    LOG(ERROR) << "Unexpected negative window_size: " << window_size;
+    return;
+  }
+
+  ScopedListPrefUpdate update(
+      prefs, prefs::kArcFirstActivationDuringUserSessionStartUpHistory);
+  auto& history = update.Get();
+  // Limit the size up to the history_window.
+  history.Append(value);
+  if (history.size() >= static_cast<size_t>(window_size)) {
+    history.erase(history.begin(), history.end() - window_size);
+  }
 }
 
 }  // namespace arc

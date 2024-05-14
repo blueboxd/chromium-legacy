@@ -15,6 +15,7 @@
 #import "components/feature_engagement/public/tracker.h"
 #import "components/omnibox/browser/autocomplete_match.h"
 #import "components/omnibox/browser/autocomplete_result.h"
+#import "components/omnibox/browser/location_bar_model.h"
 #import "components/omnibox/browser/omnibox_log.h"
 #import "components/omnibox/browser/shortcuts_backend.h"
 #import "components/omnibox/common/omnibox_features.h"
@@ -22,9 +23,9 @@
 #import "ios/chrome/browser/autocomplete/model/autocomplete_classifier_factory.h"
 #import "ios/chrome/browser/autocomplete/model/autocomplete_provider_client_impl.h"
 #import "ios/chrome/browser/autocomplete/model/shortcuts_backend_factory.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/model/bookmarks_utils.h"
-#import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
-#import "ios/chrome/browser/default_browser/model/utils.h"
+#import "ios/chrome/browser/default_browser/model/default_browser_interest_signals.h"
 #import "ios/chrome/browser/https_upgrades/model/https_upgrade_service_factory.h"
 #import "ios/chrome/browser/intents/intents_donation_helper.h"
 #import "ios/chrome/browser/prerender/model/prerender_service.h"
@@ -93,9 +94,8 @@ PrefService* ChromeOmniboxClientIOS::GetPrefs() {
   return browser_state_->GetPrefs();
 }
 
-bookmarks::BookmarkModel* ChromeOmniboxClientIOS::GetBookmarkModel() {
-  return ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
-      browser_state_);
+bookmarks::CoreBookmarkModel* ChromeOmniboxClientIOS::GetBookmarkModel() {
+  return ios::BookmarkModelFactory::GetForBrowserState(browser_state_);
 }
 
 AutocompleteControllerEmitter*
@@ -136,6 +136,37 @@ gfx::Image ChromeOmniboxClientIOS::GetIconIfExtensionMatch(
   return gfx::Image();
 }
 
+std::u16string ChromeOmniboxClientIOS::GetFormattedFullURL() const {
+  return location_bar_->GetLocationBarModel()->GetFormattedFullURL();
+}
+
+std::u16string ChromeOmniboxClientIOS::GetURLForDisplay() const {
+  return location_bar_->GetLocationBarModel()->GetURLForDisplay();
+}
+
+GURL ChromeOmniboxClientIOS::GetNavigationEntryURL() const {
+  return location_bar_->GetLocationBarModel()->GetURL();
+}
+
+metrics::OmniboxEventProto::PageClassification
+ChromeOmniboxClientIOS::GetPageClassification(OmniboxFocusSource focus_source,
+                                              bool is_prefetch) {
+  return location_bar_->GetLocationBarModel()->GetPageClassification(
+      focus_source, is_prefetch);
+}
+
+security_state::SecurityLevel ChromeOmniboxClientIOS::GetSecurityLevel() const {
+  return location_bar_->GetLocationBarModel()->GetSecurityLevel();
+}
+
+net::CertStatus ChromeOmniboxClientIOS::GetCertStatus() const {
+  return location_bar_->GetLocationBarModel()->GetCertStatus();
+}
+
+const gfx::VectorIcon& ChromeOmniboxClientIOS::GetVectorIcon() const {
+  return location_bar_->GetLocationBarModel()->GetVectorIcon();
+}
+
 bool ChromeOmniboxClientIOS::ProcessExtensionKeyword(
     const std::u16string& text,
     const TemplateURL* template_url,
@@ -166,10 +197,8 @@ void ChromeOmniboxClientIOS::OnUserPastedInOmniboxResultingInValidURL() {
   base::RecordAction(
       base::UserMetricsAction("Mobile.Omnibox.iOS.PastedValidURL"));
 
-  if (!browser_state_->IsOffTheRecord() &&
-      HasRecentValidURLPastesAndRecordsCurrentPaste()) {
-    engagement_tracker_->NotifyEvent(
-        feature_engagement::events::kBlueDotPromoCriterionMet);
+  if (!browser_state_->IsOffTheRecord()) {
+    default_browser::NotifyOmniboxURLCopyPaste(engagement_tracker_);
   }
 }
 
@@ -266,10 +295,6 @@ void ChromeOmniboxClientIOS::OnAutocompleteAccept(
   location_bar_->OnNavigate(destination_url, post_content, disposition,
                             transition, destination_url_entered_without_scheme,
                             match);
-}
-
-LocationBarModel* ChromeOmniboxClientIOS::GetLocationBarModel() {
-  return location_bar_->GetLocationBarModel();
 }
 
 base::WeakPtr<OmniboxClient> ChromeOmniboxClientIOS::AsWeakPtr() {

@@ -6,9 +6,9 @@
 
 #include <iterator>
 #include <memory>
+#include <vector>
 
 #include "base/containers/contains.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
@@ -564,6 +564,17 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChainByEventURL(
 }
 
 SafeBrowsingNavigationObserverManager::AttributionResult
+SafeBrowsingNavigationObserverManager::IdentifyReferrerChainByEventURL(
+    const GURL& event_url,
+    SessionID event_tab_id,
+    int user_gesture_count_limit,
+    ReferrerChain* out_referrer_chain) {
+  return IdentifyReferrerChainByEventURL(
+      event_url, event_tab_id, content::GlobalRenderFrameHostId(),
+      user_gesture_count_limit, out_referrer_chain);
+}
+
+SafeBrowsingNavigationObserverManager::AttributionResult
 SafeBrowsingNavigationObserverManager::IdentifyReferrerChainByPendingEventURL(
     const GURL& event_url,
     int user_gesture_count_limit,
@@ -817,7 +828,7 @@ void SafeBrowsingNavigationObserverManager::CleanUpUserGestures() {
 
 void SafeBrowsingNavigationObserverManager::CleanUpIpAddresses() {
   for (auto it = host_to_ip_map_.begin(); it != host_to_ip_map_.end();) {
-    base::EraseIf(it->second, [](const ResolvedIPAddress& resolved_ip) {
+    std::erase_if(it->second, [](const ResolvedIPAddress& resolved_ip) {
       return IsEventExpired(resolved_ip.timestamp, GetNavigationFootprintTTL());
     });
     if (it->second.empty())
@@ -877,7 +888,9 @@ void SafeBrowsingNavigationObserverManager::RecordNotificationNavigationEvent(
     const GURL& script_url,
     const GURL& url) {
   // Push notifications are tied to the https scheme.
-  if (!script_url.SchemeIs(url::kHttpsScheme)) {
+  // We also care about notifications from Chrome extensions.
+  if (!script_url.SchemeIs(url::kHttpsScheme) &&
+      !script_url.SchemeIs("chrome-extension")) {
     return;
   }
   // We only collect notification referrers for ESB users.

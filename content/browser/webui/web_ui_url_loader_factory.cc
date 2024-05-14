@@ -31,6 +31,7 @@
 #include "content/browser/webui/url_data_source_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -351,24 +352,17 @@ class WebUIURLLoaderFactory : public network::SelfDeletingURLLoaderFactory {
       DVLOG(1) << "Bad scheme: " << request.url.scheme();
       SCOPED_CRASH_KEY_STRING32("WebUI", "actual_scheme", request.url.scheme());
       SCOPED_CRASH_KEY_STRING32("WebUI", "expected_scheme", scheme_);
+      SCOPED_CRASH_KEY_STRING64("WebUI", "requested_url", request.url.spec());
       mojo::ReportBadMessage("Incorrect scheme");
       mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
           ->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
       return;
     }
 
-    if (!allowed_hosts_.empty() &&
-        (!request.url.has_host() ||
-         allowed_hosts_.find(request.url.host()) == allowed_hosts_.end())) {
-      // Temporary reporting the bad WebUI host for for http://crbug.com/837328.
-      SCOPED_CRASH_KEY_STRING64("WebUIURLLoader", "url", request.url.spec());
-
-      DVLOG(1) << "Bad host: \"" << request.url.host() << '"';
-      mojo::ReportBadMessage("Incorrect host");
-      mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
-          ->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
-      return;
-    }
+    CHECK(allowed_hosts_.empty() ||
+          (request.url.has_host() &&
+           allowed_hosts_.find(request.url.host()) != allowed_hosts_.end()))
+        << "Incorrect host: " << request.url.host();
 
     if (request.url.host_piece() == kChromeUIBlobInternalsHost) {
       GetIOThreadTaskRunner({})->PostTask(

@@ -4,9 +4,11 @@
 
 #import "ios/chrome/browser/ui/save_to_drive/save_to_drive_coordinator.h"
 
+#import "base/metrics/histogram_functions.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/download/model/download_manager_tab_helper.h"
+#import "ios/chrome/browser/drive/model/drive_metrics.h"
 #import "ios/chrome/browser/drive/model/drive_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -16,6 +18,7 @@
 #import "ios/chrome/browser/shared/public/commands/manage_storage_alert_commands.h"
 #import "ios/chrome/browser/shared/public/commands/save_to_drive_commands.h"
 #import "ios/chrome/browser/shared/public/commands/show_signin_command.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/model/system_identity.h"
 #import "ios/chrome/browser/ui/account_picker/account_picker_configuration.h"
 #import "ios/chrome/browser/ui/account_picker/account_picker_coordinator.h"
@@ -64,6 +67,9 @@
   ChromeBrowserState* browserState = self.browser->GetBrowserState();
   drive::DriveService* driveService =
       drive::DriveServiceFactory::GetForBrowserState(browserState);
+  ChromeAccountManagerService* accountManagerService =
+      ChromeAccountManagerServiceFactory::GetForBrowserState(browserState);
+  PrefService* prefService = browserState->GetPrefs();
   id<SaveToDriveCommands> saveToDriveHandler =
       HandlerForProtocol(dispatcher, SaveToDriveCommands);
   id<ApplicationCommands> applicationHandler =
@@ -74,10 +80,18 @@
                               manageStorageAlertHandler:self
                                      applicationHandler:applicationHandler
                                    accountPickerHandler:self
+                                            prefService:prefService
+                                  accountManagerService:accountManagerService
                                            driveService:driveService];
 
   AccountPickerConfiguration* accountPickerConfiguration =
       drive::GetAccountPickerConfiguration(_downloadTask);
+
+  accountPickerConfiguration.dismissOnBackgroundTap =
+      self.baseViewController.traitCollection.horizontalSizeClass ==
+          UIUserInterfaceSizeClassRegular &&
+      self.baseViewController.traitCollection.verticalSizeClass ==
+          UIUserInterfaceSizeClassRegular;
   _accountPickerCoordinator = [[AccountPickerCoordinator alloc]
       initWithBaseViewController:self.baseViewController
                          browser:self.browser
@@ -143,7 +157,7 @@
 
 - (void)accountPickerCoordinatorCancel:
     (AccountPickerCoordinator*)accountPickerCoordinator {
-  [_accountPickerCoordinator stopAnimated:YES];
+  [_mediator cancelSaveToDrive];
 }
 
 - (void)accountPickerCoordinatorAllIdentityRemoved:
@@ -180,12 +194,16 @@
                 style:UIAlertActionStyleDefault
               handler:^(UIAlertAction* action) {
                 [weakMediator showManageStorageForIdentity:identity];
+                base::UmaHistogramBoolean(
+                    kSaveToDriveUIManageStorageAlertCanceled, false);
               }];
-  UIAlertAction* cancelAction =
-      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                               style:UIAlertActionStyleCancel
-                             handler:^(UIAlertAction* action){
-                             }];
+  UIAlertAction* cancelAction = [UIAlertAction
+      actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                style:UIAlertActionStyleCancel
+              handler:^(UIAlertAction* action) {
+                base::UmaHistogramBoolean(
+                    kSaveToDriveUIManageStorageAlertCanceled, true);
+              }];
   [_alertController addAction:manageStorageAction];
   [_alertController addAction:cancelAction];
   [_alertController setPreferredAction:manageStorageAction];

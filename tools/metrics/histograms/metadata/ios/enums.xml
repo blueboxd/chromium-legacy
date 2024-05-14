@@ -52,6 +52,23 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="SecondImpression"/>
 </enum>
 
+<enum name="DocumentDownloadConflictResolution">
+  <int value="0" label="No Conflict"/>
+  <int value="1" label="Previous Download Complete"/>
+  <int value="2" label="Previous Download Cancelled"/>
+  <int value="3" label="Previous Download Not Finished"/>
+</enum>
+
+<enum name="DocumentDownloadState">
+  <int value="0" label="Complete"/>
+  <int value="1" label="Failed"/>
+  <int value="2" label="Failed Not Resumable"/>
+  <int value="3" label="Not Started"/>
+  <int value="4" label="In Progress"/>
+  <int value="5"
+      label="Cancelled (includes termination of tab and application)"/>
+</enum>
+
 <enum name="ExperienceKitCalendarTypes">
   <summary>
     This list corresponds to the calendar providers supported by Experience Kit
@@ -132,8 +149,8 @@ chromium-metrics-reviews@google.com.
 
 <enum name="IOSCredentialProviderPromoSource">
   <int value="0" label="Unknown"/>
-  <int value="1" label="Password Copied"/>
-  <int value="2" label="Password Saved"/>
+  <int value="1" label="Password Copied (deprecated)"/>
+  <int value="2" label="Password Saved (deprecated)"/>
   <int value="3" label="Autofill Used"/>
   <int value="4" label="Set Up List"/>
 </enum>
@@ -158,6 +175,16 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Made for iOS"/>
   <int value="2" label="Stay Safe"/>
   <int value="3" label="All Tabs"/>
+</enum>
+
+<enum name="IOSDefaultBrowserSettingsPageUsage">
+  <summary>
+    The action taken by the user after they landed on the Default Browser
+    Settings page.
+  </summary>
+  <int value="0" label="Open iOS Settings"/>
+  <int value="1" label="Dismissed"/>
+  <int value="2" label="Displayed"/>
 </enum>
 
 <enum name="IOSDefaultBrowserVideoPromoAction">
@@ -273,14 +300,36 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="Skipped Default Browser Settings For NTP"/>
 </enum>
 
-<enum name="IOSExternalActionDefaultBrowserPromoUsage">
-  <summary>
-    The action taken by the user after they landed on the Default Browser Promo
-    from an External Action (URL passed to Chrome with
-    &quot;ChromeExternalAction&quot; as host).
-  </summary>
-  <int value="0" label="Open iOS Settings"/>
-  <int value="1" label="Dismissed"/>
+<enum name="IOSFullscreenMimeType">
+  <int value="0" label="Other"/>
+  <int value="1" label="Animated Portable Network Graphics"/>
+  <int value="2" label="AVIF Image"/>
+  <int value="3" label="Bitmap"/>
+  <int value="4" label="CSS"/>
+  <int value="5" label="CSV"/>
+  <int value="6" label="Microsoft Word"/>
+  <int value="7" label="Microsoft Word XML"/>
+  <int value="8" label="GIF"/>
+  <int value="9" label="HTML"/>
+  <int value="10" label="Icon"/>
+  <int value="11" label="JPEG"/>
+  <int value="12" label="JS"/>
+  <int value="13" label="JSON"/>
+  <int value="14" label="JSON LD"/>
+  <int value="15" label="PNG"/>
+  <int value="16" label="PDF"/>
+  <int value="17" label="PHP"/>
+  <int value="18" label="PowerPoint"/>
+  <int value="19" label="PowerPoint XML"/>
+  <int value="20" label="Rich Text Format"/>
+  <int value="21" label="SVG"/>
+  <int value="22" label="TIFF"/>
+  <int value="23" label="Plain Text"/>
+  <int value="24" label="Webp"/>
+  <int value="25" label="XHTML"/>
+  <int value="26" label="Microsoft Excel"/>
+  <int value="27" label="Microsoft Excel XML"/>
+  <int value="28" label="XML"/>
 </enum>
 
 <enum name="IOSHomeActionType">
@@ -288,7 +337,7 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Shortcuts"/>
   <int value="2" label="Return to Recent Tab tile"/>
   <int value="3" label="Feed Card"/>
-  <int value="4" label="Fake Omnibox tap"/>
+  <int value="4" label="Obsolete in M124 - Fake Omnibox tap"/>
   <int value="5" label="Set Up List"/>
   <int value="6" label="Omnibox navigation"/>
   <int value="7" label="Safety Check tile"/>
@@ -373,6 +422,12 @@ chromium-metrics-reviews@google.com.
   <int value="11" label="Standard beside Compact with Slideover"/>
   <int value="12" label="Compact beside Compact"/>
   <int value="13" label="Compact beside Compact with Slideover"/>
+</enum>
+
+<enum name="IOSNotificationsOptInActionOnPrompt">
+  <int value="0" label="Swiped to dismiss"/>
+  <int value="1" label="No thanks tapped"/>
+  <int value="2" label="Enable notifications tapped"/>
 </enum>
 
 <enum name="IOSNTPImpressionType">
@@ -588,6 +643,17 @@ chromium-metrics-reviews@google.com.
   <int value="6" label="Success"/>
 </enum>
 
+<enum name="IOSSaveToDriveOutcomeType">
+  <int value="0" label="Failure - WebState Hidden"/>
+  <int value="1" label="Failure - WebState Destroyed"/>
+  <int value="2" label="Failure - Download Destroyed"/>
+  <int value="3" label="Failure - Canceled (Files Selected)"/>
+  <int value="4" label="Failure - Canceled (Drive Selected)"/>
+  <int value="5" label="Success - Selected Files"/>
+  <int value="6" label="Success - Selected Drive"/>
+  <int value="7" label="Success - Opted to Manage Storage"/>
+</enum>
+
 <enum name="IOSSaveToDriveUploadTaskStateType">
   <int value="0" label="Not Started"/>
   <int value="1" label="In Progress"/>
@@ -647,6 +713,9 @@ chromium-metrics-reviews@google.com.
       label="Success - StoreKit opened and app not installed (maybe dismissed
              before full installation)"/>
   <int value="8" label="Success - StoreKit opened and app installed"/>
+  <int value="9" label="Failure - User out-of-storage and DID manage storage"/>
+  <int value="10"
+      label="Failure - User out-of-storage and did NOT manage storage"/>
 </enum>
 
 <enum name="IOSSearchExtensionAction">
@@ -782,6 +851,13 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="Page Control Drag"/>
   <int value="4" label="Item Drag"/>
   <int value="5" label="Voice Over Swipe"/>
+</enum>
+
+<enum name="IOSTipsNotificationType">
+  <int value="0" label="Default Browser"/>
+  <int value="1" label="What's New"/>
+  <int value="2" label="Sign In"/>
+  <int value="3" label="Error"/>
 </enum>
 
 <enum name="IOSWebFileInputAttributes">

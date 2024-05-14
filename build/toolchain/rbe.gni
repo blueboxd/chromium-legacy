@@ -1,3 +1,7 @@
+# Copyright 2024 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # Defines the configuration of Remote Build Execution (RBE).
 
 declare_args() {
@@ -26,6 +30,8 @@ declare_args() {
   if (host_os == "linux") {
     rbe_py_cfg_file =
         rebase_path(rbe_cfg_dir, root_build_dir) + "/python/rewrapper_linux.cfg"
+    rbe_py_large_cfg_file = rebase_path(rbe_cfg_dir, root_build_dir) +
+                            "/python/rewrapper_linux_large.cfg"
     rbe_cc_cfg_file = rebase_path(rbe_cfg_dir, root_build_dir) +
                       "/chromium-browser-clang/rewrapper_linux.cfg"
     rbe_link_cfg_file = rebase_path(rbe_cfg_dir, root_build_dir) +
@@ -33,12 +39,16 @@ declare_args() {
   } else if (host_os == "win") {
     rbe_py_cfg_file = rebase_path(rbe_cfg_dir, root_build_dir) +
                       "/python/rewrapper_windows.cfg"
+    rbe_py_large_cfg_file = rebase_path(rbe_cfg_dir, root_build_dir) +
+                            "/python/rewrapper_windows_large.cfg"
     rbe_cc_cfg_file = rebase_path(rbe_cfg_dir, root_build_dir) +
                       "/chromium-browser-clang/rewrapper_windows.cfg"
     rbe_link_cfg_file = ""
   } else if (host_os == "mac") {
     rbe_py_cfg_file =
         rebase_path(rbe_cfg_dir, root_build_dir) + "/python/rewrapper_mac.cfg"
+    rbe_py_large_cfg_file = rebase_path(rbe_cfg_dir, root_build_dir) +
+                            "/python/rewrapper_mac_large.cfg"
     rbe_cc_cfg_file = rebase_path(rbe_cfg_dir, root_build_dir) +
                       "/chromium-browser-clang/rewrapper_mac.cfg"
     rbe_link_cfg_file = ""
@@ -73,3 +83,14 @@ if (is_mac || is_ios) {
     use_remoteexec_links = false
   }
 }
+
+# TODO(crbug.com/326584510): Reclient does not upload `inputs` from C/C++
+# targets. This file is added to `inputs` for all C targets in
+# //build/config/BUILDCONFIG.gn. We work around the bug in Reclient by
+# specifying the file here.
+#
+# This is a comma-delimited list of paths relative to the source tree root. The
+# leading space is important, if the string is non-empty. :)
+unsafe_buffers_paths_txt =
+    rebase_path("//build/config/unsafe_buffers_paths.txt", rbe_exec_root)
+rbe_bug_326584510_missing_inputs = " -inputs=" + unsafe_buffers_paths_txt

@@ -5,6 +5,12 @@
 #ifndef IOS_CHROME_BROWSER_DEFAULT_BROWSER_MODEL_DEFAULT_BROWSER_INTEREST_SIGNALS_H_
 #define IOS_CHROME_BROWSER_DEFAULT_BROWSER_MODEL_DEFAULT_BROWSER_INTEREST_SIGNALS_H_
 
+@class SceneState;
+
+namespace feature_engagement {
+class Tracker;
+}
+
 namespace default_browser {
 
 // Records all necessary information for Chrome start with widget.
@@ -26,6 +32,35 @@ void NotifyPasswordAutofillSuggestionUsed();
 // Records all necessary information when password is saved or updated through
 // infobar.
 void NotifyPasswordSavedOrUpdated();
+
+// Records all necessary information when remote tabs grid is selected.
+void NotifyRemoteTabsGridViewed();
+
+// Records all necessary information when user added or edited a bookmark.
+void NotifyBookmarkAddOrEdit();
+
+// Records all necessary information when user opens bookmark manager.
+void NotifyBookmarkManagerOpened();
+
+// Records all necessary information when user closes bookmark manager.
+// TODO(b/315330160): Consider not tracking Bookmark manager close events.
+void NotifyBookmarkManagerClosed();
+
+// Records all necessary information when user opens a URL from bookmarks.
+void NotifyURLFromBookmarkOpened();
+
+// Records all necessary information when user copy-pastes a URL in omnibox.
+void NotifyOmniboxURLCopyPaste(feature_engagement::Tracker* tracker);
+
+// Records all necessary information when user copy-pastes and navigates to a
+// URL in omnibox.
+void NotifyOmniboxURLCopyPasteAndNavigate(bool is_off_record,
+                                          feature_engagement::Tracker* tracker,
+                                          SceneState* scene_state);
+
+// Records all necessary information when user copy-pastes and searches a text
+// in omnibox.
+void NotifyOmniboxTextCopyPasteAndNavigate();
 
 }  // namespace default_browser
 

@@ -52,7 +52,7 @@ export class DeviceTrustConnectorElement extends CustomElement {
     this.setValueToElement('#policy-enabled-levels', `${policyLevels}`);
   }
 
-  set consentMetadata(consentMetadata: ConsentMetadata|undefined) {
+  set consentMetadata(consentMetadata: ConsentMetadata|null) {
     const consentDetailsEl = (this.$('#consent-details') as HTMLElement);
     const noConsentDetailsEl = (this.$('#no-consent') as HTMLElement);
     if (!consentMetadata) {
@@ -111,8 +111,8 @@ export class DeviceTrustConnectorElement extends CustomElement {
             utils.trustLevelToString(keyMetadata.trustLevel);
         keyTypeStateEl.innerText = utils.keyTypeToString(keyMetadata.keyType);
         spkiHashStateEl.innerText = keyMetadata.encodedSpkiHash;
-        keySyncStateEl.innerText =
-            utils.keySyncCodeToString(keyMetadata.syncKeyResponseCode);
+        keySyncStateEl.innerText = utils.keySyncCodeToString(
+            keyMetadata.keyUploadStatus?.syncKeyResponseCode);
 
         this.showElement(keyLoadedRows);
       } else {

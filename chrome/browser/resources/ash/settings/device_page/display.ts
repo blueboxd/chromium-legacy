@@ -9,6 +9,7 @@
 
 import 'chrome://resources/ash/common/cr_elements/cr_checkbox/cr_checkbox.js';
 import 'chrome://resources/ash/common/cr_elements/cr_link_row/cr_link_row.js';
+import 'chrome://resources/ash/common/cr_elements/cr_slider/cr_slider.js';
 import 'chrome://resources/ash/common/cr_elements/cr_tabs/cr_tabs.js';
 import 'chrome://resources/ash/common/cr_elements/cr_toggle/cr_toggle.js';
 import 'chrome://resources/ash/common/cr_elements/policy/cr_policy_pref_indicator.js';
@@ -23,10 +24,10 @@ import '../settings_vars.css.js';
 import 'chrome://resources/ash/common/cr_elements/cr_slider/cr_slider.js';
 import 'chrome://resources/ash/common/cr_elements/cr_shared_style.css.js';
 
-import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {CrCheckboxElement} from 'chrome://resources/ash/common/cr_elements/cr_checkbox/cr_checkbox.js';
 import {CrSliderElement, SliderTick} from 'chrome://resources/ash/common/cr_elements/cr_slider/cr_slider.js';
 import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
+import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
@@ -38,7 +39,7 @@ import {isRevampWayfindingEnabled} from '../common/load_time_booleans.js';
 import {RouteObserverMixin} from '../common/route_observer_mixin.js';
 import {DropdownMenuOptionList} from '../controls/settings_dropdown_menu.js';
 import {SettingsSliderElement} from '../controls/settings_slider.js';
-import {DisplayConfigurationObserverReceiver, DisplaySettingsOrientationOption, DisplaySettingsProviderInterface, DisplaySettingsType, TabletModeObserverReceiver} from '../mojom-webui/display_settings_provider.mojom-webui.js';
+import {DisplayConfigurationObserverReceiver, DisplaySettingsOrientationOption, DisplaySettingsProviderInterface, DisplaySettingsType, DisplaySettingsValue, TabletModeObserverReceiver} from '../mojom-webui/display_settings_provider.mojom-webui.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {Route, routes} from '../router.js';
 
@@ -64,6 +65,20 @@ interface DisplayResolutionPrefObject {
     external_scale_percentage?: number,
     internal_scale_percentage?: number,
   }|null;
+}
+
+function createDisplayValue(overrides: Partial<DisplaySettingsValue>):
+    DisplaySettingsValue {
+  const empty = {
+    isInternalDisplay: null,
+    displayId: null,
+    orientation: null,
+    nightLightStatus: null,
+    nightLightSchedule: null,
+    mirrorModeStatus: null,
+    unifiedModeStatus: null,
+  };
+  return Object.assign(empty, overrides);
 }
 
 export interface SettingsDisplayElement {
@@ -166,6 +181,13 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
         },
       },
 
+      isDisplayPerformanceSupported_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('isDisplayPerformanceSupported');
+        },
+      },
+
       ambientColorAvailable_: {
         type: Boolean,
         value() {
@@ -186,6 +208,11 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
       },
 
       isTabletMode_: {
+        type: Boolean,
+        value: false,
+      },
+
+      isDisplayPerformanceEnabled_: {
         type: Boolean,
         value: false,
       },
@@ -263,6 +290,7 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
   private displaySettingsProvider: DisplaySettingsProviderInterface;
   private displayTabNames_: string[];
   private invalidDisplayId_: string;
+  private isDisplayPerformanceEnabled_: boolean;
   private readonly isRevampWayfindingEnabled_: boolean;
   private isTabletMode_: boolean;
   private listAllDisplayModes_: boolean;
@@ -345,7 +373,7 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
 
     // Record metrics that user has opened the display settings page.
     this.displaySettingsProvider.recordChangingDisplaySettings(
-        DisplaySettingsType.kDisplayPage, /*value=*/ {});
+        DisplaySettingsType.kDisplayPage, /*value=*/ createDisplayValue({}));
   }
 
   override disconnectedCallback(): void {
@@ -861,6 +889,15 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
   }
 
   /**
+   * Returns true if display brightness controls should be shown for |display|.
+   */
+  private showBrightnessControls_(display: DisplayUnitInfo): boolean {
+    return loadTimeData.getBoolean(
+               'enableDisplayBrightnessControlInSettings') &&
+        display.isInternal;
+  }
+
+  /**
    * Returns true if the ambient color setting should be shown for |display|.
    */
   showAmbientColorSetting(
@@ -1112,7 +1149,7 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
         .setDisplayProperties(this.selectedDisplay.id, properties)
         .then(() => this.setPropertiesCallback_());
     this.displaySettingsProvider.recordChangingDisplaySettings(
-        DisplaySettingsType.kPrimaryDisplay, /*value=*/ {});
+        DisplaySettingsType.kPrimaryDisplay, createDisplayValue({}));
   }
 
   /**
@@ -1201,10 +1238,10 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
         DisplaySettingsType.kRefreshRate :
         DisplaySettingsType.kResolution;
     this.displaySettingsProvider.recordChangingDisplaySettings(
-        displaySettingsType, {
+        displaySettingsType, createDisplayValue({
           isInternalDisplay: this.selectedDisplay.isInternal,
           displayId: BigInt(this.selectedDisplay.id),
-        });
+        }));
   }
 
   /**
@@ -1225,10 +1262,10 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
         .setDisplayProperties(this.selectedDisplay.id, properties)
         .then(() => this.setPropertiesCallback_());
     this.displaySettingsProvider.recordChangingDisplaySettings(
-        DisplaySettingsType.kScaling, {
+        DisplaySettingsType.kScaling, createDisplayValue({
           isInternalDisplay: this.selectedDisplay.isInternal,
           displayId: BigInt(this.selectedDisplay.id),
-        });
+        }));
   }
 
   /**
@@ -1266,7 +1303,8 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
     }
     this.displaySettingsProvider.recordChangingDisplaySettings(
         DisplaySettingsType.kOrientation,
-        {isInternalDisplay: this.selectedDisplay.isInternal, orientation});
+        createDisplayValue(
+            {isInternalDisplay: this.selectedDisplay.isInternal, orientation}));
   }
 
   private onMirroredClick_(event: Event): void {
@@ -1284,9 +1322,9 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
       }
     });
     this.displaySettingsProvider.recordChangingDisplaySettings(
-        DisplaySettingsType.kMirrorMode, /*value=*/ {
+        DisplaySettingsType.kMirrorMode, /*value=*/ createDisplayValue({
           mirrorModeStatus: mirrorModeInfo.mode === MirrorMode.NORMAL,
-        });
+        }));
   }
 
   private onUnifiedDesktopClick_(): void {
@@ -1296,9 +1334,11 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
     getDisplayApi()
         .setDisplayProperties(this.primaryDisplayId, properties)
         .then(() => this.setPropertiesCallback_());
+    const unified =
+        properties.isUnified === undefined ? null : properties.isUnified;
     this.displaySettingsProvider.recordChangingDisplaySettings(
         DisplaySettingsType.kUnifiedMode,
-        /*value=*/ {unifiedModeStatus: properties.isUnified});
+        createDisplayValue({unifiedModeStatus: unified}));
   }
 
   private onOverscanClick_(e: Event): void {
@@ -1308,7 +1348,8 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
     this.showOverscanDialog_(true);
     this.displaySettingsProvider.recordChangingDisplaySettings(
         DisplaySettingsType.kOverscan,
-        {isInternalDisplay: this.selectedDisplay.isInternal});
+        createDisplayValue(
+            {isInternalDisplay: this.selectedDisplay.isInternal}));
   }
 
   private onCloseOverscanDialog_(): void {
@@ -1373,6 +1414,12 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
       displayLayout.updateDisplays(
           this.displays, this.layouts, this.mirroringDestinationIds);
     }
+  }
+
+  private toggleDisplayPerformanceEnabled_(): void {
+    this.isDisplayPerformanceEnabled_ = !this.isDisplayPerformanceEnabled_;
+    this.displaySettingsProvider.setShinyPerformance(
+        this.isDisplayPerformanceEnabled_);
   }
 
   getInvalidDisplayId(): string {

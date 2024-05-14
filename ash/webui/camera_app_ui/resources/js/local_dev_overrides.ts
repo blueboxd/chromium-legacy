@@ -15,11 +15,14 @@ import * as localDev from './local_dev.js';
 import {getCameraDirectory, getObjectURL} from './models/file_system.js';
 import {ChromeHelper, getInstanceImpl} from './mojo/chrome_helper.js';
 import {
+  EventsSenderRemote,
+  LidState,
   ScreenState,
   StorageMonitorStatus,
   ToteMetricFormat,
   WifiConfig,
 } from './mojo/type.js';
+import {fakeEndpoint} from './mojo/util.js';
 import {MimeType} from './type.js';
 import {expandPath} from './util.js';
 
@@ -160,6 +163,21 @@ export class ChromeHelperFake extends ChromeHelper {
   override openWifiDialog(_config: WifiConfig): void {
     /* Do nothing. */
   }
+
+  override async initLidStateMonitor(_onChange: (lidStatus: LidState) => void):
+      Promise<LidState> {
+    return LidState.kNotPresent;
+  }
+
+  override async getEventsSender(): Promise<EventsSenderRemote> {
+    return fakeEndpoint();
+  }
+
+  override async initScreenLockedMonitor(
+      _onChange: (isScreenLocked: boolean) => void): Promise<boolean> {
+    return false;
+  }
+
   /* eslint-enable @typescript-eslint/require-await */
 }
 

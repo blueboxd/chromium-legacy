@@ -8,8 +8,12 @@
 #include <string>
 #include <string_view>
 #include <variant>
+#include <vector>
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/cpp/picker/picker_category.h"
+#include "base/files/file_path.h"
+#include "base/unguessable_token.h"
 #include "ui/base/models/image_model.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -44,10 +48,43 @@ class ASH_PUBLIC_EXPORT PickerSearchResult {
     bool operator==(const EmoticonData&) const;
   };
 
+  struct ClipboardData {
+    // Unique ID that specifies which item in the clipboard this refers to.
+    base::UnguessableToken item_id;
+
+    ClipboardData(base::UnguessableToken item_id);
+    ClipboardData(const ClipboardData&);
+    ClipboardData& operator=(const ClipboardData&);
+    ~ClipboardData();
+
+    bool operator==(const ClipboardData&) const;
+  };
+
   struct GifData {
-    GURL url;
-    // Width and height of the GIF at `url`.
-    gfx::Size dimensions;
+    GifData(const GURL& preview_url,
+            const GURL& preview_image_url,
+            const gfx::Size& preview_dimensions,
+            const GURL& full_url,
+            const gfx::Size& full_dimensions,
+            std::u16string content_description);
+    GifData(const GifData&);
+    GifData& operator=(const GifData&);
+    ~GifData();
+
+    // A url to an animated preview gif media source.
+    GURL preview_url;
+
+    // A url to an unanimated preview image of the gif media source.
+    GURL preview_image_url;
+
+    // Width and height of the GIF at `preview_url`.
+    gfx::Size preview_dimensions;
+
+    // A url to a full-sized gif media source.
+    GURL full_url;
+
+    // Width and height of the GIF at `full_url`.
+    gfx::Size full_dimensions;
 
     // A textual description of the content, primarily used for accessibility
     // features.
@@ -64,15 +101,41 @@ class ASH_PUBLIC_EXPORT PickerSearchResult {
     bool operator==(const BrowsingHistoryData&) const;
   };
 
+  struct LocalFileData {
+    base::FilePath file_path;
+    std::u16string title;
+
+    bool operator==(const LocalFileData&) const;
+  };
+
+  struct DriveFileData {
+    GURL url;
+    std::u16string title;
+
+    bool operator==(const DriveFileData&) const;
+  };
+
+  struct CategoryData {
+    PickerCategory category;
+
+    bool operator==(const CategoryData&) const;
+  };
+
   using Data = std::variant<TextData,
                             EmojiData,
                             SymbolData,
                             EmoticonData,
+                            ClipboardData,
                             GifData,
-                            BrowsingHistoryData>;
+                            BrowsingHistoryData,
+                            LocalFileData,
+                            DriveFileData,
+                            CategoryData>;
 
   PickerSearchResult(const PickerSearchResult&);
   PickerSearchResult& operator=(const PickerSearchResult&);
+  PickerSearchResult(PickerSearchResult&&);
+  PickerSearchResult& operator=(PickerSearchResult&&);
   ~PickerSearchResult();
 
   static PickerSearchResult BrowsingHistory(const GURL& url,
@@ -82,9 +145,17 @@ class ASH_PUBLIC_EXPORT PickerSearchResult {
   static PickerSearchResult Emoji(std::u16string_view emoji);
   static PickerSearchResult Symbol(std::u16string_view symbol);
   static PickerSearchResult Emoticon(std::u16string_view emoticon);
-  static PickerSearchResult Gif(const GURL& url,
-                                const gfx::Size& dimensions,
+  static PickerSearchResult Clipboard(base::UnguessableToken item_id);
+  static PickerSearchResult Gif(const GURL& preview_url,
+                                const GURL& preview_image_url,
+                                const gfx::Size& preview_dimensions,
+                                const GURL& full_url,
+                                const gfx::Size& full_dimensions,
                                 std::u16string content_description);
+  static PickerSearchResult LocalFile(std::u16string title,
+                                      base::FilePath file_path);
+  static PickerSearchResult DriveFile(std::u16string title, const GURL& url);
+  static PickerSearchResult Category(PickerCategory category);
 
   const Data& data() const;
 

@@ -380,8 +380,6 @@ bool Clipboard::IsMarkedByOriginatorAsConfidential() const {
   return false;
 }
 
-void Clipboard::MarkAsConfidential() {}
-
 void Clipboard::ReadAvailableTypes(ClipboardBuffer buffer,
                                    const DataTransferEndpoint* data_dst,
                                    ReadAvailableTypesCallback callback) const {

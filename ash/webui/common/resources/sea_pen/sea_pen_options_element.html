@@ -1,0 +1,70 @@
+<style include="common cros-button-style">
+  #container {
+    align-items: center;
+    color: var(--cros-text-color-primary);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-block: var(--cr-section-padding);
+    /* Leave 4px of padding for chip outlines. */
+    padding: 4px;
+    width: calc(100% - 8px);
+    max-height: 80px;
+    overflow: hidden;
+  }
+
+  #container.expanded {
+    max-height: unset;
+  }
+
+  #container cr-button {
+    background-color: var(--cros-bg-color);
+    border-radius: 12px;
+    height: 36px;
+    padding: 4px, 12px;
+  }
+
+  #container cr-button[aria-selected] {
+    --text-color: var(--cros-button-label-color-primary);
+    background-color: var(--cros-button-background-color-primary);
+    border-radius: 10px;
+    outline: 2px solid var(--cros-button-background-color-primary);
+    outline-offset: 2px;
+  }
+
+  img {
+    border-radius: 50%;
+    height: 20px;
+    margin-inline-end: 8px;
+    outline: 2px solid var(--cros-separator-color);
+    outline-offset: -2px;
+    width: 20px;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  #expandButton {
+    --text-color: var(--cros-text-color-prominent);
+  }
+</style>
+<div id="container" class$="[[getOptionsClassName_(chipsExpanded_)]]">
+  <template is="dom-repeat" items="[[options]]" as="option">
+    <cr-button
+        class="option"
+        on-click="onClickOption_"
+        aria-selected$="[[isSelected_(option, selectedChip, selectedOptions)]]">
+      <template is="dom-if" if="[[option.previewUrl]]" restamp>
+        <img is="cr-auto-img" auto-src="[[option.previewUrl]]">
+      </template>
+      [[option.translation]]
+    </cr-button>
+  </template>
+  <cr-button
+      id="expandButton"
+      class$="[[getExpandButtonClassName_(shouldShowExpandButton_)]]"
+      on-click="onClickExpandButton_">
+  </cr-button>
+</div>

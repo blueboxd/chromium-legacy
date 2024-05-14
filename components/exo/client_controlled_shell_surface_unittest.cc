@@ -210,8 +210,7 @@ TEST_P(ClientControlledShellSurfaceTest, UpdateModalWindow) {
   std::unique_ptr<Display> display(new Display);
   std::unique_ptr<Surface> child = display->CreateSurface();
   gfx::Size buffer_size(128, 128);
-  std::unique_ptr<Buffer> child_buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  auto child_buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   child->Attach(child_buffer.get());
   std::unique_ptr<SubSurface> sub_surface(
       display->CreateSubSurface(child.get(), surface));
@@ -324,8 +323,7 @@ TEST_P(ClientControlledShellSurfaceTest, SurfaceShadow) {
 
   // 4) Shadow bounds is independent of the sub surface.
   gfx::Size new_buffer_size(256, 256);
-  std::unique_ptr<Buffer> new_child_buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(new_buffer_size)));
+  auto new_child_buffer = test::ExoTestHelper::CreateBuffer(new_buffer_size);
   child->Attach(new_child_buffer.get());
   child->Commit();
   surface->Commit();
@@ -1760,8 +1758,7 @@ TEST_P(ClientControlledShellSurfaceTest,
       display::Screen::GetScreen()->GetPrimaryDisplay().id();
 
   const gfx::Size buffer_size(64, 64);
-  std::unique_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
 
   constexpr double kOriginalScale = 4.f;
   const gfx::Rect bounds_dp(64, 64, 128, 128);
@@ -2375,8 +2372,7 @@ TEST_F(ClientControlledShellSurfaceScaleTest,
   EXPECT_EQ(0, delegate->bounds_change_count());
 
   const gfx::Size new_buffer_size(10, 10);
-  std::unique_ptr<Buffer> new_buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(new_buffer_size)));
+  auto new_buffer = test::ExoTestHelper::CreateBuffer(new_buffer_size);
   surface->Attach(new_buffer.get());
   shell_surface->SetScaleFactor(1.f);
   surface->Commit();
@@ -2490,6 +2486,21 @@ TEST_P(ClientControlledShellSurfaceTest, OverlayShadowBounds) {
   }
 }
 
+// WideFrameView should be safely deleted even when the window is
+// deleted directly.
+TEST_P(ClientControlledShellSurfaceTest, DeleteWindowWithWideframe) {
+  auto shell_surface =
+      exo::test::ShellSurfaceBuilder({64, 64})
+          .SetWindowState(chromeos::WindowStateType::kMaximized)
+          .SetGeometry(gfx::Rect(100, 0, 64, 64))
+          .SetInputRegion(gfx::Rect(0, 0, 64, 64))
+          .SetFrame(SurfaceFrameType::NORMAL)
+          .BuildClientControlledShellSurface();
+  auto* wide_frame = shell_surface->wide_frame_for_test();
+  ASSERT_TRUE(wide_frame);
+  delete shell_surface->GetWidget()->GetNativeWindow();
+}
+
 // WideFrameView follows its respective surface when it is eventually parented.
 // See crbug.com/1223135.
 TEST_P(ClientControlledShellSurfaceTest, WideframeForUnparentedTasks) {
@@ -2572,9 +2583,7 @@ TEST_P(ClientControlledShellSurfaceTest,
       display::Screen::GetScreen()->GetPrimaryDisplay().id();
 
   const gfx::Size buffer_size(64, 64);
-  std::unique_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-
+  auto buffer = test::ExoTestHelper::CreateBuffer(buffer_size);
   const gfx::Rect bounds_dp(64, 64, 128, 128);
   const gfx::Rect bounds_px_for_2x = gfx::ScaleToRoundedRect(bounds_dp, 2);
   {
@@ -2657,6 +2666,34 @@ TEST_P(ClientControlledShellSurfaceTest, FrameOverlap) {
   shell_surface->SetMinimized();
   surface->Commit();
   EXPECT_TRUE(shell_surface->GetWidget()->IsMinimized());
+}
+
+TEST_P(ClientControlledShellSurfaceTest, ShowMinimizedNoActivation) {
+  class TestObserver : public SeatObserver {
+   public:
+    // SeatObserver:
+    void OnSurfaceFocused(Surface* gained_focus,
+                          Surface* lost_focus,
+                          bool has_focused_client) override {
+      focused_called_ = true;
+    }
+
+    bool focused_called() const { return focused_called_; }
+
+   private:
+    bool focused_called_ = false;
+  } observer;
+
+  Seat seat;
+  seat.AddObserver(&observer, 1);
+
+  auto shell_surface =
+      test::ShellSurfaceBuilder({300, 200})
+          .SetWindowState(chromeos::WindowStateType::kMinimized)
+          .BuildClientControlledShellSurface();
+  ASSERT_TRUE(shell_surface->GetWidget()->IsMinimized());
+  EXPECT_FALSE(observer.focused_called());
+  seat.RemoveObserver(&observer);
 }
 
 }  // namespace exo

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/birch/birch_client.h"
 #include "ash/shell_observer.h"
 #include "base/scoped_observation.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -15,14 +16,18 @@ class Profile;
 
 namespace ash {
 
-class Shell;
-class BirchClientImpl;
+class BirchCalendarProvider;
 class BirchFileSuggestProvider;
 class BirchRecentTabsProvider;
+class BirchReleaseNotesProvider;
+class RefreshTokenWaiter;
+class Shell;
 
 // A keyed service which is used to manage data providers for the birch feature.
 // Fetched data will be sent to the `BirchModel` to be stored.
-class BirchKeyedService : public ShellObserver, public KeyedService {
+class BirchKeyedService : public KeyedService,
+                          public ShellObserver,
+                          public BirchClient {
  public:
   explicit BirchKeyedService(Profile* profile);
   BirchKeyedService(const BirchKeyedService&) = delete;
@@ -33,10 +38,19 @@ class BirchKeyedService : public ShellObserver, public KeyedService {
     return file_suggest_provider_.get();
   }
 
+  BirchReleaseNotesProvider* GetReleaseNotesProviderForTest() {
+    return release_notes_provider_.get();
+  }
+
   // ShellObserver:
   void OnShellDestroying() override;
 
-  void RequestBirchDataFetch();
+  // BirchClient:
+  BirchDataProvider* GetCalendarProvider() override;
+  BirchDataProvider* GetFileSuggestProvider() override;
+  BirchDataProvider* GetRecentTabsProvider() override;
+  BirchDataProvider* GetReleaseNotesProvider() override;
+  void WaitForRefreshTokens(base::OnceClosure callback) override;
 
  private:
   void ShutdownBirch();
@@ -44,13 +58,17 @@ class BirchKeyedService : public ShellObserver, public KeyedService {
   // Whether shutdown of BirchKeyedService has already begun.
   bool is_shutdown_ = false;
 
+  std::unique_ptr<BirchCalendarProvider> calendar_provider_;
+
   std::unique_ptr<BirchFileSuggestProvider> file_suggest_provider_;
 
   std::unique_ptr<BirchRecentTabsProvider> recent_tabs_provider_;
 
-  std::unique_ptr<BirchClientImpl> birch_client_impl_;
+  std::unique_ptr<BirchReleaseNotesProvider> release_notes_provider_;
 
   base::ScopedObservation<Shell, ShellObserver> shell_observation_{this};
+
+  std::unique_ptr<RefreshTokenWaiter> refresh_token_waiter_;
 };
 
 }  // namespace ash

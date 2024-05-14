@@ -40,6 +40,7 @@ class RTCPeerConnection;
 class RTCRtpCapabilities;
 class RTCRtpTransceiver;
 class RTCInsertableStreams;
+class RTCStatsReport;
 
 webrtc::RtpEncodingParameters ToRtpEncodingParameters(
     ExecutionContext* context,
@@ -78,15 +79,16 @@ class RTCRtpSender final : public ScriptWrappable,
   MediaStreamTrack* track();
   RTCDtlsTransport* transport();
   RTCDtlsTransport* rtcpTransport();
-  ScriptPromise replaceTrack(ScriptState*, MediaStreamTrack*);
+  ScriptPromiseTyped<IDLUndefined> replaceTrack(ScriptState*,
+                                                MediaStreamTrack*);
   RTCDTMFSender* dtmf();
   static RTCRtpCapabilities* getCapabilities(ScriptState* state,
                                              const String& kind);
   RTCRtpSendParameters* getParameters();
-  ScriptPromise setParameters(ScriptState*,
-                              const RTCRtpSendParameters*,
-                              const RTCSetParameterOptions*);
-  ScriptPromise getStats(ScriptState*);
+  ScriptPromiseTyped<IDLUndefined> setParameters(ScriptState*,
+                                                 const RTCRtpSendParameters*,
+                                                 const RTCSetParameterOptions*);
+  ScriptPromiseTyped<RTCStatsReport> getStats(ScriptState*);
   void setStreams(HeapVector<Member<MediaStream>> streams, ExceptionState&);
   RTCInsertableStreams* createEncodedStreams(ScriptState*, ExceptionState&);
   // TODO(crbug.com/1069295): Make these methods private.

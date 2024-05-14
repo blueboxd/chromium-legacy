@@ -13,6 +13,7 @@ Per canviar aquesta opció de configuració, <ph name="BEGIN_LINK" />esborra les
 <translation id="1180362651362502943">Continua utilitzant les dades de Chrome al teu Compte de Google.</translation>
 <translation id="1200396280085622191">Utilitza Chrome cada vegada que toquis enllaços en missatges i altres aplicacions.</translation>
 <translation id="1229222343402087523">Cerca ${searchPhrase} a Chrome</translation>
+<translation id="124228879633599436">Chrome no està actualitzat. Actualitza'l per mantenir la protecció.</translation>
 <translation id="1282031177488366470">Ajuda a millorar les funcions i el rendiment de Chrome</translation>
 <translation id="1320619893013575407">Has desactivat l'inici de sessió a Chrome.</translation>
 <translation id="1333745675627230582">Juga al joc El dinosaure de Chrome</translation>
@@ -21,6 +22,7 @@ Per canviar aquesta opció de configuració, <ph name="BEGIN_LINK" />esborra les
 <translation id="1436059927646026729">Obre la meva darrera pestanya a Chrome</translation>
 <translation id="1449241544691504574">Afegeix adreces d'interès a Chrome</translation>
 <translation id="1462727070346936664">Inicia la sessió per treure el màxim profit de Chrome.</translation>
+<translation id="1462833127986525564">Enllaça Chrome i altres serveis de Google si vols que personalitzin la teva experiència utilitzant dades entre si</translation>
 <translation id="1491435845014430217">Activa l'opció Bloqueja les pestanyes d'incògnit després de tancar Chrome.</translation>
 <translation id="1493827051843127077">Configura Chrome com a navegador predeterminat per sincronitzar les pestanyes, les contrasenyes i la informació de pagament de tots els dispositius</translation>
 <translation id="1504372625950710826">Chrome no ha pogut cercar actualitzacions. Comprova la connexió a Internet.</translation>
@@ -141,6 +143,7 @@ Només les persones que sàpiguen la teva frase de contrasenya podran llegir les
 <translation id="4834499902900503484">Quan tinguis la sessió iniciada a Chrome, les contrasenyes que desis aniran al teu Compte de Google. Per desactivar-ho, <ph name="BEGIN_LINK" />ves a la configuració<ph name="END_LINK" />.</translation>
 <translation id="484033449593719797">No s'admeten a la versió beta de Chrome</translation>
 <translation id="4840404732697892756">El gestor de contrasenyes de Google pot comprovar les teves contrasenyes quan inicies la sessió amb el Compte de Google.</translation>
+<translation id="4856636171409137183">Per gaudir d'una experiència més personalitzada, inclou Chrome a <ph name="FEATURE_NAME_1" /> i a <ph name="FEATURE_NAME_2" /></translation>
 <translation id="4860330141789125848">{COUNT,plural, =1{Chrome et pot ajudar a fer un seguiment d'aquest paquet a la pàgina Pestanya nova.}other{Chrome et pot ajudar a fer un seguiment d'aquests paquets a la pàgina Pestanya nova.}}</translation>
 <translation id="4903674399067644695">Aquesta targeta mostra suggeriments sobre com pots treure el màxim profit de Chrome.</translation>
 <translation id="49200511069271369">La teva organització, <ph name="DOMAIN" />, gestiona el compte en què estàs iniciant la sessió i com es pot utilitzar Chrome. L'administrador pot configurar o restringir determinades funcions.</translation>
@@ -195,10 +198,8 @@ Només les persones que sàpiguen la teva frase de contrasenya podran llegir les
 <translation id="6484712497741564393">Has iniciat la sessió com a <ph name="EMAIL" />.
 
 Les teves dades s'encripten amb la teva frase de contrasenya. Per utilitzar i desar les dades de Chrome al teu Compte de Google, introdueix la frase de contrasenya.</translation>
-<translation id="6497850081273517953">Chrome no està actualitzat. Actualitza'l a la darrera versió per protegir-te.</translation>
 <translation id="6540120577248033958">Visita un lloc web i fes clic a Segueix al menú de Chrome</translation>
 <translation id="6545449117344801102">Chrome detecta les adreces i utilitza Google Maps per oferir-te indicacions i informació local.</translation>
-<translation id="6600954340915313787">Copiada de Chrome</translation>
 <translation id="6634107063912726160">Quan tanquis la sessió, Chrome no sincronitzarà cap dada nova amb el teu Compte de Google. Les dades sincronitzades prèviament romandran al compte.</translation>
 <translation id="6646696210740573446">Envia una part ofuscada de l'URL a Google mitjançant un servidor de privadesa que amaga la teva adreça IP. Si un lloc web prova de robar-te la contrasenya o si baixes un fitxer maliciós, és possible que Chrome també n'enviï els URL, inclosos fragments de contingut de les pàgines, a Google.</translation>
 <translation id="6648150602980899529">Esteu iniciant la sessió amb un compte gestionat per <ph name="DOMAIN" /> i esteu proporcionant a l'administrador el control de les vostres dades de Chrome. Les dades estaran permanentment lligades a aquest compte. Si tanqueu la sessió de Chrome, se suprimiran les vostres dades d'aquest dispositiu, però continuaran emmagatzemades al compte de Google.</translation>
@@ -231,6 +232,7 @@ Per veure més opcions de configuració que utilitzin dades per millorar la teva
 <translation id="7261678641327190792">Chrome no pot comprovar les teves contrasenyes</translation>
 <translation id="7272930098487145294">Si vols desar imatges, toca Configuració per permetre que Chrome les afegeixi a les teves fotos</translation>
 <translation id="7275945473750112644">Com que <ph name="HOSTED_DOMAIN" /> gestiona el teu compte, les dades de Chrome s'esborraran d'aquest dispositiu</translation>
+<translation id="7304491752269485262">Visualització ampliada de la funció Emplenament automàtic de Chrome</translation>
 <translation id="7349129508108954623">Permet que Chrome utilitzi Google Maps per oferir-te indicacions i informació local sobre les adreces detectades.</translation>
 <translation id="7394108421562933108">Maps a Chrome</translation>
 <translation id="7400722733683201933">Sobre Google Chrome</translation>
@@ -293,6 +295,7 @@ Les dades s'han encriptat amb la teva frase de contrasenya el dia <ph name="TIME
 <translation id="8788269841521769222">No caldrà que recordis aquesta contrasenya. Es desarà al gestor de contrasenyes de Google per a <ph name="EMAIL" /></translation>
 <translation id="878917453316810648">Consell de Chrome: fes servir Chrome de manera predeterminada</translation>
 <translation id="8808828119384186784">Configuració de Chrome</translation>
+<translation id="8850736900032787670">Per rebre contingut personalitzat basat en els teus interessos, inicia la sessió a Chrome.</translation>
 <translation id="8855781063981781621">Per desactivar el mode d’aïllament a Chrome, l'has de desactivar a l'iPad.</translation>
 <translation id="8856877214925961642">L'encriptació de frases de contrasenya no inclou les formes de pagament ni les adreces.
 

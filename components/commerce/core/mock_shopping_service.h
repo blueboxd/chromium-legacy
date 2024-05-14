@@ -21,6 +21,8 @@ class BookmarkNode;
 
 namespace commerce {
 
+class AccountChecker;
+
 // A mock ShoppingService that allows us to decide the response.
 class MockShoppingService : public commerce::ShoppingService {
  public:
@@ -31,6 +33,7 @@ class MockShoppingService : public commerce::ShoppingService {
   ~MockShoppingService() override;
 
   // commerce::ShoppingService overrides.
+  MOCK_METHOD(AccountChecker*, GetAccountChecker, (), (override));
   MOCK_METHOD(void,
               GetProductInfoForUrl,
               (const GURL& url, commerce::ProductInfoCallback callback),
@@ -118,11 +121,17 @@ class MockShoppingService : public commerce::ShoppingService {
               (const std::string& tracking_id,
                base::OnceCallback<void(bool)> callback),
               (override));
+  MOCK_METHOD(void,
+              GetProductSpecificationsForUrls,
+              (const std::vector<GURL>& urls,
+               ProductSpecificationsCallback callback),
+              (override));
 
   // Make this mock permissive for all features but default to providing empty
   // data for all accessors of shopping data.
   void SetupPermissiveMock();
 
+  void SetAccountChecker(AccountChecker* account_checker);
   void SetResponseForGetProductInfoForUrl(
       std::optional<commerce::ProductInfo> product_info);
   void SetResponseForGetPriceInsightsInfoForUrl(
@@ -151,6 +160,8 @@ class MockShoppingService : public commerce::ShoppingService {
   void SetIsParcelTrackingEligible(bool is_eligible);
   void SetGetAllParcelStatusesCallbackValue(
       std::vector<ParcelTrackingStatus> parcels);
+  void SetResponseForGetProductSpecificationsForUrls(
+      ProductSpecifications specs);
 
  private:
   // Since the discount API wants a const ref to some map, keep a default

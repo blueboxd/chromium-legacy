@@ -37,6 +37,7 @@
 #include "components/feature_engagement/public/configuration.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/feature_list.h"
+#include "components/feature_engagement/public/session_controller.h"
 #include "components/feature_engagement/test/scoped_iph_feature_list.h"
 #include "components/feature_engagement/test/test_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -263,6 +264,21 @@ class TestTrackerEventExporter : public TrackerEventExporter {
   base::WeakPtrFactory<TestTrackerEventExporter> weak_ptr_factory_{this};
 };
 
+class TestSessionController : public SessionController {
+ public:
+  TestSessionController() : should_reset_for_next_call_(false) {}
+  ~TestSessionController() override = default;
+
+  bool ShouldResetSession() override { return should_reset_for_next_call_; }
+
+  void SetShouldResetForNextCall(bool should_reset_for_next_call) {
+    should_reset_for_next_call_ = should_reset_for_next_call;
+  }
+
+ private:
+  bool should_reset_for_next_call_;
+};
+
 class TrackerImplTest : public ::testing::Test {
  public:
   TrackerImplTest() = default;
@@ -319,13 +335,17 @@ class TrackerImplTest : public ::testing::Test {
     time_provider_ = time_provider.get();
     time_provider->SetCurrentDay(1u);
 
-    event_exporter_ = std::make_unique<TestTrackerEventExporter>();
+    auto event_exporter = std::make_unique<TestTrackerEventExporter>();
+    event_exporter_ = event_exporter.get();
+
+    auto session_controller = std::make_unique<TestSessionController>();
+    session_controller_ = session_controller.get();
 
     tracker_ = std::make_unique<TrackerImpl>(
         std::move(event_model), std::move(availability_model),
         std::move(configuration), std::move(display_lock_controller),
         std::move(condition_validator), std::move(time_provider),
-        event_exporter_->AsWeakPtr());
+        std::move(event_exporter), std::move(session_controller));
   }
 
   void VerifyEventTrigger(std::string event_name, uint32_t count) {
@@ -538,7 +558,8 @@ class TrackerImplTest : public ::testing::Test {
   raw_ptr<TestTrackerAvailabilityModel> availability_model_;
   raw_ptr<TestTrackerDisplayLockController> display_lock_controller_;
   raw_ptr<EditableConfiguration> configuration_;
-  std::unique_ptr<TestTrackerEventExporter> event_exporter_;
+  raw_ptr<TestTrackerEventExporter> event_exporter_;
+  raw_ptr<TestSessionController> session_controller_;
   base::HistogramTester histogram_tester_;
   raw_ptr<ConditionValidator> condition_validator_;
   raw_ptr<TestTimeProvider> time_provider_;
@@ -814,20 +835,18 @@ TEST_F(TrackerImplTest, TestMigrateSameEventMultipleTimes) {
 }
 
 TEST_F(TrackerImplTest, TestNoMigration) {
-  EXPECT_FALSE(tracker_->IsInitialized());
-
-  // Reset the event provider to simulate not providing one.
-  event_exporter_.reset();
+  std::unique_ptr<Tracker> tracker = feature_engagement::CreateTestTracker();
+  EXPECT_FALSE(tracker->IsInitialized());
 
   StoringInitializedCallback callback;
-  tracker_->AddOnInitializedCallback(base::BindOnce(
+  tracker->AddOnInitializedCallback(base::BindOnce(
       &StoringInitializedCallback::OnInitialized, base::Unretained(&callback)));
   EXPECT_FALSE(callback.invoked());
 
   // Ensure all initialization is finished and no crash or NPE happens.
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(tracker_->IsInitialized());
+  EXPECT_TRUE(tracker->IsInitialized());
   EXPECT_TRUE(callback.invoked());
   EXPECT_TRUE(callback.success());
 }
@@ -989,6 +1008,37 @@ TEST_F(TrackerImplTest, TestTriggering) {
   VerifyUserActionsWouldHaveTriggered(user_action_tester, 0, 0, 0, 0);
   VerifyUserActionsDismissed(user_action_tester, 2);
   VerifyHistograms(true, 1, 3, 0, true, 1, 2, 0, false, 0, 0, 0, true, 0, 4, 0);
+}
+
+TEST_F(TrackerImplTest, TestTriggeringWithSessionController) {
+  // Ensure all initialization is finished.
+  StoringInitializedCallback callback;
+  tracker_->AddOnInitializedCallback(base::BindOnce(
+      &StoringInitializedCallback::OnInitialized, base::Unretained(&callback)));
+  base::RunLoop().RunUntilIdle();
+  base::UserActionTester user_action_tester;
+
+  // The first time a feature triggers it should be shown.
+  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureFoo));
+  VerifyEventTriggerEvents(kTrackerTestFeatureFoo, 1u);
+  VerifyGroupEventTriggerEvents(kTrackerTestGroupOne, 1u);
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureFoo));
+  VerifyEventTriggerEvents(kTrackerTestFeatureFoo, 1u);
+  VerifyGroupEventTriggerEvents(kTrackerTestGroupOne, 1u);
+
+  // Dismiss the feature.
+  tracker_->Dismissed(kTrackerTestFeatureFoo);
+
+  // Make the next `ShouldTriggerHelpUI` call trigger the session reset.
+  session_controller_->SetShouldResetForNextCall(true);
+
+  // The same feature can be shown again, and blocks a different feature.
+  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureFoo));
+  VerifyEventTriggerEvents(kTrackerTestFeatureFoo, 2u);
+  VerifyGroupEventTriggerEvents(kTrackerTestGroupOne, 2u);
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureBar));
+  VerifyEventTriggerEvents(kTrackerTestFeatureBar, 0);
+  VerifyGroupEventTriggerEvents(kTrackerTestGroupOne, 2u);
 }
 
 TEST_F(TrackerImplTest, TestTrackingOnlyTriggering) {

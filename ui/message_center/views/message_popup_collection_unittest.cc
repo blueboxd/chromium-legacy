@@ -4,7 +4,8 @@
 
 #include "ui/message_center/views/message_popup_collection.h"
 
-#include "base/containers/cxx20_erase.h"
+#include <vector>
+
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -47,9 +48,7 @@ class MockMessagePopupCollection : public DesktopMessagePopupCollection {
       AnimationProgressed(animation());
   }
 
-  void RemovePopup(MockMessagePopupView* popup) {
-    base::Erase(popups_, popup);
-  }
+  void RemovePopup(MockMessagePopupView* popup) { std::erase(popups_, popup); }
 
   bool IsAnimating() { return animation()->is_animating(); }
 
@@ -346,6 +345,8 @@ class MessagePopupCollectionTest : public views::ViewsTestBase,
   MockMessagePopupView* GetPopupAt(size_t index) {
     return popup_collection_->popups()[index];
   }
+
+  void CloseAllPopupsNow() { popup_collection()->CloseAllPopupsNow(); }
 
   size_t GetPopupCounts() const { return popup_collection_->popups().size(); }
 
@@ -1138,6 +1139,21 @@ TEST_F(MessagePopupCollectionTest, PopupWidgetClosedOutsideDuringFadeOut) {
   AnimateToEnd();
 
   EXPECT_FALSE(IsAnimating());
+}
+
+TEST_F(MessagePopupCollectionTest, NotifyPopupClosedThenCloseAllPopups) {
+  std::string id1 = AddNotification();
+  std::string id2 = AddNotification();
+  AnimateUntilIdle();
+
+  // This test make sure that when `NotifyPopupClosed()` is called and then
+  // `CloseAllPopupsNow()` is triggered, no crash would happen. This scenerio
+  // can happen when `MessagePopupView::~MessagePopupView()` is called, and then
+  // at the same time another entity (i.e.
+  // AshMessagePopupCollection::NotifierCollisionHandler) calls
+  // `CloseAllPopupsNow()` (b/312515706).
+  popup_collection()->NotifyPopupClosed(GetPopup(id1));
+  CloseAllPopupsNow();
 }
 
 // Notification removing may occur while the animation triggered by the previous

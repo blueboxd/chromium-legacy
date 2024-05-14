@@ -82,10 +82,11 @@ namespace {
 const char kAppLocale[] = "en-US";
 
 MATCHER(EqualsFillData, "") {
-  FormFieldData::FillData lhs_field = std::get<0>(arg);
+  FormFieldData lhs_field = std::get<0>(arg);
   FormFieldData::FillData rhs_field = std::get<1>(arg);
   return lhs_field.value == rhs_field.value &&
          lhs_field.renderer_id == rhs_field.renderer_id &&
+         lhs_field.host_form_id == rhs_field.host_form_id &&
          lhs_field.section == rhs_field.section &&
          lhs_field.is_autofilled == rhs_field.is_autofilled &&
          lhs_field.force_override == rhs_field.force_override;
@@ -199,25 +200,26 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
   // mojom::AutofillAgent:
   void TriggerFormExtraction() override {}
 
-  void ApplyFormAction(mojom::ActionType action_type,
-                       mojom::ActionPersistence action_persistence,
-                       const FormData::FillData& form) override {
+  void ApplyFieldsAction(
+      mojom::FormActionType action_type,
+      mojom::ActionPersistence action_persistence,
+      const std::vector<FormFieldData::FillData>& fields) override {
     switch (action_persistence) {
       case mojom::ActionPersistence::kPreview:
-        preview_form_fields_ = form.fields;
+        preview_form_fields_ = fields;
         break;
       case mojom::ActionPersistence::kFill:
-        fill_form_fields_ = form.fields;
+        fill_form_fields_ = fields;
         break;
     }
     CallDone();
   }
 
-  void ApplyFieldAction(mojom::ActionPersistence action_persistence,
-                        mojom::TextReplacement text_replacement,
+  void ApplyFieldAction(mojom::FieldActionType action_type,
+                        mojom::ActionPersistence action_persistence,
                         FieldRendererId field,
                         const std::u16string& value) override {
-    CHECK_EQ(text_replacement, mojom::TextReplacement::kReplaceAll)
+    CHECK_EQ(action_type, mojom::FieldActionType::kReplaceAll)
         << "FakeAutofillAgent only supports kReplaceAll";
     value_renderer_id_ = field;
     switch (action_persistence) {
@@ -276,8 +278,6 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
     CallDone();
   }
 
-  void EnableHeavyFormDataScraping() override {}
-
   void PreviewPasswordSuggestion(const std::u16string& username,
                                  const std::u16string& password) override {}
 
@@ -315,8 +315,8 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
 
 class MockBrowserAutofillManager : public BrowserAutofillManager {
  public:
-  MockBrowserAutofillManager(AutofillDriver* driver, AutofillClient* client)
-      : BrowserAutofillManager(driver, client, kAppLocale) {}
+  explicit MockBrowserAutofillManager(AutofillDriver* driver)
+      : BrowserAutofillManager(driver, kAppLocale) {}
   ~MockBrowserAutofillManager() override = default;
 
   MOCK_METHOD(void, Reset, (), (override));
@@ -719,8 +719,8 @@ TEST_F(ContentAutofillDriverTestWithAddressForm,
   base::RunLoop run_loop;
   agent().SetQuitLoopClosure(run_loop.QuitClosure());
   driver().browser_events().ApplyFormAction(
-      mojom::ActionType::kFill, mojom::ActionPersistence::kFill, address_form(),
-      triggered_origin, {});
+      mojom::FormActionType::kFill, mojom::ActionPersistence::kFill,
+      address_form(), triggered_origin, {});
 
   run_loop.RunUntilIdle();
 
@@ -728,9 +728,8 @@ TEST_F(ContentAutofillDriverTestWithAddressForm,
   std::optional<std::vector<FormFieldData::FillData>> output_fields =
       agent().GetAutofillFillFormMessage();
   ASSERT_TRUE(output_fields.has_value());
-  EXPECT_THAT(
-      FormData::FillData(test::WithoutUnserializedData(address_form())).fields,
-      Pointwise(EqualsFillData(), *output_fields));
+  EXPECT_THAT(test::WithoutUnserializedData(address_form()).fields,
+              Pointwise(EqualsFillData(), *output_fields));
 }
 
 TEST_F(ContentAutofillDriverTestWithAddressForm,
@@ -746,7 +745,7 @@ TEST_F(ContentAutofillDriverTestWithAddressForm,
   base::RunLoop run_loop;
   agent().SetQuitLoopClosure(run_loop.QuitClosure());
   driver().browser_events().ApplyFormAction(
-      mojom::ActionType::kFill, mojom::ActionPersistence::kPreview,
+      mojom::FormActionType::kFill, mojom::ActionPersistence::kPreview,
       address_form(), triggered_origin, {});
 
   run_loop.RunUntilIdle();
@@ -755,9 +754,8 @@ TEST_F(ContentAutofillDriverTestWithAddressForm,
   std::optional<std::vector<FormFieldData::FillData>> output_fields =
       agent().GetAutofillPreviewFormMessage();
   ASSERT_TRUE(output_fields);
-  EXPECT_THAT(
-      FormData::FillData(test::WithoutUnserializedData(address_form())).fields,
-      Pointwise(EqualsFillData(), *output_fields));
+  EXPECT_THAT(test::WithoutUnserializedData(address_form()).fields,
+              Pointwise(EqualsFillData(), *output_fields));
 }
 
 TEST_F(ContentAutofillDriverTest, TypePredictionsSentToRendererWhenEnabled) {
@@ -847,7 +845,7 @@ TEST_F(ContentAutofillDriverTestWithAddressForm, ApplyFieldAction_Fill) {
   base::RunLoop run_loop;
   agent().SetQuitLoopClosure(run_loop.QuitClosure());
   driver().browser_events().ApplyFieldAction(
-      mojom::ActionPersistence::kFill, mojom::TextReplacement::kReplaceAll,
+      mojom::FieldActionType::kReplaceAll, mojom::ActionPersistence::kFill,
       field, input_value);
   run_loop.RunUntilIdle();
 
@@ -861,7 +859,7 @@ TEST_F(ContentAutofillDriverTestWithAddressForm, ApplyFieldAction_Preview) {
   base::RunLoop run_loop;
   agent().SetQuitLoopClosure(run_loop.QuitClosure());
   driver().browser_events().ApplyFieldAction(
-      mojom::ActionPersistence::kPreview, mojom::TextReplacement::kReplaceAll,
+      mojom::FieldActionType::kReplaceAll, mojom::ActionPersistence::kPreview,
       field, input_value);
   run_loop.RunUntilIdle();
 

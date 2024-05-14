@@ -14,6 +14,7 @@ import org.chromium.base.cached_flags.BooleanCachedFieldTrialParameter;
 import org.chromium.base.cached_flags.IntCachedFieldTrialParameter;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.logo.LogoUtils.LogoSizeForLogoPolish;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 
@@ -112,6 +113,16 @@ public class StartSurfaceConfiguration {
             ChromeFeatureList.newBooleanCachedFieldTrialParameter(
                     ChromeFeatureList.SURFACE_POLISH, SURFACE_POLISH_SCROLLABLE_MVT_PARAM, true);
 
+    private static final String LOGO_POLISH_LARGE_SIZE_PARAM = "polish_logo_size_large";
+    public static final BooleanCachedFieldTrialParameter LOGO_POLISH_LARGE_SIZE =
+            ChromeFeatureList.newBooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.LOGO_POLISH, LOGO_POLISH_LARGE_SIZE_PARAM, false);
+
+    private static final String LOGO_POLISH_MEDIUM_SIZE_PARAM = "polish_logo_size_medium";
+    public static final BooleanCachedFieldTrialParameter LOGO_POLISH_MEDIUM_SIZE =
+            ChromeFeatureList.newBooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.LOGO_POLISH, LOGO_POLISH_MEDIUM_SIZE_PARAM, false);
+
     private static final String STARTUP_UMA_PREFIX = "Startup.Android.";
     private static final String INSTANT_START_SUBFIX = ".Instant";
     private static final String REGULAR_START_SUBFIX = ".NoInstant";
@@ -136,8 +147,29 @@ public class StartSurfaceConfiguration {
     /** Returns whether a magic stack is enabled on Start surface. */
     public static boolean useMagicStack() {
         return ChromeFeatureList.sSurfacePolish.isEnabled()
-                && ChromeFeatureList.sMagicStackAndroid.isEnabled()
-                && ChromeFeatureList.sStartSurfaceRefactor.isEnabled();
+                && ChromeFeatureList.sMagicStackAndroid.isEnabled();
+    }
+
+    /** Returns whether logo polish is enabled in the given context. */
+    public static boolean isLogoPolishEnabled() {
+        return ChromeFeatureList.sSurfacePolish.isEnabled()
+                && ChromeFeatureList.sLogoPolish.isEnabled();
+    }
+
+    /**
+     * Returns the logo size to use when logo polish is enabled. When logo polish is disabled, the
+     * return value should be invalid.
+     */
+    public static @LogoSizeForLogoPolish int getLogoSizeForLogoPolish() {
+        if (StartSurfaceConfiguration.LOGO_POLISH_LARGE_SIZE.getValue()) {
+            return LogoSizeForLogoPolish.LARGE;
+        }
+
+        if (StartSurfaceConfiguration.LOGO_POLISH_MEDIUM_SIZE.getValue()) {
+            return LogoSizeForLogoPolish.MEDIUM;
+        }
+
+        return LogoSizeForLogoPolish.SMALL;
     }
 
     /**

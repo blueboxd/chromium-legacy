@@ -514,8 +514,7 @@ std::vector<AXPlatformNode*> AXPlatformNodeDelegate::GetTargetNodesForRelation(
   std::vector<ui::AXPlatformNode*> nodes;
   for (int32_t target_id : target_ids) {
     ui::AXPlatformNode* target = GetFromNodeID(target_id);
-    if (target && IsValidRelationTarget(target) &&
-        !base::Contains(nodes, target)) {
+    if (IsValidRelationTarget(target) && !base::Contains(nodes, target)) {
       nodes.push_back(target);
     }
   }
@@ -547,7 +546,7 @@ AXPlatformNodeDelegate::GetNodesFromRelationIdSet(
 
   for (AXNodeID node_id : ids) {
     ui::AXPlatformNode* node = GetFromNodeID(node_id);
-    if (node && IsValidRelationTarget(node)) {
+    if (IsValidRelationTarget(node)) {
       nodes.push_back(node);
     }
   }
@@ -556,6 +555,13 @@ AXPlatformNodeDelegate::GetNodesFromRelationIdSet(
 
 bool AXPlatformNodeDelegate::IsValidRelationTarget(
     AXPlatformNode* target) const {
+  if (!target) {
+    // This can occur when the target of the relation was not included in the
+    // tree, e.g. it was display:none or role="none".
+    // By returning false here, the relation will not be included in the
+    // relations reported via platform APIs.
+    return false;
+  }
   DCHECK_GT(GetUniqueId(), kInvalidAXUniqueId);
   DCHECK(target);
   DCHECK_GT(target->GetUniqueId(), kInvalidAXUniqueId);
@@ -1094,6 +1100,20 @@ std::optional<int32_t> AXPlatformNodeDelegate::GetCellId(int row_index,
     AXNode* cell = node()->GetTableCellFromCoords(row_index, col_index);
     if (!cell)
       return std::nullopt;
+    return cell->id();
+  }
+  return std::nullopt;
+}
+
+std::optional<int32_t> AXPlatformNodeDelegate::GetCellIdAriaCoords(
+    int aria_row_index,
+    int aria_col_index) const {
+  if (node_) {
+    AXNode* cell =
+        node()->GetTableCellFromAriaCoords(aria_row_index, aria_col_index);
+    if (!cell) {
+      return std::nullopt;
+    }
     return cell->id();
   }
   return std::nullopt;

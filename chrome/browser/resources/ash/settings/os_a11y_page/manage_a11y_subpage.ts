@@ -350,6 +350,7 @@ export class SettingsManageA11ySubpageElement extends
           Setting.kHighlightKeyboardFocus,
           Setting.kHighlightTextCaret,
           Setting.kAutoClickWhenCursorStops,
+          Setting.kMouseKeysEnabled,
           Setting.kLargeCursor,
           Setting.kHighlightCursorWhileMoving,
           Setting.kTabletNavigationButtons,
@@ -360,6 +361,8 @@ export class SettingsManageA11ySubpageElement extends
           Setting.kColorCorrectionEnabled,
           Setting.kColorCorrectionFilterType,
           Setting.kColorCorrectionFilterAmount,
+          Setting.kReducedAnimationsEnabled,
+          Setting.kCaretBlinkInterval,
         ]),
       },
     };
@@ -413,7 +416,7 @@ export class SettingsManageA11ySubpageElement extends
   }
 
   redirectToNewA11ySettings(): void {
-    location.href = 'chrome://os-settings/osAccessibility';
+    Router.getInstance().navigateTo(routes.OS_ACCESSIBILITY);
   }
 
   override connectedCallback(): void {

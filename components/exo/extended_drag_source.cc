@@ -122,6 +122,9 @@ class ExtendedDragSource::DraggedWindowHolder : public aura::WindowObserver,
   void OnSurfaceDestroying(Surface* surface) override {
     if (surface_ == surface) {
       surface_->RemoveSurfaceObserver(this);
+      if (surface_->window()->HasObserver(this)) {
+        surface_->window()->RemoveObserver(this);
+      }
       surface_ = nullptr;
     }
   }
@@ -257,13 +260,13 @@ void ExtendedDragSource::OnToplevelWindowDragCancelled() {
 }
 
 void ExtendedDragSource::OnToplevelWindowDragEvent(ui::LocatedEvent* event) {
-  pointer_location_ = event->root_location_f();
-
   if (!dragged_window_holder_)
     return;
 
-  DCHECK(event);
+  // The pointer location must be translated into screen coordinates.
+  CHECK(event);
   aura::Window* target = static_cast<aura::Window*>(event->target());
+  pointer_location_ = event->root_location_f();
   wm::ConvertPointToScreen(target->GetRootWindow(), &pointer_location_);
 
   auto* handler = ash::Shell::Get()->toplevel_window_event_handler();

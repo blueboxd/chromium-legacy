@@ -13,30 +13,63 @@
 
 namespace net {
 
-class CookiePartitionKeyTest : public testing::TestWithParam<bool> {
- protected:
-  // testing::Test
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatureState(features::kPartitionedCookies,
-                                              PartitionedCookiesEnabled());
+TEST(CookiePartitionKeyTest, TestFromStorage) {
+  struct {
+    const std::string top_level_site;
+    bool expected_return;
+    const std::optional<CookiePartitionKey> expected_output;
+  } cases[] = {{/*empty site*/
+                "", true, std::nullopt},
+               /*invalid site*/
+               {"Invalid", false, std::nullopt},
+               /*valid site*/
+               {"https://toplevelsite.com", true,
+                CookiePartitionKey::FromURLForTesting(
+                    GURL("https://toplevelsite.com"))}};
+
+  for (const auto& tc : cases) {
+    base::expected<std::optional<CookiePartitionKey>, std::string> got =
+        CookiePartitionKey::FromStorage(tc.top_level_site);
+    EXPECT_EQ(got.has_value(), tc.expected_return);
+    if (got.has_value()) {
+      EXPECT_EQ(got.value(), tc.expected_output);
+    }
   }
+}
 
-  bool PartitionedCookiesEnabled() { return GetParam(); }
+TEST(CookiePartitionKeyTest, TestFromUntrustedInput) {
+  const std::string kFullURL = "https://subdomain.toplevelsite.com/index.html";
+  const std::string kValidSite = "https://toplevelsite.com";
+  struct {
+    const std::string top_level_site;
+    bool partition_key_created;
+  } cases[] = {{/*empty site*/
+                "", false},
+               {/*valid site*/
+                kValidSite, true},
+               {/*full url*/
+                kFullURL, true},
+               {/*invalid site (missing scheme)*/
+                "toplevelsite.com", false},
+               {/*invalid site*/
+                "abc123foobar!!", false}};
 
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
+  for (const auto& tc : cases) {
+    base::expected<CookiePartitionKey, std::string> got =
+        CookiePartitionKey::FromUntrustedInput(tc.top_level_site);
+    EXPECT_EQ(got.has_value(), tc.partition_key_created);
+    if (tc.partition_key_created) {
+      EXPECT_EQ(got->site().Serialize(), kValidSite);
+    }
+  }
+}
 
-INSTANTIATE_TEST_SUITE_P(/* no label */,
-                         CookiePartitionKeyTest,
-                         ::testing::Bool());
-
-TEST_P(CookiePartitionKeyTest, Serialization) {
+TEST(CookiePartitionKeyTest, Serialization) {
   base::UnguessableToken nonce = base::UnguessableToken::Create();
   struct {
-    std::optional<CookiePartitionKey> input;
-    bool expected_ret;
-    std::string expected_output;
+    const std::optional<CookiePartitionKey> input;
+    bool expected_success;
+    const std::string expected_output_top_level_site;
   } cases[] = {
       // No partition key
       {std::nullopt, true, kEmptyCookiePartitionKey},
@@ -58,58 +91,25 @@ TEST_P(CookiePartitionKeyTest, Serialization) {
            SchemefulSite(GURL("https://cookiesite.com")), nonce)),
        false, ""},
       // Invalid partition key
-      {std::make_optional(
-           CookiePartitionKey::FromURLForTesting(GURL("abc123foobar!!"))),
-       false, ""},
+      {CookiePartitionKey::FromURLForTesting(GURL("abc123foobar!!")), false,
+       ""},
   };
 
   for (const auto& tc : cases) {
-    std::string got;
-    if (PartitionedCookiesEnabled()) {
-      EXPECT_EQ(tc.expected_ret, CookiePartitionKey::Serialize(tc.input, got));
-      EXPECT_EQ(tc.expected_output, got);
-    } else {
-      // Serialize should only return true for unpartitioned cookies if the
-      // feature is disabled.
-      EXPECT_NE(tc.input.has_value(),
-                CookiePartitionKey::Serialize(tc.input, got));
+    base::expected<CookiePartitionKey::SerializedCookiePartitionKey,
+                   std::string>
+        got = CookiePartitionKey::Serialize(tc.input);
+
+    EXPECT_EQ(tc.expected_success, got.has_value());
+    if (got.has_value()) {
+      // TODO (crbug.com/41486025) once ancestor chain bit is implemented update
+      // test to check bit's value.
+      EXPECT_EQ(tc.expected_output_top_level_site, got->TopLevelSite());
     }
   }
 }
 
-TEST_P(CookiePartitionKeyTest, Deserialization) {
-  struct {
-    std::string input;
-    bool expected_ret;
-    std::optional<CookiePartitionKey> expected_output;
-  } cases[] = {
-      {kEmptyCookiePartitionKey, true, std::nullopt},
-      {"https://toplevelsite.com", true,
-       CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite.com"))},
-      {"abc123foobar!!", false, std::nullopt},
-  };
-
-  for (const auto& tc : cases) {
-    std::optional<CookiePartitionKey> got;
-    if (PartitionedCookiesEnabled()) {
-      EXPECT_EQ(tc.expected_ret,
-                CookiePartitionKey::Deserialize(tc.input, got));
-      if (tc.expected_output.has_value()) {
-        EXPECT_TRUE(got.has_value());
-        EXPECT_EQ(tc.expected_output.value(), got.value());
-      } else {
-        EXPECT_FALSE(got.has_value());
-      }
-    } else {
-      // Deserialize should only return true for unpartitioned cookies if the
-      // feature is disabled.
-      EXPECT_EQ(tc.input == kEmptyCookiePartitionKey,
-                CookiePartitionKey::Deserialize(tc.input, got));
-    }
-  }
-}
-
-TEST_P(CookiePartitionKeyTest, FromNetworkIsolationKey) {
+TEST(CookiePartitionKeyTest, FromNetworkIsolationKey) {
   const SchemefulSite kTopLevelSite =
       SchemefulSite(GURL("https://toplevelsite.com"));
   const SchemefulSite kCookieSite =
@@ -141,40 +141,25 @@ TEST_P(CookiePartitionKeyTest, FromNetworkIsolationKey) {
   for (const auto& test_case : test_cases) {
     SCOPED_TRACE(test_case.desc);
 
-    base::test::ScopedFeatureList feature_list;
-    std::vector<base::test::FeatureRef> enabled_features;
-    std::vector<base::test::FeatureRef> disabled_features;
-    if (PartitionedCookiesEnabled()) {
-      enabled_features.push_back(features::kPartitionedCookies);
-    } else {
-      disabled_features.push_back(features::kPartitionedCookies);
-    }
-    feature_list.InitWithFeatures(enabled_features, disabled_features);
-
     std::optional<CookiePartitionKey> got =
         CookiePartitionKey::FromNetworkIsolationKey(
             test_case.network_isolation_key);
 
-    if (PartitionedCookiesEnabled()) {
-      EXPECT_EQ(test_case.expected, got);
-      if (got) {
-        EXPECT_EQ(test_case.network_isolation_key.GetNonce(), got->nonce());
-      }
-    } else {
-      EXPECT_FALSE(got);
+    EXPECT_EQ(test_case.expected, got);
+    if (got) {
+      EXPECT_EQ(test_case.network_isolation_key.GetNonce(), got->nonce());
     }
   }
 }
 
-TEST_P(CookiePartitionKeyTest, FromWire) {
+TEST(CookiePartitionKeyTest, FromWire) {
   struct TestCase {
     const GURL url;
     const std::optional<base::UnguessableToken> nonce;
   } test_cases[] = {
       {GURL("https://foo.com"), std::nullopt},
       {GURL(), std::nullopt},
-      {GURL("https://foo.com"),
-       std::make_optional(base::UnguessableToken::Create())},
+      {GURL("https://foo.com"), base::UnguessableToken::Create()},
   };
 
   for (const auto& test_case : test_cases) {
@@ -186,7 +171,7 @@ TEST_P(CookiePartitionKeyTest, FromWire) {
   }
 }
 
-TEST_P(CookiePartitionKeyTest, FromStorageKeyComponents) {
+TEST(CookiePartitionKeyTest, FromStorageKeyComponents) {
   struct TestCase {
     const GURL url;
     const std::optional<base::UnguessableToken> nonce = std::nullopt;
@@ -201,15 +186,11 @@ TEST_P(CookiePartitionKeyTest, FromStorageKeyComponents) {
         CookiePartitionKey::FromURLForTesting(test_case.url, test_case.nonce);
     std::optional<CookiePartitionKey> got =
         CookiePartitionKey::FromStorageKeyComponents(want.site(), want.nonce());
-    if (PartitionedCookiesEnabled()) {
-      EXPECT_EQ(got, want);
-    } else {
-      EXPECT_FALSE(got);
-    }
+    EXPECT_EQ(got, want);
   }
 }
 
-TEST_P(CookiePartitionKeyTest, FromScript) {
+TEST(CookiePartitionKeyTest, FromScript) {
   auto key = CookiePartitionKey::FromScript();
   EXPECT_TRUE(key);
   EXPECT_TRUE(key->from_script());
@@ -226,14 +207,14 @@ TEST_P(CookiePartitionKeyTest, FromScript) {
   EXPECT_TRUE(key != key2);
 }
 
-TEST_P(CookiePartitionKeyTest, IsSerializeable) {
+TEST(CookiePartitionKeyTest, IsSerializeable) {
   EXPECT_FALSE(CookiePartitionKey::FromURLForTesting(GURL()).IsSerializeable());
-  EXPECT_EQ(PartitionedCookiesEnabled(), CookiePartitionKey::FromURLForTesting(
-                                             GURL("https://www.example.com"))
-                                             .IsSerializeable());
+  EXPECT_TRUE(
+      CookiePartitionKey::FromURLForTesting(GURL("https://www.example.com"))
+          .IsSerializeable());
 }
 
-TEST_P(CookiePartitionKeyTest, Equality) {
+TEST(CookiePartitionKeyTest, Equality) {
   // Same eTLD+1 but different scheme are not equal.
   EXPECT_NE(CookiePartitionKey::FromURLForTesting(GURL("https://foo.com")),
             CookiePartitionKey::FromURLForTesting(GURL("http://foo.com")));
@@ -243,7 +224,7 @@ TEST_P(CookiePartitionKeyTest, Equality) {
             CookiePartitionKey::FromURLForTesting(GURL("https://b.foo.com")));
 }
 
-TEST_P(CookiePartitionKeyTest, Equality_WithNonce) {
+TEST(CookiePartitionKeyTest, Equality_WithNonce) {
   SchemefulSite top_level_site =
       SchemefulSite(GURL("https://toplevelsite.com"));
   SchemefulSite frame_site = SchemefulSite(GURL("https://cookiesite.com"));
@@ -252,10 +233,7 @@ TEST_P(CookiePartitionKeyTest, Equality_WithNonce) {
   EXPECT_NE(nonce1, nonce2);
   auto key1 = CookiePartitionKey::FromNetworkIsolationKey(
       NetworkIsolationKey(top_level_site, frame_site, nonce1));
-  EXPECT_EQ(PartitionedCookiesEnabled(), key1.has_value());
-  if (!PartitionedCookiesEnabled()) {
-    return;
-  }
+  EXPECT_TRUE(key1.has_value());
 
   auto key2 = CookiePartitionKey::FromNetworkIsolationKey(
       NetworkIsolationKey(top_level_site, frame_site, nonce2));
@@ -271,26 +249,22 @@ TEST_P(CookiePartitionKeyTest, Equality_WithNonce) {
   EXPECT_NE(key1, unnonced_key);
 }
 
-TEST_P(CookiePartitionKeyTest, Localhost) {
+TEST(CookiePartitionKeyTest, Localhost) {
   SchemefulSite top_level_site(GURL("https://localhost:8000"));
 
   auto key = CookiePartitionKey::FromNetworkIsolationKey(
       NetworkIsolationKey(top_level_site, top_level_site));
-  EXPECT_EQ(PartitionedCookiesEnabled(), key.has_value());
+  EXPECT_TRUE(key.has_value());
 
   SchemefulSite frame_site(GURL("https://cookiesite.com"));
   key = CookiePartitionKey::FromNetworkIsolationKey(
       NetworkIsolationKey(top_level_site, frame_site));
-  EXPECT_EQ(PartitionedCookiesEnabled(), key.has_value());
+  EXPECT_TRUE(key.has_value());
 }
 
 // Test that creating nonced partition keys works with both types of
 // NetworkIsolationKey modes. See https://crbug.com/1442260.
-TEST_P(CookiePartitionKeyTest, NetworkIsolationKeyMode) {
-  if (!PartitionedCookiesEnabled()) {
-    return;
-  }
-
+TEST(CookiePartitionKeyTest, NetworkIsolationKeyMode) {
   const net::SchemefulSite kTopFrameSite(GURL("https://a.com"));
   const net::SchemefulSite kFrameSite(GURL("https://b.com"));
   const auto kNonce = base::UnguessableToken::Create();

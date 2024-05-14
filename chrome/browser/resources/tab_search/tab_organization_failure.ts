@@ -26,7 +26,11 @@ export class TabOrganizationFailureElement extends PolymerElement {
   static get properties() {
     return {
       error: Object,
-      showFre: Boolean,
+
+      showFre: {
+        type: Boolean,
+        value: false,
+      },
     };
   }
 
@@ -35,11 +39,6 @@ export class TabOrganizationFailureElement extends PolymerElement {
 
   static get template() {
     return getTemplate();
-  }
-
-  announceHeader() {
-    this.$.header.textContent = '';
-    this.$.header.textContent = this.getTitle_();
   }
 
   private getTitle_(): string {

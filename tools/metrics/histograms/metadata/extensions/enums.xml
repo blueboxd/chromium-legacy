@@ -751,6 +751,7 @@ Called by update_extension_histograms.py.-->
   <int value="553" label="PDF_VIEWER_PRIVATE_ON_SAVE"/>
   <int value="554"
       label="ACCESSIBILITY_PRIVATE_ON_SELECT_TO_SPEAK_FOCUS_CHANGED"/>
+  <int value="555" label="TTS_ON_VOICES_CHANGED"/>
 </enum>
 
 <enum name="ExtensionForceInstalledPreInstalledDeprecatedSite">
@@ -1816,7 +1817,7 @@ Called by update_extension_histograms.py.-->
   <int value="1015" label="AUTOFILLPRIVATE_SAVECREDITCARD"/>
   <int value="1016" label="AUTOFILLPRIVATE_REMOVEENTRY"/>
   <int value="1017" label="DELETED_AUTOFILLPRIVATE_VALIDATEPHONENUMBERS"/>
-  <int value="1018" label="AUTOFILLPRIVATE_MASKCREDITCARD"/>
+  <int value="1018" label="DELETED_AUTOFILLPRIVATE_MASKCREDITCARD"/>
   <int value="1019" label="INSTANCEID_GETID"/>
   <int value="1020" label="INSTANCEID_GETCREATIONTIME"/>
   <int value="1021" label="INSTANCEID_GETTOKEN"/>
@@ -2719,6 +2720,9 @@ Called by update_extension_histograms.py.-->
   <int value="1868" label="OS_MANAGEMENT_SETAUDIOVOLUME"/>
   <int value="1869" label="AUTOTESTPRIVATE_SETDEVICELANGUAGE"/>
   <int value="1870" label="AUTOFILLPRIVATE_SETAUTOFILLSYNCTOGGLEENABLED"/>
+  <int value="1871"
+      label="ODFSCONFIGPRIVATE_ISFILESYSTEMPROVIDERCLOUDFILESYSTEMENABLED"/>
+  <int value="1872" label="PDFVIEWERPRIVATE_SETPDFDOCUMENTTITLE"/>
 </enum>
 
 <enum name="ExtensionInstallationCrxInstallError">
@@ -3209,6 +3213,14 @@ Called by update_extension_permission.py.-->
   <int value="3" label="Not Available, Incognito mode"/>
 </enum>
 
+<enum name="GuestViewType">
+  <int value="0" label="Invalid"/>
+  <int value="1" label="webview"/>
+  <int value="2" label="mime handler view"/>
+  <int value="3" label="extension options"/>
+  <int value="4" label="app view"/>
+</enum>
+
 <enum name="HostPermissionsAccess">
   <int value="0" label="CANNOT_AFFECT"/>
   <int value="1" label="NOT_REQUESTED"/>
@@ -3303,6 +3315,16 @@ Called by update_extension_permission.py.-->
   <int value="4" label="Null context"/>
 </enum>
 
+<enum name="ServiceWorkerVersionStatus">
+  <int value="0" label="kUnknown"/>
+  <int value="1" label="kNew"/>
+  <int value="2" label="kInstalling"/>
+  <int value="3" label="kInstalled"/>
+  <int value="4" label="kActivating"/>
+  <int value="5" label="kActivated"/>
+  <int value="6" label="kRedundant"/>
+</enum>
+
 <enum name="SessionType">
   <int value="0" label="Existing Regular"/>
   <int value="1" label="Guest"/>
@@ -3343,6 +3365,21 @@ Called by update_extension_permission.py.-->
   <int value="16" label="kErrorSerializeToJson"/>
   <int value="17" label="kErrorWriteJson"/>
   <int value="18" label="kErrorWriteFlatbuffer"/>
+</enum>
+
+<enum name="VerifiedFileType">
+  <summary>
+    The type of file that was verified in content verification. Keep in sync
+    with ContentVerifier::VerifiedFileType.
+  </summary>
+  <int value="0" label="None"/>
+  <int value="1" label="Background Page"/>
+  <int value="2" label="Background Script"/>
+  <int value="3" label="Service Worker Script"/>
+  <int value="4" label="Content Script"/>
+  <int value="5" label="Misc Html File"/>
+  <int value="6" label="Misc Js File"/>
+  <int value="7" label="Misc File"/>
 </enum>
 
 <enum name="WebRequest.RequestHeader">

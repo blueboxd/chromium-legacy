@@ -479,7 +479,8 @@ WebView* WebView::Create(
     scheduler::WebAgentGroupScheduler& agent_group_scheduler,
     const SessionStorageNamespaceId& session_storage_namespace_id,
     std::optional<SkColor> page_base_background_color,
-    const BrowsingContextGroupInfo& browsing_context_group_info) {
+    const BrowsingContextGroupInfo& browsing_context_group_info,
+    const ColorProviderColorMaps* color_provider_colors) {
   return WebViewImpl::Create(
       client,
       is_hidden ? mojom::blink::PageVisibilityState::kHidden
@@ -487,7 +488,8 @@ WebView* WebView::Create(
       is_prerendering, is_inside_portal, fenced_frame_mode, compositing_enabled,
       widgets_never_composited, To<WebViewImpl>(opener), std::move(page_handle),
       agent_group_scheduler, session_storage_namespace_id,
-      std::move(page_base_background_color), browsing_context_group_info);
+      std::move(page_base_background_color), browsing_context_group_info,
+      color_provider_colors);
 }
 
 WebViewImpl* WebViewImpl::Create(
@@ -504,13 +506,14 @@ WebViewImpl* WebViewImpl::Create(
     blink::scheduler::WebAgentGroupScheduler& agent_group_scheduler,
     const SessionStorageNamespaceId& session_storage_namespace_id,
     std::optional<SkColor> page_base_background_color,
-    const BrowsingContextGroupInfo& browsing_context_group_info) {
+    const BrowsingContextGroupInfo& browsing_context_group_info,
+    const ColorProviderColorMaps* color_provider_colors) {
   return new WebViewImpl(
       client, visibility, is_prerendering, is_inside_portal, fenced_frame_mode,
       compositing_enabled, widgets_never_composited, opener,
       std::move(page_handle), agent_group_scheduler,
       session_storage_namespace_id, std::move(page_base_background_color),
-      browsing_context_group_info);
+      browsing_context_group_info, color_provider_colors);
 }
 
 size_t WebView::GetWebViewCount() {
@@ -574,7 +577,8 @@ WebViewImpl::WebViewImpl(
     blink::scheduler::WebAgentGroupScheduler& agent_group_scheduler,
     const SessionStorageNamespaceId& session_storage_namespace_id,
     std::optional<SkColor> page_base_background_color,
-    const BrowsingContextGroupInfo& browsing_context_group_info)
+    const BrowsingContextGroupInfo& browsing_context_group_info,
+    const ColorProviderColorMaps* color_provider_colors)
     : widgets_never_composited_(widgets_never_composited),
       web_view_client_(client),
       chrome_client_(MakeGarbageCollected<ChromeClientImpl>(this)),
@@ -600,10 +604,10 @@ WebViewImpl::WebViewImpl(
   }
   if (!web_view_client_)
     DCHECK(!does_composite_);
-  page_ = Page::CreateOrdinary(*chrome_client_,
-                               opener ? opener->GetPage() : nullptr,
-                               agent_group_scheduler.GetAgentGroupScheduler(),
-                               browsing_context_group_info);
+  page_ = Page::CreateOrdinary(
+      *chrome_client_, opener ? opener->GetPage() : nullptr,
+      agent_group_scheduler.GetAgentGroupScheduler(),
+      browsing_context_group_info, color_provider_colors);
   CoreInitializer::GetInstance().ProvideModulesToPage(
       *page_, session_storage_namespace_id_);
 
@@ -1479,16 +1483,16 @@ void WebViewImpl::PaintContent(cc::PaintCanvas* canvas, const gfx::Rect& rect) {
   DCHECK_EQ(main_view.GetLayoutView()->GetDocument().Lifecycle().GetState(),
             DocumentLifecycle::kPaintClean);
 
-  auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
+  PaintRecordBuilder builder;
   main_view.PaintOutsideOfLifecycleWithThrottlingAllowed(
-      builder->Context(), PaintFlag::kNoFlag, CullRect(rect));
+      builder.Context(), PaintFlag::kNoFlag, CullRect(rect));
   // Don't bother to save/restore here as the caller is expecting the canvas
   // to be modified and take care of it.
   canvas->clipRect(gfx::RectToSkRect(rect));
-  builder->EndRecording(*canvas, main_view.GetLayoutView()
-                                     ->FirstFragment()
-                                     .LocalBorderBoxProperties()
-                                     .Unalias());
+  builder.EndRecording(*canvas, main_view.GetLayoutView()
+                                    ->FirstFragment()
+                                    .LocalBorderBoxProperties()
+                                    .Unalias());
 }
 
 // static
@@ -1787,6 +1791,7 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
                                        ::features::UseSurfaceLayerForVideo());
 
   settings->SetLazyLoadEnabled(prefs.lazy_load_enabled);
+  settings->SetInForcedColors(prefs.in_forced_colors);
   settings->SetPreferredColorScheme(prefs.preferred_color_scheme);
   settings->SetPreferredContrast(prefs.preferred_contrast);
 
@@ -1895,8 +1900,9 @@ void WebViewImpl::SetPageFocus(bool enable) {
           // instead. Note that this has the side effect of moving the
           // caret back to the beginning of the text.
           Position position(element, 0);
-          focused_frame->Selection().SetSelectionAndEndTyping(
-              SelectionInDOMTree::Builder().Collapse(position).Build());
+          focused_frame->Selection().SetSelection(
+              SelectionInDOMTree::Builder().Collapse(position).Build(),
+              SetSelectionOptions());
         }
       }
     }
@@ -2559,7 +2565,8 @@ void WebViewImpl::SetPageLifecycleStateInternal(
   // Notify all local frames that we've updated the page lifecycle state.
   for (WebFrame* frame = MainFrame(); frame; frame = frame->TraverseNext()) {
     if (frame->IsWebLocalFrame()) {
-      frame->ToWebLocalFrame()->Client()->DidSetPageLifecycleState();
+      frame->ToWebLocalFrame()->Client()->DidSetPageLifecycleState(
+          restoring_from_bfcache);
     }
   }
 
@@ -3302,7 +3309,12 @@ void WebViewImpl::SetPageBaseBackgroundColor(std::optional<SkColor> color) {
 
 void WebViewImpl::UpdateColorProviders(
     const ColorProviderColorMaps& color_provider_colors) {
-  page_->UpdateColorProviders(color_provider_colors);
+  bool color_providers_did_change =
+      page_->UpdateColorProviders(color_provider_colors);
+  if (color_providers_did_change) {
+    Page::PlatformColorsChanged();
+    Page::ColorSchemeChanged();
+  }
 }
 
 void WebViewImpl::SetBaseBackgroundColorOverrideTransparent(
@@ -3339,9 +3351,10 @@ void WebViewImpl::UpdateBaseBackgroundColor() {
 
 void WebViewImpl::UpdateFontRenderingFromRendererPrefs() {
 #if !BUILDFLAG(IS_MAC)
-  skia::LegacyDisplayGlobals::SetCachedPixelGeometry(
+  skia::LegacyDisplayGlobals::SetCachedParams(
       gfx::FontRenderParams::SubpixelRenderingToSkiaPixelGeometry(
-          renderer_preferences_.subpixel_rendering));
+          renderer_preferences_.subpixel_rendering),
+      renderer_preferences_.text_contrast, renderer_preferences_.text_gamma);
 #if BUILDFLAG(IS_WIN)
   // Cache the system font metrics in blink.
   WebFontRendering::SetMenuFontMetrics(
@@ -3501,6 +3514,14 @@ void WebViewImpl::UpdateRendererPreferences(
 
   SetExplicitlyAllowedPorts(
       renderer_preferences_.explicitly_allowed_network_ports);
+
+  if (renderer_preferences_.prefixed_fullscreen_video_api_availability
+          .has_value()) {
+    WebRuntimeFeatures::EnableFeatureFromString(
+        "PrefixedVideoFullscreen",
+        renderer_preferences_.prefixed_fullscreen_video_api_availability
+            .value());
+  }
 }
 
 void WebViewImpl::SetHistoryOffsetAndLength(int32_t history_offset,
@@ -3984,11 +4005,6 @@ void WebViewImpl::StopDeferringMainFrameUpdate() {
 void WebViewImpl::SetDeviceColorSpaceForTesting(
     const gfx::ColorSpace& color_space) {
   web_widget_->SetDeviceColorSpaceForTesting(color_space);
-}
-
-void WebViewImpl::SetColorProviders(
-    const ColorProviderColorMaps& color_provider_colors) {
-  UpdateColorProviders(color_provider_colors);
 }
 
 const SessionStorageNamespaceId& WebViewImpl::GetSessionStorageNamespaceId() {

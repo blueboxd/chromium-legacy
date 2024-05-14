@@ -16,11 +16,8 @@
 #include "base/test/scoped_path_override.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/extensions/chrome_extension_test_notification_observer.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/browsertest_util.h"
@@ -47,6 +44,7 @@ class ServiceWorkerContext;
 }  // namespace content
 
 namespace extensions {
+class ChromeExtensionTestNotificationObserver;
 class ExtensionCacheFake;
 class ExtensionService;
 class ExtensionSet;
@@ -125,13 +123,9 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   ~ExtensionBrowserTest() override;
 
   // Useful accessors.
-  ExtensionService* extension_service() {
-    return ExtensionSystem::Get(profile())->extension_service();
-  }
+  ExtensionService* extension_service();
 
-  ExtensionRegistry* extension_registry() {
-    return ExtensionRegistry::Get(profile());
-  }
+  ExtensionRegistry* extension_registry();
 
   const extensions::ExtensionId& last_loaded_extension_id() {
     return last_loaded_extension_id_;
@@ -298,24 +292,16 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   void EnableExtension(const extensions::ExtensionId& extension_id);
 
   // Wait for the number of visible page actions to change to |count|.
-  bool WaitForPageActionVisibilityChangeTo(int count) {
-    return observer_->WaitForPageActionVisibilityChangeTo(count);
-  }
+  bool WaitForPageActionVisibilityChangeTo(int count);
 
   // Wait for all extension views to load.
-  bool WaitForExtensionViewsToLoad() {
-    return observer_->WaitForExtensionViewsToLoad();
-  }
+  bool WaitForExtensionViewsToLoad();
 
   // Wait for the extension to be idle.
-  bool WaitForExtensionIdle(const extensions::ExtensionId& extension_id) {
-    return observer_->WaitForExtensionIdle(extension_id);
-  }
+  bool WaitForExtensionIdle(const extensions::ExtensionId& extension_id);
 
   // Wait for the extension to not be idle.
-  bool WaitForExtensionNotIdle(const extensions::ExtensionId& extension_id) {
-    return observer_->WaitForExtensionNotIdle(extension_id);
-  }
+  bool WaitForExtensionNotIdle(const extensions::ExtensionId& extension_id);
 
   // Simulates a page calling window.open on an URL and waits for the
   // navigation.

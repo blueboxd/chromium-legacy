@@ -7,14 +7,18 @@
 #include <utility>
 
 #include "ash/constants/ash_switches.h"
+#include "ash/shell.h"
 #include "base/check_is_test.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/bind_post_task.h"
 #include "chrome/browser/ash/crosapi/chaps_service_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/kcer/nssdb_migration/kcer_rollback_helper.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
 #include "chromeos/ash/components/network/system_token_cert_db_storage.h"
@@ -23,11 +27,33 @@
 #include "chromeos/components/kcer/chaps/session_chaps_client.h"
 #include "chromeos/components/kcer/extra_instances.h"
 #include "components/account_id/account_id.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/nss_util_internal.h"
 
 namespace kcer {
+namespace {
+
+// Returns the currently valid ChapsService. Might return a nullptr during early
+// initialization and after shutdown.
+crosapi::mojom::ChapsService* GetChapsService() {
+  crosapi::mojom::ChapsService* chaps_service = nullptr;
+  if (crosapi::CrosapiManager::IsInitialized() &&
+      crosapi::CrosapiManager::Get() &&
+      crosapi::CrosapiManager::Get()->crosapi_ash()) {
+    chaps_service =
+        crosapi::CrosapiManager::Get()->crosapi_ash()->chaps_service_ash();
+  }
+  if (!chaps_service) {
+    LOG(ERROR) << "ChapsService mojo interface is not available";
+  }
+  return chaps_service;
+}
+
+}  // namespace
 
 const user_manager::User* GetUserByContext(content::BrowserContext* context) {
   if (!context) {
@@ -40,21 +66,62 @@ const user_manager::User* GetUserByContext(content::BrowserContext* context) {
   return ash::ProfileHelper::Get()->GetUserByProfile(profile);
 }
 
+KcerFactoryAsh::KcerFactoryAsh() = default;
+KcerFactoryAsh::~KcerFactoryAsh() = default;
+
 // static
 void KcerFactoryAsh::EnsureFactoryBuilt() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!GetGlobalPointer()) {
-    GetGlobalPointer() = new KcerFactoryAsh();
+    KcerFactoryAsh* new_factory = new KcerFactoryAsh();
+    GetGlobalPointer() = new_factory;
+    // This assumes that CrosapiManager is created before the main message loop
+    // is running (i.e. before PostMainMessageLoopRun Chrome initialization
+    // stage) and postpones the initialization until after that. `new_factory`
+    // is never destroyed.
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&KcerFactoryAsh::Initialize,
+                                  base::Unretained(new_factory)));
   }
 }
 
-KcerFactoryAsh::KcerFactoryAsh() {
+void KcerFactoryAsh::Initialize() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (ash::Shell::HasInstance() && ash::Shell::Get()->session_controller()) {
+    ash::Shell::Get()->session_controller()->AddObserver(this);
+  } else {
+    CHECK_IS_TEST();
+  }
   if (UseKcerWithoutNss()) {
     StartInitializingDeviceKcerWithoutNss();
   } else {
     StartInitializingDeviceKcerForNss();
   }
+}
+
+void KcerFactoryAsh::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kNssChapsDualWrittenCertsExist,
+                                /*default_value=*/false);
+}
+
+// Writes the prefs::kNssChapsDualWrittenCertsExist pref into the pref storage
+// of the currently active user. The value might be used to clean up the user
+// slot in Chaps, which is semantically owned by the current ChromeOS user.
+void KcerFactoryAsh::RecordPkcs12CertDualWrittenImpl() {
+  user_manager::UserManager* manager = user_manager::UserManager::Get();
+  if (!manager) {
+    return;
+  }
+  user_manager::User* user = manager->GetActiveUser();
+  if (!user) {
+    return;
+  }
+  PrefService* prefs = user->GetProfilePrefs();
+  if (!prefs) {
+    return;
+  }
+  prefs->SetBoolean(prefs::kNssChapsDualWrittenCertsExist, true);
 }
 
 base::WeakPtr<Kcer> KcerFactoryAsh::GetKcerImpl(Profile* profile) {
@@ -99,8 +166,8 @@ void KcerFactoryAsh::StartInitializingKcerWithoutNss(
   const user_manager::User* user = GetUserByContext(context);
   if (!user) {
     return KcerFactory::InitializeKcerInstanceWithoutNss(
-        kcer_service, /*user_token_id=*/absl::nullopt,
-        /*device_token_id=*/absl::nullopt);
+        kcer_service, /*user_token_id=*/std::nullopt,
+        /*device_token_id=*/std::nullopt);
   }
 
   if (user->IsAffiliated()) {
@@ -109,7 +176,7 @@ void KcerFactoryAsh::StartInitializingKcerWithoutNss(
 
   return GetUserTokenInfo(std::move(kcer_service), user->GetAccountId(),
                           /*scoped_device_token_info_getter=*/nullptr,
-                          /*device_token_info=*/absl::nullopt);
+                          /*device_token_info=*/std::nullopt);
 }
 
 void KcerFactoryAsh::GetDeviceTokenInfo(
@@ -140,7 +207,7 @@ void KcerFactoryAsh::GetUserTokenInfo(
     base::WeakPtr<internal::KcerImpl> kcer_service,
     AccountId account_id,
     std::unique_ptr<ash::TPMTokenInfoGetter> scoped_device_token_info_getter,
-    absl::optional<user_data_auth::TpmTokenInfo> device_token_info) {
+    std::optional<user_data_auth::TpmTokenInfo> device_token_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!kcer_service) {
     return;
@@ -164,20 +231,20 @@ void KcerFactoryAsh::GetUserTokenInfo(
 
 void KcerFactoryAsh::GotAllTokenInfos(
     base::WeakPtr<internal::KcerImpl> kcer_service,
-    absl::optional<user_data_auth::TpmTokenInfo> device_token_info,
+    std::optional<user_data_auth::TpmTokenInfo> device_token_info,
     std::unique_ptr<ash::TPMTokenInfoGetter> scoped_user_token_info_getter,
-    absl::optional<user_data_auth::TpmTokenInfo> user_token_info) {
+    std::optional<user_data_auth::TpmTokenInfo> user_token_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!kcer_service) {
     return;
   }
 
-  absl::optional<SessionChapsClient::SlotId> user_token_id;
+  std::optional<SessionChapsClient::SlotId> user_token_id;
   if (user_token_info) {
     user_token_id = SessionChapsClient::SlotId(
         static_cast<uint64_t>(user_token_info->slot()));
   }
-  absl::optional<SessionChapsClient::SlotId> device_token_id;
+  std::optional<SessionChapsClient::SlotId> device_token_id;
   if (device_token_info) {
     device_token_id = SessionChapsClient::SlotId(
         static_cast<uint64_t>(device_token_info->slot()));
@@ -241,10 +308,10 @@ void KcerFactoryAsh::StartInitializingDeviceKcerWithoutNss() {
 
 void KcerFactoryAsh::InitializeDeviceKcerWithoutNss(
     std::unique_ptr<ash::TPMTokenInfoGetter> scoped_device_token_info_getter,
-    absl::optional<user_data_auth::TpmTokenInfo> device_token_info) {
+    std::optional<user_data_auth::TpmTokenInfo> device_token_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  absl::optional<SessionChapsClient::SlotId> device_token_id;
+  std::optional<SessionChapsClient::SlotId> device_token_id;
   if (device_token_info) {
     device_token_id = SessionChapsClient::SlotId(
         static_cast<uint64_t>(device_token_info->slot()));
@@ -260,30 +327,34 @@ void KcerFactoryAsh::InitializeDeviceKcerWithoutNss(
       content::GetIOThreadTaskRunner({}), std::move(device_token));
 }
 
-// This method can in theory fail, but this shouldn't happen. In Ash the mojo
-// interface is implemented by Ash itself, so it should always be present.
 bool KcerFactoryAsh::EnsureHighLevelChapsClientInitialized() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (IsHighLevelChapsClientInitialized()) {
     return true;
   }
 
-  crosapi::mojom::ChapsService* chaps_service = nullptr;
-  if (crosapi::CrosapiManager::Get() &&
-      crosapi::CrosapiManager::Get()->crosapi_ash()) {
-    chaps_service =
-        crosapi::CrosapiManager::Get()->crosapi_ash()->chaps_service_ash();
-  }
-  if (!chaps_service) {
-    LOG(ERROR) << "ChapsService mojo interface is not available";
-    return false;
-  }
-
-  session_chaps_client_ =
-      std::make_unique<SessionChapsClientImpl>(chaps_service);
+  session_chaps_client_ = std::make_unique<SessionChapsClientImpl>(
+      base::BindRepeating(&GetChapsService));
   high_level_chaps_client_ =
       std::make_unique<HighLevelChapsClientImpl>(session_chaps_client_.get());
 
   return IsHighLevelChapsClientInitialized();
+}
+
+void KcerFactoryAsh::OnActiveUserPrefServiceChanged(PrefService* pref_service) {
+  if (rollback_helper_) {
+    rollback_helper_.reset();
+  }
+  if (!pref_service) {
+    return;
+  }
+  EnsureHighLevelChapsClientInitialized();
+  if (internal::KcerRollbackHelper::IsChapsRollbackRequired(pref_service)) {
+    rollback_helper_ = std::make_unique<internal::KcerRollbackHelper>(
+        high_level_chaps_client_.get(), pref_service);
+
+    return rollback_helper_->PerformRollback();
+  }
 }
 
 }  // namespace kcer

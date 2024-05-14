@@ -19,15 +19,16 @@
 #include "components/permissions/permission_request_manager.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
+#include "third_party/blink/public/common/features_generated.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/views/controls/label.h"
 #include "url/origin.h"
 
 namespace {
 DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kWebContentsElementId);
-DEFINE_LOCAL_CUSTOM_ELEMENT_EVENT_TYPE(kElementReadyEvent);
-const WebContentsInteractionTestUtil::DeepQuery kReadyElementQuery = {"#ready"};
+DEFINE_LOCAL_CUSTOM_ELEMENT_EVENT_TYPE(kPEPCVisibleEvent);
 }  // namespace
 
 class EmbeddedPermissionPromptInteractiveTest : public InteractiveBrowserTest {
@@ -35,12 +36,11 @@ class EmbeddedPermissionPromptInteractiveTest : public InteractiveBrowserTest {
   EmbeddedPermissionPromptInteractiveTest() {
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
-    feature_list_.InitWithFeatures({features::kPermissionElement,
-                                    permissions::features::kOneTimePermission},
-                                   {});
-    ready_element_visible_.where = kReadyElementQuery;
-    ready_element_visible_.type = StateChange::Type::kExists;
-    ready_element_visible_.event = kElementReadyEvent;
+    feature_list_.InitWithFeatures(
+        {features::kPermissionElement,
+         permissions::features::kOneTimePermission,
+         blink::features::kDisablePepcSecurityForTesting},
+        {});
   }
 
   ~EmbeddedPermissionPromptInteractiveTest() override = default;
@@ -82,11 +82,13 @@ class EmbeddedPermissionPromptInteractiveTest : public InteractiveBrowserTest {
   }
 
   auto ClickOnPEPCElement(const std::string& element_id) {
+    StateChange pepc_visible;
+    pepc_visible.where = DeepQuery{"#" + element_id};
+    pepc_visible.type = StateChange::Type::kExists;
+    pepc_visible.event = kPEPCVisibleEvent;
     return Steps(
-        WaitForStateChange(kWebContentsElementId, ready_element_visible_),
-        EnsurePresent(kWebContentsElementId, DeepQuery{"#" + element_id}),
-        MoveMouseTo(kWebContentsElementId, DeepQuery{"#" + element_id}),
-        ClickMouse());
+        WaitForStateChange(kWebContentsElementId, pepc_visible),
+        ExecuteJsAt(kWebContentsElementId, pepc_visible.where, "click"));
   }
 
   auto PushPEPCPromptButton(ui::ElementIdentifier button_identifier) {
@@ -249,10 +251,11 @@ class EmbeddedPermissionPromptInteractiveTest : public InteractiveBrowserTest {
         }));
   }
 
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+
  private:
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
-  base::test::ScopedFeatureList feature_list_;
-  StateChange ready_element_visible_;
 };
 
 // Failing on Windows, though manual testing of the same flow does not reproduce
@@ -262,11 +265,15 @@ class EmbeddedPermissionPromptInteractiveTest : public InteractiveBrowserTest {
 #define MAYBE_BasicFlowCamera DISABLED_BasicFlowCamera
 #define MAYBE_BasicFlowCameraMicrophone DISABLED_BasicFlowCameraMicrophone
 #define MAYBE_TestPartialPermissionsLabels DISABLED_TestPartialPermissionsLabels
+#define MAYBE_TestPermissionElementDialogPositioning \
+  DISABLED_TestPermissionElementDialogPositioning
 #else
 #define MAYBE_BasicFlowMicrophone BasicFlowMicrophone
 #define MAYBE_BasicFlowCamera BasicFlowCamera
 #define MAYBE_BasicFlowCameraMicrophone BasicFlowCameraMicrophone
 #define MAYBE_TestPartialPermissionsLabels TestPartialPermissionsLabels
+#define MAYBE_TestPermissionElementDialogPositioning \
+  TestPermissionElementDialogPositioning
 #endif
 IN_PROC_BROWSER_TEST_F(EmbeddedPermissionPromptInteractiveTest,
                        MAYBE_BasicFlowMicrophone) {
@@ -332,4 +339,56 @@ IN_PROC_BROWSER_TEST_F(EmbeddedPermissionPromptInteractiveTest,
       CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
       u"You previously didn't allow microphone on a.test:" +
           base::UTF8ToUTF16(GetOrigin().port()));
+}
+
+class EmbeddedPermissionPromptPositioningInteractiveTest
+    : public EmbeddedPermissionPromptInteractiveTest {
+ public:
+  EmbeddedPermissionPromptPositioningInteractiveTest() {
+    feature_list_.Reset();
+    feature_list_.InitWithFeaturesAndParameters(
+        {
+            {features::kPermissionElement,
+             {{"PermissionElementDialogPositioning", "true"}}},
+            {permissions::features::kOneTimePermission, {}},
+            {blink::features::kDisablePepcSecurityForTesting, {}},
+        },
+        {});
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(EmbeddedPermissionPromptPositioningInteractiveTest,
+                       MAYBE_TestPermissionElementDialogPositioning) {
+  RunTestSequence(InstrumentTab(kWebContentsElementId),
+                  NavigateWebContents(kWebContentsElementId, GetURL()));
+
+  // Click on multiple elements in order from left to right, and ensure that
+  // dialog moves with each click
+  int previous_x = 0;
+  struct ElementAction {
+    std::string element_name;
+    ui::ElementIdentifier button_identifier;
+  };
+  std::vector<ElementAction> element_actions = {
+      {"microphone", EmbeddedPermissionPromptAskView::kAllowId},
+      {"camera", EmbeddedPermissionPromptAskView::kAllowId},
+      {"camera-microphone",
+       EmbeddedPermissionPromptPreviouslyGrantedView::kStopAllowingId},
+  };
+
+  for (const auto& element_action : element_actions) {
+    RunTestSequence(ClickOnPEPCElement(element_action.element_name),
+                    InAnyContext(WaitForShow(
+                        EmbeddedPermissionPromptBaseView::kMainViewId)),
+                    FlushEvents(),
+                    InAnyContext(CheckView(
+                        EmbeddedPermissionPromptBaseView::kMainViewId,
+                        [&previous_x](views::View* view) {
+                          gfx::Rect bounds = view->GetBoundsInScreen();
+                          previous_x = bounds.x();
+                          return bounds.x();
+                        },
+                        testing::Gt(previous_x))),
+                    PushPEPCPromptButton(element_action.button_identifier));
+  }
 }

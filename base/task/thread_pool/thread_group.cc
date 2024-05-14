@@ -4,6 +4,7 @@
 
 #include "base/task/thread_pool/thread_group.h"
 
+#include <string_view>
 #include <utility>
 
 #include "base/check.h"
@@ -140,8 +141,8 @@ void ThreadGroup::ScopedReenqueueExecutor::
   destination_thread_group_ = destination_thread_group;
 }
 
-ThreadGroup::ThreadGroup(StringPiece histogram_label,
-                         StringPiece thread_group_label,
+ThreadGroup::ThreadGroup(std::string_view histogram_label,
+                         std::string_view thread_group_label,
                          ThreadType thread_type_hint,
                          TrackedRef<TaskTracker> task_tracker,
                          TrackedRef<Delegate> delegate)
@@ -162,7 +163,7 @@ void ThreadGroup::StartImpl(
     WorkerThreadObserver* worker_thread_observer,
     WorkerEnvironment worker_environment,
     bool synchronous_thread_start_for_testing,
-    absl::optional<TimeDelta> may_block_threshold) {
+    std::optional<TimeDelta> may_block_threshold) {
   DCHECK(!replacement_thread_group_);
 
   if (synchronous_thread_start_for_testing) {

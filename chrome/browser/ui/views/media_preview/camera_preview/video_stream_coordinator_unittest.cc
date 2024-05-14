@@ -46,7 +46,10 @@ class VideoStreamCoordinatorTest : public TestWithBrowserView {
   void SetUp() override {
     TestWithBrowserView::SetUp();
     parent_view_ = std::make_unique<views::View>();
-    coordinator_ = std::make_unique<VideoStreamCoordinator>(*parent_view_);
+    coordinator_ = std::make_unique<VideoStreamCoordinator>(
+        *parent_view_,
+        media_preview_metrics::Context(
+            media_preview_metrics::UiLocation::kPermissionPrompt));
   }
 
   void TearDown() override {
@@ -55,14 +58,20 @@ class VideoStreamCoordinatorTest : public TestWithBrowserView {
     TestWithBrowserView::TearDown();
   }
 
-  static std::vector<media::VideoCaptureFormat> GetFormats() {
-    return {{{160, 120}, 15.0, media::PIXEL_FORMAT_I420},
-            {{160, 120}, 30.0, media::PIXEL_FORMAT_NV12},
-            {{640, 480}, 30.0, media::PIXEL_FORMAT_NV12},
-            {{640, 480}, 30.0, media::PIXEL_FORMAT_I420},
-            {{3840, 2160}, 30.0, media::PIXEL_FORMAT_Y16},
-            {{844, 400}, 30.0, media::PIXEL_FORMAT_NV12},
-            {{1280, 720}, 30.0, media::PIXEL_FORMAT_I420}};
+  static media::VideoCaptureDeviceInfo GetVideoCaptureDeviceInfo() {
+    media::VideoCaptureDeviceDescriptor descriptor;
+    descriptor.device_id = "device_id";
+
+    media::VideoCaptureDeviceInfo device_info(descriptor);
+    device_info.supported_formats = {
+        {{160, 120}, 15.0, media::PIXEL_FORMAT_I420},
+        {{160, 120}, 30.0, media::PIXEL_FORMAT_NV12},
+        {{640, 480}, 30.0, media::PIXEL_FORMAT_NV12},
+        {{640, 480}, 30.0, media::PIXEL_FORMAT_I420},
+        {{3840, 2160}, 30.0, media::PIXEL_FORMAT_Y16},
+        {{844, 400}, 30.0, media::PIXEL_FORMAT_NV12},
+        {{1280, 720}, 30.0, media::PIXEL_FORMAT_I420}};
+    return device_info;
   }
 
   void ExpectCreatePushSubscriptionCall(Sequence sequence) {
@@ -178,6 +187,7 @@ TEST_F(VideoStreamCoordinatorTest, ConnectToFrameHandlerAndReceiveFrames) {
 
   mojo::Remote<video_capture::mojom::VideoSource> video_source;
   video_source_receiver_.Bind(video_source.BindNewPipeAndPassReceiver());
-  coordinator_->ConnectToDevice(std::move(video_source), GetFormats());
+  coordinator_->ConnectToDevice(GetVideoCaptureDeviceInfo(),
+                                std::move(video_source));
   run_loop.Run();
 }

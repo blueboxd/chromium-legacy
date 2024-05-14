@@ -7,6 +7,7 @@
 # non-pixel tests here.
 
 AccessCodeCastDialogBrowserTest.*
+AddNewAddressProfileTest.*
 AppInfoDialogBrowserTest.*
 AppMenuBrowserTest*.InvokeUi_*
 AskGoogleForSuggestionsDialogTest.*
@@ -67,9 +68,11 @@ PageInfoBubbleViewIsolatedWebAppBrowserTest.*
 *PasswordBubbleBrowserTest.*
 *PasswordAutomaticSaveBubbleBrowserTest.*
 *PasswordGenerationPopupViewBrowsertest.*
+*PasswordGenerationPopupViewWithExperimentsBrowsertest.*
 *PasswordManagementRevampedBubbleInteractiveUiTest.*
 PasswordBubbleInteractiveUiTest.NavigateToManagementDetailsViewAndTakeScreenshot
 PasswordBubbleInteractiveUiTest.NavigateToManagementDetailsViewWithMoveFooterVisibleAndTakeScreenshot
+*PasswordBubbleWithManagePasswordButtonInteractiveUiTest.*
 PasswordReuseModalWarningTest.*
 PerformanceToolbarButtonInteractiveUiTest.*
 PermissionRequestChipBrowserUiTest.*
@@ -99,6 +102,8 @@ TabHoverCardBubbleViewDialogBrowserTest.*
 *TailoredSecurityDesktopDialogManagerTest.InvokeUi_*
 TranslateBubbleVisualTest.InvokeUi_*
 UpdateRecommendedDialogTest.*
+*WatermarkBrowserTest.*
+*WatermarkDisabledBrowserTest.*
 WebAppConfirmViewBrowserTest.*
 ZoomBubbleDialogTest.*
 

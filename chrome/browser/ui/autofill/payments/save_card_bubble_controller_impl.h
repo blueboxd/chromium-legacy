@@ -115,6 +115,7 @@ class SaveCardBubbleControllerImpl
   bool IsUploadSave() const override;
   BubbleType GetBubbleType() const override;
   bool IsPaymentsSyncTransportEnabledWithoutSyncFeature() const override;
+  void HideSaveCardBubble() override;
 
   // SavePaymentIconController:
   std::u16string GetSavePaymentIconTooltipText() const override;
@@ -154,6 +155,9 @@ class SaveCardBubbleControllerImpl
   void UpdateSaveCardIcon();
 
   void OpenUrl(const GURL& url);
+
+  // Returns whether the web contents related to the controller is active.
+  bool IsWebContentsActive();
 
   // Should outlive this object.
   raw_ptr<PersonalDataManager> personal_data_manager_;

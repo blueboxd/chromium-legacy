@@ -23,6 +23,7 @@
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/cr_components/history_clusters/history_clusters_util.h"
+#include "chrome/browser/ui/webui/cr_components/history_embeddings/history_embeddings_handler.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/history/browsing_history_handler.h"
 #include "chrome/browser/ui/webui/history/foreign_session_handler.h"
@@ -44,6 +45,7 @@
 #include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/features.h"
 #include "components/history_clusters/core/history_clusters_prefs.h"
+#include "components/history_embeddings/history_embeddings_features.h"
 #include "components/page_image_service/image_service.h"
 #include "components/page_image_service/image_service_handler.h"
 #include "components/prefs/pref_service.h"
@@ -161,6 +163,18 @@ content::WebUIDataSource* CreateAndAddHistoryUIHTMLSource(Profile* profile) {
       "lastSelectedTab",
       prefs->GetInteger(history_clusters::prefs::kLastSelectedTab));
 
+  bool enable_history_embeddings =
+      base::FeatureList::IsEnabled(history_embeddings::kHistoryEmbeddings);
+  source->AddBoolean("enableHistoryEmbeddings", enable_history_embeddings);
+  if (enable_history_embeddings) {
+    static constexpr webui::LocalizedString kHistoryEmbeddingsStrings[] = {
+        {"historyEmbeddingsSuggestion1", IDS_HISTORY_EMBEDDINGS_SUGGESTION_1},
+        {"historyEmbeddingsSuggestion2", IDS_HISTORY_EMBEDDINGS_SUGGESTION_2},
+        {"historyEmbeddingsSuggestion3", IDS_HISTORY_EMBEDDINGS_SUGGESTION_3},
+    };
+    source->AddLocalizedStrings(kHistoryEmbeddingsStrings);
+  }
+
   // History clusters
   HistoryClustersUtil::PopulateSource(source, profile, /*in_side_panel=*/false);
 
@@ -237,6 +251,13 @@ base::RefCountedMemory* HistoryUI::GetFaviconResourceBytes(
 }
 
 void HistoryUI::BindInterface(
+    mojo::PendingReceiver<history_embeddings::mojom::PageHandler>
+        pending_page_handler) {
+  history_embeddings_handler_ = std::make_unique<HistoryEmbeddingsHandler>(
+      std::move(pending_page_handler));
+}
+
+void HistoryUI::BindInterface(
     mojo::PendingReceiver<history_clusters::mojom::PageHandler>
         pending_page_handler) {
   history_clusters_handler_ =
@@ -267,16 +288,14 @@ void HistoryUI::UpdateDataSource() {
   base::Value::Dict update;
   update.Set(kIsUserSignedInKey, IsUserSignedIn(profile));
 
-  const bool rename_journeys =
-      base::FeatureList::IsEnabled(history_clusters::kRenameJourneys);
   const bool is_managed = profile->GetPrefs()->IsManagedPreference(
       history_clusters::prefs::kVisible);
-  // When history_clusters::kRenameJourneys is enabled, history clusters are
-  // always visible unless the visibility prefs is set to false by policy.
+  // History clusters are always visible unless the visibility prefs
+  // is set to false by policy.
   update.Set(
       kIsHistoryClustersVisibleKey,
       profile->GetPrefs()->GetBoolean(history_clusters::prefs::kVisible) ||
-          (rename_journeys && !is_managed));
+          !is_managed);
   update.Set(kIsHistoryClustersVisibleManagedByPolicyKey, is_managed);
 
   content::WebUIDataSource::Update(profile, chrome::kChromeUIHistoryHost,

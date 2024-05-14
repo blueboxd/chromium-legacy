@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/private_aggregation/private_aggregation_internals_ui.h"
-
 #include <memory>
 #include <optional>
 #include <string>
@@ -18,11 +16,13 @@
 #include "content/browser/aggregation_service/aggregation_service_observer.h"
 #include "content/browser/aggregation_service/aggregation_service_storage.h"
 #include "content/browser/aggregation_service/aggregation_service_test_utils.h"
+#include "content/browser/private_aggregation/private_aggregation_internals_ui.h"
 #include "content/browser/private_aggregation/private_aggregation_test_utils.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -191,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(PrivateAggregationInternalsWebUiBrowserTest,
       const cell = (a, b) => table.children[a]?.children[b]?.textContent;
       const obs = new MutationObserver((_, obs) => {
         const kExpectedBodyStr =
-          '[ {  "bucket": {   "high": "0",   "low": "123"  },  "value": 456 }]';
+          '[ {  "bucket": "123",  "value": 456 }]';
         if (table.children.length === 4 &&
             cell(0, 1) === 'Pending' &&
             cell(0, 2) === 'https://reporting.example/example-path' &&

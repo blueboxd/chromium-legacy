@@ -51,7 +51,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_GROWTH) CampaignsManager {
   // Download and install campaigns. Once installed, trigger the
   // `OnCampaignsLoaded` to install campaigns and notifier observers when
   // complete loading campaigns.
-  void LoadCampaigns(base::OnceClosure load_callback);
+  void LoadCampaigns(base::OnceClosure load_callback, bool in_oobe = false);
 
   // Get campaigns by slot and register sythetical trial for current session.
   // This is used by reactive slots to query campaign that targets the given
@@ -59,12 +59,19 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_GROWTH) CampaignsManager {
   // TODO(b/308684443): Rename this to `GetCampaignBySlotAndRegisterTrial`.
   const Campaign* GetCampaignBySlot(Slot slot) const;
 
-  ActionMap& actions_map() { return actions_map_; }
+  // Set the current opened app. Used in `CampaignsMatcher` for matching
+  // opened app targeting.
+  void SetOpenedApp(const std::string& app_id);
+
+  // Select action performer based on the action type and perform action with
+  // action params.
+  void PerformAction(const Action* action);
 
  private:
   // Triggred when campaigns component loaded.
   void OnCampaignsComponentLoaded(
       base::OnceClosure load_callback,
+      bool in_oobe,
       const std::optional<const base::FilePath>& file_path);
 
   // Triggered when campaigns are loaded from the campaigns component mounted

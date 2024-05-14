@@ -4,10 +4,9 @@
 
 package org.chromium.chrome.browser.omnibox;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -53,6 +52,8 @@ public class OmniboxSuggestionsDropdownEmbedderImplTest {
     private static final int ANCHOR_TOP = 31;
     private static final int TABLET_OVERLAP = 2;
 
+    private static final int INTERMEDIATE_VIEW_TOP = 75;
+
     private static final int ALIGNMENT_WIDTH = 400;
     // Sentinel value for mistaken use of alignment view top instead of left. If you see a 43, it's
     // probably because you used position[1] instead of position[0].
@@ -72,6 +73,7 @@ public class OmniboxSuggestionsDropdownEmbedderImplTest {
     private @Mock ViewTreeObserver mViewTreeObserver;
     private @Mock ViewGroup mContentView;
     private @Mock ViewGroup mAnchorView;
+    private @Mock ViewGroup mIntermediateView;
     private @Mock View mHorizontalAlignmentView;
     private @Mock DisplayAndroid mDisplay;
     private @Mock InsetObserver mInsetObserver;
@@ -104,7 +106,8 @@ public class OmniboxSuggestionsDropdownEmbedderImplTest {
                         mWindowDelegate,
                         mAnchorView,
                         mHorizontalAlignmentView,
-                        false);
+                        false,
+                        null);
     }
 
     @Test
@@ -131,6 +134,37 @@ public class OmniboxSuggestionsDropdownEmbedderImplTest {
         doReturn(60).when(mHorizontalAlignmentView).getTop();
         mImpl.recalculateOmniboxAlignment();
         OmniboxAlignment alignment = mImpl.getCurrentAlignment();
+        assertEquals(
+                new OmniboxAlignment(
+                        0,
+                        ANCHOR_HEIGHT + ANCHOR_TOP,
+                        ANCHOR_WIDTH,
+                        getExpectedHeight(ANCHOR_HEIGHT + ANCHOR_TOP),
+                        0,
+                        0),
+                alignment);
+    }
+
+    @Test
+    public void testRecalculateOmniboxAlignment_definedBaseChromeLayout() {
+        // Add an intermediate view between the anchorView and contentView
+        doReturn(mIntermediateView).when(mAnchorView).getParent();
+        doReturn(mContentView).when(mIntermediateView).getParent();
+        doReturn(INTERMEDIATE_VIEW_TOP).when(mIntermediateView).getTop();
+
+        doReturn(mAnchorView).when(mHorizontalAlignmentView).getParent();
+        doReturn(60).when(mHorizontalAlignmentView).getTop();
+
+        OmniboxSuggestionsDropdownEmbedderImpl impl =
+                new OmniboxSuggestionsDropdownEmbedderImpl(
+                        mWindowAndroid,
+                        mWindowDelegate,
+                        mAnchorView,
+                        mHorizontalAlignmentView,
+                        false,
+                        mIntermediateView);
+        impl.recalculateOmniboxAlignment();
+        OmniboxAlignment alignment = impl.getCurrentAlignment();
         assertEquals(
                 new OmniboxAlignment(
                         0,
@@ -181,41 +215,6 @@ public class OmniboxSuggestionsDropdownEmbedderImplTest {
                         getExpectedHeight(ANCHOR_HEIGHT + ANCHOR_TOP),
                         0,
                         0),
-                alignment);
-    }
-
-    @Test
-    @Config(qualifiers = "ldltr-sw600dp")
-    public void testRecalculateOmniboxAlignment_tablet_ltr() {
-        doReturn(mAnchorView).when(mHorizontalAlignmentView).getParent();
-        mImpl.recalculateOmniboxAlignment();
-        OmniboxAlignment alignment = mImpl.getCurrentAlignment();
-        assertEquals(
-                new OmniboxAlignment(
-                        0,
-                        ANCHOR_HEIGHT + ANCHOR_TOP,
-                        ANCHOR_WIDTH,
-                        getExpectedHeight(ANCHOR_HEIGHT + ANCHOR_TOP),
-                        ALIGNMENT_LEFT,
-                        ANCHOR_WIDTH - ALIGNMENT_WIDTH - ALIGNMENT_LEFT),
-                alignment);
-    }
-
-    @Test
-    @Config(qualifiers = "ldrtl-sw600dp")
-    public void testRecalculateOmniboxAlignment_tablet_rtl() {
-        doReturn(View.LAYOUT_DIRECTION_RTL).when(mAnchorView).getLayoutDirection();
-        doReturn(mAnchorView).when(mHorizontalAlignmentView).getParent();
-        mImpl.recalculateOmniboxAlignment();
-        OmniboxAlignment alignment = mImpl.getCurrentAlignment();
-        assertEquals(
-                new OmniboxAlignment(
-                        0,
-                        ANCHOR_HEIGHT + ANCHOR_TOP,
-                        ANCHOR_WIDTH,
-                        getExpectedHeight(ANCHOR_HEIGHT + ANCHOR_TOP),
-                        ALIGNMENT_LEFT,
-                        ANCHOR_WIDTH - ALIGNMENT_WIDTH - ALIGNMENT_LEFT),
                 alignment);
     }
 
@@ -315,38 +314,6 @@ public class OmniboxSuggestionsDropdownEmbedderImplTest {
         newConfig.screenWidthDp = DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP + 1;
         mImpl.onConfigurationChanged(newConfig);
         assertFalse(mImpl.isTablet());
-    }
-
-    @Test
-    @Config(qualifiers = "sw600dp")
-    public void testRecalculateOmniboxAlignment_tabletToPhoneSwitch_revampDisabled() {
-        doReturn(mAnchorView).when(mHorizontalAlignmentView).getParent();
-        mImpl.recalculateOmniboxAlignment();
-        OmniboxAlignment alignment = mImpl.getCurrentAlignment();
-        assertEquals(
-                new OmniboxAlignment(
-                        0,
-                        ANCHOR_HEIGHT + ANCHOR_TOP,
-                        ANCHOR_WIDTH,
-                        getExpectedHeight(ANCHOR_HEIGHT + ANCHOR_TOP),
-                        ALIGNMENT_LEFT,
-                        ANCHOR_WIDTH - ALIGNMENT_WIDTH - ALIGNMENT_LEFT),
-                alignment);
-
-        Configuration newConfig = getConfiguration();
-        newConfig.screenWidthDp = DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP - 1;
-        mImpl.onConfigurationChanged(newConfig);
-        assertFalse(mImpl.isTablet());
-        OmniboxAlignment newAlignment = mImpl.getCurrentAlignment();
-        assertEquals(
-                new OmniboxAlignment(
-                        0,
-                        ANCHOR_HEIGHT + ANCHOR_TOP,
-                        ANCHOR_WIDTH,
-                        getExpectedHeight(ANCHOR_HEIGHT + ANCHOR_TOP),
-                        0,
-                        0),
-                newAlignment);
     }
 
     @Test

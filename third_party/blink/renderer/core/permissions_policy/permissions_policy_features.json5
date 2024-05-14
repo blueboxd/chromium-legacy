@@ -152,8 +152,8 @@
       permissions_policy_name: "ch-ua-bitness",
     },
     {
-      name: "ClientHintUAFormFactor",
-      permissions_policy_name: "ch-ua-form-factor",
+      name: "ClientHintUAFormFactors",
+      permissions_policy_name: "ch-ua-form-factors",
     },
     {
       name: "ClientHintUAPlatform",
@@ -386,6 +386,11 @@
       name: "SmartCard",
       permissions_policy_name: "smart-card",
       depends_on: ["SmartCard"],
+    },
+    {
+      name: "SpeakerSelection",
+      permissions_policy_name: "speaker-selection",
+      depends_on: ["SpeakerSelection"],
     },
     {
       name: "StorageAccessAPI",

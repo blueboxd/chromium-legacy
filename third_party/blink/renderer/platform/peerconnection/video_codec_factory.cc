@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_video_encoder_factory.h"
 #include "third_party/blink/renderer/platform/peerconnection/stats_collecting_decoder.h"
 #include "third_party/blink/renderer/platform/peerconnection/stats_collecting_encoder.h"
-#include "third_party/webrtc/api/transport/field_trial_based_config.h"
 #include "third_party/webrtc/api/video_codecs/video_decoder_software_fallback_wrapper.h"
 #include "third_party/webrtc/api/video_codecs/video_encoder_software_fallback_wrapper.h"
 #include "third_party/webrtc/media/base/codec.h"
@@ -53,18 +52,20 @@ std::vector<webrtc::SdpVideoFormat> MergeFormats(
 
 std::unique_ptr<webrtc::VideoDecoder> CreateDecoder(
     webrtc::VideoDecoderFactory* factory,
+    const webrtc::Environment& env,
     const webrtc::SdpVideoFormat& format) {
   if (!IsFormatSupported(factory, format))
     return nullptr;
-  return factory->CreateVideoDecoder(format);
+  return factory->Create(env, format);
 }
 
 std::unique_ptr<webrtc::VideoDecoder> Wrap(
+    const webrtc::Environment& env,
     std::unique_ptr<webrtc::VideoDecoder> software_decoder,
     std::unique_ptr<webrtc::VideoDecoder> hardware_decoder) {
   if (software_decoder && hardware_decoder) {
     return webrtc::CreateVideoDecoderSoftwareFallbackWrapper(
-        std::move(software_decoder), std::move(hardware_decoder));
+        env, std::move(software_decoder), std::move(hardware_decoder));
   }
   return hardware_decoder ? std::move(hardware_decoder)
                           : std::move(software_decoder);
@@ -80,7 +81,8 @@ class EncoderAdapter : public webrtc::VideoEncoderFactory {
       : hardware_encoder_factory_(std::move(hardware_encoder_factory)),
         stats_callback_(stats_callback) {}
 
-  std::unique_ptr<webrtc::VideoEncoder> CreateVideoEncoder(
+  std::unique_ptr<webrtc::VideoEncoder> Create(
+      const webrtc::Environment& env,
       const webrtc::SdpVideoFormat& format) override {
     const bool supported_in_hardware =
         IsFormatSupported(hardware_encoder_factory_.get(), format);
@@ -115,7 +117,7 @@ class EncoderAdapter : public webrtc::VideoEncoderFactory {
             : nullptr;
     std::unique_ptr<webrtc::VideoEncoder> encoder =
         std::make_unique<webrtc::SimulcastEncoderAdapter>(
-            primary_factory, fallback_factory, format, field_trials_);
+            env, primary_factory, fallback_factory, format);
 
     return std::make_unique<StatsCollectingEncoder>(format, std::move(encoder),
                                                     stats_callback_);
@@ -146,7 +148,6 @@ class EncoderAdapter : public webrtc::VideoEncoderFactory {
   }
 
  private:
-  const webrtc::FieldTrialBasedConfig field_trials_;
   webrtc::InternalEncoderFactory software_encoder_factory_;
   const std::unique_ptr<webrtc::VideoEncoderFactory> hardware_encoder_factory_;
   StatsCollector::StoreProcessingStatsCB stats_callback_;
@@ -162,19 +163,21 @@ class DecoderAdapter : public webrtc::VideoDecoderFactory {
       : hardware_decoder_factory_(std::move(hardware_decoder_factory)),
         stats_callback_(stats_callback) {}
 
-  std::unique_ptr<webrtc::VideoDecoder> CreateVideoDecoder(
+  std::unique_ptr<webrtc::VideoDecoder> Create(
+      const webrtc::Environment& env,
       const webrtc::SdpVideoFormat& format) override {
     std::unique_ptr<webrtc::VideoDecoder> software_decoder =
-        CreateDecoder(&software_decoder_factory_, format);
+        CreateDecoder(&software_decoder_factory_, env, format);
 
     std::unique_ptr<webrtc::VideoDecoder> hardware_decoder =
-        CreateDecoder(hardware_decoder_factory_.get(), format);
+        CreateDecoder(hardware_decoder_factory_.get(), env, format);
 
     if (!software_decoder && !hardware_decoder)
       return nullptr;
 
     return std::make_unique<StatsCollectingDecoder>(
-        format, Wrap(std::move(software_decoder), std::move(hardware_decoder)),
+        format,
+        Wrap(env, std::move(software_decoder), std::move(hardware_decoder)),
         stats_callback_);
   }
 

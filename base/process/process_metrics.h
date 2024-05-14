@@ -12,6 +12,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <optional>
 
 #include "base/base_export.h"
 #include "base/gtest_prod_util.h"
@@ -46,9 +47,6 @@
 #endif
 
 namespace base {
-
-// Full declaration is in process_metrics_iocounters.h.
-struct IoCounters;
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 // Minor and major page fault counts since the process creation.
@@ -127,40 +125,16 @@ class BASE_EXPORT ProcessMetrics {
   [[nodiscard]] double GetPlatformIndependentCPUUsage(TimeDelta cumulative_cpu);
 
   // Same as the above, but automatically calls GetCumulativeCPUUsage() to
-  // determine the current cumulative CPU.
-  [[nodiscard]] double GetPlatformIndependentCPUUsage();
+  // determine the current cumulative CPU. Returns nullopt if
+  // GetCumulativeCPUUsage() fails.
+  [[nodiscard]] std::optional<double> GetPlatformIndependentCPUUsage();
 
   // Returns the cumulative CPU usage across all threads of the process since
-  // process start. In case of multi-core processors, a process can consume CPU
-  // at a rate higher than wall-clock time, e.g. two cores at full utilization
-  // will result in a time delta of 2 seconds/per 1 wall-clock second.
-  [[nodiscard]] TimeDelta GetCumulativeCPUUsage();
-
-#if BUILDFLAG(IS_WIN)
-  // TODO(pmonette): Remove the precise version of the CPU usage functions once
-  // we're validated that they are indeed better than the regular version above
-  // and that they can replace the old implementation.
-
-  // Returns the percentage of time spent executing, across all threads of the
-  // process, in the interval since the last time the method was called, using
-  // the current |cumulative_cpu|.
-  //
-  // Same as GetPlatformIndependentCPUUSage() but implemented using
-  // `QueryProcessCycleTime` for higher precision.
-  [[nodiscard]] double GetPreciseCPUUsage(TimeDelta cumulative_cpu);
-
-  // Same as the above, but automatically calls GetPreciseCumulativeCPUUsage()
-  // to determine the current cumulative CPU.
-  [[nodiscard]] double GetPreciseCPUUsage();
-
-  // Returns the cumulative CPU usage across all threads of the process since
-  // process start. In case of multi-core processors, a process can consume CPU
-  // at a rate higher than wall-clock time, e.g. two cores at full utilization
-  // will result in a time delta of 2 seconds/per 1 wall-clock second.
-  //
-  // This is implemented using `QueryProcessCycleTime` for higher precision.
-  [[nodiscard]] TimeDelta GetPreciseCumulativeCPUUsage();
-#endif  // BUILDFLAG(IS_WIN)
+  // process start, or nullopt on error. In case of multi-core processors, a
+  // process can consume CPU at a rate higher than wall-clock time, e.g. two
+  // cores at full utilization will result in a time delta of 2 seconds/per 1
+  // wall-clock second.
+  [[nodiscard]] std::optional<TimeDelta> GetCumulativeCPUUsage();
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || \
     BUILDFLAG(IS_AIX)
@@ -197,17 +171,6 @@ class BASE_EXPORT ProcessMetrics {
   // auto-refresh), place interconnects into lower-power states etc"
   int GetPackageIdleWakeupsPerSecond();
 #endif
-
-  // Retrieves accounting information for all I/O operations performed by the
-  // process.
-  // If IO information is retrieved successfully, the function returns true
-  // and fills in the IO_COUNTERS passed in. The function returns false
-  // otherwise.
-  bool GetIOCounters(IoCounters* io_counters) const;
-
-  // Returns the cumulative disk usage in bytes across all threads of the
-  // process since process start.
-  uint64_t GetCumulativeDiskUsageInBytes();
 
 #if BUILDFLAG(IS_POSIX)
   // Returns the number of file descriptors currently open by the process, or
@@ -264,11 +227,6 @@ class BASE_EXPORT ProcessMetrics {
   TimeTicks last_cpu_time_;
 #if !BUILDFLAG(IS_FREEBSD) || !BUILDFLAG(IS_POSIX)
   TimeDelta last_cumulative_cpu_;
-#endif
-
-#if BUILDFLAG(IS_WIN)
-  TimeTicks last_cpu_time_for_precise_cpu_usage_;
-  TimeDelta last_precise_cumulative_cpu_;
 #endif
 
 #if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \

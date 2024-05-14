@@ -20,11 +20,11 @@
 #include <memory>
 #include <mutex>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_constants.h"
 #include "base/base_export.h"
 #include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string_piece.h"
+#include "partition_alloc/partition_alloc_constants.h"
 
 #include <pthread.h>
 
@@ -73,6 +73,8 @@ struct BASE_EXPORT MMapAllocator {
   constexpr static size_t AllocationChunkSize =
       partition_alloc::PartitionPageSize();
 #elif BUILDFLAG(IS_APPLE)
+  constexpr static size_t AllocationChunkSize = 16384;
+#elif BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_64_BITS)
   constexpr static size_t AllocationChunkSize = 16384;
 #elif BUILDFLAG(IS_LINUX) && defined(ARCH_CPU_ARM64)
   constexpr static size_t AllocationChunkSize = 16384;

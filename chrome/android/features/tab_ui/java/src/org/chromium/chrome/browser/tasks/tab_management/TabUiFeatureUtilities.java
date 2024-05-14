@@ -179,4 +179,23 @@ public class TabUiFeatureUtilities {
         }
         return sTabDragNonSplitManufacturerAllowlist;
     }
+
+    /** Returns if the tab group pane should be displayed in the hub. */
+    public static boolean isTabGroupPaneEnabled() {
+        return ChromeFeatureList.sTabGroupPaneAndroid.isEnabled();
+    }
+
+    /** Returns if we are using optimized window layout for tab strip. */
+    public static boolean isTabStripWindowLayoutOptimizationEnabled() {
+        return ChromeFeatureList.sTabStripLayoutOptimization.isEnabled();
+    }
+
+    /** Returns whether drag drop from tab strip to create new instance is enabled. */
+    // TODO(crbug/328511660): This flag is similar with {@link #isTabDragAsWindowEnabled()}.
+    // Consider merge code logic.
+    public static boolean isTabTearingEnabled() {
+        // TODO(crbug/328511660): Add OS version check once available.
+        return ChromeFeatureList.sTabLinkDragDropAndroid.isEnabled()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.DRAG_DROP_TAB_TEARING);
+    }
 }

@@ -39,8 +39,6 @@
 
 namespace optimization_guide {
 
-using base::test::TestMessage;
-
 namespace {
 
 enum class ModelExecutionRemoteResponseType {
@@ -418,6 +416,14 @@ class ModelExecutionEnabledBrowserTest : public ModelExecutionBrowserTestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(ModelExecutionEnabledBrowserTest,
+                       ShouldFeatureBeCurrentlyAllowedForLoggingTestFeatures) {
+  EXPECT_FALSE(ShouldFeatureBeCurrentlyAllowedForLogging(
+      proto::MODEL_EXECUTION_FEATURE_TEST));
+  EXPECT_FALSE(ShouldFeatureBeCurrentlyAllowedForLogging(
+      proto::MODEL_EXECUTION_FEATURE_UNSPECIFIED));
+}
+
+IN_PROC_BROWSER_TEST_F(ModelExecutionEnabledBrowserTest,
                        ModelExecutionDisabledInIncognito) {
   Browser* otr_browser = CreateIncognitoBrowser(browser()->profile());
   proto::ComposeRequest request;
@@ -471,7 +477,7 @@ IN_PROC_BROWSER_TEST_F(ModelExecutionEnabledBrowserTest,
 
   // The logs shouldn't be uploaded because there is no metrics consent.
   histogram_tester_.ExpectBucketCount(
-      "OptimizationGuide.ModelQualityLogsUploadService.UploadStatus.Compose",
+      "OptimizationGuide.ModelQualityLogsUploaderService.UploadStatus.Compose",
       optimization_guide::ModelQualityLogsUploadStatus::kNoMetricsConsent, 1);
 }
 
@@ -558,7 +564,7 @@ IN_PROC_BROWSER_TEST_F(ModelExecutionEnabledBrowserTest,
   // The logs should be attempted to be uploaded but flagged behind enterprise
   // check.
   histogram_tester_.ExpectBucketCount(
-      "OptimizationGuide.ModelQualityLogsUploadService.UploadStatus.Compose",
+      "OptimizationGuide.ModelQualityLogsUploaderService.UploadStatus.Compose",
       optimization_guide::ModelQualityLogsUploadStatus::
           kDisabledDueToEnterprisePolicy,
       1);
@@ -659,6 +665,47 @@ IN_PROC_BROWSER_TEST_F(ModelExecutionEnabledBrowserTest, EnableFeatureViaPref) {
       "OptimizationGuide.ModelExecution.FeatureEnabledAtSettingsChange."
       "WallpaperSearch",
       0);
+}
+
+class ModelExecutionComposeLoggingDisabledTest
+    : public ModelExecutionEnabledBrowserTest {
+ public:
+  void InitializeFeatureList() override {
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kOptimizationGuideModelExecution, {}},
+         {features::kModelQualityLogging,
+          {{"model_execution_feature_compose", "false"}}}},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(ModelExecutionComposeLoggingDisabledTest,
+                       LoggingForFeatureNotEnabled) {
+  EnableSignin();
+  SetExpectedBearerAccessToken("Bearer access_token");
+
+  // Enable metrics consent for logging.
+  SetMetricsConsent(true);
+  ASSERT_TRUE(
+      g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven());
+
+  proto::ComposeRequest request;
+  request.mutable_generate_params()->set_user_input("a user typed this");
+  ExecuteModel(proto::MODEL_EXECUTION_FEATURE_COMPOSE, request);
+  EXPECT_TRUE(model_execution_result_.has_value());
+  EXPECT_TRUE(model_execution_result_->has_value());
+  auto response = ParsedAnyMetadata<proto::ComposeResponse>(
+      model_execution_result_->value());
+  EXPECT_EQ("foo response", response->output());
+
+  // The logs shouldn't be uploaded because the feature is not enabled for
+  // logging.
+  histogram_tester_.ExpectBucketCount(
+      "OptimizationGuide.ModelQualityLogsUploaderService.UploadStatus.Compose",
+      optimization_guide::ModelQualityLogsUploadStatus::kLoggingNotEnabled, 1);
 }
 
 class ModelExecutionNewFeaturesEnabledAutomaticallyTest
@@ -858,7 +905,7 @@ IN_PROC_BROWSER_TEST_F(ModelExecutionEnterprisePolicyBrowserTest,
 
   // The logs should be disabled via enterprise policy.
   histogram_tester_.ExpectBucketCount(
-      "OptimizationGuide.ModelQualityLogsUploadService.UploadStatus.Compose",
+      "OptimizationGuide.ModelQualityLogsUploaderService.UploadStatus.Compose",
       optimization_guide::ModelQualityLogsUploadStatus::
           kDisabledDueToEnterprisePolicy,
       1);

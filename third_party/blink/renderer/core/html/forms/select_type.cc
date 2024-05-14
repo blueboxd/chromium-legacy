@@ -34,6 +34,7 @@
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_mutation_observer_init.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/mutation_record.h"
@@ -115,7 +116,7 @@ class MenuListSelectType final : public SelectType {
   void CreateShadowSubtree(ShadowRoot& root) override;
   void ManuallyAssignSlots() override;
   HTMLButtonElement* SlottedButton() const override;
-  HTMLDataListElement* SlottedDatalist() const override;
+  bool IsAppearanceBikeshed() const override;
   Element& InnerElement() const override;
   void ShowPopup(PopupMenu::ShowEventType type) override;
   void HidePopup() override;
@@ -150,6 +151,7 @@ class MenuListSelectType final : public SelectType {
   bool has_updated_menulist_active_option_ = false;
   bool popup_is_visible_ = false;
   bool snav_arrow_key_selection_ = false;
+  bool is_appearance_bikeshed_ = false;
 };
 
 void MenuListSelectType::Trace(Visitor* visitor) const {
@@ -388,15 +390,18 @@ HTMLButtonElement* MenuListSelectType::SlottedButton() const {
     CHECK(!button_slot_);
     return nullptr;
   }
+  CHECK(button_slot_);
   return To<HTMLButtonElement>(button_slot_->FirstAssignedNode());
 }
 
-HTMLDataListElement* MenuListSelectType::SlottedDatalist() const {
+bool MenuListSelectType::IsAppearanceBikeshed() const {
   if (!RuntimeEnabledFeatures::StylableSelectEnabled()) {
-    CHECK(!datalist_slot_);
-    return nullptr;
+    return false;
   }
-  return To<HTMLDataListElement>(datalist_slot_->FirstAssignedNode());
+  if (auto* style = select_->GetComputedStyle()) {
+    return style->EffectiveAppearance() == ControlPart::kBikeshedPart;
+  }
+  return false;
 }
 
 Element& MenuListSelectType::InnerElement() const {
@@ -404,11 +409,13 @@ Element& MenuListSelectType::InnerElement() const {
 }
 
 void MenuListSelectType::ShowPopup(PopupMenu::ShowEventType type) {
-  if (auto* datalist = SlottedDatalist()) {
-    // TODO(crbug.com/1511354): Instead of calling ShowPopover here, we should
-    // create a method in HTMLSelectElement like
-    // HTMLSelectListElement::OpenListbox which focuses an option.
-    datalist->showPopover(ASSERT_NO_EXCEPTION);
+  if (auto* datalist = select_->FirstChildDatalist()) {
+    if (IsAppearanceBikeshed()) {
+      // TODO(crbug.com/1511354): Instead of calling ShowPopover here, we should
+      // create a method in HTMLSelectElement like
+      // HTMLSelectListElement::OpenListbox which focuses an option.
+      datalist->showPopover(ASSERT_NO_EXCEPTION);
+    }
   }
 
   if (PopupIsVisible())
@@ -568,6 +575,19 @@ void MenuListSelectType::DidDetachLayoutTree() {
 }
 
 void MenuListSelectType::DidRecalcStyle(const StyleRecalcChange change) {
+  if (auto* style = select_->GetComputedStyle()) {
+    bool is_appearance_bikeshed =
+        style->EffectiveAppearance() == ControlPart::kBikeshedPart;
+    if (is_appearance_bikeshed_ != is_appearance_bikeshed) {
+      is_appearance_bikeshed_ = is_appearance_bikeshed;
+      // Switching appearance needs layout to be rebuilt because of special
+      // logic in LayoutFlexibleBox::IsChildAllowed which ignores children in
+      // appearance:auto mode. We also call SetNeedsReattachLayoutTree every
+      // time that the size and multiple attributes are changed.
+      select_->SetNeedsReattachLayoutTree();
+    }
+  }
+
   if (change.ReattachLayoutTree())
     return;
   UpdateTextStyle();
@@ -791,7 +811,7 @@ class ListBoxSelectType final : public SelectType {
   void CreateShadowSubtree(ShadowRoot&) override;
   void ManuallyAssignSlots() override;
   HTMLButtonElement* SlottedButton() const override;
-  HTMLDataListElement* SlottedDatalist() const override;
+  bool IsAppearanceBikeshed() const override;
 
  private:
   HTMLOptionElement* NextSelectableOptionPageAway(HTMLOptionElement*,
@@ -1450,8 +1470,8 @@ HTMLButtonElement* ListBoxSelectType::SlottedButton() const {
   return nullptr;
 }
 
-HTMLDataListElement* ListBoxSelectType::SlottedDatalist() const {
-  return nullptr;
+bool ListBoxSelectType::IsAppearanceBikeshed() const {
+  return false;
 }
 
 // ============================================================================

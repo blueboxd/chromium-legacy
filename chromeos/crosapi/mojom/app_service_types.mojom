@@ -116,6 +116,14 @@ struct App {
   [MinVersion=22]
   // Whether the app publisher allows the app to be closed.
   OptionalBool allow_close@32;
+
+  [MinVersion=23]
+  // Whether the app publisher allows the user to select app open mode.
+  OptionalBool allow_window_mode_selection@33;
+
+  [MinVersion=24]
+  // An optional ID for the package that installed this app.
+  PackageId? installer_package_id@34;
 };
 
 // The types of apps available in the registry.
@@ -479,6 +487,7 @@ enum LaunchSource {
   [MinVersion=11] kFromSysTrayCalendar,          // System Tray Calendar.
   [MinVersion=12] kFromInstaller,                // Installation UI.
   [MinVersion=13] kFromFirstRun,                 // First Run.
+  [MinVersion=14] kFromWelcomeTour,              // Welcome Tour.
 };
 
 [Stable, Extensible]
@@ -565,6 +574,25 @@ struct PreferredApp {
   string app_id;
 };
 
+[Stable, Extensible]
+enum PackageIdType {
+  [Default] kUnknown = 0,
+  kWeb = 1,
+  kArc = 2,
+};
+
+// A globally unique stable identifier for an installable app package.
+[Stable]
+struct PackageId {
+  // The app type of the package.
+  PackageIdType package_type;
+
+  // A platform-specific unique ID for the package. For example, for
+  // PackageIdType::kArc, the identifier will be the package name. Must be
+  // non-empty.
+  string identifier;
+};
+
 // Information about an app shortcut.
 
 // This struct is used to transport App Shortcut data between lacros-chrome and
@@ -619,10 +647,15 @@ enum ControllerRegistrationResult {
 [Stable]
 struct InstallAppParams {
   // Represents the origin of the installation.
+  // Next version: 2
   [Stable, Extensible]
   enum Surface {
     [Default] kUnknown = 0,
-    kAppInstallNavigationThrottle = 1,
+    kAppInstallUriUnknown = 1,
+    [MinVersion=1] kAppInstallUriShowoff = 2,
+    [MinVersion=1] kAppInstallUriMall = 3,
+    [MinVersion=1] kAppInstallUriGetit = 4,
+    [MinVersion=1] kAppInstallUriLauncher = 5,
   };
   Surface surface@0;
 

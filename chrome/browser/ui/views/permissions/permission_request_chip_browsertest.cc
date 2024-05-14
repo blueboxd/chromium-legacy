@@ -4,6 +4,7 @@
 
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/browser.h"
@@ -26,6 +27,7 @@
 #include "components/permissions/test/permission_request_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/animation/animation_test_api.h"
 #include "ui/views/test/views_test_utils.h"
@@ -279,8 +281,8 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestChipGestureSensitiveBrowserTest,
   // reference to a Permission Request Manager instance.
   ASSERT_FALSE(chip_controller->permissions::PermissionRequestManager::
                    Observer::IsInObserverList());
-  ASSERT_FALSE(chip_controller->active_permission_request_manager_for_testing()
-                   .has_value());
+  ASSERT_FALSE(
+      chip_controller->active_permission_request_manager().has_value());
 
   // Trigger a request on the second (the now only remaining) tab.
   EXPECT_TRUE(content::ExecJs(
@@ -292,11 +294,9 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestChipGestureSensitiveBrowserTest,
   // During the request, the chip controller should be observing the correct
   // permission request manager instance, and have a reference to the same.
   EXPECT_TRUE(manager_tab_1->IsRequestInProgress());
-  ASSERT_TRUE(chip_controller->active_permission_request_manager_for_testing()
-                  .has_value());
-  ASSERT_EQ(
-      chip_controller->active_permission_request_manager_for_testing().value(),
-      manager_tab_1);
+  ASSERT_TRUE(chip_controller->active_permission_request_manager().has_value());
+  ASSERT_EQ(chip_controller->active_permission_request_manager().value(),
+            manager_tab_1);
   ASSERT_TRUE(manager_tab_1->get_observer_list_for_testing()->HasObserver(
       chip_controller));
 }
@@ -393,10 +393,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestChipBrowserUiTest,
   EXPECT_TRUE(lbv->GetChipController()->IsPermissionPromptChipVisible());
   EXPECT_TRUE(lbv->GetChipController()->IsBubbleShowing());
 
-  lbv->GetChipController()
-      ->active_permission_request_manager_for_testing()
-      .value()
-      ->Deny();
+  lbv->GetChipController()->active_permission_request_manager().value()->Deny();
 
   base::RunLoop().RunUntilIdle();
 

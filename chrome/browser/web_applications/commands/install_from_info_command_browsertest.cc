@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(InstallFromInfoCommandTest, SuccessInstall) {
 
   base::RunLoop loop;
   webapps::AppId result_app_id;
-  provider().scheduler().InstallFromInfo(
+  provider().scheduler().InstallFromInfoNoIntegrationForTesting(
       std::move(info),
       /*overwrite_existing_manifest_fields=*/false, install_source,
       base::BindLambdaForTesting(
@@ -90,7 +90,13 @@ IN_PROC_BROWSER_TEST_F(InstallFromInfoCommandTest, SuccessInstall) {
   // Ensure histogram is only measured once.
   tester.ExpectBucketCount("WebApp.Install.Result", /*sample=*/true,
                            /*expected_count=*/1);
-  EXPECT_EQ(os_integration_manager()->num_create_shortcuts_calls(), 0u);
+  size_t expected_shortcut_creation = 0;
+#if BUILDFLAG(IS_CHROMEOS)
+  // ChromeOS always has OS integration.
+  expected_shortcut_creation = 1;
+#endif
+  EXPECT_EQ(os_integration_manager()->num_create_shortcuts_calls(),
+            expected_shortcut_creation);
 
   const WebApp* web_app =
       provider().registrar_unsafe().GetAppById(result_app_id);
@@ -135,15 +141,13 @@ IN_PROC_BROWSER_TEST_F(InstallFromInfoCommandTest, InstallWithParams) {
   EXPECT_TRUE(options->add_to_desktop);
   EXPECT_TRUE(options->add_to_quick_launch_bar);
   EXPECT_FALSE(options->os_hooks[OsHookType::kRunOnOsLogin]);
-  if (AreOsIntegrationSubManagersEnabled()) {
-    std::optional<proto::WebAppOsIntegrationState> os_state =
-        provider().registrar_unsafe().GetAppCurrentOsIntegrationState(
-            result_app_id);
-    ASSERT_TRUE(os_state.has_value());
-    EXPECT_TRUE(os_state->has_shortcut());
-    EXPECT_EQ(os_state->run_on_os_login().run_on_os_login_mode(),
-              proto::RunOnOsLoginMode::NOT_RUN);
-  }
+  std::optional<proto::WebAppOsIntegrationState> os_state =
+      provider().registrar_unsafe().GetAppCurrentOsIntegrationState(
+          result_app_id);
+  ASSERT_TRUE(os_state.has_value());
+  EXPECT_TRUE(os_state->has_shortcut());
+  EXPECT_EQ(os_state->run_on_os_login().run_on_os_login_mode(),
+            proto::RunOnOsLoginMode::NOT_RUN);
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -193,20 +197,17 @@ IN_PROC_BROWSER_TEST_F(InstallFromInfoCommandTest,
       }),
       install_params, {old_app});
   loop.Run();
-  EXPECT_EQ(os_integration_manager()->num_create_shortcuts_calls(), 2u);
   auto options = os_integration_manager()->get_last_install_options();
   EXPECT_FALSE(options->add_to_desktop);
   EXPECT_TRUE(options->add_to_quick_launch_bar);
   EXPECT_TRUE(options->os_hooks[OsHookType::kRunOnOsLogin]);
-  if (AreOsIntegrationSubManagersEnabled()) {
-    std::optional<proto::WebAppOsIntegrationState> os_state =
-        provider().registrar_unsafe().GetAppCurrentOsIntegrationState(
-            result_app_id);
-    ASSERT_TRUE(os_state.has_value());
-    EXPECT_TRUE(os_state->has_shortcut());
-    EXPECT_EQ(os_state->run_on_os_login().run_on_os_login_mode(),
-              proto::RunOnOsLoginMode::WINDOWED);
-  }
+  std::optional<proto::WebAppOsIntegrationState> os_state =
+      provider().registrar_unsafe().GetAppCurrentOsIntegrationState(
+          result_app_id);
+  ASSERT_TRUE(os_state.has_value());
+  EXPECT_TRUE(os_state->has_shortcut());
+  EXPECT_EQ(os_state->run_on_os_login().run_on_os_login_mode(),
+            proto::RunOnOsLoginMode::WINDOWED);
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 

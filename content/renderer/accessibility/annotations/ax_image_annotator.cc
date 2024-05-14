@@ -138,7 +138,7 @@ int GetMessageIdForIconEnum(const std::string& icon_type) {
           {"ICON_SUN", IDS_AX_IMAGE_ANNOTATION_ICON_SUN},
       });
 
-  auto* iter = kIconTypeToMessageIdMap.find(icon_type);
+  auto iter = kIconTypeToMessageIdMap.find(icon_type);
   if (iter == kIconTypeToMessageIdMap.end())
     return 0;
 
@@ -213,19 +213,19 @@ AXImageAnnotator::AXImageAnnotator(
 AXImageAnnotator::~AXImageAnnotator() {}
 
 void AXImageAnnotator::EnableAnnotations() {
-  if (annotator_.is_bound() || !render_accessibility_->render_frame()) {
+  if (annotator_remote_.is_bound() || !render_accessibility_->render_frame()) {
     return;
   }
   mojo::PendingRemote<image_annotation::mojom::Annotator> annotator;
   render_accessibility_->render_frame()
       ->GetBrowserInterfaceBroker()
       ->GetInterface(annotator.InitWithNewPipeAndPassReceiver());
-  annotator_.Bind(std::move(annotator));
+  annotator_remote_.Bind(std::move(annotator));
 }
 
 void AXImageAnnotator::BindAnnotatorForTesting(
     mojo::PendingRemote<image_annotation::mojom::Annotator> annotator) {
-  annotator_.Bind(std::move(annotator));
+  annotator_remote_.Bind(std::move(annotator));
 }
 
 void AXImageAnnotator::CancelAnnotations() {
@@ -233,16 +233,20 @@ void AXImageAnnotator::CancelAnnotations() {
   // Remove the image annotator if the page is loading and it was added for
   // the one-shot image annotation (i.e. AXMode for image annotation is not
   // set).
-  if (!annotator_.is_bound() ||
+  if (!annotator_remote_.is_bound() ||
       render_accessibility_->GetAccessibilityMode().has_mode(
-          ui::AXMode::kLabelImages)) {
+          GetAXModeToEnableAnnotations())) {
     return;
   }
-  annotator_.reset();
+  annotator_remote_.reset();
 }
 
 uint32_t AXImageAnnotator::GetAXModeToEnableAnnotations() {
   return ui::AXMode::kLabelImages;
+}
+
+bool AXImageAnnotator::HasAXActionToEnableAnnotations() {
+  return true;
 }
 
 ax::mojom::Action AXImageAnnotator::GetAXActionToEnableAnnotations() {
@@ -394,7 +398,7 @@ void AXImageAnnotator::AddImageAnnotationsForNode(WebAXObject& src,
     return;
   }
 
-  if (!annotator_.is_bound()) {
+  if (!annotator_remote_.is_bound()) {
     if (!render_accessibility_->first_unlabeled_image_id_.has_value() ||
         render_accessibility_->first_unlabeled_image_id_.value() ==
             src.AxID()) {
@@ -544,10 +548,11 @@ void AXImageAnnotator::OnImageAdded(blink::WebAXObject& image) {
   image_annotations_.emplace(image.AxID(), image);
   ImageInfo& image_info = image_annotations_.at(image.AxID());
   // Fetch image annotation.
-  annotator_->AnnotateImage(image_id, render_accessibility_->GetLanguage(),
-                            image_info.GetImageProcessor(),
-                            base::BindOnce(&AXImageAnnotator::OnImageAnnotated,
-                                           weak_factory_.GetWeakPtr(), image));
+  annotator_remote_->AnnotateImage(
+      image_id, render_accessibility_->GetLanguage(),
+      image_info.GetImageProcessor(),
+      base::BindOnce(&AXImageAnnotator::OnImageAnnotated,
+                     weak_factory_.GetWeakPtr(), image));
   VLOG(1) << "Requesting annotation for " << image_id << " with language '"
           << render_accessibility_->GetLanguage() << "' from page "
           << GetDocumentUrl();
@@ -562,10 +567,11 @@ void AXImageAnnotator::OnImageUpdated(blink::WebAXObject& image) {
 
   ImageInfo& image_info = image_annotations_.at(image.AxID());
   // Update annotation.
-  annotator_->AnnotateImage(image_id, render_accessibility_->GetLanguage(),
-                            image_info.GetImageProcessor(),
-                            base::BindOnce(&AXImageAnnotator::OnImageAnnotated,
-                                           weak_factory_.GetWeakPtr(), image));
+  annotator_remote_->AnnotateImage(
+      image_id, render_accessibility_->GetLanguage(),
+      image_info.GetImageProcessor(),
+      base::BindOnce(&AXImageAnnotator::OnImageAnnotated,
+                     weak_factory_.GetWeakPtr(), image));
 }
 
 void AXImageAnnotator::OnImageRemoved(blink::WebAXObject& image) {

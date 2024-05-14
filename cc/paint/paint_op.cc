@@ -1284,7 +1284,7 @@ void DrawRecordOp::Raster(const DrawRecordOp* op,
                           SkCanvas* canvas,
                           const PlaybackParams& params) {
   // Don't use drawPicture here, as it adds an implicit clip.
-  op->record.Playback(canvas, params);
+  op->record.Playback(canvas, params, op->local_ctm);
 }
 
 void DrawRectOp::RasterWithFlags(const DrawRectOp* op,
@@ -1431,7 +1431,7 @@ void DrawSlugOp::RasterWithFlags(const DrawSlugOp* op,
       DCHECK(!params.is_analyzing);
       const auto& draw_slug = i == 0 ? op->slug : op->extra_slugs[i - 1];
       if (draw_slug) {
-        draw_slug->draw(c);
+        draw_slug->draw(c, p);
       }
     }
     ++i;
@@ -2090,8 +2090,8 @@ bool DrawImageRectOp::HasDiscardableImages() const {
 
 DrawImageRectOp::~DrawImageRectOp() = default;
 
-DrawRecordOp::DrawRecordOp(PaintRecord record)
-    : PaintOp(kType), record(std::move(record)) {}
+DrawRecordOp::DrawRecordOp(PaintRecord record, bool local_ctm)
+    : PaintOp(kType), record(std::move(record)), local_ctm(local_ctm) {}
 
 DrawRecordOp::~DrawRecordOp() = default;
 

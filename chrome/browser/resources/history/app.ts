@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_components/history_clusters/clusters.js';
+import 'chrome://resources/cr_components/history_embeddings/filter_chips.js';
+import 'chrome://resources/cr_components/history_embeddings/history_embeddings.js';
 import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
@@ -145,6 +147,11 @@ export class HistoryAppElement extends HistoryAppElementBase {
 
   static get properties() {
     return {
+      enableHistoryEmbeddings_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('enableHistoryEmbeddings'),
+      },
+
       // The id of the currently selected page.
       selectedPage_: {
         type: String,
@@ -195,8 +202,7 @@ export class HistoryAppElement extends HistoryAppElementBase {
 
       historyClustersPath_: {
         type: String,
-        value: () =>
-            loadTimeData.getBoolean('renameJourneys') ? 'grouped' : 'journeys',
+        value: 'grouped',
       },
 
       showHistoryClusters_: {
@@ -204,6 +210,12 @@ export class HistoryAppElement extends HistoryAppElementBase {
         computed:
             'computeShowHistoryClusters_(historyClustersEnabled_, historyClustersVisible_)',
         reflectToAttribute: true,
+      },
+
+      showTabs_: {
+        type: Boolean,
+        computed:
+            'computeShowTabs_(showHistoryClusters_, enableHistoryEmbeddings_)',
       },
 
       // The index of the currently selected tab.
@@ -232,6 +244,7 @@ export class HistoryAppElement extends HistoryAppElementBase {
 
   footerInfo: FooterInfo;
   private browserService_: BrowserService = BrowserServiceImpl.getInstance();
+  private enableHistoryEmbeddings_: boolean;
   private eventTracker_: EventTracker = new EventTracker();
   private hasDrawer_: boolean;
   private historyClustersEnabled_: boolean;
@@ -301,6 +314,19 @@ export class HistoryAppElement extends HistoryAppElementBase {
     }
   }
 
+  private getShowResultsByGroup_() {
+    return this.selectedPage_ === Page.HISTORY_CLUSTERS;
+  }
+
+  private onShowResultsByGroupChanged_(e: CustomEvent<{value: boolean}>) {
+    const showResultsByGroup = e.detail.value;
+    if (showResultsByGroup) {
+      this.selectedTab_ = TABBED_PAGES.indexOf(Page.HISTORY_CLUSTERS);
+    } else {
+      this.selectedTab_ = TABBED_PAGES.indexOf(Page.HISTORY);
+    }
+  }
+
   override disconnectedCallback() {
     super.disconnectedCallback();
     this.eventTracker_.removeAll();
@@ -324,6 +350,10 @@ export class HistoryAppElement extends HistoryAppElementBase {
 
   private computeShowHistoryClusters_(): boolean {
     return this.historyClustersEnabled_ && this.historyClustersVisible_;
+  }
+
+  private computeShowTabs_(): boolean {
+    return this.showHistoryClusters_ && !this.enableHistoryEmbeddings_;
   }
 
   private historyClustersSelected_(

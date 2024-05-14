@@ -13,6 +13,7 @@ import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxImageSupplier;
@@ -24,8 +25,6 @@ import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestion
 import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.groupseparator.GroupSeparatorProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.header.HeaderProcessor;
-import org.chromium.chrome.browser.omnibox.suggestions.history_clusters.HistoryClustersProcessor;
-import org.chromium.chrome.browser.omnibox.suggestions.history_clusters.HistoryClustersProcessor.OpenHistoryClustersDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.mostvisited.MostVisitedTilesProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.querytiles.QueryTilesProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionProcessor;
@@ -42,7 +41,7 @@ import java.util.List;
 
 /** Builds DropdownItemViewInfo list from AutocompleteResult for the Suggestions list. */
 class DropdownItemViewInfoListBuilder {
-    @Px private static final int DROPDOWN_HEIGHT_UNKNOWN = -1;
+    private @Px static final int DROPDOWN_HEIGHT_UNKNOWN = -1;
     private static final int DEFAULT_SIZE_OF_VISIBLE_GROUP = 5;
 
     private final @NonNull List<SuggestionProcessor> mPriorityOrderedSuggestionProcessors;
@@ -53,18 +52,15 @@ class DropdownItemViewInfoListBuilder {
     private @Nullable Supplier<ShareDelegate> mShareDelegateSupplier;
     private @Nullable OmniboxImageSupplier mImageSupplier;
     private @NonNull BookmarkState mBookmarkState;
-    @Px private int mDropdownHeight;
-    private OpenHistoryClustersDelegate mOpenHistoryClustersDelegate;
+    private @Px int mDropdownHeight;
+    private boolean mUseNativeGrouping;
 
     DropdownItemViewInfoListBuilder(
-            @NonNull Supplier<Tab> tabSupplier,
-            BookmarkState bookmarkState,
-            OpenHistoryClustersDelegate openHistoryClustersDelegate) {
+            @NonNull Supplier<Tab> tabSupplier, BookmarkState bookmarkState) {
         mPriorityOrderedSuggestionProcessors = new ArrayList<>();
         mDropdownHeight = DROPDOWN_HEIGHT_UNKNOWN;
         mActivityTabSupplier = tabSupplier;
         mBookmarkState = bookmarkState;
-        mOpenHistoryClustersDelegate = openHistoryClustersDelegate;
     }
 
     /**
@@ -94,14 +90,6 @@ class DropdownItemViewInfoListBuilder {
                 new AnswerSuggestionProcessor(context, host, textProvider, mImageSupplier));
         registerSuggestionProcessor(
                 new ClipboardSuggestionProcessor(context, host, mImageSupplier));
-        registerSuggestionProcessor(
-                new HistoryClustersProcessor(
-                        mOpenHistoryClustersDelegate,
-                        context,
-                        host,
-                        textProvider,
-                        mImageSupplier,
-                        mBookmarkState));
         registerSuggestionProcessor(
                 new EntitySuggestionProcessor(
                         context, host, textProvider, mImageSupplier, mBookmarkState));
@@ -206,6 +194,9 @@ class DropdownItemViewInfoListBuilder {
     /** Signals that native initialization has completed. */
     void onNativeInitialized() {
         mHeaderProcessor.onNativeInitialized();
+        mUseNativeGrouping =
+                ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.OMNIBOX_SUGGESTION_GROUPING_FOR_NON_ZPS);
         for (int index = 0; index < mPriorityOrderedSuggestionProcessors.size(); index++) {
             mPriorityOrderedSuggestionProcessors.get(index).onNativeInitialized();
         }
@@ -363,13 +354,16 @@ class DropdownItemViewInfoListBuilder {
             mPriorityOrderedSuggestionProcessors.get(index).onSuggestionsReceived();
         }
 
-        performPartialGroupingBySearchVsUrl(autocompleteResult);
+        if (!mUseNativeGrouping) {
+            performPartialGroupingBySearchVsUrl(autocompleteResult);
+        }
 
         var newMatches = autocompleteResult.getSuggestionsList();
         int newMatchesCount = newMatches.size();
         var viewInfoList = new ArrayList<DropdownItemViewInfo>();
         var currentGroupMatches = new ArrayList<AutocompleteMatch>();
         var nextSuggestionLogicalIndex = 0;
+        var groupsInfo = autocompleteResult.getGroupsInfo();
 
         GroupConfig previousGroupConfig = null;
 
@@ -378,10 +372,17 @@ class DropdownItemViewInfoListBuilder {
             int currentGroupId = newMatches.get(index).getGroupId();
             currentGroupMatches.clear();
 
+            var currentGroupConfig =
+                    groupsInfo.getGroupConfigsOrDefault(
+                            currentGroupId, GroupConfig.getDefaultInstance());
+
             // Inner loop to populate AutocompleteMatch objects belonging to this group.
             while (index < newMatchesCount) {
                 var match = newMatches.get(index);
-                if (currentGroupId != match.getGroupId()) break;
+                var matchGroupConfig =
+                        groupsInfo.getGroupConfigsOrDefault(
+                                match.getGroupId(), GroupConfig.getDefaultInstance());
+                if (currentGroupConfig.getSection() != matchGroupConfig.getSection()) break;
                 currentGroupMatches.add(match);
                 index++;
             }
@@ -389,11 +390,6 @@ class DropdownItemViewInfoListBuilder {
             // Append this suggestions group/section to resulting model, following the render type
             // dictated by GroupConfig.
             // The default instance holds safe values, applicable to non-Google DSE.
-            var currentGroupConfig =
-                    autocompleteResult
-                            .getGroupsInfo()
-                            .getGroupConfigsOrDefault(
-                                    currentGroupId, GroupConfig.getDefaultInstance());
             if (currentGroupConfig.getRenderType() == GroupConfig.RenderType.DEFAULT_VERTICAL) {
                 viewInfoList.addAll(
                         buildVerticalSuggestionsGroup(

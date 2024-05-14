@@ -62,7 +62,7 @@
 #include "storage/browser/quota/quota_manager_observer.mojom-forward.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/quota_override_handle.h"
-#include "third_party/blink/public/common/interest_group/interest_group.h"
+#include "third_party/blink/public/common/interest_group/devtools_serialization.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/buckets/bucket_manager_host.mojom-shared.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
@@ -357,7 +357,7 @@ class StorageHandler::SharedStorageObserver
   void OnSharedStorageAccessed(
       const base::Time& access_time,
       AccessType type,
-      const std::string& main_frame_id,
+      int main_frame_id,
       const std::string& owner_origin,
       const SharedStorageEventParams& params) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -464,7 +464,15 @@ void StorageHandler::Wire(UberDispatcher* dispatcher) {
 void StorageHandler::SetRenderer(int process_host_id,
                                  RenderFrameHostImpl* frame_host) {
   RenderProcessHost* process = RenderProcessHost::FromID(process_host_id);
-  storage_partition_ = process ? process->GetStoragePartition() : nullptr;
+  StoragePartition* new_storage_partition =
+      process ? process->GetStoragePartition() : nullptr;
+  if (interest_group_tracking_enabled_) {
+    // Transfer observer registration from old frame's StoragePartition to new;
+    // SetInterestGroupTrackingInternal() will handle any nulls.
+    SetInterestGroupTrackingInternal(storage_partition_, false);
+    SetInterestGroupTrackingInternal(new_storage_partition, true);
+  }
+  storage_partition_ = new_storage_partition;
   frame_host_ = frame_host;
 }
 
@@ -1089,69 +1097,15 @@ void SendGetInterestGroup(
     return;
   }
 
-  const blink::InterestGroup& group = storage_group.value()->interest_group;
-  auto trusted_bidding_signals_keys =
-      std::make_unique<protocol::Array<std::string>>();
-  if (group.trusted_bidding_signals_keys) {
-    for (const auto& key : group.trusted_bidding_signals_keys.value()) {
-      trusted_bidding_signals_keys->push_back(key);
-    }
-  }
-  auto ads =
-      std::make_unique<protocol::Array<protocol::Storage::InterestGroupAd>>();
-  if (group.ads) {
-    for (const auto& ad : *group.ads) {
-      auto protocol_ad = protocol::Storage::InterestGroupAd::Create()
-                             .SetRenderURL(ad.render_url())
-                             .Build();
-      if (ad.metadata) {
-        protocol_ad->SetMetadata(*ad.metadata);
-      }
-      ads->push_back(std::move(protocol_ad));
-    }
-  }
-  auto ad_components =
-      std::make_unique<protocol::Array<protocol::Storage::InterestGroupAd>>();
-  if (group.ad_components) {
-    for (const auto& ad : *group.ad_components) {
-      auto protocol_ad = protocol::Storage::InterestGroupAd::Create()
-                             .SetRenderURL(ad.render_url())
-                             .Build();
-      if (ad.metadata) {
-        protocol_ad->SetMetadata(*ad.metadata);
-      }
-      ad_components->push_back(std::move(protocol_ad));
-    }
-  }
-  auto protocol_group =
-      protocol::Storage::InterestGroupDetails::Create()
-          .SetOwnerOrigin(group.owner.Serialize())
-          .SetName(group.name)
-          .SetExpirationTime(group.expiry.InSecondsFSinceUnixEpoch())
-          .SetJoiningOrigin(storage_group.value()->joining_origin.Serialize())
-          .SetTrustedBiddingSignalsKeys(std::move(trusted_bidding_signals_keys))
-          .SetAds(std::move(ads))
-          .SetAdComponents(std::move(ad_components))
-          .Build();
-  if (group.bidding_url) {
-    protocol_group->SetBiddingLogicURL(group.bidding_url->spec());
-  }
-  if (group.bidding_wasm_helper_url) {
-    protocol_group->SetBiddingWasmHelperURL(
-        group.bidding_wasm_helper_url->spec());
-  }
-  if (group.update_url) {
-    protocol_group->SetUpdateURL(group.update_url->spec());
-  }
-  if (group.trusted_bidding_signals_url) {
-    protocol_group->SetTrustedBiddingSignalsURL(
-        group.trusted_bidding_signals_url->spec());
-  }
-  if (group.user_bidding_signals) {
-    protocol_group->SetUserBiddingSignals(*group.user_bidding_signals);
-  }
+  base::Value::Dict ig_serialization =
+      SerializeInterestGroupForDevtools(storage_group.value()->interest_group);
 
-  callback->sendSuccess(std::move(protocol_group));
+  // "joiningOrigin" is in StorageInterestGroup, not InterestGroup, so it needs
+  // to be added in separately.
+  ig_serialization.Set("joiningOrigin",
+                       storage_group.value()->joining_origin.Serialize());
+  callback->sendSuccess(
+      std::make_unique<base::Value::Dict>(std::move(ig_serialization)));
 }
 
 }  // namespace
@@ -1187,12 +1141,19 @@ void StorageHandler::GetInterestGroupDetails(
 }
 
 Response StorageHandler::SetInterestGroupTracking(bool enable) {
-  if (!storage_partition_) {
+  interest_group_tracking_enabled_ = enable;
+  return SetInterestGroupTrackingInternal(storage_partition_, enable);
+}
+
+Response StorageHandler::SetInterestGroupTrackingInternal(
+    StoragePartition* storage_partition,
+    bool enable) {
+  if (!storage_partition) {
     return Response::InternalError();
   }
 
   InterestGroupManagerImpl* manager = static_cast<InterestGroupManagerImpl*>(
-      storage_partition_->GetInterestGroupManager());
+      storage_partition->GetInterestGroupManager());
   if (!manager) {
     return Response::ServerError("Interest group storage is disabled.");
   }
@@ -1508,11 +1469,26 @@ void StorageHandler::ResetSharedStorageBudget(
           std::move(callback)));
 }
 
+namespace {
+
+std::string GetFrameTokenFromFrameTreeNodeId(int frame_id) {
+  if (frame_id == FrameTreeNode::kFrameTreeNodeInvalidId) {
+    return std::string();
+  }
+  auto* frame_tree_node = FrameTreeNode::GloballyFindByID(frame_id);
+  return frame_tree_node ? frame_tree_node->current_frame_host()
+                               ->devtools_frame_token()
+                               .ToString()
+                         : std::string();
+}
+
+}  // namespace
+
 void StorageHandler::NotifySharedStorageAccessed(
     const base::Time& access_time,
     SharedStorageWorkletHostManager::SharedStorageObserverInterface::AccessType
         type,
-    const std::string& main_frame_id,
+    int main_frame_id,
     const std::string& owner_origin,
     const SharedStorageEventParams& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1542,6 +1518,9 @@ void StorageHandler::NotifySharedStorageAccessed(
     case AccessType::kDocumentClear:
       type_enum = Storage::SharedStorageAccessTypeEnum::DocumentClear;
       break;
+    case AccessType::kDocumentGet:
+      type_enum = Storage::SharedStorageAccessTypeEnum::DocumentGet;
+      break;
     case AccessType::kWorkletSet:
       type_enum = Storage::SharedStorageAccessTypeEnum::WorkletSet;
       break;
@@ -1569,6 +1548,18 @@ void StorageHandler::NotifySharedStorageAccessed(
     case AccessType::kWorkletRemainingBudget:
       type_enum = Storage::SharedStorageAccessTypeEnum::WorkletRemainingBudget;
       break;
+    case AccessType::kHeaderSet:
+      type_enum = Storage::SharedStorageAccessTypeEnum::HeaderSet;
+      break;
+    case AccessType::kHeaderAppend:
+      type_enum = Storage::SharedStorageAccessTypeEnum::HeaderAppend;
+      break;
+    case AccessType::kHeaderDelete:
+      type_enum = Storage::SharedStorageAccessTypeEnum::HeaderDelete;
+      break;
+    case AccessType::kHeaderClear:
+      type_enum = Storage::SharedStorageAccessTypeEnum::HeaderClear;
+      break;
   };
 
   auto protocol_params =
@@ -1588,6 +1579,9 @@ void StorageHandler::NotifySharedStorageAccessed(
   }
   if (params.value) {
     protocol_params->SetValue(*params.value);
+  }
+  if (params.ignore_if_present) {
+    protocol_params->SetIgnoreIfPresent(*params.ignore_if_present);
   }
 
   if (params.urls_with_metadata) {
@@ -1618,9 +1612,10 @@ void StorageHandler::NotifySharedStorageAccessed(
     protocol_params->SetUrlsWithMetadata(std::move(protocol_urls));
   }
 
-  frontend_->SharedStorageAccessed(access_time.InSecondsFSinceUnixEpoch(),
-                                   type_enum, main_frame_id, owner_origin,
-                                   std::move(protocol_params));
+  frontend_->SharedStorageAccessed(
+      access_time.InSecondsFSinceUnixEpoch(), type_enum,
+      GetFrameTokenFromFrameTreeNodeId(main_frame_id), owner_origin,
+      std::move(protocol_params));
 }
 
 DispatchResponse StorageHandler::SetStorageBucketTracking(
@@ -2033,16 +2028,37 @@ ToAggregatableTriggerData(
   return out;
 }
 
-std::unique_ptr<Array<Storage::AttributionReportingAggregatableValueEntry>>
-ToAggregatableValueEntries(
-    const attribution_reporting::AggregatableValues& values) {
+std::unique_ptr<Array<Storage::AttributionReportingAggregatableValueDictEntry>>
+ToAggregatableValueDictEntries(
+    const attribution_reporting::AggregatableValues::Values&
+        aggregatable_value) {
   auto out = std::make_unique<
-      Array<Storage::AttributionReportingAggregatableValueEntry>>();
-  for (const auto& [key, value] : values.values()) {
+      Array<Storage::AttributionReportingAggregatableValueDictEntry>>();
+  out->reserve(aggregatable_value.size());
+  for (const auto& [key, value] : aggregatable_value) {
     out->emplace_back(
-        Storage::AttributionReportingAggregatableValueEntry::Create()
+        Storage::AttributionReportingAggregatableValueDictEntry::Create()
             .SetKey(key)
             .SetValue(value)
+            .Build());
+  }
+
+  return out;
+}
+
+std::unique_ptr<Array<Storage::AttributionReportingAggregatableValueEntry>>
+ToAggregatableValueEntries(
+    const std::vector<attribution_reporting::AggregatableValues>&
+        aggregatable_values) {
+  auto out = std::make_unique<
+      Array<Storage::AttributionReportingAggregatableValueEntry>>();
+  out->reserve(aggregatable_values.size());
+  for (const auto& aggregatable_value : aggregatable_values) {
+    out->emplace_back(
+        Storage::AttributionReportingAggregatableValueEntry::Create()
+            .SetValues(
+                ToAggregatableValueDictEntries(aggregatable_value.values()))
+            .SetFilters(ToFilterPair(aggregatable_value.filters()))
             .Build());
   }
 
@@ -2109,12 +2125,11 @@ void StorageHandler::OnSourceHandled(
       std::move(out_source), ToSourceRegistrationResult(result));
 }
 
-void StorageHandler::OnTriggerHandled(const AttributionTrigger& trigger,
-                                      std::optional<uint64_t> cleared_debug_key,
+void StorageHandler::OnTriggerHandled(std::optional<uint64_t> cleared_debug_key,
                                       const CreateReportResult& result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  const auto& registration = trigger.registration();
+  const auto& registration = result.trigger().registration();
 
   auto out_trigger =
       Storage::AttributionReportingTriggerRegistration::Create()

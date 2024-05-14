@@ -7,6 +7,8 @@
 #include "components/autofill/core/browser/autofill_form_test_utils.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
+#include "components/autofill/core/browser/payments/credit_card_access_manager_test_api.h"
+#include "components/autofill/core/browser/payments/test_payments_autofill_client.h"
 #include "components/autofill/core/browser/payments/test_payments_network_interface.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -53,16 +55,18 @@ void AutofillMetricsBaseTest::SetUpHelper() {
   personal_data().SetPrefService(autofill_client_->GetPrefs());
   personal_data().SetSyncServiceForTest(&sync_service_);
 
-  autofill_driver_ = std::make_unique<TestAutofillDriver>();
+  autofill_driver_ =
+      std::make_unique<TestAutofillDriver>(autofill_client_.get());
   autofill_driver_->SetIsInAnyMainFrame(is_in_any_main_frame_);
 
   payments::TestPaymentsNetworkInterface* payments_network_interface =
       new payments::TestPaymentsNetworkInterface(
           autofill_client_->GetURLLoaderFactory(),
           autofill_client_->GetIdentityManager(), &personal_data());
-  autofill_client_->set_test_payments_network_interface(
-      std::unique_ptr<payments::TestPaymentsNetworkInterface>(
-          payments_network_interface));
+  autofill_client_->GetPaymentsAutofillClient()
+      ->set_test_payments_network_interface(
+          std::unique_ptr<payments::TestPaymentsNetworkInterface>(
+              payments_network_interface));
   auto credit_card_save_manager = std::make_unique<TestCreditCardSaveManager>(
       autofill_driver_.get(), autofill_client_.get(), &personal_data());
   autofill_client_->set_test_form_data_importer(
@@ -74,8 +78,8 @@ void AutofillMetricsBaseTest::SetUpHelper() {
           &personal_data(), /*coupon_service_delegate=*/nullptr,
           /*shopping_service=*/nullptr));
 
-  auto browser_autofill_manager = std::make_unique<TestBrowserAutofillManager>(
-      autofill_driver_.get(), autofill_client_.get());
+  auto browser_autofill_manager =
+      std::make_unique<TestBrowserAutofillManager>(autofill_driver_.get());
   autofill_driver_->set_autofill_manager(std::move(browser_autofill_manager));
 
   test_api(autofill_manager())
@@ -83,11 +87,9 @@ void AutofillMetricsBaseTest::SetUpHelper() {
           std::make_unique<AutofillExternalDelegate>(&autofill_manager()));
 
 #if !BUILDFLAG(IS_IOS)
-  autofill_manager()
-      .GetCreditCardAccessManager()
-      .set_fido_authenticator_for_testing(
-          std::make_unique<TestCreditCardFidoAuthenticator>(
-              autofill_driver_.get(), autofill_client_.get()));
+  test_api(autofill_manager().GetCreditCardAccessManager())
+      .set_fido_authenticator(std::make_unique<TestCreditCardFidoAuthenticator>(
+          autofill_driver_.get(), autofill_client_.get()));
 #endif
 
   // Initialize the TestPersonalDataManager with some default data.
@@ -141,12 +143,12 @@ void AutofillMetricsBaseTest::SetFidoEligibility(bool is_verifiable) {
       access_manager.GetOrCreateFidoAuthenticator())
       ->SetUserVerifiable(is_verifiable);
 #endif
-  static_cast<payments::TestPaymentsNetworkInterface*>(
-      autofill_client_->GetPaymentsNetworkInterface())
+  autofill_client_->GetPaymentsAutofillClient()
+      ->GetPaymentsNetworkInterface()
       ->AllowFidoRegistration(true);
-  access_manager.is_authentication_in_progress_ = false;
-  access_manager.can_fetch_unmask_details_ = true;
-  access_manager.is_user_verifiable_ = std::nullopt;
+  test_api(access_manager).set_is_authentication_in_progress(false);
+  test_api(access_manager).set_can_fetch_unmask_details(true);
+  test_api(access_manager).set_is_user_verifiable(std::nullopt);
 }
 
 void AutofillMetricsBaseTest::OnDidGetRealPan(
@@ -210,7 +212,7 @@ void AutofillMetricsBaseTest::RecreateCreditCards(
     bool include_masked_server_credit_card,
     bool include_full_server_credit_card,
     bool masked_card_is_enrolled_for_virtual_card) {
-  personal_data().ClearCreditCards();
+  personal_data().test_payments_data_manager().ClearCreditCards();
   CreateCreditCards(include_local_credit_card,
                     include_masked_server_credit_card,
                     include_full_server_credit_card,

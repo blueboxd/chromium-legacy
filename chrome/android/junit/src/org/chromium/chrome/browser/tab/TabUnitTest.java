@@ -11,15 +11,21 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.SparseArray;
 import android.view.View;
+import android.view.ViewStructure;
+import android.view.autofill.AutofillValue;
 
 import androidx.annotation.Nullable;
 import androidx.test.filters.SmallTest;
@@ -36,10 +42,14 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Token;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
+import org.chromium.components.autofill.AutofillFeatures;
+import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
@@ -57,6 +67,7 @@ public class TabUnitTest {
 
     @Rule public JniMocker mocker = new JniMocker();
 
+    @Mock private AutofillProvider mAutofillProvider;
     @Mock private Profile mProfile;
     @Mock private WindowAndroid mWindowAndroid;
     @Mock private LoadUrlParams mLoadUrlParams;
@@ -93,6 +104,7 @@ public class TabUnitTest {
                     }
                 };
         mTab.addObserver(mObserver);
+        mTab.setAutofillProvider(mAutofillProvider);
     }
 
     @Test
@@ -196,7 +208,7 @@ public class TabUnitTest {
                 .createWebContentsDelegate(any(Tab.class));
         doReturn(mNativePage)
                 .when(mDelegateFactory)
-                .createNativePage(any(String.class), any(), any(Tab.class));
+                .createNativePage(any(String.class), any(), any(Tab.class), anyBoolean());
         doReturn(false).when(mNativePage).isFrozen();
         doReturn(mNativePageView).when(mNativePage).getView();
         doReturn(mWindowAndroid).when(mWebContents).getTopLevelNativeWindow();
@@ -238,7 +250,41 @@ public class TabUnitTest {
     @SmallTest
     public void testMaybeLoadNativePage_nullOrEmptyUrl() {
         mTab.updateAttachment(mWindowAndroid, mDelegateFactory);
-        assertFalse(mTab.maybeShowNativePage(null, /* forceReload= */ false));
-        assertFalse(mTab.maybeShowNativePage("", /* forceReload= */ false));
+        assertFalse(
+                mTab.maybeShowNativePage(
+                        (String) null, /* forceReload= */ false, /* isPdf= */ false));
+        assertFalse(mTab.maybeShowNativePage("", /* forceReload= */ false, /* isPdf= */ false));
+    }
+
+    @Test
+    @SmallTest
+    @DisableFeatures({AutofillFeatures.AUTOFILL_VIRTUAL_VIEW_STRUCTURE_ANDROID})
+    public void testAutofillUnavailable() {
+        assertFalse(mTab.providesAutofillStructure());
+        mTab.setAutofillProvider(null);
+
+        mTab.onProvideAutofillVirtualStructure(mock(ViewStructure.class), 0);
+        verify(mAutofillProvider, never()).onProvideAutoFillVirtualStructure(any(), anyInt());
+
+        mTab.autofill(new SparseArray<AutofillValue>());
+        verify(mAutofillProvider, never()).autofill(any());
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({AutofillFeatures.AUTOFILL_VIRTUAL_VIEW_STRUCTURE_ANDROID})
+    public void testAutofillRequestsHandledByProvider() {
+        assertTrue(mTab.providesAutofillStructure());
+
+        ViewStructure structure = mock(ViewStructure.class);
+        mTab.onProvideAutofillVirtualStructure(
+                structure, View.AUTOFILL_FLAG_INCLUDE_NOT_IMPORTANT_VIEWS);
+        verify(mAutofillProvider)
+                .onProvideAutoFillVirtualStructure(
+                        structure, View.AUTOFILL_FLAG_INCLUDE_NOT_IMPORTANT_VIEWS);
+
+        SparseArray<AutofillValue> values = new SparseArray<AutofillValue>();
+        mTab.autofill(values);
+        verify(mAutofillProvider).autofill(values);
     }
 }

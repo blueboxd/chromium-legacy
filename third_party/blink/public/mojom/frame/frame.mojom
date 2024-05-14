@@ -665,6 +665,12 @@ interface LocalFrameHost {
   // the future) and gain access to unpartitioned storage.
   DisableUntrustedNetworkInFencedFrame() => ();
 
+  // A test-only IPC to exempt `exempted_url` from fenced frames network
+  // revocation immediately above (`DisableUntrustedNetworkInFencedFrame`).
+  // Used primarily to exempt the fenced frames remote context executor pattern
+  // in WPT from network revocation.
+  ExemptUrlFromNetworkRevocationForTesting(url.mojom.Url exempted_url) => ();
+
   // Notify the browser that there is a legacy technology used by the page.
   // The event contains the technology `type` and code location from the
   // ExecutionContext.
@@ -725,6 +731,12 @@ interface LocalFrameHost {
       blink.mojom.RemoteFrameToken frame_token,
       mojo_base.mojom.UnguessableToken devtools_frame_token);
 
+  // Can be called when a DOM event named `event_type` fires within a fenced
+  // frame's DOM tree. Propagates a censored version of the event to the
+  // embedder that omits privacy-sensitive information like mouse coordinates or
+  // timestamps.
+  ForwardFencedFrameEventToEmbedder(string event_type);
+
   // Notifies when the ViewTransition opt-in state for the current Document
   // changes.
   // See https://github.com/WICG/view-transitions/blob/main/explainer.md#declarative-opt-in-to-transitions.
@@ -741,6 +753,11 @@ interface LocalFrameHost {
                 gfx.mojom.Vector2d cursor_offset_in_dip,
                 gfx.mojom.Rect drag_obj_rect_in_dip,
                 DragEventSourceInfo event_info);
+
+  // Register the remote corresponding to |receiver| as a keep alive handle for
+  // browser-process navigation state associated with this LocalFrameHost.
+  IssueKeepAliveHandle(
+      pending_receiver<NavigationStateKeepAliveHandle> receiver);
 };
 
 // Implemented in Browser, this interface defines frame-specific methods
@@ -1081,9 +1098,23 @@ interface LocalFrame {
 
   // Requests a one-time snapshot of the document state for a ViewTransition.
   // See https://drafts.csswg.org/css-view-transitions-1/ for details.
+  //
+  // The navigation id is used to preserve the identity of the transition
+  // between old and new documents so they can share captured pixel state in
+  // viz.
   SnapshotDocumentForViewTransition(
-    PageConcealEventParams page_conceal_event_params) => (
+    mojo_base.mojom.UnguessableToken navigation_id,
+    PageSwapEventParams page_swap_event_params) => (
       blink.mojom.ViewTransitionState view_transition_state);
+
+  // Dispatches a `pageswap` event on the previous Document before the
+  // navigation is committed. This API is used for navigations which don't have
+  // a ViewTransition.
+  // For ViewTransition the event must be dispatched before snapshotting the old
+  // Document with a `ViewTransition` object passed to script. So the dispatch
+  // is done as a part of the `SnapshotDocumentForViewTransition` API above.
+  DispatchPageSwap(
+    PageSwapEventParams? page_swap_event_params);
 
   // Allows the browser to add a resource timing entry for a subframe
   // navigation that has failed before committing - a non-ok object navigation

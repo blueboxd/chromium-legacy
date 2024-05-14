@@ -8,13 +8,15 @@
 #define RTCD_EXTERN extern
 #endif
 
+#include <stdbool.h>
+
 struct yv12_buffer_config;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void aom_extend_frame_borders_c(struct yv12_buffer_config *ybf, const int num_planes);
+void aom_extend_frame_borders_c(struct yv12_buffer_config* ybf, int num_planes);
 #define aom_extend_frame_borders aom_extend_frame_borders_c
 
 void aom_extend_frame_borders_plane_row_c(const struct yv12_buffer_config *ybf, int plane, int v_start, int v_end);
@@ -86,7 +88,11 @@ void aom_yv12_partial_copy_v_c(const struct yv12_buffer_config *src_bc, int hsta
 void aom_yv12_partial_copy_y_c(const struct yv12_buffer_config *src_ybc, int hstart1, int hend1, int vstart1, int vend1, struct yv12_buffer_config *dst_ybc, int hstart2, int vstart2);
 #define aom_yv12_partial_copy_y aom_yv12_partial_copy_y_c
 
-int aom_yv12_realloc_with_new_border_c(struct yv12_buffer_config *ybf, int new_border, int byte_alignment, int num_pyramid_levels, int num_planes);
+int aom_yv12_realloc_with_new_border_c(struct yv12_buffer_config* ybf,
+                                       int new_border,
+                                       int byte_alignment,
+                                       bool alloc_pyramid,
+                                       int num_planes);
 #define aom_yv12_realloc_with_new_border aom_yv12_realloc_with_new_border_c
 
 void aom_scale_rtcd(void);

@@ -15,6 +15,7 @@
 <translation id="1423007117030725713">Inicia una cerca en una pestanya nova de Chromium.</translation>
 <translation id="1431818719585918472">Deixa que Chromium bloquegi les teves pestanyes d'incògnit.</translation>
 <translation id="1472013873724362412">El vostre compte no funciona a Chromium. Contacteu amb l'administrador del domini o utilitzeu un compte de Google estàndard per iniciar la sessió.</translation>
+<translation id="1503199973012840174">Chromium no està actualitzat. Actualitza'l per mantenir la protecció.</translation>
 <translation id="1507010443238049608">Ajuda a millorar les funcions i el rendiment de Chromium</translation>
 <translation id="1513122820609681462">Estableix Chromium com a navegador predeterminat</translation>
 <translation id="1531155317299575425">Mostra sol·licituds per iniciar la sessió a Chromium.</translation>
@@ -50,6 +51,7 @@
 <translation id="22313767259766852">Aquesta adreça està desada a Chromium. Per utilitzar-la en tots els productes de Google, desa-la al teu Compte de Google, <ph name="USER_EMAIL" />.</translation>
 <translation id="2236584955986023187">Això vol dir que Chromium sol·licitarà el lloc web per a ordinadors cada vegada.</translation>
 <translation id="2313870531055795960">Compara els URL amb una llista de llocs web no segurs emmagatzemada a Chromium. Si un lloc web prova de robar-te la contrasenya o si baixes un fitxer maliciós, és possible que Chromium també n'enviï els URL, inclosos fragments de contingut de les pàgines, a Navegació segura.</translation>
+<translation id="231828342043114302">Per rebre contingut personalitzat basat en els teus interessos, inicia la sessió a Chromium.</translation>
 <translation id="2374627437126809292">Chromium utilitza Google Maps per oferir-te indicacions i informació local sobre les adreces detectades.</translation>
 <translation id="2386292341327187942">Al quadre de widgets de la Cerca, escriu "Chromium"</translation>
 <translation id="2426113998523353159">La teva organització requereix que iniciïs la sessió per utilitzar Chromium.</translation>
@@ -78,7 +80,6 @@ Per veure més opcions de configuració que utilitzin dades per millorar la teva
 <translation id="3219277919172823720">Cerca amb la veu a Chromium</translation>
 <translation id="3228349498066165585">Algunes dades de Chromium encara no s'han desat al teu Compte de Google.
         Prova d'esperar uns quants minuts abans de tancar la sessió. Si la tanques ara, aquestes dades se suprimiran.</translation>
-<translation id="3256316712990552818">Copiada a Chromium</translation>
 <translation id="328933489847748230">{count,plural, =1{S'està mostrant 1 finestra de Chromium}other{S'estan mostrant {count} finestres de Chromium}}</translation>
 <translation id="3344973607274501920">Chromium no ha pogut comprovar les teves contrasenyes. Comprova la connexió a Internet.</translation>
 <translation id="3366305173356742781">Dades de Chromium al teu compte</translation>
@@ -116,6 +117,7 @@ Les teves dades s'encripten amb la teva frase de contrasenya. Per utilitzar i de
 <translation id="4195557071150719219">Mostra les pestanyes recents de Chromium</translation>
 <translation id="4200712796753248893">Utilitza Accions de Chromium a iOS</translation>
 <translation id="420541179527342563">Per desactivar el mode d’aïllament a Chromium, l'has de desactivar a l'iPad.</translation>
+<translation id="427331839909790668">Enllaça Chromium i altres serveis de Google si vols que personalitzin la teva experiència utilitzant dades entre si</translation>
 <translation id="4408912345039114853">Executa la comprovació de seguretat de Chromium</translation>
 <translation id="4432744876818348753">Inicia la sessió per treure el màxim profit de Chromium.</translation>
 <translation id="4445228361214254027">La teva organització ha desactivat l'opció de fer servir i desar dades de Chromium al teu Compte de Google. Les adreces d'interès noves, les contrasenyes i altres dades només es desaran en aquest dispositiu.</translation>
@@ -213,9 +215,11 @@ Només les persones que sàpiguen la teva frase de contrasenya podran llegir les
 <translation id="6752854822223394465">La teva organització està configurant Chromium...</translation>
 <translation id="6794054469102824109">Obre el joc El dinosaure de Chromium.</translation>
 <translation id="6820823224820483452">Chromium no ha pogut comprovar totes les contrasenyes. Torna-ho a provar demà.</translation>
+<translation id="6830362027989570433">Visualització ampliada de la funció Emplenament automàtic de Chromium</translation>
 <translation id="6852799557929001644">Accedeix a les teves contrasenyes de Chromium i a més elements en altres aplicacions d'aquest dispositiu.</translation>
 <translation id="6887138405044152640">Per enviar aquesta pestanya a un altre dispositiu, inicia la sessió a Chromium al dispositiu en qüestió.</translation>
 <translation id="6911341667534646387">Continua utilitzant les dades de Chromium al teu Compte de Google</translation>
+<translation id="7002548535535009764">Per gaudir d'una experiència més personalitzada, inclou Chromium a <ph name="FEATURE_NAME_1" /> i a <ph name="FEATURE_NAME_2" /></translation>
 <translation id="7006920032187763988">Pots utilitzar les contrasenyes que has desat al gestor de contrasenyes en altres aplicacions de l'iPad.</translation>
 <translation id="7018284295775193585">Chromium no es pot actualitzar</translation>
 <translation id="7045244423563602563">Personalitza Chromium</translation>
@@ -310,7 +314,6 @@ Les dades s'han encriptat amb la teva frase de contrasenya el dia <ph name="TIME
 <translation id="9059693977935746710">No caldrà que recordis aquesta contrasenya. Es desarà al gestor de contrasenyes per a <ph name="EMAIL" /></translation>
 <translation id="9089354809943900324">Chromium no està actualitzat</translation>
 <translation id="9110075932708282655">Utilitza Chromium de manera predeterminada</translation>
-<translation id="9137114218472648150">Chromium no està actualitzat. Actualitza'l a la darrera versió per protegir-te.</translation>
 <translation id="921174536258924340">Chromium no ha pogut comprovar totes les contrasenyes. Torna-ho a provar demà o <ph name="BEGIN_LINK" />comprova les contrasenyes desades al teu Compte de Google<ph name="END_LINK" />.</translation>
 <translation id="971488683725792095">Utilitza Chromium automàticament quan toquis enllaços en missatges, documents i altres aplicacions.</translation>
 <translation id="981812233959540767">Juga al joc El dinosaure de Chromium</translation>

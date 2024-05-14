@@ -43,6 +43,20 @@ TypeMatcher MemberType() {
                hasCanonicalType(arrayType(hasElementType(has_member_base))));
 }
 
+TypeMatcher TraceableType() {
+  auto has_gc_base = hasCanonicalType(hasDeclaration(
+      cxxRecordDecl(
+          hasMethod(cxxMethodDecl(
+              hasName("Trace"), isConst(), parameterCountIs(1),
+              hasParameter(
+                  0, parmVarDecl(hasType(pointerType(pointee(hasCanonicalType(
+                         hasDeclaration(cxxRecordDecl(isSameOrDerivedFrom(
+                             hasName("cppgc::Visitor")))))))))))))
+          .bind("traceable")));
+  return anyOf(has_gc_base,
+               hasCanonicalType(arrayType(hasElementType(has_gc_base))));
+}
+
 class UniquePtrGarbageCollectedMatcher : public MatchFinder::MatchCallback {
  public:
   explicit UniquePtrGarbageCollectedMatcher(DiagnosticsReporter& diagnostics)
@@ -73,50 +87,7 @@ class UniquePtrGarbageCollectedMatcher : public MatchFinder::MatchCallback {
   DiagnosticsReporter& diagnostics_;
 };
 
-class OptionalGarbageCollectedMatcher : public MatchFinder::MatchCallback {
- public:
-  explicit OptionalGarbageCollectedMatcher(DiagnosticsReporter& diagnostics)
-      : diagnostics_(diagnostics) {}
-
-  void Register(MatchFinder& match_finder) {
-    // Matches fields and new-expressions of type absl::optional where the
-    // template argument is known to refer to a garbage-collected type.
-    auto optional_type = hasType(
-        classTemplateSpecializationDecl(
-            hasAnyName("::absl::optional", "::std::optional"),
-            hasTemplateArgument(0, refersToType(GarbageCollectedType())))
-            .bind("optional"));
-    // Only check fields. Optional variables on stack will be found by
-    // conservative stack scanning.
-    auto optional_field = fieldDecl(optional_type).bind("bad_field");
-    auto optional_new_expression =
-        cxxNewExpr(has(cxxConstructExpr(optional_type))).bind("bad_new");
-    match_finder.addDynamicMatcher(optional_field, this);
-    match_finder.addDynamicMatcher(optional_new_expression, this);
-  }
-
-  void run(const MatchFinder::MatchResult& result) override {
-    auto* optional = result.Nodes.getNodeAs<clang::CXXRecordDecl>("optional");
-    auto* gc_type = result.Nodes.getNodeAs<clang::CXXRecordDecl>("gctype");
-    if (auto* bad_field =
-            result.Nodes.getNodeAs<clang::FieldDecl>("bad_field")) {
-      diagnostics_.OptionalFieldUsedWithGC(bad_field, optional, gc_type);
-    } else {
-      auto* bad_new = result.Nodes.getNodeAs<clang::Expr>("bad_new");
-      diagnostics_.OptionalNewExprUsedWithGC(bad_new, optional, gc_type);
-    }
-  }
-
- private:
-  DiagnosticsReporter& diagnostics_;
-};
-
-bool IsArrayOnStack(const clang::CXXRecordDecl* collection,
-                    const clang::Decl* decl,
-                    RecordCache& record_cache) {
-  if (collection->getNameAsString() != "array") {
-    return false;
-  }
+bool IsOnStack(const clang::Decl* decl, RecordCache& record_cache) {
   if (dyn_cast<const clang::VarDecl>(decl)) {
     return true;
   }
@@ -126,6 +97,87 @@ bool IsArrayOnStack(const clang::CXXRecordDecl* collection,
       dyn_cast<const clang::CXXRecordDecl>(field_decl->getParent());
   assert(parent_decl);
   return record_cache.Lookup(parent_decl)->IsStackAllocated();
+}
+
+class OptionalOrRawPtrToGCedMatcher : public MatchFinder::MatchCallback {
+ public:
+  OptionalOrRawPtrToGCedMatcher(DiagnosticsReporter& diagnostics,
+                                RecordCache& record_cache,
+                                bool check_traceable,
+                                bool check_raw_ptr)
+      : diagnostics_(diagnostics),
+        record_cache_(record_cache),
+        check_traceable_(check_traceable),
+        check_raw_ptr_(check_raw_ptr) {}
+
+  void Register(MatchFinder& match_finder) {
+    // Matches fields and new-expressions of type absl::optional where the
+    // template argument is known to refer to a garbage-collected type.
+    auto optional_gced_type = hasType(
+        classTemplateSpecializationDecl(
+            hasAnyName("::absl::optional", "::std::optional",
+                       "::base::raw_ptr"),
+            hasTemplateArgument(
+                0, refersToType(check_traceable_ ? anyOf(GarbageCollectedType(),
+                                                         TraceableType())
+                                                 : GarbageCollectedType())))
+            .bind("type"));
+    // Only check fields. Optional variables on stack will be found by
+    // conservative stack scanning.
+    auto optional_field = fieldDecl(optional_gced_type).bind("bad_field");
+    auto optional_new_expression =
+        cxxNewExpr(has(cxxConstructExpr(optional_gced_type))).bind("bad_new");
+    match_finder.addDynamicMatcher(optional_field, this);
+    match_finder.addDynamicMatcher(optional_new_expression, this);
+  }
+
+  void run(const MatchFinder::MatchResult& result) override {
+    auto* type = result.Nodes.getNodeAs<clang::CXXRecordDecl>("type");
+    bool is_optional = (type->getName() != "raw_ptr");
+    if (!is_optional && !check_raw_ptr_) {
+      return;
+    }
+    auto* arg_type = result.Nodes.getNodeAs<clang::CXXRecordDecl>("gctype");
+    if (!arg_type) {
+      arg_type = result.Nodes.getNodeAs<clang::CXXRecordDecl>("traceable");
+    }
+    assert(arg_type);
+    if (auto* bad_field =
+            result.Nodes.getNodeAs<clang::FieldDecl>("bad_field")) {
+      if (Config::IsIgnoreAnnotated(bad_field) ||
+          IsOnStack(bad_field, record_cache_)) {
+        return;
+      }
+      if (is_optional) {
+        diagnostics_.OptionalFieldUsedWithGC(bad_field, type, arg_type);
+      } else {
+        diagnostics_.RawPtrFieldUsedWithGC(bad_field, type, arg_type);
+      }
+    } else {
+      auto* bad_new = result.Nodes.getNodeAs<clang::Expr>("bad_new");
+      assert(bad_new);
+      if (is_optional) {
+        diagnostics_.OptionalNewExprUsedWithGC(bad_new, type, arg_type);
+      } else {
+        diagnostics_.RawPtrNewExprUsedWithGC(bad_new, type, arg_type);
+      }
+    }
+  }
+
+ private:
+  DiagnosticsReporter& diagnostics_;
+  RecordCache& record_cache_;
+  const bool check_traceable_;
+  const bool check_raw_ptr_;
+};
+
+bool IsArrayOnStack(const clang::CXXRecordDecl* collection,
+                    const clang::Decl* decl,
+                    RecordCache& record_cache) {
+  if (collection->getNameAsString() != "array") {
+    return false;
+  }
+  return IsOnStack(decl, record_cache);
 }
 
 class CollectionOfGarbageCollectedMatcher : public MatchFinder::MatchCallback {
@@ -488,8 +540,10 @@ void FindBadPatterns(clang::ASTContext& ast_context,
   UniquePtrGarbageCollectedMatcher unique_ptr_gc(diagnostics);
   unique_ptr_gc.Register(match_finder);
 
-  OptionalGarbageCollectedMatcher optional_gc(diagnostics);
-  optional_gc.Register(match_finder);
+  OptionalOrRawPtrToGCedMatcher optional_or_rawptr_gc(
+      diagnostics, record_cache, options.enable_optional_of_traceable_check,
+      options.enable_raw_ptr_of_gced_or_traceable_check);
+  optional_or_rawptr_gc.Register(match_finder);
 
   CollectionOfGarbageCollectedMatcher collection_of_gc(diagnostics,
                                                        record_cache);

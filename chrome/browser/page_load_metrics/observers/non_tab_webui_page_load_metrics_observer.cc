@@ -5,8 +5,9 @@
 #include "chrome/browser/page_load_metrics/observers/non_tab_webui_page_load_metrics_observer.h"
 
 #include "base/strings/strcat.h"
+#include "base/trace_event/named_trigger.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
-#include "content/public/browser/background_tracing_manager.h"
+#include "content/public/common/url_constants.h"
 
 namespace chrome {
 
@@ -27,7 +28,7 @@ std::string GetSuffixedFCPHistogram(const std::string& webui_name) {
 NonTabPageLoadMetricsObserver::NonTabPageLoadMetricsObserver(
     const std::string& webui_name)
     : page_load_metrics::PageLoadMetricsObserver(), webui_name_(webui_name) {
-  content::BackgroundTracingManager::EmitNamedTrigger("non-tab-webui-creation");
+  base::trace_event::EmitNamedTrigger("non-tab-webui-creation");
 }
 
 void NonTabPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
@@ -67,6 +68,15 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 NonTabPageLoadMetricsObserver::OnPrerenderStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url) {
+  return STOP_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+NonTabPageLoadMetricsObserver::ShouldObserveScheme(const GURL& url) const {
+  if (url.SchemeIs(content::kChromeUIScheme) ||
+      url.SchemeIs(content::kChromeUIUntrustedScheme)) {
+    return CONTINUE_OBSERVING;
+  }
   return STOP_OBSERVING;
 }
 

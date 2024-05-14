@@ -8,7 +8,10 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/memory/raw_ptr.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_feature_list.h"
@@ -55,8 +58,12 @@ using ::testing::Return;
 using ::testing::TestWithParam;
 using ::testing::ValuesIn;
 
-#if BUILDFLAG(IS_WIN) || \
-    (BUILDFLAG(IS_MAC) && BUILDFLAG(USE_PROPRIETARY_CODECS))
+#if BUILDFLAG(IS_WIN)
+#include "media/gpu/windows/mf_audio_encoder.h"
+#define HAS_AAC_ENCODER 1
+#endif
+
+#if BUILDFLAG(IS_MAC) && BUILDFLAG(USE_PROPRIETARY_CODECS)
 #define HAS_AAC_ENCODER 1
 #endif
 
@@ -200,8 +207,10 @@ class MediaRecorderHandlerFixture : public ScopedMockOverlayScrollbars {
   void OnEncodedAudioForTesting(const media::AudioParameters& params,
                                 std::string encoded_data,
                                 base::TimeTicks timestamp) {
+    media::AudioEncoder::CodecDescription codec_description = {99};
     media_recorder_handler_->OnEncodedAudio(params, std::move(encoded_data),
-                                            std::nullopt, timestamp);
+                                            std::move(codec_description),
+                                            timestamp);
   }
 
   void OnAudioBusForTesting(const media::AudioBus& audio_bus) {
@@ -238,8 +247,28 @@ class MediaRecorderHandlerFixture : public ScopedMockOverlayScrollbars {
                              bus.get());
     return bus;
   }
+
+  void OnEncodedH264VideoForTesting(
+      base::TimeTicks timestamp,
+      std::optional<media::VideoEncoder::CodecDescription> codec_description =
+          std::nullopt) {
+    // It provides valid h264 stream.
+    if (h264_video_stream_.empty()) {
+      base::MemoryMappedFile mapped_h264_file;
+      LoadEncodedFile("h264-320x180-frame-0", mapped_h264_file);
+      h264_video_stream_ =
+          std::string(reinterpret_cast<const char*>(mapped_h264_file.data()),
+                      mapped_h264_file.length());
+    }
+    media::Muxer::VideoParameters video_params(
+        gfx::Size(), 1, media::VideoCodec::kH264, gfx::ColorSpace());
+    OnEncodedVideoForTesting(video_params, h264_video_stream_, "alpha",
+                             timestamp, true, std::move(codec_description));
+  }
+
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  void PopulateAVCDecoderConfiguration(std::vector<uint8_t>& code_description) {
+  void PopulateAVCDecoderConfiguration(
+      std::vector<uint8_t>& codec_description) {
     // copied from box_reader_unittest.cc.
     std::vector<uint8_t> test_data{
         0x1,        // configurationVersion = 1
@@ -267,7 +296,7 @@ class MediaRecorderHandlerFixture : public ScopedMockOverlayScrollbars {
     media::mp4::AVCDecoderConfigurationRecord avc_config;
     ASSERT_TRUE(
         avc_config.Parse(test_data.data(), static_cast<int>(test_data.size())));
-    ASSERT_TRUE(avc_config.Serialize(code_description));
+    ASSERT_TRUE(avc_config.Serialize(codec_description));
   }
 #endif
 
@@ -280,6 +309,26 @@ class MediaRecorderHandlerFixture : public ScopedMockOverlayScrollbars {
   media::SineWaveAudioSource audio_source_;
   raw_ptr<MockMediaStreamVideoSource, DanglingUntriaged> video_source_ =
       nullptr;
+  std::string h264_video_stream_;
+
+ private:
+  void LoadEncodedFile(base::StringPiece filename,
+                       base::MemoryMappedFile& mapped_stream) {
+    base::FilePath file_path = GetTestDataFilePath(filename);
+
+    ASSERT_TRUE(mapped_stream.Initialize(file_path))
+        << "Couldn't open stream file: " << file_path.MaybeAsASCII();
+  }
+
+  base::FilePath GetTestDataFilePath(base::StringPiece name) {
+    base::FilePath file_path;
+    base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &file_path);
+    file_path = file_path.Append(FILE_PATH_LITERAL("media"))
+                    .Append(FILE_PATH_LITERAL("test"))
+                    .Append(FILE_PATH_LITERAL("data"))
+                    .AppendASCII(name);
+    return file_path;
+  }
 };
 
 class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
@@ -336,6 +385,10 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
 #else
     return codecs.Find("av1") != kNotFound && codecs.Find("av01") != kNotFound;
 #endif
+  }
+
+  bool IsAvc1CodecSupported(const String codecs) {
+    return codecs.Find("avc1") != kNotFound;
   }
 
  private:
@@ -494,7 +547,7 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
 
   if (GetParam().use_mp4_muxer) {
     {
-      const size_t kMfraBoxSize = 76;
+      const size_t kMfraBoxSize = 48u;
       base::RunLoop run_loop;
       // WriteData is called as many as fragments (`moof` box) in addition
       // to 3 times of `ftyp`, `moov`, `mfra` boxes.
@@ -761,16 +814,20 @@ TEST_P(MediaRecorderHandlerTest, PauseRecorderForVideo) {
         gfx::Size(), 1, media::VideoCodec::kH264, gfx::ColorSpace());
     std::vector<uint8_t> codec_description;
     PopulateAVCDecoderConfiguration(codec_description);
-    OnEncodedVideoForTesting(params, "avc1 frame", "", base::TimeTicks::Now(),
-                             true, std::move(codec_description));
+    OnEncodedH264VideoForTesting(base::TimeTicks::Now(),
+                                 std::move(codec_description));
     media_recorder_handler_->Stop();
 #endif
   } else {
     EXPECT_CALL(*recorder, WriteData).Times(AtLeast(1));
     media::Muxer::VideoParameters params(
         gfx::Size(), 1, media::VideoCodec::kVP9, gfx::ColorSpace());
-    OnEncodedVideoForTesting(params, "vp9 frame", "", base::TimeTicks::Now(),
-                             true);
+    if (IsAvc1CodecSupported(codecs)) {
+      OnEncodedH264VideoForTesting(base::TimeTicks::Now());
+    } else {
+      OnEncodedVideoForTesting(params, "vp9 frame", "alpha",
+                               base::TimeTicks::Now(), true);
+    }
   }
 
   Mock::VerifyAndClearExpectations(recorder);
@@ -811,8 +868,12 @@ TEST_P(MediaRecorderHandlerTest, StartStopStartRecorderForVideo) {
   EXPECT_CALL(*recorder, WriteData).Times(AtLeast(1));
   media::Muxer::VideoParameters params(gfx::Size(), 1, media::VideoCodec::kVP9,
                                        gfx::ColorSpace());
-  OnEncodedVideoForTesting(params, "vp9 frame", "", base::TimeTicks::Now(),
-                           true);
+  if (IsAvc1CodecSupported(codecs)) {
+    OnEncodedH264VideoForTesting(base::TimeTicks::Now());
+  } else {
+    OnEncodedVideoForTesting(params, "vp9 frame", "alpha",
+                             base::TimeTicks::Now(), true);
+  }
 
   Mock::VerifyAndClearExpectations(recorder);
 
@@ -1105,6 +1166,34 @@ TEST_F(MediaRecorderHandlerAudioVideoTest, EmitsCachedVideoDataOnStop) {
   Mock::VerifyAndClearExpectations(recorder);
 }
 
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+TEST_F(MediaRecorderHandlerAudioVideoTest, CorrectH264LevelOnWrite) {
+  AddTracks();
+  V8TestingScope scope;
+  auto* recorder = MakeGarbageCollected<MockMediaRecorder>(scope);
+  media_recorder_handler_->Initialize(
+      recorder, registry_.test_stream(), "video/webm", "avc1.640022,opus",
+      AudioTrackRecorder::BitrateMode::kVariable);
+
+  EXPECT_EQ(media_recorder_handler_->ActualMimeType(),
+            "video/x-matroska;codecs=avc1.640022,opus");
+  media_recorder_handler_->Start(std::numeric_limits<int>::max(), "video/webm",
+                                 0, 0);
+
+  // Feed some encoded data into the recorder. Expect that data cached by the
+  // muxer is emitted on the call to Stop.
+  FeedAudio();
+  OnEncodedH264VideoForTesting(base::TimeTicks::Now());
+  EXPECT_CALL(*recorder, WriteData).Times(AtLeast(1));
+  media_recorder_handler_->Stop();
+
+  EXPECT_EQ(media_recorder_handler_->ActualMimeType(),
+            "video/x-matroska;codecs=avc1.64000d,opus");
+  media_recorder_handler_ = nullptr;
+  Mock::VerifyAndClearExpectations(recorder);
+}
+#endif
+
 TEST_F(MediaRecorderHandlerAudioVideoTest,
        EmitsCachedAudioDataAfterVideoTrackEnded) {
   AddTracks();
@@ -1143,13 +1232,11 @@ static const H264ProfileTestParams kH264ProfileTestParams[] = {
     {false, "video/x-matroska", "avc1.640029"},
     {false, "video/x-matroska", "avc1.640034"},
     {true, "video/x-matroska", "avc1.64000c,pcm"},
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
     {false, "video/mp4", "avc1.42000c"},  // H264PROFILE_BASELINE
     {false, "video/mp4", "avc1.4d000c"},  // H264PROFILE_MAIN
     {false, "video/mp4", "avc1.64000c"},  // H264PROFILE_HIGH
     {false, "video/mp4", "avc1.640029"},
     {false, "video/mp4", "avc1.640034"},
-#endif
 };
 
 class MediaRecorderHandlerH264ProfileTest
@@ -1194,7 +1281,51 @@ INSTANTIATE_TEST_SUITE_P(All,
                          MediaRecorderHandlerH264ProfileTest,
                          ValuesIn(kH264ProfileTestParams));
 
-#endif
+#if BUILDFLAG(IS_WIN)
+class MediaRecorderHandlerWinAacCodecTest : public TestWithParam<unsigned int>,
+                                            public MediaRecorderHandlerFixture {
+ public:
+  MediaRecorderHandlerWinAacCodecTest()
+      : MediaRecorderHandlerFixture(false, true) {
+    scoped_feature_list_.InitAndEnableFeature(kMediaRecorderEnableMp4Muxer);
+  }
+
+  MediaRecorderHandlerWinAacCodecTest(
+      const MediaRecorderHandlerWinAacCodecTest&) = delete;
+  MediaRecorderHandlerWinAacCodecTest& operator=(
+      const MediaRecorderHandlerWinAacCodecTest&) = delete;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_P(MediaRecorderHandlerWinAacCodecTest, AudioBitsPerSeconds) {
+  AddTracks();
+
+  V8TestingScope scope;
+  auto* recorder = MakeGarbageCollected<MockMediaRecorder>(scope);
+
+  const String mime_type("audio/mp4");
+  const String codecs("mp4a.40.2");
+  EXPECT_TRUE(media_recorder_handler_->Initialize(
+      recorder, registry_.test_stream(), mime_type, codecs,
+      AudioTrackRecorder::BitrateMode::kVariable));
+  media_recorder_handler_->Start(0, "", GetParam(), 0);
+
+  EXPECT_EQ(media::MFAudioEncoder::ClampAccCodecBitrate(GetParam()),
+            recorder->audioBitsPerSecond());
+
+  media_recorder_handler_->Stop();
+  media_recorder_handler_ = nullptr;
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         MediaRecorderHandlerWinAacCodecTest,
+                         ValuesIn({5000u, 96000u, 128000u, 160000u, 192000u,
+                                   256000u, 300000u}));
+
+#endif  // BUILDFLAG(IS_WIN)
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 struct MediaRecorderPassthroughTestParams {
   const char* mime_type;

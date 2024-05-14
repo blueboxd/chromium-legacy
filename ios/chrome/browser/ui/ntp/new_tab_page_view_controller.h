@@ -15,6 +15,7 @@
 @class FeedHeaderViewController;
 @class FeedMetricsRecorder;
 @class FeedWrapperViewController;
+@class MagicStackCollectionViewController;
 @protocol NewTabPageContentDelegate;
 @class NewTabPageHeaderViewController;
 @protocol NewTabPageMutator;
@@ -44,6 +45,9 @@
 // The view controller representing the content suggestions.
 @property(nonatomic, strong)
     ContentSuggestionsViewController* contentSuggestionsViewController;
+
+@property(nonatomic, strong)
+    MagicStackCollectionViewController* magicStackCollectionView;
 
 // Feed metrics recorder.
 @property(nonatomic, strong) FeedMetricsRecorder* feedMetricsRecorder;

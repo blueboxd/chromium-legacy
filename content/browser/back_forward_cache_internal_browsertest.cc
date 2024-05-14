@@ -3638,7 +3638,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithFlagForAXEvents,
   BrowserAccessibilityManager* manager =
       rfh_a->GetOrCreateBrowserAccessibilityManager();
   manager->SetGeneratedEventCallbackForTesting(
-      base::BindRepeating([](RenderFrameHostImpl* render_frame_host,
+      base::BindRepeating([](BrowserAccessibilityManager* manager,
                              ui::AXEventGenerator::Event event,
                              ui::AXNodeID event_target_id) { FAIL(); }));
   // Generate an event.
@@ -4060,8 +4060,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // Navigate forward to b.com again and block with an error again.
   NavigateAndBlock(url_b, /*history_offset=*/1);
   ExpectNotRestored(
-      {NotRestoredReason::kHTTPStatusNotOK, NotRestoredReason::kNoResponseHead,
-       NotRestoredReason::kErrorDocument},
+      {NotRestoredReason::kHTTPStatusNotOK, NotRestoredReason::kErrorDocument},
       {}, {}, {}, {}, FROM_HERE);
 }
 
@@ -4098,8 +4097,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       web_contents()->GetController().GetLastCommittedEntry()->GetUniqueID());
   // The reasons from the old entry should be copied to the new entry.
   ExpectNotRestored(
-      {NotRestoredReason::kHTTPStatusNotOK, NotRestoredReason::kNoResponseHead,
-       NotRestoredReason::kErrorDocument},
+      {NotRestoredReason::kHTTPStatusNotOK, NotRestoredReason::kErrorDocument},
       {}, {}, {}, {}, FROM_HERE);
 }
 

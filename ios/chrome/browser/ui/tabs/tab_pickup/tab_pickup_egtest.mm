@@ -19,7 +19,6 @@
 #import "ios/chrome/browser/ui/tabs/tests/fake_distant_tab.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -35,14 +34,12 @@ constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
 
 // Resets the prefs::kTabPickupLastDisplayedTime pref.
 void ResetTabPickupLastDisplayedTimePref() {
-  [ChromeEarlGrey setTimeValue:base::Time()
-             forLocalStatePref:prefs::kTabPickupLastDisplayedTime];
+  [ChromeEarlGrey clearUserPrefWithName:prefs::kTabPickupLastDisplayedTime];
 }
 
 // Resets the prefs::kTabPickupLastDisplayedURL pref.
 void ResetTabPickupLastDisplayedURLPref() {
-  [ChromeEarlGrey setStringValue:std::string()
-               forLocalStatePref:prefs::kTabPickupLastDisplayedURL];
+  [ChromeEarlGrey clearUserPrefWithName:prefs::kTabPickupLastDisplayedURL];
 }
 
 // Sign in and sync using a fake identity.
@@ -91,7 +88,6 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
   if ([self isRunningTest:@selector
             (testBannerNotDisplayedOnNTPWhenTabResumptionEnbaled)]) {
     config.features_enabled.push_back(kTabResumption);
-    config.features_enabled.push_back(kMagicStack);
 
   } else {
     config.features_disabled.push_back(kTabResumption);

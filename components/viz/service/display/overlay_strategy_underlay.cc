@@ -37,8 +37,10 @@ void OverlayStrategyUnderlay::Propose(
   auto* render_pass = render_pass_list->back().get();
   QuadList& quad_list = render_pass->quad_list;
 
-  const OverlayCandidateFactory::OverlayContext context = {
-      .supports_mask_filter = true};
+  OverlayCandidateFactory::OverlayContext context;
+  context.supports_mask_filter = true;
+  context.supports_flip_rotate_transform =
+      capability_checker_->SupportsFlipRotateTransform();
 
   OverlayCandidateFactory candidate_factory = OverlayCandidateFactory(
       render_pass, resource_provider, surface_damage_rect_list,

@@ -151,7 +151,7 @@ void CmdBufFuzz::GfxInit() {
   wire_descriptor_->serializer = dawn_wire_serializer_.get();
   wire_server_ = std::make_unique<dawn::wire::WireServer>(*wire_descriptor_);
   dawn_instance_ = std::make_unique<dawn::native::Instance>();
-  wire_server_->InjectInstance(dawn_instance_->Get(), 1, 0);
+  wire_server_->InjectInstance(dawn_instance_->Get(), {1, 0});
 
   VLOG(3) << "Populate data structure grab bag";
   command_buffer_ = webgpu_context_->GetCommandBufferForTest();
@@ -470,9 +470,11 @@ void CmdBufFuzz::RunCommandBuffer(fuzzing::CmdBufSession session) {
             // Passing totally unstructured data leads to hitting validation
             // errors in webgpu_decoder_impl.cc.
 
-            // TODO(bookholt): Explore whether it's worth giving some structure
-            // to data sent to HandleReturnData().
-            command_buffer_->HandleReturnData(data_span);
+            // We don't fuzz HandleReturnData because, as of right now, that
+            // command is exclusively used by the client in the renderer.
+            // {GPU Process}->{Renderer Process} attacks are not in our threat
+            // model.
+            // command_buffer_->HandleReturnData(data_span);
             break;
           }
 

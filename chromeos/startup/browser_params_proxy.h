@@ -156,11 +156,23 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
 
   bool IsDeskProfilesEnabled() const;
 
+  bool IsCrosWebAppInstallDialogEnabled() const;
+
   bool IsCrosWebAppShortcutUiUpdateEnabled() const;
 
   bool IsCrosShortstandEnabled() const;
 
   bool ShouldDisableChromeComposeOnChromeOS() const;
+
+  bool IsCaptivePortalPopupWindowEnabled() const;
+
+  bool IsFileSystemProviderCloudFileSystemEnabled() const;
+
+  bool IsOrcaEnabled() const;
+
+  bool IsCrosMallEnabled() const;
+
+  bool IsMahiEnabled() const;
 
  private:
   friend base::NoDestructor<BrowserParamsProxy>;

@@ -157,6 +157,10 @@ message AutofillProfileSpecifics {
   // Note that some address forms require the combination of both in a single
   // field as opposed to each one separately.
   optional string address_home_overflow_and_landmark = 83;
+  // Combination of types address_home_street_location and
+  // address_home_dependent_locality. Note that some address forms require the
+  // combination of both in a single field as opposed to each one separately.
+  optional string address_home_street_location_and_locality = 89;
 
   // Validation status records for address fields.
   optional VerificationStatus address_home_city_status = 43;
@@ -172,6 +176,8 @@ message AutofillProfileSpecifics {
   optional VerificationStatus address_home_between_streets_or_landmark_status =
       82;
   optional VerificationStatus address_home_overflow_and_landmark_status = 84;
+  optional VerificationStatus address_home_street_location_and_locality_status =
+      90;
   optional VerificationStatus address_home_street_address_status = 47;
   optional VerificationStatus address_home_sorting_code_status = 48;
   optional VerificationStatus address_home_dependent_locality_status = 49;
@@ -516,6 +522,8 @@ message PaymentInstrument {
     SUPPORTED_RAIL_UNKNOWN = 0;
     // Payment rails for Brazil Open Banking.
     PIX = 1;
+    // International Bank Account Numbers.
+    IBAN = 2;
   }
   // The supported rails for which a payment can be made for the given account.
   // For example, Pix is the open-banking rail in Brazil, UPI is the
@@ -532,6 +540,7 @@ message PaymentInstrument {
   // The backing source for the applicable rails.
   oneof instrument_details {
     BankAccountDetails bank_account = 5;
+    WalletMaskedIban iban = 6;
   }
 }
 
@@ -584,7 +593,7 @@ message AutofillWalletSpecifics {
     CUSTOMER_DATA = 3;
     CREDIT_CARD_CLOUD_TOKEN_DATA = 4;
     PAYMENT_INSTRUMENT = 5;
-    MASKED_IBAN = 6;
+    MASKED_IBAN = 6 [deprecated = true];
   }
 
   optional WalletInfoType type = 1;
@@ -612,7 +621,7 @@ message AutofillWalletSpecifics {
 
   // This field exists if and only if the `type` field equals to
   // MASKED_IBAN.
-  optional WalletMaskedIban masked_iban = 7;
+  optional WalletMaskedIban masked_iban = 7 [deprecated = true];
 }
 
 // Wallet card usage information that can be synced.

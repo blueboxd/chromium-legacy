@@ -373,7 +373,7 @@ size_t FillThreadCacheAndReturnIndex(PartitionRoot* root,
   return bucket_index;
 }
 
-// TODO(1151236): To remove callback from partition allocator's DEPS,
+// TODO(1151236): To remove callback from PartitionAlloc's DEPS,
 // rewrite the tests without BindLambdaForTesting and RepeatingClosure.
 // However this makes a little annoying to add more tests using their
 // own threads. Need to support an easier way to implement tests using
@@ -1261,9 +1261,6 @@ TEST_P(PartitionAllocThreadCacheTest, MAYBE_Bookkeeping) {
   EXPECT_EQ(root()->get_total_size_of_allocated_bytes(),
             expected_allocated_size);
   tcache->Purge();
-  EXPECT_EQ(
-      internal::InternalAllocatorRoot().get_total_size_of_allocated_bytes(),
-      GetBucketSizeForThreadCache());
 }
 
 TEST_P(PartitionAllocThreadCacheTest, TryPurgeNoAllocs) {

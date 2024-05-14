@@ -47,6 +47,7 @@
 #include "components/autofill/core/browser/metrics/profile_import_metrics.h"
 #include "components/autofill/core/browser/payments/credit_card_save_manager.h"
 #include "components/autofill/core/browser/payments/mandatory_reauth_manager.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/autofill/core/browser/payments/payments_network_interface.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -116,11 +117,6 @@ bool ShouldOfferVirtualCardEnrollment(
   if (!base::FeatureList::IsEnabled(features::kAutofillEnableVirtualCards)) {
     return false;
   }
-#else
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillEnableUpdateVirtualCardEnrollment)) {
-    return false;
-  }
 #endif
 
   if (!extracted_credit_card) {
@@ -188,7 +184,8 @@ FormDataImporter::FormDataImporter(AutofillClient* client,
       virtual_card_enrollment_manager_(
           std::make_unique<VirtualCardEnrollmentManager>(
               personal_data_manager,
-              client->GetPaymentsNetworkInterface(),
+              client->GetPaymentsAutofillClient()
+                  ->GetPaymentsNetworkInterface(),
               client)),
       multistep_importer_(app_locale,
                           client_->GetVariationConfigCountryCode()) {
@@ -268,15 +265,9 @@ bool FormDataImporter::SetPhoneNumber(
     const PhoneNumber::PhoneCombineHelper& combined_phone) {
   if (combined_phone.IsEmpty())
     return true;
-  std::u16string constructed_number;
-  // If the phone number only consists of a single component, the
-  // `PhoneCombineHelper` won't try to parse it. This happens during `SetInfo()`
-  // in this case.
-  bool parsed_successfully =
-      combined_phone.ParseNumber(profile, app_locale_, &constructed_number) &&
-      profile.SetInfoWithVerificationStatus(PHONE_HOME_WHOLE_NUMBER,
-                                            constructed_number, app_locale_,
-                                            VerificationStatus::kObserved);
+
+  bool parsed_successfully = PhoneNumber::ImportPhoneNumberToProfile(
+      combined_phone, app_locale_, profile);
   autofill_metrics::LogPhoneNumberImportParsingResult(parsed_successfully);
   return parsed_successfully;
 }
@@ -986,7 +977,7 @@ std::optional<Iban> FormDataImporter::ExtractIban(const FormStructure& form) {
   // with IBANs as a concept. We set the pref so that even if the user travels
   // to a country where IBAN functionality is not typically used, they will
   // still be able to save new IBANs from the settings page using this pref.
-  personal_data_manager_->SetAutofillHasSeenIban();
+  personal_data_manager_->payments_data_manager().SetAutofillHasSeenIban();
 
   return candidate_iban;
 }

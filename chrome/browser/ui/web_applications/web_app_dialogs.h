@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/functional/callback.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -149,7 +150,16 @@ enum class PwaInProductHelpState {
 // |callback| is called when install bubble closed.
 // |iph_state| records whether PWA install iph is shown before Install bubble is
 // shown.
-void ShowPWAInstallBubble(
+void ShowSimpleInstallDialogForWebApps(
+    content::WebContents* web_contents,
+    std::unique_ptr<WebAppInstallInfo> web_app_info,
+    std::unique_ptr<webapps::MlInstallOperationTracker> install_tracker,
+    AppInstallationAcceptanceCallback callback,
+    PwaInProductHelpState iph_state = PwaInProductHelpState::kNotShown);
+
+// Shows the PWA install dialog for apps that are not installable, AKA, DIY
+// apps.
+void ShowDiyAppInstallDialog(
     content::WebContents* web_contents,
     std::unique_ptr<WebAppInstallInfo> web_app_info,
     std::unique_ptr<webapps::MlInstallOperationTracker> install_tracker,
@@ -164,12 +174,16 @@ void ShowWebAppDetailedInstallDialog(
     std::unique_ptr<WebAppInstallInfo> web_app_info,
     std::unique_ptr<webapps::MlInstallOperationTracker> install_tracker,
     AppInstallationAcceptanceCallback callback,
-    const std::vector<webapps::Screenshot>& screenshots,
+    std::vector<webapps::Screenshot> screenshots,
     PwaInProductHelpState iph_state = PwaInProductHelpState::kNotShown);
 
-// Sets whether |ShowPWAInstallBubble| should accept immediately without any
-// user interaction.
+// Sets whether |ShowSimpleInstallDialogForWebApps| should accept immediately
+// without any user interaction.
 void SetAutoAcceptPWAInstallConfirmationForTesting(bool auto_accept);
+
+// Sets whether the bubble should close when it is not in an active window
+// during testing.
+base::AutoReset<bool> SetDontCloseOnDeactivateForTesting();
 
 // Shows the Isolated Web App manual install wizard.
 IsolatedWebAppInstallerCoordinator* LaunchIsolatedWebAppInstaller(

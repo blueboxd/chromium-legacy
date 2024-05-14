@@ -16,7 +16,6 @@
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
@@ -246,12 +245,15 @@ NoStatePrefetchManager::StartPrefetchingFromLinkRelPrerender(
     int64_t confidence = 100;
 
     // Create PreloadingPrediction and PreloadingAttempt for NoStatePrefetch.
+    ukm::SourceId triggered_primary_page_source_id =
+        source_web_contents->GetPrimaryMainFrame()->GetPageUkmSourceId();
     preloading_data->AddPreloadingPrediction(
-        content::preloading_predictor::kLinkRel, confidence, same_url_matcher);
+        content::preloading_predictor::kLinkRel, confidence, same_url_matcher,
+        triggered_primary_page_source_id);
     attempt = preloading_data->AddPreloadingAttempt(
         content::preloading_predictor::kLinkRel,
         content::PreloadingType::kNoStatePrefetch, same_url_matcher,
-        source_web_contents->GetPrimaryMainFrame()->GetPageUkmSourceId());
+        triggered_primary_page_source_id);
   }
   return StartPrefetchingWithPreconnectFallback(
       origin, url, referrer, initiator_origin, gfx::Rect(size),
@@ -961,7 +963,7 @@ bool NoStatePrefetchManager::HasRecentlyPrefetchedUrlForTesting(
 void NoStatePrefetchManager::OnPrefetchUsed(const GURL& url) {
   // Loading a prefetched URL resets the revalidation bypass. Remove all
   // matching urls from the prefetch list for more accurate metrics.
-  base::EraseIf(prefetches_,
+  std::erase_if(prefetches_,
                 [url](const NavigationRecord& r) { return r.url == url; });
 }
 

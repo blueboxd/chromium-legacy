@@ -101,6 +101,9 @@ class BackForwardCacheWithDedicatedWorkerBrowserTest
     } else {
       DisableFeature(blink::features::kPlzDedicatedWorker);
     }
+    // Disable the feature to test eviction for dedicated worker.
+    DisableFeature(
+        blink::features::kAllowDatapipeDrainedAsBytesConsumerInBFCache);
     BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
     feature_list_.InitWithFeaturesAndParameters(
         {{blink::features::kLoadingTasksUnfreezable,
@@ -2269,8 +2272,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithJavaScriptDetails,
   // Both socketA and socketB's JavaScript locations should be reported.
   EXPECT_THAT(map.at(blink::scheduler::WebSchedulerTrackedFeature::kWebSocket),
               testing::UnorderedElementsAre(
-                  MatchesBlockingDetails(url_js.spec(), std::nullopt, 10, 15),
-                  MatchesBlockingDetails(url_js.spec(), std::nullopt, 17, 15)));
+                  MatchesBlockingDetails(
+                      MatchesSourceLocation(url_js.spec(), "", 10, 15)),
+                  MatchesBlockingDetails(
+                      MatchesSourceLocation(url_js.spec(), "", 17, 15))));
 }
 
 // Use a blocklisted feature in multiple locations from an external JavaScript
@@ -2338,8 +2343,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithJavaScriptDetails,
       map.contains(blink::scheduler::WebSchedulerTrackedFeature::kWebSocket));
   // Only socketB's JavaScript locations should be reported.
   EXPECT_THAT(map.at(blink::scheduler::WebSchedulerTrackedFeature::kWebSocket),
-              testing::UnorderedElementsAre(
-                  MatchesBlockingDetails(url_js.spec(), std::nullopt, 17, 15)));
+              testing::UnorderedElementsAre(MatchesBlockingDetails(
+                  MatchesSourceLocation(url_js.spec(), "", 17, 15))));
 }
 
 // Use a blocklisted feature in multiple places from HTML file and make sure all
@@ -2399,8 +2404,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithJavaScriptDetails,
   // Both socketA and socketB's JavaScript locations should be reported.
   EXPECT_THAT(map.at(blink::scheduler::WebSchedulerTrackedFeature::kWebSocket),
               testing::UnorderedElementsAre(
-                  MatchesBlockingDetails(url_a.spec(), std::nullopt, 11, 15),
-                  MatchesBlockingDetails(url_a.spec(), std::nullopt, 18, 15)));
+                  MatchesBlockingDetails(
+                      MatchesSourceLocation(url_a.spec(), "", 11, 15)),
+                  MatchesBlockingDetails(
+                      MatchesSourceLocation(url_a.spec(), "", 18, 15))));
 }
 
 // Use a blocklisted feature in multiple locations from HTML file but stop using
@@ -2464,8 +2471,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithJavaScriptDetails,
       map.contains(blink::scheduler::WebSchedulerTrackedFeature::kWebSocket));
   // Only socketB's JavaScript locations should be reported.
   EXPECT_THAT(map.at(blink::scheduler::WebSchedulerTrackedFeature::kWebSocket),
-              testing::UnorderedElementsAre(
-                  MatchesBlockingDetails(url_a.spec(), std::nullopt, 18, 15)));
+              testing::UnorderedElementsAre(MatchesBlockingDetails(
+                  MatchesSourceLocation(url_a.spec(), "", 18, 15))));
 }
 
 // TODO(crbug.com/1317431): WebSQL does not work on Fuchsia.
@@ -3012,8 +3019,32 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       DoesNotCacheIfBroadcastChannelStillOpen) {
+// The parameter is used for switching `kBFCacheOpenBroadcastChannel`.
+class BackForwardCacheWithBroadcastChannelTest
+    : public BackForwardCacheBrowserTest,
+      public testing::WithParamInterface<bool> {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    if (IsBFCacheOpenBroadcastChannelEnabled()) {
+      EnableFeatureAndSetParams(blink::features::kBFCacheOpenBroadcastChannel,
+                                "", "");
+    } else {
+      DisableFeature(blink::features::kBFCacheOpenBroadcastChannel);
+    }
+    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
+  }
+
+  bool IsBFCacheOpenBroadcastChannelEnabled() { return GetParam(); }
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         BackForwardCacheWithBroadcastChannelTest,
+                         testing::Bool());
+
+// Checks that a page with an open broadcast channel is eligible for BFCache.
+// Expects it's not eligible if the flag is disabled.
+IN_PROC_BROWSER_TEST_P(BackForwardCacheWithBroadcastChannelTest,
+                       MaybeCacheIfBroadcastChannelStillOpen) {
   ASSERT_TRUE(CreateHttpsServer()->Start());
 
   // 1) Navigate to an empty page.
@@ -3037,12 +3068,14 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // 4) Go back.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
 
-  // Because the RenderFrameHostManager changed, the blocklisted features will
-  // be tracked in RenderFrameHostManager::UnloadOldFrame.
-  ExpectNotRestored(
-      {NotRestoredReason::kBlocklistedFeatures},
-      {blink::scheduler::WebSchedulerTrackedFeature::kBroadcastChannel}, {}, {},
-      {}, FROM_HERE);
+  if (IsBFCacheOpenBroadcastChannelEnabled()) {
+    ExpectRestored(FROM_HERE);
+  } else {
+    ExpectNotRestored(
+        {NotRestoredReason::kBlocklistedFeatures},
+        {blink::scheduler::WebSchedulerTrackedFeature::kBroadcastChannel}, {},
+        {}, {}, FROM_HERE);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -3070,6 +3103,61 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // 4) Go back.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
   ExpectRestored(FROM_HERE);
+}
+
+// Checks that a page will be evicted from BFCache as soon as its broadcast
+// channel receives a message.
+IN_PROC_BROWSER_TEST_P(BackForwardCacheWithBroadcastChannelTest,
+                       MaybeEvictOnMessage) {
+  // No need to test for when the flag is disabled. In that case the page will
+  // not enter BFCache if there's an open broadcast channel.
+  if (!IsBFCacheOpenBroadcastChannelEnabled()) {
+    return;
+  }
+
+  ASSERT_TRUE(CreateHttpsServer()->Start());
+
+  // Two same-origin pages and one empty page.
+  GURL url_a_receiver(https_server()->GetURL(
+      "a.test", "/back_forward_cache/page_with_broadcastchannel.html"));
+  GURL url_a_sender(https_server()->GetURL(
+      "a.test", "/back_forward_cache/page_with_broadcastchannel_sender.html"));
+  GURL url_b(https_server()->GetURL("b.test", "/title1.html"));
+
+  // Navigate to a page which will receive message.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a_receiver));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  RenderFrameDeletedObserver receiver_rfh_deleted_observer(
+      current_frame_host());
+  // Set up a broadcast channel.
+  RenderFrameHostImpl* rfh_a_receiver = current_frame_host();
+  EXPECT_TRUE(ExecJs(rfh_a_receiver, "acquireBroadcastChannel();"));
+  EXPECT_TRUE(ExecJs(rfh_a_receiver, "setOnMessage();"));
+
+  // Navigate to an empty page.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_TRUE(rfh_a_receiver->IsInBackForwardCache());
+
+  // Open another tab and navigate to a page which will send message.
+  Shell* shell2 =
+      Shell::CreateNewWindow(shell()->web_contents()->GetBrowserContext(),
+                             url_a_sender, nullptr, gfx::Size());
+  ASSERT_TRUE(WaitForLoadStop(shell2->web_contents()));
+  // Open a broadcast channel and cast a message.
+  RenderFrameHostImplWrapper rfh_a_sender(
+      shell2->web_contents()->GetPrimaryMainFrame());
+  EXPECT_TRUE(ExecJs(rfh_a_sender.get(), "acquireBroadcastChannel();"));
+  EXPECT_TRUE(ExecJs(rfh_a_sender.get(), "sendMessageOnce();"));
+
+  // The receiver page's rfh should be deleted.
+  receiver_rfh_deleted_observer.WaitUntilDeleted();
+
+  // Navigate back from the empty page to the receiver page.
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
+  // The receiver page should have been evicted upon message.
+  ExpectNotRestored({NotRestoredReason::kBroadcastChannelOnMessage}, {}, {}, {},
+                    {}, FROM_HERE);
 }
 
 // Disabled on Android, since we have problems starting up the websocket test
@@ -4921,7 +5009,7 @@ class BackForwardCacheBrowserTestWithSupportedFeatures
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EnableFeatureAndSetParams(features::kBackForwardCache, "supported_features",
-                              "BroadcastChannel,KeyboardLock");
+                              "broadcastchannel,keyboard-lock");
     BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
   }
 };

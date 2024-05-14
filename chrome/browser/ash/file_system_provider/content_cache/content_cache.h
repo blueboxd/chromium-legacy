@@ -5,21 +5,24 @@
 #ifndef CHROME_BROWSER_ASH_FILE_SYSTEM_PROVIDER_CONTENT_CACHE_CONTENT_CACHE_H_
 #define CHROME_BROWSER_ASH_FILE_SYSTEM_PROVIDER_CONTENT_CACHE_CONTENT_CACHE_H_
 
+#include "chrome/browser/ash/file_system_provider/content_cache/content_lru_cache.h"
+
 namespace ash::file_system_provider {
 
-// A singleton that is the hub for all FileSystemProvider extensions that are
-// enabled with a content cache. Currently this is just an experiment hidden
-// behind both the `FileSystemProviderCloudFileSystem` and
-// `FileSystemProviderContentCache` flags and only enabled on ODFS when the
-// flags are toggled on.
+// The content cache for every mounted FSP. This will serve as the single point
+// of orchestration between the LRU cache and the disk persistence layer.
 class ContentCache {
  public:
-  ContentCache();
+  explicit ContentCache(const base::FilePath& root_dir);
 
   ContentCache(const ContentCache&) = delete;
   ContentCache& operator=(const ContentCache&) = delete;
 
   ~ContentCache();
+
+ private:
+  const base::FilePath root_dir_;
+  ContentLRUCache lru_cache_;
 };
 
 }  // namespace ash::file_system_provider

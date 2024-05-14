@@ -254,6 +254,29 @@ chromium-metrics-reviews@google.com.
   <int value="25" label="Manage Bruschetta sharing toast startup"/>
 </enum>
 
+<enum name="FileManagerNavigationSurface">
+  <summary>The UI Surface that user used to navigate to the files.</summary>
+  <int value="0" label="Physical Location">
+    User navigated directly via the volume/directory.
+  </int>
+  <int value="1" label="Search results">
+    User has searched and is acting on the search results.
+  </int>
+  <int value="2" label="Recent">User has navigated via the Recent root.</int>
+  <int value="3" label="Starred files">
+    User has navigated to Starred files or any sub-folder within it.
+  </int>
+  <int value="4" label="Screen captures view">
+    User has navigated to Screen captures view.
+  </int>
+  <int value="5" label="Drive Shared with me root">
+    User has navigated to Google Drive &quot;Shared with me&quot; root.
+  </int>
+  <int value="6" label="Drive Offline root">
+    User has navigated to Google Drive &quot;Offline&quot; root.
+  </int>
+</enum>
+
 <enum name="FileManagerNotificationType">
   <int value="0" label="DEVICE_NAVIGATION_ALLOW_APP_ACCESS"/>
   <int value="1" label="DEVICE_NAVIGATION_APPS_HAVE_ACCESS"/>
@@ -404,6 +427,25 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="AbortedInternally"/>
 </enum>
 
+<enum name="FuseboxPosixErrorCode">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="OK"/>
+  <int value="2" label="EOTHER"/>
+  <int value="3" label="EFAULT"/>
+  <int value="4" label="EBUSY"/>
+  <int value="5" label="EEXIST"/>
+  <int value="6" label="ENOENT"/>
+  <int value="7" label="EACCES"/>
+  <int value="8" label="EMFILE"/>
+  <int value="9" label="ENOMEM"/>
+  <int value="10" label="ENOSPC"/>
+  <int value="11" label="ENOTDIR"/>
+  <int value="12" label="ENOTSUP"/>
+  <int value="13" label="EINVAL"/>
+  <int value="14" label="ENOTEMPTY"/>
+  <int value="15" label="EIO"/>
+</enum>
+
 <enum name="GoogleDrive.BulkPinning.MountFailureReason">
   <int value="0" label="Successfully mounted"/>
   <int value="1" label="More than 3 consecutive startup failures"/>
@@ -457,6 +499,7 @@ chromium-metrics-reviews@google.com.
   <int value="13" label="Local file waiting for upload"/>
   <int value="14" label="Disable Drive preference set"/>
   <int value="15" label="Drive disabled for account type"/>
+  <int value="16" label="Cannot get relative path"/>
 </enum>
 
 <enum name="OfficeFileHandler">
@@ -516,6 +559,7 @@ chromium-metrics-reviews@google.com.
   <int value="22" label="Sync error cancelled and trashed"/>
   <int value="23" label="Upload not started: Reauthentication needed"/>
   <int value="24" label="Success after reauthentication"/>
+  <int value="25" label="File not an office file"/>
 </enum>
 
 <enum name="OfficeFilesUseOutsideDriveHook">
@@ -632,6 +676,8 @@ chromium-metrics-reviews@google.com.
   <int value="10" label="getActions: no email"/>
   <int value="11" label="Conversion to ODFS URL error"/>
   <int value="12" label="Emails do not match"/>
+  <int value="13" label="Unsupported Android OneDrive location"/>
+  <int value="14" label="Invalid Android OneDrive URL"/>
 </enum>
 
 <enum name="OfficeOneDriveType">
@@ -702,6 +748,11 @@ chromium-metrics-reviews@google.com.
   <int value="13" label="Cannot show setup dialog"/>
   <int value="14" label="Cannot show move confirmation"/>
   <int value="15" label="No files to open"/>
+  <int value="16" label="Selected OK at fallback"/>
+  <int value="17" label="Selected OK at fallback after open attempt"/>
+  <int value="18" label="Fallback (QuickOffice) after open attempt"/>
+  <int value="19" label="Cancelled at fallback after open attempt"/>
+  <int value="20" label="Cannot get fallback choice after open attempt"/>
 </enum>
 
 <enum name="RestoreFailedNoParentType">
@@ -710,6 +761,12 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Multiple items with different parents"/>
   <int value="3"
       label="Multiple items with some parents removed, some still existing"/>
+</enum>
+
+<enum name="SearchRootType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Standalone"/>
+  <int value="2" label="Picker"/>
 </enum>
 
 <enum name="ZipFileCreator.Result">

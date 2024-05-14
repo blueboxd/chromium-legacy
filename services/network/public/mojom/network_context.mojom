@@ -442,8 +442,8 @@ struct NetworkContextParams {
   // cases as `ip_protection_config_getter`.
   pending_receiver<IpProtectionProxyDelegate>? ip_protection_proxy_delegate;
 
-  // Whether the IP Protection feature is enabled via user prefs at the time the
-  // NetworkContext is created. This setting can change via the
+  // Whether the IP Protection feature is enabled at the time the NetworkContext
+  // is created. This setting can change via the
   // `SetIpProtectionEnabled` method of the `IpProtectionProxyDelegate`
   // interface.
   bool enable_ip_protection = false;
@@ -592,14 +592,6 @@ struct NetworkContextParams {
   // label value defined by the experiment is empty.
   string? cookie_deprecation_label;
 
-  // Whether the experimental AFP block list is enabled for this NetworkContext.
-  // Default is false and will only be true if a feature corresponding to the
-  // type of NetworkContext is enabled.
-  // TODO(crbug.com/1478868): This is an interim field only for AFP block list
-  // experiment. This field should not be used for other use cases. This will
-  // be removed when AFP block list logic is migrated to subresource filter.
-  bool afp_block_list_experiment_enabled = false;
-
   // Sets the cookie encryption provider to be used by this network context if
   // `enable_encrypted_cookies` is also enabled.
   // If both are set then the `GetEncryptor` method on the supplied
@@ -623,6 +615,17 @@ struct NetworkConditions {
   // Maximal aggregated upload throughput (bytes/sec). <=0 disables upload
   // throttling.
   double upload_throughput;
+
+  // Packet loss for WebRTC connections (percent, 0 to 100).<= 0 disables
+  // packet loss.
+  double packet_loss;
+
+  // Packet queue length for WebRTC connections (packet count). <=0 allows for
+  // an infinite queue.
+  int32 packet_queue_length;
+
+  // Allow packet reordering for WebRTC connections.
+  bool packet_reordering;
 };
 
 // Represents a shared dictionary.
@@ -1654,4 +1657,18 @@ interface NetworkContext {
 
   // Sets cookie deprecation label.
   SetCookieDeprecationLabel(string? label);
+
+  // Register that all network requests with `nonce` as their partition nonce
+  // should be blocked.
+  // Used for fenced frames network revocation:
+  // https://github.com/WICG/fenced-frame/blob/master/explainer/fenced_frames_with_local_unpartitioned_data_access.md#revoking-network-access
+  RevokeNetworkForNonce(mojo_base.mojom.UnguessableToken nonce) => ();
+
+  // Register that network requests operating under the nonce `nonce` whose url
+  // without filename is `exempted_url` should be exempt from network
+  // revocation. This can be called before network is revoked for `nonce` with
+  // `RevokeNetworkForNonce`, and it will store the exemption so that it can
+  // take effect afterwards.
+  ExemptUrlFromNetworkRevocationForNonce(
+      url.mojom.Url exempted_url, mojo_base.mojom.UnguessableToken nonce) => ();
 };

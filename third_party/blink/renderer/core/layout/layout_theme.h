@@ -40,10 +40,8 @@ namespace blink {
 
 class ComputedStyle;
 class ComputedStyleBuilder;
-class Document;
 class Element;
 class File;
-class FontDescription;
 class LocalFrame;
 class Node;
 class ThemePainter;
@@ -145,8 +143,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   void SetCaretBlinkInterval(base::TimeDelta);
   virtual base::TimeDelta CaretBlinkInterval() const;
 
-  // System fonts and colors for CSS.
-  void SystemFont(CSSValueID system_font_id, FontDescription&, const Document*);
+  // System colors for CSS.
   virtual Color SystemColor(CSSValueID,
                             mojom::blink::ColorScheme color_scheme,
                             const ui::ColorProvider* color_provider) const;
@@ -242,9 +239,10 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
 
   Color DefaultSystemColor(CSSValueID,
                            mojom::blink::ColorScheme color_scheme) const;
-  Color SystemColorFromNativeTheme(
+  Color SystemColorFromColorProvider(
       CSSValueID,
-      mojom::blink::ColorScheme color_scheme) const;
+      mojom::blink::ColorScheme color_scheme,
+      const ui::ColorProvider* color_provider) const;
 
  private:
   // This function is to be implemented in your platform-specific theme

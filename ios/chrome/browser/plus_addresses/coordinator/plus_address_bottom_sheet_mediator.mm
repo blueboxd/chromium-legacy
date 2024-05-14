@@ -11,7 +11,6 @@
 #import "components/plus_addresses/plus_address_metrics.h"
 #import "components/plus_addresses/plus_address_service.h"
 #import "components/plus_addresses/plus_address_types.h"
-#import "ios/chrome/browser/autofill/model/bottom_sheet/autofill_bottom_sheet_tab_helper.h"
 #import "ios/chrome/browser/plus_addresses/ui/plus_address_bottom_sheet_constants.h"
 #import "ios/chrome/browser/plus_addresses/ui/plus_address_bottom_sheet_consumer.h"
 #import "ios/chrome/browser/url_loading/model/url_loading_browser_agent.h"
@@ -95,7 +94,7 @@
 }
 
 - (NSString*)primaryEmailAddress {
-  absl::optional<std::string> primaryAddress =
+  std::optional<std::string> primaryAddress =
       _plusAddressService->GetPrimaryEmail();
   // TODO(crbug.com/1467623): determine the appropriate behavior in cases
   // without a primary email (or just switch the signature away from optional).
@@ -133,9 +132,9 @@
 - (GURL)plusAddressURL:(PlusAddressURLType)type {
   switch (type) {
     case PlusAddressURLType::kErrorReport:
-      return GURL(plus_addresses::kPlusAddressErrorReportUrl.Get());
+      return GURL(plus_addresses::features::kPlusAddressErrorReportUrl.Get());
     case PlusAddressURLType::kManagement:
-      return GURL(plus_addresses::kPlusAddressManagementUrl.Get());
+      return GURL(plus_addresses::features::kPlusAddressManagementUrl.Get());
   }
 }
 @end

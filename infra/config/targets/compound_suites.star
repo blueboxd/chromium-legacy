@@ -159,11 +159,11 @@ targets.legacy_compound_suite(
 )
 
 targets.legacy_compound_suite(
-    name = "chromeos_device_gtests",
+    name = "chrome_wpt_tests_three_modes",
     basic_suites = [
-        "chromeos_browser_all_tast_tests",
-        "chromeos_browser_integration_tests",
-        "chromeos_device_only_gtests",
+        "chromium_wpt_tests_isolated_scripts",
+        "chromium_wpt_tests_headful_isolated_scripts",
+        "chromium_wpt_tests_old_headless_isolated_scripts",
     ],
 )
 
@@ -171,6 +171,8 @@ targets.legacy_compound_suite(
     name = "chromeos_device_no_gtests",
     basic_suites = [
         "chromeos_browser_all_tast_tests",
+        "chromeos_browser_criticalstaging_tast_tests",
+        "chromeos_browser_disabled_tast_tests",
         "chromeos_browser_integration_tests",
     ],
 )
@@ -188,6 +190,8 @@ targets.legacy_compound_suite(
     name = "chromeos_vm_gtests_and_tast",
     basic_suites = [
         "chromeos_browser_all_tast_tests",
+        "chromeos_browser_criticalstaging_tast_tests",
+        "chromeos_browser_disabled_tast_tests",
         "chromeos_browser_integration_tests",
         "chromeos_system_friendly_gtests",
         "chromeos_vaapi_fakelib_gtests",
@@ -196,9 +200,20 @@ targets.legacy_compound_suite(
 )
 
 targets.legacy_compound_suite(
+    name = "chromeos_vm_preuprev_tast",
+    basic_suites = [
+        "chromeos_cq_medium_tast_tests",
+        "chromeos_integration_tests",
+        "chromeos_device_only_gtests",
+    ],
+)
+
+targets.legacy_compound_suite(
     name = "chromeos_vm_tast",
     basic_suites = [
         "chromeos_browser_all_tast_tests",
+        "chromeos_browser_criticalstaging_tast_tests",
+        "chromeos_browser_disabled_tast_tests",
         "chromeos_browser_integration_tests",
     ],
 )
@@ -279,15 +294,17 @@ targets.legacy_compound_suite(
     ],
 )
 
-targets.legacy_compound_suite(
-    name = "chromium_linux_cast_video_gtests",
-    basic_suites = [
-        "cast_audio_specific_chromium_gtests",
-        "cast_video_specific_chromium_gtests",
-        "chromium_gtests",
-        "linux_flavor_specific_chromium_gtests",
-    ],
-)
+# TODO(issues.chromium.org/1516671): Create a combined test suite target for
+# Cast Receiver builders.
+# targets.legacy_compound_suite(
+#     name = "chromium_linux_cast_video_gtests",
+#     basic_suites = [
+#         "cast_audio_specific_chromium_gtests",
+#         "cast_video_specific_chromium_gtests",
+#         "chromium_gtests",
+#         "linux_flavor_specific_chromium_gtests",
+#     ],
+# )
 
 targets.legacy_compound_suite(
     name = "chromium_linux_dbg_isolated_scripts",
@@ -299,8 +316,7 @@ targets.legacy_compound_suite(
 )
 
 # When changing something here, change chromium_linux_and_gl_gtests,
-# chromium_linux_and_gl_and_vulkan_gtests, and
-# chromium_linux_rel_gtests_once in the same way.
+# chromium_linux_and_gl_and_vulkan_gtests in the same way.
 targets.legacy_compound_suite(
     name = "chromium_linux_gtests",
     basic_suites = [
@@ -311,32 +327,6 @@ targets.legacy_compound_suite(
         "chromium_gtests_for_linux_and_mac_only",
         "chromium_gtests_for_linux_only",
         "chromium_gtests_for_win_and_linux_only",
-        "linux_flavor_specific_chromium_gtests",
-        "linux_specific_xr_gtests",
-        "non_android_and_cast_and_chromeos_chromium_gtests",
-        "non_android_chromium_gtests_no_nacl",
-        "vr_platform_specific_chromium_gtests",
-    ],
-)
-
-# TODO(crbug.com/1444855): This set should match chromium_linux_gtests,
-# except that it also runs tests that we can afford to run only once on
-# Linux machines (for now, this is just the cr23_linux_gtests).
-#
-# Delete this test suite after the ChromeRefresh2023 is fully rolled out
-# (assuming no other test suites are being run only once) and make sure
-# any bots go back to using chromium_linux_gtests.
-targets.legacy_compound_suite(
-    name = "chromium_linux_gtests_once",
-    basic_suites = [
-        "aura_gtests",
-        "chromium_gtests",
-        "chromium_gtests_for_devices_with_graphical_output",
-        "chromium_gtests_for_linux_and_chromeos_only",
-        "chromium_gtests_for_linux_and_mac_only",
-        "chromium_gtests_for_linux_only",
-        "chromium_gtests_for_win_and_linux_only",
-        "cr23_linux_gtests",
         "linux_flavor_specific_chromium_gtests",
         "linux_specific_xr_gtests",
         "non_android_and_cast_and_chromeos_chromium_gtests",
@@ -356,6 +346,10 @@ targets.legacy_compound_suite(
         "telemetry_perf_unittests_isolated_scripts",
         "vulkan_swiftshader_isolated_scripts",
         "chromium_web_tests_high_dpi_isolated_scripts",
+        # TODO(crbug.com/328079854): we should eventually run chrome_wpt_tests where
+        # blink_wpt_tests runs on Linux. There should not have any resource
+        # concern on this because those are all CI builders.
+        #"chromium_wpt_tests_isolated_scripts",
     ],
 )
 
@@ -394,6 +388,7 @@ targets.legacy_compound_suite(
         # TODO(crbug.com/1498364): Remove this once the BackgroundResourceFetch
         # feature launches.
         "chromium_web_tests_brfetch_isolated_scripts",
+        "chromium_wpt_tests_isolated_scripts",
     ],
 )
 
@@ -409,7 +404,6 @@ targets.legacy_compound_suite(
     ],
 )
 
-# When changing something here, change
 # chromium_mac_gtests_no_nacl_once in the same way.
 # TODO(b/303417958): This no_nacl suite is identical to the normal suite, since
 # NaCl has been disabled on Mac. Replace this by the normal suite.
@@ -419,26 +413,6 @@ targets.legacy_compound_suite(
         "chromium_gtests",
         "chromium_gtests_for_devices_with_graphical_output",
         "chromium_gtests_for_linux_and_mac_only",
-        "mac_specific_chromium_gtests",
-        "non_android_and_cast_and_chromeos_chromium_gtests",
-        "non_android_chromium_gtests_no_nacl",
-    ],
-)
-
-# TODO(crbug.com/1444855): This set should match
-# chromium_mac_gtests_no_nacl, except that it also runs tests that we can
-# only afford to run once on Mac machines (for now, this is just the
-# cr23_mac_gtests).
-#
-# Delete this test suite after the ChromeRefresh2023 is fully rolled out
-# and make sure any bots go back to using
-# chromium_mac_gtests_no_nacl_no_nocompile.
-targets.legacy_compound_suite(
-    name = "chromium_mac_gtests_no_nacl_once",
-    basic_suites = [
-        "chromium_gtests",
-        "chromium_gtests_for_devices_with_graphical_output",
-        "cr23_mac_gtests",
         "mac_specific_chromium_gtests",
         "non_android_and_cast_and_chromeos_chromium_gtests",
         "non_android_chromium_gtests_no_nacl",
@@ -506,7 +480,6 @@ targets.legacy_compound_suite(
         "chromium_gtests",
         "chromium_gtests_for_devices_with_graphical_output",
         "chromium_gtests_for_win_and_linux_only",
-        "cr23_pixel_browser_tests_gtests",
         "fieldtrial_browser_tests",
         "non_android_and_cast_and_chromeos_chromium_gtests",
         "non_android_chromium_gtests_no_nacl",
@@ -521,31 +494,6 @@ targets.legacy_compound_suite(
     name = "chromium_win10_gtests_multiscreen_fyi",
     basic_suites = [
         "chromium_gtests_for_windows_multiscreen",
-    ],
-)
-
-# TODO(crbug.com/1444855): This set should match chromium_win10_gtests,
-# except that it also runs tests that we can afford to run only once
-# on Windows machines (for now this is just the cr23_win_gtests).
-#
-# Delete this test suite after the ChromeRefresh2023 is fully rolled out
-# and make sure any bots go back to using chromium_win10_gtests.
-targets.legacy_compound_suite(
-    name = "chromium_win10_gtests_once",
-    basic_suites = [
-        "aura_gtests",
-        "chromium_gtests",
-        "chromium_gtests_for_devices_with_graphical_output",
-        "chromium_gtests_for_win_and_linux_only",
-        "cr23_pixel_browser_tests_gtests",
-        "cr23_win_gtests",
-        "fieldtrial_browser_tests",
-        "non_android_and_cast_and_chromeos_chromium_gtests",
-        "non_android_chromium_gtests_no_nacl",
-        "non_android_chromium_gtests_skia_gold",
-        "pixel_browser_tests_gtests",
-        "vr_platform_specific_chromium_gtests",
-        "win_specific_chromium_gtests",
     ],
 )
 
@@ -1345,22 +1293,6 @@ targets.legacy_compound_suite(
     name = "rust_host_gtests",
     basic_suites = [
         "rust_common_gtests",
-    ],
-)
-
-targets.legacy_compound_suite(
-    name = "webrtc_chromium_tests_with_baremetal_tests",
-    basic_suites = [
-        "webrtc_chromium_baremetal_gtests",
-        "webrtc_chromium_gtests",
-    ],
-)
-
-targets.legacy_compound_suite(
-    name = "webrtc_chromium_tests_without_baremetal_tests",
-    basic_suites = [
-        "webrtc_chromium_without_baremetal_gtests",
-        "webrtc_chromium_gtests",
     ],
 )
 

@@ -122,23 +122,32 @@ void FragmentBuilder::PropagateStickyDescendants(
   }
 }
 
-HeapHashSet<Member<LayoutBox>>& FragmentBuilder::EnsureSnapAreas() {
+HeapVector<Member<LayoutBox>>& FragmentBuilder::EnsureSnapAreas() {
   if (!snap_areas_) {
-    snap_areas_ = MakeGarbageCollected<HeapHashSet<Member<LayoutBox>>>();
+    snap_areas_ = MakeGarbageCollected<HeapVector<Member<LayoutBox>>>();
   }
   return *snap_areas_;
 }
 
 void FragmentBuilder::PropagateSnapAreas(const PhysicalFragment& child) {
+  auto get_insertion_pos = [&](LayoutBox* snap_area) {
+    auto& snap_areas = EnsureSnapAreas();
+    // Ensure that snap areas are added in DOM order.
+    for (int i = snap_areas.size(); i >= 1; i--) {
+      if (snap_areas.at(i - 1)->IsBeforeInPreOrder(*snap_area)) {
+        return i;
+      }
+    }
+    return 0;
+  };
   if (child.IsSnapArea()) {
-    EnsureSnapAreas().insert(To<LayoutBox>(child.GetMutableLayoutObject()));
+    auto* snap_area = To<LayoutBox>(child.GetMutableLayoutObject());
+    EnsureSnapAreas().insert(get_insertion_pos(snap_area), snap_area);
   }
 
   if (const auto* child_snap_areas = child.PropagatedSnapAreas()) {
-    auto& snap_areas = EnsureSnapAreas();
-    for (auto& child_snap_area : *child_snap_areas) {
-      snap_areas.insert(child_snap_area);
-    }
+    EnsureSnapAreas().InsertVector(get_insertion_pos(child_snap_areas->at(0)),
+                                   *child_snap_areas);
   }
 
   if (child.IsSnapArea() && child.PropagatedSnapAreas()) {
@@ -286,13 +295,13 @@ void FragmentBuilder::PropagateFromFragment(
     const auto& child_style = child.Style();
     if (child.IsCSSBox() && child_style.GetPosition() == EPosition::kRelative) {
       if (IsHorizontalWritingMode(Style().GetWritingMode())) {
-        if (child_style.UsedTop().IsPercentOrCalc() ||
-            child_style.UsedBottom().IsPercentOrCalc()) {
+        if (child_style.Top().IsPercentOrCalc() ||
+            child_style.Bottom().IsPercentOrCalc()) {
           has_descendant_that_depends_on_percentage_block_size_ = true;
         }
       } else {
-        if (child_style.UsedLeft().IsPercentOrCalc() ||
-            child_style.UsedRight().IsPercentOrCalc()) {
+        if (child_style.Left().IsPercentOrCalc() ||
+            child_style.Right().IsPercentOrCalc()) {
           has_descendant_that_depends_on_percentage_block_size_ = true;
         }
       }
@@ -320,10 +329,9 @@ void FragmentBuilder::PropagateFromFragment(
 
   // Collect any (block) break tokens, but skip break tokens for fragmentainers,
   // as they should only escape a fragmentation context at the discretion of the
-  // fragmentation context. Also skip this if there's a pre-set break token, or
-  // if we're only to add break tokens manually.
+  // fragmentation context. Also skip this if there's a pre-set break token.
   if (has_block_fragmentation_ && !child.IsFragmentainerBox() &&
-      !break_token_ && !should_add_break_tokens_manually_) {
+      !break_token_) {
     const BreakToken* child_break_token = child.GetBreakToken();
     switch (child.Type()) {
       case PhysicalFragment::kFragmentBox:

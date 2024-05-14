@@ -188,8 +188,7 @@ class TimeZoneResolverManagerUnenrolledDeviceTest
  protected:
   TimeZoneResolverManagerUnenrolledDeviceTest() {
     // Enabling Privacy Hub with location switch
-    scoped_feature_list_.InitWithFeatures(
-        {ash::features::kCrosPrivacyHubV0, ash::features::kCrosPrivacyHub}, {});
+    scoped_feature_list_.InitWithFeatures({ash::features::kCrosPrivacyHub}, {});
   }
 
  private:
@@ -413,8 +412,7 @@ IN_PROC_BROWSER_TEST_F(TimeZoneResolverManagerUnenrolledDeviceTest,
   ash::system::TimeZoneResolverManager* tz_resolver_manager =
       g_browser_process->platform_part()->GetTimezoneResolverManager();
 
-  TimeZoneResolver* tz_resolver =
-      g_browser_process->platform_part()->GetTimezoneResolver();
+  TimeZoneResolver* tz_resolver = tz_resolver_manager->GetResolver();
   ASSERT_NE(tz_resolver_manager, nullptr);
   ASSERT_NE(tz_resolver, nullptr);
 

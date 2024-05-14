@@ -33,7 +33,9 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/service/sync_service.h"
 #include "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/ui/autofill/ios_chrome_payments_autofill_client.h"
 
+@protocol AutofillCommands;
 @class UIViewController;
 
 namespace web {
@@ -41,10 +43,6 @@ class WebState;
 }
 
 namespace autofill {
-
-namespace payments {
-class IOSChromePaymentsAutofillClient;
-}
 
 // Chrome iOS implementation of AutofillClient.
 class ChromeAutofillClientIOS : public AutofillClient {
@@ -62,9 +60,14 @@ class ChromeAutofillClientIOS : public AutofillClient {
   // Sets a weak reference to the view controller used to present UI.
   void SetBaseViewController(UIViewController* base_view_controller);
 
+  void set_commands_handler(id<AutofillCommands> commands_handler) {
+    commands_handler_ = commands_handler;
+  }
+  id<AutofillCommands> commands_handler() const { return commands_handler_; }
+
   // AutofillClient:
   version_info::Channel GetChannel() const override;
-  bool IsOffTheRecord() override;
+  bool IsOffTheRecord() const override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   AutofillCrowdsourcingManager* GetCrowdsourcingManager() override;
   PersonalDataManager* GetPersonalDataManager() override;
@@ -77,8 +80,8 @@ class ChromeAutofillClientIOS : public AutofillClient {
   syncer::SyncService* GetSyncService() override;
   signin::IdentityManager* GetIdentityManager() override;
   FormDataImporter* GetFormDataImporter() override;
-  payments::PaymentsAutofillClient* GetPaymentsAutofillClient() override;
-  payments::PaymentsNetworkInterface* GetPaymentsNetworkInterface() override;
+  payments::IOSChromePaymentsAutofillClient* GetPaymentsAutofillClient()
+      override;
   StrikeDatabase* GetStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
@@ -95,6 +98,11 @@ class ChromeAutofillClientIOS : public AutofillClient {
       const CardUnmaskPromptOptions& card_unmask_prompt_options,
       base::WeakPtr<CardUnmaskDelegate> delegate) override;
   void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
+  void ShowUnmaskAuthenticatorSelectionDialog(
+      const std::vector<CardUnmaskChallengeOption>& challenge_options,
+      base::OnceCallback<void(const std::string&)>
+          confirm_unmask_challenge_option_callback,
+      base::OnceClosure cancel_unmasking_closure) override;
   payments::MandatoryReauthManager* GetOrCreatePaymentsMandatoryReauthManager()
       override;
   void ConfirmAccountNameFixFlow(
@@ -138,8 +146,6 @@ class ChromeAutofillClientIOS : public AutofillClient {
       base::span<const autofill::SelectOption> datalist) override;
   std::vector<Suggestion> GetPopupSuggestions() const override;
   void PinPopupView() override;
-  PopupOpenArgs GetReopenPopupArgs(
-      AutofillSuggestionTriggerSource trigger_source) const override;
   void UpdatePopup(const std::vector<Suggestion>& suggestions,
                    FillingProduct main_filling_product,
                    AutofillSuggestionTriggerSource trigger_source) override;
@@ -156,6 +162,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   FormInteractionsFlowId GetCurrentFormInteractionsFlowId() override;
   LogManager* GetLogManager() const override;
   bool IsLastQueriedField(FieldGlobalId field_id) override;
+  bool ShouldFormatForLargeKeyboardAccessory() const override;
   AutofillPlusAddressDelegate* GetPlusAddressDelegate() override;
   void OfferPlusAddressCreation(const url::Origin& main_frame_origin,
                                 PlusAddressCallback callback) override;
@@ -183,8 +190,6 @@ class ChromeAutofillClientIOS : public AutofillClient {
   raw_ptr<signin::IdentityManager> identity_manager_;
   std::unique_ptr<payments::IOSChromePaymentsAutofillClient>
       payments_autofill_client_;
-  std::unique_ptr<payments::PaymentsNetworkInterface>
-      payments_network_interface_;
   std::unique_ptr<CreditCardCvcAuthenticator> cvc_authenticator_;
   std::unique_ptr<CreditCardOtpAuthenticator> otp_authenticator_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
@@ -200,6 +205,8 @@ class ChromeAutofillClientIOS : public AutofillClient {
 
   // A weak reference to the view controller used to present UI.
   __weak UIViewController* base_view_controller_;
+
+  __weak id<AutofillCommands> commands_handler_;
 };
 
 }  // namespace autofill

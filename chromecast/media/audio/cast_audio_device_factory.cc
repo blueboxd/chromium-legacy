@@ -246,9 +246,10 @@ CastAudioDeviceFactory::~CastAudioDeviceFactory() {
 }
 
 scoped_refptr<::media::SwitchableAudioRendererSink>
-CastAudioDeviceFactory::NewSwitchableAudioRendererSink(
+CastAudioDeviceFactory::NewMixableSink(
     blink::WebAudioDeviceSourceType source_type,
     const blink::LocalFrameToken& frame_token,
+    const blink::FrameToken& main_frame_token,
     const ::media::AudioSinkParameters& params) {
   return base::MakeRefCounted<NonSwitchableAudioRendererSink>(frame_token,
                                                               params);

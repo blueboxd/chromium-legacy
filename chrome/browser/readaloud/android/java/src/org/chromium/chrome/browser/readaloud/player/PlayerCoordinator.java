@@ -67,7 +67,8 @@ public class PlayerCoordinator implements Player {
                         contextForInflation,
                         model,
                         delegate.getBrowserControlsSizer(),
-                        delegate.getLayoutManager());
+                        delegate.getLayoutManager(),
+                        this);
         mExpandedPlayer = new ExpandedPlayerCoordinator(contextForInflation, delegate, model);
         mMediator = new PlayerMediator(/* coordinator= */ this, delegate, model);
         mDelegate = delegate;
@@ -174,6 +175,11 @@ public class PlayerCoordinator implements Player {
         }
     }
 
+    /** Collapses the expanded player and shows mini player */
+    void hideExpandedPlayer() {
+        mExpandedPlayer.dismiss(true);
+    }
+
     @Override
     public void hidePlayers() {
         int expandedSheetVisibility = mExpandedPlayer.getVisibility();
@@ -220,6 +226,13 @@ public class PlayerCoordinator implements Player {
     void voiceMenuClosed() {
         for (Observer o : mObserverList) {
             o.onVoiceMenuClosed();
+        }
+    }
+
+    // Called by mini player when it finishes showing.
+    public void onMiniPlayerShown() {
+        for (Observer o : mObserverList) {
+            o.onMiniPlayerShown();
         }
     }
 }

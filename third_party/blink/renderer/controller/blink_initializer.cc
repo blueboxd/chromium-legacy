@@ -61,12 +61,17 @@
 #include "third_party/blink/renderer/platform/disk_data_allocator.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/scheduler/public/main_thread.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 #include "v8/include/v8.h"
 
 #if defined(USE_BLINK_EXTENSIONS_CHROMEOS)
 #include "third_party/blink/renderer/extensions/chromeos/chromeos_extensions.h"
+#endif
+
+#if defined(USE_BLINK_EXTENSIONS_WEBVIEW)
+#include "third_party/blink/renderer/extensions/webview/webview_extensions.h"
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -131,11 +136,14 @@ void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
 #endif  // !defined(ARCH_CPU_X86_64) && !defined(ARCH_CPU_ARM64) &&
         // BUILDFLAG(IS_WIN)
 
+  // These Initialize() methods for renderer extensions initialize strings which
+  // must be done before calling CoreInitializer::Initialize() which is called
+  // by GetBlinkInitializer().Initialize() below.
 #if defined(USE_BLINK_EXTENSIONS_CHROMEOS)
-  // ChromeOSExtensions::Initialize() initializes strings which must be done
-  // before calling CoreInitializer::Initialize() which is called by
-  // GetBlinkInitializer().Initialize() below.
   ChromeOSExtensions::Initialize();
+#endif
+#if defined(USE_BLINK_EXTENSIONS_WEBVIEW)
+  WebViewExtensions::Initialize();
 #endif
 
   // BlinkInitializer::Initialize() must be called before InitializeMainThread
@@ -331,6 +339,16 @@ void BlinkInitializer::OnClearWindowObjectInMainWorld(
     devtools_frontend->DidClearWindowObject();
   }
   ModulesInitializer::OnClearWindowObjectInMainWorld(document, settings);
+}
+
+// Function defined in third_party/blink/public/web/blink.h.
+void OnProcessForegrounded() {
+  WTF::Partitions::AdjustPartitionsForForeground();
+}
+
+// Function defined in third_party/blink/public/web/blink.h.
+void OnProcessBackgrounded() {
+  WTF::Partitions::AdjustPartitionsForBackground();
 }
 
 }  // namespace blink

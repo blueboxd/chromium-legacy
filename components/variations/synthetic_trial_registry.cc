@@ -5,7 +5,6 @@
 #include "components/variations/synthetic_trial_registry.h"
 
 #include "base/containers/contains.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
@@ -22,9 +21,15 @@ BASE_FEATURE(kExternalExperimentAllowlist,
 
 }  // namespace internal
 
-SyntheticTrialRegistry::SyntheticTrialRegistry()
-    : enable_external_experiment_allowlist_(base::FeatureList::IsEnabled(
-          internal::kExternalExperimentAllowlist)) {}
+namespace {
+
+bool IsExternalExperimentAllowlistEnabled() {
+  return base::FeatureList::IsEnabled(internal::kExternalExperimentAllowlist);
+}
+
+}  // namespace
+
+SyntheticTrialRegistry::SyntheticTrialRegistry() = default;
 SyntheticTrialRegistry::~SyntheticTrialRegistry() = default;
 
 void SyntheticTrialRegistry::AddObserver(SyntheticTrialObserver* observer) {
@@ -45,7 +50,7 @@ void SyntheticTrialRegistry::RegisterExternalExperiments(
   DCHECK(!fallback_study_name.empty());
 
   base::FieldTrialParams params;
-  if (enable_external_experiment_allowlist_ &&
+  if (IsExternalExperimentAllowlistEnabled() &&
       !GetFieldTrialParamsByFeature(internal::kExternalExperimentAllowlist,
                                     &params)) {
     return;
@@ -139,8 +144,9 @@ base::StringPiece SyntheticTrialRegistry::GetStudyNameForExpId(
     const std::string& fallback_study_name,
     const base::FieldTrialParams& params,
     const std::string& experiment_id) {
-  if (!enable_external_experiment_allowlist_)
+  if (!IsExternalExperimentAllowlistEnabled()) {
     return fallback_study_name;
+  }
 
   const auto it = params.find(experiment_id);
   if (it == params.end())

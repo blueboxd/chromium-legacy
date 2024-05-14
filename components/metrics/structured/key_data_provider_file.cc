@@ -30,24 +30,18 @@ bool KeyDataProviderFile::IsReady() {
   return is_data_loaded_;
 }
 
-void KeyDataProviderFile::OnKeyReady() {
-  is_data_loaded_ = true;
-  NotifyKeyReady();
-}
-
 std::optional<uint64_t> KeyDataProviderFile::GetId(
     const std::string& project_name) {
   DCHECK(IsReady());
 
   // Validates the project. If valid, retrieve the metadata associated
   // with the event.
-  auto maybe_project_validator =
+  const auto* project_validator =
       validator::Validators::Get()->GetProjectValidator(project_name);
 
-  if (!maybe_project_validator.has_value()) {
+  if (!project_validator) {
     return std::nullopt;
   }
-  const auto* project_validator = maybe_project_validator.value();
   return key_data_->Id(project_validator->project_hash(),
                        project_validator->key_rotation_period());
 }
@@ -62,13 +56,15 @@ KeyData* KeyDataProviderFile::GetKeyData(const std::string& project_name) {
   return key_data_.get();
 }
 
-// No-op.
-void KeyDataProviderFile::OnProfileAdded(const base::FilePath& profile_path) {}
-
 void KeyDataProviderFile::Purge() {
   if (IsReady()) {
     key_data_->Purge();
   }
+}
+
+void KeyDataProviderFile::OnKeyReady() {
+  is_data_loaded_ = true;
+  NotifyKeyReady();
 }
 
 }  // namespace metrics::structured

@@ -81,6 +81,12 @@ void AwFieldTrials::RegisterFeatureOverrides(base::FeatureList* feature_list) {
   aw_feature_overrides.DisableFeature(
       net::features::kThirdPartyStoragePartitioning);
 
+  // TODO(crbug.com/323992884): Re-enable support for partitioning Blob URLs
+  // once a fix is in place for WebViews becoming unresponsive when an attempt
+  // to register a Blob URL is made after WebView destruction.
+  aw_feature_overrides.DisableFeature(
+      net::features::kSupportPartitionedBlobUrl);
+
   // Disable the passthrough on WebView.
   aw_feature_overrides.DisableFeature(
       ::features::kDefaultPassthroughCommandDecoder);
@@ -105,6 +111,7 @@ void AwFieldTrials::RegisterFeatureOverrides(base::FeatureList* feature_list) {
 
   // Disable Shared Storage on WebView.
   aw_feature_overrides.DisableFeature(blink::features::kSharedStorageAPI);
+  aw_feature_overrides.DisableFeature(blink::features::kSharedStorageAPIM124);
 
   // Disable scrollbar-color on WebView.
   aw_feature_overrides.DisableFeature(blink::features::kScrollbarColor);
@@ -182,7 +189,18 @@ void AwFieldTrials::RegisterFeatureOverrides(base::FeatureList* feature_list) {
   // FedCM is not yet supported on WebView.
   aw_feature_overrides.DisableFeature(::features::kFedCm);
 
-  // Storage Access permission prompts are not supported on WebView.
+  // Disable enhanced track-pad features until WebView's experiment
+  // is fully rolled out to stable.
+  aw_feature_overrides.DisableFeature(ui::kConvertTrackpadEventsToMouse);
   aw_feature_overrides.DisableFeature(
-      permissions::features::kPermissionStorageAccessAPI);
+      ::features::kMouseAndTrackpadDropdownMenu);
+
+  // Disable the MPA ViewTransition + BFCache fix on WebView. It's enabled on
+  // all other platforms but WebView requires a slower rollout.
+  aw_feature_overrides.DisableFeature(
+      ::features::kInvalidateLocalSurfaceIdPreCommit);
+
+  // This is rolling out more slowly on Android WebView, so should default to
+  // off unless a field trial turns it on.
+  aw_feature_overrides.DisableFeature(::features::kPrefetchRedirects);
 }

@@ -60,6 +60,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
     virtual void InspectElementCompleted() = 0;
     virtual void SetIsDocked(bool is_docked) = 0;
     virtual void OpenInNewTab(const std::string& url) = 0;
+    virtual void OpenSearchResultsInNewTab(const std::string& query) = 0;
     virtual void SetWhitelistedShortcuts(const std::string& message) = 0;
     virtual void SetEyeDropperActive(bool active) = 0;
     virtual void OpenNodeFrontend() = 0;
@@ -142,6 +143,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
                            int stream_id) override;
   void SetIsDocked(DispatchCallback callback, bool is_docked) override;
   void OpenInNewTab(const std::string& url) override;
+  void OpenSearchResultsInNewTab(const std::string& query) override;
   void ShowItemInFolder(const std::string& file_system_path) override;
   void SaveToFile(const std::string& url,
                   const std::string& content,
@@ -220,7 +222,9 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   void CanShowSurvey(DispatchCallback callback,
                      const std::string& trigger) override;
   void DoAidaConversation(DispatchCallback callback,
-                          const std::string& request) override;
+                          const std::string& request,
+                          int stream_id) override;
+  void RegisterAidaClientEvent(const std::string& request) override;
 
   void EnableRemoteDeviceCounter(bool enable);
 
@@ -273,14 +277,32 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
                            DevToolsInfoBarDelegate::Callback callback);
   bool MaybeStartLogging();
   base::TimeDelta GetTimeSinceSessionStart();
+  void OnAidaConversationRequest(
+      DispatchCallback callback,
+      int stream_id,
+      const std::string& request,
+      base::TimeDelta delay,
+      absl::variant<network::ResourceRequest, std::string>
+          resource_request_or_error);
+  void OnAidaConversationResponse(
+      DispatchCallback callback,
+      int stream_id,
+      const std::string& request,
+      base::TimeDelta delay,
+      absl::variant<network::ResourceRequest, std::string>
+          resource_request_or_error,
+      base::TimeTicks start_time,
+      const base::Value* response);
+  void OnRegisterAidaClientEventRequest(
+      const std::string& request,
+      absl::variant<network::ResourceRequest, std::string>
+          resource_request_or_error);
 
   // Extensions support.
   void AddDevToolsExtensionsToClient();
 
   static DevToolsUIBindingsList& GetDevToolsUIBindings();
 
-  void OnAidaConversationResponse(DispatchCallback callback,
-                                  const std::string& response);
   class FrontendWebContentsObserver;
   std::unique_ptr<FrontendWebContentsObserver> frontend_contents_observer_;
 

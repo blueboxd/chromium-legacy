@@ -23,13 +23,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tab_sharing/tab_sharing_infobar_delegate.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/infobars/content/content_infobar_manager.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -73,8 +73,8 @@ infobars::ContentInfoBarManager* GetInfoBarManager(
   return infobars::ContentInfoBarManager::FromWebContents(contents);
 }
 
-ConfirmInfoBarDelegate* GetDelegate(Browser* browser, int tab) {
-  return static_cast<ConfirmInfoBarDelegate*>(
+TabSharingInfoBarDelegate* GetDelegate(Browser* browser, int tab) {
+  return static_cast<TabSharingInfoBarDelegate*>(
       GetInfoBarManager(browser, tab)->infobars()[0]->delegate());
 }
 
@@ -307,8 +307,12 @@ class WebRtcDesktopCaptureBrowserTest : public WebRtcTestBase {
   FakeDesktopMediaPickerFactory picker_factory_;
 };
 
-// TODO(crbug.com/1449889): Fails on MAC.
+// TODO(crbug.com/40915051): Fails on MAC.
+// TODO(crbug.com/40915051): Fails with MSAN. Determine if enabling the test for
+// MSAN is feasible or not.
 #if BUILDFLAG(IS_MAC)
+#define MAYBE_TabCaptureProvidesMinFps DISABLED_TabCaptureProvidesMinFps
+#elif defined(MEMORY_SANITIZER)
 #define MAYBE_TabCaptureProvidesMinFps DISABLED_TabCaptureProvidesMinFps
 #else
 #define MAYBE_TabCaptureProvidesMinFps TabCaptureProvidesMinFps
@@ -316,7 +320,7 @@ class WebRtcDesktopCaptureBrowserTest : public WebRtcTestBase {
 IN_PROC_BROWSER_TEST_F(WebRtcDesktopCaptureBrowserTest,
                        MAYBE_TabCaptureProvidesMinFps) {
   constexpr int kFps = 30;
-  constexpr const char* const kFpsString = "30";
+  constexpr const char* kFpsString = "30";
   constexpr int kTestTimeSeconds = 2;
   // We wait with measuring frame rate until a few frames has passed. This is
   // because the frame rate frame dropper in VideoTrackAdapter is pretty
@@ -362,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcDesktopCaptureBrowserTest,
   ASSERT_GE(average_fps, kFps / 3);
 }
 
-// TODO(crbug.com/1449889): Fails on Linux ASan, LSan and MSan builders.
+// TODO(crbug.com/40915051): Fails on Linux ASan, LSan and MSan builders.
 #if BUILDFLAG(IS_LINUX) &&                                      \
     ((defined(ADDRESS_SANITIZER) && defined(LEAK_SANITIZER)) || \
      defined(MEMORY_SANITIZER))
@@ -430,13 +434,13 @@ IN_PROC_BROWSER_TEST_F(WebRtcDesktopCaptureBrowserTest,
   // Should delete 3 infobars and create 3 new!
   observer.ExpectCalls(6);
   // Switch shared tab from 2 to 0.
-  GetDelegate(browser(), 0)->Cancel();
+  GetDelegate(browser(), 0)->ShareThisTabInstead();
   observer.Wait();
 
   // Should delete 3 infobars and create 3 new!
   observer.ExpectCalls(6);
   // Switch shared tab from 0 to 2.
-  GetDelegate(browser(), 2)->Cancel();
+  GetDelegate(browser(), 2)->ShareThisTabInstead();
   observer.Wait();
 }
 

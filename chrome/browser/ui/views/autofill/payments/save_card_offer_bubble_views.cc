@@ -170,18 +170,10 @@ void SaveCardOfferBubbleViews::AddedToWidget() {
       controller()->GetBubbleType() == BubbleType::LOCAL_CVC_SAVE ||
       controller()->GetBubbleType() == BubbleType::UPLOAD_CVC_SAVE;
   auto image_view = std::make_unique<ThemeTrackingNonAccessibleImageView>(
-      *bundle.GetImageSkiaNamed(
-          is_cvc_save_bubble ? IDR_SAVE_CVC
-          : base::FeatureList::IsEnabled(
-                features::kAutofillEnableNewSaveCardBubbleUi)
-              ? IDR_SAVE_CARD_SECURELY
-              : IDR_SAVE_CARD),
-      *bundle.GetImageSkiaNamed(
-          is_cvc_save_bubble ? IDR_SAVE_CVC_DARK
-          : base::FeatureList::IsEnabled(
-                features ::kAutofillEnableNewSaveCardBubbleUi)
-              ? IDR_SAVE_CARD_SECURELY_DARK
-              : IDR_SAVE_CARD_DARK),
+      *bundle.GetImageSkiaNamed(is_cvc_save_bubble ? IDR_SAVE_CVC
+                                                   : IDR_SAVE_CARD),
+      *bundle.GetImageSkiaNamed(is_cvc_save_bubble ? IDR_SAVE_CVC_DARK
+                                                   : IDR_SAVE_CARD_DARK),
       base::BindRepeating(&views::BubbleDialogDelegate::GetBackgroundColor,
                           base::Unretained(this)));
   GetBubbleFrameView()->SetHeaderView(std::move(image_view));
@@ -384,19 +376,9 @@ SaveCardOfferBubbleViews::CreateLegalMessageView() {
       base::BindRepeating(&SaveCardOfferBubbleViews::LinkClicked,
                           base::Unretained(this));
 
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnableNewSaveCardBubbleUi) ||
-      base::FeatureList::IsEnabled(
-          features::kAutofillEnableUserAvatarInSaveCardFooter)) {
-    return (std::make_unique<LegalMessageView>(
-        message_lines, base::UTF8ToUTF16(controller()->GetAccountInfo().email),
-        GetProfileAvatar(controller()->GetAccountInfo()),
-        LegalMessageCallBack));
-  }
-
   return std::make_unique<LegalMessageView>(
-      message_lines, /*user_email=*/std::u16string(),
-      /*user_avatar=*/ui::ImageModel(), LegalMessageCallBack);
+      message_lines, base::UTF8ToUTF16(controller()->GetAccountInfo().email),
+      GetProfileAvatar(controller()->GetAccountInfo()), LegalMessageCallBack);
 }
 
 std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateLoadingRow() {
@@ -406,8 +388,9 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateLoadingRow() {
   // the user accepts uploading the card.
   loading_row->SetVisible(false);
 
-  loading_row->SetOrientation(views::BoxLayout::Orientation::kHorizontal);
   loading_row->SetMainAxisAlignment(views::BoxLayout::MainAxisAlignment::kEnd);
+  loading_row->SetInsideBorderInsets(gfx::Insets::TLBR(10, 0, 0, 40));
+
   loading_throbber_ =
       loading_row->AddChildView(std::make_unique<views::Throbber>());
   loading_throbber_->SetID(DialogViewId::LOADING_THROBBER);
@@ -426,6 +409,7 @@ void SaveCardOfferBubbleViews::ShowThrobber() {
   }
 
   SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetExtraView({nullptr});
 
   CHECK(loading_throbber_);
   loading_throbber_->Start();

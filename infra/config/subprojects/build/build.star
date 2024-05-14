@@ -38,6 +38,30 @@ luci.bucket(
     ],
 )
 
+# Define the shadow bucket of `build`.
+# See also http://go/luci-how-to-led#configure-a-shadow-bucket
+luci.bucket(
+    name = "build.shadow",
+    shadows = "build",
+    constraints = luci.bucket_constraints(
+        pools = [ci.DEFAULT_POOL],
+        service_accounts = [
+            "chromium-build-perf-ci-builder@chops-service-accounts.iam.gserviceaccount.com",
+        ],
+    ),
+    bindings = [
+        # for led permissions.
+        luci.binding(
+            roles = "role/buildbucket.creator",
+            groups = [
+                "mdb/chrome-troopers",
+                "mdb/foundry-x-team",
+            ],
+        ),
+    ],
+    dynamic = True,
+)
+
 luci.gitiles_poller(
     name = "chrome-build-gitiles-trigger",
     bucket = "build",
@@ -56,7 +80,6 @@ ci.defaults.set(
     build_numbers = True,
     contact_team_email = "chrome-build-team@google.com",
     execution_timeout = 10 * time.hour,
-    notifies = ["chrome-build-perf"],
     priority = ci.DEFAULT_FYI_PRIORITY,
     service_account = "chromium-build-perf-ci-builder@chops-service-accounts.iam.gserviceaccount.com",
     siso_configs = [],
@@ -116,6 +139,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         category = "android",
         short_name = "ninja",
     ),
+    siso_enabled = False,
 )
 
 cq_build_perf_builder(
@@ -155,6 +179,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         category = "android",
         short_name = "siso",
     ),
+    siso_experiments = ["no-fallback"],
 )
 
 cq_build_perf_builder(
@@ -182,6 +207,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         category = "linux",
         short_name = "ninja",
     ),
+    siso_enabled = False,
 )
 
 cq_build_perf_builder(
@@ -215,6 +241,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         category = "linux",
         short_name = "siso",
     ),
+    siso_experiments = ["no-fallback"],
 )
 
 cq_build_perf_builder(
@@ -242,6 +269,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         category = "windows",
         short_name = "ninja",
     ),
+    siso_enabled = False,
 )
 
 cq_build_perf_builder(
@@ -305,6 +333,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         category = "cros",
         short_name = "ninja",
     ),
+    siso_enabled = False,
 )
 
 cq_build_perf_builder(
@@ -369,6 +398,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         category = "mac",
         short_name = "ninja",
     ),
+    siso_enabled = False,
 )
 
 cq_build_perf_builder(
@@ -405,6 +435,77 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         category = "mac",
         short_name = "siso",
     ),
+)
+
+cq_build_perf_builder(
+    name = "ios-build-perf",
+    description_html = """\
+This builder measures ios build performance with and without remote caches.<br/>\
+The build configs and the bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium/builders/try/ios-simulator-compilator">ios-simulator-compilator</a>.\
+""",
+    executable = "recipe:chrome_build/build_perf",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "ios",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+                "mac_toolchain",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.IOS,
+        ),
+    ),
+    gn_args = "try/ios-simulator",
+    os = os.MAC_DEFAULT,
+    cpu = cpu.ARM64,
+    console_view_entry = consoles.console_view_entry(
+        category = "ios",
+        short_name = "ninja",
+    ),
+    siso_enabled = False,
+    xcode = xcode.xcode_default,
+)
+
+cq_build_perf_builder(
+    name = "ios-build-perf-siso",
+    description_html = """\
+This builder measures ios build performance with Siso.<br/>\
+The build configs and the bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium/builders/try/ios-simulator-compilator">ios-simulator-compilator</a>.\
+""",
+    executable = "recipe:chrome_build/build_perf_siso",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "ios",
+            apply_configs = [
+                "siso_latest",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+                "mac_toolchain",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.IOS,
+        ),
+    ),
+    gn_args = {
+        "builtin": gn_args.config(configs = ["try/ios-simulator", "no_reclient"]),
+        "reproxy": "try/ios-simulator",
+    },
+    os = os.MAC_DEFAULT,
+    cpu = cpu.ARM64,
+    console_view_entry = consoles.console_view_entry(
+        category = "ios",
+        short_name = "siso",
+    ),
+    xcode = xcode.xcode_default,
 )
 
 def developer_build_perf_builder(description_html, **kwargs):

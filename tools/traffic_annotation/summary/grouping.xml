@@ -294,7 +294,6 @@ after discussions on the right group.
       <annotation id="metrics_report_ukm_and_appkm"/>
       <annotation id="search_engine_adapter"/>
       <annotation id="launcher_manatee"/>
-      <annotation id="chromeos_picker_gif_fetcher"/>
       <annotation id="prewarm_http_disk_cache"/>
       <annotation id="admin_specified_ppd_fetch"/>
       <annotation id="shopping_list_ui_image_fetcher"/>
@@ -313,6 +312,12 @@ after discussions on the right group.
       <annotation id="remoting_corp_session_authz_generate_host_token"/>
       <annotation id="remoting_corp_session_authz_verify_session_token"/>
       <annotation id="remoting_corp_session_reauthorize_host"/>
+      <annotation id="chromeos_picker_gif_media_fetcher"/>
+      <annotation id="weather_icon"/>
+      <annotation id="birch_calendar_provider"/>
+      <annotation id="recovery_key_store_fetch"/>
+      <annotation id="enterprise_logo_fetcher"/>
+      <annotation id="remoting_corp_logging_report_session_disconnected"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">
@@ -379,6 +384,9 @@ after discussions on the right group.
     </sender>
   </group>
   <group name="Chrome Commerce" hidden="true">
+    <sender name="Compare">
+      <annotation id="product_specifications_fetcher"/>
+    </sender>
     <sender name="Parcel Tracking">
       <annotation id="chrome_commerce_parcels_status"/>
       <annotation id="chrome_commerce_start_tracking_parcel"/>

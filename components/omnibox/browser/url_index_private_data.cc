@@ -29,8 +29,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_usage_estimator.h"
-#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/browser/core_bookmark_model.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
@@ -129,7 +129,7 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     size_t cursor_position,
     const std::string& host_filter,
     size_t max_matches,
-    bookmarks::BookmarkModel* bookmark_model,
+    bookmarks::CoreBookmarkModel* bookmark_model,
     TemplateURLService* template_url_service,
     OmniboxTriggeredFeatureService* triggered_feature_service) {
   // This list will contain the original search string and any other string
@@ -375,8 +375,6 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RebuildFromHistory(
   if (!history_db)
     return nullptr;
 
-  base::TimeTicks beginning_time = base::TimeTicks::Now();
-
   history::URLDatabase::URLEnumerator history_enum;
   if (!history_db->InitURLEnumeratorForSignificant(&history_enum))
     return nullptr;
@@ -401,8 +399,6 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RebuildFromHistory(
     }
   }
 
-  UMA_HISTOGRAM_TIMES("History.InMemoryURLIndexingTime",
-                      base::TimeTicks::Now() - beginning_time);
   UMA_HISTOGRAM_COUNTS_1M("History.InMemoryURLHistoryItems",
                           rebuilt_data->history_id_word_map_.size());
   // TODO(manukh): Add histograms if we decide to experiment with
@@ -647,7 +643,7 @@ void URLIndexPrivateData::HistoryIdsToScoredMatches(
     const std::u16string& lower_raw_string,
     const std::string& host_filter,
     const TemplateURLService* template_url_service,
-    bookmarks::BookmarkModel* bookmark_model,
+    bookmarks::CoreBookmarkModel* bookmark_model,
     ScoredHistoryMatches* scored_items,
     OmniboxTriggeredFeatureService* triggered_feature_service) const {
   if (history_ids.empty())

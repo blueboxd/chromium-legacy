@@ -10,6 +10,7 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewPropertyAnimator;
@@ -27,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.Callback;
 import org.chromium.base.TraceEvent;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.ui.widget.ViewRectProvider;
 
@@ -48,6 +50,7 @@ class KeyboardAccessoryView extends LinearLayout {
     private float mLastBarItemsViewPosition;
     private boolean mShouldSkipClosingAnimation;
     private boolean mDisableAnimations;
+    private boolean mAllowClicksWhileObscured;
 
     protected RecyclerView mBarItemsView;
 
@@ -158,6 +161,32 @@ class KeyboardAccessoryView extends LinearLayout {
     }
 
     @Override
+    public boolean onInterceptTouchEvent(MotionEvent event) {
+        if (!ChromeFeatureList.isEnabled(
+                ChromeFeatureList.AUTOFILL_ENABLE_SECURITY_TOUCH_EVENT_FILTERING_ANDROID)) {
+            return super.onInterceptTouchEvent(event);
+        }
+        final boolean isViewObscured =
+                (event.getFlags() & MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED) != 0
+                        || (event.getFlags() & MotionEvent.FLAG_WINDOW_IS_OBSCURED) != 0;
+
+        // The event is filtered out when the keyboard accessory view is fully or partially obscured
+        // given that no user education bubbles are shown to the user.
+        if (isViewObscured && !mAllowClicksWhileObscured) {
+            return true;
+        }
+        // When keyboard accessory view is fully or partially obsured, clicks are allowed only if
+        // the user education bubble is being displayed. After the first click
+        // (MotionEvent.ACTION_UP), such motion events start to get filtered again. Please note that
+        // a user click produces 2 motion events: MotionEvent.ACTION_DOWN and then
+        // MotionEvent.ACTION_UP.
+        if (event.getAction() == MotionEvent.ACTION_UP) {
+            mAllowClicksWhileObscured = false;
+        }
+        return super.onInterceptTouchEvent(event);
+    }
+
+    @Override
     protected void onFinishInflate() {
         TraceEvent.begin("KeyboardAccessoryView#onFinishInflate");
         super.onFinishInflate();
@@ -245,6 +274,14 @@ class KeyboardAccessoryView extends LinearLayout {
 
     boolean areAnimationsDisabled() {
         return mDisableAnimations;
+    }
+
+    void setAllowClicksWhileObscured(boolean allowClicksWhileObscured) {
+        mAllowClicksWhileObscured = allowClicksWhileObscured;
+    }
+
+    boolean areClicksAllowedWhenObscured() {
+        return mAllowClicksWhileObscured;
     }
 
     void setAccessibilityMessage(boolean hasSuggestions) {

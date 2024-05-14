@@ -259,7 +259,8 @@ IN_PROC_BROWSER_TEST_F(RequestStorageAccessForBrowserTest,
       base::Time::Now() - base::Minutes(5) - lifetime;
   content_settings::ContentSettingConstraints constraints(creation_time);
   constraints.set_lifetime(lifetime);
-  constraints.set_session_model(content_settings::SessionModel::UserSession);
+  constraints.set_session_model(
+      content_settings::mojom::SessionModel::USER_SESSION);
 
   // Manually create a pre-expired grant and ensure it doesn't grant access.
   // This needs to be done manually because normally this expired value would be
@@ -352,6 +353,19 @@ IN_PROC_BROWSER_TEST_F(RequestStorageAccessForEnabledBrowserTest,
       GetPrimaryMainFrame(), GetURL(kHostA).spec()));
   EXPECT_FALSE(storage::test::RequestStorageAccessForOrigin(
       GetFrame(), GetURL(kHostA).spec()));
+}
+
+IN_PROC_BROWSER_TEST_F(RequestStorageAccessForEnabledBrowserTest,
+                       TopLevelUnrelatedOriginRejected) {
+  NavigateToPageWithFrame(kHostA);
+
+  EXPECT_FALSE(storage::test::RequestStorageAccessForOrigin(
+      GetPrimaryMainFrame(), GetURL(kHostB).spec()));
+
+  EXPECT_EQ(content::EvalJs(GetPrimaryMainFrame(),
+                            "navigator.userActivation.isActive",
+                            content::EXECUTE_SCRIPT_NO_USER_GESTURE),
+            false);
 }
 
 IN_PROC_BROWSER_TEST_F(RequestStorageAccessForEnabledBrowserTest,
@@ -566,6 +580,21 @@ IN_PROC_BROWSER_TEST_F(RequestStorageAccessForWithFirstPartySetsBrowserTest,
   EXPECT_EQ(CookiesFromFetchWithCredentials(GetFrame(), kHostB,
                                             /*cors_enabled=*/true),
             "");
+}
+
+IN_PROC_BROWSER_TEST_F(RequestStorageAccessForWithFirstPartySetsBrowserTest,
+                       AccessGranted_DoesNotConsumeUserGesture) {
+  SetBlockThirdPartyCookies(true);
+
+  NavigateToPageWithFrame(kHostA);
+  NavigateFrameTo(kHostB, "/");
+  ASSERT_TRUE(storage::test::RequestStorageAccessForOrigin(
+      GetPrimaryMainFrame(), GetURL(kHostB).spec()));
+
+  EXPECT_EQ(content::EvalJs(GetPrimaryMainFrame(),
+                            "navigator.userActivation.isActive",
+                            content::EXECUTE_SCRIPT_NO_USER_GESTURE),
+            true);
 }
 
 // Validate that the permission for rSAFor allows autogranting of rSA, including
@@ -814,6 +843,22 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(CookiesFromFetchWithCredentials(GetFrame(), kHostB,
                                             /*cors_enabled=*/true),
             "");
+}
+
+IN_PROC_BROWSER_TEST_F(RequestStorageAccessForWithFirstPartySetsBrowserTest,
+                       PRE_PermissionGrantsResetAfterRestart) {
+  SetBlockThirdPartyCookies(true);
+  NavigateToPageWithFrame(kHostA);
+  ASSERT_TRUE(storage::test::RequestStorageAccessForOrigin(
+      GetPrimaryMainFrame(), GetURL(kHostB).spec()));
+  ASSERT_EQ("granted", QueryPermission(GetPrimaryMainFrame(), kHostB));
+}
+
+IN_PROC_BROWSER_TEST_F(RequestStorageAccessForWithFirstPartySetsBrowserTest,
+                       PermissionGrantsResetAfterRestart) {
+  SetBlockThirdPartyCookies(true);
+  NavigateToPageWithFrame(kHostA);
+  EXPECT_EQ("prompt", QueryPermission(GetPrimaryMainFrame(), kHostB));
 }
 
 class RequestStorageAccessForWithCHIPSBrowserTest

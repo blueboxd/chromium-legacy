@@ -53,6 +53,11 @@ class CompositorFrame;
 }
 
 namespace exo {
+
+// Occluded surfaces can be detected and not emitted as a quad in the
+// corresponding compositor frame.
+BASE_DECLARE_FEATURE(kExoPerSurfaceOcclusion);
+
 class Buffer;
 class SecurityDelegate;
 class FrameSinkResourceManager;
@@ -194,12 +199,10 @@ class Surface final : public ui::PropertyHandler {
   using SubSurfaceEntryList = std::list<SubSurfaceEntry>;
   SubSurfaceEntryList& sub_surfaces() { return sub_surfaces_; }
 
-  // `is_root_coordinates` specifies whether `rounded_corners_bounds` is on its
-  // root surface coordinates or on the local surface coordinates.
+  // `rounded_corners_bounds` is on the local surface coordinates.
   // If `commit` is true, rounded corner bounds are add to committed state,
   // overriding the previously committed value.
   void SetRoundedCorners(const gfx::RRectF& rounded_corners_bounds,
-                         bool is_root_coordinates,
                          bool commit_override);
   void SetOverlayPriorityHint(OverlayPriority hint);
 
@@ -209,10 +212,6 @@ class Surface final : public ui::PropertyHandler {
   // Sets the trace ID for tracking frame submission, which is used for the next
   // surface commit.
   void SetFrameTraceId(int64_t frame_trace_id);
-
-  // Sets the surface's clip rectangle on parent surface coordinates.
-  // TODO(crbug.com/1457446): Remove this.
-  void SetClipRectOnParentSurface(const std::optional<gfx::RectF>& clip_rect);
 
   // Sets the surface's transformation matrix.
   void SetSurfaceTransform(const gfx::Transform& transform);
@@ -370,8 +369,8 @@ class Surface final : public ui::PropertyHandler {
   // Called when the begin frame source has changed.
   void SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source);
 
-  // Returns the active content size.
-  const gfx::SizeF& content_size() const { return content_size_; }
+  // Returns the active visual rect.
+  const gfx::RectF& visual_rect() const { return visual_rect_; }
 
   // Returns the active content bounds for surface hierarchy. ie. the bounding
   // box of the surface and its descendants, in the local coordinate space of
@@ -585,13 +584,6 @@ class Surface final : public ui::PropertyHandler {
     // The rounded corners bounds for the surface.
     // Persisted between commits.
     gfx::RRectF rounded_corners_bounds;
-    // True if `rounded_corners_bounds` is on root surface coordinate space.
-    // `rounded_corners_bounds` should be on local surface coordinates, but the
-    // outdated implementation was on root surface coordinate space. This flag
-    // is to support the fallback implementation.
-    // Persisted between commits.
-    // TODO(crbug.com/1470955): Remove this.
-    bool rounded_corners_is_root_coordinates = false;
     // The damage region to schedule paint for.
     // Not persisted between commits.
     cc::Region damage;
@@ -619,13 +611,6 @@ class Surface final : public ui::PropertyHandler {
     // should only be set for subsurfaces.
     // Persisted between commits.
     std::optional<gfx::RectF> clip_rect;
-    // True if `clip_rect` is on parent coordinate space. `clip_rect` should be
-    // on local surface coordinates, but the outdated implementation was on
-    // parent coordinate space. This flag is to support the fallback
-    // implementation.
-    // Persisted between commits.
-    // TODO(crbug.com/1457446): Remove this.
-    bool clip_rect_is_parent_coordinates = false;
     // The transform to apply when drawing this surface. This should only be set
     // for subsurfaces, and doesn't apply to children of this surface.
     // Persisted between commits.
@@ -658,8 +643,9 @@ class Surface final : public ui::PropertyHandler {
                              std::optional<float> device_scale_factor,
                              viz::CompositorFrame* frame);
 
-  // Update surface content size base on current buffer size.
-  void UpdateContentSize();
+  // Update surface content size and visual rect based on the current buffer
+  // size or viewport rect.
+  void UpdateContentSizeAndVisualRect();
 
   // This returns true when the surface has some contents assigned to it.
   bool has_contents() const {
@@ -677,6 +663,9 @@ class Surface final : public ui::PropertyHandler {
 
   // This is the size of the last committed contents.
   gfx::SizeF content_size_;
+
+  // This is the bounds of the last committed contents that are not clipped.
+  gfx::RectF visual_rect_;
 
   // This is the bounds of the last committed surface hierarchy contents.
   gfx::Rect surface_hierarchy_content_bounds_;

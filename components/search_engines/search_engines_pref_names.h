@@ -32,8 +32,10 @@ inline constexpr char kSyncedDefaultSearchProviderGUID[] =
 // Note that this has effect only if the `kSearchEngineChoiceTrigger` feature
 // is enabled and if its `kSearchEngineChoiceTriggerForTaggedProfilesOnly`
 // param is set to `true`.
+// This pref is the replacement for "default_search_provider.choice_pending",
+// that was wrongly populated due to a bug and was deprecated.
 inline constexpr char kDefaultSearchProviderChoicePending[] =
-    "default_search_provider.choice_pending";
+    "default_search_provider.engine_choice_pending";
 
 // Epoch timestamp in seconds of when the user chose a search engine in
 // the choice screen.
@@ -82,12 +84,6 @@ inline constexpr char kSearchProviderOverrides[] = "search_provider_overrides";
 // The format version for the dictionary above.
 inline constexpr char kSearchProviderOverridesVersion[] =
     "search_provider_overrides_version";
-
-// Path to the profile selected to show the search engine choice prompt.
-// NOTE: Unlike most of the other preferences here, this one is stored in the
-// local state, not the profile prefs.
-inline constexpr char kSearchEnginesChoiceProfile[] =
-    "search_engines.choice_profile";
 
 // String that refers to the study group in which this install was enrolled.
 // Used to implement the first run experiment tracking.

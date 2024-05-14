@@ -8,7 +8,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/lacros/browser_test_util.h"
-#include "chrome/browser/ui/lacros/window_utility.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -17,6 +16,8 @@
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/event.h"
@@ -95,12 +96,7 @@ bool RenderHtmlInLacros(Browser* browser, const std::string& html) {
     return false;
   }
 
-  std::string window_id = lacros_window_utility::GetRootWindowUniqueId(
-      BrowserView::GetBrowserViewForBrowser(browser)
-          ->frame()
-          ->GetNativeWindow()
-          ->GetRootWindow());
-  EXPECT_TRUE(browser_test_util::WaitForWindowCreation(window_id));
+  EXPECT_TRUE(browser_test_util::WaitForWindowCreation(browser));
   EXPECT_TRUE(BrowserView::GetBrowserViewForBrowser(browser)
                   ->contents_web_view()
                   ->HasFocus());

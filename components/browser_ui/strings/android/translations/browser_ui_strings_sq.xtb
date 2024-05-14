@@ -5,6 +5,7 @@
 <translation id="1036348656032585052">Çaktivizo</translation>
 <translation id="1044891598689252897">Sajtet do të punojnë normalisht</translation>
 <translation id="1073417869336441572">Na ndihmo të përmirësojmë Chrome duke na treguar se pse ke lejuar kukit e palëve të treta. <ph name="BEGIN_LINK" />Dërgo komente<ph name="END_LINK" /></translation>
+<translation id="1113435009358629918">Fshih kartën e uljes së çmimit</translation>
 <translation id="1178581264944972037">Pauzë</translation>
 <translation id="1181037720776840403">Hiq</translation>
 <translation id="1192844206376121885">Kjo do të fshijë të gjitha të dhënat dhe kukit e ruajtura nga <ph name="ORIGIN" />.</translation>
@@ -21,7 +22,6 @@
 <translation id="1383876407941801731">Kërko</translation>
 <translation id="1384959399684842514">Shkarkimi u ndërpre</translation>
 <translation id="1415402041810619267">URL e prerë</translation>
-<translation id="1434873037477293673">karta e uljes së çmimit</translation>
 <translation id="1448064542941920355">Zvogëlo zmadhimin</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{<ph name="SITE_COUNT" /> sajt}other{<ph name="SITE_COUNT" /> sajte}}</translation>
 <translation id="1510341833810331442">Sajtet nuk lejohen të ruajnë të dhëna në pajisjen tënde</translation>
@@ -93,12 +93,14 @@
 <translation id="2498359688066513246">Ndihmë dhe komente</translation>
 <translation id="2501278716633472235">Kthehu prapa</translation>
 <translation id="2546283357679194313">Kukit dhe të dhënat e faqes</translation>
+<translation id="2550801787432930915">Karta e uljes së çmimit</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 kuki është bllokuar}other{# kuki janë bllokuar}}</translation>
 <translation id="2570922361219980984">Qasja te vendndodhja është po ashtu joaktive për këtë pajisje. Aktivizoje te <ph name="BEGIN_LINK" />Cilësimet e Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">I zgjeruar - kliko për ta palosur.</translation>
 <translation id="2586657967955657006">Kujtesa e fragmenteve</translation>
 <translation id="2597457036804169544">Mos zbato temën e errët për sajtet</translation>
 <translation id="2606760465469169465">Verifiko automatikisht</translation>
+<translation id="2613007545732217283"><ph name="HOST_NAME" /> <ph name="SEPARATOR" /> <ph name="RECENCY" /></translation>
 <translation id="2621115761605608342">Lejo JavaScript për një sajt specifik</translation>
 <translation id="2653659639078652383">Dërgoje</translation>
 <translation id="2677748264148917807">Largohu</translation>
@@ -121,7 +123,6 @@
 <translation id="2979365474350987274">Kukit e palëve të treta janë të kufizuara</translation>
 <translation id="3008272652534848354">Rivendos autorizimet</translation>
 <translation id="301521992641321250">Bllokuar automatikisht</translation>
-<translation id="3025010840409371499"><ph name="RECENCY" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="3069226013421428034">Lejo identifikimin e palëve të treta për një sajt specifik.</translation>
 <translation id="3082992102194421695">{COUNT,plural, =1{Skadon nesër}other{Skadon për # ditë}}</translation>
 <translation id="310297983047869047">Diapozitivi i mëparshëm</translation>
@@ -188,7 +189,6 @@
 <translation id="4149994727733219643">Pamje e thjeshtuar për faqet e uebit</translation>
 <translation id="4151930093518524179">Zmadhimi i parazgjedhur</translation>
 <translation id="4165986682804962316">Cilësimet e sajtit</translation>
-<translation id="4169019654293892025">Fshih "<ph name="TITLE_OF_MODULE" />"</translation>
 <translation id="4169549551965910670">U lidh me një pajisje USB</translation>
 <translation id="4194328954146351878">Pyet përpara se të lejosh sajtet të shikojnë dhe ndryshojnë informacionin në pajisjet NFC (rekomandohet)</translation>
 <translation id="4200726100658658164">Hap "Cilësimet e vendndodhjes"</translation>
@@ -213,6 +213,7 @@
 <translation id="4566417217121906555">Çaktivizo mikrofonin</translation>
 <translation id="4570913071927164677">Detajet</translation>
 <translation id="4598549027014564149">Në modalitetin "e fshehtë", sajtet nuk mund t'i përdorin kukit e tua për të parë aktivitetin e shfletimit nëpër sajte të ndryshme, as edhe në sajtet e ngjashme. Aktiviteti yt i shfletimit nuk përdoret për gjëra të tilla si p.sh. personalizimi i reklamave. Veçoritë në disa sajte mund të mos funksionojnë.</translation>
+<translation id="4619615317237390068">Skedat nga pajisjet e tjera</translation>
 <translation id="4644713492825682049">Fshi dhe rivendos</translation>
 <translation id="4645575059429386691">Menaxhohet nga prindi yt</translation>
 <translation id="4670064810192446073">Realiteti virtual</translation>
@@ -344,6 +345,7 @@
 <translation id="6612358246767739896">Përmbajtje e mbrojtur</translation>
 <translation id="662080504995468778">Qëndro</translation>
 <translation id="6653342741369270081">Shtyp butonin e kthimit prapa për të dalë nga ekrani i plotë.</translation>
+<translation id="6670377348676659110">{TILE_COUNT,plural, =1{Fshih "Vazhdo me këtë skedë"}other{Fshi "Vazhdo me këto skeda"}}</translation>
 <translation id="6689172468748959065">Fotografitë e profilit</translation>
 <translation id="6697925417670533197">Shkarkimet aktive</translation>
 <translation id="6722828510648505498">Blloko kërkesat për identifikim nga shërbimet e identitetit.</translation>
@@ -366,6 +368,7 @@
 <translation id="702275896380648118">Ky sajt përcakton gjërat që të pëlqejnë dhe më pas sugjeron reklama për sajtet e tjera. Ky sajt merr po ashtu temat e tua të reklamave nga Chrome për të të shfaqur reklama më të përshtatshme</translation>
 <translation id="7053983685419859001">Bllokoje</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 i zgjedhur}other{# të zgjedhur}}</translation>
+<translation id="708014373017851679"><ph name="APP_NAME" /> nuk është përditësuar. Përditëso aplikacionin.</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> të zgjedhura. Opsionet ofrohen pranë kreut të ekranit</translation>
 <translation id="7141896414559753902">Blloko që sajtet të shfaqin dritare kërcyese dhe ridrejtime (rekomandohet)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -402,6 +405,7 @@
 <translation id="7667547420449112975">Magjistari i mrekullueshëm i Ozit</translation>
 <translation id="7684642910516280563">Mos lejo që një sajt të përdorë kukit e palëve të treta</translation>
 <translation id="7719367874908701697">Zmadhimi i faqes</translation>
+<translation id="7759147511335618829">Kontrolli dhe riprogramimi i pajisjes MIDI</translation>
 <translation id="7781829728241885113">Dje</translation>
 <translation id="7791543448312431591">Shtoje</translation>
 <translation id="7801888679188438140">{TILE_COUNT,plural, =1{Vazhdo me këtë skedë}other{Vazhdo me këto skeda}}</translation>

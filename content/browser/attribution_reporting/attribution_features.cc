@@ -8,19 +8,8 @@
 
 namespace content {
 
-// When enabled, prefer to use the new recovery module to recover the
-// `AttributionStorageSql` database. See https://crbug.com/1385500 for details.
-// This is a kill switch and is not intended to be used in a field trial.
-BASE_FEATURE(kAttributionStorageUseBuiltInRecoveryIfSupported,
-             "AttributionStorageUseBuiltInRecoveryIfSupported",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kAttributionVerboseDebugReporting,
              "AttributionVerboseDebugReporting",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kAttributionReportingDeactivateAfterFilterMatch,
-             "AttributionReportingDeactivateAfterFilterMatch",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace content

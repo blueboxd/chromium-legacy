@@ -50,14 +50,18 @@ GetVcnMerchantOptOutOptimizationTypeForCard(const CreditCard& card) {
 std::vector<optimization_guide::proto::OptimizationType>
 GetCardBenefitsOptimizationTypesForCard(const CreditCard& card) {
   std::vector<optimization_guide::proto::OptimizationType> optimization_types;
-  if (card.issuer_id() == kAmexCardIssuerId) {
+  if (card.issuer_id() == kAmexCardIssuerId &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillEnableCardBenefitsForAmericanExpress)) {
     optimization_types.push_back(
         optimization_guide::proto::
             AMERICAN_EXPRESS_CREDIT_CARD_FLIGHT_BENEFITS);
     optimization_types.push_back(
         optimization_guide::proto::
             AMERICAN_EXPRESS_CREDIT_CARD_SUBSCRIPTION_BENEFITS);
-  } else if (card.issuer_id() == kCapitalOneCardIssuerId) {
+  } else if (card.issuer_id() == kCapitalOneCardIssuerId &&
+             base::FeatureList::IsEnabled(
+                 features::kAutofillEnableCardBenefitsForCapitalOne)) {
     optimization_types.push_back(
         optimization_guide::proto::CAPITAL_ONE_CREDIT_CARD_DINING_BENEFITS);
     optimization_types.push_back(
@@ -87,14 +91,38 @@ void AddCreditCardOptimizationTypes(
     // optimizations from supported issuers. Other benefit types are read
     // directly from the PersonalDataManager and don't require filter
     // optimizations.
-    if (base::FeatureList::IsEnabled(features::kAutofillEnableCardBenefits)) {
-      auto benefits_optimization_types =
-          GetCardBenefitsOptimizationTypesForCard(*card);
-      if (!benefits_optimization_types.empty()) {
-        optimization_types.insert(benefits_optimization_types.begin(),
-                                  benefits_optimization_types.end());
-      }
+    auto benefits_optimization_types =
+        GetCardBenefitsOptimizationTypesForCard(*card);
+    if (!benefits_optimization_types.empty()) {
+      optimization_types.insert(benefits_optimization_types.begin(),
+                                benefits_optimization_types.end());
     }
+  }
+}
+
+// Maps the credit card category optimizations type to the
+// CreditCardCategoryBenefit::BenefitCategory enum.
+CreditCardCategoryBenefit::BenefitCategory
+GetBenefitCategoryForOptimizationType(
+    const optimization_guide::proto::OptimizationType& optimization_type) {
+  switch (optimization_type) {
+    case optimization_guide::proto::
+        AMERICAN_EXPRESS_CREDIT_CARD_FLIGHT_BENEFITS:
+      return CreditCardCategoryBenefit::BenefitCategory::kFlights;
+    case optimization_guide::proto::
+        AMERICAN_EXPRESS_CREDIT_CARD_SUBSCRIPTION_BENEFITS:
+      return CreditCardCategoryBenefit::BenefitCategory::kSubscription;
+    case optimization_guide::proto::CAPITAL_ONE_CREDIT_CARD_DINING_BENEFITS:
+      return CreditCardCategoryBenefit::BenefitCategory::kDining;
+    case optimization_guide::proto::CAPITAL_ONE_CREDIT_CARD_GROCERY_BENEFITS:
+      return CreditCardCategoryBenefit::BenefitCategory::kGroceryStores;
+    case optimization_guide::proto::
+        CAPITAL_ONE_CREDIT_CARD_ENTERTAINMENT_BENEFITS:
+      return CreditCardCategoryBenefit::BenefitCategory::kEntertainment;
+    case optimization_guide::proto::CAPITAL_ONE_CREDIT_CARD_STREAMING_BENEFITS:
+      return CreditCardCategoryBenefit::BenefitCategory::kStreaming;
+    default:
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -143,6 +171,46 @@ void AutofillOptimizationGuide::OnDidParseForm(
   }
 }
 
+CreditCardCategoryBenefit::BenefitCategory
+AutofillOptimizationGuide::AttemptToGetEligibleCreditCardBenefitCategory(
+    std::string_view issuer_id,
+    const url::Origin& origin) const {
+  std::vector<optimization_guide::proto::OptimizationType>
+      issuer_optimization_types;
+  if (issuer_id == kAmexCardIssuerId) {
+    issuer_optimization_types.push_back(
+        optimization_guide::proto::
+            AMERICAN_EXPRESS_CREDIT_CARD_FLIGHT_BENEFITS);
+    issuer_optimization_types.push_back(
+        optimization_guide::proto::
+            AMERICAN_EXPRESS_CREDIT_CARD_SUBSCRIPTION_BENEFITS);
+  } else if (issuer_id == kCapitalOneCardIssuerId) {
+    issuer_optimization_types.push_back(
+        optimization_guide::proto::CAPITAL_ONE_CREDIT_CARD_DINING_BENEFITS);
+    issuer_optimization_types.push_back(
+        optimization_guide::proto::CAPITAL_ONE_CREDIT_CARD_GROCERY_BENEFITS);
+    issuer_optimization_types.push_back(
+        optimization_guide::proto::
+            CAPITAL_ONE_CREDIT_CARD_ENTERTAINMENT_BENEFITS);
+    issuer_optimization_types.push_back(
+        optimization_guide::proto::CAPITAL_ONE_CREDIT_CARD_STREAMING_BENEFITS);
+  }
+
+  for (auto& optimization_type : issuer_optimization_types) {
+    optimization_guide::OptimizationGuideDecision decision =
+        decider_->CanApplyOptimization(origin.GetURL(), optimization_type,
+                                       /*optimization_metadata=*/nullptr);
+    if (decision == optimization_guide::OptimizationGuideDecision::kTrue) {
+      // Webpage is eligible for category benefit `optimization_type`. Early
+      // return is fine as a website can only fall under one category for an
+      // issuer.
+      return GetBenefitCategoryForOptimizationType(optimization_type);
+    }
+  }
+  // No applicable category benefit for the 'issuer_id' on `origin` webpage.
+  return CreditCardCategoryBenefit::BenefitCategory::kUnknownBenefitCategory;
+}
+
 bool AutofillOptimizationGuide::ShouldBlockSingleFieldSuggestions(
     const GURL& url,
     AutofillField* field) const {
@@ -157,10 +225,10 @@ bool AutofillOptimizationGuide::ShouldBlockSingleFieldSuggestions(
     // `IBAN_AUTOFILL_BLOCKED` lists are blocklists for the question "Can this
     // site be optimized?" a match on the blocklist answers the question with
     // "no". Therefore, ...::kFalse indicates that `url` is blocked from
-    // displaying IBAN suggestions. If the optimization type was not registered
-    // in time when we queried it, it will be `kUnknown`, so the default
-    // functionality in this case will be to not block the suggestions from
-    // being shown.
+    // displaying IBAN suggestions. If the optimization type was not
+    // registered in time when we queried it, it will be `kUnknown`, so the
+    // default functionality in this case will be to not block the suggestions
+    // from being shown.
     return decision == optimization_guide::OptimizationGuideDecision::kFalse;
   }
 
@@ -171,26 +239,26 @@ bool AutofillOptimizationGuide::ShouldBlockSingleFieldSuggestions(
 
 bool AutofillOptimizationGuide::ShouldBlockFormFieldSuggestion(
     const GURL& url,
-    const CreditCard* card) const {
+    const CreditCard& card) const {
   if (auto optimization_type =
-          GetVcnMerchantOptOutOptimizationTypeForCard(*card);
+          GetVcnMerchantOptOutOptimizationTypeForCard(card);
       optimization_type != optimization_guide::proto::TYPE_UNSPECIFIED) {
     optimization_guide::OptimizationGuideDecision decision =
         decider_->CanApplyOptimization(url, optimization_type,
                                        /*optimization_metadata=*/nullptr);
     // Since the optimization guide decider integration corresponding to VCN
-    // merchant opt-out lists are blocklists for the question "Can this site be
-    // optimized?" a match on the blocklist answers the question with "no".
+    // merchant opt-out lists are blocklists for the question "Can this site
+    // be optimized?" a match on the blocklist answers the question with "no".
     // Therefore, ...::kFalse indicates that `url` is blocked from displaying
     // this suggestion. If the optimization type was not registered
     // in time when we queried it, it will be `kUnknown`, so the default
-    // functionality in this case will be to not block the suggestion from being
-    // shown.
+    // functionality in this case will be to not block the suggestion from
+    // being shown.
     return decision == optimization_guide::OptimizationGuideDecision::kFalse;
   }
 
-  // No conditions to block displaying this virtual card suggestion were met, so
-  // return that we should not block displaying this suggestion.
+  // No conditions to block displaying this virtual card suggestion were met,
+  // so return that we should not block displaying this suggestion.
   return false;
 }
 

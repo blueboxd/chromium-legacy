@@ -95,6 +95,8 @@ class WaylandEventSource : public PlatformEventSource,
 
   void DumpState(std::ostream& out) const;
 
+  void ResetStateForTesting() override;
+
  protected:
   // WaylandKeyboard::Delegate
   void OnKeyboardFocusChanged(WaylandWindow* window, bool focused) override;
@@ -106,6 +108,8 @@ class WaylandEventSource : public PlatformEventSource,
                               base::TimeTicks timestamp,
                               int device_id,
                               WaylandKeyboard::KeyEventKind kind) override;
+  void OnSynthesizedKeyPressEvent(DomCode dom_code,
+                                  base::TimeTicks timestamp) override;
 
   // WaylandPointer::Delegate
   void OnPointerFocusChanged(WaylandWindow* window,

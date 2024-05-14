@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "ash/webui/common/chrome_os_webui_config.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -65,6 +66,7 @@ class OobeUI : public ui::MojoWebUIController {
   static const char kAppLaunchSplashDisplay[];
   static const char kGaiaSigninDisplay[];
   static const char kOobeDisplay[];
+  static const char kOobeTestLoader[];
 
   class Observer {
    public:

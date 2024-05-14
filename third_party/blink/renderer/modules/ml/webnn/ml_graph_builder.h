@@ -10,7 +10,7 @@
 #include "base/types/expected.h"
 #include "components/ml/webnn/graph_validation_utils.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_ml_auto_pad.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_operand_data_type.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
@@ -34,6 +34,7 @@ class MLConvTranspose2dOptions;
 class MLEluOptions;
 class MLGatherOptions;
 class MLGemmOptions;
+class MLGruOptions;
 class MLGraph;
 class MLHardSigmoidOptions;
 class MLInstanceNormalizationOptions;
@@ -48,9 +49,9 @@ class MLResample2dOptions;
 class MLSoftplusOptions;
 class MLSplitOptions;
 class MLTransposeOptions;
+class MLTriangularOptions;
 class MLOperand;
 class MLOperandDescriptor;
-class ScriptPromiseResolver;
 
 typedef HeapVector<std::pair<String, Member<MLOperand>>> MLNamedOperands;
 
@@ -198,6 +199,14 @@ class MODULES_EXPORT MLGraphBuilder final : public ScriptWrappable {
                   const MLGemmOptions* options,
                   ExceptionState& exception_state);
 
+  HeapVector<Member<const MLOperand>> gru(const MLOperand* input,
+                                          const MLOperand* weight,
+                                          const MLOperand* recurrent_weight,
+                                          const uint32_t steps,
+                                          const uint32_t hidden_size,
+                                          MLGruOptions* options,
+                                          ExceptionState& exception_state);
+
   MLOperand* hardSigmoid(const MLOperand* input,
                          const MLHardSigmoidOptions* options,
                          ExceptionState& exception_state);
@@ -233,7 +242,7 @@ class MODULES_EXPORT MLGraphBuilder final : public ScriptWrappable {
                                            const MLOperand* recurrent_weight,
                                            const uint32_t steps,
                                            const uint32_t hidden_size,
-                                           const MLLstmOptions* options,
+                                           MLLstmOptions* options,
                                            ExceptionState& exception_state);
 
   MLOperand* matmul(const MLOperand* a,
@@ -340,31 +349,27 @@ class MODULES_EXPORT MLGraphBuilder final : public ScriptWrappable {
                        const MLTransposeOptions* options,
                        ExceptionState& exception_state);
 
+  MLOperand* triangular(const MLOperand* input,
+                        const MLTriangularOptions* options,
+                        ExceptionState& exception_state);
+
   MLOperand* where(const MLOperand* condition,
                    const MLOperand* true_value,
                    const MLOperand* false_value,
                    ExceptionState& exception_state);
 
-  ScriptPromise build(ScriptState* script_state,
-                      const MLNamedOperands& outputs,
-                      ExceptionState& exception_state);
-
-  MLGraph* buildSync(ScriptState* script_state,
-                     const MLNamedOperands& named_outputs,
-                     ExceptionState& exception_state);
+  ScriptPromiseTyped<MLGraph> build(ScriptState* script_state,
+                                    const MLNamedOperands& outputs,
+                                    ExceptionState& exception_state);
 
   // The test cases can override the graph building behavior by implementing
   // this class and setting its instance by SetBackendForTesting().
   class BackendForTesting {
    public:
-    virtual void BuildGraphAsyncImpl(MLContext* context,
-                                     const MLNamedOperands& named_outputs,
-                                     ScriptPromiseResolver* resolver) = 0;
-
-    virtual MLGraph* BuildGraphSyncImpl(ScriptState* script_state,
-                                        MLContext* context,
-                                        const MLNamedOperands& named_outputs,
-                                        ExceptionState& exception_state) = 0;
+    virtual void BuildGraphImpl(
+        MLContext* context,
+        const MLNamedOperands& named_outputs,
+        ScriptPromiseResolverTyped<MLGraph>* resolver) = 0;
   };
 
   static void SetBackendForTesting(BackendForTesting* backend_for_testing);

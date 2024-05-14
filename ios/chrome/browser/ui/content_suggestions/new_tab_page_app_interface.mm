@@ -35,6 +35,10 @@ using set_up_list_prefs::SetUpListItemState;
                                                traitCollection);
 }
 
++ (UIView*)NTPView {
+  return ntp_home::NTPView();
+}
+
 + (UICollectionView*)collectionView {
   return ntp_home::CollectionView();
 }
@@ -65,24 +69,8 @@ using set_up_list_prefs::SetUpListItemState;
                                   SetUpListItemType::kDefaultBrowser, unknown);
   set_up_list_prefs::SetItemState(localState, SetUpListItemType::kAutofill,
                                   unknown);
-}
-
-+ (BOOL)setUpListItemSignInSyncIsComplete {
-  return ntp_home::SetUpListItemViewWithAccessibilityId(
-             set_up_list::kSignInItemID)
-      .complete;
-}
-
-+ (BOOL)setUpListItemDefaultBrowserIsComplete {
-  SetUpListItemView* view = ntp_home::SetUpListItemViewWithAccessibilityId(
-      set_up_list::kDefaultBrowserItemID);
-  return view.complete;
-}
-
-+ (BOOL)setUpListItemAutofillIsComplete {
-  return ntp_home::SetUpListItemViewWithAccessibilityId(
-             set_up_list::kAutofillItemID)
-      .complete;
+  set_up_list_prefs::SetItemState(localState, SetUpListItemType::kNotifications,
+                                  unknown);
 }
 
 + (BOOL)setUpListItemDefaultBrowserInMagicStackIsComplete {

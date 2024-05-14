@@ -11,7 +11,7 @@ import {TrafficCounter, TrafficCounterSource} from 'chrome://resources/mojo/chro
 import {ConnectionStateType, NetworkType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {Time} from 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-webui.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {assertEquals, assertNull, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals} from 'chrome://webui-test/chai_assert.js';
 import {FakeNetworkConfig} from 'chrome://webui-test/chromeos/fake_network_config_mojom.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
@@ -87,78 +87,13 @@ suite('<settings-traffic-counters>', () => {
   }
 
   function getDataUsageLabel(): string {
-    const dataUsageLabelDiv =
-        settingsTrafficCounters.shadowRoot!.querySelector('#dataUsageLabel');
-    assertTrue(!!dataUsageLabelDiv);
+    const dataUsageLabelDiv = settingsTrafficCounters.$.dataUsageLabel;
     return dataUsageLabelDiv.textContent!.trim();
   }
 
   function getDataUsageSubLabel(): string {
-    const dataUsageSubLabelDiv =
-        settingsTrafficCounters.shadowRoot!.querySelector('#dataUsageSubLabel');
-    assertTrue(!!dataUsageSubLabelDiv);
+    const dataUsageSubLabelDiv = settingsTrafficCounters.$.dataUsageSubLabel;
     return dataUsageSubLabelDiv.textContent!.trim();
-  }
-
-  function getResetDataUsageLabel(): string {
-    const resetDataUsageSubLabelDiv =
-        settingsTrafficCounters.shadowRoot!.querySelector(
-            '#resetDataUsageLabel');
-    assertTrue(!!resetDataUsageSubLabelDiv);
-    return resetDataUsageSubLabelDiv.textContent!.trim();
-  }
-
-  function getResetDataUsageButton(): HTMLButtonElement {
-    const resetDataUsageButton =
-        settingsTrafficCounters.shadowRoot!.querySelector<HTMLButtonElement>(
-            '#resetDataUsageButton');
-    assertTrue(!!resetDataUsageButton);
-    return resetDataUsageButton;
-  }
-
-  function getAutoDataUsageResetLabel(): string {
-    const autoDataUsageResetLabelDiv =
-        settingsTrafficCounters.shadowRoot!.querySelector(
-            '#autoDataUsageResetLabel');
-    assertTrue(!!autoDataUsageResetLabelDiv);
-    return autoDataUsageResetLabelDiv.textContent!.trim();
-  }
-
-  function getAutoDataUsageResetSubLabel(): string {
-    const autoDataUsageResetSubLabelDiv =
-        settingsTrafficCounters.shadowRoot!.querySelector(
-            '#autoDataUsageResetSubLabel');
-    assertTrue(!!autoDataUsageResetSubLabelDiv);
-    return autoDataUsageResetSubLabelDiv.textContent!.trim();
-  }
-
-  function getDaySelectionLabel(): string {
-    const daySelectionLabelDiv =
-        settingsTrafficCounters.shadowRoot!.querySelector('#daySelectionLabel');
-    assertTrue(!!daySelectionLabelDiv);
-    return daySelectionLabelDiv.textContent!.trim();
-  }
-
-  function getAutoDataUsageResetToggle(): HTMLButtonElement {
-    const autoDataUsageResetToggle =
-        settingsTrafficCounters.shadowRoot!.querySelector<HTMLButtonElement>(
-            '#autoDataUsageResetToggle');
-    assertTrue(!!autoDataUsageResetToggle);
-    return autoDataUsageResetToggle;
-  }
-
-  function ensureDaySelectionInputIsNotPresent(): void {
-    const daySelectionInput =
-        settingsTrafficCounters.shadowRoot!.querySelector('#daySelectionInput');
-    assertNull(daySelectionInput);
-  }
-
-  function getDaySelectionInput(): HTMLInputElement {
-    const daySelectionInput =
-        settingsTrafficCounters.shadowRoot!.querySelector<HTMLInputElement>(
-            '#daySelectionInput');
-    assertTrue(!!daySelectionInput);
-    return daySelectionInput;
   }
 
   setup(() => {
@@ -187,7 +122,6 @@ suite('<settings-traffic-counters>', () => {
         NetworkType.kCellular, 'cellular_guid', 'cellular');
     managedProperties.connectionState = ConnectionStateType.kConnected;
     managedProperties.connectable = true;
-    managedProperties.trafficCounterProperties.autoReset = true;
     managedProperties.trafficCounterProperties.userSpecifiedResetDay = 31;
     networkConfigRemote.setManagedPropertiesForTest(managedProperties);
     await flushTasks();
@@ -220,7 +154,6 @@ suite('<settings-traffic-counters>', () => {
         FAKE_INITIAL_LAST_RESET_TIME;
     managedProperties.trafficCounterProperties.friendlyDate =
         FAKE_INITIAL_FRIENDLY_DATE;
-    managedProperties.trafficCounterProperties.autoReset = true;
     managedProperties.trafficCounterProperties.userSpecifiedResetDay = 31;
     networkConfigRemote.setManagedPropertiesForTest(managedProperties);
     await flushTasks();
@@ -238,23 +171,7 @@ suite('<settings-traffic-counters>', () => {
 
     assertEquals(EXPECTED_INITIAL_DATA_USAGE_LABEL, getDataUsageLabel());
     assertEquals(EXPECTED_INITIAL_DATA_USAGE_SUBLABEL, getDataUsageSubLabel());
-    assertEquals(
-        settingsTrafficCounters.i18n('TrafficCountersDataUsageResetLabel'),
-        getResetDataUsageLabel());
-    assertEquals(
-        settingsTrafficCounters.i18n(
-            'TrafficCountersDataUsageEnableAutoResetLabel'),
-        getAutoDataUsageResetLabel());
-    assertEquals(
-        settingsTrafficCounters.i18n(
-            'TrafficCountersDataUsageEnableAutoResetSublabel'),
-        getAutoDataUsageResetSubLabel());
-    assertEquals(
-        settingsTrafficCounters.i18n(
-            'TrafficCountersDataUsageAutoResetDayOfMonthLabel'),
-        getDaySelectionLabel());
-    getAutoDataUsageResetToggle();
-    assertEquals(31, getDaySelectionInput().value);
+    assertEquals(String(31), settingsTrafficCounters.$.resetDayList.value);
 
     // Simulate a reset by updating the last reset time for the cellular
     // network. The internal value represents two days after the initial
@@ -268,65 +185,15 @@ suite('<settings-traffic-counters>', () => {
     await flushTasks();
 
     // Reset the data usage.
-    getResetDataUsageButton().click();
+    settingsTrafficCounters.$.resetDataUsageButton.click();
+    // Load the data post reset. Note we have to include the load() in tests
+    // and not in onResetDataUsageClicked_() because SettingTrafficCounters'
+    // parent element handles the reloading in prod.
+    settingsTrafficCounters.load();
     await flushTasks();
 
     assertEquals(EXPECTED_POST_RESET_DATA_USAGE_LABEL, getDataUsageLabel());
     assertEquals(
         EXPECTED_POST_RESET_DATA_USAGE_SUBLABEL, getDataUsageSubLabel());
-    assertEquals(
-        settingsTrafficCounters.i18n('TrafficCountersDataUsageResetLabel'),
-        getResetDataUsageLabel());
-  });
-
-  test('Enable traffic counters auto reset', async () => {
-    // Disable auto reset initially.
-    const managedProperties = OncMojo.getDefaultManagedProperties(
-        NetworkType.kCellular, 'cellular_guid', 'cellular');
-    managedProperties.connectionState = ConnectionStateType.kConnected;
-    managedProperties.connectable = true;
-    managedProperties.trafficCounterProperties.autoReset = false;
-    managedProperties.trafficCounterProperties.userSpecifiedResetDay = 0;
-    managedProperties.trafficCounterProperties.lastResetTime =
-        FAKE_INITIAL_LAST_RESET_TIME;
-    managedProperties.trafficCounterProperties.friendlyDate =
-        FAKE_INITIAL_FRIENDLY_DATE;
-    networkConfigRemote.setManagedPropertiesForTest(managedProperties);
-    await flushTasks();
-
-    // Set traffic counters.
-    // A bigint primitive is created by appending n to the end of an integer
-    // literal
-    networkConfigRemote.setTrafficCountersForTest(
-        'cellular_guid', generateTrafficCounters(100n, 100n));
-    await flushTasks();
-
-    // Load the settings traffic counters HTML for cellular_guid.
-    settingsTrafficCounters.guid = 'cellular_guid';
-    settingsTrafficCounters.load();
-    await flushTasks();
-    ensureDaySelectionInputIsNotPresent();
-
-    // Enable auto reset.
-    getAutoDataUsageResetToggle().click();
-    await flushTasks();
-
-    // Verify that the correct day selection label is shown.
-    assertEquals(
-        settingsTrafficCounters.i18n(
-            'TrafficCountersDataUsageAutoResetDayOfMonthLabel'),
-        getDaySelectionLabel());
-    // Verify that the correct user specified day is shown.
-    assertEquals(1, getDaySelectionInput().value);
-
-    // Change the reset day to a valid value.
-    getDaySelectionInput().value = '15';
-    await flushTasks();
-    assertEquals('15', getDaySelectionInput().value);
-
-    // Disable auto reset again.
-    getAutoDataUsageResetToggle().click();
-    await flushTasks();
-    ensureDaySelectionInputIsNotPresent();
   });
 });

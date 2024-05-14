@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/manage_storage_alert_commands.h"
 #import "ios/chrome/browser/shared/public/commands/save_to_drive_commands.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/web/public/test/fakes/fake_download_task.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
@@ -64,7 +65,7 @@ class SaveToDriveMediatorTest : public PlatformTest {
     browser_state_ = TestChromeBrowserState::Builder().Build();
     web_state_ = std::make_unique<web::FakeWebState>();
     web_state_->SetBrowserState(browser_state_.get());
-    DriveTabHelper::CreateForWebState(web_state_.get());
+    DriveTabHelper::GetOrCreateForWebState(web_state_.get());
     FakeDownloadManagerTabHelper::CreateForWebState(web_state_.get());
     download_task_ =
         std::make_unique<web::FakeDownloadTask>(GURL(kTestUrl), kTestMimeType);
@@ -83,6 +84,9 @@ class SaveToDriveMediatorTest : public PlatformTest {
         manageStorageAlertHandler:manage_storage_alert_commands_handler_
                applicationHandler:application_commands_handler_
              accountPickerHandler:account_picker_commands_handler_
+                      prefService:browser_state_->GetPrefs()
+            accountManagerService:ChromeAccountManagerServiceFactory::
+                                      GetForBrowserState(browser_state_.get())
                      driveService:drive::DriveServiceFactory::
                                       GetForBrowserState(browser_state_.get())];
   }
@@ -94,7 +98,7 @@ class SaveToDriveMediatorTest : public PlatformTest {
   }
 
   DriveTabHelper* GetDriveTabHelper() const {
-    return DriveTabHelper::FromWebState(web_state_.get());
+    return DriveTabHelper::GetOrCreateForWebState(web_state_.get());
   }
 
   drive::TestDriveService* GetTestDriveService() {

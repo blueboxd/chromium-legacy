@@ -4,6 +4,7 @@
 
 #include "media/gpu/chromeos/video_frame_resource.h"
 
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "media/gpu/chromeos/platform_video_frame_utils.h"
 
@@ -138,16 +139,6 @@ void VideoFrameResource::set_hdr_metadata(
   GetMutableVideoFrame()->set_hdr_metadata(hdr_metadata);
 }
 
-const std::optional<gpu::VulkanYCbCrInfo>& VideoFrameResource::ycbcr_info()
-    const {
-  return frame_->ycbcr_info();
-}
-
-void VideoFrameResource::set_ycbcr_info(
-    const std::optional<gpu::VulkanYCbCrInfo>& ycbcr_info) {
-  GetMutableVideoFrame()->set_ycbcr_info(ycbcr_info);
-}
-
 const VideoFrameMetadata& VideoFrameResource::metadata() const {
   return frame_->metadata();
 }
@@ -175,8 +166,19 @@ void VideoFrameResource::AddDestructionObserver(base::OnceClosure callback) {
 scoped_refptr<FrameResource> VideoFrameResource::CreateWrappingFrame(
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size) {
-  return Create(VideoFrame::WrapVideoFrame(GetMutableVideoFrame(), format(),
-                                           visible_rect, natural_size));
+  auto wrapping_frame = Create(VideoFrame::WrapVideoFrame(
+      GetMutableVideoFrame(), format(), visible_rect, natural_size));
+  if (!wrapping_frame) {
+    return nullptr;
+  }
+
+  // Adds a reference to |this| from the wrapping frame via a destruction
+  // observer. This avoids destroying the original frame before the wrapping
+  // frame has been destroyed.
+  wrapping_frame->AddDestructionObserver(base::DoNothingWithBoundArgs(
+      base::WrapRefCounted<VideoFrameResource>(this)));
+
+  return wrapping_frame;
 }
 
 std::string VideoFrameResource::AsHumanReadableString() const {

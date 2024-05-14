@@ -111,7 +111,7 @@ Promo* PromosManagerImplTest::TestPromoWithImpressionLimits() {
 void PromosManagerImplTest::CreatePromosManager() {
   CreatePrefs();
   promos_manager_ = std::make_unique<PromosManagerImpl>(
-      local_state_.get(), &test_clock_, &mock_tracker_, nullptr);
+      local_state_.get(), &test_clock_, &mock_tracker_);
   promos_manager_->Init();
 }
 
@@ -119,8 +119,6 @@ void PromosManagerImplTest::CreatePromosManager() {
 void PromosManagerImplTest::CreatePrefs() {
   local_state_ = std::make_unique<TestingPrefServiceSimple>();
 
-  local_state_->registry()->RegisterListPref(
-      prefs::kIosPromosManagerImpressions);
   local_state_->registry()->RegisterListPref(
       prefs::kIosPromosManagerActivePromos);
   local_state_->registry()->RegisterListPref(
@@ -134,14 +132,11 @@ void PromosManagerImplTest::CreatePrefs() {
 TEST_F(PromosManagerImplTest, InitWithPrefService) {
   CreatePromosManager();
 
-  EXPECT_NE(local_state_->FindPreference(prefs::kIosPromosManagerImpressions),
-            nullptr);
   EXPECT_NE(local_state_->FindPreference(prefs::kIosPromosManagerActivePromos),
             nullptr);
   EXPECT_NE(local_state_->FindPreference(
                 prefs::kIosPromosManagerSingleDisplayActivePromos),
             nullptr);
-  EXPECT_FALSE(local_state_->HasPrefPath(prefs::kIosPromosManagerImpressions));
   EXPECT_FALSE(local_state_->HasPrefPath(prefs::kIosPromosManagerActivePromos));
   EXPECT_FALSE(local_state_->HasPrefPath(
       prefs::kIosPromosManagerSingleDisplayActivePromos));
@@ -420,6 +415,46 @@ TEST_F(PromosManagerImplTest, SortsPromosPreferCertainTypes) {
   // with pending state, before the less recently shown promo (Test).
   EXPECT_EQ(sorted[2], promos_manager::Promo::DefaultBrowser);
   EXPECT_EQ(sorted[3], promos_manager::Promo::Test);
+}
+
+// Tests `SortPromos` sorts `DockingPromo` promos before others.
+TEST_F(PromosManagerImplTest, SortsPromosPreferDockingPromoType) {
+  CreatePromosManager();
+
+  const std::map<promos_manager::Promo, PromoContext> active_promos = {
+      {promos_manager::Promo::Test, PromoContext{false}},
+      {promos_manager::Promo::AllTabsDefaultBrowser, PromoContext{true}},
+      {promos_manager::Promo::DockingPromo, PromoContext{false}},
+  };
+
+  std::vector<promos_manager::Promo> sorted =
+      promos_manager_->SortPromos(active_promos);
+  EXPECT_EQ(sorted.size(), (size_t)3);
+  // tied for the type.
+  EXPECT_TRUE(sorted[0] == promos_manager::Promo::DockingPromo);
+  // with pending state, before the less recently shown promo (Test).
+  EXPECT_EQ(sorted[1], promos_manager::Promo::AllTabsDefaultBrowser);
+  EXPECT_EQ(sorted[2], promos_manager::Promo::Test);
+}
+
+// Tests `SortPromos` sorts `DockingPromoRemindMeLater` promos before others.
+TEST_F(PromosManagerImplTest, SortsPromosPreferDockingPromoRemindMeLaterType) {
+  CreatePromosManager();
+
+  const std::map<promos_manager::Promo, PromoContext> active_promos = {
+      {promos_manager::Promo::Test, PromoContext{false}},
+      {promos_manager::Promo::AllTabsDefaultBrowser, PromoContext{true}},
+      {promos_manager::Promo::DockingPromoRemindMeLater, PromoContext{false}},
+  };
+
+  std::vector<promos_manager::Promo> sorted =
+      promos_manager_->SortPromos(active_promos);
+  EXPECT_EQ(sorted.size(), (size_t)3);
+  // tied for the type.
+  EXPECT_TRUE(sorted[0] == promos_manager::Promo::DockingPromoRemindMeLater);
+  // with pending state, before the less recently shown promo (Test).
+  EXPECT_EQ(sorted[1], promos_manager::Promo::AllTabsDefaultBrowser);
+  EXPECT_EQ(sorted[2], promos_manager::Promo::Test);
 }
 
 // Tests `SortPromos` sorts promos with pending state before others without.
@@ -1080,10 +1115,8 @@ TEST_F(PromosManagerImplTest, DeregistersNonExistentPromo) {
       (size_t)0);
 }
 
-// Tests a given single-display promo is automatically deregistered after its
-// impression is recorded.
-TEST_F(PromosManagerImplTest,
-       DeregistersSingleDisplayPromoAfterRecordedImpression) {
+// Tests a given single-display promo is automatically deregistered correctly.
+TEST_F(PromosManagerImplTest, DeregistersSingleDisplayPromoAfterDisplay) {
   CreatePromosManager();
 
   EXPECT_TRUE(
@@ -1099,7 +1132,7 @@ TEST_F(PromosManagerImplTest,
           .size(),
       (size_t)1);
 
-  promos_manager_->RecordImpression(
+  promos_manager_->DeregisterAfterDisplay(
       promos_manager::Promo::CredentialProviderExtension);
 
   EXPECT_TRUE(
@@ -1108,7 +1141,7 @@ TEST_F(PromosManagerImplTest,
 }
 
 // Tests a given single-display pending promo is automatically deregistered
-// after its impression is recorded.
+// correctly.
 TEST_F(PromosManagerImplTest,
        DeregistersSingleDisplayPendingPromoAfterRecordedImpression) {
   CreatePromosManager();
@@ -1126,7 +1159,7 @@ TEST_F(PromosManagerImplTest,
           .size(),
       (size_t)1);
 
-  promos_manager_->RecordImpression(
+  promos_manager_->DeregisterAfterDisplay(
       promos_manager::Promo::CredentialProviderExtension);
 
   EXPECT_TRUE(

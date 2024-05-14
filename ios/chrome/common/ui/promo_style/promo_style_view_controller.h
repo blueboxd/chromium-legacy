@@ -23,6 +23,18 @@ enum class BannerImageSizeType {
   kExtraTall,
 };
 
+// Indicates the visibility and style of action buttons.
+enum class ActionButtonsVisibility {
+  // No visibility changes have been made to the action buttons.
+  kDefault,
+  // Primary and secondary buttons are hidden.
+  kHidden,
+  // Primary and secondary buttons are shown in the default differing styles.
+  kRegularButtonsShown,
+  // Primary and secondary buttons are shown with the same style.
+  kEquallyWeightedButtonShown,
+};
+
 // A base view controller for the common UI controls in the new Promo
 // Style screens.
 @interface PromoStyleViewController : UIViewController <UITextViewDelegate>
@@ -100,6 +112,9 @@ enum class BannerImageSizeType {
 // The label of the headline below the image. Must be set before the view is
 // loaded. This is declared public so the accessibility can be enabled.
 @property(nonatomic, strong) UILabel* titleLabel;
+
+// The subtitle label below the title. Must be set before the view is loaded.
+@property(nonatomic, strong) UILabel* subtitleLabel;
 
 // The headline below the image. Must be set before the view is loaded.
 @property(nonatomic, copy) NSString* titleText;
@@ -186,8 +201,9 @@ enum class BannerImageSizeType {
 // Aligns the elements to the top of the view.
 @property(nonatomic, assign) BOOL topAlignedLayout;
 
-// Whether action buttons should have the same visual style.
-@property(nonatomic, assign) BOOL useEquallyWeightedButtons;
+// Visibility and style indicator of the primary and secondary action buttons.
+@property(nonatomic, assign, readwrite)
+    ActionButtonsVisibility actionButtonsVisibility;
 
 @end
 

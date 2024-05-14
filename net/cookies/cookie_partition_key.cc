@@ -10,10 +10,28 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/types/optional_util.h"
-#include "net/base/features.h"
 #include "net/cookies/cookie_constants.h"
 
 namespace net {
+
+namespace {
+
+base::unexpected<std::string> WarnAndCreateUnexpected(
+    const std::string& message) {
+  DLOG(WARNING) << message;
+  return base::unexpected(message);
+}
+
+}  // namespace
+
+CookiePartitionKey::SerializedCookiePartitionKey::SerializedCookiePartitionKey(
+    const std::string& site)
+    : top_level_site_(site) {}
+
+const std::string&
+CookiePartitionKey::SerializedCookiePartitionKey::TopLevelSite() const {
+  return top_level_site_;
+}
 
 CookiePartitionKey::CookiePartitionKey() = default;
 
@@ -54,50 +72,25 @@ bool CookiePartitionKey::operator<(const CookiePartitionKey& other) const {
 }
 
 // static
-bool CookiePartitionKey::Serialize(const std::optional<CookiePartitionKey>& in,
-                                   std::string& out) {
+base::expected<CookiePartitionKey::SerializedCookiePartitionKey, std::string>
+CookiePartitionKey::Serialize(const std::optional<CookiePartitionKey>& in) {
   if (!in) {
-    out = kEmptyCookiePartitionKey;
-    return true;
+    return base::ok(SerializedCookiePartitionKey(kEmptyCookiePartitionKey));
   }
-  if (!in->IsSerializeable()) {
-    DLOG(WARNING) << "CookiePartitionKey is not serializeable";
-    return false;
-  }
-  out = in->site_.GetURL().SchemeIsFile()
-            ? in->site_.SerializeFileSiteWithHost()
-            : in->site_.Serialize();
-  return true;
-}
 
-// static
-bool CookiePartitionKey::Deserialize(const std::string& in,
-                                     std::optional<CookiePartitionKey>& out) {
-  if (in == kEmptyCookiePartitionKey) {
-    out = std::nullopt;
-    return true;
+  if (!in->IsSerializeable()) {
+    return WarnAndCreateUnexpected("CookiePartitionKey is not serializeable");
   }
-  if (!base::FeatureList::IsEnabled(features::kPartitionedCookies)) {
-    DLOG(WARNING) << "Attempting to deserialize CookiePartitionKey when "
-                     "PartitionedCookies is disabled";
-    return false;
-  }
-  auto schemeful_site = SchemefulSite::Deserialize(in);
-  // SchemfulSite is opaque if the input is invalid.
-  if (schemeful_site.opaque()) {
-    DLOG(WARNING) << "Cannot deserialize opaque origin to CookiePartitionKey";
-    return false;
-  }
-  out = std::make_optional(CookiePartitionKey(schemeful_site, std::nullopt));
-  return true;
+
+  SerializedCookiePartitionKey result = SerializedCookiePartitionKey(
+      in->site_.GetURL().SchemeIsFile() ? in->site_.SerializeFileSiteWithHost()
+                                        : in->site_.Serialize());
+
+  return base::ok(result);
 }
 
 std::optional<CookiePartitionKey> CookiePartitionKey::FromNetworkIsolationKey(
     const NetworkIsolationKey& network_isolation_key) {
-  if (!base::FeatureList::IsEnabled(features::kPartitionedCookies)) {
-    return std::nullopt;
-  }
-
   const std::optional<base::UnguessableToken>& nonce =
       network_isolation_key.GetNonce();
 
@@ -112,26 +105,58 @@ std::optional<CookiePartitionKey> CookiePartitionKey::FromNetworkIsolationKey(
   if (!partition_key_site)
     return std::nullopt;
 
-  return net::CookiePartitionKey(*partition_key_site, nonce);
+  return CookiePartitionKey(*partition_key_site, nonce);
 }
 
 // static
-std::optional<net::CookiePartitionKey>
-CookiePartitionKey::FromStorageKeyComponents(
+std::optional<CookiePartitionKey> CookiePartitionKey::FromStorageKeyComponents(
     const SchemefulSite& site,
     const std::optional<base::UnguessableToken>& nonce) {
-  if (!base::FeatureList::IsEnabled(features::kPartitionedCookies)) {
-    return std::nullopt;
-  }
   return CookiePartitionKey::FromWire(site, nonce);
 }
 
-bool CookiePartitionKey::IsSerializeable() const {
-  if (!base::FeatureList::IsEnabled(features::kPartitionedCookies)) {
-    DLOG(WARNING) << "Attempting to serialize CookiePartitionKey when "
-                     "PartitionedCookies feature is disabled";
-    return false;
+// static
+base::expected<std::optional<CookiePartitionKey>, std::string>
+CookiePartitionKey::FromStorage(const std::string& top_level_site) {
+  if (top_level_site == kEmptyCookiePartitionKey) {
+    return base::ok(std::nullopt);
   }
+
+  base::expected<CookiePartitionKey, std::string> key =
+      DeserializeInternal(top_level_site);
+  if (!key.has_value()) {
+    DLOG(WARNING) << key.error();
+  }
+
+  return key;
+}
+
+// static
+base::expected<CookiePartitionKey, std::string>
+CookiePartitionKey::FromUntrustedInput(const std::string& top_level_site) {
+  if (top_level_site.empty()) {
+    return WarnAndCreateUnexpected("top_level_site is unexpectedly empty");
+  }
+
+  base::expected<CookiePartitionKey, std::string> key =
+      DeserializeInternal(top_level_site);
+  if (!key.has_value()) {
+    return WarnAndCreateUnexpected(key.error());
+  }
+  return key;
+}
+
+base::expected<CookiePartitionKey, std::string>
+CookiePartitionKey::DeserializeInternal(const std::string& top_level_site) {
+  auto schemeful_site = SchemefulSite::Deserialize(top_level_site);
+  if (schemeful_site.opaque()) {
+    return WarnAndCreateUnexpected(
+        "Cannot deserialize opaque origin to CookiePartitionKey");
+  }
+  return base::ok(CookiePartitionKey(schemeful_site, std::nullopt));
+}
+
+bool CookiePartitionKey::IsSerializeable() const {
   // We should not try to serialize a partition key created by a renderer.
   DCHECK(!from_script_);
   return !site_.opaque() && !nonce_.has_value();

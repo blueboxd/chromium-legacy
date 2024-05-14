@@ -74,6 +74,7 @@ source_set("startup") {
   deps = [
     ":startup_basic",
     "//base",
+    "//components/crash/core/app",
     "//components/password_manager/core/browser",
     "//components/search_engines:search_engines",
     "//ios/chrome/app",
@@ -90,6 +91,7 @@ source_set("startup") {
     "//ios/components/webui:url_constants",
     "//ios/net",
     "//ios/public/provider/chrome/browser/app_utils:app_utils_api",
+    "//ios/public/provider/chrome/browser/raccoon:raccoon_api",
     "//ios/web",
     "//ios/web/public/init",
   ]

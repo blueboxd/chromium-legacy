@@ -852,6 +852,7 @@
 <translation id="7589661784326793847">Почекајте малку</translation>
 <translation id="7600126690270271294">српски</translation>
 <translation id="7603724359189955920">Мрежи</translation>
+<translation id="7624010287655004652">Заклучено од друг мобилен оператор</translation>
 <translation id="7627790789328695202">Упс, <ph name="FILE_NAME" /> веќе постои. Преименувајте и обидете се повторно.</translation>
 <translation id="7628656427739290098"><ph name="PERCENT" /> % завршени.</translation>
 <translation id="7649070708921625228">Помош</translation>
@@ -976,7 +977,7 @@
 <translation id="8425213833346101688">Промени</translation>
 <translation id="8428213095426709021">Поставки</translation>
 <translation id="8429998526804961548"><ph name="NUMBER_OF_ITEMS" /> папки се споделени со <ph name="VM_NAME" /></translation>
-<translation id="8431909052837336408">Променете PIN на SIM-картичката</translation>
+<translation id="8431909052837336408">Променете PIN за SIM-картичката</translation>
 <translation id="8437209419043462667">US</translation>
 <translation id="8452135315243592079">Недостасува SIM-картичка</translation>
 <translation id="8456681095658380701">Неважечко име</translation>
@@ -1018,7 +1019,6 @@
 <translation id="8698877009525468705">Датотекава е доверлива и подлежи на ограничувања според правилата на администраторот.</translation>
 <translation id="8712637175834984815">Сфатив</translation>
 <translation id="8713112442029511308">малтешки</translation>
-<translation id="8714138378966541668">Заклучено од операторот</translation>
 <translation id="8714406895390098252">Велосипед</translation>
 <translation id="8719721339511222681">Избрано е <ph name="ENTRY_NAME" />.</translation>
 <translation id="872537912056138402">хрватска</translation>
@@ -1086,7 +1086,7 @@
 <translation id="945522503751344254">Испратете повратни информации</translation>
 <translation id="947144732524271678">Избравте опсег од <ph name="ENTRY_COUNT" /> записи од <ph name="FROM_ENTRY_NAME" /> до <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="954194396377670556">Администраторското правило спречува:</translation>
-<translation id="965477715979482472">англиски (Јужна Африка)</translation>
+<translation id="965477715979482472">англиски (Јужноафриканска Република)</translation>
 <translation id="976666271385981812">Се преместуваат <ph name="NUMBER_OF_ITEMS" /> ставки во корпата</translation>
 <translation id="981121421437150478">Без мрежа</translation>
 <translation id="988685240266037636">Веќе постои датотека со име „<ph name="FILE_NAME" />“. Дали сакате да ја замените?</translation>

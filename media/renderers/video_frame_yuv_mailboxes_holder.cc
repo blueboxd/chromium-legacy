@@ -31,8 +31,8 @@ namespace media {
 
 namespace {
 
-BASE_FEATURE(kAddSharedImageRasterUsageWithNonOOPR,
-             "AddSharedImageRasterUsageWithNonOOPR",
+BASE_FEATURE(kVideoFrameYUVAddSharedImageRasterUsageWithNonOOPR,
+             "VideoFrameYUVAddSharedImageRasterUsageWithNonOOPR",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 viz::SharedImageFormat PlaneSharedImageFormat(int num_channels,
@@ -165,15 +165,27 @@ void VideoFrameYUVMailboxesHolder::VideoFrameToMailboxes(
                     gpu::SHARED_IMAGE_USAGE_RASTER_WRITE |
                     gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
   } else {
+    // NOTE: This GLES2 usage is *only* for raster, as these SharedImages are
+    // created to hold YUV data that is then converted to RGBA via the raster
+    // interface before being shared with some other use case (e.g., WebGL).
+    // There is no flow wherein these SharedImages are directly exposed to
+    // WebGL. It is critical to specify this to the service side to ensure that
+    // the correct SharedImage backing is created (see crbug.com/328472684).
     mailbox_usage = gpu::SHARED_IMAGE_USAGE_GLES2_READ |
-                    gpu::SHARED_IMAGE_USAGE_GLES2_WRITE;
+                    gpu::SHARED_IMAGE_USAGE_GLES2_WRITE |
+                    gpu::SHARED_IMAGE_USAGE_GLES2_FOR_RASTER_ONLY;
     // RASTER_{READ, WRITE} usages should be included as these SharedImages are
     // both read and written via raster, but historically these usages were not
     // included. Currently in the process of adding with a killswitch.
     // TODO(crbug.com/1524009): Remove this killswitch post-safe rollout.
-    if (base::FeatureList::IsEnabled(kAddSharedImageRasterUsageWithNonOOPR)) {
+    // NOTE: It is critical to specify that this raster usage is *only* over
+    // GLES2 to the service side to ensure that the correct SharedImage backing
+    // is created (see crbug.com/328472684).
+    if (base::FeatureList::IsEnabled(
+            kVideoFrameYUVAddSharedImageRasterUsageWithNonOOPR)) {
       mailbox_usage = mailbox_usage | gpu::SHARED_IMAGE_USAGE_RASTER_READ |
-                      gpu::SHARED_IMAGE_USAGE_RASTER_WRITE;
+                      gpu::SHARED_IMAGE_USAGE_RASTER_WRITE |
+                      gpu::SHARED_IMAGE_USAGE_RASTER_OVER_GLES2_ONLY;
     }
   }
 
@@ -189,9 +201,10 @@ void VideoFrameYUVMailboxesHolder::VideoFrameToMailboxes(
     // exist already.
     if (!created_shared_images_) {
       auto client_shared_image = sii->CreateSharedImage(
-          format, video_frame->coded_size(), video_frame->ColorSpace(),
-          kTopLeft_GrSurfaceOrigin, kPlaneAlphaType, mailbox_usage,
-          "VideoFrameYUV", gpu::kNullSurfaceHandle);
+          {format, video_frame->coded_size(), video_frame->ColorSpace(),
+           kTopLeft_GrSurfaceOrigin, kPlaneAlphaType, mailbox_usage,
+           "VideoFrameYUV"},
+          gpu::kNullSurfaceHandle);
       CHECK(client_shared_image);
       holders_[0].mailbox = client_shared_image->mailbox();
       holders_[0].texture_target = GL_TEXTURE_2D;
@@ -229,10 +242,11 @@ void VideoFrameYUVMailboxesHolder::VideoFrameToMailboxes(
       int num_channels = yuva_info_.numChannelsInPlane(plane);
       viz::SharedImageFormat format =
           PlaneSharedImageFormat(num_channels, caps.texture_rg);
-      auto client_shared_image = sii->CreateSharedImage(
-          format, tex_size, video_frame->ColorSpace(), kTopLeft_GrSurfaceOrigin,
-          kPlaneAlphaType, mailbox_usage, "VideoFrameYUV",
-          gpu::kNullSurfaceHandle);
+      auto client_shared_image =
+          sii->CreateSharedImage({format, tex_size, video_frame->ColorSpace(),
+                                  kTopLeft_GrSurfaceOrigin, kPlaneAlphaType,
+                                  mailbox_usage, "VideoFrameYUV"},
+                                 gpu::kNullSurfaceHandle);
       CHECK(client_shared_image);
       holders_[plane].mailbox = client_shared_image->mailbox();
       holders_[plane].texture_target = GL_TEXTURE_2D;

@@ -167,6 +167,7 @@ _BROWSER_SPECIFIC_FILTER['chrome-headless-shell'] = [
     # S/A: BrowserHandler::setWindowsBounds at
     # //headelss/lib/browser/protocol/browser_handler.cc.
     'ChromeDriverTest.testWindowMaximize',
+    'ChromeDriverTest.testWindowMaximizeFromFrame',
     'ChromeDriverTest.testWindowFullScreen',
     # chrome-headless-shell does not support scripted print
     'ChromeDriverTest.testCanSwitchToPrintPreviewDialog',
@@ -285,6 +286,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testWindowSize',
         'ChromeDriverTest.testWindowRect',
         'ChromeDriverTest.testWindowMaximize',
+        'ChromeDriverTest.testWindowMaximizeFromFrame',
         'ChromeDriverTest.testWindowMinimize',
         'ChromeLogPathCapabilityTest.testChromeLogPath',
         # Connecting to running browser is not supported on Android.
@@ -2543,6 +2545,33 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.SetWindowRect(*old_rect_list)
     self.assertEqual(old_rect_list, self._driver.GetWindowRect())
 
+  def testWindowMaximizeFromFrame(self):
+    # This test is somewhat close to WindowTest.testCanMaximizeTheWindow of
+    # Selenium in its attempt to reproduce https://crbug.com/chromedriver/2663
+    self._http_server.SetDataForPath('/nested.html',
+      bytes('<p>nested.html</p>', 'utf-8'))
+    self._http_server.SetDataForPath('/main.html',
+      bytes('<iframe src="/nested.html">', 'utf-8'))
+
+    old_rect_list = [640, 400, 100, 200]
+    self._driver.SetWindowRect(*old_rect_list)
+
+    self._driver.Load(self.GetHttpUrlForFile('/main.html'))
+    frame = self._driver.FindElement('tag name', 'iframe')
+    self._driver.SwitchToFrame(frame)
+
+    new_rect = self._driver.MaximizeWindow()
+    new_rect_list = [
+        new_rect['width'],
+        new_rect['height'],
+        new_rect['x'],
+        new_rect['y']
+    ]
+    self.assertNotEqual(old_rect_list, new_rect_list)
+
+    self._driver.SetWindowRect(*old_rect_list)
+    self.assertEqual(old_rect_list, self._driver.GetWindowRect())
+
   def testWindowMinimize(self):
     handle = self._driver.GetCurrentWindowHandle()
     self._driver.SetWindowRect(640, 400, 100, 200)
@@ -4128,6 +4157,44 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
     self.assertEqual('OK', result['status'])
     self.assertEqual(['usb'], result['credential']['transports'])
 
+  def testAddVirtualAuthenticatorDefaultBackupSettings(self):
+    registerCredentialScript = """
+      let done = arguments[0];
+      registerCredential().then(done);
+    """
+    self._driver.Load(self.GetHttpsUrlForFile(
+        '/chromedriver/webauthn_test.html', 'chromedriver.test'))
+
+    for backupState in [False, True]:
+      for backupEligibility in [False, True]:
+        # Add a virtual authenticator with the specified default backup flag
+        # values.
+        authenticatorId = self._driver.AddVirtualAuthenticator(
+            protocol = 'ctap2',
+            transport = 'usb',
+            hasResidentKey = True,
+            hasUserVerification = True,
+            isUserVerified = True,
+            defaultBackupState = backupState,
+            defaultBackupEligibility = backupEligibility
+        )
+
+        # Creating a credential through the web API should reflect the default
+        # values.
+        result = self._driver.ExecuteAsyncScript(registerCredentialScript)
+        self.assertEqual('OK', result['status'])
+        self.assertEqual(backupEligibility, result['credential']['flags']['be'])
+        self.assertEqual(backupState, result['credential']['flags']['bs'])
+
+        # Getting the credential through webdriver should reflect the values.
+        credentials = self._driver.GetCredentials(authenticatorId)
+        self.assertEqual(1, len(credentials))
+        self.assertEqual(backupEligibility, credentials[0]['backupEligibility'])
+        self.assertEqual(backupState, credentials[0]['backupState'])
+
+        # Cleanup.
+        self._driver.RemoveVirtualAuthenticator(authenticatorId)
+
   def testRemoveVirtualAuthenticator(self):
     self._driver.Load(self.GetHttpsUrlForFile(
         '/chromedriver/webauthn_test.html', 'chromedriver.test'))
@@ -4227,6 +4294,58 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
     result = self._driver.ExecuteAsyncScript(script)
     self.assertEqual('OK', result['status'])
     self.assertEqual('large blob contents', result['blob'])
+
+  def testAddCredentialBackupFlags(self):
+    script = """
+      let done = arguments[0];
+      getCredential({
+        type: "public-key",
+        id: new TextEncoder().encode("cred-1"),
+        transports: ["usb"],
+      }).then(done);
+    """
+    self._driver.Load(self.GetHttpsUrlForFile(
+        '/chromedriver/webauthn_test.html', 'chromedriver.test'))
+
+    authenticatorId = self._driver.AddVirtualAuthenticator(
+        protocol = 'ctap2',
+        transport = 'usb',
+        hasResidentKey = True,
+        hasUserVerification = True,
+        isUserVerified = True,
+    )
+
+    credentialId = self.URLSafeBase64Encode("cred-1")
+    for backupState in [False, True]:
+      for backupEligibility in [False, True]:
+        # Create a credential with the given backup flags.
+        self._driver.AddCredential(
+          authenticatorId = authenticatorId,
+          credentialId = credentialId,
+          userHandle = self.URLSafeBase64Encode('melia'),
+          isResidentCredential = True,
+          rpId = "chromedriver.test",
+          privateKey = self.privateKey,
+          signCount = 1,
+          backupState = backupState,
+          backupEligibility = backupEligibility,
+        )
+
+        # Getting an assertion should reflect the values.
+        result = self._driver.ExecuteAsyncScript(script)
+        self.assertEqual('OK', result['status'])
+        self.assertEqual(backupState, result['flags']['bs'])
+        self.assertEqual(backupEligibility, result['flags']['be'])
+
+        # Getting the credential through webdriver should reflect the values.
+        credentials = self._driver.GetCredentials(authenticatorId)
+        self.assertEqual(1, len(credentials))
+        self.assertEqual(credentialId, credentials[0]['credentialId'])
+        self.assertEqual(backupEligibility, credentials[0]['backupEligibility'])
+        self.assertEqual(backupState, credentials[0]['backupState'])
+
+        # Cleanup.
+        self._driver.RemoveCredential(authenticatorId, credentialId)
 
   def testAddCredentialBase64Errors(self):
     # Test that AddCredential checks UrlBase64 parameteres.
@@ -4412,6 +4531,57 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
     self._driver.SetUserVerified(authenticatorId, True)
     result = self._driver.ExecuteAsyncScript(register_uv_script)
     self.assertEqual("OK", result['status'])
+
+  def testSetCredentialProperties(self):
+    script = """
+      let done = arguments[0];
+      getCredential({
+        type: "public-key",
+        id: new TextEncoder().encode("cred-1"),
+        transports: ["usb"],
+      }).then(done);
+    """
+    self._driver.Load(self.GetHttpsUrlForFile(
+        '/chromedriver/webauthn_test.html', 'chromedriver.test'))
+
+    authenticatorId = self._driver.AddVirtualAuthenticator(
+        protocol = 'ctap2',
+        transport = 'usb',
+        hasResidentKey = True,
+        hasUserVerification = True,
+        isUserVerified = True,
+    )
+    credentialId = self.URLSafeBase64Encode("cred-1")
+
+    # Create a credential with default backup flags.
+    self._driver.AddCredential(
+      authenticatorId = authenticatorId,
+      credentialId = credentialId,
+      userHandle = self.URLSafeBase64Encode('melia'),
+      isResidentCredential = True,
+      rpId = "chromedriver.test",
+      privateKey = self.privateKey,
+      signCount = 1,
+    )
+    for backupState in [False, True]:
+      for backupEligibility in [False, True]:
+        # Set the credential properties.
+        self._driver.SetCredentialProperties(
+            authenticatorId = authenticatorId, credentialId = credentialId,
+            backupState = backupState, backupEligibility = backupEligibility)
+
+        # Getting an assertion should reflect the values.
+        result = self._driver.ExecuteAsyncScript(script)
+        self.assertEqual('OK', result['status'])
+        self.assertEqual(backupState, result['flags']['bs'])
+        self.assertEqual(backupEligibility, result['flags']['be'])
+
+        # Getting the credential through webdriver should reflect the values.
+        credentials = self._driver.GetCredentials(authenticatorId)
+        self.assertEqual(1, len(credentials))
+        self.assertEqual(credentialId, credentials[0]['credentialId'])
+        self.assertEqual(backupEligibility, credentials[0]['backupEligibility'])
+        self.assertEqual(backupState, credentials[0]['backupState'])
 
   def testCreateVirtualSensorWithInvalidSensorName(self):
     self.assertRaisesRegex(chromedriver.InvalidArgument,
@@ -7613,7 +7783,9 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
         ]}""" % self._accounts, 'utf-8')
 
     def respondWithTokenResponse(request):
-      return {'Content-Type': 'application/json'}, self._token_response
+      return {'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': request.GetHeader('Origin'),
+        'Access-Control-Allow-Credentials': 'true'}, self._token_response
 
     self._https_server.SetCallbackForPath('/.well-known/web-identity',
                                           respondWithWellKnownFile)
@@ -7886,6 +8058,11 @@ if __name__ == '__main__':
       '--replayable',
       help="Don't truncate long strings in the log so that the log can be "
       "replayed.")
+  parser.add_argument(
+      '--failfast',
+      action='store_true',
+      default=False,
+      help='Stop the test run on the first error or failure.')
   parser.add_argument('--chrome', help='Path to a build of the chrome binary')
   parser.add_argument(
       '--filter',
@@ -8054,6 +8231,7 @@ if __name__ == '__main__':
 
   runner = unittest.TextTestRunner(
       stream=sys.stdout, descriptions=False, verbosity=2,
+      failfast=options.failfast,
       resultclass=unittest_util.AddSuccessTextTestResult)
   result = runner.run(test_suite)
   results = [result]

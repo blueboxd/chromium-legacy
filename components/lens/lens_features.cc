@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/system/sys_info.h"
 
 namespace lens {
 namespace features {
@@ -45,6 +46,12 @@ BASE_FEATURE(kLensRegionSearchStaticPage,
 BASE_FEATURE(kEnableContextMenuInLensSidePanel,
              "EnableContextMenuInLensSidePanel",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kLensOverlay, "LensOverlay", base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<int> kLensOverlayMinRamMb{&kLensOverlay, "min_ram_mb",
+                                                   /*default=value=*/-1};
+const base::FeatureParam<std::string> kResultsSearchUrl{
+    &kLensOverlay, "results-search-url", "https://www.google.com/search"};
 
 constexpr base::FeatureParam<std::string> kHomepageURLForLens{
     &kLensStandalone, "lens-homepage-url", "https://lens.google.com/v3/"};
@@ -171,6 +178,18 @@ std::string GetPreconnectKeyForLens() {
 
 bool GetShouldIssueProcessPrewarmingForLens() {
   return kShouldIssueProcessPrewarmingForLens.Get();
+}
+
+bool IsLensOverlayEnabled() {
+  if (!base::FeatureList::IsEnabled(kLensOverlay)) {
+    return false;
+  }
+  static int phys_mem_mb = base::SysInfo::AmountOfPhysicalMemoryMB();
+  return phys_mem_mb > kLensOverlayMinRamMb.Get();
+}
+
+std::string GetLensOverlayResultsSearchURL() {
+  return kResultsSearchUrl.Get();
 }
 
 }  // namespace features

@@ -5,7 +5,7 @@
 #import "base/test/ios/wait_util.h"
 #import "base/time/time.h"
 #import "components/feature_engagement/public/feature_constants.h"
-#import "ios/chrome/browser/ui/bubble/gesture_iph/gesture_in_product_help_constants.h"
+#import "ios/chrome/browser/ui/bubble/gesture_iph/gesture_in_product_help_view_egtest_utils.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -16,23 +16,10 @@
 
 namespace {
 
+using ::chrome_test_util::IncognitoTabGrid;
 using ::chrome_test_util::TabGridIncognitoTabsPanelButton;
 using ::chrome_test_util::TabGridNormalModePageControl;
 using ::chrome_test_util::TabGridSearchTabsButton;
-
-// Performs the assertion that the gesture IPH appears and return the result.
-// NOTE: Do not directly pass the method as a parameter of assertion methods.
-BOOL HasGestureIPHAppeared() {
-  // Disable scoped synchronization to perform checks with animation running.
-  ScopedSynchronizationDisabler sync_disabler;
-  return
-      [ChromeEarlGrey
-          testUIElementAppearanceWithMatcher:
-              grey_accessibilityID(kGestureInProductHelpViewBackgroundAXId)] &&
-      [ChromeEarlGrey
-          testUIElementAppearanceWithMatcher:
-              grey_accessibilityID(kGestureInProductHelpViewBubbleAXId)];
-}
 
 }  // namespace
 
@@ -63,6 +50,9 @@ BOOL HasGestureIPHAppeared() {
   [[self class] removeAnyOpenMenusAndInfoBars];
   [BaseEarlGreyTestCaseAppInterface disableFastAnimation];
   [ChromeEarlGreyUI openTabGrid];
+  // Wait for tab grid animation to complete; value is the animation duration
+  // for `PointZoomTransitionAnimation`.
+  base::test::ios::SpinRunLoopWithMinDelay(base::Seconds(0.2));
 }
 
 - (void)tearDown {
@@ -79,7 +69,7 @@ BOOL HasGestureIPHAppeared() {
     GREYAssertTrue(
         appearance,
         @"IPH doesn't show after the user taps to go to incognito twice.");
-    base::test::ios::SpinRunLoopWithMinDelay(base::Seconds(9.2));
+    base::test::ios::SpinRunLoopWithMinDelay(base::Seconds(9.5));
   }
   appearance = HasGestureIPHAppeared();
   GREYAssertFalse(appearance, @"IPH still displaying after the timeout.");
@@ -95,12 +85,9 @@ BOOL HasGestureIPHAppeared() {
     GREYAssertTrue(
         appearance,
         @"IPH doesn't show after the user taps to go to incognito twice.");
-    // Tap "dismiss" button.
-    [[EarlGrey
-        selectElementWithMatcher:
-            grey_accessibilityID(kGestureInProductHelpViewDismissButtonAXId)]
-        performAction:grey_tap()];
   }
+  base::test::ios::SpinRunLoopWithMinDelay(base::Seconds(0.5));
+  TapDismissButton();
   appearance = HasGestureIPHAppeared();
   GREYAssertFalse(
       appearance,
@@ -145,6 +132,43 @@ BOOL HasGestureIPHAppeared() {
   appearance = HasGestureIPHAppeared();
   GREYAssertFalse(appearance, @"IPH still displaying after the user goes to "
                               @"incognito mode and comes back.");
+}
+
+// Tests that swiping in the right direction dismisses the IPH and scrolls the
+// tab grid to incognito.
+- (void)testSwipeRightToDismissIPHAndGoToIncognito {
+  BOOL appearance = HasGestureIPHAppeared();
+  {
+    // Disable scoped synchronization to tap the incognito button with animation
+    // running.
+    ScopedSynchronizationDisabler sync_disabler;
+    GREYAssertTrue(
+        appearance,
+        @"IPH doesn't show after the user taps to go to incognito twice.");
+    // Swipe right.
+    SwipeIPHInDirection(kGREYDirectionRight);
+  }
+  [[EarlGrey selectElementWithMatcher:IncognitoTabGrid()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that swiping in the wrong direction does nothing.
+- (void)testSwipeLeftDoesNotDismissIPHAndGoToIncognito {
+  BOOL appearance = HasGestureIPHAppeared();
+  {
+    // Disable scoped synchronization to tap the incognito button with animation
+    // running.
+    ScopedSynchronizationDisabler sync_disabler;
+    GREYAssertTrue(
+        appearance,
+        @"IPH doesn't show after the user taps to go to incognito twice.");
+    // Swipe left.
+    SwipeIPHInDirection(kGREYDirectionLeft);
+  }
+  // The IPH should have auto-dismissed by now; verify that the user is NOT
+  // viewing in incognito.
+  [[EarlGrey selectElementWithMatcher:IncognitoTabGrid()]
+      assertWithMatcher:grey_notVisible()];
 }
 
 @end

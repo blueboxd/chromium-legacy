@@ -191,9 +191,13 @@ class TestTextInputClient : public ui::DummyTextInputClient {
 
 class SplitViewControllerTest : public AshTestBase {
  public:
-  SplitViewControllerTest()
-      : faster_split_screen_enabled_(
-            features::IsFasterSplitScreenSetupEnabled()) {}
+  SplitViewControllerTest() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kFasterSplitScreenSetup,
+                              features::kOsSettingsRevampWayfinding},
+        /*disabled_features=*/{});
+    faster_split_screen_enabled_ = features::IsFasterSplitScreenSetupEnabled();
+  }
   SplitViewControllerTest(const SplitViewControllerTest&) = delete;
   SplitViewControllerTest& operator=(const SplitViewControllerTest&) = delete;
   ~SplitViewControllerTest() override = default;
@@ -346,8 +350,13 @@ class SplitViewControllerTest : public AshTestBase {
     histograms_.ExpectTotalCount(histogram + std::string(".SplitView"),
                                  counts[1]);
   }
+
   std::vector<std::string> trace_names_;
+
   base::HistogramTester histograms_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   bool faster_split_screen_enabled_ = false;
 };
 
@@ -1450,9 +1459,8 @@ TEST_F(SplitViewControllerTest, SwapWindows) {
 }
 
 // Verify the left and right windows get swapped when the divider is double
-// tapped. SwapWindows() contains a long code comment that shows it is worth
-// having separate tests for double clicking and double tapping the divider->
-TEST_F(SplitViewControllerTest, DoubleTapDivider) {
+// tapped and/or double clicked. Also tests we don't start a drag to resize.
+TEST_F(SplitViewControllerTest, DoubleTapAndClickDivider) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -1470,13 +1478,35 @@ TEST_F(SplitViewControllerTest, DoubleTapDivider) {
       split_view_divider()
           ->GetDividerBoundsInScreen(false /* is_dragging */)
           .CenterPoint();
-  GetEventGenerator()->GestureTapAt(divider_center);
-  GetEventGenerator()->GestureTapAt(divider_center);
+  auto* event_generator = GetEventGenerator();
+  event_generator->GestureTapAt(divider_center);
+  EXPECT_FALSE(WindowState::Get(window1.get())->is_dragged());
+  EXPECT_FALSE(WindowState::Get(window2.get())->is_dragged());
+  event_generator->GestureTapAt(divider_center);
+  EXPECT_FALSE(WindowState::Get(window1.get())->is_dragged());
+  EXPECT_FALSE(WindowState::Get(window2.get())->is_dragged());
 
   EXPECT_EQ(split_view_controller()->primary_window(), window2.get());
   EXPECT_EQ(split_view_controller()->secondary_window(), window1.get());
   EXPECT_EQ(left_bounds, window2->GetBoundsInScreen());
   EXPECT_EQ(right_bounds, window1->GetBoundsInScreen());
+
+  // Press without releasing the mouse. Test we don't start a drag.
+  event_generator->MoveMouseTo(divider_center);
+  event_generator->PressLeftButton();
+  EXPECT_FALSE(WindowState::Get(window1.get())->is_dragged());
+  EXPECT_FALSE(WindowState::Get(window2.get())->is_dragged());
+  event_generator->ReleaseLeftButton();
+
+  // Now double click. Note we need to set `EF_IS_DOUBLE_CLICK` in the event
+  // flags to simulate a double click.
+  event_generator->DoubleClickLeftButton();
+  EXPECT_FALSE(WindowState::Get(window1.get())->is_dragged());
+  EXPECT_FALSE(WindowState::Get(window2.get())->is_dragged());
+  EXPECT_EQ(split_view_controller()->primary_window(), window1.get());
+  EXPECT_EQ(split_view_controller()->secondary_window(), window2.get());
+  EXPECT_EQ(left_bounds, window1->GetBoundsInScreen());
+  EXPECT_EQ(right_bounds, window2->GetBoundsInScreen());
 }
 
 // Verify the left and right windows do not get swapped when the divider is
@@ -3908,6 +3938,86 @@ TEST_F(SplitViewControllerTest,
       faster_split_screen_enabled() ? 0 : 1);
 }
 
+// Test that there will be no crash when disabling a tablet mode when a window
+// with a transient bubble widget is snapped. Regression test for b/327135981.
+TEST_F(SplitViewControllerTest,
+       ClamshellConversionWithSnappedWindowWithTransient) {
+  // Create a widget with a transient bubble widget.
+  std::unique_ptr<views::Widget> widget(CreateTestWidget());
+  aura::Window* window = widget->GetNativeWindow();
+  window->SetProperty(aura::client::kResizeBehaviorKey,
+                      aura::client::kResizeBehaviorCanResize |
+                          aura::client::kResizeBehaviorCanMaximize);
+  views::Widget* bubble_widget = views::BubbleDialogDelegateView::CreateBubble(
+      new TestBubbleDialogDelegateView(widget->GetContentsView()));
+  aura::Window* bubble_transient = bubble_widget->GetNativeWindow();
+  EXPECT_TRUE(wm::HasTransientAncestor(bubble_transient, window));
+
+  // Snap the window.
+  ToggleOverview();
+  split_view_controller()->SnapWindow(window, SnapPosition::kSecondary);
+
+  // Convert the device to clamshell mode. There should be no crash.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+}
+
+// Tests that snap across multi-displays works correctly. Regression test for
+// b/331663949.
+TEST_F(SplitViewControllerTest, SnapToCorrectDisplay) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  UpdateDisplay("800x600,800x600");
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
+
+  auto get_drag_point = [](aura::Window* window) -> gfx::Point {
+    const gfx::Rect window_bounds = window->GetBoundsInScreen();
+    return {window_bounds.CenterPoint().x(), window_bounds.y() + 10};
+  };
+
+  // Create 2 test windows with non-overlapping bounds so we can drag them.
+  std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 400, 400)));
+  std::unique_ptr<aura::Window> w2(
+      CreateTestWindow(gfx::Rect(400, 0, 400, 400)));
+
+  // Drag to snap `w1` on display 1.
+  auto* event_generator = GetEventGenerator();
+  event_generator->set_current_screen_location(get_drag_point(w1.get()));
+  event_generator->DragMouseTo(0, 100);
+  const gfx::Rect work_area1 =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+  EXPECT_EQ(gfx::Rect(0, 0, work_area1.width() / 2, work_area1.height()),
+            w1->GetBoundsInScreen());
+
+  // Drag to snap `w2` on display 1.
+  event_generator->set_current_screen_location(get_drag_point(w2.get()));
+  event_generator->DragMouseTo(799, 100);
+  EXPECT_EQ(gfx::Rect(work_area1.width() / 2, 0, work_area1.width() / 2,
+                      work_area1.height()),
+            w2->GetBoundsInScreen());
+
+  // Drag to snap `w2` on display 2.
+  event_generator->set_current_screen_location(get_drag_point(w2.get()));
+  event_generator->DragMouseTo(800, 100);
+  const gfx::Rect work_area2 =
+      display_manager_test.GetSecondaryDisplay().work_area();
+  EXPECT_EQ(
+      gfx::Rect(work_area2.x(), 0, work_area2.width() / 2, work_area2.height()),
+      w2->GetBoundsInScreen());
+
+  // Drag to snap `w2` back on display 1.
+  event_generator->set_current_screen_location(get_drag_point(w2.get()));
+  event_generator->DragMouseTo(799, 100);
+  EXPECT_EQ(gfx::Rect(work_area1.width() / 2, 0, work_area1.width() / 2,
+                      work_area1.height()),
+            w2->GetBoundsInScreen());
+
+  // Drag to snap `w2` back on display 2. Test the bounds are correct.
+  event_generator->set_current_screen_location(get_drag_point(w2.get()));
+  event_generator->DragMouseTo(800, 100);
+  EXPECT_EQ(
+      gfx::Rect(work_area2.x(), 0, work_area2.width() / 2, work_area2.height()),
+      w2->GetBoundsInScreen());
+}
+
 // The test class that enables the feature flag of portrait mode split view
 // virtual keyboard improvement and the virtual keyboard.
 class SplitViewKeyboardTest : public SplitViewControllerTest {
@@ -3926,9 +4036,6 @@ class SplitViewKeyboardTest : public SplitViewControllerTest {
   keyboard::KeyboardUIController* keyboard_controller() {
     return keyboard::KeyboardUIController::Get();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Tests that when the input field in the bottom window is blocked by the
@@ -4275,6 +4382,31 @@ TEST_F(SplitViewKeyboardTest, ShowHideOnScreenKeyboardWithOverviewEnabled) {
     EndSplitView();
     ExitOverview();
   }
+}
+
+// Tests no crash in clamshell split view on keyboard bounds change. Regression
+// test for b/331194782.
+TEST_F(SplitViewKeyboardTest, NoCrashOnClamshellBoundsChange) {
+  // Enter vertical splitview in clamshell mode.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  UpdateDisplay("800x1200");
+
+  gfx::Rect bounds(0, 0, 200, 200);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  auto input_client = std::make_unique<TestTextInputClient>(window1.get());
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  ToggleOverview();
+  const gfx::Rect keyboard_bounds =
+      keyboard_controller()->GetKeyboardWindow()->GetBoundsInScreen();
+  split_view_controller()->SnapWindow(window1.get(), SnapPosition::kSecondary);
+  EXPECT_TRUE(split_view_controller()->InClamshellSplitViewMode());
+
+  // Focus the bottom client to show the virtual keyboard. Test no crash.
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
+  input_client->set_caret_bounds(gfx::Rect(keyboard_bounds.top_center(),
+                                           gfx::Size(0, kCaretHeightForTest)));
+  input_client->Focus();
+  EXPECT_TRUE(keyboard_controller->IsKeyboardVisible());
 }
 
 }  // namespace ash

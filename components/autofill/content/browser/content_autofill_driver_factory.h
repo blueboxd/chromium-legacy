@@ -10,10 +10,10 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/raw_ref.h"
+#include "base/observer_list.h"
 #include "base/types/pass_key.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/core/browser/autofill_driver_router.h"
-#include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 
@@ -103,6 +103,7 @@ class ContentAutofillDriverFactory : public content::WebContentsObserver {
  private:
   friend class ContentAutofillDriverFactoryTestApi;
 
+  // The owning AutofillClient.
   const raw_ref<ContentAutofillClient> client_;
 
   // Routes events between different ContentAutofillDrivers.

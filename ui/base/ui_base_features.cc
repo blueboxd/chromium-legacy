@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
@@ -45,11 +46,23 @@ BASE_FEATURE(kScreenPowerListenerForNativeWinOcclusion,
 // name `kApplyNativeOcclusionToCompositorType`.
 BASE_FEATURE(kApplyNativeOcclusionToCompositor,
              "ApplyNativeOcclusionToCompositor",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 // Field trial param name for `kApplyNativeOcclusionToCompositor`.
 const base::FeatureParam<std::string> kApplyNativeOcclusionToCompositorType{
-    &kApplyNativeOcclusionToCompositor, "type", /*default=*/""};
+    &kApplyNativeOcclusionToCompositor, "type",
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    /*default=*/"throttle_and_release"
+#else
+    /*default=*/""
+#endif
+};
+
 // When the WindowTreeHost is occluded or hidden, resources are released and
 // the compositor is hidden. See WindowTreeHost for specifics on what this
 // does.
@@ -78,23 +91,15 @@ bool IsDeprecateAltClickEnabled() {
 
 BASE_FEATURE(kNotificationsIgnoreRequireInteraction,
              "NotificationsIgnoreRequireInteraction",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsNotificationsIgnoreRequireInteractionEnabled() {
   return base::FeatureList::IsEnabled(kNotificationsIgnoreRequireInteraction);
 }
 
-BASE_FEATURE(kShortcutCustomizationApp,
-             "ShortcutCustomizationApp",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-bool IsShortcutCustomizationAppEnabled() {
-  return base::FeatureList::IsEnabled(kShortcutCustomizationApp);
-}
-
 BASE_FEATURE(kShortcutCustomization,
              "ShortcutCustomization",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsShortcutCustomizationEnabled() {
   return base::FeatureList::IsEnabled(kShortcutCustomization);
@@ -329,8 +334,12 @@ BASE_FEATURE(kEyeDropper,
 #endif
 );
 
+const char kEyeDropperNotSupported[] = "eye-dropper-not-supported";
+
 bool IsEyeDropperEnabled() {
-  return base::FeatureList::IsEnabled(features::kEyeDropper);
+  return base::FeatureList::IsEnabled(features::kEyeDropper) &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             kEyeDropperNotSupported);
 }
 
 // Used to enable keyboard accessible tooltips in in-page content
@@ -352,7 +361,7 @@ bool IsKeyboardAccessibleTooltipEnabled() {
 // TODO(https://b/288337080): Remove this flag once the feature is ready.
 BASE_FEATURE(kNotificationGesturesUpdate,
              "NotificationGesturesUpdate",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsNotificationGesturesUpdateEnabled() {
   return base::FeatureList::IsEnabled(kNotificationGesturesUpdate);
@@ -438,6 +447,9 @@ BASE_FEATURE(kVariableRefreshRateAvailable,
 BASE_FEATURE(kEnableVariableRefreshRate,
              "EnableVariableRefreshRate",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kVariableRefreshRateDefaultEnabled,
+             "VariableRefreshRateDefaultEnabled",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 // This param indicates whether to ignore the VRR availability flag. It is set
 // to false by Finch for non-forced groups.
 const base::FeatureParam<bool> kVrrIgnoreAvailability{
@@ -445,6 +457,16 @@ const base::FeatureParam<bool> kVrrIgnoreAvailability{
     /*default_value=*/true};
 bool IsVariableRefreshRateEnabled() {
   if (base::FeatureList::IsEnabled(kEnableVariableRefreshRateAlwaysOn)) {
+    return true;
+  }
+
+  // Special default case for devices with |kVariableRefreshRateDefaultEnabled|
+  // set. Requires |kVariableRefreshRateAvailable| to also be set.
+  // TODO(b/310666603): Remove after VRR is enabled-by-default for all hardware.
+  if (!base::FeatureList::GetInstance()->IsFeatureOverridden(
+          kEnableVariableRefreshRate.name) &&
+      base::FeatureList::IsEnabled(kVariableRefreshRateDefaultEnabled) &&
+      base::FeatureList::IsEnabled(kVariableRefreshRateAvailable)) {
     return true;
   }
 
@@ -533,7 +555,7 @@ ChromeRefresh2023NTBVariation GetChromeRefresh2023NTB() {
 
 BASE_FEATURE(kChromeRefresh2023TopChromeFont,
              "ChromeRefresh2023TopChromeFont",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsChromeRefresh2023() {
   if (!CustomizeChromeSupportsChromeRefresh2023()) {
@@ -620,7 +642,7 @@ BASE_FEATURE(kCr2023MacFontSmoothing,
 #if BUILDFLAG(IS_WIN)
 BASE_FEATURE(kUseGammaContrastRegistrySettings,
              "UseGammaContrastRegistrySettings",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace features

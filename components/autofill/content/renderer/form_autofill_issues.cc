@@ -7,13 +7,13 @@
 #include <string_view>
 #include <vector>
 
-#include "base/check_op.h"
 #include "base/no_destructor.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
@@ -61,7 +61,7 @@ const WebString& GetWebString() {
 
 void MaybeAppendLabelWithoutControlDevtoolsIssue(
     WebLabelElement label,
-    std::vector<blink::WebAutofillClient::FormIssue>& form_issues) {
+    std::vector<FormIssue>& form_issues) {
   if (!label.CorrespondingControl().IsNull()) {
     return;
   }
@@ -77,7 +77,7 @@ void MaybeAppendLabelWithoutControlDevtoolsIssue(
 
 void MaybeAppendAriaLabelledByDevtoolsIssue(
     const WebElement& element,
-    std::vector<blink::WebAutofillClient::FormIssue>& form_issues) {
+    std::vector<FormIssue>& form_issues) {
   const WebString& aria_label_attr = GetWebString<kAriaLabelledBy>();
   if (base::ranges::any_of(
           base::SplitStringPiece(element.GetAttribute(aria_label_attr).Utf16(),
@@ -94,7 +94,7 @@ void MaybeAppendAriaLabelledByDevtoolsIssue(
 
 void MaybeAppendInputWithEmptyIdAndNameDevtoolsIssue(
     const WebFormControlElement& element,
-    std::vector<blink::WebAutofillClient::FormIssue>& form_issues) {
+    std::vector<FormIssue>& form_issues) {
   const WebString& name_attr = GetWebString<kName>();
   if (element.GetAttribute(name_attr).IsEmpty() &&
       element.GetIdAttribute().IsEmpty()) {
@@ -114,7 +114,7 @@ int GetShadowHostDOMNodeId(const WebFormControlElement& element) {
 
 void MaybeAppendDuplicateIdForInputDevtoolsIssue(
     const WebVector<WebFormControlElement>& elements,
-    std::vector<blink::WebAutofillClient::FormIssue>& form_issues) {
+    std::vector<FormIssue>& form_issues) {
   const WebString& id_attr = GetWebString<kId>();
 
   // Create copies of |elements| with ids that can be modified
@@ -159,7 +159,7 @@ void MaybeAppendDuplicateIdForInputDevtoolsIssue(
 
 void MaybeAppendAutocompleteAttributeDevtoolsIssue(
     const WebElement& element,
-    std::vector<blink::WebAutofillClient::FormIssue>& form_issues) {
+    std::vector<FormIssue>& form_issues) {
   const WebString& autocomplete_attr = GetWebString<kAutocomplete>();
   std::string autocomplete_attribute =
       form_util::GetAutocompleteAttribute(element);
@@ -180,7 +180,7 @@ void MaybeAppendAutocompleteAttributeDevtoolsIssue(
 
 void MaybeAppendInputAssignedAutocompleteValueToIdOrNameAttributesDevtoolsIssue(
     const WebFormControlElement& element,
-    std::vector<blink::WebAutofillClient::FormIssue>& form_issues) {
+    std::vector<FormIssue>& form_issues) {
   const WebString& autocomplete_attr = GetWebString<kAutocomplete>();
   if (element.HasAttribute(autocomplete_attr)) {
     return;
@@ -221,9 +221,8 @@ void MaybeAppendInputAssignedAutocompleteValueToIdOrNameAttributesDevtoolsIssue(
   }
 }
 
-void AppendFormIssuesInternal(
-    const WebVector<WebFormControlElement>& elements,
-    std::vector<blink::WebAutofillClient::FormIssue>& form_issues) {
+void AppendFormIssuesInternal(const WebVector<WebFormControlElement>& elements,
+                              std::vector<FormIssue>& form_issues) {
   if (elements.size() == 0) {
     return;
   }
@@ -253,20 +252,23 @@ void AppendFormIssuesInternal(
   }
 }
 
-}  // namespace
-
-std::vector<blink::WebAutofillClient::FormIssue> GetFormIssues(
+// Looks for form issues in `control_elements`, e.g., inputs with duplicate ids
+// and returns a vector that is the union of `form_issues` and the new issues
+// found.
+std::vector<FormIssue> GetFormIssues(
     const blink::WebVector<blink::WebFormControlElement>& control_elements,
-    std::vector<blink::WebAutofillClient::FormIssue> form_issues) {
+    std::vector<FormIssue> form_issues) {
   AppendFormIssuesInternal(control_elements, form_issues);
   return form_issues;
 }
 
-std::vector<blink::WebAutofillClient::FormIssue>
-CheckForLabelsWithIncorrectForAttribute(
+// Method specific to find issues regarding label `for` attribute. This needs to
+// be called after label extraction. Similar to `GetFormIssues` it returns
+// a vector that is the union of `form_issues` and the new issues found.
+std::vector<FormIssue> CheckForLabelsWithIncorrectForAttribute(
     const blink::WebDocument& document,
     const std::vector<FormFieldData>& fields,
-    std::vector<blink::WebAutofillClient::FormIssue> form_issues) {
+    std::vector<FormIssue> form_issues) {
   const WebString& for_attr = GetWebString<kFor>();
   const WebString& label_attr = GetWebString<kLabel>();
 
@@ -307,6 +309,8 @@ CheckForLabelsWithIncorrectForAttribute(
   return form_issues;
 }
 
+}  // namespace
+
 void MaybeEmitFormIssuesToDevtools(blink::WebLocalFrame& web_local_frame,
                                    base::span<const FormData> forms) {
   // TODO(crbug.com/1399414): Only calculate and emit these issues if devtools
@@ -316,9 +320,13 @@ void MaybeEmitFormIssuesToDevtools(blink::WebLocalFrame& web_local_frame,
   }
 
   WebDocument document = web_local_frame.GetDocument();
-  std::vector<blink::WebAutofillClient::FormIssue> form_issues;
+  std::vector<FormIssue> form_issues;
   // Get issues from forms input elements.
-  for (const WebFormElement& form_element : document.Forms()) {
+  for (const WebFormElement& form_element :
+       base::FeatureList::IsEnabled(
+           blink::features::kAutofillIncludeFormElementsInShadowDom)
+           ? document.GetTopLevelForms()
+           : document.Forms()) {
     form_issues = form_issues::GetFormIssues(
         form_element.GetFormControlElements(), std::move(form_issues));
   }
@@ -336,11 +344,25 @@ void MaybeEmitFormIssuesToDevtools(blink::WebLocalFrame& web_local_frame,
     form_issues.erase(form_issues.begin() + kMaxNumberOfDevtoolsIssuesEmitted,
                       form_issues.end());
   }
-  for (const blink::WebAutofillClient::FormIssue& form_issue : form_issues) {
+  for (const FormIssue& form_issue : form_issues) {
     web_local_frame.AddGenericIssue(form_issue.issue_type,
                                     form_issue.violating_node,
                                     form_issue.violating_node_attribute);
   }
+}
+
+std::vector<FormIssue> GetFormIssuesForTesting(  // IN-TEST
+    const blink::WebVector<blink::WebFormControlElement>& control_elements,
+    std::vector<FormIssue> form_issues) {
+  return GetFormIssues(control_elements, form_issues);
+}
+
+std::vector<FormIssue>
+CheckForLabelsWithIncorrectForAttributeForTesting(  // IN-TEST
+    const blink::WebDocument& document,
+    const std::vector<FormFieldData>& fields,
+    std::vector<FormIssue> form_issues) {
+  return CheckForLabelsWithIncorrectForAttribute(document, fields, form_issues);
 }
 
 }  // namespace autofill::form_issues

@@ -14,6 +14,7 @@ class WebState;
 @protocol ContentSuggestionsDelegate;
 @class ContentSuggestionsMediator;
 @class ContentSuggestionsViewController;
+@class MagicStackCollectionViewController;
 @protocol NewTabPageControllerDelegate;
 @protocol NewTabPageDelegate;
 @protocol NewTabPageMetricsDelegate;
@@ -34,6 +35,10 @@ class WebState;
 @property(nonatomic, strong, readonly)
     ContentSuggestionsViewController* viewController;
 
+// The Magic Stack UICollectionView.
+@property(nonatomic, strong, readonly)
+    MagicStackCollectionViewController* magicStackCollectionView;
+
 // The mediator used by this coordinator.
 // TODO(crbug.com/1403298): Replace this with a delegate to avoid exposing this.
 @property(nonatomic, strong, readonly)
@@ -51,11 +56,6 @@ class WebState;
 
 // Refreshes the contents owned by this coordinator.
 - (void)refresh;
-
-// Configure Content Suggestions if showing the Start Surface. NOTE: this should
-// only be called once for every Start configuration. Calling it multiple times
-// in sequence can lead to unpredictable outcomes.
-- (void)configureStartSurfaceIfNeeded;
 
 @end
 

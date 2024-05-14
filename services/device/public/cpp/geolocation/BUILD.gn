@@ -11,8 +11,8 @@ buildflag_header("buildflags") {
 
 component("geolocation") {
   sources = [
-    "geolocation_manager.cc",
-    "geolocation_manager.h",
+    "geolocation_system_permission_manager.cc",
+    "geolocation_system_permission_manager.h",
     "geoposition.cc",
     "geoposition.h",
     "location_provider.h",
@@ -27,9 +27,8 @@ component("geolocation") {
   }
   if (is_apple) {
     sources += [
-      "geolocation_manager_mac.cc",
-      "system_geolocation_source_mac.h",
-      "system_geolocation_source_mac.mm",
+      "system_geolocation_source_apple.h",
+      "system_geolocation_source_apple.mm",
     ]
     frameworks = [
       "CoreLocation.framework",

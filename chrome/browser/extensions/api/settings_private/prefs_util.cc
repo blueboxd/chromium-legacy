@@ -52,10 +52,8 @@
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/search_engines/default_search_manager.h"
-#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/spellcheck/browser/pref_names.h"
-#include "components/supervised_user/core/common/features.h"
 #include "components/supervised_user/core/common/pref_names.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -67,6 +65,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/common/extension.h"
+#include "services/screen_ai/buildflags/buildflags.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/arc_prefs.h"
@@ -196,6 +195,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
 #endif
   (*s_allowlist)[autofill::prefs::kAutofillPaymentCvcStorage] =
       settings_api::PrefType::kBoolean;
+  (*s_allowlist)[autofill::prefs::kAutofillPaymentCardBenefits] =
+      settings_api::PrefType::kBoolean;
   (*s_allowlist)[payments::kCanMakePaymentEnabled] =
       settings_api::PrefType::kBoolean;
   (*s_allowlist)[bookmarks::prefs::kShowBookmarkBar] =
@@ -241,9 +242,9 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[::prefs::kConfirmToQuitEnabled] =
       settings_api::PrefType::kBoolean;
 #endif
-  (*s_allowlist)[dom_distiller::prefs::kOfferReaderMode] =
-      settings_api::PrefType::kBoolean;
   (*s_allowlist)[prefs::kHoverCardImagesEnabled] =
+      settings_api::PrefType::kBoolean;
+  (*s_allowlist)[prefs::kHoverCardMemoryUsageEnabled] =
       settings_api::PrefType::kBoolean;
 
   // On startup.
@@ -360,6 +361,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kNumber;
   (*s_allowlist)[::prefs::kEnableDoNotTrack] = settings_api::PrefType::kBoolean;
   (*s_allowlist)[::prefs::kIpProtectionEnabled] =
+      settings_api::PrefType::kBoolean;
+  (*s_allowlist)[::prefs::kFingerprintingProtectionEnabled] =
       settings_api::PrefType::kBoolean;
 
   // Sync and personalization page.
@@ -678,6 +681,18 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
           settings_api::PrefType::kNumber;
   (*s_allowlist)[ash::prefs::kAccessibilityMonoAudioEnabled] =
       settings_api::PrefType::kBoolean;
+  (*s_allowlist)[ash::prefs::kAccessibilityMouseKeysEnabled] =
+      settings_api::PrefType::kBoolean;
+  (*s_allowlist)[ash::prefs::kAccessibilityMouseKeysShortcutToPauseEnabled] =
+      settings_api::PrefType::kBoolean;
+  (*s_allowlist)[ash::prefs::kAccessibilityMouseKeysDisableInTextFields] =
+      settings_api::PrefType::kBoolean;
+  (*s_allowlist)[ash::prefs::kAccessibilityMouseKeysAcceleration] =
+      settings_api::PrefType::kNumber;
+  (*s_allowlist)[ash::prefs::kAccessibilityMouseKeysMaxSpeed] =
+      settings_api::PrefType::kNumber;
+  (*s_allowlist)[ash::prefs::kAccessibilityMouseKeysDominantHand] =
+      settings_api::PrefType::kBoolean;
   (*s_allowlist)
       [ash::prefs::kAccessibilityEnhancedNetworkVoicesInSelectToSpeakAllowed] =
           settings_api::PrefType::kBoolean;
@@ -700,6 +715,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kBoolean;
   (*s_allowlist)[ash::prefs::kAccessibilitySelectToSpeakWordHighlight] =
       settings_api::PrefType::kBoolean;
+  (*s_allowlist)[ash::prefs::kAccessibilityReducedAnimationsEnabled] =
+      settings_api::PrefType::kBoolean;
   (*s_allowlist)[ash::prefs::kAccessibilityFaceGazeEnabled] =
       settings_api::PrefType::kBoolean;
   (*s_allowlist)[ash::prefs::kAccessibilityFaceGazeCursorSpeedUp] =
@@ -714,6 +731,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kNumber;
   (*s_allowlist)[ash::prefs::kAccessibilityFaceGazeCursorUseAcceleration] =
       settings_api::PrefType::kBoolean;
+  (*s_allowlist)[ash::prefs::kAccessibilityFaceGazeGesturesToMacros] =
+      settings_api::PrefType::kDictionary;
+  (*s_allowlist)[ash::prefs::kAccessibilityFaceGazeGesturesToConfidence] =
+      settings_api::PrefType::kDictionary;
+  (*s_allowlist)[ash::prefs::kAccessibilityCaretBlinkInterval] =
+      settings_api::PrefType::kNumber;
 
   // Text to Speech.
   (*s_allowlist)[::prefs::kTextToSpeechLangToVoiceName] =
@@ -998,6 +1021,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kBoolean;
   (*s_allowlist)[ash::prefs::kUserGeolocationAccessLevel] =
       settings_api::PrefType::kNumber;
+  (*s_allowlist)[ash::prefs::kUserGeolocationAccuracyEnabled] =
+      settings_api::PrefType::kBoolean;
 #else
   // System settings.
   (*s_allowlist)[::prefs::kBackgroundModeEnabled] =
@@ -1027,7 +1052,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-
+  (*s_allowlist)[::prefs::kDocumentScanAPITrustedExtensions] =
+      settings_api::PrefType::kList;
   (*s_allowlist)[::prefs::kPrintingAPIExtensionsAllowlist] =
       settings_api::PrefType::kList;
 #endif
@@ -1222,33 +1248,19 @@ std::optional<settings_api::PrefObject> PrefsUtil::GetPref(
     return pref_object;
   }
 #endif
-  if (base::FeatureList::IsEnabled(
-          supervised_user::kSupervisedPrefsControlledBySupervisedStore)) {
-    if (pref && pref->IsManaged()) {
-      pref_object->controlled_by = settings_api::ControlledBy::kUserPolicy;
-    }
-
-    if (pref && pref->IsManagedByCustodian()) {
-      pref_object->controlled_by =
-          settings_api::ControlledBy::kChildRestriction;
-    }
-
-    if (pref_object->controlled_by != settings_api::ControlledBy::kNone) {
-      pref_object->enforcement = settings_api::Enforcement::kEnforced;
-      return pref_object;
-    }
-  } else {
-    if (pref && pref->IsManaged()) {
-      if (profile_->IsChild()) {
-        pref_object->controlled_by =
-            settings_api::ControlledBy::kChildRestriction;
-      } else {
-        pref_object->controlled_by = settings_api::ControlledBy::kUserPolicy;
-      }
-      pref_object->enforcement = settings_api::Enforcement::kEnforced;
-      return pref_object;
-    }
+  if (pref && pref->IsManaged()) {
+    pref_object->controlled_by = settings_api::ControlledBy::kUserPolicy;
   }
+
+  if (pref && pref->IsManagedByCustodian()) {
+    pref_object->controlled_by = settings_api::ControlledBy::kChildRestriction;
+  }
+
+  if (pref_object->controlled_by != settings_api::ControlledBy::kNone) {
+    pref_object->enforcement = settings_api::Enforcement::kEnforced;
+    return pref_object;
+  }
+
   // A pref is recommended if it has a recommended value, regardless of whether
   // the current value is set by policy. The UI will test to see whether the
   // current value matches the recommended value and inform the user.

@@ -18,6 +18,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/angle_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
@@ -83,7 +84,6 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/color_transform.h"
-#include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/linear_gradient.h"
 #include "ui/gfx/geometry/rect.h"
@@ -155,13 +155,6 @@ struct SkDrawRegion {
   explicit SkDrawRegion(const gfx::QuadF& draw_region);
 
   SkPoint points[4];
-};
-
-// Additional YUV information to skia renderer to draw 9- and 10- bits color.
-struct YUVInput {
-  YUVInput() { memset(this, 0, sizeof(*this)); }
-  float offset;
-  float multiplier;
 };
 
 SkDrawRegion::SkDrawRegion(const gfx::QuadF& draw_region) {
@@ -1170,8 +1163,17 @@ void SkiaRenderer::FinishDrawingFrame() {
       surface_candidate.damage_rect =
           use_partial_swap_ ? gfx::RectF(swap_buffer_rect_)
                             : gfx::RectF(surface_plane.resource_size);
-      current_frame()->overlay_list.insert(
-          current_frame()->overlay_list.begin(), surface_candidate);
+#if BUILDFLAG(IS_MAC)
+      // Mac doesn't use the plane_z_order field and it needs to have primary
+      // plane last in the list of overlays.
+      auto insert_positon = current_frame()->overlay_list.end();
+#else
+      // Most platforms respect plane_z_order so the list order doesn't matter
+      // but Ozone DRM needs the primary plane as the first overlay when overlay
+      // testing.
+      auto insert_positon = current_frame()->overlay_list.begin();
+#endif
+      current_frame()->overlay_list.insert(insert_positon, surface_candidate);
     }
   } else {
     if (buffer_queue_) {
@@ -1264,18 +1266,6 @@ void SkiaRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
   available_render_pass_overlay_backings_.clear();
 #endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
 
-#if BUILDFLAG(IS_OZONE)
-  // Clear cached solid color buffers that weren't reused.
-  base::EraseIf(solid_color_buffers_, [this](auto entry) {
-    SolidColorBuffer& color_buffer = entry.second;
-    if (!color_buffer.use_count) {
-      skia_output_surface_->DestroySharedImage(color_buffer.mailbox);
-      return true;
-    }
-    return false;
-  });
-#endif  // BUILDFLAG(IS_OZONE)
-
 #if BUILDFLAG(ENABLE_VULKAN) && BUILDFLAG(IS_CHROMEOS) && \
     BUILDFLAG(USE_V4L2_CODEC)
   if (protected_buffer_queue_) {
@@ -1294,10 +1284,6 @@ void SkiaRenderer::SwapBuffersSkipped() {
   gfx::Rect root_pass_damage_rect = gfx::Rect(surface_size_for_swap_buffers());
   if (use_partial_swap_)
     root_pass_damage_rect.Intersect(swap_buffer_rect_);
-
-#if BUILDFLAG(IS_OZONE)
-  MaybeDecrementSolidColorBuffers(pending_overlay_locks_.back());
-#endif  // BUILDFLAG(IS_OZONE)
 
   pending_overlay_locks_.pop_back();
   skia_output_surface_->SwapBuffersSkipped(root_pass_damage_rect);
@@ -1347,10 +1333,6 @@ void SkiaRenderer::SwapBuffersComplete(
         std::make_move_iterator(read_fence_lock_iter),
         std::make_move_iterator(committed_overlay_locks_.end()));
   }
-
-#if BUILDFLAG(IS_OZONE)
-  MaybeDecrementSolidColorBuffers(committed_overlay_locks_);
-#endif  // BUILDFLAG(IS_OZONE)
 
 #if BUILDFLAG(IS_APPLE)
   // On macOS, we don't want to release |committed_overlay_locks_| right away
@@ -1636,7 +1618,7 @@ void SkiaRenderer::PrepareGradient(
 
   SkPoint start_end[2];
 
-  float rad_angle = gfx::DegToRad(static_cast<float>(angle));
+  float rad_angle = base::DegToRad(static_cast<float>(angle));
   float s = std::sin(rad_angle);
   float c = std::cos(rad_angle);
 
@@ -2644,10 +2626,12 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
 
   // We need only RGB portion of the color space, YUV conversion handled in
   // skia.
-  const gfx::ColorSpace& src_color_space =
+  const gfx::ColorSpace src_color_space =
       resource_provider()
           ->GetColorSpace(quad->resource_id())
           .GetAsFullRangeRGB();
+  const gfx::HDRMetadata& src_hdr_metadata =
+      resource_provider()->GetHDRMetadata(quad->resource_id());
   const bool needs_color_conversion_filter =
       ((quad->is_video_frame && src_color_space.IsHDR()) ||
        src_color_space.IsToneMappedByDefault()) &&
@@ -2658,16 +2642,6 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
   if (needs_color_conversion_filter) {
     override_color_space = CurrentRenderPassSkColorSpace();
   }
-
-    // TODO(b/221643955): Some Chrome OS tests rely on the old GLRenderer
-    // behavior of skipping color space conversions if the quad's color space is
-    // invalid. Once these tests are migrated, we can remove the override here
-    // and revert to Skia's default behavior of assuming sRGB on invalid.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!src_color_space.IsValid()) {
-    override_color_space = CurrentRenderPassSkColorSpace();
-  }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_ANDROID)
   if (quad->is_stream_video) {
@@ -2815,7 +2789,7 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
     DCHECK(SkColorSpace::Equals(image->colorSpace(),
                                 CurrentRenderPassSkColorSpace().get()));
     sk_sp<SkColorFilter> color_filter = GetColorSpaceConversionFilter(
-        src_color_space, std::nullopt, quad->hdr_metadata, dst_color_space,
+        src_color_space, std::nullopt, src_hdr_metadata, dst_color_space,
         quad->is_video_frame);
     paint.setColorFilter(color_filter->makeComposed(paint.refColorFilter()));
   }
@@ -2966,8 +2940,7 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
 
   sk_sp<SkColorFilter> color_filter = GetColorSpaceConversionFilter(
       src_color_space, quad->bits_per_channel, quad->hdr_metadata,
-      dst_color_space, /*is_video_frame=*/true, quad->resource_offset,
-      quad->resource_multiplier);
+      dst_color_space, /*is_video_frame=*/true);
 
   auto content_color_filter = GetContentColorFilter();
   if (content_color_filter)
@@ -3059,25 +3032,10 @@ void SkiaRenderer::ScheduleOverlays() {
     if (overlay.is_solid_color) {
       DCHECK(overlay.color);
       DCHECK(!overlay.resource_id);
-
-#if BUILDFLAG(IS_OZONE)
-      // If non-backed solid color overlays aren't supported (e.g. Lacros on
-      // Linux) then we need to create buffers to send over Wayland.
-      if (!output_surface_->capabilities()
-               .supports_non_backed_solid_color_overlays &&
-          !output_surface_->capabilities().supports_single_pixel_buffer) {
-        overlay.mailbox = GetImageMailboxForColor(*overlay.color);
-        overlay.resource_size_in_pixels = gfx::Size(1, 1);
-        // This can now be treated as a regular overlay with a mailbox backing.
-        overlay.is_solid_color = false;
-        locks.emplace_back(this, overlay.mailbox);
-      }
-#else
-      // All other platforms that support solid color overlays don't need fake
-      // buffer.
+      // All other platforms must support solid color overlays
       DCHECK(output_surface_->capabilities()
-                 .supports_non_backed_solid_color_overlays);
-#endif
+                 .supports_non_backed_solid_color_overlays ||
+             output_surface_->capabilities().supports_single_pixel_buffer);
       continue;
     }
 
@@ -3106,9 +3064,7 @@ sk_sp<SkColorFilter> SkiaRenderer::GetColorSpaceConversionFilter(
     std::optional<uint32_t> src_bit_depth,
     std::optional<gfx::HDRMetadata> src_hdr_metadata,
     const gfx::ColorSpace& dst,
-    bool is_video_frame,
-    float resource_offset,
-    float resource_multiplier) {
+    bool is_video_frame) {
   // Use the current SDR slider white level for PQ HDR videos on
   // Windows, so that they look similar when rendered by the
   // compositor and when rendered as an overlay (HDR10 MPO).
@@ -3123,8 +3079,7 @@ sk_sp<SkColorFilter> SkiaRenderer::GetColorSpaceConversionFilter(
         current_frame()->display_color_spaces.GetSDRMaxLuminanceNits());
   }
   return color_filter_cache_.Get(
-      src, dst, resource_offset, resource_multiplier, src_bit_depth,
-      hdr_metadata,
+      src, dst, src_bit_depth, hdr_metadata,
       current_frame()->display_color_spaces.GetSDRMaxLuminanceNits(),
       current_frame()->display_color_spaces.GetHDRMaxLuminanceRelative());
 }
@@ -3317,18 +3272,24 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
 
     // Besides ensuring the output of the backdrop filter doesn't go beyond its
     // bounds, it should not read pixels outside of its bounds to prevent color
-    // bleeding. If it's a pixel-moving filter, we compose a kClamp-tiling Crop
-    // image filter to enforce this requirement.
-    // TODO(crbug.com/978031): Revisit the tilemode, perhaps kMirror is better
+    // bleeding. If it's a pixel-moving filter, we compose a kMirror-tiling Crop
+    // image filter to enforce this requirement. Mirror tiling avoids jarring
+    // discontinuities and flickering when content moves in and out of the
+    // background. See https://github.com/w3c/fxtf-drafts/issues/374.
+    // NOTE: The above comment refers to the intended ideal behavior. Originally
+    // the edge mode was kClamp and a feature controls the active mode.
     SkIRect sk_crop_rect = backdrop_rect.roundOut();
     SkIRect sk_src_rect = rpdq_params.backdrop_filter->filterBounds(
         sk_crop_rect, SkMatrix::I(), SkImageFilter::kReverse_MapDirection,
         /*inputRect=*/nullptr);
     if (!sk_crop_rect.contains(sk_src_rect)) {
+      SkTileMode sk_tile_mode =
+          base::FeatureList::IsEnabled(features::kBackdropFilterMirrorEdgeMode)
+              ? SkTileMode::kMirror
+              : SkTileMode::kClamp;
       rpdq_params.backdrop_filter = SkImageFilters::Compose(
           /*outer=*/std::move(rpdq_params.backdrop_filter),
-          /*inner=*/SkImageFilters::Crop(backdrop_rect, SkTileMode::kClamp,
-                                         nullptr));
+          /*inner=*/SkImageFilters::Crop(backdrop_rect, sk_tile_mode, nullptr));
     }
 
     // Update |filter_bounds| to include content produced by the backdrop. Under
@@ -4230,33 +4191,16 @@ gpu::Mailbox SkiaRenderer::GetPrimaryPlaneOverlayTestingMailbox() {
 }
 
 #if BUILDFLAG(IS_OZONE)
-const gpu::Mailbox SkiaRenderer::GetImageMailboxForColor(
-    const SkColor4f& color) {
-  // Currently the Wayland protocol does not have protocol to support solid
-  // color quads natively as surfaces. Here we create tiny 1x1 image buffers
-  // in the color space of the frame buffer and fill them with the quad's solid
-  // color. These freshly created buffers are then treated like any other
-  // overlay via the mailbox interface.
-  gpu::Mailbox solid_color_mailbox;
-  // First try for an existing same color image.
-  auto it = solid_color_buffers_.find(color.toSkColor());
-  if (it != solid_color_buffers_.end()) {
-    solid_color_mailbox = it->second.mailbox;
-    it->second.use_count++;
-  } else {
-    solid_color_mailbox = skia_output_surface_->CreateSolidColorSharedImage(
-        color, reshape_color_space());
-
-    solid_color_buffers_.insert({color.toSkColor(), {solid_color_mailbox, 1}});
-  }
-  return solid_color_mailbox;
-}
 
 void SkiaRenderer::MaybeScheduleBackgroundImage(
     OverlayProcessorInterface::CandidateList& overlay_list) {
   if (!output_surface_->capabilities().needs_background_image) {
     return;
   }
+
+  DCHECK(output_surface_->capabilities()
+             .supports_non_backed_solid_color_overlays ||
+         output_surface_->capabilities().supports_single_pixel_buffer);
 
   OverlayCandidate background_candidate;
   background_candidate.color_space = reshape_color_space();
@@ -4276,22 +4220,6 @@ void SkiaRenderer::MaybeScheduleBackgroundImage(
   overlay_list.push_back(background_candidate);
 }
 
-void SkiaRenderer::MaybeDecrementSolidColorBuffers(
-    std::vector<OverlayLock>& finished_locks) {
-  if (output_surface_->capabilities()
-          .supports_non_backed_solid_color_overlays ||
-      output_surface_->capabilities().supports_single_pixel_buffer) {
-    return;
-  }
-  for (auto& lock : finished_locks) {
-    for (auto& entry : solid_color_buffers_) {
-      if (entry.second.mailbox == lock.mailbox()) {
-        entry.second.use_count--;
-        break;
-      }
-    }
-  }
-}
 #endif  // BUILDFLAG(IS_OZONE)
 
 #if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)

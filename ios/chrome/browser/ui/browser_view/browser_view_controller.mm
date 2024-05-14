@@ -38,6 +38,7 @@
 #import "ios/chrome/browser/shared/public/commands/settings_commands.h"
 #import "ios/chrome/browser/shared/public/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/public/features/features_utils.h"
 #import "ios/chrome/browser/shared/ui/util/named_guide.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/url_with_title.h"
@@ -602,15 +603,6 @@ enum HeaderBehaviour {
 
 #pragma mark - Public methods
 
-- (void)setPrimary:(BOOL)primary {
-  if (_tabUsageRecorderBrowserAgent) {
-    _tabUsageRecorderBrowserAgent->RecordPrimaryBrowserChange(primary);
-  }
-  if (primary) {
-    [self updateBroadcastState];
-  }
-}
-
 - (void)shieldWasTapped:(id)sender {
   [self.omniboxCommandsHandler cancelOmniboxEdit];
 }
@@ -684,12 +676,6 @@ enum HeaderBehaviour {
       startRecognitionOnViewController:self
                               webState:self.currentWebState];
   [self.omniboxCommandsHandler cancelOmniboxEdit];
-}
-
-// TODO:(crbug.com/1385847): Remove this when BVC is refactored to not know
-// about model layer objects such as webstates.
-- (void)displayCurrentTab {
-  [self displayTabView];
 }
 
 #pragma mark - browser_view_controller+private.h
@@ -791,14 +777,14 @@ enum HeaderBehaviour {
   _isShutdown = YES;
 
   // Disconnect child coordinators.
-  if (base::FeatureList::IsEnabled(kModernTabStrip)) {
+  if (IsModernTabStripOrRaccoonEnabled()) {
     [self.tabStripCoordinator stop];
     self.tabStripCoordinator = nil;
   } else {
     [self.legacyTabStripCoordinator stop];
     self.legacyTabStripCoordinator = nil;
-    self.tabStripView = nil;
   }
+  self.tabStripView = nil;
 
   _bubblePresenter = nil;
 
@@ -874,7 +860,8 @@ enum HeaderBehaviour {
   self.typingShield.accessibilityIdentifier = @"Typing Shield";
   self.typingShield.accessibilityLabel = l10n_util::GetNSString(IDS_CANCEL);
   if (IsIpadPopoutOmniboxEnabled()) {
-    self.typingShield.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.25];
+    self.typingShield.backgroundColor =
+        [UIColor colorNamed:kOmniboxPopoutOverlayColor];
   }
   [self.typingShield addTarget:self
                         action:@selector(shieldWasTapped:)
@@ -941,6 +928,20 @@ enum HeaderBehaviour {
   self.viewVisible = YES;
   [self updateBroadcastState];
   [self updateToolbarState];
+
+  // If there is no first responder, try to make the webview the first
+  // responder to have it answer keyboard commands (e.g. space bar to scroll
+  // and respond to gampad controllers). The WKContentView must be the first
+  // responder before (or very shortly after) a load starts in order for
+  // gamepads to work. (Ref: crbug.com/325307469)
+  web::WebState* activeWebState = self.currentWebState;
+  if (activeWebState && !GetFirstResponder()) {
+    NewTabPageTabHelper* NTPHelper =
+        NewTabPageTabHelper::FromWebState(activeWebState);
+    if (!NTPHelper || !NTPHelper->IsActive()) {
+      [activeWebState->GetWebViewProxy() becomeFirstResponder];
+    }
+  }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -990,14 +991,14 @@ enum HeaderBehaviour {
     [self.toolbarCoordinator stop];
     self.toolbarCoordinator = nil;
     _toolbarUIState = nil;
-    if (base::FeatureList::IsEnabled(kModernTabStrip)) {
+    if (IsModernTabStripOrRaccoonEnabled()) {
       [self.tabStripCoordinator stop];
       self.tabStripCoordinator = nil;
     } else {
       [self.legacyTabStripCoordinator stop];
       self.legacyTabStripCoordinator = nil;
-      self.tabStripView = nil;
     }
+    self.tabStripView = nil;
     _sideSwipeMediator = nil;
   }
 }
@@ -1015,6 +1016,13 @@ enum HeaderBehaviour {
   // After `-shutdown` is called, browserState is invalid and will cause a
   // crash.
   if (_isShutdown) {
+    return;
+  }
+
+  if (self.traitCollection.horizontalSizeClass ==
+          previousTraitCollection.horizontalSizeClass &&
+      self.traitCollection.verticalSizeClass ==
+          previousTraitCollection.verticalSizeClass) {
     return;
   }
 
@@ -1066,7 +1074,7 @@ enum HeaderBehaviour {
     [self showTabStripView:self.tabStripView];
     [self.tabStripView layoutSubviews];
     const bool canShowTabStrip = IsRegularXRegularSizeClass(self);
-    if (base::FeatureList::IsEnabled(kModernTabStrip)) {
+    if (IsModernTabStripOrRaccoonEnabled()) {
       [self.tabStripCoordinator hideTabStrip:!canShowTabStrip];
     } else {
       [self.legacyTabStripCoordinator hideTabStrip:!canShowTabStrip];
@@ -1136,7 +1144,7 @@ enum HeaderBehaviour {
 }
 
 - (void)completedTransition {
-  if (!base::FeatureList::IsEnabled(kModernTabStrip)) {
+  if (!IsModernTabStripOrRaccoonEnabled()) {
     if (self.tabStripView) {
       [self.legacyTabStripCoordinator tabStripSizeDidChange];
     }
@@ -1275,7 +1283,7 @@ enum HeaderBehaviour {
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
   if (IsRegularXRegularSizeClass(self) && !_isOffTheRecord &&
-      !base::FeatureList::IsEnabled(kModernTabStrip)) {
+      !IsModernTabStripOrRaccoonEnabled()) {
     return self.tabStripView.frame.origin.y < kTabStripAppearanceOffset
                ? UIStatusBarStyleDefault
                : UIStatusBarStyleLightContent;
@@ -1299,7 +1307,7 @@ enum HeaderBehaviour {
   _fakeStatusBarView = [[UIView alloc] initWithFrame:statusBarFrame];
   [_fakeStatusBarView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
   if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
-    if (base::FeatureList::IsEnabled(kModernTabStrip)) {
+    if (IsModernTabStripOrRaccoonEnabled()) {
       _fakeStatusBarView.backgroundColor =
           [UIColor colorNamed:kGroupedPrimaryBackgroundColor];
       // Force the UserInterfaceStyle update in incognito.
@@ -1331,26 +1339,16 @@ enum HeaderBehaviour {
   }
 
   if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
-    if (base::FeatureList::IsEnabled(kModernTabStrip)) {
+    const bool canShowTabStrip = IsRegularXRegularSizeClass(self);
+    if (IsModernTabStripOrRaccoonEnabled()) {
       [self.tabStripCoordinator start];
+      [self.tabStripCoordinator hideTabStrip:!canShowTabStrip];
     } else {
       self.legacyTabStripCoordinator.presentationProvider = self;
       [self.legacyTabStripCoordinator start];
+      [self.legacyTabStripCoordinator hideTabStrip:!canShowTabStrip];
     }
   }
-}
-
-// Called by NSNotificationCenter when the view's window becomes key to account
-// for topLayoutGuide length updates.
-- (void)updateToolbarHeightForKeyWindow {
-  // Update the toolbar height to account for `topLayoutGuide` changes.
-  self.primaryToolbarHeightConstraint.constant =
-      [self primaryToolbarHeightWithInset];
-  // Stop listening for the key window notification.
-  [[NSNotificationCenter defaultCenter]
-      removeObserver:self
-                name:UIWindowDidBecomeKeyNotification
-              object:self.view.window];
 }
 
 // The height of the primary toolbar with the top safe area inset included.
@@ -1385,23 +1383,6 @@ enum HeaderBehaviour {
   // Add the safe area inset to the toolbar height.
   CGFloat unsafeHeight = self.rootSafeAreaInsets.bottom;
   return height + unsafeHeight;
-}
-
-- (void)addConstraintsToTabStrip {
-  if (!base::FeatureList::IsEnabled(kModernTabStrip))
-    return;
-
-  self.tabStripView.translatesAutoresizingMaskIntoConstraints = NO;
-  [NSLayoutConstraint activateConstraints:@[
-    [self.view.safeAreaLayoutGuide.topAnchor
-        constraintEqualToAnchor:self.tabStripView.topAnchor],
-    [self.view.safeAreaLayoutGuide.leadingAnchor
-        constraintEqualToAnchor:self.tabStripView.leadingAnchor],
-    [self.view.safeAreaLayoutGuide.trailingAnchor
-        constraintEqualToAnchor:self.tabStripView.trailingAnchor],
-    [self.tabStripView.heightAnchor
-        constraintEqualToConstant:kModernTabStripHeight],
-  ]];
 }
 
 // Sets up the constraints on the toolbar.
@@ -1505,18 +1486,29 @@ enum HeaderBehaviour {
     UIView* primaryToolbarView =
         self.toolbarCoordinator.primaryToolbarViewController.view;
     if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
-      if (base::FeatureList::IsEnabled(kModernTabStrip) &&
-          self.tabStripCoordinator) {
+      if (IsModernTabStripOrRaccoonEnabled() && self.tabStripCoordinator) {
         UIViewController* tabStripViewController =
             self.tabStripCoordinator.viewController;
         [self addChildViewController:tabStripViewController];
         self.tabStripView = tabStripViewController.view;
         [self.view addSubview:self.tabStripView];
         [tabStripViewController didMoveToParentViewController:self];
-        [self addConstraintsToTabStrip];
+        CGRect tabStripFrame =
+            CGRectMake(0, self.headerOffset, self.view.bounds.size.width,
+                       kModernTabStripHeight);
+        self.tabStripView.frame = tabStripFrame;
+        self.tabStripView.autoresizingMask =
+            (UIViewAutoresizingFlexibleWidth |
+             UIViewAutoresizingFlexibleBottomMargin);
       }
-      [self.view insertSubview:primaryToolbarView
-                  belowSubview:self.tabStripView];
+      if (IsModernTabStripOrRaccoonEnabled()) {
+        [self.view insertSubview:primaryToolbarView
+                    aboveSubview:self.tabStripView];
+      } else {
+        [self.view insertSubview:primaryToolbarView
+                    belowSubview:self.tabStripView];
+      }
+
     } else {
       [self.view addSubview:primaryToolbarView];
     }
@@ -2572,7 +2564,14 @@ enum HeaderBehaviour {
   tabStripFrame.origin.y = self.headerOffset;
   tabStripFrame.size.width = CGRectGetWidth([self view].bounds);
   [self.tabStripView setFrame:tabStripFrame];
-  [[self view] addSubview:tabStripView];
+
+  if (IsModernTabStripOrRaccoonEnabled()) {
+    UIView* primaryToolbar =
+        self.toolbarCoordinator.primaryToolbarViewController.view;
+    [self.view insertSubview:tabStripView belowSubview:primaryToolbar];
+  } else {
+    [self.view addSubview:tabStripView];
+  }
 }
 
 #pragma mark - FindBarPresentationDelegate

@@ -269,10 +269,10 @@ void RegisterWebApp(Profile* profile, apps::AppPtr app) {
 std::unique_ptr<net::CanonicalCookie> CreateCookieKey(
     const GURL& url,
     const std::string& cookie_line,
-    absl::optional<net::CookiePartitionKey> cookie_partition_key =
-        absl::nullopt) {
+    std::optional<net::CookiePartitionKey> cookie_partition_key =
+        std::nullopt) {
   return net::CanonicalCookie::Create(url, cookie_line, base::Time::Now(),
-                                      absl::nullopt /* server_time */,
+                                      std::nullopt /* server_time */,
                                       cookie_partition_key);
 }
 
@@ -534,7 +534,7 @@ class SiteSettingsHandlerBaseTest : public testing::Test {
     constraints.set_lifetime(lifetime);
     if (is_auto_granted) {
       constraints.set_session_model(
-          content_settings::SessionModel::NonRestorableUserSession);
+          content_settings::mojom::SessionModel::NON_RESTORABLE_USER_SESSION);
     }
 
     map->SetContentSettingCustomScope(
@@ -874,8 +874,7 @@ class SiteSettingsHandlerBaseTest : public testing::Test {
         mock_browsing_data_cookie_helper,
         mock_browsing_data_local_storage_helper,
         /*session_storage_helper=*/nullptr,
-        /*quota_helper=*/nullptr,
-        /*cache_storage_helper=*/nullptr);
+        /*quota_helper=*/nullptr);
     auto mock_cookies_tree_model = std::make_unique<CookiesTreeModel>(
         std::move(container), profile()->GetExtensionSpecialStoragePolicy());
 
@@ -2942,7 +2941,7 @@ TEST_P(SiteSettingsHandlerTest, TemporaryCookieExceptions) {
 
   content_settings::ContentSettingConstraints constraints;
   constraints.set_lifetime(base::Days(kExpirationDurationInDays));
-  constraints.set_session_model(content_settings::SessionModel::Durable);
+  constraints.set_session_model(content_settings::mojom::SessionModel::DURABLE);
 
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile());

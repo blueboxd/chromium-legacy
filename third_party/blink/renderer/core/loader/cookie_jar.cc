@@ -73,7 +73,7 @@ void CookieJar::SetCookie(const String& value) {
 }
 
 void CookieJar::OnBackendDisconnect() {
-  shared_memory_initialized_ = false;
+  shared_memory_version_client_.reset();
   InvalidateCache();
 }
 
@@ -87,7 +87,8 @@ String CookieJar::Cookies() {
 
   String value = g_empty_string;
   base::ReadOnlySharedMemoryRegion new_mapped_region;
-  const bool get_version_shared_memory = !shared_memory_initialized_;
+  const bool get_version_shared_memory =
+      !shared_memory_version_client_.has_value();
 
   // Store the latest cookie version to update |last_version_| after attempting
   // to get the string. Will get updated once more by GetCookiesString() if an
@@ -101,7 +102,8 @@ String CookieJar::Cookies() {
             cookie_url, document_->SiteForCookies(),
             document_->TopFrameOrigin(),
             document_->GetExecutionContext()->HasStorageAccess(),
-            get_version_shared_memory, is_ad_tagged, &new_version,
+            get_version_shared_memory, is_ad_tagged,
+            /*force_disable_third_party_cookies=*/false, &new_version,
             &new_mapped_region, &value)) {
       // On IPC failure invalidate cached values and return empty string since
       // there is no guarantee the client can still validly access cookies in
@@ -111,13 +113,8 @@ String CookieJar::Cookies() {
     }
     last_cookies_ = value;
   }
-
-  // TODO(crbug.com/1465996): Once determined whether getting an invalid region
-  // is possible add a DCHECK or comment depending.
-  if (!shared_memory_initialized_ && new_mapped_region.IsValid()) {
-    mapped_region_ = std::move(new_mapped_region);
-    mapping_ = mapped_region_.Map();
-    shared_memory_initialized_ = true;
+  if (new_mapped_region.IsValid()) {
+    shared_memory_version_client_.emplace(std::move(new_mapped_region));
   }
   base::UmaHistogramTimes("Blink.CookiesTime", timer.Elapsed());
   UpdateCacheAfterGetRequest(cookie_url, value, new_version);
@@ -152,28 +149,12 @@ void CookieJar::SetCookieManager(
 void CookieJar::InvalidateCache() {
   last_cookies_hash_.reset();
   last_cookies_ = String();
-  last_version_ = network::mojom::blink::kInvalidCookieVersion;
-}
-
-uint64_t CookieJar::GetSharedCookieVersion() {
-  if (shared_memory_initialized_) {
-    // Relaxed memory order since only the version is stored within the region
-    // and as such is the only data shared between processes. There is no
-    // re-ordering to worry about.
-    return mapping_.GetMemoryAs<const std::atomic<uint64_t>>()->load(
-        std::memory_order_relaxed);
-  }
-  return network::mojom::blink::kInvalidCookieVersion;
+  last_version_ = mojo::shared_memory_version::kInvalidVersion;
 }
 
 bool CookieJar::IPCNeeded() {
   // Not under the experiment, always use IPCs.
   if (!RuntimeEnabledFeatures::ReduceCookieIPCsEnabled()) {
-    return true;
-  }
-
-  // An IPC is needed if there is no cached version.
-  if (last_version_ == network::mojom::blink::kInvalidCookieVersion) {
     return true;
   }
 
@@ -184,8 +165,14 @@ bool CookieJar::IPCNeeded() {
     return true;
   }
 
+  // No shared memory communication so IPC needed.
+  if (!shared_memory_version_client_.has_value()) {
+    return true;
+  }
+
   // Cookie string has changed.
-  if (last_version_ < GetSharedCookieVersion()) {
+  if (shared_memory_version_client_->SharedVersionIsGreaterThan(
+          last_version_)) {
     return true;
   }
 
@@ -220,7 +207,7 @@ void CookieJar::UpdateCacheAfterGetRequest(const KURL& cookie_url,
   // An invalid version means no shared memory communication so assume changes
   // happened.
   const bool cookie_is_unchanged =
-      new_version != network::mojom::blink::kInvalidCookieVersion &&
+      new_version != mojo::shared_memory_version::kInvalidVersion &&
       last_version_ == new_version;
 
   if (last_cookies_hash_.has_value() && cookie_is_unchanged) {

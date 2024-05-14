@@ -11,7 +11,6 @@
 
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "base/memory/ptr_util.h"
-#include "base/ranges/algorithm.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -20,16 +19,13 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/cookies/parsed_cookie.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-forward.h"
-#include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "url/gurl.h"
 
 namespace android_webview {
 
 namespace {
 
-bool AreAllCookiesDisabled() {
-  return !AwCookieAccessPolicy::GetInstance()->GetShouldAcceptCookies();
-}
+using PrivacySetting = net::NetworkDelegate::PrivacySetting;
 
 }  // namespace
 
@@ -50,14 +46,15 @@ class AwProxyingRestrictedCookieManagerListener
         client_listener_(std::move(client_listener)) {}
 
   void OnCookieChange(const net::CookieChangeInfo& change) override {
-    if (AreAllCookiesDisabled()) {
-      return;
-    }
-    if (change.cookie.IsPartitioned() ||
-        (aw_restricted_cookie_manager_ &&
-         aw_restricted_cookie_manager_->AllowFullCookies(
-             url_, site_for_cookies_, has_storage_access_))) {
-      client_listener_->OnCookieChange(change);
+    if (aw_restricted_cookie_manager_) {
+      PrivacySetting cookieState = aw_restricted_cookie_manager_->AllowCookies(
+          url_, site_for_cookies_, has_storage_access_);
+
+      if (cookieState == PrivacySetting::kStateAllowed ||
+          (cookieState == PrivacySetting::kPartitionedStateAllowedOnly &&
+           change.cookie.IsPartitioned())) {
+        client_listener_->OnCookieChange(change);
+      }
     }
   }
 
@@ -109,42 +106,25 @@ void AwProxyingRestrictedCookieManager::GetAllForUrl(
     bool has_storage_access,
     network::mojom::CookieManagerGetOptionsPtr options,
     bool is_ad_tagged,
+    bool force_disable_third_party_cookies,
     GetAllForUrlCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  if (AreAllCookiesDisabled()) {
+  PrivacySetting cookieState =
+      AllowCookies(url, site_for_cookies, has_storage_access);
+
+  if (cookieState == PrivacySetting::kStateDisallowed) {
     std::move(callback).Run(std::vector<net::CookieWithAccessResult>());
     return;
   }
 
-  bool allow_all_cookies =
-      AllowFullCookies(url, site_for_cookies, has_storage_access);
+  bool disable_3pcs =
+      force_disable_third_party_cookies ||
+      cookieState == PrivacySetting::kPartitionedStateAllowedOnly;
 
   underlying_restricted_cookie_manager_->GetAllForUrl(
       url, site_for_cookies, top_frame_origin, has_storage_access,
-      std::move(options), is_ad_tagged,
-      base::BindOnce(
-          [](bool allow_all_cookies,
-             const std::vector<::net::CookieWithAccessResult>& cookies) {
-            if (allow_all_cookies) {
-              return cookies;
-            }
-
-            // We get back a const vector of cookies so we can't modify the
-            // original vector. So we instead need to copy all the partitioned
-            // cookies to a new list.
-            std::vector<::net::CookieWithAccessResult> partitioned_cookies;
-
-            std::copy_if(cookies.begin(), cookies.end(),
-                         std::back_inserter(partitioned_cookies),
-                         [](::net::CookieWithAccessResult cookie) {
-                           return cookie.cookie.IsPartitioned();
-                         });
-
-            return partitioned_cookies;
-          },
-          allow_all_cookies)
-          .Then(std::move(callback)));
+      std::move(options), is_ad_tagged, disable_3pcs, std::move(callback));
 }
 
 void AwProxyingRestrictedCookieManager::SetCanonicalCookie(
@@ -156,13 +136,15 @@ void AwProxyingRestrictedCookieManager::SetCanonicalCookie(
     net::CookieInclusionStatus status,
     SetCanonicalCookieCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (AreAllCookiesDisabled()) {
+  PrivacySetting cookieState =
+      AllowCookies(url, site_for_cookies, has_storage_access);
+
+  if (cookieState == PrivacySetting::kStateDisallowed) {
     std::move(callback).Run(false);
     return;
   }
 
-  if (cookie.IsPartitioned() ||
-      AllowFullCookies(url, site_for_cookies, has_storage_access)) {
+  if (cookie.IsPartitioned() || cookieState == PrivacySetting::kStateAllowed) {
     underlying_restricted_cookie_manager_->SetCanonicalCookie(
         cookie, url, site_for_cookies, top_frame_origin, has_storage_access,
         status, std::move(callback));
@@ -204,7 +186,11 @@ void AwProxyingRestrictedCookieManager::SetCookieFromString(
     const std::string& cookie,
     SetCookieFromStringCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (AreAllCookiesDisabled()) {
+
+  PrivacySetting cookieState =
+      AllowCookies(url, site_for_cookies, has_storage_access);
+
+  if (cookieState == PrivacySetting::kStateDisallowed) {
     std::move(callback).Run();
     return;
   }
@@ -214,9 +200,9 @@ void AwProxyingRestrictedCookieManager::SetCookieFromString(
   // cookie manager.
   net::ParsedCookie parsed_cookie(cookie);
 
-  if (parsed_cookie.IsValid() &&
-      ((parsed_cookie.IsPartitioned() && parsed_cookie.IsSecure()) ||
-       AllowFullCookies(url, site_for_cookies, has_storage_access))) {
+  if (cookieState == PrivacySetting::kStateAllowed ||
+      (parsed_cookie.IsValid() && parsed_cookie.IsPartitioned() &&
+       parsed_cookie.IsSecure())) {
     underlying_restricted_cookie_manager_->SetCookieFromString(
         url, site_for_cookies, top_frame_origin, has_storage_access, cookie,
         std::move(callback));
@@ -232,40 +218,32 @@ void AwProxyingRestrictedCookieManager::GetCookiesString(
     bool has_storage_access,
     bool get_version_shared_memory,
     bool is_ad_tagged,
+    bool force_disable_third_party_cookies,
     GetCookiesStringCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (AreAllCookiesDisabled()) {
+
+  PrivacySetting cookieState =
+      AllowCookies(url, site_for_cookies, has_storage_access);
+
+  if (cookieState == PrivacySetting::kStateDisallowed) {
     std::move(callback).Run(network::mojom::kInvalidCookieVersion,
                             base::ReadOnlySharedMemoryRegion(), "");
     return;
   }
 
-  // In order to know if we should return cookies or not, we need to have
-  // access to the canonical cookies before they are parsed into a cookie
-  // line so that we can apply our filtering logic. Because of this, we don't
-  // use restricted cookie managers underlying GetCookiesString method. This
-  // isn't a huge loss because the GetCookiesString method mostly has logic
-  // around creating shared memory which we don't use on WebView. In Android
-  // Webview the access to cookies can change dynamically. For now never
-  // request a shared memory region so that a full IPC is issued every time.
-  // This prevents a client retaining access to the cookie value past the
-  // moment where it was denied. (crbug.com/1393050): Implement a strategy so
-  // that the shared memory access can be revoked from here.
+  bool disable_3pcs =
+      force_disable_third_party_cookies ||
+      cookieState == PrivacySetting::kPartitionedStateAllowedOnly;
 
-  auto match_options = network::mojom::CookieManagerGetOptions::New();
-  match_options->name = "";
-  match_options->match_type = network::mojom::CookieMatchType::STARTS_WITH;
-
-  auto bound_callback =
-      base::BindOnce(std::move(callback), network::mojom::kInvalidCookieVersion,
-                     base::ReadOnlySharedMemoryRegion());
-
-  GetAllForUrl(url, site_for_cookies, top_frame_origin, has_storage_access,
-               std::move(match_options), is_ad_tagged,
-               base::BindOnce([](const std::vector<net::CookieWithAccessResult>&
-                                     cookies) {
-                 return net::CanonicalCookie::BuildCookieLine(cookies);
-               }).Then(std::move(bound_callback)));
+  // In Android Webview the access to cookies can change dynamically. For
+  // now never request a shared memory region so that a full IPC is issued
+  // every time. This prevents a client retaining access to the cookie value
+  // past the moment where it was denied. (crbug.com/1393050): Implement a
+  // strategy so that the shared memory access can be revoked from here.
+  underlying_restricted_cookie_manager_->GetCookiesString(
+      url, site_for_cookies, top_frame_origin, has_storage_access,
+      /*get_version_shared_memory=*/false, is_ad_tagged, disable_3pcs,
+      std::move(callback));
 }
 
 void AwProxyingRestrictedCookieManager::CookiesEnabledFor(
@@ -276,7 +254,8 @@ void AwProxyingRestrictedCookieManager::CookiesEnabledFor(
     CookiesEnabledForCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   std::move(callback).Run(
-      AllowFullCookies(url, site_for_cookies, has_storage_access));
+      AllowCookies(url, site_for_cookies, has_storage_access) ==
+      PrivacySetting::kStateAllowed);
 }
 
 AwProxyingRestrictedCookieManager::AwProxyingRestrictedCookieManager(
@@ -305,14 +284,16 @@ void AwProxyingRestrictedCookieManager::CreateAndBindOnIoThread(
   mojo::MakeSelfOwnedReceiver(std::move(wrapper), std::move(receiver));
 }
 
-bool AwProxyingRestrictedCookieManager::AllowFullCookies(
+PrivacySetting AwProxyingRestrictedCookieManager::AllowCookies(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
     bool has_storage_access) const {
   if (is_service_worker_) {
     // Service worker cookies are always first-party, so only need to check
     // the global toggle.
-    return AwCookieAccessPolicy::GetInstance()->GetShouldAcceptCookies();
+    return AwCookieAccessPolicy::GetInstance()->GetShouldAcceptCookies()
+               ? PrivacySetting::kStateAllowed
+               : PrivacySetting::kStateDisallowed;
   } else {
     return AwCookieAccessPolicy::GetInstance()->AllowCookies(
         url, site_for_cookies, global_frame_token_, has_storage_access);

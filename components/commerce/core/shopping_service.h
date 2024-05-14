@@ -22,6 +22,7 @@
 #include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
 #include "components/commerce/core/account_checker.h"
+#include "components/commerce/core/commerce_info_cache.h"
 #include "components/commerce/core/commerce_types.h"
 #include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
 #include "components/commerce/core/proto/discounts_db_content.pb.h"
@@ -107,6 +108,8 @@ class ScheduledMetricsManager;
 class BookmarkUpdateManager;
 class DiscountsStorage;
 class ParcelsManager;
+class ProductSpecificationsServerProxy;
+class ProductSpecificationsService;
 class ShoppingPowerBookmarkDataProvider;
 class ShoppingBookmarkModelObserver;
 class SubscriptionsManager;
@@ -173,11 +176,20 @@ enum class ShoppingPageType {
 
 using DiscountsPair = std::pair<GURL, std::vector<DiscountInfo>>;
 using DiscountsOptGuideCallback = base::OnceCallback<void(DiscountsPair)>;
+using RepeatingProductInfoCallback =
+    base::RepeatingCallback<void(const GURL&,
+                                 const std::optional<const ProductInfo>&)>;
 
 // A callback for getting updated ProductInfo for a bookmark. This provides the
 // bookmark ID being updated, the URL, and the product info.
 using BookmarkProductInfoUpdatedCallback = base::RepeatingCallback<
     void(const int64_t, const GURL&, std::optional<ProductInfo>)>;
+
+using UrlProductIdentifierTuple =
+    std::tuple<const GURL&, const std::optional<const uint64_t>>;
+
+using UrlProductIdentifierTupleCallback =
+    base::OnceCallback<void(const UrlProductIdentifierTuple&)>;
 
 // Under Desktop browser test or interactive ui test, use
 // ShoppingServiceFactory::SetTestingFactory to create a
@@ -236,6 +248,7 @@ class ShoppingService : public KeyedService,
           commerce_subscription_db::CommerceSubscriptionContentProto>*
           subscription_proto_db,
       power_bookmarks::PowerBookmarkService* power_bookmark_service,
+      ProductSpecificationsService* product_specifications_service,
       SessionProtoStorage<discounts_db::DiscountsContentProto>*
           discounts_proto_db,
       SessionProtoStorage<parcel_tracking_db::ParcelTrackingContent>*
@@ -246,6 +259,9 @@ class ShoppingService : public KeyedService,
 
   ShoppingService(const ShoppingService&) = delete;
   ShoppingService& operator=(const ShoppingService&) = delete;
+
+  // Gets an AccountChecker instance to aid in determining feature eligibility.
+  virtual AccountChecker* GetAccountChecker();
 
   // This API retrieves the product information for the provided |url| and
   // passes the payload back to the caller via |callback|. At minimum, this
@@ -293,6 +309,10 @@ class ShoppingService : public KeyedService,
   // the fetch is completed.
   virtual void GetDiscountInfoForUrls(const std::vector<GURL>& urls,
                                       DiscountInfoCallback callback);
+
+  virtual void GetProductSpecificationsForUrls(
+      const std::vector<GURL>& urls,
+      ProductSpecificationsCallback callback);
 
   // This API fetches whether the provided |url| is a shopping-related page and
   // passes the result back to the caller via |callback|. Call will run after
@@ -436,6 +456,11 @@ class ShoppingService : public KeyedService,
   // Called to stop tracking all parcels.
   void StopTrackingAllParcels(base::OnceCallback<void(bool)> callback);
 
+  // Called to fetch product specs for a set of urls.
+  void GetProductSpecificationsSetForUrls(
+      const std::vector<GURL>& urls,
+      base::OnceCallback<void(const ProductSpecificationSet)> callback);
+
   // Get a weak pointer for this service instance.
   base::WeakPtr<ShoppingService> AsWeakPtr();
 
@@ -517,10 +542,20 @@ class ShoppingService : public KeyedService,
       const optimization_guide::OptimizationMetadata& metadata);
 
   // Handle a response from the optimization guide on-demand API for product
-  // info.
-  void OnProductInfoUpdatedOnDemand(
+  // info, specifically dealing with batch updates for bookmarks.
+  void HandleOnDemandProductInfoResponseForBookmarks(
       BookmarkProductInfoUpdatedCallback callback,
       std::unordered_map<std::string, int64_t> url_to_id_map,
+      const GURL& url,
+      const base::flat_map<
+          optimization_guide::proto::OptimizationType,
+          optimization_guide::OptimizationGuideDecisionWithMetadata>&
+          decisions);
+
+  // Handle a generic on-demand request for product info. While this method
+  // accepts a repeating callback, it should only ever be called once.
+  void HandleOnDemandProductInfoResponse(
+      RepeatingProductInfoCallback callback,
       const GURL& url,
       const base::flat_map<
           optimization_guide::proto::OptimizationType,
@@ -550,15 +585,6 @@ class ShoppingService : public KeyedService,
   // |on_page_data_map|. The merged data is written to |info|.
   static void MergeProductInfoData(ProductInfo* info,
                                    const base::Value::Dict& on_page_data_map);
-
-  // Check if the shopping list is eligible for use. This not only checks the
-  // feature flag, but whether the feature is allowed by enterprise policy and
-  // whether the user is signed in. The value returned here can change during
-  // runtime so it should not be used when deciding to build infrastructure.
-  static bool IsShoppingListEligible(AccountChecker* account_checker,
-                                     PrefService* prefs,
-                                     const std::string& country_code,
-                                     const std::string& locale);
 
   void HandleOptGuideMerchantInfoResponse(
       const GURL& url,
@@ -634,6 +660,13 @@ class ShoppingService : public KeyedService,
 
   void OnStateChanged(syncer::SyncService* sync) override;
 
+  void GetProductIdentifierForUrl(const GURL& url,
+                                  UrlProductIdentifierTupleCallback callback);
+
+  void CreateProductSpecificationsSet(
+      base::OnceCallback<void(const ProductSpecificationSet)> callback,
+      const std::vector<UrlProductIdentifierTuple>& result);
+
   // Updates the bookmark model used for sync (and shopping) if needed. Invoked
   // when sync state changes.
   void UpdateBookmarkModelUsedForSync();
@@ -672,6 +705,8 @@ class ShoppingService : public KeyedService,
 
   raw_ptr<power_bookmarks::PowerBookmarkService> power_bookmark_service_;
 
+  raw_ptr<ProductSpecificationsService> product_specifications_service_;
+
   // The service's means of observing the bookmark model which is automatically
   // removed from the model when destroyed. This will be null if no
   // BookmarkModel is provided to the service.
@@ -681,10 +716,11 @@ class ShoppingService : public KeyedService,
   std::unique_ptr<ShoppingPowerBookmarkDataProvider>
       shopping_power_bookmark_data_provider_;
 
-  // This is a cache that maps URL to a cache entry that may or may not contain
-  // product info.
-  std::unordered_map<std::string, std::unique_ptr<ProductInfoCacheEntry>>
-      product_info_cache_;
+  // A cache that retains commerce information for a URL as long as at least one
+  // instance of the URL is open in a tab or mainteined by some other subsystem.
+  CommerceInfoCache commerce_info_cache_;
+
+  std::unique_ptr<ProductSpecificationsServerProxy> product_specs_server_proxy_;
 
   // This is a cache that maps URL to a cache entry that may or may not contain
   // price insights info.

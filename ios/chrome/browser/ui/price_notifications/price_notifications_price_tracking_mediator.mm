@@ -9,7 +9,6 @@
 #import "base/metrics/histogram_functions.h"
 #import "base/strings/string_number_conversions.h"
 #import "base/strings/sys_string_conversions.h"
-#import "components/bookmarks/browser/bookmark_model.h"
 #import "components/commerce/core/commerce_constants.h"
 #import "components/commerce/core/price_tracking_utils.h"
 #import "components/commerce/core/shopping_service.h"
@@ -19,6 +18,7 @@
 #import "components/power_bookmarks/core/proto/power_bookmark_meta.pb.h"
 #import "components/power_bookmarks/core/proto/shopping_specifics.pb.h"
 #import "components/sync/base/features.h"
+#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_client_id.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_service.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_util.h"
@@ -53,8 +53,6 @@ using PriceNotificationItems =
 @interface PriceNotificationsPriceTrackingMediator () {
   // The service responsible for fetching a product's image data.
   std::unique_ptr<image_fetcher::ImageDataFetcher> _imageFetcher;
-  // Only used if ReplaceSyncPromosWithSignInPromos is not enabled.
-  raw_ptr<bookmarks::BookmarkModel> _localOrSyncableBookmarkModel;
 }
 // The service responsible for interacting with commerce's price data
 // infrastructure.
@@ -77,7 +75,6 @@ using PriceNotificationItems =
 
 - (instancetype)
     initWithShoppingService:(commerce::ShoppingService*)service
-              bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
                imageFetcher:
                    (std::unique_ptr<image_fetcher::ImageDataFetcher>)fetcher
                    webState:(web::WebState*)webState
@@ -85,12 +82,10 @@ using PriceNotificationItems =
   self = [super init];
   if (self) {
     DCHECK(service);
-    DCHECK(bookmarkModel);
     DCHECK(fetcher);
     DCHECK(webState);
     DCHECK(pushNotificationService);
     _shoppingService = service;
-    _localOrSyncableBookmarkModel = bookmarkModel;
     _imageFetcher = std::move(fetcher);
     _webState = webState;
     _pushNotificationService = pushNotificationService;
@@ -111,12 +106,7 @@ using PriceNotificationItems =
 #pragma mark - Accessors
 
 - (bookmarks::BookmarkModel*)bookmarkModel {
-  if (base::FeatureList::IsEnabled(
-          syncer::kReplaceSyncPromosWithSignInPromos)) {
-    return self.shoppingService->GetBookmarkModelUsedForSync();
-  } else {
-    return _localOrSyncableBookmarkModel;
-  }
+  return self.shoppingService->GetBookmarkModelUsedForSync();
 }
 
 #pragma mark - PriceNotificationsMutator

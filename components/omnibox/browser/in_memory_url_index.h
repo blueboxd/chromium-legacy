@@ -19,7 +19,6 @@
 #include "base/scoped_observation.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread_checker.h"
-#include "base/time/time.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
@@ -38,7 +37,7 @@ class SequencedTaskRunner;
 }
 
 namespace bookmarks {
-class BookmarkModel;
+class CoreBookmarkModel;
 }
 
 namespace history {
@@ -74,7 +73,7 @@ class InMemoryURLIndex : public KeyedService,
                          public base::trace_event::MemoryDumpProvider {
  public:
   // `history_service` may be null during unit testing.
-  InMemoryURLIndex(bookmarks::BookmarkModel* bookmark_model,
+  InMemoryURLIndex(bookmarks::CoreBookmarkModel* bookmark_model,
                    history::HistoryService* history_service,
                    TemplateURLService* template_url_service,
                    const base::FilePath& history_dir,
@@ -140,9 +139,6 @@ class InMemoryURLIndex : public KeyedService,
     SchemeSet scheme_allowlist_;  // Schemes to be indexed.
     bool succeeded_ = false;      // Indicates if the rebuild was successful.
     scoped_refptr<URLIndexPrivateData> data_;  // The rebuilt private data.
-    // When the task was first requested from the main thread. This is the same
-    // time as when this task object is constructed.
-    const base::TimeTicks task_creation_time_;
   };
 
   // Clears the in-memory cache entirely. Called when History is cleared.
@@ -191,7 +187,7 @@ class InMemoryURLIndex : public KeyedService,
   const SchemeSet& scheme_allowlist() { return scheme_allowlist_; }
 
   // The BookmarkModel; may be null when testing.
-  raw_ptr<bookmarks::BookmarkModel> bookmark_model_;
+  raw_ptr<bookmarks::CoreBookmarkModel> bookmark_model_;
 
   // The HistoryService; may be null when testing.
   raw_ptr<history::HistoryService> history_service_;

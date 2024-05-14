@@ -10,10 +10,13 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "components/autofill/core/browser/autofill_client.h"
 #import "components/autofill/core/browser/autofill_test_utils.h"
 #import "components/autofill/core/browser/browser_autofill_manager_test_api.h"
 #import "components/autofill/core/browser/form_data_importer.h"
 #import "components/autofill/core/browser/payments/credit_card_save_manager.h"
+#import "components/autofill/core/browser/payments/payments_autofill_client.h"
+#import "components/autofill/core/browser/payments/payments_network_interface.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
 #import "components/autofill/core/common/autofill_prefs.h"
 #import "components/autofill/ios/browser/autofill_driver_ios.h"
@@ -28,6 +31,7 @@
 #import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/autofill/scoped_autofill_payment_reauth_module_override.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/mock_reauthentication_module.h"
@@ -221,7 +225,8 @@ class SaveCardInfobarEGTestHelper
     return AutofillDriverIOS::FromWebStateAndWebFrame(web_state, main_frame)
         ->GetAutofillManager()
         .client()
-        .GetPaymentsNetworkInterface();
+        .GetPaymentsAutofillClient()
+        ->GetPaymentsNetworkInterface();
   }
 
   // Delete all failed attempds registered on every cards.
@@ -553,6 +558,10 @@ static std::unique_ptr<ScopedAutofillPaymentReauthModuleOverride>
   autofill::PersonalDataManager* personalDataManager =
       [self personalDataManager];
   personalDataManager->SetPaymentMethodsMandatoryReauthEnabled(enabled);
+}
+
++ (BOOL)isKeyboardAccessoryUpgradeEnabled {
+  return IsKeyboardAccessoryUpgradeEnabled();
 }
 
 #pragma mark - Private

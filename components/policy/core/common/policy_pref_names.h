@@ -69,9 +69,11 @@ extern const char kBeforeunloadEventCancelByPreventDefaultEnabled[];
 extern const char kPolicyTestPageEnabled[];
 extern const char kAllowBackForwardCacheForCacheControlNoStorePageEnabled[];
 extern const char kLocalTestPoliciesForNextStartup[];
+extern const char kMutationEventsEnabled[];
 extern const char kForcePermissionPolicyUnloadDefaultEnabled[];
 #if BUILDFLAG(IS_CHROMEOS)
 extern const char kAlwaysOnVpnPreConnectUrlAllowlist[];
+extern const char kFloatingWorkspaceEnabled[];
 #endif
 }  // namespace policy_prefs
 }  // namespace policy

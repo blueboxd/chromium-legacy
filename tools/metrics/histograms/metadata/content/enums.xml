@@ -41,9 +41,15 @@ chromium-metrics-reviews@google.com.
   <int value="6" label="Profile"/>
 </enum>
 
+<enum name="ContentNotificationPromoProvisionalEntrypoint">
+  <int value="0" label="Promo dismissed from close button."/>
+  <int value="1" label="Promo shown threshold exceeded."/>
+</enum>
+
 <enum name="ContentNotificationPromptAction">
   <int value="0" label="Go to Settings tapped"/>
   <int value="1" label="No Thanks tapped"/>
+  <int value="2" label="Accepted tapped"/>
 </enum>
 
 <enum name="ContentNotificationSetUpListPromoAction">
@@ -76,6 +82,7 @@ chromium-metrics-reviews@google.com.
   <int value="0" label="OS prompt was shown to user"/>
   <int value="1" label="Promo shown when OS notifications are active"/>
   <int value="2" label="Error displaying the OS prompt"/>
+  <int value="3" label="Prompt shown but dismissed without interaction"/>
 </enum>
 
 <enum name="ContentSettingBubbleAction">
@@ -103,6 +110,8 @@ chromium-metrics-reviews@google.com.
   <int value="14" label="FRAMEBUST"/>
   <int value="16" label="SENSORS"/>
   <int value="18" label="CLIPBOARD_READ_WRITE"/>
+  <int value="19" label="STORAGE_ACCESS"/>
+  <int value="21" label="NOTIFICATIONS"/>
 </enum>
 
 <enum name="ContentSettingPopupAction">

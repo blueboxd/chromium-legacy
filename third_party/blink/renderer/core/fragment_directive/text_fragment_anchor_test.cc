@@ -168,18 +168,11 @@ class TextFragmentAnchorTestController : public TextFragmentAnchorTestBase {
   }
 };
 
-// TODO(crbug.com/1315595): Only have one constructor that initializes the
-// MOCK_TIME for blink::test::TaskEnvironment once migration to
-// blink_unittests_v2 completes.
 class TextFragmentAnchorTest : public TextFragmentAnchorTestController {
  public:
-#if defined(HAS_BLINK_TASK_ENVIRONMENT)
   TextFragmentAnchorTest()
       : TextFragmentAnchorTestController(
             base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
-#else
-  TextFragmentAnchorTest() = default;
-#endif
 };
 
 // Basic test case, ensure we scroll the matching text into view.

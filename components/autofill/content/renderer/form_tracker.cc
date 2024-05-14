@@ -128,6 +128,7 @@ void FormTracker::RemoveObserver(Observer* observer) {
 
 void FormTracker::AjaxSucceeded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
+  submission_triggering_events_.xhr_succeeded = true;
   FireSubmissionIfFormDisappear(SubmissionSource::XHR_SUCCEEDED);
 }
 
@@ -135,11 +136,6 @@ void FormTracker::TextFieldDidChange(const WebFormControlElement& element) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
   DCHECK(!element.DynamicTo<WebInputElement>().IsNull() ||
          form_util::IsTextAreaElement(element));
-
-  if (ignore_control_changes_) {
-    return;
-  }
-
   // If the element isn't focused then the changes don't matter. This check is
   // required to properly handle IME interactions.
   if (!element.Focused()) {
@@ -153,11 +149,9 @@ void FormTracker::TextFieldDidChange(const WebFormControlElement& element) {
       return;
     }
   }
-
   if (!unsafe_render_frame()) {
     return;
   }
-
   // Disregard text changes that aren't caused by user gestures or pastes. Note
   // that pastes aren't necessarily user gestures because Blink's conception of
   // user gestures is centered around creating new windows/tabs.
@@ -166,7 +160,6 @@ void FormTracker::TextFieldDidChange(const WebFormControlElement& element) {
       !unsafe_render_frame()->IsPasting()) {
     return;
   }
-
   // We post a task for doing the Autofill as the caret position is not set
   // properly at this point (http://bugs.webkit.org/show_bug.cgi?id=16976) and
   // it is needed to trigger autofill.
@@ -182,14 +175,9 @@ void FormTracker::TextFieldDidChange(const WebFormControlElement& element) {
 
 void FormTracker::SelectControlDidChange(const WebFormControlElement& element) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
-
-  if (ignore_control_changes_)
-    return;
-
   if (!unsafe_render_frame()) {
     return;
   }
-
   // Post a task to avoid processing select control change while it is changing.
   weak_ptr_factory_.InvalidateWeakPtrs();
   unsafe_render_frame()
@@ -202,23 +190,56 @@ void FormTracker::SelectControlDidChange(const WebFormControlElement& element) {
 }
 
 void FormTracker::ElementDisappeared(const blink::WebElement& element) {
-  // TODO(crbug.com/1483242): Implement.
+  // Signal is discarded altogether when the feature is disabled.
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillReplaceFormElementObserver)) {
+    return;
+  }
+  if (element.DynamicTo<WebFormElement>().IsNull() &&
+      element.DynamicTo<WebFormControlElement>().IsNull()) {
+    return;
+  }
+  // If tracking a form, any disappearance other than that form is not
+  // interesting.
+  if (!element.DynamicTo<WebFormElement>().IsNull() &&
+      last_interacted_.form.GetId() != form_util::GetFormRendererId(element)) {
+    return;
+  }
+  // If tracking a field, any disappearance other than that field is not
+  // interesting.
+  if (!element.DynamicTo<WebFormControlElement>().IsNull() &&
+      last_interacted_.formless_element.GetId() !=
+          form_util::GetFieldRendererId(element)) {
+    return;
+  }
+  if (submission_triggering_events_.xhr_succeeded) {
+    FireInferredFormSubmission(mojom::SubmissionSource::XHR_SUCCEEDED);
+    return;
+  }
+  if (submission_triggering_events_.finished_same_document_navigation) {
+    FireInferredFormSubmission(
+        mojom::SubmissionSource::SAME_DOCUMENT_NAVIGATION);
+    return;
+  }
+  if (submission_triggering_events_.tracked_element_autofilled) {
+    FireInferredFormSubmission(
+        mojom::SubmissionSource::DOM_MUTATION_AFTER_AUTOFILL);
+    return;
+  }
+  submission_triggering_events_.tracked_element_disappeared = true;
 }
 
 void FormTracker::TrackAutofilledElement(const WebFormControlElement& element) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
   DCHECK(element.IsAutofilled());
-
-  if (ignore_control_changes_)
-    return;
-
   ResetLastInteractedElements();
-  if (element.Form().IsNull())
-    last_interacted_formless_element_ = FieldRef(element);
-  else
-    last_interacted_form_ = FormRef(element.Form());
-  // TODO(crbug.com/1483242): Investigate if this is necessary: if it is,
-  // document the reason, if not, remove.
+  if (blink::WebFormElement form = form_util::GetOwningForm(element);
+      !form.IsNull()) {
+    last_interacted_.form = FormRef(form);
+  } else {
+    last_interacted_.formless_element = FieldRef(element);
+  }
+  submission_triggering_events_.tracked_element_autofilled = true;
   TrackElement(mojom::SubmissionSource::DOM_MUTATION_AFTER_AUTOFILL);
 }
 
@@ -233,13 +254,14 @@ void FormTracker::FormControlDidChangeImpl(
     return;
   }
 
-  if (element.Form().IsNull()) {
-    last_interacted_formless_element_ = FieldRef(element);
+  blink::WebFormElement form = form_util::GetOwningForm(element);
+  if (!form.IsNull()) {
+    last_interacted_.form = FormRef(form);
   } else {
-    last_interacted_form_ = FormRef(element.Form());
+    last_interacted_.formless_element = FieldRef(element);
   }
   for (auto& observer : observers_) {
-    observer.OnProvisionallySaveForm(element.Form(), element, change_source);
+    observer.OnProvisionallySaveForm(form, element, change_source);
   }
 }
 
@@ -250,6 +272,7 @@ void FormTracker::DidCommitProvisionalLoad(ui::PageTransition transition) {
 
 void FormTracker::DidFinishSameDocumentNavigation() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
+  submission_triggering_events_.finished_same_document_navigation = true;
   FireSubmissionIfFormDisappear(SubmissionSource::SAME_DOCUMENT_NAVIGATION);
 }
 
@@ -288,7 +311,8 @@ void FormTracker::WillDetach(blink::DetachReason detach_reason) {
 
 void FormTracker::WillSendSubmitEvent(const WebFormElement& form) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
-  last_interacted_form_ = FormRef(form);
+  ResetLastInteractedElements();
+  last_interacted_.form = FormRef(form);
   for (auto& observer : observers_) {
     observer.OnProvisionallySaveForm(
         form, blink::WebFormControlElement(),
@@ -347,7 +371,10 @@ void FormTracker::FireInferredFormSubmission(SubmissionSource source) {
 }
 
 void FormTracker::FireSubmissionIfFormDisappear(SubmissionSource source) {
-  if (CanInferFormSubmitted()) {
+  if (CanInferFormSubmitted() ||
+      (submission_triggering_events_.tracked_element_disappeared &&
+       base::FeatureList::IsEnabled(
+           features::kAutofillReplaceFormElementObserver))) {
     FireInferredFormSubmission(source);
     return;
   }
@@ -355,38 +382,44 @@ void FormTracker::FireSubmissionIfFormDisappear(SubmissionSource source) {
 }
 
 bool FormTracker::CanInferFormSubmitted() {
-  if (last_interacted_form_.GetId()) {
-    WebFormElement last_interacted_form = last_interacted_form_.GetForm();
+  if (last_interacted_.form.GetId()) {
+    WebFormElement last_interacted_form = last_interacted_.form.GetForm();
     // Infer submission if the form was removed or all its elements are hidden.
     return last_interacted_form.IsNull() ||
            base::ranges::none_of(last_interacted_form.GetFormControlElements(),
                                  &form_util::IsWebElementFocusableForAutofill);
   }
-  if (last_interacted_formless_element_.GetId()) {
+  if (last_interacted_.formless_element.GetId()) {
     WebFormControlElement last_interacted_formless_element =
-        last_interacted_formless_element_.GetField();
+        last_interacted_.formless_element.GetField();
     // Infer submission if the field was removed or it's hidden.
     return last_interacted_formless_element.IsNull() ||
            !form_util::IsWebElementFocusableForAutofill(
                last_interacted_formless_element);
   }
-
   return false;
 }
 
 void FormTracker::TrackElement(mojom::SubmissionSource source) {
-  // Already has observer for last interacted element.
-  if (form_element_observer_)
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillReplaceFormElementObserver)) {
+    // Do not use WebFormElementObserver. Instead, rely on the signal
+    // `FormTracker::ElementDisappeared` coming from blink.
     return;
+  }
+  // Already has observer for last interacted element.
+  if (form_element_observer_) {
+    return;
+  }
   auto callback = base::BindOnce(&FormTracker::ElementWasHiddenOrRemoved,
                                  base::Unretained(this), source);
 
-  if (WebFormElement last_interacted_form = last_interacted_form_.GetForm();
+  if (WebFormElement last_interacted_form = last_interacted_.form.GetForm();
       !last_interacted_form.IsNull()) {
     form_element_observer_ = blink::WebFormElementObserver::Create(
         last_interacted_form, std::move(callback));
   } else if (WebFormControlElement last_interacted_formless_element =
-                 last_interacted_formless_element_.GetField();
+                 last_interacted_.formless_element.GetField();
              !last_interacted_formless_element.IsNull()) {
     form_element_observer_ = blink::WebFormElementObserver::Create(
         last_interacted_formless_element, std::move(callback));
@@ -394,12 +427,13 @@ void FormTracker::TrackElement(mojom::SubmissionSource source) {
 }
 
 void FormTracker::ResetLastInteractedElements() {
-  last_interacted_form_ = {};
-  last_interacted_formless_element_ = {};
+  last_interacted_.form = {};
+  last_interacted_.formless_element = {};
   if (form_element_observer_) {
     form_element_observer_->Disconnect();
     form_element_observer_ = nullptr;
   }
+  submission_triggering_events_ = {};
 }
 
 void FormTracker::ElementWasHiddenOrRemoved(mojom::SubmissionSource source) {

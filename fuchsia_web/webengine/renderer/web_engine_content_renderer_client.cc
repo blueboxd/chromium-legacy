@@ -4,9 +4,9 @@
 
 #include "fuchsia_web/webengine/renderer/web_engine_content_renderer_client.h"
 
+#include <optional>
 #include <tuple>
 
-#include <optional>
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
@@ -200,7 +200,8 @@ WebEngineContentRendererClient::CreateURLLoaderThrottleProvider(
   return std::make_unique<WebEngineURLLoaderThrottleProvider>(this);
 }
 
-void WebEngineContentRendererClient::GetSupportedKeySystems(
+std::unique_ptr<media::KeySystemSupportObserver>
+WebEngineContentRendererClient::GetSupportedKeySystems(
     media::GetSupportedKeySystemsCB cb) {
   media::KeySystemInfos key_systems;
   media::SupportedCodecs supported_video_codecs = 0;
@@ -273,6 +274,7 @@ void WebEngineContentRendererClient::GetSupportedKeySystems(
 #endif  // BUILDFLAG(ENABLE_WIDEVINE)
 
   std::move(cb).Run(std::move(key_systems));
+  return nullptr;
 }
 
 bool WebEngineContentRendererClient::IsSupportedVideoType(

@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_source.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -28,6 +28,8 @@
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
 #include "components/webapps/common/web_app_id.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/browser_test_utils.h"
+#include "content/public/test/navigation_simulator.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/blink/public/common/features_generated.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -109,7 +111,8 @@ IsolatedWebAppUrlInfo InstallDevModeProxyIsolatedWebApp(
   auto url_info = IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(
       web_package::SignedWebBundleId::CreateRandomForDevelopment());
   WebAppProvider::GetForWebApps(profile)->scheduler().InstallIsolatedWebApp(
-      url_info, DevModeProxy{.proxy_url = proxy_origin},
+      url_info,
+      IsolatedWebAppInstallSource::FromDevUi(IwaSourceProxy(proxy_origin)),
       /*expected_version=*/std::nullopt,
       /*optional_keep_alive=*/nullptr,
       /*optional_profile_keep_alive=*/nullptr, future.GetCallback());
@@ -186,6 +189,22 @@ webapps::AppId AddDummyIsolatedAppToRegistry(
   EXPECT_TRUE(future.Take());
   provider->install_manager().NotifyWebAppInstalled(app_id);
   return app_id;
+}
+
+void SimulateIsolatedWebAppNavigation(content::WebContents* web_contents,
+                                      const GURL& url) {
+  auto navigation =
+      content::NavigationSimulator::CreateBrowserInitiated(url, web_contents);
+  navigation->SetTransition(ui::PAGE_TRANSITION_TYPED);
+  // We need to inject the COI headers here because they're normally injected
+  // by IsolatedWebAppURLLoader, which is skipped when simulating navigations.
+  navigation->SetResponseHeaders(
+      net::HttpResponseHeaders::Builder(net::HttpVersion(1, 1), "200 OK")
+          .AddHeader("Cross-Origin-Opener-Policy", "same-origin")
+          .AddHeader("Cross-Origin-Embedder-Policy", "require-corp")
+          .AddHeader("Cross-Origin-Resource-Policy", "same-origin")
+          .Build());
+  navigation->Commit();
 }
 
 }  // namespace web_app

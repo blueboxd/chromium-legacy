@@ -9,7 +9,9 @@
 #import "base/metrics/histogram_functions.h"
 #import "base/ranges/algorithm.h"
 #import "components/autofill/core/browser/form_structure.h"
+#import "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
+#import "components/autofill/core/browser/ui/payments/card_unmask_authentication_selection_dialog_controller_impl.h"
 #import "components/autofill/core/browser/ui/payments/virtual_card_enroll_ui_model.h"
 #import "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "components/autofill/ios/form_util/form_activity_params.h"
@@ -21,7 +23,7 @@
 #import "ios/chrome/browser/autofill/model/bottom_sheet/autofill_bottom_sheet_observer.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
-#import "ios/chrome/browser/shared/public/commands/autofill_bottom_sheet_commands.h"
+#import "ios/chrome/browser/shared/public/commands/autofill_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/web/public/js_messaging/script_message.h"
@@ -67,6 +69,15 @@ AutofillBottomSheetTabHelper::AutofillBottomSheetTabHelper(
 
 // Public methods
 
+void AutofillBottomSheetTabHelper::ShowCardUnmaskAuthenticationSelection(
+    std::unique_ptr<
+        autofill::CardUnmaskAuthenticationSelectionDialogControllerImpl>
+        model_controller) {
+  card_unmask_authentication_selection_controller_ =
+      std::move(model_controller);
+  [commands_handler_ showCardUnmaskAuthentication];
+}
+
 void AutofillBottomSheetTabHelper::ShowPlusAddressesBottomSheet(
     const url::Origin& main_frame_origin,
     plus_addresses::PlusAddressCallback callback) {
@@ -82,7 +93,7 @@ void AutofillBottomSheetTabHelper::ShowVirtualCardEnrollmentBottomSheet(
 }
 
 void AutofillBottomSheetTabHelper::SetAutofillBottomSheetHandler(
-    id<AutofillBottomSheetCommands> commands_handler) {
+    id<AutofillCommands> commands_handler) {
   commands_handler_ = commands_handler;
 }
 
@@ -126,8 +137,7 @@ void AutofillBottomSheetTabHelper::ShowPasswordBottomSheet(
     return;
   }
 
-  __weak id<AutofillBottomSheetCommands> weak_commands_handler =
-      commands_handler_;
+  __weak id<AutofillCommands> weak_commands_handler = commands_handler_;
   [password_account_storage_notice_handler_ showAccountStorageNotice:^{
     [weak_commands_handler showPasswordBottomSheet:params];
   }];
@@ -340,6 +350,12 @@ void AutofillBottomSheetTabHelper::OnFieldTypesDetermined(
   std::string frame_id = frame->GetFrameId();
   AttachListeners(renderer_ids, registered_payments_renderer_ids_[frame_id],
                   frame_id, /*allow_autofocus=*/false);
+}
+
+std::unique_ptr<autofill::CardUnmaskAuthenticationSelectionDialogControllerImpl>
+AutofillBottomSheetTabHelper::
+    GetCardUnmaskAuthenticationSelectionDialogController() {
+  return std::move(card_unmask_authentication_selection_controller_);
 }
 
 plus_addresses::PlusAddressCallback

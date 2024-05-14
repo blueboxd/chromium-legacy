@@ -581,6 +581,21 @@ String BuildServiceWorkerResponseSource(const ResourceResponse& response) {
   }
 }
 
+String BuildServiceWorkerRouterSourceType(
+    const network::mojom::ServiceWorkerRouterSourceType& type) {
+  switch (type) {
+    case network::mojom::ServiceWorkerRouterSourceType::kNetwork:
+      return protocol::Network::ServiceWorkerRouterSourceEnum::Network;
+    case network::mojom::ServiceWorkerRouterSourceType::kRace:
+      return protocol::Network::ServiceWorkerRouterSourceEnum::
+          RaceNetworkAndFetchHandler;
+    case network::mojom::ServiceWorkerRouterSourceType::kFetchEvent:
+      return protocol::Network::ServiceWorkerRouterSourceEnum::FetchEvent;
+    case network::mojom::ServiceWorkerRouterSourceType::kCache:
+      return protocol::Network::ServiceWorkerRouterSourceEnum::Cache;
+  }
+}
+
 WebConnectionType ToWebConnectionType(const String& connection_type) {
   if (connection_type == protocol::Network::ConnectionTypeEnum::None)
     return kWebConnectionTypeNone;
@@ -862,7 +877,7 @@ static std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
     san_list->push_back(StringFromASCII(san));
   }
   for (const std::string& san : san_ip) {
-    net::IPAddress ip(reinterpret_cast<const uint8_t*>(san.data()), san.size());
+    net::IPAddress ip(base::as_byte_span(san));
     san_list->push_back(StringFromASCII(ip.ToString()));
   }
 
@@ -1075,6 +1090,8 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
         protocol::Network::ServiceWorkerRouterInfo::create()
             .setRuleIdMatched(
                 response.GetServiceWorkerRouterInfo()->RuleIdMatched())
+            .setMatchedSourceType(BuildServiceWorkerRouterSourceType(
+                response.GetServiceWorkerRouterInfo()->MatchedSourceType()))
             .build());
   }
 
@@ -1667,8 +1684,6 @@ void InspectorNetworkAgent::DidFailLoading(
     return;
   }
 
-  resources_data_->ClearData(request_id);
-
   bool canceled = error.IsCancellation();
 
   protocol::Maybe<String> blocked_reason = BuildBlockedReason(error);
@@ -2204,7 +2219,10 @@ protocol::Response InspectorNetworkAgent::emulateNetworkConditions(
     double latency,
     double download_throughput,
     double upload_throughput,
-    Maybe<String> connection_type) {
+    Maybe<String> connection_type,
+    Maybe<double> packet_loss,
+    Maybe<int> packet_queue_length,
+    Maybe<bool> packet_reordering) {
   WebConnectionType type = kWebConnectionTypeUnknown;
   if (connection_type.has_value()) {
     type = ToWebConnectionType(connection_type.value());

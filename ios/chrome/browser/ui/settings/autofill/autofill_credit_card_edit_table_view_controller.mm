@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_edit_table_view_controller.h"
 
 #import "base/apple/foundation_util.h"
+#import "base/feature_list.h"
 #import "base/format_macros.h"
 #import "base/ios/block_types.h"
 #import "base/memory/raw_ptr.h"
@@ -29,7 +30,6 @@
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_constants.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_util.h"
-#import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
 #import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -40,7 +40,6 @@ using ::AutofillTypeFromAutofillUIType;
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierFields = kSectionIdentifierEnumZero,
-  SectionIdentifierCopiedToChrome,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
@@ -48,7 +47,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeCardNumber,
   ItemTypeExpirationMonth,
   ItemTypeExpirationYear,
-  ItemTypeCopiedToChrome,
   ItemTypeNickname,
 };
 
@@ -95,10 +93,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)editButtonPressed {
   // In the case of server cards, open the Payments editing page instead.
   if (_creditCard.record_type() ==
-          autofill::CreditCard::RecordType::kFullServerCard ||
-      _creditCard.record_type() ==
           autofill::CreditCard::RecordType::kMaskedServerCard) {
-    GURL paymentsURL = autofill::payments::GetManageInstrumentsUrl();
+    GURL paymentsURL =
+        base::FeatureList::IsEnabled(
+            autofill::features::kAutofillUpdateChromeSettingsLinkToGPayWeb)
+            ? autofill::payments::GetManageInstrumentUrl(
+                  _creditCard.instrument_id())
+            : autofill::payments::GetManageInstrumentsUrl();
     OpenNewTabCommand* command =
         [OpenNewTabCommand commandWithURLFromChrome:paymentsURL];
     [self.applicationHandler closeSettingsUIAndOpenURL:command];
@@ -169,16 +170,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierFields];
   for (AutofillEditItem* item in editItems) {
     [model addItem:item toSectionWithIdentifier:SectionIdentifierFields];
-  }
-
-  if (_creditCard.record_type() ==
-      autofill::CreditCard::RecordType::kFullServerCard) {
-    // Add CopiedToChrome cell in its own section.
-    [model addSectionWithIdentifier:SectionIdentifierCopiedToChrome];
-    CopiedToChromeItem* copiedToChromeItem =
-        [[CopiedToChromeItem alloc] initWithType:ItemTypeCopiedToChrome];
-    [model addItem:copiedToChromeItem
-        toSectionWithIdentifier:SectionIdentifierCopiedToChrome];
   }
 }
 
@@ -280,14 +271,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case ItemTypeExpirationYear:
     case ItemTypeNickname:
       break;
-    case ItemTypeCopiedToChrome: {
-      CopiedToChromeCell* copiedToChromeCell =
-          base::apple::ObjCCastStrict<CopiedToChromeCell>(cell);
-      [copiedToChromeCell.button addTarget:self
-                                    action:@selector(buttonTapped:)
-                          forControlEvents:UIControlEventTouchUpInside];
-      break;
-    }
     default:
       break;
   }
@@ -331,7 +314,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case ItemTypeExpirationMonth:
     case ItemTypeExpirationYear:
     case ItemTypeNickname:
-    case ItemTypeCopiedToChrome:
       return YES;
   }
   NOTREACHED();
@@ -341,7 +323,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - Actions
 
 - (void)buttonTapped:(UIButton*)button {
-  _personalDataManager->ResetFullServerCard(_creditCard.guid());
+  // TODO(crbug.com/1497734): Remove this method and button entirely; it should
+  // no longer be possible to have it visible.
 
   // Reset the copy of the card data used for display immediately.
   _creditCard.set_record_type(

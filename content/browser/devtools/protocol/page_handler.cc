@@ -60,8 +60,10 @@
 #include "content/public/common/url_utils.h"
 #include "net/base/filename_util.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
-#include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-forward.h"
+#include "third_party/blink/public/mojom/back_forward_cache_not_restored_reasons.mojom.h"
+#include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
+#include "third_party/blink/public/mojom/script_source_location.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -382,8 +384,9 @@ Response PageHandler::Disable() {
     pending_dialog_.Reset();
   }
 
-  for (auto* item : pending_downloads_)
+  for (download::DownloadItem* item : pending_downloads_) {
     item->RemoveObserver(this);
+  }
   pending_downloads_.clear();
   navigate_callbacks_.clear();
   SetPrerenderingAllowed(true);
@@ -1427,9 +1430,6 @@ Page::BackForwardCacheNotRestoredReason NotRestoredReasonToProtocol(
     case Reason::kEnteredBackForwardCacheBeforeServiceWorkerHostAdded:
       return Page::BackForwardCacheNotRestoredReasonEnum::
           EnteredBackForwardCacheBeforeServiceWorkerHostAdded;
-    case Reason::kNotMostRecentNavigationEntry:
-      return Page::BackForwardCacheNotRestoredReasonEnum::
-          NotMostRecentNavigationEntry;
     case Reason::kServiceWorkerClaim:
       return Page::BackForwardCacheNotRestoredReasonEnum::ServiceWorkerClaim;
     case Reason::kIgnoreEventAndEvict:
@@ -1486,18 +1486,17 @@ Page::BackForwardCacheNotRestoredReason NotRestoredReasonToProtocol(
     case Reason::kCacheControlNoStoreHTTPOnlyCookieModified:
       return Page::BackForwardCacheNotRestoredReasonEnum::
           CacheControlNoStoreHTTPOnlyCookieModified;
-    case Reason::kNoResponseHead:
-      return Page::BackForwardCacheNotRestoredReasonEnum::NoResponseHead;
     case Reason::kErrorDocument:
       return Page::BackForwardCacheNotRestoredReasonEnum::ErrorDocument;
-    case Reason::kFencedFramesEmbedder:
-      return Page::BackForwardCacheNotRestoredReasonEnum::FencedFramesEmbedder;
     case Reason::kCookieDisabled:
       return Page::BackForwardCacheNotRestoredReasonEnum::CookieDisabled;
     case Reason::kHTTPAuthRequired:
       return Page::BackForwardCacheNotRestoredReasonEnum::HTTPAuthRequired;
     case Reason::kCookieFlushed:
       return Page::BackForwardCacheNotRestoredReasonEnum::CookieFlushed;
+    case Reason::kBroadcastChannelOnMessage:
+      return Page::BackForwardCacheNotRestoredReasonEnum::
+          BroadcastChannelOnMessage;
     case Reason::kBlocklistedFeatures:
       // Blocklisted features should be handled separately and be broken down
       // into sub reasons.
@@ -1540,9 +1539,6 @@ Page::BackForwardCacheNotRestoredReason BlocklistedFeatureToProtocol(
       return Page::BackForwardCacheNotRestoredReasonEnum::ContainsPlugins;
     case WebSchedulerTrackedFeature::kDocumentLoaded:
       return Page::BackForwardCacheNotRestoredReasonEnum::DocumentLoaded;
-    case WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet:
-      return Page::BackForwardCacheNotRestoredReasonEnum::
-          DedicatedWorkerOrWorklet;
     case WebSchedulerTrackedFeature::kOutstandingNetworkRequestOthers:
       return Page::BackForwardCacheNotRestoredReasonEnum::
           OutstandingNetworkRequestOthers;
@@ -1590,16 +1586,12 @@ Page::BackForwardCacheNotRestoredReason BlocklistedFeatureToProtocol(
       return Page::BackForwardCacheNotRestoredReasonEnum::WebDatabase;
     case WebSchedulerTrackedFeature::kPictureInPicture:
       return Page::BackForwardCacheNotRestoredReasonEnum::PictureInPicture;
-    case WebSchedulerTrackedFeature::kPortal:
-      return Page::BackForwardCacheNotRestoredReasonEnum::Portal;
     case WebSchedulerTrackedFeature::kSpeechRecognizer:
       return Page::BackForwardCacheNotRestoredReasonEnum::SpeechRecognizer;
     case WebSchedulerTrackedFeature::kIdleManager:
       return Page::BackForwardCacheNotRestoredReasonEnum::IdleManager;
     case WebSchedulerTrackedFeature::kPaymentManager:
       return Page::BackForwardCacheNotRestoredReasonEnum::PaymentManager;
-    case WebSchedulerTrackedFeature::kSpeechSynthesis:
-      return Page::BackForwardCacheNotRestoredReasonEnum::SpeechSynthesis;
     case WebSchedulerTrackedFeature::kKeyboardLock:
       return Page::BackForwardCacheNotRestoredReasonEnum::KeyboardLock;
     case WebSchedulerTrackedFeature::kWebOTPService:
@@ -1633,22 +1625,24 @@ Page::BackForwardCacheNotRestoredReason BlocklistedFeatureToProtocol(
       return Page::BackForwardCacheNotRestoredReasonEnum::LiveMediaStreamTrack;
     case WebSchedulerTrackedFeature::kUnloadHandler:
       return Page::BackForwardCacheNotRestoredReasonEnum::UnloadHandler;
+    case WebSchedulerTrackedFeature::kParserAborted:
+      return Page::BackForwardCacheNotRestoredReasonEnum::ParserAborted;
   }
 }
 
-std::unique_ptr<Page::BackForwardCacheBlockingDetails>
-BlockingDetailsToProtocol(const blink::mojom::BlockingDetailsPtr& details) {
+std::unique_ptr<Page::BackForwardCacheBlockingDetails> SourceLocationToProtocol(
+    const blink::mojom::ScriptSourceLocationPtr& source) {
   auto blocking_details = Page::BackForwardCacheBlockingDetails::Create();
-  if (details->url.has_value()) {
-    blocking_details.SetUrl(details->url.value());
+  if (!source->url.empty()) {
+    blocking_details.SetUrl(source->url);
   }
-  if (details->function_name.has_value()) {
-    blocking_details.SetFunction(details->function_name.value());
+  if (!source->function_name.empty()) {
+    blocking_details.SetFunction(source->function_name);
   }
-  CHECK(details->line_number > 0);
-  CHECK(details->column_number > 0);
-  return blocking_details.SetLineNumber(details->line_number - 1)
-      .SetColumnNumber(details->column_number - 1)
+  CHECK(source->line_number > 0);
+  CHECK(source->column_number > 0);
+  return blocking_details.SetLineNumber(source->line_number - 1)
+      .SetColumnNumber(source->column_number - 1)
       .Build();
 }
 
@@ -1731,16 +1725,9 @@ DisableForRenderFrameHostReasonToProtocol(
         case back_forward_cache::DisabledReasonId::kModalDialog:
           return Page::BackForwardCacheNotRestoredReasonEnum::
               EmbedderModalDialog;
-        case back_forward_cache::DisabledReasonId::kExtensions:
-          return Page::BackForwardCacheNotRestoredReasonEnum::
-              EmbedderExtensions;
         case back_forward_cache::DisabledReasonId::kExtensionMessaging:
           return Page::BackForwardCacheNotRestoredReasonEnum::
               EmbedderExtensionMessaging;
-        case back_forward_cache::DisabledReasonId::
-            kExtensionMessagingForOpenPort:
-          return Page::BackForwardCacheNotRestoredReasonEnum::
-              EmbedderExtensionMessagingForOpenPort;
         case back_forward_cache::DisabledReasonId::
             kExtensionSentMessageToCachedFrame:
           return Page::BackForwardCacheNotRestoredReasonEnum::
@@ -1775,7 +1762,6 @@ Page::BackForwardCacheNotRestoredReasonType MapNotRestoredReasonToType(
     case Reason::kSessionRestored:
     case Reason::kServiceWorkerPostMessage:
     case Reason::kEnteredBackForwardCacheBeforeServiceWorkerHostAdded:
-    case Reason::kNotMostRecentNavigationEntry:
     case Reason::kServiceWorkerClaim:
     case Reason::kIgnoreEventAndEvict:
     case Reason::kHaveInnerContents:
@@ -1791,12 +1777,11 @@ Page::BackForwardCacheNotRestoredReasonType MapNotRestoredReasonToType(
     case Reason::kBrowsingInstanceNotSwapped:
     case Reason::kBackForwardCacheDisabledForDelegate:
     case Reason::kServiceWorkerUnregistration:
-    case Reason::kNoResponseHead:
     case Reason::kErrorDocument:
-    case Reason::kFencedFramesEmbedder:
     case Reason::kCookieDisabled:
     case Reason::kHTTPAuthRequired:
     case Reason::kCookieFlushed:
+    case Reason::kBroadcastChannelOnMessage:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::Circumstantial;
     case Reason::kCacheControlNoStore:
     case Reason::kCacheControlNoStoreCookieModified:
@@ -1835,8 +1820,8 @@ Page::BackForwardCacheNotRestoredReasonType MapBlocklistedFeatureToType(
     case WebSchedulerTrackedFeature::kSmartCard:
     case WebSchedulerTrackedFeature::kLiveMediaStreamTrack:
     case WebSchedulerTrackedFeature::kUnloadHandler:
+    case WebSchedulerTrackedFeature::kParserAborted:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::PageSupportNeeded;
-    case WebSchedulerTrackedFeature::kPortal:
     case WebSchedulerTrackedFeature::kWebNfc:
     case WebSchedulerTrackedFeature::kRequestedStorageAccessGrant:
     case WebSchedulerTrackedFeature::kRequestedMIDIPermission:
@@ -1851,8 +1836,6 @@ Page::BackForwardCacheNotRestoredReasonType MapBlocklistedFeatureToType(
     case WebSchedulerTrackedFeature::kPictureInPicture:
     case WebSchedulerTrackedFeature::kWebLocks:
     case WebSchedulerTrackedFeature::kWebSocket:
-    case WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet:
-    case WebSchedulerTrackedFeature::kSpeechSynthesis:
     case WebSchedulerTrackedFeature::kKeepaliveRequest:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::SupportPending;
     case WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore:
@@ -1908,13 +1891,8 @@ CreateNotRestoredExplanation(
             protocol::Array<Page::BackForwardCacheBlockingDetails>>();
         CHECK(details.contains(feature));
         for (const auto& detail : details.at(feature)) {
-          if (detail->line_number != 0 && detail->column_number != 0) {
-            details_list->push_back(BlockingDetailsToProtocol(detail));
-          } else {
-            // Details are not captured.
-            CHECK(!detail->url.has_value() || detail->url == "");
-            CHECK(!detail->function_name.has_value() ||
-                  detail->function_name == "");
+          if (detail->source) {
+            details_list->push_back(SourceLocationToProtocol(detail->source));
           }
         }
         auto explanation =

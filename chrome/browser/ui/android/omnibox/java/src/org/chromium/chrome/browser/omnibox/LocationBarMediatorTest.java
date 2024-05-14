@@ -4,11 +4,10 @@
 
 package org.chromium.chrome.browser.omnibox;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -452,18 +451,26 @@ public class LocationBarMediatorTest {
         mMediator.onFinishNativeInitialization();
 
         doReturn(mTab).when(mLocationBarDataProvider).getTab();
+        ArgumentCaptor<OmniboxLoadUrlParams> captor =
+                ArgumentCaptor.forClass(OmniboxLoadUrlParams.class);
         doReturn(true)
                 .when(mOverrideUrlLoadingDelegate)
-                .willHandleLoadUrlWithPostData(
-                        TEST_URL, PageTransition.TYPED, 0, null, null, false);
+                .willHandleLoadUrlWithPostData(any(), anyBoolean());
         mMediator.loadUrl(
                 new OmniboxLoadUrlParams.Builder(TEST_URL, PageTransition.TYPED)
                         .setOpenInNewTab(false)
                         .build());
 
         verify(mOverrideUrlLoadingDelegate)
-                .willHandleLoadUrlWithPostData(
-                        TEST_URL, PageTransition.TYPED, 0, null, null, false);
+                .willHandleLoadUrlWithPostData(captor.capture(), anyBoolean());
+
+        var params = captor.getValue();
+        assertEquals(TEST_URL, params.url);
+        assertEquals(PageTransition.TYPED, params.transitionType);
+        assertEquals(0, params.inputStartTimestamp);
+        assertNull(null, params.postData);
+        assertNull(null, params.postDataType);
+        assertFalse(params.openInNewTab);
         verify(mTab, times(0)).loadUrl(any());
     }
 
@@ -1218,22 +1225,8 @@ public class LocationBarMediatorTest {
         // Test clicking omnibox on {@link NewTabPage}.
         doReturn(false)
                 .when(mOverrideUrlLoadingDelegate)
-                .willHandleLoadUrlWithPostData(
-                        eq(TEST_URL),
-                        eq(PageTransition.TYPED),
-                        eq(0),
-                        eq(null),
-                        eq(null),
-                        anyBoolean());
-        doReturn(false)
-                .when(mOverrideUrlLoadingDelegate)
-                .willHandleLoadUrlWithPostData(
-                        eq(TEST_URL),
-                        eq(PageTransition.TYPED),
-                        eq(0),
-                        eq(null),
-                        eq(null),
-                        anyBoolean());
+                .willHandleLoadUrlWithPostData(any(), anyBoolean());
+
         doReturn(true).when(mTab).isNativePage();
         ShadowUrlUtilities.sIsNtp = true;
         assertTrue(UrlUtilities.isNtpUrl(mTab.getUrl()));
@@ -1292,12 +1285,7 @@ public class LocationBarMediatorTest {
         // Test clicking omnibox on {@link StartSurface}.
         doReturn(true)
                 .when(mOverrideUrlLoadingDelegate)
-                .willHandleLoadUrlWithPostData(
-                        TEST_URL, PageTransition.TYPED, 0, null, null, false);
-        doReturn(true)
-                .when(mOverrideUrlLoadingDelegate)
-                .willHandleLoadUrlWithPostData(
-                        TEST_URL, PageTransition.GENERATED, 0, null, null, false);
+                .willHandleLoadUrlWithPostData(any(), anyBoolean());
         // Test navigating using omnibox.
         mMediator.loadUrl(
                 new OmniboxLoadUrlParams.Builder(TEST_URL, PageTransition.TYPED)

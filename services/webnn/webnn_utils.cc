@@ -30,6 +30,8 @@ std::string OpTagToString(mojom::Operation::Tag tag) {
       return "gather";
     case mojom::Operation::Tag::kGemm:
       return "gemm";
+    case mojom::Operation::Tag::kGru:
+      return "gru";
     case mojom::Operation::Tag::kHardSigmoid:
       return "hardSigmoid";
     case mojom::Operation::Tag::kHardSwish:
@@ -42,6 +44,8 @@ std::string OpTagToString(mojom::Operation::Tag tag) {
       return "leakyRelu";
     case mojom::Operation::Tag::kLinear:
       return "linear";
+    case mojom::Operation::Tag::kLstm:
+      return "lstm";
     case mojom::Operation::Tag::kMatmul:
       return "matmul";
     case mojom::Operation::Tag::kPad:
@@ -74,6 +78,8 @@ std::string OpTagToString(mojom::Operation::Tag tag) {
       return "tanh";
     case mojom::Operation::Tag::kTranspose:
       return "transpose";
+    case mojom::Operation::Tag::kTriangular:
+      return "triangular";
     case mojom::Operation::Tag::kWhere:
       return "where";
   }

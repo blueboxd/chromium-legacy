@@ -12,12 +12,14 @@
 #include "ash/capture_mode/capture_mode_observer.h"
 #include "ash/game_dashboard/game_dashboard_context.h"
 #include "ash/game_dashboard/game_dashboard_delegate.h"
+#include "ash/game_dashboard/game_dashboard_metrics.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
 #include "ui/aura/env.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
+#include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
 
 class PrefRegistrySimple;
@@ -27,12 +29,17 @@ class Window;
 class WindowTracker;
 }  // namespace aura
 
+namespace display {
+enum class TabletState;
+}  // namespace display
+
 namespace ash {
 
 // Controls the Game Dashboard behavior on supported windows.
 class ASH_EXPORT GameDashboardController : public aura::EnvObserver,
                                            public aura::WindowObserver,
                                            public CaptureModeObserver,
+                                           public display::DisplayObserver,
                                            public OverviewObserver {
  public:
   explicit GameDashboardController(
@@ -64,17 +71,21 @@ class ASH_EXPORT GameDashboardController : public aura::EnvObserver,
   // game window, otherwise nullptr.
   GameDashboardContext* GetGameDashboardContext(aura::Window* window) const;
 
+  // Stacks all of the `window`'s Game Dashboard widgets on top of `widget`.
+  void MaybeStackAboveWidget(aura::Window* window, views::Widget* widget);
+
   // Represents the start of the `context`'s game window capture session.
   // Sets `context` as the `active_recording_context_`, and requests
   // `CaptureModeController` to start a capture session for the `context`'s game
-  // window. If `record_instantly` is true, instantly starts the capture
-  // session, skipping the countdown timer UI. The session ends when
-  // `OnRecordingEnded` or `OnRecordingStartAborted` is called.
-  void StartCaptureSession(GameDashboardContext* context,
-                           bool record_instantly = false);
+  // window. The session ends when `OnRecordingEnded` or
+  // `OnRecordingStartAborted` is called.
+  void StartCaptureSession(GameDashboardContext* context);
 
   // Shows the compat mode resize toggle menu for the given `window`.
   void ShowResizeToggleMenu(aura::Window* window);
+
+  // Gets the UKM source id by `app_id`.
+  ukm::SourceId GetUkmSourceId(const std::string& app_id) const;
 
   // aura::EnvObserver:
   void OnWindowInitialized(aura::Window* new_window) override;
@@ -96,6 +107,9 @@ class ASH_EXPORT GameDashboardController : public aura::EnvObserver,
                             const gfx::ImageSkia& thumbnail) override;
   void OnRecordedWindowChangingRoot(aura::Window* new_root) override;
   void OnRecordingStartAborted() override;
+
+  // display::DisplayObserver:
+  void OnDisplayTabletStateChanged(display::TabletState state) override;
 
   // OverviewObserver:
   void OnOverviewModeWillStart() override;
@@ -127,6 +141,14 @@ class ASH_EXPORT GameDashboardController : public aura::EnvObserver,
   // Updates the Game Dashboard button state and toolbar for a game window.
   void RefreshForGameControlsFlags(aura::Window* window);
 
+  // Enables or disables feature entry partially depending on `enable`. In
+  // addition, it needs to check
+  // `game_dashboard_utils::ShouldEnableFeatures()`. It may close main menu
+  // by `main_menu_toggle_method` when disabling the features.
+  void MaybeEnableFeatures(
+      bool enable,
+      GameDashboardMainMenuToggleMethod main_menu_toggle_method);
+
   std::map<aura::Window*, std::unique_ptr<GameDashboardContext>>
       game_window_contexts_;
 
@@ -138,6 +160,8 @@ class ASH_EXPORT GameDashboardController : public aura::EnvObserver,
 
   base::ScopedMultiSourceObservation<aura::Window, aura::WindowObserver>
       window_observations_{this};
+
+  display::ScopedDisplayObserver display_observer_{this};
 
   // Represents the active `GameDashboardContext`. If
   // `active_recording_context_` is non-null, then `CaptureModeController` is

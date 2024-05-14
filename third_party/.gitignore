@@ -49,6 +49,7 @@
 /cros
 /custom_tabs_client/src
 /cygwin
+/devserver
 /directxsdk
 /elfutils/src
 /espresso/lib/
@@ -116,6 +117,7 @@
 /pefile
 /ppapi
 /proguard/lib/
+/protobuf-javascript/src
 /protobuf/java/lite/target/
 /psyco_win32
 /pthreads-win32

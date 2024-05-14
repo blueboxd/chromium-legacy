@@ -15,6 +15,7 @@
 #include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_manager/volume_manager_observer.h"
 #include "chrome/browser/ash/file_system_provider/fake_extension_provider.h"
 #include "chrome/browser/ash/file_system_provider/fake_provided_file_system.h"
@@ -137,6 +138,19 @@ void AddDefaultComponentExtensionsOnMainThread(Profile* profile) {
   extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   service->component_loader()->AddDefaultComponentExtensions(false);
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // QuickOffice loads from rootfs at /usr/share/chromeos-assets/quickoffce
+  // which does not exist on bots for tests, so load test version.
+  base::FilePath data_dir;
+  CHECK(base::PathService::Get(chrome::DIR_TEST_DATA, &data_dir));
+  base::RunLoop run_loop;
+  service->component_loader()->AddComponentFromDirWithManifestFilename(
+      data_dir.Append("chromeos/file_manager/quickoffice"),
+      extension_misc::kQuickOfficeComponentExtensionId,
+      extensions::kManifestFilename, extensions::kManifestFilename,
+      run_loop.QuitClosure());
+  run_loop.Run();
+#endif
   // AddDefaultComponentExtensions() is normally invoked during
   // ExtensionService::Init() which also invokes UninstallMigratedExtensions().
   // Invoke it here as well, otherwise migrated extensions will remain installed
@@ -420,7 +434,7 @@ std::unique_ptr<ash::file_system_provider::ProvidedFileSystemInterface>
 FakeExtensionProviderOneDrive::CreateProvidedFileSystem(
     Profile* profile,
     const ash::file_system_provider::ProvidedFileSystemInfo& file_system_info,
-    ash::file_system_provider::ContentCache* content_cache) {
+    ash::file_system_provider::CacheManager* cache_manager) {
   DCHECK(profile);
   std::unique_ptr<FakeProvidedFileSystemOneDrive> fake_provided_file_system =
       std::make_unique<FakeProvidedFileSystemOneDrive>(file_system_info);

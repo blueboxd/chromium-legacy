@@ -156,6 +156,7 @@ bool IsArcCompatibleFilesystem(const base::FilePath& path) {
   // If it can be verified it is not on ecryptfs, then it is ok.
   struct statfs statfs_buf;
   if (statfs(path.value().c_str(), &statfs_buf) < 0) {
+    VLOG(1) << "statfs failed, errno=" << errno;
     return false;
   }
   return statfs_buf.f_type != ECRYPTFS_SUPER_MAGIC;
@@ -164,9 +165,29 @@ bool IsArcCompatibleFilesystem(const base::FilePath& path) {
 FileSystemCompatibilityState GetFileSystemCompatibilityPref(
     const AccountId& account_id) {
   user_manager::KnownUser known_user(g_browser_process->local_state());
-  return static_cast<FileSystemCompatibilityState>(
-      known_user.FindIntPath(account_id, prefs::kArcCompatibleFilesystemChosen)
-          .value_or(kFileSystemIncompatible));
+  if (auto pref = known_user.FindIntPath(account_id,
+                                         prefs::kArcCompatibleFilesystemChosen);
+      pref) {
+    return static_cast<FileSystemCompatibilityState>(pref.value());
+  }
+  VLOG(1) << "arc.compatible_filesystem.chosen not set. Assuming incompatible.";
+  return kFileSystemIncompatible;
+}
+
+// Similar to GetFileSystemCompatibilityPref, but when the pref is not found,
+// it optimistically assumes that the file system is compatible. This is for
+// the mitigation of issues like b/327969092 that unexpectedly clears the pref
+// during the initial sign-in.
+FileSystemCompatibilityState GetFileSystemCompatibilityPrefOptimistic(
+    const AccountId& account_id) {
+  user_manager::KnownUser known_user(g_browser_process->local_state());
+  if (auto pref = known_user.FindIntPath(account_id,
+                                         prefs::kArcCompatibleFilesystemChosen);
+      pref) {
+    return static_cast<FileSystemCompatibilityState>(pref.value());
+  }
+  VLOG(1) << "arc.compatible_filesystem.chosen not set. Assuming compatible.";
+  return kFileSystemCompatible;
 }
 
 // Stores the result of IsArcCompatibleFilesystem posted back from the blocking
@@ -454,7 +475,7 @@ bool IsArcCompatibleFileSystemUsedForUser(const user_manager::User* user) {
   // ash::UserSessionManager does the actual file system check and stores
   // the result to prefs, so that it survives crash-restart.
   FileSystemCompatibilityState filesystem_compatibility =
-      GetFileSystemCompatibilityPref(user->GetAccountId());
+      GetFileSystemCompatibilityPrefOptimistic(user->GetAccountId());
   const bool is_filesystem_compatible =
       filesystem_compatibility != kFileSystemIncompatible ||
       g_known_compatible_users.Get().count(user->GetAccountId()) != 0;
@@ -513,7 +534,8 @@ bool SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled) {
       return false;
     }
     if (enabled) {
-      arc_session_manager->AllowActivation();
+      arc_session_manager->AllowActivation(
+          ArcSessionManager::AllowActivationReason::kUserEnableAction);
       arc_session_manager->RequestEnable();
     } else {
       arc_session_manager->RequestDisableWithArcDataRemoval();
@@ -529,8 +551,15 @@ bool AreArcAllOptInPreferencesIgnorableForProfile(const Profile* profile) {
   // The preferences are ignorable iff both backup&restore and location services
   // are set by policy.
   const PrefService* prefs = profile->GetPrefs();
-  return prefs->IsManagedPreference(prefs::kArcBackupRestoreEnabled) &&
-         prefs->IsManagedPreference(prefs::kArcLocationServiceEnabled);
+
+  if (ash::features::IsCrosPrivacyHubLocationEnabled()) {
+    // When PH is enabled, location toggle is no longer ARC specific (applies to
+    // entire ChromeOS);
+    return prefs->IsManagedPreference(prefs::kArcBackupRestoreEnabled);
+  } else {
+    return prefs->IsManagedPreference(prefs::kArcBackupRestoreEnabled) &&
+           prefs->IsManagedPreference(prefs::kArcLocationServiceEnabled);
+  }
 }
 
 bool IsArcOobeOptInActive() {

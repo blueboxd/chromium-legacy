@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "absl/base/internal/raw_logging.h"
+#include "absl/container/internal/container_memory.h"
 #include "absl/container/internal/hash_function_defaults.h"
 #include "absl/container/internal/raw_hash_set.h"
 #include "absl/strings/str_format.h"
@@ -58,6 +59,11 @@ struct IntPolicy {
   template <class F>
   static auto apply(F&& f, int64_t x) -> decltype(std::forward<F>(f)(x, x)) {
     return std::forward<F>(f)(x, x);
+  }
+
+  template <class Hash>
+  static constexpr HashSlotFn get_hash_slot_fn() {
+    return nullptr;
   }
 };
 
@@ -116,6 +122,11 @@ class StringPolicy {
                              PairArgs(std::forward<Args>(args)...))) {
     return apply_impl(std::forward<F>(f),
                       PairArgs(std::forward<Args>(args)...));
+  }
+
+  template <class Hash>
+  static constexpr HashSlotFn get_hash_slot_fn() {
+    return nullptr;
   }
 };
 
@@ -446,6 +457,19 @@ void BM_Group_Match(benchmark::State& state) {
 }
 BENCHMARK(BM_Group_Match);
 
+void BM_GroupPortable_Match(benchmark::State& state) {
+  std::array<ctrl_t, GroupPortableImpl::kWidth> group;
+  Iota(group.begin(), group.end(), -4);
+  GroupPortableImpl g{group.data()};
+  h2_t h = 1;
+  for (auto _ : state) {
+    ::benchmark::DoNotOptimize(h);
+    ::benchmark::DoNotOptimize(g);
+    ::benchmark::DoNotOptimize(g.Match(h));
+  }
+}
+BENCHMARK(BM_GroupPortable_Match);
+
 void BM_Group_MaskEmpty(benchmark::State& state) {
   std::array<ctrl_t, Group::kWidth> group;
   Iota(group.begin(), group.end(), -4);
@@ -468,6 +492,17 @@ void BM_Group_MaskEmptyOrDeleted(benchmark::State& state) {
 }
 BENCHMARK(BM_Group_MaskEmptyOrDeleted);
 
+void BM_Group_MaskNonFull(benchmark::State& state) {
+  std::array<ctrl_t, Group::kWidth> group;
+  Iota(group.begin(), group.end(), -4);
+  Group g{group.data()};
+  for (auto _ : state) {
+    ::benchmark::DoNotOptimize(g);
+    ::benchmark::DoNotOptimize(g.MaskNonFull());
+  }
+}
+BENCHMARK(BM_Group_MaskNonFull);
+
 void BM_Group_CountLeadingEmptyOrDeleted(benchmark::State& state) {
   std::array<ctrl_t, Group::kWidth> group;
   Iota(group.begin(), group.end(), -2);
@@ -489,6 +524,17 @@ void BM_Group_MatchFirstEmptyOrDeleted(benchmark::State& state) {
   }
 }
 BENCHMARK(BM_Group_MatchFirstEmptyOrDeleted);
+
+void BM_Group_MatchFirstNonFull(benchmark::State& state) {
+  std::array<ctrl_t, Group::kWidth> group;
+  Iota(group.begin(), group.end(), -2);
+  Group g{group.data()};
+  for (auto _ : state) {
+    ::benchmark::DoNotOptimize(g);
+    ::benchmark::DoNotOptimize(g.MaskNonFull().LowestBitSet());
+  }
+}
+BENCHMARK(BM_Group_MatchFirstNonFull);
 
 void BM_DropDeletes(benchmark::State& state) {
   constexpr size_t capacity = (1 << 20) - 1;

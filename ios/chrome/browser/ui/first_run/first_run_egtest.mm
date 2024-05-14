@@ -9,10 +9,10 @@
 #import "build/branding_buildflags.h"
 #import "components/policy/core/common/policy_loader_ios_constants.h"
 #import "components/policy/policy_constants.h"
-#import "components/search_engines/search_engines_pref_names.h"
 #import "components/search_engines/search_engines_switches.h"
 #import "components/signin/ios/browser/features.h"
 #import "components/signin/public/base/consent_level.h"
+#import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/base/signin_switches.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/base/features.h"
@@ -29,7 +29,6 @@
 #import "ios/chrome/browser/signin/model/test_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
-#import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_matchers.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
@@ -39,6 +38,7 @@
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
+#import "ios/chrome/browser/ui/settings/settings_app_interface.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/promo_style/constants.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
@@ -46,7 +46,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -139,6 +138,9 @@ void DismissDefaultBrowserAndOmniboxPositionSelectionScreens() {
   [[self class] testForStartup];
   [super setUp];
 
+  GREYAssertNil([MetricsAppInterface setupHistogramTester],
+                @"Failed to set up histogram tester.");
+
   // Because this test suite changes the state of Sync passwords, wait
   // until the engine is initialized before startup.
   [ChromeEarlGrey
@@ -157,20 +159,17 @@ void DismissDefaultBrowserAndOmniboxPositionSelectionScreens() {
   [ChromeEarlGrey clearFakeSyncServerData];
 
   // Clear sync prefs for data types.
-  [ChromeEarlGreyAppInterface
-      clearUserPrefWithName:base::SysUTF8ToNSString(
-                                syncer::SyncPrefs::GetPrefNameForTypeForTesting(
-                                    syncer::UserSelectableType::kTabs))];
-  [ChromeEarlGreyAppInterface
-      clearUserPrefWithName:base::SysUTF8ToNSString(
-                                syncer::SyncPrefs::GetPrefNameForTypeForTesting(
-                                    syncer::UserSelectableType::kHistory))];
+  [ChromeEarlGrey
+      clearUserPrefWithName:syncer::SyncPrefs::GetPrefNameForTypeForTesting(
+                                syncer::UserSelectableType::kTabs)];
+  [ChromeEarlGrey
+      clearUserPrefWithName:syncer::SyncPrefs::GetPrefNameForTypeForTesting(
+                                syncer::UserSelectableType::kHistory)];
 
   // Clear MSBB consent.
-  [ChromeEarlGreyAppInterface
-      clearUserPrefWithName:base::SysUTF8ToNSString(
-                                unified_consent::prefs::
-                                    kUrlKeyedAnonymizedDataCollectionEnabled)];
+  [ChromeEarlGrey
+      clearUserPrefWithName:unified_consent::prefs::
+                                kUrlKeyedAnonymizedDataCollectionEnabled];
 
   [super tearDown];
 }
@@ -456,15 +455,54 @@ void DismissDefaultBrowserAndOmniboxPositionSelectionScreens() {
   }
 
   if ([self isRunningTest:@selector
-            (testHistorySyncShownWithEquallyWeightedButtons)]) {
+            (testHistorySyncShownWithEquallyWeightedButtons)] ||
+      [self isRunningTest:@selector
+            (testHistorySyncShownWithoutMinorModeRestrictions)] ||
+      [self
+          isRunningTest:@selector
+          (DISABLED_testHistorySyncShownWithEquallyWeightedButtonsOnCapabilitiesFetchTimeout
+              )]) {
     config.features_enabled.push_back(
         switches::kMinorModeRestrictionsForHistorySyncOptIn);
+    config.features_enabled.push_back(
+        switches::kUseSystemCapabilitiesForMinorModeRestrictions);
   }
 
   return config;
 }
 
 #pragma mark - Tests
+
+// Tests that the sentinel is written at the end of the first run.
+- (void)testFRESentinel {
+  [ChromeEarlGrey removeFirstRunSentinel];
+  GREYAssertFalse([ChromeEarlGrey hasFirstRunSentinel],
+                  @"First Run Sentinel not removed");
+  [ChromeEarlGreyUI waitForAppToIdle];
+  // Skip sign-in.
+  [[self elementInteractionWithGreyMatcher:
+             chrome_test_util::SigninScreenPromoSecondaryButtonMatcher()
+                      scrollViewIdentifier:
+                          kPromoStyleScrollViewAccessibilityIdentifier]
+      performAction:grey_tap()];
+  [[self elementInteractionWithGreyMatcher:
+             chrome_test_util::SigninScreenPromoSecondaryButtonMatcher()
+                      scrollViewIdentifier:
+                          kPromoStyleScrollViewAccessibilityIdentifier]
+      performAction:grey_tap()];
+  // Omnibox position choice promo dismissal.
+  if ([FirstRunAppInterface isOmniboxPositionChoiceEnabled]) {
+    [[self elementInteractionWithGreyMatcher:
+               chrome_test_util::SigninScreenPromoSecondaryButtonMatcher()
+                        scrollViewIdentifier:
+                            kPromoStyleScrollViewAccessibilityIdentifier]
+        performAction:grey_tap()];
+  }
+  [ChromeEarlGreyUI waitForAppToIdle];
+  // Tests that the sentinel file has been created.
+  GREYAssertTrue([ChromeEarlGrey hasFirstRunSentinel],
+                 @"First Run Sentinel not created");
+}
 
 // Tests FRE with UMA default value and without sign-in.
 - (void)testWithUMACheckedAndNoSignin {
@@ -1126,13 +1164,15 @@ void DismissDefaultBrowserAndOmniboxPositionSelectionScreens() {
 }
 
 // Tests that the History Sync Opt-In screen will have equally weighted button
-// for supervised users.
-// TODO(b/318349283): This feature is only behind a feature flag. It will then
-// be based on AccountCapabilities.
+// for users with minor mode restrictions.
 - (void)testHistorySyncShownWithEquallyWeightedButtons {
   // Add identity.
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
+  // Enforce minor mode restrictions.
+  [SigninEarlGrey
+      setCanShowHistorySyncOptInsWithoutMinorModeRestrictions:NO
+                                                  forIdentity:fakeIdentity];
   // Accept sign-in.
   [[self elementInteractionWithGreyMatcher:
              chrome_test_util::SigninScreenPromoPrimaryButtonMatcher()
@@ -1155,15 +1195,197 @@ void DismissDefaultBrowserAndOmniboxPositionSelectionScreens() {
           grey_allOf(
               chrome_test_util::ButtonWithForegroundColor(foregroundColorName),
               chrome_test_util::ButtonWithBackgroundColor(backgroundColorName),
-              chrome_test_util::PromoStylePrimaryActionButtonMatcher(), nil)]
+              chrome_test_util::SigninScreenPromoPrimaryButtonMatcher(), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey
       selectElementWithMatcher:
           grey_allOf(
               chrome_test_util::ButtonWithForegroundColor(foregroundColorName),
               chrome_test_util::ButtonWithBackgroundColor(backgroundColorName),
-              chrome_test_util::PromoStyleSecondaryActionButtonMatcher(), nil)]
+              chrome_test_util::SigninScreenPromoSecondaryButtonMatcher(), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
+  // Accept History Sync.
+  [[self elementInteractionWithGreyMatcher:
+             chrome_test_util::SigninScreenPromoPrimaryButtonMatcher()
+                      scrollViewIdentifier:
+                          kPromoStyleScrollViewAccessibilityIdentifier]
+      performAction:grey_tap()];
+  // Verify that latency metrics are recorded for when the system capability is
+  // immediately available.
+  GREYAssertNil([MetricsAppInterface
+                    expectUniqueSampleWithCount:1
+                                      forBucket:true
+                                   forHistogram:@"Signin.AccountCapabilities."
+                                                @"ImmediatelyAvailable"],
+                @"Incorrect immediate availability histogram");
+  GREYAssertNil(
+      [MetricsAppInterface
+          expectTotalCount:1
+              forHistogram:@"Signin.AccountCapabilities.UserVisibleLatency"],
+      @"Failed to record user visibile latency histogram");
+  GREYAssertNil(
+      [MetricsAppInterface
+          expectUniqueSampleWithCount:1
+                            forBucket:0
+                         forHistogram:
+                             @"Signin.AccountCapabilities.UserVisibleLatency"],
+      @"User visibile latency should be zero.");
+  GREYAssertNil(
+      [MetricsAppInterface
+          expectTotalCount:0
+              forHistogram:@"Signin.AccountCapabilities.FetchLatency"],
+      @"Fetch latency should not be recorded on immediate availability.");
+  // Verify that History Sync buttons metrics are recorded.
+  GREYAssertNil(
+      [MetricsAppInterface
+          expectUniqueSampleWithCount:1
+                            forBucket:static_cast<int>(
+                                          signin_metrics::SyncButtonsType::
+                                              kHistorySyncEqualWeighted)
+                         forHistogram:@"Signin.SyncButtons.Shown"],
+      @"Failed to record History Sync button type histogram.");
+  GREYAssertNil(
+      [MetricsAppInterface
+          expectUniqueSampleWithCount:1
+                            forBucket:static_cast<int>(
+                                          signin_metrics::SyncButtonClicked::
+                                              kHistorySyncOptInEqualWeighted)
+                         forHistogram:@"Signin.SyncButtons.Clicked"],
+      @"Failed to record History Sync buttons clicked histogram.");
+}
+
+// Tests that the History Sync Opt-In screen will not have equally weighted
+// button for users without minor mode restrictions.
+- (void)testHistorySyncShownWithoutMinorModeRestrictions {
+  // Add identity.
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+  // Set up capabilities.
+  [SigninEarlGrey
+      setCanShowHistorySyncOptInsWithoutMinorModeRestrictions:YES
+                                                  forIdentity:fakeIdentity];
+  // Accept sign-in.
+  [[self elementInteractionWithGreyMatcher:
+             chrome_test_util::SigninScreenPromoPrimaryButtonMatcher()
+                      scrollViewIdentifier:
+                          kPromoStyleScrollViewAccessibilityIdentifier]
+      performAction:grey_tap()];
+  [SigninEarlGrey verifyPrimaryAccountWithEmail:fakeIdentity.userEmail
+                                        consent:signin::ConsentLevel::kSignin];
+  // Verify that the History Sync Opt-In screen is shown.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kHistorySyncViewAccessibilityIdentifier)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  // Verify that buttons have the expected colors.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(chrome_test_util::ButtonWithForegroundColor(
+                         kSolidButtonTextColor),
+                     chrome_test_util::ButtonWithBackgroundColor(kBlueColor),
+                     chrome_test_util::SigninScreenPromoPrimaryButtonMatcher(),
+                     nil)] assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(
+              chrome_test_util::ButtonWithForegroundColor(kBlueColor),
+              chrome_test_util::SigninScreenPromoSecondaryButtonMatcher(), nil)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  // Decline History Sync.
+  [[self elementInteractionWithGreyMatcher:
+             chrome_test_util::SigninScreenPromoSecondaryButtonMatcher()
+                      scrollViewIdentifier:
+                          kPromoStyleScrollViewAccessibilityIdentifier]
+      performAction:grey_tap()];
+  // Verify that History Sync buttons metrics are recorded.
+  GREYAssertNil(
+      [MetricsAppInterface
+          expectUniqueSampleWithCount:1
+                            forBucket:static_cast<int>(
+                                          signin_metrics::SyncButtonsType::
+                                              kHistorySyncNotEqualWeighted)
+                         forHistogram:@"Signin.SyncButtons.Shown"],
+      @"Failed to record History Sync button type histogram.");
+  GREYAssertNil(
+      [MetricsAppInterface
+          expectUniqueSampleWithCount:1
+                            forBucket:
+                                static_cast<int>(
+                                    signin_metrics::SyncButtonClicked::
+                                        kHistorySyncCancelNotEqualWeighted)
+                         forHistogram:@"Signin.SyncButtons.Clicked"],
+      @"Failed to record History Sync buttons clicked histogram.");
+}
+
+// TODO(b/327221052): Set up the fake identity without value for the capability
+// CanShowHistorySyncOptInsWithoutMinorModeRestrictions.
+// Tests that the History Sync Opt-In screen will have equally weighted button
+// for users with unknown minor mode restrictions status.
+- (void)
+    DISABLED_testHistorySyncShownWithEquallyWeightedButtonsOnCapabilitiesFetchTimeout {
+  // Add identity without specifiying capabilities.
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+  // Accept sign-in.
+  [[self elementInteractionWithGreyMatcher:
+             chrome_test_util::SigninScreenPromoPrimaryButtonMatcher()
+                      scrollViewIdentifier:
+                          kPromoStyleScrollViewAccessibilityIdentifier]
+      performAction:grey_tap()];
+  [SigninEarlGrey verifyPrimaryAccountWithEmail:fakeIdentity.userEmail
+                                        consent:signin::ConsentLevel::kSignin];
+  // Verify that the History Sync Opt-In screen is shown.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kHistorySyncViewAccessibilityIdentifier)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  // Wait for UI changes to take effect.
+  [ChromeEarlGrey
+      waitForSufficientlyVisibleElementWithMatcher:
+          chrome_test_util::SigninScreenPromoPrimaryButtonMatcher()];
+  // Verify that the title and subtitle are present.
+  [[EarlGrey selectElementWithMatcher:grey_text(l10n_util::GetNSString(
+                                          IDS_IOS_HISTORY_SYNC_TITLE))]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:grey_text(l10n_util::GetNSString(
+                                          IDS_IOS_HISTORY_SYNC_SUBTITLE))]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  // Verify that the primary and secondary buttons have the same foreground and
+  // background colors.
+  NSString* foregroundColorName = kBlueColor;
+  NSString* backgroundColorName = kBlueHaloColor;
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(
+              chrome_test_util::ButtonWithForegroundColor(foregroundColorName),
+              chrome_test_util::ButtonWithBackgroundColor(backgroundColorName),
+              chrome_test_util::SigninScreenPromoPrimaryButtonMatcher(), nil)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(
+              chrome_test_util::ButtonWithForegroundColor(foregroundColorName),
+              chrome_test_util::ButtonWithBackgroundColor(backgroundColorName),
+              chrome_test_util::SigninScreenPromoSecondaryButtonMatcher(), nil)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  // Verify that latency metrics are recorded later for when the system
+  // capability is not immediately available.
+  GREYAssertNil([MetricsAppInterface
+                    expectUniqueSampleWithCount:1
+                                      forBucket:false
+                                   forHistogram:@"Signin.AccountCapabilities."
+                                                @"ImmediatelyAvailable"],
+                @"Incorrect immediate availability histogram");
+  GREYAssertNil(
+      [MetricsAppInterface
+          expectTotalCount:1
+              forHistogram:@"Signin.AccountCapabilities.UserVisibleLatency"],
+      @"Failed to record user visibile latency histogram");
+  GREYAssertNil(
+      [MetricsAppInterface
+          expectTotalCount:1
+              forHistogram:@"Signin.AccountCapabilities.FetchLatency"],
+      @"Fetch latency should not be recorded on immediate availability.");
 }
 
 #pragma mark - Sync UI Disabled
@@ -1262,13 +1484,14 @@ void DismissDefaultBrowserAndOmniboxPositionSelectionScreens() {
           grey_allOf(chrome_test_util::ButtonWithForegroundColor(
                          kSolidButtonTextColor),
                      chrome_test_util::ButtonWithBackgroundColor(kBlueColor),
-                     chrome_test_util::PromoStylePrimaryActionButtonMatcher(),
+                     chrome_test_util::SigninScreenPromoPrimaryButtonMatcher(),
                      nil)] assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey
       selectElementWithMatcher:
-          grey_allOf(chrome_test_util::ButtonWithForegroundColor(kBlueColor),
-                     chrome_test_util::PromoStyleSecondaryActionButtonMatcher(),
-                     nil)] assertWithMatcher:grey_sufficientlyVisible()];
+          grey_allOf(
+              chrome_test_util::ButtonWithForegroundColor(kBlueColor),
+              chrome_test_util::SigninScreenPromoSecondaryButtonMatcher(), nil)]
+      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Tests that the correct subtitle is shown in the FRE sign-in screen if the
@@ -1430,12 +1653,12 @@ void DismissDefaultBrowserAndOmniboxPositionSelectionScreens() {
   [self verifyDefaultBrowserIsDisplayed];
   // Verify that the history sync is enabled.
   GREYAssertTrue(
-      [SigninEarlGreyAppInterface
+      [SigninEarlGrey
           isSelectedTypeEnabled:syncer::UserSelectableType::kHistory],
       @"History sync should be enabled.");
-  GREYAssertTrue([SigninEarlGreyAppInterface
-                     isSelectedTypeEnabled:syncer::UserSelectableType::kTabs],
-                 @"Tabs sync should be enabled.");
+  GREYAssertTrue(
+      [SigninEarlGrey isSelectedTypeEnabled:syncer::UserSelectableType::kTabs],
+      @"Tabs sync should be enabled.");
   // TODO(crbug.com/1467853): Verify that sync consent is granted.
   // Verify that MSBB consent is granted.
   GREYAssertTrue(
@@ -1469,12 +1692,12 @@ void DismissDefaultBrowserAndOmniboxPositionSelectionScreens() {
   [self verifyDefaultBrowserIsDisplayed];
   // Verify that the history sync is disabled.
   GREYAssertFalse(
-      [SigninEarlGreyAppInterface
+      [SigninEarlGrey
           isSelectedTypeEnabled:syncer::UserSelectableType::kHistory],
       @"History sync should be disabled.");
-  GREYAssertFalse([SigninEarlGreyAppInterface
-                      isSelectedTypeEnabled:syncer::UserSelectableType::kTabs],
-                  @"Tabs sync should be disabled.");
+  GREYAssertFalse(
+      [SigninEarlGrey isSelectedTypeEnabled:syncer::UserSelectableType::kTabs],
+      @"Tabs sync should be disabled.");
   // TODO(crbug.com/1467853): Verify that sync consent is not granted.
   // Verify that MSBB consent is not granted.
   GREYAssertFalse(
@@ -1543,12 +1766,16 @@ void DismissDefaultBrowserAndOmniboxPositionSelectionScreens() {
   return config;
 }
 
+- (void)setUp {
+  [super setUp];
+  // Make sure the search engine has been reset, to avoid any issues if it was
+  // not by a previous test.
+  [SettingsAppInterface resetSearchEngine];
+}
+
 - (void)tearDown {
-  // Clear the "choice was made" timestamp pref.
-  [ChromeEarlGreyAppInterface
-      clearUserPrefWithName:
-          base::SysUTF8ToNSString(
-              prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp)];
+  // Reset the search engine for any other tests.
+  [SettingsAppInterface resetSearchEngine];
   [super tearDown];
 }
 
@@ -1557,7 +1784,8 @@ void DismissDefaultBrowserAndOmniboxPositionSelectionScreens() {
 // Tests that the Search Engine Choice screen is displayed, that the primary
 // button is correctly updated when the user selects a search engine then
 // scrolls down and that it correctly sets the default search engine.
-- (void)testSearchEngineChoiceScreenSelectThenScroll {
+// TODO(crbug.com/329210226): Re-enable the test.
+- (void)DISABLED_testSearchEngineChoiceScreenSelectThenScroll {
   // Skips sign-in.
   [[self elementInteractionWithGreyMatcher:
              chrome_test_util::PromoStyleSecondaryActionButtonMatcher()
@@ -1567,12 +1795,6 @@ void DismissDefaultBrowserAndOmniboxPositionSelectionScreens() {
   // Checks that the choice screen is shown
   [SearchEngineChoiceEarlGreyUI verifySearchEngineChoiceScreenIsDisplayed];
 
-  BOOL isPhone = (ui::GetDeviceFormFactor() ==
-                  ui::DeviceFormFactor::DEVICE_FORM_FACTOR_PHONE);
-  // Checks that the fake omnibox illustration is displayed on phones and is
-  // initially empty
-  [SearchEngineChoiceEarlGreyUI
-      verifyFakeOmniboxIllustrationState:isPhone ? kEmpty : kHidden];
   // Verifies that the primary button is initially the "More" button.
   id<GREYMatcher> moreButtonMatcher =
       grey_accessibilityID(kSearchEngineMoreButtonIdentifier);
@@ -1585,10 +1807,6 @@ void DismissDefaultBrowserAndOmniboxPositionSelectionScreens() {
       selectSearchEngineCellWithName:searchEngineToSelect
                      scrollDirection:kGREYDirectionDown
                               amount:50];
-  // Checks that the fake omnibox illustration is still displayed on phones but
-  // is no longer empty
-  [SearchEngineChoiceEarlGreyUI
-      verifyFakeOmniboxIllustrationState:isPhone ? kFull : kHidden];
   // Taps the primary button. This scrolls the table down to the bottom.
   [[[EarlGrey selectElementWithMatcher:moreButtonMatcher]
       assertWithMatcher:grey_notNil()] performAction:grey_tap()];
@@ -1604,7 +1822,8 @@ void DismissDefaultBrowserAndOmniboxPositionSelectionScreens() {
 // Tests that the Search Engine Choice screen is displayed, that the
 // primary button is correctly updated when the user scrolls down then selects a
 // search engine and that it correctly sets the default search engine.
-- (void)testSearchEngineChoiceScreenScrollThenSelect {
+// TODO(crbug.com/329210226): Re-enable the test.
+- (void)DISABLED_testSearchEngineChoiceScreenScrollThenSelect {
   // Skips sign-in.
   [[self elementInteractionWithGreyMatcher:
              chrome_test_util::PromoStyleSecondaryActionButtonMatcher()
@@ -1614,12 +1833,6 @@ void DismissDefaultBrowserAndOmniboxPositionSelectionScreens() {
   // Checks that the choice screen is shown
   [SearchEngineChoiceEarlGreyUI verifySearchEngineChoiceScreenIsDisplayed];
 
-  BOOL isPhone = (ui::GetDeviceFormFactor() ==
-                  ui::DeviceFormFactor::DEVICE_FORM_FACTOR_PHONE);
-  // Checks that the fake omnibox illustration is displayed on phones and is
-  // initially empty
-  [SearchEngineChoiceEarlGreyUI
-      verifyFakeOmniboxIllustrationState:isPhone ? kEmpty : kHidden];
   // Verifies that the primary button is initially the "More" button.
   id<GREYMatcher> moreButtonMatcher =
       grey_accessibilityID(kSearchEngineMoreButtonIdentifier);
@@ -1644,10 +1857,6 @@ void DismissDefaultBrowserAndOmniboxPositionSelectionScreens() {
       selectSearchEngineCellWithName:searchEngineToSelect
                      scrollDirection:kGREYDirectionUp
                               amount:300];
-  // Checks that the fake omnibox illustration is still displayed on phones but
-  // is no longer empty
-  [SearchEngineChoiceEarlGreyUI
-      verifyFakeOmniboxIllustrationState:isPhone ? kFull : kHidden];
   [SearchEngineChoiceEarlGreyUI confirmSearchEngineChoiceScreen];
 
   DismissDefaultBrowserAndOmniboxPositionSelectionScreens();

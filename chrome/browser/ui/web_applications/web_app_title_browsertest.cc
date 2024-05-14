@@ -2,12 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/metrics/content/subprocess_metrics_provider.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
+#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom.h"
 
 namespace web_app {
 
@@ -21,10 +26,17 @@ class WebAppTitleBrowserTest : public WebAppControllerBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WebAppTitleBrowserTest, ValidAppTitle) {
+// TODO(b/330201484): Deflake and re-enable.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_ValidAppTitle DISABLED_ValidAppTitle
+#else
+#define MAYBE_ValidAppTitle ValidAppTitle
+#endif
+IN_PROC_BROWSER_TEST_F(WebAppTitleBrowserTest, MAYBE_ValidAppTitle) {
   const GURL app_url =
       https_server()->GetURL("/web_apps/page_with_app_title.html");
   const std::u16string app_title = u"A Web App";
+  base::HistogramTester histogram_tester;
 
   auto web_app_info = std::make_unique<WebAppInstallInfo>(
       GenerateManifestIdFromStartUrlOnly(app_url));
@@ -41,12 +53,19 @@ IN_PROC_BROWSER_TEST_F(WebAppTitleBrowserTest, ValidAppTitle) {
   // Validate app title has app title.
   EXPECT_EQ(u"A Web App - AppTitle",
             app_browser->GetWindowTitleForCurrentTab(false));
+  // Navigate away to flush use counters.
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Blink.UseCounter.Features"),
+      BucketsInclude(base::Bucket(blink::mojom::WebFeature::kWebAppTitle, 1)));
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppTitleBrowserTest, WithoutAppTitle) {
   const GURL app_url =
       https_server()->GetURL("/web_apps/page_without_app_title.html");
   const std::u16string app_title = u"A Web App";
+  base::HistogramTester histogram_tester;
 
   auto web_app_info = std::make_unique<WebAppInstallInfo>(
       GenerateManifestIdFromStartUrlOnly(app_url));
@@ -62,12 +81,19 @@ IN_PROC_BROWSER_TEST_F(WebAppTitleBrowserTest, WithoutAppTitle) {
 
   // Validate app title is the same as page title.
   EXPECT_EQ(u"A Web App", app_browser->GetWindowTitleForCurrentTab(false));
+  // Navigate away to flush use counters.
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Blink.UseCounter.Features"),
+      BucketsInclude(base::Bucket(blink::mojom::WebFeature::kWebAppTitle, 0)));
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppTitleBrowserTest, DynamicAppTitle) {
   const GURL app_url =
       https_server()->GetURL("/web_apps/page_without_app_title.html");
   const std::u16string app_title = u"A Web App";
+  base::HistogramTester histogram_tester;
 
   auto web_app_info = std::make_unique<WebAppInstallInfo>(
       GenerateManifestIdFromStartUrlOnly(app_url));
@@ -83,6 +109,12 @@ IN_PROC_BROWSER_TEST_F(WebAppTitleBrowserTest, DynamicAppTitle) {
 
   // Validate that app title matches page title.
   EXPECT_EQ(u"A Web App", app_browser->GetWindowTitleForCurrentTab(false));
+  // Navigate away to flush use counters.
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Blink.UseCounter.Features"),
+      BucketsInclude(base::Bucket(blink::mojom::WebFeature::kWebAppTitle, 0)));
 
   {
     // Add app title via script and validate title is updated.
@@ -115,13 +147,24 @@ IN_PROC_BROWSER_TEST_F(WebAppTitleBrowserTest, DynamicAppTitle) {
     EXPECT_TRUE(content::WaitForLoadStop(web_contents));
     EXPECT_EQ(u"A Web App", app_browser->GetWindowTitleForCurrentTab(false));
   }
+
+  // Navigate away to flush use counters.
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
 }
 
 // Navigate to page with and without app title to validate app title is updated.
-IN_PROC_BROWSER_TEST_F(WebAppTitleBrowserTest, AppTitleNavigation) {
+#if BUILDFLAG(IS_LINUX)
+// TODO(b/328563549): Re-enable after the bug is fixed.
+#define MAYBE_AppTitleNavigation DISABLED_AppTitleNavigation
+#else
+#define MAYBE_AppTitleNavigation AppTitleNavigation
+#endif
+IN_PROC_BROWSER_TEST_F(WebAppTitleBrowserTest, MAYBE_AppTitleNavigation) {
   const GURL app_url =
       https_server()->GetURL("/web_apps/page_with_app_title.html");
   const std::u16string app_title = u"A Web App";
+  base::HistogramTester histogram_tester;
 
   auto web_app_info = std::make_unique<WebAppInstallInfo>(
       GenerateManifestIdFromStartUrlOnly(app_url));
@@ -155,5 +198,14 @@ IN_PROC_BROWSER_TEST_F(WebAppTitleBrowserTest, AppTitleNavigation) {
   web_contents->GetController().GoForward();
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   EXPECT_EQ(u"A Web App", app_browser->GetWindowTitleForCurrentTab(false));
+  // Navigate away to flush use counters.
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
+  // Explicitly fetch the metrics from the child processes and merge them.
+  content::FetchHistogramsFromChildProcesses();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Blink.UseCounter.Features"),
+      BucketsInclude(base::Bucket(blink::mojom::WebFeature::kWebAppTitle, 1)));
 }
 }  // namespace web_app

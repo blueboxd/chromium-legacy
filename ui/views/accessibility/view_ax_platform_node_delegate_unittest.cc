@@ -210,11 +210,15 @@ class ViewAXPlatformNodeDelegateTest : public ViewsTestBase {
     //  v[1] p3 s4   v[2] p2 s4   v[3] p- s-   v[4] p1 s4
     ASSERT_GE(views.size(), 5u);
 
-    views[0]->GetViewAccessibility().OverridePosInSet(4, 4);
-    views[1]->GetViewAccessibility().OverridePosInSet(3, 4);
-    views[2]->GetViewAccessibility().OverridePosInSet(2, 4);
+    views[0]->GetViewAccessibility().SetPosInSet(4);
+    views[0]->GetViewAccessibility().SetSetSize(4);
+    views[1]->GetViewAccessibility().SetPosInSet(3);
+    views[1]->GetViewAccessibility().SetSetSize(4);
+    views[2]->GetViewAccessibility().SetPosInSet(2);
+    views[2]->GetViewAccessibility().SetSetSize(4);
     // Skip views[3] - no override.
-    views[4]->GetViewAccessibility().OverridePosInSet(1, 4);
+    views[4]->GetViewAccessibility().SetPosInSet(1);
+    views[4]->GetViewAccessibility().SetSetSize(4);
   }
 
  protected:
@@ -442,11 +446,11 @@ TEST_F(ViewAXPlatformNodeDelegateTest, SetFocus) {
   EXPECT_FALSE(SetFocused(button_accessibility(), true));
   button_->SetEnabled(true);
 
-  button_accessibility()->OverrideIsEnabled(false);
+  button_accessibility()->SetIsEnabled(false);
   EXPECT_FALSE(SetFocused(button_accessibility(), true));
 
   EXPECT_FALSE(button_accessibility()->IsAccessibilityFocusable());
-  button_accessibility()->OverrideIsEnabled(true);
+  button_accessibility()->SetIsEnabled(true);
   EXPECT_TRUE(button_accessibility()->IsAccessibilityFocusable());
 }
 
@@ -458,7 +462,7 @@ TEST_F(ViewAXPlatformNodeDelegateTest, GetAuthorUniqueIdNonDefault) {
   ASSERT_EQ(u"view_1", button_accessibility()->GetAuthorUniqueId());
 }
 
-TEST_F(ViewAXPlatformNodeDelegateTest, OverrideNameAndDescription) {
+TEST_F(ViewAXPlatformNodeDelegateTest, SetNameAndDescription) {
   // Initially the button has no name and no description.
   EXPECT_EQ(button_accessibility()->GetName(), "");
   EXPECT_EQ(button_accessibility()->GetNameFrom(), ax::mojom::NameFrom::kNone);
@@ -467,41 +471,42 @@ TEST_F(ViewAXPlatformNodeDelegateTest, OverrideNameAndDescription) {
             ax::mojom::DescriptionFrom::kNone);
 
   // Setting the name to the empty string without explicitly setting the
-  // source to reflect that should trigger a DCHECK in OverrideName.
-  EXPECT_DCHECK_DEATH_WITH(button_accessibility()->OverrideName(""),
-                           "Check failed: name.empty\\(\\) == name_from == "
-                           "ax::mojom::NameFrom::kAttributeExplicitlyEmpty");
+  // source to reflect that should trigger a DCHECK in SetName.
+  EXPECT_DCHECK_DEATH_WITH(
+      button_accessibility()->SetName("", ax::mojom::NameFrom::kAttribute),
+      "Check failed: name.empty\\(\\) == name_from == "
+      "ax::mojom::NameFrom::kAttributeExplicitlyEmpty");
 
   // Setting the name to a non-empty string with a NameFrom of
-  // kAttributeExplicitlyEmpty should trigger a DCHECK in OverrideName.
+  // kAttributeExplicitlyEmpty should trigger a DCHECK in SetName.
   EXPECT_DCHECK_DEATH_WITH(
-      button_accessibility()->OverrideName(
+      button_accessibility()->SetName(
           "foo", ax::mojom::NameFrom::kAttributeExplicitlyEmpty),
       "Check failed: name.empty\\(\\) == name_from == "
       "ax::mojom::NameFrom::kAttributeExplicitlyEmpty");
 
-  button_accessibility()->OverrideName(
+  button_accessibility()->SetName(
       "", ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
   EXPECT_EQ(button_accessibility()->GetName(), "");
   EXPECT_EQ(button_accessibility()->GetNameFrom(),
             ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
 
   // Setting the description to the empty string without explicitly setting
-  // the source to reflect that should trigger a DCHECK in OverrideDescription.
+  // the source to reflect that should trigger a DCHECK in SetDescription.
   EXPECT_DCHECK_DEATH_WITH(
-      button_accessibility()->OverrideDescription(""),
+      button_accessibility()->SetDescription(""),
       "Check failed: description.empty\\(\\) == description_from == "
       "ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty");
 
   // Setting the description to a non-empty string with a DescriptionFrom of
-  // kAttributeExplicitlyEmpty should trigger a DCHECK in OverrideDescription.
+  // kAttributeExplicitlyEmpty should trigger a DCHECK in SetDescription.
   EXPECT_DCHECK_DEATH_WITH(
-      button_accessibility()->OverrideDescription(
+      button_accessibility()->SetDescription(
           "foo", ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty),
       "Check failed: description.empty\\(\\) == description_from == "
       "ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty");
 
-  button_accessibility()->OverrideDescription(
+  button_accessibility()->SetDescription(
       "", ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty);
   EXPECT_EQ(button_accessibility()->GetDescription(), "");
   EXPECT_EQ(button_accessibility()->GetDescriptionFrom(),
@@ -509,12 +514,13 @@ TEST_F(ViewAXPlatformNodeDelegateTest, OverrideNameAndDescription) {
 
   // Overriding the name and description without specifying the sources
   // should set the sources to kAttribute and kAriaDescription respectively.
-  button_accessibility()->OverrideName("Button's Name");
+  button_accessibility()->SetName("Button's Name",
+                                  ax::mojom::NameFrom::kAttribute);
   EXPECT_EQ(button_accessibility()->GetName(), "Button's Name");
   EXPECT_EQ(button_accessibility()->GetNameFrom(),
             ax::mojom::NameFrom::kAttribute);
 
-  button_accessibility()->OverrideDescription("Button's description");
+  button_accessibility()->SetDescription("Button's description");
   EXPECT_EQ(button_accessibility()->GetDescription(), "Button's description");
   EXPECT_EQ(button_accessibility()->GetDescriptionFrom(),
             ax::mojom::DescriptionFrom::kAriaDescription);
@@ -526,14 +532,14 @@ TEST_F(ViewAXPlatformNodeDelegateTest, OverrideNameAndDescription) {
   // Set the name and description of the label using other source types
   // for greater test coverage (i.e. rather than those types being the
   // most appropriate choice.)
-  label_accessibility()->OverrideName("Label's Name",
-                                      ax::mojom::NameFrom::kContents);
+  label_accessibility()->SetName("Label's Name",
+                                 ax::mojom::NameFrom::kContents);
   EXPECT_EQ(label_accessibility()->GetName(), "Label's Name");
   EXPECT_EQ(label_accessibility()->GetNameFrom(),
             ax::mojom::NameFrom::kContents);
 
-  label_accessibility()->OverrideDescription(
-      "Label's description", ax::mojom::DescriptionFrom::kTitle);
+  label_accessibility()->SetDescription("Label's description",
+                                        ax::mojom::DescriptionFrom::kTitle);
   EXPECT_EQ(label_accessibility()->GetDescription(), "Label's description");
   EXPECT_EQ(label_accessibility()->GetDescriptionFrom(),
             ax::mojom::DescriptionFrom::kTitle);
@@ -541,21 +547,21 @@ TEST_F(ViewAXPlatformNodeDelegateTest, OverrideNameAndDescription) {
   // Set the label's View as the name source of the accessible button.
   // This should cause the previously-set name to be replaced with the
   // accessible name of the label.
-  button_accessibility()->OverrideLabelledBy(label_);
+  button_accessibility()->SetName(*label_);
   EXPECT_EQ(button_accessibility()->GetName(), "Label's Name");
   EXPECT_EQ(button_accessibility()->GetNameFrom(),
             ax::mojom::NameFrom::kRelatedElement);
 
   // Setting the labelledby View to itself should trigger a DCHECK.
-  EXPECT_DCHECK_DEATH_WITH(button_accessibility()->OverrideLabelledBy(button_),
-                           "Check failed: labelled_by_view != view_");
+  EXPECT_DCHECK_DEATH_WITH(button_accessibility()->SetName(*button_),
+                           "Check failed: view_ != &naming_view");
 }
 
-TEST_F(ViewAXPlatformNodeDelegateTest, OverrideIsSelected) {
+TEST_F(ViewAXPlatformNodeDelegateTest, SetIsSelected) {
   View::Views view_ids = SetUpExtraViews();
 
-  view_ids[1]->GetViewAccessibility().OverrideIsSelected(true);
-  view_ids[2]->GetViewAccessibility().OverrideIsSelected(false);
+  view_ids[1]->GetViewAccessibility().SetIsSelected(true);
+  view_ids[2]->GetViewAccessibility().SetIsSelected(false);
 
   ui::AXNodeData node_data_0;
   view_ids[0]->GetViewAccessibility().GetAccessibleNodeData(&node_data_0);
@@ -627,16 +633,16 @@ TEST_F(ViewAXPlatformNodeDelegateTest, SetSizeAndPosition) {
   EXPECT_FALSE(view_accessibility(group_ids[4])->GetPosInSet().has_value());
 
   // Check if a View is ignored, it is not counted in SetSize or PosInSet
-  group_ids[1]->GetViewAccessibility().OverrideIsIgnored(true);
-  group_ids[2]->GetViewAccessibility().OverrideIsIgnored(true);
+  group_ids[1]->GetViewAccessibility().SetIsIgnored(true);
+  group_ids[2]->GetViewAccessibility().SetIsIgnored(true);
   EXPECT_EQ(view_accessibility(group_ids[0])->GetSetSize(), 1);
   EXPECT_EQ(view_accessibility(group_ids[0])->GetPosInSet(), 1);
   EXPECT_FALSE(view_accessibility(group_ids[1])->GetSetSize().has_value());
   EXPECT_FALSE(view_accessibility(group_ids[1])->GetPosInSet().has_value());
   EXPECT_FALSE(view_accessibility(group_ids[2])->GetSetSize().has_value());
   EXPECT_FALSE(view_accessibility(group_ids[2])->GetPosInSet().has_value());
-  group_ids[1]->GetViewAccessibility().OverrideIsIgnored(false);
-  group_ids[2]->GetViewAccessibility().OverrideIsIgnored(false);
+  group_ids[1]->GetViewAccessibility().SetIsIgnored(false);
+  group_ids[2]->GetViewAccessibility().SetIsIgnored(false);
 
   // Test Views with setSize/ posInSet override values set.
   View::Views overrides = SetUpExtraViews();
@@ -744,14 +750,14 @@ TEST_F(ViewAXPlatformNodeDelegateTest, ComputeViewListItemName) {
   ViewAXPlatformNodeDelegate* child_view_2 = view_accessibility(extra_views[2]);
   ViewAXPlatformNodeDelegate* child_view_3 = view_accessibility(extra_views[3]);
 
-  parent_view->OverrideRole(ax::mojom::Role::kListItem);
-  child_view_1->OverrideRole(ax::mojom::Role::kStaticText);
-  child_view_2->OverrideRole(ax::mojom::Role::kLink);
-  child_view_3->OverrideRole(ax::mojom::Role::kStaticText);
+  parent_view->SetRole(ax::mojom::Role::kListItem);
+  child_view_1->SetRole(ax::mojom::Role::kStaticText);
+  child_view_2->SetRole(ax::mojom::Role::kLink);
+  child_view_3->SetRole(ax::mojom::Role::kStaticText);
 
-  child_view_1->OverrideName("1");
-  child_view_2->OverrideName("2");
-  child_view_3->OverrideName("3");
+  child_view_1->SetName("1", ax::mojom::NameFrom::kAttribute);
+  child_view_2->SetName("2", ax::mojom::NameFrom::kAttribute);
+  child_view_3->SetName("3", ax::mojom::NameFrom::kAttribute);
 
   EXPECT_EQ(parent_view->ComputeListItemNameFromContent(), L"123");
 }
@@ -791,12 +797,12 @@ TEST_F(ViewAXPlatformNodeDelegateTest, TreeNavigationWithLeafViews) {
   EXPECT_EQ(0u, button_accessibility()->GetIndexInParent());
   EXPECT_EQ(2u, parent_view->GetIndexInParent());
 
-  EXPECT_FALSE(contents_view->IsIgnored());
-  EXPECT_FALSE(parent_view->IsIgnored());
-  EXPECT_TRUE(child_view_1->IsIgnored());
-  EXPECT_TRUE(child_view_2->IsIgnored());
-  EXPECT_TRUE(child_view_3->IsIgnored());
-  EXPECT_TRUE(child_view_4->IsIgnored());
+  EXPECT_FALSE(contents_view->GetIsIgnored());
+  EXPECT_FALSE(parent_view->GetIsIgnored());
+  EXPECT_TRUE(child_view_1->GetIsIgnored());
+  EXPECT_TRUE(child_view_2->GetIsIgnored());
+  EXPECT_TRUE(child_view_3->GetIsIgnored());
+  EXPECT_TRUE(child_view_4->GetIsIgnored());
 
   EXPECT_FALSE(contents_view->IsLeaf());
   EXPECT_TRUE(parent_view->IsLeaf());
@@ -828,12 +834,12 @@ TEST_F(ViewAXPlatformNodeDelegateTest, TreeNavigationWithLeafViews) {
   EXPECT_EQ(0u, button_accessibility()->GetIndexInParent());
   EXPECT_EQ(2u, parent_view->GetIndexInParent());
 
-  EXPECT_FALSE(contents_view->IsIgnored());
-  EXPECT_FALSE(parent_view->IsIgnored());
-  EXPECT_FALSE(child_view_1->IsIgnored());
-  EXPECT_FALSE(child_view_2->IsIgnored());
-  EXPECT_FALSE(child_view_3->IsIgnored());
-  EXPECT_FALSE(child_view_4->IsIgnored());
+  EXPECT_FALSE(contents_view->GetIsIgnored());
+  EXPECT_FALSE(parent_view->GetIsIgnored());
+  EXPECT_FALSE(child_view_1->GetIsIgnored());
+  EXPECT_FALSE(child_view_2->GetIsIgnored());
+  EXPECT_FALSE(child_view_3->GetIsIgnored());
+  EXPECT_FALSE(child_view_4->GetIsIgnored());
 
   EXPECT_FALSE(contents_view->IsLeaf());
   EXPECT_FALSE(parent_view->IsLeaf());
@@ -882,8 +888,8 @@ TEST_F(ViewAXPlatformNodeDelegateTest, TreeNavigationWithIgnoredViews) {
   ViewAXPlatformNodeDelegate* child_view_4 = view_accessibility(extra_views[4]);
 
   // Mark the parent view and the second child view as ignored.
-  parent_view->OverrideIsIgnored(true);
-  child_view_2->OverrideIsIgnored(true);
+  parent_view->SetIsIgnored(true);
+  child_view_2->SetIsIgnored(true);
 
   EXPECT_EQ(contents_view->GetNativeObject(), parent_view->GetParent());
   EXPECT_EQ(3u, parent_view->GetChildCount());
@@ -932,57 +938,55 @@ TEST_F(ViewAXPlatformNodeDelegateTest, TreeNavigationWithIgnoredViews) {
             child_view_4->GetPreviousSibling());
 }
 
-TEST_F(ViewAXPlatformNodeDelegateTest, OverrideIsEnabled) {
+TEST_F(ViewAXPlatformNodeDelegateTest, SetIsEnabled) {
   // Initially, the button should be enabled.
-  EXPECT_TRUE(button_accessibility()->IsAccessibilityEnabled());
+  EXPECT_TRUE(button_accessibility()->GetIsEnabled());
   EXPECT_TRUE(button_accessibility()->IsAccessibilityFocusable());
 
   button_->SetEnabled(false);
-  EXPECT_FALSE(button_accessibility()->IsAccessibilityEnabled());
+  EXPECT_FALSE(button_accessibility()->GetIsEnabled());
   EXPECT_FALSE(button_accessibility()->IsAccessibilityFocusable());
 
   button_->SetEnabled(true);
-  EXPECT_TRUE(button_accessibility()->IsAccessibilityEnabled());
+  EXPECT_TRUE(button_accessibility()->GetIsEnabled());
   EXPECT_TRUE(button_accessibility()->IsAccessibilityFocusable());
 
-  // `ViewAccessibility::OverrideIsEnabled` should have priority over
+  // `ViewAccessibility::SetIsEnabled` should have priority over
   // `View::SetEnabled`.
-  button_accessibility()->OverrideIsEnabled(false);
-  EXPECT_FALSE(button_accessibility()->IsAccessibilityEnabled());
+  button_accessibility()->SetIsEnabled(false);
+  EXPECT_FALSE(button_accessibility()->GetIsEnabled());
   EXPECT_FALSE(button_accessibility()->IsAccessibilityFocusable());
 
   button_->SetEnabled(false);
-  EXPECT_FALSE(button_accessibility()->IsAccessibilityEnabled());
+  EXPECT_FALSE(button_accessibility()->GetIsEnabled());
   EXPECT_FALSE(button_accessibility()->IsAccessibilityFocusable());
-  button_accessibility()->OverrideIsEnabled(true);
-  EXPECT_TRUE(button_accessibility()->IsAccessibilityEnabled());
+  button_accessibility()->SetIsEnabled(true);
+  EXPECT_TRUE(button_accessibility()->GetIsEnabled());
   EXPECT_TRUE(button_accessibility()->IsAccessibilityFocusable());
 
   // Initially, the label should be enabled. It should never be focusable
   // because it is not an interactive control like the button.
-  EXPECT_TRUE(label_accessibility()->IsAccessibilityEnabled());
+  EXPECT_TRUE(label_accessibility()->GetIsEnabled());
   EXPECT_FALSE(label_accessibility()->IsAccessibilityFocusable());
 
   label_->SetEnabled(false);
-  EXPECT_FALSE(label_accessibility()->IsAccessibilityEnabled());
+  EXPECT_FALSE(label_accessibility()->GetIsEnabled());
   EXPECT_FALSE(label_accessibility()->IsAccessibilityFocusable());
 
-  label_accessibility()->OverrideIsEnabled(true);
-  EXPECT_TRUE(label_accessibility()->IsAccessibilityEnabled());
+  label_accessibility()->SetIsEnabled(true);
+  EXPECT_TRUE(label_accessibility()->GetIsEnabled());
   EXPECT_FALSE(label_accessibility()->IsAccessibilityFocusable());
 
-  label_accessibility()->OverrideIsEnabled(false);
-  EXPECT_FALSE(label_accessibility()->IsAccessibilityEnabled());
+  label_accessibility()->SetIsEnabled(false);
+  EXPECT_FALSE(label_accessibility()->GetIsEnabled());
   EXPECT_FALSE(label_accessibility()->IsAccessibilityFocusable());
 }
 
-TEST_F(ViewAXPlatformNodeDelegateTest, OverrideHasPopup) {
+TEST_F(ViewAXPlatformNodeDelegateTest, SetHasPopup) {
   View::Views view_ids = SetUpExtraViews();
 
-  view_ids[1]->GetViewAccessibility().OverrideHasPopup(
-      ax::mojom::HasPopup::kTrue);
-  view_ids[2]->GetViewAccessibility().OverrideHasPopup(
-      ax::mojom::HasPopup::kMenu);
+  view_ids[1]->GetViewAccessibility().SetHasPopup(ax::mojom::HasPopup::kTrue);
+  view_ids[2]->GetViewAccessibility().SetHasPopup(ax::mojom::HasPopup::kMenu);
 
   ui::AXNodeData node_data_0;
   view_ids[0]->GetViewAccessibility().GetAccessibleNodeData(&node_data_0);

@@ -362,7 +362,8 @@ bool IsGaiaPageDefaultsToSAML() {
 bool IsContextNeededForScreen(OobeScreenId screen_id) {
   return screen_id == SamlConfirmPasswordView::kScreenId ||
          screen_id == CryptohomeRecoveryScreenView::kScreenId ||
-         screen_id == GaiaPasswordChangedView::kScreenId;
+         screen_id == GaiaPasswordChangedView::kScreenId ||
+         screen_id == LocalDataLossWarningScreenView::kScreenId;
 }
 
 }  // namespace
@@ -1348,10 +1349,20 @@ void WizardController::OnConsumerUpdateScreenExit(
 
   const std::string screen_name =
       GetLocalState()->GetString(prefs::kOobeScreenAfterConsumerUpdate);
-  if (screen_name == GaiaView::kScreenId.name) {
-    AdvanceToScreen(GaiaView::kScreenId);
-  } else {
+  if (screen_name == GaiaInfoScreenView::kScreenId.name) {
+    if (features::IsOobeGaiaInfoScreenEnabled() &&
+        HasScreen(PrefToScreenId(screen_name))) {
+      AdvanceToScreen(PrefToScreenId(screen_name));
+    } else {
+      AdvanceToScreen(GaiaView::kScreenId);
+    }
+  } else if (HasScreen(PrefToScreenId(screen_name))) {
     AdvanceToScreen(PrefToScreenId(screen_name));
+  } else {
+    // Fallback for resuming consumer update screen from local state. This
+    // handles cases where screen names/structure changed between versions.
+    // 'OnUserCreationScreenExit' would update the state for compatibility.
+    AdvanceToScreen(UserCreationView::kScreenId);
   }
 }
 
@@ -1790,7 +1801,7 @@ void WizardController::OnLocalDataLossWarningScreenExit(
       ShowOSAuthErrorScreen();
       break;
     case LocalDataLossWarningScreen::Result::kCancel:
-      ShowLoginScreen();
+      LoginDisplayHost::default_host()->CancelPasswordChangedFlow();
       break;
     case LocalDataLossWarningScreen::Result::kBackToOnlineAuth:
       ShowEnterOldPasswordScreen();
@@ -2111,6 +2122,9 @@ void WizardController::OnEnrollmentScreenExit(EnrollmentScreen::Result result) {
       PerformOOBECompletedActions(
           OobeMetricsHelper::CompletedPreLoginOobeFlowType::kAutoEnrollment);
       DCHECK(!prescribed_enrollment_config_.is_forced());
+      // set  the userCreationScreen with the default step creation and
+      // pre-select 'For personal use'.
+      GetScreen<UserCreationScreen>()->SetDefaultStep();
       ShowLoginScreen();
       break;
     case EnrollmentScreen::Result::TPM_ERROR:

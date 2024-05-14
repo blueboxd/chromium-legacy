@@ -23,8 +23,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/updater/net/network.h"
 #include "chrome/updater/policy/service.h"
+#include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/util.h"
 #include "chrome/updater/util/win_util.h"
+#include "chrome/updater/win/scoped_handle.h"
+#include "chrome/updater/win/scoped_impersonation.h"
 #include "chrome/updater/win/user_info.h"
 #include "components/update_client/network.h"
 #include "components/winhttp/proxy_configuration.h"
@@ -39,17 +42,16 @@ scoped_refptr<winhttp::ProxyConfiguration> GetProxyConfiguration(
     std::optional<PolicyServiceProxyConfiguration>
         policy_service_proxy_configuration) {
   if (policy_service_proxy_configuration) {
+    VLOG(1) << "Using cloud policy configuration for proxy.";
     return base::MakeRefCounted<winhttp::ProxyConfiguration>(winhttp::ProxyInfo{
-        policy_service_proxy_configuration->proxy_auto_detect.value_or(false),
+        policy_service_proxy_configuration->proxy_auto_detect,
         base::SysUTF8ToWide(
             policy_service_proxy_configuration->proxy_pac_url.value_or("")),
         base::SysUTF8ToWide(
             policy_service_proxy_configuration->proxy_url.value_or("")),
         L""});
   }
-
   VLOG(1) << "Using the system configuration for proxy.";
-
   return base::MakeRefCounted<winhttp::AutoProxyConfiguration>();
 }
 
@@ -185,11 +187,28 @@ class NetworkFetcherFactory::Impl {
   explicit Impl(std::optional<PolicyServiceProxyConfiguration>
                     policy_service_proxy_configuration)
       : proxy_configuration_(
-            GetProxyConfiguration(policy_service_proxy_configuration)),
-        session_handle_(base::MakeRefCounted<winhttp::SharedHInternet>(
-            winhttp::CreateSessionHandle(
-                base::ASCIIToWide(GetUpdaterUserAgent()).c_str(),
-                proxy_configuration_->access_type()))) {}
+            GetProxyConfiguration(policy_service_proxy_configuration)) {
+    ScopedImpersonation impersonate;
+    if (IsSystemInstall()) {
+      HResultOr<ScopedKernelHANDLE> token = GetLoggedOnUserToken();
+      VLOG_IF(2, !token.has_value())
+          << __func__ << ": GetLoggedOnUserToken failed: " << std::hex
+          << token.error();
+      if (token.has_value()) {
+        const HRESULT hr = impersonate.Impersonate(token.value().get());
+        VLOG(2)
+            << __func__
+            << ": Successfully got logged on user token. Impersonate result: "
+            << std::hex << hr;
+      }
+    }
+    session_handle_ = base::MakeRefCounted<winhttp::SharedHInternet>(
+        winhttp::CreateSessionHandle(base::SysUTF8ToWide(GetUpdaterUserAgent()),
+                                     proxy_configuration_->access_type(),
+                                     proxy_configuration_->proxy(),
+                                     proxy_configuration_->proxy_bypass()));
+    VLOG_IF(2, !session_handle_) << "Failed to create a winhttp session.";
+  }
 
   std::unique_ptr<update_client::NetworkFetcher> Create() {
     return session_handle_ ? std::make_unique<NetworkFetcher>(

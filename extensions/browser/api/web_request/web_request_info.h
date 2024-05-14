@@ -11,6 +11,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+
 #include "base/memory/scoped_refptr.h"
 #include "base/values.h"
 #include "content/public/browser/global_routing_id.h"
@@ -93,6 +94,10 @@ struct WebRequestInfo {
   void AddResponseInfoFromResourceResponse(
       const network::mojom::URLResponseHead& response);
 
+  // Erases all actions in `dnr_actions` that are associated with the given
+  // `extension_id`.
+  void EraseDNRActionsForExtension(const ExtensionId& extension_id);
+
   // A unique identifier for this request.
   const uint64_t id;
 
@@ -158,10 +163,10 @@ struct WebRequestInfo {
   const int web_view_rules_registry_id;
   const int web_view_embedder_process_id;
 
-  // The Declarative Net Request actions associated with this request. Mutable
-  // since this is lazily computed. Cached to avoid redundant computations.
-  // Valid when not null. In case no actions are taken, populated with an empty
-  // vector.
+  // The Declarative Net Request actions associated with this request that are
+  // matched during the onBeforeRequest stage. Mutable since this is lazily
+  // computed. Cached to avoid redundant computations. Valid when not null. In
+  // case no actions are taken, populated with an empty vector.
   mutable std::optional<std::vector<declarative_net_request::RequestAction>>
       dnr_actions;
 

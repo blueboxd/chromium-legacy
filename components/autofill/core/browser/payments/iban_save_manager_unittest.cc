@@ -59,24 +59,16 @@ class IbanSaveManagerTest : public testing::Test {
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
     autofill_client_.set_personal_data_manager(
         std::make_unique<TestPersonalDataManager>());
-    autofill_client_.set_test_payments_network_interface(
-        std::make_unique<MockTestPaymentsNetworkInterface>());
+    autofill_client_.GetPaymentsAutofillClient()
+        ->set_test_payments_network_interface(
+            std::make_unique<MockTestPaymentsNetworkInterface>());
     autofill_client_.set_sync_service(&sync_service_);
     std::unique_ptr<TestStrikeDatabase> test_strike_database =
         std::make_unique<TestStrikeDatabase>();
     strike_database_ = test_strike_database.get();
     autofill_client_.set_test_strike_database(std::move(test_strike_database));
     personal_data().SetSyncingForTest(true);
-    personal_data().Init(/*profile_database=*/nullptr,
-                         /*account_database=*/nullptr,
-                         /*pref_service=*/autofill_client_.GetPrefs(),
-                         /*local_state=*/autofill_client_.GetPrefs(),
-                         /*identity_manager=*/nullptr,
-                         /*history_service=*/nullptr,
-                         /*sync_service=*/nullptr,
-                         /*strike_database=*/nullptr,
-                         /*image_fetcher=*/nullptr,
-                         /*shared_storage_handler=*/nullptr);
+    personal_data().SetPrefService(autofill_client_.GetPrefs());
     iban_save_manager_ =
         std::make_unique<IbanSaveManager>(&personal_data(), &autofill_client_);
   }
@@ -133,7 +125,8 @@ class IbanSaveManagerTest : public testing::Test {
 
   MockTestPaymentsNetworkInterface* payments_network_interface() {
     return static_cast<MockTestPaymentsNetworkInterface*>(
-        autofill_client_.GetPaymentsNetworkInterface());
+        autofill_client_.GetPaymentsAutofillClient()
+            ->GetPaymentsNetworkInterface());
   }
 
   base::test::TaskEnvironment task_environment_;

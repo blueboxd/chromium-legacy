@@ -165,7 +165,6 @@ public final class MostVisitedTilesProcessorUnitTest {
     @EnableFeatures({ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
     public void createModel_padding() {
         OmniboxFeatures.ENABLE_MODERNIZE_VISUAL_UPDATE_ON_TABLET.setForTesting(true);
-        OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_SMALLEST_MARGINS.setForTesting(true);
 
         var model = mProcessor.createModel();
 
@@ -533,16 +532,14 @@ public final class MostVisitedTilesProcessorUnitTest {
     }
 
     @Test
-    public void getMinimumCarouselItemViewHeight_forFullTestCoverage() {
-        // TODO(ender): migrate this to measured dimensions when TileViews no longer grow with the
-        // parent.
-        assertEquals(
-                mContext.getResources().getDimensionPixelSize(R.dimen.tile_view_width),
-                mProcessor.getCarouselItemViewWidth());
-        assertEquals(
-                mContext.getResources().getDimensionPixelSize(R.dimen.tile_view_min_height),
-                mProcessor.getCarouselItemViewHeight());
+    public void getCarouselItemViewHeight() {
+        // Consider using TileView directly.
+        int baseHeight =
+                mContext.getResources().getDimensionPixelSize(R.dimen.tile_view_min_height);
+
+        assertEquals(baseHeight, mProcessor.getCarouselItemViewHeight());
     }
+
 
     @Test
     public void createModel_checkContentDescription() {

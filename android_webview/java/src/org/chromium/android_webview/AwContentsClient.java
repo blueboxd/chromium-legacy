@@ -29,6 +29,7 @@ import org.chromium.android_webview.safe_browsing.AwSafeBrowsingResponse;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.WebResourceResponseInfo;
@@ -217,6 +218,7 @@ public abstract class AwContentsClient {
             String url,
             boolean isOutermostMainFrame,
             boolean hasUserGesture,
+            @Nullable HashMap<String, String> requestHeaders,
             boolean isRedirect) {
         AwContentsClientCallbackHelper.CancelCallbackPoller poller =
                 mCallbackHelper.getCancelCallbackPoller();
@@ -226,12 +228,20 @@ public abstract class AwContentsClient {
             // Note: only GET requests can be overridden, so we hardcode the method.
             AwWebResourceRequest request =
                     new AwWebResourceRequest(
-                            url, isOutermostMainFrame, hasUserGesture, "GET", null);
+                            url, isOutermostMainFrame, hasUserGesture, "GET", requestHeaders);
             request.isRedirect = isRedirect;
+            recordBrowsingFallbackHistogram(false);
             return shouldOverrideUrlLoading(request);
         } else {
-            return sendBrowsingIntent(context, url, hasUserGesture, isRedirect);
+            boolean sentIntent = sendBrowsingIntent(context, url, hasUserGesture, isRedirect);
+            recordBrowsingFallbackHistogram(sentIntent);
+            return sentIntent;
         }
+    }
+
+    private void recordBrowsingFallbackHistogram(boolean isFallbackSent) {
+        RecordHistogram.recordBooleanHistogram(
+                "Android.WebView.ShouldInterceptRequest.IsBrowsingIntentFallback", isFallbackSent);
     }
 
     private static boolean sendBrowsingIntent(

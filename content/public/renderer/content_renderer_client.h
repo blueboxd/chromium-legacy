@@ -26,10 +26,12 @@
 #include "content/public/common/content_client.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/key_system_info.h"
+#include "media/base/key_systems_support_observer.h"
 #include "media/base/supported_types.h"
 #include "third_party/blink/public/platform/url_loader_throttle_provider.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle_provider.h"
+#include "third_party/blink/public/web/web_link_preview_triggerer.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "ui/base/page_transition_types.h"
@@ -280,7 +282,8 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual bool IsOriginIsolatedPepperPlugin(const base::FilePath& plugin_path);
 
   // Allows embedder to register the key system(s) it supports.
-  virtual void GetSupportedKeySystems(media::GetSupportedKeySystemsCB cb);
+  virtual std::unique_ptr<media::KeySystemSupportObserver>
+  GetSupportedKeySystems(media::GetSupportedKeySystemsCB cb);
 
   // Allows embedder to describe customized audio capabilities.
   virtual bool IsSupportedAudioType(const media::AudioType& type);
@@ -438,6 +441,13 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual std::unique_ptr<cast_streaming::ResourceProvider>
   CreateCastStreamingResourceProvider();
 #endif
+
+  // Creates a WebLinkPreviewTriggerer if an embedder wants to observe events
+  // and trigger preview. It is allowed to return nullptr.
+  //
+  // See blink::WebLinkPreviewTriggerer for more details.
+  virtual std::unique_ptr<blink::WebLinkPreviewTriggerer>
+  CreateLinkPreviewTriggerer();
 };
 
 }  // namespace content

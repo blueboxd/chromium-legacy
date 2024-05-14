@@ -16,6 +16,7 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/types/expected.h"
 #include "services/webnn/public/mojom/webnn_context_provider.mojom.h"
 #include "services/webnn/public/mojom/webnn_graph.mojom.h"
 #include "services/webnn/webnn_graph_impl.h"
@@ -51,7 +52,8 @@ class GraphImpl final : public WebNNGraphImpl {
   static void CreateAndBuild(scoped_refptr<CommandQueue> command_queue,
                              ComPtr<IDMLDevice> dml_device,
                              mojom::GraphInfoPtr graph_info,
-                             mojom::WebNNContext::CreateGraphCallback callback);
+                             mojom::WebNNContext::CreateGraphCallback callback,
+                             bool pass_dml_execution_disable_meta_commands);
 
   GraphImpl(const GraphImpl&) = delete;
   GraphImpl& operator=(const GraphImpl&) = delete;
@@ -139,10 +141,10 @@ class GraphImpl final : public WebNNGraphImpl {
     std::optional<DML_BINDING_DESC> temporary_buffer_binding_desc;
   };
 
-  static std::unique_ptr<ComputeResources> AllocateComputeResources(
-      CommandRecorder* command_recorder,
-      IDMLCompiledOperator* compiled_operator,
-      const ComputeResourceInfo& compute_resource_info);
+  static base::expected<std::unique_ptr<ComputeResources>, HRESULT>
+  AllocateComputeResources(CommandRecorder* command_recorder,
+                           IDMLCompiledOperator* compiled_operator,
+                           const ComputeResourceInfo& compute_resource_info);
 
   // This method mainly records the graph execution onto the command list, binds
   // all required resources and closes the command list.
@@ -175,7 +177,8 @@ class GraphImpl final : public WebNNGraphImpl {
   // this method should run on a background thread rather than the current GPU
   // main thread to avoid blocking.
   static ComPtr<IDMLCompiledOperator> CompileOnBackgroundThread(
-      GraphBuilder graph_builder);
+      GraphBuilder graph_builder,
+      bool pass_dml_execution_disable_meta_commands);
 
   // After the CompileOnBackgroundThread task is completed on a background
   // thread, the OnCompilationComplete method should run back on the GPU main
@@ -232,7 +235,8 @@ class GraphImpl final : public WebNNGraphImpl {
   void HandleComputationFailure(const std::string& error_message,
                                 mojom::WebNNGraph::ComputeCallback callback);
   // Similar to the method above, while it will report the error message and log
-  // it with the system error code `hr`.
+  // it with the system error code `hr`. In addition, log and report the out of
+  // memory error message if there is.
   void HandleComputationFailure(const std::string& error_message,
                                 HRESULT hr,
                                 mojom::WebNNGraph::ComputeCallback callback);

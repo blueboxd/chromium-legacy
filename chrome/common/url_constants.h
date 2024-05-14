@@ -276,6 +276,10 @@ inline constexpr char kGoogleAccountActivityControlsURLInPrivacyGuide[] =
     "https://myaccount.google.com/activitycontrols/"
     "search&utm_source=chrome&utm_medium=privacy-guide";
 
+// URL of the 'Linked services' section of the privacy settings page.
+inline constexpr char kGoogleAccountLinkedServicesURL[] =
+    "https://myaccount.google.com/linked-services";
+
 // URL of the Google Account.
 inline constexpr char kGoogleAccountURL[] = "https://myaccount.google.com";
 
@@ -760,8 +764,8 @@ inline constexpr char kSpeakOnMuteDetectionLearnMoreURL[] =
 
 // The URL for the "Learn more" page for the geolocation area in the privacy
 // hub page.
-inline constexpr char kGeolocationAreaLearnMoreURL[] =
-    "https://support.google.com/chromebook?p=cpn_location_sharing";
+inline constexpr char kPrivacyHubGeolocationLearnMoreURL[] =
+    "https://support.google.com/chromebook/?p=manage_your_location";
 
 // The URL for the "Learn more" page for Suggested Content in the privacy page.
 inline constexpr char kSuggestedContentLearnMoreURL[] =
@@ -799,6 +803,12 @@ inline constexpr char kFingerprintLearnMoreURL[] =
 // devices.
 inline constexpr char kRecoveryLearnMoreURL[] =
     "https://support.google.com/chrome?p=local_data_recovery";
+
+// The URL for the learn more link about extended automatic updates for
+// ChromeOS devices.
+// TODO(b/324303395): Update link to landing page.
+inline constexpr char16_t kDeviceExtendedUpdatesLearnMoreURL[] =
+    u"https://support.google.com/chromebook?p=extended_updates_support";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_MAC)

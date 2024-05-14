@@ -18,6 +18,7 @@
 <translation id="1056775291175587022">Желі табылмады</translation>
 <translation id="1056898198331236512">Ескерту</translation>
 <translation id="1058009965971887428">Пікір жіберу</translation>
+<translation id="1059120031266247284">Сізге берілді</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="1062407476771304334">Ауыстыру</translation>
 <translation id="1073899992769346247">Батареяны ауыстырыңыз немесе зарядтаңыз.</translation>
@@ -34,6 +35,7 @@
 <translation id="1111021433905331574">Пернетақта жарығының түсін "Параметрлер &gt; <ph name="APP_TITLE" />" бөлімінен өзгерте аласыз.</translation>
 <translation id="1117719261843403176">Мобильдік интернетті қосу/өшіру. <ph name="STATE" />.</translation>
 <translation id="112308213915226829">Сөрені автоматты жасыру</translation>
+<translation id="1129383337808748948"><ph name="CONTENT_TITLE" /> жаңарту</translation>
 <translation id="1142002900084379065">Жақында түскен фотосуреттер</translation>
 <translation id="114221662579355151">Бұл <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> қолданбаларының және камера рұқсаты бар барлық қолданба мен веб-сайттың камераны пайдалануына мүмкіндік береді. Веб-бетті жаңарту немесе қолданбаны өшіріп қосу керек болуы мүмкін.</translation>
 <translation id="1148499908455722006"><ph name="USER_NAME" /> аккаунты туралы ақпарат диалогтік терезесін ашу</translation>
@@ -172,7 +174,6 @@
 <translation id="1647986356840967552">Алдыңғы бет</translation>
 <translation id="1651914502370159744">"Тарих" бетін ашу</translation>
 <translation id="1654477262762802994">Дауыстық сұрауды бастау</translation>
-<translation id="1662667383227796099">Іске қосу тақтасында файлдарды, қолданбаларды және т.б. іздеңіз. Сондай-ақ Chromebook туралы сұрақтарға жауаптар ала аласыз.</translation>
 <translation id="1668469839109562275">Ендірілген VPN</translation>
 <translation id="1675844249244994876">Оң жақ терезені жаңарту</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> қалды</translation>
@@ -228,6 +229,7 @@
 <translation id="1882814835921407042">Мобильдік желі жоқ.</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> арқылы экран көшірмесін көрсету</translation>
 <translation id="1885785240814121742">Құлыпты саусақ ізімен ашыңыз</translation>
+<translation id="1904997243703671177">Bluetooth өшірілгенде, <ph name="DEVICE_COUNT" /> сыртқы құрылғы <ph name="DEVICE_TYPE" /> құрылғыңыздан ажыратылады, оның ішінде:</translation>
 <translation id="1908992311423394684">Жаңадан орнатылған</translation>
 <translation id="1915307458270490472">Жабу</translation>
 <translation id="1918022425394817322">Камера жоғарғы оң жақ бұрышқа ауыстырылды.</translation>
@@ -329,6 +331,7 @@
 <translation id="2369165858548251131">Қытай тілінде "Сәлем" қалай болады?</translation>
 <translation id="2382875860893882175">Қазір трансляция кідіртілген. Кез келген уақытта трансляцияны жалғастыруға немесе тоқтатуға болады.</translation>
 <translation id="2386292613071805067">Беттегі барлығын таңдау</translation>
+<translation id="2392659840443812875">Хотспот табылмады. Телефоныңыз жаныңызда болсын. Bluetooth қосылып тұрғанын тексеріңіз.</translation>
 <translation id="2397416548179033562">Chrome мәзірін көрсету</translation>
 <translation id="240006516586367791">Мультимедианы басқару элементтері</translation>
 <translation id="2402411679569069051">Chromebook құлпын ашу үшін саусақ ізін пайдаланыңыз немесе телефон құлпын ашыңыз.</translation>
@@ -356,12 +359,14 @@
 <translation id="2484513351006226581">Пернетақтаны ауыстыру үшін <ph name="KEYBOARD_SHORTCUT" /> пернелерін басыңыз.</translation>
 <translation id="2486214324139475545"><ph name="DESK_NAME" /> алғы көрінісі. Жұмыс үстелі белсенді.</translation>
 <translation id="2487915095798731898">Қосылу</translation>
-<translation id="250047928202119308">Жұмыс үстелі профилінің мәзірі</translation>
+<translation id="2499445554382787206">Жұмыс үстелі профилінің мәзірі. <ph name="DESK_NAME" /></translation>
 <translation id="2501920221385095727">Жабысқақ пернелер</translation>
 <translation id="2504454902900101003">Телефондағы соңғы фотосуреттерді, медиафайлдарды және хабарландыруларды көру мүмкіндігін реттеуден бас тарту</translation>
+<translation id="2505378917951323738">Тапсырма өңделмеді. Онлайн болғанда қайталап көріңіз.</translation>
 <translation id="2509468283778169019">CAPS LOCK қосулы</translation>
 <translation id="2514415433888497495"><ph name="CAPTURE_MEDIUM" /> аялдама. <ph name="CAPTURE_MEDIUM" /> — <ph name="CAPTURE_STATE" /></translation>
 <translation id="2515586267016047495">Alt</translation>
+<translation id="2516637483312286228">Ойынның басқару элементтерін өңдеу</translation>
 <translation id="2526581474998477112">Терезелер құлпын ашу</translation>
 <translation id="2528111225373402384">Хотспот параметрлері</translation>
 <translation id="253007620291357635"><ph name="NETWORK_NAME" /> · <ph name="SERVICE_PROVIDER" /></translation>
@@ -411,7 +416,7 @@
 <translation id="2726420622004325180">Хотспотты ұсыну үшін телефоныңызда мобильдік интернет болуы керек.</translation>
 <translation id="2727175239389218057">Жауап беру</translation>
 <translation id="2727977024730340865">Төмен қуатты зарядтағышқа жалғанған. Батареяны зарядтау кезінде қиындықтар болуы мүмкін.</translation>
-<translation id="2744221223678373668">Ортақ</translation>
+<translation id="2743387203779672305">Буферге көшіру</translation>
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2750932254614666392">"Жою"</translation>
 <translation id="2750941250130734256">Белсенді терезе бекітілмеген.</translation>
@@ -465,7 +470,6 @@
 <translation id="2965227184985674128">Микрофонды пайдалану мүмкіндігін қосу керек пе?</translation>
 <translation id="296762781903199866">Тіл файлдары (<ph name="LANGUAGE" />) жүктеп алынбады</translation>
 <translation id="2970920913501714344">Қолданбаларды, кеңейтімдерді және тақырыптарды орнатыңыз</translation>
-<translation id="2977098646659697261">Бекітілген және ашық қолданбалар сөреде орналасқан. Қолданбаны сөреге бекіту үшін қолданбаны тінтуірдің оң жақ түймесімен басыңыз немесе сенсорлық тақтаны екі саусақпен түртіңіз.</translation>
 <translation id="2977598380246111477">Келесі сан</translation>
 <translation id="2985148236010982088">Барлық қолданбаны қарау</translation>
 <translation id="2992327365391326550">Құрылғы микрофоны өшірулі.</translation>
@@ -482,6 +486,7 @@
 <translation id="3038571455154067151">Аккаунтқа кіру үшін Family Link ата-ананың рұқсат кодын енгізіңіз.</translation>
 <translation id="3039939407102840004">Стилус батареясының заряды – <ph name="PERCENTAGE" /> пайыз.</translation>
 <translation id="304097922505898963">Перне таңбашалары қолданбасын ашу</translation>
+<translation id="304417730895741346">Бекітілген және ашық қолданбалар сөреде орналасқан. Қолданбаны сөреге бекіту үшін қолданбаны тінтуірдің оң жақ түймесімен басыңыз немесе сенсорлық тақтаны екі саусақпен түртіңіз.</translation>
 <translation id="3045488863354895414">Қайырлы күн!</translation>
 <translation id="3047761520276763270">Былай айтып көріңіз:</translation>
 <translation id="3055162170959710888">Бүгін бұл құрылғыны <ph name="USED_TIME" /> рет пайдаландыңыз</translation>
@@ -587,6 +592,7 @@
 <translation id="3437677362970530951">Play Store мен басқа ойын платформаларындағы ойындар</translation>
 <translation id="3439896670700055005">Кэштелген мазмұнды пайдаланбай, ағымдағы бетті қайта жүктеу</translation>
 <translation id="3441920967307853524"><ph name="RECEIVED_BYTES" />/<ph name="TOTAL_BYTES" /></translation>
+<translation id="3443917186865471894">Тінтуірді бейімдеуге болады</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> минут</translation>
 <translation id="3445925074670675829">USB-C құрылғысы</translation>
 <translation id="3454555520521576458">Өлшемін өзгертуге болады</translation>
@@ -603,16 +609,15 @@
 <translation id="3509391053705095206">Телефон табылмады. Онда Bluetooth қосылып тұрғанына көз жеткізіңіз.</translation>
 <translation id="3510164367642747937">Тінтуір курсорын ерекшелеу</translation>
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> басқаратын аккаунт</translation>
+<translation id="3517037892157925473">Тапсырмалардың соңғы жаңартылған уақыты: <ph name="TIME" />, <ph name="DATE" />.</translation>
 <translation id="352245152354538528">{0,plural, =1{Құрылғыны 1 минутта жаңарту керек}other{Құрылғыны # минутта жаңарту керек}}</translation>
 <translation id="3522979239100719575">Қолжетімді профильдер ізделуде. Бұл бірнеше минутқа созылуы мүмкін.</translation>
 <translation id="3526440770046466733">Сілтемені жаңа қойындыда ашу және ағымдағы қойындыда қалу</translation>
 <translation id="353086728817903341"><ph name="NUM_DEVICES" /> құрылғыға қосылды.</translation>
 <translation id="3533126039236445965">Сөредегі қолданбалар</translation>
-<translation id="3537350467437346467">Сіз көрдіңіз</translation>
 <translation id="3539957339480430241"><ph name="DEVICE_NAME" /> хотспоты</translation>
 <translation id="3540893133818942399">Телефондағы соңғы фотосуреттерді және медиафайлдарды көру мүмкіндігін реттеуден бас тарту</translation>
 <translation id="3542066395059568317">Көретін ұсыныстардың арқасында тоқтаған жеріңізден жалғастыра аласыз. Ұсыныстарды өшіру үшін тінтуірдің оң жақ түймесін басыңыз.</translation>
-<translation id="3547318469722231257">Сіз өзгерттіңіз</translation>
 <translation id="3552189655002856821">Wi-Fi өшірулі.</translation>
 <translation id="3554215588514239132">"Әзірлеуші құралдары" панелін көрсету немесе жасыру</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> бекітілді</translation>
@@ -626,6 +631,7 @@
 <translation id="3577473026931028326">Бірдеңе дұрыс болмады. Қайталап көріңіз.</translation>
 <translation id="3580650856351781466">Сөз файлдары жүктеп алынуда</translation>
 <translation id="3585296979871889131">Телефондағы соңғы фотосуреттерді, медиафайлдарды, хабарландыруларды және қолданбаларды көру</translation>
+<translation id="358832729276157756">ExpressKey 1</translation>
 <translation id="3590441166907930941">Бүйірлік түйме</translation>
 <translation id="3593039967545720377">Буферді көру үшін <ph name="SHORTCUT_KEY_NAME" /> + V басу арқылы буфер тарихын пайдаланыңыз. Бастау үшін элементті көшіріңіз.</translation>
 <translation id="3593646411856133110">Ашық қолданбаларды көру үшін жоғары сипап, ұстап тұрыңыз.</translation>
@@ -642,6 +648,7 @@
 <translation id="3621202678540785336">Енгізу</translation>
 <translation id="3621712662352432595">Аудио параметрлері</translation>
 <translation id="3626281679859535460">Жарықтық</translation>
+<translation id="3628323833346754646">Алдыңғы түйме</translation>
 <translation id="3630697955794050612">өшірулі</translation>
 <translation id="3631369015426612114">Келесі көздерден алынатын хабарландыруларға рұқсат беру</translation>
 <translation id="3633097874324966332">Құрылғыны жұптау үшін Bluetooth параметрлерін ашыңыз.</translation>
@@ -661,7 +668,6 @@
 <translation id="3660860940251915011"><ph name="FEATURE_NAME" /> үшін тез табылу режимін қосу немесе өшіру</translation>
 <translation id="366222428570480733">Басқарылатын пайдаланушы: <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="3666266999138159418">Қалқымалы терезені жасыру үшін сырғытыңыз.</translation>
-<translation id="3673898235958558034">Bluetooth-ды өшірсеңіз, "<ph name="DEVICE_NAME_1" />" және "<ph name="DEVICE_NAME_2" />" құрылғылары Chromebook-тен ажыратылады.</translation>
 <translation id="367531336287639526">Мекенжай жолағының сол жағындағы бірінші белгішені таңдау</translation>
 <translation id="3677931086890821290">Бұл геодеректі пайдалану рұқсаты мен ChromeOS жүйесі бар барлық қолданба мен веб-сайттың Wi-Fi және мобильді желілер орындарын пайдалануына мүмкіндік береді.</translation>
 <translation id="3679827876008292680">Терезедегі соңғы қойындыға өту</translation>
@@ -677,6 +683,7 @@
 <translation id="371370241367527062">Алдыңғы микрофон</translation>
 <translation id="3713734891607377840">Жүктеп алынған соң ашу</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> және тағы <ph name="UNAVAILABLE_APPS_COUNT" /> қолданба бұл құрылғыда жоқ.</translation>
+<translation id="3727231512028252576">Элементтер жүктелмеді. Онлайн болғанда қайталап көріңіз.</translation>
 <translation id="3735740477244556633">Сұрыптау шарты</translation>
 <translation id="3738664582935948253">Енді экран жазбаларында басулар мен пернелер тіркесімдерін көрсете аласыз</translation>
 <translation id="3742055079367172538">Скриншот түсірілді</translation>
@@ -706,7 +713,6 @@
 <translation id="385300504083504382">Басына өту</translation>
 <translation id="3859364108019690">Қолданбаларды трансляциялау мүмкін емес</translation>
 <translation id="3861651314799684201">Толық экранды жазу үшін "Enter" пернесін басыңыз</translation>
-<translation id="3882323608730650973">Өзгертілді</translation>
 <translation id="3886872229787704059">Бүгін ашылды.</translation>
 <translation id="3891340733213178823">Шығу үшін Ctrl+Shift+Q тіркесімін екі рет басыңыз.</translation>
 <translation id="3893630138897523026">ChromeVox (дауыстық көмек)</translation>
@@ -770,7 +776,6 @@
 <translation id="4123259114412175274">Chromebook-тың құлпын ашу үшін телефонда Bluetooth қосылып тұрғанына көз жеткізіңіз.</translation>
 <translation id="4125970834901680537">Планшет режимінде қолданбалардағы контентті трансляциялау мүмкін емес. Ноутбук режимінде қайталап көріңіз.</translation>
 <translation id="4131973331381812765">Температура: <ph name="TEMPERATURE" />°C - Қазіргі жылдамдығы: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" /> ГГц</translation>
-<translation id="4132502210362661715">Chromebook құрылғыңыз жұмысты орындауға көмектесетін кірістірілген қолданбалармен бірге келеді. Қолданбаларды іске қосу тақтасынан табыңыз.</translation>
 <translation id="4136724716305260864">Күн шыққанға дейін қосулы</translation>
 <translation id="4141710407113804517"><ph name="LAUNCHER_KEY_NAME" /> + оң бағыт пернесі</translation>
 <translation id="4146671046252289537">Келесі сөздің соңына жылжыту</translation>
@@ -798,11 +803,11 @@
 <translation id="4209973997261364186">Wi-Fi қосылды.</translation>
 <translation id="4212472694152630271">PIN кодына ауысу</translation>
 <translation id="4215497585250573029">VPN параметрлері</translation>
+<translation id="4215548513524864822">Шолудың 5/5-қадамы. Құрылғы параметрлерін іске қосу тақтасынан табуға болады. Параметрлерде <ph name="PRODUCT_NAME" /> құрылғысын бейімдеңіз. Мысалы, тұсқағазды ауыстырыңыз немесе скринсейвер орнатыңыз.</translation>
 <translation id="4217571870635786043">Мәтінді дауыспен енгізу</translation>
 <translation id="4221957499226645091"><ph name="APP_NAME" />, қолданба орнатылған, кідіртілген</translation>
 <translation id="4228078597006700451">Басқару элементтері орнатылмаған</translation>
 <translation id="4231053948789591973">Қазір трансляция кідіртілген. Кез келген уақытта экранды трансляциялауды жалғастыруға немесе тоқтатуға болады.</translation>
-<translation id="423685346499232137">Контентті қазір көшіру немесе қою мүмкін емес.</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4240486403425279990">Шолу режимі</translation>
 <translation id="4242533952199664413">Параметрлерді ашу</translation>
@@ -814,7 +819,6 @@
 <translation id="4269883910223712419">Құрылғының әкімшісі мына әрекеттерді орындай алады:</translation>
 <translation id="4274537685965975248">Ctrl + Alt + төменге бағыттауыш перне тіркесімінің функциясы өзгерді. End пернесінің әрекетін орындау үшін <ph name="LAUNCHER_KEY_NAME" /> пернесі + оң жаққа бағыттауыш перне тіркесімін басыңыз.</translation>
 <translation id="4275283744500212192">Терезе форматы опцияларын ашу</translation>
-<translation id="4278138729651139331">Параметрлерде Chromebook құрылғысын бейімдеңіз және жекелендіріңіз. Тұсқағазды өзгертіп көріңіз немесе скринсейверді орнатып көріңіз.</translation>
 <translation id="4279490309300973883">Экран көшірмесін көрсету</translation>
 <translation id="4280601795273309128">Қауіпсіздік жаңартулары аяқталды. Құрылғыңызды жаңартыңыз.</translation>
 <translation id="4283888303416325161">Қауіпсіздікті күшейту үшін құпия сөзді енгізіңіз.</translation>
@@ -842,7 +846,7 @@
 <translation id="4375482231364171368">Мекенжай жолағынан іздеу</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, сигнал күші <ph name="SIGNAL_STRENGTH" /> пайыз.</translation>
-<translation id="4378551569595875038">Қосылуда…</translation>
+<translation id="4378551569595875038">Қосылып жатыр…</translation>
 <translation id="4379531060876907730">Стилус құралдары</translation>
 <translation id="4381031910344220229">Бұл — микрофон рұқсаты бар барлық қолданба мен веб-сайт және <ph name="APP_NAME" /> қолданбасы үшін микрофонды пайдалануға мүмкіндік береді</translation>
 <translation id="4382340674111381977">Алдыңғы бетке өту</translation>
@@ -872,6 +876,7 @@
 <translation id="4481530544597605423">Жұпталмаған құрылғылар</translation>
 <translation id="4485506555414638855">Телефондағы соңғы фотосуреттерді, медиафайлдарды, хабарландыруларды және қолданбаларды көру мүмкіндігін реттеуден бас тарту</translation>
 <translation id="4491109536499578614">Кескін</translation>
+<translation id="4493452241184130939">Негізгі әрекеттерді қарастырдық! Кеңестер мен анықтама алу үшін ендірілген Explore қолданбамызға өтіңіз. Іске кірісу кеңестерін, ұсынылған қолданбаларды, арнайы ұсыныстарды және <ph name="PRODUCT_NAME" /> құрылғысының ең жаңа функцияларын табасыз.</translation>
 <translation id="450584155212756404">Әзірлеуші арнасы</translation>
 <translation id="4513946894732546136">Пікір жіберу</translation>
 <translation id="4518404433291145981">Chromebook құлпын ашу үшін алдымен телефонның құлпын ашыңыз.</translation>
@@ -909,6 +914,7 @@
 <translation id="4642092649622328492">Экранның бір бөлігін түсіру</translation>
 <translation id="4644727592819780893">Аймақ камераның алғы көрінісін көрсету үшін тым кіші.</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, қолданба ұсынысы</translation>
+<translation id="4649019912155580914">Сіз өзгерткенсіз</translation>
 <translation id="4654916960643280876"><ph name="PROFILE_NAME" /> <ph name="EMAIL" /> құсбелгі ұяшығы таңдалған.</translation>
 <translation id="4657775630156561295">Келесі ұсыныс аккаунтыңыздың ұсыныс тарихынан біржола өшіріледі:
 
@@ -921,6 +927,7 @@
 <translation id="468293128311738995">Телефондағы қолданбалар</translation>
 <translation id="4690510401873698237">Төмен жақтағы сөре</translation>
 <translation id="4696813013609194136">Құрылғының құлпын ата-ана кодымен ашыңыз</translation>
+<translation id="469693290987463983">Шолудың 1/5-қадамы. Бекітілген және ашық қолданбалар экранның төменгі жағындағы сөреде болады. Сөре элементтерін ерекшелеу үшін Alt + Shift + L пернелерін, содан кейін Tab пернесін басыңыз.</translation>
 <translation id="4702647871202761252">Құпиялық экраны өшірулі.</translation>
 <translation id="4706121060329443414">Кейінірек жүктеп алынады. Айтылған сөз әзірше Google-дың өңдеуіне жіберіледі.</translation>
 <translation id="470644585772471629">Түс инверсиясы</translation>
@@ -954,6 +961,7 @@
 <translation id="4813311884204119883">Сілтемені қойындылар жолағындағы бос жерге сүйреу</translation>
 <translation id="4814539958450445987">Аккаунтқа кіру экраны</translation>
 <translation id="481455355267255546">Алдағы іс-шаралар</translation>
+<translation id="481749895090480684">Тапсырмалар тізімі: <ph name="GLANCEABLES_TASKS_LIST_NAME" /></translation>
 <translation id="4826588772550366629">камера және микрофон</translation>
 <translation id="482908187605862807">Play Store-дан қолжетімді қолданбалар</translation>
 <translation id="4831034276697007977">Автоматты түрде басу функциясын шынымен де өшіргіңіз келе ме?</translation>
@@ -995,6 +1003,7 @@
 <translation id="4952936045814352993">Дабыл сигналы өшірілсе, телефонды табу функциясы қолжетімді болмайды.</translation>
 <translation id="4960324571663582548"><ph name="MANAGER" /> сізден <ph name="DEVICE_TYPE" /> құрылғысын алдыңғы нұсқаға қайтаруды талап етеді. Құрылғы бастапқы күйге қайтарылады және барлық дерек жойылады.</translation>
 <translation id="4961318399572185831">Экран трансляциясы</translation>
+<translation id="4964188651935955085">Bluetooth өшірілгенде, бұл сыртқы құрылғы <ph name="DEVICE_TYPE" /> құрылғыңыздан ажыратылады:</translation>
 <translation id="4966431234408005599">Дыбыс деңгейін көтеру</translation>
 <translation id="4969092041573468113"><ph name="HOURS" />с <ph name="MINUTES" />м <ph name="SECONDS" />с</translation>
 <translation id="4975771730019223894">Қолданбаға танымбелгі қою</translation>
@@ -1028,6 +1037,7 @@
 <translation id="5083553833479578423">Басқа да Assistant мүмкіндіктерін ашыңыз.</translation>
 <translation id="5092436659250499817">Пернетақтаның артқы жарығын қосу/өшіру</translation>
 <translation id="5094577350232361255">шамамен</translation>
+<translation id="5095136268899496849">Параметрлерде <ph name="PRODUCT_NAME" /> құрылғысын бейімдеңіз және жекелендіріңіз. Тұсқағазды өзгертіп көріңіз немесе скринсейвер орнатып көріңіз.</translation>
 <translation id="509790653408515442">Телефондағы қолданбаларды трансляциялау кезінде олар осы жерде шығады.</translation>
 <translation id="5098537242461068432">Жұмыс үстелі мен терезелер қайта ашылды.</translation>
 <translation id="5104236669533825617">Скринкаст жасау мүмкін емес</translation>
@@ -1056,9 +1066,9 @@
 <translation id="5207949376430453814">Мәтін курсорын ерекшелеу</translation>
 <translation id="5208059991603368177">Қосулы</translation>
 <translation id="5216991270656129561"><ph name="TIME" /> дейін өшірулі</translation>
-<translation id="5218064144558110424">Орындалмаған деп белгілеу</translation>
 <translation id="5222676887888702881">Шығу</translation>
 <translation id="5229343007215035173">Құпиялық экранын қосу/өшіру</translation>
+<translation id="5230516054153933099">Терезе</translation>
 <translation id="5234764350956374838">Жабу</translation>
 <translation id="523505283826916779">Арнайы мүмкіндіктер параметрлері</translation>
 <translation id="5238719049014159442">Іске қосу тақтасын ашу/жабу</translation>
@@ -1067,7 +1077,6 @@
 <translation id="5253783950165989294">"<ph name="DEVICE_NAME" />" деп аталатын, батарея заряды <ph name="BATTERY_PERCENTAGE" />% құрылғыға қосылды.</translation>
 <translation id="5258528442992323769">Сақталған жұмыс үстелі жоқ.</translation>
 <translation id="5260676007519551770">4-ші жұмыс үстелі</translation>
-<translation id="5268819379131021772">Google тапсырмалар тізімі</translation>
 <translation id="5277869901083657836">Стилус құралдарын көрсету/жасыру</translation>
 <translation id="5278086053818066789">ChromeVox-ты (экранды дыбыстау функциясын) қосу/өшіру</translation>
 <translation id="5283099933536931082"><ph name="APP_ITEM_TITLE" /> қолданбасы назар аударуыңызды сұрайды.</translation>
@@ -1084,13 +1093,14 @@
 <translation id="5313326810920013265">Bluetooth параметрлері</translation>
 <translation id="5314219114274263156">Экран жазбасы алынды</translation>
 <translation id="5314489738835854379">Терезелер арқылы кері айналдыру</translation>
+<translation id="5315931444962548795">Маңайдан қолжетімді хотспоттар табу үшін Bluetooth қосыңыз.</translation>
 <translation id="5316716239522500219">Айна мониторлары</translation>
 <translation id="5317780077021120954">Сақтау</translation>
 <translation id="5319712128756744240">Жаңа құрылғымен жұптау</translation>
 <translation id="5322611492012084517">Телефоныңызды табу мүмкін емес</translation>
 <translation id="5323994101633366939">Жұмыс үстелі атын жасыру</translation>
 <translation id="5327248766486351172">Аты</translation>
-<translation id="5329548388331921293">Қосылуда…</translation>
+<translation id="5329548388331921293">Қосылып жатыр…</translation>
 <translation id="5331975486040154427">USB-C құрылғысы (сол жақ артқы порты)</translation>
 <translation id="533282197239610265">Трансляциялау құрылғыларын көрсету</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (оң)</translation>
@@ -1128,7 +1138,6 @@
 <translation id="550391772491508736">Трансляциялауды жалғастыру</translation>
 <translation id="5506975627792768506">Ұлғайтқышты қосу немесе өшіру</translation>
 <translation id="5512042095225963688">Алдыңғы сөзді жою</translation>
-<translation id="5518068085000130971">Бұл негіздер болды! Кеңестер мен анықтама үшін ендірілген Explore қолданбамызда жалғастырыңыз. Бастау бойынша кеңестерді, ұсынылған қолданбаларды, арнайы ұсыныстарды және Chromebook-тың ең жаңа мүмкіндіктерін табасыз.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="5520229639206813572">Әкімшіңіз барлық eSIM профилін өшірген. Толығырақ ақпарат алу үшін әкімшіге хабарласыңыз.</translation>
 <translation id="5520909879404821039">Француз тілінде "Сәлем" қалай болады?</translation>
@@ -1138,12 +1147,14 @@
 <translation id="5536723544185013515">Соңғы пайдаланылған қолданбалар. Соңғы пайдаланылған барлық қолданбаны көру үшін сол немесе оң бағыт пернелерін пайдаланыңыз.</translation>
 <translation id="553675580533261935">Сеанстан шығу</translation>
 <translation id="5537725057119320332">Cast</translation>
+<translation id="554017492391497564">Аяқталған деп белгілеу мүмкін емес.</translation>
 <translation id="5546397813406633847">Пайдаланушыны қалпына келтіру</translation>
 <translation id="554893713779400387">Дауыстап оқуды қосу/өшіру</translation>
 <translation id="5550417424894892620">Файлдарды <ph name="HOLDING_SPACE_TITLE" /> аймағына қосу үшін жұмыс үстеліне қойыңыз. Файлдарды жұмыс үстеліне қосу мүмкін емес.</translation>
 <translation id="5551456515017410630">Күнтізбені ашу/жабу</translation>
 <translation id="5551974246223970793">Беттегі іздеу сұрауына сай келетін келесі нәтижеге өту</translation>
 <translation id="5555639311269196631">Хотспотты өшіру</translation>
+<translation id="5556459405103347317">Қайта жүктеу</translation>
 <translation id="5558091555391176027">Nearby Share функциясының маңайдағыларға көріну режимін ауыстыру</translation>
 <translation id="556042886152191864">Түйме</translation>
 <translation id="5570122939431135380">Жаңа қойындыны жаңа инкогнито терезесінде ашу</translation>
@@ -1188,6 +1199,7 @@
 <translation id="570390244361237317">Барлық қолданбалар. Оларды көру үшін бағыт пернелерін пайдаланыңыз.</translation>
 <translation id="5707775774148071965">Құрылғының деректерді өткізу жылдамдығы кабельге қарағанда жоғары. Құрылғының өнімділігі шектелуі мүмкін.</translation>
 <translation id="5710450975648804523">Мазаламау режимі қосулы</translation>
+<translation id="5712132663381964774"><ph name="PRODUCT_NAME" /> құрылғысында қажет нәрсенің барлығын істеу үшін қолданбаларды пайдаланыңыз. Қолданбаларыңызды іске қосу тақтасынан таба аласыз.</translation>
 <translation id="571295407079589142">Мобильдік интернет өшірілді.</translation>
 <translation id="5727460725221669831">Құпия сөзіңізді ұмытып қалсаңыз немесе Google аккаунты құпия сөзін жақында өзгертсеңіз, осы пайдаланушыны қалпына келтіріп көріңіз.</translation>
 <translation id="573413375004481890">Бұл құрылғы барлық дисплейлерді бірдей қолдамайтындықтан, бір дисплей ажыратылды.</translation>
@@ -1216,7 +1228,6 @@
 <translation id="5802516411616338943">Жылдам параметрлерді ашу</translation>
 <translation id="5804651031882187592">"SIM картасын құлыптау" параметрін өшіру</translation>
 <translation id="5805809050170488595"><ph name="NETWORK_NAME" /> іске қосу үшін басыңыз</translation>
-<translation id="5816222150329690597">Bluetooth-ды өшірсеңіз, "<ph name="DEVICE_NAME_1" />", "<ph name="DEVICE_NAME_2" />" және тағы <ph name="DEVICE_COUNT" /> құрылғы Chromebook-тен ажыратылады.</translation>
 <translation id="5823239091726045201">Ғаламтордағы Google Tasks</translation>
 <translation id="5825969630400862129">Байланыстырылған құрылғылар параметрлері</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> қабылдағышында <ph name="ROUTE_TITLE" /> трансляциясын тоқтату</translation>
@@ -1257,6 +1268,7 @@
 <translation id="5983567367406220847">Әрекетсіздікке байланысты хотспот өшірілді.</translation>
 <translation id="598407983968395253">Үлгіні қолдану</translation>
 <translation id="598882571027504733">Жаңартылған нұсқаны алу үшін, пернетақта жалғанған күйі Chromebook ноутбугын қайта қосыңыз.</translation>
+<translation id="5998374579424866922">Ойынның басқару элементтерін өшіру</translation>
 <translation id="6000279412553873020">Пернелер, түймелер және т.б.</translation>
 <translation id="6002122790816966947">Құрылғыларыңыз</translation>
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" />/<ph name="TOTAL_PAGE_NUM" /> бет</translation>
@@ -1282,6 +1294,7 @@
 <translation id="6052614013050385269">Сілтемені тінтуірдің оң жақ түймесімен басу</translation>
 <translation id="6054305421211936131">Смарт картамен кіру</translation>
 <translation id="6059276912018042191">Соңғы Chrome қойындылары</translation>
+<translation id="606147842285839995">ExpressKey 3</translation>
 <translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT" /> уақытта жүйеден автоматты түрде шығасыз.</translation>
 <translation id="6064463340679478396">Файлды пайдаланбаймын</translation>
 <translation id="6068258534237496331">Бейнеқоңырауды басқару элементтері</translation>
@@ -1331,6 +1344,7 @@
 <translation id="6237231532760393653">1X</translation>
 <translation id="62380141479352646">Батарея заряды аз. Батареяны үнемдеу режимі қосылды.</translation>
 <translation id="6247728804802644171">Хабарландыруларды ашу</translation>
+<translation id="6249795363855770621">Аяқталған деп белгілеу мүмкін емес. Онлайн болғанда қайталап көріңіз.</translation>
 <translation id="6254629735336163724">Көлденең күйде құлыптаулы</translation>
 <translation id="6259254695169772643">Стилустың көмегімен таңдаңыз</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: белсендірілуде…</translation>
@@ -1343,6 +1357,7 @@
 <translation id="6309219492973062892">1–8 сөре белгішелерін басу немесе түрту</translation>
 <translation id="6315170314923504164">Микрофон</translation>
 <translation id="6319058840130157106">Төменгі оң жақ бұрыш, іске қосу тақтасы, мекенжай жолағы, бетбелгілер жолағы, ашық веб-сайт және жүктеп алынғандар арасында артқа жылжу</translation>
+<translation id="6319503618073410818">Мәліметтерді браузерден көру</translation>
 <translation id="6324916366299863871">Таңбашаны өзгерту</translation>
 <translation id="6330012934079202188">Терезелер барлық жұмыс үстелінен көрсетіліп тұр. Терезелерді қазіргі жұмыс үстелінен көрсету үшін жоғарыға бағыттауыш пернені басыңыз.</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> – <ph name="MANAGER" /> басқаратын сеанс.</translation>
@@ -1396,7 +1411,6 @@
 <translation id="6539852571005954999">Жүктеп алынған <ph name="FILENAME" /> файлы сканерленіп жатыр</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> құрылғысына трансляциялануда</translation>
 <translation id="6546062506073634094">Суретті ішінде не нәрсе бейнеленгеніне және алғы көрінісіне байланысты іздеу</translation>
-<translation id="6547795021703527064">Bluetooth-ды өшірсеңіз, "<ph name="DEVICE_NAME" />" құрылғысы Chromebook-тен ажыратылады.</translation>
 <translation id="6555373427270923730">Мекенжай жолағына веб-мекенжайды енгізіп, <ph name="MODIFIER" /><ph name="KEY" /> пернесін басыңыз</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 Жаңадан орнатылды</translation>
@@ -1425,6 +1439,7 @@
 <translation id="6643169293433369663">Ат бойынша сұрыптау ретін қайтару</translation>
 <translation id="6649641931981131786">Камераны реттеп, сізді экранның ортасына орналастырады.</translation>
 <translation id="6650072551060208490"><ph name="ORIGIN_NAME" /> жеке басыңызды растағысы келеді.</translation>
+<translation id="6650742588569439432">Элементтер жүктелмеді.</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" Bluetooth құрылғысы жұптасуға рұқсат сұрайды. Айтылған құрылғыда осы негізгі кілтті енгізіңіз: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Құпия сөз</translation>
 <translation id="666343722268997814">Ерекшеленген элемент үшін контекстік мәзірді ашу</translation>
@@ -1483,6 +1498,7 @@
 <translation id="6874854809828346832">Хотспот мәліметтерін көрсету. Хотспот қосулы.</translation>
 <translation id="6878400149835617132">Таңбаша өшірілді</translation>
 <translation id="6878701771800702153">{NUM_APPS,plural, =1{1 қолданба}other{# қолданба}}</translation>
+<translation id="6878787305374738418">Шолудың 4/5-қадамы. Іске қосу тақтасы қосылған кезде, кеңейтілген іздеу жолағы көрсетіледі. Файлдарды, қолданбаларды және т.б. іздеу үшін теруді бастай берсеңіз болады. Сондай-ақ <ph name="PRODUCT_NAME" /> туралы сұрақтардың жауабын ала аласыз.</translation>
 <translation id="6883768636838842873">Key Shortcuts, құрылғы пайдалануға арналған кеңестер және т.б.</translation>
 <translation id="6884665277231944629">Бүгінге оралу</translation>
 <translation id="6886172995547742638"><ph name="DEVICE_TYPE" /> құрылғысы нашар жұмыс істеуі мүмкін. Сертификаты бар <ph name="PREFERRED_MINIMUM_POWER" /> Вт немесе одан жоғары кернеулі USB-C қуат адаптерін пайдаланыңыз.</translation>
@@ -1490,6 +1506,7 @@
 <translation id="6896758677409633944">Көшіру</translation>
 <translation id="6912841030378044227">Мекенжай жолағында ерекшелеу</translation>
 <translation id="6912901278692845878">Қысқаша шолу</translation>
+<translation id="6917259695595127329">Тапсырмалардың соңғы жаңартылған уақыты: <ph name="TIME" />.</translation>
 <translation id="6919251195245069855">Смарт карта анықталмады. Қайталап көріңіз.</translation>
 <translation id="692135145298539227">жой</translation>
 <translation id="6929081673585394903">Басқару элементтерін көрсету</translation>
@@ -1509,7 +1526,6 @@
 <translation id="6981982820502123353">Арнайы мүмкіндіктер</translation>
 <translation id="698231206551913481">Бұл пайдаланушы өшірілгеннен кейін, оған қатысты барлық файлдар және жергілікті деректер біржола жойылады.</translation>
 <translation id="6984028004251196682"><ph name="DISPLAY_NAME" /> дисплейі <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Гц) ажыратымдылығына қолдау көрсетпейді. Ажыратымдылық <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" /> Гц) болып өзгертілді. Өзгерістерді сақтау үшін "Растау" түймесін басыңыз. Алдыңғы параметрлер <ph name="TIMEOUT_SECONDS" /> өткеннен кейін қалпына келтіріледі.</translation>
-<translation id="6989752354829085073">Chromebook құрылғысын пайдалану жолын білу үшін қысқаша шолу жасаңыз. 6 қадаммен жұмысты бастаңыз.</translation>
 <translation id="7000027735917578303">Windows және жұмыс үстелі параметрлері</translation>
 <translation id="7004910047186208204">Мобильдік интернетке қосылу</translation>
 <translation id="7005239792648594238">Іске қосу үшін қолданбаны ашыңыз.</translation>
@@ -1556,6 +1572,7 @@
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> уақыт ішінде ескі ажыратымдылыққа ауысады</translation>
 <translation id="7173114856073700355">Параметрлерді ашу</translation>
 <translation id="7180611975245234373">Жаңарту</translation>
+<translation id="7181691792034457084">Сәлеметсіз бе! <ph name="PRODUCT_NAME" /> сәл өзгеше.</translation>
 <translation id="7188494361780961876">Мәзір экранның жоғарғы сол жақ бұрышына жылжытылды.</translation>
 <translation id="7189412385142492784">Шолпан қаншалықты алыс орналасқан?</translation>
 <translation id="7198435252016571249">Камера төменгі оң жақ бұрышқа ауыстырылды. Жүйе платформасына қатысты қарама-қайшылық туындады.</translation>
@@ -1563,11 +1580,13 @@
 <translation id="7229029500464092426">Қолжетімді жад: <ph name="AVAILABLE_MEMORY" /> | Жалпы жад: <ph name="TOTAL_MEMORY" /></translation>
 <translation id="7244725679040769470">Батарея заряды — <ph name="PERCENTAGE" />%. Құрылғыны қуат көзіне қосыңыз.</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Жаңартылған нұсқаны қолдану үшін бұл Chromebook-ті қайта қосу қажет. Оған 1 минуттай кетуі мүмкін.</translation>
+<translation id="7256057185598509352">ExpressKey 2</translation>
 <translation id="7256634071279256947">Артқы микрофон</translation>
 <translation id="7258828758145722155">Кеше өзгертілді.</translation>
 <translation id="726276584504105859">Бөлінген экранды пайдалану үшін осында сүйреңіз</translation>
 <translation id="7262906531272962081">Еске салғыш жасау</translation>
 <translation id="7278787617901301220"><ph name="LAUNCHER_KEY_NAME" /> + backspace</translation>
+<translation id="7282547098317872382">Шолудың 3/5-қадамы. <ph name="PRODUCT_NAME" /> құрылғысында қажет нәрсенің барлығын істеу үшін қолданбаларды пайдаланыңыз. Қолданбаларыңызды іске қосу тақтасынан таба аласыз. Іске қосу тақтасының түймесін ерекшелеу үшін Alt + Shift + L пернелерін басыңыз.</translation>
 <translation id="7285232777292757180">Скриншот түсіру үшін жылдам параметрлердегі экранды түсіру құралын пайдаланыңыз</translation>
 <translation id="7301826272005790482">Терезе ұсыныстарын жабу</translation>
 <translation id="7302889331339392448">Live Caption өшірулі.</translation>
@@ -1575,7 +1594,6 @@
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7312210124139670355">Әкімші eSIM-ді қайта орнатуда. Бұл бірнеше минутқа созылуы мүмкін.</translation>
 <translation id="7313193732017069507">Өлшемді өзгерту түймесін көрсету</translation>
-<translation id="7316261577130609484">Жаңа тапсырма қосу</translation>
 <translation id="7330397557116570022">Мәтінді дауыспен енгізуді пайдалану үшін мәтіндік хабар өрісіне өтіңіз.</translation>
 <translation id="7331646370422660166">alt + төмен бағыт пернесі</translation>
 <translation id="7340731148882810149">Автоматты басулар мәзірі</translation>
@@ -1612,6 +1630,7 @@
 <translation id="746232733191930409">Экран жазу режимі</translation>
 <translation id="7466449121337984263">Саусақ ізін оқу сканерін түртіңіз.</translation>
 <translation id="7477793887173910789">Музыканы, бейнелерді және т.б. басқарыңыз.</translation>
+<translation id="7488762544858401571">Өзгертілді</translation>
 <translation id="7489261257412536105">Толық экранға кіру немесе шығу</translation>
 <translation id="7490360161041035804">Маңызды файлдарды, соның ішінде Google Drive файлдарын бекітуге болады. Бекіту үшін элементке курсорды апарыңыз немесе Files қолданбасын ашыңыз және элементті тінтуірдің оң жақ түймесімен басыңыз.</translation>
 <translation id="7497767806359279797">Тілді және пернетақтаны таңдау</translation>
@@ -1620,6 +1639,7 @@
 <translation id="7509246181739783082">Жеке басыңызды растаңыз</translation>
 <translation id="7512509370370076552">Тінтуірдің оң жақ түймесін басу жылдам пәрмені alt + басу орнына "<ph name="LAUNCHER_KEY_NAME" /> пернесі + басу" пәрменіне жаңартылды.</translation>
 <translation id="7512726380443357693"><ph name="BUTTON_LABEL" />, таңдалмаған</translation>
+<translation id="7513057995673284840"><ph name="PERIPHERAL_NAME" /> түйме әрекеттерін жекелендіре аласыз.</translation>
 <translation id="7513622367902644023">Скриншот режимі таңдалды.</translation>
 <translation id="7513922695575567867">Күнтізбе, <ph name="DATE" /> аптасы, <ph name="SELECTED_DATE" /> қазір таңдалды.</translation>
 <translation id="7514365320538308">Жүктеу</translation>
@@ -1639,7 +1659,6 @@
 <translation id="7557816257942363084"><ph name="APP_NAME" /> қолданбасы микрофонды камераны пайдаланып жатыр.</translation>
 <translation id="7561982940498449837">Мәзірді жабу</translation>
 <translation id="7564874036684306347">Терезелерді басқа жұмыс үстеліне ауыстырғанда, күтпеген қате шығуы мүмкін. Хабарландырулар, терезелер мен диалогтік терезелер түрлі жұмыс үстелдерінде көрсетілуі ықтимал.</translation>
-<translation id="7567950130372125778">Сәлеметсіз бе. Chromebook сәл өзгеше.</translation>
 <translation id="7569509451529460200">Брайль және ChromeVox қосулы</translation>
 <translation id="7569886975397378678">Телефондағы хабарландыруларды және қолданбаларды көру мүмкіндігін реттеуден бас тарту</translation>
 <translation id="7571361473021531288">Батарея <ph name="BATTERY_PERCENTAGE" />% | <ph name="TIME" /> қалды</translation>
@@ -1652,6 +1671,7 @@
 <translation id="7607002721634913082">Кідіртілген</translation>
 <translation id="7609951632080598826">Күнтізбе көрінісі: <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Камера қайта жалғанды.</translation>
+<translation id="7613620083300976559">Ойынның басқару элементтерін қосу</translation>
 <translation id="761736749114493194">Камерамен кадрлауды ауыстыру. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7634648064048557203">Камера төменгі оң жақ бұрышқа ауыстырылды.</translation>
@@ -1671,11 +1691,13 @@
 <translation id="7672095158465655885"><ph name="NAME" /> құрылғысына жалғанған, <ph name="SUBTEXT" /></translation>
 <translation id="7682351277038250258">Мазмұнды буферден қарапайым мәтін ретінде қою</translation>
 <translation id="7684531502177797067">Камера кірісі <ph name="CAMERA_NAME" /> деп өзгертілді.</translation>
+<translation id="7687172143976244806">Сіз аштыңыз</translation>
 <translation id="7689817529363080918">Бұл — микрофон рұқсаты бар барлық қолданба мен веб-сайт және <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> қолданбалары үшін микрофонды пайдалануға мүмкіндік береді</translation>
 <translation id="7704000866383261579">Соңғы әрекетті қайталау</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="770741401784017797">GIF жасалып жатыр</translation>
 <translation id="7714767791242455379">Жаңа ұялы желі қосу</translation>
+<translation id="7716257086539630827">Планшетті бейімдеуге болады</translation>
 <translation id="7720400844887872976"><ph name="TIME" /> дейін қосулы</translation>
 <translation id="7720410380936703141">ҚАЙТАЛАП КӨРУ</translation>
 <translation id="7721132362314201794">Жұмыс үстелінің атауы</translation>
@@ -1688,6 +1710,7 @@
 <translation id="7742327441377685481">Хабарландырулар жоқ</translation>
 <translation id="7748275671948949022">Сөредегі іске қосу тақтасының түймесін ерекшелеу</translation>
 <translation id="7749443890790263709">Жұмыс үстелдерінің максималды санына жетті.</translation>
+<translation id="7749958366403230681">ExpressKey 4</translation>
 <translation id="776344839111254542">Жаңарту мәліметтерін қарау үшін басыңыз</translation>
 <translation id="7768784765476638775">Select to Speak</translation>
 <translation id="7769299611924763557">GIF файлыңыз жақын арада дайын болады.</translation>
@@ -1701,6 +1724,7 @@
 <translation id="7807067443225230855">Іздеу және Assistant</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> және <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Күшті сигнал</translation>
+<translation id="7830453190047749513"><ph name="PERIPHERAL_NAME" /> түйме әрекеттерін, курсор жылдамдығын және т.б. жекелендіре аласыз.</translation>
 <translation id="7837740436429729974">Уақыт бітті</translation>
 <translation id="7842569679327885685">Ескерту: эксперименттік функция</translation>
 <translation id="7846634333498149051">Пернетақта</translation>
@@ -1721,6 +1745,7 @@
 <translation id="7893503627044934815">Бұл файлдың көрсетілгенін қаламаймын</translation>
 <translation id="7893547474469215105">Зенит анықтамасы</translation>
 <translation id="7895348134893321514">Tote</translation>
+<translation id="7896681766480521542">Тапсырма қосу</translation>
 <translation id="7897375687985782769">Экранды бұруға арналған пернелер тіркесімін бастыңыз. Оны бұрғыңыз келе ме?</translation>
 <translation id="7897626842031123113">Күй жолағы, уақыты: <ph name="TIME" />,
         <ph name="BATTERY" />
@@ -1762,6 +1787,7 @@
 <translation id="8000066093800657092">Желі жоқ</translation>
 <translation id="8001755249288974029">Курсордан жолдың басына дейінгі мәтінді таңдау</translation>
 <translation id="8004512796067398576">Арту</translation>
+<translation id="8015361438441228492">Тапсырма өңделмеді.</translation>
 <translation id="8026334261755873520">Шолу деректерін өшіру</translation>
 <translation id="802782383769312836">Алдыңғы жұмыс үстелі: <ph name="DESK_NAME" />. <ph name="DESK_INDEX" />/<ph name="DESK_COUNT" /> жұмыс үстелі.</translation>
 <translation id="8029247720646289474">Хотспотпен байланыс орнатылмады</translation>
@@ -1804,6 +1830,7 @@
 <translation id="8155628902202578800"><ph name="USER_EMAIL_ADDRESS" /> аккаунты туралы ақпарат диалогтік терезесін ашу</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> тілін пайдалану</translation>
 <translation id="8185090165691050712">Өлшем өзгертуді құлыптау режимі мәзірін қосу/өшіру</translation>
+<translation id="8192727139462702395">Bluetooth өшірілгенде, мынадай сыртқы құрылғылар <ph name="DEVICE_TYPE" /> құрылғыңыздан ажыратылады:</translation>
 <translation id="8198456017687137612">Қойынды трансляциялануда</translation>
 <translation id="8200772114523450471">Жалғастыру</translation>
 <translation id="8203795194971602413">Тінтуірдің оң жақ түймесін басу</translation>
@@ -1813,10 +1840,12 @@
 <translation id="8230305195727960608">Түс инверсиясы режимі</translation>
 <translation id="8236042855478648955">Үзіліс жасайтын кез келді</translation>
 <translation id="8237964652943995219">Келесі жұмыс үстелі: <ph name="DESK_NAME" />. <ph name="DESK_INDEX" />/<ph name="DESK_COUNT" /> жұмыс үстелі.</translation>
+<translation id="8238817965863339552"><ph name="PRODUCT_NAME" /> құрылғысын пайдалану жолын білу үшін қысқаша шолу жасаңыз. 5 қадаммен жұмысты бастаңыз.</translation>
 <translation id="8239034820133090126">Оң жақтағы жұмыс үстелін іске қосу</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, сигнал күші: <ph name="SIGNAL_STRENGTH" />, телефонның батарея заряды: <ph name="BATTERY_STATUS" /></translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, қолданба</translation>
 <translation id="8255234195843591763">Жаңарту үшін бастапқы күйге қайтарыңыз.</translation>
+<translation id="8257510091797044096">Құрылғы параметрлерін реттеу</translation>
 <translation id="8261506727792406068">Жою</translation>
 <translation id="8262312463845990408">Ойнату/кідірту</translation>
 <translation id="8270450402312105425">{0,plural, =1{Құрылғыны бір сағатта алдыңғы нұсқаға қайтару қажет}other{Құрылғыны # сағатта алдыңғы нұсқаға қайтару қажет}}</translation>
@@ -1849,6 +1878,7 @@
 <translation id="8412677897383510995">Дисплей параметрлерін көрсету</translation>
 <translation id="8413272770729657668">Жазу басталайын деп жатыр. 3, 2, 1</translation>
 <translation id="8416730306157376817"><ph name="BATTERY_PERCENTAGE" />% (қап)</translation>
+<translation id="8417951779969083400">Шолудың 2/5-қадамы. Wi-Fi, Bluetooth және дыбыс деңгейі сияқты жиі пайдаланылатын басқару элементтері жылдам параметрлерде орналасқан. Сонымен қатар скриншоттар түсіру үшін осы жерге өтуге болады. Жылдам параметрлерді ашу үшін Alt + Shift + S пернелерін басыңыз.</translation>
 <translation id="8420205633584771378">Бұл ұсынысты өшіру керек пе?</translation>
 <translation id="8421270167862077762"><ph name="UNAVAILABLE_APPS" /> қолданбасы бұл құрылғыда жоқ.</translation>
 <translation id="8426708595819210923">Қайырлы кеш, <ph name="GIVEN_NAME" />!</translation>
@@ -1883,8 +1913,8 @@
 <translation id="8551588720239073785">Күн және уақыт параметрлері</translation>
 <translation id="8553395910833293175">Барлық жұмыс үстеліне әлдеқашан тағайындалған.</translation>
 <translation id="8555757996376137129">Ағымдағы жұмыс үстелін өшіру</translation>
+<translation id="8559845965695780508"><ph name="USER" /> өзгерткен</translation>
 <translation id="856298576161209842"><ph name="MANAGER" /> сізге <ph name="DEVICE_TYPE" /> құрылғысын жаңартуды ұсынады.</translation>
-<translation id="8563862697512465947">Хабарландыру параметрлері</translation>
 <translation id="8569751806372591456">Мұнда ұсыныстар берілген</translation>
 <translation id="857201607579416096">Мәзір экранның төменгі оң жақ бұрышына жылжытылды.</translation>
 <translation id="8581946341807941670"><ph name="MODIFIER_1" /><ph name="MODIFIER_2" /> пернесін басып, сілтемені түртіңіз</translation>
@@ -1893,6 +1923,7 @@
 <translation id="8609384513243082612">Жаңа қойынды ашу</translation>
 <translation id="8612216344243590325">Маңызды файлдарды жұмыс үстелінің орнына <ph name="HOLDING_SPACE_TITLE" /> аймағында сақтаңыз. Ол үшін файлдарды <ph name="HOLDING_SPACE_TITLE" /> аймағына сүйреп апарыңыз.</translation>
 <translation id="8614517853887502247"><ph name="APP_1_TITLE" /> және <ph name="APP_2_TITLE" /> хабарландырулары жасырылған, себебі көруден қорғау режимі қосулы тұр.</translation>
+<translation id="8619000641825875669">OneDrive</translation>
 <translation id="8619138598101195078">Дыбыс деңгейін түсіру</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> құрылғысына жалғанған</translation>
 <translation id="8631727435199967028">Арнайы мүмкіндіктер параметрлері</translation>
@@ -1999,6 +2030,7 @@
 <translation id="9065203028668620118">Өзгерту</translation>
 <translation id="9070640332319875144">Assistant параметрлері</translation>
 <translation id="9072519059834302790"><ph name="TIME_LEFT" /> өткен соң, батареяңыздың қуаты таусылады.</translation>
+<translation id="9074432941673450836"><ph name="PRODUCT_NAME" /> құрылғысында қажет нәрсенің барлығын істеу үшін қолданбаларды пайдаланыңыз. Қолданбаларыңызды іске қосу тақтасынан таба аласыз. Сондай-ақ пернетақтадағы іске қосу пернесін (сол жақ Shift пернесінің үстінде) басуға болады.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9077515519330855811">Медиафайлдарды басқару құралдары, қазір <ph name="MEDIA_TITLE" /> ойнатылуда</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
@@ -2010,10 +2042,12 @@
 <translation id="9084606467167974638">Мәзірдің орнын ауыстыру</translation>
 <translation id="9085962983642906571">Батарея қуат көзіне жалғанған кезде, оның жұмысының ұзақтығы артуы үшін заряд 80% болып тұрады.</translation>
 <translation id="9089416786594320554">Енгізу әдістері</translation>
+<translation id="9091406374499386796">Іске қосу тақтасында файлдарды, қолданбаларды және т.б. іздеңіз. Сондай-ақ <ph name="PRODUCT_NAME" /> туралы сұрақтардың жауабын ала аласыз.</translation>
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> экраны өшірілді</translation>
 <translation id="9098969848082897657">Телефон дыбысын өшіру</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> немесе <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>
 <translation id="9126339866969410112">Соңғы әрекетті қайтару</translation>
+<translation id="9129245940793250979">Артқы түйме</translation>
 <translation id="9133335900048457298">Қорғалған контентті жазу мүмкін емес</translation>
 <translation id="9139720510312328767">Келесі әріпті жою</translation>
 <translation id="9151906066336345901">end</translation>
@@ -2048,7 +2082,6 @@
 <translation id="953431725143473984">Құрылғыны өшіру керек пе?</translation>
 <translation id="954052413789300507"><ph name="FILENAME" /> файлын сақтауға орын жеткіліксіз. Орын босатыңыз.</translation>
 <translation id="954520015070501466">30 мин</translation>
-<translation id="954786879461589145"><ph name="USER" /> өзгертті</translation>
 <translation id="974545358917229949"><ph name="QUERY" /> бойынша <ph name="RESULT_COUNT" /> нәтиже көрсетілуде</translation>
 <translation id="981011780479609956">Орындалу мерзімі жоқ</translation>
 <translation id="98120814841227350">Құжаттың соңына өту</translation>

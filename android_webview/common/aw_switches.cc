@@ -88,4 +88,13 @@ const char kWebViewTpcdMetadaComponent[] = "webview-tpcd-metadata-component";
 // updater downloading service in nonembedded WebView.
 const char kWebViewFpsComponent[] = "webview-fps-component";
 
+// Force disables 3rd party cookie for all apps.
+const char kWebViewForceDisable3pcs[] = "webview-force-disable-3pcs";
+
+// Enables crashes during WebView startup in the Java layer
+const char kWebViewForceCrashJava[] = "webview-force-crash-java";
+
+// Enables crashes during WebView startup in the Native layer
+const char kWebViewForceCrashNative[] = "webview-force-crash-native";
+
 }  // namespace switches

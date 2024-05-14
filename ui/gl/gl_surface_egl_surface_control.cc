@@ -269,16 +269,14 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
   }
 
   AHardwareBuffer* hardware_buffer = nullptr;
-  base::ScopedFD fence_fd;
   auto scoped_hardware_buffer = std::move(image);
-  bool is_primary_plane = false;
+  bool is_primary_plane = overlay_plane_data.is_root_overlay;
   if (scoped_hardware_buffer) {
     hardware_buffer = scoped_hardware_buffer->buffer();
 
     // We currently only promote the display compositor's buffer or a video
     // buffer to an overlay. So if this buffer is not for video then it implies
     // its the primary plane.
-    is_primary_plane = !scoped_hardware_buffer->is_video();
     DCHECK(!is_primary_plane || !primary_plane_fences_);
     if (is_primary_plane) {
       primary_plane_fences_.emplace();
@@ -294,11 +292,11 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
     resource_ref.scoped_buffer = std::move(scoped_hardware_buffer);
   }
 
-  surface_state.buffer_updated_in_pending_transaction =
-      uninitialized || surface_state.hardware_buffer != hardware_buffer;
-  if (surface_state.buffer_updated_in_pending_transaction) {
+  if (uninitialized || surface_state.hardware_buffer != hardware_buffer ||
+      gpu_fence) {
     surface_state.hardware_buffer = hardware_buffer;
 
+    base::ScopedFD fence_fd;
     if (gpu_fence && surface_state.hardware_buffer) {
       auto fence_handle = gpu_fence->GetGpuFenceHandle().Clone();
       DCHECK(!fence_handle.is_null());

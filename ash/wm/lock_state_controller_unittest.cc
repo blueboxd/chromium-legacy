@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/shutdown_controller.h"
@@ -24,6 +25,7 @@
 #include "ash/wm/lock_state_controller_test_api.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/session_state_animator.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/test/test_session_state_animator.h"
 #include "ash/wm/window_restore/window_restore_util.h"
 #include "base/barrier_closure.h"
@@ -40,6 +42,7 @@
 #include "base/time/time.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "ui/aura/test/test_windows.h"
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/test/fake_display_snapshot.h"
 #include "ui/display/tablet_state.h"
@@ -1051,11 +1054,30 @@ class LockStateControllerPineTest : public LockStateControllerTest {
     CHECK(temp_dir_.CreateUniqueTempDir());
     file_path_ = temp_dir_.GetPath().AppendASCII("test_pine.png");
     SetPineImagePathForTest(file_path_);
+    Initialize(ButtonType::NORMAL, LoginStatus::USER);
   }
 
   void TearDown() override {
     SetPineImagePathForTest(base::FilePath());
     LockStateControllerTest::TearDown();
+  }
+
+  void RequestShutdownWithoutFailTimer() {
+    base::RunLoop run_loop;
+    lock_state_test_api_->set_pine_image_callback(run_loop.QuitClosure());
+    lock_state_test_api_->disable_screenshot_timeout_for_test(true);
+    lock_state_controller_->RequestShutdown(
+        ShutdownReason::TRAY_SHUT_DOWN_BUTTON);
+    run_loop.Run();
+  }
+
+  // Checks that the pine image was taken and saved at `file_path` on disk
+  // successfully.
+  void VerifyPineImageOnDisk() {
+    EXPECT_TRUE(base::PathExists(file_path()));
+    int64_t file_size = 0;
+    ASSERT_TRUE(base::GetFileSize(file_path(), &file_size));
+    EXPECT_GT(file_size, 0);
   }
 
   const base::FilePath& file_path() const { return file_path_; }
@@ -1069,20 +1091,11 @@ class LockStateControllerPineTest : public LockStateControllerTest {
 
 // Tests that a pine image is taken when there are windows open.
 TEST_F(LockStateControllerPineTest, ShutdownWithWindows) {
-  Initialize(ButtonType::NORMAL, LoginStatus::USER);
   std::unique_ptr<aura::Window> window = CreateTestWindow();
 
-  base::RunLoop run_loop;
-  lock_state_test_api_->set_pine_image_callback(run_loop.QuitClosure());
-  lock_state_controller_->RequestShutdown(
-      ShutdownReason::TRAY_SHUT_DOWN_BUTTON);
-  run_loop.Run();
-
+  RequestShutdownWithoutFailTimer();
   // The pine image was taken and not empty.
-  EXPECT_TRUE(base::PathExists(file_path()));
-  int64_t file_size = 0;
-  ASSERT_TRUE(base::GetFileSize(file_path(), &file_size));
-  EXPECT_GT(file_size, 0);
+  VerifyPineImageOnDisk();
 
   auto* local_state = Shell::Get()->local_state();
   // Pine screenshot related durations were recorded.
@@ -1097,19 +1110,117 @@ TEST_F(LockStateControllerPineTest, ShutdownWithWindows) {
 // Tests that no pine image is taken when there are no windows opened and the
 // existing pine image should be deleted.
 TEST_F(LockStateControllerPineTest, ShutdownWithoutWindows) {
-  Initialize(ButtonType::NORMAL, LoginStatus::USER);
-
   // Create an empty file to simulate an old pine image.
   ASSERT_TRUE(base::WriteFile(file_path(), ""));
 
+  RequestShutdownWithoutFailTimer();
+  // Existing pine image was deleted.
+  EXPECT_FALSE(base::PathExists(file_path()));
+}
+
+TEST_F(LockStateControllerPineTest, ShutdownInOverview) {
+  // Create an empty file to simulate an old pine image.
+  ASSERT_TRUE(base::WriteFile(file_path(), ""));
+
+  // Create a window and enter the overview before requesting shutdown.
+  CreateTestWindow();
+  EnterOverview();
+
+  RequestShutdownWithoutFailTimer();
+  // The pine image should not be taken if it is in overview when shutting down.
+  // The existing pine image should be deleted as well.
+  EXPECT_FALSE(base::PathExists(file_path()));
+}
+
+TEST_F(LockStateControllerPineTest, ShutdownInLockScreen) {
+  // Create an empty file to simulate an old pine image.
+  ASSERT_TRUE(base::WriteFile(file_path(), ""));
+
+  // Create a window and go the lock screen before requesting shutdown.
+  CreateTestWindowInShellWithId(0);
+  GetSessionControllerClient()->LockScreen();
+  EXPECT_TRUE(Shell::Get()->session_controller()->IsScreenLocked());
+
+  RequestShutdownWithoutFailTimer();
+  // The pine image should not be taken if it is in the lock screen. The
+  // existing pine image should be deleted as well.
+  EXPECT_FALSE(base::PathExists(file_path()));
+}
+
+TEST_F(LockStateControllerPineTest, ShutdownInHomeLauncher) {
+  // Create an empty file to simulate an old pine image.
+  ASSERT_TRUE(base::WriteFile(file_path(), ""));
+
+  // Create a window and go to the home launcher page before requesting
+  // shutdown.
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
+  TabletModeControllerTestApi().EnterTabletMode();
+  auto* app_list_controller = Shell::Get()->app_list_controller();
+  app_list_controller->GoHome(GetPrimaryDisplay().id());
+  ASSERT_TRUE(app_list_controller->IsHomeScreenVisible());
+  EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
+
+  RequestShutdownWithoutFailTimer();
+  // The pine image should not be taken if it is in the home launcher page when
+  // shutting down. The existing image should be deleted as well.
+  EXPECT_FALSE(base::PathExists(file_path()));
+}
+
+TEST_F(LockStateControllerPineTest, AllWindowsMinimized) {
+  // Create an empty file to simulate an old pine image.
+  ASSERT_TRUE(base::WriteFile(file_path(), ""));
+
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+  WindowState::Get(window1.get())->Minimize();
+  WindowState::Get(window2.get())->Minimize();
+
+  RequestShutdownWithoutFailTimer();
+  // The pine image should not be taken if all the windows inside the active
+  // desk are minimized. The existing image should be deleted as well.
+  EXPECT_FALSE(base::PathExists(file_path()));
+}
+
+// Tests that the pine image should be taken with only the floated window.
+TEST_F(LockStateControllerPineTest, ShutdownWithFloatWindow) {
+  std::unique_ptr<aura::Window> floated_window = CreateAppWindow();
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(WindowState::Get(floated_window.get())->IsFloated());
+
+  RequestShutdownWithoutFailTimer();
+  // The pine image was taken and not empty with the float window only.
+  VerifyPineImageOnDisk();
+}
+
+// Tests that the pine image should be taken with only the always on top window.
+TEST_F(LockStateControllerPineTest, ShutdownWithAlwaysOnTopWindow) {
+  aura::Window* top_container = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(), kShellWindowId_AlwaysOnTopContainer);
+  std::unique_ptr<aura::Window> window_always_on_top(
+      aura::test::CreateTestWindowWithId(1, top_container));
+
+  RequestShutdownWithoutFailTimer();
+  // The pine image was taken and not empty with the always on top window only.
+  VerifyPineImageOnDisk();
+}
+
+TEST_F(LockStateControllerPineTest, TakeScreenshotTimeout) {
+  // Create an empty file to simulate an old pine image.
+  ASSERT_TRUE(base::WriteFile(file_path(), ""));
+
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
   base::RunLoop run_loop;
   lock_state_test_api_->set_pine_image_callback(run_loop.QuitClosure());
   lock_state_controller_->RequestShutdown(
       ShutdownReason::TRAY_SHUT_DOWN_BUTTON);
-  run_loop.Run();
 
-  // Existing pine image was deleted.
+  // Fire the screenshot timeout before taking the screenshot completes. Then no
+  // screenshot should be saved, the existing one should be deleted as well and
+  // the shutdown process should be triggered directly.
+  lock_state_test_api_->trigger_take_screenshot_timeout();
+  run_loop.Run();
   EXPECT_FALSE(base::PathExists(file_path()));
+  EXPECT_TRUE(lock_state_test_api_->real_shutdown_timer_is_running());
 }
 
 }  // namespace ash

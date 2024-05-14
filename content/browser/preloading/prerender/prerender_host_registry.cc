@@ -1305,11 +1305,14 @@ void PrerenderHostRegistry::BackNavigationLikely(
 
   PreloadingURLMatchCallback same_url_matcher =
       PreloadingData::GetSameURLMatcher(back_url);
+  ukm::SourceId triggered_primary_page_source_id =
+      web_contents()->GetPrimaryMainFrame()->GetPageUkmSourceId();
   preloading_data->AddPreloadingPrediction(predictor, /*confidence=*/100,
-                                           same_url_matcher);
+                                           same_url_matcher,
+                                           triggered_primary_page_source_id);
   PreloadingAttempt* attempt = preloading_data->AddPreloadingAttempt(
       predictor, PreloadingType::kPrerender, same_url_matcher,
-      web_contents()->GetPrimaryMainFrame()->GetPageUkmSourceId());
+      triggered_primary_page_source_id);
 
   if (back_entry->GetMainFrameDocumentSequenceNumber() ==
       controller.GetLastCommittedEntry()
@@ -1444,6 +1447,25 @@ void PrerenderHostRegistry::DidStartNavigation(
   CHECK(prerender_host);
 
   prerender_host->DidStartNavigation(navigation_handle);
+}
+
+void PrerenderHostRegistry::ReadyToCommitNavigation(
+    NavigationHandle* navigation_handle) {
+  // ReadyToCommitNavigation is used for monitoring the main frame navigation in
+  // a prerendered page so do nothing for other navigations.
+  auto* navigation_request = NavigationRequest::From(navigation_handle);
+  if (!navigation_request->IsInPrerenderedMainFrame() ||
+      navigation_request->IsSameDocument()) {
+    return;
+  }
+
+  // This navigation is running on the main frame in the prerendered page, so
+  // its FrameTree::Delegate should be PrerenderHost.
+  auto* prerender_host = static_cast<PrerenderHost*>(
+      navigation_request->frame_tree_node()->frame_tree().delegate());
+  CHECK(prerender_host);
+
+  prerender_host->ReadyToCommitNavigation(navigation_handle);
 }
 
 void PrerenderHostRegistry::DidFinishNavigation(

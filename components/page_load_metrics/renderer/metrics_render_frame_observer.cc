@@ -337,7 +337,8 @@ void MetricsRenderFrameObserver::DidStartNavigation(
   }
 }
 
-void MetricsRenderFrameObserver::DidSetPageLifecycleState() {
+void MetricsRenderFrameObserver::DidSetPageLifecycleState(
+    bool restoring_from_bfcache) {
   // Send current metrics, as this RenderFrame might be replaced by a new
   // RenderFrame or its process might be killed, and this might be the last
   // point we can send the metrics to the browser. See crbug.com/1150242 for
@@ -394,11 +395,7 @@ void MetricsRenderFrameObserver::DidCreateDocumentElement() {
   // be possible.
   DCHECK(!provisional_frame_resource_data_use_);
 
-  // Set `document_token_` when the document first becomes available.
-  document_token_ = render_frame()->GetWebFrame()->GetDocument().Token();
-
   Timing timing = GetTiming();
-
   page_timing_metrics_sender_ = std::make_unique<PageTimingMetricsSender>(
       CreatePageTimingSender(true /* limited_sending_mode */), CreateTimer(),
       std::move(timing.relative_timing), timing.monotonic_timing,
@@ -539,7 +536,7 @@ MetricsRenderFrameObserver::GetSoftNavigationMetrics() const {
   CHECK(!soft_navigation_metrics.is_null());
 
   soft_navigation_metrics->largest_contentful_paint =
-      mojom::LargestContentfulPaintTiming::New();
+      CreateLargestContentfulPaintTiming();
 
   auto soft_navigation_lcp_details_ =
       metrics.SoftNavigationLargestContentfulDetailsForMetrics();
@@ -598,10 +595,12 @@ MetricsRenderFrameObserver::GetSoftNavigationMetrics() const {
     }
 
     // Set largest image discovery time.
-    if (soft_navigation_lcp_details_.image_discovery_time.has_value()) {
+    if (soft_navigation_lcp_details_.resource_load_timings.discovery_time
+            .has_value()) {
       base::TimeDelta image_discovery_time_relative_to_navigation_start =
           CreateTimeDeltaFromTimestampsInSeconds(
-              (soft_navigation_lcp_details_.image_discovery_time.value())
+              (soft_navigation_lcp_details_.resource_load_timings.discovery_time
+                   .value())
                   .InSecondsF(),
               navigation_start);
 
@@ -610,16 +609,18 @@ MetricsRenderFrameObserver::GetSoftNavigationMetrics() const {
               image_discovery_time_relative_to_navigation_start.InSecondsF(),
               soft_navigation_start_relative_to_navigation_start);
 
-      soft_navigation_metrics->largest_contentful_paint
-          ->largest_image_discovery_time =
+      soft_navigation_metrics->largest_contentful_paint->resource_load_timings
+          ->discovery_time =
           image_discovery_time_relative_to_soft_navigation_start;
     }
 
     // Set largest image load start.
-    if (soft_navigation_lcp_details_.image_load_start.has_value()) {
+    if (soft_navigation_lcp_details_.resource_load_timings.load_start
+            .has_value()) {
       base::TimeDelta image_load_start_relative_to_navigation_start =
           CreateTimeDeltaFromTimestampsInSeconds(
-              (soft_navigation_lcp_details_.image_load_start.value())
+              (soft_navigation_lcp_details_.resource_load_timings.load_start
+                   .value())
                   .InSecondsF(),
               navigation_start);
 
@@ -628,16 +629,17 @@ MetricsRenderFrameObserver::GetSoftNavigationMetrics() const {
               image_load_start_relative_to_navigation_start.InSecondsF(),
               soft_navigation_start_relative_to_navigation_start);
 
-      soft_navigation_metrics->largest_contentful_paint
-          ->largest_image_load_start =
-          image_load_start_relative_to_soft_navigation_start;
+      soft_navigation_metrics->largest_contentful_paint->resource_load_timings
+          ->load_start = image_load_start_relative_to_soft_navigation_start;
     }
 
     // Set largest image load end.
-    if (soft_navigation_lcp_details_.image_load_end.has_value()) {
+    if (soft_navigation_lcp_details_.resource_load_timings.load_end
+            .has_value()) {
       base::TimeDelta image_load_end_relative_to_navigation_start =
           CreateTimeDeltaFromTimestampsInSeconds(
-              (soft_navigation_lcp_details_.image_load_end.value())
+              (soft_navigation_lcp_details_.resource_load_timings.load_end
+                   .value())
                   .InSecondsF(),
               navigation_start);
 
@@ -646,9 +648,8 @@ MetricsRenderFrameObserver::GetSoftNavigationMetrics() const {
               image_load_end_relative_to_navigation_start.InSecondsF(),
               soft_navigation_start_relative_to_navigation_start);
 
-      soft_navigation_metrics->largest_contentful_paint
-          ->largest_image_load_end =
-          image_load_end_relative_to_soft_navigation_start;
+      soft_navigation_metrics->largest_contentful_paint->resource_load_timings
+          ->load_end = image_load_end_relative_to_soft_navigation_start;
     }
   }
 
@@ -689,9 +690,6 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
   double start = perf.NavigationStart();
   timing->navigation_start = base::Time::FromSecondsSinceUnixEpoch(start);
   monotonic_timing.navigation_start = perf.NavigationStartAsMonotonicTime();
-  // Document token is nullopt on the first call of `GetTiming` when the
-  // document is not ready yet.
-  monotonic_timing.document_token = document_token_;
   if (perf.InputForNavigationStart() > 0.0) {
     timing->input_to_navigation_start = CreateTimeDeltaFromTimestampsInSeconds(
         start, perf.InputForNavigationStart());
@@ -825,29 +823,34 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
     }
 
     // Set largest image load timings.
-    if (largest_contentful_paint_details.image_discovery_time.has_value()) {
-      timing->paint_timing->largest_contentful_paint
-          ->largest_image_discovery_time =
-          CreateTimeDeltaFromTimestampsInSeconds(
-              (largest_contentful_paint_details.image_discovery_time.value())
-                  .InSecondsF(),
-              start);
+    if (largest_contentful_paint_details.resource_load_timings.discovery_time
+            .has_value()) {
+      timing->paint_timing->largest_contentful_paint->resource_load_timings
+          ->discovery_time = CreateTimeDeltaFromTimestampsInSeconds(
+          (largest_contentful_paint_details.resource_load_timings.discovery_time
+               .value())
+              .InSecondsF(),
+          start);
     }
 
-    if (largest_contentful_paint_details.image_load_start.has_value()) {
-      timing->paint_timing->largest_contentful_paint->largest_image_load_start =
-          CreateTimeDeltaFromTimestampsInSeconds(
-              (largest_contentful_paint_details.image_load_start.value())
-                  .InSecondsF(),
-              start);
+    if (largest_contentful_paint_details.resource_load_timings.load_start
+            .has_value()) {
+      timing->paint_timing->largest_contentful_paint->resource_load_timings
+          ->load_start = CreateTimeDeltaFromTimestampsInSeconds(
+          (largest_contentful_paint_details.resource_load_timings.load_start
+               .value())
+              .InSecondsF(),
+          start);
     }
 
-    if (largest_contentful_paint_details.image_load_end.has_value()) {
-      timing->paint_timing->largest_contentful_paint->largest_image_load_end =
-          CreateTimeDeltaFromTimestampsInSeconds(
-              (largest_contentful_paint_details.image_load_end.value())
-                  .InSecondsF(),
-              start);
+    if (largest_contentful_paint_details.resource_load_timings.load_end
+            .has_value()) {
+      timing->paint_timing->largest_contentful_paint->resource_load_timings
+          ->load_end = CreateTimeDeltaFromTimestampsInSeconds(
+          (largest_contentful_paint_details.resource_load_timings.load_end
+               .value())
+              .InSecondsF(),
+          start);
     }
 
     timing->paint_timing->largest_contentful_paint

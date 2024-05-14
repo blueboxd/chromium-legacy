@@ -409,7 +409,9 @@ void SystemTrayClientImpl::ShowDateSettings() {
   base::RecordAction(base::UserMetricsAction("ShowDateOptions"));
   // Everybody can change the time zone (even though it is a device setting).
   ShowSettingsSubPageForActiveUser(
-      chromeos::settings::mojom::kDateAndTimeSectionPath);
+      ash::features::IsOsSettingsRevampWayfindingEnabled()
+          ? chromeos::settings::mojom::kSystemPreferencesSectionPath
+          : chromeos::settings::mojom::kDateAndTimeSectionPath);
 }
 
 void SystemTrayClientImpl::ShowSetTimeDialog() {
@@ -614,6 +616,11 @@ void SystemTrayClientImpl::ShowSettingsCellularSetup(bool show_psim_flow) {
   ShowSettingsSubPageForActiveUser(page);
 }
 
+void SystemTrayClientImpl::ShowMobileDataSubpage() {
+  ShowSettingsSubPageForActiveUser(
+      chromeos::settings::mojom::kCellularNetworksSubpagePath);
+}
+
 void SystemTrayClientImpl::ShowThirdPartyVpnCreate(
     const std::string& extension_id) {
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
@@ -710,9 +717,6 @@ void SystemTrayClientImpl::ShowNetworkSettingsHelper(
 
 void SystemTrayClientImpl::ShowMultiDeviceSetup() {
   ash::multidevice_setup::MultiDeviceSetupDialog::Show();
-  ash::phonehub::util::LogMultiDeviceSetupDialogEntryPoint(
-      ash::phonehub::util::MultiDeviceSetupDialogEntrypoint::
-          kSetupNotification);
 }
 
 void SystemTrayClientImpl::ShowFirmwareUpdate() {
@@ -958,7 +962,6 @@ void SystemTrayClientImpl::UpdateDeviceEnterpriseInfo() {
   ash::DeviceEnterpriseInfo device_enterprise_info;
   device_enterprise_info.enterprise_domain_manager =
       connector->GetEnterpriseDomainManager();
-  device_enterprise_info.active_directory_managed = false;
   device_enterprise_info.management_device_mode =
       GetManagementDeviceMode(connector);
   if (!last_device_enterprise_info_) {

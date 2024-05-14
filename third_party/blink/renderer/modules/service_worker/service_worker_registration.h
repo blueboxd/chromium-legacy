@@ -25,7 +25,6 @@
 namespace blink {
 
 class ExceptionState;
-class ScriptPromise;
 class ScriptState;
 
 // The implementation of a service worker registration object in Blink.
@@ -80,13 +79,18 @@ class ServiceWorkerRegistration final
 
   int64_t RegistrationId() const { return registration_id_; }
 
-  void EnableNavigationPreload(bool enable, ScriptPromiseResolver* resolver);
-  void GetNavigationPreloadState(ScriptPromiseResolver* resolver);
-  void SetNavigationPreloadHeader(const String& value,
-                                  ScriptPromiseResolver* resolver);
+  void EnableNavigationPreload(
+      bool enable,
+      ScriptPromiseResolverTyped<IDLUndefined>* resolver);
+  void GetNavigationPreloadState(
+      ScriptPromiseResolverTyped<NavigationPreloadState>* resolver);
+  void SetNavigationPreloadHeader(
+      const String& value,
+      ScriptPromiseResolverTyped<IDLUndefined>* resolver);
 
-  ScriptPromise update(ScriptState*, ExceptionState&);
-  ScriptPromise unregister(ScriptState*, ExceptionState&);
+  ScriptPromiseTyped<ServiceWorkerRegistration> update(ScriptState*,
+                                                       ExceptionState&);
+  ScriptPromiseTyped<IDLBoolean> unregister(ScriptState*, ExceptionState&);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(updatefound, kUpdatefound)
 
@@ -112,8 +116,8 @@ class ServiceWorkerRegistration final
 
   void UpdateInternal(
       mojom::blink::FetchClientSettingsObjectPtr mojom_settings_object,
-      ScriptPromiseResolver* resolver);
-  void UnregisterInternal(ScriptPromiseResolver* resolver);
+      ScriptPromiseResolverTyped<ServiceWorkerRegistration>* resolver);
+  void UnregisterInternal(ScriptPromiseResolverTyped<IDLBoolean>* resolver);
 
   Member<ServiceWorker> installing_;
   Member<ServiceWorker> waiting_;

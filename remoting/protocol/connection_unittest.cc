@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <numbers>
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -146,7 +147,7 @@ class TestAudioSource : public AudioSource {
   static int16_t GetSampleValue(double pos, int frequency) {
     const int kMaxSampleValue = 32767;
     return static_cast<int>(
-        sin(pos * 2 * base::kPiDouble * frequency / kAudioSampleRate) *
+        sin(pos * 2 * std::numbers::pi * frequency / kAudioSampleRate) *
             kMaxSampleValue +
         0.5);
   }
@@ -332,12 +333,14 @@ class ConnectionTest : public testing::Test,
 
     {
       testing::InSequence sequence;
+      EXPECT_CALL(
+          client_event_handler_,
+          OnConnectionState(ConnectionToHost::CONNECTING, ErrorCode::OK));
+      EXPECT_CALL(
+          client_event_handler_,
+          OnConnectionState(ConnectionToHost::AUTHENTICATED, ErrorCode::OK));
       EXPECT_CALL(client_event_handler_,
-                  OnConnectionState(ConnectionToHost::CONNECTING, OK));
-      EXPECT_CALL(client_event_handler_,
-                  OnConnectionState(ConnectionToHost::AUTHENTICATED, OK));
-      EXPECT_CALL(client_event_handler_,
-                  OnConnectionState(ConnectionToHost::CONNECTED, OK))
+                  OnConnectionState(ConnectionToHost::CONNECTED, ErrorCode::OK))
           .WillOnce(
               InvokeWithoutArgs(this, &ConnectionTest::OnClientConnected));
     }
@@ -470,9 +473,9 @@ INSTANTIATE_TEST_SUITE_P(Webrtc, ConnectionTest, ::testing::Values(true));
 
 TEST_P(ConnectionTest, RejectConnection) {
   EXPECT_CALL(client_event_handler_,
-              OnConnectionState(ConnectionToHost::CONNECTING, OK));
+              OnConnectionState(ConnectionToHost::CONNECTING, ErrorCode::OK));
   EXPECT_CALL(client_event_handler_,
-              OnConnectionState(ConnectionToHost::CLOSED, OK));
+              OnConnectionState(ConnectionToHost::CLOSED, ErrorCode::OK));
 
   client_connection_->Connect(
       std::move(owned_client_session_),
@@ -491,10 +494,10 @@ TEST_P(ConnectionTest, MAYBE_Disconnect) {
   Connect();
 
   EXPECT_CALL(client_event_handler_,
-              OnConnectionState(ConnectionToHost::CLOSED, OK));
-  EXPECT_CALL(host_event_handler_, OnConnectionClosed(OK));
+              OnConnectionState(ConnectionToHost::CLOSED, ErrorCode::OK));
+  EXPECT_CALL(host_event_handler_, OnConnectionClosed(ErrorCode::OK));
 
-  client_session_->Close(OK);
+  client_session_->Close(ErrorCode::OK);
   base::RunLoop().RunUntilIdle();
 }
 

@@ -178,7 +178,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAudio.AudioDestination.HardwareBufferSize" units="units"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>mjwilson@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
@@ -189,7 +189,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAudio.AudioDestination.HardwareOutputLatency" units="ms"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>mjwilson@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
@@ -197,6 +197,28 @@ chromium-metrics-reviews@google.com.
     The latency reported from the audio hardware. This number can be dynamic at
     runtime but the metric is collected only once at the first platform audio
     callback after an AudioContext is created.
+  </summary>
+</histogram>
+
+<histogram name="WebAudio.AudioWorklet.PeakDedicatedBackingThreadCount"
+    units="threads" expires_after="2024-12-31">
+  <owner>mjwilson@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
+  <summary>
+    The maximum number of dedicated backing worklet threads throughout the
+    lifetime of the document/frame.
+  </summary>
+</histogram>
+
+<histogram name="WebAudio.AudioWorklet.PeakSharedBackingThreadRefCount"
+    units="refcounts" expires_after="2024-12-31">
+  <owner>mjwilson@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
+  <summary>
+    The maximum number of ref counts using the shared backing thread throughout
+    the lifetime of the document/frame.
   </summary>
 </histogram>
 

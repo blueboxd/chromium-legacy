@@ -59,8 +59,9 @@ class MODULES_EXPORT TransferredMediaStreamTrack : public MediaStreamTrack {
   MediaTrackSettings* getSettings() const override;
   MediaStreamTrackVideoStats* stats() override;
   CaptureHandle* getCaptureHandle() const override;
-  ScriptPromise applyConstraints(ScriptState*,
-                                 const MediaTrackConstraints*) override;
+  ScriptPromiseTyped<IDLUndefined> applyConstraints(
+      ScriptState*,
+      const MediaTrackConstraints*) override;
 
   bool HasImplementation() const { return !!track_; }
   // TODO(1288839): access to track_ is a baby-step toward removing
@@ -106,7 +107,7 @@ class MODULES_EXPORT TransferredMediaStreamTrack : public MediaStreamTrack {
 
   std::unique_ptr<AudioSourceProvider> CreateWebAudioSource(
       int context_sample_rate,
-      uint32_t context_buffer_size) override;
+      base::TimeDelta platform_buffer_duration) override;
 
   ImageCapture* GetImageCapture() override;
   std::optional<const MediaStreamDevice> device() const override;
@@ -126,7 +127,7 @@ class MODULES_EXPORT TransferredMediaStreamTrack : public MediaStreamTrack {
     CLONE
   };
 
-  void applyConstraints(ScriptPromiseResolver*,
+  void applyConstraints(ScriptPromiseResolverTyped<IDLUndefined>*,
                         const MediaTrackConstraints*) override;
 
   // Helper class to register as an event listener on the underlying
@@ -144,11 +145,11 @@ class MODULES_EXPORT TransferredMediaStreamTrack : public MediaStreamTrack {
   };
 
   struct ConstraintsPair : GarbageCollected<ConstraintsPair> {
-    ConstraintsPair(ScriptPromiseResolver* resolver,
+    ConstraintsPair(ScriptPromiseResolverTyped<IDLUndefined>* resolver,
                     const MediaTrackConstraints* constraints);
     void Trace(Visitor*) const;
 
-    const Member<ScriptPromiseResolver> resolver;
+    const Member<ScriptPromiseResolverTyped<IDLUndefined>> resolver;
     const Member<const MediaTrackConstraints> constraints;
   };
 

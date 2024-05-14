@@ -22,6 +22,7 @@ import type {DomRepeat, DomRepeatEvent} from '//resources/polymer/v3_0/polymer/p
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ReadAnythingElement} from './app.js';
+import {validatedFontName} from './common.js';
 import {getTemplate} from './read_anything_toolbar.html.js';
 import type {VoiceSelectionMenuElement} from './voice_selection_menu.js';
 
@@ -59,7 +60,7 @@ interface MenuButton {
 interface ToggleButton {
   id: string;
   icon: string;
-  ariaLabel: string;
+  title: string;
   callback: (event: DomRepeatEvent<ToggleButton>) => void;
 }
 
@@ -83,9 +84,19 @@ const moreOptionsClass = '.more-options-icon';
 const activeClass = ' active';
 
 // Link toggle button constants.
-const LINKS_ENABLED_ICON = 'read-anything:links-enabled';
-const LINKS_DISABLED_ICON = 'read-anything:links-disabled';
-const LINK_TOGGLE_BUTTON_ID = 'link-toggle-button';
+export const LINKS_ENABLED_ICON = 'read-anything:links-enabled';
+export const LINKS_DISABLED_ICON = 'read-anything:links-disabled';
+export const LINK_TOGGLE_BUTTON_ID = 'link-toggle-button';
+
+// Events emitted from the toolbar to the app
+export const FONT_SIZE_EVENT = 'font-size-change';
+export const FONT_EVENT = 'font-change';
+export const RATE_EVENT = 'rate-change';
+export const PLAY_PAUSE_EVENT = 'play-pause-click';
+export const HIGHLIGHT_TOGGLE_EVENT = 'highlight-toggle';
+export const NEXT_GRANULARITY_EVENT = 'next-granularity-click';
+export const PREVIOUS_GRANULARITY_EVENT = 'previous-granularity-click';
+export const LINKS_EVENT = 'links-toggle';
 
 const ReadAnythingToolbarElementBase = WebUiListenerMixin(PolymerElement);
 export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
@@ -109,8 +120,10 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
       textStyleOptions_: Array,
       textStyleToggles_: Array,
       paused: Boolean,
+      hasContent: Boolean,
       selectedVoice: Object,
       availableVoices: Array,
+      localeToDisplayName: Object,
       previewVoicePlaying: Object,
     };
   }
@@ -220,9 +233,9 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
       id: LINK_TOGGLE_BUTTON_ID,
       icon: chrome.readingMode.linksEnabled?
       LINKS_ENABLED_ICON: LINKS_DISABLED_ICON,
-      ariaLabel: chrome.readingMode.linksEnabled?
-               loadTimeData.getString('disableLinksLabel'):
-                   loadTimeData.getString('enableLinksLabel'),
+      title: chrome.readingMode.linksEnabled?
+           loadTimeData.getString('disableLinksLabel'):
+               loadTimeData.getString('enableLinksLabel'),
       callback: this.onToggleLinksClick_.bind(this),
     },
   ];
@@ -303,6 +316,11 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
   // via one way data binding.
   private readonly paused: boolean;
 
+  // If Read Anything has content. If it doesn't, certain toolbar buttons
+  // like the play / pause button should be disabled. This is set from
+  // the parent element via one way data binding.
+  private readonly hasContent: boolean;
+
   override connectedCallback() {
     super.connectedCallback();
     this.isReadAloudEnabled_ = chrome.readingMode.isReadAloudEnabled;
@@ -375,14 +393,7 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
       // scrollbar because the height is calculated before the font is set.
       // Therefore, only set the custom fonts on the individual items when
       // Read Aloud is enabled.
-      fontOptions.forEach(element => {
-        assert(element instanceof HTMLElement);
-        if (!element.innerText) {
-          return;
-        }
-        // Update the font of each button to be the same as the font text.
-        element.style.fontFamily = element.innerText;
-      });
+      this.setFontForFontOptions_(fontOptions);
     } else {
       const shadowRoot = this.shadowRoot;
       assert(shadowRoot);
@@ -392,6 +403,17 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
       fontOptions = Array.from(select.options);
       select.selectedIndex = currentFontIndex;
     }
+  }
+
+  private setFontForFontOptions_(fontOptions: Element[]) {
+    fontOptions.forEach(element => {
+      assert(element instanceof HTMLElement);
+      if (!element.innerText) {
+        return;
+      }
+      // Update the font of each button to be the same as the font text.
+      element.style.fontFamily = element.innerText;
+    });
   }
 
   restoreSettingsFromPrefs(colorSuffix?: string) {
@@ -437,6 +459,9 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
     });
 
     this.$.fontTemplate.render();
+    if (this.isReadAloudEnabled_) {
+      this.setFontForFontOptions_(Array.from(this.$.fontMenu.children));
+    }
   }
 
 
@@ -457,16 +482,20 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
     this.$.fontMenu.close();
   }
 
+  private emitEvent_(name: string, eventDetail?: any) {
+    this.dispatchEvent(new CustomEvent(name, {
+      bubbles: true,
+      composed: true,
+      detail: eventDetail,
+    }));
+  }
+
   private onNextGranularityClick_() {
-    if (this.contentPage) {
-      this.contentPage.playNextGranularity();
-    }
+    this.emitEvent_(NEXT_GRANULARITY_EVENT);
   }
 
   private onPreviousGranularityClick_() {
-    if (this.contentPage) {
-      this.contentPage.playPreviousGranularity();
-    }
+    this.emitEvent_(PREVIOUS_GRANULARITY_EVENT);
   }
 
   private onTextStyleMenuButtonClick_(event: DomRepeatEvent<MenuButton>) {
@@ -539,9 +568,9 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
       button.setAttribute('title', loadTimeData.getString('turnHighlightOn'));
     }
 
-    if (this.contentPage) {
-      this.contentPage.updateHighlight(this.isHighlightOn_);
-    }
+    this.emitEvent_(HIGHLIGHT_TOGGLE_EVENT, {
+      highlightOn: this.isHighlightOn_,
+    });
   }
 
   private onLetterSpacingClick_(event: DomRepeatEvent<MenuStateItem<number>>) {
@@ -584,10 +613,7 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
         SETTINGS_CHANGE_UMA, ReadAnythingSettingsChange.FONT_CHANGE,
         ReadAnythingSettingsChange.COUNT);
     const fontName = event.model.item;
-    chrome.readingMode.onFontChange(fontName);
-    if (this.contentPage) {
-      this.contentPage.updateFont(fontName);
-    }
+    this.propagateFontChange_(fontName);
     this.setCheckMarkForMenu_(this.$.fontMenu, event.model.index);
 
     this.closeMenus_();
@@ -595,18 +621,23 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
 
   private onFontSelectValueChange_(event: Event) {
     const fontName = (event.target as HTMLSelectElement).value;
+    this.propagateFontChange_(fontName);
+  }
+
+  private propagateFontChange_(fontName: string) {
     chrome.readingMode.onFontChange(fontName);
-    if (this.contentPage) {
-      this.contentPage.updateFont(fontName);
-    }
+    this.emitEvent_(FONT_EVENT, {
+      fontName,
+    });
+    this.style.fontFamily = validatedFontName(fontName);
   }
 
   private onRateClick_(event: DomRepeatEvent<number>) {
     chrome.readingMode.onSpeechRateChange(event.model.item);
-    if (this.contentPage) {
-      this.contentPage.onSpeechRateChange(event.model.item);
-      this.setRateIcon_(event.model.item);
-    }
+    this.emitEvent_(RATE_EVENT, {
+      rate: event.model.item,
+    });
+    this.setRateIcon_(event.model.item);
     this.setCheckMarkForMenu_(this.$.rateMenu, event.model.index);
 
     this.closeMenus_();
@@ -653,9 +684,8 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
         SETTINGS_CHANGE_UMA, ReadAnythingSettingsChange.LINKS_ENABLED_CHANGE,
         ReadAnythingSettingsChange.COUNT);
 
-
     chrome.readingMode.onLinksEnabledToggled();
-    this.contentPage?.updateContent();
+    this.emitEvent_(LINKS_EVENT);
     this.updateLinkToggleButton();
   }
 
@@ -665,7 +695,7 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
     if (button) {
       button.ironIcon = chrome.readingMode.linksEnabled ? LINKS_ENABLED_ICON :
                                                           LINKS_DISABLED_ICON;
-      button.ariaLabel = chrome.readingMode.linksEnabled ?
+      button.title = chrome.readingMode.linksEnabled ?
           loadTimeData.getString('disableLinksLabel') :
           loadTimeData.getString('enableLinksLabel');
     }
@@ -676,9 +706,7 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
         SETTINGS_CHANGE_UMA, ReadAnythingSettingsChange.FONT_SIZE_CHANGE,
         ReadAnythingSettingsChange.COUNT);
     chrome.readingMode.onFontSizeChanged(increase);
-    if (this.contentPage) {
-      this.contentPage.updateFontSize();
-    }
+    this.emitEvent_(FONT_SIZE_EVENT);
     // Don't close the menu
   }
 
@@ -687,21 +715,11 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
         SETTINGS_CHANGE_UMA, ReadAnythingSettingsChange.FONT_SIZE_CHANGE,
         ReadAnythingSettingsChange.COUNT);
     chrome.readingMode.onFontSizeReset();
-    if (this.contentPage) {
-      this.contentPage.updateFontSize();
-    }
+    this.emitEvent_(FONT_SIZE_EVENT);
   }
 
-  onPlayPauseClick() {
-    if (!this.contentPage) {
-      return;
-    }
-
-    if (this.paused) {
-      this.contentPage.playSpeech();
-    } else {
-      this.contentPage.stopSpeech(/* pausedFromPlayClickButton = */ true);
-    }
+  private onPlayPauseClick_() {
+    this.emitEvent_(PLAY_PAUSE_EVENT);
   }
 
   private onToolbarKeyDown_(e: KeyboardEvent) {

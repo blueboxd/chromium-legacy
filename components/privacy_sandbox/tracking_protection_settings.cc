@@ -32,6 +32,11 @@ TrackingProtectionSettings::TrackingProtectionSettings(
           &TrackingProtectionSettings::OnDoNotTrackEnabledPrefChanged,
           base::Unretained(this)));
   pref_change_registrar_.Add(
+      prefs::kFingerprintingProtectionEnabled,
+      base::BindRepeating(
+          &TrackingProtectionSettings::OnFingerprintingProtectionPrefChanged,
+          base::Unretained(this)));
+  pref_change_registrar_.Add(
       prefs::kIpProtectionEnabled,
       base::BindRepeating(
           &TrackingProtectionSettings::OnIpProtectionPrefChanged,
@@ -65,6 +70,8 @@ TrackingProtectionSettings::TrackingProtectionSettings(
     onboarding_observation_.Observe(onboarding_service_);
   }
 
+  // TODO(https://b/316171695): Remove.
+  pref_service_->ClearPref(prefs::kIpProtectionEnabled);
   // It's possible enterprise status changed while profile was shut down.
   OnEnterpriseControlForPrefsChanged();
 }
@@ -82,6 +89,11 @@ bool TrackingProtectionSettings::AreAllThirdPartyCookiesBlocked() const {
   return IsTrackingProtection3pcdEnabled() &&
          (pref_service_->GetBoolean(prefs::kBlockAll3pcToggleEnabled) ||
           is_incognito_);
+}
+
+bool TrackingProtectionSettings::IsFingerprintingProtectionEnabled() const {
+  return pref_service_->GetBoolean(prefs::kFingerprintingProtectionEnabled) &&
+         base::FeatureList::IsEnabled(kFingerprintingProtectionSetting);
 }
 
 bool TrackingProtectionSettings::IsIpProtectionEnabled() const {
@@ -116,6 +128,12 @@ void TrackingProtectionSettings::OnTrackingProtectionOnboardingUpdated(
       return;
     case TrackingProtectionOnboarding::OnboardingStatus::kOnboarded:
       pref_service_->SetBoolean(prefs::kTrackingProtection3pcdEnabled, true);
+      // If the user chose to block all 3PC pre-3PCD, copy this over.
+      if (base::FeatureList::IsEnabled(kTrackingProtectionSettingsLaunch) &&
+          pref_service_->GetInteger(prefs::kCookieControlsMode) ==
+              1 /* BlockThirdParty */) {
+        pref_service_->SetBoolean(prefs::kBlockAll3pcToggleEnabled, true);
+      }
       return;
   }
 }
@@ -129,6 +147,12 @@ void TrackingProtectionSettings::OnDoNotTrackEnabledPrefChanged() {
 void TrackingProtectionSettings::OnIpProtectionPrefChanged() {
   for (auto& observer : observers_) {
     observer.OnIpProtectionEnabledChanged();
+  }
+}
+
+void TrackingProtectionSettings::OnFingerprintingProtectionPrefChanged() {
+  for (auto& observer : observers_) {
+    observer.OnFingerprintingProtectionEnabledChanged();
   }
 }
 

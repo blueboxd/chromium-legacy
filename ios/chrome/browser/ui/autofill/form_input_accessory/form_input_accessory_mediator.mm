@@ -416,6 +416,23 @@ class PasswordCounterDelegateBridge
   [self.consumer manualFillButtonPressed:sender.manualFillButton];
 }
 
+- (void)formInputAccessoryViewDidTapPasswordManualFillButton:
+    (FormInputAccessoryView*)sender {
+  [self.consumer
+      passwordManualFillButtonPressed:sender.passwordManualFillButton];
+}
+
+- (void)formInputAccessoryViewDidTapCreditCardManualFillButton:
+    (FormInputAccessoryView*)sender {
+  [self.consumer
+      creditCardManualFillButtonPressed:sender.creditCardManualFillButton];
+}
+
+- (void)formInputAccessoryViewDidTapAddressManualFillButton:
+    (FormInputAccessoryView*)sender {
+  [self.consumer addressManualFillButtonPressed:sender.addressManualFillButton];
+}
+
 - (FormInputAccessoryViewTextData*)textDataforFormInputAccessoryView:
     (FormInputAccessoryView*)sender {
   return ChromiumAccessoryViewTextData();
@@ -523,9 +540,9 @@ class PasswordCounterDelegateBridge
 // Returns the reauthentication module, which can be an override for testing
 // purposes.
 - (ReauthenticationModule*)reauthenticationModule {
-  return ScopedFormInputAccessoryReauthModuleOverride::instance
-             ? ScopedFormInputAccessoryReauthModuleOverride::instance->module
-             : _reauthenticationModule;
+  id<ReauthenticationProtocol> overrideModule =
+      ScopedFormInputAccessoryReauthModuleOverride::Get();
+  return overrideModule ? overrideModule : _reauthenticationModule;
 }
 
 - (void)updateSuggestionsIfNeeded {

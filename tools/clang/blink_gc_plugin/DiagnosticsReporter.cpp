@@ -53,16 +53,29 @@ const char kRawPtrToGCManagedClassNote[] =
 const char kRefPtrToGCManagedClassNote[] =
     "[blink-gc] scoped_refptr field %0 to a GC managed class declared here:";
 
-const char kWeakPtrToGCManagedClass[] =
-    "[blink-gc] WeakPtr or WeakPtrFactory field %0 to a GC managed class %1 "
-    "declared here (use WeakCell or WeakCellFactory instead):";
-
 const char kReferencePtrToGCManagedClassNote[] =
     "[blink-gc] Reference pointer field %0 to a GC managed class"
     " declared here:";
 
 const char kUniquePtrToGCManagedClassNote[] =
     "[blink-gc] std::unique_ptr field %0 to a GC managed class declared here:";
+
+const char kRawPtrToTraceableClassNote[] =
+    "[blink-gc] Raw pointer field %0 to a traceable class declared here:";
+
+const char kRefPtrToTraceableClassNote[] =
+    "[blink-gc] scoped_refptr field %0 to a traceable class declared here:";
+
+const char kReferencePtrToTraceableClassNote[] =
+    "[blink-gc] Reference pointer field %0 to a traceable class"
+    " declared here:";
+
+const char kUniquePtrToTraceableClassNote[] =
+    "[blink-gc] std::unique_ptr field %0 to a traceable class declared here:";
+
+const char kWeakPtrToGCManagedClass[] =
+    "[blink-gc] WeakPtr or WeakPtrFactory field %0 to a GC managed class %1 "
+    "declared here (use WeakCell or WeakCellFactory instead):";
 
 const char kTaskRunnerInGCManagedClassNote[] =
     "[blink-gc] TaskRunnerTimer field %0 used within a garbage collected "
@@ -197,13 +210,23 @@ const char kUniquePtrUsedWithGC[] =
 
 const char kOptionalFieldUsedWithGC[] =
     "[blink-gc] Disallowed optional field of %0 found; %1 is a "
-    "garbage-collected "
-    "type. Optional fields cannot hold garbage-collected objects.";
+    "garbage-collected or traceable "
+    "type. Optional fields cannot hold garbage-collected or traceable objects.";
 
 const char kOptionalNewExprUsedWithGC[] =
     "[blink-gc] Disallowed new-expression of %0 found; %1 is a "
-    "garbage-collected "
-    "type. GCed types cannot be created with new.";
+    "garbage-collected or traceable "
+    "type. Optional fields cannot hold garbage-collected or traceable objects.";
+
+const char kRawPtrFieldUsedWithGC[] =
+    "[blink-gc] Disallowed raw_ptr field of %0 found; %1 is a "
+    "garbage-collected or traceable "
+    "type. Raw_ptr fields cannot hold garbage-collected or traceable objects.";
+
+const char kRawPtrNewExprUsedWithGC[] =
+    "[blink-gc] Disallowed new-expression of %0 found; %1 is a "
+    "garbage-collected or traceable "
+    "type. Raw_ptr fields cannot hold garbage-collected or traceable objects.";
 
 const char kVariantUsedWithGC[] =
     "[blink-gc] Disallowed construction of %0 found; %1 is a garbage-collected "
@@ -301,6 +324,8 @@ DiagnosticsReporter::DiagnosticsReporter(
       DiagnosticsEngine::Note, kRefPtrToGCManagedClassNote);
   diag_reference_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
       DiagnosticsEngine::Note, kReferencePtrToGCManagedClassNote);
+  diag_unique_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
+      DiagnosticsEngine::Note, kUniquePtrToGCManagedClassNote);
   diag_task_runner_timer_in_gc_class_note = diagnostic_.getCustomDiagID(
       DiagnosticsEngine::Note, kTaskRunnerInGCManagedClassNote);
   diag_mojo_remote_in_gc_class_note = diagnostic_.getCustomDiagID(
@@ -313,8 +338,6 @@ DiagnosticsReporter::DiagnosticsReporter(
       DiagnosticsEngine::Note, kMojoAssociatedReceiverInGCManagedClassNote);
   diag_forbidden_field_part_object_class_note = diagnostic_.getCustomDiagID(
       DiagnosticsEngine::Note, kForbiddenFieldPartObjectClassNote);
-  diag_unique_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
-      DiagnosticsEngine::Note, kUniquePtrToGCManagedClassNote);
   diag_member_to_gc_unmanaged_class_note_ = diagnostic_.getCustomDiagID(
       DiagnosticsEngine::Note, kMemberToGCUnmanagedClassNote);
   diag_stack_allocated_field_note_ = diagnostic_.getCustomDiagID(
@@ -339,6 +362,14 @@ DiagnosticsReporter::DiagnosticsReporter(
       DiagnosticsEngine::Note, kOverriddenNonVirtualTraceNote);
   diag_manual_dispatch_method_note_ = diagnostic_.getCustomDiagID(
       DiagnosticsEngine::Note, kManualDispatchMethodNote);
+  diag_raw_ptr_to_traceable_class_note_ = diagnostic_.getCustomDiagID(
+      DiagnosticsEngine::Note, kRawPtrToTraceableClassNote);
+  diag_ref_ptr_to_traceable_class_note_ = diagnostic_.getCustomDiagID(
+      DiagnosticsEngine::Note, kRefPtrToTraceableClassNote);
+  diag_reference_ptr_to_traceable_class_note_ = diagnostic_.getCustomDiagID(
+      DiagnosticsEngine::Note, kReferencePtrToTraceableClassNote);
+  diag_unique_ptr_to_traceable_class_note_ = diagnostic_.getCustomDiagID(
+      DiagnosticsEngine::Note, kUniquePtrToTraceableClassNote);
 
   diag_unique_ptr_used_with_gc_ =
       diagnostic_.getCustomDiagID(getErrorLevel(), kUniquePtrUsedWithGC);
@@ -346,6 +377,10 @@ DiagnosticsReporter::DiagnosticsReporter(
       diagnostic_.getCustomDiagID(getErrorLevel(), kOptionalFieldUsedWithGC);
   diag_optional_new_expr_used_with_gc_ =
       diagnostic_.getCustomDiagID(getErrorLevel(), kOptionalNewExprUsedWithGC);
+  diag_raw_ptr_field_used_with_gc_ =
+      diagnostic_.getCustomDiagID(getErrorLevel(), kRawPtrFieldUsedWithGC);
+  diag_raw_ptr_new_expr_used_with_gc_ =
+      diagnostic_.getCustomDiagID(getErrorLevel(), kRawPtrNewExprUsedWithGC);
   diag_variant_used_with_gc_ =
       diagnostic_.getCustomDiagID(getErrorLevel(), kVariantUsedWithGC);
   diag_collection_of_gced_ =
@@ -447,6 +482,14 @@ void DiagnosticsReporter::ClassContainsInvalidFields(
     } else if (error.second ==
                CheckFieldsVisitor::kTraceablePartObjectInUnmanaged) {
       note = diag_part_object_in_unmanaged_;
+    } else if (error.second == CheckFieldsVisitor::kRawPtrToTraceable) {
+      note = diag_raw_ptr_to_traceable_class_note_;
+    } else if (error.second == CheckFieldsVisitor::kRefPtrToTraceable) {
+      note = diag_ref_ptr_to_traceable_class_note_;
+    } else if (error.second == CheckFieldsVisitor::kReferencePtrToTraceable) {
+      note = diag_reference_ptr_to_traceable_class_note_;
+    } else if (error.second == CheckFieldsVisitor::kUniquePtrToTraceable) {
+      note = diag_unique_ptr_to_traceable_class_note_;
     } else {
       llvm_unreachable("Unknown field error.");
     }
@@ -723,6 +766,22 @@ void DiagnosticsReporter::OptionalNewExprUsedWithGC(
     const clang::CXXRecordDecl* optional,
     const clang::CXXRecordDecl* gc_type) {
   ReportDiagnostic(expr->getBeginLoc(), diag_optional_new_expr_used_with_gc_)
+      << optional << gc_type << expr->getSourceRange();
+}
+
+void DiagnosticsReporter::RawPtrFieldUsedWithGC(
+    const clang::FieldDecl* field,
+    const clang::CXXRecordDecl* optional,
+    const clang::CXXRecordDecl* gc_type) {
+  ReportDiagnostic(field->getBeginLoc(), diag_raw_ptr_field_used_with_gc_)
+      << optional << gc_type << field->getSourceRange();
+}
+
+void DiagnosticsReporter::RawPtrNewExprUsedWithGC(
+    const clang::Expr* expr,
+    const clang::CXXRecordDecl* optional,
+    const clang::CXXRecordDecl* gc_type) {
+  ReportDiagnostic(expr->getBeginLoc(), diag_raw_ptr_new_expr_used_with_gc_)
       << optional << gc_type << expr->getSourceRange();
 }
 

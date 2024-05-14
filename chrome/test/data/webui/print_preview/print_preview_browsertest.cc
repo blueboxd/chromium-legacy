@@ -84,6 +84,13 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, PinSettingsTest) {
 }
 #endif
 
+// Test is flaky on LaCros, see crbug.com/328690296
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+IN_PROC_BROWSER_TEST_F(PrintPreviewTest, SearchableDropDownCrosTest) {
+  RunTest("print_preview/searchable_drop_down_cros_test.js", "mocha.run()");
+}
+#endif
+
 IN_PROC_BROWSER_TEST_F(PrintPreviewTest, SelectMixinTest) {
   RunTest("print_preview/select_mixin_test.js", "mocha.run()");
 }
@@ -664,6 +671,11 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewPrinterSetupInfoCrosTest,
   RunTestCase("DoNotShowManagePrinters");
 }
 
+IN_PROC_BROWSER_TEST_F(PrintPreviewPrinterSetupInfoCrosTest,
+                       HideIllustrationForSmallWindow) {
+  RunTestCase("HideIllustrationForSmallWindow");
+}
+
 class PrintPreviewPrintServerStoreTest : public PrintPreviewBrowserTest {
  protected:
   void RunTestCase(const std::string& testCase) {
@@ -1235,6 +1247,11 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewPrinterStatusTest, StatusTextClass_FlagOff) {
 
 IN_PROC_BROWSER_TEST_F(PrintPreviewPrinterStatusTest, StatusTextClass_FlagOn) {
   RunTestCase("StatusTextClass_FlagOn");
+}
+
+IN_PROC_BROWSER_TEST_F(PrintPreviewPrinterStatusTest,
+                       OverrideStatusForPrinterSetupInfo) {
+  RunTestCase("OverrideStatusForPrinterSetupInfo");
 }
 
 class PrintPreviewDestinationDropdownCrosTest : public PrintPreviewBrowserTest {

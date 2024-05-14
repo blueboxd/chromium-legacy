@@ -7,6 +7,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api_helpers.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -14,8 +16,8 @@
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/service_worker_test_helpers.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/service_worker/service_worker_task_queue.h"
 #include "extensions/browser/service_worker/service_worker_test_utils.h"
-#include "extensions/browser/service_worker_task_queue.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -600,6 +602,9 @@ INSTANTIATE_TEST_SUITE_P(
 
 // TODO(crbug.com/1467015): Create test for event dispatching that uses the
 // `EventRouter::DispatchEventToSender()` event flow.
+
+// TODO(crbug.com/40072982): Test that kBadRequestId no longer kills the service
+// worker renderer with a test that mimics receiving a stale ack to the browser.
 
 }  // namespace
 

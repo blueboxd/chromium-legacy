@@ -24,6 +24,8 @@ namespace ash {
 
 class PillButton;
 class PineContextMenuModel;
+class PineItemsContainerView;
+class PineScreenshotIconRowView;
 
 class ASH_EXPORT PineContentsView : public views::BoxLayoutView {
   METADATA_HEADER(PineContentsView, views::BoxLayoutView)
@@ -34,14 +36,11 @@ class ASH_EXPORT PineContentsView : public views::BoxLayoutView {
   PineContentsView& operator=(const PineContentsView&) = delete;
   ~PineContentsView() override;
 
-  static std::unique_ptr<views::Widget> Create(aura::Window* root);
-
-  // TODO(sammiequon): Move this to a test api.
-  const PillButton* restore_button_for_testing() const {
-    return restore_button_for_testing_;
-  }
+  static std::unique_ptr<views::Widget> Create(
+      const gfx::Rect& grid_bounds_in_screen);
 
  private:
+  friend class PineContentsViewTestApi;
   FRIEND_TEST_ALL_PREFIXES(PineContextMenuModelTest,
                            ShowContextMenuOnSettingsButtonClicked);
 
@@ -62,7 +61,11 @@ class ASH_EXPORT PineContentsView : public views::BoxLayoutView {
   // The menu runner that is responsible for the context menu.
   std::unique_ptr<views::MenuRunner> menu_runner_;
 
+  raw_ptr<PineItemsContainerView> items_container_view_ = nullptr;
+  raw_ptr<PineScreenshotIconRowView> screenshot_icon_row_view_ = nullptr;
+
   raw_ptr<PillButton> restore_button_for_testing_ = nullptr;
+  raw_ptr<PillButton> cancel_button_for_testing_ = nullptr;
 
   base::WeakPtrFactory<PineContentsView> weak_ptr_factory_{this};
 };

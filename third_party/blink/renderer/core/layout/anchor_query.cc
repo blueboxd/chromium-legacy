@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/layout/anchor_query.h"
 
-#include "third_party/blink/renderer/core/css/calculation_expression_anchor_query_node.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/layout/anchor_query_map.h"
@@ -362,9 +361,7 @@ const LogicalAnchorQuery* AnchorEvaluatorImpl::AnchorQuery() const {
 }
 
 std::optional<LayoutUnit> AnchorEvaluatorImpl::Evaluate(
-    const CalculationExpressionNode& node) const {
-  DCHECK(node.IsAnchorQuery());
-  const auto& anchor_query = To<CalculationExpressionAnchorQueryNode>(node);
+    const class AnchorQuery& anchor_query) {
   switch (anchor_query.Type()) {
     case CSSAnchorQueryType::kAnchor:
       return EvaluateAnchor(anchor_query.AnchorSpecifier(),
@@ -480,8 +477,6 @@ std::optional<LayoutUnit> AnchorEvaluatorImpl::EvaluateAnchor(
     const AnchorSpecifierValue& anchor_specifier,
     CSSAnchorValue anchor_value,
     float percentage) const {
-  has_anchor_functions_ = true;
-
   if (!AllowAnchor()) {
     return std::nullopt;
   }
@@ -513,8 +508,6 @@ std::optional<LayoutUnit> AnchorEvaluatorImpl::EvaluateAnchor(
 std::optional<LayoutUnit> AnchorEvaluatorImpl::EvaluateAnchorSize(
     const AnchorSpecifierValue& anchor_specifier,
     CSSAnchorSizeValue anchor_size_value) const {
-  has_anchor_functions_ = true;
-
   if (!AllowAnchorSize()) {
     return std::nullopt;
   }
@@ -556,7 +549,6 @@ AnchorEvaluatorImpl::GetAdditionalFallbackBoundsRect() const {
 
 std::optional<LayoutUnit> AnchorEvaluatorImpl::GetPhysicalAnchorCenterOffset(
     bool is_y_axis) {
-  using AnchorScope = Length::AnchorScope;
   AnchorScope anchor_scope(
       is_y_axis ? AnchorScope::Mode::kTop : AnchorScope::Mode::kLeft, this);
   // Parameter `percentage` is unused for any non-percentage anchor value.

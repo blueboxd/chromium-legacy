@@ -26,7 +26,7 @@ class FormEventLoggerWeblayerAndroid;
 class AndroidAutofillManager : public AutofillManager,
                                public AutofillManager::Observer {
  public:
-  AndroidAutofillManager(AutofillDriver* driver, AutofillClient* client);
+  explicit AndroidAutofillManager(AutofillDriver* driver);
 
   AndroidAutofillManager(const AndroidAutofillManager&) = delete;
   AndroidAutofillManager& operator=(const AndroidAutofillManager&) = delete;
@@ -52,8 +52,6 @@ class AndroidAutofillManager : public AutofillManager,
       const FormData& form) override {}
 
   void Reset() override;
-  void OnContextMenuShownInField(const FormGlobalId& form_global_id,
-                                 const FieldGlobalId& field_global_id) override;
 
   void ReportAutofillWebOTPMetrics(bool used_web_otp) override {}
 
@@ -70,7 +68,7 @@ class AndroidAutofillManager : public AutofillManager,
   // triggered; this affects the security policy for cross-frame fills. See
   // AutofillDriver::FillOrPreviewForm() for further details.
   void FillOrPreviewForm(mojom::ActionPersistence action_persistence,
-                         const FormData& form,
+                         FormData form,
                          const FieldTypeGroup field_type_group,
                          const url::Origin& triggered_origin);
 

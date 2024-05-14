@@ -60,6 +60,7 @@
 #import "ios/web/common/features.h"
 #import "ios/web/public/download/download_task.h"
 #import "ios/web/public/web_client.h"
+#import "net/base/apple/url_conversions.h"
 #import "net/base/net_errors.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
@@ -129,6 +130,7 @@
         IdentityManagerFactory::GetForBrowserState(browserState));
     _mediator.SetDriveService(
         drive::DriveServiceFactory::GetForBrowserState(browserState));
+    _mediator.SetPrefService(browserState->GetPrefs());
   }
 
   _mediator.SetDownloadTask(_downloadTask);
@@ -147,6 +149,7 @@
 
 - (void)stop {
   _mediator.SetDriveService(nullptr);
+  _mediator.SetPrefService(nullptr);
   _mediator.SetIdentityManager(nullptr);
 
   if (_viewController) {
@@ -367,10 +370,14 @@
 - (void)downloadManagerViewControllerDidOpenInDriveApp:
     (UIViewController*)controller {
   CHECK(base::FeatureList::IsEnabled(kIOSSaveToDrive));
+  base::RecordAction(base::UserMetricsAction("IOSDownloadOpenInDriveApp"));
   UploadTask* uploadTask = _mediator.GetUploadTask();
   CHECK(uploadTask);
+  std::optional<GURL> openFileInDriveURL =
+      uploadTask->GetResponseLink(/* add_user_identifier= */ true);
+  CHECK(openFileInDriveURL);
   [UIApplication.sharedApplication
-                openURL:uploadTask->GetResponseLink()
+                openURL:net::NSURLWithGURL(*openFileInDriveURL)
                 options:@{UIApplicationOpenURLOptionUniversalLinksOnly : @YES}
       completionHandler:nil];
 }
@@ -412,9 +419,11 @@
 // Attempts to start the current download task, either for the first time or
 // after one or several previously failed attempts.
 - (void)tryDownload {
+  DownloadManagerTabHelper* tabHelper =
+      DownloadManagerTabHelper::FromWebState(_downloadTask->GetWebState());
   if (_downloadTask->GetErrorCode() != net::OK) {
     base::RecordAction(base::UserMetricsAction("MobileDownloadRetryDownload"));
-  } else if (_mediator.GetUploadTask() != nullptr) {
+  } else if (tabHelper->WillDownloadTaskBeSavedToDrive()) {
     base::RecordAction(
         base::UserMetricsAction("IOSDownloadStartDownloadToDrive"));
   } else {

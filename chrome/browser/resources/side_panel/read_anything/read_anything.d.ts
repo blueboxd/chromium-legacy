@@ -104,6 +104,9 @@ declare namespace chrome {
     // Returns the url of the AXNode for the provided AXNodeID.
     function getUrl(nodeId: number): string;
 
+    // Returns the alt text of the AXNode for the provided AXNodeID.
+    function getAltText(nodeId: number): string;
+
     // Returns true if the text node / element should be bolded.
     function shouldBold(nodeId: number): boolean;
 
@@ -217,7 +220,7 @@ declare namespace chrome {
 
     // Called when the side panel has finished loading and it's safe to call
     // SidePanelWebUIView::ShowUI
-    function shouldShowUI(): boolean;
+    function shouldShowUi(): boolean;
 
     ////////////////////////////////////////////////////////////////
     // Implemented in read_anything/app.ts and called by native c++.
@@ -236,6 +239,10 @@ declare namespace chrome {
     // Redraws links when the enabled state changes.
     function updateLinks(): void;
 
+    // Updates an images src attribute with a data url. The data url must have
+    // been requested first.
+    function updateImage(nodeId: number): void;
+
     // Ping that the selection has been updated.
     function updateSelection(): void;
 
@@ -250,7 +257,7 @@ declare namespace chrome {
     // Inits the AXPosition instance in ReadAnythingAppController with the
     // starting node. Currently needed to orient the AXPosition to the correct
     // position, but we should be able to remove this in the future.
-    function initAXPositionWithNode(startingNodeId: number): void;
+    function initAxPositionWithNode(startingNodeId: number): void;
 
     // Gets the starting text index for the current Read Aloud text segment
     // for the given node. nodeId should be a node returned by getCurrentText.
@@ -284,5 +291,16 @@ declare namespace chrome {
     // Gets the accessible text boundary for the given string
     function getAccessibleBoundary(text: string, maxSpeechLength: number):
         number;
+
+    // Requests the image in the form of a data url. The result will then be
+    // stored in the AXNode which can be fetched on content update.
+    function requestImageDataUrl(nodeId: number): void;
+
+    // Gets the stored image data url from the AXNode.
+    function getImageDataUrl(nodeId: number): string;
+
+    // Gets the readable name for a locale code
+    function getDisplayNameForLocale(locale: string, displayLocale: string):
+        string;
   }
 }

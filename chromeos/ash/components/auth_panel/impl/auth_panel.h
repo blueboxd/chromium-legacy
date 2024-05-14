@@ -7,7 +7,9 @@
 
 #include <vector>
 
+#include "ash/login/ui/non_accessible_view.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/callback_forward.h"
 #include "chromeos/ash/components/auth_panel/public/shared_types.h"
 #include "chromeos/ash/components/osauth/public/auth_factor_status_consumer.h"
 #include "chromeos/ash/components/osauth/public/common_types.h"
@@ -15,6 +17,7 @@
 
 namespace ash {
 
+class AuthHubConnector;
 class AuthPanelEventDispatcher;
 class AuthPanelEventDispatcherFactory;
 class AuthFactorStore;
@@ -30,13 +33,15 @@ class FactorAuthViewFactory;
 // showing UI elements for particular auth factors when their status change.
 // - Tracking selected factors, in the event where a factor can be toggled,
 // for instance, with password/pin.
-class AuthPanel : public views::View, public AuthFactorStatusConsumer {
+class AuthPanel : public NonAccessibleView, public AuthFactorStatusConsumer {
  public:
   AuthPanel(
       std::unique_ptr<FactorAuthViewFactory> view_factory,
       std::unique_ptr<AuthFactorStoreFactory> store_factory,
       std::unique_ptr<AuthPanelEventDispatcherFactory> event_dispatcher_factory,
-      auth_panel::AuthCompletionCallback on_auth_complete);
+      auth_panel::AuthCompletionCallback on_auth_complete,
+      base::RepeatingClosure on_ui_initialized,
+      AuthHubConnector* connector);
   AuthPanel(const AuthPanel&) = delete;
   AuthPanel(AuthPanel&&) = delete;
   AuthPanel& operator=(const AuthPanel&) = delete;
@@ -65,6 +70,10 @@ class AuthPanel : public views::View, public AuthFactorStatusConsumer {
   base::flat_map<AshAuthFactor, views::View*> views_;
 
   auth_panel::AuthCompletionCallback on_auth_complete_;
+
+  base::RepeatingClosure on_preferred_size_changed_;
+
+  raw_ptr<AuthHubConnector> auth_hub_connector_;
 };
 
 }  // namespace ash

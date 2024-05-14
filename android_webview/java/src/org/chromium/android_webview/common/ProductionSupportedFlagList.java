@@ -30,7 +30,6 @@ import org.chromium.media.MediaFeatures;
 import org.chromium.net.NetFeatures;
 import org.chromium.services.network.NetworkServiceFeatures;
 import org.chromium.services.tracing.TracingServiceFeatures;
-import org.chromium.ui.accessibility.AccessibilityFeatures;
 import org.chromium.ui.base.UiAndroidFeatures;
 
 /**
@@ -208,6 +207,10 @@ public final class ProductionSupportedFlagList {
                 AndroidAutofillFeatures.ANDROID_AUTOFILL_BOTTOM_SHEET_WORKAROUND_NAME,
                 "Enable the workaround for autofill bottom sheet platform bug."),
         Flag.baseFeature(
+                AndroidAutofillFeatures.ANDROID_AUTOFILL_CANCEL_SESSION_ON_NAVIGATION_NAME,
+                "Enable cancelling autofill session on a new document navigation, same frame that"
+                        + " has the form"),
+        Flag.baseFeature(
                 AndroidAutofillFeatures.ANDROID_AUTOFILL_PREFILL_REQUESTS_FOR_LOGIN_FORMS_NAME,
                 "When enabled, prefill requests are supported for login forms."),
         Flag.baseFeature(
@@ -291,11 +294,17 @@ public final class ProductionSupportedFlagList {
                 AutofillFeatures.AUTOFILL_USE_I18N_ADDRESS_MODEL,
                 "When enabled, Autofill uses the i18n version of the address model."),
         Flag.baseFeature(
+                AutofillFeatures.AUTOFILL_USE_BR_ADDRESS_MODEL,
+                "When enabled, Autofill uses a custom address model for Brazil."),
+        Flag.baseFeature(
                 AutofillFeatures.AUTOFILL_USE_DE_ADDRESS_MODEL,
                 "When enabled, Autofill uses a custom address model for Germany."),
         Flag.baseFeature(
-                AutofillFeatures.AUTOFILL_ENABLE_ZIP_ONLY_ADDRESS_FORMS,
-                "When enabled, Autofill supports forms consisting of only zip code fields."),
+                AutofillFeatures.AUTOFILL_USE_IN_ADDRESS_MODEL,
+                "When enabled, Autofill uses a custom address model for India."),
+        Flag.baseFeature(
+                AutofillFeatures.AUTOFILL_USE_MX_ADDRESS_MODEL,
+                "When enabled, Autofill uses a custom address model for Mexico."),
         Flag.baseFeature(
                 AutofillFeatures.AUTOFILL_DEFAULT_TO_CITY_AND_NUMBER,
                 "When enabled, Autofill heuristics will prioritize filling phone numbers in "
@@ -404,6 +413,9 @@ public final class ProductionSupportedFlagList {
                 "Enables support for providing an allow-list for the X-Requested-Header "
                         + "through AndroidManifest.xml meta-data."),
         Flag.baseFeature(
+                AwFeatures.WEBVIEW_REDUCE_UA_ANDROID_VERSION_DEVICE_MODEL,
+                "Enables reduce webview user-agent android version and device model."),
+        Flag.baseFeature(
                 BlinkFeatures.VIEWPORT_HEIGHT_CLIENT_HINT_HEADER,
                 "Enables the use of sec-ch-viewport-height client hint."),
         Flag.baseFeature(
@@ -422,10 +434,6 @@ public final class ProductionSupportedFlagList {
                 BlinkFeatures.ESTABLISH_GPU_CHANNEL_ASYNC,
                 "Enables establishing the GPU channel asnchronously when requesting a new "
                         + "layer tree frame sink."),
-        Flag.baseFeature(
-                BlinkFeatures.DECODE_SCRIPT_SOURCE_OFF_THREAD,
-                "If enabled, script source text will be decoded and hashed off the main"
-                        + "thread."),
         Flag.baseFeature(
                 BaseFeatures.OPTIMIZE_DATA_URLS, "Optimizes parsing and loading of data: URLs."),
         Flag.baseFeature(
@@ -475,9 +483,6 @@ public final class ProductionSupportedFlagList {
                 "Enable the use of an increased parse slice size per command buffer before"
                         + " each forced context switch."),
         Flag.baseFeature(
-                AccessibilityFeatures.ABLATE_SEND_PENDING_ACCESSIBILITY_EVENTS,
-                "Enable to increase the cost of SendPendingAccessibilityEvents"),
-        Flag.baseFeature(
                 BlinkFeatures.RUN_TEXT_INPUT_UPDATE_POST_LIFECYCLE,
                 "Runs code to update IME state at the end of a lifecycle update "
                         + "rather than the beginning."),
@@ -493,15 +498,11 @@ public final class ProductionSupportedFlagList {
                 "Switches skia to use DMSAA instead of MSAA for tile raster"
                         + " on Android GL backend."),
         Flag.baseFeature(
-                BlinkFeatures.CSS_SPELLING_GRAMMAR_ERRORS,
-                "Enables new CSS spelling and grammar features"),
-        Flag.baseFeature(
                 BlinkFeatures.WEB_RTC_INITIALIZE_ENCODER_ON_FIRST_FRAME,
                 "Initialize VideoEncodeAccelerator on the first encode."),
         Flag.baseFeature(
                 BlinkFeatures.THREADED_BODY_LOADER,
                 "If enabled, reads and decodes navigation body data off the main thread."),
-        Flag.baseFeature(BlinkFeatures.SPARSE_OBJECT_PAINT_PROPERTIES),
         Flag.baseFeature(BlinkFeatures.HIT_TEST_OPAQUENESS),
         Flag.baseFeature(CcFeatures.USE_RECORDED_BOUNDS_FOR_TILING),
         Flag.baseFeature(BlinkFeatures.DYNAMIC_SCROLL_CULL_RECT_EXPANSION),
@@ -607,9 +608,6 @@ public final class ProductionSupportedFlagList {
                 "When enabled, blocks rendering on font preloads to reduce CLS. "
                         + "See go/critical-font-analysis"),
         Flag.baseFeature(
-                SafeBrowsingFeatures.SAFE_BROWSING_SKIP_SUBRESOURCES,
-                "When enabled, Safe Browsing will skip subresources"),
-        Flag.baseFeature(
                 SafeBrowsingFeatures.SAFE_BROWSING_NEW_GMS_API_FOR_BROWSE_URL_DATABASE_CHECK,
                 "When enabled, Safe Browsing traffic will route through the new SafeBrowsing API"),
         Flag.baseFeature(
@@ -630,8 +628,6 @@ public final class ProductionSupportedFlagList {
         Flag.baseFeature(
                 BlinkFeatures.ANDROID_EXTENDED_KEYBOARD_SHORTCUTS,
                 "Enables WebView to use the extended keyboard shortcuts added for Android U"),
-        Flag.baseFeature(
-                NetFeatures.PARTITIONED_COOKIES, "Enables the Partitioned cookie attribute"),
         Flag.baseFeature(
                 NetFeatures.SUPPORT_PARTITIONED_BLOB_URL,
                 "Enables the new Blob URL implementation needed for third-party storage"
@@ -685,6 +681,12 @@ public final class ProductionSupportedFlagList {
                 ContentFeatures.QUEUE_NAVIGATIONS_WHILE_WAITING_FOR_COMMIT,
                 "If enabled, allows navigations to be queued when there is "
                         + "an existing pending commit navigation in progress."),
+        Flag.baseFeature(
+                ContentFeatures.RENDER_DOCUMENT,
+                "If enabled, same-site navigations will change RenderFrameHosts"),
+        Flag.baseFeature(
+                ContentFeatures.RENDER_DOCUMENT_COMPOSITOR_REUSE,
+                "If enabled, allows compositor to be reused on cross-RenderFrameHost navigations"),
         Flag.baseFeature("NetworkServiceCookiesHighPriorityTaskRunner"),
         Flag.baseFeature("IncreaseCoookieAccesCacheSize"),
         Flag.baseFeature("AvoidScheduleWorkDuringNativeEventProcessing"),
@@ -808,6 +810,7 @@ public final class ProductionSupportedFlagList {
         Flag.baseFeature("WebAssemblyMoreAggressiveCodeCaching"),
         Flag.baseFeature("WebAssemblyTurboshaft"),
         Flag.baseFeature("WebAssemblyTurboshaftInstructionSelection"),
+        Flag.baseFeature("WebAssemblyInlining"),
         Flag.baseFeature(
                 AwFeatures.WEBVIEW_INJECT_PLATFORM_JS_APIS,
                 "Inject platform-specific JavaScript APIs."),
@@ -815,6 +818,10 @@ public final class ProductionSupportedFlagList {
                 AwFeatures.WEBVIEW_MEDIA_INTEGRITY_API,
                 "Enable the WebView Media Integrity API. Requires injection of platform-specific"
                         + " JavaScript APIs to be enabled."),
+        Flag.baseFeature(
+                AwFeatures.WEBVIEW_MEDIA_INTEGRITY_API_BLINK_EXTENSION,
+                "Enable the WebView Media Integrity API as a Blink extension. Only works if"
+                        + " WebViewMediaIntegrityApi is disabled."),
         Flag.baseFeature(
                 "PMProcessPriorityPolicy",
                 "Controls whether the priority of renderers is controlled by the performance "
@@ -844,10 +851,10 @@ public final class ProductionSupportedFlagList {
                         + " `viz::LocalSurfaceId` from the impl thread."),
         Flag.baseFeature(
                 BaseFeatures.PARTITION_ALLOC_SCHEDULER_LOOP_QUARANTINE,
-                "Enables Partition Allocator's FreeFlags::kSchedulerLoopQuarantine"),
+                "Enables PartitionAlloc's FreeFlags::kSchedulerLoopQuarantine"),
         Flag.baseFeature(
                 BaseFeatures.PARTITION_ALLOC_ZAPPING_BY_FREE_FLAGS,
-                "Enables Partition Allocator's FreeFlags::kZap"),
+                "Enables PartitionAlloc's FreeFlags::kZap"),
         Flag.baseFeature(
                 BlinkFeatures.REGISTER_JS_SOURCE_LOCATION_BLOCKING_BF_CACHE,
                 "Starts capturing bfcache blocking details"),
@@ -887,10 +894,46 @@ public final class ProductionSupportedFlagList {
         Flag.baseFeature(
                 BlinkFeatures.BACK_FORWARD_CACHE_SEND_NOT_RESTORED_REASONS,
                 "Expose NotRestoredReasons via PerformanceNavigationTiming API."),
+        Flag.baseFeature(
+                BlinkFeatures.EVENT_TIMING_FALLBACK_TO_MODAL_DIALOG_START,
+                "Enable reporting the modal dialog start time as an alternative end time for"
+                        + " duration measurement in performance event timing."),
+        Flag.baseFeature(
+                BlinkFeatures.EVENT_TIMING_KEYPRESS_AND_COMPOSITION_INTERACTION_ID,
+                "Exposes Event Timing keyboard InteractionId of composition and keypress events."),
         Flag.baseFeature("SkipUnnecessaryThreadHopsForParseHeaders"),
         Flag.commandLine(
                 AwSwitches.WEBVIEW_FPS_COMPONENT,
                 "Enables installing the first party sets component to WebViews."),
+        Flag.commandLine(
+                AwSwitches.WEBVIEW_FORCE_DISABLE3PCS,
+                "Force disables 3rd party cookies for all apps."),
+        Flag.baseFeature(
+                "DoNotEvictOnAXLocationChange",
+                "When enabled, do not evict the bfcache entry even when AXLocationChange happens."),
+        Flag.baseFeature("PassHistogramSharedMemoryOnLaunch"),
+        Flag.baseFeature(
+                BlinkFeatures.NO_THROTTLING_VISIBLE_AGENT,
+                "Do not throttle Javascript timers to 1Hz on hidden cross-origin frames that are"
+                        + " same-agent with a visible frame."),
+        Flag.baseFeature("CreateSpareRendererOnBrowserContextCreation"),
+        Flag.baseFeature(
+                "AllowDatapipeDrainedAsBytesConsumerInBFCache",
+                "When enabled, allow pages with drained datapipe into bfcache."),
+        Flag.baseFeature(
+                AwFeatures.WEBVIEW_USE_INITIAL_NETWORK_STATE_AT_STARTUP,
+                "Use initial network state at startup"),
+        Flag.baseFeature(
+                BlinkFeatures.AUTOFILL_INCLUDE_FORM_ELEMENTS_IN_SHADOW_DOM,
+                "Extract form elements from shadow DOM"),
+        Flag.baseFeature(
+                BlinkFeatures.AUTOFILL_INCLUDE_SHADOW_DOM_IN_UNASSOCIATED_LISTED_ELEMENTS,
+                "Include elements from shadow DOM in unassociated listed elements"),
+        Flag.baseFeature("ShadowDomSupport", "Improve shadow DOM support in password manager"),
+        Flag.baseFeature("StandardCompliantNonSpecialSchemeURLParsing"),
+        Flag.baseFeature(
+                BlinkFeatures.BLINK_SCHEDULER_PRIORITIZE_NAVIGATION_IP_CS,
+                "If enabled, main frame navigation IPCs have higher priority on visible pages"),
         // Add new commandline switches and features above. The final entry should have a
         // trailing comma for cleaner diffs.
     };

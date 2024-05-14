@@ -13,9 +13,11 @@
 #include "third_party/blink/renderer/core/editing/markers/text_fragment_marker.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/highlight/highlight_registry.h"
-#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/fonts/text_fragment_paint_info.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
@@ -32,24 +34,39 @@ using HighlightPart = HighlightOverlay::HighlightPart;
 
 class HighlightOverlayTest : public PageTestBase {
  public:
-  HighlightOverlayTest() : PageTestBase() {}
+  TextPaintStyle CreatePaintStyle(Color color) {
+    return TextPaintStyle{color,   color,
+                          color,   color,
+                          2,       ::blink::mojom::blink::ColorScheme::kLight,
+                          nullptr, TextDecorationLine::kNone,
+                          color,   kPaintOrderNormal};
+  }
 };
 
 TEST_F(HighlightOverlayTest, ComputeLayers) {
-  auto* registry =
-      MakeGarbageCollected<HighlightRegistry>(*GetFrame().DomWindow());
+  SetBodyInnerHTML(R"HTML(foo)HTML");
+  Node* text = GetDocument().body()->firstChild();
+  UpdateAllLifecyclePhasesForTest();
+
   LayoutSelectionStatus selection{0, 0, SelectSoftLineBreak::kNotSelected};
   auto* none = MakeGarbageCollected<DocumentMarkerVector>();
+  const ComputedStyle& style = text->GetLayoutObject()->StyleRef();
+  TextPaintStyle text_style;
+  auto controller = std::make_unique<PaintController>();
+  GraphicsContext context(*controller);
+  PaintInfo paint_info(context, CullRect(), PaintPhase::kForeground);
 
-  EXPECT_EQ(
-      HighlightOverlay::ComputeLayers(registry, nullptr, *none, *none, *none,
-                                      *none),
-      Vector<HighlightLayer>{HighlightLayer{HighlightLayerType::kOriginating}})
+  EXPECT_EQ(HighlightOverlay::ComputeLayers(GetDocument(), text, style,
+                                            text_style, paint_info, nullptr,
+                                            *none, *none, *none, *none),
+            HeapVector<HighlightLayer>{
+                HighlightLayer{HighlightLayerType::kOriginating}})
       << "should return kOriginating when nothing is highlighted";
 
-  EXPECT_EQ(HighlightOverlay::ComputeLayers(registry, &selection, *none, *none,
-                                            *none, *none),
-            (Vector<HighlightLayer>{
+  EXPECT_EQ(HighlightOverlay::ComputeLayers(GetDocument(), text, style,
+                                            text_style, paint_info, &selection,
+                                            *none, *none, *none, *none),
+            (HeapVector<HighlightLayer>{
                 HighlightLayer{HighlightLayerType::kOriginating},
                 HighlightLayer{HighlightLayerType::kSelection},
             }))
@@ -65,9 +82,10 @@ TEST_F(HighlightOverlayTest, ComputeLayers) {
   target->push_back(MakeGarbageCollected<TextFragmentMarker>(0, 1));
   target->push_back(MakeGarbageCollected<TextFragmentMarker>(0, 1));
 
-  EXPECT_EQ(HighlightOverlay::ComputeLayers(registry, nullptr, *none, *grammar,
-                                            *spelling, *target),
-            (Vector<HighlightLayer>{
+  EXPECT_EQ(HighlightOverlay::ComputeLayers(
+                GetDocument(), text, style, text_style, paint_info, nullptr,
+                *none, *grammar, *spelling, *target),
+            (HeapVector<HighlightLayer>{
                 HighlightLayer{HighlightLayerType::kOriginating},
                 HighlightLayer{HighlightLayerType::kGrammar},
                 HighlightLayer{HighlightLayerType::kSpelling},
@@ -76,6 +94,8 @@ TEST_F(HighlightOverlayTest, ComputeLayers) {
       << "should return kGrammar + kSpelling + kTargetText no more than once "
          "each";
 
+  HighlightRegistry* registry =
+      HighlightRegistry::From(*text->GetDocument().domWindow());
   Highlight* foo = Highlight::Create(
       *MakeGarbageCollected<HeapVector<Member<AbstractRange>>>());
   Highlight* bar = Highlight::Create(
@@ -94,9 +114,10 @@ TEST_F(HighlightOverlayTest, ComputeLayers) {
       MakeGarbageCollected<CustomHighlightMarker>(0, 1, "foo", nullptr));
 
   EXPECT_EQ(
-      HighlightOverlay::ComputeLayers(registry, nullptr, *custom, *none, *none,
-                                      *none),
-      (Vector<HighlightLayer>{
+      HighlightOverlay::ComputeLayers(GetDocument(), text, style, text_style,
+                                      paint_info, nullptr, *custom, *none,
+                                      *none, *none),
+      (HeapVector<HighlightLayer>{
           HighlightLayer{HighlightLayerType::kOriginating},
           HighlightLayer{HighlightLayerType::kCustom, AtomicString("foo")},
           HighlightLayer{HighlightLayerType::kCustom, AtomicString("bar")},
@@ -109,41 +130,64 @@ TEST_F(HighlightOverlayTest, ComputeEdges) {
   // • DOM [0,3), text content [1,1)
   // • DOM [3,6), text content [1,4)
   SetBodyInnerHTML(R"HTML(<br>   foo<br>)HTML");
-  const Node* br = GetDocument().body()->childNodes()->item(0);
-  const Node* text = GetDocument().body()->childNodes()->item(1);
+  Node* br = GetDocument().body()->firstChild();
+  Node* text = br->nextSibling();
   UpdateAllLifecyclePhasesForTest();
+  auto controller = std::make_unique<PaintController>();
+  GraphicsContext context(*controller);
+  PaintInfo paint_info(context, CullRect(), PaintPhase::kForeground);
 
-  auto* registry =
-      MakeGarbageCollected<HighlightRegistry>(*GetFrame().DomWindow());
+  const ComputedStyle& br_style = br->GetLayoutObject()->StyleRef();
+  const ComputedStyle& text_style = text->GetLayoutObject()->StyleRef();
+  TextPaintStyle paint_style;
+
   TextOffsetRange originating{3, 6};
   LayoutSelectionStatus selection{1, 3, SelectSoftLineBreak::kNotSelected};
   auto* none = MakeGarbageCollected<DocumentMarkerVector>();
-  HighlightLayer originating_layer{HighlightLayerType::kOriginating};
-  HighlightLayer selection_layer{HighlightLayerType::kSelection};
-  HighlightLayer grammar_layer{HighlightLayerType::kGrammar};
-  HighlightLayer spelling_layer{HighlightLayerType::kSpelling};
-  HighlightLayer target_layer{HighlightLayerType::kTargetText};
 
-  EXPECT_EQ(HighlightOverlay::ComputeEdges(text, registry, false, originating,
+  HeapVector<HighlightLayer> layers;
+
+  layers = HighlightOverlay::ComputeLayers(GetDocument(), text, text_style,
+                                           paint_style, paint_info, nullptr,
+                                           *none, *none, *none, *none);
+  EXPECT_EQ(HighlightOverlay::ComputeEdges(text, false, originating, layers,
                                            nullptr, *none, *none, *none, *none),
             (Vector<HighlightEdge>{}))
       << "should return no edges when nothing is highlighted";
 
+  layers = HighlightOverlay::ComputeLayers(GetDocument(), text, text_style,
+                                           paint_style, paint_info, &selection,
+                                           *none, *none, *none, *none);
   EXPECT_EQ(
-      HighlightOverlay::ComputeEdges(nullptr, registry, false, originating,
+      HighlightOverlay::ComputeEdges(nullptr, false, originating, layers,
                                      &selection, *none, *none, *none, *none),
       (Vector<HighlightEdge>{
-          HighlightEdge{{1, 3}, selection_layer, HighlightEdgeType::kStart},
-          HighlightEdge{{1, 3}, selection_layer, HighlightEdgeType::kEnd},
+          HighlightEdge{{1, 3},
+                        HighlightLayerType::kSelection,
+                        1,
+                        HighlightEdgeType::kStart},
+          HighlightEdge{{1, 3},
+                        HighlightLayerType::kSelection,
+                        1,
+                        HighlightEdgeType::kEnd},
       }))
       << "should still return non-marker edges when node is nullptr";
 
+  layers = HighlightOverlay::ComputeLayers(GetDocument(), br, br_style,
+                                           paint_style, paint_info, &selection,
+                                           *none, *none, *none, *none);
   EXPECT_EQ(
-      HighlightOverlay::ComputeEdges(br, registry, false, originating,
-                                     &selection, *none, *none, *none, *none),
+      HighlightOverlay::ComputeEdges(br, false, originating, layers, &selection,
+                                     *none, *none, *none, *none),
       (Vector<HighlightEdge>{
-          HighlightEdge{{1, 3}, selection_layer, HighlightEdgeType::kStart},
-          HighlightEdge{{1, 3}, selection_layer, HighlightEdgeType::kEnd},
+          HighlightEdge{{1, 3},
+                        HighlightLayerType::kSelection,
+                        1,
+                        HighlightEdgeType::kStart},
+          HighlightEdge{{1, 3},
+                        HighlightLayerType::kSelection,
+                        1,
+                        HighlightEdgeType::kEnd},
       }))
       << "should still return non-marker edges when node is <br>";
 
@@ -156,52 +200,116 @@ TEST_F(HighlightOverlayTest, ComputeEdges) {
   spelling->push_back(MakeGarbageCollected<SpellingMarker>(4, 5, ""));
   spelling->push_back(MakeGarbageCollected<SpellingMarker>(5, 6, ""));
 
+  layers = HighlightOverlay::ComputeLayers(GetDocument(), text, text_style,
+                                           paint_style, paint_info, &selection,
+                                           *none, *grammar, *spelling, *target);
   EXPECT_EQ(
-      HighlightOverlay::ComputeEdges(text, registry, false, originating,
+      HighlightOverlay::ComputeEdges(text, false, originating, layers,
                                      &selection, *none, *grammar, *spelling,
                                      *target),
       (Vector<HighlightEdge>{
-          HighlightEdge{{1, 2}, grammar_layer, HighlightEdgeType::kStart},
-          HighlightEdge{{1, 3}, selection_layer, HighlightEdgeType::kStart},
-          HighlightEdge{{1, 2}, grammar_layer, HighlightEdgeType::kEnd},
-          HighlightEdge{{2, 3}, grammar_layer, HighlightEdgeType::kStart},
-          HighlightEdge{{2, 3}, spelling_layer, HighlightEdgeType::kStart},
-          HighlightEdge{{2, 3}, target_layer, HighlightEdgeType::kStart},
-          HighlightEdge{{2, 3}, grammar_layer, HighlightEdgeType::kEnd},
-          HighlightEdge{{2, 3}, spelling_layer, HighlightEdgeType::kEnd},
-          HighlightEdge{{2, 3}, target_layer, HighlightEdgeType::kEnd},
-          HighlightEdge{{1, 3}, selection_layer, HighlightEdgeType::kEnd},
-          HighlightEdge{{3, 4}, spelling_layer, HighlightEdgeType::kStart},
-          HighlightEdge{{3, 4}, spelling_layer, HighlightEdgeType::kEnd},
+          HighlightEdge{{1, 2},
+                        HighlightLayerType::kGrammar,
+                        1,
+                        HighlightEdgeType::kStart},
+          HighlightEdge{{1, 3},
+                        HighlightLayerType::kSelection,
+                        4,
+                        HighlightEdgeType::kStart},
+          HighlightEdge{
+              {1, 2}, HighlightLayerType::kGrammar, 1, HighlightEdgeType::kEnd},
+          HighlightEdge{{2, 3},
+                        HighlightLayerType::kGrammar,
+                        1,
+                        HighlightEdgeType::kStart},
+          HighlightEdge{{2, 3},
+                        HighlightLayerType::kSpelling,
+                        2,
+                        HighlightEdgeType::kStart},
+          HighlightEdge{{2, 3},
+                        HighlightLayerType::kTargetText,
+                        3,
+                        HighlightEdgeType::kStart},
+          HighlightEdge{
+              {2, 3}, HighlightLayerType::kGrammar, 1, HighlightEdgeType::kEnd},
+          HighlightEdge{{2, 3},
+                        HighlightLayerType::kSpelling,
+                        2,
+                        HighlightEdgeType::kEnd},
+          HighlightEdge{{2, 3},
+                        HighlightLayerType::kTargetText,
+                        3,
+                        HighlightEdgeType::kEnd},
+          HighlightEdge{{1, 3},
+                        HighlightLayerType::kSelection,
+                        4,
+                        HighlightEdgeType::kEnd},
+          HighlightEdge{{3, 4},
+                        HighlightLayerType::kSpelling,
+                        2,
+                        HighlightEdgeType::kStart},
+          HighlightEdge{{3, 4},
+                        HighlightLayerType::kSpelling,
+                        2,
+                        HighlightEdgeType::kEnd},
       }))
       << "should return edges in correct order";
 
   TextOffsetRange originating2{4, 5};
 
   EXPECT_EQ(
-      HighlightOverlay::ComputeEdges(text, registry, false, originating2,
+      HighlightOverlay::ComputeEdges(text, false, originating2, layers,
                                      &selection, *none, *grammar, *spelling,
                                      *target),
       (Vector<HighlightEdge>{
-          HighlightEdge{{1, 3}, selection_layer, HighlightEdgeType::kStart},
-          HighlightEdge{{2, 3}, grammar_layer, HighlightEdgeType::kStart},
-          HighlightEdge{{2, 3}, spelling_layer, HighlightEdgeType::kStart},
-          HighlightEdge{{2, 3}, target_layer, HighlightEdgeType::kStart},
-          HighlightEdge{{2, 3}, grammar_layer, HighlightEdgeType::kEnd},
-          HighlightEdge{{2, 3}, spelling_layer, HighlightEdgeType::kEnd},
-          HighlightEdge{{2, 3}, target_layer, HighlightEdgeType::kEnd},
-          HighlightEdge{{1, 3}, selection_layer, HighlightEdgeType::kEnd},
+          HighlightEdge{{1, 3},
+                        HighlightLayerType::kSelection,
+                        4,
+                        HighlightEdgeType::kStart},
+          HighlightEdge{{2, 3},
+                        HighlightLayerType::kGrammar,
+                        1,
+                        HighlightEdgeType::kStart},
+          HighlightEdge{{2, 3},
+                        HighlightLayerType::kSpelling,
+                        2,
+                        HighlightEdgeType::kStart},
+          HighlightEdge{{2, 3},
+                        HighlightLayerType::kTargetText,
+                        3,
+                        HighlightEdgeType::kStart},
+          HighlightEdge{
+              {2, 3}, HighlightLayerType::kGrammar, 1, HighlightEdgeType::kEnd},
+          HighlightEdge{{2, 3},
+                        HighlightLayerType::kSpelling,
+                        2,
+                        HighlightEdgeType::kEnd},
+          HighlightEdge{{2, 3},
+                        HighlightLayerType::kTargetText,
+                        3,
+                        HighlightEdgeType::kEnd},
+          HighlightEdge{{1, 3},
+                        HighlightLayerType::kSelection,
+                        4,
+                        HighlightEdgeType::kEnd},
       }))
       << "should skip edge pairs that are completely outside fragment";
 }
 
 TEST_F(HighlightOverlayTest, ComputeParts) {
   SetBodyInnerHTML(R"HTML(brown fxo oevr lazy dgo today)HTML");
-  const Node* node = GetDocument().body()->childNodes()->item(0);
+  Node* node = GetDocument().body()->firstChild();
   UpdateAllLifecyclePhasesForTest();
 
-  auto* registry =
-      MakeGarbageCollected<HighlightRegistry>(*GetFrame().DomWindow());
+  auto controller = std::make_unique<PaintController>();
+  GraphicsContext context(*controller);
+  PaintInfo paint_info(context, CullRect(), PaintPhase::kForeground);
+
+  const ComputedStyle& text_style = node->GetLayoutObject()->StyleRef();
+  TextPaintStyle paint_style;
+
+  HighlightRegistry* registry =
+      HighlightRegistry::From(*node->GetDocument().domWindow());
   auto* none = MakeGarbageCollected<DocumentMarkerVector>();
   auto* custom = MakeGarbageCollected<DocumentMarkerVector>();
   auto* grammar = MakeGarbageCollected<DocumentMarkerVector>();
@@ -214,12 +322,6 @@ TEST_F(HighlightOverlayTest, ComputeParts) {
   registry->SetForTesting(AtomicString("foo"), foo_highlight);
   registry->SetForTesting(AtomicString("bar"), bar_highlight);
 
-  HighlightLayer orig{HighlightLayerType::kOriginating};
-  HighlightLayer foo{HighlightLayerType::kCustom, AtomicString("foo")};
-  HighlightLayer bar{HighlightLayerType::kCustom, AtomicString("bar")};
-  HighlightLayer spel{HighlightLayerType::kSpelling};
-  HighlightLayer targ{HighlightLayerType::kTargetText};
-  HighlightLayer sele{HighlightLayerType::kSelection};
   TextFragmentPaintInfo originating{"", 0, 25};
   TextOffsetRange originating_dom_offsets{0, 25};
   custom->push_back(
@@ -232,8 +334,61 @@ TEST_F(HighlightOverlayTest, ComputeParts) {
   target->push_back(MakeGarbageCollected<TextFragmentMarker>(15, 23));
   LayoutSelectionStatus selection{13, 19, SelectSoftLineBreak::kNotSelected};
 
-  Vector<HighlightLayer> layers = HighlightOverlay::ComputeLayers(
-      registry, &selection, *custom, *grammar, *spelling, *target);
+  HeapVector<HighlightLayer> layers = HighlightOverlay::ComputeLayers(
+      GetDocument(), node, text_style, paint_style, paint_info, &selection,
+      *custom, *grammar, *spelling, *target);
+
+  // Set up paint styles for each layer
+  Color originating_color(0, 0, 0);
+  HighlightStyleUtils::HighlightColorPropertySet originating_current_colors;
+  HighlightStyleUtils::HighlightTextPaintStyle originating_text_style{
+      CreatePaintStyle(originating_color), originating_color,
+      originating_current_colors};
+  layers[0].text_style = originating_text_style;
+
+  Color foo_color(0, 0, 1);
+  HighlightStyleUtils::HighlightColorPropertySet foo_current_colors;
+  HighlightStyleUtils::HighlightTextPaintStyle foo_text_style{
+      CreatePaintStyle(foo_color), foo_color, foo_current_colors};
+  layers[1].text_style = foo_text_style;
+
+  Color bar_color(0, 0, 2);
+  HighlightStyleUtils::HighlightColorPropertySet bar_current_colors{
+      HighlightStyleUtils::HighlightColorProperty::kCurrentColor,
+      HighlightStyleUtils::HighlightColorProperty::kFillColor,
+      HighlightStyleUtils::HighlightColorProperty::kStrokeColor,
+      HighlightStyleUtils::HighlightColorProperty::kEmphasisColor,
+      HighlightStyleUtils::HighlightColorProperty::kSelectionDecorationColor,
+      HighlightStyleUtils::HighlightColorProperty::kTextDecorationColor};
+  HighlightStyleUtils::HighlightTextPaintStyle bar_text_style{
+      CreatePaintStyle(bar_color), bar_color, bar_current_colors};
+  layers[2].text_style = bar_text_style;
+
+  Color spelling_color(0, 0, 3);
+  HighlightStyleUtils::HighlightColorPropertySet spelling_current_colors;
+  HighlightStyleUtils::HighlightTextPaintStyle spelling_text_style{
+      CreatePaintStyle(spelling_color), spelling_color,
+      spelling_current_colors};
+  layers[3].text_style = spelling_text_style;
+
+  Color target_color(0, 0, 4);
+  HighlightStyleUtils::HighlightColorPropertySet target_current_colors{
+      HighlightStyleUtils::HighlightColorProperty::kCurrentColor,
+      HighlightStyleUtils::HighlightColorProperty::kFillColor,
+      HighlightStyleUtils::HighlightColorProperty::kStrokeColor,
+      HighlightStyleUtils::HighlightColorProperty::kEmphasisColor,
+      HighlightStyleUtils::HighlightColorProperty::kSelectionDecorationColor,
+      HighlightStyleUtils::HighlightColorProperty::kTextDecorationColor};
+  HighlightStyleUtils::HighlightTextPaintStyle target_text_style{
+      CreatePaintStyle(target_color), target_color, target_current_colors};
+  layers[4].text_style = target_text_style;
+
+  Color selection_color(0, 0, 5);
+  HighlightStyleUtils::HighlightColorPropertySet selection_current_colors;
+  HighlightStyleUtils::HighlightTextPaintStyle selection_text_style{
+      CreatePaintStyle(selection_color), selection_color,
+      selection_current_colors};
+  layers[5].text_style = selection_text_style;
 
   // 0     6   10   15   20  24
   // brown fxo oevr lazy dgo today
@@ -245,16 +400,16 @@ TEST_F(HighlightOverlayTest, ComputeParts) {
   //                                  ::selection, not active
 
   Vector<HighlightEdge> edges = HighlightOverlay::ComputeEdges(
-      node, registry, false, originating_dom_offsets, nullptr, *none, *none,
+      node, false, originating_dom_offsets, layers, nullptr, *none, *none,
       *none, *none);
 
   // clang-format off
   EXPECT_EQ(HighlightOverlay::ComputeParts(originating, layers, edges),
             (Vector<HighlightPart>{
-                HighlightPart{orig, {0,25}, {{orig,{0,25}}}},
+                HighlightPart{HighlightLayerType::kOriginating, 0, {0,25}, originating_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color}}},
             }))
       << "should return correct kOriginating part when nothing is highlighted";
-  // clang-format on
 
   // 0     6   10   15   20  24
   // brown fxo oevr lazy dgo today
@@ -266,25 +421,52 @@ TEST_F(HighlightOverlayTest, ComputeParts) {
   //              [    ]              ::selection, changed!
 
   Vector<HighlightEdge> edges2 = HighlightOverlay::ComputeEdges(
-      node, registry, false, originating_dom_offsets, &selection, *custom,
+      node, false, originating_dom_offsets, layers, &selection, *custom,
       *grammar, *spelling, *target);
 
-  // clang-format off
   EXPECT_EQ(HighlightOverlay::ComputeParts(originating, layers, edges2),
             (Vector<HighlightPart>{
-                HighlightPart{foo, {0,6}, {{orig,{0,25}}, {foo,{0,14}}}},
-                HighlightPart{spel, {6,9}, {{orig,{0,25}}, {foo,{0,14}}, {spel,{6,9}}}},
-                HighlightPart{foo, {9,10}, {{orig,{0,25}}, {foo,{0,14}}}},
-                HighlightPart{spel, {10,13}, {{orig,{0,25}}, {foo,{0,14}}, {bar,{10,19}}, {spel,{10,14}}}},
-                HighlightPart{sele, {13,14}, {{orig,{0,25}}, {foo,{0,14}}, {bar,{10,19}}, {spel,{10,14}}, {sele,{13,19}}}},
-                HighlightPart{sele, {14,15}, {{orig,{0,25}}, {bar,{10,19}}, {sele,{13,19}}}},
-                HighlightPart{sele, {15,19}, {{orig,{0,25}}, {bar,{10,19}}, {targ,{15,23}}, {sele,{13,19}}}},
-                HighlightPart{targ, {19,20}, {{orig,{0,25}}, {targ,{15,23}}}},
-                HighlightPart{targ, {20,23}, {{orig,{0,25}}, {spel,{20,23}}, {targ,{15,23}}}},
-                HighlightPart{orig, {23,25}, {{orig,{0,25}}}},
+                HighlightPart{HighlightLayerType::kCustom, 1, {0,6}, foo_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color},
+                               {HighlightLayerType::kCustom, 1, {0,14}, foo_color}}},
+                HighlightPart{HighlightLayerType::kSpelling, 3, {6,9}, spelling_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color},
+                               {HighlightLayerType::kCustom, 1, {0,14}, foo_color},
+                               {HighlightLayerType::kSpelling, 3, {6,9}, spelling_color}}},
+                HighlightPart{HighlightLayerType::kCustom, 1, {9,10}, foo_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color},
+                               {HighlightLayerType::kCustom, 1, {0,14}, foo_color}}},
+                HighlightPart{HighlightLayerType::kSpelling, 3, {10,13}, spelling_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color},
+                               {HighlightLayerType::kCustom, 1, {0,14}, foo_color},
+                               {HighlightLayerType::kCustom, 2, {10,19}, foo_color},
+                               {HighlightLayerType::kSpelling, 3, {10,14}, spelling_color}}},
+                HighlightPart{HighlightLayerType::kSelection, 5, {13,14}, selection_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color},
+                               {HighlightLayerType::kCustom, 1, {0,14}, foo_color},
+                               {HighlightLayerType::kCustom, 2, {10,19}, foo_color},
+                               {HighlightLayerType::kSpelling, 3, {10,14}, spelling_color},
+                               {HighlightLayerType::kSelection, 5, {13,19}, selection_color}}},
+                HighlightPart{HighlightLayerType::kSelection, 5, {14,15}, selection_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color},
+                               {HighlightLayerType::kCustom, 2, {10,19}, originating_color},
+                               {HighlightLayerType::kSelection, 5, {13,19}, selection_color}}},
+                HighlightPart{HighlightLayerType::kSelection, 5, {15,19}, selection_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color},
+                               {HighlightLayerType::kCustom, 2, {10,19}, originating_color},
+                               {HighlightLayerType::kTargetText, 4, {15,23}, originating_color},
+                               {HighlightLayerType::kSelection, 5, {13,19}, selection_color}}},
+                HighlightPart{HighlightLayerType::kTargetText, 4, {19,20}, originating_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color},
+                               {HighlightLayerType::kTargetText, 4, {15,23}, originating_color}}},
+                HighlightPart{HighlightLayerType::kTargetText, 4, {20,23}, spelling_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color},
+                               {HighlightLayerType::kSpelling, 3, {20,23}, spelling_color},
+                               {HighlightLayerType::kTargetText, 4, {15,23}, spelling_color}}},
+                HighlightPart{HighlightLayerType::kOriginating, 0, {23,25}, originating_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color}}},
             }))
       << "should return correct parts given several active highlights";
-  // clang-format on
 
   // 0     6   10   15   20  24
   // brown fxo oevr lazy dgo today
@@ -297,25 +479,51 @@ TEST_F(HighlightOverlayTest, ComputeParts) {
 
   custom->at(0)->SetStartOffset(6);
   Vector<HighlightEdge> edges3 = HighlightOverlay::ComputeEdges(
-      node, registry, false, originating_dom_offsets, &selection, *custom,
+      node, false, originating_dom_offsets, layers, &selection, *custom,
       *grammar, *spelling, *target);
 
-  // clang-format off
   EXPECT_EQ(HighlightOverlay::ComputeParts(originating, layers, edges3),
             (Vector<HighlightPart>{
-                HighlightPart{orig, {0,6}, {{orig,{0,25}}}},
-                HighlightPart{spel, {6,9}, {{orig,{0,25}}, {foo,{6,14}}, {spel,{6,9}}}},
-                HighlightPart{foo, {9,10}, {{orig,{0,25}}, {foo,{6,14}}}},
-                HighlightPart{spel, {10,13}, {{orig,{0,25}}, {foo,{6,14}}, {bar,{10,19}}, {spel,{10,14}}}},
-                HighlightPart{sele, {13,14}, {{orig,{0,25}}, {foo,{6,14}}, {bar,{10,19}}, {spel,{10,14}}, {sele,{13,19}}}},
-                HighlightPart{sele, {14,15}, {{orig,{0,25}}, {bar,{10,19}}, {sele,{13,19}}}},
-                HighlightPart{sele, {15,19}, {{orig,{0,25}}, {bar,{10,19}}, {targ,{15,23}}, {sele,{13,19}}}},
-                HighlightPart{targ, {19,20}, {{orig,{0,25}}, {targ,{15,23}}}},
-                HighlightPart{targ, {20,23}, {{orig,{0,25}}, {spel,{20,23}}, {targ,{15,23}}}},
-                HighlightPart{orig, {23,25}, {{orig,{0,25}}}},
+                HighlightPart{HighlightLayerType::kOriginating, 0, {0,6}, originating_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color}}},
+                HighlightPart{HighlightLayerType::kSpelling, 3, {6,9}, spelling_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color},
+                               {HighlightLayerType::kCustom, 1, {6,14}, foo_color},
+                               {HighlightLayerType::kSpelling, 3, {6,9}, spelling_color}}},
+                HighlightPart{HighlightLayerType::kCustom, 1, {9,10}, foo_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color},
+                               {HighlightLayerType::kCustom, 1, {6,14}, foo_color}}},
+                HighlightPart{HighlightLayerType::kSpelling, 3, {10,13}, spelling_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color},
+                               {HighlightLayerType::kCustom, 1, {6,14}, foo_color},
+                               {HighlightLayerType::kCustom, 2, {10,19}, foo_color},
+                               {HighlightLayerType::kSpelling, 3, {10,14}, spelling_color}}},
+                HighlightPart{HighlightLayerType::kSelection, 5, {13,14}, selection_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color},
+                               {HighlightLayerType::kCustom, 1, {6,14}, foo_color},
+                               {HighlightLayerType::kCustom, 2, {10,19}, foo_color},
+                               {HighlightLayerType::kSpelling, 3, {10,14}, spelling_color},
+                               {HighlightLayerType::kSelection, 5, {13,19}, selection_color}}},
+                HighlightPart{HighlightLayerType::kSelection, 5, {14,15}, selection_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color},
+                               {HighlightLayerType::kCustom, 2, {10,19}, originating_color},
+                               {HighlightLayerType::kSelection, 5, {13,19}, selection_color}}},
+                HighlightPart{HighlightLayerType::kSelection, 5, {15,19}, selection_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color},
+                               {HighlightLayerType::kCustom, 2, {10,19}, originating_color},
+                               {HighlightLayerType::kTargetText, 4, {15,23}, originating_color},
+                               {HighlightLayerType::kSelection, 5, {13,19}, selection_color}}},
+                HighlightPart{HighlightLayerType::kTargetText, 4, {19,20}, originating_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color},
+                               {HighlightLayerType::kTargetText, 4, {15,23}, originating_color}}},
+                HighlightPart{HighlightLayerType::kTargetText, 4, {20,23}, spelling_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color},
+                               {HighlightLayerType::kSpelling, 3, {20,23}, spelling_color},
+                               {HighlightLayerType::kTargetText, 4, {15,23}, spelling_color}}},
+                HighlightPart{HighlightLayerType::kOriginating, 0, {23,25}, originating_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {0,25}, originating_color}}},
             }))
       << "correct when first edge starts after start of originating fragment";
-  // clang-format on
 
   // 0     6   10   15   20  24
   // brown fxo oevr lazy dgo today
@@ -329,21 +537,40 @@ TEST_F(HighlightOverlayTest, ComputeParts) {
   TextFragmentPaintInfo originating2{"", 8, 18};
   TextOffsetRange originating2_dom_offsets{8, 18};
   Vector<HighlightEdge> edges4 = HighlightOverlay::ComputeEdges(
-      node, registry, false, originating2_dom_offsets, &selection, *custom,
+      node, false, originating2_dom_offsets, layers, &selection, *custom,
       *grammar, *spelling, *target);
 
-  // clang-format off
   EXPECT_EQ(HighlightOverlay::ComputeParts(originating2, layers, edges4),
             (Vector<HighlightPart>{
-                HighlightPart{spel, {8,9}, {{orig,{8,18}}, {foo,{8,14}}, {spel,{8,9}}}},
-                HighlightPart{foo, {9,10}, {{orig,{8,18}}, {foo,{8,14}}}},
-                HighlightPart{spel, {10,13}, {{orig,{8,18}}, {foo,{8,14}}, {bar,{10,18}}, {spel,{10,14}}}},
-                HighlightPart{sele, {13,14}, {{orig,{8,18}}, {foo,{8,14}}, {bar,{10,18}}, {spel,{10,14}}, {sele,{13,18}}}},
-                HighlightPart{sele, {14,15}, {{orig,{8,18}}, {bar,{10,18}}, {sele,{13,18}}}},
-                HighlightPart{sele, {15,18}, {{orig,{8,18}}, {bar,{10,18}}, {targ,{15,18}}, {sele,{13,18}}}},
+                HighlightPart{HighlightLayerType::kSpelling, 3, {8,9}, spelling_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {8,18}, originating_color},
+                               {HighlightLayerType::kCustom, 1, {8,14}, foo_color},
+                               {HighlightLayerType::kSpelling, 3, {8,9}, spelling_color}}},
+                HighlightPart{HighlightLayerType::kCustom, 1, {9,10}, foo_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {8,18}, originating_color},
+                               {HighlightLayerType::kCustom, 1, {8,14}, foo_color}}},
+                HighlightPart{HighlightLayerType::kSpelling, 3, {10,13}, spelling_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {8,18}, originating_color},
+                               {HighlightLayerType::kCustom, 1, {8,14}, foo_color},
+                               {HighlightLayerType::kCustom, 2, {10,18}, foo_color},
+                               {HighlightLayerType::kSpelling, 3, {10,14}, spelling_color}}},
+                HighlightPart{HighlightLayerType::kSelection, 5, {13,14}, selection_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {8,18}, originating_color},
+                               {HighlightLayerType::kCustom, 1, {8,14}, foo_color},
+                               {HighlightLayerType::kCustom, 2, {10,18}, foo_color},
+                               {HighlightLayerType::kSpelling, 3, {10,14}, spelling_color},
+                               {HighlightLayerType::kSelection, 5, {13,18}, selection_color}}},
+                HighlightPart{HighlightLayerType::kSelection, 5, {14,15}, selection_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {8,18}, originating_color},
+                               {HighlightLayerType::kCustom, 2, {10,18}, originating_color},
+                               {HighlightLayerType::kSelection, 5, {13,18}, selection_color}}},
+                HighlightPart{HighlightLayerType::kSelection, 5, {15,18}, selection_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {8,18}, originating_color},
+                               {HighlightLayerType::kCustom, 2, {10,18}, originating_color},
+                               {HighlightLayerType::kTargetText, 4, {15,18}, originating_color},
+                               {HighlightLayerType::kSelection, 5, {13,18}, selection_color}}},
             }))
       << "should clamp result to originating fragment offsets";
-  // clang-format on
 
   // 0     6   10   15   20  24
   // brown fxo oevr lazy dgo today
@@ -355,19 +582,23 @@ TEST_F(HighlightOverlayTest, ComputeParts) {
   //                                  ::selection, changed!
 
   Vector<HighlightEdge> edges5 = HighlightOverlay::ComputeEdges(
-      node, registry, false, originating2_dom_offsets, nullptr, *none, *none,
+      node, false, originating2_dom_offsets, layers, nullptr, *none, *none,
       *spelling, *none);
 
-  // clang-format off
   EXPECT_EQ(HighlightOverlay::ComputeParts(originating2, layers, edges5),
             (Vector<HighlightPart>{
-                HighlightPart{spel, {8,9}, {{orig,{8,18}}, {spel,{8,9}}}},
-                HighlightPart{orig, {9,10}, {{orig,{8,18}}}},
-                HighlightPart{spel, {10,14}, {{orig,{8,18}}, {spel,{10,14}}}},
-                HighlightPart{orig, {14,18}, {{orig,{8,18}}}},
+                HighlightPart{HighlightLayerType::kSpelling, 3, {8,9}, spelling_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {8,18}, originating_color},
+                               {HighlightLayerType::kSpelling, 3, {8,9}, spelling_color}}},
+                HighlightPart{HighlightLayerType::kOriginating, 0, {9,10}, originating_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {8,18}, originating_color}}},
+                HighlightPart{HighlightLayerType::kSpelling, 3, {10,14}, spelling_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {8,18}, originating_color},
+                               {HighlightLayerType::kSpelling, 3, {10,14}, spelling_color}}},
+                HighlightPart{HighlightLayerType::kOriginating, 0, {14,18}, originating_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {8,18}, originating_color}}},
             }))
       << "should not crash if there is a gap in active layers";
-  // clang-format on
 
   // 0     6   10   15   20  24
   // brown fxo oevr lazy dgo today
@@ -381,16 +612,15 @@ TEST_F(HighlightOverlayTest, ComputeParts) {
   TextFragmentPaintInfo originating3{"", 1, 4};
   TextOffsetRange originating3_dom_offsets{1, 4};
   Vector<HighlightEdge> edges6 = HighlightOverlay::ComputeEdges(
-      node, registry, false, originating3_dom_offsets, &selection, *custom,
+      node, false, originating3_dom_offsets, layers, &selection, *custom,
       *grammar, *spelling, *target);
 
-  // clang-format off
   EXPECT_EQ(HighlightOverlay::ComputeParts(originating3, layers, edges6),
             (Vector<HighlightPart>{
-                HighlightPart{orig, {1,4}, {{orig,{1,4}}}},
+                HighlightPart{HighlightLayerType::kOriginating, 0, {1,4}, originating_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {1,4}, originating_color}}},
             }))
       << "correct when first edge starts after end of originating fragment";
-  // clang-format on
 
   // 0     6   10   15   20  24
   // brown fxo oevr lazy dgo today
@@ -404,16 +634,15 @@ TEST_F(HighlightOverlayTest, ComputeParts) {
   TextFragmentPaintInfo originating4{"", 25, 28};
   TextOffsetRange originating4_dom_offsets{25, 28};
   Vector<HighlightEdge> edges7 = HighlightOverlay::ComputeEdges(
-      node, registry, false, originating4_dom_offsets, &selection, *custom,
+      node, false, originating4_dom_offsets, layers, &selection, *custom,
       *grammar, *spelling, *target);
 
-  // clang-format off
   EXPECT_EQ(HighlightOverlay::ComputeParts(originating4, layers, edges7),
             (Vector<HighlightPart>{
-                HighlightPart{orig, {25,28}, {{orig,{25,28}}}},
+                HighlightPart{HighlightLayerType::kOriginating, 0, {25,28}, originating_text_style.style,
+                              {{HighlightLayerType::kOriginating, 0, {25,28}, originating_color}}},
             }))
       << "correct when last edge ends before start of originating fragment";
-  // clang-format on
 }
 
 }  // namespace blink

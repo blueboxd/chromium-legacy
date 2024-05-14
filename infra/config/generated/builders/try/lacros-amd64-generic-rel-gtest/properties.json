@@ -1,7 +1,8 @@
 {
   "$build/chromium_orchestrator": {
     "compilator": "lacros-amd64-generic-rel-gtest-compilator",
-    "compilator_watcher_git_revision": "27c191f304c8d7329a393d8a69020fc14032c3c3"
+    "compilator_watcher_git_revision": "27c191f304c8d7329a393d8a69020fc14032c3c3",
+    "propagate_properties_to_compilator": true
   },
   "$build/chromium_tests_builder_config": {
     "builder_config": {
@@ -14,7 +15,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "lacros-amd64-generic-rel",
-              "project": "chromium"
+              "project": "chromium-m124"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-chromiumos-archive",
@@ -49,7 +50,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "lacros-amd64-generic-rel-gtest",
-              "project": "chromium"
+              "project": "chromium-m124"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-chromiumos-archive",
@@ -78,7 +79,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "lacros-amd64-generic-rel",
-                "project": "chromium"
+                "project": "chromium-m124"
               },
               "skylab_upload_location": {
                 "gs_bucket": "chromium-ci-skylab"
@@ -91,14 +92,14 @@
         {
           "bucket": "ci",
           "builder": "lacros-amd64-generic-rel",
-          "project": "chromium"
+          "project": "chromium-m124"
         }
       ],
       "builder_ids_in_scope_for_testing": [
         {
           "bucket": "ci",
           "builder": "lacros-amd64-generic-rel-gtest",
-          "project": "chromium"
+          "project": "chromium-m124"
         }
       ]
     }
@@ -106,6 +107,12 @@
   "$build/flakiness": {
     "check_for_flakiness": true,
     "check_for_flakiness_with_resultdb": true
+  },
+  "$build/reclient": {
+    "instance": "rbe-chromium-untrusted",
+    "jobs": 500,
+    "metrics_project": "chromium-reclient-metrics",
+    "scandeps_server": true
   },
   "$build/siso": {
     "configs": [

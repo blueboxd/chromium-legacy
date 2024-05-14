@@ -162,6 +162,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessibleForWindow()
       override;
   std::optional<SkColor> GetBackgroundColor() override;
+  viz::SurfaceId GetFallbackSurfaceIdForTesting() const override;
 
   void TransformPointToRootSurface(gfx::PointF* point) override;
   gfx::Rect GetBoundsInRootWindow() override;
@@ -320,6 +321,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   }
 
   // RenderWidgetHostNSViewHostHelper implementation.
+  id GetAccessibilityElement() override;
   id GetRootBrowserAccessibilityElement() override;
   id GetFocusedBrowserAccessibilityElement() override;
   void SetAccessibilityWindow(NSWindow* window) override;
@@ -415,6 +417,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void StartSpeaking() override;
   void StopSpeaking() override;
   bool SyncIsSpeaking(bool* is_speaking) override;
+  void GetRenderWidgetAccessibilityToken(
+      GetRenderWidgetAccessibilityTokenCallback callback) override;
   void SyncIsSpeaking(SyncIsSpeakingCallback callback) override;
   void SetRemoteAccessibilityWindowToken(
       const std::vector<uint8_t>& window_token) override;

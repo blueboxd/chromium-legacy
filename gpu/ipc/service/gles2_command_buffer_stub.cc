@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/unsafe_shared_memory_region.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -195,8 +196,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
     // offscreen.
     auto surface_format = default_surface->GetFormat();
     surface_ = ImageTransportSurface::CreateNativeGLSurface(
-        display, weak_ptr_factory_.GetWeakPtr(), init_params.surface_handle,
-        surface_format);
+        display, init_params.surface_handle, surface_format);
     if (!surface_ || !surface_->Initialize(surface_format)) {
       surface_ = nullptr;
       LOG(ERROR) << "ContextResult::kSurfaceFailure: Failed to create surface.";
@@ -389,23 +389,12 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
   return gpu::ContextResult::kSuccess;
 }
 
-#if BUILDFLAG(IS_WIN)
-void GLES2CommandBufferStub::AddChildWindowToBrowser(
-    gpu::SurfaceHandle child_window) {
-  NOTREACHED();
-}
-#endif
-
-const gles2::FeatureInfo* GLES2CommandBufferStub::GetFeatureInfo() const {
-  return context_group_->feature_info();
-}
-
-const GpuPreferences& GLES2CommandBufferStub::GetGpuPreferences() const {
-  return context_group_->gpu_preferences();
-}
-
 MemoryTracker* GLES2CommandBufferStub::GetContextGroupMemoryTracker() const {
   return context_group_->memory_tracker();
+}
+
+base::WeakPtr<CommandBufferStub> GLES2CommandBufferStub::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void GLES2CommandBufferStub::OnGpuSwitched(

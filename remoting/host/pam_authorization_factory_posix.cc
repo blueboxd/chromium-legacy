@@ -25,6 +25,8 @@ class PamAuthorizer : public protocol::Authenticator {
   ~PamAuthorizer() override;
 
   // protocol::Authenticator:
+  protocol::CredentialsType credentials_type() const override;
+  const Authenticator& implementing_authenticator() const override;
   State state() const override;
   bool started() const override;
   RejectionReason rejection_reason() const override;
@@ -53,9 +55,20 @@ class PamAuthorizer : public protocol::Authenticator {
 
 PamAuthorizer::PamAuthorizer(
     std::unique_ptr<protocol::Authenticator> underlying)
-    : underlying_(std::move(underlying)), local_login_status_(NOT_CHECKED) {}
+    : underlying_(std::move(underlying)), local_login_status_(NOT_CHECKED) {
+  ChainStateChangeAfterAcceptedWithUnderlying(*underlying_);
+}
 
 PamAuthorizer::~PamAuthorizer() {}
+
+protocol::CredentialsType PamAuthorizer::credentials_type() const {
+  return underlying_->credentials_type();
+}
+
+const protocol::Authenticator& PamAuthorizer::implementing_authenticator()
+    const {
+  return underlying_->implementing_authenticator();
+}
 
 protocol::Authenticator::State PamAuthorizer::state() const {
   if (local_login_status_ == DISALLOWED) {

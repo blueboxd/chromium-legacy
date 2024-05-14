@@ -34,6 +34,8 @@ crosapi::mojom::EditorPanelPresetQueryCategory ToEditorPanelQueryCategory(
       return crosapi::mojom::EditorPanelPresetQueryCategory::kFormalize;
     case orca::mojom::PresetTextQueryType::kEmojify:
       return crosapi::mojom::EditorPanelPresetQueryCategory::kEmojify;
+    case orca::mojom::PresetTextQueryType::kProofread:
+      return crosapi::mojom::EditorPanelPresetQueryCategory::kProofread;
   }
 }
 
@@ -175,6 +177,31 @@ void EditorPanelManager::LogEditorMode(
 
   if (mode == crosapi::mojom::EditorPanelMode::kPromoCard) {
     logger->LogEditorState(EditorStates::kPromoCardImpression);
+  }
+}
+
+void EditorPanelManager::BindEditorObserver(
+    mojo::PendingRemote<crosapi::mojom::EditorObserver>
+        pending_observer_remote) {
+  observer_remotes_.Add(std::move(pending_observer_remote));
+}
+
+void EditorPanelManager::AddObserver(EditorPanelManager::Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void EditorPanelManager::RemoveObserver(
+    EditorPanelManager::Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void EditorPanelManager::NotifyEditorModeChanged(const EditorMode& mode) {
+  for (const mojo::Remote<crosapi::mojom::EditorObserver>& obs :
+       observer_remotes_) {
+    obs->OnEditorPanelModeChanged(GetEditorPanelMode(mode));
+  }
+  for (EditorPanelManager::Observer& obs : observers_) {
+    obs.OnEditorModeChanged(mode);
   }
 }
 

@@ -146,7 +146,7 @@ class PrerenderHostRegistryTest : public RenderViewHostImplTestHarness {
     std::move(setup_callback).Run(navigation.get());
     navigation->Start();
     NavigationRequest* navigation_request = navigation->GetNavigationHandle();
-    // Use is_potentially_prerendered_page_activation_for_testing() instead of
+    // Use is_running_potential_prerender_activation_checks() instead of
     // IsPrerenderedPageActivation() because the NavigationSimulator does not
     // proceed past CommitDeferringConditions on potential activations,
     // so IsPrerenderedPageActivation() will fail with a CHECK because
@@ -154,7 +154,7 @@ class PrerenderHostRegistryTest : public RenderViewHostImplTestHarness {
     // TODO(https://crbug.com/1239220): Fix NavigationSimulator to wait for
     // commit deferring conditions as it does throttles.
     return navigation_request
-        ->is_potentially_prerendered_page_activation_for_testing();
+        ->is_running_potential_prerender_activation_checks();
   }
 
   // Helper method to perform a prerender activation that includes specialized
@@ -202,8 +202,8 @@ class PrerenderHostRegistryTest : public RenderViewHostImplTestHarness {
             contents()->GetWeakPtr(), rfh->GetFrameToken(),
             rfh->GetFrameTreeNodeId(), rfh->GetPageUkmSourceId(),
             ui::PAGE_TRANSITION_LINK,
-            /*url_match_predicate=*/std::nullopt,
-            /*prerender_navigation_handle_callback=*/std::nullopt);
+            /*url_match_predicate=*/{},
+            /*prerender_navigation_handle_callback=*/{});
       case PreloadingTriggerType::kEmbedder:
         return PrerenderAttributes(
             url, trigger_type, embedder_histogram_suffix,
@@ -217,8 +217,8 @@ class PrerenderHostRegistryTest : public RenderViewHostImplTestHarness {
             /*initiator_ukm_id=*/ukm::kInvalidSourceId,
             ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
                                       ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-            /*url_match_predicate=*/std::nullopt,
-            /*prerender_navigation_handle_callback=*/std::nullopt);
+            /*url_match_predicate=*/{},
+            /*prerender_navigation_handle_callback=*/{});
     }
   }
 

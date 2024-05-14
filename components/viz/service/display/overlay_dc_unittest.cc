@@ -115,7 +115,7 @@ static ResourceId CreateResourceInLayerTree(
 
 ResourceId CreateResource(DisplayResourceProvider* parent_resource_provider,
                           ClientResourceProvider* child_resource_provider,
-                          ContextProvider* child_context_provider,
+                          RasterContextProvider* child_context_provider,
                           const gfx::Size& size,
                           bool is_overlay_candidate) {
   ResourceId resource_id = CreateResourceInLayerTree(
@@ -166,7 +166,7 @@ void CreateOpaqueQuadAt(DisplayResourceProvider* resource_provider,
 YUVVideoDrawQuad* CreateFullscreenCandidateYUVVideoQuad(
     DisplayResourceProvider* parent_resource_provider,
     ClientResourceProvider* child_resource_provider,
-    ContextProvider* child_context_provider,
+    RasterContextProvider* child_context_provider,
     const SharedQuadState* shared_quad_state,
     AggregatedRenderPass* render_pass) {
   bool needs_blending = false;
@@ -181,8 +181,8 @@ YUVVideoDrawQuad* CreateFullscreenCandidateYUVVideoQuad(
   overlay_quad->SetNew(
       shared_quad_state, rect, rect, needs_blending, resource_size_in_pixels,
       gfx::Rect(resource_size_in_pixels), gfx::Size(1, 1), resource_id,
-      resource_id, resource_id, resource_id, gfx::ColorSpace::CreateREC601(), 0,
-      1.0, 8, gfx::ProtectedVideoType::kClear, std::nullopt);
+      resource_id, resource_id, resource_id, gfx::ColorSpace::CreateREC601(), 8,
+      gfx::ProtectedVideoType::kClear, std::nullopt);
 
   return overlay_quad;
 }
@@ -281,7 +281,8 @@ class DCLayerOverlayTest : public testing::Test {
 TEST_F(DCLayerOverlayTest, DisableVideoOverlayIfMovingFeature) {
   InitializeOverlayProcessor();
   auto ProcessForOverlaysSingleVideoRectWithOffset =
-      [&](gfx::Vector2d video_rect_offset, bool is_hdr = false) {
+      [&](gfx::Vector2d video_rect_offset, bool is_hdr = false,
+          bool is_sdr_to_hdr = false) {
         auto pass = CreateRenderPass();
         auto* video_quad = CreateFullscreenCandidateYUVVideoQuad(
             resource_provider_.get(), child_resource_provider_.get(),
@@ -297,15 +298,13 @@ TEST_F(DCLayerOverlayTest, DisableVideoOverlayIfMovingFeature) {
           // Device has RGB10A2 overlay support.
           gl::SetDirectCompositionScaledOverlaysSupportedForTesting(true);
 
-          // Device enabled system HDR feature.
-          overlay_processor_->set_system_hdr_enabled_for_testing(true);
+          // Device has HDR-enabled display and no non-HDR-enabled display.
+          overlay_processor_
+              ->set_system_hdr_disabled_on_any_display_for_testing(false);
 
           // Device has video processor support.
           overlay_processor_->set_has_p010_video_processor_support_for_testing(
               true);
-
-          // Video playback in fullscreen mode.
-          overlay_processor_->SetIsPageFullscreen(true);
 
           // Content is 10bit P010 content.
           video_quad->bits_per_channel = 10;
@@ -319,6 +318,26 @@ TEST_F(DCLayerOverlayTest, DisableVideoOverlayIfMovingFeature) {
 
           // Content has HDR10 colorspace.
           video_quad->video_color_space = gfx::ColorSpace::CreateHDR10();
+        } else if (is_sdr_to_hdr) {
+          // Render Pass has SDR content usage.
+          pass->content_color_usage = gfx::ContentColorUsage::kSRGB;
+
+          // Content is 8bit NV12 content.
+          video_quad->bits_per_channel = 8;
+
+          // Device is not using battery power.
+          overlay_processor_->set_is_on_battery_power_for_testing(false);
+
+          // Device has at least one HDR-enabled display.
+          overlay_processor_->set_system_hdr_enabled_on_any_display_for_testing(
+              true);
+
+          // Device has video processor auto hdr support.
+          overlay_processor_
+              ->set_has_auto_hdr_video_processor_support_for_testing(true);
+
+          // Content has 709 colorspace.
+          video_quad->video_color_space = gfx::ColorSpace::CreateREC709();
         }
 
         OverlayCandidateList dc_layer_list;
@@ -364,6 +383,27 @@ TEST_F(DCLayerOverlayTest, DisableVideoOverlayIfMovingFeature) {
       ProcessForOverlaysSingleVideoRectWithOffset({1, 0}).size();
     }
     EXPECT_EQ(1U, ProcessForOverlaysSingleVideoRectWithOffset({1, 0}).size());
+  }
+
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeature(
+        features::kDisableVideoOverlayIfMoving);
+    // We expect an overlay promotion after a couple frames of no movement
+    for (int i = 0; i < 10; i++) {
+      ProcessForOverlaysSingleVideoRectWithOffset({0, 0}, /*is_hdr=*/false,
+                                                  /*is_sdr_to_hdr*/ true)
+          .size();
+    }
+    EXPECT_EQ(1U, ProcessForOverlaysSingleVideoRectWithOffset(
+                      {0, 0}, /*is_hdr=*/false, /*is_sdr_to_hdr*/ true)
+                      .size());
+    // We still expect an overlay promotion for SDR video when auto hdr is
+    // enabled and when moving to ensure uniform tone mapping results between
+    // viz and GPU driver.
+    EXPECT_EQ(1U, ProcessForOverlaysSingleVideoRectWithOffset(
+                      {1, 0}, /*is_hdr=*/false, /*is_sdr_to_hdr*/ true)
+                      .size());
   }
 
   {
@@ -1771,14 +1811,11 @@ TEST_F(DCLayerOverlayTest, HDR10VideoOverlay) {
   // Device has RGB10A2 overlay support.
   gl::SetDirectCompositionScaledOverlaysSupportedForTesting(true);
 
-  // Device enabled system HDR feature.
-  overlay_processor_->set_system_hdr_enabled_for_testing(true);
+  // Device has HDR-enabled display and no non-HDR-enabled display.
+  overlay_processor_->set_system_hdr_disabled_on_any_display_for_testing(false);
 
   // Device has video processor support.
   overlay_processor_->set_has_p010_video_processor_support_for_testing(true);
-
-  // Video playback in fullscreen mode.
-  overlay_processor_->SetIsPageFullscreen(true);
 
   // Frame 1 should promote overlay as all conditions satisfied.
   {
@@ -1996,47 +2033,7 @@ TEST_F(DCLayerOverlayTest, HDR10VideoOverlay) {
     EXPECT_EQ(0U, dc_layer_list.size());
   }
 
-  // Frame 7 should skip overlay as not in fullscreen mode.
-  {
-    overlay_processor_->SetIsPageFullscreen(false);
-
-    auto pass = CreateRenderPass();
-    pass->content_color_usage = gfx::ContentColorUsage::kHDR;
-    YUVVideoDrawQuad* video_quad = CreateFullscreenCandidateYUVVideoQuad(
-        resource_provider_.get(), child_resource_provider_.get(),
-        child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
-
-    // Content is 10bit P010 content.
-    video_quad->bits_per_channel = 10;
-
-    // Content has valid HDR metadata.
-    video_quad->hdr_metadata = valid_hdr_metadata;
-
-    // Content has HDR10 colorspace.
-    video_quad->video_color_space = gfx::ColorSpace::CreateHDR10();
-
-    OverlayCandidateList dc_layer_list;
-    OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
-    OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
-    damage_rect_ = gfx::Rect(0, 0, 220, 220);
-    AggregatedRenderPassList pass_list;
-    pass_list.push_back(std::move(pass));
-    SurfaceDamageRectList surface_damage_rect_list;
-
-    overlay_processor_->ProcessForOverlays(
-        resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-        render_pass_filters, render_pass_backdrop_filters,
-        std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
-        &dc_layer_list, &damage_rect_, &content_bounds_);
-
-    // Should skip overlay.
-    EXPECT_EQ(0U, dc_layer_list.size());
-
-    // Recover config.
-    overlay_processor_->SetIsPageFullscreen(true);
-  }
-
-  // Frame 8 should skip overlay as no P010 video processor support.
+  // Frame 7 should skip overlay as no P010 video processor support.
   {
     overlay_processor_->set_has_p010_video_processor_support_for_testing(false);
 
@@ -2076,9 +2073,10 @@ TEST_F(DCLayerOverlayTest, HDR10VideoOverlay) {
     overlay_processor_->set_has_p010_video_processor_support_for_testing(true);
   }
 
-  // Frame 9 should skip overlay as system HDR is not enabled.
+  // Frame 8 should skip overlay as non-HDR-enabled display exists.
   {
-    overlay_processor_->set_system_hdr_enabled_for_testing(false);
+    overlay_processor_->set_system_hdr_disabled_on_any_display_for_testing(
+        true);
 
     auto pass = CreateRenderPass();
     pass->content_color_usage = gfx::ContentColorUsage::kHDR;
@@ -2113,10 +2111,11 @@ TEST_F(DCLayerOverlayTest, HDR10VideoOverlay) {
     EXPECT_EQ(0U, dc_layer_list.size());
 
     // Recover config.
-    overlay_processor_->set_system_hdr_enabled_for_testing(true);
+    overlay_processor_->set_system_hdr_disabled_on_any_display_for_testing(
+        false);
   }
 
-  // Frame 10 should skip overlay as no rgb10a2 overlay support.
+  // Frame 9 should skip overlay as no rgb10a2 overlay support.
   {
     gl::SetDirectCompositionScaledOverlaysSupportedForTesting(false);
 

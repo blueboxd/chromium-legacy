@@ -27,7 +27,7 @@ import org.chromium.chrome.browser.password_manager.FakePasswordStoreAndroidBack
 import org.chromium.chrome.browser.password_manager.PasswordStoreAndroidBackendFactory;
 import org.chromium.chrome.browser.password_manager.PasswordStoreBridge;
 import org.chromium.chrome.browser.password_manager.PasswordStoreCredential;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
@@ -74,7 +74,7 @@ public class BrowsingDataTest {
         CallbackHelper helper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    BrowsingDataBridge.getForProfile(Profile.getLastUsedRegularProfile())
+                    BrowsingDataBridge.getForProfile(ProfileManager.getLastUsedRegularProfile())
                             .clearBrowsingData(
                                     helper::notifyCalled, new int[] {dataType}, timePeriod);
                 });
@@ -95,9 +95,9 @@ public class BrowsingDataTest {
                 () -> {
                     counter[0] =
                             new BrowsingDataCounterBridge(
-                                    Profile.getLastUsedRegularProfile(),
+                                    ProfileManager.getLastUsedRegularProfile(),
                                     callback,
-                                    BrowsingDataType.COOKIES,
+                                    BrowsingDataType.SITE_DATA,
                                     ClearBrowsingDataTab.ADVANCED);
                 });
         helper.waitForCallback(0);
@@ -130,7 +130,7 @@ public class BrowsingDataTest {
         Assert.assertEquals("true", runJavascriptSync("hasCookie()"));
         Assert.assertEquals(1, getCookieCount());
 
-        clearBrowsingData(BrowsingDataType.COOKIES, TimePeriod.LAST_HOUR);
+        clearBrowsingData(BrowsingDataType.SITE_DATA, TimePeriod.LAST_HOUR);
         Assert.assertEquals("false", runJavascriptSync("hasCookie()"));
         Assert.assertEquals(0, getCookieCount());
     }
@@ -157,12 +157,12 @@ public class BrowsingDataTest {
             Assert.assertEquals(type, 1, getCookieCount());
             Assert.assertEquals(type, "true", runJavascriptAsync("has" + type + "Async()"));
 
-            clearBrowsingData(BrowsingDataType.COOKIES, TimePeriod.LAST_HOUR);
+            clearBrowsingData(BrowsingDataType.SITE_DATA, TimePeriod.LAST_HOUR);
             Assert.assertEquals(type, 0, getCookieCount());
             Assert.assertEquals(type, "false", runJavascriptAsync("has" + type + "Async()"));
 
             // Some types create data by checking for them, so we need to do a cleanup at the end.
-            clearBrowsingData(BrowsingDataType.COOKIES, TimePeriod.LAST_HOUR);
+            clearBrowsingData(BrowsingDataType.SITE_DATA, TimePeriod.LAST_HOUR);
         }
     }
 
@@ -178,13 +178,13 @@ public class BrowsingDataTest {
         CallbackHelper helper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    BrowsingDataBridge.getForProfile(Profile.getLastUsedRegularProfile())
+                    BrowsingDataBridge.getForProfile(ProfileManager.getLastUsedRegularProfile())
                             .clearBrowsingDataIncognitoForTesting(
                                     helper::notifyCalled,
                                     new int[] {
                                         BrowsingDataType.HISTORY,
                                         BrowsingDataType.CACHE,
-                                        BrowsingDataType.COOKIES,
+                                        BrowsingDataType.SITE_DATA,
                                         BrowsingDataType.PASSWORDS,
                                         BrowsingDataType.FORM_DATA
                                     },

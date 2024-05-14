@@ -10,23 +10,26 @@
 import 'chrome://os-settings/os_settings.js';
 
 import {Account, AccountManagerBrowserProxyImpl} from 'chrome://os-settings/lazy_load.js';
-import {createPageAvailabilityForTesting, FakeInputDeviceSettingsProvider, fakeKeyboards, fakeMice, fakePointingSticks, fakeTouchpads, MultiDeviceBrowserProxyImpl, MultiDevicePageContentData, MultiDeviceSettingsMode, OsSettingsMenuElement, OsSettingsMenuItemElement, routesMojom, setInputDeviceSettingsProviderForTesting} from 'chrome://os-settings/os_settings.js';
+import {createPageAvailabilityForTesting, createRouterForTesting, DevicePageBrowserProxyImpl, FakeInputDeviceSettingsProvider, fakeKeyboards, fakeMice, fakePointingSticks, fakeTouchpads, MultiDeviceBrowserProxyImpl, MultiDevicePageContentData, MultiDeviceSettingsMode, OsSettingsMenuElement, OsSettingsMenuItemElement, Router, routesMojom, setInputDeviceSettingsProviderForTesting} from 'chrome://os-settings/os_settings.js';
 import {setBluetoothConfigForTesting} from 'chrome://resources/ash/common/bluetooth/cros_bluetooth_config.js';
 import {MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {AudioOutputCapability, DeviceConnectionState, DeviceType} from 'chrome://resources/mojo/chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js';
 import {InhibitReason} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
 import {ConnectionStateType, DeviceStateType, NetworkType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {assertEquals, assertFalse, assertStringContains, assertStringExcludes, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals, assertFalse, assertNull, assertStringContains, assertStringExcludes, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {FakeNetworkConfig} from 'chrome://webui-test/chromeos/fake_network_config_mojom.js';
 import {createDefaultBluetoothDevice, FakeBluetoothConfig} from 'chrome://webui-test/cr_components/chromeos/bluetooth/fake_bluetooth_config.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {isVisible} from 'chrome://webui-test/test_util.js';
 
+import {TestDevicePageBrowserProxy} from '../device_page/test_device_page_browser_proxy.js';
 import {createFakePageContentData, TestMultideviceBrowserProxy} from '../multidevice_page/test_multidevice_browser_proxy.js';
 import {TestAccountManagerBrowserProxy} from '../os_people_page/test_account_manager_browser_proxy.js';
+import {clearBody} from '../utils.js';
 
 const {Section} = routesMojom;
 type SectionName = keyof typeof Section;
@@ -38,15 +41,15 @@ interface MenuItemData {
 
 suite('<os-settings-menu>', () => {
   let settingsMenu: OsSettingsMenuElement;
-  let browserProxy: TestAccountManagerBrowserProxy;
+  let accountManagerBrowserProxy: TestAccountManagerBrowserProxy;
+  let testRouter: Router;
 
   async function createMenu(): Promise<void> {
+    clearBody();
     settingsMenu = document.createElement('os-settings-menu');
     settingsMenu.pageAvailability = createPageAvailabilityForTesting();
     settingsMenu.advancedOpened = true;
     document.body.appendChild(settingsMenu);
-
-    await browserProxy.whenCalled('getAccounts');
     await flushTasks();
   }
 
@@ -55,42 +58,54 @@ suite('<os-settings-menu>', () => {
         `os-settings-menu-item[path="${path}"]`);
   }
 
+  function simulateGuestMode(enabled: boolean): void {
+    loadTimeData.overrideValues({isGuest: enabled});
+
+    // Reinitialize Router and routes based on load time data. Some routes
+    // should not exist in guest mode.
+    testRouter = createRouterForTesting();
+    Router.resetInstanceForTesting(testRouter);
+  }
+
+  function enableInputDeviceSettingsSplit(enabled: boolean): void {
+    loadTimeData.overrideValues({enableInputDeviceSettingsSplit: enabled});
+  }
+
   setup(() => {
-    browserProxy = new TestAccountManagerBrowserProxy();
-    AccountManagerBrowserProxyImpl.setInstanceForTesting(browserProxy);
+    loadTimeData.overrideValues({isKerberosEnabled: true});
+    simulateGuestMode(/*enabled=*/ false);
+
+    accountManagerBrowserProxy = new TestAccountManagerBrowserProxy();
+    AccountManagerBrowserProxyImpl.setInstanceForTesting(
+        accountManagerBrowserProxy);
   });
 
   teardown(() => {
-    settingsMenu.remove();
+    Router.getInstance().resetRouteForTesting();
   });
 
-  suite('Menu item visibility', () => {
+  test('Advanced toggle and collapsible menu are not visible', async () => {
+    await createMenu();
+
+    const advancedButton =
+        settingsMenu.shadowRoot!.querySelector('#advancedButton');
+    assertFalse(isVisible(advancedButton));
+
+    const advancedCollapse =
+        settingsMenu.shadowRoot!.querySelector('#advancedCollapse');
+    assertFalse(isVisible(advancedCollapse));
+
+    const advancedSubmenu =
+        settingsMenu.shadowRoot!.querySelector('#advancedSubmenu');
+    assertFalse(isVisible(advancedSubmenu));
+  });
+
+  suite('All menu items', () => {
     setup(async () => {
       await createMenu();
     });
 
-    test('Advanced toggle and collapsible menu are not visible', () => {
-      const advancedButton =
-          settingsMenu.shadowRoot!.querySelector('#advancedButton');
-      assertFalse(isVisible(advancedButton));
-
-      const advancedCollapse =
-          settingsMenu.shadowRoot!.querySelector('#advancedCollapse');
-      assertFalse(isVisible(advancedCollapse));
-
-      const advancedSubmenu =
-          settingsMenu.shadowRoot!.querySelector('#advancedSubmenu');
-      assertFalse(isVisible(advancedSubmenu));
-    });
-
-    test('About page menu item should always be visible', () => {
-      const path = `/${routesMojom.ABOUT_CHROME_OS_SECTION_PATH}`;
-      const menuItem = queryMenuItemByPath(path);
-      assertTrue(isVisible(menuItem));
-    });
-
     const menuItemData: MenuItemData[] = [
-      // Basic pages
       {
         sectionName: 'kNetwork',
         path: `/${routesMojom.NETWORK_SECTION_PATH}`,
@@ -138,35 +153,59 @@ suite('<os-settings-menu>', () => {
     ];
 
     for (const {sectionName, path} of menuItemData) {
-      test(`${sectionName} menu item is visible if page is available`, () => {
-        // Make page available
-        settingsMenu.pageAvailability = {
-          ...settingsMenu.pageAvailability,
-          [Section[sectionName]]: true,
-        };
-        flush();
+      suite(`When ${sectionName} page is available`, () => {
+        setup(() => {
+          settingsMenu.pageAvailability = {
+            ...settingsMenu.pageAvailability,
+            [Section[sectionName]]: true,
+          };
+          flush();
+        });
 
-        const menuItem = queryMenuItemByPath(path);
-        assertTrue(isVisible(menuItem));
+        test(`${sectionName} menu item is visible`, () => {
+          const menuItem = queryMenuItemByPath(path);
+          assertTrue(isVisible(menuItem));
+        });
+
+
+        test(`${sectionName} menu item is selected when route changes`, () => {
+          const route = testRouter.getRouteForPath(path);
+          assertTrue(!!route);
+          testRouter.navigateTo(route);
+          flush();
+
+          const menuItem = queryMenuItemByPath(path);
+          assertTrue(!!menuItem);
+          assertEquals('true', menuItem.getAttribute('aria-current'));
+          assertTrue(menuItem.classList.contains('iron-selected'));
+        });
       });
 
-      test(
-          `${sectionName} menu item is not visible if page is unavailable`,
-          () => {
-            // Make page unavailable
-            settingsMenu.pageAvailability = {
-              ...settingsMenu.pageAvailability,
-              [Section[sectionName]]: false,
-            };
-            flush();
+      suite(`When ${sectionName} page is not available`, () => {
+        setup(() => {
+          settingsMenu.pageAvailability = {
+            ...settingsMenu.pageAvailability,
+            [Section[sectionName]]: false,
+          };
+          flush();
+        });
 
-            const menuItem = queryMenuItemByPath(path);
-            assertFalse(isVisible(menuItem));
-          });
+        test(`${sectionName} menu item is not visible`, () => {
+          const menuItem = queryMenuItemByPath(path);
+          assertFalse(isVisible(menuItem));
+        });
+      });
     }
   });
 
   suite('About ChromeOS menu item', () => {
+    test('About page menu item should always be visible', async () => {
+      await createMenu();
+      const menuItem =
+          queryMenuItemByPath(`/${routesMojom.ABOUT_CHROME_OS_SECTION_PATH}`);
+      assertTrue(isVisible(menuItem));
+    });
+
     test('Description text', async () => {
       await createMenu();
 
@@ -215,13 +254,36 @@ suite('<os-settings-menu>', () => {
       return accountsMenuItem;
     }
 
+    suite('when in guest mode', () => {
+      setup(() => {
+        simulateGuestMode(/*enabled=*/ true);
+      });
+
+      test('Accounts menu item should not exist', async () => {
+        await createMenu();
+        const accountsMenuItem =
+            queryMenuItemByPath(`/${routesMojom.PEOPLE_SECTION_PATH}`);
+        assertNull(accountsMenuItem);
+      });
+
+      test('Should not call getAccounts', async () => {
+        await createMenu();
+
+        const callCount =
+            accountManagerBrowserProxy.getCallCount('getAccounts');
+        assertEquals(0, callCount);
+      });
+    });
+
     suite('When there is only one account', () => {
       setup(() => {
-        browserProxy.setAccountsForTesting(fakeAccounts.slice(0, 1));
+        accountManagerBrowserProxy.setAccountsForTesting(
+            fakeAccounts.slice(0, 1));
       });
 
       test('Description should show account email', async () => {
         await createMenu();
+        await accountManagerBrowserProxy.whenCalled('getAccounts');
 
         const accountsMenuItem = getAccountsMenuItem();
         assertEquals(fakeAccounts[0]!.email, accountsMenuItem.sublabel);
@@ -229,12 +291,13 @@ suite('<os-settings-menu>', () => {
 
       test('Description should update when an account is added', async () => {
         await createMenu();
+        await accountManagerBrowserProxy.whenCalled('getAccounts');
 
         const accountsMenuItem = getAccountsMenuItem();
         assertEquals(fakeAccounts[0]!.email, accountsMenuItem.sublabel);
 
         // Update accounts to have 2 accounts
-        browserProxy.setAccountsForTesting(fakeAccounts);
+        accountManagerBrowserProxy.setAccountsForTesting(fakeAccounts);
         webUIListenerCallback('accounts-changed');
         await flushTasks();
 
@@ -244,11 +307,12 @@ suite('<os-settings-menu>', () => {
 
     suite('When there is more than one account', () => {
       setup(() => {
-        browserProxy.setAccountsForTesting(fakeAccounts);
+        accountManagerBrowserProxy.setAccountsForTesting(fakeAccounts);
       });
 
       test('Description should show number of accounts', async () => {
         await createMenu();
+        await accountManagerBrowserProxy.whenCalled('getAccounts');
 
         const accountsMenuItem = getAccountsMenuItem();
         assertEquals('2 accounts', accountsMenuItem.sublabel);
@@ -256,12 +320,14 @@ suite('<os-settings-menu>', () => {
 
       test('Description should update when an account is removed', async () => {
         await createMenu();
+        await accountManagerBrowserProxy.whenCalled('getAccounts');
 
         const accountsMenuItem = getAccountsMenuItem();
         assertEquals('2 accounts', accountsMenuItem.sublabel);
 
         // Remove an account to leave only 1 account
-        browserProxy.setAccountsForTesting(fakeAccounts.slice(0, 1));
+        accountManagerBrowserProxy.setAccountsForTesting(
+            fakeAccounts.slice(0, 1));
         webUIListenerCallback('accounts-changed');
         await flushTasks();
 
@@ -403,6 +469,8 @@ suite('<os-settings-menu>', () => {
     }
 
     setup(() => {
+      enableInputDeviceSettingsSplit(/*enabled=*/ true);
+
       provider = new FakeInputDeviceSettingsProvider();
       provider.setFakeKeyboards([]);
       provider.setFakeMice([]);
@@ -567,6 +635,129 @@ suite('<os-settings-menu>', () => {
       const deviceMenuItem = getDeviceMenuItem();
       assertEquals('Touchpad, print, display', deviceMenuItem.sublabel);
     });
+  });
+
+  suite('Device menu item settings split disabled', () => {
+    let devicePageBrowserProxy: TestDevicePageBrowserProxy;
+
+    function getDeviceMenuItem(): OsSettingsMenuItemElement {
+      const deviceMenuItem =
+          queryMenuItemByPath(`/${routesMojom.DEVICE_SECTION_PATH}`);
+      assertTrue(!!deviceMenuItem);
+      return deviceMenuItem;
+    }
+
+    setup(() => {
+      enableInputDeviceSettingsSplit(/*enabled=*/ false);
+
+      devicePageBrowserProxy = new TestDevicePageBrowserProxy();
+      DevicePageBrowserProxyImpl.setInstanceForTesting(devicePageBrowserProxy);
+
+      // Start with all devices disconnected.
+      devicePageBrowserProxy.hasMouse = false;
+      devicePageBrowserProxy.hasTouchpad = false;
+      devicePageBrowserProxy.hasPointingStick = false;
+      flush();
+    });
+
+    test('Description includes "keyboard" always', async () => {
+      await createMenu();
+
+      // Label should always include keyboard.
+      const deviceMenuItem = getDeviceMenuItem();
+      assertStringContains(deviceMenuItem.sublabel.toLowerCase(), 'keyboard');
+    });
+
+    test('Description includes "mouse" when connected', async () => {
+      await createMenu();
+
+      // No mouse connected.
+      const deviceMenuItem = getDeviceMenuItem();
+      assertStringExcludes(deviceMenuItem.sublabel.toLowerCase(), 'mouse');
+
+      // Connect a mouse.
+      devicePageBrowserProxy.hasMouse = true;
+      flush();
+      assertStringContains(deviceMenuItem.sublabel.toLowerCase(), 'mouse');
+
+      // Disconnect the mouse.
+      devicePageBrowserProxy.hasMouse = false;
+      flush();
+      assertStringExcludes(deviceMenuItem.sublabel.toLowerCase(), 'mouse');
+    });
+
+    test(
+        'Description includes "mouse" when pointing stick is connected',
+        async () => {
+          await createMenu();
+
+          // No pointing stick connected.
+          const deviceMenuItem = getDeviceMenuItem();
+          assertStringExcludes(deviceMenuItem.sublabel.toLowerCase(), 'mouse');
+
+          // Connect a pointing stick.
+          devicePageBrowserProxy.hasPointingStick = true;
+          flush();
+          assertStringContains(deviceMenuItem.sublabel.toLowerCase(), 'mouse');
+
+          // Disconnect the pointing stick.
+          devicePageBrowserProxy.hasPointingStick = false;
+          flush();
+          assertStringExcludes(deviceMenuItem.sublabel.toLowerCase(), 'mouse');
+        });
+
+    test('Description includes "touchpad" when connected', async () => {
+      await createMenu();
+
+      // No touchpad connected.
+      const deviceMenuItem = getDeviceMenuItem();
+      assertStringExcludes(deviceMenuItem.sublabel.toLowerCase(), 'touchpad');
+
+      // Connect a touchpad.
+      devicePageBrowserProxy.hasTouchpad = true;
+      flush();
+      assertStringContains(deviceMenuItem.sublabel.toLowerCase(), 'touchpad');
+
+      // Disconnect the touchpad.
+      devicePageBrowserProxy.hasTouchpad = false;
+      flush();
+      assertStringExcludes(deviceMenuItem.sublabel.toLowerCase(), 'touchpad');
+    });
+
+    test('Description prioritizes "mouse" over "touchpad"', async () => {
+      await createMenu();
+
+      // No mouse or touchpad connected.
+      const deviceMenuItem = getDeviceMenuItem();
+      assertStringExcludes(deviceMenuItem.sublabel.toLowerCase(), 'mouse');
+      assertStringExcludes(deviceMenuItem.sublabel.toLowerCase(), 'touchpad');
+
+      // Connect a touchpad.
+      devicePageBrowserProxy.hasTouchpad = true;
+      flush();
+      assertStringExcludes(deviceMenuItem.sublabel.toLowerCase(), 'mouse');
+      assertStringContains(deviceMenuItem.sublabel.toLowerCase(), 'touchpad');
+
+      // Connect a mouse.
+      devicePageBrowserProxy.hasMouse = true;
+      flush();
+      assertStringContains(deviceMenuItem.sublabel.toLowerCase(), 'mouse');
+      assertStringExcludes(deviceMenuItem.sublabel.toLowerCase(), 'touchpad');
+    });
+
+    test(
+        'Description shows at most 3 words when devices are connected',
+        async () => {
+          // 4 devices connected.
+          devicePageBrowserProxy.hasMouse = true;
+          devicePageBrowserProxy.hasPointingStick = true;
+          devicePageBrowserProxy.hasTouchpad = true;
+          flush();
+
+          await createMenu();
+          const deviceMenuItem = getDeviceMenuItem();
+          assertEquals('Keyboard, mouse, print', deviceMenuItem.sublabel);
+        });
   });
 
   suite('Internet menu item', () => {
@@ -824,6 +1015,27 @@ suite('<os-settings-menu>', () => {
           multideviceBrowserProxy);
     });
 
+    suite('when in guest mode', () => {
+      setup(() => {
+        simulateGuestMode(/*enabled=*/ true);
+      });
+
+      test('Multidevice menu item should not exist', async () => {
+        await createMenu();
+        const multideviceMenuItem =
+            queryMenuItemByPath(`/${routesMojom.MULTI_DEVICE_SECTION_PATH}`);
+        assertNull(multideviceMenuItem);
+      });
+
+      test('Should not call getPageContentData', async () => {
+        await createMenu();
+
+        const numGetPageContentDataCalls =
+            multideviceBrowserProxy.getCallCount('getPageContentData');
+        assertEquals(0, numGetPageContentDataCalls);
+      });
+    });
+
     test('Default description shows for NO_ELIGIBLE_HOSTS status', async () => {
       await createMenu();
 
@@ -831,7 +1043,9 @@ suite('<os-settings-menu>', () => {
 
       setPageContentData(
           createFakePageContentData(MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS));
-      assertEquals('Phone Hub, Nearby Share', multideviceMenuItem.sublabel);
+      assertEquals(
+          settingsMenu.i18n('multideviceMenuItemDescription'),
+          multideviceMenuItem.sublabel);
     });
 
 
@@ -842,7 +1056,9 @@ suite('<os-settings-menu>', () => {
 
       setPageContentData(
           createFakePageContentData(MultiDeviceSettingsMode.NO_HOST_SET));
-      assertEquals('Phone Hub, Nearby Share', multideviceMenuItem.sublabel);
+      assertEquals(
+          settingsMenu.i18n('multideviceMenuItemDescription'),
+          multideviceMenuItem.sublabel);
     });
 
     test(
@@ -854,7 +1070,9 @@ suite('<os-settings-menu>', () => {
 
           setPageContentData(createFakePageContentData(
               MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER));
-          assertEquals('Phone Hub, Nearby Share', multideviceMenuItem.sublabel);
+          assertEquals(
+              settingsMenu.i18n('multideviceMenuItemDescription'),
+              multideviceMenuItem.sublabel);
         });
 
     test(
@@ -866,7 +1084,9 @@ suite('<os-settings-menu>', () => {
 
           setPageContentData(createFakePageContentData(
               MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION));
-          assertEquals('Phone Hub, Nearby Share', multideviceMenuItem.sublabel);
+          assertEquals(
+              settingsMenu.i18n('multideviceMenuItemDescription'),
+              multideviceMenuItem.sublabel);
         });
 
     test(
@@ -906,28 +1126,36 @@ suite('<os-settings-menu>', () => {
           const multideviceMenuItem = getMultideviceMenuItem();
 
           // No eligible device found, show the default description "Phone Hub,
-          // Nearby Share".
+          // Quick Share".
           setPageContentData(createFakePageContentData(
               MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS));
-          assertEquals('Phone Hub, Nearby Share', multideviceMenuItem.sublabel);
+          assertEquals(
+              settingsMenu.i18n('multideviceMenuItemDescription'),
+              multideviceMenuItem.sublabel);
 
           // No device connected, show the default description "Phone Hub,
-          // Nearby Share".
+          // Quick Share".
           setPageContentData(
               createFakePageContentData(MultiDeviceSettingsMode.NO_HOST_SET));
-          assertEquals('Phone Hub, Nearby Share', multideviceMenuItem.sublabel);
+          assertEquals(
+              settingsMenu.i18n('multideviceMenuItemDescription'),
+              multideviceMenuItem.sublabel);
 
           // Device connection is waiting for server, show the default
-          // description "Phone Hub, Nearby Share".
+          // description "Phone Hub, Quick Share".
           setPageContentData(createFakePageContentData(
               MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER));
-          assertEquals('Phone Hub, Nearby Share', multideviceMenuItem.sublabel);
+          assertEquals(
+              settingsMenu.i18n('multideviceMenuItemDescription'),
+              multideviceMenuItem.sublabel);
 
           // Device connection is waiting for verification, show the default
-          // description "Phone Hub, Nearby Share".
+          // description "Phone Hub, Quick Share".
           setPageContentData(createFakePageContentData(
               MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION));
-          assertEquals('Phone Hub, Nearby Share', multideviceMenuItem.sublabel);
+          assertEquals(
+              settingsMenu.i18n('multideviceMenuItemDescription'),
+              multideviceMenuItem.sublabel);
 
           // Device is connected, show the phone connected description
           // "Connected to <phone name>".
@@ -938,10 +1166,12 @@ suite('<os-settings-menu>', () => {
               `Connected to ${deviceName}`, multideviceMenuItem.sublabel);
 
           // Disconnect the Device, the description should be updated to the
-          // default "Phone Hub, Nearby Share".
+          // default "Phone Hub, Quick Share".
           setPageContentData(
               createFakePageContentData(MultiDeviceSettingsMode.NO_HOST_SET));
-          assertEquals('Phone Hub, Nearby Share', multideviceMenuItem.sublabel);
+          assertEquals(
+              settingsMenu.i18n('multideviceMenuItemDescription'),
+              multideviceMenuItem.sublabel);
         });
   });
 

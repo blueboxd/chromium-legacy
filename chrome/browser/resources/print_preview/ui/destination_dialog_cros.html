@@ -39,12 +39,12 @@
     <div class="form-row">
       <div class="server-search-box-container">
         <!-- TODO(crbug.com/1013408): Uses deprecated iron-dropdown. -->
-        <cr-searchable-drop-down class="server-search-box-input"
+        <searchable-drop-down-cros class="server-search-box-input"
             hidden$="[[!isSingleServerFetchingMode_]]"
             placeholder="$i18n{serverSearchBoxPlaceholder}"
             value="{{printServerSelected_}}"
             items="[[printServerNames_]]">
-        </cr-searchable-drop-down>
+        </searchable-drop-down-cros>
       </div>
     </div>
     <div class="throbber-container" hidden$="[[!showThrobber_]]">
@@ -66,7 +66,7 @@
     <print-preview-printer-setup-info-cros
         hidden$="[[!isShowingPrinterSetupAssistance]]"
         message-type="[[noPrinters_]]"
-        metrics-source="[[destinationDialogCrosSource_]]">
+        initiator="[[destinationDialogCrosInitiator_]]">
     </print-preview-printer-setup-info-cros>
     <print-preview-provisional-destination-resolver id="provisionalResolver"
         destination-store="[[destinationStore]]">

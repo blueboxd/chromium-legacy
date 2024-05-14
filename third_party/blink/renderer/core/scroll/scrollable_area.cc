@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
@@ -607,8 +608,10 @@ bool ScrollableArea::ProgrammaticScrollHelper(
       std::move(callback), WrapWeakPersistent(this)));
 
   // Enqueue snapchanging if necessary.
-  UpdateSnapChangingTargetsAndEnqueueSnapChanging(
-      gfx::PointF(offset.x(), offset.y()));
+  if (auto* snap_container = GetSnapContainerData()) {
+    UpdateSnapChangingTargetsAndEnqueueSnapChanging(
+        snap_container->GetTargetSnapAreaElementIds());
+  }
 
   if (should_use_animation) {
     GetProgrammaticScrollAnimator().AnimateToOffset(offset, is_sequenced_scroll,
@@ -945,13 +948,6 @@ bool ScrollableArea::HasLayerForScrollCorner() const {
   return LayerForScrollCorner();
 }
 
-void ScrollableArea::MainThreadScrollingDidChange() {
-  if (auto* programmatic_scroll_animator = ExistingProgrammaticScrollAnimator())
-    programmatic_scroll_animator->MainThreadScrollingDidChange();
-  if (auto* scroll_animator = ExistingScrollAnimator())
-    scroll_animator->MainThreadScrollingDidChange();
-}
-
 void ScrollableArea::ServiceScrollAnimations(double monotonic_time) {
   bool requires_animation_service = false;
   if (ScrollAnimatorBase* scroll_animator = ExistingScrollAnimator()) {
@@ -1040,7 +1036,8 @@ void ScrollableArea::FadeOverlayScrollbarsTimerFired(TimerBase*) {
   // ShowNonMacOverlayScrollbars to be fired.
   if (RuntimeEnabledFeatures::
           InterruptComposedScrollbarDisappearanceEnabled() &&
-      UsesCompositedScrolling()) {
+      (RuntimeEnabledFeatures::RasterInducingScrollEnabled() ||
+       UsesCompositedScrolling())) {
     return;
   }
   SetScrollbarsHiddenIfOverlay(true);
@@ -1056,8 +1053,10 @@ void ScrollableArea::ShowNonMacOverlayScrollbars() {
   // TODO(crbug.com/1229864): We may want to always composite overlay
   // scrollbars to avoid the bug and the duplicated code for composited and
   // non-composited overlay scrollbars.
-  if (UsesCompositedScrolling())
+  if (RuntimeEnabledFeatures::RasterInducingScrollEnabled() ||
+      UsesCompositedScrolling()) {
     return;
+  }
 
   SetScrollbarsHiddenIfOverlay(false);
 
@@ -1311,11 +1310,9 @@ bool ScrollableArea::PerformSnapping(
   // We should set the snapchanging targets of a snap container the first
   // time it is laid out to avoid a spurious snapchanging event firing the first
   // time the scroller is scrolled.
-  if (!GetSnapChangingTargetData()) {
-    std::set<cc::ElementId> snap_targets =
-        cc::SnapContainerData::FindSnappedTargetsAtScrollOffset(
-            GetSnapContainerData(), snap_point.value());
-    SetSnapChangingTargetData(cc::SnappedTargetData(std::move(snap_targets)));
+  if (!GetSnapchangingTargetIds()) {
+    SetSnapchangingTargetIds(
+        GetSnapContainerData()->GetTargetSnapAreaElementIds());
   }
 
   CancelScrollAnimation();
@@ -1401,34 +1398,18 @@ bool ScrollableArea::ScrollOffsetIsNoop(const ScrollOffset& offset) const {
               : offset);
 }
 
-HeapVector<Member<Node>> ScrollableArea::PrepareSnapEventTargets(
-    const cc::SnappedTargetData* target_data) const {
-  HeapVector<Member<Node>> target_nodes;
-  if (target_data) {
-    for (const cc::ElementId& id : target_data->GetSnappedTargetIds()) {
-      if (Node* node =
-              DOMNodeIds::NodeForId(DOMNodeIdFromCompositorElementId(id))) {
-        target_nodes.push_back(node);
-      }
-    }
-    auto compare_targets = [](Node* node1, Node* node2) {
-      return node1->compareDocumentPosition(node2) &
-             Node::kDocumentPositionFollowing;
-    };
-    std::sort(target_nodes.begin(), target_nodes.end(), compare_targets);
-  }
-  return target_nodes;
-}
-
 void ScrollableArea::EnqueueSnapChangedEvent() const {
   DCHECK(RuntimeEnabledFeatures::CSSSnapChangedEventEnabled());
   Node* target_node = EventTargetNode();
   if (!target_node) {
     return;
   }
-  HeapVector<Member<Node>> snap_targets =
-      PrepareSnapEventTargets(GetSnappedTargetData());
-  target_node->GetDocument().EnqueueSnapChangedEvent(target_node, snap_targets);
+  Member<Node> block_target = GetSnapEventTargetAlongAxis(
+      event_type_names::kSnapchanged, cc::SnapAxis::kBlock);
+  Member<Node> inline_target = GetSnapEventTargetAlongAxis(
+      event_type_names::kSnapchanged, cc::SnapAxis::kInline);
+  target_node->GetDocument().EnqueueSnapChangedEvent(target_node, block_target,
+                                                     inline_target);
 }
 
 void ScrollableArea::EnqueueSnapChangingEvent() const {
@@ -1437,10 +1418,12 @@ void ScrollableArea::EnqueueSnapChangingEvent() const {
   if (!target_node) {
     return;
   }
-  HeapVector<Member<Node>> snap_targets =
-      PrepareSnapEventTargets(GetSnapChangingTargetData());
-  target_node->GetDocument().EnqueueSnapChangingEvent(target_node,
-                                                      snap_targets);
+  Member<Node> block_target = GetSnapEventTargetAlongAxis(
+      event_type_names::kSnapchanging, cc::SnapAxis::kBlock);
+  Member<Node> inline_target = GetSnapEventTargetAlongAxis(
+      event_type_names::kSnapchanging, cc::SnapAxis::kInline);
+  target_node->GetDocument().EnqueueSnapChangingEvent(target_node, block_target,
+                                                      inline_target);
 }
 
 }  // namespace blink

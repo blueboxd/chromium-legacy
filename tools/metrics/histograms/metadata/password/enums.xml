@@ -78,6 +78,25 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Malformed response"/>
 </enum>
 
+<enum name="AuthenticationResultStatusWin">
+  <summary>Result of authenticating using Windows Hello.</summary>
+  <int value="0" label="User verified successfully."/>
+  <int value="1" label="There is no biometric verifier device available."/>
+  <int value="2"
+      label="A biometric verifier device is not configured for this user."/>
+  <int value="3"
+      label="Group policy has disabled the biometric verifier device."/>
+  <int value="4"
+      label="The biometric verifier device is performing an operation and is
+             unavailable."/>
+  <int value="5"
+      label="After 10 attempts, the original verification request and all
+             subsequent attempts at the same verification were not verified."/>
+  <int value="6" label="The verification operation was canceled."/>
+  <int value="7" label="Failed to create UserConsentVerifier factory."/>
+  <int value="8" label="Failed to call UserConsentVerifier API."/>
+</enum>
+
 <enum name="AutoSigninFirstRun">
   <int value="0" label="No action"/>
   <int value="1" label="Turn off"/>
@@ -109,6 +128,11 @@ chromium-metrics-reviews@google.com.
   <int value="5" label="Not enrolled"/>
   <int value="6" label="Security update required"/>
   <int value="7" label="Android version not supported"/>
+</enum>
+
+<enum name="BooleanCalled">
+  <int value="0" label="Not called"/>
+  <int value="1" label="Called"/>
 </enum>
 
 <enum name="BooleanFormManager">
@@ -311,6 +335,23 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="User typed or autofilled values"/>
 </enum>
 
+<enum name="LocalPwdMigrationProgressState">
+  <int value="0" label="Scheduled"/>
+  <int value="1" label="Started"/>
+  <int value="2" label="Finished"/>
+</enum>
+
+<enum name="LocalUpmActivationError">
+  <int value="0"
+      label="None (activated / migration scheduled / previously activated)"/>
+  <int value="1" label="Unenrolled from UPM"/>
+  <int value="2" label="Initial UPM migration missing"/>
+  <int value="3" label="Login DB file move failed"/>
+  <int value="4" label="Outdated GmsCore"/>
+  <int value="5" label="Flag disabled"/>
+  <int value="6" label="Migration warning unacknowledged"/>
+</enum>
+
 <enum name="LoginDatabaseEncryptionStatus">
   <int value="0" label="No issues"/>
   <int value="1"
@@ -393,6 +434,7 @@ chromium-metrics-reviews@google.com.
   <int value="19" label="Add Username bubble"/>
   <int value="20" label="Omnibox Pedal Suggestion"/>
   <int value="21" label="Default store changed bubble"/>
+  <int value="22" label="Manage Password Details Bubble"/>
 </enum>
 
 <enum name="MigrationToOSCryptEnum">
@@ -664,6 +706,8 @@ chromium-metrics-reviews@google.com.
   <int value="15" label="Part of a note copied"/>
   <int value="16" label="Full note copied"/>
   <int value="17" label="Move password link clicked in details footer"/>
+  <int value="18"
+      label="Link redirecting to the specific password page clicked"/>
 </enum>
 
 <enum name="PasswordManager.AssistantStoppedBubble.CloseReason">
@@ -908,6 +952,7 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Add shortcut promo"/>
   <int value="3" label="Access on any device promo"/>
   <int value="4" label="Relaunch Chrome"/>
+  <int value="5" label="Move passwords"/>
 </enum>
 
 <enum name="PasswordManagerShortcutMetric">
@@ -934,7 +979,8 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Clicked 'Save'/'Update'/'Move'/etc"/>
   <int value="2" label="Clicked 'Nope'"/>
   <int value="3" label="Clicked 'Never'"/>
-  <int value="4" label="Clicked 'Manage passwords'"/>
+  <int value="4"
+      label="Clicked 'Manage passwords' in the passwords for domain bubble"/>
   <int value="5" label="Clicked 'Done' (obsolete)"/>
   <int value="6" label="Clicked 'Unblocklist' (obsolete)"/>
   <int value="7" label="Clicked 'OK' (obsolete)"/>
@@ -943,6 +989,8 @@ chromium-metrics-reviews@google.com.
   <int value="10" label="Auto-signin toast clicked (obsolete)"/>
   <int value="11" label="Clicked 'Google Smart Lock' (obsolete)"/>
   <int value="12" label="Clicked the link passwords.google.com"/>
+  <int value="13"
+      label="Clicked 'Manage Password' in password details bubble."/>
 </enum>
 
 <enum name="PasswordMigrationWarningSheetStateAtClosing">
@@ -1181,6 +1229,8 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="AuthErrorUnresolvable"/>
   <int value="3" label="KeychainError"/>
   <int value="4" label="kKeyRetrievalRequired"/>
+  <int value="5" label="kGMSCoreOutdatedSavingDisabled"/>
+  <int value="6" label="kGMSCoreOutdatedSavingPossible"/>
 </enum>
 
 <enum name="PasswordSubmissionEvent">
@@ -1262,6 +1312,11 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Somewhat guessable password"/>
   <int value="3" label="Safely unguessable password"/>
   <int value="4" label="Very unguessable password"/>
+</enum>
+
+<enum name="PostPasswordMigrationSheetOutcome">
+  <int value="0" label="The sheet was acknowledged"/>
+  <int value="1" label="The sheet was dismissed"/>
 </enum>
 
 <enum name="PrefilledUsernameFillOutcome">

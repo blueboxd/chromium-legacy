@@ -14,6 +14,7 @@
 #include "chrome/browser/net/nss_service.h"
 #include "chrome/browser/net/nss_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
 #include "chromeos/components/kcer/extra_instances.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/cert/nss_cert_database.h"
@@ -33,6 +34,7 @@ KcerFactory::UniqueSlotId GetUniqueId(PK11SlotInfo* nss_slot) {
 
 base::WeakPtr<internal::KcerToken> PrepareOneTokenForNss(
     KcerFactory::KcerTokenMapNss* token_map,
+    HighLevelChapsClient* chaps_client,
     crypto::ScopedPK11Slot nss_slot,
     Token token_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -57,7 +59,7 @@ base::WeakPtr<internal::KcerToken> PrepareOneTokenForNss(
   }
 
   std::unique_ptr<internal::KcerToken> new_token =
-      internal::KcerToken::CreateForNss(token_type);
+      internal::KcerToken::CreateForNss(token_type, chaps_client);
   new_token->InitializeForNss(std::move(nss_slot));
   base::WeakPtr<internal::KcerToken> result = new_token->GetWeakPtr();
   (*token_map)[id] = std::move(new_token);
@@ -67,6 +69,7 @@ base::WeakPtr<internal::KcerToken> PrepareOneTokenForNss(
 // Finds KcerTokens in `token_map` for the slots from `nss_db` (or creates new
 // ones) and returns weak pointers to them through the `callback`.
 void PrepareTokensForNss(KcerFactory::KcerTokenMapNss* token_map,
+                         HighLevelChapsClient* chaps_client,
                          KcerFactory::InitializeOnUIThreadCallback callback,
                          net::NSSCertDatabase* nss_db) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -76,10 +79,10 @@ void PrepareTokensForNss(KcerFactory::KcerTokenMapNss* token_map,
     return;
   }
 
-  base::WeakPtr<internal::KcerToken> user_token_ptr =
-      PrepareOneTokenForNss(token_map, nss_db->GetPrivateSlot(), Token::kUser);
-  base::WeakPtr<internal::KcerToken> device_token_ptr =
-      PrepareOneTokenForNss(token_map, nss_db->GetSystemSlot(), Token::kDevice);
+  base::WeakPtr<internal::KcerToken> user_token_ptr = PrepareOneTokenForNss(
+      token_map, chaps_client, nss_db->GetPrivateSlot(), Token::kUser);
+  base::WeakPtr<internal::KcerToken> device_token_ptr = PrepareOneTokenForNss(
+      token_map, chaps_client, nss_db->GetSystemSlot(), Token::kDevice);
 
   return std::move(callback).Run(std::move(user_token_ptr),
                                  std::move(device_token_ptr));
@@ -125,6 +128,13 @@ base::WeakPtr<Kcer> KcerFactory::GetKcer(Profile* profile) {
 }
 
 // static
+void KcerFactory::RecordPkcs12CertDualWritten() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  CHECK(g_kcer_factory);
+  g_kcer_factory->RecordPkcs12CertDualWrittenImpl();
+}
+
+// static
 bool KcerFactory::IsHighLevelChapsClientInitialized() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   CHECK(g_kcer_factory);
@@ -154,9 +164,9 @@ KcerFactory::KcerFactory()
               // or certificates.
               .WithSystem(ProfileSelection::kNone)
               // Ash internal profiles are used by ash for the sign-in and lock
-              // screens. Not clear if Chrome ever creates incognito profiles
-              // for them, but redirect them to the original ones just in case.
-              .WithAshInternals(ProfileSelection::kRedirectedToOriginal)
+              // screens. All code is expected to use DeviceKcer on these
+              // screens (will also be automatically returned from GetKcer()).
+              .WithAshInternals(ProfileSelection::kNone)
               .Build()) {
   DependsOn(NssServiceFactory::GetInstance());
 }
@@ -165,13 +175,7 @@ KcerFactory::~KcerFactory() = default;
 
 // static
 void KcerFactory::Shutdown() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (g_kcer_factory && g_kcer_factory->session_chaps_client_) {
-    // `session_chaps_client_` is initialized in
-    // EnsureHighLevelChapsClientInitialized and should be shut down in Ash and
-    // Lacros before its dependencies.
-    g_kcer_factory->session_chaps_client_->Shutdown();
-  }
+  // TODO(miersh): Delete this method.
 }
 
 // static
@@ -184,7 +188,13 @@ base::OnceCallback<void(KcerFactory::InitializeOnUIThreadCallback,
                         net::NSSCertDatabase*)>
 KcerFactory::GetPrepareTokensForNssOnIOThreadFunctor() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return base::BindOnce(&PrepareTokensForNss, &nss_tokens_io_);
+  EnsureHighLevelChapsClientInitialized();
+  // `high_level_chaps_client_` is never destroyed (as a part of the factory),
+  // so it's ok to pass it by a raw pointer. PrepareTokensForNss() will run on
+  // the IO thread, but it only needs `high_level_chaps_client_` to pass it
+  // further, where it will only be used on the UI thread.
+  return base::BindOnce(&PrepareTokensForNss, &nss_tokens_io_,
+                        high_level_chaps_client_.get());
 }
 
 base::WeakPtr<Kcer> KcerFactory::GetKcerImpl(Profile* profile) {
@@ -192,6 +202,18 @@ base::WeakPtr<Kcer> KcerFactory::GetKcerImpl(Profile* profile) {
   if (!context) {
     return ExtraInstances::GetEmptyKcer();
   }
+  if (profile->IsSystemProfile()) {
+    // System profiles don't exist in Ash, in Lacros they are used to render the
+    // profile selection screen, which shouldn't need keys or certificates.
+    return ExtraInstances::GetEmptyKcer();
+  }
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!ash::IsUserBrowserContext(profile)) {
+    // This should be returned for Ash Internal profiles, primarily for the
+    // SignIn profile.
+    return ExtraInstances::GetDeviceKcer();
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   KcerService* service = static_cast<KcerService*>(
       GetServiceForBrowserContext(context, /*create=*/true));
@@ -204,12 +226,11 @@ base::WeakPtr<Kcer> KcerFactory::GetKcerImpl(Profile* profile) {
 
 bool KcerFactory::ServiceIsCreatedWithBrowserContext() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // TODO(miersh): This should be set to true because Kcer for the primary
-  // context needs to be created as soon as possible. It is used by the
-  // components through kcer::ExtraInstance::GetDefaultKcer() and on consumer
-  // devices to determine whether the current user is the owner. It's disabled
-  // for now because Kcer is not used anywhere yet.
-  return false;
+  // This should be true because Kcer for the primary context needs to be
+  // created as soon as possible. It is used by the components through
+  // kcer::ExtraInstance::GetDefaultKcer() and on consumer devices to determine
+  // whether the current user is the owner.
+  return true;
 }
 
 std::unique_ptr<KeyedService>
@@ -232,7 +253,10 @@ KcerFactory::BuildServiceInstanceForBrowserContext(
       FROM_HERE,
       base::BindOnce(&KcerFactory::StartInitializingKcerInstance,
                      base::Unretained(const_cast<KcerFactory*>(this)),
-                     new_kcer->GetWeakPtr(), context));
+                     new_kcer->GetWeakPtr(),
+                     // TODO(https://crbug.com/1380714): Remove
+                     // `UnsafeDanglingUntriaged`
+                     base::UnsafeDanglingUntriaged(context)));
 
   return std::make_unique<KcerService>(std::move(new_kcer));
 }
@@ -276,10 +300,9 @@ void KcerFactory::StartInitializingKcerForNss(
       base::BindOnce(&KcerFactory::InitializeKcerInstanceForNss,
                      base::Unretained(this), std::move(kcer_service)));
 
-  auto prepare_tokens_on_io = base::BindPostTask(
-      content::GetIOThreadTaskRunner({}),
+  auto prepare_tokens_on_io =
       base::BindOnce(GetPrepareTokensForNssOnIOThreadFunctor(),
-                     std::move(initialize_callback_ui)));
+                     std::move(initialize_callback_ui));
 
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&GetNssDbOnIOThread, std::move(nss_db_getter),
@@ -300,8 +323,8 @@ void KcerFactory::InitializeKcerInstanceForNss(
 
 void KcerFactory::InitializeKcerInstanceWithoutNss(
     base::WeakPtr<internal::KcerImpl> kcer_service,
-    absl::optional<SessionChapsClient::SlotId> user_token_id,
-    absl::optional<SessionChapsClient::SlotId> device_token_id) {
+    std::optional<SessionChapsClient::SlotId> user_token_id,
+    std::optional<SessionChapsClient::SlotId> device_token_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!kcer_service) {
     return;
@@ -313,7 +336,7 @@ void KcerFactory::InitializeKcerInstanceWithoutNss(
 }
 
 base::WeakPtr<internal::KcerToken> KcerFactory::GetTokenWithoutNss(
-    absl::optional<SessionChapsClient::SlotId> token_id,
+    std::optional<SessionChapsClient::SlotId> token_id,
     Token token_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

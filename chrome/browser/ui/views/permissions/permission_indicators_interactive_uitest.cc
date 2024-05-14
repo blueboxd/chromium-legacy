@@ -14,6 +14,7 @@
 #include "components/content_settings/core/common/features.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -27,8 +28,9 @@ DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kWebContentsElementId);
 class PermissionIndicatorsInteractiveUITest : public InteractiveBrowserTest {
  public:
   PermissionIndicatorsInteractiveUITest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        content_settings::features::kImprovedSemanticsActivityIndicators);
+    scoped_feature_list_.InitWithFeatures(
+        {content_settings::features::kImprovedSemanticsActivityIndicators},
+        {content_settings::features::kLeftHandSideActivityIndicators});
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
   }

@@ -67,7 +67,10 @@ size_t EstimateFlatMapSize(
 InterestGroup::Ad::Ad() = default;
 
 InterestGroup::Ad::Ad(base::PassKey<content::InterestGroupStorage>,
-                      std::string render_url)
+                      std::string&& render_url)
+    : render_url_(std::move(render_url)) {}
+InterestGroup::Ad::Ad(base::PassKey<content::InterestGroupStorage>,
+                      const std::string& render_url)
     : render_url_(render_url) {}
 InterestGroup::Ad::Ad(
     GURL render_gurl,
@@ -127,6 +130,10 @@ bool InterestGroup::Ad::operator==(const Ad& other) const {
 
 InterestGroup::InterestGroup() = default;
 InterestGroup::~InterestGroup() = default;
+InterestGroup::InterestGroup(InterestGroup&& other) = default;
+InterestGroup& InterestGroup::operator=(InterestGroup&& other) = default;
+InterestGroup::InterestGroup(const InterestGroup& other) = default;
+InterestGroup& InterestGroup::operator=(const InterestGroup& other) = default;
 
 // The logic in this method must be kept in sync with ValidateBlinkInterestGroup
 // in blink/renderer/modules/ad_auction/. The tests for this logic are also

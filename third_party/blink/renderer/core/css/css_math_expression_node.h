@@ -61,11 +61,10 @@ enum CalculationResultCategory {
   kCalcNumber,
   kCalcLength,
   kCalcPercent,
-  // TODO(crbug.com/1309178): We are now using this for all calculated lengths
-  // that can't be resolved at style time, including not only calc(px + %) but
-  // also anchor queries and intrinsic size keywords in calc-size(). Rename
-  // this category accordingly.
-  kCalcPercentLength,
+  // kCalcLengthFunction is used for calculated lengths that can't be resolved
+  // at style time.  This includes mixes of length and percent, and also
+  // anchor queries and intrinsic size keywords in calc-size().
+  kCalcLengthFunction,
   kCalcAngle,
   kCalcTime,
   kCalcFrequency,
@@ -73,6 +72,10 @@ enum CalculationResultCategory {
   kCalcIdent,
   kCalcOther,
 };
+using CalculationResultCategorySet =
+    base::EnumSet<CalculationResultCategory,
+                  CalculationResultCategory::kCalcNumber,
+                  CalculationResultCategory::kCalcOther>;
 
 class CORE_EXPORT CSSMathExpressionNode
     : public GarbageCollected<CSSMathExpressionNode> {
@@ -84,9 +87,10 @@ class CORE_EXPORT CSSMathExpressionNode
   enum class Flag : uint8_t {
     AllowPercent,
     AllowCalcSize,
+    AllowAutoInCalcSize,
 
     MinValue = AllowPercent,
-    MaxValue = AllowCalcSize,
+    MaxValue = AllowAutoInCalcSize,
   };
 
   using Flags = base::EnumSet<Flag, Flag::MinValue, Flag::MaxValue>;
@@ -141,7 +145,8 @@ class CORE_EXPORT CSSMathExpressionNode
   // TODO(crbug.com/984372): We currently use 'ms' as the canonical unit of
   // <time>. Switch to 's' to follow the spec.
   // Returns |nullopt| on evaluation failures due to the following reasons:
-  // - The category doesn't have a canonical unit (e.g., |kCalcPercentLength|).
+  // - The category doesn't have a canonical unit (e.g.,
+  //   |kCalcLengthFunction|).
   // - A type conversion that doesn't have a fixed conversion ratio is needed
   //   (e.g., between 'px' and 'em').
   // - There's an unsupported calculation, e.g., dividing two lengths.
@@ -155,10 +160,23 @@ class CORE_EXPORT CSSMathExpressionNode
   virtual bool IsComputationallyIndependent() const = 0;
 
   CalculationResultCategory Category() const { return category_; }
-  bool HasPercentage() const {
-    return category_ == kCalcPercent || category_ == kCalcPercentLength;
+
+  // HasPercentage returns whether the toplevel result type involves a
+  // percentage.  In some cases a result type having a percentage requires
+  // different layout behavior (when there's nothing to resolve percentages
+  // against), so this needs to be tracked accurately.  This examines the
+  // cases of kCalcLengthFunction to determine whether it results from a
+  // percentage.
+  virtual bool HasPercentage() const { return Category() == kCalcPercent; }
+
+  // InvolvesLayout returns whether a percentage, an anchor query, or a
+  // calc-size() keyword is used anywhere in the value, including in contexts
+  // (such as the progress() function) that convert the result type of their
+  // arguments into a number.
+  virtual bool InvolvesLayout() const {
+    return Category() == kCalcPercent || Category() == kCalcLengthFunction;
   }
-  virtual bool InvolvesPercentage() const { return HasPercentage(); }
+
   virtual bool InvolvesAnchorQueries() const { return IsAnchorQuery(); }
 
   // Returns the unit type of the math expression *without doing any type
@@ -538,7 +556,8 @@ class CORE_EXPORT CSSMathExpressionOperation final
            IsTrigonometricFunction() || IsSignRelatedFunction() || IsCalcSize();
   }
 
-  bool InvolvesPercentage() const final;
+  bool HasPercentage() const final;
+  bool InvolvesLayout() const final;
   bool InvolvesAnchorQueries() const final;
 
   String CSSTextAsClamp() const;
@@ -639,16 +658,8 @@ class CORE_EXPORT CSSMathExpressionAnchorQuery final
     return false;
   }
   bool IsComputationallyIndependent() const final { return false; }
-  double DoubleValue() const final {
-    // We can't resolve an anchor query until layout time.
-    NOTREACHED();
-    return 0;
-  }
-  double ComputeLengthPx(const CSSLengthResolver& length_resolver) const final {
-    // We can't resolve an anchor query until layout time.
-    NOTREACHED();
-    return 0;
-  }
+  double DoubleValue() const final;
+  double ComputeLengthPx(const CSSLengthResolver& length_resolver) const final;
   void AccumulateLengthUnitTypes(
       CSSPrimitiveValue::LengthTypeFlags& types) const final {
     // AccumulateLengthUnitTypes() is only used when interpolating the
@@ -670,13 +681,13 @@ class CORE_EXPORT CSSMathExpressionAnchorQuery final
 #endif
 
  protected:
-  double ComputeDouble(const CSSLengthResolver& length_resolver) const final {
-    // We can't resolve an anchor query until layout time.
-    NOTREACHED();
-    return 0;
-  }
+  double ComputeDouble(const CSSLengthResolver&) const final;
 
  private:
+  std::optional<LayoutUnit> EvaluateQuery(const AnchorQuery& query,
+                                          const CSSLengthResolver&) const;
+  AnchorQuery ToQuery(const CSSLengthResolver& length_resolver) const;
+
   CSSAnchorQueryType type_;
   Member<const CSSValue> anchor_specifier_;
   Member<const CSSValue> value_;

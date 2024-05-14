@@ -44,13 +44,15 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.TabListCoordinator.TabListMode;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionsOrchestrator;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator.SystemUiScrimDelegate;
@@ -101,6 +103,7 @@ public class TabSwitcherCoordinator
     private final ViewGroup mCoordinatorView;
     private final ViewGroup mRootView;
     private TabContentManager mTabContentManager;
+    private final @NonNull BottomSheetController mBottomSheetController;
 
     /**
      * TODO(crbug.com/1227656): Refactor this to pass a supplier instead to ensure we re-use the
@@ -133,6 +136,7 @@ public class TabSwitcherCoordinator
             @NonNull Supplier<DynamicResourceLoader> dynamicResourceLoaderSupplier,
             @NonNull SnackbarManager snackbarManager,
             @NonNull ModalDialogManager modalDialogManager,
+            @NonNull BottomSheetController bottomSheetController,
             @Nullable OneshotSupplier<IncognitoReauthController> incognitoReauthControllerSupplier,
             @Nullable BackPressManager backPressManager,
             @Nullable OneshotSupplier<LayoutStateProvider> layoutStateProviderSupplier) {
@@ -150,6 +154,7 @@ public class TabSwitcherCoordinator
             mDynamicResourceLoaderSupplier = dynamicResourceLoaderSupplier;
             mSnackbarManager = snackbarManager;
             mModalDialogManager = modalDialogManager;
+            mBottomSheetController = bottomSheetController;
 
             PropertyModel containerViewModel =
                     new PropertyModel.Builder(TabListContainerProperties.ALL_KEYS)
@@ -176,7 +181,6 @@ public class TabSwitcherCoordinator
                             tabModelSelector,
                             browserControls,
                             container,
-                            tabContentManager,
                             new Handler(),
                             mode,
                             incognitoReauthControllerSupplier,
@@ -197,12 +201,19 @@ public class TabSwitcherCoordinator
                             currentTabModelFilterSupplier);
 
             PseudoTab.TitleProvider titleProvider =
-                    (context, tab) -> {
-                        int numRelatedTabs =
-                                PseudoTab.getRelatedTabs(context, tab, tabModelSelector).size();
-                        if (numRelatedTabs == 1) return tab.getTitle();
+                    (context, pseudoTab) -> {
+                        TabGroupModelFilter filter =
+                                (TabGroupModelFilter)
+                                        tabModelSelector
+                                                .getTabModelFilterProvider()
+                                                .getCurrentTabModelFilterSupplier()
+                                                .get();
+                        Tab tab = TabModelUtils.getTabById(filter.getTabModel(), pseudoTab.getId());
+                        assert tab != null;
+                        if (!filter.isTabInTabGroup(tab)) return tab.getTitle();
 
-                        return TabGroupTitleEditor.getDefaultTitle(context, numRelatedTabs);
+                        return TabGroupTitleEditor.getDefaultTitle(
+                                context, filter.getRelatedTabCountForRootId(tab.getRootId()));
                     };
 
             long startTimeMs = SystemClock.uptimeMillis();
@@ -326,6 +337,7 @@ public class TabSwitcherCoordinator
                 new TabGridDialogCoordinator(
                         mActivity,
                         mBrowserControlsStateProvider,
+                        mBottomSheetController,
                         currentTabModelFilterSupplier,
                         () -> mTabModelSelector.getModel(false),
                         mTabContentManager,
@@ -363,8 +375,7 @@ public class TabSwitcherCoordinator
             final boolean shouldUseDynamicResource =
                     mMode == TabListCoordinator.TabListMode.GRID
                             && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity)
-                            && !(ChromeFeatureList.sGridTabSwitcherAndroidAnimations.isEnabled()
-                                    && ReturnToChromeUtil.isStartSurfaceRefactorEnabled(mActivity));
+                            && !ChromeFeatureList.sGridTabSwitcherAndroidAnimations.isEnabled();
 
             Profile profile = mTabModelSelector.getModel(false).getProfile();
             assert profile != null;
@@ -444,11 +455,6 @@ public class TabSwitcherCoordinator
     }
 
     @Override
-    public void refreshTabList() {
-        mMediator.refreshTabList();
-    }
-
-    @Override
     public int getTabListTopOffset() {
         return mTabListCoordinator.getTabListTopOffset();
     }
@@ -469,11 +475,6 @@ public class TabSwitcherCoordinator
         // should listen for |requestFocusOnCurrentTab| signal implicitly and apply changes. This
         // would require refactoring TabSwitcher.TabListDelegate and its implementation.
         mMediator.requestAccessibilityFocusOnCurrentTab();
-    }
-
-    @Override
-    public void prepareTabGridView() {
-        mTabListCoordinator.prepareTabGridView();
     }
 
     @Override

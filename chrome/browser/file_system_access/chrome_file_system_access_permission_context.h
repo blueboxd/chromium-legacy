@@ -17,6 +17,7 @@
 #include "base/time/default_clock.h"
 #include "chrome/browser/file_system_access/file_system_access_features.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_request_manager.h"
+#include "components/enterprise/buildflags/buildflags.h"
 #include "components/permissions/features.h"
 #include "components/permissions/object_permission_context_base.h"
 #include "content/public/browser/file_system_access_permission_context.h"
@@ -27,6 +28,11 @@
 #include "chrome/browser/permissions/one_time_permissions_tracker_observer.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_manager_observer.h"
+#endif
+
+#if BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
+#include "chrome/browser/enterprise/connectors/analysis/content_analysis_delegate.h"
+#include "components/enterprise/common/files_scan_data.h"
 #endif
 
 class HostContentSettingsMap;
@@ -195,6 +201,10 @@ class ChromeFileSystemAccessPermissionContext
   void OnFileCreatedFromShowSaveFilePicker(
       const GURL& file_picker_binding_context,
       const storage::FileSystemURL& url) override;
+  void CheckPathsAgainstEnterprisePolicy(
+      std::vector<PathInfo> entries,
+      content::GlobalRenderFrameHostId frame_id,
+      EntriesAllowedByEnterprisePolicyCallback callback) override;
 
   // Registers a subscriber to be notified of file creation events originating
   // from `window.showSaveFilePicker()` until the returned subscription is
@@ -219,12 +229,6 @@ class ChromeFileSystemAccessPermissionContext
     return GetPersistedGrantStatus(origin);
   }
 
-  bool RevokeActiveGrantsForTesting(
-      const url::Origin& origin,
-      base::FilePath file_path = base::FilePath()) {
-    return RevokeActiveGrants(origin, std::move(file_path));
-  }
-
   std::vector<std::unique_ptr<Object>> GetExtendedPersistedObjectsForTesting(
       const url::Origin& origin) {
     return GetExtendedPersistedObjects(origin);
@@ -233,10 +237,6 @@ class ChromeFileSystemAccessPermissionContext
   PersistedGrantType GetPersistedGrantTypeForTesting(
       const url::Origin& origin) {
     return GetPersistedGrantType(origin);
-  }
-
-  bool OriginHasExtendedPermissionForTesting(const url::Origin& origin) {
-    return OriginHasExtendedPermission(origin);
   }
 
   bool HasExtendedPermissionForTesting(const url::Origin& origin,
@@ -279,10 +279,18 @@ class ChromeFileSystemAccessPermissionContext
   // usage icon/bubble).
   void RevokeGrants(const url::Origin& origin);
 
+  // Revokes all the active grants in `active_permissions_map_`. This method is
+  // currently used by the browsing data clearning code.
+  void RevokeAllActiveGrants();
+
   // Returns whether active or extended grants exist for the origin of the given
   // type.
   bool OriginHasReadAccess(const url::Origin& origin);
   bool OriginHasWriteAccess(const url::Origin& origin);
+
+  // Returns whether the origin has extended permission enabled via user
+  // opt-in or by having an actively installed PWA.
+  bool OriginHasExtendedPermission(const url::Origin& origin);
 
   // Enable or disable extended permissions as a result of user
   // interaction with the File System Access Page Info UI.
@@ -298,6 +306,12 @@ class ChromeFileSystemAccessPermissionContext
   void TriggerTimersForTesting();
 
   void SetOriginHasExtendedPermissionForTesting(const url::Origin& origin);
+
+  bool RevokeActiveGrantsForTesting(
+      const url::Origin& origin,
+      base::FilePath file_path = base::FilePath()) {
+    return RevokeActiveGrants(origin, std::move(file_path));
+  }
 
   scoped_refptr<content::FileSystemAccessPermissionGrant>
   GetExtendedReadPermissionGrantForTesting(const url::Origin& origin,
@@ -335,6 +349,14 @@ class ChromeFileSystemAccessPermissionContext
   };
 
   void PermissionGrantDestroyed(PermissionGrantImpl* grant);
+
+#if BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
+  void OnContentAnalysisComplete(
+      std::vector<PathInfo> entries,
+      EntriesAllowedByEnterprisePolicyCallback callback,
+      std::vector<base::FilePath> paths,
+      std::vector<bool> allowed);
+#endif
 
   // Checks whether the file or directory at `path` corresponds to a directory
   // Chrome considers sensitive (i.e. system files). Calls `callback` with
@@ -452,9 +474,6 @@ class ChromeFileSystemAccessPermissionContext
                                                    const base::FilePath& path,
                                                    GrantType grant_type);
 
-  // Returns whether the origin has extended permission enabled via user
-  // opt-in or by having an actively installed PWA.
-  bool OriginHasExtendedPermission(const url::Origin& origin);
   // Removes extended permissions for grants. Does not update the content
   // setting type for extended permissions.
   // This method should only be called for an origin that already has extended

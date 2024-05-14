@@ -65,6 +65,10 @@ namespace {
 
 constexpr char kTestDataChannelCallbackName[] = "test_channel_name";
 
+// Use large fake screen-ids on 64-bit systems, to detect errors caused by
+// inadvertent casts to 32-bits.
+constexpr bool kUse64BitDisplayId = (sizeof(webrtc::ScreenId) >= 8);
+
 // Matches a |protocol::Capabilities| argument against a list of capabilities
 // formatted as a space-separated string.
 MATCHER_P(IncludesCapabilities, expected_capabilities, "") {
@@ -127,11 +131,13 @@ class ClientSessionTest : public testing::Test {
       protocol::FakeDesktopCapturer::kWidth;  // 800
   static const int kDisplay1Height =
       protocol::FakeDesktopCapturer::kHeight;  // 600
-  static const int64_t kDisplay1Id = 1111111111111111;
+  static const int64_t kDisplay1Id =
+      kUse64BitDisplayId ? 1111111111111111 : 11111111;
   static const int kDisplay2Width = 1024;
   static const int kDisplay2Height = 768;
   static const int kDisplay2YOffset = 35;
-  static const int64_t kDisplay2Id = 2222222222222222;
+  static const int64_t kDisplay2Id =
+      kUse64BitDisplayId ? 2222222222222222 : 22222222;
 
   // Creates the client session from a FakeSession instance.
   void CreateClientSession(std::unique_ptr<protocol::FakeSession> session);
@@ -237,7 +243,7 @@ void ClientSessionTest::SetUp() {
 void ClientSessionTest::TearDown() {
   if (client_session_) {
     if (connection_->is_connected()) {
-      client_session_->DisconnectSession(protocol::OK);
+      client_session_->DisconnectSession(ErrorCode::OK);
     }
     client_session_.reset();
     desktop_environment_factory_.reset();
@@ -487,7 +493,7 @@ TEST_F(ClientSessionTest, MultiMonMouseMove) {
   // Events should clamp to the entire desktop (800+1024, 35+768).
   connection_->input_stub()->InjectMouseEvent(MakeMouseMoveEvent(2000, 1000));
 
-  client_session_->DisconnectSession(protocol::OK);
+  client_session_->DisconnectSession(ErrorCode::OK);
   client_session_.reset();
 
   EXPECT_EQ(7U, mouse_events_.size());
@@ -543,7 +549,7 @@ TEST_F(ClientSessionTest, MultiMonMouseMove_SameSize) {
   // Events should clamp to the entire desktop (800+800, 35+600).
   connection_->input_stub()->InjectMouseEvent(MakeMouseMoveEvent(2000, 1000));
 
-  client_session_->DisconnectSession(protocol::OK);
+  client_session_->DisconnectSession(ErrorCode::OK);
   client_session_.reset();
 
   EXPECT_EQ(7U, mouse_events_.size());
@@ -598,7 +604,7 @@ TEST_F(ClientSessionTest, DisableInputs) {
   connection_->input_stub()->InjectKeyEvent(MakeKeyEvent(true, 3));
   connection_->input_stub()->InjectMouseEvent(MakeMouseMoveEvent(300, 301));
 
-  client_session_->DisconnectSession(protocol::OK);
+  client_session_->DisconnectSession(ErrorCode::OK);
   client_session_.reset();
 
   EXPECT_EQ(2U, mouse_events_.size());
@@ -688,7 +694,7 @@ TEST_F(ClientSessionTest, RestoreEventState) {
   mousedown.set_button_down(true);
   connection_->input_stub()->InjectMouseEvent(mousedown);
 
-  client_session_->DisconnectSession(protocol::OK);
+  client_session_->DisconnectSession(ErrorCode::OK);
   client_session_.reset();
 
   EXPECT_EQ(2U, mouse_events_.size());

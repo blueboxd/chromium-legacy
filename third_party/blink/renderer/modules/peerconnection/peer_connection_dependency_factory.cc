@@ -84,7 +84,6 @@
 #include "third_party/webrtc/api/rtc_event_log/rtc_event_log_factory.h"
 #include "third_party/webrtc/api/video_track_source_proxy_factory.h"
 #include "third_party/webrtc/media/engine/fake_video_codec_factory.h"
-#include "third_party/webrtc/media/engine/multiplex_codec_factory.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
 #include "third_party/webrtc/rtc_base/openssl_stream_adapter.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
@@ -173,7 +172,7 @@ class ProxyAsyncDnsResolverFactory final
   }
 
  private:
-  raw_ptr<IpcPacketSocketFactory, ExperimentalRenderer> ipc_psf_;
+  raw_ptr<IpcPacketSocketFactory, DanglingUntriaged> ipc_psf_;
 };
 
 std::string WorkerThreadName() {
@@ -693,14 +692,6 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
           base::BindRepeating(&WebrtcVideoPerfReporter::StoreWebrtcVideoStats,
                               WrapCrossThreadWeakPersistent(
                                   webrtc_video_perf_reporter_.Get())));
-
-  // Enable Multiplex codec in SDP optionally.
-  if (base::FeatureList::IsEnabled(blink::features::kWebRtcMultiplexCodec)) {
-    webrtc_encoder_factory = std::make_unique<webrtc::MultiplexEncoderFactory>(
-        std::move(webrtc_encoder_factory));
-    webrtc_decoder_factory = std::make_unique<webrtc::MultiplexDecoderFactory>(
-        std::move(webrtc_decoder_factory));
-  }
 
   if (blink::Platform::Current()->UsesFakeCodecForPeerConnection()) {
     webrtc_encoder_factory =

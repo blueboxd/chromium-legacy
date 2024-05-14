@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_coordinator.h"
 
-#import "base/feature_list.h"
 #import "base/memory/raw_ptr.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
@@ -168,11 +167,6 @@
   _viewController = [[HistorySyncViewController alloc] init];
   _viewController.delegate = self;
 
-  // TODO(b/318349283): This property will also be based on the capability
-  // CanShowHistorySyncOptInsWithoutMinorModeRestrictions.
-  _viewController.useEquallyWeightedButtons = base::FeatureList::IsEnabled(
-      switches::kMinorModeRestrictionsForHistorySyncOptIn);
-
   ChromeAccountManagerService* chromeAccountManagerService =
       ChromeAccountManagerServiceFactory::GetForBrowserState(browserState);
   signin::IdentityManager* identityManager =
@@ -185,6 +179,7 @@
                       showUserEmail:_showUserEmail];
   _mediator.consumer = _viewController;
   _mediator.delegate = self;
+
   if (_firstRun) {
     _viewController.modalInPresentation = YES;
     base::UmaHistogramEnumeration(first_run::kFirstRunStageHistogram,
@@ -242,6 +237,7 @@
 
   history_sync::ResetDeclinePrefs(_prefService);
   base::RecordAction(base::UserMetricsAction("Signin_HistorySync_Completed"));
+  [self recordActionButtonTappedWithHistorySyncCompleted:YES];
   if (_firstRun) {
     base::UmaHistogramEnumeration(
         first_run::kFirstRunStageHistogram,
@@ -258,6 +254,7 @@
 - (void)didTapSecondaryActionButton {
   history_sync::RecordDeclinePrefs(_prefService);
   base::RecordAction(base::UserMetricsAction("Signin_HistorySync_Declined"));
+  [self recordActionButtonTappedWithHistorySyncCompleted:NO];
   if (_firstRun) {
     base::UmaHistogramEnumeration(
         first_run::kFirstRunStageHistogram,
@@ -269,6 +266,36 @@
   _recordOptInEndAtStop = NO;
 
   [_delegate closeHistorySyncCoordinator:self declinedByUser:YES];
+}
+
+#pragma mark - Private
+
+- (void)recordActionButtonTappedWithHistorySyncCompleted:(BOOL)completed {
+  if (!base::FeatureList::IsEnabled(
+          switches::kMinorModeRestrictionsForHistorySyncOptIn)) {
+    return;
+  }
+
+  std::optional<signin_metrics::SyncButtonClicked> buttonClicked;
+  switch (_viewController.actionButtonsVisibility) {
+    case ActionButtonsVisibility::kRegularButtonsShown:
+      buttonClicked = completed ? signin_metrics::SyncButtonClicked::
+                                      kHistorySyncOptInNotEqualWeighted
+                                : signin_metrics::SyncButtonClicked::
+                                      kHistorySyncCancelNotEqualWeighted;
+      break;
+    case ActionButtonsVisibility::kEquallyWeightedButtonShown:
+      buttonClicked = completed ? signin_metrics::SyncButtonClicked::
+                                      kHistorySyncOptInEqualWeighted
+                                : signin_metrics::SyncButtonClicked::
+                                      kHistorySyncCancelEqualWeighted;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  base::UmaHistogramEnumeration("Signin.SyncButtons.Clicked", *buttonClicked);
 }
 
 @end

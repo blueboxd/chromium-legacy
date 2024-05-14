@@ -1235,7 +1235,7 @@ TEST_F(PasswordGenerationAgentTest, AutofillToGenerationField) {
   WebElement element = GetElementById("first_password");
   const WebInputElement input_element = element.To<WebInputElement>();
   // Since password isn't generated (just suitable field was detected),
-  // |OnFieldAutofilled| wouldn't trigger any actions.
+  // `OnFieldAutofilled` wouldn't trigger any actions.
   EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated(testing::_)).Times(0);
   password_generation_->OnFieldAutofilled(input_element);
 }
@@ -1265,7 +1265,7 @@ TEST_F(PasswordGenerationAgentTest, PasswordUnmaskedUntilCompleteDeletion) {
   testing::Mock::VerifyAndClearExpectations(&fake_pw_client_);
 
   // Delete characters of the generated password until only
-  // |kMinimumLengthForEditedPassword| - 1 chars remain.
+  // `kMinimumLengthForEditedPassword` - 1 chars remain.
   EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup).Times(AtLeast(1));
   FocusField(kGenerationElementId);
   SimulateUserTypingASCIICharacter(ui::VKEY_END, false);
@@ -1317,7 +1317,7 @@ TEST_F(PasswordGenerationAgentTest, ShortPasswordMaskedAfterChangingFocus) {
   testing::Mock::VerifyAndClearExpectations(&fake_pw_client_);
 
   // Delete characters of the generated password until only
-  // |kMinimumLengthForEditedPassword| - 1 chars remain.
+  // `kMinimumLengthForEditedPassword` - 1 chars remain.
   EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup).Times(AtLeast(1));
   FocusField(kGenerationElementId);
   EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated(testing::_));
@@ -1415,18 +1415,13 @@ TEST_F(PasswordGenerationAgentTest, SuggestionPreviewTest) {
             blink::WebAutofillState::kPreviewed);
 
   // Previewed suggestions should be successfully cleared upon request.
-  EXPECT_TRUE(password_generation_->DidClearGenerationSuggestion(
-      first_password_element));
+  password_generation_->ClearPreviewedForm();
   EXPECT_TRUE(first_password_element.SuggestedValue().IsNull());
   EXPECT_TRUE(second_password_element.SuggestedValue().IsNull());
   EXPECT_EQ(first_password_element.GetAutofillState(),
             blink::WebAutofillState::kNotFilled);
   EXPECT_EQ(second_password_element.GetAutofillState(),
             blink::WebAutofillState::kNotFilled);
-
-  // Clearing should not succeed when there is nothing to clear.
-  EXPECT_FALSE(password_generation_->DidClearGenerationSuggestion(
-      first_password_element));
 }
 
 TEST_F(PasswordGenerationAgentTest, AdvancesFocusToNextFieldAfterPasswords) {

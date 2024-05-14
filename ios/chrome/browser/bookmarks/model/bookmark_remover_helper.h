@@ -12,10 +12,7 @@
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 
 class ChromeBrowserState;
-
-namespace bookmarks {
-class BookmarkModel;
-}  // namespace bookmarks
+class LegacyBookmarkModel;
 
 // Helper class to asynchronously remove bookmarks.
 class BookmarkRemoverHelper : public bookmarks::BaseBookmarkModelObserver {
@@ -37,9 +34,8 @@ class BookmarkRemoverHelper : public bookmarks::BaseBookmarkModelObserver {
   void BookmarkModelChanged() override;
 
   // BookmarkModelObserver implementation.
-  void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
-                           bool ids_reassigned) override;
-  void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override;
+  void BookmarkModelLoaded(bool ids_reassigned) override;
+  void BookmarkModelBeingDeleted() override;
 
  private:
   // Invoked when the bookmark entries have been deleted. Invoke the
@@ -49,7 +45,7 @@ class BookmarkRemoverHelper : public bookmarks::BaseBookmarkModelObserver {
 
   Callback completion_;
   raw_ptr<ChromeBrowserState> browser_state_ = nullptr;
-  base::ScopedMultiSourceObservation<bookmarks::BookmarkModel,
+  base::ScopedMultiSourceObservation<LegacyBookmarkModel,
                                      bookmarks::BookmarkModelObserver>
       bookmark_model_observations_{this};
 

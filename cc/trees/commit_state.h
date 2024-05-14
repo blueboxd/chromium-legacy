@@ -144,7 +144,7 @@ struct CC_EXPORT CommitState {
   // added here.
   std::vector<PresentationTimeCallbackBuffer::Callback>
       pending_presentation_callbacks;
-  std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback>
+  std::vector<PresentationTimeCallbackBuffer::SuccessfulCallbackWithDetails>
       pending_successful_presentation_callbacks;
 
   std::vector<std::unique_ptr<MicroBenchmarkImpl>> benchmarks;
@@ -157,7 +157,8 @@ struct CC_EXPORT CommitState {
   std::vector<UIResourceRequest> ui_resource_request_queue;
   base::flat_map<UIResourceId, gfx::Size> ui_resource_sizes;
   PropertyTreesChangeState property_trees_change_state;
-  base::flat_set<Layer*> layers_that_should_push_properties;
+  base::flat_set<raw_ptr<Layer, CtnExperimental>>
+      layers_that_should_push_properties;
 };
 
 struct CC_EXPORT ThreadUnsafeCommitState {

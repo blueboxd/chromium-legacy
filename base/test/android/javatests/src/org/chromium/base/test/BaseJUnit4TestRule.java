@@ -4,10 +4,13 @@
 
 package org.chromium.base.test;
 
+import android.app.job.JobScheduler;
+
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.test.util.InMemorySharedPreferencesContext;
 
 /** Holds setUp / tearDown logic common to all instrumentation tests. */
@@ -24,8 +27,17 @@ class BaseJUnit4TestRule implements TestRule {
                             "BaseJUnit4TestRule requires that you use "
                                     + "BaseChromiumAndroidJUnitRunner (or a subclass)");
                 }
-                base.evaluate();
+                UmaRecorderHolder.resetForTesting();
+                try {
+                    base.evaluate();
+                } finally {
+                    clearJobSchedulerJobs();
+                }
             }
         };
+    }
+
+    static void clearJobSchedulerJobs() {
+        BaseJUnit4ClassRunner.getApplication().getSystemService(JobScheduler.class).cancelAll();
     }
 }

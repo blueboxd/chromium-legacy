@@ -19,7 +19,6 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/containers/contains.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -155,6 +154,12 @@ std::vector<ash::AcceleratorData> GetDefaultAccelerators() {
         accelerators,
         base::make_span(ash::kToggleGameDashboardAcceleratorData,
                         ash::kToggleGameDashboardAcceleratorDataLength));
+  }
+
+  if (ash::features::IsPickerUpdateEnabled()) {
+    AppendAcceleratorData(
+        accelerators, base::make_span(ash::kTogglePickerAcceleratorData,
+                                      ash::kTogglePickerAcceleratorDataLength));
   }
 
   // Debug accelerators.
@@ -494,10 +499,25 @@ AcceleratorConfigResult AshAcceleratorConfiguration::DoRemoveAccelerator(
   CHECK(*found_id == action_id);
 
   // Remove accelerator from lookup map.
-  base::Erase(found_accelerators_iter->second, accelerator);
+  std::erase(found_accelerators_iter->second, accelerator);
 
   // Remove accelerator from reverse lookup map.
   accelerator_to_id_.Erase(accelerator);
+
+  // Also remove accelerators in the reverse key_state.
+  ui::Accelerator accelerator_reverse_state(accelerator);
+  accelerator_reverse_state.set_key_state(
+      accelerator.key_state() == ui::Accelerator::KeyState::PRESSED
+          ? ui::Accelerator::KeyState::RELEASED
+          : ui::Accelerator::KeyState::PRESSED);
+
+  const AcceleratorAction* reverse_key_state_id =
+      accelerator_to_id_.Find(accelerator_reverse_state);
+
+  if (reverse_key_state_id && *reverse_key_state_id == action_id) {
+    std::erase(found_accelerators_iter->second, accelerator_reverse_state);
+    accelerator_to_id_.Erase(accelerator_reverse_state);
+  }
 
   // Store the final state of `action_id`.
   if (save_override) {

@@ -125,6 +125,15 @@ class PrefetchManagerTest : public testing::Test {
     return prefetch_manager_->queued_jobs_.size();
   }
 
+  void CheckHeaders(network::ResourceRequest& request) {
+    std::string purpose;
+    EXPECT_TRUE(request.headers.GetHeader("Purpose", &purpose));
+    EXPECT_EQ(purpose, "prefetch");
+    std::string sec_purpose;
+    EXPECT_TRUE(request.headers.GetHeader("Sec-Purpose", &sec_purpose));
+    EXPECT_EQ(sec_purpose, "prefetch");
+  }
+
   base::test::ScopedFeatureList features_;
   // IO_MAINLOOP is needed for the EmbeddedTestServer.
   content::BrowserTaskEnvironment task_environment_{
@@ -170,9 +179,7 @@ TEST_F(PrefetchManagerTest, OneMainFrameUrlOnePrefetch) {
 
         EXPECT_EQ(request.mode, network::mojom::RequestMode::kNoCors);
 
-        std::string purpose;
-        EXPECT_TRUE(request.headers.GetHeader("Purpose", &purpose));
-        EXPECT_EQ(purpose, "prefetch");
+        CheckHeaders(request);
 
         loop.Quit();
         return false;
@@ -470,8 +477,9 @@ TEST_F(PrefetchManagerTest, Stop) {
               UnorderedElementsAreArray({test_server.GetURL(path2)}));
 }
 
-// Flaky on Mac/Linux/CrOS only. http://crbug.com/1239235
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+// Flaky on Mac/Linux/CrOS/Android/Windows. http://crbug.com/1239235
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN)
 #define MAYBE_StopAndStart DISABLED_StopAndStart
 #else
 #define MAYBE_StopAndStart StopAndStart
@@ -660,9 +668,7 @@ TEST_F(PrefetchManagerTest, Font) {
 
         EXPECT_EQ(request.mode, network::mojom::RequestMode::kNoCors);
 
-        std::string purpose;
-        EXPECT_TRUE(request.headers.GetHeader("Purpose", &purpose));
-        EXPECT_EQ(purpose, "prefetch");
+        CheckHeaders(request);
 
         loop.Quit();
         return false;

@@ -15,9 +15,9 @@ namespace printing {
 namespace features {
 
 #if BUILDFLAG(IS_CHROMEOS)
-// Enable support for borderless printing and media type.
-BASE_FEATURE(kEnableBorderlessPrinting,
-             "EnableBorderlessPrinting",
+// Add printers via printscanmgr instead of debugd.
+BASE_FEATURE(kAddPrinterViaPrintscanmgr,
+             "AddPrinterViaPrintscanmgr",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
@@ -88,6 +88,9 @@ bool ShouldPrintUsingXps(bool source_is_pdf) {
 BASE_FEATURE(kEnableOopPrintDrivers,
              "EnableOopPrintDrivers",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<bool> kEnableOopPrintDriversEarlyStart{
+    &kEnableOopPrintDrivers, "EarlyStart", false};
 
 const base::FeatureParam<bool> kEnableOopPrintDriversJobPrint{
     &kEnableOopPrintDrivers, "JobPrint", true};

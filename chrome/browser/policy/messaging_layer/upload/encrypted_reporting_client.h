@@ -17,6 +17,7 @@
 #include "base/thread_annotations.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "chrome/browser/policy/messaging_layer/util/upload_response_parser.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/encrypted_reporting_job_configuration.h"
@@ -24,10 +25,6 @@
 #include "components/reporting/proto/synced/record_constants.pb.h"
 #include "components/reporting/resources/resource_manager.h"
 #include "components/reporting/util/statusor.h"
-
-namespace policy {
-class CloudPolicyClient;
-}  // namespace policy
 
 namespace reporting {
 
@@ -91,7 +88,7 @@ class EncryptedReportingClient {
   };
 
   using ResponseCallback =
-      base::OnceCallback<void(StatusOr<base::Value::Dict>)>;
+      base::OnceCallback<void(StatusOr<UploadResponseParser>)>;
 
   static std::unique_ptr<EncryptedReportingClient> Create(
       std::unique_ptr<Delegate> delegate = std::make_unique<Delegate>());
@@ -105,6 +102,12 @@ class EncryptedReportingClient {
   // Returns false otherwise.
   static bool GenerationGuidIsRequired();
 
+  // Presets common settings to be applied to future cached uploads. May be
+  // called more than once, but settings are expected to end up being the same.
+  void PresetUploads(base::Value::Dict context,
+                     std::string dm_token,
+                     std::string client_id);
+
   // Uploads a report containing multiple `records`, augmented with
   // `need_encryption_key` flag and `config_file_version`. Calls `callback` when
   // the upload process is completed. Uses `scoped_reservation` to ensure proper
@@ -113,8 +116,6 @@ class EncryptedReportingClient {
                     int config_file_version,
                     std::vector<EncryptedRecord> records,
                     ScopedReservation scoped_reservation,
-                    std::optional<base::Value::Dict> context,
-                    policy::CloudPolicyClient* cloud_policy_client,
                     ResponseCallback callback);
 
   // Test-only method that resets collected uploads state.
@@ -138,13 +139,21 @@ class EncryptedReportingClient {
   // Constructor called by factory only.
   explicit EncryptedReportingClient(std::unique_ptr<Delegate> delegate);
 
+  // Performs actual upload containing multiple `records`, augmented with
+  // `need_encryption_key` flag and `config_file_version`. Calls `callback` when
+  // the upload process is completed. Uses `scoped_reservation` to ensure proper
+  // memory management (stops and returns error if memory is insufficient).
+  void PerformUpload(bool need_encryption_key,
+                     int config_file_version,
+                     std::vector<EncryptedRecord> records,
+                     ScopedReservation scoped_reservation,
+                     ResponseCallback callback);
+
   // Constructs upload job after the data is converted into JSON, assigned to
   // `payload_result` (`nullopt` if there was an error). Calls `callback` once
   // the job has been responded or if an error has been detected, and releases
   // `scoped_reservation`.
   void CreateUploadJob(
-      std::optional<base::Value::Dict> context,
-      policy::CloudPolicyClient* cloud_policy_client,
       policy::EncryptedReportingJobConfiguration::UploadResponseCallback
           response_cb,
       ResponseCallback callback,
@@ -179,6 +188,11 @@ class EncryptedReportingClient {
                                        int response_code);
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  // Cached elements expected by the reporting server.
+  std::string dm_token_ GUARDED_BY_CONTEXT(sequence_checker_);
+  std::string client_id_ GUARDED_BY_CONTEXT(sequence_checker_);
+  base::Value::Dict context_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   JobSet request_jobs_ GUARDED_BY_CONTEXT(sequence_checker_);
 

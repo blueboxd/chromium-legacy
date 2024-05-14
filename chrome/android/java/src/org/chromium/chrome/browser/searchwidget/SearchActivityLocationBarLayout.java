@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.omnibox.status.StatusCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
+import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityClient.SearchType;
 import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityPreferencesManager;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -64,18 +65,12 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
                 ToolbarPhone.createModernLocationBarBackground(getContext());
         if (OmniboxFeatures.shouldShowModernizeVisualUpdate(getContext())) {
             backgroundDrawable.setTint(
-                    OmniboxFeatures.shouldShowActiveColorOnOmnibox()
-                            ? ChromeColors.getSurfaceColor(
-                                    getContext(), R.dimen.omnibox_suggestion_bg_elevation)
-                            : ChromeColors.getSurfaceColor(
-                                    getContext(),
-                                    R.dimen.omnibox_suggestion_dropdown_bg_elevation));
-            if (OmniboxFeatures.shouldShowActiveColorOnOmnibox()) {
-                backgroundDrawable.setCornerRadius(
-                        getResources()
-                                .getDimensionPixelSize(
-                                        R.dimen.omnibox_suggestion_bg_round_corner_radius));
-            }
+                    ChromeColors.getSurfaceColor(
+                            getContext(), R.dimen.omnibox_suggestion_bg_elevation));
+            backgroundDrawable.setCornerRadius(
+                    getResources()
+                            .getDimensionPixelSize(
+                                    R.dimen.omnibox_suggestion_bg_round_corner_radius));
             setPaddingRelative(
                     getResources().getDimensionPixelSize(R.dimen.location_bar_start_padding_modern),
                     getPaddingTop(),

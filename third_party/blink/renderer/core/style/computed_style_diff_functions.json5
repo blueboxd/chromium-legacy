@@ -106,7 +106,7 @@
                 "CssDominantBaseline", "text-anchor",
                 "stroke-width", "stroke-miterlimit", "stroke-linecap", "stroke-linejoin",
                 "marker-end", "marker-mid", "marker-start", "scrollbar-width", "object-view-box",
-                "position-fallback", "position-fallback-bounds"],
+                "position-fallback-bounds", "position-try-options", "position-try-order"],
         methods_to_diff: [
           {
             method: "BorderLeftWidth()",
@@ -126,6 +126,10 @@
           },
           {
             method: "HasPseudoElementStyle(kPseudoIdScrollbar)",
+            field_dependencies: ["StyleType"]
+          },
+          {
+            method: "UsesStandardScrollbarStyle()",
             field_dependencies: ["StyleType"]
           },
           {
@@ -196,8 +200,8 @@
                                  "opacity"]
           },
           {
-            predicate: "a.AnchorDefaultDataEquivalent(b)",
-            field_dependencies: ["anchor-default"]
+            predicate: "a.PositionAnchorDataEquivalent(b)",
+            field_dependencies: ["position-anchor"]
           },
         ]
     },
@@ -247,7 +251,7 @@
                 "content-visibility", "aspect-ratio", "overflow-clip-margin",
                 "-internal-align-content-block", "orphans", "widows",
                 "scrollbar-gutter", "break-after", "break-before",
-                "break-inside", "baseline-source", "text-wrap", "app-region"],
+                "break-inside", "baseline-source", "text-wrap", "app-region", "reading-order-items"],
         methods_to_diff: [
           {
             method: "VerticalAlign()",

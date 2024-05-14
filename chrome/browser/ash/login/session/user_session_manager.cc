@@ -79,6 +79,8 @@
 #include "chrome/browser/ash/login/screens/sync_consent_screen.h"
 #include "chrome/browser/ash/login/security_token_session_controller_factory.h"
 #include "chrome/browser/ash/login/session/user_session_initializer.h"
+#include "chrome/browser/ash/login/signin/auth_error_observer.h"
+#include "chrome/browser/ash/login/signin/auth_error_observer_factory.h"
 #include "chrome/browser/ash/login/signin/oauth2_login_manager_factory.h"
 #include "chrome/browser/ash/login/signin/offline_signin_limiter.h"
 #include "chrome/browser/ash/login/signin/offline_signin_limiter_factory.h"
@@ -752,9 +754,12 @@ scoped_refptr<Authenticator> UserSessionManager::CreateAuthenticator(
     if (injected_authenticator_builder_) {
       authenticator_ = injected_authenticator_builder_->Create(consumer);
     } else {
+      auto* user_manager = user_manager::UserManager::Get();
+      bool new_user_can_become_owner = !user_manager->IsEnterpriseManaged() &&
+                                       user_manager->GetUsers().empty();
       authenticator_ = new AuthSessionAuthenticator(
           consumer, std::make_unique<ChromeSafeModeDelegate>(),
-          base::BindRepeating(&RecordKnownUser),
+          base::BindRepeating(&RecordKnownUser), new_user_can_become_owner,
           g_browser_process->local_state());
     }
   } else {
@@ -1287,16 +1292,10 @@ void UserSessionManager::StartCrosSession() {
   TRACE_EVENT0(kEventCategoryChromeOS, kEventStartCrosSession);
   BootTimesRecorder* btl = BootTimesRecorder::Get();
   btl->AddLoginTimeMarker("StartSession-Start", false);
-  if (base::FeatureList::IsEnabled(ownership::kChromeSideOwnerKeyGeneration)) {
-    SessionManagerClient::Get()->StartSessionEx(
-        cryptohome::CreateAccountIdentifierFromAccountId(
-            user_context_.GetAccountId()),
-        true);
-  } else {
-    SessionManagerClient::Get()->StartSession(
-        cryptohome::CreateAccountIdentifierFromAccountId(
-            user_context_.GetAccountId()));
-  }
+  SessionManagerClient::Get()->StartSessionEx(
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          user_context_.GetAccountId()),
+      true);
   btl->AddLoginTimeMarker("StartSession-End", false);
 }
 
@@ -1818,7 +1817,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
 
   {
     TRACE_EVENT0(kEventCategoryChromeOS, kEventHandleProfileLoad);
-    NotifyUserProfileLoaded(profile, user);
+    OnUserProfileLoaded(profile, user);
 
     // Initialize various services only for primary user.
     if (user_manager->GetPrimaryUser() == user) {
@@ -2143,11 +2142,21 @@ void UserSessionManager::RestoreAuthSessionImpl(
   login_manager->RestoreSession(user_context_.GetAccessToken());
 }
 
-void UserSessionManager::NotifyUserProfileLoaded(
-    Profile* profile,
-    const user_manager::User* user) {
+void UserSessionManager::OnUserProfileLoaded(Profile* profile,
+                                             const user_manager::User* user) {
   session_manager::SessionManager::Get()->NotifyUserProfileLoaded(
       user->GetAccountId());
+
+  // TODO(hidehiko): the condition looks redundant. We can merge them into
+  // AuthErrorObserver::ShouldObserve.
+  auto* user_manager = user_manager::UserManager::Get();
+  if (user_manager->IsUserLoggedIn() && !user_manager->IsLoggedInAsGuest() &&
+      !user_manager->IsLoggedInAsAnyKioskApp() && !profile->IsOffTheRecord() &&
+      AuthErrorObserver::ShouldObserve(profile)) {
+    AuthErrorObserver* observer =
+        AuthErrorObserverFactory::GetInstance()->GetForProfile(profile);
+    observer->StartObserving();
+  }
 
   if (TokenHandlesEnabled() && user && user->HasGaiaAccount()) {
     CreateTokenUtilIfMissing();
@@ -2188,13 +2197,7 @@ void UserSessionManager::ShowNotificationsIfNeeded(Profile* profile) {
   // Show legacy U2F notification if applicable.
   MaybeShowU2FNotification();
 
-  // If the profile does not meet the criteria for showing the Discover
-  // notification, show the Release Notes notification early instead of waiting
-  // for the background page to trigger it.
-  if (!GetHelpAppNotificationController(profile)
-           ->ShouldShowDiscoverNotification()) {
-    MaybeShowHelpAppReleaseNotesNotification(profile);
-  }
+  MaybeShowHelpAppReleaseNotesNotification(profile);
 
   g_browser_process->platform_part()
       ->browser_policy_connector_ash()
@@ -2646,13 +2649,6 @@ void UserSessionManager::SetEolNotificationHandlerFactoryForTesting(
 base::WeakPtr<UserSessionManager>
 UserSessionManager::GetUserSessionManagerAsWeakPtr() {
   return weak_factory_.GetWeakPtr();
-}
-
-void UserSessionManager::MaybeShowHelpAppDiscoverNotification(
-    Profile* profile) {
-  if (!ProfileHelper::IsPrimaryProfile(profile))
-    return;
-  GetHelpAppNotificationController(profile)->MaybeShowDiscoverNotification();
 }
 
 void UserSessionManager::CreateTokenUtilIfMissing() {

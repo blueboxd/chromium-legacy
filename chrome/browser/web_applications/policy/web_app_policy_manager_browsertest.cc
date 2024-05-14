@@ -4,6 +4,7 @@
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 
 #include <memory>
+#include <string_view>
 
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
@@ -112,7 +113,7 @@ class WebAppPolicyManagerBrowserTest : public WebAppControllerBrowserTest {
     return web_contents()->GetPrimaryMainFrame();
   }
 
-  void SetPolicyPrefs(base::StringPiece json,
+  void SetPolicyPrefs(std::string_view json,
                       std::vector<std::string> replacements = {}) {
     profile()->GetPrefs()->Set(
         prefs::kWebAppInstallForceList,
@@ -264,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(WebAppPolicyManagerBrowserTest,
                                install_info.get());
 
   auto* provider = WebAppProvider::GetForTest(profile());
-  provider->scheduler().InstallFromInfo(
+  provider->scheduler().InstallFromInfoNoIntegrationForTesting(
       std::move(install_info),
       /*overwrite_existing_manifest_fields=*/true,
       webapps::WebappInstallSource::EXTERNAL_POLICY, base::DoNothing());

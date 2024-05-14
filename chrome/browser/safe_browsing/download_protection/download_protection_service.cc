@@ -132,6 +132,8 @@ bool IsDownloadSecuritySensitive(safe_browsing::DownloadCheckResult result) {
     case Result::PROMPT_FOR_SCANNING:
     case Result::PROMPT_FOR_LOCAL_PASSWORD_SCANNING:
     case Result::BLOCKED_UNSUPPORTED_FILE_TYPE:
+    case Result::BLOCKED_SCAN_FAILED:
+    case Result::IMMEDIATE_DEEP_SCAN:
       return false;
   }
   NOTREACHED();
@@ -255,7 +257,7 @@ bool DownloadProtectionService::MaybeCheckClientDownload(
         base::BindRepeating(
             &DownloadProtectionService::MaybeCheckMetadataAfterDeepScanning,
             weak_ptr_factory_.GetWeakPtr(), item, std::move(callback)),
-        DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
+        DownloadItemWarningData::DeepScanTrigger::TRIGGER_POLICY,
         DownloadCheckResult::UNKNOWN, std::move(settings.value()),
         /*password=*/std::nullopt);
     return true;
@@ -271,11 +273,11 @@ bool DownloadProtectionService::MaybeCheckClientDownload(
     DCHECK(!safe_browsing_enabled);
     // Since this branch implies that Safe Browsing is disabled, the pre-deep
     // scanning DownloadCheckResult is considered UNKNOWN.
-    UploadForDeepScanning(item, std::move(callback),
-                          DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
-                          DownloadCheckResult::UNKNOWN,
-                          std::move(settings.value()),
-                          /*password=*/std::nullopt);
+    UploadForDeepScanning(
+        item, std::move(callback),
+        DownloadItemWarningData::DeepScanTrigger::TRIGGER_POLICY,
+        DownloadCheckResult::UNKNOWN, std::move(settings.value()),
+        /*password=*/std::nullopt);
     return true;
   }
 
@@ -330,12 +332,7 @@ void DownloadProtectionService::CheckDownloadUrl(
   scoped_refptr<DownloadUrlSBClient> client(new DownloadUrlSBClient(
       item, this, std::move(callback), ui_manager_, database_manager_));
   // The client will release itself once it is done.
-  if (base::FeatureList::IsEnabled(kSafeBrowsingOnUIThread)) {
-    client->StartCheck();
-  } else {
-    content::GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE, base::BindOnce(&DownloadUrlSBClient::StartCheck, client));
-  }
+  client->StartCheck();
 }
 
 bool DownloadProtectionService::IsSupportedDownload(
@@ -790,7 +787,7 @@ bool DownloadProtectionService::MaybeBeginFeedbackForDownload(
 void DownloadProtectionService::UploadForDeepScanning(
     download::DownloadItem* item,
     CheckDownloadRepeatingCallback callback,
-    DeepScanningRequest::DeepScanTrigger trigger,
+    DownloadItemWarningData::DeepScanTrigger trigger,
     DownloadCheckResult download_check_result,
     enterprise_connectors::AnalysisSettings analysis_settings,
     base::optional_ref<const std::string> password) {
@@ -803,11 +800,21 @@ void DownloadProtectionService::UploadForDeepScanning(
       std::make_pair(request_raw, std::move(request)));
   DCHECK(insertion_result.second);
   insertion_result.first->second->Start();
+  SafeBrowsingMetricsCollector* metrics_collector =
+      SafeBrowsingMetricsCollectorFactory::GetForProfile(
+          Profile::FromBrowserContext(
+              content::DownloadItemUtils::GetBrowserContext(item)));
+  if (metrics_collector) {
+    metrics_collector->AddSafeBrowsingEventToPref(
+        safe_browsing::SafeBrowsingMetricsCollector::EventType::
+            DOWNLOAD_DEEP_SCAN);
+  }
 }
 
 // static
 void DownloadProtectionService::UploadForConsumerDeepScanning(
     download::DownloadItem* item,
+    DownloadItemWarningData::DeepScanTrigger trigger,
     base::optional_ref<const std::string> password) {
   if (!item) {
     return;
@@ -843,9 +850,7 @@ void DownloadProtectionService::UploadForConsumerDeepScanning(
       base::BindRepeating(
           &ChromeDownloadManagerDelegate::CheckClientDownloadDone,
           delegate->GetWeakPtr(), item->GetId()),
-      safe_browsing::DeepScanningRequest::DeepScanTrigger::
-          TRIGGER_CONSUMER_PROMPT,
-      safe_browsing::DownloadCheckResult::UNKNOWN, std::move(settings),
+      trigger, safe_browsing::DownloadCheckResult::UNKNOWN, std::move(settings),
       password);
 }
 

@@ -83,6 +83,10 @@ constexpr auto kSixPackKeyToPrefName =
          {prefs::kSixPackKeyInsertNotificationsRemaining}},
     });
 
+// Device key of the virutal mouse often used by integration tests, avoid
+// showing notification in this case.
+const char kVirtualMouseDeviceKey[] = "0000:0000";
+
 const char kNotifierId[] = "input_device_settings_controller";
 const char kAltRightClickRewriteNotificationId[] =
     "alt_right_click_rewrite_blocked_by_setting";
@@ -417,6 +421,11 @@ void InputDeviceSettingsNotificationController::NotifyMouseFirstTimeConnected(
     return;
   }
 
+  // Avoid showing notification for the virtual mouse device.
+  if (mouse.device_key == kVirtualMouseDeviceKey) {
+    return;
+  }
+
   PrefService* prefs =
       Shell::Get()->session_controller()->GetActivePrefService();
   CHECK(prefs);
@@ -540,7 +549,7 @@ void InputDeviceSettingsNotificationController::
   CHECK_NE(blocked_modifier, SixPackShortcutModifier::kNone);
   CHECK(ui::KeyboardCapability::IsSixPackKey(key_code));
 
-  auto* it = kSixPackKeyToPrefName.find(key_code);
+  auto it = kSixPackKeyToPrefName.find(key_code);
   CHECK(it != kSixPackKeyToPrefName.end());
   const char* pref = it->second;
   PrefService* prefs =

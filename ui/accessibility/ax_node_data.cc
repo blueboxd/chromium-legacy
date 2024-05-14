@@ -9,8 +9,8 @@
 #include <set>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
-#include "base/containers/cxx20_erase.h"
 #include "base/no_destructor.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
@@ -175,6 +175,8 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
     case ax::mojom::IntAttribute::kImageAnnotationStatus:
     case ax::mojom::IntAttribute::kDropeffectDeprecated:
     case ax::mojom::IntAttribute::kDOMNodeId:
+    case ax::mojom::IntAttribute::kAriaNotificationInterruptDeprecated:
+    case ax::mojom::IntAttribute::kAriaNotificationPriorityDeprecated:
       return false;
   }
 
@@ -219,6 +221,8 @@ bool IsNodeIdIntListAttribute(ax::mojom::IntListAttribute attr) {
     case ax::mojom::IntListAttribute::kTextOperationEndAnchorIds:
     case ax::mojom::IntListAttribute::kTextOperationStartAnchorIds:
     case ax::mojom::IntListAttribute::kTextOperations:
+    case ax::mojom::IntListAttribute::kAriaNotificationInterruptProperties:
+    case ax::mojom::IntListAttribute::kAriaNotificationPriorityProperties:
       return false;
   }
 }
@@ -479,11 +483,30 @@ bool AXNodeData::GetHtmlAttribute(const char* attribute,
 }
 
 void AXNodeData::AddChildTreeId(const AXTreeID& tree_id) {
-  ax::mojom::StringAttribute attribute =
-      ax::mojom::StringAttribute::kChildTreeId;
-  if (HasStringAttribute(attribute))
-    RemoveStringAttribute(attribute);
-  string_attributes.emplace_back(attribute, tree_id.ToString());
+  DCHECK(!HasChildTreeID());
+  if (tree_id.type() == ax::mojom::AXTreeIDType::kUnknown) {
+    DUMP_WILL_BE_NOTREACHED_NORETURN();
+    return;
+  }
+  std::string tree_id_str = tree_id.ToString();
+  DCHECK(!tree_id_str.empty());
+  string_attributes.emplace_back(ax::mojom::StringAttribute::kChildTreeId,
+                                 tree_id_str);
+}
+
+bool AXNodeData::HasChildTreeID() const {
+  return HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId);
+}
+
+std::optional<AXTreeID> AXNodeData::GetChildTreeID() const {
+  std::string child_tree_id_str;
+  if (!GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
+                          &child_tree_id_str)) {
+    return std::nullopt;
+  }
+
+  DCHECK(!child_tree_id_str.empty());
+  return AXTreeID::FromString(child_tree_id_str);
 }
 
 void AXNodeData::AddBoolAttribute(ax::mojom::BoolAttribute attribute,
@@ -538,35 +561,35 @@ void AXNodeData::AddStringListAttribute(
 
 void AXNodeData::RemoveBoolAttribute(ax::mojom::BoolAttribute attribute) {
   DCHECK_NE(attribute, ax::mojom::BoolAttribute::kNone);
-  base::EraseIf(bool_attributes, [attribute](const auto& bool_attribute) {
+  std::erase_if(bool_attributes, [attribute](const auto& bool_attribute) {
     return bool_attribute.first == attribute;
   });
 }
 
 void AXNodeData::RemoveIntAttribute(ax::mojom::IntAttribute attribute) {
   DCHECK_NE(attribute, ax::mojom::IntAttribute::kNone);
-  base::EraseIf(int_attributes, [attribute](const auto& int_attribute) {
+  std::erase_if(int_attributes, [attribute](const auto& int_attribute) {
     return int_attribute.first == attribute;
   });
 }
 
 void AXNodeData::RemoveFloatAttribute(ax::mojom::FloatAttribute attribute) {
   DCHECK_NE(attribute, ax::mojom::FloatAttribute::kNone);
-  base::EraseIf(float_attributes, [attribute](const auto& float_attribute) {
+  std::erase_if(float_attributes, [attribute](const auto& float_attribute) {
     return float_attribute.first == attribute;
   });
 }
 
 void AXNodeData::RemoveStringAttribute(ax::mojom::StringAttribute attribute) {
   DCHECK_NE(attribute, ax::mojom::StringAttribute::kNone);
-  base::EraseIf(string_attributes, [attribute](const auto& string_attribute) {
+  std::erase_if(string_attributes, [attribute](const auto& string_attribute) {
     return string_attribute.first == attribute;
   });
 }
 
 void AXNodeData::RemoveIntListAttribute(ax::mojom::IntListAttribute attribute) {
   DCHECK_NE(attribute, ax::mojom::IntListAttribute::kNone);
-  base::EraseIf(intlist_attributes, [attribute](const auto& intlist_attribute) {
+  std::erase_if(intlist_attributes, [attribute](const auto& intlist_attribute) {
     return intlist_attribute.first == attribute;
   });
 }
@@ -574,7 +597,7 @@ void AXNodeData::RemoveIntListAttribute(ax::mojom::IntListAttribute attribute) {
 void AXNodeData::RemoveStringListAttribute(
     ax::mojom::StringListAttribute attribute) {
   DCHECK_NE(attribute, ax::mojom::StringListAttribute::kNone);
-  base::EraseIf(stringlist_attributes,
+  std::erase_if(stringlist_attributes,
                 [attribute](const auto& stringlist_attribute) {
                   return stringlist_attribute.first == attribute;
                 });
@@ -1647,6 +1670,17 @@ std::string AXNodeData::ToString(bool verbose) const {
       case ax::mojom::IntAttribute::kDOMNodeId:
         result += " dom_node_id=" + value;
         break;
+      case ax::mojom::IntAttribute::kAriaNotificationInterruptDeprecated:
+        result +=
+            std::string(" aria_notification_interrupt=") +
+            ui::ToString(static_cast<ax::mojom::AriaNotificationInterrupt>(
+                int_attribute.second));
+        break;
+      case ax::mojom::IntAttribute::kAriaNotificationPriorityDeprecated:
+        result += std::string(" aria_notification_priority=") +
+                  ui::ToString(static_cast<ax::mojom::AriaNotificationPriority>(
+                      int_attribute.second));
+        break;
       case ax::mojom::IntAttribute::kNone:
         break;
     }
@@ -1668,6 +1702,12 @@ std::string AXNodeData::ToString(bool verbose) const {
       case ax::mojom::StringAttribute::kAriaBrailleRoleDescription:
         result += " aria_braille_role_description=" + value;
         break;
+      case ax::mojom::StringAttribute::kAriaNotificationAnnouncementDeprecated:
+        result += " aria_notification_announcement=" + value;
+        break;
+      case ax::mojom::StringAttribute::kAriaNotificationIdDeprecated:
+        result += " aria_notification_id=" + value;
+        break;
       case ax::mojom::StringAttribute::kCheckedStateDescription:
         result += " checked_state_description=" + value;
         break;
@@ -1675,7 +1715,9 @@ std::string AXNodeData::ToString(bool verbose) const {
         result += " autocomplete=" + value;
         break;
       case ax::mojom::StringAttribute::kChildTreeId:
-        result += " child_tree_id=" + value.substr(0, 8);
+        // This is covered by has_child_tree above. The exact value of the
+        // child tree is not added to the string as it varies, and adding it
+        // would cause tesrt failures.
         break;
       case ax::mojom::StringAttribute::kChildTreeNodeAppId:
         result += " child_tree_node_app_id=" + value.substr(0, 8);
@@ -1990,6 +2032,22 @@ std::string AXNodeData::ToString(bool verbose) const {
       case ax::mojom::IntListAttribute::kTextOperations:
         result += " text_operations=" + IntVectorToString(values);
         break;
+      case ax::mojom::IntListAttribute::kAriaNotificationInterruptProperties:
+        result +=
+            " aria_notification_interrupt_properties=" +
+            VectorToString(values, [](int32_t interrupt) {
+              return ui::ToString(
+                  static_cast<ax::mojom::AriaNotificationInterrupt>(interrupt));
+            });
+        break;
+      case ax::mojom::IntListAttribute::kAriaNotificationPriorityProperties:
+        result +=
+            " aria_notification_priority_properties=" +
+            VectorToString(values, [](int32_t priority) {
+              return ui::ToString(
+                  static_cast<ax::mojom::AriaNotificationPriority>(priority));
+            });
+        break;
     }
   }
 
@@ -1998,9 +2056,16 @@ std::string AXNodeData::ToString(bool verbose) const {
        stringlist_attributes) {
     const std::vector<std::string>& values = stringlist_attribute.second;
     switch (stringlist_attribute.first) {
+      case ax::mojom::StringListAttribute::kAriaNotificationAnnouncements:
+        result +=
+            " aria_notification_announcements=" + base::JoinString(values, ",");
+        break;
+      case ax::mojom::StringListAttribute::kAriaNotificationIds:
+        result += " aria_notification_ids=" + base::JoinString(values, ",");
+        break;
       case ax::mojom::StringListAttribute::kCustomActionDescriptions:
         result +=
-            " custom_action_descriptions: " + base::JoinString(values, ",");
+            " custom_action_descriptions=" + base::JoinString(values, ",");
         break;
       case ax::mojom::StringListAttribute::kNone:
         break;

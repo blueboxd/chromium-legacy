@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/functional/callback.h"
@@ -14,11 +15,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/quick_answers/quick_answers_controller_impl.h"
 #include "chrome/browser/ui/views/editor_menu/editor_menu_controller_impl.h"
+#include "chrome/browser/ui/views/editor_menu/utils/editor_types.h"
 #include "chrome/browser/ui/views/mahi/mahi_menu_controller.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_state.h"
 #include "chromeos/components/quick_answers/quick_answers_client.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "chromeos/crosapi/mojom/editor_panel.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/context_menu_params.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -40,7 +41,7 @@ ReadWriteCardsManagerImpl::ReadWriteCardsManagerImpl()
   }
 
   if (chromeos::features::IsMahiEnabled()) {
-    mahi_menu_controller_ = std::make_unique<mahi::MahiMenuController>();
+    mahi_menu_controller_.emplace(ui_controller_);
   }
 }
 
@@ -49,63 +50,57 @@ ReadWriteCardsManagerImpl::~ReadWriteCardsManagerImpl() = default;
 void ReadWriteCardsManagerImpl::FetchController(
     const content::ContextMenuParams& params,
     content::BrowserContext* context,
-    editor_menu::FetchControllerCallback callback) {
+    editor_menu::FetchControllersCallback callback) {
   // Skip password input field.
   const bool is_password_field =
       params.form_control_type == blink::mojom::FormControlType::kInputPassword;
   if (is_password_field) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run({});
     return;
   }
-  if (editor_menu_controller_) {
-    auto* panel_manager =
-        editor_menu_controller_->GetEditorPanelManager(context);
-    if (panel_manager && params.is_editable) {
-      panel_manager->GetEditorPanelContext(base::BindOnce(
-          &ReadWriteCardsManagerImpl::OnEditorPanelContextCallback,
-          weak_factory_.GetWeakPtr(), params, std::move(callback), context));
-      return;
-    }
+  if (editor_menu_controller_ && params.is_editable) {
+    editor_menu_controller_->SetBrowserContext(context);
+    editor_menu_controller_->GetEditorMode(base::BindOnce(
+        &ReadWriteCardsManagerImpl::OnGetEditorModeResult,
+        weak_factory_.GetWeakPtr(), params, std::move(callback)));
+    return;
   }
 
-  std::move(callback).Run(GetMahiOrQuickAnswerControllerIfEligible(params));
+  std::move(callback).Run(GetMahiOrQuickAnswerControllersIfEligible(params));
 }
 
-void ReadWriteCardsManagerImpl::OnEditorPanelContextCallback(
+void ReadWriteCardsManagerImpl::SetContextMenuBounds(
+    const gfx::Rect& context_menu_bounds) {
+  ui_controller_.SetContextMenuBounds(context_menu_bounds);
+}
+
+void ReadWriteCardsManagerImpl::OnGetEditorModeResult(
     const content::ContextMenuParams& params,
-    editor_menu::FetchControllerCallback callback,
-    content::BrowserContext* context,
-    const crosapi::mojom::EditorPanelContextPtr editor_panel_context) {
-  if (editor_menu_controller_) {
-    if (editor_panel_context->editor_panel_mode !=
-        crosapi::mojom::EditorPanelMode::kBlocked) {
-      editor_menu_controller_->SetBrowserContext(context);
-      std::move(callback).Run(editor_menu_controller_->GetWeakPtr());
-      return;
-    }
-    auto* panel_manager =
-        editor_menu_controller_->GetEditorPanelManager(context);
-    if (panel_manager) {
-      panel_manager->LogEditorMode(crosapi::mojom::EditorPanelMode::kBlocked);
-    }
+    editor_menu::FetchControllersCallback callback,
+    editor_menu::EditorMode editor_mode) {
+  if (editor_mode != editor_menu::EditorMode::kBlocked) {
+    std::move(callback).Run({editor_menu_controller_->GetWeakPtr()});
+    return;
   }
-  std::move(callback).Run(GetMahiOrQuickAnswerControllerIfEligible(params));
+  editor_menu_controller_->LogEditorMode(editor_menu::EditorMode::kBlocked);
+  std::move(callback).Run(GetMahiOrQuickAnswerControllersIfEligible(params));
 }
 
-base::WeakPtr<chromeos::ReadWriteCardController>
-ReadWriteCardsManagerImpl::GetMahiOrQuickAnswerControllerIfEligible(
+std::vector<base::WeakPtr<chromeos::ReadWriteCardController>>
+ReadWriteCardsManagerImpl::GetMahiOrQuickAnswerControllersIfEligible(
     const content::ContextMenuParams& params) {
-  if (params.selection_text.empty() && mahi_menu_controller_ &&
-      chromeos::features::IsMahiEnabled()) {
-    return mahi_menu_controller_->GetWeakPtr();
+  std::vector<base::WeakPtr<chromeos::ReadWriteCardController>> result;
+
+  if (mahi_menu_controller_ && chromeos::features::IsMahiEnabled()) {
+    result.emplace_back(mahi_menu_controller_->GetWeakPtr());
   }
 
-  if (!QuickAnswersState::Get()->is_eligible() ||
-      params.selection_text.empty() || !quick_answers_controller_) {
-    return base::WeakPtr<chromeos::ReadWriteCardController>();
+  if (QuickAnswersState::Get()->is_eligible() &&
+      !params.selection_text.empty() && quick_answers_controller_) {
+    result.emplace_back(quick_answers_controller_->GetWeakPtr());
   }
 
-  return quick_answers_controller_->GetWeakPtr();
+  return result;
 }
 
 }  // namespace chromeos

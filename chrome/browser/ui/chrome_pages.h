@@ -127,6 +127,8 @@ enum FeedbackSource {
   kFeedbackSourceLogin,
   kFeedbackSourceAI,
   kFeedbackSourceFocusMode,
+  kFeedbackSourceOverview,
+  kFeedbackSourceSnapGroups,
 
   // ATTENTION: Before making any changes or adding to feedback collection,
   // please ensure the teams that operationalize feedback are aware and
@@ -208,6 +210,8 @@ void ShowSettingsSubPageInTabbedBrowser(Browser* browser,
                                         const std::string& sub_page);
 void ShowClearBrowsingDataDialog(Browser* browser);
 void ShowPasswordManager(Browser* browser);
+void ShowPasswordDetailsPage(Browser* browser,
+                             const std::string& password_domain_name);
 void ShowPasswordCheck(Browser* browser);
 void ShowSafeBrowsingEnhancedProtection(Browser* browser);
 void ShowSafeBrowsingEnhancedProtectionWithIph(

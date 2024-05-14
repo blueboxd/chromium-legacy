@@ -92,6 +92,7 @@
 #include "chromeos/crosapi/mojom/networking_attributes.mojom.h"
 #include "chromeos/crosapi/mojom/networking_private.mojom.h"
 #include "chromeos/crosapi/mojom/nonclosable_app_toast_service.mojom.h"
+#include "chromeos/crosapi/mojom/one_drive_integration_service.mojom.h"
 #include "chromeos/crosapi/mojom/one_drive_notification_service.mojom.h"
 #include "chromeos/crosapi/mojom/parent_access.mojom.h"
 #include "chromeos/crosapi/mojom/policy_service.mojom.h"
@@ -107,6 +108,7 @@
 #include "chromeos/crosapi/mojom/sharesheet.mojom.h"
 #include "chromeos/crosapi/mojom/smart_reader.mojom.h"
 #include "chromeos/crosapi/mojom/speech_recognition.mojom.h"
+#include "chromeos/crosapi/mojom/suggestion_service.mojom.h"
 #include "chromeos/crosapi/mojom/sync.mojom.h"
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_diagnostic_routine_service.mojom.h"
@@ -518,6 +520,11 @@ LacrosService::LacrosService()
       &crosapi::mojom::Crosapi::BindOneDriveNotificationService,
       Crosapi::MethodMinVersions::kBindOneDriveNotificationServiceMinVersion>();
 
+  ConstructRemote<
+      crosapi::mojom::OneDriveIntegrationService,
+      &crosapi::mojom::Crosapi::BindOneDriveIntegrationService,
+      Crosapi::MethodMinVersions::kBindOneDriveIntegrationServiceMinVersion>();
+
   ConstructRemote<crosapi::mojom::Prefs, &crosapi::mojom::Crosapi::BindPrefs,
                   Crosapi::MethodMinVersions::kBindPrefsMinVersion>();
   ConstructRemote<
@@ -576,6 +583,10 @@ LacrosService::LacrosService()
       crosapi::mojom::StructuredMetricsService,
       &crosapi::mojom::Crosapi::BindStructuredMetricsService,
       Crosapi::MethodMinVersions::kBindStructuredMetricsServiceMinVersion>();
+  ConstructRemote<
+      crosapi::mojom::SuggestionService,
+      &crosapi::mojom::Crosapi::BindSuggestionService,
+      Crosapi::MethodMinVersions::kBindSuggestionServiceMinVersion>();
   ConstructRemote<crosapi::mojom::SyncService,
                   &crosapi::mojom::Crosapi::BindSyncService,
                   Crosapi::MethodMinVersions::kBindSyncServiceMinVersion>();

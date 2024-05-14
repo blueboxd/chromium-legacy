@@ -5,31 +5,29 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_POSITION_TRY_OPTIONS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_POSITION_TRY_OPTIONS_H_
 
+#include <array>
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/scoped_css_name.h"
 
 namespace blink {
 
-enum class TryTactic {
-  kNone = 0,
-  kFlipBlock = 1 << 1,
-  kFlipInline = 1 << 2,
-  kFlipStart = 1 << 3,
-};
+// https://drafts.csswg.org/css-anchor-position-1/#typedef-position-try-options-try-tactic
+//
+// Note that we have to preserve the individual "flips"
+// in the order they were specified.
+using TryTacticList = std::array<TryTactic, 3>;
 
-using TryTacticFlags = unsigned;
+static inline constexpr TryTacticList kNoTryTactics = {
+    TryTactic::kNone, TryTactic::kNone, TryTactic::kNone};
 
 class CORE_EXPORT PositionTryOption {
   DISALLOW_NEW();
 
  public:
-  explicit PositionTryOption(TryTacticFlags tactic) : tactic_(tactic) {}
-  explicit PositionTryOption(const ScopedCSSName* name)
-      : position_try_name_(name) {}
+  PositionTryOption(const ScopedCSSName* name, TryTacticList tactic_list)
+      : position_try_name_(name), tactic_list_(tactic_list) {}
 
-  bool HasTryTactic() const {
-    return tactic_ != static_cast<TryTacticFlags>(TryTactic::kNone);
-  }
-  TryTacticFlags GetTryTactic() const { return tactic_; }
+  const TryTacticList& GetTryTactic() const { return tactic_list_; }
   const ScopedCSSName* GetPositionTryName() const { return position_try_name_; }
 
   bool operator==(const PositionTryOption& other) const;
@@ -38,7 +36,7 @@ class CORE_EXPORT PositionTryOption {
 
  private:
   Member<const ScopedCSSName> position_try_name_;
-  TryTacticFlags tactic_ = static_cast<TryTacticFlags>(TryTactic::kNone);
+  TryTacticList tactic_list_;
 };
 
 class CORE_EXPORT PositionTryOptions

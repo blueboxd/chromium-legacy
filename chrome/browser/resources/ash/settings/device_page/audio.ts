@@ -120,11 +120,21 @@ export class SettingsAudioElement extends SettingsAudioElementBase {
         value: true,
         observer: SettingsAudioElement.prototype.onAllowAGCEnabledChanged,
       },
+
+      isHfpMicSrEnabled: {
+        type: Boolean,
+      },
+
+      showHfpMicSr: {
+        type: Boolean,
+      },
     };
   }
 
   protected isAllowAGCEnabled: boolean;
   protected showAllowAGC: boolean;
+  protected isHfpMicSrEnabled: boolean;
+  protected showHfpMicSr: boolean;
 
   private audioAndCaptionsBrowserProxy_: AudioAndCaptionsPageBrowserProxy;
   private audioSystemProperties_: AudioSystemProperties;
@@ -139,6 +149,7 @@ export class SettingsAudioElement extends SettingsAudioElementBase {
   private startupSoundEnabled_: boolean;
   private batteryStatus_: BatteryStatus|undefined;
   private powerSoundsHidden_: boolean;
+  private isHfpMicSrSupported_: boolean;
 
   constructor() {
     super();
@@ -186,6 +197,13 @@ export class SettingsAudioElement extends SettingsAudioElementBase {
         (activeInputDevice?.forceRespectUiGainsState ===
          AudioEffectState.kNotEnabled);
     this.outputVolume_ = this.audioSystemProperties_.outputVolumePercent;
+    this.isHfpMicSrEnabled =
+        (activeInputDevice?.hfpMicSrState === AudioEffectState.kEnabled);
+    this.isHfpMicSrSupported_ = activeInputDevice !== undefined &&
+        !(activeInputDevice?.hfpMicSrState === AudioEffectState.kNotSupported);
+    this.showHfpMicSr =
+        (this.isHfpMicSrSupported_ &&
+         loadTimeData.getBoolean('enableAudioHfpMicSRToggle'));
   }
 
   getIsOutputMutedForTest(): boolean {
@@ -402,6 +420,10 @@ export class SettingsAudioElement extends SettingsAudioElementBase {
 
   private toggleNoiseCancellationEnabled_(e: CustomEvent<boolean>): void {
     this.crosAudioConfig_.setNoiseCancellationEnabled(e.detail);
+  }
+
+  private toggleHfpMicSrEnabled_(e: CustomEvent<boolean>): void {
+    this.crosAudioConfig_.setHfpMicSrEnabled(e.detail);
   }
 
   private toggleStartupSoundEnabled_(e: CustomEvent<boolean>): void {

@@ -48,9 +48,6 @@ ScopedClipboardWriter::~ScopedClipboardWriter() {
         buffer_, objects_, std::move(platform_representations_),
         std::move(data_src_));
   }
-
-  if (confidential_)
-    Clipboard::GetForCurrentThread()->MarkAsConfidential();
 }
 
 void ScopedClipboardWriter::SetDataSource(
@@ -176,6 +173,9 @@ void ScopedClipboardWriter::WriteImage(const SkBitmap& bitmap) {
 
 void ScopedClipboardWriter::MarkAsConfidential() {
   confidential_ = true;
+}
+
+void ScopedClipboardWriter::MarkAsOffTheRecord() {
 }
 
 void ScopedClipboardWriter::WritePickledData(

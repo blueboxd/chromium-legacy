@@ -16,11 +16,12 @@
 
 class Browser;
 class GURL;
+class LegacyBookmarkModel;
 class TestChromeBrowserState;
 
 namespace bookmarks {
-class BookmarkModel;
 class BookmarkNode;
+class CoreBookmarkModel;
 class ManagedBookmarkService;
 }  // namespace bookmarks
 
@@ -32,6 +33,11 @@ class BookmarkIOSUnitTestSupport : public PlatformTest {
 
  protected:
   void SetUp() override;
+
+  // Allows subclasses to add custom logic immediately following the creation
+  // of the BrowserState, before keyed services are created.
+  virtual void SetUpBrowserStateBeforeCreatingServices();
+
   const bookmarks::BookmarkNode* AddBookmark(
       const bookmarks::BookmarkNode* parent,
       const std::u16string& title);
@@ -44,7 +50,7 @@ class BookmarkIOSUnitTestSupport : public PlatformTest {
       const std::u16string& title);
   void ChangeTitle(const std::u16string& title,
                    const bookmarks::BookmarkNode* node);
-  bookmarks::BookmarkModel* GetBookmarkModelForNode(
+  LegacyBookmarkModel* GetBookmarkModelForNode(
       const bookmarks::BookmarkNode* node);
 
   const bool wait_for_initialization_;
@@ -54,9 +60,11 @@ class BookmarkIOSUnitTestSupport : public PlatformTest {
   std::unique_ptr<Browser> browser_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   // Bookmark model for the LocalOrSyncable storage.
-  raw_ptr<bookmarks::BookmarkModel> local_or_syncable_bookmark_model_;
+  raw_ptr<LegacyBookmarkModel> local_or_syncable_bookmark_model_;
   // Bookmark model for the account storage.
-  raw_ptr<bookmarks::BookmarkModel> account_bookmark_model_;
+  raw_ptr<LegacyBookmarkModel> account_bookmark_model_;
+  // Bookmark model providing a merged view.
+  raw_ptr<bookmarks::CoreBookmarkModel> bookmark_model_;
   raw_ptr<bookmarks::ManagedBookmarkService> managed_bookmark_service_;
 };
 

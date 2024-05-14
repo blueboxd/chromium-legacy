@@ -31,6 +31,8 @@ NSString* const kBanner = @"notifications_opt_in_banner";
 CGFloat const kTableViewSeparatorInset = 16.0;
 // Space above the title.
 CGFloat const kSpaceAboveTitle = 20.0;
+// Accessibility identifier.
+NSString* const kNotificationsOptInScreenAxId = @"NotificationsOptInScreenAxId";
 }  // namespace
 
 @interface NotificationsOptInViewController () <UITableViewDelegate>
@@ -61,6 +63,7 @@ CGFloat const kSpaceAboveTitle = 20.0;
   self.bannerName = kBanner;
   self.bannerSize = BannerImageSizeType::kShort;
   self.shouldBannerFillTopSpace = YES;
+  self.view.accessibilityIdentifier = kNotificationsOptInScreenAxId;
   _tableView = [self createTableView];
   [self.specificContentView addSubview:_tableView];
   [NSLayoutConstraint activateConstraints:@[
@@ -128,7 +131,7 @@ CGFloat const kSpaceAboveTitle = 20.0;
   [snapshot appendSectionsWithIdentifiers:@[
     @(SectionIdentifier::kNotificationOptions)
   ]];
-  if (IsContentPushNotificationsSetUpListEnabled()) {
+  if (IsContentPushNotificationsEnabled()) {
     [snapshot appendItemsWithIdentifiers:@[
       @(NotificationsOptInItemIdentifier::kContent)
     ]];
@@ -202,7 +205,7 @@ CGFloat const kSpaceAboveTitle = 20.0;
   switch (itemIdentifier) {
     case kContent:
       return {IDS_IOS_CONTENT_NOTIFICATIONS_CONTENT_SETTINGS_TOGGLE_TITLE,
-              IDS_IOS_NOTIFICATIONS_OPT_IN_CONTENT_TOGGLE_MESSSAGE,
+              IDS_IOS_CONTENT_NOTIFICATIONS_CONTENT_SETTINGS_FOOTER_TEXT,
               _contentNotificationsEnabled, YES};
     case kTips:
       return {IDS_IOS_SET_UP_LIST_TIPS_TITLE,

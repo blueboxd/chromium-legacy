@@ -30,7 +30,6 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionLayout.LayoutParams;
 import org.chromium.chrome.browser.omnibox.test.R;
 
@@ -45,6 +44,7 @@ public class BaseSuggestionViewTest {
     private int mSemicompactSuggestionViewHeight;
     private int mCompactSuggestionViewHeight;
     private int mDecorationIconWidthPx;
+    private int mLargeDecorationIconWidthPx;
 
     private BaseSuggestionViewForTest mView;
     private Activity mActivity;
@@ -116,6 +116,10 @@ public class BaseSuggestionViewTest {
                 mActivity
                         .getResources()
                         .getDimensionPixelSize(R.dimen.omnibox_suggestion_icon_area_size);
+        mLargeDecorationIconWidthPx =
+                mActivity
+                        .getResources()
+                        .getDimensionPixelSize(R.dimen.omnibox_suggestion_icon_area_size_large);
     }
 
     /**
@@ -593,7 +597,6 @@ public class BaseSuggestionViewTest {
     @Test
     @EnableFeatures(ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE)
     public void testRevamp_smallestMargins() {
-        OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_SMALLEST_MARGINS.setForTesting(true);
         View contentView = new View(mActivity);
         contentView.setMinimumHeight(CONTENT_VIEW_REPORTED_HEIGHT_PX);
         BaseSuggestionViewForTest suggestionViewForTest =
@@ -604,5 +607,31 @@ public class BaseSuggestionViewTest {
                 mSemicompactSuggestionViewHeight, suggestionViewForTest.mContentHeightPx);
         Assert.assertEquals(
                 mCompactSuggestionViewHeight, suggestionViewForTest.mCompactContentHeightPx);
+    }
+
+    @Test
+    public void layout_LtrLargeDecoration() {
+        // Expectations (edge to edge):
+        //
+        // +---+-------------------+
+        // | %%% |CONTENT          |
+        // +---+-------------------+
+        // <- giveSuggestionWidth ->
+        //
+
+        final int giveSuggestionWidth = 250;
+        final int giveContentHeight = 15;
+        final int paddingStart = 11;
+
+        mView.setPaddingRelative(paddingStart, 0, 0, 0);
+        View decorationView = mView.getChildAt(0);
+        decorationView.setLayoutParams(SuggestionLayout.LayoutParams.forLargeDecorationIcon());
+        executeLayoutTest(giveSuggestionWidth, giveContentHeight, View.LAYOUT_DIRECTION_LTR);
+        verifyViewLayout(
+                decorationView,
+                paddingStart + mLargeDecorationIconWidthPx / 2,
+                mSemicompactSuggestionViewHeight / 2,
+                paddingStart + mLargeDecorationIconWidthPx / 2,
+                mSemicompactSuggestionViewHeight);
     }
 }

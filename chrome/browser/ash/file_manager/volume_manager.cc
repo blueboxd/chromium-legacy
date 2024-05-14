@@ -4,10 +4,15 @@
 
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 
+#include <string_view>
+
 #include "ash/components/arc/arc_util.h"
 #include "ash/constants/ash_features.h"
 #include "base/auto_reset.h"
 #include "base/base64url.h"
+#include "base/check_is_test.h"
+#include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -29,8 +34,10 @@
 #include "chrome/browser/ash/file_manager/snapshot_manager.h"
 #include "chrome/browser/ash/file_manager/volume_manager_factory.h"
 #include "chrome/browser/ash/file_manager/volume_manager_observer.h"
+#include "chrome/browser/ash/policy/local_user_files/policy_utils.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
+#include "chrome/common/chrome_features.h"
 #include "chromeos/components/disks/disks_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/storage_monitor/storage_monitor.h"
@@ -73,6 +80,17 @@ bool RegisterDownloadsMountPoint(Profile* profile, const base::FilePath& path) {
       storage::FileSystemMountOption(), path);
 }
 
+// Revokes |path| as the "Downloads" folder from the FileSystem API backend,
+// if mounted.
+void RevokeDownloadsMountPoint(Profile* profile, const base::FilePath& path) {
+  const std::string mount_point_name =
+      file_manager::util::GetDownloadsMountPointName(profile);
+  storage::ExternalMountPoints* const mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+
+  mount_points->RevokeFileSystem(mount_point_name);
+}
+
 // Registers a mount point for Android files to ExternalMountPoints.
 bool RegisterAndroidFilesMountPoint() {
   if (arc::IsArcVmEnabled()) {
@@ -84,6 +102,17 @@ bool RegisterAndroidFilesMountPoint() {
       file_manager::util::GetAndroidFilesMountPointName(),
       storage::kFileSystemTypeLocal, storage::FileSystemMountOption(),
       base::FilePath(util::kAndroidFilesPath));
+}
+
+// Revokes Android files mount point, if mounted.
+void RevokeAndroidFilesMountPoint() {
+  if (arc::IsArcVmEnabled()) {
+    return;
+  }
+  storage::ExternalMountPoints* const mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+  mount_points->RevokeFileSystem(
+      file_manager::util::GetAndroidFilesMountPointName());
 }
 
 bool RegisterShareCacheMountPoint(Profile* profile) {
@@ -235,6 +264,11 @@ std::unique_ptr<Volume> CreateForFuseBoxDownloads(
   return fusebox_volume;
 }
 
+bool IsArcEnabled(Profile* profile) {
+  return base::FeatureList::IsEnabled(arc::kMediaViewFeature) &&
+         arc::IsArcAllowedForProfile(profile);
+}
+
 }  // namespace
 
 int VolumeManager::counter_ = 0;
@@ -284,25 +318,11 @@ void VolumeManager::Initialize() {
     fusebox_daemon_ = file_manager::FuseBoxDaemon::GetInstance();
   }
 
-  const base::FilePath localVolume =
-      file_manager::util::GetMyFilesFolderForProfile(profile_);
-  const bool success = RegisterDownloadsMountPoint(profile_, localVolume);
-  DCHECK(success);
-
-  DoMountEvent(Volume::CreateForDownloads(localVolume));
-  if (ash::features::IsFileManagerFuseBoxDebugEnabled()) {
-    if (auto volume = CreateForFuseBoxDownloads(profile_, fusebox_daemon_.get(),
-                                                "fusebox Downloads")) {
-      DoMountEvent(std::move(volume));
-    }
+  local_user_files_allowed_ = policy::local_user_files::LocalUserFilesAllowed();
+  if (local_user_files_allowed_) {
+    // Add local folders - My Files and ARC if enabled.
+    OnLocalUserFilesEnabled();
   }
-
-  // Asynchronously record the disk usage for the downloads path.
-  base::ThreadPool::PostTask(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-       base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&RecordDownloadsDiskUsageStats, std::move(localVolume)));
 
   // Subscribe to DriveIntegrationService.
   Observe(drive_integration_service_);
@@ -316,9 +336,6 @@ void VolumeManager::Initialize() {
       base::BindOnce(&VolumeManager::OnDiskMountManagerRefreshed,
                      weak_ptr_factory_.GetWeakPtr()),
       false /* force */);
-
-  // Subscribe to ARC DocumentsProvider events about roots.
-  documents_provider_root_manager_->AddObserver(this);
 
   // Subscribe to FileSystemProviderService and register currently mounted
   // volumes for the profile.
@@ -351,17 +368,6 @@ void VolumeManager::Initialize() {
     storage_monitor::StorageMonitor::GetInstance()->EnsureInitialized(
         base::BindOnce(&VolumeManager::OnStorageMonitorInitialized,
                        weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  // Subscribe to ARC file system events.
-  if (base::FeatureList::IsEnabled(arc::kMediaViewFeature) &&
-      arc::IsArcAllowedForProfile(profile_)) {
-    // Registers a mount point for Android files only when the flag is enabled.
-    RegisterAndroidFilesMountPoint();
-
-    arc::ArcSessionManager::Get()->AddObserver(this);
-    OnArcPlayStoreEnabledChanged(
-        arc::IsArcPlayStoreEnabledForProfile(profile_));
   }
 
   // Subscribe to clipboard events.
@@ -398,17 +404,7 @@ void VolumeManager::Shutdown() {
     file_system_provider_service_->RemoveObserver(this);
   }
 
-  // Unsubscribe from ARC file system events.
-  if (base::FeatureList::IsEnabled(arc::kMediaViewFeature) &&
-      arc::IsArcAllowedForProfile(profile_)) {
-    // TODO(crbug.com/672829): We need nullptr check here because
-    // ArcSessionManager may or may not be alive at this point.
-    if (arc::ArcSessionManager* const session_manager =
-            arc::ArcSessionManager::Get()) {
-      session_manager->RemoveObserver(this);
-    }
-  }
-
+  UnsubscribeFromArcEvents();
   ui::ClipboardMonitor::GetInstance()->RemoveObserver(this);
 }
 
@@ -614,6 +610,11 @@ void VolumeManager::RemoveVolumeForTesting(
   DoUnmountEvent(*Volume::CreateForTesting(path, volume_type, device_type,
                                            read_only, device_path, drive_label,
                                            file_system_type));
+}
+
+void VolumeManager::RemoveVolumeForTesting(const std::string& volume_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DoUnmountEvent(volume_id);
 }
 
 void VolumeManager::OnFileSystemMounted() {
@@ -955,6 +956,25 @@ void VolumeManager::ConvertFuseBoxFSPVolumeIdToFSPIfNeeded(
   *volume_id = volume_id->substr(prefix).insert(0, "provided:");
 }
 
+// TODO(aidazolic): Figure out why it's called twice for every update.
+void VolumeManager::OnLocalUserFilesPolicyChanged() {
+  if (!base::FeatureList::IsEnabled(features::kSkyVault)) {
+    return;
+  }
+
+  bool allowed = policy::local_user_files::LocalUserFilesAllowed();
+  if (allowed == local_user_files_allowed_) {
+    return;
+  }
+  local_user_files_allowed_ = allowed;
+
+  if (allowed) {
+    OnLocalUserFilesEnabled();
+  } else {
+    OnLocalUserFilesDisabled();
+  }
+}
+
 void VolumeManager::OnProvidedFileSystemUnmount(
     const ash::file_system_provider::ProvidedFileSystemInfo& file_system_info,
     base::File::Error error) {
@@ -1016,36 +1036,22 @@ void VolumeManager::OnExternalStorageDisabledChangedUnmountCallback(
 
 void VolumeManager::OnArcPlayStoreEnabledChanged(bool enabled) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(base::FeatureList::IsEnabled(arc::kMediaViewFeature));
-  DCHECK(arc::IsArcAllowedForProfile(profile_));
+  DCHECK(IsArcEnabled(profile_));
+  const bool mounting =
+      arc::ShouldAlwaysMountAndroidVolumesInFilesForTesting() || enabled;
 
-  if (enabled == arc_volumes_mounted_) {
+  if (mounting == arc_volumes_mounted_) {
     return;
   }
 
-  // Need to mount all roots declared in in arc_media_view_util.cc.
-  if (enabled) {
-    DoMountEvent(Volume::CreateForMediaView(arc::kImagesRootId));
-    DoMountEvent(Volume::CreateForMediaView(arc::kVideosRootId));
-    DoMountEvent(Volume::CreateForMediaView(arc::kAudioRootId));
-    DoMountEvent(Volume::CreateForMediaView(arc::kDocumentsRootId));
-    if (!arc::IsArcVmEnabled()) {
-      DoMountEvent(Volume::CreateForAndroidFiles(
-          base::FilePath(util::kAndroidFilesPath)));
-    }
+  if (mounting) {
+    MountArcRoots();
   } else {
-    DoUnmountEvent(*Volume::CreateForMediaView(arc::kImagesRootId));
-    DoUnmountEvent(*Volume::CreateForMediaView(arc::kVideosRootId));
-    DoUnmountEvent(*Volume::CreateForMediaView(arc::kAudioRootId));
-    DoUnmountEvent(*Volume::CreateForMediaView(arc::kDocumentsRootId));
-    if (!arc::IsArcVmEnabled()) {
-      DoUnmountEvent(*Volume::CreateForAndroidFiles(
-          base::FilePath(util::kAndroidFilesPath)));
-    }
+    UnmountArcRoots();
   }
 
-  documents_provider_root_manager_->SetEnabled(enabled);
-  arc_volumes_mounted_ = enabled;
+  documents_provider_root_manager_->SetEnabled(mounting);
+  arc_volumes_mounted_ = mounting;
 }
 
 void VolumeManager::OnExternalStorageDisabledChanged() {
@@ -1535,7 +1541,7 @@ base::FilePath VolumeManager::GetDriveMountPointPath() const {
   return drive_integration_service_->GetMountPointPath();
 }
 
-void VolumeManager::DoUnmountEvent(base::StringPiece volume_id,
+void VolumeManager::DoUnmountEvent(std::string_view volume_id,
                                    ash::MountError error) {
   Volumes::const_iterator it = mounted_volumes_.find(volume_id);
   if (it == mounted_volumes_.end()) {
@@ -1593,6 +1599,125 @@ void VolumeManager::OnSftpGuestOsUnmountCallback(
   if (callback) {
     std::move(callback).Run(false);
   }
+}
+
+void VolumeManager::MountDownloadsVolume() {
+  const base::FilePath localVolume =
+      file_manager::util::GetMyFilesFolderForProfile(profile_);
+  const bool success = RegisterDownloadsMountPoint(profile_, localVolume);
+  DCHECK(success);
+
+  DoMountEvent(Volume::CreateForDownloads(localVolume));
+  if (ash::features::IsFileManagerFuseBoxDebugEnabled()) {
+    if (auto volume = CreateForFuseBoxDownloads(profile_, fusebox_daemon_.get(),
+                                                "fusebox Downloads")) {
+      DoMountEvent(std::move(volume));
+    }
+  }
+
+  // Asynchronously record the disk usage for the downloads path.
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+       base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&RecordDownloadsDiskUsageStats, std::move(localVolume)));
+}
+
+void VolumeManager::UnmountDownloadsVolume() {
+  const base::FilePath localVolume =
+      file_manager::util::GetMyFilesFolderForProfile(profile_);
+  RevokeDownloadsMountPoint(profile_, localVolume);
+  DoUnmountEvent(*Volume::CreateForDownloads(localVolume));
+  if (ash::features::IsFileManagerFuseBoxDebugEnabled()) {
+    if (auto volume = CreateForFuseBoxDownloads(profile_, fusebox_daemon_.get(),
+                                                "fusebox Downloads")) {
+      DoUnmountEvent(*volume);
+    }
+  }
+}
+
+void VolumeManager::MountArcRoots() {
+  DCHECK(IsArcEnabled(profile_));
+  if (arc_volumes_mounted_) {
+    return;
+  }
+  DoMountEvent(Volume::CreateForMediaView(arc::kImagesRootId));
+  DoMountEvent(Volume::CreateForMediaView(arc::kVideosRootId));
+  DoMountEvent(Volume::CreateForMediaView(arc::kAudioRootId));
+  DoMountEvent(Volume::CreateForMediaView(arc::kDocumentsRootId));
+  if (!arc::IsArcVmEnabled()) {
+    DoMountEvent(
+        Volume::CreateForAndroidFiles(base::FilePath(util::kAndroidFilesPath)));
+  }
+  arc_volumes_mounted_ = true;
+}
+
+void VolumeManager::UnmountArcRoots() {
+  DCHECK(IsArcEnabled(profile_));
+  if (!arc_volumes_mounted_) {
+    return;
+  }
+  DoUnmountEvent(*Volume::CreateForMediaView(arc::kImagesRootId));
+  DoUnmountEvent(*Volume::CreateForMediaView(arc::kVideosRootId));
+  DoUnmountEvent(*Volume::CreateForMediaView(arc::kAudioRootId));
+  DoUnmountEvent(*Volume::CreateForMediaView(arc::kDocumentsRootId));
+  if (!arc::IsArcVmEnabled()) {
+    DoUnmountEvent(*Volume::CreateForAndroidFiles(
+        base::FilePath(util::kAndroidFilesPath)));
+  }
+  arc_volumes_mounted_ = false;
+}
+
+void VolumeManager::UnsubscribeFromArcEvents() {
+  if (!IsArcEnabled(profile_)) {
+    return;
+  }
+  // TODO(crbug.com/672829): We need nullptr check here because
+  // ArcSessionManager may or may not be alive at this point.
+  if (arc::ArcSessionManager* const session_manager =
+          arc::ArcSessionManager::Get()) {
+    session_manager->RemoveObserver(this);
+  }
+}
+
+void VolumeManager::SubscribeAndMountArc() {
+  if (!IsArcEnabled(profile_)) {
+    return;
+  }
+  documents_provider_root_manager_->AddObserver(this);
+  // Registers a mount point for Android files only when the flag is enabled.
+  RegisterAndroidFilesMountPoint();
+  if (arc::ArcSessionManager* const session_manager =
+          arc::ArcSessionManager::Get()) {
+    arc::ArcSessionManager::Get()->AddObserver(this);
+  } else {
+    // Can be NULL only in tests.
+    CHECK_IS_TEST();
+  }
+  // Trigger mounting if enabled by policy.
+  OnArcPlayStoreEnabledChanged(arc::IsArcPlayStoreEnabledForProfile(profile_));
+}
+
+void VolumeManager::UnsubscribeAndUnmountArc() {
+  if (!IsArcEnabled(profile_)) {
+    return;
+  }
+  documents_provider_root_manager_->RemoveObserver(this);
+  UnsubscribeFromArcEvents();
+  UnmountArcRoots();
+  RevokeAndroidFilesMountPoint();
+}
+
+void VolumeManager::OnLocalUserFilesEnabled() {
+  CHECK(policy::local_user_files::LocalUserFilesAllowed());
+  MountDownloadsVolume();
+  SubscribeAndMountArc();
+}
+
+void VolumeManager::OnLocalUserFilesDisabled() {
+  CHECK(!policy::local_user_files::LocalUserFilesAllowed());
+  UnsubscribeAndUnmountArc();
+  UnmountDownloadsVolume();
 }
 
 }  // namespace file_manager

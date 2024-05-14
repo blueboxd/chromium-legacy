@@ -31,6 +31,8 @@
 #include "third_party/blink/renderer/core/css/container_query.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_selector_list.h"
+#include "third_party/blink/renderer/core/css/css_syntax_definition.h"
+#include "third_party/blink/renderer/core/css/css_variable_data.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/parser/css_at_rule_id.h"
 #include "third_party/blink/renderer/core/css/parser/css_nesting_type.h"
@@ -69,10 +71,10 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
     kCounterStyle,
     kScope,
     kSupports,
-    kPositionFallback,
-    kTry,
     kStartingStyle,
     kViewTransition,
+    kFunction,
+    kPositionTry,
   };
 
   // Name of a cascade layer as given by an @layer rule, split at '.' into a
@@ -107,23 +109,25 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
   bool IsScopeRule() const { return GetType() == kScope; }
   bool IsSupportsRule() const { return GetType() == kSupports; }
   bool IsImportRule() const { return GetType() == kImport; }
-  bool IsPositionFallbackRule() const { return GetType() == kPositionFallback; }
-  bool IsTryRule() const { return GetType() == kTry; }
   bool IsStartingStyleRule() const { return GetType() == kStartingStyle; }
   bool IsViewTransitionRule() const { return GetType() == kViewTransition; }
   bool IsConditionRule() const {
     return GetType() == kContainer || GetType() == kMedia ||
            GetType() == kSupports || GetType() == kStartingStyle;
   }
+  bool IsFunctionRule() const { return GetType() == kFunction; }
+  bool IsPositionTryRule() const { return GetType() == kPositionTry; }
 
   StyleRuleBase* Copy() const;
 
   // FIXME: There shouldn't be any need for the null parent version.
   CSSRule* CreateCSSOMWrapper(
       wtf_size_t position_hint = std::numeric_limits<wtf_size_t>::max(),
-      CSSStyleSheet* parent_sheet = nullptr) const;
+      CSSStyleSheet* parent_sheet = nullptr,
+      bool trigger_use_counters = false) const;
   CSSRule* CreateCSSOMWrapper(wtf_size_t position_hint,
-                              CSSRule* parent_rule) const;
+                              CSSRule* parent_rule,
+                              bool trigger_use_counters = false) const;
 
   // Move this rule from being a child of old_parent (which is only given for
   // sake of DCHECK) to being a child of new_parent, updating parent pointers
@@ -224,7 +228,8 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
  private:
   CSSRule* CreateCSSOMWrapper(wtf_size_t position_hint,
                               CSSStyleSheet* parent_sheet,
-                              CSSRule* parent_rule) const;
+                              CSSRule* parent_rule,
+                              bool trigger_use_counters) const;
 
   const uint8_t type_;
   // See CSSSelector::Signal.
@@ -695,6 +700,46 @@ class StyleRuleCharset : public StyleRuleBase {
  private:
 };
 
+// An @function rule, representing a CSS function.
+class CORE_EXPORT StyleRuleFunction : public StyleRuleBase {
+ public:
+  struct Type {
+    CSSSyntaxDefinition syntax;
+
+    // Whether this is a numeric type, that would be accepted by calc()
+    // (see https://drafts.csswg.org/css-values/#calc-func). This is used
+    // to allow the user to not have to write calc() around every single
+    // expression, so that one could do e.g. --foo(2 + 2) instead of
+    // --foo(calc(2 + 2)). Since writing calc() around an expression of
+    // such a type will never change its meaning, and nested calc is allowed,
+    // this is always safe even when not needed.
+    bool should_add_implicit_calc;
+  };
+  struct Parameter {
+    String name;
+    Type type;
+  };
+
+  StyleRuleFunction(AtomicString name,
+                    Vector<Parameter> parameters,
+                    scoped_refptr<CSSVariableData> function_body,
+                    Type return_type);
+  StyleRuleFunction(const StyleRuleFunction&) = delete;
+
+  const AtomicString& GetName() const { return name_; }
+  const Vector<Parameter>& GetParameters() const { return parameters_; }
+  CSSVariableData& GetFunctionBody() const { return *function_body_; }
+  const Type& GetReturnType() const { return return_type_; }
+
+  void TraceAfterDispatch(blink::Visitor*) const;
+
+ private:
+  AtomicString name_;
+  Vector<Parameter> parameters_;
+  scoped_refptr<CSSVariableData> function_body_;
+  Type return_type_;
+};
+
 template <>
 struct DowncastTraits<StyleRule> {
   static bool AllowFrom(const StyleRuleBase& rule) {
@@ -740,8 +785,7 @@ struct DowncastTraits<StyleRuleGroup> {
   static bool AllowFrom(const StyleRuleBase& rule) {
     return rule.IsMediaRule() || rule.IsSupportsRule() ||
            rule.IsContainerRule() || rule.IsLayerBlockRule() ||
-           rule.IsScopeRule() || rule.IsPositionFallbackRule() ||
-           rule.IsStartingStyleRule();
+           rule.IsScopeRule() || rule.IsStartingStyleRule();
   }
 };
 
@@ -791,6 +835,13 @@ template <>
 struct DowncastTraits<StyleRuleStartingStyle> {
   static bool AllowFrom(const StyleRuleBase& rule) {
     return rule.IsStartingStyleRule();
+  }
+};
+
+template <>
+struct DowncastTraits<StyleRuleFunction> {
+  static bool AllowFrom(const StyleRuleBase& rule) {
+    return rule.IsFunctionRule();
   }
 };
 

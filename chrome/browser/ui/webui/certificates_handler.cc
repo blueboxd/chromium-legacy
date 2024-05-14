@@ -42,8 +42,8 @@
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_nss.h"
-#include "third_party/boringssl/src/pki/input.h"
-#include "third_party/boringssl/src/pki/parser.h"
+#include "third_party/boringssl/src/include/openssl/bytestring.h"
+#include "third_party/boringssl/src/include/openssl/span.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
@@ -180,14 +180,10 @@ bool CouldBePFX(std::string_view data) {
 
   // If the SEQUENCE is definite length, it can be parsed through the version
   // tag using DER parser, since INTEGER must be definite length, even in BER.
-  bssl::der::Parser parser((bssl::der::Input(data)));
-  bssl::der::Parser sequence_parser;
-  if (!parser.ReadSequence(&sequence_parser))
-    return false;
-  if (!sequence_parser.SkipTag(bssl::der::kInteger)) {
-    return false;
-  }
-  return true;
+  CBS cbs = bssl::StringAsBytes(data);
+  CBS sequence, version;
+  return CBS_get_asn1(&cbs, &sequence, CBS_ASN1_SEQUENCE) &&
+         CBS_get_asn1(&sequence, &version, CBS_ASN1_INTEGER);
 }
 
 }  // namespace
@@ -735,11 +731,16 @@ void CertificatesHandler::ImportPersonalSlotUnlocked() {
   // to true if importing into a hardware module. Currently, this only happens
   // for Chrome OS when the "Import and Bind" option is chosen.
   bool is_extractable = !use_hardware_backed_;
-  int result = certificate_manager_model_->ImportFromPKCS12(
-      slot_.get(), file_data_, password_, is_extractable);
+  certificate_manager_model_->ImportFromPKCS12(
+      slot_.get(), file_data_, password_, is_extractable,
+      base::BindOnce(&CertificatesHandler::ImportPersonalResultReceived,
+                     weak_ptr_factory_.GetWeakPtr()));
   ImportExportCleanup();
+}
+
+void CertificatesHandler::ImportPersonalResultReceived(int net_result) {
   int string_id;
-  switch (result) {
+  switch (net_result) {
     case net::OK:
       ResolveCallback(base::Value());
       return;

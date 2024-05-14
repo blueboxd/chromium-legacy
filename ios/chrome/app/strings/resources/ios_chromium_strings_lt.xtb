@@ -15,6 +15,7 @@
 <translation id="1423007117030725713">Pradėti paiešką naujame „Chromium“ skirtuke.</translation>
 <translation id="1431818719585918472">Leiskite „Chromium“ užrakinti jūsų inkognito skirtukus.</translation>
 <translation id="1472013873724362412">Paskyra neveikia sistemoje „Chromium“. Susisiekite su domeno administratoriumi arba prisijungdami naudokite įprastą „Google“ paskyrą.</translation>
+<translation id="1503199973012840174">Jūsų „Chromium“ pasenusi. Atnaujinkite, kad užtikrintumėte saugą.</translation>
 <translation id="1507010443238049608">Padėti tobulinti „Chromium“ funkcijas ir našumą</translation>
 <translation id="1513122820609681462">Nustatyti „Chromium“ kaip numatytąją naršyklę</translation>
 <translation id="1531155317299575425">Rodomi raginimai prisijungti prie „Chromium“.</translation>
@@ -50,6 +51,7 @@
 <translation id="22313767259766852">Šis adresas šiuo metu išsaugotas naršyklėje „Chromium“. Jei norite jį naudoti „Google“ produktuose, išsaugokite „Google“ paskyroje (<ph name="USER_EMAIL" />).</translation>
 <translation id="2236584955986023187">Tai reiškia, kad kiekvieną kartą „Chromium“ teiks staliniams kompiuteriams skirtos svetainės užklausą.</translation>
 <translation id="2313870531055795960">Tikrinami URL pagal nesaugių svetainių sąrašą, saugomą naršyklėje „Chromium“. Jei svetainė bando pavogti slaptažodį ar atsisiuntėte žalingą failą, „Chromium“ taip pat gali siųsti URL, įskaitant puslapio turinio dalis, Saugaus naršymo funkcijai.</translation>
+<translation id="231828342043114302">Jei norite gauti pagal pomėgius suasmeninto turinio, prisijunkite prie „Chromium“.</translation>
 <translation id="2374627437126809292">„Chromium“ naudoja „Google“ žemėlapius, kad pateiktų jums nuorodų ir vietinės informacijos apie aptiktus adresus.</translation>
 <translation id="2386292341327187942">Laukelyje „Paieškos valdikliai“ įveskite „Chromium“</translation>
 <translation id="2426113998523353159">Organizacija reikalauja prisijungti, kad galėtumėte naudoti „Chromium“.</translation>
@@ -78,7 +80,6 @@ Jei reikia daugiau nustatymų, pagal kuriuos duomenys naudojami „Chromium“ f
 <translation id="3219277919172823720">Paieška balsu naršyklėje „Chromium“</translation>
 <translation id="3228349498066165585">Kai kurie „Chromium“ duomenys dar neišsaugoti „Google“ paskyroje.
         Pabandykite palaukti kelias minutes prieš atsijungdami. Jei atsijungsite dabar, šie duomenys bus ištrinti.</translation>
-<translation id="3256316712990552818">Nukopijuota į „Chromium“</translation>
 <translation id="328933489847748230">{count,plural, =1{Dabar rodomas vienas „Chromium“ langas}one{Dabar rodomas {count} „Chromium“ langas}few{Dabar rodomi {count} „Chromium“ langai}many{Dabar rodoma {count} „Chromium“ lango}other{Dabar rodoma {count} „Chromium“ langų}}</translation>
 <translation id="3344973607274501920">„Chromium“ nepavyko patikrinti jūsų slaptažodžių. Pabandykite patikrinti interneto ryšį.</translation>
 <translation id="3366305173356742781">„Chromium“ duomenys jūsų paskyroje</translation>
@@ -116,6 +117,7 @@ Duomenys užšifruoti naudojant slaptafrazę. Įveskite ją, kad galėtumėte na
 <translation id="4195557071150719219">Žr. „Chromium“ naujausius skirtukus</translation>
 <translation id="4200712796753248893">„Chromium“ veiksmų naudojimas sistemoje „iOS“</translation>
 <translation id="420541179527342563">Jei norite išjungti užrakinimo režimą naršyklėje „Chromium“, išjunkite jį „iPad“ įrenginyje.</translation>
+<translation id="427331839909790668">Susiekite „Chromium“ ir kitas „Google“ paslaugas, jei norite, kad jos suasmenintų jums teikiamas funkcijas pagal skirtingų paslaugų duomenis</translation>
 <translation id="4408912345039114853">„Chromium“ saugos patikros vykdymas</translation>
 <translation id="4432744876818348753">Prisijunkite, kad išnaudotumėte visas „Chromium“ galimybes.</translation>
 <translation id="4445228361214254027">Organizacija išjungė galimybę naudoti ir išsaugoti „Chromium“ duomenis „Google“ paskyroje. Nauji slaptažodžiai, žymės ir kt. bus išsaugoti tik šiame įrenginyje.</translation>
@@ -217,6 +219,7 @@ Tik jūsų slaptafrazę turintis asmuo galės perskaityti šifruotus duomenis. S
 <translation id="6852799557929001644">Pasiekite „Chromium“ slaptažodžius ir kitas programas kitose šio įrenginio programose.</translation>
 <translation id="6887138405044152640">Jei norite siųsti šį skirtuką į kitą įrenginį, prisijunkite prie „Chromium“ čia.</translation>
 <translation id="6911341667534646387">Toliau naudokite „Chromium“ duomenis „Google“ paskyroje</translation>
+<translation id="7002548535535009764">Jei norite išnaudoti visus suasmenintų funkcijų pranašumus, įtraukite „Chromium“ į „<ph name="FEATURE_NAME_1" />“ ir „<ph name="FEATURE_NAME_2" />“</translation>
 <translation id="7006920032187763988">Galite naudoti Slaptažodžių tvarkytuvėje išsaugotus slaptažodžius kitose „iPad“ programose.</translation>
 <translation id="7018284295775193585">Nepavyko atnaujinti „Chromium“</translation>
 <translation id="7045244423563602563">Suasmeninkite „Chromium“</translation>
@@ -313,7 +316,6 @@ Duomenys užšifruoti naudojant slaptafrazę <ph name="TIME" />. Įveskite ją, 
 <translation id="9059693977935746710">Jums nereikia prisiminti šio slaptažodžio. Jis bus išsaugotas Slaptažodžių tvarkytuvėje kaip priskirtas el. pašto adresui <ph name="EMAIL" /></translation>
 <translation id="9089354809943900324">„Chromium“ versija yra pasenusi</translation>
 <translation id="9110075932708282655">„Chromium“ naudojimas pagal numatytuosius nustatymus</translation>
-<translation id="9137114218472648150">„Chromium“ pasenusi, atnaujinkite į naujausią versiją, kad užtikrintumėte saugą.</translation>
 <translation id="921174536258924340">„Chromium“ nepavyko patikrinti visų slaptažodžių. Bandykite dar kartą rytoj arba <ph name="BEGIN_LINK" />patikrinkite slaptažodžius „Google“ paskyroje<ph name="END_LINK" />.</translation>
 <translation id="971488683725792095">Automatiškai naudokite „Chromium“ palietę nuorodą pranešimuose, dokumentuose ir kitose programose.</translation>
 <translation id="981812233959540767">Žaisti „Chromium“ dinozauro žaidimą</translation>

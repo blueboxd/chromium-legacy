@@ -67,7 +67,11 @@ class IdentityDialogController
                        const std::optional<TokenError>& error,
                        DismissCallback dismiss_callback,
                        MoreDetailsCallback more_details_callback) override;
-  void ShowIdpSigninFailureDialog(base::OnceClosure dismiss_callback) override;
+  void ShowLoadingDialog(const std::string& top_frame_for_display,
+                         const std::string& idp_for_display,
+                         blink::mojom::RpContext rp_context,
+                         blink::mojom::RpMode rp_mode,
+                         DismissCallback dismiss_callback) override;
 
   std::string GetTitle() const override;
   std::optional<std::string> GetSubtitle() const override;
@@ -89,6 +93,11 @@ class IdentityDialogController
   void OnAccountsDisplayed() override;
   gfx::NativeView GetNativeView() override;
   content::WebContents* GetWebContents() override;
+
+  // Request the IdP Registration permission.
+  void RequestIdPRegistrationPermision(
+      const url::Origin& origin,
+      base::OnceCallback<void(bool accepted)> callback) override;
 
  private:
   std::unique_ptr<AccountSelectionView> account_view_{nullptr};

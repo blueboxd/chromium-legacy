@@ -77,6 +77,15 @@ chromium-metrics-reviews@google.com.
   <int value="4" label="CancellationSucceeded"/>
 </enum>
 
+<enum name="ClientSideDetectionType">
+  <int value="0" label="CLIENT_SIDE_DETECTION_TYPE_UNSPECIFIED"/>
+  <int value="1" label="FORCE_REQUEST"/>
+  <int value="2" label="TRIGGER_MODELS"/>
+  <int value="3" label="NOTIFICATION_PERMISSION_PROMPT"/>
+  <int value="4" label="KEYBOARD_LOCK_REQUESTED"/>
+  <int value="5" label="POINTER_LOCK_REQUESTED"/>
+</enum>
+
 <enum name="ClientSidePhishingImageEmbeddingResult">
   <summary>
     Enumerates the possible results from client side phishing image embedding
@@ -172,6 +181,7 @@ chromium-metrics-reviews@google.com.
   <int value="36" label="ACCOUNT_COMPROMISE"/>
   <int value="37" label="LOCAL_DECRYPTION_PROMPT"/>
   <int value="38" label="LOCAL_DECRYPTION_FAILED"/>
+  <int value="39" label="IMMEDIATE_DEEP_SCAN"/>
 </enum>
 
 <enum name="SBClientDownloadCheckResult">
@@ -194,6 +204,8 @@ chromium-metrics-reviews@google.com.
   <int value="16" label="DEEP_SCANNED_FAILED"/>
   <int value="17" label="PROMPT_FOR_LOCAL_PASSWORD_SCANNING"/>
   <int value="18" label="ASYNC_LOCAL_PASSWORD_SCANNING"/>
+  <int value="19" label="BLOCKED_SCAN_FAILED"/>
+  <int value="20" label="IMMEDIATE_DEEP_SCAN"/>
 </enum>
 
 <enum name="SBClientDownloadUserGestureFileTypeAttributes">
@@ -239,6 +251,7 @@ chromium-metrics-reviews@google.com.
   <int value="5" label="Scan failed"/>
   <int value="6" label="Scan deleted"/>
   <int value="7" label="Prompt accepted from chrome://downloads"/>
+  <int value="8" label="Incorrect password prompt shown"/>
 </enum>
 
 <enum name="SBDeepScanTriggers">

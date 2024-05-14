@@ -65,8 +65,9 @@ class CONTENT_EXPORT AuctionMetricsRecorder {
   // counts are all aggregated across all component auctions for a multi-seller
   // auction.
   void SetNumInterestGroups(int64_t num_interest_groups);
-  void SetNumOwnersWithInterestGroups(int64_t num_interest_groups);
-  void SetNumOwnersWithoutInterestGroups(int64_t num_excluded);
+  void SetNumOwnersWithInterestGroups(int64_t num_owners_with_interest_groups);
+  void SetNumOwnersWithoutInterestGroups(
+      int64_t num_owners_without_interest_groups);
   void SetNumSellersWithBidders(int64_t num_sellers_with_bidders);
 
   // Records the number of negative interest groups associated with an auction.
@@ -130,6 +131,11 @@ class CONTENT_EXPORT AuctionMetricsRecorder {
   void RecordInterestGroupWithOnlyNonKAnonBid();
   void RecordInterestGroupWithSameBidForKAnonAndNonKAnon();
   void RecordInterestGroupWithSeparateBidsForKAnonAndNonKAnon();
+  void RecordInterestGroupWithOtherMultiBid();
+
+  // Records total number of bids returned from a generateBid() call, and the
+  // number that's k-anonymous.
+  void RecordNumberOfBidsFromGenerateBid(size_t k_anom_num, size_t num);
 
   // Records the latency of each component for a multi-seller auction.
   void RecordComponentAuctionLatency(base::TimeDelta latency);
@@ -307,7 +313,13 @@ class CONTENT_EXPORT AuctionMetricsRecorder {
   int64_t num_interest_groups_with_no_bids_ = 0,
           num_interest_groups_with_only_non_k_anon_bid_ = 0,
           num_interest_groups_with_separate_bids_for_k_anon_and_non_k_anon_ = 0,
-          num_interest_groups_with_same_bid_for_k_anon_and_non_k_anon_ = 0;
+          num_interest_groups_with_same_bid_for_k_anon_and_non_k_anon_ = 0,
+          num_interest_groups_with_other_multi_bid_ = 0;
+
+  // Number of bids generated from worklets invocation, total and k-anon
+  // suitable ones only.
+  size_t num_bids_generated_ = 0;
+  size_t num_kanon_bids_generated_ = 0;
 
   // Various latency measurements.
   LatencyAggregator component_auction_latency_aggregator_;

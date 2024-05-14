@@ -2261,7 +2261,7 @@ TEST_P(AnimationPendingAnimationsTest,
 }
 
 TEST_P(AnimationAnimationTestCompositing,
-       ScrollLinkedAnimationNotCompositedIfSourceIsNotComposited) {
+       ScrollLinkedAnimationCompositedEvenIfSourceIsNotComposited) {
   SetPreferCompositingToLCDText(false);
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -2320,8 +2320,11 @@ TEST_P(AnimationAnimationTestCompositing,
   UpdateAllLifecyclePhasesForTest();
   scroll_animation->play();
   scroll_animation->SetDeferredStartTimeForTesting();
-  EXPECT_EQ(scroll_animation->CheckCanStartAnimationOnCompositor(nullptr),
-            CompositorAnimations::kTimelineSourceHasInvalidCompositingState);
+  EXPECT_EQ(
+      scroll_animation->CheckCanStartAnimationOnCompositor(nullptr),
+      RuntimeEnabledFeatures::ScrollTimelineAlwaysOnCompositorEnabled()
+          ? CompositorAnimations::kNoFailure
+          : CompositorAnimations::kTimelineSourceHasInvalidCompositingState);
 }
 
 #if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)
@@ -2425,7 +2428,7 @@ TEST_P(AnimationAnimationTestCompositing, HiddenAnimationsDoNotTick) {
   // The animation should run on main because compositor properties are missing.
   EXPECT_EQ(
       animation->CheckCanStartAnimationOnCompositor(paint_artifact_compositor),
-      CompositorAnimations::kCompositorPropertyAnimationsHaveNoEffect);
+      CompositorAnimations::kAnimationHasNoVisibleChange);
   EXPECT_TRUE(animation->CompositorPropertyAnimationsHaveNoEffectForTesting());
   EXPECT_TRUE(animation->AnimationHasNoEffect());
 
@@ -2468,7 +2471,7 @@ TEST_P(AnimationAnimationTestCompositing, HiddenAnimationsTickWhenVisible) {
   // The animation should run on main because compositor properties are missing.
   EXPECT_EQ(
       animation->CheckCanStartAnimationOnCompositor(paint_artifact_compositor),
-      CompositorAnimations::kCompositorPropertyAnimationsHaveNoEffect);
+      CompositorAnimations::kAnimationHasNoVisibleChange);
   EXPECT_TRUE(animation->CompositorPropertyAnimationsHaveNoEffectForTesting());
   EXPECT_TRUE(animation->AnimationHasNoEffect());
 

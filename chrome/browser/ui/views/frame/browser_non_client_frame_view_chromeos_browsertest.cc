@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chromeos/test_util.h"
-#include "chrome/browser/ui/lacros/window_utility.h"
 #include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -540,12 +539,7 @@ class WebAppNonClientFrameViewChromeOSTest
     app_browser_ = web_app::LaunchWebAppBrowser(browser()->profile(), app_id);
     navigation_observer.WaitForNavigationFinished();
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-    {
-      aura::Window* window = app_browser_->window()->GetNativeWindow();
-      std::string id =
-          lacros_window_utility::GetRootWindowUniqueId(window->GetRootWindow());
-      ASSERT_TRUE(browser_test_util::WaitForWindowCreation(id));
-    }
+    ASSERT_TRUE(browser_test_util::WaitForWindowCreation(app_browser_));
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
     browser_view_ = BrowserView::GetBrowserViewForBrowser(app_browser_);
@@ -707,9 +701,10 @@ IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewChromeOSTest,
   password_form.username_value = u"test";
   password_form.url = GetAppURL().DeprecatedGetOriginAsURL();
   password_form.match_type = password_manager::PasswordForm::MatchType::kExact;
+  std::vector<password_manager::PasswordForm> forms = {password_form};
   PasswordsClientUIDelegateFromWebContents(web_contents)
-      ->OnPasswordAutofilled({&password_form},
-                             url::Origin::Create(password_form.url), nullptr);
+      ->OnPasswordAutofilled(forms, url::Origin::Create(password_form.url),
+                             nullptr);
   chrome::ManagePasswordsForPage(app_browser_);
   ASSERT_TRUE(WaitForVisible(true, manage_passwords_icon));
 }
@@ -896,16 +891,11 @@ IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewChromeOSTest,
   EXPECT_FALSE(GetPaintingAsActive());
 }
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-// TODO(crbug.com/1507735): Reenable the test once the GetLastActive() race
-// condition is fixed.
-#define MAYBE_PopupHasNoToolbar DISABLED_PopupHasNoToolbar
-#else
-#define MAYBE_PopupHasNoToolbar PopupHasNoToolbar
-#endif
 IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewChromeOSTest,
-                       MAYBE_PopupHasNoToolbar) {
+                       PopupHasNoToolbar) {
   SetUpWebApp();
+
+  Browser* popup_browser;
   {
     NavigateParams navigate_params(app_browser_, GetAppURL(),
                                    ui::PAGE_TRANSITION_LINK);
@@ -915,9 +905,9 @@ IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewChromeOSTest,
     navigation_observer.StartWatchingNewWebContents();
     Navigate(&navigate_params);
     navigation_observer.WaitForNavigationFinished();
+    popup_browser = navigate_params.browser;
   }
 
-  Browser* popup_browser = BrowserList::GetInstance()->GetLastActive();
   BrowserView* browser_view =
       BrowserView::GetBrowserViewForBrowser(popup_browser);
   EXPECT_FALSE(browser_view->web_app_frame_toolbar_for_testing() &&

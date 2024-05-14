@@ -34,6 +34,8 @@ SystemProfileProto_ComponentId CrxIdToComponentId(const std::string& app_id) {
        SystemProfileProto_ComponentId_COMMERCE_HEURISTICS},
       {"copjbmjbojbakpaedmpkhmiplmmehfck",
        SystemProfileProto_ComponentId_INTERVENTION_POLICY_DATABASE},
+      {"dgeeihjgkpfplghdiaomabiakidhjnnn",
+       SystemProfileProto_ComponentId_GROWTH_CAMPAIGNS},
       {"dhlpobdgcjafebgbbhjdnapejmpkgiie",
        SystemProfileProto_ComponentId_DESKTOP_SHARING_HUB},
       {"eeigpngbgcognadeebkilcpcaedhellh",
@@ -141,7 +143,7 @@ SystemProfileProto_ComponentId CrxIdToComponentId(const std::string& app_id) {
        SystemProfileProto_ComponentId_SODA_JA_JP},
   });
 
-  const auto* result = kComponentMap.find(app_id);
+  const auto result = kComponentMap.find(app_id);
   if (result == kComponentMap.end()) {
     return SystemProfileProto_ComponentId_UNKNOWN;
   }

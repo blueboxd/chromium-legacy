@@ -23,8 +23,25 @@ class DesktopPaymentsWindowManagerTestApi {
 
   void CreatePopup(const GURL& url) { window_manager_->CreatePopup(url); }
 
-  std::optional<PaymentsWindowManager::Vcn3dsContext> GetVcn3dsContext() {
+  void OnVcn3dsAuthenticationResponseReceived(
+      AutofillClient::PaymentsRpcResult result,
+      const PaymentsNetworkInterface::UnmaskResponseDetails& response_details) {
+    window_manager_->OnVcn3dsAuthenticationResponseReceived(result,
+                                                            response_details);
+  }
+
+  void OnVcn3dsAuthenticationProgressDialogCancelled() {
+    window_manager_->OnVcn3dsAuthenticationProgressDialogCancelled();
+  }
+
+  const std::optional<PaymentsWindowManager::Vcn3dsContext>&
+  GetVcn3dsContext() {
     return window_manager_->vcn_3ds_context_;
+  }
+
+  bool NoOngoingFlow() {
+    return window_manager_->flow_type_ ==
+           DesktopPaymentsWindowManager::FlowType::kNoFlow;
   }
 
  private:

@@ -5,6 +5,7 @@
 <translation id="1036348656032585052">إيقاف</translation>
 <translation id="1044891598689252897">ستعمل المواقع الإلكترونية بشكلٍ طبيعي.</translation>
 <translation id="1073417869336441572">‏ساعِدنا في تحسين متصفِّح Chrome من خلال إخبارنا بأسباب سماحك باستخدام ملفات تعريف الارتباط التابعة لجهات خارجية. <ph name="BEGIN_LINK" />إرسال ملاحظات<ph name="END_LINK" /></translation>
+<translation id="1113435009358629918">إخفاء بطاقة الانخفاض في السعر</translation>
 <translation id="1178581264944972037">الإيقاف مؤقتًا</translation>
 <translation id="1181037720776840403">إزالة</translation>
 <translation id="1192844206376121885">سيؤدي هذا الإجراء إلى حذف جميع البيانات وملفات تعريف الارتباط المُخزَّنة من خلال <ph name="ORIGIN" />.</translation>
@@ -21,7 +22,6 @@
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1384959399684842514">تم إيقاف التنزيل مؤقتًا</translation>
 <translation id="1415402041810619267">‏تم اقتطاع عنوان URL</translation>
-<translation id="1434873037477293673">بطاقة انخفاض في السعر</translation>
 <translation id="1448064542941920355">تصغير</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{موقع إلكتروني واحد (<ph name="SITE_COUNT" />)}zero{<ph name="SITE_COUNT" /> موقع إلكتروني}two{موقعَين إلكترونيَين (<ph name="SITE_COUNT" />)}few{<ph name="SITE_COUNT" /> مواقع إلكترونية}many{<ph name="SITE_COUNT" /> موقعًا إلكترونيًا}other{<ph name="SITE_COUNT" /> موقع إلكتروني}}</translation>
 <translation id="1510341833810331442">المواقع الإلكترونية غير مسموح لها بحفظ البيانات على جهازك.</translation>
@@ -94,12 +94,14 @@
 <translation id="2501278716633472235">الرجوع</translation>
 <translation id="2546283357679194313">ملفات تعريف الارتباط وبيانات المواقع الإلكترونية
 </translation>
+<translation id="2550801787432930915">بطاقة الانخفاض في السعر</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{تم حظر ملف تعريف ارتباط واحد.}zero{تم حظر # ملف تعريف ارتباط.}two{تم حظر ملفَّي تعريف ارتباط.}few{تم حظر # ملفات تعريف ارتباط.}many{تم حظر # ملف تعريف ارتباط.}other{تم حظر # ملف تعريف ارتباط.}}</translation>
 <translation id="2570922361219980984">‏الوصول إلى الموقع الجغرافي متوقف لهذا الجهاز أيضًا. يمكنك تفعليه في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">تم التوسيع - انقر للتصغير.</translation>
 <translation id="2586657967955657006">الحافظة</translation>
 <translation id="2597457036804169544">عدم تطبيق "المظهر الداكن" على المواقع الإلكترونية</translation>
 <translation id="2606760465469169465">التحقّق التلقائي</translation>
+<translation id="2613007545732217283"><ph name="HOST_NAME" /> <ph name="SEPARATOR" /> <ph name="RECENCY" /></translation>
 <translation id="2621115761605608342">‏السماح لموقع إلكتروني معيّن بتشغيل JavaScript</translation>
 <translation id="2653659639078652383">إرسال</translation>
 <translation id="2677748264148917807">الخروج</translation>
@@ -122,7 +124,6 @@
 <translation id="2979365474350987274">ملفات تعريف الارتباط التابعة لجهات خارجية محدودة</translation>
 <translation id="3008272652534848354">إعادة ضبط الأذونات</translation>
 <translation id="301521992641321250">تم الحظر تلقائيًا</translation>
-<translation id="3025010840409371499"><ph name="RECENCY" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="3069226013421428034">يمكنك السماح بتسجيل الدخول في الخدمات التابعة لجهات خارجية في موقع إلكتروني محدَّد.</translation>
 <translation id="3082992102194421695">{COUNT,plural, =1{تنتهي الصلاحية غدًا}zero{تنتهي الصلاحية بعد # يوم}two{تنتهي الصلاحية بعد يومَين}few{تنتهي الصلاحية بعد # أيام}many{تنتهي الصلاحية بعد # يومًا}other{تنتهي الصلاحية بعد # يوم}}</translation>
 <translation id="310297983047869047">الشريحة السابقة</translation>
@@ -189,7 +190,6 @@
 <translation id="4149994727733219643">عرض مبسَّط لصفحات الويب</translation>
 <translation id="4151930093518524179">المستوى التلقائي للتكبير/التصغير</translation>
 <translation id="4165986682804962316">إعدادات الموقع الإلكتروني</translation>
-<translation id="4169019654293892025">إخفاء "<ph name="TITLE_OF_MODULE" />"</translation>
 <translation id="4169549551965910670">‏تم ربط الموقع الإلكتروني بجهاز USB.</translation>
 <translation id="4194328954146351878">‏يتم طلب الإذن قبل السماح للمواقع الإلكترونية بالاطّلاع على المعلومات وتعديلها على الأجهزة المزوَّدة بتقنية NFC (إعداد مُقترَح).</translation>
 <translation id="4200726100658658164">فتح إعدادات الموقع الجغرافي</translation>
@@ -214,6 +214,7 @@
 <translation id="4566417217121906555">كتم صوت الميكروفون</translation>
 <translation id="4570913071927164677">التفاصيل</translation>
 <translation id="4598549027014564149">في وضع التصفّح المتخفي، لا يمكن للمواقع الإلكترونية استخدام ملفات تعريف الارتباط للاطّلاع على نشاط التصفُّح على المواقع الإلكترونية، بما في ذلك المواقع الإلكترونية ذات الصلة. لا يتم استخدام نشاط التصفُّح لأغراض مثل تخصيص الإعلانات. وقد لا تعمل ميزات بعض المواقع الإلكترونية.</translation>
+<translation id="4619615317237390068">علامات التبويب من الأجهزة الأخرى</translation>
 <translation id="4644713492825682049">الحذف وإعادة الضبط</translation>
 <translation id="4645575059429386691">يديره والداك</translation>
 <translation id="4670064810192446073">الواقع الافتراضي</translation>
@@ -345,6 +346,7 @@
 <translation id="6612358246767739896">المحتوى المحمي</translation>
 <translation id="662080504995468778">البقاء</translation>
 <translation id="6653342741369270081">اضغط على زر الرجوع للخروج من وضع ملء الشاشة.</translation>
+<translation id="6670377348676659110">{TILE_COUNT,plural, =1{إخفاء خيار المتابعة باستخدام علامة التبويب هذه}zero{إخفاء خيار المتابعة باستخدام علامات التبويب هذه}two{إخفاء خيار المتابعة باستخدام علامتَي التبويب هاتين}few{إخفاء خيار المتابعة باستخدام علامات التبويب هذه}many{إخفاء خيار المتابعة باستخدام علامات التبويب هذه}other{إخفاء خيار المتابعة باستخدام علامات التبويب هذه}}</translation>
 <translation id="6689172468748959065">صور الملف الشخصي</translation>
 <translation id="6697925417670533197">عمليات التنزيل النشِطة</translation>
 <translation id="6722828510648505498">بإمكانك حظر الطلبات بتسجيل الدخول من خدمات تقديم الهويات.</translation>
@@ -367,6 +369,7 @@
 <translation id="702275896380648118">‏يحدّد هذا الموقع الإلكتروني اهتماماتك، ثم يقدّم إلى المواقع الإلكترونية الأخرى اقتراحات عن الإعلانات ذات الصلة باهتماماتك. ويتعرّف أيضًا هذا الموقع الإلكتروني من خلال Chrome على مواضيع الإعلانات التي تهمّك، وذلك بهدف عرض إعلانات وثيقة الصلة باهتماماتك.</translation>
 <translation id="7053983685419859001">حظر</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{تم اختيار عنصر واحد}zero{تم اختيار # عنصر}two{تم اختيار عنصرين (#)}few{تم اختيار # عناصر}many{تم اختيار # عنصرًا}other{تم اختيار # عنصر}}</translation>
+<translation id="708014373017851679">إصدار <ph name="APP_NAME" /> قديم. يُرجى تحديث التطبيق.</translation>
 <translation id="7087918508125750058">تم اختيار <ph name="ITEM_COUNT" /> عنصر، ويمكنك الاطّلاع على الخيارات في الجزء العلوي من الشاشة.</translation>
 <translation id="7141896414559753902">منع المواقع الإلكترونية من عرض النوافذ المنبثقة وعمليات إعادة التوجيه (مُوصى به)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> كيلوبايت</translation>

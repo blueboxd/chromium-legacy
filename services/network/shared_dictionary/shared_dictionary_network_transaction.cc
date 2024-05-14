@@ -13,6 +13,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -274,7 +275,7 @@ void SharedDictionaryNetworkTransaction::ModifyRequestHeaders(
   }
 
   if (!shared_dictionary_->id().empty()) {
-    absl::optional<std::string> serialized_id =
+    std::optional<std::string> serialized_id =
         net::structured_headers::SerializeItem(shared_dictionary_->id());
     if (serialized_id) {
       request_headers->SetHeader("Dictionary-ID", *serialized_id);
@@ -385,6 +386,9 @@ int SharedDictionaryNetworkTransaction::Read(
       if (!shared_compression_stream_) {
         if (shared_dictionary_encoding_type_ ==
             SharedDictionaryEncodingType::kSharedBrotli) {
+          SCOPED_UMA_HISTOGRAM_TIMER_MICROS(
+              "Network.SharedDictionary."
+              "CreateBrotliSourceStreamWithDictionary");
           shared_compression_stream_ =
               net::CreateBrotliSourceStreamWithDictionary(
                   std::make_unique<ProxyingSourceStream>(
@@ -392,6 +396,8 @@ int SharedDictionaryNetworkTransaction::Read(
                   shared_dictionary_->data(), shared_dictionary_->size());
         } else if (shared_dictionary_encoding_type_ ==
                    SharedDictionaryEncodingType::kSharedZstd) {
+          SCOPED_UMA_HISTOGRAM_TIMER_MICROS(
+              "Network.SharedDictionary.CreateZstdSourceStreamWithDictionary");
           shared_compression_stream_ =
               net::CreateZstdSourceStreamWithDictionary(
                   std::make_unique<ProxyingSourceStream>(

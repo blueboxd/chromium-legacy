@@ -17,6 +17,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace autofill {
 namespace {
@@ -25,6 +26,10 @@ namespace {
 const char kProdPaymentsServiceUrl[] = "https://payments.google.com/";
 const char kSandboxPaymentsSecureServiceUrl[] =
     "https://payments.sandbox.google.com/";
+
+// Origins of execution used by Google Pay's pay.js script
+const char kProdGooglePayScriptOrigin[] = "https://pay.google.com/";
+const char kSandboxGooglePayScriptOrigin[] = "https://pay.sandbox.google.com/";
 
 // URLs used when opening the Payment methods management page from
 // chrome://settings/payments.
@@ -66,6 +71,12 @@ GURL GetBaseSecureUrl() {
                                             : kSandboxPaymentsSecureServiceUrl);
 }
 
+url::Origin GetGooglePayScriptOrigin() {
+  return url::Origin::Create(GURL(IsPaymentsProductionEnabled()
+                                      ? kProdGooglePayScriptOrigin
+                                      : kSandboxGooglePayScriptOrigin));
+}
+
 GURL GetManageInstrumentsUrl() {
   bool use_gpay_url = base::FeatureList::IsEnabled(
       features::kAutofillUpdateChromeSettingsLinkToGPayWeb);
@@ -74,6 +85,17 @@ GURL GetManageInstrumentsUrl() {
                                   : kProdPaymentsManageCardsUrl)
                   : (use_gpay_url ? kSandboxPaymentsManageCardsUrlForGPayWeb
                                   : kSandboxPaymentsManageCardsUrl));
+}
+
+GURL GetManageInstrumentUrl(int64_t instrument_id) {
+  CHECK(base::FeatureList::IsEnabled(
+      features::kAutofillUpdateChromeSettingsLinkToGPayWeb));
+  GURL url = GetManageInstrumentsUrl();
+  std::string new_query =
+      base::StrCat({url.query(), "&id=", base::NumberToString(instrument_id)});
+  GURL::Replacements replacements;
+  replacements.SetQueryStr(new_query);
+  return url.ReplaceComponents(replacements);
 }
 
 GURL GetManageAddressesUrl() {

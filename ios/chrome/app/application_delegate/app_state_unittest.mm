@@ -31,18 +31,21 @@
 #import "ios/chrome/browser/shared/model/browser/browser_provider_interface.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state_manager.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_coordinator.h"
+#import "ios/chrome/browser/ui/scoped_iphone_portrait_only/scoped_iphone_portrait_only.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/web_state_list/model/web_usage_enabler/web_usage_enabler_browser_agent.h"
 #import "ios/chrome/common/crash_report/crash_helper.h"
 #import "ios/chrome/test/block_cleanup_test.h"
 #import "ios/chrome/test/providers/app_distribution/test_app_distribution.h"
 #import "ios/chrome/test/scoped_key_window.h"
+#import "ios/chrome/test/testing_application_context.h"
 #import "ios/public/provider/chrome/browser/app_distribution/app_distribution_api.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #import "ios/testing/scoped_block_swizzler.h"
@@ -50,6 +53,7 @@
 #import "ios/web/public/thread/web_task_traits.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
+#import "ui/base/device_form_factor.h"
 
 // Subclass of AppState that allow returning a fake list of connected scenes.
 @interface TestAppState : AppState
@@ -194,7 +198,12 @@ class AppStateTest : public BlockCleanupTest {
   void SetUp() override {
     BlockCleanupTest::SetUp();
     TestChromeBrowserState::Builder test_cbs_builder;
-    browser_state_ = test_cbs_builder.Build();
+    browser_state_manager_ = std::make_unique<TestChromeBrowserStateManager>(
+        test_cbs_builder.Build());
+    TestingApplicationContext::GetGlobal()->SetChromeBrowserStateManager(
+        browser_state_manager_.get());
+
+    browser_state_ = browser_state_manager_->GetLastUsedBrowserState();
   }
 
   void TearDown() override {
@@ -248,7 +257,7 @@ class AppStateTest : public BlockCleanupTest {
 
       main_scene_state_ =
           [main_scene_state_ initWithAppState:app_state_
-                                 browserState:browser_state_.get()];
+                                 browserState:GetBrowserState()];
       main_scene_state_.window = GetWindowMock();
 
       if (with_safe_mode_agent) {
@@ -288,7 +297,7 @@ class AppStateTest : public BlockCleanupTest {
 
       main_scene_state_ =
           [main_scene_state_ initWithAppState:app_state_
-                                 browserState:browser_state_.get()];
+                                 browserState:GetBrowserState()];
       main_scene_state_.window = window;
       [window makeKeyAndVisible];
 
@@ -334,7 +343,8 @@ class AppStateTest : public BlockCleanupTest {
   std::unique_ptr<ScopedBlockSwizzler> safe_mode_swizzler_;
   std::unique_ptr<ScopedBlockSwizzler> connected_scenes_swizzler_;
   std::unique_ptr<ScopedBlockSwizzler> handle_startup_swizzler_;
-  std::unique_ptr<TestChromeBrowserState> browser_state_;
+  raw_ptr<ChromeBrowserState> browser_state_;
+  std::unique_ptr<TestChromeBrowserStateManager> browser_state_manager_;
 };
 
 #pragma mark - Tests.
@@ -348,6 +358,12 @@ TEST_F(AppStateNoFixtureTest, willResignActive) {
   FakeStartupInformation* startupInformation =
       [[FakeStartupInformation alloc] init];
   [startupInformation setIsColdStart:YES];
+
+  TestChromeBrowserState::Builder test_cbs_builder;
+  std::unique_ptr<TestChromeBrowserStateManager> browser_state_manager =
+      std::make_unique<TestChromeBrowserStateManager>(test_cbs_builder.Build());
+  TestingApplicationContext::GetGlobal()->SetChromeBrowserStateManager(
+      browser_state_manager.get());
 
   AppState* appState =
       [[AppState alloc] initWithStartupInformation:startupInformation];
@@ -628,4 +644,29 @@ TEST_F(AppStateTest,
   [appState queueTransitionToNextInitStage];
   [observer1 verify];
   [observer2 verify];
+}
+
+// Tests, on iPhone, that when ScopedIphonePortraitOnly is created,
+// `-AppState.portraitOnly` returns YES.
+TEST_F(AppStateTest, BlockIphonePortraitOnly) {
+  AppState* appState = GetAppStateWithMock();
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE) {
+    [[[GetWindowMock() stub] andReturn:nil] rootViewController];
+    SwizzleSafeModeShouldStart(NO);
+
+    [[[GetStartupInformationMock() stub] andReturnValue:@YES] isColdStart];
+    [[GetStartupInformationMock() stub] setIsFirstRun:YES];
+    [[[GetStartupInformationMock() stub] andReturnValue:@YES] isFirstRun];
+
+    // Simulate finishing the initialization before going to background.
+    [GetAppStateWithMock() startInitialization];
+    [GetAppStateWithMock() queueTransitionToNextInitStage];
+
+    ASSERT_FALSE(appState.portraitOnly);
+    std::unique_ptr<ScopedIphonePortraitOnly> scopedIphonePortraitOnly =
+        std::make_unique<ScopedIphonePortraitOnly>(appState);
+    ASSERT_TRUE(appState.portraitOnly);
+    scopedIphonePortraitOnly.reset();
+    ASSERT_FALSE(appState.portraitOnly);
+  }
 }

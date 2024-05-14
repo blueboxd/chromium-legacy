@@ -39,7 +39,6 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
       const std::optional<std::u16string>& iframe_for_display,
       const std::optional<std::u16string>& idp_title,
       blink::mojom::RpContext rp_context,
-      bool show_auto_reauthn_checkbox,
       content::WebContents* web_contents,
       views::View* anchor_view,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -74,6 +73,13 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
                        const std::u16string& idp_for_display,
                        const content::IdentityProviderMetadata& idp_metadata,
                        const std::optional<TokenError>& error) override;
+
+  void ShowRequestPermissionDialog(
+      const std::u16string& top_frame_for_display,
+      const content::IdentityRequestAccount& account,
+      const IdentityProviderDisplayData& idp_display_data) override;
+
+  void ShowLoadingDialog() override;
 
   void CloseDialog() override;
 

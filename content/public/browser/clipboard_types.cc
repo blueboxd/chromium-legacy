@@ -11,20 +11,60 @@
 
 namespace content {
 
-ClipboardPasteData::ClipboardPasteData(std::string text,
-                                       std::string image,
-                                       std::vector<base::FilePath> file_paths)
-    : text(std::move(text)),
-      image(std::move(image)),
-      file_paths(std::move(file_paths)) {}
 ClipboardPasteData::ClipboardPasteData() = default;
 ClipboardPasteData::ClipboardPasteData(const ClipboardPasteData&) = default;
+ClipboardPasteData& ClipboardPasteData::operator=(const ClipboardPasteData&) =
+    default;
 ClipboardPasteData::ClipboardPasteData(ClipboardPasteData&&) = default;
 ClipboardPasteData& ClipboardPasteData::operator=(ClipboardPasteData&&) =
     default;
+
 bool ClipboardPasteData::empty() {
-  return text.empty() && image.empty() && file_paths.empty();
+  return text.empty() && html.empty() && svg.empty() && rtf.empty() &&
+         png.empty() && file_paths.empty() && custom_data.empty();
 }
+
+size_t ClipboardPasteData::size() {
+  size_t size =
+      text.size() + html.size() + svg.size() + rtf.size() + png.size();
+  for (const auto& entry : custom_data) {
+    size += entry.second.size();
+  }
+  return size;
+}
+
+void ClipboardPasteData::Merge(ClipboardPasteData&& other) {
+  if (!other.text.empty()) {
+    text = std::move(other.text);
+  }
+
+  if (!other.html.empty()) {
+    html = std::move(other.html);
+  }
+
+  if (!other.svg.empty()) {
+    svg = std::move(other.svg);
+  }
+
+  if (!other.rtf.empty()) {
+    rtf = std::move(other.rtf);
+  }
+
+  if (!other.png.empty()) {
+    png = std::move(other.png);
+  }
+
+  if (!other.file_paths.empty()) {
+    file_paths = std::move(other.file_paths);
+  }
+
+  if (!other.custom_data.empty()) {
+    for (auto& entry : other.custom_data) {
+      custom_data[entry.first] = std::move(entry.second);
+    }
+  }
+}
+
 ClipboardPasteData::~ClipboardPasteData() = default;
 
 ClipboardEndpoint::ClipboardEndpoint(

@@ -133,8 +133,6 @@ class ArcMetricsService : public KeyedService,
   void ReportArcCorePriAbiMigBootTime(base::TimeDelta duration) override;
   void ReportArcSystemHealthUpgrade(base::TimeDelta duration,
                                     bool packages_deleted) override;
-  void ReportClipboardDragDropEvent(
-      mojom::ArcClipboardDragDropEvent event_type) override;
   void ReportAnr(mojom::AnrPtr anr) override;
   void ReportLowLatencyStylusLibApiUsage(
       mojom::LowLatencyStylusLibApiId api_id) override;
@@ -151,8 +149,6 @@ class ArcMetricsService : public KeyedService,
                                 uint32_t number_of_directories) override;
   void ReportMainAccountHashMigrationMetrics(
       mojom::MainAccountHashMigrationStatus status) override;
-  void ReportImageCopyPasteCompatActionDeprecated(
-      mojom::ArcImageCopyPasteCompatAction action_type) override;
   void ReportArcNetworkEvent(mojom::ArcNetworkEvent event) override;
   void ReportArcNetworkError(mojom::ArcNetworkError error) override;
   void ReportAppPrimaryAbi(mojom::AppPrimaryAbi abi) override;
@@ -166,6 +162,7 @@ class ArcMetricsService : public KeyedService,
   void ReportArcKeyMintError(mojom::ArcKeyMintError error) override;
   void ReportDragResizeLatency(
       const std::vector<base::TimeDelta>& durations) override;
+  void ReportAppErrorDialogType(mojom::AppErrorDialogType type) override;
 
   // wm::ActivationChangeObserver overrides.
   // Records to UMA when a user has interacted with an ARC app window.

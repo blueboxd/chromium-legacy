@@ -6,6 +6,8 @@
 
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/push_notification/model/push_notification_client_id.h"
+#import "ios/chrome/browser/push_notification/model/push_notification_settings_util.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
@@ -13,6 +15,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_layout_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
+#import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_module.h"
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_module_container_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_module_contents_factory.h"
@@ -46,9 +49,6 @@ const CGFloat kContentVerticalSpacing = 16.0f;
 // The corner radius of this container.
 const float kCornerRadius = 24;
 
-// The max height of the modules.
-const int kModuleMaxHeight = 150;
-
 const CGFloat kSeparatorHeight = 0.5;
 
 }  // namespace
@@ -80,7 +80,9 @@ const CGFloat kSeparatorHeight = 0.5;
   if (self) {
     _magicStackModuleContentsFactory = [[MagicStackModuleContentsFactory alloc] init];
 
-    self.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+    self.contentView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+    self.contentView.layer.cornerRadius = kCornerRadius;
+    self.contentView.clipsToBounds = YES;
     self.layer.cornerRadius = kCornerRadius;
 
     _titleStackView = [[UIStackView alloc] init];
@@ -89,7 +91,7 @@ const CGFloat kSeparatorHeight = 0.5;
     _titleStackView.distribution = UIStackViewDistributionFill;
     // Resist Vertical expansion so all titles are the same height, allowing
     // content view to fill the rest of the module space.
-    [_titleStackView setContentHuggingPriority:UILayoutPriorityDefaultHigh
+    [_titleStackView setContentHuggingPriority:UILayoutPriorityRequired
                                        forAxis:UILayoutConstraintAxisVertical];
 
     _title = [[UILabel alloc] init];
@@ -113,7 +115,7 @@ const CGFloat kSeparatorHeight = 0.5;
     // intrinsic contentSize. Constraining the title label to the StackView will
     // ensure contentView expands.
     [NSLayoutConstraint activateConstraints:@[
-      [_title.topAnchor constraintEqualToAnchor:_titleStackView.topAnchor]
+      [_title.bottomAnchor constraintEqualToAnchor:_titleStackView.bottomAnchor]
     ]];
 
     _seeMoreButton = [[UIButton alloc] init];
@@ -145,6 +147,7 @@ const CGFloat kSeparatorHeight = 0.5;
              forControlEvents:UIControlEventTouchUpInside];
     [_seeMoreButton setContentHuggingPriority:UILayoutPriorityDefaultHigh
                                       forAxis:UILayoutConstraintAxisHorizontal];
+    _seeMoreButton.pointerInteractionEnabled = YES;
     [_titleStackView addArrangedSubview:_seeMoreButton];
     _seeMoreButton.accessibilityIdentifier = _seeMoreButton.titleLabel.text;
     _seeMoreButton.hidden = YES;
@@ -192,7 +195,7 @@ const CGFloat kSeparatorHeight = 0.5;
         [self.heightAnchor constraintEqualToConstant:kModuleMaxHeight];
     [NSLayoutConstraint activateConstraints:@[ _containerHeightAnchor ]];
 
-    [self addSubview:_stackView];
+    [self.contentView addSubview:_stackView];
     AddSameConstraintsToSidesWithInsets(
         _stackView, self,
         (LayoutSides::kTop | LayoutSides::kLeading | LayoutSides::kTrailing),
@@ -208,6 +211,7 @@ const CGFloat kSeparatorHeight = 0.5;
 }
 
 - (void)configureWithConfig:(MagicStackModule*)config {
+  [self resetCell];
   // Ensures that the modules conforms to a height of kModuleMaxHeight. For
   // the MVT when it lives outside of the Magic Stack to stay as close to its
   // intrinsic size as possible, the constraint is configured to be less than
@@ -359,6 +363,13 @@ const CGFloat kSeparatorHeight = 0.5;
   }
 }
 
+#pragma mark UICollectionViewCell Overrides
+
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  [self resetCell];
+}
+
 #pragma mark - UITraitEnvironment
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
@@ -393,7 +404,8 @@ const CGFloat kSeparatorHeight = 0.5;
 - (NSArray<UIAction*>*)contextMenuActions {
   NSMutableArray<UIAction*>* actions = [[NSMutableArray alloc] init];
 
-  if (IsSetUpListModuleType(self.type) && IsIOSTipsNotificationsEnabled()) {
+  if (IsSetUpListModuleType(self.type) && IsIOSTipsNotificationsEnabled() &&
+      ![self optedInToTipsNotifications]) {
     [actions addObject:[self turnOnTipsNotificationsAction]];
   }
   [actions addObject:[self hideAction]];
@@ -540,4 +552,25 @@ const CGFloat kSeparatorHeight = 0.5;
   }
 }
 
+// Reset the main configurations of the cell.
+- (void)resetCell {
+  _title.text = nil;
+  _subtitle.text = nil;
+  _isPlaceholder = NO;
+  if (_placeholderImage) {
+    [_placeholderImage removeFromSuperview];
+    _placeholderImage = nil;
+  }
+  if (_contentView) {
+    [_contentView removeFromSuperview];
+    _contentView = nil;
+  }
+}
+
+// Returns YES if the user has already opted-in to Tips Notifications.
+- (BOOL)optedInToTipsNotifications {
+  return push_notification_settings::
+      GetMobileNotificationPermissionStatusForClient(
+          PushNotificationClientId::kTips, "");
+}
 @end

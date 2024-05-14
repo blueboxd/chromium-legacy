@@ -588,6 +588,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         rebaselinable_set = self._filter_baseline_set(test_baseline_set)
         test_count = len(rebaselinable_set.all_tests())
         if test_count == 0:
+            _log.info('No tests to rebaseline.')
             return 0
 
         _log.info('Rebaselining %s.', pluralize('test', test_count))
@@ -824,6 +825,7 @@ class BaselineLoader:
     def __init__(self, host: Host):
         self._host = host
         self._default_port = host.port_factory.get()
+        self._default_port.set_option_default('manifest_update', False)
         self._digests_to_contents = {}
         # Image diff statistics are commutative. By canonicalizing the
         # (expected, actual) argument order and caching the result, we can

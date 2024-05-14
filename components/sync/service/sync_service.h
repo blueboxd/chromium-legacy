@@ -349,9 +349,8 @@ class SyncService : public KeyedService {
   bool IsEngineInitialized() const;
 
   // Returns whether Sync-the-feature can (attempt to) start. This means that
-  // there is a Sync-consented account and no disable reasons. It does *not*
-  // require first-time Sync setup to be complete, because that can only happen
-  // after the engine has started.
+  // there is a ConsentLevel::kSync account and no disable reasons. It does
+  // *not* require first-time Sync setup to be complete.
   // Note: This refers to Sync-the-feature. Sync-the-transport may be running
   // even if this is false.
   // TODO(crbug.com/1444344): Remove this API, in favor of
@@ -492,8 +491,13 @@ class SyncService : public KeyedService {
   // OBSERVERS
   //////////////////////////////////////////////////////////////////////////////
 
-  // Adds/removes an observer. SyncService does not take ownership of the
-  // observer.
+  // Adds/removes an observer.
+  // IMPORTANT: Observers must be removed before SyncService::Shutdown() gets
+  // called (during the KeyedServices shutdown sequence). If your observer is
+  // tied to a KeyedService itself, declare an appropriate DependsOn()
+  // relation and remove the observer in your service's Shutdown(). Otherwise,
+  // implement SyncServiceObserver::OnSyncShutdown() and remove the observer
+  // there.
   virtual void AddObserver(SyncServiceObserver* observer) = 0;
   virtual void RemoveObserver(SyncServiceObserver* observer) = 0;
 

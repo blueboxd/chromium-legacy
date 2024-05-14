@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
+#include "base/task/thread_pool.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -56,7 +57,7 @@ void AshIntegrationTest::SetUpLacrosBrowserManager() {
   // test uses BrowserManager::Get() to install the fake waiter (e.g. in
   // SetUpOnMainThread) often the existing device ownership waiter has already
   // been called and its too late to install the fake.
-  crosapi::BrowserManager::SkipDeviceOwnershipWaitForTesting(true);
+  crosapi::BrowserLauncher::SkipDeviceOwnershipWaitForTesting(true);
 }
 
 void AshIntegrationTest::WaitForAshFullyStarted() {

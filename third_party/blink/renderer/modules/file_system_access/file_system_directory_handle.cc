@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/modules/file_system_access/file_system_file_handle.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_deque.h"
+#include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -39,7 +40,8 @@ class FileSystemDirectoryHandle::IterationSource final
             kind),
         ExecutionContextClient(execution_context),
         directory_(directory),
-        receiver_(this, execution_context) {
+        receiver_(this, execution_context),
+        keep_alive_(this) {
     directory_->MojoHandle()->GetEntries(receiver_.BindNewPipeAndPassRemote(
         execution_context->GetTaskRunner(TaskType::kStorage)));
   }
@@ -47,22 +49,24 @@ class FileSystemDirectoryHandle::IterationSource final
   void DidReadDirectory(mojom::blink::FileSystemAccessErrorPtr result,
                         Vector<mojom::blink::FileSystemAccessEntryPtr> entries,
                         bool has_more_entries) override {
-    ExecutionContext* execution_context = GetExecutionContext();
+    is_waiting_for_more_entries_ = has_more_entries;
+    ExecutionContext* const execution_context = GetExecutionContext();
+    if (!has_more_entries || !execution_context) {
+      keep_alive_.Clear();
+    }
     if (!execution_context) {
       return;
     }
-
     if (result->status == mojom::blink::FileSystemAccessStatus::kOk) {
       for (auto& entry : entries) {
         file_system_handle_queue_.push_back(
             FileSystemHandle::CreateFromMojoEntry(std::move(entry),
                                                   execution_context));
       }
-      is_waiting_for_more_entries_ = has_more_entries;
     } else {
+      CHECK(!has_more_entries);
       error_ = std::move(result);
     }
-
     ScriptState::Scope script_state_scope(GetScriptState());
     TryResolvePromise();
   }
@@ -111,6 +115,9 @@ class FileSystemDirectoryHandle::IterationSource final
   HeapDeque<Member<FileSystemHandle>> file_system_handle_queue_;
   mojom::blink::FileSystemAccessErrorPtr error_;
   bool is_waiting_for_more_entries_ = true;
+  // HeapMojoReceived won't retain us, so maintain a keepalive while
+  // waiting for the browser to send all entries.
+  SelfKeepAlive<IterationSource> keep_alive_;
 };
 
 using mojom::blink::FileSystemAccessErrorPtr;
@@ -125,7 +132,8 @@ FileSystemDirectoryHandle::FileSystemDirectoryHandle(
   DCHECK(mojo_ptr_.is_bound());
 }
 
-ScriptPromise FileSystemDirectoryHandle::getFileHandle(
+ScriptPromiseTyped<FileSystemFileHandle>
+FileSystemDirectoryHandle::getFileHandle(
     ScriptState* script_state,
     const String& name,
     const FileSystemGetFileOptions* options,
@@ -133,17 +141,19 @@ ScriptPromise FileSystemDirectoryHandle::getFileHandle(
   if (!mojo_ptr_.is_bound()) {
     // TODO(crbug.com/1293949): Add an error message.
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError, "");
-    return ScriptPromise();
+    return ScriptPromiseTyped<FileSystemFileHandle>();
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
-  ScriptPromise result = resolver->Promise();
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<FileSystemFileHandle>>(
+          script_state, exception_state.GetContext());
+  auto result = resolver->Promise();
 
   mojo_ptr_->GetFile(
       name, options->create(),
       WTF::BindOnce(
-          [](FileSystemDirectoryHandle*, ScriptPromiseResolver* resolver,
+          [](FileSystemDirectoryHandle*,
+             ScriptPromiseResolverTyped<FileSystemFileHandle>* resolver,
              const String& name, FileSystemAccessErrorPtr result,
              mojo::PendingRemote<mojom::blink::FileSystemAccessFileHandle>
                  handle) {
@@ -165,7 +175,8 @@ ScriptPromise FileSystemDirectoryHandle::getFileHandle(
   return result;
 }
 
-ScriptPromise FileSystemDirectoryHandle::getDirectoryHandle(
+ScriptPromiseTyped<FileSystemDirectoryHandle>
+FileSystemDirectoryHandle::getDirectoryHandle(
     ScriptState* script_state,
     const String& name,
     const FileSystemGetDirectoryOptions* options,
@@ -173,17 +184,19 @@ ScriptPromise FileSystemDirectoryHandle::getDirectoryHandle(
   if (!mojo_ptr_.is_bound()) {
     // TODO(crbug.com/1293949): Add an error message.
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError, "");
-    return ScriptPromise();
+    return ScriptPromiseTyped<FileSystemDirectoryHandle>();
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<
+      ScriptPromiseResolverTyped<FileSystemDirectoryHandle>>(
       script_state, exception_state.GetContext());
-  ScriptPromise result = resolver->Promise();
+  auto result = resolver->Promise();
 
   mojo_ptr_->GetDirectory(
       name, options->create(),
       WTF::BindOnce(
-          [](FileSystemDirectoryHandle*, ScriptPromiseResolver* resolver,
+          [](FileSystemDirectoryHandle*,
+             ScriptPromiseResolverTyped<FileSystemDirectoryHandle>* resolver,
              const String& name, FileSystemAccessErrorPtr result,
              mojo::PendingRemote<mojom::blink::FileSystemAccessDirectoryHandle>
                  handle) {
@@ -205,7 +218,7 @@ ScriptPromise FileSystemDirectoryHandle::getDirectoryHandle(
   return result;
 }
 
-ScriptPromise FileSystemDirectoryHandle::removeEntry(
+ScriptPromiseTyped<IDLUndefined> FileSystemDirectoryHandle::removeEntry(
     ScriptState* script_state,
     const String& name,
     const FileSystemRemoveOptions* options,
@@ -213,17 +226,19 @@ ScriptPromise FileSystemDirectoryHandle::removeEntry(
   if (!mojo_ptr_.is_bound()) {
     // TODO(crbug.com/1293949): Add an error message.
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError, "");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
-  ScriptPromise result = resolver->Promise();
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<IDLUndefined>>(
+          script_state, exception_state.GetContext());
+  auto result = resolver->Promise();
 
   mojo_ptr_->RemoveEntry(
       name, options->recursive(),
       WTF::BindOnce(
-          [](FileSystemDirectoryHandle*, ScriptPromiseResolver* resolver,
+          [](FileSystemDirectoryHandle*,
+             ScriptPromiseResolverTyped<IDLUndefined>* resolver,
              FileSystemAccessErrorPtr result) {
             // Keep `this` alive so the handle will not be garbage-collected
             // before the promise is resolved.

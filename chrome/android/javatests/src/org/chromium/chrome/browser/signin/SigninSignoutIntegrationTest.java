@@ -40,7 +40,7 @@ import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
@@ -104,7 +104,7 @@ public class SigninSignoutIntegrationTest {
                 () -> {
                     mSigninManager =
                             IdentityServicesProvider.get()
-                                    .getSigninManager(Profile.getLastUsedRegularProfile());
+                                    .getSigninManager(ProfileManager.getLastUsedRegularProfile());
                     mSigninManager.addSignInStateObserver(mSignInStateObserverMock);
                 });
     }
@@ -261,7 +261,9 @@ public class SigninSignoutIntegrationTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     Assert.assertEquals(
-                            0, mBookmarkModel.getChildCount(mBookmarkModel.getDefaultFolder()));
+                            0,
+                            mBookmarkModel.getChildCount(
+                                    mBookmarkModel.getDefaultBookmarkFolder()));
                 });
     }
 
@@ -277,7 +279,9 @@ public class SigninSignoutIntegrationTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     Assert.assertEquals(
-                            1, mBookmarkModel.getChildCount(mBookmarkModel.getDefaultFolder()));
+                            1,
+                            mBookmarkModel.getChildCount(
+                                    mBookmarkModel.getDefaultBookmarkFolder()));
                 });
     }
 
@@ -339,14 +343,18 @@ public class SigninSignoutIntegrationTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     Assert.assertEquals(
-                            0, mBookmarkModel.getChildCount(mBookmarkModel.getDefaultFolder()));
+                            0,
+                            mBookmarkModel.getChildCount(
+                                    mBookmarkModel.getDefaultBookmarkFolder()));
                     mBookmarkModel.addBookmark(
-                            mBookmarkModel.getDefaultFolder(),
+                            mBookmarkModel.getDefaultBookmarkFolder(),
                             0,
                             "Test Bookmark",
                             new GURL("http://google.com"));
                     Assert.assertEquals(
-                            1, mBookmarkModel.getChildCount(mBookmarkModel.getDefaultFolder()));
+                            1,
+                            mBookmarkModel.getChildCount(
+                                    mBookmarkModel.getDefaultBookmarkFolder()));
                 });
     }
 

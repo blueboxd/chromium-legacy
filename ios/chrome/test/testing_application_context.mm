@@ -63,6 +63,7 @@ void TestingApplicationContext::SetLocalState(PrefService* local_state) {
     // components owned by TestingApplicationContext that depends on the local
     // state are also freed.
     network_time_tracker_.reset();
+    push_notification_service_.reset();
   }
   local_state_ = local_state;
 }
@@ -89,6 +90,12 @@ void TestingApplicationContext::SetSystemIdentityManager(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!system_identity_manager_);
   system_identity_manager_ = std::move(system_identity_manager);
+}
+
+void TestingApplicationContext::SetUpgradeCenter(
+    UpgradeCenter* upgrade_center) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  upgrade_center_ = upgrade_center;
 }
 
 void TestingApplicationContext::OnAppEnterForeground() {
@@ -268,4 +275,9 @@ TestingApplicationContext::GetPushNotificationService() {
   }
 
   return push_notification_service_.get();
+}
+
+UpgradeCenter* TestingApplicationContext::GetUpgradeCenter() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return upgrade_center_;
 }

@@ -21,6 +21,7 @@ extern NSString* const kGoogleShieldSymbol;
 extern NSString* const kMulticolorChromeballSymbol;
 extern NSString* const kGoogleMapsSymbol;
 extern NSString* const kGooglePhotosSymbol;
+extern NSString* const kPageInsightsSymbol;
 extern NSString* const kFedexCarrierImage;
 extern NSString* const kUPSCarrierImage;
 extern NSString* const kUSPSCarrierImage;
@@ -32,8 +33,6 @@ extern NSString* const kArrowClockWiseSymbol;
 extern NSString* const kIncognitoSymbol;
 extern NSString* const kSquareNumberSymbol;
 extern NSString* const kTranslateSymbol;
-extern NSString* const kCameraSymbol;
-extern NSString* const kCameraFillSymbol;
 extern NSString* const kPasswordManagerSymbol;
 extern NSString* const kPopupBadgeMinusSymbol;
 extern NSString* const kPhotoBadgePlusSymbol;
@@ -46,6 +45,7 @@ extern NSString* const kPasswordSymbol;
 #if !BUILDFLAG(IS_IOS_MACCATALYST)
 extern NSString* const kMulticolorPasswordSymbol;
 #endif  // BUILDFLAG(IS_IOS_MACCATALYST)
+extern NSString* const kVoiceSymbol;
 extern NSString* const kCameraLensSymbol;
 extern NSString* const kDownTrendSymbol;
 extern NSString* const kUpTrendSymbol;
@@ -75,6 +75,11 @@ extern NSString* const kCustomMovePlatterToTopPhoneSymbol;
 // Custom symbol to replace "palette" symbols on iOS 14. Cannot be used with a
 // palette.
 extern NSString* const kIncognitoCircleFilliOS14Symbol;
+
+// Use custom symbol for camera because the default video icon in iOS should
+// always represent “Apple Facetime”.
+extern NSString* const kCameraSymbol;
+extern NSString* const kCameraFillSymbol;
 
 // Default symbol names.
 extern NSString* const kChartBarXAxisSymbol;
@@ -205,6 +210,7 @@ extern NSString* const kRemoveTabFromGroupActionSymbol;
 extern NSString* const kMoveTabToGroupActionSymbol;
 extern NSString* const kClockSymbol;
 extern NSString* const kUngroupTabGroupSymbol;
+extern NSString* const kPlusInSquareSymbol;
 
 // Names of the default symbol being non-monochrome by default. When using them,
 // you probably want to set their color to monochrome.

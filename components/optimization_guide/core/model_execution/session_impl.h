@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "components/optimization_guide/core/model_execution/optimization_guide_model_execution_error.h"
@@ -22,7 +23,7 @@
 class OptimizationGuideLogger;
 
 namespace optimization_guide {
-class OnDeviceModelExecutionConfigInterpreter;
+class OnDeviceModelFeatureAdapter;
 class OnDeviceModelServiceController;
 
 using ExecuteRemoteFn = base::RepeatingCallback<void(
@@ -97,11 +98,14 @@ class SessionImpl : public OptimizationGuideModelExecutor::Session,
       StartSessionFn start_session_fn,
       proto::ModelExecutionFeature feature,
       std::optional<proto::OnDeviceModelVersions> on_device_model_versions,
-      const OnDeviceModelExecutionConfigInterpreter* config_interpreter,
+      scoped_refptr<const OnDeviceModelFeatureAdapter> adapter,
       base::WeakPtr<OnDeviceModelServiceController> controller,
       const std::optional<proto::FeatureTextSafetyConfiguration>& safety_config,
       ExecuteRemoteFn execute_remote_fn,
-      OptimizationGuideLogger* optimization_guide_logger);
+      OptimizationGuideLogger* optimization_guide_logger,
+      base::WeakPtr<ModelQualityLogsUploaderService>
+          model_quality_uploader_service,
+      const std::optional<SessionConfigParams>& config_params);
   ~SessionImpl() override;
 
   // optimization_guide::OptimizationGuideModelExecutor::Session:
@@ -169,7 +173,7 @@ class SessionImpl : public OptimizationGuideModelExecutor::Session,
     void ResetRequestState();
 
     mojo::Remote<on_device_model::mojom::Session> session;
-    raw_ptr<const OnDeviceModelExecutionConfigInterpreter> config_interpreter;
+    scoped_refptr<const OnDeviceModelFeatureAdapter> adapter;
     StartSessionFn start_session_fn;
     std::unique_ptr<ContextProcessor> context_processor;
     mojo::Receiver<on_device_model::mojom::StreamingResponder> receiver;
@@ -252,6 +256,15 @@ class SessionImpl : public OptimizationGuideModelExecutor::Session,
   // Logger is owned by the Optimization Guide Keyed Service, which should
   // outlive this session.
   raw_ptr<OptimizationGuideLogger> optimization_guide_logger_;
+
+  // Owned by OptimizationGuideKeyedService and outlives `this`. This is to be
+  // passed through the ModelQualityLogEntry to invoke upload during log
+  // destruction.
+  base::WeakPtr<ModelQualityLogsUploaderService>
+      model_quality_uploader_service_;
+
+  // Params used to control output sampling for the on device model.
+  const SamplingParams sampling_params_;
 };
 
 }  // namespace optimization_guide

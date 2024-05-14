@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <optional>
 #include "base/memory/raw_ptr.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/paint/paint_cache.h"
@@ -203,7 +203,7 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
       const gfx::Point& paste_location,
       base::OnceCallback<void()> release_mailbox,
       base::OnceCallback<void(bool)> readback_done) override;
-  void ReadbackImagePixels(const gpu::Mailbox& source_mailbox,
+  bool ReadbackImagePixels(const gpu::Mailbox& source_mailbox,
                            const SkImageInfo& dst_info,
                            GLuint dst_row_bytes,
                            int src_x,
@@ -350,7 +350,7 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
       SyncToken* decode_sync_token,
       ClientDiscardableHandle handle);
 
-  void ReadbackImagePixelsINTERNAL(const gpu::Mailbox& source_mailbox,
+  bool ReadbackImagePixelsINTERNAL(const gpu::Mailbox& source_mailbox,
                                    const SkImageInfo& dst_info,
                                    GLuint dst_row_bytes,
                                    int src_x,

@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/performance_manager/public/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -72,6 +71,7 @@ constexpr int kHoverCardTitleMaxLines = 2;
 
 constexpr int kHorizontalMargin = 18;
 constexpr int kVerticalMargin = 10;
+constexpr int kTitleDomainSpacing = 4;
 constexpr int kFootnoteVerticalMargin = 8;
 constexpr auto kTitleMargins =
     gfx::Insets::VH(kVerticalMargin, kHorizontalMargin);
@@ -340,7 +340,7 @@ class TabHoverCardBubbleView::ThumbnailView
   ImageType image_type_ = ImageType::kNone;
 };
 
-BEGIN_METADATA(TabHoverCardBubbleView, ThumbnailView, views::View)
+BEGIN_METADATA(TabHoverCardBubbleView, ThumbnailView)
 END_METADATA
 
 // TabHoverCardBubbleView:
@@ -356,9 +356,7 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
     : BubbleDialogDelegateView(tab,
                                views::BubbleBorder::TOP_LEFT,
                                views::BubbleBorder::STANDARD_SHADOW),
-      tab_style_(TabStyle::Get()),
-      memory_usage_in_hovercards_enabled_(base::FeatureList::IsEnabled(
-          performance_manager::features::kMemoryUsageInHovercards)) {
+      tab_style_(TabStyle::Get()) {
   SetButtons(ui::DIALOG_BUTTON_NONE);
 
   // Remove the accessible role so that hover cards are not read when they
@@ -434,8 +432,9 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
       features::IsChromeRefresh2023() ? kTextAreaRefreshMargins : kTitleMargins;
   domain_label_->SetVisible(show_domain);
   if (show_domain) {
-    const gfx::Insets domain_margins = gfx::Insets::TLBR(
-        0, title_margins.left(), title_margins.bottom(), title_margins.right());
+    gfx::Insets domain_margins = title_margins;
+    domain_margins.set_top(features::IsChromeRefresh2023() ? kTitleDomainSpacing
+                                                           : 0);
     domain_label_->SetProperty(views::kMarginsKey, domain_margins);
     title_margins.set_bottom(0);
   }

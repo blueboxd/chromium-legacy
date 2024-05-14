@@ -31,7 +31,7 @@ public class ColorPickerUtils {
         // The color ids used here can be found in {@link TabGroupColorId}. Note that it is assumed
         // the id list is contiguous from 0 to size-1.
         List<Integer> colors = new ArrayList<>();
-        for (int i = 0; i < TabGroupColorId.class.getDeclaredFields().length; i++) {
+        for (int i = 0; i < TabGroupColorId.NUM_ENTRIES; i++) {
             colors.add(i);
         }
         return colors;
@@ -106,7 +106,7 @@ public class ColorPickerUtils {
                         ? R.color.tab_group_color_picker_orange_incognito
                         : R.color.tab_group_color_picker_orange;
             default:
-                assert false : "Not reached.";
+                assert false : "Invalid tab group color id " + colorId;
                 return Resources.ID_NULL;
         }
     }
@@ -139,7 +139,7 @@ public class ColorPickerUtils {
             case TabGroupColorId.ORANGE:
                 return R.string.accessibility_tab_group_color_picker_color_item_orange;
             default:
-                assert false : "Not reached.";
+                assert false : "Invalid tab group color id " + colorId;
                 return Resources.ID_NULL;
         }
     }

@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/sessions/web_state_list_serialization.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/web/public/session/proto/metadata.pb.h"
 #import "ios/web/public/session/proto/storage.pb.h"
 #import "ios/web/public/web_state.h"
@@ -154,12 +155,6 @@ WebStateMetadataMap MetadataMapFromStorage(
     const ios::proto::WebStateListStorage& storage) {
   WebStateMetadataMap result;
   for (const auto& item : storage.items()) {
-    // Ignore the item if it has no metadata or no navigation (since it
-    // will be dropped when restoring the session).
-    if (!item.has_metadata() || !item.metadata().navigation_item_count()) {
-      continue;
-    }
-
     DCHECK(web::WebStateID::IsValidValue(item.identifier()));
     const web::WebStateID web_state_id =
         web::WebStateID::FromSerializedValue(item.identifier());
@@ -167,6 +162,33 @@ WebStateMetadataMap MetadataMapFromStorage(
     result.insert(std::make_pair(web_state_id, item.metadata()));
   }
   return result;
+}
+
+// Updates `metadata_map` to contains data for all items in `web_state_list`
+// and only those items. It will remove irrelevant mappings and add missing
+// ones.
+void UpdateMetadataMap(WebStateMetadataMap& metadata_map,
+                       const WebStateList* web_state_list) {
+  WebStateMetadataMap old_metadata_map;
+  std::swap(metadata_map, old_metadata_map);
+
+  const int count = web_state_list->count();
+  for (int index = 0; index < count; ++index) {
+    const web::WebState* web_state = web_state_list->GetWebStateAt(index);
+    const web::WebStateID web_state_id = web_state->GetUniqueIdentifier();
+    auto iter = old_metadata_map.find(web_state_id);
+
+    web::proto::WebStateMetadataStorage storage;
+    if (iter != old_metadata_map.end()) {
+      storage = std::move(iter->second);
+    } else {
+      web_state->SerializeMetadataToProto(storage);
+    }
+
+    metadata_map.insert(std::make_pair(web_state_id, std::move(storage)));
+  }
+
+  DCHECK_EQ(metadata_map.size(), static_cast<size_t>(count));
 }
 
 }  // anonymous namespace
@@ -384,7 +406,8 @@ void SessionRestorationServiceImpl::LoadSession(Browser* browser) {
       ios::sessions::LoadSessionStorage(session_dir);
 
   // Updates `info`'s WebStateMetadataMap from `session`.
-  info.metadata_map() = MetadataMapFromStorage(session);
+  WebStateMetadataMap& metadata_map = info.metadata_map();
+  metadata_map = MetadataMapFromStorage(session);
 
   // Since this is the first session load, it is safe to delete any
   // unreferenced files from the Browser's storage path.
@@ -405,6 +428,9 @@ void SessionRestorationServiceImpl::LoadSession(Browser* browser) {
                               enable_pinned_web_states_,
                               base::BindRepeating(&CreateWebState, session_dir,
                                                   browser->GetBrowserState()));
+
+  // Loading the session may have dropped some items, so clean the metadata map.
+  UpdateMetadataMap(metadata_map, browser->GetWebStateList());
 
   // Loading the session may have marked the Browser as dirty (unless the
   // session was empty). There is no need to serialize the WebStates that
@@ -620,8 +646,14 @@ void SessionRestorationServiceImpl::SaveDirtySessions() {
       const std::string& identifier = info.identifier();
 
       for (const auto web_state_id : detached_web_states) {
+        // If a realized WebState is created, inserted into a Browser and
+        // then moved to another Browser before its state could be saved,
+        // the metadata will not be present in the metadata_map. See the
+        // bug https://crbug.com/329219388 for more details.
         auto iter = metadata_map.find(web_state_id);
-        DCHECK(iter != metadata_map.end());
+        if (iter == metadata_map.end()) {
+          continue;
+        }
 
         OrphanInfo orphan_info{
             .session_id = identifier,
@@ -663,7 +695,9 @@ void SessionRestorationServiceImpl::SaveDirtySessions() {
         auto iter = orphaned_map.find(web_state_id);
         OrphanInfo& orphan_info = iter->second;
 
-        // Move the orphan metadata information to its new owner's `info`.
+        // Only unrealized WebState should be adopted, realized WebState
+        // will instead be considered dirty. Thus the metadata should be
+        // present in the orphaned_map.
         DCHECK(!base::Contains(metadata_map, web_state_id));
         metadata_map.insert(
             std::make_pair(web_state_id, std::move(orphan_info.metadata)));
@@ -775,11 +809,16 @@ void SessionRestorationServiceImpl::SaveDirtySessions() {
       continue;
     }
 
+    // It has been found in production that the metadata map may be missing
+    // data for some items (see https://crbug.com/332533665 for such crash).
+    // As a workaround, update the metadata map from the WebStateList.
+    UpdateMetadataMap(metadata_map, web_state_list);
+
     // Always serialize the WebStateList as it includes the WebStates'
     // metadata (and thus needs to be saved either the list or one of
     // the WebState is dirty).
     auto storage = std::make_unique<ios::proto::WebStateListStorage>();
-    SerializeWebStateList(*web_state_list, info.metadata_map(), *storage);
+    SerializeWebStateList(*web_state_list, metadata_map, *storage);
 
     requests.push_back(std::make_unique<ios::sessions::WriteProtoIORequest>(
         dest_dir.Append(kSessionMetadataFilename), std::move(storage)));

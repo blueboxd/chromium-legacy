@@ -7,6 +7,7 @@
 #include <string>
 #include <tuple>
 
+#include "base/containers/contains.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/url_constants.h"
@@ -49,29 +50,6 @@ bool IsWebViewProcessForExtension(int process_id,
 
 }  // namespace
 
-// Item
-struct ProcessMap::Item {
-  Item(const ExtensionId& extension_id, int process_id)
-      : extension_id(extension_id), process_id(process_id) {}
-
-  Item(const Item&) = delete;
-  Item& operator=(const Item&) = delete;
-
-  ~Item() = default;
-
-  Item(ProcessMap::Item&&) = default;
-  Item& operator=(ProcessMap::Item&&) = default;
-
-  bool operator<(const ProcessMap::Item& other) const {
-    return std::tie(extension_id, process_id) <
-           std::tie(other.extension_id, other.process_id);
-  }
-
-  ExtensionId extension_id;
-  int process_id = 0;
-};
-
-
 // ProcessMap
 ProcessMap::ProcessMap() = default;
 
@@ -83,44 +61,30 @@ ProcessMap* ProcessMap::Get(content::BrowserContext* browser_context) {
 }
 
 bool ProcessMap::Insert(const ExtensionId& extension_id, int process_id) {
-  return items_.insert(Item(extension_id, process_id)).second;
+  return items_.emplace(extension_id, process_id).second;
 }
 
 int ProcessMap::RemoveAllFromProcess(int process_id) {
-  int result = 0;
-  for (auto iter = items_.begin(); iter != items_.end();) {
-    if (iter->process_id == process_id) {
-      items_.erase(iter++);
-      ++result;
-    } else {
-      ++iter;
-    }
-  }
-  return result;
+  return std::erase_if(
+      items_, [&](const auto& item) { return item.second == process_id; });
 }
 
 bool ProcessMap::Contains(const ExtensionId& extension_id,
                           int process_id) const {
-  for (auto iter = items_.cbegin(); iter != items_.cend(); ++iter) {
-    if (iter->process_id == process_id && iter->extension_id == extension_id)
-      return true;
-  }
-  return false;
+  return items_.contains({extension_id, process_id});
 }
 
 bool ProcessMap::Contains(int process_id) const {
-  for (auto iter = items_.cbegin(); iter != items_.cend(); ++iter) {
-    if (iter->process_id == process_id)
-      return true;
-  }
-  return false;
+  return base::Contains(items_, process_id, &Item::second);
 }
 
-std::set<ExtensionId> ProcessMap::GetExtensionsInProcess(int process_id) const {
+std::set<ExtensionId> ProcessMap::GetExtensionsInProcess(
+    int process_id_in) const {
   std::set<ExtensionId> result;
-  for (auto iter = items_.cbegin(); iter != items_.cend(); ++iter) {
-    if (iter->process_id == process_id)
-      result.insert(iter->extension_id);
+  for (const auto& [extension_id, process_id] : items_) {
+    if (process_id == process_id_in) {
+      result.insert(extension_id);
+    }
   }
   return result;
 }
@@ -168,14 +132,14 @@ bool ProcessMap::CanProcessHostContextType(
              ScriptInjectionTracker::DidProcessRunUserScriptFromExtension(
                  process, extension->id());
     case mojom::ContextType::kLockscreenExtension:
-      // Lock screen contexts are essentially blessed contexts that run on the
-      // lock screen profile. We don't run component hosted apps there, so no
-      // need to allow those.
+      // Lock screen contexts are essentially privileged contexts that run on
+      // the lock screen profile. We don't run component hosted apps there, so
+      // no need to allow those.
       return is_lock_screen_context_ && extension &&
              !extension->is_hosted_app() &&
              Contains(extension->id(), process_id);
     case mojom::ContextType::kPrivilegedWebPage:
-      // A blessed web page is a (non-component) hosted app process.
+      // A privileged web page is a (non-component) hosted app process.
       return extension && extension->is_hosted_app() &&
              extension->location() != mojom::ManifestLocation::kComponent &&
              Contains(extension->id(), process_id);
@@ -224,7 +188,7 @@ mojom::ContextType ProcessMap::GetMostLikelyContextType(
     // If the process map doesn't contain the process, it might be an extension
     // frame in a webview.
     // We (deliberately) don't add webview-hosted frames to the process map and
-    // don't classify them as BLESSED_EXTENSION_CONTEXTs.
+    // don't classify them as kPrivilegedExtension contexts.
     if (url && extension->origin().IsSameOriginWith(*url) &&
         IsWebViewProcessForExtension(process_id, extension->id())) {
       // Yep, it's an extension frame in a webview.
@@ -242,7 +206,7 @@ mojom::ContextType ProcessMap::GetMostLikelyContextType(
   }
 
   // TODO(https://crbug.com/1339382): Currently, offscreen document contexts
-  // are misclassified as BLESSED_EXTENSION_CONTEXTs. This is not ideal
+  // are misclassified as kPrivilegedExtension contexts. This is not ideal
   // because there is a mismatch between the browser and the renderer), but it's
   // not a security issue because, while offscreen documents have fewer
   // capabilities, this is an API distinction, and not a security enforcement.
@@ -251,7 +215,7 @@ mojom::ContextType ProcessMap::GetMostLikelyContextType(
   // access all the same features.
   // Even so, we should fix this to properly classify offscreen documents (and
   // this would be a problem if offscreen documents ever have access to APIs
-  // that BLESSED_EXTENSION_CONTEXTs don't).
+  // that kPrivilegedExtension contexts don't).
 
   return is_lock_screen_context_ ? mojom::ContextType::kLockscreenExtension
                                  : mojom::ContextType::kPrivilegedExtension;

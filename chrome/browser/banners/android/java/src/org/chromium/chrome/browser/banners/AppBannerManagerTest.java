@@ -77,8 +77,8 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -172,6 +172,8 @@ public class AppBannerManagerTest {
 
     private static final String INSTALL_PATH_HISTOGRAM_NAME = "WebApk.Install.PathToInstall";
 
+    private static final String EXPECTED_DIALOG_TITLE = "Install app";
+
     private class MockAppDetailsDelegate extends AppDetailsDelegate {
         private Observer mObserver;
         private AppData mAppData;
@@ -240,7 +242,7 @@ public class AppBannerManagerTest {
 
         ThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    Profile profile = Profile.getLastUsedRegularProfile();
+                    Profile profile = ProfileManager.getLastUsedRegularProfile();
                     TrackerFactory.setTestingFactory(profile, mTracker);
                 });
 
@@ -271,7 +273,8 @@ public class AppBannerManagerTest {
         ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     // TODO (https://crbug.com/1063807):  Add incognito mode tests.
-                    SiteEngagementService.getForBrowserContext(Profile.getLastUsedRegularProfile())
+                    SiteEngagementService.getForBrowserContext(
+                                    ProfileManager.getLastUsedRegularProfile())
                             .resetBaseScoreForUrl(url, engagement);
                 });
     }
@@ -362,22 +365,9 @@ public class AppBannerManagerTest {
                 });
     }
 
-    private static String getExpectedDialogTitle(Tab tab) throws Exception {
-        String title =
-                ThreadUtils.runOnUiThreadBlocking(
-                        () -> {
-                            return TabUtils.getActivity(tab)
-                                    .getString(
-                                            AppBannerManager.getHomescreenLanguageOption(
-                                                            tab.getWebContents())
-                                                    .titleTextId);
-                        });
-        return title;
-    }
-
     private void waitUntilNoDialogsShowing(final Tab tab) throws Exception {
         UiObject dialogUiObject =
-                mUiDevice.findObject(new UiSelector().text(getExpectedDialogTitle(tab)));
+                mUiDevice.findObject(new UiSelector().text(EXPECTED_DIALOG_TITLE));
         dialogUiObject.waitUntilGone(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
     }
 
@@ -385,7 +375,7 @@ public class AppBannerManagerTest {
         TouchCommon.singleClickView(tab.getView());
 
         UiObject dialogUiObject =
-                mUiDevice.findObject(new UiSelector().text(getExpectedDialogTitle(tab)));
+                mUiDevice.findObject(new UiSelector().text(EXPECTED_DIALOG_TITLE));
         Assert.assertTrue(dialogUiObject.waitForExists(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL));
     }
 
@@ -693,7 +683,6 @@ public class AppBannerManagerTest {
     @Test
     @MediumTest
     @Feature({"AppBanners"})
-    @DisabledTest(message = "crbug.com/1144199")
     public void testBlockedModalNativeAppBannerResolveUserChoice() throws Exception {
         triggerModalNativeAppBanner(
                 mTabbedActivityTestRule,
@@ -1086,6 +1075,7 @@ public class AppBannerManagerTest {
         "enable-features=" + FeatureConstants.PWA_INSTALL_AVAILABLE_FEATURE,
         "disable-features=" + ChromeFeatureList.ADD_TO_HOMESCREEN_IPH
     })
+    @DisabledTest(message = "crbug/327273599")
     public void testInProductHelp() throws Exception {
         // Visit a site that is a PWA. The ambient badge should show.
         String webBannerUrl = WebappTestPage.getServiceWorkerUrl(mTestServer);

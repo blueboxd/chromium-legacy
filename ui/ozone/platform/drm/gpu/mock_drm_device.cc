@@ -17,23 +17,6 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_atomic.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_legacy.h"
 
-// Private types defined in libdrm. Define them here so we can peek at the
-// commit and ensure the expected state has been set correctly.
-struct drmModeAtomicReqItem {
-  uint32_t object_id;
-  uint32_t property_id;
-  uint64_t value;
-  uint32_t cursor;
-};
-
-typedef drmModeAtomicReqItem* drmModeAtomicReqItemPtr;
-
-struct _drmModeAtomicReq {
-  uint32_t cursor;
-  uint32_t size_items;
-  drmModeAtomicReqItemPtr items;
-};
-
 namespace ui {
 
 namespace {
@@ -266,7 +249,7 @@ MockDrmDevice::MockDrmState::AddConnector() {
 }
 
 MockDrmDevice::EncoderProperties& MockDrmDevice::MockDrmState::AddEncoder() {
-  uint32_t next_encoder_id = GetNextId(crtc_properties, kEncoderIdBase);
+  uint32_t next_encoder_id = GetNextId(encoder_properties, kEncoderIdBase);
   auto& encoder_property = encoder_properties.emplace_back();
   encoder_property.id = next_encoder_id;
 
@@ -774,30 +757,33 @@ bool MockDrmDevice::CreateDumbBuffer(const SkImageInfo& info,
   if (!create_dumb_buffer_expectation_)
     return false;
 
-  *handle = allocate_buffer_count_++;
+  // |handle| should start from 1. 0 is considered an invalid handle.
+  *handle = ++allocate_buffer_count_;
   *stride = info.minRowBytes();
   void* pixels = new char[info.computeByteSize(*stride)];
   SkSurfaceProps props = skia::LegacyDisplayGlobals::GetSkSurfaceProps();
-  buffers_.push_back(SkSurfaces::WrapPixels(
+  buffers_[*handle] = SkSurfaces::WrapPixels(
       info, pixels, *stride,
       [](void* pixels, void* context) { delete[] static_cast<char*>(pixels); },
-      /*context=*/nullptr, &props));
+      /*context=*/nullptr, &props);
   buffers_[*handle]->getCanvas()->clear(SK_ColorBLACK);
 
   return true;
 }
 
 bool MockDrmDevice::DestroyDumbBuffer(uint32_t handle) {
-  if (handle >= buffers_.size() || !buffers_[handle])
+  if (handle > buffers_.size() || !buffers_[handle]) {
     return false;
+  }
 
   buffers_[handle].reset();
   return true;
 }
 
 bool MockDrmDevice::MapDumbBuffer(uint32_t handle, size_t size, void** pixels) {
-  if (handle >= buffers_.size() || !buffers_[handle])
+  if (handle > buffers_.size() || !buffers_[handle]) {
     return false;
+  }
 
   SkPixmap pixmap;
   buffers_[handle]->peekPixels(&pixmap);

@@ -324,14 +324,6 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     Mock::VerifyAndClearExpectations(this);
   }
 
-  // Helper routine that sets the device DeviceWilcoDtcAllowed policy.
-  void SetDeviceWilcoDtcAllowedSetting(bool device_wilco_dtc_allowed) {
-    em::DeviceWilcoDtcAllowedProto* proto =
-        device_policy_->payload().mutable_device_wilco_dtc_allowed();
-    proto->set_device_wilco_dtc_allowed(device_wilco_dtc_allowed);
-    BuildAndInstallDevicePolicy();
-  }
-
   void SetDeviceDockMacAddressSourceSetting(
       em::DeviceDockMacAddressSourceProto::Source
           device_dock_mac_address_source) {
@@ -1021,17 +1013,6 @@ TEST_F(DeviceSettingsProviderTest, DeviceRebootAfterUserSignout) {
   }
 }
 
-TEST_F(DeviceSettingsProviderTest, DeviceWilcoDtcAllowedSetting) {
-  // Policy should not be set by default
-  VerifyPolicyValue(kDeviceWilcoDtcAllowed, nullptr);
-
-  SetDeviceWilcoDtcAllowedSetting(true);
-  EXPECT_EQ(base::Value(true), *provider_->Get(kDeviceWilcoDtcAllowed));
-
-  SetDeviceWilcoDtcAllowedSetting(false);
-  EXPECT_EQ(base::Value(false), *provider_->Get(kDeviceWilcoDtcAllowed));
-}
-
 TEST_F(DeviceSettingsProviderTest, DeviceDockMacAddressSourceSetting) {
   const base::Value default_value(3);
   VerifyPolicyValue(kDeviceDockMacAddressSource, &default_value);
@@ -1407,7 +1388,7 @@ TEST_F(DeviceSettingsProviderTest, DeviceDlcPredownloadListNonempty) {
   BuildAndInstallDevicePolicy();
 
   VerifyPolicyList(kDeviceDlcPredownloadList,
-                   base::Value::List().Append("sane-backends-extras-dlc"));
+                   base::Value::List().Append("sane-backends-pfu"));
 }
 
 TEST_F(DeviceSettingsProviderTest, DeviceDlcPredownloadListInvalidDlc) {
@@ -1424,7 +1405,7 @@ TEST_F(DeviceSettingsProviderTest, DeviceDlcPredownloadListInvalidDlc) {
 
   // Device setting must contain only the valid DLCs that can be pre downloaded.
   VerifyPolicyList(kDeviceDlcPredownloadList,
-                   base::Value::List().Append("sane-backends-extras-dlc"));
+                   base::Value::List().Append("sane-backends-pfu"));
 }
 
 TEST_F(DeviceSettingsProviderTest, DeviceDlcPredownloadListDuplicateDlc) {
@@ -1441,7 +1422,29 @@ TEST_F(DeviceSettingsProviderTest, DeviceDlcPredownloadListDuplicateDlc) {
 
   // Device setting must not contain any duplicate values.
   VerifyPolicyList(kDeviceDlcPredownloadList,
-                   base::Value::List().Append("sane-backends-extras-dlc"));
+                   base::Value::List().Append("sane-backends-pfu"));
+}
+
+TEST_F(DeviceSettingsProviderTest, DeviceExtendedAutoUpdateEnabledValueSet) {
+  device_policy_->payload()
+      .mutable_deviceextendedautoupdateenabled()
+      ->set_value(true);
+  BuildAndInstallDevicePolicy();
+
+  const base::Value* actual_value =
+      provider_->Get(kDeviceExtendedAutoUpdateEnabled);
+
+  EXPECT_TRUE(actual_value->GetBool());
+}
+
+TEST_F(DeviceSettingsProviderTest, DeviceExtendedAutoUpdateEnabledValueUnset) {
+  device_policy_->payload().clear_deviceextendedautoupdateenabled();
+  BuildAndInstallDevicePolicy();
+
+  const base::Value* actual_value =
+      provider_->Get(kDeviceExtendedAutoUpdateEnabled);
+
+  EXPECT_FALSE(actual_value);
 }
 
 }  // namespace ash

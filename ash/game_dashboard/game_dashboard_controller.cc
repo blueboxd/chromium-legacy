@@ -10,11 +10,17 @@
 
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/constants/notifier_catalogs.h"
+#include "ash/game_dashboard/game_dashboard_constants.h"
 #include "ash/game_dashboard/game_dashboard_context.h"
+#include "ash/game_dashboard/game_dashboard_metrics.h"
 #include "ash/game_dashboard/game_dashboard_utils.h"
 #include "ash/public/cpp/app_types_util.h"
+#include "ash/public/cpp/system/toast_data.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
+#include "ash/system/toast/toast_manager_impl.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "base/functional/bind.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -22,6 +28,9 @@
 #include "extensions/common/constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/display/screen.h"
+#include "ui/display/tablet_state.h"
 
 namespace ash {
 
@@ -43,14 +52,15 @@ bool GameDashboardController::IsGameWindow(aura::Window* window) {
 
 // static
 bool GameDashboardController::ReadyForAccelerator(aura::Window* window) {
-  return IsGameWindow(window) &&
-             game_dashboard_utils::ShouldEnableGameDashboardButton(window);
+  return game_dashboard_utils::ShouldEnableFeatures() && IsGameWindow(window) &&
+         game_dashboard_utils::ShouldEnableGameDashboardButton(window);
 }
 
 // static
 void GameDashboardController::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kGameDashboardShowWelcomeDialog, true);
+  registry->RegisterBooleanPref(prefs::kGameDashboardShowToolbar, true);
 }
 
 GameDashboardController::GameDashboardController(
@@ -79,14 +89,22 @@ std::string GameDashboardController::GetArcAppName(
 GameDashboardContext* GameDashboardController::GetGameDashboardContext(
     aura::Window* window) const {
   DCHECK(window);
-  game_window_contexts_.find(window);
   auto it = game_window_contexts_.find(window);
   return it != game_window_contexts_.end() ? it->second.get() : nullptr;
 }
 
+void GameDashboardController::MaybeStackAboveWidget(aura::Window* window,
+                                                    views::Widget* widget) {
+  DCHECK(widget);
+  DCHECK(window);
+
+  if (auto* context = GetGameDashboardContext(window)) {
+    context->MaybeStackAboveWidget(widget);
+  }
+}
+
 void GameDashboardController::StartCaptureSession(
-    GameDashboardContext* game_context,
-    bool record_instantly) {
+    GameDashboardContext* game_context) {
   CHECK(!active_recording_context_);
   auto* game_window = game_context->game_window();
   CHECK(game_window_contexts_.contains(game_window));
@@ -94,16 +112,16 @@ void GameDashboardController::StartCaptureSession(
   CHECK(capture_mode_controller->can_start_new_recording());
 
   active_recording_context_ = game_context;
-  if (record_instantly) {
-    capture_mode_controller->StartRecordingInstantlyForGameDashboard(
-        game_window);
-  } else {
-    capture_mode_controller->StartForGameDashboard(game_window);
-  }
+  capture_mode_controller->StartForGameDashboard(game_window);
 }
 
 void GameDashboardController::ShowResizeToggleMenu(aura::Window* window) {
   delegate_->ShowResizeToggleMenu(window);
+}
+
+ukm::SourceId GameDashboardController::GetUkmSourceId(
+    const std::string& app_id) const {
+  return delegate_->GetUkmSourceId(app_id);
 }
 
 void GameDashboardController::OnWindowInitialized(aura::Window* new_window) {
@@ -178,22 +196,56 @@ void GameDashboardController::OnRecordingStartAborted() {
   OnRecordingEnded();
 }
 
+void GameDashboardController::OnDisplayTabletStateChanged(
+    display::TabletState state) {
+  switch (state) {
+    case display::TabletState::kInClamshellMode:
+      // Cancel the tablet toast if it is still shown.
+      Shell::Get()->toast_manager()->Cancel(game_dashboard::kTabletToastId);
+      MaybeEnableFeatures(/*enable=*/true,
+                          GameDashboardMainMenuToggleMethod::kTabletMode);
+      break;
+    case display::TabletState::kEnteringTabletMode: {
+      const int toast_text_id =
+          active_recording_context_
+              ? IDS_ASH_GAME_DASHBOARD_TABLET_STOP_RECORDING_TOAST
+              : IDS_ASH_GAME_DASHBOARD_TABLET_TOAST;
+      if (active_recording_context_) {
+        auto* capture_mode_controller = CaptureModeController::Get();
+        CHECK(capture_mode_controller->is_recording_in_progress());
+        // TODO(b/316036118): Update the end recording reason in the capture
+        // mode.
+        capture_mode_controller->EndVideoRecording(
+            EndRecordingReason::kGameDashboardStopRecordingButton);
+      }
+      MaybeEnableFeatures(/*enable=*/false,
+                          GameDashboardMainMenuToggleMethod::kTabletMode);
+      // Show the toast to notify users when there is any game window open.
+      if (!game_window_contexts_.empty()) {
+        Shell::Get()->toast_manager()->Show(
+            ToastData(game_dashboard::kTabletToastId,
+                      ToastCatalogName::kGameDashboardEnterTablet,
+                      l10n_util::GetStringUTF16(toast_text_id)));
+      }
+      break;
+    }
+    case display::TabletState::kInTabletMode:
+    case display::TabletState::kExitingTabletMode:
+      break;
+  }
+}
+
 void GameDashboardController::OnOverviewModeWillStart() {
   // In overview mode, hide the Game Dashboard button, and if open, close the
   // main menu.
-  for (auto const& [_, context] : game_window_contexts_) {
-    context->game_dashboard_button_widget()->Hide();
-    if (context->main_menu_view()) {
-      context->CloseMainMenu();
-    }
-  }
+  MaybeEnableFeatures(/*enable=*/false,
+                      GameDashboardMainMenuToggleMethod::kOverview);
 }
 
 void GameDashboardController::OnOverviewModeEnded() {
   // Make the Game Dashboard button visible.
-  for (auto const& [_, context] : game_window_contexts_) {
-    context->game_dashboard_button_widget()->Show();
-  }
+  MaybeEnableFeatures(/*enable=*/true,
+                      GameDashboardMainMenuToggleMethod::kOverview);
 }
 
 void GameDashboardController::GetWindowGameState(aura::Window* window) {
@@ -268,6 +320,16 @@ void GameDashboardController::RefreshForGameControlsFlags(
 
   if (auto* context = GetGameDashboardContext(window)) {
     context->UpdateForGameControlsFlags();
+  }
+}
+
+void GameDashboardController::MaybeEnableFeatures(
+    bool enable,
+    GameDashboardMainMenuToggleMethod main_menu_toggle_method) {
+  const bool should_enable =
+      enable && game_dashboard_utils::ShouldEnableFeatures();
+  for (auto const& [_, context] : game_window_contexts_) {
+    context->EnableFeatures(should_enable, main_menu_toggle_method);
   }
 }
 

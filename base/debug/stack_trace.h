@@ -65,6 +65,7 @@ BASE_EXPORT uintptr_t GetStackEnd();
 // can later see where the given object was created from.
 class BASE_EXPORT StackTrace {
  public:
+  // LINT.IfChange(max_stack_frames)
 #if BUILDFLAG(IS_ANDROID)
   // TODO(https://crbug.com/925525): Testing indicates that Android has issues
   // with a larger value here, so leave Android at 62.
@@ -74,6 +75,7 @@ class BASE_EXPORT StackTrace {
   // being huge.
   static constexpr size_t kMaxTraces = 250;
 #endif
+  // LINT.ThenChange(dwarf_line_no.cc:max_stack_frames)
 
   // Creates a stacktrace from the current location.
   StackTrace();
@@ -149,6 +151,18 @@ BASE_EXPORT std::ostream& operator<<(std::ostream& os, const StackTrace& s);
 // Record a stack trace with up to |count| frames into |trace|. Returns the
 // number of frames read.
 BASE_EXPORT size_t CollectStackTrace(const void** trace, size_t count);
+
+// A helper for death tests that must override the default suppression of
+// symbolized stack traces.
+class BASE_EXPORT OverrideSuppressedOutputForTesting {
+ public:
+  OverrideSuppressedOutputForTesting();
+  ~OverrideSuppressedOutputForTesting();
+  OverrideSuppressedOutputForTesting(
+      const OverrideSuppressedOutputForTesting&) = delete;
+  OverrideSuppressedOutputForTesting& operator=(
+      const OverrideSuppressedOutputForTesting&) = delete;
+};
 
 #if BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
 

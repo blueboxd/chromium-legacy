@@ -16,7 +16,6 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
-#include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
@@ -51,6 +50,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/scoped_animation_disabler.h"
 
 namespace ash {
 
@@ -120,7 +120,7 @@ void HideFloatedWindow(aura::Window* floated_window) {
   // while the `Hide()` animation is still in progress, and this will
   // introduce a glitch.
   DCHECK(floated_window);
-  ScopedAnimationDisabler disabler(floated_window);
+  wm::ScopedAnimationDisabler disabler(floated_window);
   floated_window->Hide();
 }
 
@@ -131,7 +131,7 @@ void ShowFloatedWindow(aura::Window* floated_window) {
     return;
   }
 
-  ScopedAnimationDisabler disabler(floated_window);
+  wm::ScopedAnimationDisabler disabler(floated_window);
   floated_window->Show();
 }
 
@@ -253,7 +253,7 @@ class FloatScopedWindowTuckerDelegate : public ScopedWindowTucker::Delegate {
   }
 
   void OnAnimateTuckEnded(aura::Window* window) override {
-    ScopedAnimationDisabler disable(window);
+    wm::ScopedAnimationDisabler disable(window);
     window->Hide();
   }
 
@@ -291,7 +291,10 @@ class FloatController::FloatedWindowInfo : public aura::WindowObserver {
       float_start_time_ = base::TimeTicks::Now();
 
     if (display::Screen::GetScreen()->InTabletMode() &&
-        TabletModeTuckEducation::CanActivateTuckEducation()) {
+        TabletModeTuckEducation::CanActivateTuckEducation() &&
+        !Shell::Get()
+             ->float_controller()
+             ->disable_tuck_education_for_testing_) {
       tuck_education_ =
           std::make_unique<TabletModeTuckEducation>(floated_window);
     }
@@ -421,6 +424,17 @@ class FloatController::FloatedWindowInfo : public aura::WindowObserver {
         desks_controller->MaybeRemoveVisibleOnAllDesksWindow(window);
       }
 
+      return;
+    }
+
+    // Always on top window cannot be floated, so if a floated window becomes
+    // always on top, exit float state.
+    if (key == aura::client::kZOrderingKey) {
+      if (window->GetProperty(aura::client::kZOrderingKey) !=
+          ui::ZOrderLevel::kNormal) {
+        // Destroys `this`.
+        Shell::Get()->float_controller()->ResetFloatedWindow(floated_window_);
+      }
       return;
     }
 
@@ -955,6 +969,13 @@ void FloatController::OnScreenRotationAnimationFinished(
                     window, chromeos::FloatStartLocation::kBottomRight);
       const SetBoundsWMEvent event(bounds);
       WindowState::Get(window)->OnWMEvent(&event);
+
+      // When a window is tucked, ash has full control over the bounds.
+      if (IsFloatedWindowTuckedForTablet(window)) {
+        TabletModeWindowState::UpdateWindowPosition(
+            WindowState::Get(window),
+            WindowState::BoundsChangeAnimationType::kNone);
+      }
     }
   }
 }

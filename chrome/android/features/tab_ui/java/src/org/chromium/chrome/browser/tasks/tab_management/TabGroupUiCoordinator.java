@@ -137,6 +137,7 @@ public class TabGroupUiCoordinator
                 new TabGridDialogCoordinator(
                         mActivity,
                         mBrowserControlsStateProvider,
+                        mBottomSheetController,
                         currentTabModelFilterSupplier,
                         () -> mTabModelSelector.getModel(false),
                         mTabContentManager,
@@ -253,7 +254,6 @@ public class TabGroupUiCoordinator
     @Override
     public void resetStripWithListOfTabs(List<Tab> tabs) {
         if (tabs != null
-                && tabs.size() > 1
                 && mBottomSheetController.getSheetState()
                         == BottomSheetController.SheetState.HIDDEN) {
             TabGroupUtils.maybeShowIPH(

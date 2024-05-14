@@ -1510,25 +1510,39 @@ void ImageCapture::ContextDestroyed() {
   service_requests_.clear();
 }
 
-ScriptPromise ImageCapture::getPhotoCapabilities(ScriptState* script_state) {
-  return GetMojoPhotoState(
-      script_state, WTF::BindOnce(&ImageCapture::ResolveWithPhotoCapabilities,
+ScriptPromiseTyped<PhotoCapabilities> ImageCapture::getPhotoCapabilities(
+    ScriptState* script_state) {
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<PhotoCapabilities>>(
+          script_state);
+  auto promise = resolver->Promise();
+  GetMojoPhotoState(resolver,
+                    WTF::BindOnce(&ImageCapture::ResolveWithPhotoCapabilities,
                                   WrapPersistent(this)));
+  return promise;
 }
 
-ScriptPromise ImageCapture::getPhotoSettings(ScriptState* script_state) {
-  return GetMojoPhotoState(
-      script_state, WTF::BindOnce(&ImageCapture::ResolveWithPhotoSettings,
+ScriptPromiseTyped<PhotoSettings> ImageCapture::getPhotoSettings(
+    ScriptState* script_state) {
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<PhotoSettings>>(
+          script_state);
+  auto promise = resolver->Promise();
+  GetMojoPhotoState(resolver,
+                    WTF::BindOnce(&ImageCapture::ResolveWithPhotoSettings,
                                   WrapPersistent(this)));
+  return promise;
 }
 
-ScriptPromise ImageCapture::takePhoto(ScriptState* script_state,
-                                      const PhotoSettings* photo_settings) {
+ScriptPromiseTyped<Blob> ImageCapture::takePhoto(
+    ScriptState* script_state,
+    const PhotoSettings* photo_settings) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
                "ImageCapture::takePhoto");
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<Blob>>(script_state);
+  auto promise = resolver->Promise();
 
   if (TrackIsInactive(*stream_track_)) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -2380,24 +2394,20 @@ bool ImageCapture::HasPanTiltZoomPermissionGranted() const {
   return pan_tilt_zoom_permission_ == mojom::blink::PermissionStatus::GRANTED;
 }
 
-ScriptPromise ImageCapture::GetMojoPhotoState(
-    ScriptState* script_state,
-    PromiseResolverFunction resolver_cb) {
+void ImageCapture::GetMojoPhotoState(ScriptPromiseResolver* resolver,
+                                     PromiseResolverFunction resolver_cb) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
                "ImageCapture::GetMojoPhotoState");
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
   if (TrackIsInactive(*stream_track_)) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError, kInvalidStateTrackError));
-    return promise;
+    return;
   }
 
   if (!service_.is_bound()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotFoundError, kNoServiceError));
-    return promise;
+    return;
   }
   service_requests_.insert(resolver);
 
@@ -2406,7 +2416,6 @@ ScriptPromise ImageCapture::GetMojoPhotoState(
       WTF::BindOnce(&ImageCapture::OnMojoGetPhotoState, WrapPersistent(this),
                     WrapPersistent(resolver), std::move(resolver_cb),
                     /*trigger_take_photo=*/false));
-  return promise;
 }
 
 void ImageCapture::OnMojoGetPhotoState(
@@ -2507,7 +2516,7 @@ void ImageCapture::OnMojoTakePhoto(ScriptPromiseResolver* resolver,
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kUnknownError, "platform error"));
   } else {
-    resolver->Resolve(
+    resolver->DowncastTo<Blob>()->Resolve(
         Blob::Create(blob->data.data(), blob->data.size(), blob->mime_type));
   }
   service_requests_.erase(resolver);
@@ -2706,18 +2715,18 @@ void ImageCapture::MaybeRejectWithOverconstrainedError(
 
 void ImageCapture::ResolveWithNothing(ScriptPromiseResolver* resolver) {
   DCHECK(resolver);
-  resolver->Resolve();
+  resolver->DowncastTo<IDLUndefined>()->Resolve();
 }
 
 void ImageCapture::ResolveWithPhotoSettings(ScriptPromiseResolver* resolver) {
   DCHECK(resolver);
-  resolver->Resolve(photo_settings_);
+  resolver->DowncastTo<PhotoSettings>()->Resolve(photo_settings_);
 }
 
 void ImageCapture::ResolveWithPhotoCapabilities(
     ScriptPromiseResolver* resolver) {
   DCHECK(resolver);
-  resolver->Resolve(photo_capabilities_);
+  resolver->DowncastTo<PhotoCapabilities>()->Resolve(photo_capabilities_);
 }
 
 bool ImageCapture::IsPageVisible() const {

@@ -10,6 +10,7 @@
 #include <optional>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -49,6 +50,8 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
  public:
   using ConfigurationCallback = base::OnceCallback<void(bool /* success */)>;
   using DisplayControlCallback = base::OnceCallback<void(bool success)>;
+  using GetSeamlessRefreshRatesCallback =
+      base::OnceCallback<void(const std::optional<RefreshRange>&)>;
 
   using DisplayStateList =
       std::vector<raw_ptr<DisplaySnapshot, VectorExperimental>>;
@@ -251,6 +254,26 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   void MaybeSetRefreshRateThrottleState(int64_t display_id,
                                         RefreshRateThrottleState state);
 
+  // Request a description of the refresh rates to which the display can support
+  // a configuration without a full modeset.
+  // The supported refresh rates depend on the current configuration of the
+  // display driver and hardware.
+  //
+  // It's possible that there could be some configuration change such that a
+  // seamless modeset to a refresh rate returned from here succeeds at one time,
+  // and fails at another due to some configuration change in the display
+  // driver. The caller should re-query the supported refresh rates whenever
+  // there is a full modeset, or when a seamless refresh rate change fails, to
+  // ensure that the caller has an up-to-date picture of which refresh rates are
+  // supported.
+  //
+  // A result of nullopt indicates that the request failed for some reason such
+  // as an invalid display_id. An empty RefreshRange vector indicates that there
+  // are no modes to which the display can be configured seamlessly. This could
+  // happen if the display is currently turned off.
+  void GetSeamlessRefreshRates(int64_t display_id,
+                               GetSeamlessRefreshRatesCallback callback);
+
   // NativeDisplayObserver:
   void OnConfigurationChanged() override;
   void OnDisplaySnapshotsInvalidated() override;
@@ -312,9 +335,10 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
     return requested_power_state_;
   }
 
-  // Requests to enable or disable variable refresh rates across all capable
-  // displays, and schedules a configuration change as needed.
-  void SetVrrEnabled(bool enable_vrr);
+  // Requests to enable variable refresh rates on the specified displays and to
+  // disable variable refresh rates on all other displays, and schedules a
+  // configuration change as needed.
+  void SetVrrEnabled(const base::flat_set<int64_t>& display_ids);
 
  private:
   friend class test::DisplayManagerTestApi;
@@ -358,8 +382,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
       const std::vector<raw_ptr<DisplaySnapshot, VectorExperimental>>&
           unassociated_displays,
       MultipleDisplayState new_display_state,
-      chromeos::DisplayPowerState new_power_state,
-      bool new_vrr_state);
+      chromeos::DisplayPowerState new_power_state);
 
   // Updates the current and pending power state and notifies observers.
   void UpdatePowerState(chromeos::DisplayPowerState new_power_state);
@@ -400,12 +423,23 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   void SendRelinquishDisplayControl(DisplayControlCallback callback,
                                     bool success);
 
-  // Returns the requested VRR state, or the current state by default.
-  bool GetRequestedVrrState() const;
+  // Returns the requested VRR state listing the display ids which should have
+  // VRR enabled, defaulting to the current state as needed.
+  const base::flat_set<int64_t> GetRequestedVrrState() const;
 
   // Returns whether a configuration should occur on account of a pending VRR
   // request.
   bool ShouldConfigureVrr() const;
+
+  // Returns the throttle state that should be used for a configuration attempt.
+  // If no new state has been requested, this will default to the current state
+  // unless a full configuration is pending, in which case the requested state
+  // will be disabled.
+  RefreshRateThrottleState GetRequestedThrottleState() const;
+
+  // Returns the current throttle state for |display|.
+  static RefreshRateThrottleState GetRefreshRateThrottleStateForDisplay(
+      const DisplaySnapshot& display);
 
   raw_ptr<StateController> state_controller_;
   raw_ptr<SoftwareMirroringController> mirroring_controller_;
@@ -487,10 +521,10 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // notification will be created to inform user.
   bool has_unassociated_display_;
 
-  // Stores the current variable refresh rate enabled state.
-  bool current_vrr_state_ = false;
-  // Stores the requested variable refresh rate enabled state.
-  std::optional<bool> pending_vrr_state_;
+  // Stores the requested variable refresh rate state as a set of display ids
+  // for which VRR should be enabled. All omitted displays should have VRR
+  // disabled. Absent if there is no pending state.
+  std::optional<base::flat_set<int64_t>> pending_vrr_state_ = std::nullopt;
 
   // This must be the last variable.
   base::WeakPtrFactory<DisplayConfigurator> weak_ptr_factory_{this};

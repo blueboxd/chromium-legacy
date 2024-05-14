@@ -15,6 +15,7 @@
 <translation id="1423007117030725713">Börja söka på en ny Chromium-flik.</translation>
 <translation id="1431818719585918472">Låt Chromium låsa inkognitoflikarna.</translation>
 <translation id="1472013873724362412">Kontot fungerar inte på Chromium. Kontakta domänadministratören eller logga in med ett vanligt Google-konto.</translation>
+<translation id="1503199973012840174">Chromium är inaktuellt. Se till att du är skyddad genom att uppdatera.</translation>
 <translation id="1507010443238049608">Bidra till att förbättra Chromiums funktioner och prestanda</translation>
 <translation id="1513122820609681462">Ställ in Chromium som standardwebbläsare</translation>
 <translation id="1531155317299575425">Visar meddelanden om att logga in i Chromium.</translation>
@@ -50,6 +51,7 @@
 <translation id="22313767259766852">Den här adressen har sparats i Chromium. Om du vill använda den i olika produkter från Google sparar du den i Google-kontot <ph name="USER_EMAIL" />.</translation>
 <translation id="2236584955986023187">Detta betyder att datorversionen av webbplatsen begärs varje gång i Chromium.</translation>
 <translation id="2313870531055795960">Kontrollera webbadresser mot en lista över osäkra webbplatser i Chromium. Om du utsätts för försök att kapa ditt lösenord på en webbplats eller om du laddar ned en skadlig fil kan webbadresserna skickas från Chromium till Säker webbsökning tillsammans med delar av sidinnehållet.</translation>
+<translation id="231828342043114302">Logga in i Chromium om du vill få anpassat innehåll utifrån dina intressen.</translation>
 <translation id="2374627437126809292">Google Maps används i Chromium för att ge dig vägbeskrivningar och lokal information om identifierade adresser.</translation>
 <translation id="2386292341327187942">Skriv ”Chromium” i sökwidgetrutan</translation>
 <translation id="2426113998523353159">Organisationen kräver att du loggar in för att använda Chromium.</translation>
@@ -78,7 +80,6 @@ Du hittar fler inställningar som använder data för att förbättra Chromium-u
 <translation id="3219277919172823720">Sök med rösten i Chromium</translation>
 <translation id="3228349498066165585">Viss Chromium-data har inte sparats i ditt Google-konto ännu.
         Testa att vänta några minuter innan du loggar ut. Om du loggar ut nu raderas denna data.</translation>
-<translation id="3256316712990552818">Kopierat till Chromium</translation>
 <translation id="328933489847748230">{count,plural, =1{Nu visas 1 Chromium-fönster}other{Nu visas {count} Chromium-fönster}}</translation>
 <translation id="3344973607274501920">Chromium kunde inte kontrollera dina lösenord. Testa att kontrollera internetanslutningen.</translation>
 <translation id="3366305173356742781">Chromium-data i ditt konto</translation>
@@ -116,6 +117,7 @@ Din data krypteras med lösenfrasen. Ange den om du vill använda och spara Chro
 <translation id="4195557071150719219">Visa senaste flikarna i Chromium</translation>
 <translation id="4200712796753248893">Använda Chromium-åtgärder på iOS</translation>
 <translation id="420541179527342563">Om du vill inaktivera låsningsläget i Chromium kan du stänga av det på din iPad.</translation>
+<translation id="427331839909790668">Länka Chromium och andra tjänster från Google om du vill att din upplevelse ska anpassas med hjälp av data som delas mellan tjänsterna</translation>
 <translation id="4408912345039114853">Kör en säkerhetskontroll i Chromium</translation>
 <translation id="4432744876818348753">Logga in så att du får ut mesta möjliga av Chromium.</translation>
 <translation id="4445228361214254027">Din organisation har inaktiverat möjligheten att använda och spara Chromium-data i ditt Google-konto. Nya bokmärken, lösenord med mera sparas endast på den här enheten.</translation>
@@ -213,9 +215,11 @@ Din krypterade data kan endast läsas av en person som har din lösenfras. Löse
 <translation id="6752854822223394465">Organisationen konfigurerar Chromium …</translation>
 <translation id="6794054469102824109">Öppnar spelet Chromium Dino.</translation>
 <translation id="6820823224820483452">Chromium kunde inte kontrollera alla lösenord. Försök igen i morgon.</translation>
+<translation id="6830362027989570433">Utökad vy för autofyll i Chromium</translation>
 <translation id="6852799557929001644">Få åtkomst till dina lösenord och annat från Chromium i andra appar på den här enheten.</translation>
 <translation id="6887138405044152640">Om du vill skicka den här fliken till en annan enhet loggar du in i Chromium på den enheten.</translation>
 <translation id="6911341667534646387">Fortsätt använda Chromium-data i Google-kontot</translation>
+<translation id="7002548535535009764">Om du inkluderar Chromium i <ph name="FEATURE_NAME_1" /> och <ph name="FEATURE_NAME_2" /> får du en så anpassad upplevelse som möjligt</translation>
 <translation id="7006920032187763988">Du kan använda lösenorden som sparats med Lösenordshantering i andra iPad-appar.</translation>
 <translation id="7018284295775193585">Chromium kan inte uppdateras</translation>
 <translation id="7045244423563602563">Anpassa Chromium</translation>
@@ -310,7 +314,6 @@ Din data krypterades med lösenfrasen <ph name="TIME" />. Ange den om du vill an
 <translation id="9059693977935746710">Du behöver inte komma ihåg det här lösenordet. Det sparas med Lösenordshantering för <ph name="EMAIL" /></translation>
 <translation id="9089354809943900324">Den här versionen av Chromium är inaktuell</translation>
 <translation id="9110075932708282655">Använd Chromium som standard</translation>
-<translation id="9137114218472648150">Chromium är inaktuellt. Uppdatera till den senaste versionen för att hålla dig säker.</translation>
 <translation id="921174536258924340">Chromium kunde inte kontrollera alla lösenord. Försök igen i morgon eller <ph name="BEGIN_LINK" />kontrollera lösenorden i ditt Google-konto<ph name="END_LINK" />.</translation>
 <translation id="971488683725792095">Använd Chromium automatiskt när du trycker på länkar i meddelanden, dokument och andra appar.</translation>
 <translation id="981812233959540767">Spela spelet Chromium Dino</translation>

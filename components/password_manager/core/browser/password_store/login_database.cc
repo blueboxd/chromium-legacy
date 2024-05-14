@@ -31,8 +31,9 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/affiliations/core/browser/affiliation_utils.h"
+#include "components/affiliations/core/browser/sql_table_builder.h"
 #include "components/os_crypt/sync/os_crypt.h"
-#include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -40,7 +41,6 @@
 #include "components/password_manager/core/browser/password_store/password_notes_table.h"
 #include "components/password_manager/core/browser/password_store/password_store_change.h"
 #include "components/password_manager/core/browser/password_store/psl_matching_helper.h"
-#include "components/password_manager/core/browser/sql_table_builder.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/metadata_batch.h"
@@ -60,10 +60,6 @@
 using signin::GaiaIdHash;
 
 namespace password_manager {
-
-#if BUILDFLAG(IS_IOS)
-using metrics_util::MigrationToOSCrypt;
-#endif
 
 // The current version number of the login database schema.
 constexpr int kCurrentVersionNumber = 41;
@@ -122,6 +118,8 @@ std::vector<GaiaIdHash> DeserializeGaiaIdHashVector(const base::Pickle& p) {
 }
 
 namespace {
+
+using affiliations::SQLTableBuilder;
 
 // Common prefix for all histograms.
 constexpr char kPasswordManager[] = "PasswordManager";
@@ -307,7 +305,8 @@ class ScopedDbErrorHandler {
 };
 
 bool DoesMatchConstraints(const PasswordForm& form) {
-  if (!IsValidAndroidFacetURI(form.signon_realm) && form.url.is_empty()) {
+  if (!affiliations::IsValidAndroidFacetURI(form.signon_realm) &&
+      form.url.is_empty()) {
     DLOG(ERROR) << "Constraint violation: form.origin is empty";
     return false;
   }
@@ -717,29 +716,6 @@ bool PasswordNotesPostMigrationStepCallback(
 }
 
 #if BUILDFLAG(IS_IOS)
-void LogMigratedDeletedStats(IsAccountStore is_account_store,
-                             int deleted_passwords,
-                             int migrated_passwords) {
-  base::StringPiece infix_for_store =
-      is_account_store.value() ? "AccountStore" : "ProfileStore";
-  base::UmaHistogramCounts1000(
-      base::StrCat({"PasswordManager.MigrationToOSCrypt.", infix_for_store,
-                    ".DeletedPasswordCount"}),
-      deleted_passwords);
-  base::UmaHistogramCounts1000(
-      base::StrCat({"PasswordManager.MigrationToOSCrypt.", infix_for_store,
-                    ".MigratedPasswordCount"}),
-      migrated_passwords);
-}
-
-void LogKeychainError(IsAccountStore is_account_store, OSStatus error) {
-  base::UmaHistogramSparse(
-      base::StrCat({"PasswordManager.MigrationToOSCrypt.",
-                    is_account_store.value() ? "AccountStore" : "ProfileStore",
-                    ".KeychainRetrievalError"}),
-      static_cast<int>(error));
-}
-
 bool DeletePassword(sql::Database* db, int id) {
   sql::Statement password_delete(
       db->GetUniqueStatement("DELETE FROM logins WHERE id = ?"));
@@ -757,11 +733,9 @@ bool UpdatePassword(sql::Database* db,
   return password_value_update.Run();
 }
 
-MigrationToOSCrypt MigrateToOSCryptTheOldWay(IsAccountStore is_account_store,
-                                             sql::Database* db) {
+bool MigrateToOSCrypt(IsAccountStore is_account_store, sql::Database* db) {
   sql::Statement get_passwords_statement(
       db->GetUniqueStatement("SELECT id, password_value FROM logins"));
-  int deleted_passwords = 0, migrated_passwords = 0;
   // Update each password_value with the new BLOB.
   while (get_passwords_statement.Step()) {
     int id = get_passwords_statement.ColumnInt(0);
@@ -774,32 +748,26 @@ MigrationToOSCrypt MigrateToOSCryptTheOldWay(IsAccountStore is_account_store,
     // migration.
     if (retrieval_status == errSecItemNotFound) {
       if (!DeletePassword(db, id)) {
-        return MigrationToOSCrypt::kFailedToDelete;
+        return false;
       }
-      deleted_passwords++;
     } else if (retrieval_status != errSecSuccess) {
       // Stop migration with any other error.
-      LogKeychainError(is_account_store, retrieval_status);
-      return MigrationToOSCrypt::kFailedToDecryptFromKeychain;
+      return false;
     } else {
       // Encrypt password using OSCrypt.
       std::string encrypted_password;
       if (LoginDatabase::EncryptedString(plaintext_password,
                                          &encrypted_password) !=
           LoginDatabase::ENCRYPTION_RESULT_SUCCESS) {
-        return MigrationToOSCrypt::kFailedToEncrypt;
+        return false;
       }
       // Updated password_value in the database.
       if (!UpdatePassword(db, id, encrypted_password)) {
-        return MigrationToOSCrypt::kFailedToUpdate;
+        return false;
       }
-
-      migrated_passwords++;
     }
   }
-  LogMigratedDeletedStats(is_account_store, deleted_passwords,
-                          migrated_passwords);
-  return MigrationToOSCrypt::kSuccess;
+  return true;
 }
 
 #endif
@@ -911,14 +879,6 @@ bool MigrateDatabase(unsigned current_version,
 
 #if BUILDFLAG(IS_IOS)
   if (current_version < 39) {
-    base::TimeTicks migration_start_time = base::TimeTicks::Now();
-    metrics_util::RecordMigrationToOSCryptStatus(migration_start_time,
-                                                 is_account_store.value(),
-                                                 MigrationToOSCrypt::kStarted);
-    base::OnceCallback<void(metrics_util::MigrationToOSCrypt)>
-        record_completion_metrics =
-            base::BindOnce(&metrics_util::RecordMigrationToOSCryptStatus,
-                           migration_start_time, is_account_store.value());
     // Before version 39, password_value was used to store keychain identifier
     // where the actual password is. After this version password_value is
     // encrypted password using OSCrypt. To ensure Credential Provider works as
@@ -927,17 +887,10 @@ bool MigrateDatabase(unsigned current_version,
     sql::Statement copy_keychain_identifier(db->GetUniqueStatement(
         "UPDATE logins SET keychain_identifier = password_value"));
     if (!copy_keychain_identifier.Run()) {
-      std::move(record_completion_metrics)
-          .Run(MigrationToOSCrypt::kFailedToCopyPasswordColumn);
       return false;
     }
 
-    MigrationToOSCrypt status = MigrateToOSCryptTheOldWay(is_account_store, db);
-    std::move(record_completion_metrics).Run(status);
-
-    if (status != MigrationToOSCrypt::kSuccess) {
-      return false;
-    }
+    return MigrateToOSCrypt(is_account_store, db);
   }
 #endif
 

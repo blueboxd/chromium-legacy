@@ -28,7 +28,9 @@ class TokenHolder {
   // Creates a KcerToken of the type `token` and moves it to the IO thread. If
   // `initialize` then the KcerToken will be ready to process requests
   // immediately.
-  explicit TokenHolder(Token token, bool initialize);
+  explicit TokenHolder(Token token,
+                       HighLevelChapsClient* chaps_client,
+                       bool initialize);
   ~TokenHolder();
 
   // If KcerToken was not initialized on construction, this method makes it
@@ -41,6 +43,8 @@ class TokenHolder {
   // Returns a weak pointer to the token that can be used to post requests for
   // it. The pointer should only be dereferenced on the IO thread.
   base::WeakPtr<internal::KcerToken> GetWeakPtr() { return weak_ptr_; }
+
+  uint32_t GetSlotId();
 
  private:
   base::WeakPtr<internal::KcerToken> weak_ptr_;

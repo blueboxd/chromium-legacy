@@ -344,7 +344,7 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
 
 void SkiaOutputSurfaceImplOnGpu::ReleaseAsyncReadResultHelpers() {
   base::AutoLock auto_lock(async_read_result_lock_->lock());
-  for (auto* helper : async_read_result_helpers_) {
+  for (AsyncReadResultHelper* helper : async_read_result_helpers_) {
     helper->reset();
   }
   async_read_result_helpers_.clear();
@@ -908,6 +908,38 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputRGBAInMemory(
   }
 }
 
+namespace {
+bool IsValidInTextureCopyOutputRequest(
+    const copy_output::RenderPassGeometry& geometry,
+    const CopyOutputRequest& request) {
+  if (!request.has_blit_request()) {
+    return true;
+  }
+
+  if (request.result_destination() !=
+      CopyOutputRequest::ResultDestination::kNativeTextures) {
+    DLOG(ERROR) << "BlitRequest must have native texture destination";
+    return false;
+  }
+
+  if (!request.has_result_selection()) {
+    DLOG(ERROR) << "BlitRequest must have result_selection";
+    return false;
+  }
+
+  if (request.result_selection().size() != geometry.result_selection.size()) {
+    // We have a blit request that asks for a different
+    // size than what we have available - the behavior in this case is
+    // currently unspecified as we'd have to leave parts of the caller's
+    // region unpopulated.
+    DLOG(ERROR) << "BlitRequest result_selection must match output";
+    return false;
+  }
+
+  return true;
+}
+}  // namespace
+
 void SkiaOutputSurfaceImplOnGpu::CopyOutputRGBA(
     SkSurface* surface,
     copy_output::RenderPassGeometry geometry,
@@ -925,79 +957,202 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputRGBA(
           is_downscale_or_identity_in_both_dimensions, std::move(request));
       break;
     case CopyOutputRequest::ResultDestination::kNativeTextures: {
-      auto representation = CreateSharedImageRepresentationSkia(
-          SinglePlaneFormat::kRGBA_8888,
-          gfx::Size(geometry.result_selection.width(),
-                    geometry.result_selection.height()),
-          color_space, "CopyOutputInMemory");
-
-      if (!representation) {
-        DLOG(ERROR) << "Failed to create shared image.";
-        return;
-      }
-
-      SkSurfaceProps surface_props;
-      std::vector<GrBackendSemaphore> begin_semaphores;
-      std::vector<GrBackendSemaphore> end_semaphores;
-
-      auto scoped_write = representation->BeginScopedWriteAccess(
-          /*final_msaa_count=*/1, surface_props, &begin_semaphores,
-          &end_semaphores,
-          gpu::SharedImageRepresentation::AllowUnclearedAccess::kYes);
-
-      std::optional<SkVector> scaling;
-      if (request->is_scaled()) {
-        scaling =
-            SkVector::Make(static_cast<SkScalar>(request->scale_to().x()) /
-                               request->scale_from().x(),
-                           static_cast<SkScalar>(request->scale_to().y()) /
-                               request->scale_from().y());
-      }
-
-      scoped_write->surface()->wait(begin_semaphores.size(),
-                                    begin_semaphores.data());
-
-      RenderSurface(surface, src_rect, scaling,
-                    is_downscale_or_identity_in_both_dimensions,
-                    scoped_write->surface());
-
-      bool should_submit_gr_context = !end_semaphores.empty();
-
-      if (!FlushSurface(scoped_write->surface(), end_semaphores,
-                        scoped_write.get())) {
-        // TODO(penghuang): handle vulkan device lost.
-        FailedSkiaFlush("CopyOutputRGBA dest_surface->flush()");
-        return;
-      }
-
-      if (should_submit_gr_context && !gr_context()->submit()) {
-        DLOG(ERROR) << "CopyOutputRGBA gr_context->submit() failed";
-        return;
-      }
-
-      if (graphite_context() && !graphite_context()->submit()) {
-        DLOG(ERROR) << "CopyOutputRGBA graphite_context->submit() failed";
-        return;
-      }
-
-      representation->SetCleared();
-
-      // Grab the mailbox before we transfer `representation`'s ownership:
-      gpu::Mailbox mailbox = representation->mailbox();
-
-      CopyOutputResult::ReleaseCallbacks release_callbacks;
-      release_callbacks.push_back(
-          CreateDestroyCopyOutputResourcesOnGpuThreadCallback(
-              std::move(representation)));
-
-      request->SendResult(std::make_unique<CopyOutputTextureResult>(
-          CopyOutputResult::Format::RGBA, geometry.result_selection,
-          CopyOutputResult::TextureResult(mailbox, gpu::SyncToken(),
-                                          color_space),
-          std::move(release_callbacks)));
+      CopyOutputRGBAInTexture(
+          surface, geometry, color_space, src_rect, rescale_mode,
+          is_downscale_or_identity_in_both_dimensions, std::move(request));
       break;
     }
   }
+}
+
+void SkiaOutputSurfaceImplOnGpu::CopyOutputRGBAInTexture(
+    SkSurface* surface,
+    copy_output::RenderPassGeometry geometry,
+    const gfx::ColorSpace& color_space,
+    const SkIRect& src_rect,
+    SkSurface::RescaleMode rescale_mode,
+    bool is_downscale_or_identity_in_both_dimensions,
+    std::unique_ptr<CopyOutputRequest> request) {
+  // Check if the request is valid.
+  if (!IsValidInTextureCopyOutputRequest(geometry, *request)) {
+    return;
+  }
+
+  std::unique_ptr<gpu::SkiaImageRepresentation> representation;
+  // If has blit request, import texture from request.
+  if (request->has_blit_request()) {
+    const auto& blit_request = request->blit_request();
+    const gpu::Mailbox& mailbox = blit_request.mailbox(0).mailbox;
+
+    // Should never happen, mailboxes are validated when setting blit
+    // request on a CopyOutputResult.
+    DCHECK(!mailbox.IsZero());
+
+    representation = dependency_->GetSharedImageManager()->ProduceSkia(
+        mailbox, context_state_->memory_type_tracker(), context_state_);
+  } else {
+    representation = CreateSharedImageRepresentationSkia(
+        SinglePlaneFormat::kRGBA_8888,
+        gfx::Size(geometry.result_selection.width(),
+                  geometry.result_selection.height()),
+        color_space, "CopyOutputRGBA");
+  }
+
+  if (!representation) {
+    DLOG(ERROR) << "Failed to create shared image.";
+    return;
+  }
+
+  auto allow_unclear_access =
+      gpu::SharedImageRepresentation::AllowUnclearedAccess::kYes;
+  if (request->has_blit_request()) {
+    // Check if the destination will fit in the blit target:
+    const gfx::Rect blit_destination_rect(
+        request->blit_request().destination_region_offset(),
+        geometry.result_selection.size());
+    const gfx::Rect blit_target_image_rect(representation->size());
+    if (!blit_target_image_rect.Contains(blit_destination_rect)) {
+      // Send empty result, the blit target image is not large enough to fit
+      // the results.
+      DLOG(ERROR) << "blit target image is not large enough to fit results";
+      return;
+    }
+
+    if (request->blit_request().letterboxing_behavior() ==
+            LetterboxingBehavior::kDoNotLetterbox &&
+        blit_destination_rect != blit_target_image_rect) {
+      // If the BlitRequest won't clear the entire destination texture then it
+      // must already be cleared to be usable.
+      allow_unclear_access =
+          gpu::SharedImageRepresentation::AllowUnclearedAccess::kNo;
+    }
+  }
+
+  SkSurfaceProps surface_props;
+  std::vector<GrBackendSemaphore> begin_semaphores;
+  std::vector<GrBackendSemaphore> end_semaphores;
+
+  auto scoped_write = representation->BeginScopedWriteAccess(
+      /*final_msaa_count=*/1, surface_props, &begin_semaphores, &end_semaphores,
+      allow_unclear_access);
+  if (!scoped_write) {
+    return;
+  }
+
+  std::optional<SkVector> scaling;
+  if (request->is_scaled()) {
+    scaling = SkVector::Make(static_cast<SkScalar>(request->scale_to().x()) /
+                                 request->scale_from().x(),
+                             static_cast<SkScalar>(request->scale_to().y()) /
+                                 request->scale_from().y());
+  }
+
+  scoped_write->surface()->wait(begin_semaphores.size(),
+                                begin_semaphores.data());
+
+  gfx::Point dest_origin;
+  if (request->has_blit_request()) {
+    dest_origin = request->blit_request().destination_region_offset();
+
+    if (request->blit_request().letterboxing_behavior() ==
+        LetterboxingBehavior::kLetterbox) {
+      scoped_write->surface()->getCanvas()->clear(SK_ColorBLACK);
+    }
+  }
+
+  RenderSurface(surface, src_rect, scaling,
+                is_downscale_or_identity_in_both_dimensions,
+                scoped_write->surface(), dest_origin);
+
+  if (request->has_blit_request()) {
+    BlendBitmapOverlays(scoped_write->surface()->getCanvas(),
+                        request->blit_request());
+  }
+
+  bool should_submit_gr_context = !end_semaphores.empty();
+
+  // If we are not the ones allocating the textures, they may come from a
+  // GMB, in which case we need to delay sending the results until we
+  // receive a callback that the GPU work has completed - otherwise,
+  // memory-mapping the GMB may not yield the latest version of the
+  // contents.
+  const bool should_wait_for_gpu_work =
+      request->has_blit_request() &&
+      request->blit_request().populates_gpu_memory_buffer();
+
+  std::unique_ptr<ReadbackContextRGBA> readback_context;
+
+  if (should_wait_for_gpu_work) {
+    // Treat the fact that we're waiting for GPU work to finish the same way
+    // as a readback request. This would allow us to nudge Skia to fire the
+    // callbacks. See
+    // `SkiaOutputSurfaceImplOnGpu::CheckReadbackCompletion()`.
+    ++num_readbacks_pending_;
+
+    readback_context = std::make_unique<ReadbackContextRGBA>(
+        weak_ptr_, std::move(request), geometry.result_selection,
+        request->blit_request().mailbox(0).mailbox, color_space);
+  }
+
+  bool flush_succeeded = false;
+  if (gr_context()) {
+    flush_succeeded = FlushSurface(
+        scoped_write->surface(), end_semaphores, scoped_write.get(),
+        should_wait_for_gpu_work ? &ReadbackContextRGBA::OnMailboxReady
+                                 : nullptr,
+        readback_context.release());
+  } else {
+    CHECK(graphite_context());
+    skgpu::graphite::GpuFinishedProc graphite_proc =
+        [](void* context, skgpu::CallbackResult result) {
+          NV12SingleMailboxReadyContext::OnMailboxReady(context);
+        };
+    flush_succeeded = FlushSurface(
+        scoped_write->surface(), end_semaphores, scoped_write.get(),
+        /*ganesh_finished_proc=*/nullptr, /*ganesh_finished_context=*/nullptr,
+        should_wait_for_gpu_work ? graphite_proc : nullptr,
+        readback_context.release());
+  }
+
+  if (!flush_succeeded) {
+    // TODO(penghuang): handle vulkan device lost.
+    FailedSkiaFlush("CopyOutputRGBA FlushSurface(scoped_write->surface())");
+    return;
+  }
+
+  if (should_submit_gr_context && !gr_context()->submit()) {
+    DLOG(ERROR) << "CopyOutputRGBA gr_context->submit() failed";
+    return;
+  }
+
+  if (graphite_context() && !graphite_context()->submit()) {
+    DLOG(ERROR) << "CopyOutputRGBA graphite_context->submit() failed";
+    return;
+  }
+
+  representation->SetCleared();
+
+  if (should_wait_for_gpu_work) {
+    // Flow will continue after GPU work is done - see
+    // `ReadbackContextRGBA::OnMailboxReady()` that eventually gets
+    // called.
+    return;
+  }
+
+  // Grab the mailbox before we transfer `representation`'s ownership:
+  gpu::Mailbox mailbox = representation->mailbox();
+
+  CopyOutputResult::ReleaseCallbacks release_callbacks;
+  if (!request->has_blit_request()) {
+    release_callbacks.push_back(
+        CreateDestroyCopyOutputResourcesOnGpuThreadCallback(
+            std::move(representation)));
+  }
+
+  request->SendResult(std::make_unique<CopyOutputTextureResult>(
+      CopyOutputResult::Format::RGBA, geometry.result_selection,
+      CopyOutputResult::TextureResult(mailbox, gpu::SyncToken(), color_space),
+      std::move(release_callbacks)));
 }
 
 void SkiaOutputSurfaceImplOnGpu::RenderSurface(
@@ -1005,9 +1160,13 @@ void SkiaOutputSurfaceImplOnGpu::RenderSurface(
     const SkIRect& source_selection,
     std::optional<SkVector> scaling,
     bool is_downscale_or_identity_in_both_dimensions,
-    SkSurface* dest_surface) {
+    SkSurface* dest_surface,
+    gfx::Point destination_origin) {
   SkCanvas* dest_canvas = dest_surface->getCanvas();
   int state_depth = dest_canvas->save();
+
+  // Apply the destination_origin of blit-request if present
+  dest_canvas->translate(destination_origin.x(), destination_origin.y());
 
   if (scaling.has_value()) {
     dest_canvas->scale(scaling->x(), scaling->y());
@@ -1157,24 +1316,49 @@ bool SkiaOutputSurfaceImplOnGpu::CreateSurfacesForNV12Planes(
 
 bool SkiaOutputSurfaceImplOnGpu::ImportSurfacesForNV12Planes(
     const BlitRequest& blit_request,
+    gfx::Size intermediate_dst_size,
     std::array<MailboxAccessData, CopyOutputResult::kNV12MaxPlanes>&
         mailbox_access_datas,
     bool is_multiplane) {
   size_t num_mailboxes = is_multiplane ? 1 : CopyOutputResult::kNV12MaxPlanes;
+  auto allow_unclear_access =
+      gpu::SharedImageRepresentation::AllowUnclearedAccess::kYes;
   for (size_t i = 0; i < num_mailboxes; ++i) {
-    const gpu::MailboxHolder& mailbox_holder = blit_request.mailbox(i);
+    const gpu::Mailbox& mailbox = blit_request.mailbox(i).mailbox;
 
     // Should never happen, mailboxes are validated when setting blit request on
     // a CopyOutputResult and we only access `kNV12MaxPlanes` mailboxes.
-    DCHECK(!mailbox_holder.mailbox.IsZero());
+    DCHECK(!mailbox.IsZero());
 
     MailboxAccessData& mailbox_access_data = mailbox_access_datas[i];
 
     auto representation = dependency_->GetSharedImageManager()->ProduceSkia(
-        mailbox_holder.mailbox, context_state_->memory_type_tracker(),
-        context_state_);
+        mailbox, context_state_->memory_type_tracker(), context_state_);
     if (!representation) {
       return false;
+    }
+
+    if (i == 0) {
+      // Check if the destination will fit in the blit target:
+      const gfx::Rect blit_destination_rect(
+          blit_request.destination_region_offset(), intermediate_dst_size);
+      const gfx::Rect blit_target_image_rect(representation->size());
+
+      if (!blit_target_image_rect.Contains(blit_destination_rect)) {
+        // Send empty result, the blit target image is not large enough to fit
+        // the results.
+        DLOG(ERROR) << "blit target image is not large enough to fit results";
+        return false;
+      }
+
+      if (blit_request.letterboxing_behavior() ==
+              LetterboxingBehavior::kDoNotLetterbox &&
+          blit_destination_rect != blit_target_image_rect) {
+        // If the BlitRequest won't clear the entire destination texture then it
+        // must already be cleared to be usable.
+        allow_unclear_access =
+            gpu::SharedImageRepresentation::AllowUnclearedAccess::kNo;
+      }
     }
 
     SkSurfaceProps surface_props;
@@ -1183,8 +1367,10 @@ bool SkiaOutputSurfaceImplOnGpu::ImportSurfacesForNV12Planes(
         scoped_write = representation->BeginScopedWriteAccess(
             /*final_msaa_count=*/1, surface_props,
             &mailbox_access_data.begin_semaphores,
-            &mailbox_access_data.end_semaphores,
-            gpu::SharedImageRepresentation::AllowUnclearedAccess::kYes);
+            &mailbox_access_data.end_semaphores, allow_unclear_access);
+    if (!scoped_write) {
+      return false;
+    }
 
     if (gr_context()) {
       if (is_multiplane) {
@@ -1236,14 +1422,10 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
     SkSurface::RescaleMode rescale_mode,
     bool is_downscale_or_identity_in_both_dimensions,
     std::unique_ptr<CopyOutputRequest> request) {
-  DCHECK(!request->has_blit_request() ||
-         request->result_destination() ==
-             CopyOutputRequest::ResultDestination::kNativeTextures)
-      << "Only CopyOutputRequests that hand out native textures support blit "
-         "requests!";
-  DCHECK(!request->has_blit_request() || request->has_result_selection())
-      << "Only CopyOutputRequests that specify result selection support blit "
-         "requests!";
+  // Check if the request is valid.
+  if (!IsValidInTextureCopyOutputRequest(geometry, *request)) {
+    return;
+  }
 
   // Overview:
   // 1. Try to create surfaces for NV12 planes (we know the needed size in
@@ -1282,41 +1464,15 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
 
   bool destination_surfaces_ready = false;
   if (request->has_blit_request()) {
-    if (request->result_selection().size() != intermediate_dst_size) {
-      DLOG(WARNING)
-          << __func__
-          << ": result selection is different than render pass output, "
-             "geometry="
-          << geometry.ToString() << ", request=" << request->ToString();
-      // Send empty result, we have a blit request that asks for a different
-      // size than what we have available - the behavior in this case is
-      // currently unspecified as we'd have to leave parts of the caller's
-      // region unpopulated.
-      return;
-    }
-
     destination_surfaces_ready = ImportSurfacesForNV12Planes(
-        request->blit_request(), mailbox_access_datas, is_multiplane);
+        request->blit_request(), intermediate_dst_size, mailbox_access_datas,
+        is_multiplane);
 
     // The entire destination image size is the same as the size of the luma
     // plane of the image that was just imported:
     yuva_info = SkYUVAInfo(
         mailbox_access_datas[0].size, SkYUVAInfo::PlaneConfig::kY_UV,
         SkYUVAInfo::Subsampling::k420, kRec709_Limited_SkYUVColorSpace);
-
-    // Check if the destination will fit in the blit target:
-    const gfx::Rect blit_destination_rect(
-        request->blit_request().destination_region_offset(),
-        intermediate_dst_size);
-    const gfx::Rect blit_target_image_rect(
-        gfx::SkISizeToSize(mailbox_access_datas[0].size));
-
-    if (!blit_target_image_rect.Contains(blit_destination_rect)) {
-      // Send empty result, the blit target image is not large enough to fit the
-      // results.
-      DVLOG(1) << "blit target image is not large enough to fit results";
-      return;
-    }
   } else {
     yuva_info = SkYUVAInfo(gfx::SizeToSkISize(intermediate_dst_size),
                            SkYUVAInfo::PlaneConfig::kY_UV,
@@ -1369,7 +1525,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
 
   RenderSurface(surface, src_rect, scaling,
                 is_downscale_or_identity_in_both_dimensions,
-                intermediate_surface.get());
+                intermediate_surface.get(), gfx::Point());
 
   if (request->has_blit_request()) {
     BlendBitmapOverlays(intermediate_surface->getCanvas(),
@@ -1850,18 +2006,19 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
 }
 
 void SkiaOutputSurfaceImplOnGpu::ResetStateOfImages() {
-  for (auto* context : image_contexts_to_apply_end_state_) {
+  for (ImageContextImpl* context : image_contexts_to_apply_end_state_) {
     context->ApplyAccessEndState();
   }
   image_contexts_to_apply_end_state_.clear();
 }
 
 void SkiaOutputSurfaceImplOnGpu::EndAccessImages(
-    const base::flat_set<ImageContextImpl*>& image_contexts) {
+    const base::flat_set<raw_ptr<ImageContextImpl, CtnExperimental>>&
+        image_contexts) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::EndAccessImages");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(image_contexts_to_apply_end_state_.empty());
-  for (auto* context : image_contexts) {
+  for (ImageContextImpl* context : image_contexts) {
     context->EndAccessIfNecessary();
   }
 }
@@ -1974,7 +2131,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
         shared_gpu_deps_->memory_tracker(),
         GetDidSwapBuffersCompleteCallback());
   } else {
-    presenter_ = dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr());
+    presenter_ = dependency_->CreatePresenter();
     if (!presenter_) {
       gl::GLSurfaceFormat format;
 #if BUILDFLAG(IS_ANDROID)
@@ -1983,8 +2140,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
         format.SetRGB565();
       }
 #endif
-      gl_surface_ =
-          dependency_->CreateGLSurface(weak_ptr_factory_.GetWeakPtr(), format);
+      gl_surface_ = dependency_->CreateGLSurface(format);
       if (!gl_surface_) {
         return false;
       }
@@ -1995,7 +2151,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
     }
 
 #if BUILDFLAG(IS_MAC)
-      presenter_->SetVSyncDisplayID(renderer_settings_.display_id);
+    presenter_->SetVSyncDisplayID(renderer_settings_.display_id);
 #endif
 
     if (MakeCurrent(/*need_framebuffer=*/true)) {
@@ -2009,7 +2165,9 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
             shared_gpu_deps_->memory_tracker(),
             GetDidSwapBuffersCompleteCallback(), GetReleaseOverlaysCallback());
 #else   // !BUILDFLAG(IS_WIN)
+        AddChildWindowToBrowser(presenter_->GetWindow());
         output_device_ = std::make_unique<SkiaOutputDeviceDComp>(
+            dependency_, shared_image_factory_.get(),
             shared_image_representation_factory_.get(), context_state_.get(),
             presenter_, feature_info_, shared_gpu_deps_->memory_tracker(),
             GetDidSwapBuffersCompleteCallback());
@@ -2079,7 +2237,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
   output_presenter =
       OutputPresenterFuchsia::Create(window_surface_.get(), dependency_);
 #else
-  presenter_ = dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr());
+  presenter_ = dependency_->CreatePresenter();
   if (presenter_) {
     output_presenter = std::make_unique<OutputPresenterGL>(
         presenter_, dependency_, shared_image_factory_.get(),
@@ -2160,9 +2318,10 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
   }
 
 #elif BUILDFLAG(IS_WIN)
-  presenter_ = dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr());
+  presenter_ = dependency_->CreatePresenter();
   if (presenter_) {
     output_device_ = std::make_unique<SkiaOutputDeviceDComp>(
+        dependency_, shared_image_factory_.get(),
         shared_image_representation_factory_.get(), context_state_.get(),
         presenter_, feature_info_, shared_gpu_deps_->memory_tracker(),
         GetDidSwapBuffersCompleteCallback());
@@ -2179,8 +2338,8 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
   }
   return true;
 
-#elif BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_ANDROID)
-  presenter_ = dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr());
+#elif BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
+  presenter_ = dependency_->CreatePresenter();
 
 #if BUILDFLAG(IS_ANDROID)
   if (!presenter_) {
@@ -2194,7 +2353,11 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
   if (features::UseGpuVsync()) {
     presenter_->SetVSyncDisplayID(renderer_settings_.display_id);
   }
-#endif  // BUILDFLAG(IS_MAC)
+#elif BUILDFLAG(IS_CHROMEOS)
+  if (!presenter_) {
+    return false;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   output_device_ = std::make_unique<SkiaOutputDeviceBufferQueue>(
       std::make_unique<OutputPresenterGL>(
@@ -2205,7 +2368,8 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
       GetReleaseOverlaysCallback());
   return true;
 
-#endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_ANDROID)
+#endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_ANDROID) ||
+        // BUILDFLAG(IS_CHROMEOS)
 #endif  // BUILDFLAG(SKIA_USE_DAWN)
   NOTREACHED_NORETURN();
 }
@@ -2221,7 +2385,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForMetal() {
         shared_gpu_deps_->memory_tracker(),
         GetDidSwapBuffersCompleteCallback());
   } else {
-    presenter_ = dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr());
+    presenter_ = dependency_->CreatePresenter();
     CHECK(presenter_);
 
 #if BUILDFLAG(IS_MAC)
@@ -2243,9 +2407,9 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForMetal() {
 }
 
 bool SkiaOutputSurfaceImplOnGpu::MakeCurrent(bool need_framebuffer) {
-// Windows still uses gl_surface for DComp presentation. Once that's switched
-// over to presenter, these DCHECKs will be actual on all platforms and code can
-// be simplified.
+  // Windows still uses gl_surface for DComp presentation. Once that's switched
+  // over to presenter, these DCHECKs will be actual on all platforms and code
+  // can be simplified.
 #if !BUILDFLAG(IS_WIN)
   if (gl_surface_) {
     DCHECK(context_state_->GrContextIsGL());
@@ -2465,11 +2629,6 @@ void SkiaOutputSurfaceImplOnGpu::AddChildWindowToBrowser(
 const gpu::gles2::FeatureInfo* SkiaOutputSurfaceImplOnGpu::GetFeatureInfo()
     const {
   return feature_info_.get();
-}
-
-const gpu::GpuPreferences& SkiaOutputSurfaceImplOnGpu::GetGpuPreferences()
-    const {
-  return gpu_preferences_;
 }
 
 void SkiaOutputSurfaceImplOnGpu::DidSwapBuffersCompleteInternal(

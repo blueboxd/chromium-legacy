@@ -62,14 +62,6 @@
 #error "Unsupported target abi"
 #endif
 
-#if !defined(PAGE_SIZE)
-#define PAGE_SIZE (1 << 12)
-#define PAGE_MASK (~(PAGE_SIZE - 1))
-#endif
-
-#define PAGE_START(x) ((x)&PAGE_MASK)
-#define PAGE_END(x) PAGE_START((x) + (PAGE_SIZE - 1))
-
 // Copied from //base/posix/eintr_wrapper.h to avoid depending on //base.
 #define HANDLE_EINTR(x)                                     \
   ({                                                        \
@@ -101,6 +93,14 @@ class String {
   char* ptr_;
   size_t size_;
 };
+
+inline uintptr_t PageStart(size_t page_size, uintptr_t x) {
+  return x & ~(page_size - 1);
+}
+
+inline uintptr_t PageEnd(size_t page_size, uintptr_t x) {
+  return PageStart(page_size, x + page_size - 1);
+}
 
 // Returns true iff casting a java-side |address| to uintptr_t does not lose
 // bits.

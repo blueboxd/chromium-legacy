@@ -7,7 +7,7 @@ import("//chrome/test/base/ash/js2gtest.gni")
 import("//chrome/test/include_js_tests.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/typescript/ts_library.gni")
+import("//tools/typescript/webui_ts_library.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 
 assert(is_chromeos_ash)
@@ -34,10 +34,8 @@ if (include_js2gtest_tests) {
     # build and are handled by a rule, but in the GN build they're in a
     # separate action so need to be separated out.
     sources = [
-      "../../../../browser/resources/chromeos/login/security_token_pin_browsertest.js",
       "../../../../browser/ui/webui/ash/certificate_manager_dialog_browsertest.js",
       "../cr_components/chromeos/cr_components_chromeos_v3_browsertest.js",
-      "../settings/chromeos/os_settings_browsertest.js",
       "account_manager/account_manager_browsertest.js",
       "arc_account_picker/arc_account_picker_browsertest.js",
       "ash_common/ash_common_browsertest.js",
@@ -103,7 +101,6 @@ if (include_js2gtest_tests) {
       "../nearby_share/shared/nearby_shared_v3_browsertest.js",
       "diagnostics/diagnostics_browsertest.js",
       "manage_mirrorsync/manage_mirrorsync_browsertest.js",
-      "parent_access/parent_access_browsertest.js",
       "print_management/print_management_browsertest.js",
       "shortcut_customization/shortcut_customization_browsertest.js",
     ]
@@ -160,7 +157,7 @@ group("closure_compile") {
   ]
 }
 
-ts_library("build_ts") {
+webui_ts_library("build_ts") {
   root_dir = "."
   out_dir = "$target_gen_dir/tsc"
   composite = true
@@ -233,6 +230,12 @@ ts_library("build_ts") {
     "sys_internals/test_util.js",
   ]
 
+  definitions = [
+    "//chrome/browser/resources/chromeos/arc_account_picker/arc_account_picker_app.d.ts",
+    "//chrome/browser/resources/chromeos/arc_account_picker/arc_account_picker_browser_proxy.d.ts",
+    "//chrome/test/data/webui/chromeos/arc_account_picker/test_util.d.ts",
+  ]
+
   path_mappings = [
     "chrome://chrome-signin/arc_account_picker/*|" +
         rebase_path("//chrome/browser/resources/chromeos/arc_account_picker/*",
@@ -250,11 +253,11 @@ ts_library("build_ts") {
 
   deps = [
     "//ash/webui/common/resources:build_ts",
+    "//ash/webui/common/resources/cr_elements:build_ts",
     "//chrome/browser/resources/chromeos/internet_config_dialog:build_ts",
     "//chrome/browser/resources/chromeos/internet_detail_dialog:build_ts",
     "//chrome/test/data/webui:build_ts",
     "//third_party/polymer/v3_0:library",
-    "//ash/webui/common/resources/cr_elements:build_ts",
     "//ui/webui/resources/js:build_ts",
     "//ui/webui/resources/mojo:build_ts",
   ]

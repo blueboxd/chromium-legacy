@@ -97,20 +97,6 @@ export class SettingsSecurityPageElement extends
       },
 
       /**
-       * Whether we should adjust Manage Certificates links to indicate
-       * support for Chrome Root Store.
-       */
-      // TODO(crbug.com/1412591): remove when CRS enterprise policy is removed
-      // for ChromeOS and Linux
-      showChromeRootStoreCertificates_: {
-        type: Boolean,
-        readOnly: true,
-        value: function() {
-          return loadTimeData.getBoolean('showChromeRootStoreCertificates');
-        },
-      },
-
-      /**
        * Whether the secure DNS setting should be displayed.
        */
       showSecureDnsSetting_: {
@@ -229,7 +215,6 @@ export class SettingsSecurityPageElement extends
       },
     };
   }
-  private showChromeRootStoreCertificates_: boolean;
   private showSecureDnsSetting_: boolean;
 
   // <if expr="is_chromeos">
@@ -271,6 +256,15 @@ export class SettingsSecurityPageElement extends
       this.focusConfig.set(routes.SECURITY_KEYS.path, () => {
         const toFocus = this.shadowRoot!.querySelector<HTMLElement>(
             '#security-keys-subpage-trigger');
+        assert(toFocus);
+        focusWithoutInk(toFocus);
+      });
+    }
+
+    if (routes.SITE_SETTINGS_JAVASCRIPT_JIT) {
+      this.focusConfig.set(routes.SITE_SETTINGS_JAVASCRIPT_JIT.path, () => {
+        const toFocus =
+            this.shadowRoot!.querySelector<HTMLElement>('#v8-setting-link');
         assert(toFocus);
         focusWithoutInk(toFocus);
       });
@@ -403,7 +397,7 @@ export class SettingsSecurityPageElement extends
    */
   private onSafeBrowsingRadioChange_() {
     const selected =
-        Number.parseInt(this.$.safeBrowsingRadioGroup.selected, 10);
+        Number.parseInt(this.$.safeBrowsingRadioGroup.selected || '', 10);
     const prefValue = this.getPref('generated.safe_browsing').value;
     if (prefValue !== selected) {
       this.recordInteractionHistogramOnRadioChange_(selected);

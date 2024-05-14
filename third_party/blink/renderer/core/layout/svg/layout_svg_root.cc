@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -499,6 +500,11 @@ bool LayoutSVGRoot::IsInSelfHitTestingPhase(HitTestPhase phase) const {
   // phase. (Hit-testing during the foreground phase would make us miss for
   // instance backgrounds of children inside <foreignObject>.)
   return phase == HitTestPhase::kSelfBlockBackground;
+}
+
+void LayoutSVGRoot::IntersectChildren(HitTestResult& result,
+                                      const HitTestLocation& location) const {
+  content_.HitTest(result, location, HitTestPhase::kForeground);
 }
 
 void LayoutSVGRoot::AddSvgTextDescendant(LayoutSVGText& svg_text) {

@@ -37,11 +37,8 @@ class SyncPrefObserver {
       bool is_initial_sync_feature_setup_complete) = 0;
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
   // Called when any of the prefs related to the user's selected data types has
-  // changed. `payments_integration_enabled_changed` indicates whether the
-  // setting for "Payments" *may* have changed, but this may contain false
-  // positives!
-  virtual void OnSelectedTypesPrefChange(
-      bool payments_integration_enabled_changed) = 0;
+  // changed.
+  virtual void OnSelectedTypesPrefChange() = 0;
 
  protected:
   virtual ~SyncPrefObserver();
@@ -274,6 +271,12 @@ class SyncPrefs {
   // temporary state from the above migration.
   void MarkPartialSyncToSigninMigrationFullyDone();
 
+  // Setting to false causes GetSelectedTypesForSyncingUser() and
+  // GetSelectedTypesForAccount() to not include passwords, no matter the
+  // underlying user settings.
+  // TODO(crbug.com/328190573): Remove this when local UPM migration is gone.
+  void SetPasswordSyncAllowed(bool allowed);
+
   static void MigrateAutofillWalletImportEnabledPref(PrefService* pref_service);
 
   // Copies the global versions of the selected-types prefs (used for syncing
@@ -319,6 +322,8 @@ class SyncPrefs {
   PrefChangeRegistrar pref_change_registrar_;
 
   bool batch_updating_selected_types_ = false;
+
+  bool password_sync_allowed_ = true;
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   BooleanPrefMember pref_initial_sync_feature_setup_complete_;

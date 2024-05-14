@@ -36,6 +36,14 @@ class MockPlatformKeysService : public PlatformKeysService {
               (override));
 
   MOCK_METHOD(void,
+              GenerateSymKey,
+              (chromeos::platform_keys::TokenId token_id,
+               std::vector<uint8_t> key_id,
+               int key_size,
+               GenerateKeyCallback callback),
+              (override));
+
+  MOCK_METHOD(void,
               GenerateRSAKey,
               (chromeos::platform_keys::TokenId token_id,
                unsigned int modulus_length_bits,
@@ -46,8 +54,28 @@ class MockPlatformKeysService : public PlatformKeysService {
   MOCK_METHOD(void,
               GenerateECKey,
               (chromeos::platform_keys::TokenId token_id,
-               const std::string& named_curve,
+               std::string named_curve,
                GenerateKeyCallback callback),
+              (override));
+
+  MOCK_METHOD(void,
+              DecryptAES,
+              (chromeos::platform_keys::TokenId token_id,
+               std::vector<uint8_t> key_id,
+               std::vector<uint8_t> encrypted_data,
+               std::string decrypt_algorithm,
+               std::vector<uint8_t> init_vector,
+               EncryptDecryptCallback callback),
+              (override));
+
+  MOCK_METHOD(void,
+              EncryptAES,
+              (chromeos::platform_keys::TokenId token_id,
+               std::vector<uint8_t> key_id,
+               std::vector<uint8_t> data,
+               std::string encrypt_algorithm,
+               std::vector<uint8_t> init_vector,
+               EncryptDecryptCallback callback),
               (override));
 
   MOCK_METHOD(void,
@@ -112,6 +140,13 @@ class MockPlatformKeysService : public PlatformKeysService {
               RemoveKey,
               (chromeos::platform_keys::TokenId token_id,
                std::vector<uint8_t> public_key_spki_der,
+               RemoveKeyCallback callback),
+              (override));
+
+  MOCK_METHOD(void,
+              RemoveSymKey,
+              (chromeos::platform_keys::TokenId token_id,
+               std::vector<uint8_t> key_id,
                RemoveKeyCallback callback),
               (override));
 

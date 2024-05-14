@@ -27,8 +27,12 @@ class TestSettingsWindowManager : public chrome::SettingsWindowManager {
  public:
   void ShowChromePageForProfile(Profile* profile,
                                 const GURL& gurl,
-                                int64_t display_id) override {
+                                int64_t display_id,
+                                apps::LaunchCallback callback) override {
     last_url_ = gurl;
+    if (callback) {
+      std::move(callback).Run(apps::LaunchResult(apps::State::kSuccess));
+    }
   }
 
   const GURL& last_url() { return last_url_; }
@@ -81,7 +85,9 @@ TEST_F(SystemTrayClientImplTest, ShowTouchpadSettings) {
 
 TEST_F(SystemTrayClientImplTest, ShowMouseSettings) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(ash::features::kPeripheralCustomization);
+  feature_list.InitWithFeatures({ash::features::kInputDeviceSettingsSplit,
+                                 ash::features::kPeripheralCustomization},
+                                {});
   base::UserActionTester user_action_tester;
   client_impl_->ShowMouseSettings();
   EXPECT_EQ(settings_window_manager_->last_url(),
@@ -92,7 +98,9 @@ TEST_F(SystemTrayClientImplTest, ShowMouseSettings) {
 
 TEST_F(SystemTrayClientImplTest, ShowGraphicsTabletSettings) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(ash::features::kPeripheralCustomization);
+  feature_list.InitWithFeatures({ash::features::kInputDeviceSettingsSplit,
+                                 ash::features::kPeripheralCustomization},
+                                {});
   base::UserActionTester user_action_tester;
   client_impl_->ShowGraphicsTabletSettings();
   EXPECT_EQ(settings_window_manager_->last_url(),

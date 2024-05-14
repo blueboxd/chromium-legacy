@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/content_decryption_module_result.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -29,18 +30,20 @@
 namespace blink {
 
 // This class allows MediaKeys to be set asynchronously.
-class SetMediaKeysHandler : public ScriptPromiseResolver {
+class SetMediaKeysHandler : public GarbageCollected<SetMediaKeysHandler> {
  public:
-  static ScriptPromise Create(ScriptState*, HTMLMediaElement&, MediaKeys*);
+  static ScriptPromiseTyped<IDLUndefined> Create(ScriptState*,
+                                                 HTMLMediaElement&,
+                                                 MediaKeys*);
 
   SetMediaKeysHandler(ScriptState*, HTMLMediaElement&, MediaKeys*);
 
   SetMediaKeysHandler(const SetMediaKeysHandler&) = delete;
   SetMediaKeysHandler& operator=(const SetMediaKeysHandler&) = delete;
 
-  ~SetMediaKeysHandler() override;
+  ~SetMediaKeysHandler();
 
-  void Trace(Visitor*) const override;
+  void Trace(Visitor*) const;
 
  private:
   void TimerFired(TimerBase*);
@@ -54,10 +57,14 @@ class SetMediaKeysHandler : public ScriptPromiseResolver {
   void ClearFailed(ExceptionCode, const String& error_message);
   void SetFailed(ExceptionCode, const String& error_message);
 
+  Member<ScriptPromiseResolverTyped<IDLUndefined>> resolver_;
   // Keep media element alive until promise is fulfilled
   Member<HTMLMediaElement> element_;
   Member<MediaKeys> new_media_keys_;
   bool made_reservation_;
+  // Timer uses weak reference, so keep ourselves alive explicitly
+  // while timer is pending.
+  SelfKeepAlive<SetMediaKeysHandler> keep_alive_;
   HeapTaskRunnerTimer<SetMediaKeysHandler> timer_;
 };
 
@@ -131,22 +138,24 @@ class SetContentDecryptionModuleResult final
   FailureCallback failure_callback_;
 };
 
-ScriptPromise SetMediaKeysHandler::Create(ScriptState* script_state,
-                                          HTMLMediaElement& element,
-                                          MediaKeys* media_keys) {
+ScriptPromiseTyped<IDLUndefined> SetMediaKeysHandler::Create(
+    ScriptState* script_state,
+    HTMLMediaElement& element,
+    MediaKeys* media_keys) {
   SetMediaKeysHandler* handler = MakeGarbageCollected<SetMediaKeysHandler>(
       script_state, element, media_keys);
-  handler->KeepAliveWhilePending();
-  return handler->Promise();
+  return handler->resolver_->Promise();
 }
 
 SetMediaKeysHandler::SetMediaKeysHandler(ScriptState* script_state,
                                          HTMLMediaElement& element,
                                          MediaKeys* media_keys)
-    : ScriptPromiseResolver(script_state),
+    : resolver_(MakeGarbageCollected<ScriptPromiseResolverTyped<IDLUndefined>>(
+          script_state)),
       element_(element),
       new_media_keys_(media_keys),
       made_reservation_(false),
+      keep_alive_(this),
       timer_(ExecutionContext::From(script_state)
                  ->GetTaskRunner(TaskType::kMiscPlatformAPI),
              this,
@@ -160,6 +169,7 @@ SetMediaKeysHandler::SetMediaKeysHandler(ScriptState* script_state,
 SetMediaKeysHandler::~SetMediaKeysHandler() = default;
 
 void SetMediaKeysHandler::TimerFired(TimerBase*) {
+  keep_alive_.Clear();
   ClearExistingMediaKeys();
 }
 
@@ -265,7 +275,7 @@ void SetMediaKeysHandler::Finish() {
   this_element.is_attaching_media_keys_ = false;
 
   // 5.6 Resolve promise with undefined.
-  Resolve();
+  resolver_->Resolve();
 }
 
 void SetMediaKeysHandler::Fail(ExceptionCode code,
@@ -279,12 +289,12 @@ void SetMediaKeysHandler::Fail(ExceptionCode code,
               .is_attaching_media_keys_);
 
   // Reject promise with an appropriate error.
-  ScriptState::Scope scope(GetScriptState());
-  ExceptionState exception_state(GetScriptState()->GetIsolate(),
+  ScriptState::Scope scope(resolver_->GetScriptState());
+  ExceptionState exception_state(resolver_->GetScriptState()->GetIsolate(),
                                  ExceptionContextType::kOperationInvoke,
                                  "HTMLMediaElement", "setMediaKeys");
   exception_state.ThrowException(code, error_message);
-  Reject(exception_state);
+  resolver_->Reject(exception_state);
 }
 
 void SetMediaKeysHandler::ClearFailed(ExceptionCode code,
@@ -322,10 +332,10 @@ void SetMediaKeysHandler::SetFailed(ExceptionCode code,
 }
 
 void SetMediaKeysHandler::Trace(Visitor* visitor) const {
+  visitor->Trace(resolver_);
   visitor->Trace(element_);
   visitor->Trace(new_media_keys_);
   visitor->Trace(timer_);
-  ScriptPromiseResolver::Trace(visitor);
 }
 
 // static
@@ -361,7 +371,7 @@ MediaKeys* HTMLMediaElementEncryptedMedia::mediaKeys(
   return this_element.media_keys_.Get();
 }
 
-ScriptPromise HTMLMediaElementEncryptedMedia::setMediaKeys(
+ScriptPromiseTyped<IDLUndefined> HTMLMediaElementEncryptedMedia::setMediaKeys(
     ScriptState* script_state,
     HTMLMediaElement& element,
     MediaKeys* media_keys,
@@ -379,13 +389,13 @@ ScriptPromise HTMLMediaElementEncryptedMedia::setMediaKeys(
   if (this_element.is_attaching_media_keys_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Another request is in progress.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   // 2. If mediaKeys and the mediaKeys attribute are the same object,
   //    return a resolved promise.
   if (this_element.media_keys_ == media_keys)
-    return ScriptPromise::CastUndefined(script_state);
+    return ToResolvedUndefinedPromise(script_state);
 
   // 3. Let this object's attaching media keys value be true.
   this_element.is_attaching_media_keys_ = true;

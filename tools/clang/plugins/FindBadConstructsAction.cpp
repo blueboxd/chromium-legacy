@@ -6,6 +6,7 @@
 
 #include "clang/AST/ASTConsumer.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"
+#include "llvm/Support/TimeProfiler.h"
 
 #include "FindBadConstructsConsumer.h"
 
@@ -50,6 +51,8 @@ class PluginConsumer : public ASTConsumer {
       : visitor_(*instance, options) {}
 
   void HandleTranslationUnit(clang::ASTContext& context) override {
+    llvm::TimeTraceScope TimeScope(
+        "HandleTranslationUnit for find-bad-constructs plugin");
     visitor_.Traverse(context);
   }
 
@@ -83,12 +86,8 @@ bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
     } else if (arg.starts_with(kBadRawPtrCastExcludePathArgPrefix)) {
       options_.check_bad_raw_ptr_cast_exclude_paths.push_back(
           arg.substr(strlen(kBadRawPtrCastExcludePathArgPrefix)).str());
-    } else if (arg == "check-allow-auto-typedefs-better") {
-      // TODO(danakj): Remove once enabled in Chromium.
-      options_.allow_auto_typedefs_better = true;
     } else if (arg == "check-allow-auto-typedefs-better-nested") {
-      // TODO(danakj): Remove once enabled in Chromium.
-      options_.allow_auto_typedefs_better_nested = true;
+      // This flag to be removed once clang rolls.
     } else if (arg == "check-base-classes") {
       // TODO(rsleevi): Remove this once http://crbug.com/123295 is fixed.
       options_.check_base_classes = true;

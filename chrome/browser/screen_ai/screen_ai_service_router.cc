@@ -8,8 +8,6 @@
 
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
-#include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -17,12 +15,14 @@
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/screen_ai/screen_ai_install_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_process_host.h"
 #include "content/public/browser/service_process_host_passkeys.h"
 #include "mojo/public/mojom/base/file_path.mojom.h"
+#include "services/screen_ai/public/cpp/utilities.h"
 #include "ui/accessibility/accessibility_features.h"
 
 #if BUILDFLAG(IS_WIN)
@@ -108,6 +108,12 @@ std::unique_ptr<ComponentFiles> ComponentFiles::Load(
       files_list_file_name);
 }
 
+// TODO(https://crbug.com/41489907): Remove after the issue is fixed.
+void RecordComponentAvailablity(bool available) {
+  base::UmaHistogramBoolean("Accessibility.ScreenAI.Component.Available",
+                            available);
+}
+
 }  // namespace
 
 namespace screen_ai {
@@ -144,6 +150,7 @@ void ScreenAIServiceRouter::GetServiceStateAsync(
   if (service_state) {
     // Either service is already initialized or disabled.
     std::move(callback).Run(*service_state);
+    RecordComponentAvailablity(true);
     return;
   }
 
@@ -188,6 +195,7 @@ void ScreenAIServiceRouter::StateChanged(ScreenAIInstallState::State state) {
       for (Service service : all_services) {
         CallPendingStatusRequests(service, false);
       }
+      RecordComponentAvailablity(false);
       break;
     }
 
@@ -196,6 +204,7 @@ void ScreenAIServiceRouter::StateChanged(ScreenAIInstallState::State state) {
       for (Service service : all_services) {
         InitializeServiceIfNeeded(service);
       }
+      RecordComponentAvailablity(true);
       break;
     }
   }
@@ -257,10 +266,9 @@ void ScreenAIServiceRouter::LaunchIfNotRunning() {
     return;
   }
 
-  // TODO(crbug.com/1520814): Remove after crash root cause is fixed.
+  // TODO(crbug.com/41493789): Remove when Reading Mode does not enable OCR
+  // without checking component availability.
   if (install_state != screen_ai::ScreenAIInstallState::State::kDownloaded) {
-    base::debug::Alias(&install_state);
-    base::debug::DumpWithoutCrashing();
     return;
   }
 
@@ -270,9 +278,13 @@ void ScreenAIServiceRouter::LaunchIfNotRunning() {
       << "ScreenAI service launch triggered when component is not "
          "available.";
 
+  base::FilePath binary_path = state_instance->get_component_binary_path();
 #if BUILDFLAG(IS_WIN)
-  base::FilePath library_path = state_instance->get_component_binary_path();
-  std::vector<base::FilePath> preload_libraries = {library_path};
+  std::vector<base::FilePath> preload_libraries = {binary_path};
+#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  std::vector<std::string> extra_switches = {
+      base::StringPrintf("--%s=%s", screen_ai::GetBinaryPathSwitch(),
+                         binary_path.MaybeAsASCII().c_str())};
 #endif  // BUILDFLAG(IS_WIN)
 
   content::ServiceProcessHost::Launch(
@@ -283,6 +295,8 @@ void ScreenAIServiceRouter::LaunchIfNotRunning() {
           .WithPreloadedLibraries(
               preload_libraries,
               content::ServiceProcessHostPreloadLibraries::GetPassKey())
+#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+          .WithExtraCommandLineSwitches(extra_switches)
 #endif  // BUILDFLAG(IS_WIN)
           .Pass());
 }

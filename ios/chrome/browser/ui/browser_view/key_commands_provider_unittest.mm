@@ -7,12 +7,13 @@
 #import "base/memory/raw_ptr.h"
 #import "base/test/metrics/user_action_tester.h"
 #import "base/test/task_environment.h"
-#import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/browser/bookmark_node.h"
 #import "components/bookmarks/common/bookmark_metrics.h"
-#import "components/bookmarks/test/bookmark_test_helpers.h"
 #import "components/policy/core/common/policy_pref_names.h"
 #import "components/sync_preferences/testing_pref_service_syncable.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
+#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model_test_helpers.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/find_in_page/model/find_tab_helper.h"
 #import "ios/chrome/browser/find_in_page/model/java_script_find_tab_helper.h"
@@ -64,6 +65,8 @@ class KeyCommandsProviderTest : public PlatformTest {
     TestChromeBrowserState::Builder builder;
     builder.AddTestingFactory(IOSChromeTabRestoreServiceFactory::GetInstance(),
                               FakeTabRestoreService::GetTestingFactory());
+    builder.AddTestingFactory(ios::BookmarkModelFactory::GetInstance(),
+                              ios::BookmarkModelFactory::GetDefaultFactory());
     builder.AddTestingFactory(
         ios::LocalOrSyncableBookmarkModelFactory::GetInstance(),
         ios::LocalOrSyncableBookmarkModelFactory::GetDefaultFactory());
@@ -76,7 +79,7 @@ class KeyCommandsProviderTest : public PlatformTest {
     bookmark_model_ =
         ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
             browser_state_.get());
-    bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_);
+    WaitForLegacyBookmarkModelToLoad(bookmark_model_);
     provider_ = [[KeyCommandsProvider alloc] initWithBrowser:browser_.get()];
   }
   ~KeyCommandsProviderTest() override {}
@@ -161,7 +164,7 @@ class KeyCommandsProviderTest : public PlatformTest {
   std::unique_ptr<TestBrowser> browser_;
   raw_ptr<WebStateList> web_state_list_;
   base::UserActionTester user_action_tester_;
-  raw_ptr<bookmarks::BookmarkModel> bookmark_model_;
+  raw_ptr<LegacyBookmarkModel> bookmark_model_;
   KeyCommandsProvider* provider_;
 };
 

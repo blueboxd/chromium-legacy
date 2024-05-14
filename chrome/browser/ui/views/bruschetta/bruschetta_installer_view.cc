@@ -89,7 +89,7 @@ class BruschettaInstallerView::TitleLabel : public views::Label {
   }
 };
 
-BEGIN_METADATA(BruschettaInstallerView, TitleLabel, views::Label)
+BEGIN_METADATA(BruschettaInstallerView, TitleLabel)
 END_METADATA
 
 BruschettaInstallerView::BruschettaInstallerView(Profile* profile,
@@ -211,6 +211,11 @@ BruschettaInstallerView::~BruschettaInstallerView() {
     installer_->Cancel();
   }
   observation_.Reset();
+  ash::DarkLightModeController* dark_light_controller =
+      ash::DarkLightModeController::Get();
+  if (dark_light_controller) {
+    dark_light_controller->RemoveObserver(this);
+  }
   g_bruschetta_installer_view = nullptr;
 }
 
@@ -423,7 +428,7 @@ void BruschettaInstallerView::OnStateUpdated() {
   const bool progress_bar_visible =
       (state_ == State::kInstalling || state_ == State::kCleaningUp);
   progress_bar_->SetVisible(progress_bar_visible);
-  secondary_message_label_->GetViewAccessibility().OverrideIsIgnored(
+  secondary_message_label_->GetViewAccessibility().SetIsIgnored(
       progress_bar_visible);
   if (progress_bar_visible) {
     progress_bar_->SetAccessibleDescription(secondary_message_label_);

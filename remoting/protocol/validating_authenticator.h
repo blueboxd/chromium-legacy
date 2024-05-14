@@ -45,6 +45,8 @@ class ValidatingAuthenticator : public Authenticator {
   ~ValidatingAuthenticator() override;
 
   // Authenticator interface.
+  CredentialsType credentials_type() const override;
+  const Authenticator& implementing_authenticator() const override;
   State state() const override;
   bool started() const override;
   RejectionReason rejection_reason() const override;
@@ -63,6 +65,8 @@ class ValidatingAuthenticator : public Authenticator {
   // Updates |state_| to reflect the current underlying authenticator state.
   // |resume_callback| is called after the state is updated.
   void UpdateState(base::OnceClosure resume_callback);
+
+  void NotifyStateChangeAfterAccepted() override;
 
   // The JID of the remote user.
   std::string remote_jid_;

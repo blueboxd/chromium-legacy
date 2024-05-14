@@ -12,6 +12,11 @@ build_webui("build_ts") {
   grd_prefix = "ash_common_sea_pen"
 
   static_files = [
+    "transition.css",
+
+    "sea_pen_images/sea_pen_surreal.jpg",
+    "sea_pen_images/sea_pen_glowscapes.jpg",
+    "sea_pen_images/sea_pen_letters.jpg",
     "sea_pen_images/sea_pen_art.jpg",
     "sea_pen_images/sea_pen_characters.jpg",
     "sea_pen_images/sea_pen_curious.jpg",
@@ -31,13 +36,16 @@ build_webui("build_ts") {
 
   web_component_files = [
     "sea_pen_feedback_element.ts",
+    "sea_pen_image_loading_element.ts",
     "sea_pen_images_element.ts",
     "sea_pen_input_query_element.ts",
+    "sea_pen_options_element.ts",
     "sea_pen_recent_wallpapers_element.ts",
     "sea_pen_router_element.ts",
     "sea_pen_template_query_element.ts",
     "sea_pen_templates_element.ts",
     "sea_pen_terms_of_service_dialog_element.ts",
+    "sea_pen_zero_state_svg_element.ts",
     "surface_effects/sparkle_placeholder.ts",
   ]
 
@@ -52,6 +60,7 @@ build_webui("build_ts") {
     "sea_pen_state.ts",
     "sea_pen_store.ts",
     "sea_pen_utils.ts",
+    "transition.ts",
     "surface_effects/sparkle_shader.ts",
     "surface_effects/sparkle.ts",
     "surface_effects/utils.ts",
@@ -78,6 +87,7 @@ build_webui("build_ts") {
   ]
   ts_extra_deps = [ "//ash/webui/common/resources:generate_definitions" ]
   ts_out_dir = "$root_gen_dir/ash/webui/common/resources/preprocessed/sea_pen"
+  ts_tsconfig_base = "tsconfig_base.json"
 
   generate_grdp = true
   grd_resource_path_prefix = "ash/common/sea_pen"

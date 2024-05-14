@@ -57,13 +57,29 @@ class EmojiBubbleDialogView : public WebUIBubbleDialogView {
 BEGIN_METADATA(EmojiBubbleDialogView)
 END_METADATA
 
+emoji_picker::mojom::Category ConvertCategoryEnum(
+    ui::EmojiPickerCategory category) {
+  switch (category) {
+    default:
+    case ui::EmojiPickerCategory::kEmojis:
+      return emoji_picker::mojom::Category::kEmojis;
+    case ui::EmojiPickerCategory::kSymbols:
+      return emoji_picker::mojom::Category::kSymbols;
+    case ui::EmojiPickerCategory::kEmoticons:
+      return emoji_picker::mojom::Category::kEmoticons;
+    case ui::EmojiPickerCategory::kGifs:
+      return emoji_picker::mojom::Category::kGifs;
+  }
+}
+
 }  // namespace
 
 namespace ash {
 
 EmojiUI::EmojiUI(content::WebUI* web_ui)
     : ui::MojoBubbleWebUIController(web_ui,
-                                    true /* Needed for webui browser tests */) {
+                                    true /* Needed for webui browser tests */),
+      initial_category_(emoji_picker::mojom::Category::kEmojis) {
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
       web_ui->GetWebContents()->GetBrowserContext(),
       chrome::kChromeUIEmojiPickerHost);
@@ -100,7 +116,7 @@ bool EmojiUI::ShouldShow(const ui::TextInputClient* input_client) {
   return input_client != nullptr;
 }
 
-void EmojiUI::Show() {
+void EmojiUI::Show(ui::EmojiPickerCategory category) {
   if (display::Screen::GetScreen()->InTabletMode()) {
     ui::ShowTabletModeEmojiPanel();
     return;
@@ -160,6 +176,8 @@ void EmojiUI::Show() {
   contents_wrapper->GetWebUIController()->incognito_mode_ = incognito_mode;
   contents_wrapper->GetWebUIController()->no_text_field_ =
       input_client == nullptr;
+  contents_wrapper->GetWebUIController()->initial_category_ =
+      ConvertCategoryEnum(category);
 
   auto bubble_view =
       std::make_unique<EmojiBubbleDialogView>(std::move(contents_wrapper));
@@ -211,7 +229,8 @@ void EmojiUI::BindInterface(
 void EmojiUI::CreatePageHandler(
     mojo::PendingReceiver<emoji_picker::mojom::PageHandler> receiver) {
   page_handler_ = std::make_unique<EmojiPageHandler>(
-      std::move(receiver), web_ui(), this, incognito_mode_, no_text_field_);
+      std::move(receiver), web_ui(), this, incognito_mode_, no_text_field_,
+      initial_category_);
 }
 
 }  // namespace ash

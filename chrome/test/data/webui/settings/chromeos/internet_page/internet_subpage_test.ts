@@ -97,10 +97,13 @@ suite('<settings-internet-subpage>', () => {
         mojoApi.getDeviceStateForTest(NetworkType.kCellular) || undefined;
   }
 
-  async function initSubpage(): Promise<void> {
+  function createSubpage(): void {
     internetSubpage = document.createElement('settings-internet-subpage');
     mojoApi.resetForTest();
     eSimManagerRemote.addEuiccForTest(0);
+  }
+
+  async function initSubpage(): Promise<void> {
     document.body.appendChild(internetSubpage);
     internetSubpage.init();
     await flushTasks();
@@ -114,6 +117,7 @@ suite('<settings-internet-subpage>', () => {
 
   suite('SubPage', () => {
     test('WiFi', async () => {
+      createSubpage();
       await initSubpage();
       setNetworksForTest(NetworkType.kWiFi, [
         OncMojo.getDefaultNetworkState(NetworkType.kWiFi, 'wifi1'),
@@ -134,6 +138,7 @@ suite('<settings-internet-subpage>', () => {
     });
 
     test('Deep link to WiFi on/off toggle', async () => {
+      createSubpage();
       await initSubpage();
       setNetworksForTest(NetworkType.kWiFi, [
         OncMojo.getDefaultNetworkState(NetworkType.kWiFi, 'wifi1'),
@@ -162,6 +167,7 @@ suite('<settings-internet-subpage>', () => {
           `Tether with instant hotspot rebrand flag: ${
               isInstantHotspotRebrandEnabled}`,
           async () => {
+            createSubpage();
             await initSubpage();
             setNetworksForTest(NetworkType.kTether, [
               OncMojo.getDefaultNetworkState(NetworkType.kTether, 'tether1'),
@@ -188,6 +194,7 @@ suite('<settings-internet-subpage>', () => {
     });
 
     test('Deep link to tether on/off toggle w/o cellular', async () => {
+      createSubpage();
       await initSubpage();
       setNetworksForTest(NetworkType.kTether, [
         OncMojo.getDefaultNetworkState(NetworkType.kTether, 'tether1'),
@@ -215,6 +222,7 @@ suite('<settings-internet-subpage>', () => {
     });
 
     test('Deep link to add cellular button', async () => {
+      createSubpage();
       await initSubpage();
       addCellularNetworks();
       await flushTasks();
@@ -276,6 +284,7 @@ suite('<settings-internet-subpage>', () => {
             loadTimeData.overrideValues({
               'isInstantHotspotRebrandEnabled': isInstantHotspotRebrandEnabled,
             });
+            createSubpage();
             await initSubpage();
             addCellularNetworks();
             await flushTasks();
@@ -310,6 +319,7 @@ suite('<settings-internet-subpage>', () => {
       // |oldRoute| in currentRouteChanged() could become undefined if a page
       // is refreshed. This test makes sure if |oldRoute| is undefined no js
       // console error is thrown.
+      createSubpage();
       await initSubpage();
       addCellularNetworks();
       await flushTasks();
@@ -323,6 +333,7 @@ suite('<settings-internet-subpage>', () => {
 
     // Regression test for https://crbug.com/1197342.
     test('pSIM section shows when cellularNetworks present', async () => {
+      createSubpage();
       await initSubpage();
 
       const networks = [
@@ -352,6 +363,7 @@ suite('<settings-internet-subpage>', () => {
 
     // Regression test for https://crbug.com/1182406.
     test('Cellular subpage with no networks', async () => {
+      createSubpage();
       await initSubpage();
       addCellularNetworks([] /* networkList */);
       await flushTasks();
@@ -500,6 +512,7 @@ suite('<settings-internet-subpage>', () => {
       }
 
       test('should update network state list properly', async () => {
+        createSubpage();
         await initSubpage();
         initVpn();
         await flushTasks();
@@ -518,9 +531,32 @@ suite('<settings-internet-subpage>', () => {
         assertEquals(1, allNetworkLists[3]!.networks.length);
       });
 
+      test('Add built-in VPN button disabled when prohibited', async () => {
+        createSubpage();
+        await initSubpage();
+        initVpn();
+
+        internetSubpage.isAddingBuiltInVpnProhibited = true;
+        await flushTasks();
+
+        const addBuiltInVpnButton =
+            internetSubpage.shadowRoot!.querySelector<HTMLButtonElement>(
+                '#addBuiltInVpnButton');
+
+        assertTrue(!!addBuiltInVpnButton);
+        assertTrue(addBuiltInVpnButton.disabled);
+
+        internetSubpage.isAddingBuiltInVpnProhibited = false;
+        await flushTasks();
+
+        assertTrue(!!addBuiltInVpnButton);
+        assertFalse(addBuiltInVpnButton.disabled);
+      });
+
       test(
           'should not show built-in VPN list when device is disabled',
           async () => {
+            createSubpage();
             await initSubpage();
             initVpn();
             internetSubpage.deviceState = createDeviceStateProps(
@@ -546,6 +582,7 @@ suite('<settings-internet-subpage>', () => {
           mode: AlwaysOnVpnMode.kOff,
           serviceGuid: '',
         });
+        createSubpage();
         await initSubpage();
         initVpn();
         await flushTasks();
@@ -563,6 +600,7 @@ suite('<settings-internet-subpage>', () => {
           mode: AlwaysOnVpnMode.kBestEffort,
           serviceGuid: 'vpn1_guid',
         });
+        createSubpage();
         await initSubpage();
         initVpn();
         await flushTasks();
@@ -580,6 +618,7 @@ suite('<settings-internet-subpage>', () => {
           mode: AlwaysOnVpnMode.kStrict,
           serviceGuid: 'vpn2_guid',
         });
+        createSubpage();
         await initSubpage();
         initVpn();
         await flushTasks();
@@ -593,6 +632,7 @@ suite('<settings-internet-subpage>', () => {
       });
 
       test('Enabled always-on and select a service', async () => {
+        createSubpage();
         await initSubpage();
         initVpn();
         await flushTasks();
@@ -612,6 +652,7 @@ suite('<settings-internet-subpage>', () => {
       test(
           'Enable always-on with STRICT mode and select a service',
           async () => {
+            createSubpage();
             await initSubpage();
             initVpn();
             await flushTasks();
@@ -629,6 +670,7 @@ suite('<settings-internet-subpage>', () => {
           });
 
       test('Always-on VPN is not shown without networks', async () => {
+        createSubpage();
         await initSubpage();
         const networkAlwaysOnVpn =
             internetSubpage.shadowRoot!.querySelector('#alwaysOnVpnSelector');
@@ -640,6 +682,7 @@ suite('<settings-internet-subpage>', () => {
           mode: AlwaysOnVpnMode.kBestEffort,
           serviceGuid: '',
         });
+        createSubpage();
         await initSubpage();
         initVpn();
         await flushTasks();
@@ -650,6 +693,84 @@ suite('<settings-internet-subpage>', () => {
         assertTrue(!!networkAlwaysOnVpn);
         // The list should contain 2 compatible networks.
         assertEquals(2, networkAlwaysOnVpn.networks.length);
+      });
+
+      test('Instant Hotspot page initiates tether scanning', async () => {
+        loadTimeData.overrideValues({
+          'isInstantHotspotRebrandEnabled': true,
+        });
+        createSubpage();
+        mojoApi.addNetworksForTest(
+            [OncMojo.getDefaultNetworkState(NetworkType.kTether, 'tether1')]);
+
+        internetSubpage.defaultNetwork =
+            OncMojo.getDefaultNetworkState(NetworkType.kTether, 'tether1');
+        internetSubpage.deviceState =
+            mojoApi.getDeviceStateForTest(NetworkType.kTether) || undefined;
+
+        mojoApi.setDeviceStateForTest({
+          type: NetworkType.kTether,
+          deviceState: DeviceStateType.kEnabled,
+          scanning: false,
+          ipv4Address: undefined,
+          ipv6Address: undefined,
+          imei: undefined,
+          macAddress: undefined,
+          simLockStatus: undefined,
+          simInfos: undefined,
+          inhibitReason: InhibitReason.kNotInhibited,
+          simAbsent: false,
+          managedNetworkAvailable: false,
+          serial: undefined,
+          isCarrierLocked: false,
+        });
+        assertFalse(mojoApi.getIsDeviceScanning(NetworkType.kTether));
+
+        initSubpage();
+
+        assertTrue(mojoApi.getIsDeviceScanning(NetworkType.kTether));
+      });
+
+      [false, true].forEach(isInstantHotspotRebrandEnabled => {
+        test('Cellular page does not initiate tether scanning', async () => {
+          loadTimeData.overrideValues({
+            'isInstantHotspotRebrandEnabled': isInstantHotspotRebrandEnabled,
+          });
+          createSubpage();
+          mojoApi.addNetworksForTest([OncMojo.getDefaultNetworkState(
+              NetworkType.kCellular, 'cellular1')]);
+          internetSubpage.defaultNetwork = OncMojo.getDefaultNetworkState(
+              NetworkType.kCellular, 'cellular1');
+          internetSubpage.deviceState =
+              mojoApi.getDeviceStateForTest(NetworkType.kCellular) || undefined;
+          internetSubpage.tetherDeviceState =
+              mojoApi.getDeviceStateForTest(NetworkType.kTether) || undefined;
+
+          mojoApi.setDeviceStateForTest({
+            type: NetworkType.kTether,
+            deviceState: DeviceStateType.kEnabled,
+            scanning: false,
+            ipv4Address: undefined,
+            ipv6Address: undefined,
+            imei: undefined,
+            macAddress: undefined,
+            simLockStatus: undefined,
+            simInfos: undefined,
+            inhibitReason: InhibitReason.kNotInhibited,
+            simAbsent: false,
+            managedNetworkAvailable: false,
+            serial: undefined,
+            isCarrierLocked: false,
+          });
+          assertFalse(mojoApi.getIsDeviceScanning(NetworkType.kTether));
+
+          initSubpage();
+          if (isInstantHotspotRebrandEnabled) {
+            assertFalse(mojoApi.getIsDeviceScanning(NetworkType.kTether));
+          } else {
+            assertTrue(mojoApi.getIsDeviceScanning(NetworkType.kTether));
+          }
+        });
       });
     });
   });

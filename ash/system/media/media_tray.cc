@@ -219,7 +219,7 @@ void MediaTray::PinButton::ButtonPressed() {
           : IDS_ASH_GLOBAL_MEDIA_CONTROLS_UNPINNED_BUTTON_TOOLTIP_TEXT));
 }
 
-BEGIN_METADATA(MediaTray, PinButton, IconButton)
+BEGIN_METADATA(MediaTray, PinButton)
 END_METADATA
 
 MediaTray::MediaTray(Shelf* shelf)
@@ -321,7 +321,7 @@ void MediaTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
   }
 }
 
-void MediaTray::ClickedOutsideBubble() {
+void MediaTray::ClickedOutsideBubble(const ui::LocatedEvent& event) {
   CloseBubble();
 }
 

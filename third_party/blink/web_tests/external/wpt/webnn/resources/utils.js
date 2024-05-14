@@ -1,7 +1,5 @@
 'use strict';
 
-const ExecutionArray = ['sync', 'async'];
-
 // https://webmachinelearning.github.io/webnn/#enumdef-mloperanddatatype
 const TypedArrayDict = {
   // workaround use Uint16 for Float16
@@ -193,7 +191,7 @@ const getMatmulPrecisionTolerance = (resources, operationName) => {
 };
 
 /**
- * Get ULP tolerance of averagePool2d operation.
+ * Get ULP tolerance of averagePool2d or l2Pool2d operation.
  * @param {Object} resources - Resources used for building a graph
  * @param {String} operationName - An operation name
  * @returns {Number} A tolerance number
@@ -284,6 +282,32 @@ const getReductionPrecisionTolerance = (resources, operationName) => {
   return tolerance;
 };
 
+/**
+ * Get ULP tolerance of resample2d operations.
+ * @param {Object} resources - Resources used for building a graph
+ * @param {String} operationName - An operation name
+ * @returns {Number} A tolerance number
+ */
+const getResample2dPrecisionTolerance = (resources, operationName) => {
+  const options = {...resources.options};
+  let tolerance;
+  if (options.mode && options.mode === 'linear') {
+    // interpolation mode is linear
+    const precisionType = resources.expected.type;
+    if (precisionType === 'float32') {
+      tolerance = 84;
+    } else if (precisionType === 'float16') {
+      tolerance = 10;
+    } else {
+      tolerance = 1;
+    }
+  } else {
+    // interpolation mode is nearest-neighbor
+    tolerance = 0;
+  }
+  return tolerance;
+};
+
 // Refer to precision metrics on https://github.com/webmachinelearning/webnn/issues/265#issuecomment-1256242643
 const PrecisionMetrics = {
   argMax: {ULP: {int64: 0}},
@@ -292,6 +316,7 @@ const PrecisionMetrics = {
   cast: {ULP: {float32: 1, float16: 1, int32: 0, uint32: 0, int64: 0, int8: 0, uint8: 0}},
   clamp: {ULP: {float32: 0, float16: 0}},
   concat: {ULP: {float32: 0, float16: 0}},
+  constant: {ULP: {float32: 2, float16: 2, int32: 0, uint32: 0, int64: 0, int8: 0, uint8: 0}},
   conv2d: {ULP: {float32: getConv2dPrecisionTolerance, float16: getConv2dPrecisionTolerance}},
   convTranspose2d: {ULP: {float32: getConv2dPrecisionTolerance, float16: getConv2dPrecisionTolerance}},
   // Begin Element-wise binary operations
@@ -340,6 +365,7 @@ const PrecisionMetrics = {
   pad: {ULP: {float32: 0, float16: 0}},
   // Begin Pooling operations
   averagePool2d: {ULP: {float32: getAveragePool2dPrecisionTolerance, float16: getAveragePool2dPrecisionTolerance}},
+  l2Pool2d: {ULP: {float32: getAveragePool2dPrecisionTolerance, float16: getAveragePool2dPrecisionTolerance}},
   maxPool2d: {ULP: {float32: 0, float16: 0}},
   // End Pooling operations
   prelu: {ULP: {float32: 1, float16: 1}},
@@ -356,6 +382,7 @@ const PrecisionMetrics = {
   reduceSumSquare: {ULP: {float32: getReductionPrecisionTolerance, float16: getReductionPrecisionTolerance}},
   // End Reduction operations
   relu: {ULP: {float32: 0, float16: 0}},
+  resample2d: {ULP: {float32: getResample2dPrecisionTolerance, float16: getResample2dPrecisionTolerance}},
   reshape: {ULP: {float32: 0, float16: 0}},
   sigmoid: {ULP: {float32: 32+2, float16: 3}}, // float32 (leaving a few ULP for roundoff)
   slice: {ULP: {float32: 0, float16: 0}},
@@ -365,6 +392,7 @@ const PrecisionMetrics = {
   split: {ULP: {float32: 0, float16: 0}},
   tanh: {ATOL: {float32: 1/1024, float16: 1/512}},
   transpose: {ULP: {float32: 0, float16: 0}},
+  triangular: {ULP: {float32: 0, float16: 0}},
   where: {ULP: {float32: 0, float16: 0}},
 };
 
@@ -635,6 +663,13 @@ const buildConcat = (operationName, builder, resources) => {
   return namedOutputOperand;
 };
 
+const buildConstantRange = (operationName, builder, resources) => {
+  const namedOutputOperand = {};
+  // invoke builder.constant(start, step, outputShape, type)
+  namedOutputOperand[resources.expected.name] = builder[operationName](resources.inputs.start, resources.inputs.step, resources.outputShape, resources.type);
+  return namedOutputOperand;
+};
+
 const buildConvTranspose2d = (operationName, builder, resources) => {
   // MLOperand convTranspose2d(MLOperand input, MLOperand filter, optional MLConvTranspose2dOptions options = {});
   const namedOutputOperand = {};
@@ -793,25 +828,7 @@ const buildGraph = (operationName, builder, resources, buildFunc) => {
 };
 
 /**
- * Build a graph, synchronously compile graph and execute, then check computed results.
- * @param {String} operationName - An operation name
- * @param {MLContext} context - A ML context
- * @param {MLGraphBuilder} builder - A ML graph builder
- * @param {Object} resources - Resources used for building a graph
- * @param {Function} buildFunc - A build function for an operation
- */
-const runSync = (operationName, context, builder, resources, buildFunc) => {
-  // build a graph
-  const [namedOutputOperands, inputs, outputs] = buildGraph(operationName, builder, resources, buildFunc);
-  // synchronously compile the graph up to the output operand
-  const graph = builder.buildSync(namedOutputOperands);
-  // synchronously execute the compiled graph.
-  context.computeSync(graph, inputs, outputs);
-  checkResults(operationName, namedOutputOperands, outputs, resources);
-};
-
-/**
- * Build a graph, asynchronously compile graph and execute, then check computed results.
+ * Build a graph, compile graph and execute, then check computed results.
  * @param {String} operationName - An operation name
  * @param {MLContext} context - A ML context
  * @param {MLGraphBuilder} builder - A ML graph builder
@@ -821,9 +838,9 @@ const runSync = (operationName, context, builder, resources, buildFunc) => {
 const run = async (operationName, context, builder, resources, buildFunc) => {
   // build a graph
   const [namedOutputOperands, inputs, outputs] = buildGraph(operationName, builder, resources, buildFunc);
-  // asynchronously compile the graph up to the output operand
+  // compile the graph up to the output operand
   const graph = await builder.build(namedOutputOperands);
-  // asynchronously execute the compiled graph
+  // execute the compiled graph
   const result = await context.compute(graph, inputs, outputs);
   checkResults(operationName, namedOutputOperands, result.outputs, resources);
 };
@@ -835,6 +852,10 @@ const run = async (operationName, context, builder, resources, buildFunc) => {
  * @param {String} deviceType - The execution device type for this test
  */
 const testWebNNOperation = (operationName, buildFunc, deviceType = 'cpu') => {
+  test(() => assert_not_equals(navigator.ml, undefined, "ml property is defined on navigator"));
+  if (navigator.ml === undefined) {
+    return;
+  }
   let operationNameArray;
   if (typeof operationName === 'string') {
     operationNameArray = [operationName];
@@ -842,41 +863,18 @@ const testWebNNOperation = (operationName, buildFunc, deviceType = 'cpu') => {
     operationNameArray = operationName;
   }
 
-  ExecutionArray.forEach(executionType => {
-    const isSync = executionType === 'sync';
-    if (self.GLOBAL.isWindow() && isSync) {
-      return;
-    }
-    let context;
-    let builder;
-    if (isSync) {
-      // test sync
-      operationNameArray.forEach((subOperationName) => {
-        const tests = loadTests(subOperationName);
-        setup(() => {
-          context = navigator.ml.createContextSync({deviceType});
-          builder = new MLGraphBuilder(context);
-        });
-        for (const subTest of tests) {
-          test(() => {
-            runSync(subOperationName, context, builder, subTest, buildFunc);
-          }, `${subTest.name} / ${executionType}`);
-        }
-      });
-    } else {
-      // test async
-      operationNameArray.forEach((subOperationName) => {
-        const tests = loadTests(subOperationName);
-        promise_setup(async () => {
-          context = await navigator.ml.createContext({deviceType});
-          builder = new MLGraphBuilder(context);
-        });
-        for (const subTest of tests) {
-          promise_test(async () => {
-            await run(subOperationName, context, builder, subTest, buildFunc);
-          }, `${subTest.name} / ${executionType}`);
-        }
-      });
+  let context;
+  let builder;
+  operationNameArray.forEach((subOperationName) => {
+    const tests = loadTests(subOperationName);
+    promise_setup(async () => {
+      context = await navigator.ml.createContext({deviceType});
+      builder = new MLGraphBuilder(context);
+    });
+    for (const subTest of tests) {
+      promise_test(async () => {
+        await run(subOperationName, context, builder, subTest, buildFunc);
+      }, `${subTest.name}`);
     }
   });
 };
@@ -926,4 +924,60 @@ const toHalf = (value) => {
     * the exponent, which is OK. */
   bits += m & 1;
   return bits;
+};
+
+
+/**
+ * WebNN buffer creation.
+ * @param {MLContext} context - the context used to create the buffer.
+ * @param {Number} bufferSize - Size of the buffer to create, in bytes.
+ */
+const createBuffer = (context, bufferSize) => {
+  let buffer;
+  try {
+    buffer = context.createBuffer({size: bufferSize});
+    assert_equals(buffer.size, bufferSize);
+  } catch (e) {
+    assert_true(e instanceof DOMException);
+    assert_equals(e.name, "NotSupportedError");
+  }
+  return buffer;
+};
+
+/**
+ * WebNN destroy buffer twice test.
+ * @param {String} testName - The name of the test operation.
+ * @param {String} deviceType - The execution device type for this test.
+ */
+const testDestroyWebNNBuffer = (testName, deviceType = 'cpu') => {
+  let context;
+  let buffer;
+  promise_setup(async () => {
+    context = await navigator.ml.createContext({deviceType});
+    buffer = createBuffer(context, 4);
+  });
+  promise_test(async () => {
+    // MLBuffer is not supported for this deviceType.
+    if (buffer === undefined) {
+      return;
+    }
+    buffer.destroy();
+    buffer.destroy();
+  }, `${testName}`);
+};
+
+/**
+ * WebNN create buffer test.
+ * @param {String} testName - The name of the test operation.
+ * @param {Number} bufferSize - Size of the buffer to create, in bytes.
+ * @param {String} deviceType - The execution device type for this test.
+ */
+const testCreateWebNNBuffer = (testName, bufferSize, deviceType = 'cpu') => {
+  let context;
+  promise_setup(async () => {
+      context = await navigator.ml.createContext({deviceType});
+  });
+  promise_test(async () => {
+    createBuffer(context, bufferSize);
+  }, `${testName} / ${bufferSize}`);
 };

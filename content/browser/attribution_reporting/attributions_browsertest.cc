@@ -1067,7 +1067,7 @@ IN_PROC_BROWSER_TEST_P(AttributionsBrowserTest,
       browser_client,
       GetAttributionSupport(
           ContentBrowserClient::AttributionReportingOsApiState::kDisabled,
-          testing::_))
+          /*client_os_disabled=*/false))
       .WillRepeatedly(Return(network::mojom::AttributionSupport::kNone));
 
   auto register_response =
@@ -1227,9 +1227,7 @@ ATTRIBUTION_PRERENDER_BROWSER_TEST(ConversionsRegisteredOnActivatedPrerender) {
         observation(&observer);
     observation.Observe(attribution_manager());
     base::RunLoop loop;
-    EXPECT_CALL(observer, OnTriggerHandled(_, _, _)).WillOnce([&]() {
-      loop.Quit();
-    });
+    EXPECT_CALL(observer, OnTriggerHandled).WillOnce([&]() { loop.Quit(); });
 
     // Navigate to pre-rendered page, bringing it to the fore.
     prerender_helper_.NavigatePrimaryPage(kConversionUrl);
@@ -1436,7 +1434,6 @@ class AttributionsFencedFrameBrowserTest : public AttributionsBrowserTest {
       : AttributionsBrowserTest(/*enabled_features=*/{
             blink::features::kFencedFrames,
             features::kPrivacySandboxAdsAPIsOverride,
-            features::kAttributionFencedFrameReportingBeacon,
             blink::features::kFencedFramesAPIChanges,
             blink::features::kFencedFramesDefaultMode}) {}
 

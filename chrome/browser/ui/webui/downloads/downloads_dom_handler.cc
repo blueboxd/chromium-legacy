@@ -40,6 +40,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/hats/trust_safety_sentiment_service.h"
 #include "chrome/browser/ui/hats/trust_safety_sentiment_service_factory.h"
 #include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
@@ -51,6 +52,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/safebrowsing_referral_methods.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
@@ -103,8 +105,7 @@ enum DownloadsDOMEvent {
 };
 
 void CountDownloadsDOMEvents(DownloadsDOMEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("Download.DOMEvent",
-                            event,
+  UMA_HISTOGRAM_ENUMERATION("Download.DOMEvent", event,
                             DOWNLOADS_DOM_EVENT_MAX);
 }
 
@@ -211,8 +212,9 @@ DownloadsDOMHandler::DownloadsDOMHandler(
 DownloadsDOMHandler::~DownloadsDOMHandler() {
   list_tracker_.Stop();
   list_tracker_.Reset();
-  if (!render_process_gone_)
+  if (!render_process_gone_) {
     CheckForRemovedFiles();
+  }
   FinalizeRemovals();
 }
 
@@ -228,8 +230,9 @@ void DownloadsDOMHandler::GetDownloads(
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_GET_DOWNLOADS);
 
   bool terms_changed = list_tracker_.SetSearchTerms(search_terms);
-  if (terms_changed)
+  if (terms_changed) {
     list_tracker_.Reset();
+  }
 
   list_tracker_.StartAndSendChunk();
 }
@@ -243,23 +246,27 @@ void DownloadsDOMHandler::OpenFileRequiringGesture(const std::string& id) {
 
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_OPEN_FILE);
   download::DownloadItem* file = GetDownloadByStringId(id);
-  if (file)
+  if (file) {
     file->OpenDownload();
+  }
 }
 
 void DownloadsDOMHandler::Drag(const std::string& id) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_DRAG);
   download::DownloadItem* file = GetDownloadByStringId(id);
-  if (!file)
+  if (!file) {
     return;
+  }
 
   content::WebContents* web_contents = GetWebUIWebContents();
   // |web_contents| is only NULL in the test.
-  if (!web_contents)
+  if (!web_contents) {
     return;
+  }
 
-  if (file->GetState() != download::DownloadItem::COMPLETE)
+  if (file->GetState() != download::DownloadItem::COMPLETE) {
     return;
+  }
   const display::Screen* const screen = display::Screen::GetScreen();
   gfx::NativeView view = web_contents->GetNativeView();
   gfx::Image* icon = g_browser_process->icon_manager()->LookupIconFromFilepath(
@@ -405,8 +412,9 @@ void DownloadsDOMHandler::RetryDownload(const std::string& id) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_RETRY_DOWNLOAD);
 
   download::DownloadItem* file = GetDownloadByStringId(id);
-  if (!file)
+  if (!file) {
     return;
+  }
   content::WebContents* web_contents = GetWebUIWebContents();
   content::RenderFrameHost* render_frame_host =
       web_contents->GetPrimaryMainFrame();
@@ -450,27 +458,31 @@ void DownloadsDOMHandler::RetryDownload(const std::string& id) {
 void DownloadsDOMHandler::Show(const std::string& id) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SHOW);
   download::DownloadItem* file = GetDownloadByStringId(id);
-  if (file)
+  if (file) {
     file->ShowDownloadInShell();
+  }
 }
 
 void DownloadsDOMHandler::Pause(const std::string& id) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_PAUSE);
   download::DownloadItem* file = GetDownloadByStringId(id);
-  if (file)
+  if (file) {
     file->Pause();
+  }
 }
 
 void DownloadsDOMHandler::Resume(const std::string& id) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_RESUME);
   download::DownloadItem* file = GetDownloadByStringId(id);
-  if (file)
+  if (file) {
     file->Resume(true);
+  }
 }
 
 void DownloadsDOMHandler::Remove(const std::string& id) {
-  if (!IsDeletingHistoryAllowed())
+  if (!IsDeletingHistoryAllowed()) {
     return;
+  }
 
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_REMOVE);
   RemoveDownloadInArgs(id);
@@ -478,8 +490,9 @@ void DownloadsDOMHandler::Remove(const std::string& id) {
 
 void DownloadsDOMHandler::Undo() {
   // TODO(dbeam): handle more than removed downloads someday?
-  if (removals_.empty())
+  if (removals_.empty()) {
     return;
+  }
 
   const IdSet last_removed_ids = removals_.back();
   removals_.pop_back();
@@ -492,8 +505,9 @@ void DownloadsDOMHandler::Undo() {
 
   for (auto id : last_removed_ids) {
     download::DownloadItem* download = GetDownloadById(id);
-    if (!download)
+    if (!download) {
       continue;
+    }
 
     DownloadItemModel model(download);
     model.SetShouldShowInShelf(true);
@@ -504,15 +518,17 @@ void DownloadsDOMHandler::Undo() {
     model.SetIsBeingRevived(false);
   }
 
-  if (undoing_clear_all)
+  if (undoing_clear_all) {
     list_tracker_.StartAndSendChunk();
+  }
 }
 
 void DownloadsDOMHandler::Cancel(const std::string& id) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_CANCEL);
   download::DownloadItem* file = GetDownloadByStringId(id);
-  if (file)
+  if (file) {
     file->Cancel(true);
+  }
 }
 
 void DownloadsDOMHandler::ClearAll() {
@@ -527,10 +543,12 @@ void DownloadsDOMHandler::ClearAll() {
   list_tracker_.Stop();
 
   DownloadVector downloads;
-  if (GetMainNotifierManager())
+  if (GetMainNotifierManager()) {
     GetMainNotifierManager()->GetAllDownloads(&downloads);
-  if (GetOriginalNotifierManager())
+  }
+  if (GetOriginalNotifierManager()) {
     GetOriginalNotifierManager()->GetAllDownloads(&downloads);
+  }
   RemoveDownloads(downloads);
 
   list_tracker_.StartAndSendChunk();
@@ -557,8 +575,9 @@ void DownloadsDOMHandler::RemoveDownloads(const DownloadVector& to_remove) {
     download->UpdateObservers();
   }
 
-  if (!ids.empty())
+  if (!ids.empty()) {
     removals_.push_back(ids);
+  }
 }
 
 void DownloadsDOMHandler::OpenDownloadsFolderRequiringGesture() {
@@ -604,11 +623,7 @@ void DownloadsDOMHandler::DeepScan(const std::string& id) {
     return;
   }
 
-  if ((base::FeatureList::IsEnabled(
-           safe_browsing::kDeepScanningEncryptedArchives) ||
-       base::FeatureList::IsEnabled(
-           safe_browsing::kEncryptedArchivesMetadata)) &&
-      DownloadItemWarningData::IsEncryptedArchive(download)) {
+  if (DownloadItemWarningData::IsEncryptedArchive(download)) {
     // For encrypted archives, we need a password from the user. We will request
     // this in the download bubble.
     PromptForScanningInBubble(GetWebUIWebContents(), download);
@@ -661,6 +676,28 @@ void DownloadsDOMHandler::ReviewDangerousRequiringGesture(
   }
 }
 
+void DownloadsDOMHandler::OpenEsbSettings() {
+  Browser* browser = chrome::FindBrowserWithTab(GetWebUIWebContents());
+  if (!browser) {
+    return;
+  }
+  chrome::ShowSafeBrowsingEnhancedProtectionWithIph(
+      browser,
+      safe_browsing::SafeBrowsingSettingReferralMethod::kDownloadPageRowPromo);
+}
+
+void DownloadsDOMHandler::IsEligibleForEsbPromo(
+    IsEligibleForEsbPromoCallback callback) {
+  content::DownloadManager* manager = GetMainNotifierManager();
+  if (manager) {
+    std::move(callback).Run(
+        safe_browsing::SafeBrowsingService::IsUserEligibleForESBPromo(
+            Profile::FromBrowserContext(manager->GetBrowserContext())));
+  } else {
+    std::move(callback).Run(false);
+  }
+}
+
 // DownloadsDOMHandler, private: --------------------------------------------
 
 content::DownloadManager* DownloadsDOMHandler::GetMainNotifierManager() const {
@@ -679,8 +716,9 @@ void DownloadsDOMHandler::FinalizeRemovals() {
 
     for (const auto id : remove) {
       download::DownloadItem* download = GetDownloadById(id);
-      if (download)
+      if (download) {
         download->Remove();
+      }
     }
   }
 }
@@ -702,15 +740,19 @@ void DownloadsDOMHandler::ShowDangerPrompt(
 void DownloadsDOMHandler::DangerPromptDone(
     int download_id,
     DownloadDangerPrompt::Action action) {
-  if (action != DownloadDangerPrompt::ACCEPT)
+  if (action != DownloadDangerPrompt::ACCEPT) {
     return;
+  }
   download::DownloadItem* item = nullptr;
-  if (GetMainNotifierManager())
+  if (GetMainNotifierManager()) {
     item = GetMainNotifierManager()->GetDownload(download_id);
-  if (!item && GetOriginalNotifierManager())
+  }
+  if (!item && GetOriginalNotifierManager()) {
     item = GetOriginalNotifierManager()->GetDownload(download_id);
-  if (!item || item->IsDone())
+  }
+  if (!item || item->IsDone()) {
     return;
+  }
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS);
 
   // If a download is insecure, validate that first. Is most cases, insecure
@@ -731,9 +773,9 @@ void DownloadsDOMHandler::DangerPromptDone(
 
 bool DownloadsDOMHandler::IsDeletingHistoryAllowed() {
   content::DownloadManager* manager = GetMainNotifierManager();
-  return manager &&
-         Profile::FromBrowserContext(manager->GetBrowserContext())->
-             GetPrefs()->GetBoolean(prefs::kAllowDeletingBrowserHistory);
+  return manager && Profile::FromBrowserContext(manager->GetBrowserContext())
+                        ->GetPrefs()
+                        ->GetBoolean(prefs::kAllowDeletingBrowserHistory);
 }
 
 download::DownloadItem* DownloadsDOMHandler::GetDownloadByStringId(
@@ -749,10 +791,12 @@ download::DownloadItem* DownloadsDOMHandler::GetDownloadByStringId(
 
 download::DownloadItem* DownloadsDOMHandler::GetDownloadById(uint32_t id) {
   download::DownloadItem* item = nullptr;
-  if (GetMainNotifierManager())
+  if (GetMainNotifierManager()) {
     item = GetMainNotifierManager()->GetDownload(id);
-  if (!item && GetOriginalNotifierManager())
+  }
+  if (!item && GetOriginalNotifierManager()) {
     item = GetOriginalNotifierManager()->GetDownload(id);
+  }
   return item;
 }
 
@@ -761,16 +805,19 @@ content::WebContents* DownloadsDOMHandler::GetWebUIWebContents() {
 }
 
 void DownloadsDOMHandler::CheckForRemovedFiles() {
-  if (GetMainNotifierManager())
+  if (GetMainNotifierManager()) {
     GetMainNotifierManager()->CheckForHistoryFilesRemoval();
-  if (GetOriginalNotifierManager())
+  }
+  if (GetOriginalNotifierManager()) {
     GetOriginalNotifierManager()->CheckForHistoryFilesRemoval();
+  }
 }
 
 void DownloadsDOMHandler::RemoveDownloadInArgs(const std::string& id) {
   download::DownloadItem* file = GetDownloadByStringId(id);
-  if (!file)
+  if (!file) {
     return;
+  }
 
   DownloadVector downloads;
   downloads.push_back(file);

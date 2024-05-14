@@ -9,12 +9,13 @@
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/search_engine_choice/fake_omnibox/fake_omnibox_view.h"
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_constants.h"
-#import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_table/cells/snippet_search_engine_item.h"
-#import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_table/search_engine_choice_table_view_controller.h"
+#import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_mutator.h"
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_ui_util.h"
+#import "ios/chrome/browser/ui/search_engine_choice/snippet_search_engine_button.h"
+#import "ios/chrome/browser/ui/search_engine_choice/snippet_search_engine_element.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/promo_style/utils.h"
 #import "ios/chrome/common/ui/util/button_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/device_util.h"
@@ -25,79 +26,87 @@
 
 namespace {
 
+// Chrome logo with 40pt size.
+NSString* const kChromeIcon40pt = @"chrome_icon_40";
 // Line width for the bottom separator.
 constexpr CGFloat kLineWidth = 1.;
-// The horizontal space between the safe area edges and the view elements.
-constexpr CGFloat kHorizontalInsets = -48.;
 // Space between the Chrome logo and the top of the screen.
-constexpr CGFloat kTopSpacing = 40.;
-// Space between the elements of the top stack view and around the primary
-// button.
-constexpr CGFloat kDefaultMargin = 16.;
+constexpr CGFloat kLogoTopMargin = 24.;
 // Logo dimensions.
-constexpr CGFloat kLogoSize = 50.;
-// The minimum height of the search engines table.
-// TODO(b/280753739): Figure out a way to make this the height of five rows.
-constexpr CGFloat kMinimumTableHeight = 300.;
-// Specifications for the fake omnibox animation. Durations are in seconds.
-constexpr CGFloat kEntranceAnimationDuration = 0.6;
-constexpr CGFloat kExitAnimationDuration = 0.3;
-constexpr CGFloat kSpringDamping = 0.6;
-// Angle in radians of the fake omnibox rotation.
-constexpr CGFloat kRotationAngle = (5.0 / 180.0) * M_PI;
-// Vertical distance, in pixels, that the fake omnibox travels.
-constexpr CGFloat kTravelDistance = 40;
+constexpr CGFloat kLogoSize = 40.;
+// Margin between the logo and the title.
+constexpr CGFloat kLogoTitleMargin = 16.;
+// Margin between the title and the subtitle.
+constexpr CGFloat kTitleSubtitleMargin = 8.;
+// Margin between the subtitle and search engine stack view.
+constexpr CGFloat kSubtitleSearchEngineStackMargin = 20.;
+// Margin above and below the button.
+constexpr CGFloat kButtonMargin = 16.;
+// Width margin (wide or narrow, depending on the desired layout).
+constexpr CGFloat kWidthMarginWide = 54.;
+constexpr CGFloat kWidthMarginNarrow = 24.;
 
 // URL for the "Learn more" link.
 const char* const kLearnMoreURL = "internal://choice-screen-learn-more";
 
-}  // namespace
-
-@implementation SearchEngineChoiceViewController {
-  // The screen's title
-  NSString* _titleString;
-  // The table containing the list of search engine choices.
-  SearchEngineChoiceTableViewController* _searchEngineTableViewController;
-  // Button to confirm the default search engine selection.
-  UIButton* _primaryButton;
-  // View that contains all the UI elements above the search engine table.
-  UIStackView* _topZoneStackView;
-  // A fake empty omnibox illustration, shown before the user has made any
-  // selection.
-  FakeOmniboxView* _fakeEmptyOmniboxView;
-  // A fake empty omnibox illustration, with the user's selection.
-  FakeOmniboxView* _fakeOmniboxView;
-  // The chrome logo.
-  UIImageView* _logoView;
-  // The view title.
-  UILabel* _titleLabel;
-  // Some informational text above the search engines table.
-  UITextView* _subtitleTextView;
-  // Separator between the search engines table and the primary button.
-  UIView* _separatorView;
-  // Scrollable content containing everything above the primary button.
-  UIScrollView* _scrollView;
-  UIView* _scrollContentView;
-  // Whether the choice screen is being displayed for the FRE.
-  BOOL _isForFRE;
+SnippetSearchEngineButton* CreateSnippetSearchEngineButtonWithElement(
+    SnippetSearchEngineElement* element) {
+  CHECK(element.keyword);
+  SnippetSearchEngineButton* button = [[SnippetSearchEngineButton alloc] init];
+  button.faviconImage = element.faviconImage;
+  button.searchEngineName = element.name;
+  button.snippetText = element.snippetDescription;
+  button.translatesAutoresizingMaskIntoConstraints = NO;
+  button.searchEngineKeyword = element.keyword;
+  button.accessibilityIdentifier =
+      [NSString stringWithFormat:@"%@%@", kSnippetSearchEngineIdentifierPrefix,
+                                 element.name];
+  return button;
 }
 
-- (instancetype)initWithSearchEngineTableViewController:
-                    (SearchEngineChoiceTableViewController*)tableViewController
-                                                 forFRE:(BOOL)isForFRE {
-  CHECK(tableViewController);
+}  // namespace
+
+@interface SearchEngineChoiceViewController () <UITextViewDelegate>
+@end
+
+@implementation SearchEngineChoiceViewController {
+  // Button to confirm the default search engine selection.
+  UIButton* _primaryButton;
+  // The view title.
+  UILabel* _titleLabel;
+  // Scrollable content containing everything above the primary button.
+  UIScrollView* _scrollView;
+  // Whether the choice screen is being displayed for the FRE.
+  BOOL _isForFRE;
+  // The horizontal margin.
+  CGFloat _marginWidth;
+  // Whether the scroll view reached the bottom at least once.
+  BOOL _didReachBottom;
+  // Contains the list of search engine buttons.
+  UIStackView* _searchEngineStackView;
+  // Contains the selected search engine button.
+  SnippetSearchEngineButton* _selectedSearchEngineButton;
+  // Whether `-[SearchEngineChoiceViewController viewIsAppearing:]` was called.
+  BOOL _viewIsAppearingCalled;
+  // Whether the search engine buttons have been loaded in the stack view.
+  BOOL _searchEnginesLoaded;
+}
+
+@synthesize searchEngines = _searchEngines;
+
+- (instancetype)initWithFirstRunMode:(BOOL)isForFRE
+                     wideMarginWidth:(BOOL)wideMarginWidth {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
-    _searchEngineTableViewController = tableViewController;
     _isForFRE = isForFRE;
+    _marginWidth = wideMarginWidth ? kWidthMarginWide : kWidthMarginNarrow;
   }
   return self;
 }
 
 - (void)updatePrimaryActionButton {
-  UpdatePrimaryButton(_primaryButton,
-                      _searchEngineTableViewController.didReachBottom,
-                      self.didUserSelectARow);
+  UpdatePrimaryButton(_primaryButton, _didReachBottom,
+                      _selectedSearchEngineButton != nil);
 }
 
 #pragma mark - UIViewController
@@ -105,46 +114,36 @@ const char* const kLearnMoreURL = "internal://choice-screen-learn-more";
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  [self addChildViewController:_searchEngineTableViewController];
   self.view.backgroundColor = [UIColor colorNamed:kPrimaryBackgroundColor];
-  [_searchEngineTableViewController didMoveToParentViewController:self];
 
-  _scrollContentView = [[UIView alloc] init];
-  _scrollContentView.translatesAutoresizingMaskIntoConstraints = NO;
+  // Add main scroll view with its content view.
+  UIView* scrollContentView = [[UIView alloc] init];
+  scrollContentView.translatesAutoresizingMaskIntoConstraints = NO;
+  _scrollView = [[UIScrollView alloc] init];
+  [self.view addSubview:_scrollView];
+  _scrollView.translatesAutoresizingMaskIntoConstraints = NO;
+  _scrollView.accessibilityIdentifier = kSearchEngineChoiceScrollViewIdentifier;
+  _scrollView.delegate = self;
+  [_scrollView addSubview:scrollContentView];
 
-  _topZoneStackView = [[UIStackView alloc] init];
-  [_scrollContentView addSubview:_topZoneStackView];
-  _topZoneStackView.axis = UILayoutConstraintAxisVertical;
-  _topZoneStackView.spacing = kDefaultMargin;
-  _topZoneStackView.distribution = UIStackViewDistributionEqualSpacing;
-  _topZoneStackView.alignment = UIStackViewAlignmentCenter;
-  _topZoneStackView.translatesAutoresizingMaskIntoConstraints = NO;
-
-#if BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
-  _logoView = [[UIImageView alloc]
-      initWithImage:MakeSymbolMulticolor(CustomSymbolWithPointSize(
-                        kMulticolorChromeballSymbol, kLogoSize))];
-#else
-  _logoView = [[UIImageView alloc]
-      initWithImage:CustomSymbolWithPointSize(kChromeProductSymbol, kLogoSize)];
-#endif
-  [_topZoneStackView addArrangedSubview:_logoView];
-  if (self.traitCollection.verticalSizeClass ==
-      UIUserInterfaceSizeClassCompact) {
-    _logoView.hidden = YES;
-  }
-  _logoView.translatesAutoresizingMaskIntoConstraints = NO;
+  // Need to use a regular png instead of custom symbol to have a better control
+  // on the size and the margin of the logo.
+  UIImage* logoImage = [UIImage imageNamed:kChromeIcon40pt];
+  UIImageView* logoImageView = [[UIImageView alloc] initWithImage:logoImage];
+  [scrollContentView addSubview:logoImageView];
+  logoImageView.translatesAutoresizingMaskIntoConstraints = NO;
 
   _titleLabel = [[UILabel alloc] init];
-  // Add semantic group to have a coherent behaviour with the table view and
-  // the primary button, this is related to VoiceOver.
+  // Add semantic group, so the user can skip all the search engine stack view,
+  // and jump to the primary button, using VoiceOver.
   _titleLabel.accessibilityContainerType =
       UIAccessibilityContainerTypeSemanticGroup;
-  [_topZoneStackView addArrangedSubview:_titleLabel];
+  [scrollContentView addSubview:_titleLabel];
   [_titleLabel
       setText:l10n_util::GetNSString(IDS_SEARCH_ENGINE_CHOICE_PAGE_TITLE)];
   [_titleLabel setTextColor:[UIColor colorNamed:kSolidBlackColor]];
-  _titleLabel.font = GetTitleFontWithTraitCollection(self.traitCollection);
+  UIFontTextStyle textStyle = GetTitleLabelFontTextStyle(self);
+  _titleLabel.font = GetFRETitleFont(textStyle);
   _titleLabel.adjustsFontForContentSizeCategory = YES;
   [_titleLabel setTextAlignment:NSTextAlignmentCenter];
   [_titleLabel setNumberOfLines:0];
@@ -152,15 +151,6 @@ const char* const kLearnMoreURL = "internal://choice-screen-learn-more";
                    kSearchEngineChoiceTitleAccessibilityIdentifier];
   _titleLabel.accessibilityTraits |= UIAccessibilityTraitHeader;
   _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-
-  _fakeEmptyOmniboxView =
-      [[FakeOmniboxView alloc] initWithSearchEngineName:nil faviconImage:nil];
-  [_topZoneStackView addArrangedSubview:_fakeEmptyOmniboxView];
-  if ([self shouldHideFakeOmniboxForVerticalSizeClass:self.traitCollection
-                                                          .verticalSizeClass]) {
-    _fakeEmptyOmniboxView.hidden = YES;
-  }
-  _fakeEmptyOmniboxView.translatesAutoresizingMaskIntoConstraints = NO;
 
   NSMutableAttributedString* subtitleText = [[NSMutableAttributedString alloc]
       initWithString:[l10n_util::GetNSString(
@@ -182,47 +172,49 @@ const char* const kLearnMoreURL = "internal://choice-screen-learn-more";
       IDS_SEARCH_ENGINE_CHOICE_PAGE_SUBTITLE_INFO_LINK_A11Y_LABEL);
   [subtitleText appendAttributedString:learnMoreAttributedString];
 
-  _subtitleTextView = [[UITextView alloc] init];
-  [_topZoneStackView addArrangedSubview:_subtitleTextView];
-  [_subtitleTextView setAttributedText:subtitleText];
-  [_subtitleTextView
+  UITextView* subtitleTextView = [[UITextView alloc] init];
+  [scrollContentView addSubview:subtitleTextView];
+  [subtitleTextView setAttributedText:subtitleText];
+  [subtitleTextView
       setFont:[UIFont preferredFontForTextStyle:UIFontTextStyleBody]];
-  _subtitleTextView.backgroundColor = nil;
-  _subtitleTextView.adjustsFontForContentSizeCategory = YES;
-  [_subtitleTextView setTextAlignment:NSTextAlignmentCenter];
-  _subtitleTextView.delegate = self;
-  _subtitleTextView.scrollEnabled = NO;
-  _subtitleTextView.editable = NO;
-  _subtitleTextView.translatesAutoresizingMaskIntoConstraints = NO;
+  subtitleTextView.backgroundColor = nil;
+  subtitleTextView.adjustsFontForContentSizeCategory = YES;
+  [subtitleTextView setTextAlignment:NSTextAlignmentCenter];
+  subtitleTextView.delegate = self;
+  // Disable and hide scrollbar.
+  subtitleTextView.textContainerInset = UIEdgeInsetsMake(0, 0, 0, 0);
+  subtitleTextView.scrollEnabled = NO;
+  subtitleTextView.showsVerticalScrollIndicator = NO;
+  subtitleTextView.showsHorizontalScrollIndicator = NO;
+  subtitleTextView.editable = NO;
+  subtitleTextView.translatesAutoresizingMaskIntoConstraints = NO;
 
-  UIView* searchEngineTableView = _searchEngineTableViewController.view;
-  [_scrollContentView addSubview:searchEngineTableView];
-  searchEngineTableView.translatesAutoresizingMaskIntoConstraints = NO;
+  _searchEngineStackView = [[UIStackView alloc] init];
+  // Add semantic group, so the user can skip all the search engine stack view,
+  // and jump to the primary button, using VoiceOver.
+  _searchEngineStackView.accessibilityContainerType =
+      UIAccessibilityContainerTypeSemanticGroup;
+  _searchEngineStackView.backgroundColor =
+      [UIColor colorNamed:kGroupedPrimaryBackgroundColor];
+  _searchEngineStackView.layer.cornerRadius = 12.;
+  _searchEngineStackView.layer.masksToBounds = YES;
+  _searchEngineStackView.translatesAutoresizingMaskIntoConstraints = NO;
+  _searchEngineStackView.axis = UILayoutConstraintAxisVertical;
+  [scrollContentView addSubview:_searchEngineStackView];
 
-  _scrollView = [[UIScrollView alloc] init];
-  [_scrollView addSubview:_scrollContentView];
-  [self.view addSubview:_scrollView];
-  _scrollView.translatesAutoresizingMaskIntoConstraints = NO;
+  UIView* separatorView = [[UIView alloc] init];
+  [self.view addSubview:separatorView];
+  separatorView.backgroundColor = [UIColor colorNamed:kSeparatorColor];
+  [self.view bringSubviewToFront:separatorView];
+  separatorView.translatesAutoresizingMaskIntoConstraints = NO;
 
-  _separatorView = [[UIView alloc] init];
-  [self.view addSubview:_separatorView];
-  _separatorView.backgroundColor = [UIColor colorNamed:kSeparatorColor];
-  [self.view bringSubviewToFront:_separatorView];
-  _separatorView.translatesAutoresizingMaskIntoConstraints = NO;
-
-  if (_searchEngineTableViewController.didReachBottom) {
-    _primaryButton = CreateDisabledPrimaryButton();
-  } else {
-    _primaryButton = CreateMorePrimaryButton();
-  }
-
+  _primaryButton = CreateMorePrimaryButton();
   [self.view addSubview:_primaryButton];
   [_primaryButton addTarget:self
                      action:@selector(primaryButtonAction)
            forControlEvents:UIControlEventTouchUpInside];
-  // Add semantic group, so the user can skip all the table view cells, and
-  // jump to the primary button, using VoiceOver. This requires to set
-  // `semantic group` to the button too.
+  // Add semantic group, so the user can skip all the search engine stack view,
+  // and jump to the primary button, using VoiceOver.
   _primaryButton.accessibilityContainerType =
       UIAccessibilityContainerTypeSemanticGroup;
 
@@ -232,65 +224,105 @@ const char* const kLearnMoreURL = "internal://choice-screen-learn-more";
         constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
     [_scrollView.widthAnchor
         constraintEqualToAnchor:self.view.safeAreaLayoutGuide.widthAnchor],
-    [_scrollView.bottomAnchor
-        constraintEqualToAnchor:_separatorView.bottomAnchor],
+    [_scrollView.centerXAnchor
+        constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerXAnchor],
 
     // Scroll content view constraints.
-    [_scrollContentView.topAnchor
+    [scrollContentView.topAnchor
         constraintEqualToAnchor:_scrollView.contentLayoutGuide.topAnchor],
-    [_scrollContentView.widthAnchor
-        constraintEqualToAnchor:_scrollView.widthAnchor],
-    [_scrollContentView.bottomAnchor
+    [scrollContentView.bottomAnchor
         constraintEqualToAnchor:_scrollView.contentLayoutGuide.bottomAnchor],
-    [_scrollContentView.heightAnchor
+    [scrollContentView.heightAnchor
         constraintGreaterThanOrEqualToAnchor:_scrollView.heightAnchor],
+    [scrollContentView.centerXAnchor
+        constraintEqualToAnchor:_scrollView.centerXAnchor],
+    [scrollContentView.widthAnchor
+        constraintEqualToAnchor:_scrollView.widthAnchor],
 
-    [_topZoneStackView.topAnchor
-        constraintEqualToAnchor:_scrollContentView.topAnchor
-                       constant:kTopSpacing],
-    [_topZoneStackView.widthAnchor
-        constraintEqualToAnchor:_scrollContentView.widthAnchor
-                       constant:kHorizontalInsets],
+    // Logo.
+    [logoImageView.topAnchor constraintEqualToAnchor:scrollContentView.topAnchor
+                                            constant:kLogoTopMargin],
+    [logoImageView.heightAnchor constraintEqualToConstant:kLogoSize],
+    [logoImageView.centerXAnchor
+        constraintEqualToAnchor:scrollContentView.centerXAnchor],
+    [logoImageView.widthAnchor constraintEqualToConstant:kLogoSize],
 
-    [_fakeEmptyOmniboxView.widthAnchor
-        constraintEqualToConstant:kFakeOmniboxWidth],
-    [_fakeEmptyOmniboxView.heightAnchor
-        constraintEqualToConstant:kFakeOmniboxHeight],
+    // Title.
+    [_titleLabel.topAnchor constraintEqualToAnchor:logoImageView.bottomAnchor
+                                          constant:kLogoTitleMargin],
+    [_titleLabel.leadingAnchor
+        constraintEqualToAnchor:_searchEngineStackView.leadingAnchor],
+    [_titleLabel.trailingAnchor
+        constraintEqualToAnchor:_searchEngineStackView.trailingAnchor],
 
-    [_logoView.widthAnchor constraintEqualToConstant:kLogoSize],
-    [_logoView.heightAnchor constraintEqualToConstant:kLogoSize],
+    // SubtitleTextView.
+    [subtitleTextView.topAnchor constraintEqualToAnchor:_titleLabel.bottomAnchor
+                                               constant:kTitleSubtitleMargin],
+    [subtitleTextView.leadingAnchor
+        constraintEqualToAnchor:_searchEngineStackView.leadingAnchor],
+    [subtitleTextView.trailingAnchor
+        constraintEqualToAnchor:_searchEngineStackView.trailingAnchor],
 
+    // Search engine stack view.
+    [_searchEngineStackView.topAnchor
+        constraintEqualToAnchor:subtitleTextView.bottomAnchor
+                       constant:kSubtitleSearchEngineStackMargin],
+    [_searchEngineStackView.bottomAnchor
+        constraintLessThanOrEqualToAnchor:scrollContentView.bottomAnchor
+                                 constant:-_marginWidth],
+    [_searchEngineStackView.leadingAnchor
+        constraintEqualToAnchor:scrollContentView.leadingAnchor
+                       constant:_marginWidth],
+    [_searchEngineStackView.trailingAnchor
+        constraintEqualToAnchor:scrollContentView.trailingAnchor
+                       constant:-_marginWidth],
+    [_searchEngineStackView.centerXAnchor
+        constraintEqualToAnchor:scrollContentView.centerXAnchor],
+
+    // Separator.
+    [separatorView.topAnchor constraintEqualToAnchor:_scrollView.bottomAnchor],
+    [separatorView.heightAnchor constraintEqualToConstant:kLineWidth],
+    [separatorView.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
+    [separatorView.centerXAnchor
+        constraintEqualToAnchor:self.view.centerXAnchor],
+
+    // Primary button.
+    [_primaryButton.topAnchor constraintEqualToAnchor:separatorView.bottomAnchor
+                                             constant:kButtonMargin],
     [_primaryButton.bottomAnchor
         constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor
-                       constant:-kDefaultMargin],
-    [_primaryButton.widthAnchor constraintEqualToAnchor:self.view.widthAnchor
-                                               constant:kHorizontalInsets],
-
-    [_separatorView.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
-    [_separatorView.heightAnchor constraintEqualToConstant:kLineWidth],
-    [_separatorView.bottomAnchor
-        constraintEqualToAnchor:_primaryButton.topAnchor
-                       constant:-kDefaultMargin],
-
-    [searchEngineTableView.widthAnchor
-        constraintEqualToAnchor:_scrollContentView.widthAnchor],
-    [searchEngineTableView.topAnchor
-        constraintEqualToAnchor:_subtitleTextView.bottomAnchor],
-    [searchEngineTableView.bottomAnchor
-        constraintEqualToAnchor:_scrollContentView.bottomAnchor],
-    [searchEngineTableView.heightAnchor
-        constraintGreaterThanOrEqualToConstant:kMinimumTableHeight],
-
-    [self.view.centerXAnchor
-        constraintEqualToAnchor:_primaryButton.centerXAnchor],
-    [self.view.centerXAnchor
-        constraintEqualToAnchor:_topZoneStackView.centerXAnchor],
-    [self.view.centerXAnchor
-        constraintEqualToAnchor:_separatorView.centerXAnchor],
-    [self.view.centerXAnchor constraintEqualToAnchor:_scrollView.centerXAnchor],
-    [_scrollView.centerXAnchor
-        constraintEqualToAnchor:_scrollContentView.centerXAnchor],
+                       constant:-kButtonMargin],
+    [_primaryButton.widthAnchor
+        constraintEqualToAnchor:_searchEngineStackView.widthAnchor],
+    [_primaryButton.centerXAnchor
+        constraintEqualToAnchor:_searchEngineStackView.centerXAnchor],
   ]];
+  [self updatePrimaryActionButton];
+  [self loadSearchEngineButtons];
+}
+
+- (void)viewIsAppearing:(BOOL)animated {
+  [super viewIsAppearing:animated];
+  _viewIsAppearingCalled = YES;
+  // Using -[UIViewController viewWillAppear:] is too early. There is an issue
+  // on iPhone, the safe area is not visible yet.
+  // Using -[UIViewController viewDidAppear:] is too late. There is an issue on
+  // iPad, the More button appears and then disappears.
+  [self.view layoutIfNeeded];
+  [self updateDidReachBottomFlag];
+}
+
+#pragma mark - UIScrollViewDelegate
+
+- (void)scrollViewDidScroll:(UIScrollView*)scrollView {
+  [self updateDidReachBottomFlag];
+}
+
+#pragma mark - SearchEngineChoiceTableConsumer
+
+- (void)setSearchEngines:(NSArray<SnippetSearchEngineElement*>*)searchEngines {
+  _searchEngines = searchEngines;
+  [self loadSearchEngineButtons];
 }
 
 #pragma mark - UITraitEnvironment
@@ -299,87 +331,108 @@ const char* const kLearnMoreURL = "internal://choice-screen-learn-more";
   [super traitCollectionDidChange:previousTraitCollection];
   // Reset the title font to make sure that it is
   // properly scaled.
-  _titleLabel.font = GetTitleFontWithTraitCollection(self.traitCollection);
-}
-
-#pragma mark - SearchEngineChoiceConsumer
-
-- (void)updateFakeOmniboxWithFaviconImage:(UIImage*)icon
-                         searchEngineName:(NSString*)name {
-  UIView* exitingFakeOmniboxView = _fakeOmniboxView;
-  _fakeOmniboxView = [[FakeOmniboxView alloc] initWithSearchEngineName:name
-                                                          faviconImage:icon];
-  _fakeOmniboxView.translatesAutoresizingMaskIntoConstraints = NO;
-  [_topZoneStackView addSubview:_fakeOmniboxView];
-  AddSameConstraints(_fakeOmniboxView, _fakeEmptyOmniboxView);
-  if ([self shouldHideFakeOmniboxForVerticalSizeClass:self.traitCollection
-                                                          .verticalSizeClass]) {
-    // If the vertical size is compact, the new fake omnibox should be added but
-    // hidden (just in case the user rotate the device in portrait mode).
-    // And the previous fake omnibox should be removed.
-    [exitingFakeOmniboxView removeFromSuperview];
-    _fakeOmniboxView.hidden = YES;
-    return;
-  }
-  if (exitingFakeOmniboxView) {
-    // Animate the exiting fake omnibox view.
-    [UIView animateWithDuration:kExitAnimationDuration
-        delay:0
-        usingSpringWithDamping:1
-        initialSpringVelocity:0
-        options:UIViewAnimationCurveEaseIn
-        animations:^{
-          exitingFakeOmniboxView.alpha = 0;
-          CGAffineTransform rotate =
-              CGAffineTransformMakeRotation(kRotationAngle);
-          CGAffineTransform translate =
-              CGAffineTransformMakeTranslation(0, kTravelDistance);
-          exitingFakeOmniboxView.transform =
-              CGAffineTransformConcat(rotate, translate);
-        }
-        completion:^(BOOL finished) {
-          [exitingFakeOmniboxView removeFromSuperview];
-        }];
-  }
-  // Animate the entering fake omnibox view.
-  CGAffineTransform rotate = CGAffineTransformMakeRotation(kRotationAngle);
-  CGAffineTransform translate =
-      CGAffineTransformMakeTranslation(0, kTravelDistance);
-  _fakeOmniboxView.transform = CGAffineTransformConcat(rotate, translate);
-  FakeOmniboxView* enteringFakeOmniboxView = _fakeOmniboxView;
-  [UIView animateWithDuration:kEntranceAnimationDuration
-                        delay:0
-       usingSpringWithDamping:kSpringDamping
-        initialSpringVelocity:0
-                      options:UIViewAnimationCurveEaseOut
-                   animations:^{
-                     enteringFakeOmniboxView.transform =
-                         CGAffineTransformIdentity;
-                   }
-                   completion:nil];
+  UIFontTextStyle textStyle = GetTitleLabelFontTextStyle(self);
+  _titleLabel.font = GetFRETitleFont(textStyle);
+  // Update the primary button once the layout changes take effect to have the
+  // right measurements to evaluate the scroll position.
+  __weak __typeof(self) weakSelf = self;
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [weakSelf updateDidReachBottomFlag];
+  });
 }
 
 #pragma mark - Private
 
+// Called when the tap on a SnippetSearchEngineButton.
+- (void)searchEngineTapAction:(SnippetSearchEngineButton*)button {
+  [self.mutator selectSearchEnginewWithKeyword:button.searchEngineKeyword];
+  _selectedSearchEngineButton.checked = NO;
+  _selectedSearchEngineButton = button;
+  _selectedSearchEngineButton.checked = YES;
+  [self updatePrimaryActionButton];
+}
+
+// Called when the user tap on the primary button.
 - (void)primaryButtonAction {
-  if (_searchEngineTableViewController.didReachBottom) {
-    [self.actionDelegate didTapPrimaryButton];
+  if (_didReachBottom) {
+    if (_selectedSearchEngineButton) {
+      [self.actionDelegate didTapPrimaryButton];
+    }
   } else {
-    [_searchEngineTableViewController scrollToBottom];
-    CGPoint bottomOffset = CGPointMake(0, _scrollView.contentSize.height -
-                                              _scrollView.bounds.size.height +
-                                              _scrollView.contentInset.bottom);
+    // Adding 1 to the content offset to make sure the scroll view will reach
+    // the bottom of view to trigger the floating SetAsDefault container when
+    // `updateViewsBasedOnScrollPosition` will be called.
+    // See crbug.com/332719699.
+    CGPoint bottomOffset = CGPointMake(
+        0, _scrollView.contentSize.height - _scrollView.bounds.size.height +
+               _scrollView.contentInset.bottom + 1);
     [_scrollView setContentOffset:bottomOffset animated:YES];
   }
 }
 
-// Whether the choice screen should hide the fake omnibox illustration.
-- (BOOL)shouldHideFakeOmniboxForVerticalSizeClass:
-    (UIUserInterfaceSizeClass)sizeClass {
-  // Hide the fake omnibox for the FRE on iPads or in landscape mode on iPhones.
-  return sizeClass == UIUserInterfaceSizeClassCompact ||
-         (_isForFRE && (ui::GetDeviceFormFactor() ==
-                        ui::DeviceFormFactor::DEVICE_FORM_FACTOR_TABLET));
+// Loads the search engine buttons from `_searchEngines`.
+- (void)loadSearchEngineButtons {
+  NSString* selectedSearchEngineKeyword =
+      _selectedSearchEngineButton.searchEngineKeyword;
+  _selectedSearchEngineButton = nil;
+  // This set saves the list of search engines that are expanded to keep them
+  // expanded after loading the search engine list.
+  NSMutableSet<NSString*>* expandedSearchEngineKeyword = [NSMutableSet set];
+  for (SnippetSearchEngineButton* oldSearchEngineButton in
+           _searchEngineStackView.arrangedSubviews) {
+    if (oldSearchEngineButton.snippetButtonState ==
+        SnippetButtonState::kExpanded) {
+      [expandedSearchEngineKeyword
+          addObject:oldSearchEngineButton.searchEngineKeyword];
+    }
+    [_searchEngineStackView removeArrangedSubview:oldSearchEngineButton];
+    [oldSearchEngineButton removeFromSuperview];
+  }
+  SnippetSearchEngineButton* button = nil;
+  for (SnippetSearchEngineElement* element in _searchEngines) {
+    button = CreateSnippetSearchEngineButtonWithElement(element);
+    button.animatedLayoutView = _scrollView;
+    if ([expandedSearchEngineKeyword containsObject:element.keyword]) {
+      button.snippetButtonState = SnippetButtonState::kExpanded;
+    }
+    if ([selectedSearchEngineKeyword isEqualToString:element.keyword]) {
+      button.checked = YES;
+      _selectedSearchEngineButton = button;
+    }
+    [button addTarget:self
+                  action:@selector(searchEngineTapAction:)
+        forControlEvents:UIControlEventTouchUpInside];
+    [_searchEngineStackView addArrangedSubview:button];
+  }
+  // Hide the horizontal seperator for the last button.
+  button.horizontalSeparatorHidden = YES;
+  _searchEnginesLoaded = YES;
+  [self.view layoutIfNeeded];
+  [self updateDidReachBottomFlag];
+}
+
+// Tests if the scroll view reached the end of the last search engine button
+// for the first time, and hides the more button accordingly.
+- (void)updateDidReachBottomFlag {
+  if (!_viewIsAppearingCalled || _didReachBottom ||
+      !self.presentingViewController || !_searchEnginesLoaded) {
+    // Don't update the value if the view is not ready to appear.
+    // Don't update the value if the bottom was reached at least once.
+    // Don't update the value if the view is not presented yet.
+    // Don't update the value if the search engines have not been loaded yet.
+    return;
+  }
+  CGFloat scrollPosition =
+      _scrollView.contentOffset.y + _scrollView.frame.size.height;
+  // The limit to remove the more button is when `_searchEngineStackView` is
+  // fully visible.
+  CGFloat scrollLimit = _searchEngineStackView.frame.origin.y +
+                        _searchEngineStackView.frame.size.height +
+                        _scrollView.contentInset.bottom;
+  if (scrollPosition >= scrollLimit) {
+    _didReachBottom = YES;
+    [self updatePrimaryActionButton];
+  }
 }
 
 #pragma mark - UITextViewDelegate
@@ -394,40 +447,20 @@ const char* const kLearnMoreURL = "internal://choice-screen-learn-more";
 
 #pragma mark - UIContentContainer
 
-- (void)willTransitionToTraitCollection:(UITraitCollection*)newCollection
-              withTransitionCoordinator:
-                  (id<UIViewControllerTransitionCoordinator>)coordinator {
-  [super willTransitionToTraitCollection:newCollection
-               withTransitionCoordinator:coordinator];
-  switch (newCollection.verticalSizeClass) {
-      // `hidden` is not an animatable property so we use `alpha` to make the
-      // transition smooth.
-    case UIUserInterfaceSizeClassRegular:
-      _logoView.alpha = 1;
-      _logoView.hidden = NO;
-      // The fake omnibox stays hidden in the FRE for iPads.
-      if (![self shouldHideFakeOmniboxForVerticalSizeClass:
-                     UIUserInterfaceSizeClassRegular]) {
-        _fakeEmptyOmniboxView.alpha = 1;
-        _fakeEmptyOmniboxView.hidden = NO;
-        _fakeOmniboxView.alpha = 1;
-        _fakeOmniboxView.hidden = NO;
-      }
-      break;
-
-    case UIUserInterfaceSizeClassCompact:
-      _logoView.alpha = 0;
-      _logoView.hidden = YES;
-      _fakeEmptyOmniboxView.alpha = 0;
-      _fakeEmptyOmniboxView.hidden = YES;
-      _fakeOmniboxView.alpha = 0;
-      _fakeOmniboxView.hidden = YES;
-
-      break;
-
-    default:
-      break;
-  };
+- (void)viewWillTransitionToSize:(CGSize)size
+       withTransitionCoordinator:
+           (id<UIViewControllerTransitionCoordinator>)coordinator {
+  [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+  __weak __typeof(self) weakSelf = self;
+  [coordinator
+      animateAlongsideTransition:nil
+                      completion:^(
+                          id<UIViewControllerTransitionCoordinatorContext>
+                              unused) {
+                        // Recompute if the user reached the bottom, once the
+                        // animation is done.
+                        [weakSelf updateDidReachBottomFlag];
+                      }];
 }
 
 @end

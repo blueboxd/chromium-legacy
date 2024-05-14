@@ -9,9 +9,9 @@
 #include <list>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/check_op.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/notreached.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/request_params.h"
@@ -69,16 +69,20 @@ ExtensionUrlPatternIndexMatcher::ExtensionUrlPatternIndexMatcher(
       metadata_list_(metadata_list),
       before_request_matchers_(GetMatchers(before_request_index_list)),
       headers_received_matchers_(GetMatchers(headers_received_index_list)),
+      before_request_rules_count_(
+          GetRulesCountInternal(before_request_matchers_)),
+      headers_received_rules_count_(
+          GetRulesCountInternal(headers_received_matchers_)),
+      // Currently, this is set to true if there exist any rules that match on,
+      // or modify headers. This is why we check if there are any rules to be
+      // matched in the onHeadersReceived phase since they need to match on
+      // response headers.
       // TODO(kelvinjiang): Consider separating this condition for request and
       // response headers so extra headers are only included for the phases
       // that need them.
       is_extra_headers_matcher_(
           IsExtraHeadersMatcherInternal(before_request_matchers_) ||
-          IsExtraHeadersMatcherInternal(headers_received_matchers_)),
-      before_request_rules_count_(
-          GetRulesCountInternal(before_request_matchers_)),
-      headers_received_rules_count_(
-          GetRulesCountInternal(headers_received_matchers_)) {}
+          headers_received_rules_count_ > 0) {}
 
 ExtensionUrlPatternIndexMatcher::~ExtensionUrlPatternIndexMatcher() = default;
 
@@ -120,7 +124,7 @@ ExtensionUrlPatternIndexMatcher::GetModifyHeadersActions(
       params, before_request_matchers_, flat::IndexType_modify_headers);
 
   if (min_priority) {
-    base::EraseIf(rules, [&min_priority](const flat_rule::UrlRule* rule) {
+    std::erase_if(rules, [&min_priority](const flat_rule::UrlRule* rule) {
       return rule->priority() <= *min_priority;
     });
   }

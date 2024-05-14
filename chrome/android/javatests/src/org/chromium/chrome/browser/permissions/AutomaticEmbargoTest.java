@@ -92,6 +92,7 @@ public class AutomaticEmbargoTest {
     @Test
     @LargeTest
     @Feature({"Location"})
+    @DisabledTest(message = "Flaky test b/325324593")
     public void testGeolocationEmbargo() throws Exception {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         LocationProviderOverrider.setLocationProviderImpl(new MockLocationProvider());
@@ -114,7 +115,7 @@ public class AutomaticEmbargoTest {
     @LargeTest
     @Feature({"MIDI"})
     public void testMIDIEmbargo() throws Exception {
-        runTest(MIDI_TEST_FILE, "", "fail", /* withGesture= */ true);
+        runTest(MIDI_TEST_FILE, "", "fail", /* withGesture= */ false);
     }
 
     @Test

@@ -59,7 +59,7 @@ views::Label* SetupLabel(views::View* parent) {
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   // Views should not be individually selected for accessibility. Accessible
   // name and behavior comes from the parent.
-  label->GetViewAccessibility().OverrideIsIgnored(true);
+  label->GetViewAccessibility().SetIsIgnored(true);
   label->SetBackgroundColor(SK_ColorTRANSPARENT);
   label->SetAutoColorReadabilityEnabled(false);
   return label;
@@ -114,9 +114,7 @@ class GlanceablesTaskView::CheckButton : public views::ImageButton {
     views::ImageButton::GetAccessibleNodeData(node_data);
 
     node_data->SetName(l10n_util::GetStringUTF16(
-        checked_
-            ? IDS_GLANCEABLES_TASKS_TASK_ITEM_MARK_NOT_COMPLETED_ACCESSIBLE_NAME
-            : IDS_GLANCEABLES_TASKS_TASK_ITEM_MARK_COMPLETED_ACCESSIBLE_NAME));
+        IDS_GLANCEABLES_TASKS_TASK_ITEM_MARK_COMPLETED_ACCESSIBLE_NAME));
 
     const ax::mojom::CheckedState checked_state =
         checked_ ? ax::mojom::CheckedState::kTrue
@@ -147,7 +145,7 @@ class GlanceablesTaskView::CheckButton : public views::ImageButton {
   bool checked_ = false;
 };
 
-BEGIN_METADATA(GlanceablesTaskView, CheckButton, views::ImageButton)
+BEGIN_METADATA(GlanceablesTaskView, CheckButton)
 END_METADATA
 
 class GlanceablesTaskView::TaskTitleButton : public views::LabelButton {
@@ -179,7 +177,7 @@ class GlanceablesTaskView::TaskTitleButton : public views::LabelButton {
   }
 };
 
-BEGIN_METADATA(GlanceablesTaskView, TaskTitleButton, views::LabelButton)
+BEGIN_METADATA(GlanceablesTaskView, TaskTitleButton)
 END_METADATA
 
 GlanceablesTaskView::GlanceablesTaskView(

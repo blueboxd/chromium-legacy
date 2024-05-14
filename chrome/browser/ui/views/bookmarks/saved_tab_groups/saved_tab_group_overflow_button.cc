@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/bookmarks/saved_tab_groups/saved_tab_group_bar.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
@@ -25,14 +26,20 @@
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/view_class_properties.h"
 
+namespace tab_groups {
+
 SavedTabGroupOverflowButton::SavedTabGroupOverflowButton(
     PressedCallback callback)
     : views::MenuButton(std::move(callback)) {
+  bool v2_enabled = base::FeatureList::IsEnabled(features::kTabGroupsSaveV2);
   SetAccessibilityProperties(
       ax::mojom::Role::kMenu,
-      l10n_util::GetStringUTF16(IDS_ACCNAME_SAVED_TAB_GROUPS_CHEVRON));
-  SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_SAVED_TAB_GROUPS_OVERFLOW_BUTTON_TOOLTIP));
+      l10n_util::GetStringUTF16(v2_enabled
+                                    ? IDS_ACCNAME_TAB_GROUPS_EVERYTHING
+                                    : IDS_ACCNAME_SAVED_TAB_GROUPS_CHEVRON));
+  SetTooltipText(l10n_util::GetStringUTF16(
+      v2_enabled ? IDS_TAB_GROUPS_EVERYTHING_BUTTON_TOOLTIP
+                 : IDS_SAVED_TAB_GROUPS_OVERFLOW_BUTTON_TOOLTIP));
   SetFlipCanvasOnPaintForRTLUI(true);
   ConfigureInkDropForToolbar(this);
   SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -69,9 +76,15 @@ void SavedTabGroupOverflowButton::OnThemeChanged() {
                                     ? kBookmarkbarOverflowRefreshIcon
                                     : kOverflowChevronIcon;
   SetImageModel(views::Button::STATE_NORMAL,
-                ui::ImageModel::FromVectorIcon(icon, overflow_color));
+                ui::ImageModel::FromVectorIcon(
+                    base::FeatureList::IsEnabled(features::kTabGroupsSaveV2)
+                        ? kSavedTabGroupBarEverythingIcon
+                        : icon,
+                    overflow_color));
   return;
 }
 
 BEGIN_METADATA(SavedTabGroupOverflowButton)
 END_METADATA
+
+}  // namespace tab_groups

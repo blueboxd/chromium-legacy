@@ -14,13 +14,15 @@ class AutofillAgentTestApi {
  public:
   explicit AutofillAgentTestApi(AutofillAgent* agent) : agent_(*agent) {}
 
+  bool is_dom_content_loaded() const { return agent_->is_dom_content_loaded_; }
+
   FormTracker& form_tracker() { return *agent_->form_tracker_; }
   void set_form_tracker(std::unique_ptr<FormTracker> form_tracker) {
     agent_->form_tracker_ = std::move(form_tracker);
   }
 
-  std::optional<FormData> last_interacted_saved_state() {
-    return agent_->last_interacted_.saved_state;
+  std::optional<FormData> provisionally_saved_form() {
+    return agent_->provisionally_saved_form();
   }
 
  private:

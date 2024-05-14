@@ -28,6 +28,10 @@ namespace {
 // watcher.
 constexpr base::TimeDelta kFileManagerWatcherInterval = base::Seconds(15);
 
+// TODO(b/317137739): Remove this once a proper API call is introduced.
+// Temp custom action to request ODFS sync with the cloud.
+constexpr char kODFSSyncWithCloudAction[] = "HIDDEN_SYNC_WITH_CLOUD";
+
 const GURL GetContentCacheURL() {
   return GURL("chrome://content-cache/");
 }
@@ -92,18 +96,25 @@ CloudFileSystem::CloudFileSystem(
 
 CloudFileSystem::CloudFileSystem(
     std::unique_ptr<ProvidedFileSystemInterface> file_system,
-    ContentCache* content_cache)
-    : file_system_(std::move(file_system)), content_cache_(content_cache) {
-  if (content_cache_) {
-    // Add watcher to keep content cache up to date. Notifications are received
-    // though Notify() so no notification_callback is needed.
-    AddWatcher(GetContentCacheURL(), RootFilePath(),
-               /*recursive=*/true, /*persistent=*/false,
-               base::BindOnce([](base::File::Error result) {
-                 VLOG(1) << "Added file watcher on root: " << result;
-               }),
-               base::DoNothing());
+    CacheManager* cache_manager)
+    : file_system_(std::move(file_system)) {
+  if (!cache_manager) {
+    return;
   }
+
+  cache_manager->InitializeForProvider(
+      file_system_->GetFileSystemInfo().mount_path().BaseName(),
+      base::BindOnce(&CloudFileSystem::OnContentCacheInitialized,
+                     weak_ptr_factory_.GetWeakPtr()));
+
+  // Add watcher to keep content cache up to date. Notifications are received
+  // though Notify() so no notification_callback is needed.
+  AddWatcher(GetContentCacheURL(), RootFilePath(),
+             /*recursive=*/true, /*persistent=*/false,
+             base::BindOnce([](base::File::Error result) {
+               VLOG(1) << "Added file watcher on root: " << result;
+             }),
+             base::DoNothing());
 }
 
 CloudFileSystem::~CloudFileSystem() {
@@ -113,6 +124,15 @@ CloudFileSystem::~CloudFileSystem() {
                   base::BindOnce([](base::File::Error result) {
                     VLOG(1) << "Removed file watcher on root: " << result;
                   }));
+  }
+}
+
+void CloudFileSystem::OnContentCacheInitialized(
+    base::FileErrorOr<std::unique_ptr<ContentCache>> error_or_cache) {
+  LOG_IF(ERROR, !error_or_cache.has_value())
+      << "Error initializing the content cache: " << error_or_cache.error();
+  if (error_or_cache.has_value()) {
+    content_cache_ = std::move(error_or_cache.value());
   }
 }
 
@@ -157,15 +177,17 @@ AbortCallback CloudFileSystem::ReadDirectory(
   return file_system_->ReadDirectory(directory_path, callback);
 }
 
-AbortCallback CloudFileSystem::ReadFile(int file_handle,
-                                         net::IOBuffer* buffer,
-                                         int64_t offset,
-                                         int length,
-                                         ReadChunkReceivedCallback callback) {
-  VLOG(1) << "ReadFile {fsid = '" << GetFileSystemId() << "', file_handle = '"
-          << file_handle << "', offset = '" << offset << "', length = '"
+AbortCallback CloudFileSystem::ReadFile(int operation_id,
+                                        net::IOBuffer* buffer,
+                                        int64_t offset,
+                                        int length,
+                                        ReadChunkReceivedCallback callback) {
+  VLOG(1) << "ReadFile {fsid = '" << GetFileSystemId() << "', operation_id = '"
+          << operation_id << "', offset = '" << offset << "', length = '"
           << length << "'}";
-  return file_system_->ReadFile(file_handle, buffer, offset, length, callback);
+  DCHECK(operation_id_to_file_handle_[operation_id]);
+  return file_system_->ReadFile(operation_id_to_file_handle_[operation_id],
+                                buffer, offset, length, callback);
 }
 
 AbortCallback CloudFileSystem::OpenFile(const base::FilePath& file_path,
@@ -173,15 +195,23 @@ AbortCallback CloudFileSystem::OpenFile(const base::FilePath& file_path,
                                          OpenFileCallback callback) {
   VLOG(1) << "OpenFile {fsid = '" << GetFileSystemId() << "', file_path = '"
           << file_path << "', mode = '" << mode << "'}";
-  return file_system_->OpenFile(file_path, mode, std::move(callback));
+  return file_system_->OpenFile(
+      file_path, mode,
+      base::BindOnce(&CloudFileSystem::OnOpenFileCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 AbortCallback CloudFileSystem::CloseFile(
-    int file_handle,
+    int operation_id,
     storage::AsyncFileUtil::StatusCallback callback) {
-  VLOG(1) << "CloseFile {fsid = '" << GetFileSystemId() << "', file_handle = '"
-          << file_handle << "'}";
-  return file_system_->CloseFile(file_handle, std::move(callback));
+  VLOG(1) << "CloseFile {fsid = '" << GetFileSystemId() << "', operation_id = '"
+          << operation_id << "'}";
+  DCHECK(operation_id_to_file_handle_[operation_id]);
+  return file_system_->CloseFile(
+      operation_id_to_file_handle_[operation_id],
+      base::BindOnce(&CloudFileSystem::OnCloseFileCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), operation_id,
+                     std::move(callback)));
 }
 
 AbortCallback CloudFileSystem::CreateDirectory(
@@ -222,24 +252,27 @@ AbortCallback CloudFileSystem::CopyEntry(
 }
 
 AbortCallback CloudFileSystem::WriteFile(
-    int file_handle,
+    int operation_id,
     net::IOBuffer* buffer,
     int64_t offset,
     int length,
     storage::AsyncFileUtil::StatusCallback callback) {
-  VLOG(1) << "WriteFile {fsid = '" << GetFileSystemId() << "', file_handle = '"
-          << file_handle << "', offset = '" << offset << "', length = '"
+  VLOG(1) << "WriteFile {fsid = '" << GetFileSystemId() << "', operation_id = '"
+          << operation_id << "', offset = '" << offset << "', length = '"
           << length << "'}";
-  return file_system_->WriteFile(file_handle, buffer, offset, length,
-                                 std::move(callback));
+  DCHECK(operation_id_to_file_handle_[operation_id]);
+  return file_system_->WriteFile(operation_id_to_file_handle_[operation_id],
+                                 buffer, offset, length, std::move(callback));
 }
 
 AbortCallback CloudFileSystem::FlushFile(
-    int file_handle,
+    int operation_id,
     storage::AsyncFileUtil::StatusCallback callback) {
-  VLOG(1) << "FlushFile {fsid = '" << GetFileSystemId() << "', file_handle = '"
-          << file_handle << "'}";
-  return file_system_->FlushFile(file_handle, std::move(callback));
+  VLOG(1) << "FlushFile {fsid = '" << GetFileSystemId() << "', operation_id = '"
+          << operation_id << "'}";
+  DCHECK(operation_id_to_file_handle_[operation_id]);
+  return file_system_->FlushFile(operation_id_to_file_handle_[operation_id],
+                                 std::move(callback));
 }
 
 AbortCallback CloudFileSystem::MoveEntry(
@@ -366,7 +399,40 @@ const std::string CloudFileSystem::GetFileSystemId() const {
 
 void CloudFileSystem::OnTimer() {
   VLOG(2) << "OnTimer";
-  // TODO(b/317137739): Sync with the cloud.
+  // TODO(b/317137739): Replace this with a proper API call once one is
+  // introduced.
+  // Request that the file system syncs with the Cloud. The entry path is
+  // insignficant, just pass it root.
+  ExecuteAction({base::FilePath("/")}, kODFSSyncWithCloudAction,
+                base::BindOnce([](base::File::Error result) {
+                  VLOG(1) << "Action " << kODFSSyncWithCloudAction
+                          << " completed: " << result;
+                }));
+}
+
+void CloudFileSystem::OnOpenFileCompleted(OpenFileCallback callback,
+                                          int file_handle,
+                                          base::File::Error result) {
+  int returned_id = file_handle;
+  // If the file is opened successfully then hold the operation_id until the
+  // file is closed.
+  if (result == base::File::FILE_OK) {
+    const int operation_id = ++next_operation_id_;
+    operation_id_to_file_handle_[operation_id] = file_handle;
+    returned_id = operation_id;
+  }
+  std::move(callback).Run(returned_id, result);
+}
+
+void CloudFileSystem::OnCloseFileCompleted(
+    int operation_id,
+    storage::AsyncFileUtil::StatusCallback callback,
+    base::File::Error result) {
+  // Closing is always final. Even if an error happened, the file is considered
+  // closed on the C++ side.
+  operation_id_to_file_handle_.erase(operation_id);
+
+  std::move(callback).Run(result);
 }
 
 }  // namespace ash::file_system_provider

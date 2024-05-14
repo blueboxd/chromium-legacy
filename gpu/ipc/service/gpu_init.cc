@@ -5,9 +5,10 @@
 #include "gpu/ipc/service/gpu_init.h"
 
 #include <cstdlib>
+#include <cstring>
+#include <optional>
 #include <string>
 
-#include <optional>
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -30,8 +31,11 @@
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_info_collector.h"
+#include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_switching.h"
 #include "gpu/config/gpu_util.h"
@@ -78,6 +82,16 @@
 #include "ui/gl/gl_fence_egl.h"
 #endif
 
+#if BUILDFLAG(USE_DAWN) || BUILDFLAG(SKIA_USE_DAWN)
+#include "third_party/dawn/include/dawn/dawn_proc.h"          // nogncheck
+#include "third_party/dawn/include/dawn/native/DawnNative.h"  // nogncheck
+#endif
+
+#if BUILDFLAG(SKIA_USE_DAWN)
+#include "gpu/command_buffer/service/dawn_context_provider.h"
+#include "third_party/dawn/include/dawn/webgpu_cpp.h"  // nogncheck
+#endif
+
 namespace gpu {
 
 namespace {
@@ -88,6 +102,13 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   if (!success)
     LOG(ERROR) << "CollectGraphicsInfo failed.";
   return success;
+}
+
+void InitializeDawnProcs() {
+#if BUILDFLAG(USE_DAWN) || BUILDFLAG(SKIA_USE_DAWN)
+  // Setup the global procs table for GPU process.
+  dawnProcSetProcs(&dawn::native::GetProcs());
+#endif  // BUILDFLAG(USE_DAWN) || BUILDFLAG(SKIA_USE_DAWN)
 }
 
 void InitializePlatformOverlaySettings(GPUInfo* gpu_info,
@@ -193,6 +214,22 @@ void DisableInProcessGpuVulkan(GpuFeatureInfo* gpu_feature_info,
     gpu_preferences->gr_context_type = GrContextType::kGL;
   }
 }
+
+#if BUILDFLAG(IS_ANDROID)
+// TODO(https://crbug.com/324468229): We currently do not handle Dawn device
+// lost with in-process-gpu.
+void DisableInProcessGpuGraphite(GpuFeatureInfo& gpu_feature_info,
+                                 GpuPreferences& gpu_preferences) {
+  if (gpu_feature_info.status_values[GPU_FEATURE_TYPE_SKIA_GRAPHITE] ==
+          kGpuFeatureStatusEnabled ||
+      gpu_preferences.gr_context_type == GrContextType::kGraphiteDawn) {
+    LOG(ERROR) << "Graphite not supported with in process gpu";
+    gpu_feature_info.status_values[GPU_FEATURE_TYPE_SKIA_GRAPHITE] =
+        kGpuFeatureStatusDisabled;
+    gpu_preferences.gr_context_type = GrContextType::kGL;
+  }
+}
+#endif
 
 #if BUILDFLAG(ENABLE_VULKAN)
 bool MatchGLInfo(const std::string& field, const std::string& patterns) {
@@ -629,19 +666,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     }
   }
 
-  // On MacOS, the default texture target for native GpuMemoryBuffers is
-  // GL_TEXTURE_RECTANGLE_ARB. This is due to CGL's requirements for creating
-  // a GL surface. However, when ANGLE is used on top of SwiftShader or Metal,
-  // it's necessary to use GL_TEXTURE_2D instead.
-  // TODO(crbug.com/1056312): The proper behavior is to check the config
-  // parameter set by the EGL_ANGLE_iosurface_client_buffer extension
 #if BUILDFLAG(IS_MAC)
-  if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
-      (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader ||
-       gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal)) {
-    SetMacOSSpecificTextureTarget(GL_TEXTURE_2D);
-    gpu_info_.macos_specific_texture_target = GL_TEXTURE_2D;
-  }
+  SetMacOSSpecificTextureTargetFromCurrentGLImplementation();
+  gpu_info_.macos_specific_texture_target = GetPlatformSpecificTextureTarget();
 #endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_WIN)
@@ -666,6 +693,15 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       base::LoadNativeLibrary(module_path.Append(L"dxil.dll"), nullptr);
       base::LoadNativeLibrary(module_path.Append(L"dxcompiler.dll"), nullptr);
 #endif
+
+      // Preload a redistributable DirectML.dll that allows testing WebNN
+      // against newer release of DirectML before it is integrated into
+      // Windows OS. Don't handle errors as failure here is non-fatal. The
+      // DirectML.dll within system folder will be loaded at a later point if
+      // the redistributable one fails to be loaded.
+      if (command_line->HasSwitch(switches::kUseRedistributableDirectML)) {
+        base::LoadNativeLibrary(module_path.Append(L"directml.dll"), nullptr);
+      }
     }
 
     ResumeGpuWatchdog(watchdog_thread_.get());
@@ -828,6 +864,17 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   }
   UMA_HISTOGRAM_BOOLEAN("GPU.Sandboxed", gpu_info_.sandboxed);
 
+  InitializeDawnProcs();
+
+  if (gpu_preferences_.gr_context_type == GrContextType::kGraphiteDawn) {
+    // TODO(crbug.com/325000752): Check if GPU_FEATURE_TYPE_SKIA_GRAPHITE is
+    // blocklisted and fail GPU process initialization if so.
+    if (!InitializeDawn()) {
+      // Fail initialization and restart the GPU process.
+      return false;
+    }
+  }
+
   init_successful_ = true;
 #if BUILDFLAG(IS_OZONE)
   ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
@@ -880,12 +927,14 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
     CHECK(result);
   } else {
     DisableInProcessGpuVulkan(&gpu_feature_info_, &gpu_preferences_);
+    DisableInProcessGpuGraphite(gpu_feature_info_, gpu_preferences_);
   }
 
   default_offscreen_surface_ =
       gl::init::CreateOffscreenGLSurface(gl_display, gfx::Size());
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GLImplementation", gl::GetGLImplementation());
+  InitializeDawnProcs();
 }
 #else
 void GpuInit::InitializeInProcess(base::CommandLine* command_line,
@@ -972,19 +1021,9 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
     }
   }
 
-  // On MacOS, the default texture target for native GpuMemoryBuffers is
-  // GL_TEXTURE_RECTANGLE_ARB. This is due to CGL's requirements for creating
-  // a GL surface. However, when ANGLE is used on top of SwiftShader or Metal,
-  // it's necessary to use GL_TEXTURE_2D instead.
-  // TODO(crbug.com/1056312): The proper behavior is to check the config
-  // parameter set by the EGL_ANGLE_iosurface_client_buffer extension
 #if BUILDFLAG(IS_MAC)
-  if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
-      (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader ||
-       gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal)) {
-    SetMacOSSpecificTextureTarget(GL_TEXTURE_2D);
-    gpu_info_.macos_specific_texture_target = GL_TEXTURE_2D;
-  }
+  SetMacOSSpecificTextureTargetFromCurrentGLImplementation();
+  gpu_info_.macos_specific_texture_target = GetPlatformSpecificTextureTarget();
 #endif  // BUILDFLAG(IS_MAC)
 
   if (!gl_disabled) {
@@ -1052,6 +1091,13 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   DisableInProcessGpuVulkan(&gpu_feature_info_, &gpu_preferences_);
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GLImplementation", gl::GetGLImplementation());
+
+  InitializeDawnProcs();
+  if (gpu_preferences_.gr_context_type == GrContextType::kGraphiteDawn) {
+    // For non-Android platforms in-process GPU is only used in tests. Just
+    // crash if it doesn't work to expose the test failures early.
+    CHECK(InitializeDawn());
+  }
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -1072,6 +1118,44 @@ scoped_refptr<gl::GLSurface> GpuInit::TakeDefaultOffscreenSurface() {
   return std::move(default_offscreen_surface_);
 }
 
+bool GpuInit::InitializeDawn() {
+#if BUILDFLAG(SKIA_USE_DAWN)
+  dawn_context_provider_ = gpu::DawnContextProvider::Create(
+      gpu_preferences_,
+      GpuDriverBugWorkarounds(
+          gpu_feature_info_.enabled_gpu_driver_bug_workarounds));
+  if (dawn_context_provider_) {
+    if (dawn_context_provider_->backend_type() == wgpu::BackendType::Vulkan) {
+#if BUILDFLAG(ENABLE_VULKAN)
+      // Even though Dawn successfully initialized Vulkan we still have to check
+      // if the Vulkan driver is problematic and shouldn't be used.
+      wgpu::AdapterProperties adapter_properties;
+      wgpu::AdapterPropertiesVk adapter_properties_vk;
+      adapter_properties.nextInChain = &adapter_properties_vk;
+      dawn_context_provider_->GetAdapter().GetProperties(&adapter_properties);
+
+      VulkanPhysicalDeviceProperties device_properties;
+      device_properties.device_name = adapter_properties.name;
+      device_properties.vendor_id = adapter_properties.vendorID;
+      device_properties.device_id = adapter_properties.deviceID;
+      device_properties.driver_version = adapter_properties_vk.driverVersion;
+
+      if (!CheckVulkanCompatibilities(device_properties, gpu_info_)) {
+        // The device is not compatible with Vulkan.
+        dawn_context_provider_.reset();
+        return false;
+      }
+#endif
+    }
+
+    return true;
+  }
+#endif
+
+  LOG(ERROR) << "Failed to create Dawn context provider for Graphite";
+  return false;
+}
+
 bool GpuInit::InitializeVulkan() {
 #if BUILDFLAG(ENABLE_VULKAN)
   DCHECK_EQ(gpu_feature_info_.status_values[GPU_FEATURE_TYPE_VULKAN],
@@ -1083,26 +1167,15 @@ bool GpuInit::InitializeVulkan() {
       gpu_preferences_.use_vulkan == VulkanImplementationName::kForcedNative;
   bool use_swiftshader = gl_use_swiftshader_ || vulkan_use_swiftshader;
 
-  const base::FeatureParam<std::string> force_enable_patterns(
-      &features::kVulkan, "force_enable_by_gl_renderer", "");
-  forced_native |=
-      MatchGLInfo(gpu_info_.gl_renderer, force_enable_patterns.Get());
-
-  const base::FeatureParam<std::string> disable_by_renderer(
-      &features::kVulkan, "disable_by_gl_renderer", "");
-  bool disabled = MatchGLInfo(gpu_info_.gl_renderer, disable_by_renderer.Get());
-  const base::FeatureParam<std::string> disable_by_driver(
-      &features::kVulkan, "disable_by_gl_driver", "");
-  disabled |=
-      MatchGLInfo(gpu_info_.gpu.driver_version, disable_by_driver.Get());
-#if !BUILDFLAG(IS_ANDROID)
-  // For non-Android, check disabling params before Vulkan initialization.
-  // Android disabling params are checked later, because they can be overridden
-  // by |enable_by_device_name| which requires Vulkan to already be initialized.
-  if (!use_swiftshader && !forced_native && disabled) {
-    return false;
+  if (!use_swiftshader && !forced_native) {
+    // This can be used as a finch kill switch in case Vulkan is accidentally
+    // enabled on a device that it doesn't work properly with.
+    const base::FeatureParam<std::string> disable_by_renderer(
+        &features::kVulkan, "disable_by_gl_renderer", "");
+    if (MatchGLInfo(gpu_info_.gl_renderer, disable_by_renderer.Get())) {
+      return false;
+    }
   }
-#endif  // !BUILDFLAG(IS_ANDROID)
 
   vulkan_implementation_ = CreateVulkanImplementation(
       vulkan_use_swiftshader, gpu_preferences_.enable_vulkan_protected_memory);
@@ -1119,15 +1192,20 @@ bool GpuInit::InitializeVulkan() {
   // TODO(magchen): Add back these two histograms here and re-enable them in
   // histograms.xml when we start Vulkan finch on Windows.
 
-  if (!vulkan_implementation_)
+  if (!vulkan_implementation_) {
     return false;
+  }
 
-  const base::FeatureParam<std::string> enable_by_device_name(
-      &features::kVulkan, "enable_by_device_name", "");
+  auto& vulkan_info =
+      vulkan_implementation_->GetVulkanInstance()->vulkan_info();
+  if (vulkan_info.physical_devices.empty()) {
+    return false;
+  }
+
+  VulkanPhysicalDeviceProperties device_properties(
+      vulkan_info.physical_devices.front().properties);
   if (!use_swiftshader && !forced_native &&
-      !CheckVulkanCompatibilities(
-          vulkan_implementation_->GetVulkanInstance()->vulkan_info(), gpu_info_,
-          enable_by_device_name.Get(), disabled)) {
+      !CheckVulkanCompatibilities(device_properties, gpu_info_)) {
     vulkan_implementation_.reset();
     return false;
   }

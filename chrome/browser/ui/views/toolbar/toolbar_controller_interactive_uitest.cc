@@ -4,6 +4,7 @@
 
 #include <optional>
 #include <sstream>
+
 #include "base/feature_list.h"
 #include "base/functional/overloaded.h"
 #include "base/test/metrics/user_action_tester.h"
@@ -19,7 +20,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_util.h"
-#include "chrome/browser/ui/views/toolbar/chrome_labs_button.h"
+#include "chrome/browser/ui/views/toolbar/chrome_labs/chrome_labs_button.h"
 #include "chrome/browser/ui/views/toolbar/pinned_toolbar_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -351,8 +352,15 @@ class ToolbarControllerUiTest : public InteractiveFeaturePromoTest {
   int overflow_threshold_width_;
 };
 
+// TODO(crbug.com/41495158): Flaky on Windows.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_StartBrowserWithThresholdWidth \
+  DISABLED_StartBrowserWithThresholdWidth
+#else
+#define MAYBE_StartBrowserWithThresholdWidth StartBrowserWithThresholdWidth
+#endif
 IN_PROC_BROWSER_TEST_F(ToolbarControllerUiTest,
-                       StartBrowserWithThresholdWidth) {
+                       MAYBE_StartBrowserWithThresholdWidth) {
   // Start browser with threshold width. Should not see overflow.
   SetBrowserWidth(overflow_threshold_width());
   EXPECT_FALSE(overflow_button()->GetVisible());
@@ -386,9 +394,16 @@ IN_PROC_BROWSER_TEST_F(ToolbarControllerUiTest,
   EXPECT_EQ(1, user_action_tester.GetActionCount(
                    "ResponsiveToolbar.OverflowButtonHidden"));
 }
-
+// TODO(crbug.com/41495158): Flaky on Windows.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_StartBrowserWithWidthSmallerThanThreshold \
+  DISABLED_StartBrowserWithWidthSmallerThanThreshold
+#else
+#define MAYBE_StartBrowserWithWidthSmallerThanThreshold \
+  StartBrowserWithWidthSmallerThanThreshold
+#endif
 IN_PROC_BROWSER_TEST_F(ToolbarControllerUiTest,
-                       StartBrowserWithWidthSmallerThanThreshold) {
+                       MAYBE_StartBrowserWithWidthSmallerThanThreshold) {
   // Start browser with a smaller width than threshold. Should see overflow.
   SetBrowserWidth(overflow_threshold_width() - 1);
   EXPECT_TRUE(overflow_button()->GetVisible());
@@ -597,7 +612,14 @@ IN_PROC_BROWSER_TEST_F(ToolbarControllerUiTest,
 // overflow button should show. Verify: The pinned extension button should still
 // be visible because there's enough space for it. Extensions container should
 // not have animation because its visibility didn't change.
-IN_PROC_BROWSER_TEST_F(ToolbarControllerUiTest, ExtensionHasNoAnimationLoop) {
+// TODO(crbug.com/41495158): Flaky on Windows.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_ExtensionHasNoAnimationLoop DISABLED_ExtensionHasNoAnimationLoop
+#else
+#define MAYBE_ExtensionHasNoAnimationLoop ExtensionHasNoAnimationLoop
+#endif
+IN_PROC_BROWSER_TEST_F(ToolbarControllerUiTest,
+                       MAYBE_ExtensionHasNoAnimationLoop) {
   RunTestSequence(
       LoadAndPinExtensionButton(), PinBookmarkToToolbar(),
       PinReadingModeToToolbar(), Do([this]() {
@@ -613,9 +635,16 @@ IN_PROC_BROWSER_TEST_F(ToolbarControllerUiTest, ExtensionHasNoAnimationLoop) {
                    ->is_animating());
 }
 
-IN_PROC_BROWSER_TEST_F(ToolbarControllerUiTest, DoNotShowIphWhenOverflowed) {
+// TODO(crbug.com/41495158): Flaky on Windows.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_DoNotShowIphWhenOverflowed DISABLED_DoNotShowIphWhenOverflowed
+#else
+#define MAYBE_DoNotShowIphWhenOverflowed DoNotShowIphWhenOverflowed
+#endif
+IN_PROC_BROWSER_TEST_F(ToolbarControllerUiTest,
+                       MAYBE_DoNotShowIphWhenOverflowed) {
   RunTestSequence(
-      WaitForFeatureEngagementReady(), ResizeRelativeToOverflow(-1),
+      ResizeRelativeToOverflow(-1),
       MaybeShowPromo(feature_engagement::kIPHTabSearchFeature,
                      user_education::FeaturePromoResult::kBlockedByUi),
       ResizeRelativeToOverflow(1),

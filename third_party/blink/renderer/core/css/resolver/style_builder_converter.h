@@ -229,8 +229,8 @@ class StyleBuilderConverter {
                                                    const CSSValue&);
   static ScopedCSSName* ConvertCustomIdent(StyleResolverState&,
                                            const CSSValue&);
-  static ScopedCSSName* ConvertAnchorDefault(StyleResolverState&,
-                                             const CSSValue&);
+  static ScopedCSSName* ConvertPositionAnchor(StyleResolverState&,
+                                              const CSSValue&);
   static ScopedCSSNameList* ConvertAnchorName(StyleResolverState&,
                                               const CSSValue&);
   static StyleInitialLetter ConvertInitialLetter(StyleResolverState&,
@@ -268,6 +268,7 @@ class StyleBuilderConverter {
   static SVGPaint ConvertSVGPaint(StyleResolverState&,
                                   const CSSValue&,
                                   bool for_visited_link);
+  static TextBoxEdge ConvertTextBoxEdge(StyleResolverState&, const CSSValue&);
   static TextDecorationThickness ConvertTextDecorationThickness(
       StyleResolverState&,
       const CSSValue&);
@@ -295,15 +296,12 @@ class StyleBuilderConverter {
                                             const CSSValue&);
   static cc::ScrollSnapAlign ConvertSnapAlign(StyleResolverState&,
                                               const CSSValue&);
-  static scoped_refptr<TranslateTransformOperation> ConvertTranslate(
-      StyleResolverState&,
-      const CSSValue&);
-  static scoped_refptr<RotateTransformOperation> ConvertRotate(
-      StyleResolverState&,
-      const CSSValue&);
-  static scoped_refptr<ScaleTransformOperation> ConvertScale(
-      StyleResolverState&,
-      const CSSValue&);
+  static TranslateTransformOperation* ConvertTranslate(StyleResolverState&,
+                                                       const CSSValue&);
+  static RotateTransformOperation* ConvertRotate(StyleResolverState&,
+                                                 const CSSValue&);
+  static ScaleTransformOperation* ConvertScale(StyleResolverState&,
+                                               const CSSValue&);
   static RespectImageOrientationEnum ConvertImageOrientation(
       StyleResolverState&,
       const CSSValue&);
@@ -317,7 +315,7 @@ class StyleBuilderConverter {
                                                  const CSSValue&);
   template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
   static Length ConvertPositionLength(StyleResolverState&, const CSSValue&);
-  static Rotation ConvertRotation(const CSSValue&);
+  static Rotation ConvertRotation(const CSSLengthResolver&, const CSSValue&);
 
   static const CSSValue& ConvertRegisteredPropertyInitialValue(Document&,
                                                                const CSSValue&);
@@ -497,6 +495,7 @@ CORE_EXPORT StyleColor
 ResolveColorValue(const CSSValue& value,
                   const TextLinkColors& text_link_colors,
                   mojom::blink::ColorScheme used_color_scheme,
+                  const ui::ColorProvider* color_provider,
                   bool for_visited_link = false);
 
 }  // namespace blink

@@ -114,6 +114,9 @@ class HistoryService : public KeyedService,
     return Init(false, history_database_params);
   }
 
+  // Returns the directory containing the History databases.
+  const base::FilePath& history_dir() const { return history_dir_; }
+
   // Triggers the backend to load if it hasn't already, and then returns whether
   // it's finished loading.
   // Note: Virtual needed for mocking.
@@ -278,6 +281,15 @@ class HistoryService : public KeyedService,
                                            VisitID visit_id);
 
   // Querying ------------------------------------------------------------------
+
+  // Returns the most recent visit associated with each url. Similar to
+  // QueryURL but it sends a vector of visits to the caller instead of a
+  // QueryResult.
+  // Note: Virtual needed for mocking.
+  virtual base::CancelableTaskTracker::TaskId GetMostRecentVisitForEachURL(
+      const std::vector<GURL>& urls,
+      base::OnceCallback<void(std::map<GURL, VisitRow>)> callback,
+      base::CancelableTaskTracker* tracker);
 
   // Returns the information about the requested URL. If the URL is found,
   // success will be true and the information will be in the URLRow parameter.
@@ -488,7 +500,7 @@ class HistoryService : public KeyedService,
   // removed. Also, if `restrict_app_id` is present, only visits matching the
   // passed app_id are removed.
   void ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
-                            absl::optional<std::string> restrict_app_id,
+                            std::optional<std::string> restrict_app_id,
                             base::Time begin_time,
                             base::Time end_time,
                             bool user_initiated,
@@ -523,7 +535,7 @@ class HistoryService : public KeyedService,
   void DeleteLocalAndRemoteHistoryBetween(WebHistoryService* web_history,
                                           base::Time begin_time,
                                           base::Time end_time,
-                                          absl::optional<std::string> app_id,
+                                          std::optional<std::string> app_id,
                                           base::OnceClosure callback,
                                           base::CancelableTaskTracker* tracker);
 
@@ -1120,6 +1132,9 @@ class HistoryService : public KeyedService,
   void LogTransitionMetricsForVisit(ui::PageTransition transition);
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  // The directory containing the History databases.
+  base::FilePath history_dir_;
 
   // The TaskRunner to which HistoryBackend tasks are posted. Nullptr once
   // Cleanup() is called.

@@ -8,13 +8,13 @@
 #include <stddef.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
-#include <optional>
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/functional/callback.h"
@@ -151,7 +151,7 @@ class CC_EXPORT PropertyTree {
   base::flat_map<ElementId, int> element_id_to_node_index_;
 };
 
-struct AnchorPositionScrollersData;
+struct AnchorPositionScrollData;
 struct StickyPositionNodeData;
 
 class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
@@ -177,10 +177,30 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   bool OnTransformAnimated(ElementId element_id,
                            const gfx::Transform& transform);
   void ResetChangeTracking();
-  // Updates the parent, target, and screen space transforms and snapping.
+
+  // Updates the parent, target, and screen space transforms and snapping for
+  // all nodes.
+  void UpdateAllTransforms(const ViewportPropertyIds& viewport_property_ids);
+  // UpdateAllTransforms() may update the transform tree in multiple passes.
+  // This struct stores data collected and used across the passes.
+  struct UpdateTransformsData {
+    UpdateTransformsData();
+    ~UpdateTransformsData();
+    // A transform node may depend on a later transform node (e.g. an anchor
+    // position offset node references later adjustment container nodes). When
+    // the former is updated, the latter id will be stored in this set assuming
+    // the depended data is stale. When the latter node is updated, its id will
+    // be removed from this set if it hasn't changed anything affecting the
+    // depending node. If this set is not empty after a pass,
+    // UpdateAllTransforms() will run another pass.
+    base::flat_set<int> stale_forward_dependencies;
+  };
+
+  // Updates transforms for a node.
   void UpdateTransforms(
       int id,
-      const ViewportPropertyIds* viewport_property_ids = nullptr);
+      const ViewportPropertyIds* viewport_property_ids = nullptr,
+      UpdateTransformsData* update_data = nullptr);
   void UpdateTransformChanged(TransformNode* node, TransformNode* parent_node);
   void UpdateNodeAndAncestorsAreAnimatedOrInvertible(
       TransformNode* node,
@@ -244,9 +264,9 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   }
   StickyPositionNodeData& EnsureStickyPositionData(int node_id);
 
-  const AnchorPositionScrollersData* GetAnchorPositionScrollersData(
+  const AnchorPositionScrollData* GetAnchorPositionScrollData(
       int node_id) const;
-  AnchorPositionScrollersData& EnsureAnchorPositionScrollersData(int node_id);
+  AnchorPositionScrollData& EnsureAnchorPositionScrollData(int node_id);
 
   // Computes the combined transform between |source_id| and |dest_id|. These
   // two nodes must be on the same ancestor chain.
@@ -268,9 +288,12 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
 
   StickyPositionNodeData* MutableStickyPositionData(int node_id);
   gfx::Vector2dF StickyPositionOffset(TransformNode* node);
-  gfx::Vector2dF AnchorPositionScrollOffset(TransformNode* node);
+  gfx::Vector2dF AnchorPositionOffset(TransformNode* node,
+                                      int max_updated_node_id,
+                                      UpdateTransformsData* update_data);
   void UpdateLocalTransform(TransformNode* node,
-                            const ViewportPropertyIds* viewport_property_ids);
+                            const ViewportPropertyIds* viewport_property_ids,
+                            UpdateTransformsData* update_data);
   void UpdateScreenSpaceTransform(TransformNode* node,
                                   TransformNode* parent_node);
   void UpdateAnimationProperties(TransformNode* node,
@@ -290,18 +313,19 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   std::vector<int> nodes_affected_by_outer_viewport_bounds_delta_;
   std::vector<TransformCachedNodeData> cached_data_;
   std::vector<StickyPositionNodeData> sticky_position_data_;
-  std::vector<AnchorPositionScrollersData> anchor_position_scrollers_data_;
+  std::vector<AnchorPositionScrollData> anchor_position_scroll_data_;
 };
 
-struct CC_EXPORT AnchorPositionScrollersData {
-  AnchorPositionScrollersData();
-  ~AnchorPositionScrollersData();
-  AnchorPositionScrollersData(const AnchorPositionScrollersData&);
+struct CC_EXPORT AnchorPositionScrollData {
+  AnchorPositionScrollData();
+  ~AnchorPositionScrollData();
+  AnchorPositionScrollData(const AnchorPositionScrollData&);
 
-  bool operator==(const AnchorPositionScrollersData&) const;
-  bool operator!=(const AnchorPositionScrollersData&) const;
+  bool operator==(const AnchorPositionScrollData&) const;
 
-  std::vector<ElementId> scroll_container_ids;
+  // See blink::AnchorPositionScrollData for the definition of adjustment
+  // containers.
+  std::vector<ElementId> adjustment_container_ids;
   gfx::Vector2d accumulated_scroll_origin;
   bool needs_scroll_adjustment_in_x = false;
   bool needs_scroll_adjustment_in_y = false;
@@ -585,9 +609,15 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   void NotifyDidChangeScrollbarsHidden(ElementId scroll_element_id,
                                        bool hidden) const;
 
-  // Returns true iff the node is composited and does not have any non-transient
-  // main-thread scrolling reasons (see main_thread_scrolling_reason.h).
+  // These functions determines how the rendered result of a compositor-
+  // initiated scroll should be realized by updating the scroll offset in
+  // the associated transform node.
+  // All of them return false if `node.transform_id` is invalid which means
+  // Blink didn't paint the transform node because the scrolling contents
+  // were far from the viewport and we don't need to realize the scrolls.
   bool CanRealizeScrollsOnCompositor(const ScrollNode& node) const;
+  // TODO(crbug.com/40517276): Add realization mode for RasterInducingScroll.
+  bool ShouldRealizeScrollsOnMain(const ScrollNode& node) const;
 
   // Reports reasons for blocking scroll updates on main-thread repaint. For use
   // only with scroll unification enabled. Returns bitfield of values from

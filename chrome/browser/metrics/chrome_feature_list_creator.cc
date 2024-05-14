@@ -36,6 +36,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/content_settings/core/common/features.h"
+#include "components/feature_engagement/public/feature_constants.h"
 #include "components/flags_ui/flags_ui_pref_names.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/language/core/browser/pref_names.h"
@@ -89,9 +90,6 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
   } chrome_layer_override_info[] = {
       // Overrides for --enable-download-warning-improvements.
       {switches::kEnableDownloadWarningImprovements,
-       std::cref(safe_browsing::kDeepScanningEncryptedArchives),
-       base::FeatureList::OVERRIDE_ENABLE_FEATURE},
-      {switches::kEnableDownloadWarningImprovements,
        std::cref(safe_browsing::kDownloadTailoredWarnings),
        base::FeatureList::OVERRIDE_ENABLE_FEATURE},
       {switches::kEnableDownloadWarningImprovements,
@@ -100,6 +98,14 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
       {switches::kEnableDownloadWarningImprovements,
        std::cref(safe_browsing::kEncryptedArchivesMetadata),
        base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+      {switches::kEnableDownloadWarningImprovements,
+       std::cref(safe_browsing::kDeepScanningPromptRemoval),
+       base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+#if !BUILDFLAG(IS_ANDROID)
+      {switches::kEnableDownloadWarningImprovements,
+       std::cref(feature_engagement::kIPHDeepScanPromptRemovalFeature),
+       base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+#endif
 
       // Override for --privacy-sandbox-ads-apis.
       {switches::kEnablePrivacySandboxAdsApis,

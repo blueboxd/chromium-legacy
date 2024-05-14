@@ -29,7 +29,7 @@
     // existing data should get a new version. Otherwise, existing data may
     // continue to be used and updates made here will not always appear.
     // Also then run tools/search_engine_choice/generate_search_engine_icons.py.
-    "kCurrentDataVersion": 146
+    "kCurrentDataVersion": 159
   },
 
   // The following engines are included in country lists and are added to the
@@ -61,7 +61,7 @@
     },
 
     "bing": {
-      "name": "Bing",
+      "name": "Microsoft Bing",
       "keyword": "bing.com",
       "favicon_url": "https://www.bing.com/sa/simg/bing_p_rr_teal_min.ico",
       "search_url": "https://www.bing.com/search?q={searchTerms}&PC=U316&FORM=CHROMN",
@@ -74,7 +74,7 @@
     },
 
     "brave": {
-      "name": "Brave Search",
+      "name": "Brave",
       "keyword": "search.brave.com",
       "favicon_url": "https://cdn.search.brave.com/serp/favicon.ico",
       "search_url": "https://search.brave.com/search?q={searchTerms}",
@@ -119,7 +119,6 @@
       "favicon_url": "https://cdn.ecosia.org/assets/images/ico/favicon.ico",
       "search_url": "https://www.ecosia.org/search?q={searchTerms}&addon=opensearch",
       "suggest_url": "https://ac.ecosia.org/autocomplete?q={searchTerms}&type=list",
-      "image_url": "https://www.ecosia.org/images?q={searchTerms}&addon=opensearch",
       "new_tab_url": "https://www.ecosia.org/newtab/",
       "type": "SEARCH_ENGINE_ECOSIA",
       "id": 101
@@ -159,6 +158,7 @@
       "favicon_url": "https://karmasearch.org/favicon.ico",
       "search_url": "https://karmasearch.org/search?q={searchTerms}",
       "suggest_url": "https://api.karmasearch.org/search/autosuggest?q={searchTerms}",
+      "new_tab_url": "https://karmasearch.org/newtab",
       "type": "SEARCH_ENGINE_KARMA",
       "id": 110
     },
@@ -169,6 +169,8 @@
       "favicon_url": "https://www.lilo.org/wp-content/themes/jarvis_wp/ajans/assets/favicon.ico",
       "search_url": "https://search.lilo.org/?q={searchTerms}",
       "suggest_url": "https://search.lilo.org/api/?service=suggestions&action=suggest&q={searchTerms}&f=chr&l={language}",
+      "new_tab_url": "https://search.lilo.org",
+      "type": "SEARCH_ENGINE_LILO",
       "id": 111
     },
 
@@ -265,21 +267,24 @@
     },
 
     "seznam_cz": {
-      "name": "Seznam",
+      "name": "Seznam.cz",
       "keyword": "seznam.cz",
       "favicon_url": "https://search.seznam.cz/favicon.ico",
       "search_url": "https://search.seznam.cz/?q={searchTerms}",
       "suggest_url": "https://suggest.seznam.cz/fulltext_ff?phrase={searchTerms}",
+      "new_tab_url": "https://search.seznam.cz/?sourceid=chromechoice",
       "type": "SEARCH_ENGINE_SEZNAM",
       "id": 25
     },
 
+    // TODO(b/335397380): Remove this entry once b/322513019 is fixed.
     "seznam_sk": {
-      "name": "Seznam",
+      "name": "Seznam.cz",
       "keyword": "seznam.sk",
-      "favicon_url": "https://search.seznam.sk/favicon.ico",
-      "search_url": "https://search.seznam.sk/?q={searchTerms}",
-      "suggest_url": "https://suggest.seznam.sk/fulltext_ff?phrase={searchTerms}",
+      "favicon_url": "https://search.seznam.cz/favicon.ico",
+      "search_url": "https://search.seznam.cz/?q={searchTerms}",
+      "suggest_url": "https://suggest.seznam.cz/fulltext_ff?phrase={searchTerms}",
+      "new_tab_url": "https://search.seznam.cz/?sourceid=chromechoice",
       "type": "SEARCH_ENGINE_SEZNAM",
       "id": 25
     },
@@ -424,8 +429,18 @@
       "id": 2
     },
 
+    "yahoo_emea": {
+      "name": "Yahoo Search",
+      "keyword": "emea.yahoo.com",
+      "favicon_url": "https://search.yahoo.com/favicon.ico",
+      "search_url": "https://emea.search.yahoo.com/search{google:pathWildcard}?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "suggest_url": "https://emea.search.yahoo.com/sugg/chrome?output=fxjson&appid=crmas&command={searchTerms}",
+      "type": "SEARCH_ENGINE_YAHOO",
+      "id": 2
+    },
+
     "yahoo_es": {
-      "name": "Yahoo! Espa\u00f1a",
+      "name": "Yahoo Búsquedas",
       "keyword": "es.yahoo.com",
       "favicon_url": "https://es.search.yahoo.com/favicon.ico",
       "search_url": "https://es.search.yahoo.com/search{google:pathWildcard}?ei={inputEncoding}&fr=crmas&p={searchTerms}",
@@ -444,7 +459,7 @@
     },
 
     "yahoo_fr": {
-      "name": "Yahoo! France",
+      "name": "Yahoo Recherche",
       "keyword": "fr.yahoo.com",
       "favicon_url": "https://fr.search.yahoo.com/favicon.ico",
       "search_url": "https://fr.search.yahoo.com/search{google:pathWildcard}?ei={inputEncoding}&fr=crmas&p={searchTerms}",
@@ -484,7 +499,7 @@
     },
 
     "yahoo_it": {
-      "name": "Yahoo! Italia",
+      "name": "Ricerca di Yahoo",
       "keyword": "it.yahoo.com",
       "favicon_url": "https://it.search.yahoo.com/favicon.ico",
       "search_url": "https://it.search.yahoo.com/search{google:pathWildcard}?ei={inputEncoding}&fr=crmas&p={searchTerms}",
@@ -612,7 +627,7 @@
     },
 
     "yahoo_uk": {
-      "name": "Yahoo! UK & Ireland",
+      "name": "Yahoo Search",
       "keyword": "uk.yahoo.com",
       "favicon_url": "https://uk.search.yahoo.com/favicon.ico",
       "search_url": "https://uk.search.yahoo.com/search{google:pathWildcard}?ei={inputEncoding}&fr=crmas&p={searchTerms}",
@@ -1065,6 +1080,7 @@
       "favicon_url": "https://oceanhero.today/favicon.ico",
       "search_url": "https://oceanhero.today/web?q={searchTerms}",
       "suggest_url": "https://api.oceanhero.today/suggestions?q={searchTerms}",
+      "new_tab_url": "https://oceanhero.today/home",
       "type": "SEARCH_ENGINE_OCEANHERO",
       "id": 99
     },
@@ -1085,6 +1101,7 @@
       "favicon_url": "https://www.privacywall.org/images/favicon_32x32.ico",
       "search_url": "https://www.privacywall.org/search/secure/?q={searchTerms}",
       "suggest_url": "https://search.privacywall.org/suggest.php?q={searchTerms}",
+      "new_tab_url": "https://www.privacywall.org/newtab/",
       "type": "SEARCH_ENGINE_PRIVACYWALL",
       "id": 100
     },

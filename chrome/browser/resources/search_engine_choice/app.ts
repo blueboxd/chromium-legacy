@@ -10,15 +10,10 @@ import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.js';
 import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.js';
 import 'chrome://resources/cr_elements/cr_icons.css.js';
-import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
-import 'chrome://resources/cr_elements/icons.html.js';
-import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
 import './strings.m.js';
 
 import type {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import type {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
-import type {CrRadioGroupElement} from 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {getFaviconForPageURL} from 'chrome://resources/js/icon.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
@@ -31,12 +26,11 @@ import type {PageHandlerRemote} from './search_engine_choice.mojom-webui.js';
 
 export interface SearchEngineChoiceAppElement {
   $: {
-    dummyOmnibox: HTMLElement,
     infoDialog: CrDialogElement,
-    searchEngineOmnibox: HTMLElement,
     actionButton: CrButtonElement,
     infoLink: HTMLElement,
-    choiceList: CrRadioGroupElement,
+    choiceList: HTMLElement,
+    buttonContainer: HTMLElement,
   };
 }
 
@@ -80,16 +74,6 @@ export class SearchEngineChoiceAppElement extends
             'hasUserScrolledToTheBottom_)',
       },
 
-      fakeOmniboxText_: {
-        type: String,
-        value: '',
-      },
-
-      fakeOmniboxIconPath_: {
-        type: String,
-        value: '',
-      },
-
       actionButtonText_: {
         type: String,
         computed: 'getActionButtonText_(hasUserScrolledToTheBottom_)',
@@ -99,16 +83,18 @@ export class SearchEngineChoiceAppElement extends
         type: Boolean,
         value: false,
       },
+
+      snippetDisplayed_: Boolean,
     };
   }
 
   private choiceList_: SearchEngineChoice[];
   private selectedChoice_: string;
-  private fakeOmniboxText_: string;
-  private fakeOmniboxIconPath_: string;
   private pageHandler_: PageHandlerRemote;
   private hasUserScrolledToTheBottom_: boolean;
   private actionButtonText_: string;
+  private snippetDisplayed_: boolean;
+  private resizeObserver_: ResizeObserver|null = null;
 
   constructor() {
     super();
@@ -134,22 +120,60 @@ export class SearchEngineChoiceAppElement extends
       }
     });
 
-    afterNextRender(this, () => {
-      // If the choice list and the page don't contain a scrollbar then the
-      // user is already at the bottom.
-      this.hasUserScrolledToTheBottom_ =
-          !this.isChoiceListScrollable_() && !this.isPageScrollable_();
+    this.addResizeObserver_();
 
-      if (this.isChoiceListScrollable_()) {
-        this.$.choiceList.addEventListener(
-            'scroll', this.onChoiceListScroll_.bind(this));
-      }
-      if (this.isPageScrollable_()) {
+    afterNextRender(this, () => {
+      const isPageScrollable =
+          document.body.scrollHeight > document.body.clientHeight;
+
+      // If the page doesn't contain a scrollbar then the user is already at the
+      // bottom.
+      this.hasUserScrolledToTheBottom_ = !isPageScrollable;
+
+      if (isPageScrollable) {
         document.addEventListener('scroll', this.onPageScroll_.bind(this));
       }
 
       this.pageHandler_.displayDialog();
     });
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this.resizeObserver_!.disconnect();
+  }
+
+  private addResizeObserver_() {
+    function buttonAndListOverlap(
+        buttonRect: DOMRect, listRect: DOMRect, offset: number): boolean {
+      return !(
+          buttonRect.right + offset < listRect.left ||
+          buttonRect.left - offset > listRect.right ||
+          buttonRect.bottom < listRect.top || buttonRect.top > listRect.bottom);
+    }
+
+    this.resizeObserver_ = new ResizeObserver(() => {
+      // The button container should hide the remaining elements of the list
+      // when they overlap so that the search engines and submit button don't
+      // block each other.
+      const buttonRect = this.$.actionButton.getBoundingClientRect();
+      const listRect = this.$.choiceList.getBoundingClientRect();
+
+      // We add an offset to mitigate the change in position caused by the
+      // addition of the scrollbar.
+      let offset = 0;
+      if (this.$.choiceList.classList.contains('overlap-mitigation')) {
+        offset = 30;
+      }
+
+      this.$.choiceList.classList.toggle(
+          'overlap-mitigation',
+          buttonAndListOverlap(buttonRect, listRect, offset));
+      this.$.buttonContainer.classList.toggle(
+          'overlap-mitigation',
+          buttonAndListOverlap(buttonRect, listRect, offset));
+    });
+    this.resizeObserver_.observe(document.body);
   }
 
   private onLinkClicked_() {
@@ -174,125 +198,61 @@ export class SearchEngineChoiceAppElement extends
       return;
     }
 
-    if (this.isChoiceListScrollable_()) {
-      const choiceList = this.$.choiceList;
-      choiceList.scrollTo({top: choiceList.scrollHeight, behavior: 'smooth'});
-    } else if (this.isPageScrollable_()) {
-      window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
-    }
+    window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
   }
 
-  private onChevronClicked_(chevronExpanded: boolean) {
-    if (chevronExpanded) {
-      chrome.metricsPrivate.recordUserAction('ExpandSearchEngineDescription');
-    }
+  private getMarketingSnippetClass_(item: SearchEngineChoice) {
+    return item.showMarketingSnippet ? '' : 'truncate-text';
   }
 
   private onInfoDialogButtonClicked_() {
     this.$.infoDialog.close();
   }
 
-  private onSelectedChoiceChanged_(selectedChoice: string) {
-    // No search engine selected.
-    if (parseInt(selectedChoice) === -1) {
+  private resetSnippetState_(prepopulatedId: number) {
+    if (prepopulatedId === -1) {
       return;
     }
 
     // Get the selected engine.
-    const choice = this.choiceList_.find(
-        elem => elem.prepopulateId === parseInt(selectedChoice));
-    const searchEngineOmnibox = this.$.searchEngineOmnibox;
-    const dummyOmnibox = this.$.dummyOmnibox;
-    const fakeOmniboxText = this.i18n('fakeOmniboxText', choice?.name!);
-    const fakeOmniboxIconPath = choice?.iconPath!;
-
-    // Change the previous engine name to the new one and then start
-    // the fade-in-animation when the fade-out-animation finishes running.
-    const handleFadeOutFinished = (event: AnimationEvent) => {
-      if (event.animationName === 'fade-out-animation') {
-        searchEngineOmnibox.classList.remove('fade-out-animation');
-
-        this.fakeOmniboxText_ = fakeOmniboxText;
-        this.fakeOmniboxIconPath_ = fakeOmniboxIconPath;
-        // `requestAnimationFrame` is called to make sure that the previous
-        // animation is fully removed so that the next one can be run.
-        window.requestAnimationFrame(function() {
-          searchEngineOmnibox.classList.add('fade-in-animation');
-        });
-      } else if (event.animationName === 'fade-in-animation') {
-        // Hide the dummy omnibox so that it is not shown behind the
-        // search engine omnibox.
-        if (!dummyOmnibox.classList.contains('hidden')) {
-          dummyOmnibox.classList.add('hidden');
-        }
-      }
-    };
-
-    // Show the dummy omnibox at fade-out start so that it can be seen while
-    // animating the search engine omnibox.
-    const handleAnimationStart = (event: AnimationEvent) => {
-      if (event.animationName === 'fade-out-animation') {
-        dummyOmnibox.classList.remove('hidden');
-      }
-    };
-    searchEngineOmnibox.addEventListener('animationend', handleFadeOutFinished);
-    searchEngineOmnibox.addEventListener(
-        'animationstart', handleAnimationStart);
-
-    if (searchEngineOmnibox.classList.contains('fade-in-animation')) {
-      searchEngineOmnibox.classList.remove('fade-in-animation');
-
-      window.requestAnimationFrame(function() {
-        searchEngineOmnibox.classList.add('fade-out-animation');
-      });
-    } else {
-      this.fakeOmniboxText_ = fakeOmniboxText;
-      this.fakeOmniboxIconPath_ = fakeOmniboxIconPath;
-      searchEngineOmnibox.classList.add('fade-in-animation');
-    }
+    const choice =
+        this.choiceList_.find(elem => elem.prepopulateId === prepopulatedId)!;
+    choice.showMarketingSnippet = false;
+    this.snippetDisplayed_ = false;
   }
 
-  private onChoiceListScroll_() {
-    this.processScroll_(
-        /*contentHeight=*/ this.$.choiceList.scrollHeight,
-        /*viewportHeight=*/ this.$.choiceList.clientHeight,
-        /*scrollPosition=*/ this.$.choiceList.scrollTop,
-    );
+  private showSearchEngineSnippet_(prepopulateId: number) {
+    if (prepopulateId === -1) {
+      return;
+    }
+
+    // Get the selected engine.
+    const choice =
+        this.choiceList_.find(elem => elem.prepopulateId === prepopulateId)!;
+
+    choice.showMarketingSnippet = true;
+    this.snippetDisplayed_ = true;
+  }
+
+  private onSelectedChoiceChanged_(
+      newPrepopulatedId: string, oldPrepopulatedId: string) {
+    // No search engine selected.
+    if (parseInt(newPrepopulatedId) === -1) {
+      return;
+    }
+
+    chrome.metricsPrivate.recordUserAction('ExpandSearchEngineDescription');
+    this.resetSnippetState_(parseInt(oldPrepopulatedId));
+    this.showSearchEngineSnippet_(parseInt(newPrepopulatedId));
   }
 
   private onPageScroll_() {
-    this.processScroll_(
-        /*contentHeight=*/ document.body.scrollHeight,
-        /*viewportHeight=*/ window.innerHeight,
-        /*scrollPosition=*/ window.scrollY,
-    );
-  }
-
-  private processScroll_(
-      contentHeight: number, viewportHeight: number, scrollPosition: number) {
     // The value is checked against `< 1` instead of `=== 0` to keep a margin of
     // error.
-    if (contentHeight - viewportHeight - scrollPosition < 1) {
+    if (document.body.scrollHeight - window.innerHeight - window.scrollY < 1) {
       this.hasUserScrolledToTheBottom_ = true;
       document.removeEventListener('scroll', this.onPageScroll_.bind(this));
-      this.$.choiceList.removeEventListener(
-          'scroll', this.onChoiceListScroll_.bind(this));
     }
-  }
-
-  // The choice list is scrollable at the dialog's full height.
-  private isChoiceListScrollable_() {
-    const choiceListOverflow = getComputedStyle(this.$.choiceList).overflow;
-    return choiceListOverflow === 'auto' &&
-        this.$.choiceList.scrollHeight > this.$.choiceList.clientHeight;
-  }
-
-  // The page becomes scrollable instead of the choice lists at specific
-  // heights.
-  private isPageScrollable_() {
-    const choiceListOverflow = getComputedStyle(this.$.choiceList).overflow;
-    return choiceListOverflow === 'visible' &&
-        document.body.scrollHeight > document.body.clientHeight;
   }
 
   private getActionButtonText_() {

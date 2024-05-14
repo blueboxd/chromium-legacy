@@ -109,7 +109,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/feature_switch.h"
-#include "services/device/public/cpp/geolocation/geolocation_manager.h"
+#include "services/device/public/cpp/geolocation/geolocation_system_permission_manager.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -150,6 +150,11 @@
 #include "ui/views/view.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
+
+#if BUILDFLAG(IS_MAC)
+#include "chrome/browser/web_applications/app_shim_registry_mac.h"
+#include "chrome/browser/web_applications/web_app_tab_helper.h"
+#endif
 
 namespace {
 
@@ -208,9 +213,14 @@ LocationBarView::LocationBarView(Browser* browser,
 
 #if BUILDFLAG(IS_MAC)
     geolocation_permission_observation_.Observe(
-        device::GeolocationManager::GetInstance());
+        device::GeolocationSystemPermissionManager::GetInstance());
 #endif
   }
+#if BUILDFLAG(IS_MAC)
+  app_shim_observation_ =
+      AppShimRegistry::Get()->RegisterAppChangedCallback(base::BindRepeating(
+          &LocationBarView::OnAppShimChanged, base::Unretained(this)));
+#endif
 }
 
 LocationBarView::~LocationBarView() = default;
@@ -361,9 +371,6 @@ void LocationBarView::Init() {
     params.types_enabled.push_back(PageActionIconType::kZoom);
     params.types_enabled.push_back(PageActionIconType::kFileSystemAccess);
 
-    if (dom_distiller::IsDomDistillerEnabled() && browser_->is_type_normal()) {
-      params.types_enabled.push_back(PageActionIconType::kReaderMode);
-    }
     if (features::IsReadAnythingOmniboxIconEnabled()) {
       params.types_enabled.push_back(PageActionIconType::kReadAnything);
     }
@@ -384,7 +391,7 @@ void LocationBarView::Init() {
 
   // TODO(crbug.com/1167060): Place this in the proper order upon having final
   // mocks.
-  params.types_enabled.push_back(PageActionIconType::kSaveAutofillAddress);
+  params.types_enabled.push_back(PageActionIconType::kAutofillAddress);
 
   if (browser_) {
     if (sharing_hub::HasPageAction(profile_, is_popup_mode_) &&
@@ -1194,8 +1201,7 @@ bool LocationBarView::RefreshContentSettingViews() {
         base::FeatureList::IsEnabled(
             content_settings::features::kLeftHandSideActivityIndicators)) {
       visibility_changed |= permission_dashboard_controller()->Update(
-          v->content_setting_image_model(),
-          v->delegate()->ShouldHideContentSettingImage());
+          v->content_setting_image_model(), v->delegate());
     } else {
       v->Update();
       if (was_visible != v->GetVisible()) {
@@ -1446,7 +1452,7 @@ void LocationBarView::OnChanged() {
       omnibox_view_ && omnibox_view_->model()->user_input_in_progress() &&
       !omnibox_view_->GetText().empty() &&
       IsVirtualKeyboardVisible(GetWidget()));
-  DeprecatedLayoutImmediately();
+  InvalidateLayout();
   SchedulePaint();
   UpdateSendTabToSelfIcon();
   UpdateQRCodeGeneratorIcon();
@@ -1674,6 +1680,22 @@ ui::MouseEvent LocationBarView::AdjustMouseEventLocationForOmniboxView(
 bool LocationBarView::GetPopupMode() const {
   return is_popup_mode_;
 }
+
+#if BUILDFLAG(IS_MAC)
+void LocationBarView::OnAppShimChanged(const webapps::AppId& app_id) {
+  WebContents* web_contents = GetWebContents();
+  // During window creation and teardown it is possible for web_contents to be
+  // null.
+  if (!web_contents) {
+    return;
+  }
+  if (const webapps::AppId* id =
+          web_app::WebAppTabHelper::GetAppId(web_contents);
+      id && *id == app_id) {
+    UpdateContentSettingsIcons();
+  }
+}
+#endif
 
 BEGIN_METADATA(LocationBarView)
 ADD_READONLY_PROPERTY_METADATA(int, BorderRadius)

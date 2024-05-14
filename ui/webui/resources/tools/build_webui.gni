@@ -12,6 +12,7 @@ import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/polymer/css_to_wrapper.gni")
 import("//tools/polymer/html_to_wrapper.gni")
 import("//tools/typescript/ts_library.gni")
+import("//tools/typescript/webui_path_mappings.gni")
 import("//ui/webui/resources/tools/bundle_js.gni")
 import("//ui/webui/resources/tools/bundle_js_excludes.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
@@ -130,6 +131,14 @@ template("build_webui") {
         filter_exclude(invoker.static_files, non_preprocessed_files_filter)
   }
 
+  preprocessor_defines = []
+  if (use_blink) {
+    preprocessor_defines += chrome_grit_defines
+  }
+  if (defined(invoker.preprocessor_defines)) {
+    preprocessor_defines += invoker.preprocessor_defines
+  }
+
   ### Define the various targets that are required by the build pipeline.
 
   # Specifically the order in which these targets are executed is:
@@ -150,9 +159,7 @@ template("build_webui") {
     preprocess_if_expr("preprocess_static_files") {
       visibility = [ ":$generate_grd_target_name" ]
 
-      if (use_blink) {
-        defines = chrome_grit_defines
-      }
+      defines = preprocessor_defines
 
       in_folder = "."
       out_folder = preprocess_dir
@@ -170,9 +177,7 @@ template("build_webui") {
       visibility += [ ":create_source_maps" ]
     }
 
-    if (use_blink) {
-      defines = chrome_grit_defines
-    }
+    defines = preprocessor_defines
 
     in_folder = "."
     out_folder = preprocess_dir
@@ -217,9 +222,7 @@ template("build_webui") {
         ":html_wrapper_files",
       ]
 
-      if (use_blink) {
-        defines = chrome_grit_defines
-      }
+      defines = preprocessor_defines
 
       in_folder = "."
       out_folder = preprocess_dir
@@ -286,6 +289,30 @@ template("build_webui") {
     }
   }
 
+  if (defined(invoker.ts_deps)) {
+    webui_path_mappings("build_path_map") {
+      ts_deps = invoker.ts_deps
+      visibility = [ ":build_ts" ]
+
+      if (defined(invoker.webui_host)) {
+        if (string_replace(invoker.webui_host, "chrome-untrusted://", "") !=
+            invoker.webui_host) {
+          webui_context_type = "untrusted"
+        } else if (string_replace(invoker.webui_host,
+                                  "chrome-extension://",
+                                  "") != invoker.webui_host) {
+          # chrome-extension:// UIs (PDF viewer) use chrome://resources imports
+          webui_context_type = "trusted_only"
+        } else if (string_replace(invoker.webui_host, "//", "") !=
+                   invoker.webui_host) {
+          webui_context_type = "relative"
+        } else {
+          webui_context_type = "trusted"
+        }
+      }
+    }
+  }
+
   ts_library("build_ts") {
     root_dir = preprocess_dir
     out_dir = ts_out_dir
@@ -322,7 +349,12 @@ template("build_webui") {
     }
 
     in_files = ts_files
-    extra_deps = []
+    if (defined(invoker.ts_deps)) {
+      path_mappings_file = "$target_gen_dir/path_mappings_build_path_map.json"
+      extra_deps = [ ":build_path_map" ]
+    } else {
+      extra_deps = []
+    }
     if (enable_source_maps) {
       # ts_library()'s |enable_source_maps| param inherited from the outer
       # scope's enable_source_maps
@@ -391,7 +423,7 @@ template("build_webui") {
   if (bundle) {
     bundle_js("build_bundle") {
       visibility = [ ":build_min_js" ]
-      host = invoker.optimize_webui_host
+      host = invoker.webui_host
       input = rebase_path(ts_out_dir, root_build_dir)
       js_module_in_files = invoker.optimize_webui_in_files
       out_folder = "$target_gen_dir/bundled"
@@ -486,10 +518,6 @@ template("build_webui") {
 
   if (!generate_grdp) {
     grit("resources") {
-      if (use_blink) {
-        defines = chrome_grit_defines
-      }
-
       # These arguments are needed since the grd is generated at build time.
       enable_input_discovery_for_gn_analyze = false
       source = "$target_gen_dir/resources.grd"

@@ -18,9 +18,13 @@ import {
   CameraAppHelperRemote,
   CameraIntentAction,
   DocumentOutputFormat,
+  EventsSenderRemote,
   ExternalScreenMonitorCallbackRouter,
   FileMonitorResult,
+  LidState,
+  LidStateMonitorCallbackRouter,
   Rotation,
+  ScreenLockedMonitorCallbackRouter,
   ScreenState,
   ScreenStateMonitorCallbackRouter,
   StorageMonitorCallbackRouter,
@@ -227,6 +231,14 @@ export abstract class ChromeHelper {
   abstract openStorageManagement(): void;
 
   abstract openWifiDialog(config: WifiConfig): void;
+
+  abstract initLidStateMonitor(onChange: (lidStatus: LidState) => void):
+      Promise<LidState>;
+
+  abstract getEventsSender(): Promise<EventsSenderRemote>;
+
+  abstract initScreenLockedMonitor(onChange: (isScreenLocked: boolean) => void):
+      Promise<boolean>;
 
   /**
    * Creates a new instance of ChromeHelper if it is not set. Returns the
@@ -467,5 +479,32 @@ class ChromeHelperImpl extends ChromeHelper {
 
   override openWifiDialog(config: WifiConfig): void {
     this.remote.openWifiDialog(config);
+  }
+
+  override async initLidStateMonitor(onChange: (lidStatus: LidState) => void):
+      Promise<LidState> {
+    const monitorCallbackRouter =
+        wrapEndpoint(new LidStateMonitorCallbackRouter());
+    monitorCallbackRouter.update.addListener(onChange);
+
+    const {lidStatus} = await this.remote.setLidStateMonitor(
+        monitorCallbackRouter.$.bindNewPipeAndPassRemote());
+    return lidStatus;
+  }
+
+  override async getEventsSender(): Promise<EventsSenderRemote> {
+    const {eventsSender} = await this.remote.getEventsSender();
+    return wrapEndpoint(eventsSender);
+  }
+
+  override async initScreenLockedMonitor(
+      onChange: (isScreenLocked: boolean) => void): Promise<boolean> {
+    const monitorCallbackRouter =
+        wrapEndpoint(new ScreenLockedMonitorCallbackRouter());
+    monitorCallbackRouter.update.addListener(onChange);
+
+    const {isScreenLocked} = await this.remote.setScreenLockedMonitor(
+        monitorCallbackRouter.$.bindNewPipeAndPassRemote());
+    return isScreenLocked;
   }
 }

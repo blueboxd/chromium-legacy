@@ -94,27 +94,17 @@ std::string BytesToBase64(const std::vector<uint8_t> bytes) {
 
 class CreditCardFidoAuthenticatorTest : public testing::Test {
  public:
-  CreditCardFidoAuthenticatorTest() {}
-
   void SetUp() override {
-    personal_data_manager().Init(/*profile_database=*/database_,
-                                 /*account_database=*/nullptr,
-                                 /*pref_service=*/autofill_client_.GetPrefs(),
-                                 /*local_state=*/autofill_client_.GetPrefs(),
-                                 /*identity_manager=*/nullptr,
-                                 /*history_service=*/nullptr,
-                                 /*sync_service=*/nullptr,
-                                 /*strike_database=*/nullptr,
-                                 /*image_fetcher=*/nullptr,
-                                 /*shared_storage_handler=*/nullptr);
     personal_data_manager().SetPrefService(autofill_client_.GetPrefs());
 
     autofill_driver_.SetAuthenticator(new TestInternalAuthenticator());
 
-    autofill_client_.set_test_payments_network_interface(
-        std::make_unique<payments::TestPaymentsNetworkInterface>(
-            autofill_client_.GetURLLoaderFactory(),
-            autofill_client_.GetIdentityManager(), &personal_data_manager()));
+    autofill_client_.GetPaymentsAutofillClient()
+        ->set_test_payments_network_interface(
+            std::make_unique<payments::TestPaymentsNetworkInterface>(
+                autofill_client_.GetURLLoaderFactory(),
+                autofill_client_.GetIdentityManager(),
+                &personal_data_manager()));
     autofill_client_.set_test_strike_database(
         std::make_unique<TestStrikeDatabase>());
     fido_authenticator_ = std::make_unique<CreditCardFidoAuthenticator>(
@@ -130,7 +120,7 @@ class CreditCardFidoAuthenticatorTest : public testing::Test {
     masked_server_card.set_record_type(
         CreditCard::RecordType::kMaskedServerCard);
 
-    personal_data_manager().ClearCreditCards();
+    personal_data_manager().test_payments_data_manager().ClearCreditCards();
     personal_data_manager().AddServerCreditCard(masked_server_card);
 
     return masked_server_card;
@@ -226,8 +216,7 @@ class CreditCardFidoAuthenticatorTest : public testing::Test {
   variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
       variations::VariationsIdsProvider::Mode::kUseSignedInState};
   TestAutofillClient autofill_client_;
-  TestAutofillDriver autofill_driver_;
-  scoped_refptr<AutofillWebDataService> database_;
+  TestAutofillDriver autofill_driver_{&autofill_client_};
   TestAuthenticationRequester requester_;
   std::unique_ptr<CreditCardFidoAuthenticator> fido_authenticator_;
 };

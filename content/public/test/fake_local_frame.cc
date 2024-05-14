@@ -202,8 +202,11 @@ void FakeLocalFrame::DispatchNavigateEventForCrossDocumentTraversal(
     bool is_browser_initiated) {}
 
 void FakeLocalFrame::SnapshotDocumentForViewTransition(
-    blink::mojom::PageConcealEventParamsPtr,
+    const viz::NavigationId& navigation_id,
+    blink::mojom::PageSwapEventParamsPtr,
     SnapshotDocumentForViewTransitionCallback callback) {}
+
+void FakeLocalFrame::DispatchPageSwap(blink::mojom::PageSwapEventParamsPtr) {}
 
 void FakeLocalFrame::AddResourceTimingEntryForFailedSubframeNavigation(
     const ::blink::FrameToken& subframe_token,

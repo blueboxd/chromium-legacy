@@ -92,31 +92,6 @@ void WebGPUSwapBufferProvider::SetFilterQuality(
   }
 }
 
-std::tuple<uint32_t, bool>
-WebGPUSwapBufferProvider::GetTextureTargetAndOverlayCandidacy() const {
-// On macOS, shared images are backed by IOSurfaces that can only be used with
-// OpenGL via the rectangle texture target and are overlay candidates. Every
-// other shared image implementation is implemented on OpenGL via some form of
-// eglSurface and eglBindTexImage (on ANGLE or system drivers) so they use the
-// 2D texture target and cannot always be overlay candidates.
-#if BUILDFLAG(IS_MAC)
-  const uint32_t texture_target = gpu::GetPlatformSpecificTextureTarget();
-  const bool is_overlay_candidate = true;
-#else
-  const uint32_t texture_target = GL_TEXTURE_2D;
-  const bool is_overlay_candidate = false;
-#endif
-
-  return std::make_tuple(texture_target, is_overlay_candidate);
-}
-
-uint32_t WebGPUSwapBufferProvider::GetTextureTarget() const {
-  return std::get<0>(GetTextureTargetAndOverlayCandidacy());
-}
-bool WebGPUSwapBufferProvider::IsOverlayCandidate() const {
-  return std::get<1>(GetTextureTargetAndOverlayCandidacy());
-}
-
 void WebGPUSwapBufferProvider::ReleaseWGPUTextureAccessIfNeeded() {
   if (!current_swap_buffer_ || !current_swap_buffer_->mailbox_texture) {
     return;
@@ -168,6 +143,8 @@ WebGPUSwapBufferProvider::NewOrRecycledSwapBuffer(
   }
 
   if (unused_swap_buffers_.empty()) {
+    // These SharedImages are read and written by WebGPU clients and can then be
+    // sent off to the display compositor.
     uint32_t usage = gpu::SHARED_IMAGE_USAGE_WEBGPU_READ |
                      gpu::SHARED_IMAGE_USAGE_WEBGPU_WRITE |
                      gpu::SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
@@ -176,8 +153,9 @@ WebGPUSwapBufferProvider::NewOrRecycledSwapBuffer(
       usage |= gpu::SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE;
     }
     auto client_shared_image = sii->CreateSharedImage(
-        Format(), size, PredefinedColorSpaceToGfxColorSpace(color_space_),
-        kTopLeft_GrSurfaceOrigin, alpha_mode, usage, "WebGPUSwapBufferProvider",
+        {Format(), size, PredefinedColorSpaceToGfxColorSpace(color_space_),
+         kTopLeft_GrSurfaceOrigin, alpha_mode, usage,
+         "WebGPUSwapBufferProvider"},
         gpu::kNullSurfaceHandle);
     CHECK(client_shared_image);
     gpu::SyncToken creation_token = sii->GenUnverifiedSyncToken();
@@ -267,7 +245,6 @@ scoped_refptr<WebGPUMailboxTexture> WebGPUSwapBufferProvider::GetNewTexture(
     // the layer is promoted to an overlay. Make sure we have fallback /
     // emulation paths to keep the rendering correct in that cases.
     layer_->SetPremultipliedAlpha(true);
-    layer_->SetHdrMetadata(hdr_metadata_);
 
     if (client_) {
       client_->SetNeedsCompositingUpdate();
@@ -324,12 +301,29 @@ bool WebGPUSwapBufferProvider::PrepareTransferableResource(
   ReleaseWGPUTextureAccessIfNeeded();
 
   // Populate the output resource
+  // NOTE: This call is used to match the previous behavior of hardcoding
+  // GL_TEXTURE_2D for non-MacOS and using the platform-specific texture target
+  // for MacOS.
+  // TODO(crbug.com/41494843): Replace this with calling
+  // the universal ClientSharedImage::GetTextureTarget() once that rolls out
+  // safely.
+  uint32_t texture_target =
+      current_swap_buffer_->shared_image->GetTextureTargetForOverlays();
+
+  // On macOS, shared images are backed by IOSurfaces, meaning that they are
+  // overlay candidates.
+#if BUILDFLAG(IS_MAC)
+  const bool is_overlay_candidate = true;
+#else
+  const bool is_overlay_candidate = false;
+#endif
   *out_resource = viz::TransferableResource::MakeGpu(
-      current_swap_buffer_->shared_image, GetTextureTarget(),
+      current_swap_buffer_->shared_image, texture_target,
       current_swap_buffer_->access_finished_token, current_swap_buffer_->size,
-      Format(), IsOverlayCandidate(),
+      Format(), is_overlay_candidate,
       viz::TransferableResource::ResourceSource::kWebGPUSwapBuffer);
   out_resource->color_space = PredefinedColorSpaceToGfxColorSpace(color_space_);
+  out_resource->hdr_metadata = hdr_metadata_;
 
   // This holds a ref on the SwapBuffers that will keep it alive until the
   // mailbox is released (and while the release callback is running).
@@ -364,9 +358,18 @@ bool WebGPUSwapBufferProvider::CopyToVideoFrame(
   // need to release WebGPU/Dawn's context's access to the texture.
   ReleaseWGPUTextureAccessIfNeeded();
 
+  // NOTE: This call is used to match the previous behavior of hardcoding
+  // GL_TEXTURE_2D for non-MacOS and using the platform-specific texture target
+  // for MacOS.
+  // TODO(crbug.com/41494843): Replace this with calling
+  // the universal ClientSharedImage::GetTextureTarget() once that rolls out
+  // safely.
+  uint32_t texture_target =
+      current_swap_buffer_->shared_image->GetTextureTargetForOverlays();
+
   gpu::MailboxHolder mailbox_holder(
       current_swap_buffer_->shared_image->mailbox(),
-      current_swap_buffer_->access_finished_token, GetTextureTarget());
+      current_swap_buffer_->access_finished_token, texture_target);
 
   if (frame_pool->CopyRGBATextureToVideoFrame(
           Format(), current_swap_buffer_->size,

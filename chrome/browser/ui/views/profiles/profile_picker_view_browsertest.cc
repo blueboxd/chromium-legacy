@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/profiles/profile_picker_dice_reauth_provider.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_view.h"
 
 #include <optional>
@@ -64,6 +63,7 @@
 #include "chrome/browser/ui/startup/first_run_service.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
+#include "chrome/browser/ui/views/profiles/profile_picker_dice_reauth_provider.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_test_base.h"
 #include "chrome/browser/ui/views/user_education/browser_feature_promo_controller.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
@@ -85,6 +85,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/user_education/interactive_feature_promo_test.h"
 #include "components/feature_engagement/public/feature_constants.h"
+#include "components/feature_engagement/public/tracker.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -100,7 +101,6 @@
 #include "components/sync/service/sync_service.h"
 #include "components/sync/service/sync_user_settings.h"
 #include "components/sync/test/test_sync_service.h"
-#include "components/user_education/test/feature_promo_test_util.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -568,10 +568,10 @@ class ProfilePickerCreationFlowBrowserTest
 
   // Returns true if the profile switch IPH has been shown.
   bool ProfileSwitchPromoHasBeenShown(Browser* browser) {
-    return user_education::test::WaitForStartupPromo(
-        feature_engagement::TrackerFactory::GetForBrowserContext(
-            browser->profile()),
-        feature_engagement::kIPHProfileSwitchFeature);
+    return feature_engagement::TrackerFactory::GetForBrowserContext(
+               browser->profile())
+        ->HasEverTriggered(feature_engagement::kIPHProfileSwitchFeature,
+                           /*from_window=*/false);
   }
 
   // Simulates a click on a profile card. The profile picker must be already
@@ -611,8 +611,7 @@ class ProfilePickerCreationFlowBrowserTest
   void CreateLocalProfile() {
     base::Value::List args;
     args.Append(base::Value());
-    profile_picker_handler()->HandleCreateProfileAndOpenCustomizationDialog(
-        args);
+    profile_picker_handler()->HandleContinueWithoutAccount(args);
   }
 
   // Simulates a click on "Done" on the Profile Customization to confirm the
@@ -1911,7 +1910,14 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest, ReShow) {
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest, OpenProfile) {
+// TODO(crbug.com/325310963): Re-enable this flaky test on macOS.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_OpenProfile DISABLED_OpenProfile
+#else
+#define MAYBE_OpenProfile OpenProfile
+#endif
+IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
+                       MAYBE_OpenProfile) {
   base::HistogramTester histogram_tester;
 
   AvatarToolbarButton::SetIPHMinDelayAfterCreationForTesting(base::Seconds(0));

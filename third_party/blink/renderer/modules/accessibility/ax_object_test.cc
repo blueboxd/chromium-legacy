@@ -1046,7 +1046,7 @@ TEST_F(AccessibilityTest, TestSetRangeValueVideoControlSlider) {
   ASSERT_NE(nullptr, timeline_node);
   AXObjectCache* cache = timeline_node->GetDocument().ExistingAXObjectCache();
   ASSERT_NE(nullptr, cache);
-  AXObject* video_slider = cache->ObjectFromAXID(cache->GetAXID(timeline_node));
+  AXObject* video_slider = cache->ObjectFromAXID(timeline_node->GetDomNodeId());
 
   ASSERT_NE(nullptr, video_slider);
   ASSERT_EQ(video_slider->RoleValue(), ax::mojom::blink::Role::kSlider);
@@ -1155,7 +1155,7 @@ TEST_F(AccessibilityTest, SlotIsLineBreakingObject) {
       )HTML";
   SetBodyContent(body_content);
   ShadowRoot& shadow_root =
-      GetElementById("host")->AttachShadowRootForTesting(ShadowRootType::kOpen);
+      GetElementById("host")->AttachShadowRootForTesting(ShadowRootMode::kOpen);
   shadow_root.setInnerHTML(String::FromUTF8(shadow_content),
                            ASSERT_NO_EXCEPTION);
   UpdateAllLifecyclePhasesForTest();

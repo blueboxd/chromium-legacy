@@ -34,13 +34,12 @@ import {flush, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bu
 import type {SyncBrowserProxy, SyncPrefs, SyncStatus} from '/shared/settings/people_page/sync_browser_proxy.js';
 import {PageStatus, StatusAction, SyncBrowserProxyImpl} from '/shared/settings/people_page/sync_browser_proxy.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-// <if expr="chromeos_lacros">
 import {OpenWindowProxyImpl} from 'chrome://resources/js/open_window_proxy.js';
-
-// </if>
 
 import type {FocusConfig} from '../focus_config.js';
 import {loadTimeData} from '../i18n_setup.js';
+import type {MetricsBrowserProxy} from '../metrics_browser_proxy.js';
+import {MetricsBrowserProxyImpl} from '../metrics_browser_proxy.js';
 // <if expr="chromeos_ash">
 import type {SettingsPersonalizationOptionsElement} from '../privacy_page/personalization_options.js';
 // </if>
@@ -208,6 +207,26 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
         readOnly: true,
       },
       //</if>
+
+      // TODO(crbug.com/324091979): Remove once crbug.com/324091979 launched.
+      enableLinkedServicesSetting_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('enableLinkedServicesSetting');
+        },
+      },
+
+      isEeaChoiceCountry_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('isEeaChoiceCountry');
+        },
+      },
+
+      personalizationCollapseExpanded_: {
+        type: Boolean,
+        value: false,
+      },
     };
   }
 
@@ -229,6 +248,9 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
   private signedIn_: boolean;
   private syncDisabledByAdmin_: boolean;
   private syncSectionDisabled_: boolean;
+  private enableLinkedServicesSetting_: boolean;
+  private isEeaChoiceCountry_: boolean;
+  private personalizationCollapseExpanded_: boolean;
 
   // <if expr="chromeos_lacros">
   private showSyncSettingsRevamp_: boolean;
@@ -241,7 +263,10 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
   private enterPassphraseLabel_: TrustedHTML;
   private existingPassphraseLabel_: TrustedHTML;
 
-  private browserProxy_: SyncBrowserProxy = SyncBrowserProxyImpl.getInstance();
+  private metricsBrowserProxy_: MetricsBrowserProxy =
+      MetricsBrowserProxyImpl.getInstance();
+  private syncBrowserProxy_: SyncBrowserProxy =
+      SyncBrowserProxyImpl.getInstance();
   private collapsibleSectionsInitialized_: boolean;
   private didAbort_: boolean;
   private setupCancelConfirmed_: boolean;
@@ -458,7 +483,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
     // Display loading page until the settings have been retrieved.
     this.pageStatus_ = PageStatus.SPINNER;
 
-    this.browserProxy_.didNavigateToSyncPage();
+    this.syncBrowserProxy_.didNavigateToSyncPage();
 
     this.beforeunloadCallback_ = event => {
       // When the user tries to leave the sync setup, show the 'Leave site'
@@ -485,7 +510,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
     // search useful content when the page is not visible to the user.
     this.pageStatus_ = PageStatus.CONFIGURE;
 
-    this.browserProxy_.didNavigateAwayFromSyncPage(this.didAbort_);
+    this.syncBrowserProxy_.didNavigateAwayFromSyncPage(this.didAbort_);
 
     window.removeEventListener('beforeunload', this.beforeunloadCallback_);
     this.beforeunloadCallback_ = null;
@@ -506,8 +531,14 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
 
   private onActivityControlsClick_() {
     chrome.metricsPrivate.recordUserAction('Sync_OpenActivityControlsPage');
-    this.browserProxy_.openActivityControlsUrl();
+    this.syncBrowserProxy_.openActivityControlsUrl();
     window.open(loadTimeData.getString('activityControlsUrl'));
+  }
+
+  private onLinkedServicesClick_() {
+    this.metricsBrowserProxy_.recordAction('Sync_OpenLinkedServicesPage');
+    OpenWindowProxyImpl.getInstance().openUrl(
+        loadTimeData.getString('linkedServicesUrl'));
   }
 
   private onSyncDashboardLinkClick_() {
@@ -582,7 +613,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
       return;
     }
 
-    this.browserProxy_.setDecryptionPassphrase(this.existingPassphrase_)
+    this.syncBrowserProxy_.setDecryptionPassphrase(this.existingPassphrase_)
         .then(
             sucessfullySet => this.handlePageStatusChanged_(
                 this.computePageStatusAfterPassphraseChange_(sucessfullySet)));

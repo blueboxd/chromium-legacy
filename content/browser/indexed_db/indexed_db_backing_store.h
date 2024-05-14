@@ -26,8 +26,8 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/services/storage/indexed_db/locks/partitioned_lock.h"
+#include "components/services/storage/privileged/mojom/indexed_db_control_test.mojom.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
-#include "content/browser/indexed_db/indexed_db.h"
 #include "content/browser/indexed_db/indexed_db_external_object.h"
 #include "content/browser/indexed_db/indexed_db_external_object_storage.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
@@ -51,16 +51,17 @@ struct IndexedDBDatabaseMetadata;
 
 namespace content {
 class AutoDidCommitTransaction;
+class IndexedDBBackingStoreTest;
 class IndexedDBBucketContext;
 class IndexedDBActiveBlobRegistry;
 class LevelDBWriteBatch;
 class TransactionalLevelDBDatabase;
+class TransactionalLevelDBFactory;
 class TransactionalLevelDBIterator;
 class TransactionalLevelDBTransaction;
 struct IndexedDBValue;
 
 namespace indexed_db_backing_store_unittest {
-class IndexedDBBackingStoreTest;
 FORWARD_DECLARE_TEST(IndexedDBBackingStoreTest, ReadCorruptionInfo);
 }  // namespace indexed_db_backing_store_unittest
 
@@ -379,6 +380,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
       Mode backing_store_mode,
       const storage::BucketLocator& bucket_locator,
       const base::FilePath& blob_path,
+      TransactionalLevelDBFactory& transactional_leveldb_factory,
       std::unique_ptr<TransactionalLevelDBDatabase> db,
       BlobFilesCleanedCallback blob_files_cleaned,
       ReportOutstandingBlobsCallback report_outstanding_blobs,
@@ -404,6 +406,9 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   IndexedDBActiveBlobRegistry* active_blob_registry() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return active_blob_registry_.get();
+  }
+  TransactionalLevelDBFactory& transactional_leveldb_factory() const {
+    return *transactional_leveldb_factory_;
   }
 
   // Virtual for testing.
@@ -743,6 +748,10 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   mutable int num_blob_files_deleted_ GUARDED_BY_CONTEXT(sequence_checker_) = 0;
 #endif
 
+  // This factory is used to modify LevelDB behavior for tests. It's owned by
+  // the bucket context even though ideally it would be owned by `this`, which
+  // is due to poor encapsulation of LevelDB operations within `this`.
+  raw_ref<TransactionalLevelDBFactory> transactional_leveldb_factory_;
   const std::unique_ptr<TransactionalLevelDBDatabase> db_;
 
   const BlobFilesCleanedCallback blob_files_cleaned_;

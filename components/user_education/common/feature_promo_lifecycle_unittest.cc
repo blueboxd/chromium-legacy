@@ -13,6 +13,7 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/feature_engagement/test/mock_tracker.h"
@@ -65,6 +66,8 @@ class FeaturePromoLifecycleTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
+    feature_list_.InitAndEnableFeature(
+        features::kUserEducationExperienceVersion2);
     element_.Show();
   }
 
@@ -86,6 +89,21 @@ class FeaturePromoLifecycleTest : public testing::Test {
                     promo_type() == PromoType::kTutorial ||
                     promo_type() == PromoType::kCustomAction)
                ? FeaturePromoResult::kSnoozed
+               : FeaturePromoResult::Success();
+  }
+
+  FeaturePromoResult GetNonInteractedResult() const {
+    return promo_subtype() == PromoSubtype::kNormal &&
+                   (promo_type() == PromoType::kSnooze ||
+                    promo_type() == PromoType::kTutorial ||
+                    promo_type() == PromoType::kCustomAction)
+               ? FeaturePromoResult::kRecentlyAborted
+               : FeaturePromoResult::Success();
+  }
+
+  FeaturePromoResult GetExceededResult() const {
+    return promo_subtype() == PromoSubtype::kNormal
+               ? FeaturePromoResult::kExceededMaxShowCount
                : FeaturePromoResult::Success();
   }
 
@@ -177,6 +195,8 @@ class FeaturePromoLifecycleTest : public testing::Test {
   std::vector<base::CallbackListSubscription> help_bubble_subscriptions_;
   base::HistogramTester histogram_tester_;
   base::UserActionTester user_action_tester_;
+
+  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(FeaturePromoLifecycleTest, BubbleClosedOnDiscard) {
@@ -493,12 +513,22 @@ TEST_P(FeaturePromoLifecycleTypesTest, SnoozeNonInteractedIPH) {
   lifecycle.reset();
 
   lifecycle = CreateLifecycle(kTestIPHFeature);
-  EXPECT_EQ(GetSnoozedResult(), lifecycle->CanShow());
+  EXPECT_EQ(GetNonInteractedResult(), lifecycle->CanShow());
 
   task_environment_.FastForwardBy(features::GetSnoozeDuration());
 
   lifecycle = CreateLifecycle(kTestIPHFeature);
   EXPECT_TRUE(lifecycle->CanShow());
+}
+
+TEST_P(FeaturePromoLifecycleTypesTest, MaxShowCountReached) {
+  FeaturePromoData data;
+  data.show_count = features::GetMaxPromoShowCount();
+  data.first_show_time = base::Time::Now();
+  data.last_show_time = base::Time::Now();
+  storage_service_.SavePromoData(kTestIPHFeature, data);
+  auto lifecycle = CreateLifecycle(kTestIPHFeature);
+  EXPECT_EQ(GetExceededResult(), lifecycle->CanShow());
 }
 
 using FeaturePromoLifecycleAppTest = FeaturePromoLifecycleParamTest<>;

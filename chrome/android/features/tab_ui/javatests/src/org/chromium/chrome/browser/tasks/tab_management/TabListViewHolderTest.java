@@ -27,6 +27,8 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.VectorDrawable;
 import android.util.Size;
 import android.view.View;
@@ -38,6 +40,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.core.widget.ImageViewCompat;
+import androidx.test.annotation.UiThreadTest;
 import androidx.test.filters.MediumTest;
 
 import com.google.protobuf.ByteString;
@@ -54,11 +57,11 @@ import org.mockito.stubbing.Answer;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -67,6 +70,7 @@ import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridge.Op
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeJni;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.state.LevelDBPersistedDataStorage;
@@ -90,6 +94,7 @@ import org.chromium.components.optimization_guide.OptimizationGuideDecision;
 import org.chromium.components.optimization_guide.proto.CommonTypesProto.Any;
 import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.CurrencyFormatterJni;
+import org.chromium.components.tab_groups.TabGroupColorId;
 import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -351,7 +356,7 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
         doReturn(false).when(mProfile).isOffTheRecord();
         LevelDBPersistedDataStorage.setSkipNativeAssertionsForTesting(true);
 
-        Profile.setLastUsedProfileForTesting(mProfile);
+        ProfileManager.setLastUsedProfileForTesting(mProfile);
         PriceTrackingFeatures.setPriceTrackingEnabledForTesting(false);
 
         mMocker.mock(UrlUtilitiesJni.TEST_HOOKS, mUrlUtilitiesJniMock);
@@ -1047,6 +1052,67 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
                 mTabStripView.findViewById(R.id.tab_strip_item_button),
                 fetcher,
                 tabFavicon);
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    @EnableFeatures(ChromeFeatureList.TAB_GROUP_PARITY_ANDROID)
+    public void testColorIcon_validNewColor() {
+        final int colorId = TabGroupColorId.BLUE;
+        final int colorLayer = 1;
+
+        ImageView colorIconView = mTabListView.findViewById(R.id.icon);
+        assertNull(colorIconView.getBackground());
+
+        mGridModel.set(TabProperties.TAB_GROUP_COLOR_ID, colorId);
+
+        assertEquals(colorIconView.getVisibility(), View.VISIBLE);
+        assertThat(colorIconView.getBackground(), instanceOf(LayerDrawable.class));
+        LayerDrawable layerDrawable = (LayerDrawable) colorIconView.getBackground();
+        assertEquals(2, layerDrawable.getNumberOfLayers());
+
+        // Check outer color layer
+        assertThat(layerDrawable.getDrawable(colorLayer), instanceOf(GradientDrawable.class));
+        GradientDrawable drawable = (GradientDrawable) layerDrawable.getDrawable(colorLayer);
+        assertEquals(GradientDrawable.OVAL, drawable.getShape());
+        assertEquals(
+                ColorStateList.valueOf(
+                        ColorPickerUtils.getTabGroupColorPickerItemColor(
+                                getActivity(), colorId, false)),
+                drawable.getColor());
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    @EnableFeatures(ChromeFeatureList.TAB_GROUP_PARITY_ANDROID)
+    public void testColorIcon_validExistingColor() {
+        final int colorId1 = TabGroupColorId.BLUE;
+        final int colorId2 = TabGroupColorId.RED;
+        final int colorLayer = 1;
+
+        mGridModel.set(TabProperties.TAB_GROUP_COLOR_ID, colorId1);
+
+        ImageView colorIconView = mTabListView.findViewById(R.id.icon);
+        assertEquals(colorIconView.getVisibility(), View.VISIBLE);
+        assertNotNull(colorIconView.getBackground());
+
+        mGridModel.set(TabProperties.TAB_GROUP_COLOR_ID, colorId2);
+
+        assertThat(colorIconView.getBackground(), instanceOf(LayerDrawable.class));
+        LayerDrawable layerDrawable = (LayerDrawable) colorIconView.getBackground();
+        assertEquals(2, layerDrawable.getNumberOfLayers());
+
+        // Check outer color layer
+        assertThat(layerDrawable.getDrawable(colorLayer), instanceOf(GradientDrawable.class));
+        GradientDrawable drawable = (GradientDrawable) layerDrawable.getDrawable(colorLayer);
+        assertEquals(GradientDrawable.OVAL, drawable.getShape());
+        assertEquals(
+                ColorStateList.valueOf(
+                        ColorPickerUtils.getTabGroupColorPickerItemColor(
+                                getActivity(), colorId2, false)),
+                drawable.getColor());
     }
 
     private void testFaviconFetcher(

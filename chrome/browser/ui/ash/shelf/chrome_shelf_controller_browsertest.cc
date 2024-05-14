@@ -80,6 +80,7 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
+#include "chrome/browser/ui/tabs/tab_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_app_window_icon_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -349,8 +350,9 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
                                           int32_t event_flags) {
     EXPECT_TRUE(LoadExtension(test_data_dir_.AppendASCII(name)));
 
-    const Extension* extension = extension_registry()->GetExtensionById(
-        last_loaded_extension_id(), extensions::ExtensionRegistry::ENABLED);
+    const Extension* extension =
+        extension_registry()->enabled_extensions().GetByID(
+            last_loaded_extension_id());
     EXPECT_TRUE(extension);
 
     auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile());
@@ -364,8 +366,9 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
     LoadExtension(test_data_dir_.AppendASCII(name));
 
     // First get app_id.
-    const Extension* extension = extension_registry()->GetExtensionById(
-        last_loaded_extension_id(), extensions::ExtensionRegistry::ENABLED);
+    const Extension* extension =
+        extension_registry()->enabled_extensions().GetByID(
+            last_loaded_extension_id());
     const std::string app_id = extension->id();
 
     // Then create a shortcut.
@@ -1500,9 +1503,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabDragAndDrop) {
 
   // Detach a tab at index 1 (app1) from |tab_strip_model1| and insert it as an
   // active tab at index 1 to |tab_strip_model2|.
-  std::unique_ptr<content::WebContents> detached_tab =
-      tab_strip_model1->DetachWebContentsAtForInsertion(1);
-  tab_strip_model2->InsertWebContentsAt(1, std::move(detached_tab),
+  std::unique_ptr<tabs::TabModel> detached_tab =
+      tab_strip_model1->DetachTabAtForInsertion(1);
+  tab_strip_model2->InsertDetachedTabAt(1, std::move(detached_tab),
                                         AddTabTypes::ADD_ACTIVE);
   EXPECT_EQ(1, tab_strip_model1->count());
   EXPECT_EQ(2, tab_strip_model2->count());
@@ -1649,8 +1652,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   size_t tabs = BrowserShortcutMenuItemCount(true);
 
   // Create a second browser.
-  const Extension* extension = extension_registry()->GetExtensionById(
-      last_loaded_extension_id(), extensions::ExtensionRegistry::ENABLED);
+  const Extension* extension =
+      extension_registry()->enabled_extensions().GetByID(
+          last_loaded_extension_id());
   EXPECT_TRUE(extension);
   apps::AppServiceProxyFactory::GetForProfile(profile())->LaunchAppWithParams(
       apps::AppLaunchParams(
@@ -2335,13 +2339,17 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, SettingsAndTaskManagerWindows) {
   ASSERT_GE(item_count, 0);
   size_t browser_count = BrowserShortcutMenuItemCount(false);
 
+  base::RunLoop run_loop;
   // Open a settings window. Number of browser items should remain unchanged,
   // number of shelf items should increase.
   settings_manager->ShowChromePageForProfile(
       browser()->profile(), chrome::GetOSSettingsUrl(std::string()),
-      display::kInvalidDisplayId);
+      display::kInvalidDisplayId,
+      base::BindOnce([](apps::LaunchResult&& result) {
+        EXPECT_EQ(apps::State::kSuccess, result.state);
+      }).Then(run_loop.QuitClosure()));
   // Spin a run loop to sync Ash's ShelfModel change for the settings window.
-  base::RunLoop().RunUntilIdle();
+  run_loop.Run();
   Browser* settings_browser =
       settings_manager->FindBrowserForProfile(browser()->profile());
   ASSERT_TRUE(settings_browser);
@@ -2878,7 +2886,7 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, EnableChromeVox) {
   speech_monitor.Call([generator_ptr]() {
     // Press the search + right. Expects that the browser icon receives the
     // accessibility focus and the hotseat switches to kExtended state.
-    generator_ptr->PressKey(ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN);
+    generator_ptr->PressKeyAndModifierKeys(ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN);
   });
 
   const int browser_index =

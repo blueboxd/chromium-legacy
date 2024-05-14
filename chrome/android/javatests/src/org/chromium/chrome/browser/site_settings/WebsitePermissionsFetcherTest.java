@@ -33,12 +33,12 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.components.browser_ui.site_settings.ChosenObjectInfo;
@@ -58,7 +58,6 @@ import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJ
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.content_settings.SessionModel;
-import org.chromium.components.permissions.PermissionsAndroidFeatureList;
 import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -354,7 +353,7 @@ public class WebsitePermissionsFetcherTest {
         CallbackHelper helper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    BrowsingDataBridge.getForProfile(Profile.getLastUsedRegularProfile())
+                    BrowsingDataBridge.getForProfile(ProfileManager.getLastUsedRegularProfile())
                             .clearBrowsingData(
                                     helper::notifyCalled,
                                     new int[] {BrowsingDataType.SITE_SETTINGS},
@@ -401,7 +400,7 @@ public class WebsitePermissionsFetcherTest {
         // Set lots of permissions values.
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    Profile profile = Profile.getLastUsedRegularProfile();
+                    Profile profile = ProfileManager.getLastUsedRegularProfile();
                     for (String url : PERMISSION_URLS) {
                         WebsitePreferenceBridgeJni.get()
                                 .setPermissionSettingForOrigin(
@@ -668,10 +667,10 @@ public class WebsitePermissionsFetcherTest {
                         SessionModel.DURABLE));
 
         // Add content setting exception types.
-        // If the ContentSettingsType.NUM_TYPES value changes *and* a new value has been exposed on
+        // If the ContentSettingsType.MAX_VALUE value changes *and* a new value has been exposed on
         // Android, then please update this code block to include a test for your new type.
         // Otherwise, just update count in the assert.
-        assertEquals(102, ContentSettingsType.NUM_TYPES);
+        assertEquals(105, ContentSettingsType.MAX_VALUE);
         websitePreferenceBridge.addContentSettingException(
                 new ContentSettingException(
                         ContentSettingsType.COOKIES,
@@ -1043,7 +1042,8 @@ public class WebsitePermissionsFetcherTest {
                                 ContentSettingsType.SENSORS,
                                 ContentSettingsType.VR));
 
-        @SessionModel int sessionModel = isOneTime ? SessionModel.ONE_TIME : SessionModel.DURABLE;
+        @SessionModel.EnumType
+        int sessionModel = isOneTime ? SessionModel.ONE_TIME : SessionModel.DURABLE;
         for (@ContentSettingsType.EnumType int type : permissionInfoTypes) {
             PermissionInfo fakePermissionInfo =
                     new PermissionInfo(type, ORIGIN, SITE_WILDCARD, isEmbargoed, sessionModel);
@@ -1469,7 +1469,6 @@ public class WebsitePermissionsFetcherTest {
 
     @Test
     @SmallTest
-    @EnableFeatures({PermissionsAndroidFeatureList.PERMISSION_STORAGE_ACCESS})
     public void testIncognitoFetching() throws TimeoutException {
         WebsitePermissionsFetcher fetcher =
                 new WebsitePermissionsFetcher(UNUSED_BROWSER_CONTEXT_HANDLE);
@@ -1511,7 +1510,6 @@ public class WebsitePermissionsFetcherTest {
 
     @Test
     @SmallTest
-    @EnableFeatures({PermissionsAndroidFeatureList.PERMISSION_STORAGE_ACCESS})
     public void testFetchAllSites() {
         WebsitePermissionsFetcher fetcher =
                 new WebsitePermissionsFetcher(UNUSED_BROWSER_CONTEXT_HANDLE);
@@ -1610,7 +1608,6 @@ public class WebsitePermissionsFetcherTest {
 
     @Test
     @SmallTest
-    @EnableFeatures({PermissionsAndroidFeatureList.PERMISSION_STORAGE_ACCESS})
     @UseMethodParameter(EmbargoedParams.class)
     public void testFetchPreferencesForCategoryEmbeddedPermissionTypes(boolean isEmbargoed) {
         WebsitePermissionsFetcher fetcher =

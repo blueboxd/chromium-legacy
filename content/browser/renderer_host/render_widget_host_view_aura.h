@@ -216,6 +216,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // TODO(lanwei): Use TestApi interface to write functions that are used in
   // tests and remove FRIEND_TEST_ALL_PREFIXES.
   void SetLastPointerType(ui::EventPointerType last_pointer_type) override;
+  viz::SurfaceId GetFallbackSurfaceIdForTesting() const override;
 
   // Overridden from ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;
@@ -418,10 +419,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;
 
   ui::Compositor* GetCompositor() override;
-
-  void AllocateLocalSurfaceIdOnNextShow() {
-    allocate_local_surface_id_on_next_show_ = true;
-  }
 
   DelegatedFrameHost* GetDelegatedFrameHostForTesting() const {
     return delegated_frame_host_.get();
@@ -826,8 +823,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 #endif
 
   std::optional<display::ScopedDisplayObserver> display_observer_;
-
-  bool allocate_local_surface_id_on_next_show_ = false;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_{this};
 };

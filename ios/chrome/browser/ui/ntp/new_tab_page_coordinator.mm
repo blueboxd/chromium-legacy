@@ -733,6 +733,10 @@
 - (void)configureNTPViewController {
   DCHECK(self.NTPViewController);
 
+  if (IsIOSMagicStackCollectionViewEnabled()) {
+    self.NTPViewController.magicStackCollectionView =
+        self.contentSuggestionsCoordinator.magicStackCollectionView;
+  }
   self.NTPViewController.contentSuggestionsViewController =
       self.contentSuggestionsCoordinator.viewController;
 
@@ -806,7 +810,6 @@
 }
 
 - (void)fakeboxTapped {
-  RecordHomeAction(IOSHomeActionType::kFakebox, [self isStartSurface]);
   [self focusFakebox];
 }
 
@@ -1129,11 +1132,6 @@
   return [self isFollowingFeedAvailable] &&
          self.NTPMediator.feedHeaderVisible &&
          !IsStickyHeaderDisabledForFollowingFeed();
-}
-
-- (BOOL)isRecentTabTileVisible {
-  return [self.contentSuggestionsCoordinator.contentSuggestionsMediator
-              mostRecentTabStartSurfaceTileIsShowing];
 }
 
 - (void)signinPromoHasChangedVisibility:(BOOL)visible {
@@ -1473,7 +1471,9 @@
 - (void)updateStartForVisibilityChange:(BOOL)visible {
   if (visible && NewTabPageTabHelper::FromWebState(self.webState)
                      ->ShouldShowStartSurface()) {
-    [self.contentSuggestionsCoordinator configureStartSurfaceIfNeeded];
+    DiscoverFeedServiceFactory::GetForBrowserState(
+        self.browser->GetBrowserState())
+        ->SetIsShownOnStartSurface(true);
   }
   if (!visible && NewTabPageTabHelper::FromWebState(self.webState)
                       ->ShouldShowStartSurface()) {

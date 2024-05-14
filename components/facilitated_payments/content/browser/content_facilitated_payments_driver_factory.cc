@@ -4,16 +4,19 @@
 
 #include "components/facilitated_payments/content/browser/content_facilitated_payments_driver_factory.h"
 
+#include "components/facilitated_payments/core/browser/facilitated_payments_client.h"
+#include "content/public/browser/navigation_handle.h"
+
 namespace payments::facilitated {
 
 ContentFacilitatedPaymentsDriverFactory::
     ContentFacilitatedPaymentsDriverFactory(
         content::WebContents* web_contents,
+        FacilitatedPaymentsClient* client,
         optimization_guide::OptimizationGuideDecider*
             optimization_guide_decider)
-    : content::WebContentsUserData<ContentFacilitatedPaymentsDriverFactory>(
-          *web_contents),
-      content::WebContentsObserver(web_contents),
+    : content::WebContentsObserver(web_contents),
+      client_(*client),
       optimization_guide_decider_(optimization_guide_decider) {}
 
 ContentFacilitatedPaymentsDriverFactory::
@@ -26,18 +29,30 @@ void ContentFacilitatedPaymentsDriverFactory::RenderFrameDeleted(
   driver_map_.erase(render_frame_host);
 }
 
+void ContentFacilitatedPaymentsDriverFactory::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->HasCommitted() ||
+      navigation_handle->IsSameDocument() ||
+      !navigation_handle->IsInPrimaryMainFrame() ||
+      !navigation_handle->IsInOutermostMainFrame()) {
+    return;
+  }
+  auto& driver = GetOrCreateForFrame(navigation_handle->GetRenderFrameHost());
+  driver.DidFinishNavigation();
+}
+
 void ContentFacilitatedPaymentsDriverFactory::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
   // The driver is only created for the outermost main frame as the PIX code is
-  // only expected to be present there.
-  if (render_frame_host != render_frame_host->GetOutermostMainFrame()) {
+  // only expected to be present there. Only active frames allowed.
+  if (render_frame_host != render_frame_host->GetOutermostMainFrame() ||
+      !render_frame_host->IsActive()) {
     return;
   }
   auto& driver = GetOrCreateForFrame(render_frame_host);
-  CHECK(render_frame_host->IsActive());
   // Initialize PIX code detection.
-  driver.DidFinishLoad(validated_url);
+  driver.DidFinishLoad(validated_url, render_frame_host->GetPageUkmSourceId());
 }
 
 ContentFacilitatedPaymentsDriver&
@@ -51,11 +66,9 @@ ContentFacilitatedPaymentsDriverFactory::GetOrCreateForFrame(
     return *iter->second;
   }
   driver = std::make_unique<ContentFacilitatedPaymentsDriver>(
-      optimization_guide_decider_, render_frame_host);
+      &*client_, optimization_guide_decider_, render_frame_host);
   DCHECK_EQ(driver_map_.find(render_frame_host)->second.get(), driver.get());
   return *iter->second;
 }
-
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ContentFacilitatedPaymentsDriverFactory);
 
 }  // namespace payments::facilitated

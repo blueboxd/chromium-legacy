@@ -379,6 +379,7 @@ OnceClosure GetDeleteFileCallbackInternal(
 // might cause the browser or operating system to fail in unexpected ways.
 bool IsPathSafeToSetAclOn(const FilePath& path) {
 #if BUILDFLAG(CLANG_PROFILING)
+  // TODO(crbug.com/329482479) Use PreventExecuteMappingUnchecked for .profraw.
   // Ignore .profraw profiling files, as they can occur anywhere, and only occur
   // during testing.
   if (path.Extension() == FILE_PATH_LITERAL(".profraw")) {
@@ -1120,6 +1121,7 @@ bool SetNonBlocking(int fd) {
 
 bool PreReadFile(const FilePath& file_path,
                  bool is_executable,
+                 bool sequential,
                  int64_t max_bytes) {
   DCHECK_GE(max_bytes, 0);
 
@@ -1134,8 +1136,9 @@ bool PreReadFile(const FilePath& file_path,
                                         ? MemoryMappedFile::READ_CODE_IMAGE
                                         : MemoryMappedFile::READ_ONLY;
   MemoryMappedFile mapped_file;
-  if (!mapped_file.Initialize(file_path, access))
-    return internal::PreReadFileSlow(file_path, max_bytes);
+  if (!mapped_file.Initialize(file_path, access)) {
+    return false;
+  }
 
   const ::SIZE_T length =
       std::min(base::saturated_cast<::SIZE_T>(max_bytes),
@@ -1145,21 +1148,18 @@ bool PreReadFile(const FilePath& file_path,
   // simple data file read, more from a RAM perspective than CPU. This is
   // because reading the file as data results in double mapping to
   // Image/executable pages for all pages of code executed.
-  if (!::PrefetchVirtualMemory(::GetCurrentProcess(),
-                               /*NumberOfEntries=*/1, &address_range,
-                               /*Flags=*/0)) {
-    return internal::PreReadFileSlow(file_path, max_bytes);
-  }
-  return true;
+  return ::PrefetchVirtualMemory(::GetCurrentProcess(),
+                                 /*NumberOfEntries=*/1, &address_range,
+                                 /*Flags=*/0);
 }
 
-bool PreventExecuteMapping(const FilePath& path) {
+bool PreventExecuteMappingInternal(const FilePath& path, bool skip_path_check) {
   if (!base::FeatureList::IsEnabled(
           features::kEnforceNoExecutableFileHandles)) {
     return true;
   }
 
-  bool is_path_safe = IsPathSafeToSetAclOn(path);
+  bool is_path_safe = skip_path_check || IsPathSafeToSetAclOn(path);
 
   if (!is_path_safe) {
     // To mitigate the effect of past OS bugs where attackers are able to use
@@ -1206,6 +1206,16 @@ bool PreventExecuteMapping(const FilePath& path) {
   // ACE if it already exists.
   return win::DenyAccessToPath(path, *sids, FILE_EXECUTE, /*NO_INHERITANCE=*/0,
                                /*recursive=*/false);
+}
+
+bool PreventExecuteMapping(const FilePath& path) {
+  return PreventExecuteMappingInternal(path, false);
+}
+
+bool PreventExecuteMappingUnchecked(
+    const FilePath& path,
+    base::PassKey<PreventExecuteMappingClasses> passkey) {
+  return PreventExecuteMappingInternal(path, true);
 }
 
 void SetExtraNoExecuteAllowedPath(int path_key) {

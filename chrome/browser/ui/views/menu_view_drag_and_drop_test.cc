@@ -137,8 +137,8 @@ bool TestTargetView::AreDropTypesRequired() {
 }
 
 bool TestTargetView::CanDrop(const OSExchangeData& data) {
-  std::u16string contents;
-  return data.GetString(&contents) && contents == kTestNestedDragData;
+  std::u16string contents = data.GetString().value_or(std::u16string());
+  return contents == kTestNestedDragData;
 }
 
 void TestTargetView::OnDragEntered(const ui::DropTargetEvent& event) {
@@ -300,8 +300,8 @@ bool MenuViewDragAndDropTest::AreDropTypesRequired(views::MenuItemView* menu) {
 
 bool MenuViewDragAndDropTest::CanDrop(views::MenuItemView* menu,
                                       const ui::OSExchangeData& data) {
-  std::u16string contents;
-  return data.GetString(&contents) && contents == kTestTopLevelDragData;
+  std::u16string contents = data.GetString().value_or(std::u16string());
+  return contents == kTestTopLevelDragData;
 }
 
 DragOperation MenuViewDragAndDropTest::GetDropOperation(

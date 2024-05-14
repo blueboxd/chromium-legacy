@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <WebKit/WebKit.h>
 #import <vector>
 
 #import "base/apple/foundation_util.h"
@@ -137,8 +136,8 @@ class FormStructureBrowserTest
 
   class TestAutofillManager : public BrowserAutofillManager {
    public:
-    TestAutofillManager(AutofillDriverIOS* driver, AutofillClient* client)
-        : BrowserAutofillManager(driver, client, "en-US") {}
+    explicit TestAutofillManager(AutofillDriverIOS* driver)
+        : BrowserAutofillManager(driver, "en-US") {}
 
     TestAutofillManagerWaiter& waiter() { return waiter_; }
 
@@ -212,6 +211,7 @@ FormStructureBrowserTest::FormStructureBrowserTest()
           features::kAutofillPageLanguageDetection,
           // TODO(crbug.com/1311937): Remove once launched.
           features::kAutofillEnableSupportForPhoneNumberTrunkTypes,
+          features::kAutofillInferCountryCallingCode,
           // TODO(crbug.com/1441057): Remove once launched.
           features::kAutofillEnableExpirationDateImprovements,
           // TODO(crbug.com/1474308): Clean up when launched.

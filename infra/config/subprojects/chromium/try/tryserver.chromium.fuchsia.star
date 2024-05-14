@@ -5,7 +5,8 @@
 
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "os", "reclient", "siso")
+load("//lib/builder_url.star", "linkify_builder")
+load("//lib/builders.star", "builders", "os", "reclient", "siso")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
 load("//lib/try.star", "try_")
@@ -18,15 +19,16 @@ try_.defaults.set(
     cores = 8,
     os = os.LINUX_DEFAULT,
     compilator_cores = 8,
-    compilator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     orchestrator_cores = 2,
+    orchestrator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
     siso_configs = ["builder"],
     siso_enable_cloud_profiler = True,
     siso_enable_cloud_trace = True,
+    siso_enabled = True,
     siso_project = siso.project.DEFAULT_UNTRUSTED,
 )
 
@@ -83,35 +85,10 @@ try_.builder(
             ],
         },
     },
+    # b/325854950 - 1280 concurrent remote jobs might cause slow downloads
+    # because this builder doesn't use SSD.
+    siso_remote_jobs = 640,
     tryjob = try_.job(),
-)
-
-# TODO: crbug.com/1502025 - Reduce duplicated configs from the shadow builder.
-try_.builder(
-    name = "fuchsia-binary-size-siso",
-    description_html = """\
-This builder shadows fuchsia-binary-size builder to compare between Siso builds and Ninja builds.<br/>
-This builder should be removed after migrating size from Ninja to Siso. b/277863839
-""",
-    executable = "recipe:binary_size_fuchsia_trybot",
-    gn_args = "try/fuchsia-binary-size",
-    builderless = False,
-    cores = 16,
-    contact_team_email = "chrome-build-team@google.com",
-    properties = {
-        "$build/binary_size": {
-            "analyze_targets": [
-                "//tools/fuchsia/size_tests:fuchsia_sizes",
-            ],
-            "compile_targets": [
-                "fuchsia_sizes",
-            ],
-        },
-    },
-    siso_enabled = True,
-    tryjob = try_.job(
-        experiment_percentage = 10,
-    ),
 )
 
 try_.builder(
@@ -119,7 +96,7 @@ try_.builder(
     mirrors = [
         "ci/fuchsia-x64-dbg",
     ],
-    try_settings = builder_config.try_settings(
+    builder_config_settings = builder_config.try_settings(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
@@ -138,6 +115,31 @@ try_.builder(
 )
 
 try_.builder(
+    name = "fuchsia-x64-cast-receiver-dbg-compile",
+    description_html = "A compile only replica of " + linkify_builder("ci", "fuchsia-x64-cast-receiver-dbg", "chromium"),
+    mirrors = [
+        "ci/fuchsia-x64-cast-receiver-dbg",
+    ],
+    builder_config_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
+    gn_args = gn_args.config(
+        configs = [
+            "ci/fuchsia-x64-cast-receiver-dbg",
+        ],
+    ),
+    contact_team_email = "chrome-fuchsia-engprod@google.com",
+    # TODO(b/1509109): Enable the tryjob once it's green.
+    # tryjob = try_.job(
+    #     location_filters = [
+    #         ".*fuchsia.+",
+    #         cq.location_filter(exclude = True, path_regexp = ".*\\.md"),
+    #     ],
+    # ),
+)
+
+try_.builder(
     name = "fuchsia-deterministic-dbg",
     executable = "recipe:swarming/deterministic_build",
     gn_args = gn_args.config(
@@ -147,6 +149,7 @@ try_.builder(
             "fuchsia_smart_display",
         ],
     ),
+    free_space = builders.free_space.high,
 )
 
 try_.builder(
@@ -177,6 +180,29 @@ try_.builder(
     execution_timeout = 10 * time.hour,
 )
 
+try_.builder(
+    name = "fuchsia-x64-cast-receiver-dbg",
+    branch_selector = branches.selector.FUCHSIA_BRANCHES,
+    description_html = "try replica of " + linkify_builder("ci", "fuchsia-x64-cast-receiver-dbg", "chromium"),
+    mirrors = ["ci/fuchsia-x64-cast-receiver-dbg"],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/fuchsia-x64-cast-receiver-dbg",
+            "debug_try_builder",
+        ],
+    ),
+    contact_team_email = "chrome-fuchsia-engprod@google.com",
+    execution_timeout = 10 * time.hour,
+    main_list_view = "try",
+    # This is the only bot that builds //chromecast code for Fuchsia on x64
+    # so trigger it when changes are made.
+    tryjob = try_.job(
+        location_filters = [
+            "chromecast/.+",
+        ],
+    ),
+)
+
 try_.orchestrator_builder(
     name = "fuchsia-x64-cast-receiver-rel",
     branch_selector = branches.selector.FUCHSIA_BRANCHES,
@@ -202,7 +228,6 @@ try_.orchestrator_builder(
         "chromium.enable_cleandead": 100,
     },
     main_list_view = "try",
-    siso_enabled = True,
     tryjob = try_.job(),
     use_clang_coverage = True,
 )
@@ -213,7 +238,6 @@ try_.compilator_builder(
     cores = "8|16",
     ssd = True,
     main_list_view = "try",
-    siso_enabled = True,
 )
 
 try_.builder(

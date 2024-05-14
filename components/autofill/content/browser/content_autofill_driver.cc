@@ -25,6 +25,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data_predictions.h"
+#include "components/autofill/core/common/signatures.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -84,7 +85,7 @@ ContentAutofillDriver::ContentAutofillDriver(
     content::RenderFrameHost* render_frame_host,
     ContentAutofillDriverFactory* owner)
     : render_frame_host_(*render_frame_host), owner_(*owner) {
-  autofill_manager_ = owner_->client().CreateManager(/*pass_key=*/{}, *this);
+  autofill_manager_ = GetAutofillClient().CreateManager(/*pass_key=*/{}, *this);
 }
 
 ContentAutofillDriver::~ContentAutofillDriver() {
@@ -154,6 +155,10 @@ ContentAutofillDriver* ContentAutofillDriver::GetParent() {
     return nullptr;
   }
   return owner_->DriverForFrame(parent_rfh);
+}
+
+ContentAutofillClient& ContentAutofillDriver::GetAutofillClient() {
+  return owner_->client();
 }
 
 AutofillManager& ContentAutofillDriver::GetAutofillManager() {
@@ -229,7 +234,7 @@ net::IsolationInfo ContentAutofillDriver::IsolationInfo() {
 }
 
 base::flat_set<FieldGlobalId> ContentAutofillDriver::ApplyFormAction(
-    mojom::ActionType action_type,
+    mojom::FormActionType action_type,
     mojom::ActionPersistence action_persistence,
     const FormData& form,
     const url::Origin& triggered_origin,
@@ -237,27 +242,26 @@ base::flat_set<FieldGlobalId> ContentAutofillDriver::ApplyFormAction(
   return router().ApplyFormAction(
       this, action_type, action_persistence, form, triggered_origin,
       field_type_map,
-      [](autofill::AutofillDriver* target, mojom::ActionType action_type,
+      [](autofill::AutofillDriver* target, mojom::FormActionType action_type,
          mojom::ActionPersistence action_persistence,
-         const FormData::FillData& form) {
-        cast(target)->GetAutofillAgent()->ApplyFormAction(
-            action_type, action_persistence, form);
+         const std::vector<FormFieldData::FillData>& fields) {
+        cast(target)->GetAutofillAgent()->ApplyFieldsAction(
+            action_type, action_persistence, fields);
       });
 }
 
 void ContentAutofillDriver::ApplyFieldAction(
+    mojom::FieldActionType action_type,
     mojom::ActionPersistence action_persistence,
-    mojom::TextReplacement text_replacement,
     const FieldGlobalId& field,
     const std::u16string& value) {
   router().ApplyFieldAction(
-      this, action_persistence, text_replacement, field, value,
-      [](autofill::AutofillDriver* target,
+      this, action_type, action_persistence, field, value,
+      [](autofill::AutofillDriver* target, mojom::FieldActionType action_type,
          mojom::ActionPersistence action_persistence,
-         mojom::TextReplacement text_replacement, const FieldRendererId& field,
-         const std::u16string& value) {
+         const FieldRendererId& field, const std::u16string& value) {
         cast(target)->GetAutofillAgent()->ApplyFieldAction(
-            action_persistence, text_replacement, field, value);
+            action_type, action_persistence, field, value);
       });
 }
 
@@ -622,18 +626,6 @@ void ContentAutofillDriver::JavaScriptChangedAutofilledValue(
          const FormFieldData& field, const std::u16string& old_value) {
         target->GetAutofillManager().OnJavaScriptChangedAutofilledValue(
             WithNewVersion(form), field, old_value);
-      });
-}
-
-void ContentAutofillDriver::OnContextMenuShownInField(
-    const FormGlobalId& form_global_id,
-    const FieldGlobalId& field_global_id) {
-  router().OnContextMenuShownInField(
-      this, form_global_id, field_global_id,
-      [](autofill::AutofillDriver* target, const FormGlobalId& form_global_id,
-         const FieldGlobalId& field_global_id) {
-        target->GetAutofillManager().OnContextMenuShownInField(form_global_id,
-                                                               field_global_id);
       });
 }
 

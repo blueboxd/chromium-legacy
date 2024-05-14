@@ -11,8 +11,8 @@
 #include <wrl/client.h>
 
 #include <memory>
-
 #include <optional>
+
 #include "gpu/command_buffer/service/shared_image/shared_image_backing_factory.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_format_service_utils.h"
 #include "gpu/gpu_gles2_export.h"
@@ -128,7 +128,7 @@ class GPU_GLES2_EXPORT D3DImageBackingFactory
                    gfx::GpuMemoryBufferType gmb_type,
                    GrContextType gr_context_type,
                    base::span<const uint8_t> pixel_data) override;
-
+  SharedImageBackingType GetBackingType() override;
   Microsoft::WRL::ComPtr<ID3D11Device> GetDeviceForTesting() const {
     return d3d11_device_;
   }

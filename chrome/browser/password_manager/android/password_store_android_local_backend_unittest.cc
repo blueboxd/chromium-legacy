@@ -7,6 +7,7 @@
 #include <jni.h>
 #include <cstdint>
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/password_manager/android/fake_password_manager_lifecycle_helper.h"
@@ -15,9 +16,9 @@
 #include "chrome/browser/password_manager/android/password_store_android_backend_dispatcher_bridge.h"
 #include "chrome/browser/password_manager/android/password_store_android_backend_receiver_bridge.h"
 #include "chrome/browser/password_manager/android/password_store_android_local_backend.h"
+#include "components/affiliations/core/browser/fake_affiliation_service.h"
+#include "components/affiliations/core/browser/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/affiliation/affiliations_prefetcher.h"
-#include "components/password_manager/core/browser/affiliation/fake_affiliation_service.h"
-#include "components/password_manager/core/browser/affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_store/android_backend_error.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -38,6 +39,7 @@ using testing::Return;
 using testing::VariantWith;
 using testing::WithArg;
 using JobId = PasswordStoreAndroidBackendDispatcherBridge::JobId;
+using affiliations::MockAffiliationService;
 
 constexpr JobId kJobId{1337};
 constexpr char kTestUrl[] = "https://example.com";
@@ -362,6 +364,58 @@ TEST_F(PasswordStoreAndroidLocalBackendTest,
 
   EXPECT_FALSE(prefs()->GetBoolean(
       prefs::kUnenrolledFromGoogleMobileServicesDueToErrors));
+}
+
+TEST_F(PasswordStoreAndroidLocalBackendTest, RecordPasswordStoreMetrics) {
+  base::HistogramTester histogram_tester;
+  backend().InitBackend(
+      /*affiliated_match_helper=*/nullptr,
+      PasswordStoreAndroidLocalBackend::RemoteChangesReceived(),
+      base::NullCallback(), base::DoNothing());
+
+  backend().RecordAddLoginAsyncCalledFromTheStore();
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordStore.LocalBackend.AddLoginCalledOnStore", true,
+      1);
+
+  backend().RecordUpdateLoginAsyncCalledFromTheStore();
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordStore.LocalBackend.UpdateLoginCalledOnStore",
+      true, 1);
+}
+
+TEST_F(PasswordStoreAndroidLocalBackendTest,
+       ResetTemporarySavingSuspensionAfterSuccessfulLogin) {
+  backend().InitBackend(
+      /*affiliated_match_helper=*/nullptr,
+      PasswordStoreAndroidLocalBackend::RemoteChangesReceived(),
+      base::NullCallback(), base::DoNothing());
+  EXPECT_TRUE(backend().IsAbleToSavePasswords());
+
+  std::string TestURL1("https://example.com/");
+  PasswordFormDigest form_digest(PasswordForm::Scheme::kHtml, TestURL1,
+                                 GURL(TestURL1));
+  EXPECT_CALL(*bridge_helper(), GetAffiliatedLoginsForSignonRealm)
+      .WillOnce(Return(kJobId));
+  backend().GetGroupedMatchingLoginsAsync(form_digest, base::DoNothing());
+  AndroidBackendError error{AndroidBackendErrorType::kExternalError};
+  error.api_error_code =
+      static_cast<int>(AndroidBackendAPIErrorCode::kApiNotConnected);
+  consumer().OnError(kJobId, std::move(error));
+
+  EXPECT_FALSE(backend().IsAbleToSavePasswords());
+
+  // Simulate a successful logins call.
+  base::MockCallback<LoginsOrErrorReply> mock_reply;
+  EXPECT_CALL(*bridge_helper(), GetAffiliatedLoginsForSignonRealm)
+      .WillOnce(Return(kJobId));
+  backend().GetGroupedMatchingLoginsAsync(form_digest, mock_reply.Get());
+  EXPECT_CALL(mock_reply, Run);
+  task_environment_.FastForwardBy(kTestLatencyDelta);
+  consumer().OnCompleteWithLogins(kJobId, {});
+  RunUntilIdle();
+
+  EXPECT_TRUE(backend().IsAbleToSavePasswords());
 }
 
 class PasswordStoreAndroidLocalBackendRetriesTest

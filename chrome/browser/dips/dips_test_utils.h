@@ -111,7 +111,8 @@ void AccessCookieViaJSIn(content::WebContents* web_contents,
 bool NavigateToSetCookie(content::WebContents* web_contents,
                          const net::EmbeddedTestServer* server,
                          base::StringPiece host,
-                         bool is_secure_cookie_set);
+                         bool is_secure_cookie_set,
+                         bool is_ad_tagged);
 
 // Helper function for creating an image with a cookie access on the provided
 // WebContents.
@@ -287,5 +288,9 @@ class OpenedWindowObserver : public content::WebContentsObserver {
   raw_ptr<content::WebContents> window_ = nullptr;
   base::RunLoop run_loop_;
 };
+
+// Simulate a mouse click and wait for the main frame to receive user
+// activation.
+void SimulateMouseClickAndWait(content::WebContents*);
 
 #endif  // CHROME_BROWSER_DIPS_DIPS_TEST_UTILS_H_

@@ -20,6 +20,9 @@ namespace media {
 // Forward declare for use in AsVideoFrameResource.
 class VideoFrameResource;
 
+// Forward declare for use in AsNativePixmapFrameResource
+class NativePixmapFrameResource;
+
 // Base class for holding an object like a VideoFrame. It provides accessors for
 // the metadata or data. This can be implemented using different backing types
 // e.g. VideoFrame or NativePixmap.
@@ -31,8 +34,13 @@ class FrameResource : public base::RefCountedThreadSafe<FrameResource> {
   FrameResource& operator=(const FrameResource&) = delete;
 
   // Allows safe downcasting to an VideoFrameResource, which has a VideoFrame
-  // accessor that is needed by encoders.
+  // accessor that is needed by encoders. The returned pointer is only valid as
+  // long as |this| is alive.
   virtual VideoFrameResource* AsVideoFrameResource();
+
+  // Allows safe downcasting to a NativePixmapFrameResource. The returned
+  // pointer is only valid as long as |this| is alive.
+  virtual const NativePixmapFrameResource* AsNativePixmapFrameResource() const;
 
   // Unique identifier for this video frame generated at construction time. The
   // first ID is 1. The identifier is unique within a process % overflows (which
@@ -123,11 +131,6 @@ class FrameResource : public base::RefCountedThreadSafe<FrameResource> {
   // scaled to this size when being presented. This can be used to represent
   // anamorphic frames, or to "soft-apply" any custom scaling.
   virtual const gfx::Size& natural_size() const = 0;
-
-  // Provides the sampler conversion information for the frame.
-  virtual const std::optional<gpu::VulkanYCbCrInfo>& ycbcr_info() const = 0;
-  virtual void set_ycbcr_info(
-      const std::optional<gpu::VulkanYCbCrInfo>& ycbcr_info) = 0;
 
   // Returns a dictionary of optional metadata. This contains information
   // associated with the frame that downstream clients might use for frame-level

@@ -32,6 +32,8 @@
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_anonymization_key.h"
+#include "net/base/network_handle.h"
+#include "net/base/proxy_delegate.h"
 #include "net/base/session_usage.h"
 #include "net/base/trace_constants.h"
 #include "net/base/tracing.h"
@@ -407,6 +409,7 @@ QuicSessionPool::QuicSessionPool(
     HttpServerProperties* http_server_properties,
     CertVerifier* cert_verifier,
     TransportSecurityState* transport_security_state,
+    ProxyDelegate* proxy_delegate,
     SCTAuditingDelegate* sct_auditing_delegate,
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
@@ -418,6 +421,7 @@ QuicSessionPool::QuicSessionPool(
       http_server_properties_(http_server_properties),
       cert_verifier_(cert_verifier),
       transport_security_state_(transport_security_state),
+      proxy_delegate_(proxy_delegate),
       sct_auditing_delegate_(sct_auditing_delegate),
       quic_crypto_client_stream_factory_(quic_crypto_client_stream_factory),
       random_generator_(quic_context->random_generator()),
@@ -1380,7 +1384,8 @@ bool QuicSessionPool::CreateSessionHelper(
       params_.max_migrations_to_non_default_network_on_write_error,
       params_.max_migrations_to_non_default_network_on_path_degrading,
       yield_after_packets_, yield_after_duration_, cert_verify_flags, config,
-      std::move(crypto_config_handle), dns_resolution_start_time,
+      std::move(crypto_config_handle),
+      network_connection_.connection_description(), dns_resolution_start_time,
       dns_resolution_end_time, tick_clock_, task_runner_.get(),
       std::move(socket_performance_watcher), endpoint_result,
       net_log.net_log());

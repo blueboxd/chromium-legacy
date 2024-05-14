@@ -404,7 +404,7 @@ void DrmDisplayHostManager::UpdateDisplays(
 void DrmDisplayHostManager::ConfigureDisplays(
     const std::vector<display::DisplayConfigurationParams>& config_requests,
     display::ConfigureCallback callback,
-    uint32_t modeset_flag) {
+    display::ModesetFlags modeset_flags) {
   for (auto& config : config_requests) {
     if (GetDisplay(config.id)->is_dummy()) {
       std::move(callback).Run(true);
@@ -413,7 +413,7 @@ void DrmDisplayHostManager::ConfigureDisplays(
   }
 
   proxy_->GpuConfigureNativeDisplays(config_requests, std::move(callback),
-                                     modeset_flag);
+                                     modeset_flags);
 }
 
 void DrmDisplayHostManager::OnDeviceEvent(const DeviceEvent& event) {
@@ -632,7 +632,7 @@ void DrmDisplayHostManager::GpuTookDisplayControl(bool status) {
   DCHECK(display_control_change_pending_);
 
   if (status) {
-    input_controller_->SetInputDevicesEnabled(true);
+    scoped_input_devices_disabler_.reset();
     display_externally_controlled_ = false;
   }
 
@@ -653,7 +653,7 @@ void DrmDisplayHostManager::GpuRelinquishedDisplayControl(bool status) {
   DCHECK(display_control_change_pending_);
 
   if (status) {
-    input_controller_->SetInputDevicesEnabled(false);
+    scoped_input_devices_disabler_ = input_controller_->DisableInputDevices();
     display_externally_controlled_ = true;
   }
 

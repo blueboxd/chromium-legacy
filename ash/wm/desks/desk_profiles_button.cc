@@ -62,8 +62,8 @@ DeskProfilesButton::DeskProfilesButton(Desk* desk,
 
   LoadIconForProfile();
 
-  SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ASH_DESKS_DESK_PROFILES_BUTTON));
+  SetAccessibleName(l10n_util::GetStringFUTF16(
+      IDS_ASH_DESKS_DESK_PROFILES_BUTTON, desk->name()));
 }
 
 DeskProfilesButton::~DeskProfilesButton() {
@@ -149,10 +149,14 @@ void DeskProfilesButton::MaybeCloseFocusedView(bool primary_action) {}
 void DeskProfilesButton::MaybeSwapFocusedView(bool right) {}
 
 void DeskProfilesButton::OnFocusableViewFocused() {
+  mini_view_->UpdateDeskButtonVisibility();
+  mini_view_->UpdateFocusColor();
   views::FocusRing::Get(this)->SchedulePaint();
 }
 
 void DeskProfilesButton::OnFocusableViewBlurred() {
+  mini_view_->UpdateDeskButtonVisibility();
+  mini_view_->UpdateFocusColor();
   views::FocusRing::Get(this)->SchedulePaint();
 }
 

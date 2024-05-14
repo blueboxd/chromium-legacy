@@ -40,10 +40,6 @@ BASE_FEATURE(kJourneysImages,
 const base::FeatureParam<bool> kJourneysImagesCover{
     &kJourneysImages, "JourneysImagesCover", true};
 
-BASE_FEATURE(kPersistedClusters,
-             "HistoryClustersPersistedClusters",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kOmniboxAction,
              "JourneysOmniboxAction",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -112,10 +108,6 @@ BASE_FEATURE(kSidePanelJourneys,
 // entrypoints open Journeys in Side Panel rather than the History WebUI.
 const base::FeatureParam<bool> kSidePanelJourneysOpensFromOmnibox{
     &kSidePanelJourneys, "SidePanelJourneysOpensFromOmnibox", true};
-
-BASE_FEATURE(kRenameJourneys,
-             "RenameJourneys",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Intended to be Enabled by default on Desktop and the flag left here as a
 // killswitch.

@@ -32,8 +32,8 @@
 #include "chrome/browser/password_manager/android/password_store_android_backend_api_error_codes.h"
 #include "chrome/browser/password_manager/android/password_store_android_backend_bridge_helper.h"
 #include "chrome/browser/password_manager/android/password_store_android_backend_dispatcher_bridge.h"
+#include "components/affiliations/core/browser/affiliation_utils.h"
 #include "components/autofill/core/common/autofill_regexes.h"
-#include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -78,7 +78,7 @@ std::string FormToSignonRealmQuery(const PasswordFormDigest& form,
     return GetRegistryControlledDomain(GURL(form.signon_realm));
   }
   if (form.scheme == PasswordForm::Scheme::kHtml &&
-      !IsValidAndroidFacetURI(form.signon_realm)) {
+      !affiliations::IsValidAndroidFacetURI(form.signon_realm)) {
     // Check federated matches and matches for exact signon realm.
     return form.url.host();
   }
@@ -141,7 +141,7 @@ void ValidateSignonRealm(const PasswordFormDigest& form_digest_to_match,
     std::move(callback).Run(std::move(logins_or_error));
     return;
   }
-  base::EraseIf(absl::get<LoginsResult>(logins_or_error),
+  std::erase_if(absl::get<LoginsResult>(logins_or_error),
                 [&form_digest_to_match, include_psl](const auto& form) {
                   return !MatchesIncludedPSLAndFederation(
                       form, form_digest_to_match, include_psl);
@@ -182,7 +182,7 @@ void ProcessGroupedLoginsAndReply(const PasswordFormDigest& form_digest,
   // Remove grouped only matches if filling across groups is disabled.
   if (!base::FeatureList::IsEnabled(
           password_manager::features::kFillingAcrossGroupedSites)) {
-    base::EraseIf(absl::get<LoginsResult>(logins_or_error),
+    std::erase_if(absl::get<LoginsResult>(logins_or_error),
                   [](const auto& form) {
                     return form.match_type == PasswordForm::MatchType::kGrouped;
                   });
@@ -332,17 +332,14 @@ bool ShouldRetryOperationOnError(PasswordStoreOperation operation,
 }
 
 PasswordStoreBackendErrorType APIErrorCodeToErrorType(
-    AndroidBackendAPIErrorCode api_error_code,
-    bool can_remove_unenrollment) {
+    AndroidBackendAPIErrorCode api_error_code) {
   switch (api_error_code) {
     case AndroidBackendAPIErrorCode::kAuthErrorResolvable:
       return PasswordStoreBackendErrorType::kAuthErrorResolvable;
     case AndroidBackendAPIErrorCode::kAuthErrorUnresolvable:
       return PasswordStoreBackendErrorType::kAuthErrorUnresolvable;
     case AndroidBackendAPIErrorCode::kKeyRetrievalRequired:
-      return can_remove_unenrollment
-                 ? PasswordStoreBackendErrorType::kKeyRetrievalRequired
-                 : PasswordStoreBackendErrorType::kUncategorized;
+      return PasswordStoreBackendErrorType::kKeyRetrievalRequired;
     case AndroidBackendAPIErrorCode::kNetworkError:
     case AndroidBackendAPIErrorCode::kInternalError:
     case AndroidBackendAPIErrorCode::kDeveloperError:
@@ -509,7 +506,7 @@ void PasswordStoreAndroidBackend::FillMatchingLoginsInternal(
   LoginsOrErrorReply record_metrics_and_reply =
       ReportMetricsAndInvokeCallbackForLoginsRetrieval(
           MethodName("FillMatchingLoginsAsync"), std::move(callback),
-          GetStoreType());
+          GetStorageType());
 
   // Create a barrier callback that aggregates results of a multiple
   // calls to GetLoginsInternal.
@@ -553,7 +550,7 @@ void PasswordStoreAndroidBackend::RemoveLoginsByURLAndTimeInternal(
   PasswordChangesOrErrorReply record_metrics_and_reply =
       ReportMetricsAndInvokeCallbackForStoreModifications(
           MethodName("RemoveLoginsByURLAndTimeAsync"), std::move(callback),
-          GetStoreType());
+          GetStorageType());
 
   GetAllLoginsInternal(
       account,
@@ -573,7 +570,7 @@ void PasswordStoreAndroidBackend::RemoveLoginsCreatedBetweenInternal(
   PasswordChangesOrErrorReply record_metrics_and_reply =
       ReportMetricsAndInvokeCallbackForStoreModifications(
           MethodName("RemoveLoginsCreatedBetweenAsync"), std::move(callback),
-          GetStoreType());
+          GetStorageType());
 
   GetAllLoginsInternal(
       account,
@@ -605,7 +602,7 @@ void PasswordStoreAndroidBackend::DisableAutoSignInForOriginsInternal(
           },
           PasswordStoreBackendMetricsRecorder(
               BackendInfix("AndroidBackend"),
-              MethodName("DisableAutoSignInForOriginsAsync"), GetStoreType()),
+              MethodName("DisableAutoSignInForOriginsAsync"), GetStorageType()),
           std::move(completion));
 
   GetAllLoginsInternal(
@@ -867,8 +864,7 @@ void PasswordStoreAndroidBackend::OnError(JobId job_id,
       // on error.
       reported_error.recovery_type =
           RecoverOnErrorAndReturnResult(api_error_code);
-      reported_error.type = APIErrorCodeToErrorType(
-          api_error_code, bridge_helper_->CanRemoveUnenrollment());
+      reported_error.type = APIErrorCodeToErrorType(api_error_code);
     }
   }
 
@@ -901,7 +897,7 @@ void PasswordStoreAndroidBackend::QueueNewJob(JobId job_id,
       job_id, JobReturnHandler(std::move(callback),
                                PasswordStoreBackendMetricsRecorder(
                                    BackendInfix("AndroidBackend"),
-                                   std::move(method_name), GetStoreType()),
+                                   std::move(method_name), GetStorageType()),
                                delay, operation));
 }
 

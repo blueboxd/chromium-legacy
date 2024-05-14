@@ -1250,8 +1250,17 @@ EarlyBreakOnHasArgumentChecking CheckEarlyBreakForHasArgument(
 
 bool SelectorChecker::CheckPseudoHas(const SelectorCheckingContext& context,
                                      MatchResult& result) const {
+  if (context.element->GetDocument().InPseudoHasChecking()) {
+    // :has() within :has() would normally be rejected parse-time, but we can
+    // end up in this situation nevertheless, due to nesting. We just return
+    // a not-matched for now; it is possible that we should fail the entire rule
+    // (consider what happens if it is e.g. within :not()), but we would have to
+    // have some way to propagate that up the stack, and consider interactions
+    // with the forgiveness of :is().
+    return false;
+  }
   CheckPseudoHasCacheScope check_pseudo_has_cache_scope(
-      &context.element->GetDocument());
+      &context.element->GetDocument(), /*within_selector_checking=*/true);
 
   Element* has_anchor_element = context.element;
   Document& document = has_anchor_element->GetDocument();
@@ -1785,7 +1794,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return false;
     case CSSSelector::kPseudoSelectAuthorDatalist:
       if (auto* select = DynamicTo<HTMLSelectElement>(element)) {
-        return select->SlottedDatalist();
+        return select->FirstChildDatalist();
       }
       return false;
     case CSSSelector::kPseudoDialogInTopLayer:
@@ -2002,20 +2011,25 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       DCHECK(context.relative_anchor_element);
       return context.relative_anchor_element == &element;
     case CSSSelector::kPseudoActiveViewTransition: {
-      // :active_view_transition is only valid on the html element.
+      // :active-view-transition is only valid on the html element.
       if (!IsA<HTMLElement>(element)) {
         return false;
       }
 
-      if (mode_ == kResolvingStyle) {
-        if (UNLIKELY(context.is_inside_has_pseudo_class)) {
-          element.SetAncestorsOrSiblingsAffectedByActiveViewTransitionInHas();
-        } else if (ImpactsNonSubject(context)) {
-          element.SetChildrenOrSiblingsAffectedByActiveViewTransition();
-        }
+      // The pseudo is only valid if there is a transition.
+      auto* transition =
+          ViewTransitionUtils::GetTransition(element.GetDocument());
+      if (!transition) {
+        return false;
       }
-      if (ImpactsSubject(context)) {
-        result.SetFlag(MatchFlag::kAffectedByActiveViewTransition);
+
+      // Ask the transition to match for active-view-transition.
+      return transition->MatchForActiveViewTransition();
+    }
+    case CSSSelector::kPseudoActiveViewTransitionType: {
+      // :active-view-transition-type is only valid on the html element.
+      if (!IsA<HTMLElement>(element)) {
+        return false;
       }
 
       // The pseudo is only valid if there is a transition.
@@ -2026,7 +2040,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       }
 
       // Ask the transition to match based on the argument list.
-      return transition->MatchForActiveViewTransition(selector.IdentList());
+      return transition->MatchForActiveViewTransitionType(selector.IdentList());
     }
     case CSSSelector::kPseudoUnparsed:
       // Only kept around for parsing; can never match anything
@@ -2069,7 +2083,7 @@ bool SelectorChecker::CheckPseudoAutofill(CSSSelector::PseudoType pseudo_type,
       return form_control_element->GetAutofillState() ==
              WebAutofillState::kPreviewed;
     case CSSSelector::kPseudoAutofillSelected:
-      return form_control_element->HighlightAutofilled();
+      return form_control_element->IsAutofilled();
     default:
       NOTREACHED();
   }

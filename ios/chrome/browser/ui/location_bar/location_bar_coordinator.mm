@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 
-#import <CoreLocation/CoreLocation.h>
-
 #import "base/memory/ptr_util.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/histogram_macros.h"
@@ -21,7 +19,8 @@
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/autocomplete/model/autocomplete_scheme_classifier_impl.h"
 #import "ios/chrome/browser/browser_state_metrics/model/browser_state_metrics.h"
-#import "ios/chrome/browser/default_browser/model/utils.h"
+#import "ios/chrome/browser/contextual_panel/entrypoint/coordinator/contextual_panel_entrypoint_coordinator.h"
+#import "ios/chrome/browser/default_browser/model/default_browser_interest_signals.h"
 #import "ios/chrome/browser/drag_and_drop/model/drag_item_util.h"
 #import "ios/chrome/browser/drag_and_drop/model/url_drag_drop_handler.h"
 #import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
@@ -30,7 +29,6 @@
 #import "ios/chrome/browser/ntp/model/new_tab_page_util.h"
 #import "ios/chrome/browser/overlays/model/public/overlay_presenter.h"
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
-#import "ios/chrome/browser/shared/coordinator/default_browser_promo/default_browser_promo_scene_agent_utils.h"
 #import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -41,6 +39,7 @@
 #import "ios/chrome/browser/shared/public/commands/lens_commands.h"
 #import "ios/chrome/browser/shared/public/commands/load_query_commands.h"
 #import "ios/chrome/browser/shared/public/commands/search_image_with_lens_command.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/ui/badges/badge_button_factory.h"
 #import "ios/chrome/browser/ui/badges/badge_delegate.h"
@@ -109,6 +108,9 @@ const size_t kMaxURLDisplayChars = 32 * 1024;
 @property(nonatomic, strong) BadgeMediator* badgeMediator;
 // ViewController for the badges displayed in the LocationBar.
 @property(nonatomic, strong) BadgeViewController* badgeViewController;
+// Coordinator for the contextual panel entrypoint.
+@property(nonatomic, strong)
+    ContextualPanelEntrypointCoordinator* contextualPanelEntrypointCoordinator;
 // Coordinator for the omnibox.
 @property(nonatomic, strong) OmniboxCoordinator* omniboxCoordinator;
 @property(nonatomic, strong) LocationBarMediator* mediator;
@@ -206,6 +208,14 @@ const size_t kMaxURLDisplayChars = 32 * 1024;
       didMoveToParentViewController:self.viewController];
   self.viewController.offsetProvider = [self.omniboxCoordinator offsetProvider];
 
+  if (IsContextualPanelEnabled()) {
+    self.contextualPanelEntrypointCoordinator =
+        [[ContextualPanelEntrypointCoordinator alloc]
+            initWithBaseViewController:self.viewController
+                               browser:self.browser];
+    [self.contextualPanelEntrypointCoordinator start];
+  }
+
   // Create button factory that wil be used by the ViewController to get
   // BadgeButtons for a BadgeType.
   BadgeButtonFactory* buttonFactory = [[BadgeButtonFactory alloc] init];
@@ -260,6 +270,10 @@ const size_t kMaxURLDisplayChars = 32 * 1024;
   if (!self.started)
     return;
   [self.browser->GetCommandDispatcher() stopDispatchingToTarget:self];
+
+  [self.contextualPanelEntrypointCoordinator stop];
+  self.contextualPanelEntrypointCoordinator = nil;
+
   // The popup has to be destroyed before the location bar.
   [self.omniboxCoordinator stop];
   [self.badgeMediator disconnect];
@@ -441,16 +455,10 @@ const size_t kMaxURLDisplayChars = 32 * 1024;
 }
 
 - (void)locationBarVisitCopyLinkTapped {
-  // Don't log pastes in incognito.
-  if (self.browserState->IsOffTheRecord()) {
-    return;
-  }
-
-  SceneState* sceneState = self.browser->GetSceneState();
-  NotifyDefaultBrowserPromoUserPastedInOmnibox(sceneState);
-  LogToFETUserPastedURLIntoOmnibox(
-      feature_engagement::TrackerFactory::GetForBrowserState(
-          self.browser->GetBrowserState()));
+  default_browser::NotifyOmniboxURLCopyPasteAndNavigate(
+      self.browserState->IsOffTheRecord(),
+      feature_engagement::TrackerFactory::GetForBrowserState(self.browserState),
+      self.browser->GetSceneState());
 }
 
 - (void)searchCopiedImage {

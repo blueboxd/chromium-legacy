@@ -48,8 +48,8 @@ extern const char kSearchCategoriesEnableStateHeader[];
 
 // These are used in histograms, do not remove/renumber entries. If you're
 // adding to this enum with the intention that it will be logged, update the
-// AppListResultRemovalConfirmation enum listing in
-// tools/metrics/histograms/enums.xml.
+// `AppListResultRemovalConfirmation` enum listed in
+// tools/metrics/histograms/metadata/apps/enums.xml.
 enum class SearchResultRemovalConfirmation {
   kRemovalConfirmed = 0,
   kRemovalCanceled = 1,
@@ -160,7 +160,10 @@ enum class AppListUserAction {
   // User opened a suggestion chip shown in the app list UI.
   DEPRECATED_kOpenSuggestionChip = 5,
 
-  kMaxValue = DEPRECATED_kOpenSuggestionChip,
+  // User navigated to the bottom of the app list UI.
+  kNavigatedToBottomOfAppList = 6,
+
+  kMaxValue = kNavigatedToBottomOfAppList,
 };
 
 // The possible states for a search control category. The values should match

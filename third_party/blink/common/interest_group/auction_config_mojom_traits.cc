@@ -199,6 +199,7 @@ bool StructTraits<blink::mojom::AuctionAdConfigNonSharedParamsDataView,
       !data.ReadSellerTimeout(&out->seller_timeout) ||
       !data.ReadPerBuyerSignals(&out->per_buyer_signals) ||
       !data.ReadBuyerTimeouts(&out->buyer_timeouts) ||
+      !data.ReadReportingTimeout(&out->reporting_timeout) ||
       !data.ReadSellerCurrency(&out->seller_currency) ||
       !data.ReadBuyerCurrencies(&out->buyer_currencies) ||
       !data.ReadBuyerCumulativeTimeouts(&out->buyer_cumulative_timeouts) ||
@@ -215,9 +216,22 @@ bool StructTraits<blink::mojom::AuctionAdConfigNonSharedParamsDataView,
       !data.ReadAllSlotsRequestedSizes(&out->all_slots_requested_sizes) ||
       !data.ReadPerBuyerMultiBidLimits(&out->per_buyer_multi_bid_limits) ||
       !data.ReadAuctionNonce(&out->auction_nonce) ||
-      !data.ReadComponentAuctions(&out->component_auctions)) {
+      !data.ReadComponentAuctions(&out->component_auctions) ||
+      !data.ReadDeprecatedRenderUrlReplacements(
+          &out->deprecated_render_url_replacements)) {
     return false;
   }
+
+  if (out->reporting_timeout && out->reporting_timeout->is_negative()) {
+    return false;
+  }
+
+  // Negative length limit is invalid.
+  if (data.max_trusted_scoring_signals_url_length() < 0) {
+    return false;
+  }
+  out->max_trusted_scoring_signals_url_length =
+      data.max_trusted_scoring_signals_url_length();
 
   out->all_buyers_group_limit = data.all_buyers_group_limit();
 
@@ -297,18 +311,9 @@ bool StructTraits<blink::mojom::AuctionAdConfigDataView, blink::AuctionConfig>::
       !data.ReadPerBuyerExperimentGroupIds(
           &out->per_buyer_experiment_group_ids) ||
       !data.ReadAggregationCoordinatorOrigin(
-          &out->aggregation_coordinator_origin) ||
-      !data.ReadDeprecatedRenderUrlReplacements(
-          &out->deprecated_render_url_replacements)) {
+          &out->aggregation_coordinator_origin)) {
     return false;
   }
-
-  // Negative length limit is invalid.
-  if (data.max_trusted_scoring_signals_url_length() < 0) {
-    return false;
-  }
-  out->max_trusted_scoring_signals_url_length =
-      data.max_trusted_scoring_signals_url_length();
 
   out->expects_additional_bids = data.expects_additional_bids();
   // An auction that expects additional bids must have an auction nonce provided

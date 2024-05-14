@@ -212,16 +212,21 @@ bool NetworkServiceNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
       // URL but it could still be the case that cookies are allowed, but it was
       // 3PCs that were not allowed. If that is the case, we should still
       // preserve partitioned cookies.
-      ExcludeAllCookiesExceptPartitioned(
-          net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
-          maybe_included_cookies, excluded_cookies,
-          url_loader->CookiesDisabled());
+      if (url_loader->CookiesDisabled()) {
+        ExcludeAllCookies(net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
+                          maybe_included_cookies, excluded_cookies);
+      } else {
+        ExcludeAllCookiesExceptPartitioned(
+            net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
+            maybe_included_cookies, excluded_cookies);
+      }
     }
 #if BUILDFLAG(ENABLE_WEBSOCKETS)
   } else {
     WebSocket* web_socket = WebSocket::ForRequest(request);
     if (web_socket) {
       allowed = web_socket->AllowCookies(request.url());
+      // TODO(crbug/324211435): Fix partitioned cookies for web sockets.
       if (!allowed) {
         ExcludeAllCookies(net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
                           maybe_included_cookies, excluded_cookies);

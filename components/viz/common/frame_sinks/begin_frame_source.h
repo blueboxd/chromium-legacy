@@ -24,8 +24,8 @@ namespace perfetto {
 class EventContext;
 namespace protos {
 namespace pbzero {
-class BeginFrameObserverState;
-class BeginFrameSourceState;
+class BeginFrameObserverStateV2;
+class BeginFrameSourceStateV2;
 }  // namespace pbzero
 }  // namespace protos
 }  // namespace perfetto
@@ -117,7 +117,7 @@ class VIZ_COMMON_EXPORT BeginFrameObserverBase : public BeginFrameObserver {
 
   void AsProtozeroInto(
       perfetto::EventContext& ctx,
-      perfetto::protos::pbzero::BeginFrameObserverState* state) const;
+      perfetto::protos::pbzero::BeginFrameObserverStateV2* state) const;
 
   BeginFrameArgs last_begin_frame_args_;
   int64_t dropped_begin_frame_args_ = 0;
@@ -220,7 +220,7 @@ class VIZ_COMMON_EXPORT BeginFrameSource {
 
   virtual void AsProtozeroInto(
       perfetto::EventContext& ctx,
-      perfetto::protos::pbzero::BeginFrameSourceState* state) const;
+      perfetto::protos::pbzero::BeginFrameSourceStateV2* state) const;
 
   virtual void SetDynamicBeginFrameDeadlineOffsetSource(
       DynamicBeginFrameDeadlineOffsetSource*
@@ -333,8 +333,9 @@ class VIZ_COMMON_EXPORT BackToBackBeginFrameSource
 
  private:
   std::unique_ptr<DelayBasedTimeSource> time_source_;
-  base::flat_set<BeginFrameObserver*> observers_;
-  base::flat_set<BeginFrameObserver*> pending_begin_frame_observers_;
+  base::flat_set<raw_ptr<BeginFrameObserver, CtnExperimental>> observers_;
+  base::flat_set<raw_ptr<BeginFrameObserver, CtnExperimental>>
+      pending_begin_frame_observers_;
   uint64_t next_sequence_number_;
   base::TimeDelta vsync_interval_ = BeginFrameArgs::DefaultInterval();
   std::optional<base::TimeDelta> max_vrr_interval_ = std::nullopt;
@@ -391,7 +392,7 @@ class VIZ_COMMON_EXPORT DelayBasedBeginFrameSource
   void SetActive(bool active);
 
   std::unique_ptr<DelayBasedTimeSource> time_source_;
-  base::flat_set<BeginFrameObserver*> observers_;
+  base::flat_set<raw_ptr<BeginFrameObserver, CtnExperimental>> observers_;
   base::TimeTicks last_timebase_;
   std::optional<base::TimeDelta> max_vrr_interval_ = std::nullopt;
   int vrr_tick_count_ = 0;
@@ -428,7 +429,7 @@ class VIZ_COMMON_EXPORT ExternalBeginFrameSource : public BeginFrameSource {
   void DidFinishFrame(BeginFrameObserver* obs) override {}
   void AsProtozeroInto(
       perfetto::EventContext& ctx,
-      perfetto::protos::pbzero::BeginFrameSourceState* state) const override;
+      perfetto::protos::pbzero::BeginFrameSourceStateV2* state) const override;
   void OnGpuNoLongerBusy() override;
 
   void OnSetBeginFrameSourcePaused(bool paused);
@@ -457,7 +458,7 @@ class VIZ_COMMON_EXPORT ExternalBeginFrameSource : public BeginFrameSource {
   virtual BeginFrameArgs GetMissedBeginFrameArgs(BeginFrameObserver* obs);
 
   BeginFrameArgs last_begin_frame_args_;
-  base::flat_set<BeginFrameObserver*> observers_;
+  base::flat_set<raw_ptr<BeginFrameObserver, CtnExperimental>> observers_;
   raw_ptr<ExternalBeginFrameSourceClient> client_;
   bool paused_ = false;
 

@@ -36,14 +36,17 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kWebViewZoomKeyboardShortcuts,
     &features::kWebViewClearFunctorInBackground,
     &safe_browsing::kHashPrefixRealTimeLookups,
-    &safe_browsing::kSafeBrowsingSkipSubresources,
     &features::kWebViewSupervisedUserSiteDetection,
     &features::kWebViewSupervisedUserSiteBlock,
     &base::features::kCollectAndroidFrameTimelineMetrics,
     &features::kWebViewInjectPlatformJsApis,
     &features::kWebViewMediaIntegrityApi,
+    &features::kWebViewMediaIntegrityApiBlinkExtension,
     &safe_browsing::kSafeBrowsingNewGmsApiForBrowseUrlDatabaseCheck,
     &features::kWebViewMuteAudio,
+    &features::kWebViewUseInitialNetworkStateAtStartup,
+    &features::kWebViewReduceUAAndroidVersionDeviceModel,
+    &features::kWebViewEnableCrash,
 };
 
 // static

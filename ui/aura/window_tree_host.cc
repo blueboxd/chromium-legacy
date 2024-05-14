@@ -366,10 +366,19 @@ bool WindowTreeHost::IsNativeWindowOcclusionEnabled() const {
 }
 
 void WindowTreeHost::SetNativeWindowOcclusionState(
-    Window::OcclusionState state,
-    const SkRegion& occluded_region) {
-  if (occlusion_state_ == state && occluded_region_ == occluded_region)
+    Window::OcclusionState raw_occlusion_state,
+    const SkRegion& raw_occluded_region) {
+  raw_occlusion_state_ = raw_occlusion_state;
+  raw_occluded_region_ = raw_occluded_region;
+
+  auto state = video_capture_count_ > 0 ? Window::OcclusionState::VISIBLE
+                                        : raw_occlusion_state;
+  auto occluded_region =
+      video_capture_count_ > 0 ? SkRegion() : raw_occluded_region;
+
+  if (occlusion_state_ == state && occluded_region_ == occluded_region) {
     return;
+  }
 
   occlusion_state_ = state;
   occluded_region_ = occluded_region;
@@ -532,9 +541,7 @@ void WindowTreeHost::CreateCompositor(bool force_software_compositor,
       ui::IsPixelCanvasRecordingEnabled(), use_external_begin_frame_control,
       force_software_compositor, enable_compositing_based_throttling,
       memory_limit_when_visible_mb);
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   compositor_->AddObserver(this);
-#endif
   if (!dispatcher()) {
     window()->Init(ui::LAYER_NOT_DRAWN);
     window()->set_host(this);
@@ -669,6 +676,9 @@ void WindowTreeHost::MaybeUpdateComposibleVisibilityForVideoLockCountChange() {
   if (video_capture_count_ > 1) {
     return;
   }
+  // If we no longer have video capture locks, update the occlusion state to
+  // what the platform last sent us.
+  SetNativeWindowOcclusionState(raw_occlusion_state_, raw_occluded_region_);
   MaybeUpdateCompositorVisibilityForNativeOcclusion();
 }
 
@@ -761,7 +771,7 @@ bool WindowTreeHost::ShouldThrottle() const {
 }
 
 // static
-const base::flat_set<WindowTreeHost*>&
+const base::flat_set<raw_ptr<WindowTreeHost, CtnExperimental>>&
 WindowTreeHost::GetThrottledHostsForTesting() {
   return HostFrameRateThrottler::GetInstance().hosts();
 }
@@ -780,18 +790,26 @@ void WindowTreeHost::MoveCursorToInternal(const gfx::Point& root_location,
 }
 
 void WindowTreeHost::OnCompositingEnded(ui::Compositor* compositor) {
+  // Currently, input is only throttled on ash and is not well supported on
+  // other platforms. See crbug.com/41359082.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!holding_pointer_moves_)
     return;
 
   dispatcher_->ReleasePointerMoves();
   holding_pointer_moves_ = false;
+#endif
 }
 
 void WindowTreeHost::OnCompositingChildResizing(ui::Compositor* compositor) {
+  // Currently, input is only throttled on ash and is not well supported on
+  // other platforms. See crbug.com/41359082.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!Env::GetInstance()->throttle_input_on_resize() || holding_pointer_moves_)
     return;
   dispatcher_->HoldPointerMoves();
   holding_pointer_moves_ = true;
+#endif
 }
 
 void WindowTreeHost::OnFrameSinksToThrottleUpdated(

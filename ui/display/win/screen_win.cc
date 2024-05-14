@@ -257,7 +257,7 @@ Display CreateDisplayFromDisplayInfo(
     const internal::DisplayInfo& display_info,
     const ColorProfileReader* color_profile_reader,
     const gfx::mojom::DXGIOutputDesc* dxgi_output_desc,
-    bool hdr_enabled_on_any_display) {
+    bool hdr_enabled) {
   const float scale_factor = display_info.device_scale_factor();
   const gfx::Rect bounds = gfx::ScaleToEnclosingRect(display_info.screen_rect(),
                                                      1.0f / scale_factor);
@@ -275,9 +275,7 @@ Display CreateDisplayFromDisplayInfo(
   gfx::DisplayColorSpaces color_spaces;
   if (HasForceDisplayColorProfile()) {
     color_spaces = GetForcedDisplayColorSpaces();
-  } else if (hdr_enabled_on_any_display) {
-    // TODO(https://crbug.com/1339352): Do not allow non-HDR-enabled displays
-    // to use HDR color spaces.
+  } else if (hdr_enabled) {
     color_spaces = GetDisplayColorSpacesForHdr(display_info.sdr_white_level(),
                                                dxgi_output_desc);
   } else {
@@ -324,7 +322,13 @@ std::vector<ScreenWinDisplay> DisplayInfosToScreenWinDisplays(
       display_infos_remaining, [](const internal::DisplayInfo& display_info) {
         return display_info.screen_rect().origin().IsOrigin();
       });
-  DCHECK(primary_display_iter != display_infos_remaining.end());
+
+  // If we can't find the primary display, we likely witnessed a race condition
+  // when querying the OS for display info. We expect another OS notification to
+  // trigger this lookup again soon, so just return an empty list for now.
+  if (primary_display_iter == display_infos_remaining.end()) {
+    return {};
+  }
 
   // Build the tree and determine DisplayPlacements along the way.
   DisplayLayoutBuilder builder(primary_display_iter->id());
@@ -341,14 +345,16 @@ std::vector<ScreenWinDisplay> DisplayInfosToScreenWinDisplays(
     }
   }
 
-  // Construct a map from display IDs to DXGI output descriptors.
+  // Construct a map from display IDs to DXGI output descriptors, and another
+  // map from display IDs to HDR enabled status.
   std::map<int64_t, const gfx::mojom::DXGIOutputDesc*> dxgi_output_descs;
-  bool hdr_enabled_on_any_display = false;
+  std::map<int64_t, bool> hdr_enabled;
   if (dxgi_info) {
     for (const auto& dxgi_output_desc : dxgi_info->output_descs) {
-      hdr_enabled_on_any_display |= dxgi_output_desc->hdr_enabled;
-      dxgi_output_descs[internal::DisplayInfo::DeviceIdFromDeviceName(
-          dxgi_output_desc->device_name.c_str())] = dxgi_output_desc.get();
+      auto id = internal::DisplayInfo::DeviceIdFromDeviceName(
+          dxgi_output_desc->device_name.c_str());
+      dxgi_output_descs[id] = dxgi_output_desc.get();
+      hdr_enabled[id] = dxgi_output_desc->hdr_enabled;
     }
   }
 
@@ -357,7 +363,7 @@ std::vector<ScreenWinDisplay> DisplayInfosToScreenWinDisplays(
   for (const auto& display_info : display_infos) {
     displays.push_back(CreateDisplayFromDisplayInfo(
         display_info, color_profile_reader,
-        dxgi_output_descs[display_info.id()], hdr_enabled_on_any_display));
+        dxgi_output_descs[display_info.id()], hdr_enabled[display_info.id()]));
   }
   builder.Build()->ApplyToDisplayList(&displays, nullptr, 0);
 

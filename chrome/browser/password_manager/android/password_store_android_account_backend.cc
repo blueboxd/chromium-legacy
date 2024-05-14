@@ -13,7 +13,9 @@
 #include "chrome/browser/password_manager/android/password_sync_controller_delegate_bridge_impl.h"
 #include "components/password_manager/core/browser/affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/affiliation/affiliations_prefetcher.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_store/get_logins_with_affiliations_request_handler.h"
+#include "components/password_manager/core/browser/password_store/password_model_type_controller_delegate_android.h"
 #include "components/password_manager/core/browser/password_store/password_store_backend_error.h"
 #include "components/password_manager/core/browser/password_store/password_store_backend_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_store/split_stores_and_local_upm.h"
@@ -47,13 +49,6 @@ void LogUPMActiveStatus(syncer::SyncService* sync_service, PrefService* prefs) {
     return;
   }
 
-  // This check enrolls the client into "RemoveUPMUnenrollment" study allowing
-  // us to understand the impact of removing unenrollemnt and percentage of user
-  // left without Password Manager / unenrolled from UPM.
-  if (prefs->GetBoolean(prefs::kUserReceivedGMSCoreError)) {
-    PasswordStoreAndroidBackendDispatcherBridge::CanRemoveUnenrollment();
-  }
-
   if (password_manager_upm_eviction::IsCurrentUserEvicted(prefs)) {
     base::UmaHistogramEnumeration(
         kUPMActiveHistogram,
@@ -74,18 +69,47 @@ enum class ActionOnApiError {
   kDisableSavingAndTryFixPassphraseError,
 };
 
+ActionOnApiError GetRecoveryActionForPassphraseRequiredError(
+    bool supports_passphrase_error_fix) {
+  if (supports_passphrase_error_fix) {
+    return ActionOnApiError::kDisableSavingAndTryFixPassphraseError;
+  }
+  if (base::FeatureList::IsEnabled(
+          features::kUnifiedPasswordManagerSyncOnlyInGMSCore)) {
+    return ActionOnApiError::kDisableSaving;
+  }
+  return ActionOnApiError::kEvict;
+}
+
+bool CanRemoveUnenrollment(PrefService* pref_service) {
+  switch (static_cast<prefs::UseUpmLocalAndSeparateStoresState>(
+      pref_service->GetInteger(
+          prefs::kPasswordsUseUPMLocalAndSeparateStores))) {
+    case prefs::UseUpmLocalAndSeparateStoresState::kOff:
+      // If split stores is not enabled remove unenrollment only if
+      // `kUnifiedPasswordManagerSyncOnlyInGMSCore` is enabled.
+      return base::FeatureList::IsEnabled(
+          features::kUnifiedPasswordManagerSyncOnlyInGMSCore);
+    case prefs::UseUpmLocalAndSeparateStoresState::kOn:
+    case prefs::UseUpmLocalAndSeparateStoresState::kOffAndMigrationPending:
+      // Remove unenrollment completely since user is now part of split stores
+      // experiment.
+      return true;
+  }
+  NOTREACHED_NORETURN();
+}
+
 ActionOnApiError GetRecoveryActionOnApiError(
     AndroidBackendAPIErrorCode api_error_code,
-    bool can_remove_unenrollment,
-    bool supports_passphrase_error_fix) {
+    bool supports_passphrase_error_fix,
+    PrefService* pref_service) {
   switch (api_error_code) {
     case AndroidBackendAPIErrorCode::kAuthErrorResolvable:
     case AndroidBackendAPIErrorCode::kAuthErrorUnresolvable:
       return ActionOnApiError::kDisableSaving;
     case AndroidBackendAPIErrorCode::kPassphraseRequired:
-      return supports_passphrase_error_fix
-                 ? ActionOnApiError::kDisableSavingAndTryFixPassphraseError
-                 : ActionOnApiError::kEvict;
+      return GetRecoveryActionForPassphraseRequiredError(
+          supports_passphrase_error_fix);
     case AndroidBackendAPIErrorCode::kNetworkError:
     case AndroidBackendAPIErrorCode::kApiNotConnected:
     case AndroidBackendAPIErrorCode::kConnectionSuspendedDuringCall:
@@ -107,8 +131,8 @@ ActionOnApiError GetRecoveryActionOnApiError(
     case AndroidBackendAPIErrorCode::kLeakCheckServiceResourceExhausted:
       break;
   }
-  return can_remove_unenrollment ? ActionOnApiError::kDisableSaving
-                                 : ActionOnApiError::kEvict;
+  return CanRemoveUnenrollment(pref_service) ? ActionOnApiError::kDisableSaving
+                                             : ActionOnApiError::kEvict;
 }
 
 template <typename Response, typename CallbackType>
@@ -335,7 +359,15 @@ void PasswordStoreAndroidAccountBackend::DisableAutoSignInForOriginsAsync(
 
 std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
 PasswordStoreAndroidAccountBackend::CreateSyncControllerDelegate() {
-  return sync_controller_delegate_->CreateProxyModelControllerDelegate();
+  // TODO: crbug.com/321220529 - Return
+  // PasswordModelTypeConrollerDelegateAndroid directly.
+  std::unique_ptr<PasswordModelTypeConrollerDelegateAndroid> delegate =
+      std::make_unique<PasswordModelTypeConrollerDelegateAndroid>();
+  return std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+      base::SequencedTaskRunner::GetCurrentDefault(),
+      base::BindRepeating(
+          &PasswordModelTypeConrollerDelegateAndroid::GetWeakPtrToBaseClass,
+          std::move(delegate)));
 }
 
 SmartBubbleStatsStore*
@@ -353,9 +385,14 @@ PasswordStoreAndroidAccountBackend::RecoverOnErrorAndReturnResult(
     AndroidBackendAPIErrorCode error) {
   CHECK(sync_service_);
   switch (GetRecoveryActionOnApiError(
-      error, bridge_helper()->CanRemoveUnenrollment(),
-      sync_service_->SupportsExplicitPassphrasePlatformClient())) {
+      error, sync_service_->SupportsExplicitPassphrasePlatformClient(),
+      prefs())) {
     case ActionOnApiError::kEvict: {
+      // if `kUnifiedPasswordManagerSyncOnlyInGMSCore` is enabled eviction
+      // should not happen.
+      CHECK(!base::FeatureList::IsEnabled(
+          password_manager::features::
+              kUnifiedPasswordManagerSyncOnlyInGMSCore));
       if (!password_manager_upm_eviction::IsCurrentUserEvicted(prefs())) {
         password_manager_upm_eviction::EvictCurrentUser(static_cast<int>(error),
                                                         prefs());
@@ -383,7 +420,7 @@ std::string PasswordStoreAndroidAccountBackend::GetAccountToRetryOperation() {
 }
 
 PasswordStoreBackendMetricsRecorder::PasswordStoreAndroidBackendType
-PasswordStoreAndroidAccountBackend::GetStoreType() {
+PasswordStoreAndroidAccountBackend::GetStorageType() {
   return PasswordStoreBackendMetricsRecorder::PasswordStoreAndroidBackendType::
       kAccount;
 }
@@ -408,6 +445,20 @@ void PasswordStoreAndroidAccountBackend::OnSyncServiceInitialized(
       bridge_helper()->CanUseGetAllLoginsWithBrandingInfoAPI()) {
     affiliations_prefetcher_->DisablePrefetching();
   }
+}
+
+void PasswordStoreAndroidAccountBackend::
+    RecordAddLoginAsyncCalledFromTheStore() {
+  base::UmaHistogramBoolean(
+      "PasswordManager.PasswordStore.AccountBackend.AddLoginCalledOnStore",
+      true);
+}
+
+void PasswordStoreAndroidAccountBackend::
+    RecordUpdateLoginAsyncCalledFromTheStore() {
+  base::UmaHistogramBoolean(
+      "PasswordManager.PasswordStore.AccountBackend.UpdateLoginCalledOnStore",
+      true);
 }
 
 void PasswordStoreAndroidAccountBackend::

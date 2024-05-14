@@ -49,8 +49,7 @@ namespace blink {
 HTMLDetailsElement::HTMLDetailsElement(Document& document)
     : HTMLElement(html_names::kDetailsTag, document) {
   UseCounter::Count(document, WebFeature::kDetailsElement);
-  EnsureUserAgentShadowRoot().SetSlotAssignmentMode(
-      SlotAssignmentMode::kManual);
+  EnsureUserAgentShadowRoot(SlotAssignmentMode::kManual);
 }
 
 HTMLDetailsElement::~HTMLDetailsElement() = default;
@@ -58,14 +57,9 @@ HTMLDetailsElement::~HTMLDetailsElement() = default;
 void HTMLDetailsElement::DispatchPendingEvent(
     const AttributeModificationReason reason) {
   Event* toggle_event = nullptr;
-  if (RuntimeEnabledFeatures::DetailsElementToggleEventEnabled()) {
-    CHECK(pending_toggle_event_);
-    toggle_event = pending_toggle_event_.Get();
-    pending_toggle_event_ = nullptr;
-  } else {
-    CHECK(!pending_toggle_event_);
-    toggle_event = Event::Create(event_type_names::kToggle);
-  }
+  CHECK(pending_toggle_event_);
+  toggle_event = pending_toggle_event_.Get();
+  pending_toggle_event_ = nullptr;
 
   if (reason == AttributeModificationReason::kByParser)
     GetDocument().SetToggleDuringParsing(true);
@@ -188,23 +182,22 @@ void HTMLDetailsElement::ParseAttribute(
       return;
 
     // Dispatch toggle event asynchronously.
-    if (RuntimeEnabledFeatures::DetailsElementToggleEventEnabled()) {
-      String old_state = is_open_ ? "closed" : "open";
-      String new_state = is_open_ ? "open" : "closed";
-      if (pending_toggle_event_) {
-        old_state = pending_toggle_event_->oldState();
-      }
-      pending_toggle_event_ =
-          ToggleEvent::Create(event_type_names::kToggle, Event::Cancelable::kNo,
-                              old_state, new_state);
+    String old_state = is_open_ ? "closed" : "open";
+    String new_state = is_open_ ? "open" : "closed";
+    if (pending_toggle_event_) {
+      old_state = pending_toggle_event_->oldState();
     }
+    pending_toggle_event_ =
+        ToggleEvent::Create(event_type_names::kToggle, Event::Cancelable::kNo,
+                            old_state, new_state);
     pending_event_task_ = PostCancellableTask(
         *GetDocument().GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
         WTF::BindOnce(&HTMLDetailsElement::DispatchPendingEvent,
                       WrapPersistent(this), params.reason));
 
-    Element* content = EnsureUserAgentShadowRoot().getElementById(
-        shadow_element_names::kIdDetailsContent);
+    Element* content =
+        EnsureUserAgentShadowRoot(SlotAssignmentMode::kManual)
+            .getElementById(shadow_element_names::kIdDetailsContent);
     DCHECK(content);
 
     if (is_open_) {
@@ -366,15 +359,13 @@ bool HTMLDetailsElement::HandleInvokeInternal(HTMLElement& invoker,
     return false;
   }
 
-  if (!(EqualIgnoringASCIICase(action, keywords::kAuto) ||
-        EqualIgnoringASCIICase(action, keywords::kToggle) ||
+  if (!(action.empty() || EqualIgnoringASCIICase(action, keywords::kToggle) ||
         EqualIgnoringASCIICase(action, keywords::kClose) ||
         EqualIgnoringASCIICase(action, keywords::kOpen))) {
     return false;
   }
 
-  if (EqualIgnoringASCIICase(action, keywords::kAuto) ||
-      EqualIgnoringASCIICase(action, keywords::kToggle)) {
+  if (action.empty() || EqualIgnoringASCIICase(action, keywords::kToggle)) {
     ToggleOpen();
   } else if (EqualIgnoringASCIICase(action, keywords::kClose)) {
     if (is_open_) {

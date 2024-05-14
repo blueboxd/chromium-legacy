@@ -45,8 +45,6 @@ class GURL;
 
 namespace base {
 class FilePath;
-template <typename T>
-class WeakPtr;
 }
 
 namespace blink {
@@ -754,9 +752,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual device::mojom::GeolocationContext*
   GetInstalledWebappGeolocationContext();
 
-  // Returns a weak ptr to the web contents delegate.
-  virtual base::WeakPtr<WebContentsDelegate> GetDelegateWeakPtr();
-
   // Whether the WebContents is privileged.
   // It's used to prevent drag and drop between privileged and non-privileged
   // WebContents.
@@ -773,10 +768,10 @@ class CONTENT_EXPORT WebContentsDelegate {
   // intercept.
   virtual void DidChangeCloseSignalInterceptStatus() {}
 
-  // Report that cancellation occurred in preview navigation.
+  // Reports that cancellation occurred in preview navigation.
   virtual void CancelPreview(PreviewCancelReason reason) {}
 
-  // Notify the previewed page is activated.
+  // Notifies the previewed page is activated.
   virtual void DidActivatePreviewedPage() {}
 
 #if !BUILDFLAG(IS_ANDROID)

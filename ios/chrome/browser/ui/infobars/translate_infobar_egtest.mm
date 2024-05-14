@@ -23,7 +23,6 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/web_http_server_chrome_test_case.h"
@@ -102,7 +101,33 @@ const char kFrenchPageWithLinkPath[] = "/frenchpagewithlink/";
 const char kFrenchPageNoTranslateContent[] = "/frenchpagenotranslatecontent/";
 const char kFrenchPageNoTranslateValue[] = "/frenchpagenotranslatevalue/";
 const char kTranslateScriptPath[] = "/translatescript/";
-const char kTranslateScript[] = "Fake_Translate_Script";
+// Fakes the translate element script by adding a button with the 'Translated'
+// label to the web page. The test can check it to determine if the page was
+// translated. See translate.js for details.
+const char kTranslateScript[] =
+    "var google = {"
+    "  translate: {"
+    "    TranslateService: function(config) {"
+    "      return {"
+    "        isAvailable: function() {"
+    "          return true;"
+    "        },"
+    "        translatePage: function(source, target, callback) {"
+    "          myButton = document.createElement('button');"
+    "          myButton.setAttribute('id', 'translated-button');"
+    "          myButton.appendChild(document.createTextNode('Translated'));"
+    "          document.body.prepend(myButton);"
+    "          setTimeout(callback, 1.0, 1.0, true)"
+    "        },"
+    "        restore: function() {"
+    "          myButton = document.getElementById('translated-button');"
+    "          myButton.remove();"
+    "        }"
+    "      }"
+    "    }"
+    "  }"
+    "};"
+    "setTimeout(cr.googleTranslate.onTranslateElementLoad, 1.0);";
 
 // Body text for /languagepath/.
 const char kLanguagePathText[] = "123456";
@@ -487,10 +512,8 @@ void TestResponseProvider::GetLanguageResponse(
       base::StringPrintf("http://%s", kFrenchPagePath));
 
   // Disable translate.
-  [ChromeEarlGreyAppInterface
-      setBoolValue:NO
-       forUserPref:base::SysUTF8ToNSString(
-                       translate::prefs::kOfferTranslateEnabled)];
+  [ChromeEarlGrey setBoolValue:NO
+                   forUserPref:translate::prefs::kOfferTranslateEnabled];
 
   // Open some webpage.
   [ChromeEarlGrey loadURL:URL];
@@ -504,10 +527,8 @@ void TestResponseProvider::GetLanguageResponse(
                   @"Before Translate banner was found");
 
   // Enable translate.
-  [ChromeEarlGreyAppInterface
-      setBoolValue:YES
-       forUserPref:base::SysUTF8ToNSString(
-                       translate::prefs::kOfferTranslateEnabled)];
+  [ChromeEarlGrey setBoolValue:YES
+                   forUserPref:translate::prefs::kOfferTranslateEnabled];
 }
 
 // Tests that the infobar banner persists as the page scrolls mode and that the
@@ -691,9 +712,6 @@ void TestResponseProvider::GetLanguageResponse(
   [TranslateAppInterface tearDownLanguageDetectionTabHelperObserver];
   [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGrey loadURL:URL];
-  // Since current web state has changed to Incognito, a new fake translation
-  // manager has to be set up for the rest of this test.
-  [TranslateAppInterface setUpFakeJSTranslateManagerInCurrentTab];
 
   // Check Banner was presented.
   GREYAssertTrue([self isBeforeTranslateBannerVisible],

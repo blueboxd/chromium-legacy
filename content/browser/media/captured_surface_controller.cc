@@ -6,12 +6,14 @@
 
 #include <cmath>
 
+#include "base/feature_list.h"
 #include "base/task/bind_post_task.h"
 #include "content/browser/media/captured_surface_control_permission_manager.h"
 #include "content/browser/media/media_stream_web_contents_observer.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -88,15 +90,6 @@ std::optional<CapturedSurfaceInfo> ResolveCapturedSurfaceOnUI(
                              subscription_version, initial_zoom_level);
 }
 
-// Checks whether the app is focused.
-// Note that this is different from requiring that the capturer RFH is focused.
-// The check here starts at the primary main frame, and then cascades through
-// the tree - which is the desired behavior.
-bool IsFocused(WebContentsImpl& web_contents) {
-  RenderFrameHostImpl* const rfhi = web_contents.GetPrimaryMainFrame();
-  return rfhi && rfhi->IsFocused();
-}
-
 // Deliver a synthetic MouseWheel action on `captured_wc` with the parameters
 // described by the values in `action`.
 //
@@ -131,10 +124,6 @@ CapturedSurfaceControlResult DoSendWheel(
 
   if (capturer_wc == captured_wc.get()) {
     return CapturedSurfaceControlResult::kDisallowedForSelfCaptureError;
-  }
-
-  if (!IsFocused(*capturer_wc)) {
-    return CapturedSurfaceControlResult::kCapturerNotFocusedError;
   }
 
   // Scale (x, y).
@@ -212,12 +201,23 @@ CapturedSurfaceControlResult DoSetZoomLevel(
     return CapturedSurfaceControlResult::kDisallowedForSelfCaptureError;
   }
 
-  if (!IsFocused(*capturer_wc)) {
-    return CapturedSurfaceControlResult::kCapturerNotFocusedError;
+  // TODO(crbug.com/328589994): Hard-code kCapturedSurfaceControlTemporaryZoom.
+  if (!base::FeatureList::IsEnabled(
+          features::kCapturedSurfaceControlTemporaryZoom)) {
+    HostZoomMap::SetZoomLevel(captured_wc.get(),
+                              blink::PageZoomFactorToZoomLevel(
+                                  static_cast<double>(zoom_level) / 100));
+    return CapturedSurfaceControlResult::kSuccess;
   }
 
-  HostZoomMap::SetZoomLevel(
-      captured_wc.get(),
+  HostZoomMap* const zoom_map =
+      HostZoomMap::GetForWebContents(captured_wc.get());
+  if (!zoom_map) {
+    return CapturedSurfaceControlResult::kUnknownError;
+  }
+
+  zoom_map->SetTemporaryZoomLevel(
+      captured_wc->GetPrimaryMainFrame()->GetGlobalId(),
       blink::PageZoomFactorToZoomLevel(static_cast<double>(zoom_level) / 100));
   return CapturedSurfaceControlResult::kSuccess;
 }

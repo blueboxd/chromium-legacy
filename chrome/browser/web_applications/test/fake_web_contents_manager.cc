@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <optional>
+#include <string_view>
 
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
 #include "components/webapps/common/web_page_metadata.mojom.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/url_constants.h"
 
@@ -280,9 +282,25 @@ class FakeWebContentsManager::FakeWebAppDataRetriever
       std::move(page.on_manifest_fetch).Run();
     }
 
+    // Apply the 'default' values in the manifest spec algorithm.
+    blink::mojom::ManifestPtr manifest =
+        page.manifest_before_default_processing
+            ? page.manifest_before_default_processing->Clone()
+            : blink::mojom::Manifest::New();
+    if (manifest->start_url.is_empty()) {
+      manifest->start_url = url;
+    }
+    if (manifest->id.is_empty()) {
+      manifest->id = manifest->start_url.GetWithoutRef();
+    }
+    if (manifest->scope.is_empty()) {
+      manifest->scope = manifest->start_url.GetWithoutFilename();
+    }
+    CHECK(manifest->scope.ExtractFileName().empty());
+
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(callback), page.opt_manifest.Clone(),
+        base::BindOnce(std::move(callback), std::move(manifest),
                        page.manifest_url, page.valid_manifest_for_web_app,
                        page.error_code));
   }
@@ -381,7 +399,7 @@ webapps::AppId FakeWebContentsManager::CreateBasicInstallPageState(
     const GURL& install_url,
     const GURL& manifest_url,
     const GURL& start_url,
-    base::StringPiece16 name) {
+    std::u16string_view name) {
   FakePageState& install_page_state = GetOrCreatePageState(install_url);
   install_page_state.url_load_result = WebAppUrlLoaderResult::kUrlLoaded;
   install_page_state.redirection_url = std::nullopt;
@@ -391,14 +409,12 @@ webapps::AppId FakeWebContentsManager::CreateBasicInstallPageState(
   install_page_state.manifest_url = manifest_url;
   install_page_state.valid_manifest_for_web_app = true;
 
-  install_page_state.opt_manifest = blink::mojom::Manifest::New();
-  install_page_state.opt_manifest->scope =
-      url::Origin::Create(start_url).GetURL();
-  install_page_state.opt_manifest->start_url = start_url;
-  install_page_state.opt_manifest->id = start_url;
-  install_page_state.opt_manifest->display =
+  install_page_state.manifest_before_default_processing =
+      blink::mojom::Manifest::New();
+  install_page_state.manifest_before_default_processing->start_url = start_url;
+  install_page_state.manifest_before_default_processing->display =
       blink::mojom::DisplayMode::kStandalone;
-  install_page_state.opt_manifest->short_name = name;
+  install_page_state.manifest_before_default_processing->short_name = name;
 
   return GenerateAppId(/*manifest_id_path=*/std::nullopt, start_url);
 }
@@ -414,6 +430,10 @@ FakeWebContentsManager::GetOrCreatePageState(const GURL& gurl) {
 }
 void FakeWebContentsManager::DeletePageState(const GURL& gurl) {
   page_state_.erase(gurl);
+}
+
+bool FakeWebContentsManager::HasPageState(const GURL& gurl) {
+  return page_state_.find(gurl) != page_state_.end();
 }
 
 void FakeWebContentsManager::TrackLoadUrlCalls(

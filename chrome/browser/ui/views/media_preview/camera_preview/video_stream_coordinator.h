@@ -8,11 +8,14 @@
 #include <stddef.h>
 
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
 #include "base/functional/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/time/time.h"
+#include "chrome/browser/ui/views/media_preview/media_preview_metrics.h"
 #include "components/capture_mode/camera_video_frame_handler.h"
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -28,15 +31,17 @@ class VideoStreamCoordinator
     : public capture_mode::CameraVideoFrameHandler::Delegate {
  public:
   // VideoStreamView is added to `parent_view` children list.
-  explicit VideoStreamCoordinator(views::View& parent_view);
+  explicit VideoStreamCoordinator(
+      views::View& parent_view,
+      media_preview_metrics::Context metrics_context);
   VideoStreamCoordinator(const VideoStreamCoordinator&) = delete;
   VideoStreamCoordinator& operator=(const VideoStreamCoordinator&) = delete;
   ~VideoStreamCoordinator() override;
 
   // Initializes CameraVideoFrameHandler, and request to start receiving frames.
   void ConnectToDevice(
-      mojo::Remote<video_capture::mojom::VideoSource> video_source,
-      const std::vector<media::VideoCaptureFormat>& supported_formats);
+      const media::VideoCaptureDeviceInfo& device_info,
+      mojo::Remote<video_capture::mojom::VideoSource> video_source);
 
   // Stops active VideoSource connection.
   void Stop();
@@ -66,6 +71,10 @@ class VideoStreamCoordinator
 
   // Runs when a new frame is received. Used for testing.
   base::RepeatingClosure frame_received_callback_for_test_;
+
+  const media_preview_metrics::Context metrics_context_;
+  size_t video_stream_total_frames_;
+  std::optional<base::TimeTicks> video_stream_start_time_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_MEDIA_PREVIEW_CAMERA_PREVIEW_VIDEO_STREAM_COORDINATOR_H_

@@ -13,7 +13,6 @@
 #include "base/scoped_observation.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
-#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/self_deleting_url_loader_factory.h"
@@ -38,6 +37,8 @@ class SignedWebBundleId;
 
 namespace web_app {
 
+class IwaSourceProxy;
+class IwaSourceWithMode;
 class IsolatedWebAppUrlInfo;
 
 // A URLLoaderFactory used for the isolated-app:// scheme.
@@ -75,14 +76,15 @@ class IsolatedWebAppURLLoaderFactory
 
   void HandleSignedBundle(
       const base::FilePath& path,
+      bool dev_mode,
       const web_package::SignedWebBundleId& web_bundle_id,
       mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
       const network::ResourceRequest& resource_request,
       mojo::PendingRemote<network::mojom::URLLoaderClient> loader_client);
 
-  void HandleDevModeProxy(
+  void HandleProxy(
       const IsolatedWebAppUrlInfo& url_info,
-      const DevModeProxy& dev_mode_proxy,
+      const IwaSourceProxy& proxy,
       mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
       const network::ResourceRequest& resource_request,
       mojo::PendingRemote<network::mojom::URLLoaderClient> loader_client,
@@ -105,7 +107,7 @@ class IsolatedWebAppURLLoaderFactory
 
   void HandleRequest(
       const IsolatedWebAppUrlInfo& url_info,
-      const IsolatedWebAppLocation& location,
+      const IwaSourceWithMode& source,
       bool is_pending_install,
       mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
       const network::ResourceRequest& resource_request,

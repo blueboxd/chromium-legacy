@@ -32,8 +32,9 @@ FeatureConfig CreateAlwaysTriggerConfig(const base::Feature* feature) {
   const char* prefix = "IPH_";
   std::string stripped_feature_name = feature->name;
   if (base::StartsWith(stripped_feature_name, prefix,
-                       base::CompareCase::SENSITIVE))
+                       base::CompareCase::SENSITIVE)) {
     stripped_feature_name = stripped_feature_name.substr(strlen(prefix));
+  }
 
   // A config that always meets condition to trigger IPH.
   FeatureConfig config;
@@ -132,7 +133,7 @@ std::optional<FeatureConfig> GetClientSideFeatureConfig(
     std::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
     config->trigger =
-        EventConfig("password_saved", Comparator(LESS_THAN, 1), 180, 180);
+        EventConfig("password_saved", Comparator(LESS_THAN, 1), 360, 360);
     config->session_rate = Comparator(ANY, 0);
     config->availability = Comparator(ANY, 0);
     return config;
@@ -142,7 +143,7 @@ std::optional<FeatureConfig> GetClientSideFeatureConfig(
     std::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
     config->trigger =
-        EventConfig("signin_flow_detected", Comparator(LESS_THAN, 1), 180, 180);
+        EventConfig("signin_flow_detected", Comparator(LESS_THAN, 1), 360, 360);
     config->session_rate = Comparator(ANY, 0);
     config->availability = Comparator(ANY, 0);
     return config;
@@ -591,22 +592,6 @@ std::optional<FeatureConfig> GetClientSideFeatureConfig(
     return config;
   }
 
-  if (kIPHComposeMenuNewBadgeFeature.name == feature->name) {
-    // A config that allows the new badge attached to the Compose feature
-    // entrypoint in the right-click menu to be shown at most 10 times in a
-    // 10-day window and only while the user has opened the Compose feature less
-    // than 3 times.
-    std::optional<FeatureConfig> config = FeatureConfig();
-    config->valid = true;
-    config->availability = Comparator(ANY, 0);
-    config->session_rate = Comparator(ANY, 0);
-    config->trigger = EventConfig("compose_menu_new_badge_triggered",
-                                  Comparator(LESS_THAN, 10), 10, 360);
-    config->used = EventConfig("compose_menu_item_activated",
-                               Comparator(LESS_THAN, 3), 360, 360);
-    return config;
-  }
-
   if (kIPHComposeNewBadgeFeature.name == feature->name) {
     // A config that allows the new badge displayed in the Compose feature nudge
     // to be shown at most 4 times in a 10-day window and only while the user
@@ -680,6 +665,21 @@ std::optional<FeatureConfig> GetClientSideFeatureConfig(
 
 #if BUILDFLAG(IS_ANDROID)
 
+  if (kIPHCCTHistory.name == feature->name) {
+    // A config that allows the CCTHistory IPH to be shown once
+    // a week, up to 3 times, unless the button is clicked at least once.
+    std::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 0);
+    config->trigger = EventConfig("cct_history_iph_trigger",
+                                  Comparator(LESS_THAN, 3), 360, 360);
+    config->event_configs.insert(EventConfig("cct_history_iph_trigger",
+                                             Comparator(LESS_THAN, 1), 7, 360));
+    config->used = EventConfig("cct_history_menu_item_clicked",
+                               Comparator(EQUAL, 0), 360, 360);
+    return config;
+  }
   if (kIPHCCTMinimized.name == feature->name) {
     // A config that allows the Custom Tab minimize button IPH to be shown once
     // a day, up to 3 times, unless the button is clicked at least once.
@@ -812,171 +812,9 @@ std::optional<FeatureConfig> GetClientSideFeatureConfig(
     return config;
   }
 
-  // Feature notification guide help UI promos that are shown in response to a
-  // notification click.
-  if (kIPHFeatureNotificationGuideDefaultBrowserPromoFeature.name ==
-          feature->name ||
-      kIPHFeatureNotificationGuideSignInHelpBubbleFeature.name ==
-          feature->name ||
-      kIPHFeatureNotificationGuideIncognitoTabHelpBubbleFeature.name ==
-          feature->name ||
-      kIPHFeatureNotificationGuideNTPSuggestionCardHelpBubbleFeature.name ==
-          feature->name ||
-      kIPHFeatureNotificationGuideVoiceSearchHelpBubbleFeature.name ==
-          feature->name) {
-    return CreateAlwaysTriggerConfig(feature);
-  }
-
   // A generic feature that always returns true.
   if (kIPHGenericAlwaysTriggerHelpUiFeature.name == feature->name) {
     return CreateAlwaysTriggerConfig(feature);
-  }
-
-  if (kIPHFeatureNotificationGuideIncognitoTabUsedFeature.name ==
-      feature->name) {
-    // A config that allows to check whether use has used incognito tabs before.
-    std::optional<FeatureConfig> config = FeatureConfig();
-    config->valid = true;
-    config->availability = Comparator(ANY, 0);
-    config->session_rate = Comparator(ANY, 0);
-    config->session_rate_impact.type = SessionRateImpact::Type::NONE;
-    config->blocked_by.type = BlockedBy::Type::NONE;
-    config->blocking.type = Blocking::Type::NONE;
-    // unused.
-    config->trigger =
-        EventConfig("feature_notification_guide_dummy_feature_trigger",
-                    Comparator(ANY, 0), 90, 90);
-    config->used = EventConfig("feature_notification_guide_dummy_feature_used",
-                               Comparator(ANY, 0), 90, 90);
-    config->event_configs.insert(
-        EventConfig("app_menu_new_incognito_tab_clicked",
-                    Comparator(GREATER_THAN_OR_EQUAL, 1), 90, 90));
-    return config;
-  }
-
-  if (kIPHFeatureNotificationGuideVoiceSearchUsedFeature.name ==
-      feature->name) {
-    // A config that allows to check whether use has used voice search from NTP
-    // before.
-    std::optional<FeatureConfig> config = FeatureConfig();
-    config->valid = true;
-    config->availability = Comparator(ANY, 0);
-    config->session_rate = Comparator(ANY, 0);
-    config->session_rate_impact.type = SessionRateImpact::Type::NONE;
-    config->blocked_by.type = BlockedBy::Type::NONE;
-    config->blocking.type = Blocking::Type::NONE;
-    // unused.
-    config->trigger =
-        EventConfig("feature_notification_guide_dummy_feature_trigger",
-                    Comparator(ANY, 0), 90, 90);
-    config->used = EventConfig("feature_notification_guide_dummy_feature_used",
-                               Comparator(ANY, 0), 90, 90);
-    config->event_configs.insert(
-        EventConfig("ntp_voice_search_button_clicked",
-                    Comparator(GREATER_THAN_OR_EQUAL, 1), 90, 90));
-    return config;
-  }
-
-  if (kIPHFeatureNotificationGuideIncognitoTabNotificationShownFeature.name ==
-      feature->name) {
-    // A config that allows the feature guide incognito tab notification to be
-    // shown.
-    std::optional<FeatureConfig> config = FeatureConfig();
-    config->valid = true;
-    config->availability = Comparator(ANY, 0);
-    config->session_rate = Comparator(ANY, 0);
-    config->session_rate_impact.type = SessionRateImpact::Type::NONE;
-    config->blocked_by.type = BlockedBy::Type::NONE;
-    config->blocking.type = Blocking::Type::NONE;
-    config->trigger = EventConfig(
-        "feature_notification_guide_incognito_tab_notification_trigger",
-        Comparator(LESS_THAN, 1), 90, 90);
-    config->used = EventConfig("app_menu_new_incognito_tab_clicked",
-                               Comparator(EQUAL, 0), 90, 90);
-    return config;
-  }
-
-  if (kIPHFeatureNotificationGuideNTPSuggestionCardNotificationShownFeature
-          .name == feature->name) {
-    // A config that allows the feature guide NTP suggestions cards notification
-    // to be shown.
-    std::optional<FeatureConfig> config = FeatureConfig();
-    config->valid = true;
-    config->availability = Comparator(ANY, 0);
-    config->session_rate = Comparator(ANY, 0);
-    SessionRateImpact session_rate_impact;
-    config->session_rate_impact.type = SessionRateImpact::Type::NONE;
-    config->blocked_by.type = BlockedBy::Type::NONE;
-    config->blocking.type = Blocking::Type::NONE;
-    config->trigger = EventConfig(
-        "feature_notification_guide_ntp_suggestion_card_notification_trigger",
-        Comparator(LESS_THAN, 1), 90, 90);
-    config->used = EventConfig(
-        "feature_notification_guide_ntp_suggestion_card_notification_used",
-        Comparator(EQUAL, 0), 90, 90);
-    return config;
-  }
-
-  if (kIPHFeatureNotificationGuideVoiceSearchNotificationShownFeature.name ==
-      feature->name) {
-    // A config that allows the feature guide voice search notification to be
-    // shown.
-    std::optional<FeatureConfig> config = FeatureConfig();
-    config->valid = true;
-    config->availability = Comparator(ANY, 0);
-    config->session_rate = Comparator(ANY, 0);
-    SessionRateImpact session_rate_impact;
-    config->session_rate_impact.type = SessionRateImpact::Type::NONE;
-    config->blocked_by.type = BlockedBy::Type::NONE;
-    config->blocking.type = Blocking::Type::NONE;
-    config->trigger = EventConfig(
-        "feature_notification_guide_voice_search_notification_trigger",
-        Comparator(LESS_THAN, 1), 90, 90);
-    config->used = EventConfig("ntp_voice_search_button_clicked",
-                               Comparator(EQUAL, 0), 90, 90);
-    return config;
-  }
-
-  if (kIPHFeatureNotificationGuideDefaultBrowserNotificationShownFeature.name ==
-      feature->name) {
-    // A config that allows the feature guide default browser notification to be
-    // shown.
-    std::optional<FeatureConfig> config = FeatureConfig();
-    config->valid = true;
-    config->availability = Comparator(ANY, 0);
-    config->session_rate = Comparator(ANY, 0);
-    SessionRateImpact session_rate_impact;
-    config->session_rate_impact.type = SessionRateImpact::Type::NONE;
-    config->blocked_by.type = BlockedBy::Type::NONE;
-    config->blocking.type = Blocking::Type::NONE;
-    config->trigger = EventConfig(
-        "feature_notification_guide_default_browser_notification_trigger",
-        Comparator(LESS_THAN, 1), 90, 90);
-    config->used = EventConfig(
-        "feature_notification_guide_default_browser_notification_used",
-        Comparator(EQUAL, 0), 90, 90);
-    return config;
-  }
-
-  if (kIPHFeatureNotificationGuideSignInNotificationShownFeature.name ==
-      feature->name) {
-    // A config that allows the feature guide sign-in notification to be
-    // shown.
-    std::optional<FeatureConfig> config = FeatureConfig();
-    config->valid = true;
-    config->availability = Comparator(ANY, 0);
-    config->session_rate = Comparator(ANY, 0);
-    SessionRateImpact session_rate_impact;
-    config->session_rate_impact.type = SessionRateImpact::Type::NONE;
-    config->blocked_by.type = BlockedBy::Type::NONE;
-    config->blocking.type = Blocking::Type::NONE;
-    config->trigger =
-        EventConfig("feature_notification_guide_sign_in_notification_trigger",
-                    Comparator(LESS_THAN, 1), 90, 90);
-    config->used =
-        EventConfig("feature_notification_sign_in_search_notification_used",
-                    Comparator(EQUAL, 0), 90, 90);
-    return config;
   }
 
   if (kIPHLowUserEngagementDetectorFeature.name == feature->name) {
@@ -1585,6 +1423,19 @@ std::optional<FeatureConfig> GetClientSideFeatureConfig(
     return config;
   }
 
+  if (kIPHAutofillManualFallbackFeature.name == feature->name) {
+    // Autofill Manual Fallback IPH is shown when it has not been shown before
+    // in the last 90 days.
+    std::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 0);
+    config->session_rate_impact.type = SessionRateImpact::Type::NONE;
+    config->trigger = EventConfig("autofill_manual_fallback_trigger",
+                                  Comparator(LESS_THAN, 1), 90, 360);
+    return config;
+  }
+
   if (kIPHAutofillVirtualCardSuggestionFeature.name == feature->name) {
     // A config that allows the virtual card credit card suggestion IPH to be
     // shown when:
@@ -2030,6 +1881,36 @@ std::optional<FeatureConfig> GetClientSideFeatureConfig(
         feature_engagement::events::kIOSSwipeBackForwardUsed);
   }
 
+  if (kIPHiOSSwipeToolbarToChangeTabFeature.name == feature->name) {
+    // The IPH of the swipe toolbar to go to adjacent tab feature.
+    return CreateNewUserGestureInProductHelpConfig(
+        *feature, /*action_event=*/
+        feature_engagement::events::kIOSTabGridAdjacentTabTapped,
+        /*trigger_event=*/"swipe_toolbar_to_change_tab_trigger", /*used_event=*/
+        feature_engagement::events::kIOSSwipeToolbarToChangeTabUsed);
+  }
+
+  if (kIPHiOSOverflowMenuCustomizationFeature.name == feature->name) {
+    std::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 0);
+    config->used = EventConfig(
+        feature_engagement::events::kIOSOverflowMenuCustomizationUsed,
+        Comparator(EQUAL, 0), feature_engagement::kMaxStoragePeriod,
+        feature_engagement::kMaxStoragePeriod);
+    config->trigger =
+        EventConfig("overflow_menu_customization_trigger", Comparator(EQUAL, 0),
+                    feature_engagement::kMaxStoragePeriod,
+                    feature_engagement::kMaxStoragePeriod);
+    config->event_configs.insert(EventConfig(
+        feature_engagement::events::kIOSOverflowMenuOffscreenItemUsed,
+        Comparator(GREATER_THAN_OR_EQUAL, 2),
+        feature_engagement::kMaxStoragePeriod,
+        feature_engagement::kMaxStoragePeriod));
+    return config;
+  }
+
   // iOS Promo Configs are split out into a separate file, so check that too.
   if (std::optional<FeatureConfig> ios_promo_feature_config =
           GetClientSideiOSPromoFeatureConfig(feature)) {
@@ -2082,6 +1963,26 @@ std::optional<FeatureConfig> GetClientSideFeatureConfig(
         EventConfig("dummy_feature_action", Comparator(LESS_THAN, 0), 1, 1);
     return config;
   }
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
+  if (kIPHDeepScanPromptRemovalFeature.name == feature->name) {
+    std::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    // Don't show if user has already seen an IPH this session.
+    config->session_rate = Comparator(EQUAL, 0);
+    // Only show the IPH if the user hasn't seen it before
+    config->trigger =
+        EventConfig("deep_scan_prompt_removal_iph_trigger",
+                    Comparator(EQUAL, 0), feature_engagement::kMaxStoragePeriod,
+                    feature_engagement::kMaxStoragePeriod);
+    // Only show the IPH if the user has done a download in the last day.
+    config->used =
+        EventConfig("user_downloaded_file", Comparator(GREATER_THAN, 0), 1, 1);
+    return config;
+  }
+#endif
 
   return std::nullopt;
 }

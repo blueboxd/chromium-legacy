@@ -40,7 +40,11 @@ export class TabOrganizationNotStartedElement extends
 
   static get properties() {
     return {
-      showFre: Boolean,
+      showFre: {
+        type: Boolean,
+        value: false,
+      },
+
       account_: Object,
       sync_: Object,
     };
@@ -65,11 +69,6 @@ export class TabOrganizationNotStartedElement extends
 
     this.syncBrowserProxy_.getSyncInfo().then(this.setSync_.bind(this));
     this.addWebUiListener('sync-info-changed', this.setSync_.bind(this));
-  }
-
-  announceHeader() {
-    this.$.header.textContent = '';
-    this.$.header.textContent = this.getTitle_();
   }
 
   private setAccount_(account: AccountInfo) {

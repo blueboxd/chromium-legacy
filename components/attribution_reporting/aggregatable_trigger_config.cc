@@ -15,6 +15,7 @@
 #include "base/types/expected.h"
 #include "base/types/expected_macros.h"
 #include "base/values.h"
+#include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/features.h"
 #include "components/attribution_reporting/source_registration_time_config.mojom.h"
 #include "components/attribution_reporting/trigger_registration_error.mojom.h"
@@ -26,15 +27,6 @@ namespace {
 using ::attribution_reporting::mojom::SourceRegistrationTimeConfig;
 using ::attribution_reporting::mojom::TriggerRegistrationError;
 
-constexpr char kAggregatableSourceRegistrationTime[] =
-    "aggregatable_source_registration_time";
-constexpr char kTriggerContextId[] = "trigger_context_id";
-
-constexpr char kInclude[] = "include";
-constexpr char kExclude[] = "exclude";
-
-constexpr size_t kMaxTriggerContextIdLength = 64;
-
 base::expected<mojom::SourceRegistrationTimeConfig, TriggerRegistrationError>
 ParseAggregatableSourceRegistrationTime(const base::Value* value) {
   if (!value) {
@@ -44,28 +36,29 @@ ParseAggregatableSourceRegistrationTime(const base::Value* value) {
   const std::string* str = value->GetIfString();
   if (!str) {
     return base::unexpected(
-        TriggerRegistrationError::kAggregatableSourceRegistrationTimeWrongType);
+        TriggerRegistrationError::
+            kAggregatableSourceRegistrationTimeValueInvalid);
   }
 
-  if (*str == kInclude) {
+  if (*str == kSourceRegistrationTimeInclude) {
     return SourceRegistrationTimeConfig::kInclude;
   }
 
-  if (*str == kExclude) {
+  if (*str == kSourceRegistrationTimeExclude) {
     return SourceRegistrationTimeConfig::kExclude;
   }
 
   return base::unexpected(TriggerRegistrationError::
-                              kAggregatableSourceRegistrationTimeUnknownValue);
+                              kAggregatableSourceRegistrationTimeValueInvalid);
 }
 
 std::string SerializeAggregatableSourceRegistrationTime(
     SourceRegistrationTimeConfig config) {
   switch (config) {
     case SourceRegistrationTimeConfig::kInclude:
-      return kInclude;
+      return kSourceRegistrationTimeInclude;
     case SourceRegistrationTimeConfig::kExclude:
-      return kExclude;
+      return kSourceRegistrationTimeExclude;
   }
 }
 

@@ -41,7 +41,10 @@ android_library("test_support_java") {
 
   deps = [
     ":jni_headers",
+    "//chrome/browser/profiles/android:java",
     "//content/public/android:content_java",
+    "//third_party/android_deps:espresso_java",
+    "//third_party/hamcrest:hamcrest_java",
     "//third_party/jni_zero:jni_zero_java",
     "//url:gurl_java",
   ]

@@ -80,6 +80,11 @@ namespace blink {
 
 namespace {
 
+// Controls if VideoFrame.copyTo() reads GPU frames asynchronously
+BASE_FEATURE(kVideoFrameAsyncCopyTo,
+             "VideoFrameAsyncCopyTo",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 media::VideoPixelFormat ToMediaPixelFormat(V8VideoPixelFormat::Enum fmt) {
   switch (fmt) {
     case V8VideoPixelFormat::Enum::kI420:
@@ -1220,9 +1225,11 @@ ScriptPromiseTyped<IDLSequence<PlaneLayout>> VideoFrame::copyTo(
   } else {
     DCHECK(local_frame->HasTextures());
 
-    if (CopyToAsync(resolver, local_frame, src_rect, destination,
-                    dest_layout)) {
-      return promise;
+    if (base::FeatureList::IsEnabled(kVideoFrameAsyncCopyTo)) {
+      if (CopyToAsync(resolver, local_frame, src_rect, destination,
+                      dest_layout)) {
+        return promise;
+      }
     }
 
     if (!CopyTexturablePlanes(*local_frame, src_rect, dest_layout, buffer)) {
@@ -1366,16 +1373,17 @@ gfx::Size VideoFrame::BitmapSourceSize() const {
   return local_frame->natural_size();
 }
 
-ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
-                                            std::optional<gfx::Rect> crop_rect,
-                                            const ImageBitmapOptions* options,
-                                            ExceptionState& exception_state) {
+ScriptPromiseTyped<ImageBitmap> VideoFrame::CreateImageBitmap(
+    ScriptState* script_state,
+    std::optional<gfx::Rect> crop_rect,
+    const ImageBitmapOptions* options,
+    ExceptionState& exception_state) {
   const auto local_handle = handle_->CloneForInternalUse();
   if (!local_handle) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "Cannot create ImageBitmap from closed VideoFrame.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<ImageBitmap>();
   }
 
   // SkImages are always immutable, so we don't actually need to make a copy of
@@ -1420,7 +1428,7 @@ ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
         String(("Unsupported VideoFrame: " +
                 local_handle->frame()->AsHumanReadableString())
                    .c_str()));
-    return ScriptPromise();
+    return ScriptPromiseTyped<ImageBitmap>();
   }
 
   auto* image_bitmap =

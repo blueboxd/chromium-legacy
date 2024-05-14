@@ -48,6 +48,7 @@ std::vector<Command> supported_commands = {
     Command::kStartPasswordManagerTutorial,
     Command::kStartSavedTabGroupTutorial,
     Command::kOpenAISettings,
+    Command::kOpenSafetyCheckFromWhatsNew,
 };
 
 const ui::ElementContext kTestContext1(1);
@@ -163,7 +164,8 @@ class TestTutorialService : public user_education::TutorialService {
       user_education::TutorialIdentifier id,
       ui::ElementContext context,
       base::OnceClosure completed_callback = base::DoNothing(),
-      base::OnceClosure aborted_callback = base::DoNothing()) override {
+      base::OnceClosure aborted_callback = base::DoNothing(),
+      base::RepeatingClosure restart_callback = base::DoNothing()) override {
     running_id_ = id;
   }
 
@@ -189,7 +191,8 @@ class MockTutorialService : public TestTutorialService {
               (user_education::TutorialIdentifier,
                ui::ElementContext,
                base::OnceClosure,
-               base::OnceClosure));
+               base::OnceClosure,
+               base::RepeatingClosure));
   MOCK_METHOD(void,
               LogStartedFromWhatsNewPage,
               (user_education::TutorialIdentifier, bool));
@@ -364,6 +367,20 @@ TEST_F(BrowserCommandHandlerTest, OpenSafetyCheckCommand) {
       NavigateToURL(GURL(chrome::GetSettingsUrl(chrome::kSafetyCheckSubPage)),
                     DispositionFromClick(*info)));
   EXPECT_TRUE(ExecuteCommand(Command::kOpenSafetyCheck, std::move(info)));
+}
+
+TEST_F(BrowserCommandHandlerTest, OpenSafetyCheckFromWhatsNewCommand) {
+  // The OpenSafetyCheck command opens a new settings window with the Safety
+  // Check, and the correct disposition.
+  ClickInfoPtr info = ClickInfo::New();
+  info->middle_button = true;
+  info->meta_key = true;
+  EXPECT_CALL(
+      *command_handler_,
+      NavigateToURL(GURL(chrome::GetSettingsUrl(chrome::kSafetyCheckSubPage)),
+                    DispositionFromClick(*info)));
+  EXPECT_TRUE(
+      ExecuteCommand(Command::kOpenSafetyCheckFromWhatsNew, std::move(info)));
 }
 
 TEST_F(BrowserCommandHandlerTest,

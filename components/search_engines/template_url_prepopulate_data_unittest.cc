@@ -8,9 +8,11 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/containers/to_vector.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -210,15 +212,14 @@ TEST_F(TemplateURLPrepopulateDataTest, UniqueIDs) {
 }
 
 // Verifies that the prepopulated search engines configured by country are
-// consistent with the set of countries in EeaChoiceCountry. For example, when
-// in EEA they should have more than 5, and outside of EEA not more than 5.
+// consistent with the set of countries in EeaChoiceCountry. For example, the
+// per region limits `kMaxEeaPrepopulatedEngines` and
+// `kMaxRowPrepopulatedEngines` should apply as expected.
 TEST_F(TemplateURLPrepopulateDataTest, NumberOfEntriesPerCountryConsistency) {
   feature_list_.Reset();
   feature_list_.InitAndEnableFeature(switches::kSearchEngineChoiceTrigger);
-  const size_t kMinEea = 6;
-  const size_t kMaxEea = 12;
+  const size_t kMinEea = 8;
   const size_t kMinRow = 3;
-  const size_t kMaxRow = 5;
 
   for (int country_id : kAllCountryIds) {
     OverrideCountryId(country_id);
@@ -233,17 +234,53 @@ TEST_F(TemplateURLPrepopulateDataTest, NumberOfEntriesPerCountryConsistency) {
       EXPECT_GE(kNumberOfSearchEngines, kMinEea)
           << " for country "
           << country_codes::CountryIDToCountryString(country_id);
-      EXPECT_LE(kNumberOfSearchEngines, kMaxEea)
+      EXPECT_LE(kNumberOfSearchEngines,
+                TemplateURLPrepopulateData::kMaxEeaPrepopulatedEngines)
           << " for country "
           << country_codes::CountryIDToCountryString(country_id);
     } else {
       EXPECT_GE(kNumberOfSearchEngines, kMinRow)
           << " for country "
           << country_codes::CountryIDToCountryString(country_id);
-      EXPECT_LE(kNumberOfSearchEngines, kMaxRow)
+      EXPECT_LE(kNumberOfSearchEngines,
+                TemplateURLPrepopulateData::kMaxRowPrepopulatedEngines)
           << " for country "
           << country_codes::CountryIDToCountryString(country_id);
     }
+  }
+}
+
+TEST_F(TemplateURLPrepopulateDataTest, EntriesPerCountryConsistency) {
+  feature_list_.Reset();
+  feature_list_.InitAndEnableFeature(switches::kSearchEngineChoiceTrigger);
+
+  for (int country_id : kAllCountryIds) {
+    if (!search_engines::IsEeaChoiceCountry(country_id)) {
+      // "unhandled" countries can cause some issues when inheriting a config
+      // from an EEA country. Covering them via
+      // TemplateURLPrepopulateDataTest.NumberOfEntriesPerCountryConsistency is
+      // enough, so they we exclude non-EEA countries in the rest of this test
+      // for simplicity.
+      continue;
+    }
+
+    OverrideCountryId(country_id);
+
+    // Obtained by calling the normal API to fetch engines for the current
+    // country.
+    std::vector<std::string> actual_urls =
+        base::ToVector(TemplateURLPrepopulateData::GetPrepopulatedEngines(
+                           &prefs_, search_engine_choice_service(),
+                           /*default_search_provider_index=*/nullptr),
+                       [](const auto& t_url) { return t_url->url(); });
+
+    // Pulled straight from the country -> engine mapping.
+    auto expected_urls = base::ToVector(
+        TemplateURLPrepopulateData::GetPrepopulationSetFromCountryIDForTesting(
+            country_id),
+        &TemplateURLPrepopulateData::PrepopulatedEngine::search_url);
+
+    EXPECT_THAT(actual_urls, testing::UnorderedElementsAreArray(expected_urls));
   }
 }
 

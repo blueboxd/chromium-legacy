@@ -108,6 +108,14 @@ std::vector<mojom::EyeGazeCorrectionMode> ExtendedPlatformFlagsToCaptureModes(
 
 namespace {
 
+// How long premapped frames will be premapped after corresponding feedback
+// message is received. Too high value would cause unnecessary premapped frames
+// when a VideoTrack is disconnected from the source requiring premapped frames.
+// If he value is less than the frame duration, the feedback might be ignored
+// completely and a costly mapping will be happening instead of the premapping.
+constexpr base::TimeDelta kMaxFeedbackPremappingEffectDuration =
+    base::Milliseconds(500);
+
 // Provide an unique GUID for reusing |handle| and |token| by
 // SetPrivateDataInterface/GetPrivateData.
 // {79BFE1AB-CE47-4C3D-BDB2-06E6B886368C}
@@ -688,7 +696,14 @@ HRESULT CopyTextureToGpuMemoryBuffer(ID3D11Texture2D* texture,
   hr = target_texture.As(&keyed_mutex);
   CHECK(SUCCEEDED(hr));
 
-  keyed_mutex->AcquireSync(0, INFINITE);
+  hr = keyed_mutex->AcquireSync(0, INFINITE);
+  // Can't check for FAILED(hr) because AcquireSync may return e.g.
+  // WAIT_ABANDONED.
+  if (hr != S_OK) {
+    DLOG(ERROR) << "Failed to acquire the mutex:"
+                << logging::SystemErrorCodeToString(hr);
+    return E_FAIL;
+  }
   device_context->CopySubresourceRegion(target_texture.Get(), 0, 0, 0, 0,
                                         texture, 0, nullptr);
   keyed_mutex->ReleaseSync(0);
@@ -2046,7 +2061,9 @@ void VideoCaptureDeviceMFWin::SetPhotoOptions(
 void VideoCaptureDeviceMFWin::OnUtilizationReport(
     media::VideoCaptureFeedback feedback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  last_feedback_ = feedback;
+  if (feedback.require_mapped_frame) {
+    last_premapped_request_ = base::TimeTicks::Now();
+  }
 }
 
 void VideoCaptureDeviceMFWin::OnCameraControlChange(REFGUID control_set,
@@ -2231,7 +2248,8 @@ HRESULT VideoCaptureDeviceMFWin::DeliverTextureToClient(
   }
 
   capture_buffer.is_premapped = false;
-  if (last_feedback_.require_mapped_frame) {
+  if (last_premapped_request_ >
+      base::TimeTicks::Now() - kMaxFeedbackPremappingEffectDuration) {
     // Only a flag on the Buffer is set here; the region itself isn't passed
     // anywhere because it was passed when the buffer was created.
     // Now the flag would tell the consumer that the region contains actual
@@ -2268,8 +2286,8 @@ HRESULT VideoCaptureDeviceMFWin::DeliverTextureToClient(
       VideoCaptureFormat(
           texture_size, selected_video_capability_->supported_format.frame_rate,
           pixel_format),
-      color_space_, reference_time, timestamp, gfx::Rect(texture_size),
-      frame_metadata);
+      color_space_, reference_time, timestamp, std::nullopt,
+      gfx::Rect(texture_size), frame_metadata);
 
   return hr;
 }
@@ -2337,9 +2355,9 @@ HRESULT VideoCaptureDeviceMFWin::DeliverExternalBufferToClient(
               selected_video_capability_->supported_format.frame_rate,
               pixel_format),
           gfx::ColorSpace());
-  client_->OnIncomingCapturedExternalBuffer(std::move(external_buffer),
-                                            reference_time, timestamp,
-                                            gfx::Rect(texture_size));
+  client_->OnIncomingCapturedExternalBuffer(
+      std::move(external_buffer), reference_time, timestamp, std::nullopt,
+      gfx::Rect(texture_size));
   return hr;
 }
 
@@ -2402,8 +2420,8 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedDataInternal() {
     client_->OnIncomingCapturedData(
         locked_buffer.data(), locked_buffer.length(),
         selected_video_capability_->supported_format, color_space_,
-        camera_rotation_.value(), false /* flip_y */, reference_time,
-        timestamp);
+        camera_rotation_.value(), false /* flip_y */, reference_time, timestamp,
+        std::nullopt);
   }
 
   while (!video_stream_take_photo_callbacks_.empty()) {

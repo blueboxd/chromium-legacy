@@ -80,7 +80,7 @@ class NodeData : public GarbageCollected<NodeData> {
   enum {
     kConnectedFrameCountBits = 10,  // Must fit Page::maxNumberOfFrames.
     kNumberOfElementFlags = 8,
-    kNumberOfDynamicRestyleFlags = 15
+    kNumberOfDynamicRestyleFlags = 14
   };
 
   // NOTE: This can only distinguish between NodeRareData and ElementRareData,
@@ -132,7 +132,6 @@ class NodeData : public GarbageCollected<NodeData> {
     return static_cast<ClassType>(bit_field_.get_concurrently<ClassTypeData>());
   }
 
- protected:
   subtle::UncompressedMember<const ComputedStyle> computed_style_;
   Member<LayoutObject> layout_object_;
   BitField bit_field_;

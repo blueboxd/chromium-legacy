@@ -249,6 +249,8 @@ class ASH_EXPORT AccessibilityController : public SessionObserver,
   Feature& large_cursor() const;
   Feature& live_caption() const;
   Feature& mono_audio() const;
+  Feature& mouse_keys() const;
+  Feature& reduced_animations() const;
   Feature& spoken_feedback() const;
   Feature& select_to_speak() const;
   Feature& sticky_keys() const;
@@ -382,14 +384,6 @@ class ASH_EXPORT AccessibilityController : public SessionObserver,
 
   // Toggle dictation.
   void ToggleDictation();
-
-  // Called when we first detect two fingers are held down, which can be used to
-  // toggle spoken feedback on some touch-only devices.
-  void OnTwoFingerTouchStart();
-
-  // Called when the user is no longer holding down two fingers (including
-  // releasing one, holding down three, or moving them).
-  void OnTwoFingerTouchStop();
 
   // Whether or not to enable toggling spoken feedback via holding down two
   // fingers on the screen.
@@ -672,6 +666,7 @@ class ASH_EXPORT AccessibilityController : public SessionObserver,
   void UpdateCursorColorFromPrefs(bool notify);
   void UpdateFaceGazeFromPrefs();
   void UpdateColorCorrectionFromPrefs();
+  void UpdateCaretBlinkIntervalFromPrefs() const;
   void UpdateSwitchAccessKeyCodesFromPref(SwitchAccessCommand command);
   void UpdateSwitchAccessAutoScanEnabledFromPref();
   void UpdateSwitchAccessAutoScanSpeedFromPref();

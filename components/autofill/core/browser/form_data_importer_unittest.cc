@@ -62,7 +62,6 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/test/test_sync_service.h"
 
 namespace autofill {
@@ -522,6 +521,8 @@ class FormDataImporterTest : public testing::Test {
   FormDataImporterTest() {
     scoped_feature_list_.InitWithFeatures(
         {features::kAutofillUseI18nAddressModel,
+         features::kAutofillUseBRAddressModel,
+         features::kAutofillUseMXAddressModel,
          features::kAutofillEnableDependentLocalityParsing,
          features::kAutofillEnableSupportForApartmentNumbers,
          features::kAutofillEnableSupportForLandmark,
@@ -546,16 +547,8 @@ class FormDataImporterTest : public testing::Test {
 
     personal_data_manager_ = std::make_unique<TestPersonalDataManager>();
     personal_data_manager_->set_auto_accept_address_imports_for_testing(true);
-    personal_data_manager_->Init(
-        /*profile_database=*/nullptr,
-        /*account_database=*/nullptr,
-        /*pref_service=*/prefs_.get(),
-        /*local_state=*/prefs_.get(),
-        /*identity_manager=*/identity_test_env_.identity_manager(),
-        /*history_service=*/nullptr,
-        /*sync_service=*/&sync_service_,
-        /*strike_database=*/nullptr,
-        /*image_fetcher=*/nullptr, /*shared_storage_handler=*/nullptr);
+    personal_data_manager_->SetPrefService(prefs_.get());
+    personal_data_manager_->SetSyncServiceForTest(&sync_service_);
 
     // Init the `form_data_importer()` with `personal_data_manager_`.
     autofill_client_->set_test_form_data_importer(
@@ -772,7 +765,6 @@ class FormDataImporterTest : public testing::Test {
       base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   test::AutofillUnitTestEnvironment autofill_test_environment_;
   std::unique_ptr<PrefService> prefs_;
-  signin::IdentityTestEnvironment identity_test_env_;
   syncer::TestSyncService sync_service_;
   // `personal_data_manager_` needs to be destroyed before `autofill_client_`,
   // as the destructor of the clients FormDataImporter relies on it.
@@ -3119,7 +3111,8 @@ TEST_F(FormDataImporterTest, ExtractFormData_ImportIbanRecordType_NoIban) {
 
 TEST_F(FormDataImporterTest, ExtractFormData_SubmittingIbanFormUpdatesPref) {
   // The pref should always start disabled.
-  ASSERT_FALSE(personal_data_manager_->IsAutofillHasSeenIbanPrefEnabled());
+  ASSERT_FALSE(personal_data_manager_->payments_data_manager()
+                   .IsAutofillHasSeenIbanPrefEnabled());
 
   // Simulate a form submission with a new IBAN.
   FormStructure form_structure(CreateTestIbanFormData());
@@ -3130,12 +3123,14 @@ TEST_F(FormDataImporterTest, ExtractFormData_SubmittingIbanFormUpdatesPref) {
       /*payment_methods_autofill_enabled=*/true);
 
   // Submitting the IBAN form permanently enables the pref.
-  EXPECT_TRUE(personal_data_manager_->IsAutofillHasSeenIbanPrefEnabled());
+  EXPECT_TRUE(personal_data_manager_->payments_data_manager()
+                  .IsAutofillHasSeenIbanPrefEnabled());
 }
 
 TEST_F(FormDataImporterTest,
        ExtractFormData_SubmittingCreditCardFormDoesNotUpdateIbanPref) {
-  ASSERT_FALSE(personal_data_manager_->IsAutofillHasSeenIbanPrefEnabled());
+  ASSERT_FALSE(personal_data_manager_->payments_data_manager()
+                   .IsAutofillHasSeenIbanPrefEnabled());
   std::unique_ptr<FormStructure> form_structure =
       ConstructDefaultCreditCardFormStructure();
   ExtractFormDataAndProcessAddressCandidates(
@@ -3144,7 +3139,8 @@ TEST_F(FormDataImporterTest,
 
   // Submitting the credit card form won't enable the pref, even if the flag is
   // on.
-  EXPECT_FALSE(personal_data_manager_->IsAutofillHasSeenIbanPrefEnabled());
+  EXPECT_FALSE(personal_data_manager_->payments_data_manager()
+                   .IsAutofillHasSeenIbanPrefEnabled());
 }
 
 TEST_F(FormDataImporterTest,

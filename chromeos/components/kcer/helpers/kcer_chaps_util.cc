@@ -14,6 +14,7 @@
 #include <optional>
 #include <ostream>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/check.h"
@@ -55,7 +56,7 @@ using Pkcs11Operation = base::RepeatingCallback<CK_RV()>;
 // This is useful because the session could be closed e.g. because NSS could
 // have called C_CloseAllSessions.
 bool PerformWithRetries(chromeos::ChapsSlotSession* chaps_session,
-                        base::StringPiece operation_name,
+                        std::string_view operation_name,
                         const Pkcs11Operation& operation) {
   const int kMaxAttempts = 5;
 
@@ -339,7 +340,7 @@ Pkcs12ReaderStatusCode ImportAllCerts(chromeos::ChapsSlotSession* chaps_session,
 
   Pkcs12ReaderStatusCode is_every_cert_imported =
       Pkcs12ReaderStatusCode::kSuccess;
-  for (CertData cert_data : certs_data) {
+  for (CertData& cert_data : certs_data) {
     if (ImportOneCert(chaps_session, cert_data, id, pkcs12_helper,
                       is_software_backed) != Pkcs12ReaderStatusCode::kSuccess) {
       is_every_cert_imported = Pkcs12ReaderStatusCode::kFailureDuringCertImport;
@@ -421,10 +422,10 @@ bool KcerChapsUtil::ImportPkcs12CertificateImpl(
     return false;
   }
 
-  // This will keep raw_pointers from `certs`, it cannot outlive `certs`.
+  // `certs` are empty after this code block.
   std::vector<CertData> certs_data;
   Pkcs12ReaderStatusCode prepare_certs_status = ValidateAndPrepareCertData(
-      slot, pkcs12_reader, certs, key_data, certs_data);
+      slot, pkcs12_reader, std::move(certs), key_data, certs_data);
   if (prepare_certs_status != Pkcs12ReaderStatusCode::kSuccess) {
     LOG(ERROR) << MakePkcs12ImportErrorMessage(prepare_certs_status);
     return false;

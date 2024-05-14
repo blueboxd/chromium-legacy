@@ -13,6 +13,8 @@
 #include "ash/public/cpp/esim_manager.h"
 #include "ash/public/cpp/hotspot_config_service.h"
 #include "ash/public/cpp/network_config_service.h"
+#include "ash/public/mojom/hid_preserving_bluetooth_state_controller.mojom.h"
+#include "ash/system/bluetooth/hid_preserving_controller/hid_preserving_bluetooth_state_service.h"
 #include "ash/webui/common/trusted_types_util.h"
 #include "ash/webui/personalization_app/search/search.mojom.h"
 #include "ash/webui/personalization_app/search/search_handler.h"
@@ -49,6 +51,8 @@
 #include "chromeos/ash/services/auth_factor_config/in_process_instances.h"
 #include "chromeos/ash/services/cellular_setup/cellular_setup_impl.h"
 #include "chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom.h"
+#include "chromeos/components/in_session_auth/in_process_instances.h"
+#include "chromeos/components/in_session_auth/mojom/in_session_auth.mojom.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
@@ -362,6 +366,11 @@ void OSSettingsUI::BindInterface(
 }
 
 void OSSettingsUI::BindInterface(
+    mojo::PendingReceiver<chromeos::auth::mojom::InSessionAuth> receiver) {
+  chromeos::auth::BindToInSessionAuthService(std::move(receiver));
+}
+
+void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<google_drive::mojom::PageHandlerFactory> receiver) {
   // The PageHandlerFactory is reused across same-origin navigations, so ensure
   // any existing factories are reset.
@@ -382,6 +391,13 @@ void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<chromeos::connectivity::mojom::PasspointService>
         receiver) {
   ash::GetPasspointService(std::move(receiver));
+}
+
+void OSSettingsUI::BindInterface(
+    mojo::PendingReceiver<ash::mojom::HidPreservingBluetoothStateController>
+        receiver) {
+  DCHECK(features::IsBluetoothDisconnectWarningEnabled());
+  GetHidPreservingBluetoothStateControllerService(std::move(receiver));
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(OSSettingsUI)

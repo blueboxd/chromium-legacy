@@ -73,7 +73,6 @@ class ExceptionState;
 class FetchEvent;
 class RespondWithObserver;
 class RequestInit;
-class ScriptPromise;
 class ScriptState;
 class ServiceWorker;
 class ServiceWorkerClients;
@@ -169,7 +168,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   ServiceWorkerRegistration* registration();
   ::blink::ServiceWorker* serviceWorker();
 
-  ScriptPromise skipWaiting(ScriptState*);
+  ScriptPromiseTyped<IDLUndefined> skipWaiting(ScriptState*);
 
   void BindServiceWorker(mojo::PendingReceiver<mojom::blink::ServiceWorker>);
   void BindControllerServiceWorker(
@@ -636,7 +635,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   Member<::blink::ServiceWorker> service_worker_;
 
   // Registry of interfaces exposed to the browser from Service Workers.
-  const raw_ptr<InterfaceRegistry, ExperimentalRenderer> interface_registry_;
+  const raw_ptr<InterfaceRegistry> interface_registry_;
 
   // Map from service worker version id to JavaScript ServiceWorker object in
   // current execution context.

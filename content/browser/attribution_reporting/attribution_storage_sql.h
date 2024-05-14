@@ -158,14 +158,12 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   // AttributionStorage:
   StoreSourceResult StoreSource(const StorableSource& source,
                                 bool debug_cookie_set) override;
-  CreateReportResult MaybeCreateAndStoreReport(
-      const AttributionTrigger& trigger) override;
+  CreateReportResult MaybeCreateAndStoreReport(AttributionTrigger) override;
   std::vector<AttributionReport> GetAttributionReports(
       base::Time max_report_time,
       int limit = -1) override;
   std::optional<base::Time> GetNextReportTime(base::Time time) override;
-  std::vector<AttributionReport> GetReports(
-      const std::vector<AttributionReport::Id>& ids) override;
+  std::optional<AttributionReport> GetReport(AttributionReport::Id) override;
   std::vector<StoredSource> GetActiveSources(int limit = -1) override;
   std::set<AttributionDataModel::DataKey> GetAllDataKeys() override;
   void DeleteByDataKey(const AttributionDataModel::DataKey& datakey) override;
@@ -248,7 +246,7 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       std::optional<AttributionReport>& replaced_report)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
-  std::optional<AttributionReport> GetReport(AttributionReport::Id report_id)
+  std::optional<AttributionReport> GetReportInternal(AttributionReport::Id)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   [[nodiscard]] bool ReadDedupKeys(StoredSource&)

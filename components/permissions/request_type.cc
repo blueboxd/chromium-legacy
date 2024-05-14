@@ -14,7 +14,6 @@
 #include "components/permissions/features.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permissions_client.h"
-#include "content/public/common/content_features.h"
 #include "ui/base/ui_base_features.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -46,12 +45,12 @@ int GetIconIdAndroid(RequestType type) {
       return IDR_ANDROID_INFOBAR_FOLDER;
     case RequestType::kGeolocation:
       return IDR_ANDROID_INFOBAR_GEOLOCATION;
+    case RequestType::kIdentityProvider:
+      return IDR_ANDROID_INFOBAR_IDENTITY_PROVIDER;
     case RequestType::kIdleDetection:
       return IDR_ANDROID_INFOBAR_IDLE_DETECTION;
     case RequestType::kMicStream:
       return IDR_ANDROID_INFOBAR_MEDIA_STREAM_MIC;
-    case RequestType::kMidi:
-      // kMidi and kMidiSysex share the same Android icon ID.
     case RequestType::kMidiSysex:
       return IDR_ANDROID_INFOBAR_MIDI;
     case RequestType::kMultipleDownloads:
@@ -64,10 +63,7 @@ int GetIconIdAndroid(RequestType type) {
       return IDR_ANDROID_INFOBAR_PROTECTED_MEDIA_IDENTIFIER;
     case RequestType::kStorageAccess:
     case RequestType::kTopLevelStorageAccess:
-      return base::FeatureList::IsEnabled(
-                 permissions::features::kPermissionStorageAccessAPI)
-                 ? IDR_ANDROID_STORAGE_ACCESS
-                 : IDR_ANDROID_INFOBAR_PERMISSION_COOKIE;
+      return IDR_ANDROID_STORAGE_ACCESS;
   }
   NOTREACHED();
   return 0;
@@ -108,8 +104,6 @@ const gfx::VectorIcon& GetIconIdDesktop(RequestType type) {
     case RequestType::kMicStream:
       return cr23 ? vector_icons::kMicChromeRefreshIcon
                   : vector_icons::kMicIcon;
-    case RequestType::kMidi:
-      // kMidi and kMidiSysex share the same desktop icon ID.
     case RequestType::kMidiSysex:
       return cr23 ? vector_icons::kMidiChromeRefreshIcon
                   : vector_icons::kMidiIcon;
@@ -139,16 +133,14 @@ const gfx::VectorIcon& GetIconIdDesktop(RequestType type) {
 #endif
     case RequestType::kStorageAccess:
     case RequestType::kTopLevelStorageAccess:
-      if (base::FeatureList::IsEnabled(
-              permissions::features::kPermissionStorageAccessAPI)) {
-        return vector_icons::kStorageAccessIcon;
-      }
-      return cr23 ? vector_icons::kCookieChromeRefreshIcon
-                  : vector_icons::kCookieIcon;
+      return vector_icons::kStorageAccessIcon;
     case RequestType::kWindowManagement:
       return cr23 ? vector_icons::kSelectWindowChromeRefreshIcon
                   : vector_icons::kSelectWindowIcon;
     case RequestType::kFileSystemAccess:
+      return vector_icons::kFolderIcon;
+    case RequestType::kIdentityProvider:
+      // TODO(crbug.com/1406698): provide a dedicated icon.
       return vector_icons::kFolderIcon;
   }
   NOTREACHED();
@@ -182,13 +174,14 @@ const gfx::VectorIcon& GetBlockedIconIdDesktop(RequestType type) {
     case RequestType::kMicStream:
       return cr23 ? vector_icons::kMicOffChromeRefreshIcon
                   : vector_icons::kMicOffIcon;
-    case RequestType::kMidi:
-      // kMidi and kMidiSysex share the same desktop block icon ID.
     case RequestType::kMidiSysex:
       return cr23 ? vector_icons::kMidiOffChromeRefreshIcon
                   : vector_icons::kMidiOffIcon;
     case RequestType::kStorageAccess:
       return vector_icons::kStorageAccessOffIcon;
+    case RequestType::kIdentityProvider:
+      // TODO(crbug.com/1406698): use a dedicated icon
+      return gfx::kNoneIcon;
     default:
       NOTREACHED();
   }
@@ -230,12 +223,6 @@ std::optional<RequestType> ContentSettingsTypeToRequestTypeIfExists(
       return RequestType::kIdleDetection;
     case ContentSettingsType::MEDIASTREAM_MIC:
       return RequestType::kMicStream;
-    case ContentSettingsType::MIDI:
-      if (base::FeatureList::IsEnabled(::features::kBlockMidiByDefault)) {
-        return RequestType::kMidi;
-      } else {
-        return std::nullopt;
-      }
     case ContentSettingsType::MIDI_SYSEX:
       return RequestType::kMidiSysex;
     case ContentSettingsType::NOTIFICATIONS:
@@ -312,12 +299,6 @@ std::optional<ContentSettingsType> RequestTypeToContentSettingsType(
       return ContentSettingsType::IDLE_DETECTION;
     case RequestType::kMicStream:
       return ContentSettingsType::MEDIASTREAM_MIC;
-    case RequestType::kMidi:
-      if (base::FeatureList::IsEnabled(::features::kBlockMidiByDefault)) {
-        return ContentSettingsType::MIDI;
-      } else {
-        return std::nullopt;
-      }
     case RequestType::kMidiSysex:
       return ContentSettingsType::MIDI_SYSEX;
 #if BUILDFLAG(IS_ANDROID)
@@ -421,12 +402,6 @@ const char* PermissionKeyForRequestType(permissions::RequestType request_type) {
 #endif
     case permissions::RequestType::kMicStream:
       return "mic_stream";
-    case permissions::RequestType::kMidi:
-      if (base::FeatureList::IsEnabled(::features::kBlockMidiByDefault)) {
-        return "midi";
-      } else {
-        return nullptr;
-      }
     case permissions::RequestType::kMidiSysex:
       return "midi_sysex";
     case permissions::RequestType::kMultipleDownloads:
@@ -468,6 +443,8 @@ const char* PermissionKeyForRequestType(permissions::RequestType request_type) {
         return "window_management";
       }
 #endif
+    case permissions::RequestType::kIdentityProvider:
+      return "identity_provider";
   }
 
   return nullptr;

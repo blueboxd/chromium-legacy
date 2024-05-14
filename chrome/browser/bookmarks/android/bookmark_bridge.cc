@@ -33,6 +33,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
+#include "chrome/browser/image_service/image_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -53,11 +54,14 @@
 #include "components/prefs/pref_service.h"
 #include "components/query_parser/query_parser.h"
 #include "components/reading_list/core/dual_reading_list_model.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/sync/base/features.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "components/undo/undo_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
@@ -135,6 +139,7 @@ const bookmarks::BookmarkNode* GetNodeFromReadingListIfLoaded(
 
 }  // namespace
 
+// static
 ScopedJavaLocalRef<jobject> JNI_BookmarkBridge_NativeGetForProfile(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_profile) {
@@ -152,27 +157,22 @@ ScopedJavaLocalRef<jobject> JNI_BookmarkBridge_NativeGetForProfile(
       model->GetUserData(kBookmarkBridgeUserDataKey));
 
   if (!bookmark_bridge) {
-    auto reading_list_id_generation_func =
-        base::BindRepeating([](int64_t* id) { return (*id)++; },
-                            base::Owned(std::make_unique<int64_t>(0)));
-    auto* dual_reading_list =
-        ReadingListModelFactory::GetAsDualReadingListForBrowserContext(profile);
-    std::unique_ptr<ReadingListManagerImpl> account_reading_list_manager =
-        nullptr;
-    auto* account_model = dual_reading_list->GetAccountModelIfSyncing();
-    if (account_model) {
-      account_reading_list_manager = std::make_unique<ReadingListManagerImpl>(
-          account_model, reading_list_id_generation_func);
-    }
+    // BookmarkModel factory redirects to the original profile, so it might
+    // happen that profile refers to the incognito profile, even though we're
+    // building the bridge for the regular profile. Some factories don't do
+    // this by default, so we need to pass the original profile instead. This
+    // is safe to do because BookmarkModel/Bridge is always built for the
+    // regular profile.
+    auto* original_profile = profile->GetOriginalProfile();
     bookmark_bridge = new BookmarkBridge(
-        profile, model, ManagedBookmarkServiceFactory::GetForProfile(profile),
-        PartnerBookmarksShim::BuildForBrowserContext(
-            chrome::GetBrowserContextRedirectedInIncognito(profile)),
-        std::make_unique<ReadingListManagerImpl>(
-            dual_reading_list->GetLocalOrSyncableModel(),
-            reading_list_id_generation_func),
-        std::move(account_reading_list_manager),
-        page_image_service::ImageServiceFactory::GetForBrowserContext(profile));
+        profile, model,
+        ManagedBookmarkServiceFactory::GetForProfile(original_profile),
+        page_image_service::ImageServiceFactory::GetForBrowserContext(
+            original_profile),
+        ReadingListModelFactory::GetAsDualReadingListForBrowserContext(
+            original_profile),
+        PartnerBookmarksShim::BuildForBrowserContext(original_profile),
+        IdentityManagerFactory::GetForProfile(original_profile));
     model->SetUserData(kBookmarkBridgeUserDataKey,
                        base::WrapUnique(bookmark_bridge));
   }
@@ -180,34 +180,44 @@ ScopedJavaLocalRef<jobject> JNI_BookmarkBridge_NativeGetForProfile(
   return ScopedJavaLocalRef<jobject>(bookmark_bridge->GetJavaBookmarkModel());
 }
 
-// TODO(crbug.com/1510547): Support the account reading list availability
-// changing at runtime.
 BookmarkBridge::BookmarkBridge(
     Profile* profile,
     BookmarkModel* model,
     bookmarks::ManagedBookmarkService* managed_bookmark_service,
+    page_image_service::ImageService* image_service,
+    reading_list::DualReadingListModel* dual_reading_list_model,
     PartnerBookmarksShim* partner_bookmarks_shim,
-    std::unique_ptr<ReadingListManager> local_or_syncable_reading_list_manager,
-    std::unique_ptr<ReadingListManager> account_reading_list_manager,
-    page_image_service::ImageService* image_service)
+    signin::IdentityManager* identity_manager)
     : profile_(profile),
       bookmark_model_(model),
       managed_bookmark_service_(managed_bookmark_service),
-      partner_bookmarks_shim_(partner_bookmarks_shim),
-      local_or_syncable_reading_list_manager_(
-          std::move(local_or_syncable_reading_list_manager)),
-      account_reading_list_manager_(std::move(account_reading_list_manager)),
       image_service_(image_service),
+      dual_reading_list_model_(dual_reading_list_model),
+      id_gen_func_(
+          base::BindRepeating([](int64_t* id) { return (*id)++; },
+                              base::Owned(std::make_unique<int64_t>(0)))),
+      local_or_syncable_reading_list_manager_(
+          std::make_unique<ReadingListManagerImpl>(
+              dual_reading_list_model->GetLocalOrSyncableModel(),
+              id_gen_func_)),
+      partner_bookmarks_shim_(partner_bookmarks_shim),
+      identity_manager_(identity_manager),
       weak_ptr_factory_(this) {
+  CHECK(profile);
+  CHECK(model);
+  CHECK(managed_bookmark_service);
+  CHECK(partner_bookmarks_shim);
+  CHECK(image_service_);
+  CHECK(dual_reading_list_model);
+  CHECK(identity_manager_);
+
   profile_observation_.Observe(profile_);
   bookmark_model_observation_.Observe(bookmark_model_);
   partner_bookmarks_shim_observation_.Observe(partner_bookmarks_shim_);
   reading_list_manager_observations_.AddObservation(
       local_or_syncable_reading_list_manager_.get());
-  if (account_reading_list_manager_) {
-    reading_list_manager_observations_.AddObservation(
-        account_reading_list_manager_.get());
-  }
+  dual_reading_list_model_observation_.Observe(dual_reading_list_model_);
+  identity_manager_observation_.Observe(identity_manager_);
 
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
@@ -221,7 +231,7 @@ BookmarkBridge::BookmarkBridge(
   // initialized, we need to make sure that our initial state is
   // up to date.
   if (bookmark_model_->IsDoingExtensiveChanges())
-    ExtensiveBookmarkChangesBeginning(bookmark_model_);
+    ExtensiveBookmarkChangesBeginning();
 
   java_bookmark_model_ = Java_BookmarkBridge_createBookmarkModel(
       base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this));
@@ -234,27 +244,49 @@ BookmarkBridge::~BookmarkBridge() {
   profile_observation_.Reset();
 }
 
-void BookmarkBridge::Destroy(JNIEnv*) {
+void BookmarkBridge::Destroy(JNIEnv* env) {
   // This will call the destructor because the user data is a unique pointer.
   bookmark_model_->RemoveUserData(kBookmarkBridgeUserDataKey);
 }
 
+jboolean BookmarkBridge::AreAccountBookmarkFoldersActive(JNIEnv* env) {
+  if (!base::FeatureList::IsEnabled(
+          syncer::kEnableBookmarkFoldersForAccountStorage)) {
+    return false;
+  }
+
+  return bookmark_model_->account_mobile_node() != nullptr;
+}
+
 void BookmarkBridge::GetImageUrlForBookmark(
     JNIEnv* env,
-    const JavaParamRef<jobject>& j_url,
+    const base::android::JavaParamRef<jobject>& j_url,
+    bool is_account_bookmark,
     const JavaParamRef<jobject>& j_callback) {
   ScopedJavaGlobalRef<jobject> callback(j_callback);
-  if (!image_service_) {
-    base::android::RunObjectCallbackAndroid(callback, nullptr);
+  GetImageUrlForBookmarkImpl(*url::GURLAndroid::ToNativeGURL(env, j_url),
+                             is_account_bookmark,
+                             base::BindOnce(&HandleImageUrlResponse, callback));
+}
+
+void BookmarkBridge::GetImageUrlForBookmarkImpl(
+    const GURL& url,
+    bool is_account_bookmark,
+    page_image_service::ImageService::ResultCallback callback) {
+  // Images should only be fetched for bookmarks stored in the account. For
+  // Sync-the-feature user, that means all bookmarks. ImageService checks
+  // internally that syncing of bookmarks is enabled.
+  if (identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync) ||
+      is_account_bookmark) {
+    page_image_service::mojom::Options options;
+    options.optimization_guide_images = true;
+    image_service_->FetchImageFor(
+        page_image_service::mojom::ClientId::Bookmarks, url, options,
+        std::move(callback));
     return;
   }
 
-  page_image_service::mojom::Options options;
-  options.optimization_guide_images = true;
-  image_service_->FetchImageFor(
-      page_image_service::mojom::ClientId::Bookmarks,
-      *url::GURLAndroid::ToNativeGURL(env, j_url), options,
-      base::BindOnce(&HandleImageUrlResponse, callback));
+  std::move(callback).Run(GURL());
 }
 
 base::android::ScopedJavaLocalRef<jobject>
@@ -414,32 +446,130 @@ void BookmarkBridge::GetTopLevelFolderIds(
   AddBookmarkNodesToBookmarkIdList(
       env, j_result_obj, GetTopLevelFolderIdsImpl(j_ignore_visibility));
 }
+
 std::vector<const BookmarkNode*> BookmarkBridge::GetTopLevelFolderIdsImpl(
     bool ignore_visibility) {
   std::vector<const BookmarkNode*> top_level_folders;
+
   // Query for the top-level folders:
-  // bookmarks bar, mobile node, other node, and managed node (if it exists).
-  // Account bookmarks come first, and local bookmarks after.
-
-  for (const auto& root_child : bookmark_model_->root_node()->children()) {
-    if (!ignore_visibility && !root_child->IsVisible()) {
-      continue;
-    }
-
-    top_level_folders.push_back(root_child.get());
+  // bookmarks bar, mobile node, other node, and managed node (if it exists,
+  // doesn't apply to account bookmarks). Account bookmarks come first, and
+  // local bookmarks after.
+  const BookmarkNode* account_mobile_node =
+      bookmark_model_->account_mobile_node();
+  if (IsPermanentFolderVisible(ignore_visibility, account_mobile_node)) {
+    top_level_folders.push_back(account_mobile_node);
   }
 
-  if (account_reading_list_manager_ &&
-      account_reading_list_manager_->GetRoot()) {
-    top_level_folders.push_back(account_reading_list_manager_->GetRoot());
+  const BookmarkNode* account_bookmark_bar_node =
+      bookmark_model_->account_bookmark_bar_node();
+  if (IsPermanentFolderVisible(ignore_visibility, account_bookmark_bar_node)) {
+    top_level_folders.push_back(account_bookmark_bar_node);
   }
 
-  if (local_or_syncable_reading_list_manager_->GetRoot()) {
-    top_level_folders.push_back(
-        local_or_syncable_reading_list_manager_->GetRoot());
+  const BookmarkNode* account_other_node =
+      bookmark_model_->account_other_node();
+  if (IsPermanentFolderVisible(ignore_visibility, account_other_node)) {
+    top_level_folders.push_back(account_other_node);
+  }
+
+  const BookmarkNode* account_reading_list_node =
+      account_reading_list_manager_ ? account_reading_list_manager_->GetRoot()
+                                    : nullptr;
+  if (IsPermanentFolderVisible(ignore_visibility, account_reading_list_node)) {
+    top_level_folders.push_back(account_reading_list_node);
+  }
+
+  const BookmarkNode* mobile_node = bookmark_model_->mobile_node();
+  // Partner bookmarks are child of the local mobile_node.
+  if (IsPermanentFolderVisible(ignore_visibility, mobile_node) ||
+      partner_bookmarks_shim_->HasPartnerBookmarks()) {
+    top_level_folders.push_back(mobile_node);
+  }
+
+  const BookmarkNode* bookmark_bar_node = bookmark_model_->bookmark_bar_node();
+  if (IsPermanentFolderVisible(ignore_visibility, bookmark_bar_node)) {
+    top_level_folders.push_back(bookmark_bar_node);
+  }
+
+  const BookmarkNode* other_node = bookmark_model_->other_node();
+  if (IsPermanentFolderVisible(ignore_visibility, other_node)) {
+    top_level_folders.push_back(other_node);
+  }
+
+  const BookmarkNode* reading_list_node =
+      local_or_syncable_reading_list_manager_->GetRoot();
+  if (IsPermanentFolderVisible(ignore_visibility, reading_list_node)) {
+    top_level_folders.push_back(reading_list_node);
+  }
+
+  // Managed node doesn't use the same IsPermanentFolderVisible logic because it
+  // doesn't have a corresponding account folder and shouldn't be shown unless
+  // determined to be visible through the node (aka by BookmarkClient).
+  const BookmarkNode* managed_node =
+      managed_bookmark_service_ ? managed_bookmark_service_->managed_node()
+                                : nullptr;
+  if (managed_node && managed_node->IsVisible()) {
+    top_level_folders.push_back(managed_node);
   }
 
   return top_level_folders;
+}
+
+bool BookmarkBridge::IsPermanentFolderVisible(bool ignore_visibility,
+                                              const BookmarkNode* folder) {
+  // Null folders are never shown.
+  if (!folder) {
+    return false;
+  }
+
+  bool is_account_bookmark = IsAccountBookmarkImpl(folder);
+  if (ignore_visibility) {
+    // When butter is active ignore_visibility only applies to a subset of local
+    // folder to avoid overwhelming the user with unnecessary folders
+    // (crbug.com/325070543).
+    if (!is_account_bookmark &&
+        AreAccountBookmarkFoldersActive(/*env=*/nullptr)) {
+      return folder->IsVisible();
+    } else {
+      return true;
+    }
+  }
+
+  // Account folders only need to rely on the visibility.
+  if (is_account_bookmark) {
+    return folder->IsVisible();
+  }
+
+  const BookmarkNode* account_folder = GetCorrespondingAccountFolder(folder);
+  if (account_folder == nullptr) {
+    // If there's no corresponding account folder, then rely on the status quo
+    // visibility.
+    return folder->IsVisible();
+  } else {
+    // If there is a corresponding account folder, then the local folder should
+    // only be shown when not empty.
+    return folder->children().size() > 0;
+  }
+}
+
+const BookmarkNode* BookmarkBridge::GetCorrespondingAccountFolder(
+    const BookmarkNode* folder) {
+  CHECK(!IsAccountBookmarkImpl(folder));
+
+  if (folder == bookmark_model_->mobile_node()) {
+    return bookmark_model_->account_mobile_node();
+  } else if (folder == bookmark_model_->other_node()) {
+    return bookmark_model_->account_other_node();
+  } else if (folder == bookmark_model_->bookmark_bar_node()) {
+    return bookmark_model_->account_bookmark_bar_node();
+  } else if (folder == local_or_syncable_reading_list_manager_->GetRoot()) {
+    return account_reading_list_manager_
+               ? account_reading_list_manager_->GetRoot()
+               : nullptr;
+  }
+
+  NOTREACHED_NORETURN();
 }
 
 ScopedJavaLocalRef<jobject> BookmarkBridge::GetRootFolderId(JNIEnv* env) {
@@ -554,11 +684,31 @@ BookmarkBridge::GetAccountReadingListFolder(JNIEnv* env) {
   return folder_id_obj;
 }
 
-// TODO(crbug.com/1501998): Add logic to determine when to use account/local.
 base::android::ScopedJavaLocalRef<jobject>
 BookmarkBridge::GetDefaultReadingListFolder(JNIEnv* env) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // If the account reading list is available, then it should be used as the
+  // default folder. Otherwise these would be saved into an empty local
+  // reading list.
+  if (account_reading_list_manager_ &&
+      account_reading_list_manager_->GetRoot()) {
+    return GetAccountReadingListFolder(env);
+  }
+
   return GetLocalOrSyncableReadingListFolder(env);
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+BookmarkBridge::GetDefaultBookmarkFolder(JNIEnv* env) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // If the account reading list is available, then it should be used as the
+  // default folder. Otherwise these would be saved into an empty local
+  // mobile folder.
+  if (bookmark_model_->account_mobile_node()) {
+    return GetAccountMobileFolderId(env);
+  }
+
+  return GetMobileFolderId(env);
 }
 
 base::android::ScopedJavaLocalRef<jstring>
@@ -853,9 +1003,9 @@ void BookmarkBridge::SearchBookmarks(JNIEnv* env,
 std::vector<const BookmarkNode*> BookmarkBridge::SearchBookmarksImpl(
     power_bookmarks::PowerBookmarkQueryFields& query,
     int max_results) {
-  std::vector<const BookmarkNode*> results;
-  power_bookmarks::GetBookmarksMatchingProperties(bookmark_model_, query,
-                                                  max_results, &results);
+  std::vector<const BookmarkNode*> results =
+      power_bookmarks::GetBookmarksMatchingProperties(bookmark_model_, query,
+                                                      max_results);
 
   local_or_syncable_reading_list_manager_->GetMatchingNodes(query, max_results,
                                                             &results);
@@ -879,11 +1029,11 @@ void BookmarkBridge::GetBookmarksOfType(
     const base::android::JavaParamRef<jobject>& j_list,
     jint type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::vector<const BookmarkNode*> results;
   power_bookmarks::PowerBookmarkQueryFields query;
   query.type = static_cast<power_bookmarks::PowerBookmarkType>(type);
-  power_bookmarks::GetBookmarksMatchingProperties(bookmark_model_, query, -1,
-                                                  &results);
+  std::vector<const BookmarkNode*> results =
+      power_bookmarks::GetBookmarksMatchingProperties(bookmark_model_, query,
+                                                      -1);
 
   FilterUnreachableBookmarks(&results);
   AddBookmarkNodesToBookmarkIdList(env, j_list, results);
@@ -952,8 +1102,7 @@ void BookmarkBridge::DeleteBookmarkImpl(const BookmarkNode* node, int type) {
     std::set<GURL> removed_urls;
     // Observer must be trigger prior, the underlying BookmarkNode* will be
     // deleted immediately after the delete call.
-    BookmarkNodeRemoved(bookmark_model_, reading_list_parent, index, node,
-                        removed_urls);
+    BookmarkNodeRemoved(reading_list_parent, index, node, removed_urls);
 
     // Inside the Delete method, node will be destroyed and node->url will be
     // also destroyed. This causes heap-use-after-free at
@@ -971,6 +1120,10 @@ void BookmarkBridge::RemoveAllUserBookmarks(JNIEnv* env) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
   bookmark_model_->RemoveAllUserBookmarks();
+  local_or_syncable_reading_list_manager_->DeleteAll();
+  if (account_reading_list_manager_) {
+    account_reading_list_manager_->DeleteAll();
+  }
 }
 
 void BookmarkBridge::MoveBookmark(
@@ -1058,8 +1211,7 @@ void BookmarkBridge::MoveNodeBetweenReadingListAndBookmarks(
     DeleteBookmarkImpl(node, type);
   }
 
-  BookmarkNodeMoved(bookmark_model_, old_parent_node, old_index,
-                    new_parent_node,
+  BookmarkNodeMoved(old_parent_node, old_index, new_parent_node,
                     new_parent_node->GetIndexOf(new_node).value());
 }
 
@@ -1116,10 +1268,19 @@ void BookmarkBridge::SetReadStatus(JNIEnv* env,
 
   const BookmarkNode* node = GetNodeByID(JavaBookmarkIdGetId(env, j_id),
                                          JavaBookmarkIdGetType(env, j_id));
-  ReadingListManager* manager =
-      GetReadingListManagerFromParentNode(node->parent());
+  SetReadStatusImpl(node->url(), j_read);
+}
 
-  manager->SetReadStatus(node->url(), j_read);
+void BookmarkBridge::SetReadStatusImpl(const GURL& url, bool read) {
+  // When marking an item as un/read, the same operation is done in both models
+  // (if the url exists) as a convenience. See crbug.com/329280811 for details.
+  if (local_or_syncable_reading_list_manager_->Get(url)) {
+    local_or_syncable_reading_list_manager_->SetReadStatus(url, read);
+  }
+  if (account_reading_list_manager_ &&
+      account_reading_list_manager_->Get(url)) {
+    account_reading_list_manager_->SetReadStatus(url, read);
+  }
 }
 
 int BookmarkBridge::GetUnreadCount(JNIEnv* env,
@@ -1424,20 +1585,18 @@ void BookmarkBridge::BookmarkModelChanged() {
       AttachCurrentThread(), ScopedJavaLocalRef<jobject>(java_bookmark_model_));
 }
 
-void BookmarkBridge::BookmarkModelLoaded(BookmarkModel* model,
-                                         bool ids_reassigned) {
+void BookmarkBridge::BookmarkModelLoaded(bool ids_reassigned) {
   NotifyIfDoneLoading();
 }
 
-void BookmarkBridge::BookmarkModelBeingDeleted(BookmarkModel* model) {
+void BookmarkBridge::BookmarkModelBeingDeleted() {
   if (!IsLoaded())
     return;
 
   DestroyJavaObject();
 }
 
-void BookmarkBridge::BookmarkNodeMoved(BookmarkModel* model,
-                                       const BookmarkNode* old_parent,
+void BookmarkBridge::BookmarkNodeMoved(const BookmarkNode* old_parent,
                                        size_t old_index,
                                        const BookmarkNode* new_parent,
                                        size_t new_index) {
@@ -1452,8 +1611,7 @@ void BookmarkBridge::BookmarkNodeMoved(BookmarkModel* model,
       CreateJavaBookmark(new_parent), static_cast<int>(new_index));
 }
 
-void BookmarkBridge::BookmarkNodeAdded(BookmarkModel* model,
-                                       const BookmarkNode* parent,
+void BookmarkBridge::BookmarkNodeAdded(const BookmarkNode* parent,
                                        size_t index,
                                        bool added_by_user) {
   if (!IsLoaded() || !java_bookmark_model_ ||
@@ -1466,8 +1624,7 @@ void BookmarkBridge::BookmarkNodeAdded(BookmarkModel* model,
       CreateJavaBookmark(parent), static_cast<int>(index));
 }
 
-void BookmarkBridge::BookmarkNodeRemoved(BookmarkModel* model,
-                                         const BookmarkNode* parent,
+void BookmarkBridge::BookmarkNodeRemoved(const BookmarkNode* parent,
                                          size_t old_index,
                                          const BookmarkNode* node,
                                          const std::set<GURL>& removed_urls) {
@@ -1483,7 +1640,6 @@ void BookmarkBridge::BookmarkNodeRemoved(BookmarkModel* model,
 }
 
 void BookmarkBridge::BookmarkAllUserNodesRemoved(
-    BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
   if (!IsLoaded() || !java_bookmark_model_ ||
       suppress_observer_notifications_) {
@@ -1494,8 +1650,7 @@ void BookmarkBridge::BookmarkAllUserNodesRemoved(
       AttachCurrentThread(), ScopedJavaLocalRef<jobject>(java_bookmark_model_));
 }
 
-void BookmarkBridge::BookmarkNodeChanged(BookmarkModel* model,
-                                         const BookmarkNode* node) {
+void BookmarkBridge::BookmarkNodeChanged(const BookmarkNode* node) {
   if (!IsLoaded() || !java_bookmark_model_ ||
       suppress_observer_notifications_) {
     return;
@@ -1506,8 +1661,7 @@ void BookmarkBridge::BookmarkNodeChanged(BookmarkModel* model,
       CreateJavaBookmark(node));
 }
 
-void BookmarkBridge::BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                                   const BookmarkNode* node) {
+void BookmarkBridge::BookmarkNodeChildrenReordered(const BookmarkNode* node) {
   if (!IsLoaded() || !java_bookmark_model_ ||
       suppress_observer_notifications_) {
     return;
@@ -1518,7 +1672,7 @@ void BookmarkBridge::BookmarkNodeChildrenReordered(BookmarkModel* model,
       CreateJavaBookmark(node));
 }
 
-void BookmarkBridge::ExtensiveBookmarkChangesBeginning(BookmarkModel* model) {
+void BookmarkBridge::ExtensiveBookmarkChangesBeginning() {
   if (!IsLoaded() || !java_bookmark_model_ ||
       suppress_observer_notifications_) {
     return;
@@ -1528,7 +1682,7 @@ void BookmarkBridge::ExtensiveBookmarkChangesBeginning(BookmarkModel* model) {
       AttachCurrentThread(), ScopedJavaLocalRef<jobject>(java_bookmark_model_));
 }
 
-void BookmarkBridge::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
+void BookmarkBridge::ExtensiveBookmarkChangesEnded() {
   if (!IsLoaded() || !java_bookmark_model_ ||
       suppress_observer_notifications_) {
     return;
@@ -1601,6 +1755,16 @@ void BookmarkBridge::OnProfileWillBeDestroyed(Profile* profile) {
   DestroyJavaObject();
 }
 
+ReadingListManager*
+BookmarkBridge::GetLocalOrSyncableReadingListManagerForTesting() {
+  return local_or_syncable_reading_list_manager_.get();
+}
+
+ReadingListManager*
+BookmarkBridge::GetAccountReadingListManagerIfAvailableForTesting() {
+  return account_reading_list_manager_.get();
+}
+
 ScopedJavaGlobalRef<jobject> BookmarkBridge::GetJavaBookmarkModel() {
   return java_bookmark_model_;
 }
@@ -1623,4 +1787,47 @@ ReadingListManager* BookmarkBridge::GetReadingListManagerFromParentNode(
   }
 
   NOTREACHED_NORETURN();
+}
+
+void BookmarkBridge::ReadingListModelLoaded(const ReadingListModel* model) {
+  CreateOrDestroyAccountReadingListManagerIfNeeded();
+}
+
+void BookmarkBridge::ReadingListModelCompletedBatchUpdates(
+    const ReadingListModel* model) {
+  CreateOrDestroyAccountReadingListManagerIfNeeded();
+}
+
+void BookmarkBridge::OnPrimaryAccountChanged(
+    const signin::PrimaryAccountChangeEvent& event_details) {
+  if (!base::FeatureList::IsEnabled(
+          syncer::kEnableBookmarkFoldersForAccountStorage)) {
+    return;
+  }
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_BookmarkBridge_clearLastUsedParent(env);
+}
+
+void BookmarkBridge::CreateOrDestroyAccountReadingListManagerIfNeeded() {
+  auto* account_reading_list_model =
+      dual_reading_list_model_->GetAccountModelIfSyncing();
+  if (account_reading_list_model_ == account_reading_list_model) {
+    return;
+  }
+
+  account_reading_list_model_ = account_reading_list_model;
+
+  if (account_reading_list_manager_) {
+    reading_list_manager_observations_.RemoveObservation(
+        account_reading_list_manager_.get());
+    account_reading_list_manager_.reset();
+  }
+
+  if (account_reading_list_model_) {
+    account_reading_list_manager_ = std::make_unique<ReadingListManagerImpl>(
+        account_reading_list_model_, id_gen_func_);
+    reading_list_manager_observations_.AddObservation(
+        account_reading_list_manager_.get());
+  }
 }

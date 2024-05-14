@@ -6,6 +6,7 @@
 #define CC_PAINT_RECORD_PAINT_CANVAS_H_
 
 #include <optional>
+
 #include "base/compiler_specific.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
@@ -125,6 +126,7 @@ class CC_PAINT_EXPORT RecordPaintCanvas : public PaintCanvas {
                     NodeId node_id,
                     const PaintFlags& flags) override;
   void drawPicture(PaintRecord record) override;
+  void drawPicture(PaintRecord record, bool local_ctm) override;
 
   void Annotate(AnnotationType type,
                 const SkRect& rect,
@@ -235,6 +237,14 @@ class CC_PAINT_EXPORT InspectableRecordPaintCanvas : public RecordPaintCanvas {
 
   // Don't shadow non-virtual helper functions.
   using RecordPaintCanvas::clipRect;
+
+ protected:
+  // Creates a child canvas that has the same transform matrix and size as
+  // `parent`. `CreateChildCanvasTag` is used to differentiate this from a copy
+  // constructor.
+  struct CreateChildCanvasTag {};
+  InspectableRecordPaintCanvas(CreateChildCanvasTag,
+                               const InspectableRecordPaintCanvas& parent);
 
  private:
   void clipRRectInternal(const SkRRect& rrect,

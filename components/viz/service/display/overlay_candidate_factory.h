@@ -48,6 +48,9 @@ class VIZ_SERVICE_EXPORT OverlayCandidateFactory {
   using CandidateStatus = OverlayCandidate::CandidateStatus;
 
   struct VIZ_SERVICE_EXPORT OverlayContext {
+    OverlayContext();
+    OverlayContext(const OverlayContext&);
+
     bool is_delegated_context = false;
     // When false, the factory can modify the candidate to provide the same
     // output but result in a smaller serialization size.
@@ -58,6 +61,10 @@ class VIZ_SERVICE_EXPORT OverlayCandidateFactory {
     bool supports_rounded_display_masks = false;
     bool supports_mask_filter = false;
     bool transform_and_clip_rpdq = false;
+    // When true, allow a quad to be promoted, even if its resource is not an
+    // overlay candidate.
+    bool allow_non_overlay_resources = false;
+    bool supports_flip_rotate_transform = false;
   };
 
   // The coordinate space of |render_pass| is the target space for candidates

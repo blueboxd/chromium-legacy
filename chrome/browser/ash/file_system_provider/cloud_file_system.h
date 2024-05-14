@@ -9,8 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_error_or.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/file_system_provider/abort_callback.h"
+#include "chrome/browser/ash/file_system_provider/content_cache/cache_manager.h"
 #include "chrome/browser/ash/file_system_provider/content_cache/content_cache.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
@@ -41,7 +43,7 @@ class CloudFileSystem : public ProvidedFileSystemInterface {
       std::unique_ptr<ProvidedFileSystemInterface> file_system);
 
   CloudFileSystem(std::unique_ptr<ProvidedFileSystemInterface> file_system,
-                   ContentCache* content_cache);
+                  CacheManager* cache_manager);
 
   CloudFileSystem(const CloudFileSystem&) = delete;
   CloudFileSystem& operator=(const CloudFileSystem&) = delete;
@@ -67,9 +69,9 @@ class CloudFileSystem : public ProvidedFileSystemInterface {
                          OpenFileMode mode,
                          OpenFileCallback callback) override;
   AbortCallback CloseFile(
-      int file_handle,
+      int operation_id,
       storage::AsyncFileUtil::StatusCallback callback) override;
-  AbortCallback ReadFile(int file_handle,
+  AbortCallback ReadFile(int operation_id,
                          net::IOBuffer* buffer,
                          int64_t offset,
                          int length,
@@ -98,13 +100,13 @@ class CloudFileSystem : public ProvidedFileSystemInterface {
       int64_t length,
       storage::AsyncFileUtil::StatusCallback callback) override;
   AbortCallback WriteFile(
-      int file_handle,
+      int operation_id,
       net::IOBuffer* buffer,
       int64_t offset,
       int length,
       storage::AsyncFileUtil::StatusCallback callback) override;
   AbortCallback FlushFile(
-      int file_handle,
+      int operation_id,
       storage::AsyncFileUtil::StatusCallback callback) override;
   AbortCallback AddWatcher(const GURL& origin,
                            const base::FilePath& entry_path,
@@ -136,10 +138,24 @@ class CloudFileSystem : public ProvidedFileSystemInterface {
  private:
   const std::string GetFileSystemId() const;
   void OnTimer();
+  void OnContentCacheInitialized(
+      base::FileErrorOr<std::unique_ptr<ContentCache>> error_or_cache);
+  // Called when opening a file is completed with either a success or an error.
+  void OnOpenFileCompleted(OpenFileCallback callback,
+                           int file_handle,
+                           base::File::Error result);
+  // Called when closing a file is completed with either a success or an error.
+  void OnCloseFileCompleted(int operation_id,
+                            storage::AsyncFileUtil::StatusCallback callback,
+                            base::File::Error result);
+
   std::unique_ptr<ProvidedFileSystemInterface> file_system_;
-  raw_ptr<ContentCache> content_cache_;  // Not owned.
+  std::unique_ptr<ContentCache> content_cache_;
   base::MetronomeTimer timer_;
+  // Map from operation id to file handle of opened files.
+  std::map<int, int> operation_id_to_file_handle_;
   int file_manager_watchers_ = 0;
+  int next_operation_id_ = 0;
 
   base::WeakPtrFactory<CloudFileSystem> weak_ptr_factory_{this};
 };

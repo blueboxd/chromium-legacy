@@ -16,6 +16,7 @@ import json
 import logging
 import re
 
+from blinkpy.common.checkout.git import CommitRange
 from blinkpy.common.net.git_cl import GitCL
 from blinkpy.common.net.network_transaction import NetworkTimeout
 from blinkpy.common.path_finder import PathFinder
@@ -23,6 +24,7 @@ from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.w3c.chromium_exportable_commits import exportable_commits_over_last_n_commits
 from blinkpy.w3c.common import read_credentials, is_testharness_baseline, is_file_exportable, WPT_GH_URL
 from blinkpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
+from blinkpy.w3c.gerrit import GerritAPI
 from blinkpy.w3c.local_wpt import LocalWPT
 from blinkpy.w3c.test_copier import TestCopier
 from blinkpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
@@ -199,10 +201,10 @@ class TestImporter:
             if self.git_cl.get_cl_status().lower() != 'closed':
                 self.git_cl.close()
 
-        if not self.send_notifications(local_wpt, options.auto_file_bugs,
-                                       options.monorail_auth_json):
+        gerrit_api = GerritAPI.from_credentials(self.host, credentials)
+        if not self.send_notifications(local_wpt, gerrit_api,
+                                       options.auto_file_bugs):
             return 1
-
         return 0
 
     def log_try_job_results(self, try_job_results) -> None:
@@ -365,11 +367,6 @@ class TestImporter:
             '--credentials-json',
             help='A JSON file with GitHub credentials, '
             'generally not necessary on developer machines')
-        parser.add_argument(
-            '--monorail-auth-json',
-            help='A JSON file containing the private key of a service account '
-            'to access Monorail (crbug.com), only needed when '
-            '--auto-file-bugs is used')
 
         return parser.parse_args(argv)
 
@@ -685,23 +682,18 @@ class TestImporter:
             _log.error('Cannot find last WPT import.')
             return None
 
-    def send_notifications(self, local_wpt, auto_file_bugs,
-                           monorail_auth_json):
+    def send_notifications(self,
+                           local_wpt: LocalWPT,
+                           gerrit_api: GerritAPI,
+                           auto_file_bugs: bool = True) -> bool:
         from blinkpy.w3c.import_notifier import ImportNotifier
-        issue = self.git_cl.run(['status', '--field=id']).strip()
-        patchset = self.git_cl.run(['status', '--field=patch']).strip()
         # Construct the notifier here so that any errors won't affect the import.
-        notifier = ImportNotifier(self.host, self.project_git, local_wpt)
-        notifier.main(self.last_wpt_revision,
-                      self.wpt_revision,
-                      self.rebaselined_tests,
-                      self.new_test_expectations,
-                      issue,
-                      patchset,
-                      sheriff_email=self.sheriff_email(),
-                      dry_run=not auto_file_bugs,
-                      service_account_key_json=monorail_auth_json)
-        return True
+        notifier = ImportNotifier(self.host, self.project_git, local_wpt,
+                                  gerrit_api)
+        return notifier.main(CommitRange('origin/main', 'HEAD'),
+                             self.last_wpt_revision,
+                             self.wpt_revision,
+                             dry_run=(not auto_file_bugs))
 
     def update_testlist_with_idlharness_changes(self, testlist_path):
         """Update testlist file to include idlharness test changes

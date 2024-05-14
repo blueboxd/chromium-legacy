@@ -38,6 +38,7 @@
 #include "ui/compositor_extra/shadow.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/events/event.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
@@ -114,24 +115,26 @@ class BottomAlignedBoxLayout : public views::BoxLayout {
   ~BottomAlignedBoxLayout() override {}
 
  private:
-  void Layout(View* host) override {
-    if (host->height() >= host->GetPreferredSize().height() ||
+  void LayoutImpl() override {
+    if (host_view()->height() >= host_view()->GetPreferredSize().height() ||
         !bubble_view_->is_gesture_dragging()) {
-      BoxLayout::Layout(host);
+      views::BoxLayout::LayoutImpl();
       return;
     }
 
     int consumed_height = 0;
-    for (auto i = host->children().rbegin();
-         i != host->children().rend() && consumed_height < host->height();
+    for (auto i = host_view()->children().rbegin();
+         i != host_view()->children().rend() &&
+         consumed_height < host_view()->height();
          ++i) {
       View* child = *i;
       if (!child->GetVisible()) {
         continue;
       }
       gfx::Size size = child->GetPreferredSize();
-      child->SetBounds(0, host->height() - consumed_height - size.height(),
-                       host->width(), size.height());
+      child->SetBounds(0,
+                       host_view()->height() - consumed_height - size.height(),
+                       host_view()->width(), size.height());
       consumed_height += size.height();
     }
   }
@@ -249,6 +252,21 @@ void TrayBubbleView::RerouteEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   }
 }
 
+void TrayBubbleView::RerouteEventHandler::OnEvent(ui::Event* event) {
+  if (!tray_bubble_view_->set_can_activate_on_click_or_tap_) {
+    EventHandler::OnEvent(event);
+    return;
+  }
+
+  if (event->type() == ui::ET_MOUSE_PRESSED ||
+      event->type() == ui::ET_TOUCH_PRESSED ||
+      event->type() == ui::ET_GESTURE_TAP) {
+    tray_bubble_view_->SetCanActivate(true);
+  }
+
+  EventHandler::OnEvent(event);
+}
+
 TrayBubbleView::TrayBubbleView(const InitParams& init_params)
     : BubbleDialogDelegateView(init_params.anchor_view,
                                GetArrowAlignment(init_params.shelf_alignment)),
@@ -257,6 +275,8 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
       delegate_(init_params.delegate),
       preferred_width_(init_params.preferred_width),
       is_gesture_dragging_(false),
+      set_can_activate_on_click_or_tap_(
+          init_params.set_can_activate_on_click_or_tap),
       mouse_actively_entered_(false) {
   // We set the dialog role because views::BubbleDialogDelegate defaults this to
   // an alert dialog. This would make screen readers announce the whole of the
@@ -533,11 +553,11 @@ gfx::Size TrayBubbleView::CalculatePreferredSize() const {
 
 int TrayBubbleView::GetHeightForWidth(int width) const {
   width = std::max(width - GetInsets().width(), 0);
-  const auto visible_height = [width](int height, const views::View* child) {
-    return height + (child->GetVisible() ? child->GetHeightForWidth(width) : 0);
-  };
-  const int height = std::accumulate(children().cbegin(), children().cend(),
-                                     GetInsets().height(), visible_height);
+  const int height = std::transform_reduce(
+      children().cbegin(), children().cend(), GetInsets().height(),
+      std::plus<>(), [width](const views::View* child) {
+        return child->GetVisible() ? child->GetHeightForWidth(width) : 0;
+      });
   if (params_.use_fixed_height) {
     return (params_.max_height != 0) ? params_.max_height : height;
   }

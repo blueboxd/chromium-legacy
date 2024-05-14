@@ -90,13 +90,6 @@ ConnectionRequestInfo CreateConnectionRequestInfo(
   };
 }
 
-// The callbacks are all casting NearbyDevice to PresenceDevice. Currently,
-// Presence will be the main consumer of this listener, so casting is safe.
-//
-// TODO(b/308178927): Change out the `NOTIMPLEMENTED()` macro calls to the
-// appropriate function calls when `mojom::ConnectionListenerV3` is fully
-// implemented.
-//
 // TODO(b/307319934): Extend to be used by non-Presence clients when the
 // migration to V3 APIs occurs.
 v3::ConnectionListener CreateConnectionListenerV3(
@@ -112,6 +105,9 @@ v3::ConnectionListener CreateConnectionListenerV3(
               return;
             }
 
+            // Currently, Presence will be the main consumer of this listener,
+            // so casting is safe since `NearbyDevice` is the superclass of
+            // `PresenceDevice`.
             remote->OnConnectionInitiated(
                 ash::nearby::presence::BuildPresenceMojomDevice(
                     static_cast<const ::nearby::presence::PresenceDevice&>(
@@ -119,9 +115,7 @@ v3::ConnectionListener CreateConnectionListenerV3(
                 mojom::InitialConnectionInfoV3::New(
                     info.authentication_digits, info.raw_authentication_token,
                     info.is_incoming_connection,
-                    // TODO(b/314197753): Change to info.authentication_status
-                    // when implemented in the Nearby library.
-                    mojom::AuthenticationStatus::kSuccess));
+                    AuthenticationStatusToMojom(info.authentication_status)));
           },
       .result_cb =
           [remote](const NearbyDevice& remote_device,
@@ -130,7 +124,14 @@ v3::ConnectionListener CreateConnectionListenerV3(
               return;
             }
 
-            NOTIMPLEMENTED();
+            // `result_cb` receives a `v3::ConnectionsDevice` which can't be
+            // cast to `::nearby::presence::PresenceDevice&` so we build a
+            // `PresenceDevice` mojom with just the endpoint since clients
+            // overriding `OnConnectionResult()` only need the endpoint ID.
+            remote->OnConnectionResult(
+                ash::nearby::presence::BuildPresenceMojomDevice(
+                    presence::PresenceDevice(remote_device.GetEndpointId())),
+                StatusToMojom(result.status.value));
           },
       .disconnected_cb =
           [remote, cb = std::move(on_endpoint_disconnected_cb)](
@@ -140,10 +141,10 @@ v3::ConnectionListener CreateConnectionListenerV3(
             }
 
             // Build a value before deleting what `remote_device` references are
-            // in the map.
+            // in the map. Similar to `result_cb`, `disconnected_cb` receives a
+            // `v3::ConnectionsDevice` and clients only need the endpoint ID.
             auto device_ptr = ash::nearby::presence::BuildPresenceMojomDevice(
-                static_cast<const ::nearby::presence::PresenceDevice&>(
-                    remote_device));
+                presence::PresenceDevice(remote_device.GetEndpointId()));
 
             std::move(cb).Run(remote_device.GetEndpointId());
 
@@ -156,7 +157,12 @@ v3::ConnectionListener CreateConnectionListenerV3(
               return;
             }
 
-            NOTIMPLEMENTED();
+            remote->OnBandwidthChanged(
+                ash::nearby::presence::BuildPresenceMojomDevice(
+                    presence::PresenceDevice(remote_device.GetEndpointId())),
+                mojom::BandwidthInfo::New(
+                    BandwidthQualityToMojom(bandwidth_info.quality),
+                    MediumToMojom(bandwidth_info.medium)));
           },
   };
 }
@@ -215,7 +221,9 @@ void NearbyConnections::StartAdvertising(
       .enable_bluetooth_listening = options->enable_bluetooth_listening,
       .enable_webrtc_listening = options->enable_webrtc_listening,
       .fast_advertisement_service_uuid =
-          options->fast_advertisement_service_uuid.canonical_value()};
+          options->fast_advertisement_service_uuid.has_value()
+              ? options->fast_advertisement_service_uuid->canonical_value()
+              : std::string()};
 
   advertising_options.strategy = StrategyFromMojom(options->strategy);
   advertising_options.allowed =
@@ -684,6 +692,8 @@ void NearbyConnections::AcceptConnectionV3(
                 buffer_manager_.StopTrackingFailedPayload(info.payload_id);
                 break;
               case PayloadProgressInfo::Status::kInProgress:
+                // Note that `info.bytes_transferred` is a cumulative measure of
+                // bytes that have been sent so far in the payload.
                 buffer_manager_.HandleBytesTransferred(info.payload_id,
                                                        info.bytes_transferred);
                 break;

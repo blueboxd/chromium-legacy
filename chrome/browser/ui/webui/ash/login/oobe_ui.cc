@@ -143,9 +143,8 @@
 #include "chrome/grit/gaia_auth_host_resources.h"
 #include "chrome/grit/gaia_auth_host_resources_map.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/oobe_conditional_resources.h"
-#include "chrome/grit/oobe_unconditional_resources.h"
-#include "chrome/grit/oobe_unconditional_resources_map.h"
+#include "chrome/grit/oobe_resources.h"
+#include "chrome/grit/oobe_resources_map.h"
 #include "chromeos/ash/components/assistant/buildflags.h"
 #include "chromeos/ash/services/auth_factor_config/in_process_instances.h"
 #include "chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom.h"
@@ -177,9 +176,9 @@ namespace ash {
 
 namespace {
 
-const char* kKnownDisplayTypes[] = {OobeUI::kAppLaunchSplashDisplay,
-                                    OobeUI::kGaiaSigninDisplay,
-                                    OobeUI::kOobeDisplay};
+const char* kKnownDisplayTypes[] = {
+    OobeUI::kAppLaunchSplashDisplay, OobeUI::kGaiaSigninDisplay,
+    OobeUI::kOobeDisplay, OobeUI::kOobeTestLoader};
 
 // Sorted
 constexpr char kArcOverlayCSSPath[] = "arc_support/overlay.css";
@@ -188,6 +187,8 @@ constexpr char kArcPlaystoreJSPath[] = "arc_support/playstore.js";
 constexpr char kArcPlaystoreLogoPath[] = "arc_support/icon/playstore.svg";
 constexpr char kDebuggerMJSPath[] = "debug/debug.js";
 constexpr char kQuickStartDebuggerPath[] = "debug/quick_start_debugger.js";
+constexpr char kQuickStartDebuggerHtmlPath[] =
+    "debug/quick_start_debugger.html.js";
 
 constexpr char kProductLogoPath[] = "product-logo.png";
 constexpr char kTestAPIJsMPath[] = "test_api/test_api.js";
@@ -267,25 +268,27 @@ void AddDebuggerResources(content::WebUIDataSource* source) {
     base::SysInfo::CrashIfChromeOSNonTestImage();
   }
 
-  source->AddResourcePath(kDebuggerMJSPath,
-                          dev_overlay_enabled
-                              ? IDR_OOBE_CONDITIONAL_DEBUG_DEBUG_JS
-                              : IDR_OOBE_CONDITIONAL_DEBUG_NO_DEBUG_JS);
+  source->AddResourcePath(kDebuggerMJSPath, dev_overlay_enabled
+                                                ? IDR_OOBE_DEBUG_DEBUG_JS
+                                                : IDR_OOBE_DEBUG_NO_DEBUG_JS);
 
-  source->AddResourcePath(
-      kQuickStartDebuggerPath,
-      quick_start_debugger_enabled
-          ? IDR_OOBE_CONDITIONAL_DEBUG_QUICK_START_DEBUGGER_JS
-          : IDR_OOBE_CONDITIONAL_DEBUG_NO_DEBUG_JS);
+  source->AddResourcePath(kQuickStartDebuggerPath,
+                          quick_start_debugger_enabled
+                              ? IDR_OOBE_DEBUG_QUICK_START_DEBUGGER_JS
+                              : IDR_OOBE_DEBUG_NO_DEBUG_JS);
+  if (quick_start_debugger_enabled) {
+    source->AddResourcePath(kQuickStartDebuggerHtmlPath,
+                            IDR_OOBE_DEBUG_QUICK_START_DEBUGGER_HTML_JS);
+  }
 }
 
 void AddTestAPIResources(content::WebUIDataSource* source) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   const bool enabled = command_line->HasSwitch(switches::kEnableOobeTestAPI);
 
-  source->AddResourcePath(
-      kTestAPIJsMPath, enabled ? IDR_OOBE_CONDITIONAL_TEST_API_TEST_API_JS
-                               : IDR_OOBE_CONDITIONAL_TEST_API_NO_TEST_API_JS);
+  source->AddResourcePath(kTestAPIJsMPath,
+                          enabled ? IDR_OOBE_TEST_API_TEST_API_JS
+                                  : IDR_OOBE_TEST_API_NO_TEST_API_JS);
 }
 
 // Creates a WebUIDataSource for chrome://oobe
@@ -302,11 +305,19 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
 
   OobeUI::AddOobeComponents(source);
 
-  source->SetDefaultResource(IDR_OOBE_UNCONDITIONAL_OOBE_HTML);
+  source->SetDefaultResource(IDR_OOBE_OOBE_HTML);
 
   // Add boolean variables that are used to add screens
   // dynamically depending on the flow type.
   const bool is_oobe_flow = display_type == OobeUI::kOobeDisplay;
+
+  if (display_type == OobeUI::kOobeTestLoader) {
+    source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER_JS);
+    source->AddResourcePath("test_loader_util.js",
+                            IDR_WEBUI_JS_TEST_LOADER_UTIL_JS);
+    source->AddResourcePath("test_loader.html", IDR_WEBUI_TEST_LOADER_HTML);
+  }
+
   source->AddBoolean("isOsInstallAllowed", switches::IsOsInstallAllowed());
   source->AddBoolean("isOobeFlow", is_oobe_flow);
   source->AddBoolean("isOobeLazyLoadingEnabled",
@@ -342,6 +353,9 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
 
   source->AddBoolean("isDisplaySizeEnabled",
                      features::IsOobeDisplaySizeEnabled());
+
+  source->AddBoolean("isPersonalizedOnboarding",
+                     features::IsOobePersonalizedOnboardingEnabled());
 
   source->AddBoolean("isOobeSoftwareUpdateEnabled",
                      features::IsOobeSoftwareUpdateEnabled());
@@ -404,14 +418,20 @@ const DisplayScaleFactor k4KDisplay = {3840, 1.5f},
                          kMediumDisplay = {1440, 4.f / 3};
 
 bool OobeUIConfig::IsWebUIEnabled(content::BrowserContext* browser_context) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  bool is_running_test = command_line->HasSwitch(::switches::kTestName) ||
+                         command_line->HasSwitch(::switches::kTestType);
+
   return ash::ProfileHelper::IsSigninProfile(
-      Profile::FromBrowserContext(browser_context));
+             Profile::FromBrowserContext(browser_context)) ||
+         is_running_test;
 }
 
 // static
 const char OobeUI::kAppLaunchSplashDisplay[] = "app-launch-splash";
 const char OobeUI::kGaiaSigninDisplay[] = "gaia-signin";
 const char OobeUI::kOobeDisplay[] = "oobe";
+const char OobeUI::kOobeTestLoader[] = "test_loader.html";
 
 void OobeUI::ConfigureOobeDisplay() {
   network_state_informer_ = new NetworkStateInformer();
@@ -742,11 +762,23 @@ OobeUI::~OobeUI() {
 }
 
 // static
-
 void OobeUI::AddOobeComponents(content::WebUIDataSource* source) {
   // Add all resources from OOBE's autogenerated GRD.
-  source->AddResourcePaths(base::make_span(kOobeUnconditionalResources,
-                                           kOobeUnconditionalResourcesSize));
+  const base::flat_set<std::string_view> kConditionalResources = {
+      "debug/debug.js",
+      "debug/no_debug.js",
+      "debug/quick_start_debugger.js",
+      "debug/quick_start_debugger.html.js",
+      "components/oobe_vars/oobe_custom_vars.css.js",
+      "components/oobe_vars/oobe_custom_vars_remora.css.js",
+      "test_api/no_test_api.js",
+      "test_api/test_api.js",
+  };
+  for (const auto& path : base::make_span(kOobeResources, kOobeResourcesSize)) {
+    if (!kConditionalResources.contains(path.path)) {
+      source->AddResourcePath(path.path, path.id);
+    }
+  }
   // Add Gaia Authenticator resources
   source->AddResourcePaths(
       base::make_span(kGaiaAuthHostResources, kGaiaAuthHostResourcesSize));
@@ -754,11 +786,11 @@ void OobeUI::AddOobeComponents(content::WebUIDataSource* source) {
   if (policy::EnrollmentRequisitionManager::IsRemoraRequisition()) {
     source->AddResourcePath(
         kOobeCustomVarsCssJs,
-        IDR_OOBE_CONDITIONAL_COMPONENTS_OOBE_VARS_OOBE_CUSTOM_VARS_REMORA_CSS_JS);
+        IDR_OOBE_COMPONENTS_OOBE_VARS_OOBE_CUSTOM_VARS_REMORA_CSS_JS);
   } else {
     source->AddResourcePath(
         kOobeCustomVarsCssJs,
-        IDR_OOBE_CONDITIONAL_COMPONENTS_OOBE_VARS_OOBE_CUSTOM_VARS_CSS_JS);
+        IDR_OOBE_COMPONENTS_OOBE_VARS_OOBE_CUSTOM_VARS_CSS_JS);
   }
 
   source->OverrideContentSecurityPolicy(

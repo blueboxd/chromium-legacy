@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_SKIA_UTILS_H_
 
 #include <optional>
+
 #include "base/functional/callback_forward.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_preferences.h"
@@ -37,6 +38,7 @@ class ColorSpace;
 }  // namespace gfx
 
 namespace viz {
+class SharedImageFormat;
 class VulkanContextProvider;
 }  // namespace viz
 
@@ -106,12 +108,15 @@ GPU_GLES2_EXPORT void DeleteSkSurface(SharedContextState* context_state,
 
 #if BUILDFLAG(ENABLE_VULKAN)
 GPU_GLES2_EXPORT GrVkImageInfo
-CreateGrVkImageInfo(VulkanImage* image, const gfx::ColorSpace& color_space);
+CreateGrVkImageInfo(VulkanImage* image,
+                    const viz::SharedImageFormat& si_format,
+                    const gfx::ColorSpace& color_space);
 
 GPU_GLES2_EXPORT GrVkYcbcrConversionInfo
 CreateGrVkYcbcrConversionInfo(VkPhysicalDevice physical_device,
                               VkImageTiling tiling,
                               VkFormat format,
+                              const viz::SharedImageFormat& si_format,
                               const gfx::ColorSpace& color_space,
                               const std::optional<VulkanYCbCrInfo>& ycbcr_info);
 #endif  // BUILDFLAG(ENABLE_VULKAN)

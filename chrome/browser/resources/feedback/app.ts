@@ -45,7 +45,6 @@ export class FeedbackAppElement extends PolymerElement {
    * The object will be manipulated by sendReport().
    */
   private feedbackInfo: chrome.feedbackPrivate.FeedbackInfo = {
-    assistantDebugInfoAllowed: false,
     attachedFile: undefined,
     attachedFileBlobUuid: undefined,
     autofillMetadata: '',
@@ -54,7 +53,6 @@ export class FeedbackAppElement extends PolymerElement {
     descriptionPlaceholder: undefined,
     email: undefined,
     flow: chrome.feedbackPrivate.FeedbackFlow.REGULAR,
-    fromAssistant: false,
     fromAutofill: false,
     includeBluetoothLogs: false,
     pageUrl: undefined,
@@ -102,10 +100,6 @@ export class FeedbackAppElement extends PolymerElement {
         this.cancel(e);
     this.getRequiredElement('#remove-attached-file').onclick =
         this.clearAttachedFile.bind(this);
-    // <if expr="chromeos_ash">
-    this.getRequiredElement('#performance-info-checkbox')
-        .addEventListener('change', this.performanceFeedbackChanged.bind(this));
-    // </if>
 
     // Dispatch event used by tests.
     this.dispatchEvent(new CustomEvent('ready-for-testing'));
@@ -135,16 +129,6 @@ export class FeedbackAppElement extends PolymerElement {
               'input', (e: Event) => this.checkForShowQuestionnaire(e));
     }
 
-    // <if expr="chromeos_ash">
-    if (this.shadowRoot!.querySelector<HTMLElement>(
-            '#assistant-checkbox-container') != null &&
-        feedbackInfo.flow ===
-            chrome.feedbackPrivate.FeedbackFlow.GOOGLE_INTERNAL &&
-        feedbackInfo.fromAssistant) {
-      this.getRequiredElement('#assistant-checkbox-container').hidden = false;
-    }
-    // </if>
-
     if (this.shadowRoot!.querySelector<HTMLElement>(
             '#autofill-checkbox-container') != null &&
         feedbackInfo.flow ===
@@ -172,6 +156,14 @@ export class FeedbackAppElement extends PolymerElement {
           loadTimeData.getString('freeFormTextAi');
       this.getRequiredElement('#offensive-container').hidden = false;
       this.getRequiredElement('#log-id-container').hidden = false;
+    }
+
+    const isSeaPenFlow: boolean|undefined =
+        isAiFlow && feedbackInfo.aiMetadata?.includes('is_feature_sea_pen');
+
+    if (isSeaPenFlow) {
+      this.getRequiredElement<HTMLInputElement>('#sys-info-checkbox').checked =
+          false;
     }
 
     const whenScreenshotUpdated = takeScreenshot().then((screenshotCanvas) => {
@@ -244,19 +236,6 @@ export class FeedbackAppElement extends PolymerElement {
       this.getRequiredElement('#attach-file-container').hidden = true;
       this.getRequiredElement('#attach-file-note').hidden = true;
     }
-
-    // <if expr="chromeos_ash">
-    if (feedbackInfo.traceId &&
-        (this.shadowRoot!.querySelector<HTMLElement>(
-            '#performance-info-area'))) {
-      this.getRequiredElement('#performance-info-area').hidden = false;
-      this.getRequiredElement<HTMLInputElement>('#performance-info-checkbox')
-          .checked = true;
-      this.performanceFeedbackChanged();
-      this.getRequiredElement<HTMLAnchorElement>('#performance-info-link')
-          .onclick = this.openSlowTraceWindow;
-    }
-    // </if>
 
     const autofillMetadataUrlElement =
         this.shadowRoot!.querySelector<HTMLElement>('#autofill-metadata-url');
@@ -333,38 +312,6 @@ export class FeedbackAppElement extends PolymerElement {
             termsOfServiceUrlElement, FEEDBACK_TERM_OF_SERVICE_URL,
             false /* useAppWindow */);
       }
-
-      // <if expr="chromeos_ash">
-      const bluetoothLogsInfoLinkElement =
-          this.shadowRoot!.querySelector<HTMLElement>(
-              '#bluetooth-logs-info-link');
-      if (bluetoothLogsInfoLinkElement) {
-        bluetoothLogsInfoLinkElement.onclick = (e: Event) => {
-          e.preventDefault();
-
-          FeedbackBrowserProxyImpl.getInstance().showBluetoothLogsInfo();
-
-          bluetoothLogsInfoLinkElement.onauxclick = (e: Event) => {
-            e.preventDefault();
-          };
-        };
-      }
-
-      const assistantLogsInfoLinkElement =
-          this.shadowRoot!.querySelector<HTMLElement>(
-              '#assistant-logs-info-link');
-      if (assistantLogsInfoLinkElement) {
-        assistantLogsInfoLinkElement.onclick = (e: Event) => {
-          e.preventDefault();
-
-          FeedbackBrowserProxyImpl.getInstance().showAssistantLogsInfo();
-
-          assistantLogsInfoLinkElement.onauxclick = (e: Event) => {
-            e.preventDefault();
-          };
-        };
-      }
-      // </if>
     }
 
     // Make sure our focus starts on the description field.
@@ -471,15 +418,6 @@ export class FeedbackAppElement extends PolymerElement {
       e.preventDefault();
     };
   }
-
-  // <if expr="chromeos_ash">
-  /**
-   * Opens a new window with chrome://slow_trace, downloading performance data.
-   */
-  private openSlowTraceWindow() {
-    window.open('chrome://slow_trace/tracing.zip#' + this.feedbackInfo.traceId);
-  }
-  // </if>
 
   /**
    * Checks if any keywords related to bluetooth have been typed. If they are,
@@ -665,31 +603,6 @@ export class FeedbackAppElement extends PolymerElement {
       this.feedbackInfo.sendAutofillMetadata = true;
     }
 
-    // <if expr="chromeos_ash">
-    const assistantCheckbox = this.shadowRoot!.querySelector<HTMLInputElement>(
-        '#assistant-info-checkbox');
-    if (assistantCheckbox != null && assistantCheckbox.checked &&
-        !this.getRequiredElement('#assistant-checkbox-container').hidden) {
-      // User consent to link Assistant debug info on Assistant server.
-      this.feedbackInfo.assistantDebugInfoAllowed = true;
-    }
-
-    const bluetoothCheckbox = this.shadowRoot!.querySelector<HTMLInputElement>(
-        '#bluetooth-logs-checkbox');
-    if (bluetoothCheckbox != null && bluetoothCheckbox.checked &&
-        !this.getRequiredElement('#bluetooth-checkbox-container').hidden) {
-      this.feedbackInfo.sendBluetoothLogs = true;
-      this.feedbackInfo.categoryTag = 'BluetoothReportWithLogs';
-    }
-
-    const performanceCheckbox =
-        this.shadowRoot!.querySelector<HTMLInputElement>(
-            '#performance-info-checkbox');
-    if (performanceCheckbox == null || !performanceCheckbox.checked) {
-      this.feedbackInfo.traceId = undefined;
-    }
-    // </if>
-
     this.feedbackInfo.sendHistograms = useHistograms;
 
     if (this.getRequiredElement<HTMLInputElement>('#screenshot-checkbox')
@@ -724,29 +637,6 @@ export class FeedbackAppElement extends PolymerElement {
     e.preventDefault();
     this.scheduleWindowClose();
   }
-
-  // <if expr="chromeos_ash">
-  /**
-   * Update the page when performance feedback state is changed.
-   */
-  private performanceFeedbackChanged() {
-    const screenshotCheckbox =
-        this.getRequiredElement<HTMLInputElement>('#screenshot-checkbox');
-    const fileInput = this.getRequiredElement<HTMLInputElement>('#attach-file');
-
-    if (this.getRequiredElement<HTMLInputElement>('#performance-info-checkbox')
-            .checked) {
-      fileInput.disabled = true;
-      fileInput.checked = false;
-
-      screenshotCheckbox.disabled = true;
-      screenshotCheckbox.checked = false;
-    } else {
-      fileInput.disabled = false;
-      screenshotCheckbox.disabled = false;
-    }
-  }
-  // </if>
 
   private resizeAppWindow() {
     // TODO(crbug.com/1167223): The UI is now controlled by a WebDialog delegate

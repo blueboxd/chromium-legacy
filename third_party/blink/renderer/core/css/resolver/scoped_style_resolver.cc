@@ -123,7 +123,8 @@ void ScopedStyleResolver::AppendActiveStyleSheets(
     AddKeyframeRules(rule_set);
     AddFontFaceRules(rule_set);
     AddCounterStyleRules(rule_set);
-    AddPositionFallbackRules(rule_set);
+    AddPositionTryRules(rule_set);
+    AddFunctionRules(rule_set);
     AddFontFeatureValuesRules(rule_set);
     AddImplicitScopeTriggers(*sheet, rule_set);
   }
@@ -150,8 +151,9 @@ void ScopedStyleResolver::ResetStyle() {
   active_style_sheets_.clear();
   media_query_result_flags_.Clear();
   keyframes_rule_map_.clear();
-  position_fallback_rule_map_.clear();
+  position_try_rule_map_.clear();
   font_feature_values_storage_map_.clear();
+  function_rule_map_.clear();
   if (counter_style_map_) {
     counter_style_map_->Dispose();
   }
@@ -312,7 +314,8 @@ void ScopedStyleResolver::MatchPageRules(PageRuleCollector& collector) {
   // Currently, only @page rules in the document scope apply.
   DCHECK(scope_->RootNode().IsDocumentNode());
   for (auto [sheet, rule_set] : active_style_sheets_) {
-    collector.MatchPageRules(rule_set.Get(), GetCascadeLayerMap());
+    collector.MatchPageRules(rule_set.Get(), CascadeOrigin::kAuthor, scope_,
+                             GetCascadeLayerMap());
   }
 }
 
@@ -321,13 +324,13 @@ void ScopedStyleResolver::RebuildCascadeLayerMap(
   cascade_layer_map_ = MakeGarbageCollected<CascadeLayerMap>(sheets);
 }
 
-void ScopedStyleResolver::AddPositionFallbackRules(const RuleSet& rule_set) {
-  for (StyleRulePositionFallback* rule : rule_set.PositionFallbackRules()) {
-    auto result = position_fallback_rule_map_.insert(rule->Name(), rule);
+void ScopedStyleResolver::AddPositionTryRules(const RuleSet& rule_set) {
+  for (StyleRulePositionTry* rule : rule_set.PositionTryRules()) {
+    auto result = position_try_rule_map_.insert(rule->Name(), rule);
     if (result.is_new_entry) {
       continue;
     }
-    Member<StyleRulePositionFallback>& stored_rule = result.stored_value->value;
+    Member<StyleRulePositionTry>& stored_rule = result.stored_value->value;
     const bool should_override =
         !cascade_layer_map_ ||
         cascade_layer_map_->CompareLayerOrder(stored_rule->GetCascadeLayer(),
@@ -335,6 +338,15 @@ void ScopedStyleResolver::AddPositionFallbackRules(const RuleSet& rule_set) {
     if (should_override) {
       stored_rule = rule;
     }
+  }
+}
+
+void ScopedStyleResolver::AddFunctionRules(const RuleSet& rule_set) {
+  const HeapVector<Member<StyleRuleFunction>> function_rules =
+      rule_set.FunctionRules();
+  for (StyleRuleFunction* rule : function_rules) {
+    // TODO(crbug.com/324780202): Handle @layer.
+    function_rule_map_.Set(rule->GetName(), rule);
   }
 }
 
@@ -367,11 +379,19 @@ void ScopedStyleResolver::AddFontFeatureValuesRules(const RuleSet& rule_set) {
   }
 }
 
-StyleRulePositionFallback* ScopedStyleResolver::PositionFallbackForName(
-    const AtomicString& fallback_name) {
-  DCHECK(fallback_name);
-  auto iter = position_fallback_rule_map_.find(fallback_name);
-  if (iter != position_fallback_rule_map_.end()) {
+StyleRulePositionTry* ScopedStyleResolver::PositionTryForName(
+    const AtomicString& try_name) {
+  DCHECK(try_name);
+  auto iter = position_try_rule_map_.find(try_name);
+  if (iter != position_try_rule_map_.end()) {
+    return iter->value.Get();
+  }
+  return nullptr;
+}
+
+StyleRuleFunction* ScopedStyleResolver::FunctionForName(StringView name) {
+  auto iter = function_rule_map_.find(name.ToString());
+  if (iter != function_rule_map_.end()) {
     return iter->value.Get();
   }
   return nullptr;
@@ -474,7 +494,8 @@ void ScopedStyleResolver::Trace(Visitor* visitor) const {
   visitor->Trace(scope_);
   visitor->Trace(active_style_sheets_);
   visitor->Trace(keyframes_rule_map_);
-  visitor->Trace(position_fallback_rule_map_);
+  visitor->Trace(position_try_rule_map_);
+  visitor->Trace(function_rule_map_);
   visitor->Trace(counter_style_map_);
   visitor->Trace(cascade_layer_map_);
 }

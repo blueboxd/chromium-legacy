@@ -85,14 +85,15 @@ void MemoryManagedPaintRecorder::RestartRecording() {
 void MemoryManagedPaintRecorder::BeginSideRecording() {
   CHECK(!side_canvas_) << "BeginSideRecording() can't be called when side "
                           "recording is already active.";
-  side_canvas_ = std::make_unique<MemoryManagedPaintCanvas>(size_);
+  side_canvas_ = main_canvas_.CreateChildCanvas();
   current_canvas_ = side_canvas_.get();
 }
 
 void MemoryManagedPaintRecorder::EndSideRecording() {
   CHECK(side_canvas_) << "EndSideRecording() can't be called without "
                          "first calling BeginSideRecording().";
-  main_canvas_.drawPicture(side_canvas_->ReleaseAsRecord());
+  main_canvas_.drawPicture(side_canvas_->ReleaseAsRecord(),
+                           /*local_ctm=*/false);
   current_canvas_ = &main_canvas_;
   side_canvas_ = nullptr;
 }

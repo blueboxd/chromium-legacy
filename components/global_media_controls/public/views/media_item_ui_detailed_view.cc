@@ -3,14 +3,17 @@
 // found in the LICENSE file.
 
 #include "components/global_media_controls/public/views/media_item_ui_detailed_view.h"
+#include <memory>
 
 #include "base/metrics/histogram_functions.h"
+#include "components/global_media_controls/public/views/media_progress_view.h"
+#include "components/global_media_controls/views/media_action_button.h"
 #include "components/media_message_center/media_notification_container.h"
 #include "components/media_message_center/media_notification_item.h"
 #include "components/media_message_center/media_notification_util.h"
-#include "components/media_message_center/media_squiggly_progress_view.h"
 #include "components/media_message_center/vector_icons/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
+#include "media/base/media_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -18,13 +21,16 @@
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/view_utils.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "components/global_media_controls/public/views/chapter_item_view.h"
+#endif
 
 namespace global_media_controls {
 
@@ -49,8 +55,7 @@ constexpr int kFontSize = 12;
 constexpr int kMediaInfoSeparator = 4;
 constexpr int kControlsColumnSeparator = 10;
 constexpr int kChevronIconSize = 15;
-constexpr int kMediaButtonIconSize = 20;
-constexpr int kNotMediaActionButtonId = -1;
+constexpr int kMediaActionButtonIconSize = 20;
 
 constexpr float kFocusRingHaloInset = -3.0f;
 
@@ -98,64 +103,6 @@ class MediaLabelButton : public views::Button {
 };
 
 BEGIN_METADATA(MediaLabelButton)
-END_METADATA
-
-class MediaButton : public views::ImageButton {
-  METADATA_HEADER(MediaButton, views::ImageButton)
-
- public:
-  MediaButton(PressedCallback callback,
-              int button_id,
-              const gfx::VectorIcon& vector_icon,
-              int tooltip_text_id,
-              ui::ColorId foreground_color_id,
-              ui::ColorId foreground_disabled_color_id,
-              ui::ColorId focus_ring_color_id)
-      : ImageButton(std::move(callback)),
-        foreground_disabled_color_id_(foreground_disabled_color_id) {
-    views::ConfigureVectorImageButton(this);
-
-    bool enable_flip_canvas =
-        (button_id == static_cast<int>(MediaSessionAction::kPreviousTrack) ||
-         button_id == static_cast<int>(MediaSessionAction::kNextTrack));
-    SetFlipCanvasOnPaintForRTLUI(enable_flip_canvas);
-
-    auto button_size = (button_id == static_cast<int>(MediaSessionAction::kPlay)
-                            ? kPlayPauseButtonSize
-                            : kControlsButtonSize);
-    views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
-                                                  button_size.height() / 2);
-    SetPreferredSize(button_size);
-
-    SetInstallFocusRingOnFocus(true);
-    SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-    views::FocusRing::Get(this)->SetColorId(focus_ring_color_id);
-
-    Update(button_id, vector_icon, tooltip_text_id, foreground_color_id);
-  }
-
-  void Update(int button_id,
-              const gfx::VectorIcon& vector_icon,
-              int tooltip_text_id,
-              ui::ColorId foreground_color_id) {
-    if (button_id != kNotMediaActionButtonId) {
-      SetID(button_id);
-    }
-    SetTooltipText(l10n_util::GetStringUTF16(tooltip_text_id));
-    views::SetImageFromVectorIconWithColorId(
-        this, vector_icon, foreground_color_id, foreground_disabled_color_id_,
-        kMediaButtonIconSize);
-  }
-
-  void UpdateText(int tooltip_text_id) {
-    SetTooltipText(l10n_util::GetStringUTF16(tooltip_text_id));
-  }
-
- private:
-  const ui::ColorId foreground_disabled_color_id_;
-};
-
-BEGIN_METADATA(MediaButton)
 END_METADATA
 
 // If the image does not fit the square view, scale the image to fill the view
@@ -294,7 +241,7 @@ MediaItemUIDetailedView::MediaItemUIDetailedView(
   }
 
   // Create the play/pause button.
-  play_pause_button_ = CreateMediaButton(
+  play_pause_button_ = CreateMediaActionButton(
       controls_column, static_cast<int>(MediaSessionAction::kPlay),
       media_message_center::kPlayArrowIcon,
       IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_PLAY);
@@ -302,21 +249,24 @@ MediaItemUIDetailedView::MediaItemUIDetailedView(
       theme_.play_button_container_color_id,
       kPlayPauseButtonSize.height() / 2));
 
-  // |controls_row| holds all the available media action buttons and the
+  // `controls_row` holds all the available media action buttons and the
   // progress view.
   auto* controls_row = AddChildView(std::make_unique<views::BoxLayoutView>());
-  controls_row->SetCrossAxisAlignment(
-      views::BoxLayout::CrossAxisAlignment::kCenter);
+  // TODO(b/328317702): The fllowing lines are removed as a temp fix of the
+  // tobo bug.
+  // controls_row->SetCrossAxisAlignment(
+  //     views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Create the previous track button.
-  CreateMediaButton(
+  CreateMediaActionButton(
       controls_row, static_cast<int>(MediaSessionAction::kPreviousTrack),
       media_message_center::kMediaPreviousTrackIcon,
       IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_PREVIOUS_TRACK);
 
-  // Create the squiggly progress view.
-  squiggly_progress_view_ = controls_row->AddChildView(
-      std::make_unique<media_message_center::MediaSquigglyProgressView>(
+  // Create the progress view.
+  progress_view_ =
+      controls_row->AddChildView(std::make_unique<MediaProgressView>(
+          (media_display_page_ != MediaDisplayPage::kMediaDialogView),
           theme_.playing_progress_foreground_color_id,
           theme_.playing_progress_background_color_id,
           theme_.paused_progress_foreground_color_id,
@@ -326,28 +276,28 @@ MediaItemUIDetailedView::MediaItemUIDetailedView(
                               base::Unretained(this)),
           base::BindRepeating(&MediaItemUIDetailedView::SeekTo,
                               base::Unretained(this))));
-  controls_row->SetFlexForView(squiggly_progress_view_, 1);
+  controls_row->SetFlexForView(progress_view_, 1);
 
   // Create the next track button.
-  CreateMediaButton(
+  CreateMediaActionButton(
       controls_row, static_cast<int>(MediaSessionAction::kNextTrack),
       media_message_center::kMediaNextTrackIcon,
       IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_NEXT_TRACK);
 
   // Create the start casting button.
   if (device_selector_view) {
-    start_casting_button_ = CreateMediaButton(
-        controls_row, kNotMediaActionButtonId,
+    start_casting_button_ = CreateMediaActionButton(
+        controls_row, kEmptyMediaActionButtonId,
         media_message_center::kMediaCastStartIcon,
         IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_SHOW_DEVICE_LIST);
-    start_casting_button_->SetCallback(base::BindRepeating(
-        &MediaItemUIDetailedView::StartCastingButtonPressed,
-        base::Unretained(this)));
+    start_casting_button_->SetCallback(
+        base::BindRepeating(&MediaItemUIDetailedView::StartCastingButtonPressed,
+                            base::Unretained(this)));
     start_casting_button_->SetVisible(false);
   }
 
   // Create the picture-in-picture button.
-  picture_in_picture_button_ = CreateMediaButton(
+  picture_in_picture_button_ = CreateMediaActionButton(
       controls_row,
       static_cast<int>(MediaSessionAction::kEnterPictureInPicture),
       media_message_center::kMediaEnterPipIcon,
@@ -446,6 +396,37 @@ void MediaItemUIDetailedView::UpdateWithMediaMetadata(
   artist_label_->SetText(metadata.artist);
 
   container_->OnMediaSessionMetadataChanged(metadata);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!base::FeatureList::IsEnabled(media::kBackgroundListening)) {
+    return;
+  }
+
+  if (!chapter_list_view_ && metadata.chapters.empty()) {
+    return;
+  }
+
+  if (metadata.chapters.empty()) {
+    chapter_list_view_->RemoveAllChildViews();
+    return;
+  }
+
+  if (!chapter_list_view_) {
+    chapter_list_view_ = AddChildView(
+        views::Builder<views::BoxLayoutView>()
+            .SetOrientation(views::BoxLayout::Orientation::kVertical)
+            .SetInsideBorderInsets(gfx::Insets::TLBR(16, 8, 8, 8))
+            .Build());
+  } else {
+    chapter_list_view_->RemoveAllChildViews();
+  }
+
+  for (int index = 0; index < static_cast<int>(metadata.chapters.size());
+       index++) {
+    chapters_[index] = chapter_list_view_->AddChildView(
+        std::make_unique<ChapterItemView>(metadata.chapters[index], theme_));
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void MediaItemUIDetailedView::UpdateWithMediaActions(
@@ -459,7 +440,7 @@ void MediaItemUIDetailedView::UpdateWithMediaActions(
 void MediaItemUIDetailedView::UpdateWithMediaPosition(
     const media_session::MediaPosition& position) {
   position_ = position;
-  squiggly_progress_view_->UpdateProgress(position);
+  progress_view_->UpdateProgress(position);
 }
 
 void MediaItemUIDetailedView::UpdateWithMediaArtwork(
@@ -480,6 +461,20 @@ void MediaItemUIDetailedView::UpdateWithMediaArtwork(
     artwork_view_->SetClipPath(path);
   }
   SchedulePaint();
+}
+
+void MediaItemUIDetailedView::UpdateWithChapterArtwork(
+    int index,
+    const gfx::ImageSkia& image) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!base::FeatureList::IsEnabled(media::kBackgroundListening)) {
+    return;
+  }
+
+  if (auto it = chapters_.find(index); it != chapters_.end()) {
+    it->second->UpdateArtwork(image);
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void MediaItemUIDetailedView::UpdateDeviceSelectorAvailability(
@@ -515,7 +510,7 @@ void MediaItemUIDetailedView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 bool MediaItemUIDetailedView::OnKeyPressed(const ui::KeyEvent& event) {
   // As soon as the media view gets the focus, it should be able to handle key
   // events that can change the progress.
-  return squiggly_progress_view_->OnKeyPressed(event);
+  return progress_view_->OnKeyPressed(event);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -531,20 +526,24 @@ void MediaItemUIDetailedView::MediaLabelPressed(MediaLabelButton* button) {
   container_->OnHeaderClicked(/*activate_original_media=*/true);
 }
 
-MediaButton* MediaItemUIDetailedView::CreateMediaButton(
+MediaActionButton* MediaItemUIDetailedView::CreateMediaActionButton(
     views::View* parent,
     int button_id,
     const gfx::VectorIcon& vector_icon,
     int tooltip_text_id) {
-  auto button = std::make_unique<MediaButton>(
-      views::Button::PressedCallback(), button_id, vector_icon, tooltip_text_id,
+  auto button = std::make_unique<MediaActionButton>(
+      views::Button::PressedCallback(), button_id, tooltip_text_id,
+      kMediaActionButtonIconSize, vector_icon,
+      (button_id == static_cast<int>(MediaSessionAction::kPlay)
+           ? kPlayPauseButtonSize
+           : kControlsButtonSize),
       theme_.primary_foreground_color_id, theme_.secondary_foreground_color_id,
       theme_.focus_ring_color_id);
   auto* button_ptr = parent->AddChildView(std::move(button));
 
-  if (button_id != kNotMediaActionButtonId) {
+  if (button_id != kEmptyMediaActionButtonId) {
     button_ptr->SetCallback(
-        base::BindRepeating(&MediaItemUIDetailedView::MediaButtonPressed,
+        base::BindRepeating(&MediaItemUIDetailedView::MediaActionButtonPressed,
                             base::Unretained(this), button_ptr));
     action_buttons_.push_back(button_ptr);
   }
@@ -587,7 +586,7 @@ void MediaItemUIDetailedView::UpdateActionButtonsVisibility() {
   }
 }
 
-void MediaItemUIDetailedView::MediaButtonPressed(views::Button* button) {
+void MediaItemUIDetailedView::MediaActionButtonPressed(views::Button* button) {
   const auto action = static_cast<MediaSessionAction>(button->GetID());
   if (item_) {
     item_->OnMediaSessionActionButtonPressed(action);
@@ -713,9 +712,8 @@ views::Button* MediaItemUIDetailedView::GetActionButtonForTesting(
   return (i == action_buttons_.end()) ? nullptr : *i;
 }
 
-media_message_center::MediaSquigglyProgressView*
-MediaItemUIDetailedView::GetProgressViewForTesting() {
-  return squiggly_progress_view_;
+MediaProgressView* MediaItemUIDetailedView::GetProgressViewForTesting() {
+  return progress_view_;
 }
 
 media_session::MediaPosition MediaItemUIDetailedView::GetPositionForTesting() {
@@ -738,6 +736,17 @@ MediaItemUIDetailedView::GetDeviceSelectorForTesting() {
 views::View* MediaItemUIDetailedView::GetDeviceSelectorSeparatorForTesting() {
   return device_selector_view_separator_;
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+views::View* MediaItemUIDetailedView::GetChapterListViewForTesting() {
+  return chapter_list_view_;
+}
+
+base::flat_map<int, ChapterItemView*>
+MediaItemUIDetailedView::GetChaptersForTesting() {
+  return chapters_;
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 BEGIN_METADATA(MediaItemUIDetailedView)
 END_METADATA

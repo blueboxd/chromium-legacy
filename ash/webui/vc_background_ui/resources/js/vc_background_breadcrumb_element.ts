@@ -19,11 +19,14 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 
 import {assert} from 'chrome://resources/ash/common/assert.js';
-import {getSeaPenTemplates, SeaPenTemplate} from 'chrome://resources/ash/common/sea_pen/constants.js';
-import {SeaPenPaths, SeaPenRouterElement} from 'chrome://resources/ash/common/sea_pen/sea_pen_router_element.js';
-import {isNonEmptyArray} from 'chrome://resources/ash/common/sea_pen/sea_pen_utils.js';
 import {AnchorAlignment, CrActionMenuElement} from 'chrome://resources/ash/common/cr_elements/cr_action_menu/cr_action_menu.js';
 import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
+import {getSeaPenTemplates, SeaPenTemplate} from 'chrome://resources/ash/common/sea_pen/constants.js';
+import {setThumbnailResponseStatusCodeAction} from 'chrome://resources/ash/common/sea_pen/sea_pen_actions.js';
+import {SeaPenPaths, SeaPenRouterElement} from 'chrome://resources/ash/common/sea_pen/sea_pen_router_element.js';
+import {getSeaPenStore} from 'chrome://resources/ash/common/sea_pen/sea_pen_store.js';
+import {isNonEmptyArray} from 'chrome://resources/ash/common/sea_pen/sea_pen_utils.js';
+import {getTransitionEnabled, setTransitionsEnabled} from 'chrome://resources/ash/common/sea_pen/transition.js';
 import {IronA11yKeysElement} from 'chrome://resources/polymer/v3_0/iron-a11y-keys/iron-a11y-keys.js';
 import {IronSelectorElement} from 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -193,7 +196,7 @@ export class VcBackgroundBreadcrumbElement extends
       // with new path.
       const breadcrumb = e.target as HTMLElement;
       breadcrumb.blur();
-      SeaPenRouterElement.instance().goToRoute(newPath as SeaPenPaths);
+      this.goBackToRoute_(newPath as SeaPenPaths);
     }
     // If the user clicks the last breadcrumb and the sea pen dropdown is
     // present, open the dropdown.
@@ -229,8 +232,20 @@ export class VcBackgroundBreadcrumbElement extends
     const targetElement = e.currentTarget as HTMLElement;
     const templateId = targetElement.dataset['id'];
     assert(!!templateId, 'templateId is required');
-    SeaPenRouterElement.instance().goToRoute(
-        SeaPenPaths.RESULTS, {seaPenTemplateId: templateId});
+    // resets the Sea Pen thumbnail response status code when switching
+    // template; otherwise, error state will remain in sea-pen-images element if
+    // it happens in the last query search.
+    getSeaPenStore().dispatch(setThumbnailResponseStatusCodeAction(null));
+    const transitionsEnabled = getTransitionEnabled();
+    // disables the page transition when switching templates from the drop down.
+    // Then resets it back to the original value after routing is done to not
+    // interfere with other page transitions.
+    setTransitionsEnabled(false);
+    SeaPenRouterElement.instance()
+        .goToRoute(SeaPenPaths.RESULTS, {seaPenTemplateId: templateId})
+        ?.finally(() => {
+          setTransitionsEnabled(transitionsEnabled);
+        });
     this.closeOptionMenu_();
   }
 
@@ -249,6 +264,14 @@ export class VcBackgroundBreadcrumbElement extends
   private getAriaSelected_(templateId: string, seaPenTemplateId: string):
       'true'|'false' {
     return templateId === seaPenTemplateId ? 'true' : 'false';
+  }
+
+  // Helper method to apply back transition style when navigating to path.
+  private goBackToRoute_(path: SeaPenPaths) {
+    document.documentElement.classList.add('back-transition');
+    SeaPenRouterElement.instance().goToRoute(path)?.finally(() => {
+      document.documentElement.classList.remove('back-transition');
+    });
   }
 }
 

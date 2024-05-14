@@ -6,26 +6,41 @@
 #define ASH_WM_WINDOW_RESTORE_PINE_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 
 namespace ash {
+
+// Public so it can be used by tests.
+inline constexpr char kEducationNudgeId[] = "PineEducationNudge";
+inline constexpr char kPineOnboardingHistogram[] =
+    "Ash.Pine.OnboardingDialog.TurnRestoreOn";
 
 struct PineContentsData;
 
 // Controls showing the pine dialog. Receives data from the full restore
 // service.
-class ASH_EXPORT PineController {
+class ASH_EXPORT PineController : public OverviewObserver {
  public:
   PineController();
   PineController(const PineController&) = delete;
   PineController& operator=(const PineController&) = delete;
-  ~PineController();
+  ~PineController() override;
 
   PineContentsData* pine_contents_data() { return pine_contents_data_.get(); }
   const PineContentsData* pine_contents_data() const {
     return pine_contents_data_.get();
   }
+
+  // Returns true if `this` contains `pine_contents_data_` with non-empty app
+  // restore data.
+  bool ShouldShowPineDialog() const;
+
+  // Shows the onboarding message. If `restore_on` is true, only the
+  // "Continue" button will be shown. Otherwise shows both buttons.
+  void MaybeShowPineOnboardingMessage(bool restore_on);
 
   // Starts an overview session with the pine contents view if certain
   // conditions are met. Uses fake for testing only data.
@@ -45,14 +60,30 @@ class ASH_EXPORT PineController {
   // `pine_contents_data_`.
   void MaybeEndPineOverviewSession();
 
-  // TODO(sammiequon): Entering overview normally should show the pine dialog if
-  // `pine_contents_data_` is not null.
+  // OverviewObserver:
+  void OnOverviewModeEnding(OverviewSession* overview_session) override;
+  void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
  private:
+  friend class PineTestApi;
+  FRIEND_TEST_ALL_PREFIXES(PineTest, OnboardingMetrics);
+
   // Callback function for when the pine image is finished decoding.
   void OnPineImageDecoded(const gfx::ImageSkia& pine_image);
 
   void StartPineOverviewSession();
+
+  // Called when the accept or cancel button in the onboarding dialog is
+  // pressed.
+  void OnOnboardingAcceptPressed(bool restore_on);
+  void OnOnboardingCancelPressed();
+
+  // True if overview was in pine session, up until the overview animation is
+  // ended.
+  bool in_pine_ = false;
+
+  // The first-time experience onboarding dialog.
+  views::UniqueWidgetPtr onboarding_widget_;
 
   // Stores the data needed to display the pine dialog. Created on login, and
   // deleted after the user interacts with the dialog. If the user exits

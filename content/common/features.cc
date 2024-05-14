@@ -70,6 +70,13 @@ BASE_FEATURE(kBrowserVerifiedUserActivationKeyboard,
              "BrowserVerifiedUserActivationKeyboard",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, changes to the zoom level are temporary and are forgotten when
+// the tab is closed. If disabled, changes to the zoom level persist, as though
+// the user affected them through the browser's UX.
+BASE_FEATURE(kCapturedSurfaceControlTemporaryZoom,
+             "CapturedSurfaceControlTemporaryZoom",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // If Canvas2D Image Chromium is allowed, this feature controls whether it is
 // enabled.
 BASE_FEATURE(kCanvas2DImageChromium,
@@ -91,11 +98,7 @@ BASE_FEATURE(kCodeCacheDeletionWithoutFilter,
 // proxy.
 BASE_FEATURE(kConsolidatedIPCForProxyCreation,
              "ConsolidatedIPCForProxyCreation",
-#if BUILDFLAG(IS_ANDROID)
              base::FEATURE_ENABLED_BY_DEFAULT);
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
 
 // When enabled, event.movement is calculated in blink instead of in browser.
 BASE_FEATURE(kConsolidatedMovementXY,
@@ -197,6 +200,13 @@ BASE_FEATURE(kFedCmIdAssertionCORS,
 BASE_FEATURE(kFedCmIdpSigninStatusMetrics,
              "FedCmIdpSigninStatusMetrics",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables sending only SameSite=None cookies in credentialed FedCM requests
+// (accounts endpoint and ID assertion endpoint). If kFedCmIdAssertionCORS
+// is enabled, this is a no-op for the ID assertion endpoint.
+BASE_FEATURE(kFedCmSameSiteNone,
+             "FedCmSameSiteNone",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, limits the number of FLEDGE auctions that can be run between page
 // load and unload -- any attempt to run more than this number of auctions will
@@ -367,17 +377,6 @@ BASE_FEATURE(kPreloadingConfig,
 BASE_FEATURE(kPrivacySandboxAdsAPIsM1Override,
              "PrivacySandboxAdsAPIsM1Override",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables Private Network Access checks in warning mode for navigations.
-//
-// Does nothing if `kPrivateNetworkAccessForNavigations` is disabled.
-//
-// If both this and `kPrivateNetworkAccessForNavigations` are enabled, then PNA
-// preflight requests for navigations are not required to succeed. If
-// one fails, a warning is simply displayed in DevTools.
-BASE_FEATURE(kPrivateNetworkAccessForNavigationsWarningOnly,
-             "PrivateNetworkAccessForNavigationsWarningOnly",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables reporting ResourceTiming entries for document, who initiated a
 // cancelled navigation in one of their <iframe>.

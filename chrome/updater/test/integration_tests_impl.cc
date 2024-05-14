@@ -55,6 +55,7 @@
 #include "chrome/updater/external_constants_override.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/prefs.h"
+#include "chrome/updater/protos/omaha_settings.pb.h"
 #include "chrome/updater/registration_data.h"
 #include "chrome/updater/service_proxy_factory.h"
 #include "chrome/updater/test/request_matcher.h"
@@ -69,6 +70,7 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
+#include "net/http/http_status_code.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -304,6 +306,7 @@ void ExpectDeviceManagementRequest(ScopedServer* test_server,
                                    const std::string& request_type,
                                    const std::string& authorization_type,
                                    const std::string& authorization_token,
+                                   net::HttpStatusCode response_status,
                                    const std::string& response) {
   test_server->ExpectOnce(
       {request::GetPathMatcher(base::StringPrintf(
@@ -318,7 +321,7 @@ void ExpectDeviceManagementRequest(ScopedServer* test_server,
            base::StringPrintf("%s token=%s", authorization_type.c_str(),
                               authorization_token.c_str())),
        request::GetHeaderMatcher("Content-Type", "application/x-protobuf")},
-      response);
+      response, response_status);
 }
 
 }  // namespace
@@ -423,6 +426,17 @@ void Install(UpdaterScope scope) {
   ASSERT_FALSE(path.empty());
   base::CommandLine command_line(path);
   command_line.AppendSwitchASCII(kInstallSwitch, "usagestats=1");
+  int exit_code = -1;
+  Run(scope, command_line, &exit_code);
+  ASSERT_EQ(exit_code, 0);
+}
+
+void InstallEulaRequired(UpdaterScope scope) {
+  const base::FilePath path = GetSetupExecutablePath();
+  ASSERT_FALSE(path.empty());
+  base::CommandLine command_line(path);
+  command_line.AppendSwitchASCII(kInstallSwitch, "usagestats=1");
+  command_line.AppendSwitch(kEulaRequiredSwitch);
   int exit_code = -1;
   Run(scope, command_line, &exit_code);
   ASSERT_EQ(exit_code, 0);
@@ -556,6 +570,13 @@ void ExpectAppsUpdateSequence(UpdaterScope scope,
   for (const AppUpdateExpectation& app : apps) {
     app_requests.push_back(
         base::StringPrintf(R"("appid":"%s")", app.app_id.c_str()));
+    if (app.allow_rollback) {
+      app_requests.push_back(R"("rollback_allowed":true,)");
+    }
+    if (!app.target_version_prefix.empty()) {
+      app_requests.push_back(base::StringPrintf(
+          R"("targetversionprefix":"%s")", app.target_version_prefix.c_str()));
+    }
     if (!app.target_channel.empty()) {
       app_requests.push_back(base::StringPrintf(R"("release_channel":"%s",)",
                                                 app.target_channel.c_str()));
@@ -1259,21 +1280,20 @@ void ExpectCleanProcesses() {
   }
 }
 
+// Standalone installers are supported for Windows only.
 #if !BUILDFLAG(IS_WIN)
 void RunOfflineInstall(UpdaterScope scope,
                        bool is_legacy_install,
                        bool is_silent_install) {
-  // TODO(crbug.com/1281688).
   NOTREACHED();
 }
 
 void RunOfflineInstallOsNotSupported(UpdaterScope scope,
                                      bool is_legacy_install,
                                      bool is_silent_install) {
-  // TODO(crbug.com/1281688).
   NOTREACHED();
 }
-#endif  // IS_WIN
+#endif  // !BUILDFLAG(IS_WIN)
 
 void DMPushEnrollmentToken(const std::string& enrollment_token) {
   scoped_refptr<DMStorage> storage = GetDefaultDMStorage();
@@ -1310,7 +1330,7 @@ void ExpectDeviceManagementRegistrationRequest(
     const std::string& dm_token) {
   ExpectDeviceManagementRequest(
       test_server, "register_policy_agent", "GoogleEnrollmentToken",
-      enrollment_token, [&dm_token] {
+      enrollment_token, net::HTTP_OK, [&dm_token] {
         enterprise_management::DeviceManagementResponse dm_response;
         dm_response.mutable_register_response()->set_device_management_token(
             dm_token);
@@ -1324,7 +1344,7 @@ void ExpectDeviceManagementPolicyFetchRequest(
     const ::wireless_android_enterprise_devicemanagement::
         OmahaSettingsClientProto& omaha_settings) {
   ExpectDeviceManagementRequest(
-      test_server, "policy", "GoogleDMToken", dm_token,
+      test_server, "policy", "GoogleDMToken", dm_token, net::HTTP_OK,
       [&dm_token, &omaha_settings] {
         std::unique_ptr<::enterprise_management::DeviceManagementResponse>
             dm_response = GetDMResponseForOmahaPolicy(
@@ -1335,11 +1355,58 @@ void ExpectDeviceManagementPolicyFetchRequest(
       }());
 }
 
+void ExpectDeviceManagementPolicyFetchWithNewPublicKeyRequest(
+    ScopedServer* test_server,
+    const std::string& dm_token,
+    const ::wireless_android_enterprise_devicemanagement::
+        OmahaSettingsClientProto& omaha_settings) {
+  ExpectDeviceManagementRequest(
+      test_server, "policy", "GoogleDMToken", dm_token, net::HTTP_OK,
+      [&dm_token, &omaha_settings] {
+        std::unique_ptr<::enterprise_management::DeviceManagementResponse>
+            dm_response =
+                DMPolicyBuilderForTesting::CreateInstanceWithOptions(
+                    /*first_request=*/false, /*rotate_to_new_key=*/true,
+                    DMPolicyBuilderForTesting::SigningOption::kSignNormally,
+                    dm_token, GetDefaultDMStorage()->GetDeviceID())
+                    ->BuildDMResponseForPolicies(
+                        {{"a-mock-policy-type-without-new-public-key",
+                          omaha_settings.SerializeAsString()},
+                         {"google/machine-level-omaha",
+                          omaha_settings.SerializeAsString()},
+                         {"yet-another-policy-type-without-new-public-key",
+                          omaha_settings.SerializeAsString()}});
+        return dm_response->SerializeAsString();
+      }());
+}
+
+void ExpectDeviceManagementTokenDeletionRequest(ScopedServer* test_server,
+                                                const std::string& dm_token,
+                                                bool invalidate_token) {
+  ::enterprise_management::DeviceManagementErrorDetail error_detail =
+      invalidate_token ? ::enterprise_management::
+                             CBCM_DELETION_POLICY_PREFERENCE_INVALIDATE_TOKEN
+                       : ::enterprise_management::
+                             CBCM_DELETION_POLICY_PREFERENCE_DELETE_TOKEN;
+  ExpectDeviceManagementRequest(
+      test_server, "policy", "GoogleDMToken", dm_token, net::HTTP_GONE,
+      [&dm_token, error_detail] {
+        std::unique_ptr<::enterprise_management::DeviceManagementResponse>
+            dm_response =
+                DMPolicyBuilderForTesting::CreateInstanceWithOptions(
+                    /*first_request=*/false, /*rotate_to_new_key=*/false,
+                    DMPolicyBuilderForTesting::SigningOption::kSignNormally,
+                    dm_token, GetDefaultDMStorage()->GetDeviceID())
+                    ->BuildDMResponseWithError(error_detail);
+        return dm_response->SerializeAsString();
+      }());
+}
+
 void ExpectDeviceManagementPolicyValidationRequest(
     ScopedServer* test_server,
     const std::string& dm_token) {
   ExpectDeviceManagementRequest(test_server, "policy_validation_report",
-                                "GoogleDMToken", dm_token, "");
+                                "GoogleDMToken", dm_token, net::HTTP_OK, "");
 }
 
 }  // namespace updater::test

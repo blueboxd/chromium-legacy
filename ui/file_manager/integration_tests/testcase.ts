@@ -12,7 +12,7 @@ import * as crostiniTests from './file_manager/crostini.js';
 import * as directoryTreeTests from './file_manager/directory_tree.js';
 import * as directoryTreeContextMenuTests from './file_manager/directory_tree_context_menu.js';
 import * as dlpTests from './file_manager/dlp.js';
-// import * as dlpEnterpriseConnectorsTests from './file_manager/dlp_enterprise_connectors.js';
+import * as dlpEnterpriseConnectorsTests from './file_manager/dlp_enterprise_connectors.js';
 import * as driveSpecificTests from './file_manager/drive_specific.js';
 import * as fileDialogTests from './file_manager/file_dialog.js';
 import * as fileDisplayTests from './file_manager/file_display.js';
@@ -42,13 +42,13 @@ import * as providersTests from './file_manager/providers.js';
 import * as quickViewTests from './file_manager/quick_view.js';
 import * as recentsTests from './file_manager/recents.js';
 import * as restorePrefsTests from './file_manager/restore_prefs.js';
-// import * as searchTests from './file_manager/search.js';
+import * as searchTests from './file_manager/search.js';
 import * as shareTests from './file_manager/share.js';
 import * as sortColumnsTests from './file_manager/sort_columns.js';
 import * as tabIndexTests from './file_manager/tab_index.js';
 import * as tasksTests from './file_manager/tasks.js';
 import * as toolbarTests from './file_manager/toolbar.js';
-// import * as transferTests from './file_manager/transfer.js';
+import * as transferTests from './file_manager/transfer.js';
 import * as trashTests from './file_manager/trash.js';
 import * as traverseTests from './file_manager/traverse.js';
 import * as zipFilesTests from './file_manager/zip_files.js';
@@ -70,7 +70,7 @@ export const testcase: Record<TestFunctionName, TestFunction> = {
   ...directoryTreeTests,
   ...directoryTreeContextMenuTests,
   ...dlpTests,
-  // ...dlpEnterpriseConnectorsTests,
+  ...dlpEnterpriseConnectorsTests,
   ...driveSpecificTests,
   ...fileDialogTests,
   ...fileDisplayTests,
@@ -100,13 +100,13 @@ export const testcase: Record<TestFunctionName, TestFunction> = {
   ...quickViewTests,
   ...recentsTests,
   ...restorePrefsTests,
-  // ...searchTests,
+  ...searchTests,
   ...shareTests,
   ...sortColumnsTests,
   ...tabIndexTests,
   ...tasksTests,
   ...toolbarTests,
-  // ...transferTests,
+  ...transferTests,
   ...trashTests,
   ...traverseTests,
   ...zipFilesTests,

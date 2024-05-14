@@ -44,6 +44,8 @@ chromium-metrics-reviews@google.com.
   <int value="8" label="Auto with translate"/>
   <int value="9" label="Add to bookmarks"/>
   <int value="10" label="Auto with add to bookmarks"/>
+  <int value="11" label="Read Aloud (Listen to this page)"/>
+  <int value="12" label="Auto with Read Aloud (Listen to this page)"/>
 </enum>
 
 <enum name="Android.MemoryPressureNotification">
@@ -172,7 +174,10 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Failed: Chrome already run locally"/>
   <int value="3" label="Failed: Chrome startup failed"/>
   <int value="4" label="Failed: Cannot sign in as previous user"/>
-  <int value="5" label="Failed: Sign-in timed-out or interrupted"/>
+  <int value="5" label="DEPRECATED: Failed: Sign-in timed-out or interrupted"/>
+  <int value="6"
+      label="DEPRECATED: Restore status histogram sent (never recorded)"/>
+  <int value="7" label="Failed: Sign-in timed-out or interrupted"/>
 </enum>
 
 <enum name="AndroidSearchEngineChoiceEvents">
@@ -704,6 +709,12 @@ chromium-metrics-reviews@google.com.
     WebViewCompat#setAudioMuted(boolean)
   </int>
   <int value="101" label="IS_AUDIO_MUTED">WebViewCompat#isAudioMuted()</int>
+  <int value="102" label="SET_WEBAUTHN_SUPPORT">
+    WebSettingsCompat#setWebauthnSupport(int)
+  </int>
+  <int value="103" label="GET_WEBAUTHN_SUPPORT">
+    WebSettingsCompat#getWebauthnSupport()
+  </int>
 </enum>
 
 <enum name="AppPackageNameAllowlistParseStatus">
@@ -793,6 +804,7 @@ chromium-metrics-reviews@google.com.
   <int value="28" label="Attribution Provider flush task"/>
   <int value="29" label="Download auto-resumption unmetered task"/>
   <int value="30" label="Download auto-resumption any network task"/>
+  <int value="31" label="Notification pre-unsubscribe action"/>
 </enum>
 
 <enum name="BackPressConsumer">
@@ -1097,6 +1109,13 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Toggled on"/>
 </enum>
 
+<enum name="IneligibilityReason">
+  <int value="0" label="OS version"/>
+  <int value="1" label="Form factor (e.g. tablet)"/>
+  <int value="2" label="Navigation mode (e.g. 3-button mode)"/>
+  <int value="3" label="Device type (e.g. automotive)"/>
+</enum>
+
 <enum name="InputDeviceSource">
   <int value="0" label="Other"/>
   <int value="1" label="Touchscreen"/>
@@ -1284,16 +1303,6 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Incognito"/>
 </enum>
 
-<enum name="PartnerDelegateUnusedReason">
-  <int value="0" label="Phenotype: before Android Pie"/>
-  <int value="1" label="Phenotype: flag can't commit"/>
-  <int value="2" label="Phenotype: config empty"/>
-  <int value="3" label="GServices: get timestamp exception"/>
-  <int value="4" label="GServices: timestamp missing"/>
-  <int value="5" label="PreloadApk: can't resolve provider"/>
-  <int value="6" label="PreloadApk: not system provider"/>
-</enum>
-
 <enum name="PartnerTaskCompletion">
   <int value="0" label="None valid"/>
   <int value="1" label="Completed in time for tab creation"/>
@@ -1376,6 +1385,8 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="LightWeightFirstRun"/>
   <int value="4" label="History"/>
   <int value="5" label="Settings"/>
+  <int value="6" label="BookmarkFolderPicker"/>
+  <int value="7" label="SigninAndHistoryOptIn"/>
 </enum>
 
 <enum name="SecureCookieAction">

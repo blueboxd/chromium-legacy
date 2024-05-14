@@ -83,9 +83,20 @@ struct CORE_EXPORT PaintLayerScrollableAreaRareData final
   void Trace(Visitor* visitor) const {}
 
   std::optional<cc::SnapContainerData> snap_container_data_;
-  std::optional<cc::SnappedTargetData> snapped_target_data_;
-  std::optional<cc::SnappedTargetData> snapchanging_target_data_;
+  // The ids of the elements that were reported as the selected snap targets
+  // along each axis during the last snapchanging event that fired.
+  std::optional<cc::TargetSnapAreaElementIds> snapchanging_target_ids_;
   std::unique_ptr<cc::SnapSelectionStrategy> impl_snap_strategy_;
+  // The ids of the elements that were reported as the selected snap targets
+  // along each axis during the last snapchanged event that fired.
+  std::optional<cc::TargetSnapAreaElementIds> snapchanged_target_ids_;
+  // If this is a snap container, this represents the cc::ElementId of the snap
+  // area (snapped to by this snap container) that is targeted[1] or contains a
+  // targeted[1] element.
+  // It is std::nullopt if no such snap area exists or if this is not a
+  // snap container.
+  // [1]https://drafts.csswg.org/selectors/#the-target-pseudo
+  std::optional<cc::ElementId> targeted_snap_area_id_;
   Vector<gfx::Rect> tickmarks_override_;
 };
 
@@ -268,7 +279,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void DidCompositorScroll(const gfx::PointF&) override;
 
   bool ShouldScrollOnMainThread() const override;
-  void SetShouldScrollOnMainThread(bool);
 
   bool IsActive() const override;
   bool IsScrollCornerVisible() const override;
@@ -543,14 +553,18 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   std::optional<gfx::PointF> GetSnapPositionAndSetTarget(
       const cc::SnapSelectionStrategy& strategy) override;
-  void SetSnappedTargetData(std::optional<cc::SnappedTargetData> data) override;
-  const cc::SnappedTargetData* GetSnappedTargetData() const override;
+  // Functions related to firing snapchanged events.
+  void SetSnapchangedTargetIds(
+      std::optional<cc::TargetSnapAreaElementIds>) override;
   void UpdateSnappedTargetsAndEnqueueSnapChanged() override;
 
-  const cc::SnappedTargetData* GetSnapChangingTargetData() const override;
-  void SetSnapChangingTargetData(std::optional<cc::SnappedTargetData>) override;
+  // Functions related to firing snapchanging events.
+  std::optional<cc::TargetSnapAreaElementIds> GetSnapchangingTargetIds()
+      const override;
+  void SetSnapchangingTargetIds(
+      std::optional<cc::TargetSnapAreaElementIds>) override;
   void UpdateSnapChangingTargetsAndEnqueueSnapChanging(
-      const gfx::PointF&) override;
+      const cc::TargetSnapAreaElementIds& new_target_ids) override;
   const cc::SnapSelectionStrategy* GetImplSnapStrategy() const override;
   void SetImplSnapStrategy(
       std::unique_ptr<cc::SnapSelectionStrategy> strategy) override;
@@ -605,6 +619,13 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool IsApplyingScrollStart() const final;
 
   gfx::Size PixelSnappedBorderBoxSize() const;
+
+  std::optional<cc::ElementId> GetTargetedSnapAreaId() override {
+    return RareData() ? RareData()->targeted_snap_area_id_ : std::nullopt;
+  }
+  void SetTargetedSnapAreaId(const std::optional<cc::ElementId>& id) override {
+    EnsureRareData().targeted_snap_area_id_ = id;
+  }
 
  private:
   bool NeedsHypotheticalScrollbarThickness(ScrollbarOrientation) const;
@@ -695,6 +716,11 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool UsedColorSchemeScrollbarsChanged(const ComputedStyle* old_style) const;
   bool IsGlobalRootNonOverlayScroller() const;
 
+  // Get the current target for a snap event of |type| (either "snapchanged" or
+  // snapchanging) along axis |axis|.
+  Node* GetSnapEventTargetAlongAxis(const AtomicString& type,
+                                    cc::SnapAxis) const override;
+
   // PaintLayer is destructed before PaintLayerScrollable area, during this
   // time before PaintLayerScrollableArea has been collected layer_ will
   // be set to nullptr by the Dispose method.
@@ -715,9 +741,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   unsigned is_scrollbar_freeze_root_ : 1;
   unsigned is_horizontal_scrollbar_frozen_ : 1;
   unsigned is_vertical_scrollbar_frozen_ : 1;
-
-  // This is updated after PaintArtifactCompositor::Update().
-  unsigned should_scroll_on_main_thread_ : 1;
 
   // There are 6 possible combinations of writing mode and direction. Scroll
   // origin will be non-zero in the x or y axis if there is any reversed

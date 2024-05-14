@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/webui/signin/turn_sync_on_helper.h"
+
 #include <memory>
 #include <optional>
 #include <vector>
@@ -16,7 +18,6 @@
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/signin_browser_test_base.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/webui/signin/turn_sync_on_helper.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_switches.h"
@@ -25,6 +26,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "content/public/test/browser_test.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::UnorderedElementsAre;
@@ -290,8 +292,13 @@ IN_PROC_BROWSER_TEST_P(TurnSyncOnHelperBrowserTestWithParam,
         EXPECT_EQ(second_account_id, identity_manager()->GetPrimaryAccountId(
                                          signin::ConsentLevel::kSignin));
 #else
-        // With Dice, all accounts are removed, because the first account in
-        // cookies doesn't match.
+        // With Dice, the signin manager clears the primary account and removes
+        // all accounts because the first account in cookies doesn't match.
+        // Note: This check will fail with
+        // If `switches::ExplicitBrowserSigninPhase::kFull` is enabled, the
+        // primary account is set/cleared explicitly by the user and doesn't
+        // depend on cookies. This expectation should be updated accordingly
+        // when the feature is enabled in tests.
         EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
         EXPECT_FALSE(identity_manager()->HasPrimaryAccount(
             signin::ConsentLevel::kSignin));

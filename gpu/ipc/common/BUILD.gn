@@ -333,7 +333,6 @@ mojom("interfaces") {
     "capabilities.mojom",
     "context_result.mojom",
     "device_perf_info.mojom",
-    "dx_diag_node.mojom",
     "gpu_disk_cache_type.mojom",
     "gpu_feature_info.mojom",
     "gpu_info.mojom",
@@ -342,6 +341,7 @@ mojom("interfaces") {
     "mailbox_holder.mojom",
     "memory_stats.mojom",
     "shared_image_capabilities.mojom",
+    "shared_image_metadata.mojom",
     "sync_token.mojom",
     "vulkan_ycbcr_info.mojom",
   ]
@@ -354,6 +354,8 @@ mojom("interfaces") {
     ":gpu_preferences_interface",
     ":surface_handle",
     "//mojo/public/mojom/base",
+    "//services/viz/public/mojom:shared_image_format",
+    "//skia/public/mojom",
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojom",
     "//ui/gl/mojom",
@@ -415,16 +417,6 @@ mojom("interfaces") {
       ]
       traits_sources = [ "device_perf_info_mojom_traits.cc" ]
       traits_headers = [ "device_perf_info_mojom_traits.h" ]
-    },
-    {
-      types = [
-        {
-          mojom = "gpu.mojom.DxDiagNode"
-          cpp = "::gpu::DxDiagNode"
-        },
-      ]
-      traits_sources = [ "dx_diag_node_mojom_traits.cc" ]
-      traits_headers = [ "dx_diag_node_mojom_traits.h" ]
     },
     {
       types = [
@@ -534,6 +526,16 @@ mojom("interfaces") {
     {
       types = [
         {
+          mojom = "gpu.mojom.SharedImageMetadata"
+          cpp = "::gpu::SharedImageMetadata"
+        },
+      ]
+      traits_headers = [ "shared_image_metadata_mojom_traits.h" ]
+      traits_public_deps = [ ":mojom_traits" ]
+    },
+    {
+      types = [
+        {
           mojom = "gpu.mojom.SyncToken"
           cpp = "::gpu::SyncToken"
         },
@@ -577,6 +579,11 @@ mojom("interfaces") {
           cpp = "::gpu::GpuDiskCacheDawnWebGPUHandle"
           nullable_is_same_type = true
         },
+        {
+          mojom = "gpu.mojom.GpuDiskCacheDawnGraphiteHandle"
+          cpp = "::gpu::GpuDiskCacheDawnGraphiteHandle"
+          nullable_is_same_type = true
+        },
 
         # General types that are the ones generally exposed in interfaces.
         {
@@ -614,6 +621,16 @@ mojom("interfaces") {
       ]
       traits_headers = [ "mailbox_holder_mojom_traits.h" ]
       traits_public_deps = [ "//gpu" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.SharedImageMetadata"
+          cpp = "::gpu::SharedImageMetadata"
+        },
+      ]
+      traits_headers = [ "shared_image_metadata_mojom_traits.h" ]
+      traits_public_deps = [ "//services/viz/public/mojom:shared_image_format" ]
     },
     {
       types = [

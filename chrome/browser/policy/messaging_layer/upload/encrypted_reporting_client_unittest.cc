@@ -30,6 +30,7 @@
 #include "components/policy/core/common/management/scoped_management_service_override_for_testing.h"
 #include "components/reporting/proto/synced/record_constants.pb.h"
 #include "components/reporting/resources/resource_manager.h"
+#include "components/reporting/util/encrypted_reporting_json_keys.h"
 #include "components/reporting/util/statusor.h"
 #include "components/reporting/util/test_support_callbacks.h"
 #include "content/public/test/browser_task_environment.h"
@@ -56,9 +57,6 @@ namespace reporting {
 constexpr char kDmToken[] = "fake-dm-token";
 constexpr char kClientId[] = "fake-client-id";
 constexpr char kServerUrl[] = "https://example.com/reporting";
-
-constexpr char kResponseKey[] = "response_key";
-constexpr char kResponseValue[] = "response_value";
 
 constexpr int kGenerationId = 1;
 constexpr char kEncryptedRecord[] = "encrypted-record";
@@ -109,9 +107,6 @@ class EncryptedReportingClientTest : public ::testing::Test {
     TestingBrowserProcess::GetGlobal()->SetSharedURLLoaderFactory(
         url_loader_factory_.GetSafeWeakWrapper());
 
-    cloud_policy_client_.SetDMToken(kDmToken);
-    cloud_policy_client_.client_id_ = kClientId;
-
     context_.SetByDottedPath("browser.userAgent", "agent-test-value");
   }
 
@@ -154,7 +149,6 @@ class EncryptedReportingClientTest : public ::testing::Test {
 
   std::unique_ptr<policy::DeviceManagementService> device_management_service_;
   network::TestURLLoaderFactory url_loader_factory_;
-  policy::MockCloudPolicyClient cloud_policy_client_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
@@ -164,17 +158,18 @@ class EncryptedReportingClientTest : public ::testing::Test {
 TEST_F(EncryptedReportingClientTest, Default) {
   auto encrypted_reporting_client = EncryptedReportingClient::Create(
       std::make_unique<FakeDelegate>(device_management_service_.get()));
+  encrypted_reporting_client->PresetUploads(context_.Clone(), kDmToken,
+                                            kClientId);
 
   {
     AddRecordToPayload();
     ScopedReservation scoped_reservation(RecordsSize(payload_records_),
                                          memory_resource_);
     ASSERT_TRUE(scoped_reservation.reserved());
-    test::TestEvent<StatusOr<base::Value::Dict>> response_event;
+    test::TestEvent<StatusOr<UploadResponseParser>> response_event;
     encrypted_reporting_client->UploadReport(
         need_encryption_key_, config_file_version_, payload_records_,
-        std::move(scoped_reservation), context_.Clone(), &cloud_policy_client_,
-        response_event.cb());
+        std::move(scoped_reservation), response_event.cb());
     task_environment_.RunUntilIdle();
 
     ASSERT_THAT(*url_loader_factory_.pending_requests(), SizeIs(1));
@@ -196,14 +191,11 @@ TEST_F(EncryptedReportingClientTest, Default) {
 
     url_loader_factory_.SimulateResponseForPendingRequest(
         pending_request_url,
-        base::StringPrintf(R"({"%s" : "%s"})", kResponseKey, kResponseValue));
+        base::StringPrintf(R"({"%s" : true})", json_keys::kForceConfirm));
 
     const auto actual_response = response_event.result();
     ASSERT_TRUE(actual_response.has_value());
-    ASSERT_THAT(actual_response.value(), SizeIs(1));
-    ASSERT_TRUE(actual_response.value().FindString(kResponseKey));
-    EXPECT_THAT(*(actual_response.value().FindString(kResponseKey)),
-                StrEq(kResponseValue));
+    EXPECT_TRUE(actual_response.value().force_confirm_flag());
   }
 
   // Avoid rate limiting by time, but still reject the upload because of lower
@@ -216,16 +208,15 @@ TEST_F(EncryptedReportingClientTest, Default) {
     ScopedReservation scoped_reservation(RecordsSize(payload_records_),
                                          memory_resource_);
     ASSERT_TRUE(scoped_reservation.reserved());
-    test::TestEvent<StatusOr<base::Value::Dict>> response_event;
+    test::TestEvent<StatusOr<UploadResponseParser>> response_event;
     encrypted_reporting_client->UploadReport(
         need_encryption_key_, config_file_version_, payload_records_,
-        std::move(scoped_reservation), context_.Clone(), &cloud_policy_client_,
-        response_event.cb());
+        std::move(scoped_reservation), response_event.cb());
 
     // Sequence ID decreased, upload is rejected.
     const auto actual_response = response_event.result();
     EXPECT_THAT(actual_response,
-                Property(&StatusOr<base::Value::Dict>::error,
+                Property(&StatusOr<UploadResponseParser>::error,
                          AllOf(Property(&Status::code, Eq(error::OUT_OF_RANGE)),
                                Property(&Status::error_message,
                                         StrEq("Too many upload requests")))))
@@ -236,21 +227,22 @@ TEST_F(EncryptedReportingClientTest, Default) {
 TEST_F(EncryptedReportingClientTest, ServiceUnavailable) {
   auto encrypted_reporting_client =
       EncryptedReportingClient::Create(std::make_unique<FakeDelegate>(nullptr));
+  encrypted_reporting_client->PresetUploads(context_.Clone(), kDmToken,
+                                            kClientId);
 
   AddRecordToPayload();
   ScopedReservation scoped_reservation(RecordsSize(payload_records_),
                                        memory_resource_);
   ASSERT_TRUE(scoped_reservation.reserved());
-  test::TestEvent<StatusOr<base::Value::Dict>> response_event;
+  test::TestEvent<StatusOr<UploadResponseParser>> response_event;
   encrypted_reporting_client->UploadReport(
       need_encryption_key_, config_file_version_, payload_records_,
-      std::move(scoped_reservation), context_.Clone(), &cloud_policy_client_,
-      response_event.cb());
+      std::move(scoped_reservation), response_event.cb());
   const auto actual_response = response_event.result();
   EXPECT_THAT(
       actual_response,
       Property(
-          &StatusOr<base::Value::Dict>::error,
+          &StatusOr<UploadResponseParser>::error,
           AllOf(
               Property(&Status::code, Eq(error::NOT_FOUND)),
               Property(
@@ -262,17 +254,18 @@ TEST_F(EncryptedReportingClientTest, ServiceUnavailable) {
 TEST_F(EncryptedReportingClientTest, ServiceRejectedByRateLimiting) {
   auto encrypted_reporting_client = EncryptedReportingClient::Create(
       std::make_unique<FakeDelegate>(device_management_service_.get()));
+  encrypted_reporting_client->PresetUploads(context_.Clone(), kDmToken,
+                                            kClientId);
 
   {
     AddRecordToPayload();
     ScopedReservation scoped_reservation(RecordsSize(payload_records_),
                                          memory_resource_);
     ASSERT_TRUE(scoped_reservation.reserved());
-    test::TestEvent<StatusOr<base::Value::Dict>> response_event;
+    test::TestEvent<StatusOr<UploadResponseParser>> response_event;
     encrypted_reporting_client->UploadReport(
         need_encryption_key_, config_file_version_, payload_records_,
-        std::move(scoped_reservation), context_.Clone(), &cloud_policy_client_,
-        response_event.cb());
+        std::move(scoped_reservation), response_event.cb());
     task_environment_.RunUntilIdle();
 
     ASSERT_THAT(*url_loader_factory_.pending_requests(), SizeIs(1));
@@ -294,14 +287,11 @@ TEST_F(EncryptedReportingClientTest, ServiceRejectedByRateLimiting) {
 
     url_loader_factory_.SimulateResponseForPendingRequest(
         pending_request_url,
-        base::StringPrintf(R"({"%s" : "%s"})", kResponseKey, kResponseValue));
+        base::StringPrintf(R"({"%s" : true})", json_keys::kForceConfirm));
 
     const auto actual_response = response_event.result();
     ASSERT_TRUE(actual_response.has_value());
-    ASSERT_THAT(actual_response.value(), SizeIs(1));
-    ASSERT_TRUE(actual_response.value().FindString(kResponseKey));
-    EXPECT_THAT(*(actual_response.value().FindString(kResponseKey)),
-                StrEq(kResponseValue));
+    EXPECT_TRUE(actual_response.value().force_confirm_flag());
   }
 
   // Repeat the same upload, get it rejected by rate limiter.
@@ -311,14 +301,13 @@ TEST_F(EncryptedReportingClientTest, ServiceRejectedByRateLimiting) {
     ScopedReservation scoped_reservation(RecordsSize(payload_records_),
                                          memory_resource_);
     ASSERT_TRUE(scoped_reservation.reserved());
-    test::TestEvent<StatusOr<base::Value::Dict>> response_event;
+    test::TestEvent<StatusOr<UploadResponseParser>> response_event;
     encrypted_reporting_client->UploadReport(
         need_encryption_key_, config_file_version_, payload_records_,
-        std::move(scoped_reservation), context_.Clone(), &cloud_policy_client_,
-        response_event.cb());
+        std::move(scoped_reservation), response_event.cb());
     const auto actual_response = response_event.result();
     EXPECT_THAT(actual_response,
-                Property(&StatusOr<base::Value::Dict>::error,
+                Property(&StatusOr<UploadResponseParser>::error,
                          AllOf(Property(&Status::code, Eq(error::OUT_OF_RANGE)),
                                Property(&Status::error_message,
                                         StrEq("Too many upload requests")))))
@@ -334,15 +323,16 @@ TEST_F(EncryptedReportingClientTest, UploadSucceedsWithoutDeviceInfo) {
   // the request headers.
   auto encrypted_reporting_client = EncryptedReportingClient::Create(
       std::make_unique<FakeDelegate>(device_management_service_.get()));
+  encrypted_reporting_client->PresetUploads(context_.Clone(), "", "");
+
   AddRecordToPayload();
   ScopedReservation scoped_reservation(RecordsSize(payload_records_),
                                        memory_resource_);
   ASSERT_TRUE(scoped_reservation.reserved());
-  test::TestEvent<StatusOr<base::Value::Dict>> response_event;
+  test::TestEvent<StatusOr<UploadResponseParser>> response_event;
   encrypted_reporting_client->UploadReport(
       need_encryption_key_, config_file_version_, payload_records_,
-      std::move(scoped_reservation), context_.Clone(), nullptr,
-      base::DoNothing());
+      std::move(scoped_reservation), base::DoNothing());
   task_environment_.RunUntilIdle();
 
   ASSERT_THAT(*url_loader_factory_.pending_requests(), SizeIs(1));
@@ -358,6 +348,8 @@ TEST_F(EncryptedReportingClientTest, IdenticalUploadRetriesThrottled) {
 
   auto encrypted_reporting_client = EncryptedReportingClient::Create(
       std::make_unique<FakeDelegate>(device_management_service_.get()));
+  encrypted_reporting_client->PresetUploads(context_.Clone(), kDmToken,
+                                            kClientId);
 
   base::TimeDelta expected_delay_after = base::Seconds(10);
   for (size_t i = 0; i < kTotalRetries; ++i) {
@@ -388,11 +380,10 @@ TEST_F(EncryptedReportingClientTest, IdenticalUploadRetriesThrottled) {
         encrypted_reporting_client->WhenIsAllowedToProceed(payload_records_)
             .is_positive());
 
-    test::TestEvent<StatusOr<base::Value::Dict>> response_event;
+    test::TestEvent<StatusOr<UploadResponseParser>> response_event;
     encrypted_reporting_client->UploadReport(
         need_encryption_key_, config_file_version_, payload_records_,
-        std::move(scoped_reservation), context_.Clone(), &cloud_policy_client_,
-        response_event.cb());
+        std::move(scoped_reservation), response_event.cb());
     task_environment_.RunUntilIdle();
 
     ASSERT_THAT(*url_loader_factory_.pending_requests(), SizeIs(1));
@@ -403,14 +394,11 @@ TEST_F(EncryptedReportingClientTest, IdenticalUploadRetriesThrottled) {
 
     url_loader_factory_.SimulateResponseForPendingRequest(
         pending_request_url,
-        base::StringPrintf(R"({"%s" : "%s"})", kResponseKey, kResponseValue));
+        base::StringPrintf(R"({"%s" : true})", json_keys::kForceConfirm));
 
     const auto actual_response = response_event.result();
     ASSERT_TRUE(actual_response.has_value());
-    ASSERT_THAT(actual_response.value(), SizeIs(1));
-    ASSERT_TRUE(actual_response.value().FindString(kResponseKey));
-    EXPECT_THAT(*(actual_response.value().FindString(kResponseKey)),
-                StrEq(kResponseValue));
+    EXPECT_TRUE(actual_response.value().force_confirm_flag());
 
     encrypted_reporting_client->AccountForAllowedJob(payload_records_);
   }
@@ -421,6 +409,8 @@ TEST_F(EncryptedReportingClientTest, UploadsSequenceThrottled) {
 
   auto encrypted_reporting_client = EncryptedReportingClient::Create(
       std::make_unique<FakeDelegate>(device_management_service_.get()));
+  encrypted_reporting_client->PresetUploads(context_.Clone(), kDmToken,
+                                            kClientId);
 
   base::TimeDelta expected_delay_after = base::Seconds(10);
   for (size_t i = 0; i < kTotalRetries; ++i) {
@@ -451,11 +441,10 @@ TEST_F(EncryptedReportingClientTest, UploadsSequenceThrottled) {
         encrypted_reporting_client->WhenIsAllowedToProceed(payload_records_)
             .is_positive());
 
-    test::TestEvent<StatusOr<base::Value::Dict>> response_event;
+    test::TestEvent<StatusOr<UploadResponseParser>> response_event;
     encrypted_reporting_client->UploadReport(
         need_encryption_key_, config_file_version_, payload_records_,
-        std::move(scoped_reservation), context_.Clone(), &cloud_policy_client_,
-        response_event.cb());
+        std::move(scoped_reservation), response_event.cb());
     task_environment_.RunUntilIdle();
 
     ASSERT_THAT(*url_loader_factory_.pending_requests(), SizeIs(1));
@@ -466,14 +455,11 @@ TEST_F(EncryptedReportingClientTest, UploadsSequenceThrottled) {
 
     url_loader_factory_.SimulateResponseForPendingRequest(
         pending_request_url,
-        base::StringPrintf(R"({"%s" : "%s"})", kResponseKey, kResponseValue));
+        base::StringPrintf(R"({"%s" : true})", json_keys::kForceConfirm));
 
     const auto actual_response = response_event.result();
     ASSERT_TRUE(actual_response.has_value());
-    ASSERT_THAT(actual_response.value(), SizeIs(1));
-    ASSERT_TRUE(actual_response.value().FindString(kResponseKey));
-    EXPECT_THAT(*(actual_response.value().FindString(kResponseKey)),
-                StrEq(kResponseValue));
+    EXPECT_TRUE(actual_response.value().force_confirm_flag());
 
     encrypted_reporting_client->AccountForAllowedJob(payload_records_);
   }
@@ -484,6 +470,8 @@ TEST_F(EncryptedReportingClientTest, SecurityUploadsSequenceNotThrottled) {
 
   auto encrypted_reporting_client = EncryptedReportingClient::Create(
       std::make_unique<FakeDelegate>(device_management_service_.get()));
+  encrypted_reporting_client->PresetUploads(context_.Clone(), kDmToken,
+                                            kClientId);
 
   for (size_t i = 0; i < kTotalRetries; ++i) {
     AddRecordToPayload(Priority::SECURITY);
@@ -496,11 +484,10 @@ TEST_F(EncryptedReportingClientTest, SecurityUploadsSequenceNotThrottled) {
         encrypted_reporting_client->WhenIsAllowedToProceed(payload_records_)
             .is_positive());
 
-    test::TestEvent<StatusOr<base::Value::Dict>> response_event;
+    test::TestEvent<StatusOr<UploadResponseParser>> response_event;
     encrypted_reporting_client->UploadReport(
         need_encryption_key_, config_file_version_, payload_records_,
-        std::move(scoped_reservation), context_.Clone(), &cloud_policy_client_,
-        response_event.cb());
+        std::move(scoped_reservation), response_event.cb());
     task_environment_.RunUntilIdle();
 
     ASSERT_THAT(*url_loader_factory_.pending_requests(), SizeIs(1));
@@ -511,14 +498,11 @@ TEST_F(EncryptedReportingClientTest, SecurityUploadsSequenceNotThrottled) {
 
     url_loader_factory_.SimulateResponseForPendingRequest(
         pending_request_url,
-        base::StringPrintf(R"({"%s" : "%s"})", kResponseKey, kResponseValue));
+        base::StringPrintf(R"({"%s" : true})", json_keys::kForceConfirm));
 
     const auto actual_response = response_event.result();
     ASSERT_TRUE(actual_response.has_value());
-    ASSERT_THAT(actual_response.value(), SizeIs(1));
-    ASSERT_TRUE(actual_response.value().FindString(kResponseKey));
-    EXPECT_THAT(*(actual_response.value().FindString(kResponseKey)),
-                StrEq(kResponseValue));
+    EXPECT_TRUE(actual_response.value().force_confirm_flag());
 
     encrypted_reporting_client->AccountForAllowedJob(payload_records_);
   }
@@ -529,6 +513,8 @@ TEST_F(EncryptedReportingClientTest, FailedUploadsSequenceThrottled) {
 
   auto encrypted_reporting_client = EncryptedReportingClient::Create(
       std::make_unique<FakeDelegate>(device_management_service_.get()));
+  encrypted_reporting_client->PresetUploads(context_.Clone(), kDmToken,
+                                            kClientId);
 
   for (size_t i = 0; i < kTotalRetries; ++i) {
     AddRecordToPayload();
@@ -556,11 +542,10 @@ TEST_F(EncryptedReportingClientTest, FailedUploadsSequenceThrottled) {
         encrypted_reporting_client->WhenIsAllowedToProceed(payload_records_)
             .is_positive());
 
-    test::TestEvent<StatusOr<base::Value::Dict>> response_event;
+    test::TestEvent<StatusOr<UploadResponseParser>> response_event;
     encrypted_reporting_client->UploadReport(
         need_encryption_key_, config_file_version_, payload_records_,
-        std::move(scoped_reservation), context_.Clone(), &cloud_policy_client_,
-        response_event.cb());
+        std::move(scoped_reservation), response_event.cb());
     task_environment_.RunUntilIdle();
 
     ASSERT_THAT(*url_loader_factory_.pending_requests(), SizeIs(1));

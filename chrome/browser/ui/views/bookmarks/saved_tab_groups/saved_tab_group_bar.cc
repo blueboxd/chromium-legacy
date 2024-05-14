@@ -10,6 +10,7 @@
 #include <unordered_map>
 
 #include "base/functional/bind.h"
+#include "base/types/to_address.h"
 #include "base/uuid.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
@@ -48,7 +49,9 @@
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
 
+namespace tab_groups {
 namespace {
+
 // The maximum number of buttons (excluding the overflow menu button) that can
 // appear in the SavedTabGroupBar.
 constexpr int kMaxVisibleButtons = 4;
@@ -105,7 +108,7 @@ class SavedTabGroupBar::OverflowMenu : public views::View {
     // Convert the event location into `parent_bar_`'s coordinate space.
     const gfx::Point screen_loc = ConvertPointToScreen(this, event.location());
     const gfx::Point bar_loc =
-        ConvertPointFromScreen(std::to_address(parent_bar_), screen_loc);
+        ConvertPointFromScreen(base::to_address(parent_bar_), screen_loc);
     ui::DropTargetEvent event_copy(event);
     event_copy.set_location(bar_loc);
 
@@ -182,7 +185,7 @@ class SavedTabGroupBar::OverflowMenu : public views::View {
   raw_ref<SavedTabGroupBar> parent_bar_;
 };
 
-BEGIN_METADATA(SavedTabGroupBar, OverflowMenu, views::View)
+BEGIN_METADATA(SavedTabGroupBar, OverflowMenu)
 END_METADATA
 
 SavedTabGroupBar::SavedTabGroupBar(Browser* browser,
@@ -471,14 +474,58 @@ void SavedTabGroupBar::OnWidgetDestroying(views::Widget* widget) {
 
 void SavedTabGroupBar::Layout(PassKey) {
   LayoutSuperclass<views::View>(this);
-  const bool should_show_overflow = ShouldShowOverflowButtonForWidth(width());
-  const int last_visible_button_index =
-      CalculateLastVisibleButtonIndexForWidth(width());
+  const int stg_bar_width = width();
+  bool should_show_overflow = ShouldShowOverflowButtonForWidth(stg_bar_width);
+  const int overflow_button_width =
+      overflow_button_->GetPreferredSize().width() + kBetweenElementSpacing;
+
+  if (base::FeatureList::IsEnabled(features::kTabGroupsSaveV2)) {
+    if (stg_bar_width == 0) {
+      return;
+    } else {
+      CHECK(stg_bar_width >= overflow_button_width);
+      should_show_overflow = true;
+    }
+  }
+
+  const int last_visible_button_index = CalculateLastVisibleButtonIndexForWidth(
+      stg_bar_width - (should_show_overflow ? overflow_button_width : 0));
   UpdateButtonVisibilities(should_show_overflow, last_visible_button_index);
   UpdateOverflowMenu();
 }
 
+int SavedTabGroupBar::V2CalculatePreferredWidthRestrictedBy(
+    int max_width) const {
+  DCHECK(base::FeatureList::IsEnabled(features::kTabGroupsSaveV2));
+
+  // For V2, the preferred width of Saved tab groups bar depends on the number
+  // of pinned tab groups (pinned state is WIP) in bookmark bar (plus Everything
+  // button);
+  // TODO(crbug.com/329659664): Refactor this method once pinned state is done
+  // and add tests.
+
+  // Everything button always shows for V2.
+  int width =
+      overflow_button_->GetPreferredSize().width() + kBetweenElementSpacing;
+  max_width -= width;
+  if (max_width < 0) {
+    return 0;
+  }
+
+  // Add all the visible buttons width to result.
+  const int last_visible_button_index =
+      CalculateLastVisibleButtonIndexForWidth(max_width);
+  for (int i = 0; i <= last_visible_button_index; ++i) {
+    width += children()[i]->GetPreferredSize().width() + kBetweenElementSpacing;
+  }
+  return width;
+}
+
 int SavedTabGroupBar::CalculatePreferredWidthRestrictedBy(int max_width) const {
+  if (base::FeatureList::IsEnabled(features::kTabGroupsSaveV2)) {
+    return V2CalculatePreferredWidthRestrictedBy(max_width);
+  }
+
   // Early return if the only button is the overflow button. It should be
   // invisible in this case. Happens when saved tab groups is enabled and no
   // groups are saved yet.
@@ -765,7 +812,9 @@ int SavedTabGroupBar::CalculateLastVisibleButtonIndexForWidth(
   const int buttons_to_consider =
       std::min(children().size() - 1, size_t(kMaxVisibleButtons));
   int current_width = 0;
-  int last_visible_button_index = 0;
+
+  // Returns an invalid index when no button is visible.
+  int last_visible_button_index = -1;
 
   // Only consider buttons from index 0 to kMaxVisibleButtons-1 in the worst
   // case. For each button to consider, check if we have enough room to
@@ -859,3 +908,5 @@ SavedTabGroupBar::CalculateDropIndicatorIndexInCombinedSpace() const {
 
 BEGIN_METADATA(SavedTabGroupBar)
 END_METADATA
+
+}  // namespace tab_groups

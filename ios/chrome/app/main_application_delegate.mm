@@ -37,6 +37,7 @@
 #import "ios/chrome/browser/shared/model/browser/browser_provider.h"
 #import "ios/chrome/browser/shared/model/browser/browser_provider_interface.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/keyboard/menu_builder.h"
 #import "ios/web/common/uikit_ui_util.h"
 #import "ios/web/public/thread/web_task_traits.h"
@@ -240,8 +241,13 @@ const int kMainIntentCheckDelay = 1;
                             true);
   web::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(^{
+        // TODO(b/325287919): Add separate call to register with Chime for
+        // Content notifications.
         [self.pushNotificationDelegate
             applicationDidRegisterWithAPNS:deviceToken];
+        if (IsContentPushNotificationsEnabled()) {
+          [self.pushNotificationDelegate registerNotificationCategories];
+        }
       }));
 }
 
@@ -262,7 +268,7 @@ const int kMainIntentCheckDelay = 1;
     completionHandler();
     return;
   }
-  // TODO(crbug.com/1442203) Remove this Browser dependency, ideally by
+  // TODO(crbug.com/325613461) Remove this Browser dependency, ideally by
   // refactoring into a dedicated agent.
   Browser* browser =
       _mainController.browserProviderInterface.mainBrowserProvider.browser;
@@ -272,6 +278,8 @@ const int kMainIntentCheckDelay = 1;
     completionHandler();
     return;
   }
+  // TODO(crbug.com/325613461): Associate downloads with a specific file path to
+  // determine which browser state / download service to use here.
   download::BackgroundDownloadService* download_service =
       BackgroundDownloadServiceFactory::GetForBrowserState(
           browser->GetBrowserState());
@@ -368,6 +376,9 @@ const int kMainIntentCheckDelay = 1;
 
   if (_startupInformation.isColdStart) {
     [PushNotificationUtil registerDeviceWithAPNS];
+  } else if (IsContentPushNotificationsEnabled()) {
+    // Register on every foreground for Content Push Notifications.
+    [PushNotificationUtil registerDeviceWithAPNS];
   }
 
   [_appState applicationWillEnterForeground:UIApplication.sharedApplication
@@ -422,8 +433,8 @@ const int kMainIntentCheckDelay = 1;
 // Notifies the Feature Engagement Tracker (FET) that the app has launched from
 // an external intent (i.e. through the share sheet), which is an eligibility
 // criterion for the default browser blue dot promo.
-// TODO(crbug.com/1442203) Remove this Browser dependency, ideally by
-// refactoring into a dedicated agent.
+// TODO(crbug.com/325614090): Change this to iterate and inform the feature
+// trackers for all of the browser states.
 - (void)notifyFETAppStartupFromExternalIntent {
   Browser* browser =
       _mainController.browserProviderInterface.mainBrowserProvider.browser;

@@ -62,7 +62,8 @@ class QueryBuilderUnittest(unittest.TestCase):
     for suite, module in suites_to_modules.items():
       querier = gpu_uu.CreateGenericGpuQuerier(suite=suite)
       with mock.patch.object(querier,
-                             '_RunBigQueryCommandsForJsonOutput') as query_mock:
+                             '_RunBigQueryCommandsForJsonOutput',
+                             return_value=[]) as query_mock:
         _ = querier.QueryBuilder(
             data_types.BuilderEntry('builder', constants.BuilderTypes.CI,
                                     False))
@@ -292,7 +293,7 @@ WITH
       AND status != "SKIP"
       tfc
   )
-SELECT *
+SELECT id, test_id, status, step_name, typ_tags
 FROM results
 WHERE
   "Failure" IN UNNEST(typ_expectations)
@@ -351,7 +352,7 @@ WITH
       AND status != "SKIP"
       tfc
   )
-SELECT *
+SELECT id, test_id, status, step_name, typ_tags
 FROM results
 WHERE
   "Failure" IN UNNEST(typ_expectations)
@@ -437,7 +438,7 @@ WITH
       AND status != "SKIP"
       tfc
   )
-SELECT *
+SELECT id, test_id, status, step_name, typ_tags
 FROM results
 WHERE
   "Failure" IN UNNEST(typ_expectations)
@@ -523,7 +524,7 @@ WITH
       AND status != "SKIP"
       tfc
   )
-SELECT *
+SELECT id, test_id, status, step_name, typ_tags
 FROM results
 WHERE
   "Failure" IN UNNEST(typ_expectations)

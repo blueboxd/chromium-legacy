@@ -88,6 +88,7 @@ const CGFloat kIPHVerticalOffset = -5;
     FormInputAccessoryViewControllerDelegate,
     ManualFillAllPasswordCoordinatorDelegate,
     PasswordCoordinatorDelegate,
+    ExpandedManualFillCoordinatorDelegate,
     SecurityAlertCommands>
 
 // Coordinator in charge of the presenting password autofill options as a modal.
@@ -322,11 +323,23 @@ const CGFloat kIPHVerticalOffset = -5;
 }
 
 // Starts the expanded manual fill coordinator and displays its view controller.
-- (void)startManualFill {
+- (void)startManualFillForDataType:(manual_fill::ManualFillDataType)dataType
+          invokedOnObfuscatedField:(BOOL)invokedOnObfuscatedField {
+  autofill::FormActivityParams lastSeenParams =
+      self.formInputAccessoryMediator.lastSeenParams;
+
   ExpandedManualFillCoordinator* expandedManualFillCoordinator =
       [[ExpandedManualFillCoordinator alloc]
           initWithBaseViewController:self.baseViewController
-                             browser:self.browser];
+                             browser:self.browser
+                         forDataType:dataType];
+
+  expandedManualFillCoordinator.injectionHandler = self.injectionHandler;
+  expandedManualFillCoordinator.invokedOnObfuscatedField =
+      invokedOnObfuscatedField;
+  expandedManualFillCoordinator.formID = lastSeenParams.unique_form_id;
+  expandedManualFillCoordinator.frameID = lastSeenParams.frame_id;
+  expandedManualFillCoordinator.delegate = self;
   [expandedManualFillCoordinator start];
 
   self.formInputViewController = expandedManualFillCoordinator.viewController;
@@ -403,11 +416,19 @@ const CGFloat kIPHVerticalOffset = -5;
 
 - (void)formInputAccessoryViewController:
             (FormInputAccessoryViewController*)formInputAccessoryViewController
-                didPressManualFillButton:(UIButton*)manualFillButton {
+                didPressManualFillButton:(UIButton*)manualFillButton
+                             forDataType:
+                                 (manual_fill::ManualFillDataType)dataType {
   CHECK(IsKeyboardAccessoryUpgradeEnabled());
 
   [self stopChildren];
-  [self startManualFill];
+  BOOL invokedOnObfuscatedField =
+      [self.formInputAccessoryMediator lastFocusedFieldWasObfuscated];
+  [self startManualFillForDataType:dataType
+          invokedOnObfuscatedField:invokedOnObfuscatedField];
+
+  // TODO(crbug.com/326265397): Hide the keyboard accessory and remove line
+  // below.
   [self updateKeyboardAccessoryForManualFilling];
 }
 
@@ -503,6 +524,13 @@ const CGFloat kIPHVerticalOffset = -5;
 - (void)openAddressSettings {
   [self reset];
   [self.navigator openAddressSettings];
+}
+
+#pragma mark - ExpandedManualFillCoordinatorDelegate
+
+- (void)stopExpandedManualFillCoordinator:
+    (ExpandedManualFillCoordinator*)coordinator {
+  [self reset];
 }
 
 #pragma mark - SecurityAlertCommands
@@ -626,8 +654,11 @@ const CGFloat kIPHVerticalOffset = -5;
 
 // Opens other passwords.
 - (void)showAllPasswords {
-  CHECK(!self.allPasswordCoordinator, base::NotFatalUntil::M124);
   [self reset];
+  // The old coordinator could still be alive at this point. Stop it and release
+  // it before starting a new one. See crbug.com/40063966.
+  [self stopManualFillAllPasswordCoordinator];
+
   self.allPasswordCoordinator = [[ManualFillAllPasswordCoordinator alloc]
       initWithBaseViewController:self.baseViewController
                          browser:self.browser

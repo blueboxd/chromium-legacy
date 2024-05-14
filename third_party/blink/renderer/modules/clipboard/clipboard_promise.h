@@ -51,13 +51,14 @@ class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
 
   // Creates a promise for reading plain text from the clipboard.
   // Spec: https://w3c.github.io/clipboard-apis/#dom-clipboard-readtext
-  static ScriptPromise CreateForReadText(ExecutionContext* execution_context,
-                                         ScriptState* script_state,
-                                         ExceptionState& exception_state);
+  static ScriptPromiseTyped<IDLString> CreateForReadText(
+      ExecutionContext* execution_context,
+      ScriptState* script_state,
+      ExceptionState& exception_state);
 
   // Creates a promise for writing supported MIME types to the clipboard.
   // Spec: https://w3c.github.io/clipboard-apis/#dom-clipboard-write
-  static ScriptPromise CreateForWrite(
+  static ScriptPromiseTyped<IDLUndefined> CreateForWrite(
       ExecutionContext* execution_context,
       ScriptState* script_state,
       const HeapVector<Member<ClipboardItem>>& items,
@@ -66,10 +67,11 @@ class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
   // Creates a promise for writing text to the clipboard.
   // `text`: The text to be written to the clipboard.
   // Spec: https://w3c.github.io/clipboard-apis/#dom-clipboard-writetext
-  static ScriptPromise CreateForWriteText(ExecutionContext* execution_context,
-                                          ScriptState* script_state,
-                                          const String& text,
-                                          ExceptionState& exception_state);
+  static ScriptPromiseTyped<IDLUndefined> CreateForWriteText(
+      ExecutionContext* execution_context,
+      ScriptState* script_state,
+      const String& text,
+      ExceptionState& exception_state);
 
   // Use one of the above factories to construct. This ctor is public for
   // `MakeGarbageCollected<>`.

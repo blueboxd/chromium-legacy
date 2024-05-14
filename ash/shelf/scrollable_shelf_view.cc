@@ -112,7 +112,7 @@ class ScrollableShelfView::ScrollableShelfArrowView
     // the hidden icon which receives the accessibility focus shows through
     // scroll animation. So the arrow button is not useful for the spoken
     // feedback users. The spoken feedback should ignore the arrow button.
-    GetViewAccessibility().OverrideIsIgnored(/*value=*/true);
+    GetViewAccessibility().SetIsIgnored(/*value=*/true);
   }
   ~ScrollableShelfArrowView() override = default;
 
@@ -149,7 +149,7 @@ class ScrollableShelfView::ScrollableShelfArrowView
   const raw_ptr<Shelf> shelf_;
 };
 
-BEGIN_METADATA(ScrollableShelfView, ScrollableShelfArrowView, ScrollArrowView)
+BEGIN_METADATA(ScrollableShelfView, ScrollableShelfArrowView)
 END_METADATA
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -851,8 +851,8 @@ void ScrollableShelfView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void ScrollableShelfView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  GetViewAccessibility().OverrideNextFocus(GetShelf()->GetStatusAreaWidget());
-  GetViewAccessibility().OverridePreviousFocus(
+  GetViewAccessibility().SetNextFocus(GetShelf()->GetStatusAreaWidget());
+  GetViewAccessibility().SetPreviousFocus(
       GetShelf()->shelf_widget()->navigation_widget());
 }
 

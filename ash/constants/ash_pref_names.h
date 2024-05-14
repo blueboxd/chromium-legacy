@@ -37,6 +37,11 @@ inline constexpr char kEmojiSuggestionEnterpriseAllowed[] =
 // A boolean pref of whether orca is enabled.
 inline constexpr char kOrcaEnabled[] = "assistive_input.orca_enabled";
 
+// A boolean pref used by an admin policy to enable/disable Orca. See the policy
+// at OrcaEnabled.yaml.
+inline constexpr char kManagedOrcaEnabled[] =
+    "assistive_input.managed.orca_enabled";
+
 // A boolean pref used by an admin policy to enable/disable particular
 // features on the physical keyboard. See the policy at
 // PhysicalKeyboardAutocorrect.yml.
@@ -192,6 +197,12 @@ inline constexpr char kMultitaskMenuNudgeClamshellLastShown[] =
     "ash.wm_nudge.multitask_menu_nudge_last_shown";
 inline constexpr char kMultitaskMenuNudgeTabletLastShown[] =
     "cros.wm_nudge.tablet_multitask_nudge_last_shown";
+
+// The number of times we have shown the pine education nudge.
+inline constexpr char kPineNudgeShownCount[] = "ash.wm.pine_nudge_shown_count";
+
+// The last time we showed the pine education nudge.
+inline constexpr char kPineNudgeLastShown[] = "ash.wm.pine_nudge_last_shown";
 
 // The following SAML-related prefs are not settings that the domain admin can
 // set, but information that the SAML Identity Provider can send us:
@@ -459,6 +470,28 @@ inline constexpr char kAccessibilityVirtualKeyboardFeatures[] =
 // accessibility.
 inline constexpr char kAccessibilityMonoAudioEnabled[] =
     "settings.a11y.mono_audio";
+// A boolean pref which determines if mouse keys are enabled.
+inline constexpr char kAccessibilityMouseKeysEnabled[] =
+    "settings.a11y.mouse_keys.enabled";
+// A boolean pref which determines if you can pause mouse keys with a
+// keyboard shortcut.
+inline constexpr char kAccessibilityMouseKeysShortcutToPauseEnabled[] =
+    "settings.a11y.mouse_keys.ctrl_to_pause_enabled";
+// A boolean pref which determines if mouse keys is automatically disabled in
+// text fields.
+inline constexpr char kAccessibilityMouseKeysDisableInTextFields[] =
+    "settings.a11y.mouse_keys.disable_in_text_fields";
+// A double pref which determines the acceleration of mouse keys as a scale
+// factor ranging from 0-1 (0%-100%) inclusive.
+inline constexpr char kAccessibilityMouseKeysAcceleration[] =
+    "settings.a11y.mouse_keys.acceleration";
+// A double pref which determines the max speed of mouse keys as a factor of the
+// minimum speed.
+inline constexpr char kAccessibilityMouseKeysMaxSpeed[] =
+    "settings.a11y.mouse_keys.max_speed";
+// A boolean pref which determines if mouse keys uses left or right hand keys.
+inline constexpr char kAccessibilityMouseKeysDominantHand[] =
+    "settings.a11y.mouse_keys.dominant_hand";
 // A boolean pref which determines whether autoclick is enabled.
 inline constexpr char kAccessibilityAutoclickEnabled[] =
     "settings.a11y.autoclick";
@@ -505,6 +538,10 @@ inline constexpr char kAccessibilityColorVisionCorrectionType[] =
 // A boolean pref which determines whether caret highlighting is enabled.
 inline constexpr char kAccessibilityCaretHighlightEnabled[] =
     "settings.a11y.caret_highlight";
+// A TimeDelta pref which stores the user's preferred caret blink interval. If
+// 0, the caret will not blink.
+inline constexpr char kAccessibilityCaretBlinkInterval[] =
+    "settings.a11y.caret.blink_interval";
 // A boolean pref which determines whether cursor highlighting is enabled.
 inline constexpr char kAccessibilityCursorHighlightEnabled[] =
     "settings.a11y.cursor_highlight";
@@ -633,6 +670,10 @@ inline constexpr char kAccessibilitySelectToSpeakVoiceSwitching[] =
 inline constexpr char kAccessibilitySelectToSpeakWordHighlight[] =
     "settings.a11y.select_to_speak_word_highlight";
 
+// A boolean pref which determines whether ReducedAnimations is enabled.
+inline constexpr char kAccessibilityReducedAnimationsEnabled[] =
+    "settings.a11y.reduced_animations.enabled";
+
 // A boolean pref which determines whether FaceGaze is enabled.
 inline constexpr char kAccessibilityFaceGazeEnabled[] =
     "settings.a11y.face_gaze.enabled";
@@ -657,6 +698,18 @@ inline constexpr char kAccessibilityFaceGazeCursorSmoothing[] =
 // quickly.
 inline constexpr char kAccessibilityFaceGazeCursorUseAcceleration[] =
     "settings.a11y.face_gaze.cursor_use_acceleration";
+
+// A dictionary pref which maps facial gestures to action macros. Facial
+// gestures are strings like 'browDownLeft', and actions are enums from
+// macro_names.
+inline constexpr char kAccessibilityFaceGazeGesturesToMacros[] =
+    "settings.a11y.face_gaze.gestures_to_macros";
+
+// A dictionary pref which maps facial gestures to confidence thresholds. Facial
+// gestures are strings like 'browDownLeft', and confidence thresholds are
+// integers between 0 and 100 representing percentages.
+inline constexpr char kAccessibilityFaceGazeGesturesToConfidence[] =
+    "settings.a11y.face_gaze.gestures_to_confidence";
 
 // A boolean pref which determines whether the accessibility menu shows
 // regardless of the state of a11y features.
@@ -836,6 +889,10 @@ inline constexpr char kPineScreenshotTakenDuration[] =
 // pine screenshot to the disk.
 inline constexpr char kPineScreenshotEncodeAndSaveDuration[] =
     "ash.pine.sreenshot_encode_and_save_duration";
+
+// A boolean pref indicating whether the Pine onboarding dialog should be shown.
+inline constexpr char kShouldShowPineOnboarding[] =
+    "ash.pine.should_show_pine_onboarding";
 
 // A boolean pref that specifies if the cellular setup notification can be
 // shown or not. This notification should be shown post-OOBE if the user has a
@@ -1222,6 +1279,16 @@ inline constexpr char kUserGeolocationAccessLevel[] =
 // session. Values are from `ash::GeolocationAccessLevel`.
 inline constexpr char kDeviceGeolocationAllowed[] =
     "ash.device.geolocation_allowed";
+// A pref that saves the previous geolocation access level.
+// It has to be different value than the current level saved in
+// `kUserGeolocationAccessLevel`.
+inline constexpr char kUserPreviousGeolocationAccessLevel[] =
+    "ash.user.previous_geolocation_access_level";
+
+// An boolean pref indicating whether a user has enabled the improve location
+// toggle.
+inline constexpr char kUserGeolocationAccuracyEnabled[] =
+    "ash.user.geolocation_accuracy_enabled";
 
 // Double prefs storing the most recent valid geoposition, which is only used
 // when the device lacks connectivity and we're unable to retrieve a valid
@@ -1562,10 +1629,6 @@ inline constexpr char kFilesAppTrashEnabled[] = "ash.filesapp.trash_enabled";
 // Boolean value for the DeviceLoginScreenWebUILazyLoading device policy.
 inline constexpr char kLoginScreenWebUILazyLoading[] =
     "ash.login.LoginScreenWebUILazyLoading";
-
-// Boolean value for the FloatingWorkspaceEnabled policy
-inline constexpr char kFloatingWorkspaceEnabled[] =
-    "ash.floating_workspace_enabled";
 
 // Boolean value for the FloatingWorkspaceV2Enabled policy
 inline constexpr char kFloatingWorkspaceV2Enabled[] =
@@ -1958,6 +2021,11 @@ inline constexpr char kCaptureModeEducationShownCount[] =
 inline constexpr char kCaptureModeEducationLastShown[] =
     "ash.capture_mode.capture_mode_education_last_shown";
 
+// A string pref that is set by enterprise policy when admin forces or
+// recommends a custom path to save screen captures.
+inline constexpr char kCaptureModePolicySavePath[] =
+    "ash.capture_mode.policy_save_path";
+
 // A dictionary that stores app icons' light vibrant colors.
 inline constexpr char kAshAppIconLightVibrantColorCache[] =
     "ash.app_icon_light_vibrant_color_cache";
@@ -2012,6 +2080,30 @@ inline constexpr char kRestoreAppsAndPagesPrefName[] =
 // on app startup.
 inline constexpr char kGameDashboardShowWelcomeDialog[] =
     "ash.game_dashboard.show_welcome_dialog";
+
+// A boolean pref of whether the Game Dashboard should show the toolbar.
+inline constexpr char kGameDashboardShowToolbar[] =
+    "ash.game_dashboard.show_toolbar";
+
+// An integer pref indicating the system's software scanning mode. Options:
+// (0) Never, (1) Always, (2) Only when charging.
+static constexpr char kSoftwareScanningEnabled[] =
+    "ash.nearby.software_scanning_enabled";
+
+// A boolean pref indicating whether Birch should use Google Calendar data.
+inline constexpr char kBirchUseCalendar[] = "ash.birch.use_calendar";
+
+// A boolean pref indicating whether Birch should use file suggestions.
+inline constexpr char kBirchUseFileSuggest[] = "ash.birch.use_file_suggest";
+
+// A boolean pref indicating whether Birch should use recent tab data.
+inline constexpr char kBirchUseRecentTabs[] = "ash.birch.use_recent_tabs";
+
+// A boolean pref indicating whether Birch should use weather data.
+inline constexpr char kBirchUseWeather[] = "ash.birch.use_weather";
+
+// A boolean pref indicating whether Birch should use release notes data.
+inline constexpr char kBirchUseReleaseNotes[] = "ash.birch.use_release_notes";
 
 //-----------------------------------------------------------------------------
 // Language related Prefs

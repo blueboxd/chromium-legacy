@@ -1,4 +1,4 @@
-# tags: [ Android Fuchsia Linux Mac Mac10.15 Mac11 Mac11-arm64 Mac12 Mac12-arm64 Mac13 Mac13-arm64 Win Win10.20h2 Win11 Win11-arm64 ]
+# tags: [ Android Fuchsia Linux Mac Mac10.15 Mac11 Mac11-arm64 Mac12 Mac12-arm64 Mac13 Mac13-arm64 Mac14 Mac14-arm64 Win Win10.20h2 Win11 Win11-arm64 ]
 # tags: [ Release Debug ]
 # results: [ Slow ]
 
@@ -334,6 +334,7 @@ crbug.com/1081534 [ Debug Mac13 ] virtual/oopr-canvas2d/fast/canvas/canvas-blend
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-pattern-over-pattern.html [ Slow ]
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blend-image.html [ Slow ]
 crbug.com/1081534 [ Linux ] virtual/oopr-canvas2d/fast/canvas/canvas-blend-image.html [ Slow ]
+crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-blend-image.html [ Slow ]
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-incremental-repaint.html [ Slow ]
 crbug.com/1081534 [ Mac11 Release ] virtual/oopr-canvas2d/fast/canvas/fillrect_gradient.html [ Slow ]
 crbug.com/1081534 [ Mac12 Release ] virtual/oopr-canvas2d/fast/canvas/fillrect_gradient.html [ Slow ]
@@ -1116,10 +1117,6 @@ crbug.com/1046784 [ Linux ] http/tests/devtools/elements/styles-1/edit-inspector
 crbug.com/1046784 [ Mac11 Release ] http/tests/devtools/elements/styles-1/edit-inspector-stylesheet.js [ Slow ]
 crbug.com/1046784 [ Mac12 ] http/tests/devtools/elements/styles-1/edit-inspector-stylesheet.js [ Slow ]
 crbug.com/1046784 [ Release Win ] http/tests/devtools/elements/styles-1/edit-inspector-stylesheet.js [ Slow ]
-crbug.com/1046784 [ Linux ] http/tests/devtools/animation/animation-after-navigation.js [ Slow ]
-crbug.com/1046784 [ Mac11 Release ] http/tests/devtools/animation/animation-after-navigation.js [ Slow ]
-crbug.com/1046784 [ Mac12 ] http/tests/devtools/animation/animation-after-navigation.js [ Slow ]
-crbug.com/1046784 [ Release Win ] http/tests/devtools/animation/animation-after-navigation.js [ Slow ]
 crbug.com/1046784 [ Linux ] http/tests/devtools/search/search-in-script.js [ Slow ]
 crbug.com/1046784 [ Mac11 Release ] http/tests/devtools/search/search-in-script.js [ Slow ]
 crbug.com/1046784 [ Mac12 ] http/tests/devtools/search/search-in-script.js [ Slow ]
@@ -1464,3 +1461,11 @@ crbug.com/1462683 virtual/threaded/external/wpt/long-animation-frame/tentative/l
 
 # Slow because of multiple rounds of polling using the RemoteContext/executor framework.
 crbug.com/1517319 virtual/speculation-rules-prerender-target-hint/external/wpt/speculation-rules/prerender/prerender-while-prerender.html [ Slow ]
+
+crbug.com/326619067 [ Mac ] external/wpt/css/css-scroll-snap-2/snapchanging/snapchanging-on-user-root-scroll.tentative.html [ Slow ]
+crbug.com/327390559 [ Win11-arm64 ] virtual/keepalive-in-browser-migration/external/wpt/* [ Slow ]
+
+crbug.com/328860404 virtual/disable-intersection-optimization/external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox-top-navigation-escalate-privileges.tentative.sub.window.html [ Slow ]
+crbug.com/328849073 virtual/no-auto-wpt-origin-isolation/external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox-top-navigation-escalate-privileges.tentative.sub.window.html [ Slow ]
+
+crbug.com/328501805 external/wpt/html/semantics/interactive-elements/the-summary-element/interactive-content.html [ Slow ]

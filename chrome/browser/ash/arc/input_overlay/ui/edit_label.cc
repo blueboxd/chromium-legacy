@@ -30,6 +30,7 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/view_utils.h"
 
 namespace arc::input_overlay {
 
@@ -175,7 +176,7 @@ void EditLabel::SetTextLabel(const std::u16string& text) {
 void EditLabel::SetNameTagState(bool is_error,
                                 const std::u16string& error_tooltip) {
   DCHECK(parent());
-  auto* parent_view = static_cast<EditLabels*>(parent());
+  auto* parent_view = views::AsViewClass<EditLabels>(parent());
   parent_view->SetNameTagState(is_error, error_tooltip);
 }
 
@@ -193,6 +194,13 @@ void EditLabel::UpdateAccessibleName() {
         IDS_INPUT_OVERLAY_EDIT_LABEL_A11Y_LABEL_TEMPLATE, a11y_name, reassign));
   } else {
     SetAccessibleName(reassign);
+  }
+}
+
+void EditLabel::ChangeFocusToNextLabel() {
+  DCHECK(parent());
+  if (auto* parent_view = views::AsViewClass<EditLabels>(parent())) {
+    parent_view->FocusLabel();
   }
 }
 
@@ -246,6 +254,7 @@ bool EditLabel::OnKeyPressed(const ui::KeyEvent& event) {
   // Don't show error when the same key is pressed.
   if (GetText() == new_bind) {
     SetNameTagState(/*is_error=*/false, u"");
+    ChangeFocusToNextLabel();
     return true;
   }
 
@@ -284,6 +293,7 @@ bool EditLabel::OnKeyPressed(const ui::KeyEvent& event) {
   }
   DCHECK(input);
   controller_->OnInputBindingChange(action_, std::move(input));
+  ChangeFocusToNextLabel();
   return true;
 }
 

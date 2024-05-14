@@ -4,6 +4,8 @@
 
 package org.chromium.components.webauthn;
 
+import static org.chromium.components.webauthn.WebauthnModeProvider.isChrome;
+
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -22,8 +24,8 @@ import org.chromium.blink.mojom.MakeCredentialAuthenticatorResponse;
 import org.chromium.blink.mojom.PaymentOptions;
 import org.chromium.blink.mojom.PublicKeyCredentialCreationOptions;
 import org.chromium.blink.mojom.PublicKeyCredentialRequestOptions;
-import org.chromium.components.webauthn.WebauthnModeProvider.WebauthnMode;
 import org.chromium.content_public.browser.RenderFrameHost;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.Origin;
@@ -35,8 +37,9 @@ import java.util.Queue;
 import java.util.Set;
 
 /** Android implementation of the authenticator.mojom interface. */
-public final class AuthenticatorImpl implements Authenticator {
+public final class AuthenticatorImpl implements Authenticator, AuthenticationContextProvider {
     private final Context mContext;
+    private final WebContents mWebContents;
     private final FidoIntentSender mIntentSender;
     private final RenderFrameHost mRenderFrameHost;
     private final CreateConfirmationUiDelegate mCreateConfirmationUiDelegate;
@@ -89,14 +92,16 @@ public final class AuthenticatorImpl implements Authenticator {
      */
     public AuthenticatorImpl(
             Context context,
+            WebContents webContents,
             FidoIntentSender intentSender,
             @Nullable CreateConfirmationUiDelegate createConfirmationUiDelegate,
             RenderFrameHost renderFrameHost,
             Origin topOrigin) {
         assert renderFrameHost != null;
-        assert WebauthnModeProvider.getInstance().getWebauthnMode() != WebauthnMode.NONE;
+        assert WebauthnModeProvider.getInstance().getWebauthnMode(webContents) != WebauthnMode.NONE;
 
         mContext = context;
+        mWebContents = webContents;
         mIntentSender = intentSender;
         mRenderFrameHost = renderFrameHost;
         mOrigin = mRenderFrameHost.getLastCommittedOrigin();
@@ -112,7 +117,7 @@ public final class AuthenticatorImpl implements Authenticator {
         if (sFido2CredentialRequestOverrideForTesting != null) {
             return sFido2CredentialRequestOverrideForTesting;
         }
-        Fido2CredentialRequest request = new Fido2CredentialRequest(mIntentSender);
+        Fido2CredentialRequest request = new Fido2CredentialRequest(this);
         mUnclosedFido2CredentialRequests.add(request);
         return request;
     }
@@ -145,7 +150,7 @@ public final class AuthenticatorImpl implements Authenticator {
         mMakeCredentialCallback = callback;
         mIsOperationPending = true;
         if (!GmsCoreUtils.isWebauthnSupported()
-                || (!isChrome() && !GmsCoreUtils.isResultReceiverSupported())) {
+                || (!isChrome(mWebContents) && !GmsCoreUtils.isResultReceiverSupported())) {
             onError(AuthenticatorStatus.NOT_IMPLEMENTED);
             return;
         }
@@ -165,13 +170,11 @@ public final class AuthenticatorImpl implements Authenticator {
             PublicKeyCredentialCreationOptions options, MakeCredential_Response callback) {
         mPendingFido2CredentialRequest = getFido2CredentialRequest();
         mPendingFido2CredentialRequest.handleMakeCredentialRequest(
-                mContext,
                 options,
-                mRenderFrameHost,
                 /* maybeClientDataHash= */ null,
                 mOrigin,
-                (status, response) -> onRegisterResponse(status, response),
-                status -> onError(status));
+                this::onRegisterResponse,
+                this::onError);
     }
 
     @Override
@@ -186,22 +189,20 @@ public final class AuthenticatorImpl implements Authenticator {
         mIsOperationPending = true;
 
         if (!GmsCoreUtils.isWebauthnSupported()
-                || (!isChrome() && !GmsCoreUtils.isResultReceiverSupported())) {
+                || (!isChrome(mWebContents) && !GmsCoreUtils.isResultReceiverSupported())) {
             onError(AuthenticatorStatus.NOT_IMPLEMENTED);
             return;
         }
 
         mPendingFido2CredentialRequest = getFido2CredentialRequest();
         mPendingFido2CredentialRequest.handleGetAssertionRequest(
-                mContext,
                 options,
-                mRenderFrameHost,
                 /* maybeClientDataHash= */ null,
                 mOrigin,
                 mTopOrigin,
                 mPayment,
-                (status, response) -> onSignResponse(status, response),
-                status -> onError(status));
+                this::onSignResponse,
+                this::onError);
     }
 
     @Override
@@ -214,7 +215,8 @@ public final class AuthenticatorImpl implements Authenticator {
                     callback.call(isUvpaa);
                 };
 
-        if (!GmsCoreUtils.isWebauthnSupported()) {
+        if (!GmsCoreUtils.isWebauthnSupported()
+                || (!isChrome(mWebContents) && !GmsCoreUtils.isResultReceiverSupported())) {
             decoratedCallback.call(false);
             return;
         }
@@ -222,9 +224,7 @@ public final class AuthenticatorImpl implements Authenticator {
         mIsUserVerifyingPlatformAuthenticatorAvailableCallbackQueue.add(decoratedCallback);
         getFido2CredentialRequest()
                 .handleIsUserVerifyingPlatformAuthenticatorAvailableRequest(
-                        mContext,
-                        isUvpaa ->
-                                onIsUserVerifyingPlatformAuthenticatorAvailableResponse(isUvpaa));
+                        this::onIsUserVerifyingPlatformAuthenticatorAvailableResponse);
     }
 
     /**
@@ -248,12 +248,11 @@ public final class AuthenticatorImpl implements Authenticator {
 
         getFido2CredentialRequest()
                 .handleGetMatchingCredentialIdsRequest(
-                        mRenderFrameHost,
                         relyingPartyId,
                         credentialIds,
                         requireThirdPartyPayment,
                         callback,
-                        status -> onError(status));
+                        this::onError);
     }
 
     @Override
@@ -261,7 +260,7 @@ public final class AuthenticatorImpl implements Authenticator {
             final IsConditionalMediationAvailable_Response callback) {
         if (!GmsCoreUtils.isWebauthnSupported()
                 || Build.VERSION.SDK_INT < Build.VERSION_CODES.P
-                || !isChrome()) {
+                || !isChrome(mWebContents)) {
             callback.call(false);
             return;
         }
@@ -272,7 +271,7 @@ public final class AuthenticatorImpl implements Authenticator {
         mIsConditionalMediationAvailableCallbackQueue.add(callback);
         getFido2CredentialRequest()
                 .handleIsUserVerifyingPlatformAuthenticatorAvailableRequest(
-                        mContext, isUvpaa -> onIsConditionalMediationAvailableResponse(isUvpaa));
+                        this::onIsConditionalMediationAvailableResponse);
     }
 
     @Override
@@ -285,7 +284,7 @@ public final class AuthenticatorImpl implements Authenticator {
             return;
         }
 
-        mPendingFido2CredentialRequest.cancelConditionalGetAssertion(mRenderFrameHost);
+        mPendingFido2CredentialRequest.cancelConditionalGetAssertion();
     }
 
     /** Callbacks for receiving responses from the internal handlers. */
@@ -353,9 +352,24 @@ public final class AuthenticatorImpl implements Authenticator {
         close();
     }
 
-    static boolean isChrome() {
-        return WebauthnModeProvider.getInstance().getWebauthnMode()
-                == WebauthnModeProvider.WebauthnMode.CHROME;
+    @Override
+    public Context getContext() {
+        return mContext;
+    }
+
+    @Override
+    public RenderFrameHost getRenderFrameHost() {
+        return mRenderFrameHost;
+    }
+
+    @Override
+    public FidoIntentSender getIntentSender() {
+        return mIntentSender;
+    }
+
+    @Override
+    public WebContents getWebContents() {
+        return mWebContents;
     }
 
     /** Implements {@link IntentSender} using a {@link WindowAndroid}. */

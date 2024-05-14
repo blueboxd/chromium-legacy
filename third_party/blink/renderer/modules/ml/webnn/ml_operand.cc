@@ -4,6 +4,10 @@
 
 #include "third_party/blink/renderer/modules/ml/webnn/ml_operand.h"
 
+#include <functional>
+#include <numeric>
+
+#include "base/types/expected_macros.h"
 #include "components/ml/webnn/graph_validation_utils.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph_builder.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_operator.h"
@@ -35,27 +39,6 @@ size_t GetBytesPerElement(V8MLOperandDataType::Enum operand_type) {
   }
 }
 
-base::expected<size_t, String> ValidateAndCalculateElementsNumber(
-    const Vector<uint32_t>& dimensions) {
-  auto number_of_elements =
-      webnn::ValidateAndCalculateElementsNumber(base::make_span(dimensions));
-  if (!number_of_elements.has_value()) {
-    return base::unexpected(WTF::String::FromUTF8(number_of_elements.error()));
-  }
-  return number_of_elements.value();
-}
-
-base::expected<size_t, String> ValidateAndCalculateByteLength(
-    V8MLOperandDataType::Enum data_type,
-    const Vector<uint32_t>& dimensions) {
-  auto byte_length = webnn::ValidateAndCalculateByteLength(
-      GetBytesPerElement(data_type), base::make_span(dimensions));
-  if (!byte_length.has_value()) {
-    return base::unexpected(WTF::String::FromUTF8(byte_length.error()));
-  }
-  return byte_length.value();
-}
-
 }  // namespace
 
 DOMArrayBufferView::ViewType GetArrayBufferViewType(
@@ -83,20 +66,67 @@ DOMArrayBufferView::ViewType GetArrayBufferViewType(
 }
 
 // static
+base::expected<MLOperand::ValidatedDescriptor, String>
+MLOperand::ValidatedDescriptor::Create(V8MLOperandDataType::Enum data_type,
+                                       Vector<uint32_t> dimensions) {
+  base::CheckedNumeric<size_t> checked_number_of_elements = 1;
+  for (const uint32_t& dimension : dimensions) {
+    if (dimension == 0) {
+      // TODO: crbug.com/329471677 - Consider supporting size 0 dimensions.
+      // See spec issue: https://github.com/webmachinelearning/webnn/issues/391.
+      return base::unexpected(
+          "Invalid operand descriptor: All dimensions should be positive.");
+    }
+    checked_number_of_elements *= dimension;
+  }
+  if (!checked_number_of_elements.IsValid()) {
+    return base::unexpected(
+        "Invalid operand descriptor: The number of elements is too large.");
+  }
+
+  // TODO: crbug.com/329482489 - Check the max rank of `dimensions`.
+  // See spec issue: https://github.com/webmachinelearning/webnn/issues/456.
+
+  base::CheckedNumeric<size_t> checked_byte_length =
+      checked_number_of_elements * GetBytesPerElement(data_type);
+  if (!checked_byte_length.IsValid()) {
+    return base::unexpected(
+        "Invalid operand descriptor: The byte length is too large.");
+  }
+
+  return ValidatedDescriptor(data_type, std::move(dimensions));
+}
+
+MLOperand::ValidatedDescriptor::ValidatedDescriptor(
+    V8MLOperandDataType::Enum data_type,
+    Vector<uint32_t> dimensions)
+    : data_type_(data_type), dimensions_(std::move(dimensions)) {}
+
+size_t MLOperand::ValidatedDescriptor::ByteLength() const {
+  return NumberOfElements() * GetBytesPerElement(data_type_);
+}
+
+size_t MLOperand::ValidatedDescriptor::NumberOfElements() const {
+  return std::accumulate(dimensions_.begin(), dimensions_.end(), 1u,
+                         std::multiplies<size_t>());
+}
+
+// static
 base::expected<MLOperand*, String> MLOperand::ValidateAndCreateInput(
     MLGraphBuilder* builder,
-    const V8MLOperandDataType::Enum data_type,
+    V8MLOperandDataType::Enum data_type,
     Vector<uint32_t> dimensions,
     String name) {
+  ASSIGN_OR_RETURN(MLOperand::ValidatedDescriptor validated_descriptor,
+                   ValidatedDescriptor::Create(data_type, dimensions));
+
   if (name.empty()) {
     return base::unexpected("The name is empty.");
   }
-  auto result = ValidateAndCalculateByteLength(data_type, dimensions);
-  if (!result.has_value()) {
-    return base::unexpected("Invalid operand descriptor: " + result.error());
-  }
+
   auto* input = MakeGarbageCollected<MLOperand>(
-      builder, OperandKind::kInput, data_type, std::move(dimensions));
+      builder, webnn::mojom::blink::Operand::Kind::kInput,
+      std::move(validated_descriptor));
   input->name_ = std::move(name);
   return input;
 }
@@ -104,28 +134,28 @@ base::expected<MLOperand*, String> MLOperand::ValidateAndCreateInput(
 // static
 base::expected<MLOperand*, String> MLOperand::ValidateAndCreateConstant(
     MLGraphBuilder* builder,
-    const V8MLOperandDataType::Enum data_type,
+    V8MLOperandDataType::Enum data_type,
     Vector<uint32_t> dimensions,
     const DOMArrayBufferView* array_buffer_view) {
-  DCHECK(array_buffer_view);
-  if (GetArrayBufferViewType(data_type) != array_buffer_view->GetType()) {
+  CHECK(array_buffer_view);
+
+  ASSIGN_OR_RETURN(MLOperand::ValidatedDescriptor validated_descriptor,
+                   ValidatedDescriptor::Create(data_type, dimensions));
+
+  if (GetArrayBufferViewType(validated_descriptor.DataType()) !=
+      array_buffer_view->GetType()) {
     return base::unexpected(
         "The buffer view type doesn't match the operand data type.");
   }
-  auto expected_byte_length =
-      ValidateAndCalculateByteLength(data_type, dimensions);
-  if (!expected_byte_length.has_value()) {
-    return base::unexpected("Invalid operand descriptor: " +
-                            expected_byte_length.error());
-  }
-  if (expected_byte_length.value() != array_buffer_view->byteLength()) {
+  if (validated_descriptor.ByteLength() != array_buffer_view->byteLength()) {
     return base::unexpected(String::Format(
         "The buffer view byte length (%zu) doesn't match the "
         "expected byte length (%zu).",
-        array_buffer_view->byteLength(), expected_byte_length.value()));
+        array_buffer_view->byteLength(), validated_descriptor.ByteLength()));
   }
   auto* constant = MakeGarbageCollected<MLOperand>(
-      builder, OperandKind::kConstant, data_type, std::move(dimensions));
+      builder, webnn::mojom::blink::Operand::Kind::kConstant,
+      std::move(validated_descriptor));
   constant->array_buffer_view_ = array_buffer_view;
   return constant;
 }
@@ -133,28 +163,25 @@ base::expected<MLOperand*, String> MLOperand::ValidateAndCreateConstant(
 // static
 base::expected<MLOperand*, String> MLOperand::ValidateAndCreateOutput(
     MLGraphBuilder* builder,
-    const V8MLOperandDataType::Enum data_type,
+    V8MLOperandDataType::Enum data_type,
     Vector<uint32_t> dimensions,
     const MLOperator* ml_operator) {
-  DCHECK(ml_operator);
-  auto result = ValidateAndCalculateByteLength(data_type, dimensions);
-  if (!result.has_value()) {
-    return base::unexpected("Invalid output operand: " + result.error());
-  }
+  CHECK(ml_operator);
+
+  ASSIGN_OR_RETURN(MLOperand::ValidatedDescriptor validated_descriptor,
+                   ValidatedDescriptor::Create(data_type, dimensions));
+
   auto* output = MakeGarbageCollected<MLOperand>(
-      builder, OperandKind::kOutput, data_type, std::move(dimensions));
+      builder, webnn::mojom::blink::Operand::Kind::kOutput,
+      std::move(validated_descriptor));
   output->operator_ = ml_operator;
   return output;
 }
 
 MLOperand::MLOperand(MLGraphBuilder* builder,
-                     OperandKind kind,
-                     const V8MLOperandDataType::Enum data_type,
-                     Vector<uint32_t> dimensions)
-    : builder_(builder),
-      kind_(kind),
-      data_type_(data_type),
-      dimensions_(std::move(dimensions)) {}
+                     webnn::mojom::blink::Operand::Kind kind,
+                     ValidatedDescriptor descriptor)
+    : builder_(builder), kind_(kind), descriptor_(std::move(descriptor)) {}
 
 MLOperand::~MLOperand() = default;
 
@@ -162,51 +189,47 @@ MLGraphBuilder* MLOperand::Builder() const {
   return builder_.Get();
 }
 
-MLOperand::OperandKind MLOperand::Kind() const {
+webnn::mojom::blink::Operand::Kind MLOperand::Kind() const {
   return kind_;
 }
 
 V8MLOperandDataType::Enum MLOperand::DataType() const {
-  return data_type_;
+  return descriptor_.DataType();
 }
 
 const Vector<uint32_t>& MLOperand::Dimensions() const {
-  return dimensions_;
+  return descriptor_.Dimensions();
 }
 
 const String& MLOperand::Name() const {
-  DCHECK_EQ(kind_, OperandKind::kInput);
+  DCHECK_EQ(kind_, webnn::mojom::blink::Operand::Kind::kInput);
   return name_;
 }
 
 const DOMArrayBufferView* MLOperand::ArrayBufferView() const {
-  DCHECK_EQ(kind_, OperandKind::kConstant);
+  DCHECK_EQ(kind_, webnn::mojom::blink::Operand::Kind::kConstant);
   return array_buffer_view_.Get();
 }
 
 const MLOperator* MLOperand::Operator() const {
-  DCHECK_EQ(kind_, OperandKind::kOutput);
+  DCHECK_EQ(kind_, webnn::mojom::blink::Operand::Kind::kOutput);
   return operator_.Get();
 }
 
 size_t MLOperand::NumberOfElements() const {
-  auto elements_number = ValidateAndCalculateElementsNumber(dimensions_);
-  DCHECK(elements_number.has_value());
-  return elements_number.value();
+  return descriptor_.NumberOfElements();
 }
 
 size_t MLOperand::ByteLength() const {
-  auto byte_length = ValidateAndCalculateByteLength(data_type_, dimensions_);
-  DCHECK(byte_length.has_value());
-  return byte_length.value();
+  return descriptor_.ByteLength();
 }
 
 Vector<uint32_t> MLOperand::shape() const {
-  return dimensions_;
+  return descriptor_.Dimensions();
 }
 
 V8MLOperandDataType MLOperand::dataType() const {
-  return V8MLOperandDataType(data_type_);
+  return V8MLOperandDataType(descriptor_.DataType());
 }
 
 void MLOperand::Trace(Visitor* visitor) const {

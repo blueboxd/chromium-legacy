@@ -606,7 +606,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       gesture_provider_(
           ui::GetGestureProviderConfig(
               ui::GestureProviderConfigType::CURRENT_PLATFORM,
-              content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput})),
+              GetUIThreadTaskRunner({BrowserTaskType::kUserInput})),
           this),
       stylus_text_selector_(this),
       using_browser_compositor_(CompositorImpl::IsInitialized()),
@@ -751,6 +751,11 @@ RenderWidgetHostViewAndroid::GetVirtualKeyboardMode() {
     return ui::mojom::VirtualKeyboardMode::kUnset;
 
   return frame_host->GetPage().virtual_keyboard_mode();
+}
+
+viz::SurfaceId RenderWidgetHostViewAndroid::GetFallbackSurfaceIdForTesting()
+    const {
+  return delegated_frame_host_->GetFallbackSurfaceIdForTesting();  // IN-TEST
 }
 
 bool RenderWidgetHostViewAndroid::SynchronizeVisualProperties(
@@ -1947,9 +1952,6 @@ bool RenderWidgetHostViewAndroid::UpdateControls(
   top_changed |= !cc::MathUtil::IsFloatNearlyTheSame(top_controls_pix,
                                                      prev_top_controls_pix_);
 
-  if (top_changed || !controls_initialized_)
-    view_.OnTopControlsChanged(top_translate, top_shown_pix,
-                               top_min_height_offset_pix);
   prev_top_shown_pix_ = top_shown_pix;
   prev_top_controls_pix_ = top_controls_pix;
   prev_top_controls_translate_ = top_translate;
@@ -1966,9 +1968,11 @@ bool RenderWidgetHostViewAndroid::UpdateControls(
       bottom_min_height_offset_pix,
       prev_bottom_controls_min_height_offset_pix_);
 
-  if (bottom_changed || !controls_initialized_)
-    view_.OnBottomControlsChanged(bottom_translate,
-                                  bottom_min_height_offset_pix);
+  if (top_changed || bottom_changed || !controls_initialized_) {
+    view_.OnControlsChanged(top_translate, top_shown_pix,
+                            top_min_height_offset_pix, bottom_translate,
+                            bottom_min_height_offset_pix);
+  }
   prev_bottom_shown_pix_ = bottom_shown_pix;
   prev_bottom_controls_translate_ = bottom_translate;
   prev_bottom_controls_min_height_offset_pix_ = bottom_min_height_offset_pix;

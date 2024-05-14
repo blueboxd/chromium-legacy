@@ -13,9 +13,11 @@ import org.jni_zero.NativeMethods;
 
 import org.chromium.base.ResettersForTesting;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.lifetime.Destroyable;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.autofill.AutofillProfile;
+import org.chromium.components.autofill.IbanRecordType;
 import org.chromium.components.autofill.VirtualCardEnrollmentState;
 import org.chromium.components.image_fetcher.ImageFetcher;
 import org.chromium.components.prefs.PrefService;
@@ -28,16 +30,15 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Android wrapper of the PersonalDataManager which provides access from the Java
- * layer.
+ * Android wrapper of the PersonalDataManager which provides access from the Java layer.
  *
- * Only usable from the UI thread as it's primary purpose is for supporting the Android
+ * <p>Only usable from the UI thread as it's primary purpose is for supporting the Android
  * preferences UI.
  *
- * See chrome/browser/autofill/personal_data_manager.h for more details.
+ * <p>See chrome/browser/autofill/personal_data_manager.h for more details.
  */
 @JNINamespace("autofill")
-public class PersonalDataManager {
+public class PersonalDataManager implements Destroyable {
     private static final String TAG = "PersonalDataManager";
 
     /** Observer of PersonalDataManager events. */
@@ -430,30 +431,156 @@ public class PersonalDataManager {
         }
     }
 
-    private static PersonalDataManager sManager;
+    /** Autofill IBAN information. */
+    public static class Iban {
+        private String mGuid;
+        // Obfuscated IBAN value. This is used for displaying the IBAN in the Payment methods page.
+        private String mLabel;
+        private String mNickname;
+        private @IbanRecordType int mRecordType;
+        private String mValue;
 
-    // Suppress FindBugs warning, since |sManager| is only used on the UI thread.
-    public static PersonalDataManager getInstance() {
-        ThreadUtils.assertOnUiThread();
-        if (sManager == null) {
-            sManager = new PersonalDataManager();
+        private Iban(
+                String guid,
+                String label,
+                String nickname,
+                @IbanRecordType int recordType,
+                String value) {
+            mGuid = guid;
+            mLabel = label;
+            mNickname = nickname;
+            mRecordType = recordType;
+            mValue = value;
         }
-        return sManager;
+
+        @CalledByNative("Iban")
+        private static Iban create(
+                String guid,
+                String label,
+                String nickname,
+                @IbanRecordType int recordType,
+                String value) {
+            return new Iban.Builder()
+                    .setGuid(guid)
+                    .setLabel(label)
+                    .setNickname(nickname)
+                    .setRecordType(recordType)
+                    .setValue(value)
+                    .build();
+        }
+
+        @CalledByNative("Iban")
+        public String getGuid() {
+            return mGuid;
+        }
+
+        public String getLabel() {
+            return mLabel;
+        }
+
+        @CalledByNative("Iban")
+        public String getNickname() {
+            return mNickname;
+        }
+
+        @CalledByNative("Iban")
+        public @IbanRecordType int getRecordType() {
+            return mRecordType;
+        }
+
+        @CalledByNative("Iban")
+        public String getValue() {
+            return mValue;
+        }
+
+        public void updateNickname(String nickname) {
+            mNickname = nickname;
+        }
+
+        public void updateValue(String value) {
+            mValue = value;
+        }
+
+        /** Builder for {@link Iban}. */
+        public static final class Builder {
+            private String mGuid;
+            private String mLabel;
+            private String mNickname;
+            private @IbanRecordType int mRecordType;
+            private String mValue;
+
+            public Builder setGuid(String guid) {
+                mGuid = guid;
+                return this;
+            }
+
+            public Builder setLabel(String label) {
+                mLabel = label;
+                return this;
+            }
+
+            public Builder setNickname(String nickname) {
+                mNickname = nickname;
+                return this;
+            }
+
+            public Builder setRecordType(@IbanRecordType int recordType) {
+                mRecordType = recordType;
+                return this;
+            }
+
+            public Builder setValue(String value) {
+                mValue = value;
+                return this;
+            }
+
+            public Iban build() {
+                assert mValue != null && !mValue.isEmpty() : "IBAN value can't be null or empty.";
+                switch (mRecordType) {
+                    case IbanRecordType.UNKNOWN:
+                        assert mGuid.isEmpty()
+                                : "IBANs with 'UNKNOWN' record type must have an empty GUID.";
+                        break;
+                    case IbanRecordType.LOCAL_IBAN:
+                        assert !mGuid.isEmpty() : "Local IBANs must have a non-empty GUID.";
+                        break;
+                    case IbanRecordType.SERVER_IBAN:
+                        throw new UnsupportedOperationException(
+                                "Server IBANs are not supported yet.");
+                }
+                return new Iban(mGuid, mLabel, mNickname, mRecordType, mValue);
+            }
+        }
     }
 
-    private final long mPersonalDataManagerAndroid;
+    /**
+     * @deprecated Use {@link PersonalDataManagerFactory#getForProfile(Profile)}.
+     */
+    @Deprecated
+    public static PersonalDataManager getInstance() {
+        return PersonalDataManagerFactory.getInstance();
+    }
+
+    private final PrefService mPrefService;
     private final List<PersonalDataManagerObserver> mDataObservers =
             new ArrayList<PersonalDataManagerObserver>();
+
+    private long mPersonalDataManagerAndroid;
     private AutofillImageFetcher mImageFetcher;
 
-    private PersonalDataManager() {
-        // Note that this technically leaks the native object, however, PersonalDataManager
-        // is a singleton that lives forever and there's no clean shutdown of Chrome on Android
-        mPersonalDataManagerAndroid = PersonalDataManagerJni.get().init(PersonalDataManager.this);
+    PersonalDataManager(Profile profile) {
+        mPersonalDataManagerAndroid = PersonalDataManagerJni.get().init(this, profile);
+        mPrefService = UserPrefs.get(profile);
         // Get the AutofillImageFetcher instance that was created during browser startup.
         mImageFetcher =
                 PersonalDataManagerJni.get()
                         .getOrCreateJavaImageFetcher(mPersonalDataManagerAndroid);
+    }
+
+    @Override
+    public void destroy() {
+        PersonalDataManagerJni.get().destroy(mPersonalDataManagerAndroid);
+        mPersonalDataManagerAndroid = 0;
     }
 
     /** Called from native when template URL service is done loading. */
@@ -605,6 +732,15 @@ public class PersonalDataManager {
                         profile.getGUID());
     }
 
+    /** Gets the number of credit cards for the settings page. */
+    public int getCreditCardCountForSettings() {
+        ThreadUtils.assertOnUiThread();
+        return PersonalDataManagerJni.get()
+                .getCreditCardGUIDsForSettings(
+                        mPersonalDataManagerAndroid, PersonalDataManager.this)
+                .length;
+    }
+
     /**
      * Gets the credit cards to show in the settings page. Returns all the cards without any
      * processing.
@@ -669,12 +805,10 @@ public class PersonalDataManager {
                         mPersonalDataManagerAndroid, PersonalDataManager.this, card);
     }
 
-    public String getBasicCardIssuerNetwork(String cardNumber, boolean emptyIfInvalid) {
+    public static String getBasicCardIssuerNetwork(String cardNumber, boolean emptyIfInvalid) {
         ThreadUtils.assertOnUiThread();
         return PersonalDataManagerJni.get()
                 .getBasicCardIssuerNetwork(
-                        mPersonalDataManagerAndroid,
-                        PersonalDataManager.this,
                         cardNumber,
                         emptyIfInvalid);
     }
@@ -712,11 +846,6 @@ public class PersonalDataManager {
         PersonalDataManagerJni.get().deleteAllLocalCreditCards(mPersonalDataManagerAndroid);
     }
 
-    public void clearUnmaskedCache(String guid) {
-        PersonalDataManagerJni.get()
-                .clearUnmaskedCache(mPersonalDataManagerAndroid, PersonalDataManager.this, guid);
-    }
-
     public String getShippingAddressLabelWithCountryForPaymentRequest(AutofillProfile profile) {
         return PersonalDataManagerJni.get()
                 .getShippingAddressLabelForPaymentRequest(
@@ -735,6 +864,27 @@ public class PersonalDataManager {
                         profile,
                         profile.getGUID(),
                         /* includeCountry= */ false);
+    }
+
+    public Iban getIban(String guid) {
+        ThreadUtils.assertOnUiThread();
+        return PersonalDataManagerJni.get()
+                .getIbanByGuid(mPersonalDataManagerAndroid, PersonalDataManager.this, guid);
+    }
+
+    public String addOrUpdateLocalIban(Iban iban) {
+        ThreadUtils.assertOnUiThread();
+        assert iban.getRecordType() == IbanRecordType.UNKNOWN
+                        || iban.getRecordType() == IbanRecordType.LOCAL_IBAN
+                : "Add or update local IBANs only.";
+        return PersonalDataManagerJni.get()
+                .addOrUpdateLocalIban(mPersonalDataManagerAndroid, PersonalDataManager.this, iban);
+    }
+
+    public boolean isValidIban(String ibanValue) {
+        ThreadUtils.assertOnUiThread();
+        return PersonalDataManagerJni.get()
+                .isValidIban(mPersonalDataManagerAndroid, PersonalDataManager.this, ibanValue);
     }
 
     /**
@@ -843,12 +993,6 @@ public class PersonalDataManager {
         mImageFetcher.clearCachedImagesForTesting();
     }
 
-    public static void setInstanceForTesting(PersonalDataManager manager) {
-        var oldValue = sManager;
-        sManager = manager;
-        ResettersForTesting.register(() -> sManager = oldValue);
-    }
-
     /**
      * Determines whether the logged in user (if any) is eligible to store
      * Autofill address profiles to their account.
@@ -907,107 +1051,109 @@ public class PersonalDataManager {
     /**
      * @return Whether the Autofill feature for Profiles (addresses) is enabled.
      */
-    public static boolean isAutofillProfileEnabled() {
-        return getPrefService().getBoolean(Pref.AUTOFILL_PROFILE_ENABLED);
+    public boolean isAutofillProfileEnabled() {
+        return mPrefService.getBoolean(Pref.AUTOFILL_PROFILE_ENABLED);
     }
 
     /**
      * @return Whether the Autofill feature for Credit Cards is enabled.
      */
-    public static boolean isAutofillCreditCardEnabled() {
-        return getPrefService().getBoolean(Pref.AUTOFILL_CREDIT_CARD_ENABLED);
+    public boolean isAutofillCreditCardEnabled() {
+        return mPrefService.getBoolean(Pref.AUTOFILL_CREDIT_CARD_ENABLED);
     }
 
     /**
      * Enables or disables the Autofill feature for Profiles.
+     *
      * @param enable True to disable profile Autofill, false otherwise.
      */
-    public static void setAutofillProfileEnabled(boolean enable) {
-        getPrefService().setBoolean(Pref.AUTOFILL_PROFILE_ENABLED, enable);
+    public void setAutofillProfileEnabled(boolean enable) {
+        mPrefService.setBoolean(Pref.AUTOFILL_PROFILE_ENABLED, enable);
     }
 
     /**
      * Enables or disables the Autofill feature for Credit Cards.
+     *
      * @param enable True to disable credit card Autofill, false otherwise.
      */
-    public static void setAutofillCreditCardEnabled(boolean enable) {
-        getPrefService().setBoolean(Pref.AUTOFILL_CREDIT_CARD_ENABLED, enable);
+    public void setAutofillCreditCardEnabled(boolean enable) {
+        mPrefService.setBoolean(Pref.AUTOFILL_CREDIT_CARD_ENABLED, enable);
     }
 
     /**
      * @return Whether the Autofill feature for FIDO authentication is enabled.
      */
-    public static boolean isAutofillCreditCardFidoAuthEnabled() {
-        return getPrefService().getBoolean(Pref.AUTOFILL_CREDIT_CARD_FIDO_AUTH_ENABLED);
+    public boolean isAutofillCreditCardFidoAuthEnabled() {
+        return mPrefService.getBoolean(Pref.AUTOFILL_CREDIT_CARD_FIDO_AUTH_ENABLED);
     }
 
     /**
-     * Enables or disables the Autofill feature for FIDO authentication.
-     * We are trying to align this pref with the server's source of truth, but any mismatches
-     * between this pref and the server should imply the user's intention to opt in/out.
+     * Enables or disables the Autofill feature for FIDO authentication. We are trying to align this
+     * pref with the server's source of truth, but any mismatches between this pref and the server
+     * should imply the user's intention to opt in/out.
+     *
      * @param enable True to enable credit card FIDO authentication, false otherwise.
      */
-    public static void setAutofillCreditCardFidoAuthEnabled(boolean enable) {
-        getPrefService().setBoolean(Pref.AUTOFILL_CREDIT_CARD_FIDO_AUTH_ENABLED, enable);
+    public void setAutofillCreditCardFidoAuthEnabled(boolean enable) {
+        mPrefService.setBoolean(Pref.AUTOFILL_CREDIT_CARD_FIDO_AUTH_ENABLED, enable);
     }
 
     /**
      * @return Whether the Autofill feature for payment methods mandatory reauth is enabled.
      */
-    public static boolean isPaymentMethodsMandatoryReauthEnabled() {
-        return getPrefService().getBoolean(Pref.AUTOFILL_PAYMENT_METHODS_MANDATORY_REAUTH);
+    public boolean isPaymentMethodsMandatoryReauthEnabled() {
+        return mPrefService.getBoolean(Pref.AUTOFILL_PAYMENT_METHODS_MANDATORY_REAUTH);
     }
 
     /**
      * Enables or disables the Autofill feature for payment methods mandatory reauth.
+     *
      * @param enable True to enable payment methods mandatory reauth, false otherwise.
      */
-    public static void setAutofillPaymentMethodsMandatoryReauth(boolean enable) {
-        getPrefService().setBoolean(Pref.AUTOFILL_PAYMENT_METHODS_MANDATORY_REAUTH, enable);
+    public void setAutofillPaymentMethodsMandatoryReauth(boolean enable) {
+        mPrefService.setBoolean(Pref.AUTOFILL_PAYMENT_METHODS_MANDATORY_REAUTH, enable);
     }
 
     /**
      * @return Whether the Autofill feature for payment cvc storage is enabled.
      */
-    public static boolean isPaymentCvcStorageEnabled() {
-        return getPrefService().getBoolean(Pref.AUTOFILL_PAYMENT_CVC_STORAGE);
+    public boolean isPaymentCvcStorageEnabled() {
+        return mPrefService.getBoolean(Pref.AUTOFILL_PAYMENT_CVC_STORAGE);
     }
 
     /**
      * Enables or disables the Autofill feature for payment cvc storage.
+     *
      * @param enable True to enable payment cvc storage, false otherwise.
      */
-    public static void setAutofillPaymentCvcStorage(boolean enable) {
-        getPrefService().setBoolean(Pref.AUTOFILL_PAYMENT_CVC_STORAGE, enable);
+    public void setAutofillPaymentCvcStorage(boolean enable) {
+        mPrefService.setBoolean(Pref.AUTOFILL_PAYMENT_CVC_STORAGE, enable);
     }
 
     /**
      * @return Whether the Autofill feature is managed.
      */
-    public static boolean isAutofillManaged() {
-        return PersonalDataManagerJni.get().isAutofillManaged();
+    public boolean isAutofillManaged() {
+        return PersonalDataManagerJni.get().isAutofillManaged(mPersonalDataManagerAndroid);
     }
 
     /**
      * @return Whether the Autofill feature for Profiles (addresses) is managed.
      */
-    public static boolean isAutofillProfileManaged() {
-        return PersonalDataManagerJni.get().isAutofillProfileManaged();
+    public boolean isAutofillProfileManaged() {
+        return PersonalDataManagerJni.get().isAutofillProfileManaged(mPersonalDataManagerAndroid);
     }
 
     /**
      * @return Whether the Autofill feature for Credit Cards is managed.
      */
-    public static boolean isAutofillCreditCardManaged() {
-        return PersonalDataManagerJni.get().isAutofillCreditCardManaged();
+    public boolean isAutofillCreditCardManaged() {
+        return PersonalDataManagerJni.get()
+                .isAutofillCreditCardManaged(mPersonalDataManagerAndroid);
     }
 
     public void setSyncServiceForTesting() {
         PersonalDataManagerJni.get().setSyncServiceForTesting(mPersonalDataManagerAndroid);
-    }
-
-    private static PrefService getPrefService() {
-        return UserPrefs.get(Profile.getLastUsedRegularProfile());
     }
 
     private void fetchCreditCardArtImages() {
@@ -1037,7 +1183,9 @@ public class PersonalDataManager {
 
     @NativeMethods
     interface Natives {
-        long init(PersonalDataManager caller);
+        long init(PersonalDataManager caller, Profile profile);
+
+        void destroy(long nativePersonalDataManagerAndroid);
 
         boolean isDataLoaded(long nativePersonalDataManagerAndroid, PersonalDataManager caller);
 
@@ -1116,8 +1264,6 @@ public class PersonalDataManager {
                 long nativePersonalDataManagerAndroid, PersonalDataManager caller, CreditCard card);
 
         String getBasicCardIssuerNetwork(
-                long nativePersonalDataManagerAndroid,
-                PersonalDataManager caller,
                 String cardNumber,
                 boolean emptyIfInvalid);
 
@@ -1172,25 +1318,33 @@ public class PersonalDataManager {
         void clearServerDataForTesting(
                 long nativePersonalDataManagerAndroid, PersonalDataManager caller);
 
-        void clearUnmaskedCache(
-                long nativePersonalDataManagerAndroid, PersonalDataManager caller, String guid);
-
         boolean hasProfiles(long nativePersonalDataManagerAndroid);
 
         boolean hasCreditCards(long nativePersonalDataManagerAndroid);
 
         boolean isFidoAuthenticationAvailable(long nativePersonalDataManagerAndroid);
 
-        boolean isAutofillManaged();
+        boolean isAutofillManaged(long nativePersonalDataManagerAndroid);
 
-        boolean isAutofillProfileManaged();
+        boolean isAutofillProfileManaged(long nativePersonalDataManagerAndroid);
 
-        boolean isAutofillCreditCardManaged();
+        boolean isAutofillCreditCardManaged(long nativePersonalDataManagerAndroid);
 
         String toCountryCode(String countryName);
 
         void setSyncServiceForTesting(long nativePersonalDataManagerAndroid);
 
         AutofillImageFetcher getOrCreateJavaImageFetcher(long nativePersonalDataManagerAndroid);
+
+        Iban getIbanByGuid(
+                long nativePersonalDataManagerAndroid, PersonalDataManager caller, String guid);
+
+        String addOrUpdateLocalIban(
+                long nativePersonalDataManagerAndroid, PersonalDataManager caller, Iban iban);
+
+        boolean isValidIban(
+                long nativePersonalDataManagerAndroid,
+                PersonalDataManager caller,
+                String ibanValue);
     }
 }

@@ -30,6 +30,10 @@
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
 #endif
 
+#if BUILDFLAG(IS_WIN)
+#include "base/win/windows_types.h"
+#endif
+
 namespace gfx {
 namespace mojom {
 class DelegatedInkPointRenderer;
@@ -120,10 +124,14 @@ class GL_EXPORT Presenter : public base::RefCounted<Presenter> {
                        PresentationCallback presentation_callback,
                        gfx::FrameData data) = 0;
 
+#if BUILDFLAG(IS_APPLE)
   // Sets result of delegated compositing. Value originates from overlay
   // processors and is used by integration tests to ensure we don't fall out of
   // delegated mode.
   virtual void SetCALayerErrorCode(gfx::CALayerResult ca_layer_error_code) {}
+
+  virtual void SetMaxPendingSwaps(int max_pending_swaps) {}
+#endif
 
   // Sets preferred frame rate
   virtual void SetFrameRate(float frame_rate) {}
@@ -144,6 +152,7 @@ class GL_EXPORT Presenter : public base::RefCounted<Presenter> {
   virtual void InitDelegatedInkPointRendererReceiver(
       mojo::PendingReceiver<gfx::mojom::DelegatedInkPointRenderer>
           pending_receiver) {}
+  virtual HWND GetWindow() const = 0;
 #endif
 
   // Tells the presenter to rely on implicit sync when presenting buffers.

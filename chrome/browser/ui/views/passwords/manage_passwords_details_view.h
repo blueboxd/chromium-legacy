@@ -12,8 +12,11 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/layout/box_layout_view.h"
 
+class RichHoverButton;
+
 namespace views {
 class Label;
+class Separator;
 class Textarea;
 class Textfield;
 class View;
@@ -39,13 +42,16 @@ class ManagePasswordsDetailsView : public views::BoxLayoutView {
   // is typing a note in the edit view, or copying a username.
   // `on_input_validation_callback` is invoked after validating user input to
   // inform the embedder if the current input is invalid.
+  // `on_manage_password_clicked_callback` callback is invoked when the user
+  // clicks on the "Manage password" button.
   ManagePasswordsDetailsView(
       password_manager::PasswordForm password_form,
       base::RepeatingCallback<bool(const std::u16string&)>
           username_exists_callback,
       base::RepeatingClosure switched_to_edit_mode_callback,
       base::RepeatingClosure on_activity_callback,
-      base::RepeatingCallback<void(bool)> on_input_validation_callback);
+      base::RepeatingCallback<void(bool)> on_input_validation_callback,
+      base::RepeatingClosure on_manage_password_clicked_callback);
 
   ManagePasswordsDetailsView(const ManagePasswordsDetailsView&) = delete;
   ManagePasswordsDetailsView& operator=(const ManagePasswordsDetailsView&) =
@@ -102,6 +108,9 @@ class ManagePasswordsDetailsView : public views::BoxLayoutView {
   raw_ptr<views::View> edit_note_row_ = nullptr;
   raw_ptr<views::Textarea> note_textarea_ = nullptr;
   raw_ptr<views::Label> note_error_label_ = nullptr;
+
+  raw_ptr<views::Separator> separator_row_ = nullptr;
+  raw_ptr<RichHoverButton> manage_password_row_ = nullptr;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORDS_DETAILS_VIEW_H_

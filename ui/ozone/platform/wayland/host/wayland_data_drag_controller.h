@@ -18,6 +18,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/atomic_flag.h"
+#include "base/task/task_runner.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/base/dragdrop/os_exchange_data_provider.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
@@ -129,6 +130,8 @@ class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
   FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest, StartDragWithText);
   FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest, AsyncNoopStartDrag);
   FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest,
+                           SuppressPointerButtonReleasesAfterEnter);
+  FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest,
                            StartDragWithWrongMimeType);
   FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest,
                            ForeignDragHandleAskAction);
@@ -201,6 +204,10 @@ class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
                                  struct wl_callback* callback,
                                  uint32_t time);
 
+  // Returns the task runner instance used to run data fetching tasks in
+  // incoming drag sessions.
+  base::TaskRunner& GetDataFetchTaskRunner();
+
   const raw_ptr<WaylandConnection> connection_;
   const raw_ptr<WaylandDataDeviceManager> data_device_manager_;
   const raw_ptr<WaylandDataDevice> data_device_;
@@ -210,6 +217,9 @@ class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
 
   State state_ = State::kIdle;
   std::optional<mojom::DragEventSource> drag_source_;
+
+  // In outgoing sessions, tracks if any drag enter has already been received.
+  bool has_received_enter_ = false;
 
   // Data offered by us to the other side.
   std::unique_ptr<WaylandDataSource> data_source_;
@@ -260,6 +270,9 @@ class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
   // Flag used to notify the data fetcher task, which runs on thread pool, that
   // it should abort the operation. i.e: used only in incoming dnd sessions.
   scoped_refptr<CancelFlag> data_fetch_cancel_flag_;
+
+  // Sequenced task runner used to post fetch tasks to.
+  scoped_refptr<base::TaskRunner> data_fetch_task_runner_;
 
   base::WeakPtrFactory<WaylandDataDragController> weak_factory_{this};
 };

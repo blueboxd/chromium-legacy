@@ -4,7 +4,8 @@
 
 #include "content/browser/preloading/prefetch/prefetch_service.h"
 
-#include "base/containers/cxx20_erase.h"
+#include <vector>
+
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
@@ -17,6 +18,7 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/browser/preloading/prefetch/mock_prefetch_service_delegate.h"
 #include "content/browser/preloading/prefetch/prefetch_container.h"
 #include "content/browser/preloading/prefetch/prefetch_document_manager.h"
 #include "content/browser/preloading/prefetch/prefetch_features.h"
@@ -24,6 +26,7 @@
 #include "content/browser/preloading/prefetch/prefetch_params.h"
 #include "content/browser/preloading/prefetch/prefetch_serving_page_metrics_container.h"
 #include "content/browser/preloading/prefetch/prefetch_status.h"
+#include "content/browser/preloading/prefetch/prefetch_type.h"
 #include "content/browser/preloading/preloading.h"
 #include "content/browser/preloading/preloading_attempt_impl.h"
 #include "content/browser/preloading/preloading_config.h"
@@ -69,10 +72,6 @@
 namespace content {
 namespace {
 
-const char kPrefetchProxyAddress[] = "https://testprefetchproxy.com";
-
-const char kApiKey[] = "APIKEY";
-
 const int kTotalTimeDuration = 4321;
 
 const int kConnectTimeDuration = 123;
@@ -87,61 +86,6 @@ const char kHTMLBody[] = R"(
         <head></head>
         <body></body>
       </html>)";
-
-class MockPrefetchServiceDelegate : public PrefetchServiceDelegate {
- public:
-  explicit MockPrefetchServiceDelegate(int num_on_prefetch_likely_calls = 1) {
-    // Sets default behavior for the delegate.
-    ON_CALL(*this, GetDefaultPrefetchProxyHost)
-        .WillByDefault(testing::Return(GURL(kPrefetchProxyAddress)));
-    ON_CALL(*this, GetAPIKey).WillByDefault(testing::Return(kApiKey));
-    ON_CALL(*this, IsOriginOutsideRetryAfterWindow(testing::_))
-        .WillByDefault(testing::Return(true));
-    ON_CALL(*this, DisableDecoysBasedOnUserSettings)
-        .WillByDefault(testing::Return(false));
-    ON_CALL(*this, IsSomePreloadingEnabled)
-        .WillByDefault(testing::Return(PreloadingEligibility::kEligible));
-    ON_CALL(*this, IsExtendedPreloadingEnabled)
-        .WillByDefault(testing::Return(false));
-    ON_CALL(*this, IsPreloadingPrefEnabled)
-        .WillByDefault(testing::Return(true));
-    ON_CALL(*this, IsDataSaverEnabled).WillByDefault(testing::Return(false));
-    ON_CALL(*this, IsBatterySaverEnabled).WillByDefault(testing::Return(false));
-    ON_CALL(*this, IsDomainInPrefetchAllowList(testing::_))
-        .WillByDefault(testing::Return(true));
-
-    EXPECT_CALL(*this, OnPrefetchLikely(testing::_))
-        .Times(num_on_prefetch_likely_calls);
-  }
-
-  ~MockPrefetchServiceDelegate() override = default;
-
-  MockPrefetchServiceDelegate(const MockPrefetchServiceDelegate&) = delete;
-  MockPrefetchServiceDelegate& operator=(const MockPrefetchServiceDelegate) =
-      delete;
-
-  // PrefetchServiceDelegate.
-  MOCK_METHOD(std::string, GetMajorVersionNumber, (), (override));
-  MOCK_METHOD(std::string, GetAcceptLanguageHeader, (), (override));
-  MOCK_METHOD(GURL, GetDefaultPrefetchProxyHost, (), (override));
-  MOCK_METHOD(std::string, GetAPIKey, (), (override));
-  MOCK_METHOD(GURL, GetDefaultDNSCanaryCheckURL, (), (override));
-  MOCK_METHOD(GURL, GetDefaultTLSCanaryCheckURL, (), (override));
-  MOCK_METHOD(void,
-              ReportOriginRetryAfter,
-              (const GURL&, base::TimeDelta),
-              (override));
-  MOCK_METHOD(bool, IsOriginOutsideRetryAfterWindow, (const GURL&), (override));
-  MOCK_METHOD(void, ClearData, (), (override));
-  MOCK_METHOD(bool, DisableDecoysBasedOnUserSettings, (), (override));
-  MOCK_METHOD(PreloadingEligibility, IsSomePreloadingEnabled, (), (override));
-  MOCK_METHOD(bool, IsExtendedPreloadingEnabled, (), (override));
-  MOCK_METHOD(bool, IsPreloadingPrefEnabled, (), (override));
-  MOCK_METHOD(bool, IsDataSaverEnabled, (), (override));
-  MOCK_METHOD(bool, IsBatterySaverEnabled, (), (override));
-  MOCK_METHOD(bool, IsDomainInPrefetchAllowList, (const GURL&), (override));
-  MOCK_METHOD(void, OnPrefetchLikely, (WebContents*), (override));
-};
 
 class ScopedPrefetchServiceContentBrowserClient
     : public TestContentBrowserClient {
@@ -380,7 +324,7 @@ class PrefetchServiceTest : public RenderViewHostTestHarness {
     std::vector<network::TestURLLoaderFactory::PendingRequest>* requests =
         test_url_loader_factory_.pending_requests();
 
-    base::EraseIf(
+    std::erase_if(
         *requests,
         [](const network::TestURLLoaderFactory::PendingRequest& request) {
           return !request.client.is_connected();
@@ -455,7 +399,9 @@ class PrefetchServiceTest : public RenderViewHostTestHarness {
         use_prefetch_proxy
             ? net::ProxyChain::FromSchemeHostAndPort(
                   net::ProxyServer::Scheme::SCHEME_HTTPS,
-                  PrefetchProxyHost(GURL(kPrefetchProxyAddress)).spec(),
+                  PrefetchProxyHost(
+                      GURL(MockPrefetchServiceDelegate::kPrefetchProxyAddress))
+                      .spec(),
                   std::nullopt)
             : net::ProxyChain::Direct();
 
@@ -2945,7 +2891,14 @@ TEST_F(PrefetchServiceNoVarySearchTest, MAYBE_NoVarySearchSuccessCase) {
   ExpectServingMetricsSuccess();
 }
 
-TEST_F(PrefetchServiceTest, PrefetchNotEnabled) {
+class PrefetchServiceRedirectsDisabledTest : public PrefetchServiceTest {
+ public:
+  void InitScopedFeatureList() override {
+    scoped_feature_list_.InitAndDisableFeature(features::kPrefetchRedirects);
+  }
+};
+
+TEST_F(PrefetchServiceRedirectsDisabledTest, PrefetchNotEnabled) {
   base::HistogramTester histogram_tester;
 
   MakePrefetchService(
@@ -4223,10 +4176,9 @@ TEST_P(PrefetchServiceAlwaysBlockUntilHeadTest,
   MakePrefetchService(
       std::make_unique<testing::NiceMock<MockPrefetchServiceDelegate>>());
 
-  MakePrefetchOnMainFrame(
-      GURL("https://example.com"),
-      PrefetchType(PreloadingTriggerType::kSpeculationRule,
-                   /*use_prefetch_proxy=*/true, GetParam()));
+  PrefetchType prefetch_type(PreloadingTriggerType::kSpeculationRule,
+                             /*use_prefetch_proxy=*/true, GetParam());
+  MakePrefetchOnMainFrame(GURL("https://example.com"), prefetch_type);
   task_environment()->RunUntilIdle();
 
   VerifyCommonRequestState(
@@ -4256,7 +4208,7 @@ TEST_P(PrefetchServiceAlwaysBlockUntilHeadTest,
   std::string histogram_suffix =
       GetPrefetchEagernessHistogramSuffix(GetParam());
   base::TimeDelta block_until_head_timeout =
-      PrefetchBlockUntilHeadTimeout(GetParam());
+      PrefetchBlockUntilHeadTimeout(prefetch_type);
   histogram_tester.ExpectUniqueTimeSample(
       base::StringPrintf(
           "PrefetchProxy.AfterClick.BlockUntilHeadDuration.NotServed.%s",

@@ -134,10 +134,6 @@ class PLATFORM_EXPORT WebGPUSwapBufferProvider
     gpu::SyncToken access_finished_token;
   };
 
-  std::tuple<uint32_t, bool> GetTextureTargetAndOverlayCandidacy() const;
-  uint32_t GetTextureTarget() const;
-  bool IsOverlayCandidate() const;
-
   scoped_refptr<WebGPUSwapBufferProvider::SwapBuffer> NewOrRecycledSwapBuffer(
       gpu::SharedImageInterface* sii,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider,
@@ -158,7 +154,7 @@ class PLATFORM_EXPORT WebGPUSwapBufferProvider
   void ReleaseWGPUTextureAccessIfNeeded();
 
   scoped_refptr<DawnControlClientHolder> dawn_control_client_;
-  raw_ptr<Client, ExperimentalRenderer> client_;
+  raw_ptr<Client> client_;
   WGPUDevice device_;
   scoped_refptr<cc::TextureLayer> layer_;
   bool neutered_ = false;

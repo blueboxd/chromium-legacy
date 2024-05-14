@@ -45,7 +45,6 @@ class ModelExecutionLiveTest;
 class ModelExecutionManager;
 class ModelInfo;
 class ModelQualityLogEntry;
-class ModelQualityLogsUploaderService;
 class ModelValidatorKeyedService;
 class OnDeviceModelComponentStateManager;
 class OptimizationGuideStore;
@@ -56,6 +55,7 @@ class PredictionModelStoreBrowserTestBase;
 class PushNotificationManager;
 class TabUrlProvider;
 class TopHostProvider;
+class ChromeModelQualityLogsUploaderService;
 }  // namespace optimization_guide
 
 class ChromeBrowserMainExtraPartsOptimizationGuide;
@@ -116,7 +116,9 @@ class OptimizationGuideKeyedService
 
   // optimization_guide::OptimizationGuideModelExecutor implementation:
   std::unique_ptr<Session> StartSession(
-      optimization_guide::proto::ModelExecutionFeature feature) override;
+      optimization_guide::proto::ModelExecutionFeature feature,
+      const std::optional<optimization_guide::SessionConfigParams>&
+          config_params) override;
   void ExecuteModel(
       optimization_guide::proto::ModelExecutionFeature feature,
       const google::protobuf::MessageLite& request_metadata,
@@ -174,6 +176,11 @@ class OptimizationGuideKeyedService
 
   OptimizationGuideLogger* GetOptimizationGuideLogger() {
     return optimization_guide_logger_.get();
+  }
+
+  optimization_guide::ChromeModelQualityLogsUploaderService*
+  GetChromeModelQualityLogsUploaderServiceForTesting() {
+    return model_quality_logs_uploader_service_.get();
   }
 
  private:
@@ -241,8 +248,8 @@ class OptimizationGuideKeyedService
       optimization_guide::proto::RequestContext request_context,
       optimization_guide::OnDemandOptimizationGuideDecisionRepeatingCallback
           callback,
-      optimization_guide::proto::RequestContextMetadata*
-          request_context_metadata = nullptr) override;
+      std::optional<optimization_guide::proto::RequestContextMetadata>
+          request_context_metadata = std::nullopt) override;
 
   // Returns true if the opt-in setting should be shown for this profile for
   // given `feature`. This should only be called by settings UX.
@@ -295,7 +302,7 @@ class OptimizationGuideKeyedService
 
   // Manages the model quality logs uploader service. Not created for off the
   // record profiles.
-  std::unique_ptr<optimization_guide::ModelQualityLogsUploaderService>
+  std::unique_ptr<optimization_guide::ChromeModelQualityLogsUploaderService>
       model_quality_logs_uploader_service_;
 
   // Used to observe profile initialization event.

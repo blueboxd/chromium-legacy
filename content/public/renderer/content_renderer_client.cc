@@ -167,9 +167,11 @@ bool ContentRendererClient::IsOriginIsolatedPepperPlugin(
   return true;
 }
 
-void ContentRendererClient::GetSupportedKeySystems(
+std::unique_ptr<media::KeySystemSupportObserver>
+ContentRendererClient::GetSupportedKeySystems(
     media::GetSupportedKeySystemsCB cb) {
   std::move(cb).Run({});
+  return nullptr;
 }
 
 bool ContentRendererClient::IsSupportedAudioType(const media::AudioType& type) {
@@ -281,5 +283,10 @@ ContentRendererClient::CreateCastStreamingResourceProvider() {
   return nullptr;
 }
 #endif
+
+std::unique_ptr<blink::WebLinkPreviewTriggerer>
+ContentRendererClient::CreateLinkPreviewTriggerer() {
+  return nullptr;
+}
 
 }  // namespace content

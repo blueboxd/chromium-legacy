@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_policy_handler.h"
@@ -147,6 +148,7 @@ gfx::Insets GetSecurityViewMargin() {
   return gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_VERTICAL));
 }
+
 }  // namespace
 
 DownloadToolbarButtonView::DownloadToolbarButtonView(BrowserView* browser_view)
@@ -165,7 +167,7 @@ DownloadToolbarButtonView::DownloadToolbarButtonView(BrowserView* browser_view)
                      ? kDownloadToolbarButtonChromeRefreshIcon
                      : kDownloadToolbarButtonIcon,
                  kDownloadToolbarButtonIcon);
-  GetViewAccessibility().OverrideHasPopup(ax::mojom::HasPopup::kDialog);
+  GetViewAccessibility().SetHasPopup(ax::mojom::HasPopup::kDialog);
   tooltip_texts_[0] = l10n_util::GetStringUTF16(IDS_TOOLTIP_DOWNLOAD_ICON);
   SetTooltipText(tooltip_texts_.at(0));
   SetVisible(false);
@@ -473,8 +475,9 @@ bool DownloadToolbarButtonView::IsShowingDetails() const {
 }
 
 void DownloadToolbarButtonView::UpdateIcon() {
-  if (!GetWidget())
+  if (!GetWidget()) {
     return;
+  }
 
   // Schedule paint to update the progress ring.
   if (redraw_progress_soon_) {
@@ -588,15 +591,17 @@ void DownloadToolbarButtonView::OpenSecurityDialog(
 
 void DownloadToolbarButtonView::CloseDialog(
     views::Widget::ClosedReason reason) {
-  if (bubble_delegate_)
+  if (bubble_delegate_) {
     bubble_delegate_->GetWidget()->CloseWithReason(reason);
+  }
 }
 
 void DownloadToolbarButtonView::ResizeDialog() {
   // Resize may be called when there is no delegate, e.g. during bubble
   // construction.
-  if (bubble_delegate_)
+  if (bubble_delegate_) {
     bubble_delegate_->SizeToContents();
+  }
 }
 
 void DownloadToolbarButtonView::OnDialogInteracted() {
@@ -651,6 +656,12 @@ void DownloadToolbarButtonView::CreateBubbleDialogDelegate() {
             ImmersiveModeController::ANIMATE_REVEAL_YES);
   }
 
+  // If the IPH is showing, close it to avoid showing the download dialog over
+  // it.
+  browser_->window()->CloseFeaturePromo(
+      feature_engagement::kIPHDeepScanPromptRemovalFeature,
+      user_education::EndFeaturePromoReason::kAbortPromo);
+
   auto bubble_delegate = std::make_unique<views::BubbleDialogDelegate>(
       this, views::BubbleBorder::TOP_RIGHT);
   bubble_delegate->SetTitle(
@@ -683,7 +694,10 @@ void DownloadToolbarButtonView::CreateBubbleDialogDelegate() {
     bubble_delegate_->GetWidget()
         ->GetCompositor()
         ->RequestSuccessfulPresentationTimeForNextFrame(base::BindOnce(
-            [](base::TimeTicks click_time, base::TimeTicks presentation_time) {
+            [](base::TimeTicks click_time,
+               const viz::FrameTimingDetails& frame_timing_details) {
+              base::TimeTicks presentation_time =
+                  frame_timing_details.presentation_feedback.timestamp;
               UmaHistogramTimes(
                   "Download.Bubble.ToolbarButtonClickToFullViewShownLatency",
                   presentation_time - click_time);
@@ -693,6 +707,7 @@ void DownloadToolbarButtonView::CreateBubbleDialogDelegate() {
     button_click_time_ = base::TimeTicks();
   }
 
+  CloseAutofillPopup();
   if (ShouldShowBubbleAsInactive()) {
     bubble_delegate_->GetWidget()->ShowInactive();
     bubble_closer_ = std::make_unique<BubbleCloser>(this);
@@ -764,14 +779,12 @@ void DownloadToolbarButtonView::BubbleCloser::OnEvent(const ui::Event& event) {
 }
 
 void DownloadToolbarButtonView::ShowIphPromo() {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   Profile* profile = browser_->profile();
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Don't show IPH Promo if safe browsing level is set by policy.
-  if (safe_browsing::SafeBrowsingPolicyHandler::
-          IsSafeBrowsingProtectionLevelSetByPolicy(profile->GetPrefs())) {
-    return;
-  }
-  if (safe_browsing::GetSafeBrowsingState(*profile->GetPrefs()) ==
+  if (!safe_browsing::SafeBrowsingPolicyHandler::
+          IsSafeBrowsingProtectionLevelSetByPolicy(profile->GetPrefs()) &&
+      safe_browsing::GetSafeBrowsingState(*profile->GetPrefs()) ==
           safe_browsing::SafeBrowsingState::STANDARD_PROTECTION &&
       !profile->IsOffTheRecord() &&
       browser_->window()->MaybeShowFeaturePromo(
@@ -779,6 +792,29 @@ void DownloadToolbarButtonView::ShowIphPromo() {
     return;
   }
 #endif
+
+  // Notify users that we're removing the ESB deep scanning
+  // prompt. Users should only see the prompt if:
+  // - They're not incognito, since we don't want to imply deep scans
+  //   happen incognito
+  // - They're ESB users, since this isn't relevant to SSB users
+  // - They didn't opt-in with the friendlier settings strings, since
+  //   then they should know this is possible.
+  // - chrome://settings/security currently shows the friendlier
+  //   settings strings, so that clicking "Settings" on the IPH would
+  //   show them strings saying this is possible.
+  if (!profile->IsOffTheRecord() &&
+      safe_browsing::IsEnhancedProtectionEnabled(*profile->GetPrefs()) &&
+      !profile->GetPrefs()->GetBoolean(
+          prefs::kSafeBrowsingEsbOptInWithFriendlierSettings) &&
+      base::FeatureList::IsEnabled(
+          safe_browsing::kFriendlierSafeBrowsingSettingsEnhancedProtection) &&
+      browser_->window()->MaybeShowFeaturePromo(
+          feature_engagement::kIPHDeepScanPromptRemovalFeature)) {
+    profile->GetPrefs()->SetBoolean(
+        prefs::kSafeBrowsingAutomaticDeepScanningIPHSeen, true);
+    return;
+  }
 }
 
 void DownloadToolbarButtonView::OnPartialViewClosed() {
@@ -871,6 +907,19 @@ bool DownloadToolbarButtonView::ShouldShowBubbleAsInactive() const {
   // The partial view shows up without user interaction, so it should not
   // steal focus from the web contents.
   return is_primary_partial_view_;
+}
+
+void DownloadToolbarButtonView::CloseAutofillPopup() {
+  content::WebContents* web_contents =
+      browser_->tab_strip_model()->GetActiveWebContents();
+  if (!web_contents) {
+    return;
+  }
+  if (auto* autofill_client =
+          autofill::ContentAutofillClient::FromWebContents(web_contents)) {
+    autofill_client->HideAutofillPopup(
+        autofill::PopupHidingReason::kOverlappingWithAnotherPrompt);
+  }
 }
 
 SkColor DownloadToolbarButtonView::GetIconColor() const {

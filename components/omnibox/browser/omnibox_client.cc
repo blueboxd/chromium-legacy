@@ -25,6 +25,10 @@ gfx::Image OmniboxClient::GetFavicon() const {
   return gfx::Image();
 }
 
+ukm::SourceId OmniboxClient::GetUKMSourceId() const {
+  return ukm::kInvalidSourceId;
+}
+
 bool OmniboxClient::IsLoading() const {
   return false;
 }
@@ -37,7 +41,7 @@ bool OmniboxClient::IsDefaultSearchProviderEnabled() const {
   return true;
 }
 
-bookmarks::BookmarkModel* OmniboxClient::GetBookmarkModel() {
+bookmarks::CoreBookmarkModel* OmniboxClient::GetBookmarkModel() {
   return nullptr;
 }
 

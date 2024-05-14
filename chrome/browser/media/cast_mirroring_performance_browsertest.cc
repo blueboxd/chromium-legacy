@@ -12,6 +12,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -26,7 +27,6 @@
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -122,7 +122,7 @@ constexpr char kMetricCastLatencyMs[] = "cast_latency";
 constexpr char kTestPageLocation[] =
     "/cast/cast_mirroring_performance_browsertest.html";
 
-constexpr base::StringPiece kFullPerformanceRunSwitch = "full-performance-run";
+constexpr std::string_view kFullPerformanceRunSwitch = "full-performance-run";
 
 // The test receiver and senders should share the target playout delay.
 constexpr int kTargetPlayoutDelayMs = 400;  // milliseconds
@@ -233,7 +233,7 @@ void ContinueBrowserFor(base::TimeDelta duration) {
 using TraceAnalyzerUniquePtr = std::unique_ptr<trace_analyzer::TraceAnalyzer>;
 
 void QueryTraceEvents(trace_analyzer::TraceAnalyzer* analyzer,
-                      base::StringPiece event_name,
+                      std::string_view event_name,
                       trace_analyzer::TraceEventVector* events) {
   const trace_analyzer::Query kQuery =
       trace_analyzer::Query::EventNameIs(std::string(event_name)) &&
@@ -268,7 +268,7 @@ std::string MakeBase64EncodedGZippedString(const std::string& input) {
 TraceAnalyzerUniquePtr TraceAndObserve(
     bool is_full_performance_run,
     const std::string& category_patterns,
-    const std::vector<base::StringPiece>& event_names,
+    const std::vector<std::string_view>& event_names,
     int required_event_count) {
   const base::TimeDelta observation_period = is_full_performance_run
                                                  ? kFullRunObservationPeriod
@@ -1060,7 +1060,13 @@ class TestTabMirroringSession : public mirroring::mojom::SessionObserver,
 };
 }  // namespace
 
-IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, Performance) {
+// TODO(crbug.com/328635249): Test is flaky.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_Performance DISABLED_Performance
+#else
+#define MAYBE_Performance Performance
+#endif
+IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, MAYBE_Performance) {
   net::IPEndPoint receiver_end_point = media::cast::test::GetFreeLocalPort();
   VLOG(1) << "Got local UDP endpoint for testing: "
           << receiver_end_point.ToString();
@@ -1105,7 +1111,7 @@ IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, Performance) {
   // Observe the running browser for a while, collecting a trace.
   TraceAnalyzerUniquePtr analyzer = TraceAndObserve(
       is_full_performance_run_, "gpu.capture,cast_perf_test",
-      std::vector<base::StringPiece>{
+      std::vector<std::string_view>{
           // From the Compositor/Capture pipeline...
           "Capture", "OnBufferReceived", "ConsumeVideoFrame",
           // From the Cast Sender's pipeline...

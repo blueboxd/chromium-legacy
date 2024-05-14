@@ -91,8 +91,9 @@ IpcDesktopEnvironment::CreateActiveDisplayMonitor(
   return nullptr;
 }
 
-std::unique_ptr<DesktopCapturer> IpcDesktopEnvironment::CreateVideoCapturer() {
-  return desktop_session_proxy_->CreateVideoCapturer();
+std::unique_ptr<DesktopCapturer> IpcDesktopEnvironment::CreateVideoCapturer(
+    webrtc::ScreenId id) {
+  return desktop_session_proxy_->CreateVideoCapturer(id);
 }
 
 std::unique_ptr<FileOperations> IpcDesktopEnvironment::CreateFileOperations() {
@@ -255,7 +256,7 @@ void IpcDesktopEnvironmentFactory::OnTerminalDisconnected(int terminal_id) {
     active_connections_.erase(i);
 
     // Disconnect the client session.
-    desktop_session_proxy->DisconnectSession(protocol::OK);
+    desktop_session_proxy->DisconnectSession(ErrorCode::OK);
   }
 }
 

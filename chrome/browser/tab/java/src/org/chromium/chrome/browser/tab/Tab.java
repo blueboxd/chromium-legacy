@@ -197,6 +197,11 @@ public interface Tab extends TabLifecycle {
     int getThemeColor();
 
     /**
+     * @return The background color for the current webpage.
+     */
+    int getBackgroundColor();
+
+    /**
      * @return {@code true} if the theme color from contents is valid and can be used for theming.
      */
     boolean isThemingAllowed();
@@ -270,6 +275,11 @@ public interface Tab extends TabLifecycle {
      * @return true iff the tab is loading and an interstitial page is not showing.
      */
     boolean isLoading();
+
+    /**
+     * @return true iff a navigation in primary main frame is in progress.
+     */
+    boolean isNavigationInPrimaryMainFrameInProgress();
 
     /**
      * @return true iff the tab is performing a restore page load.
@@ -371,4 +381,7 @@ public interface Tab extends TabLifecycle {
 
     /** Sets the TabLaunchType for tabs launched with an unset launch type. */
     void setTabLaunchType(@TabLaunchType int launchType);
+
+    /** Update the title for the current page if changed. */
+    void updateTitle();
 }

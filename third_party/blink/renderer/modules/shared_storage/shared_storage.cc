@@ -96,7 +96,7 @@ void LogTimingHistogramForSetterMethod(SharedStorageSetterMethod method,
   }
 }
 
-void OnSetterMethodFinished(ScriptPromiseResolver* resolver,
+void OnSetterMethodFinished(ScriptPromiseResolverTyped<IDLAny>* resolver,
                             SharedStorage* shared_storage,
                             SharedStorageSetterMethod method,
                             GlobalScope global_scope,
@@ -134,6 +134,25 @@ GetSharedStorageWorkletServiceClient(ExecutionContext* execution_context) {
   CHECK(execution_context->IsSharedStorageWorkletGlobalScope());
   return To<SharedStorageWorkletGlobalScope>(execution_context)
       ->GetSharedStorageWorkletServiceClient();
+}
+
+bool CanGetOutsideWorklet(ScriptState* script_state) {
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  CHECK(execution_context->IsWindow());
+
+  LocalFrame* frame = To<LocalDOMWindow>(execution_context)->GetFrame();
+  DCHECK(frame);
+
+  if (!blink::features::IsFencedFramesEnabled() ||
+      !base::FeatureList::IsEnabled(
+          blink::features::kFencedFramesLocalUnpartitionedDataAccess)) {
+    return false;
+  }
+
+  // Calling get() is only allowed in fenced frame trees where network access
+  // has been restricted. We can't check the network access part in the
+  // renderer, so we'll defer to the browser for that.
+  return frame->IsInFencedFrameTree();
 }
 
 }  // namespace
@@ -337,30 +356,31 @@ void SharedStorage::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
 }
 
-ScriptPromise SharedStorage::set(ScriptState* script_state,
-                                 const String& key,
-                                 const String& value,
-                                 ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLAny> SharedStorage::set(ScriptState* script_state,
+                                              const String& key,
+                                              const String& value,
+                                              ExceptionState& exception_state) {
   return set(script_state, key, value, SharedStorageSetMethodOptions::Create(),
              exception_state);
 }
 
-ScriptPromise SharedStorage::set(ScriptState* script_state,
-                                 const String& key,
-                                 const String& value,
-                                 const SharedStorageSetMethodOptions* options,
-                                 ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLAny> SharedStorage::set(
+    ScriptState* script_state,
+    const String& key,
+    const String& value,
+    const SharedStorageSetMethodOptions* options,
+    ExceptionState& exception_state) {
   base::TimeTicks start_time = base::TimeTicks::Now();
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   CHECK(execution_context->IsWindow() ||
         execution_context->IsSharedStorageWorkletGlobalScope());
 
   if (!CheckBrowsingContextIsValid(*script_state, exception_state))
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLAny>();
 
-  ScriptPromiseResolver* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<IDLAny>>(
       script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  auto promise = resolver->Promise();
 
   if (!CheckSharedStoragePermissionsPolicy(*script_state, *execution_context,
                                            *resolver)) {
@@ -403,21 +423,22 @@ ScriptPromise SharedStorage::set(ScriptState* script_state,
   return promise;
 }
 
-ScriptPromise SharedStorage::append(ScriptState* script_state,
-                                    const String& key,
-                                    const String& value,
-                                    ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLAny> SharedStorage::append(
+    ScriptState* script_state,
+    const String& key,
+    const String& value,
+    ExceptionState& exception_state) {
   base::TimeTicks start_time = base::TimeTicks::Now();
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   CHECK(execution_context->IsWindow() ||
         execution_context->IsSharedStorageWorkletGlobalScope());
 
   if (!CheckBrowsingContextIsValid(*script_state, exception_state))
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLAny>();
 
-  ScriptPromiseResolver* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<IDLAny>>(
       script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  auto promise = resolver->Promise();
 
   if (!CheckSharedStoragePermissionsPolicy(*script_state, *execution_context,
                                            *resolver)) {
@@ -459,20 +480,21 @@ ScriptPromise SharedStorage::append(ScriptState* script_state,
   return promise;
 }
 
-ScriptPromise SharedStorage::Delete(ScriptState* script_state,
-                                    const String& key,
-                                    ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLAny> SharedStorage::Delete(
+    ScriptState* script_state,
+    const String& key,
+    ExceptionState& exception_state) {
   base::TimeTicks start_time = base::TimeTicks::Now();
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   CHECK(execution_context->IsWindow() ||
         execution_context->IsSharedStorageWorkletGlobalScope());
 
   if (!CheckBrowsingContextIsValid(*script_state, exception_state))
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLAny>();
 
-  ScriptPromiseResolver* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<IDLAny>>(
       script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  auto promise = resolver->Promise();
 
   if (!CheckSharedStoragePermissionsPolicy(*script_state, *execution_context,
                                            *resolver)) {
@@ -505,19 +527,20 @@ ScriptPromise SharedStorage::Delete(ScriptState* script_state,
   return promise;
 }
 
-ScriptPromise SharedStorage::clear(ScriptState* script_state,
-                                   ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLAny> SharedStorage::clear(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   base::TimeTicks start_time = base::TimeTicks::Now();
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   CHECK(execution_context->IsWindow() ||
         execution_context->IsSharedStorageWorkletGlobalScope());
 
   if (!CheckBrowsingContextIsValid(*script_state, exception_state))
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLAny>();
 
-  ScriptPromiseResolver* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<IDLAny>>(
       script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  auto promise = resolver->Promise();
 
   if (!CheckSharedStoragePermissionsPolicy(*script_state, *execution_context,
                                            *resolver)) {
@@ -541,20 +564,30 @@ ScriptPromise SharedStorage::clear(ScriptState* script_state,
   return promise;
 }
 
-ScriptPromise SharedStorage::get(ScriptState* script_state,
-                                 const String& key,
-                                 ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLString> SharedStorage::get(
+    ScriptState* script_state,
+    const String& key,
+    ExceptionState& exception_state) {
   base::TimeTicks start_time = base::TimeTicks::Now();
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  CHECK(execution_context->IsSharedStorageWorkletGlobalScope());
+  CHECK(execution_context->IsWindow() ||
+        execution_context->IsSharedStorageWorkletGlobalScope());
 
   if (!CheckBrowsingContextIsValid(*script_state, exception_state)) {
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLString>();
   }
 
-  ScriptPromiseResolver* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  ScriptPromiseResolverTyped<IDLString>* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<IDLString>>(
+          script_state, exception_state.GetContext());
+  auto promise = resolver->Promise();
+
+  if (execution_context->IsWindow() && !CanGetOutsideWorklet(script_state)) {
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kOperationError,
+        "Cannot call get() outside of a fenced frame."));
+    return promise;
+  }
 
   CHECK(CheckSharedStoragePermissionsPolicy(*script_state, *execution_context,
                                             *resolver));
@@ -566,68 +599,78 @@ ScriptPromise SharedStorage::get(ScriptState* script_state,
     return promise;
   }
 
-  GetSharedStorageWorkletServiceClient(execution_context)
-      ->SharedStorageGet(
-          key,
-          WTF::BindOnce(
-              [](ScriptPromiseResolver* resolver, SharedStorage* shared_storage,
-                 base::TimeTicks start_time,
-                 mojom::blink::SharedStorageGetStatus status,
-                 const String& error_message, const String& value) {
-                DCHECK(resolver);
-                ScriptState* script_state = resolver->GetScriptState();
+  std::string histogram_name = execution_context->IsWindow()
+                                   ? "Storage.SharedStorage.Document.Timing.Get"
+                                   : "Storage.SharedStorage.Worklet.Timing.Get";
+  auto callback = WTF::BindOnce(
+      [](ScriptPromiseResolverTyped<IDLString>* resolver,
+         SharedStorage* shared_storage, base::TimeTicks start_time,
+         const std::string& histogram_name,
+         mojom::blink::SharedStorageGetStatus status,
+         const String& error_message, const String& value) {
+        DCHECK(resolver);
+        ScriptState* script_state = resolver->GetScriptState();
 
-                if (status == mojom::blink::SharedStorageGetStatus::kError) {
-                  if (IsInParallelAlgorithmRunnable(
-                          resolver->GetExecutionContext(), script_state)) {
-                    ScriptState::Scope scope(script_state);
-                    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
-                        script_state->GetIsolate(),
-                        DOMExceptionCode::kOperationError, error_message));
-                  }
-                  return;
-                }
+        if (status == mojom::blink::SharedStorageGetStatus::kError) {
+          if (IsInParallelAlgorithmRunnable(resolver->GetExecutionContext(),
+                                            script_state)) {
+            ScriptState::Scope scope(script_state);
+            resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+                script_state->GetIsolate(), DOMExceptionCode::kOperationError,
+                error_message));
+          }
+          return;
+        }
 
-                base::UmaHistogramMediumTimes(
-                    "Storage.SharedStorage.Worklet.Timing.Get",
-                    base::TimeTicks::Now() - start_time);
+        base::UmaHistogramMediumTimes(histogram_name,
+                                      base::TimeTicks::Now() - start_time);
 
-                if (status == mojom::blink::SharedStorageGetStatus::kSuccess) {
-                  resolver->Resolve(value);
-                  return;
-                }
+        if (status == mojom::blink::SharedStorageGetStatus::kSuccess) {
+          resolver->Resolve(value);
+          return;
+        }
 
-                CHECK_EQ(status,
-                         mojom::blink::SharedStorageGetStatus::kNotFound);
-                resolver->Resolve();
-              },
-              WrapPersistent(resolver), WrapPersistent(this), start_time));
+        CHECK_EQ(status, mojom::blink::SharedStorageGetStatus::kNotFound);
+        resolver->Resolve();
+      },
+      WrapPersistent(resolver), WrapPersistent(this), start_time,
+      histogram_name);
+
+  if (execution_context->IsWindow()) {
+    GetSharedStorageDocumentService(execution_context)
+        ->SharedStorageGet(key, std::move(callback));
+  } else {
+    GetSharedStorageWorkletServiceClient(execution_context)
+        ->SharedStorageGet(key, std::move(callback));
+  }
 
   return promise;
 }
 
-ScriptPromise SharedStorage::length(ScriptState* script_state,
-                                    ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLUnsignedLong> SharedStorage::length(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   base::TimeTicks start_time = base::TimeTicks::Now();
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   CHECK(execution_context->IsSharedStorageWorkletGlobalScope());
 
   if (!CheckBrowsingContextIsValid(*script_state, exception_state)) {
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUnsignedLong>();
   }
 
-  ScriptPromiseResolver* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<IDLUnsignedLong>>(
+          script_state, exception_state.GetContext());
+  auto promise = resolver->Promise();
 
   CHECK(CheckSharedStoragePermissionsPolicy(*script_state, *execution_context,
                                             *resolver));
 
   GetSharedStorageWorkletServiceClient(execution_context)
       ->SharedStorageLength(WTF::BindOnce(
-          [](ScriptPromiseResolver* resolver, SharedStorage* shared_storage,
-             base::TimeTicks start_time, bool success,
-             const String& error_message, uint32_t length) {
+          [](ScriptPromiseResolverTyped<IDLUnsignedLong>* resolver,
+             SharedStorage* shared_storage, base::TimeTicks start_time,
+             bool success, const String& error_message, uint32_t length) {
             DCHECK(resolver);
             ScriptState* script_state = resolver->GetScriptState();
 
@@ -726,7 +769,7 @@ ScriptValue SharedStorage::context(ScriptState* script_state,
                      V8String(script_state->GetIsolate(), embedder_context));
 }
 
-ScriptPromise SharedStorage::selectURL(
+ScriptPromiseTyped<V8SharedStorageResponse> SharedStorage::selectURL(
     ScriptState* script_state,
     const String& name,
     HeapVector<Member<SharedStorageUrlWithMetadata>> urls,
@@ -736,7 +779,7 @@ ScriptPromise SharedStorage::selectURL(
                    exception_state);
 }
 
-ScriptPromise SharedStorage::selectURL(
+ScriptPromiseTyped<V8SharedStorageResponse> SharedStorage::selectURL(
     ScriptState* script_state,
     const String& name,
     HeapVector<Member<SharedStorageUrlWithMetadata>> urls,
@@ -750,14 +793,14 @@ ScriptPromise SharedStorage::selectURL(
                                            exception_state);
 }
 
-ScriptPromise SharedStorage::run(ScriptState* script_state,
-                                 const String& name,
-                                 ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLAny> SharedStorage::run(ScriptState* script_state,
+                                              const String& name,
+                                              ExceptionState& exception_state) {
   return run(script_state, name,
              SharedStorageRunOperationMethodOptions::Create(), exception_state);
 }
 
-ScriptPromise SharedStorage::run(
+ScriptPromiseTyped<IDLAny> SharedStorage::run(
     ScriptState* script_state,
     const String& name,
     const SharedStorageRunOperationMethodOptions* options,
@@ -770,20 +813,28 @@ ScriptPromise SharedStorage::run(
                                      exception_state);
 }
 
-ScriptPromise SharedStorage::createWorklet(ScriptState* script_state,
-                                           const String& module_url,
-                                           const WorkletOptions* options,
-                                           ExceptionState& exception_state) {
-  SharedStorageWorklet* worklet = SharedStorageWorklet::Create(script_state);
-  return worklet->AddModuleHelper(script_state, module_url, options,
-                                  exception_state,
-                                  /*resolve_to_worklet=*/true);
+ScriptPromiseTyped<SharedStorageWorklet> SharedStorage::createWorklet(
+    ScriptState* script_state,
+    const String& module_url,
+    const WorkletOptions* options,
+    ExceptionState& exception_state) {
+  SharedStorageWorklet* worklet = SharedStorageWorklet::Create(
+      script_state, /*cross_origin_script_allowed=*/true);
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<SharedStorageWorklet>>(
+          script_state);
+  auto promise = resolver->Promise();
+  worklet->AddModuleHelper(script_state, resolver, module_url, options,
+                           exception_state,
+                           /*resolve_to_worklet=*/true);
+  return promise;
 }
 
 SharedStorageWorklet* SharedStorage::worklet(ScriptState* script_state,
                                              ExceptionState& exception_state) {
   if (!shared_storage_worklet_) {
-    shared_storage_worklet_ = SharedStorageWorklet::Create(script_state);
+    shared_storage_worklet_ = SharedStorageWorklet::Create(
+        script_state, /*cross_origin_script_allowed=*/false);
   }
 
   return shared_storage_worklet_.Get();

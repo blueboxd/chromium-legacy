@@ -217,6 +217,10 @@ bool PopupViewViews::Show(
 
 void PopupViewViews::Hide() {
   NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
+
+  open_sub_popup_timer_.Stop();
+  no_selection_sub_popup_close_timer_.Stop();
+
   // The controller is no longer valid after it hides us.
   controller_ = nullptr;
   DoHide();
@@ -359,7 +363,7 @@ bool PopupViewViews::HandleKeyPressEvent(
       // We do not want to handle Mod+TAB for other modifiers because this may
       // have other purposes (e.g., change the tab).
       if (!kHasNonShiftModifier) {
-        AcceptSelectedContentOrCreditCardCell(base::TimeTicks::Now());
+        AcceptSelectedContentOrCreditCardCell();
       }
       return false;
     default:
@@ -468,8 +472,7 @@ bool PopupViewViews::SelectPreviousHorizontalCell() {
   return false;
 }
 
-bool PopupViewViews::AcceptSelectedContentOrCreditCardCell(
-    base::TimeTicks event_time) {
+bool PopupViewViews::AcceptSelectedContentOrCreditCardCell() {
   std::optional<CellIndex> index = GetSelectedCell();
   if (!controller_ || !index) {
     return false;
@@ -486,7 +489,7 @@ bool PopupViewViews::AcceptSelectedContentOrCreditCardCell(
     return false;
   }
 
-  controller_->AcceptSuggestion(index->first, event_time);
+  controller_->AcceptSuggestion(index->first);
   return true;
 }
 
@@ -509,9 +512,8 @@ bool PopupViewViews::RemoveSelectedCell() {
 }
 
 void PopupViewViews::OnSuggestionsChanged() {
-  if (open_sub_popup_timer_.IsRunning()) {
-    open_sub_popup_timer_.Stop();
-  }
+  // New suggestions invalidate this scheduling (if it's running), cancel it.
+  open_sub_popup_timer_.Stop();
   SetRowWithOpenSubPopup(std::nullopt);
 
   CreateChildViews();
@@ -626,12 +628,14 @@ void PopupViewViews::SetSelectedCell(
     GetPopupRowViewAt(old_index->first).SetSelectedCell(std::nullopt);
   }
 
-  if (open_sub_popup_timer_.IsRunning()) {
-    open_sub_popup_timer_.Stop();
-  }
+  // New selected cell invalidates this scheduling (if it's running), cancel it.
+  open_sub_popup_timer_.Stop();
 
   if (cell_index && HasPopupRowViewAt(cell_index->first)) {
     has_keyboard_focus_ = true;
+    // The sub-popup hiding is canceled because the newly selected cell will
+    // rule the sub-pupop visibility from now.
+    no_selection_sub_popup_close_timer_.Stop();
 
     row_with_selected_cell_ = cell_index->first;
     PopupRowView& new_selected_row = GetPopupRowViewAt(cell_index->first);
@@ -1011,6 +1015,10 @@ bool PopupViewViews::CanShowDropdownInBounds(const gfx::Rect& bounds) const {
 void PopupViewViews::SetRowWithOpenSubPopup(
     std::optional<size_t> row_index,
     AutoselectFirstSuggestion autoselect_first_suggestion) {
+  if (!controller_) {
+    return;
+  }
+
   if (row_with_open_sub_popup_ == row_index) {
     return;
   }

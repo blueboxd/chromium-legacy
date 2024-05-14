@@ -4,7 +4,9 @@
 
 #include "base/metrics/field_trial_params.h"
 
+#include <optional>
 #include <set>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -21,7 +23,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time_delta_from_string.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 
@@ -68,9 +69,9 @@ bool AssociateFieldTrialParamsFromString(
     FieldTrialParamsDecodeStringFunc decode_data_func) {
   // Format: Trial1.Group1:k1/v1/k2/v2,Trial2.Group2:k1/v1/k2/v2
   std::set<std::pair<std::string, std::string>> trial_groups;
-  for (StringPiece experiment_group :
+  for (std::string_view experiment_group :
        SplitStringPiece(params_string, ",", TRIM_WHITESPACE, SPLIT_WANT_ALL)) {
-    std::vector<StringPiece> experiment = SplitStringPiece(
+    std::vector<std::string_view> experiment = SplitStringPiece(
         experiment_group, ":", TRIM_WHITESPACE, SPLIT_WANT_ALL);
     if (experiment.size() != 2) {
       DLOG(ERROR) << "Experiment and params should be separated by ':'";
@@ -214,7 +215,7 @@ base::TimeDelta GetFieldTrialParamByFeatureAsTimeDelta(
   if (value_as_string.empty())
     return default_value;
 
-  absl::optional<base::TimeDelta> ret = TimeDeltaFromString(value_as_string);
+  std::optional<base::TimeDelta> ret = TimeDeltaFromString(value_as_string);
   if (!ret.has_value()) {
     LogInvalidValue(feature, "a base::TimeDelta", param_name, value_as_string,
                     base::NumberToString(default_value.InSecondsF()) + " s");

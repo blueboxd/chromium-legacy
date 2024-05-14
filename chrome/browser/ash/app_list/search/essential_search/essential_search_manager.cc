@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/app_list/search/essential_search/essential_search_manager.h"
 
 #include "base/check_is_test.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/app_list/search/essential_search/socs_cookie_fetcher.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -30,6 +31,11 @@ namespace app_list {
 namespace {
 constexpr base::TimeDelta kOneDay = base::Days(1);
 const char kCookieName[] = "SOCS";
+
+void LogStatus(SocsCookieFetcher::Status status) {
+  base::UmaHistogramEnumeration("Ash.EssentialSearch.Status", status);
+}
+
 }  // namespace
 
 const net::BackoffEntry::Policy
@@ -106,6 +112,7 @@ void EssentialSearchManager::MaybeFetchSocsCookie() {
   if (prefs->GetBoolean(prefs::kEssentialSearchEnabled)) {
     // If the policy is enabled, cancel all active requests then fetch SOCS
     // cookie.
+    MaybeDisableSearchSuggest();
     CancelPendingRequests();
     socs_cookie_fetcher_ = std::make_unique<SocsCookieFetcher>(
         primary_profile_->GetURLLoaderFactory(), this);
@@ -118,6 +125,46 @@ void EssentialSearchManager::MaybeFetchSocsCookie() {
     RemoveSocsCookie();
     return;
   }
+}
+
+void EssentialSearchManager::MaybeDisableSearchSuggest() {
+  // Disable search suggest if last kEssentialSearchEnabled value was false
+  // (until SOCS is fetched)
+  if (!primary_profile_->GetPrefs()->GetBoolean(
+          prefs::kLastEssentialSearchValue)) {
+    temporary_disable_search_suggest_ = true;
+    return;
+  }
+
+  // Check user profile for valid SOCS cookie
+  primary_profile_->GetDefaultStoragePartition()
+      ->GetCookieManagerForBrowserProcess()
+      ->GetCookieList(
+          GaiaUrls::GetInstance()->secure_google_url(),
+          net::CookieOptions::MakeAllInclusive(),
+          net::CookiePartitionKeyCollection(),
+          base::BindOnce(&EssentialSearchManager::OnCookiesRetrieved,
+                         weak_ptr_factory_.GetWeakPtr()));
+}
+
+void EssentialSearchManager::OnCookiesRetrieved(
+    const net::CookieAccessResultList& list,
+    const net::CookieAccessResultList& excluded_list) {
+  // Assume disabled until valid SOCS found
+  bool should_disable_search_suggest = true;
+  for (const auto& cookie_with_access_result : list) {
+    if (cookie_with_access_result.cookie.Name() == kCookieName) {
+      should_disable_search_suggest = false;
+      break;
+    }
+  }
+
+  temporary_disable_search_suggest_ = should_disable_search_suggest;
+}
+
+bool EssentialSearchManager::ShouldDisableSearchSuggest() const {
+  // TODO(b/312542928): collect UMA with the return type.
+  return temporary_disable_search_suggest_;
 }
 
 void EssentialSearchManager::RemoveSocsCookie() {
@@ -182,8 +229,12 @@ void EssentialSearchManager::OnCookieAddedToUserProfile(
     return;
   }
 
+  // Log success of fetching the cookie and adding it to the user profile.
+  LogStatus(SocsCookieFetcher::Status::kOk);
+
   // After the SOCS cookie is added to the user profile, Schedule a SOCS cookie
   // refresh to ensure a valid SOCS cookie is maintained.
+  temporary_disable_search_suggest_ = false;
   RefetchAfter(kOneDay);
   retry_backoff_.InformOfRequest(true);
   PrefService* prefs = primary_profile_->GetPrefs();
@@ -214,7 +265,7 @@ void EssentialSearchManager::CancelPendingRequests() {
 }
 
 void EssentialSearchManager::OnApiCallFailed(SocsCookieFetcher::Status status) {
-  // TODO(b/312542928): collect UMA with the error type.
+  LogStatus(status);
   retry_backoff_.InformOfRequest(false);
   RefetchAfter(retry_backoff_.GetTimeUntilRelease());
 }

@@ -20,111 +20,163 @@ def __use_large_b289968566(ctx, step_config):
     # TODO(b/289968566): they often faile with exit=137 (OOM?).
     # They need to run on a machine has more memory than the default machine type n2-custom-2-3840
     exit137_list = [
-        "./android_clang_arm/obj/content/browser/browser/browser_interface_binders.o",
-        "./android_clang_arm/obj/third_party/distributed_point_functions/distributed_point_functions/evaluate_prg_hwy.o",
-        "./ash_clang_x64/obj/chrome/browser/ash/ash/autotest_private_api.o",
-        "./ash_clang_x64/obj/chrome/browser/ash/ash/chrome_browser_main_parts_ash.o",
-        "./ash_clang_x64/obj/chrome/browser/ash/ash/user_session_manager.o",
-        "./ash_clang_x64/obj/chrome/browser/browser/browser_prefs.o",
-        "./ash_clang_x64/obj/chrome/browser/browser/chrome_browser_interface_binders.o",
-        "./ash_clang_x64/obj/chrome/browser/browser/chrome_content_browser_client.o",
-        "./ash_clang_x64/obj/chrome/test/test_support_ui/offer_notification_bubble_views_test_base.o",
-        "./ash_clang_x64/obj/chrome/test/test_support_ui/web_app_integration_test_driver.o",
-        "./ash_clang_x64/obj/content/browser/browser/browser_interface_binders.o",
+        # Fallback happens with follwoing args.gn (try/linux-chromeos-rel-compilator).
+        # Fallback may happen in other build config too.
+        # also_build_lacros_chrome = true
+        # dcheck_always_on = true
+        # enable_backup_ref_ptr_feature_flag = true
+        # enable_dangling_raw_ptr_checks = true
+        # enable_dangling_raw_ptr_feature_flag = true
+        # ffmpeg_branding = "ChromeOS"
+        # is_component_build = false
+        # is_debug = false
+        # proprietary_codecs = true
+        # symbol_level = 0
+        # target_os = "chromeos"
+        # use_cups = true
+        # use_remoteexec = true
         "./lacros_clang_x64/obj/chrome/browser/browser/chrome_content_browser_client.o",
         "./lacros_clang_x64/obj/content/browser/browser/browser_interface_binders.o",
-        "./obj/ash_clang_x64/chrome/test/test_support_ui/offer_notification_bubble_views_test_base.o",
         "./obj/chrome/browser/ash/ash/autotest_private_api.o",
         "./obj/chrome/browser/ash/ash/chrome_browser_main_parts_ash.o",
-        "./obj/chrome/browser/ash/ash/user_session_manager.o",
         "./obj/chrome/browser/ash/ash/webui_login_view.o",
         "./obj/chrome/browser/ash/system_web_apps/apps/browser_tests/media_app_integration_browsertest.o",
-        "./obj/chrome/browser/ash/system_web_apps/apps/browser_tests/personalization_app_time_of_day_browsertest.o",
-        "./obj/chrome/browser/ash/system_web_apps/apps/browser_tests/personalization_app_wallpaper_daily_refresh_browsertest.o",
-        "./obj/chrome/browser/ash/system_web_apps/apps/browser_tests/projector_app_integration_browsertest.o",
         "./obj/chrome/browser/ash/system_web_apps/browser_tests/system_web_app_manager_browsertest.o",
-        "./obj/chrome/browser/ash/test_support/oobe_screens_utils.o",
         "./obj/chrome/browser/ash/unit_tests/wizard_controller_unittest.o",
-        "./obj/chrome/browser/autofill/interactive_ui_tests/autofill_interactive_uitest.o",
         "./obj/chrome/browser/browser/browser_prefs.o",
         "./obj/chrome/browser/browser/chrome_browser_interface_binders.o",
         "./obj/chrome/browser/browser/chrome_content_browser_client.o",
         "./obj/chrome/browser/ui/ash/holding_space/browser_tests/holding_space_ui_browsertest.o",
-        "./obj/chrome/browser/web_applications/web_applications_browser_tests/isolated_web_app_policy_manager_ash_browsertest.o",
         "./obj/chrome/test/browser_tests/app_list_client_impl_browsertest.o",
-        "./obj/chrome/test/browser_tests/ash_hud_login_browsertest.o",
-        "./obj/chrome/test/browser_tests/assistant_optin_flow_screen_browsertest.o",
-        "./obj/chrome/test/browser_tests/autotest_private_apitest.o",
-        "./obj/chrome/test/browser_tests/browser_non_client_frame_view_browsertest.o",
         "./obj/chrome/test/browser_tests/browser_non_client_frame_view_chromeos_browsertest.o",
-        "./obj/chrome/test/browser_tests/capture_mode_browsertest.o",
         "./obj/chrome/test/browser_tests/chrome_shelf_controller_browsertest.o",
-        "./obj/chrome/test/browser_tests/configuration_based_oobe_browsertest.o",
-        "./obj/chrome/test/browser_tests/consolidated_consent_screen_browsertest.o",
-        "./obj/chrome/test/browser_tests/consumer_update_screen_browsertest.o",
-        "./obj/chrome/test/browser_tests/demo_setup_browsertest.o",
         "./obj/chrome/test/browser_tests/device_local_account_browsertest.o",
-        "./obj/chrome/test/browser_tests/devtools_browsertest.o",
-        "./obj/chrome/test/browser_tests/display_size_screen_browsertest.o",
-        "./obj/chrome/test/browser_tests/drive_pinning_screen_browsertest.o",
-        "./obj/chrome/test/browser_tests/enrollment_embedded_policy_server_browsertest.o",
-        "./obj/chrome/test/browser_tests/enterprise_remote_apps_apitest.o",
-        "./obj/chrome/test/browser_tests/error_screen_browsertest.o",
-        "./obj/chrome/test/browser_tests/existing_user_controller_browsertest.o",
         "./obj/chrome/test/browser_tests/file_manager_browsertest_base.o",
-        "./obj/chrome/test/browser_tests/file_manager_policy_browsertest.o",
-        "./obj/chrome/test/browser_tests/file_tasks_browsertest.o",
         "./obj/chrome/test/browser_tests/full_restore_app_launch_handler_browsertest.o",
-        "./obj/chrome/test/browser_tests/hid_detection_screen_browsertest.o",
-        "./obj/chrome/test/browser_tests/kiosk_browsertest.o",
-        "./obj/chrome/test/browser_tests/lacros_data_migration_screen_browsertest.o",
-        "./obj/chrome/test/browser_tests/login_browsertest.o",
-        "./obj/chrome/test/browser_tests/login_manager_test.o",
-        "./obj/chrome/test/browser_tests/login_ui_browsertest.o",
-        "./obj/chrome/test/browser_tests/login_ui_shelf_visibility_browsertest.o",
-        "./obj/chrome/test/browser_tests/management_transition_screen_browsertest.o",
-        "./obj/chrome/test/browser_tests/marketing_opt_in_screen_browsertest.o",
-        "./obj/chrome/test/browser_tests/metadata_processor_ash_browsertest.o",
-        "./obj/chrome/test/browser_tests/minimum_version_policy_handler_browsertest.o",
-        "./obj/chrome/test/browser_tests/notification_display_client_browsertest.o",
-        "./obj/chrome/test/browser_tests/oauth2_browsertest.o",
-        "./obj/chrome/test/browser_tests/offline_login_test_mixin.o",
-        "./obj/chrome/test/browser_tests/oobe_base_test.o",
-        "./obj/chrome/test/browser_tests/oobe_browsertest.o",
-        "./obj/chrome/test/browser_tests/oobe_interactive_ui_test.o",
-        "./obj/chrome/test/browser_tests/oobe_metrics_browsertest.o",
-        "./obj/chrome/test/browser_tests/policy_certs_browsertest.o",
-        "./obj/chrome/test/browser_tests/pwa_install_view_browsertest.o",
-        "./obj/chrome/test/browser_tests/quick_start_screen_browsertest.o",
         "./obj/chrome/test/browser_tests/remote_apps_manager_browsertest.o",
         "./obj/chrome/test/browser_tests/safe_browsing_blocking_page_test.o",
-        "./obj/chrome/test/browser_tests/save_card_bubble_views_browsertest.o",
         "./obj/chrome/test/browser_tests/scalable_iph_browsertest.o",
-        "./obj/chrome/test/browser_tests/session_login_browsertest.o",
         "./obj/chrome/test/browser_tests/spoken_feedback_browsertest.o",
-        "./obj/chrome/test/browser_tests/sync_consent_browsertest.o",
-        "./obj/chrome/test/browser_tests/theme_selection_screen_browsertest.o",
-        "./obj/chrome/test/browser_tests/touchpad_scroll_screen_browsertest.o",
-        "./obj/chrome/test/browser_tests/update_screen_browsertest.o",
-        "./obj/chrome/test/browser_tests/usertype_by_devicetype_metrics_provider_browsertest.o",
-        "./obj/chrome/test/browser_tests/web_view_browsertest.o",
-        "./obj/chrome/test/browser_tests/webview_login_browsertest.o",
-        "./obj/chrome/test/browser_tests/welcome_screen_browsertest.o",
-        "./obj/chrome/test/browser_tests/wizard_controller_browsertest.o",
-        "./obj/chrome/test/interactive_ui_tests/iban_bubble_view_uitest.o",
         "./obj/chrome/test/interactive_ui_tests/local_card_migration_uitest.o",
-        "./obj/chrome/test/interactive_ui_tests/login_manager_test.o",
         "./obj/chrome/test/interactive_ui_tests/system_web_app_interactive_uitest.o",
         "./obj/chrome/test/interactive_ui_tests/tab_drag_controller_interactive_uitest.o",
-        "./obj/chrome/test/test_support_ui/offer_notification_bubble_views_test_base.o",
         "./obj/chrome/test/test_support_ui/web_app_integration_test_driver.o",
         "./obj/chrome/test/unit_tests/chrome_browsing_data_remover_delegate_unittest.o",
         "./obj/chrome/test/unit_tests/chrome_shelf_controller_unittest.o",
-        "./obj/chrome/test/unit_tests/site_settings_handler_unittest.o",
         "./obj/content/browser/browser/browser_interface_binders.o",
-        "./obj/fuchsia_web/runners/cast_runner_exe/main.o",
+
+        # Fallback happens with follwoing args.gn (try/linux-lacros-rel-compilator).
+        # Fallback may happen in other build config too.
+        # also_build_ash_chrome = true
+        # chromeos_is_browser_only = true
+        # dcheck_always_on = true
+        # is_clang = true
+        # is_component_build = false
+        # is_debug = false
+        # symbol_level = 0
+        # target_os = "chromeos"
+        # use_cups = true
+        # use_remoteexec = true
+        "./ash_clang_x64/obj/chrome/browser/ash/ash/autotest_private_api.o",
+        "./ash_clang_x64/obj/chrome/browser/ash/ash/chrome_browser_main_parts_ash.o",
+        "./ash_clang_x64/obj/chrome/browser/browser/browser_prefs.o",
+        "./ash_clang_x64/obj/chrome/browser/browser/chrome_browser_interface_binders.o",
+        "./ash_clang_x64/obj/chrome/browser/browser/chrome_content_browser_client.o",
+        "./ash_clang_x64/obj/content/browser/browser/browser_interface_binders.o",
+
+        # Fallback happens with follwoing args.gn (try/android_compile_dbg).
+        # Fallback may happen in other build config too.
+        # debuggable_apks = false
+        # ffmpeg_branding = "Chrome"
+        # is_component_build = true
+        # is_debug = true
+        # proprietary_codecs = true
+        # symbol_level = 0
+        # target_cpu = "arm64"
+        # target_os = "android"
+        # use_remoteexec = true
+        "./android_clang_arm/obj/content/browser/browser/browser_interface_binders.o",
+
+        # Fallback happens with follwoing args.gn (try/fuchsia-x64-cast-receiver-rel).
+        # Fallback may happen in other build config too.
+        # cast_streaming_enable_remoting = true
+        # chrome_pgo_phase = 0
+        # dcheck_always_on = true
+        # enable_cast_receiver = true
+        # enable_dav1d_decoder = false
+        # enable_hidpi = false
+        # enable_libaom = false
+        # enable_library_cdms = false
+        # enable_logging_override = true
+        # enable_pdf = false
+        # enable_plugins = false
+        # enable_printing = false
+        # fuchsia_code_coverage = true
+        # is_component_build = false
+        # is_debug = false
+        # optimize_for_size = true
+        # optional_trace_events_enabled = false
+        # produce_v8_compile_hints = false
+        # symbol_level = 0
+        # target_os = "fuchsia"
+        # use_remoteexec = true
+        # use_thin_lto = false
         "./obj/fuchsia_web/runners/cast_runner_integration_tests__exec/cast_runner_integration_test.o",
         "./obj/fuchsia_web/webengine/web_engine_core/frame_impl.o",
+
+        # Fallback happens with follwoing args.gn (try/linux_chromium_asan_rel_ng, or try/linux_chromium_asan_siso_rel_ng-compilator).
+        # dcheck_always_on = true
+        # fail_on_san_warnings = true
+        # is_asan = true
+        # is_component_build = false
+        # is_debug = false
+        # is_lsan = true
+        # symbol_level = 1
+        # use_remoteexec = true
+        "./obj/components/autofill/core/browser/unit_tests/browser_autofill_manager_unittest.o",
+        "./obj/content/browser/browser/render_frame_host_impl.o",
+        "./obj/content/browser/browser/web_contents_impl.o",
+        "./obj/content/test/content_browsertests/back_forward_cache_features_browsertest.o",
+        "./obj/content/test/content_browsertests/back_forward_cache_internal_browsertest.o",
+        "./obj/content/test/content_browsertests/fenced_frame_browsertest.o",
+        "./obj/content/test/content_browsertests/interest_group_browsertest.o",
+        "./obj/content/test/content_browsertests/navigation_controller_impl_browsertest.o",
+        "./obj/content/test/content_browsertests/navigation_request_browsertest.o",
+        "./obj/content/test/content_browsertests/prerender_browsertest.o",
+        "./obj/content/test/content_browsertests/render_frame_host_impl_browsertest.o",
+        "./obj/content/test/content_browsertests/shared_storage_browsertest.o",
+        "./obj/content/test/content_browsertests/site_per_process_browsertest.o",
+        "./obj/content/test/content_browsertests/web_contents_impl_browsertest.o",
+        "./obj/content/test/content_unittests/ad_auction_service_impl_unittest.o",
+        "./obj/content/test/content_unittests/auction_runner_unittest.o",
+        "./obj/content/test/content_unittests/authenticator_impl_unittest.o",
+        "./obj/content/test/content_unittests/web_usb_service_impl_unittest.o",
+        "./obj/net/third_party/quiche/quiche_tests/quic_connection_test.o",
+        "./obj/third_party/abseil-cpp/absl/functional/any_invocable_test/any_invocable_test.o",
+        "./obj/third_party/blink/renderer/core/unit_tests/web_frame_test.o",
+        "./obj/third_party/blink/renderer/core/unit_tests/web_media_player_impl_unittest.o",
+        "./obj/third_party/perfetto/protos/perfetto/trace/merged_trace_lite/perfetto_trace.pb.o",
+        "./obj/ui/gl/gl_unittest_utils/gl_bindings_autogen_mock.o",
+
+        # Fallback happens with follwoing args.gn (ci/Linux MSan Builder).
+        # dcheck_always_on = false
+        # is_component_build = false
+        # is_debug = false
+        # is_msan = true
+        # msan_track_origins = 2
+        # use_remoteexec = true
+        "./obj/chrome/test/unit_tests/site_settings_handler_unittest.o",
+        "./obj/components/policy/chrome_settings_proto_generated_compile_proto/chrome_settings.pb.o",
+        "./obj/content/test/content_browsertests/navigation_controller_impl_browsertest.o",
+        "./obj/content/test/content_unittests/auction_runner_unittest.o",
+        "./obj/net/dns/tests/host_resolver_manager_unittest.o",
+        "./obj/net/third_party/quiche/quiche_tests/oghttp2_adapter_test.o",
+        "./obj/net/third_party/quiche/quiche_tests/quic_connection_test.o",
+        "./obj/net/third_party/quiche/quiche_tests/structured_headers_generated_test.o",
+        "./obj/ui/accessibility/accessibility_unittests/ax_node_position_unittest.o",
+        "./obj/ui/gl/gl_unittest_utils/gl_bindings_autogen_mock.o",
+        "./obj/ui/gl/gl_unittest_utils/gl_mock.o",
+        "./obj/v8/v8_turboshaft/csa-optimize-phase.o",
     ]
     if runtime.os == "windows":
         exit137_list = [obj.removesuffix(".o") + ".obj" for obj in exit137_list if obj.startswith("./obj/")]
@@ -140,6 +192,9 @@ def __use_large_b289968566(ctx, step_config):
         r.update(rule)
         r["name"] += "/b289968566/exit-137"
         r["action_outs"] = exit137_list
+
+        # Some large compile take longer than the default timeout 2m.
+        r["timeout"] = "4m"
 
         # use `_large` variant of platform if it doesn't use default platform,
         # i.e. mac/win case.

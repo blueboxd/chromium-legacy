@@ -37,11 +37,13 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "media/base/audio_renderer_sink.h"
 #include "third_party/blink/public/platform/web_audio_device.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/audio/audio_io_callback.h"
+#include "third_party/blink/renderer/platform/audio/media_multi_channel_resampler.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -97,6 +99,8 @@ class PLATFORM_EXPORT AudioDestination final
              const media::AudioGlitchInfo& glitch_info,
              media::AudioBus* dest) override;
 
+  // This callback method may be called from either the main thread or non-main
+  // threads.
   void OnRenderError() override;
 
   void Start();
@@ -114,7 +118,7 @@ class PLATFORM_EXPORT AudioDestination final
 
   bool IsPlaying();
 
-  // This is the context sample rate, not the hardware one.
+  // This is the context sample rate, not the device one.
   double SampleRate() const;
 
   uint32_t CallbackBufferSize() const;
@@ -122,6 +126,9 @@ class PLATFORM_EXPORT AudioDestination final
   // Returns the audio buffer size in frames used by the underlying audio
   // hardware.
   int FramesPerBuffer() const;
+
+  // Returns the audio buffer duration used by the underlying sink.
+  base::TimeDelta GetPlatformBufferDuration() const;
 
   // The maximum channel count of the current audio sink device.
   uint32_t MaxChannelCount();
@@ -159,6 +166,8 @@ class PLATFORM_EXPORT AudioDestination final
                      double delay,
                      double delay_timestamp);
 
+  // Provide input to the resampler (if used).
+  void ProvideResamplerInput(int resampler_frame_delay, AudioBus* dest);
 
   void SendLogMessage(const String& message) const;
 
@@ -170,6 +179,9 @@ class PLATFORM_EXPORT AudioDestination final
   const unsigned number_of_output_channels_;
 
   const unsigned render_quantum_frames_;
+
+  // The sample rate used for rendering the Web Audio graph.
+  const float context_sample_rate_;
 
   // Can be accessed by both threads: resolves the buffer size mismatch between
   // the WebAudio engine and the callback function from the actual audio device.
@@ -184,10 +196,15 @@ class PLATFORM_EXPORT AudioDestination final
 
   // Accessed by rendering thread: the render callback function of WebAudio
   // engine. (i.e. DestinationNode)
-  const raw_ref<AudioIOCallback, ExperimentalRenderer> callback_;
+  const raw_ref<AudioIOCallback> callback_;
 
   // Accessed by rendering thread.
   size_t frames_elapsed_ = 0;
+
+  // Used for resampling if the Web Audio sample rate differs from the platform
+  // one.
+  std::unique_ptr<MediaMultiChannelResampler> resampler_;
+  std::unique_ptr<media::AudioBus> resampler_bus_;
 
   // Required for RequestRender and also in the resampling callback (if used).
   AudioIOPosition output_position_;

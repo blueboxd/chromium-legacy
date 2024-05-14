@@ -1656,7 +1656,8 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
   builder = ComputedStyleBuilder(target->StyleRef());
   TransformOperations transform;
   transform.Operations().push_back(
-      RotateTransformOperation::Create(10, TransformOperation::kRotate));
+      MakeGarbageCollected<RotateTransformOperation>(
+          10, TransformOperation::kRotate));
   builder.SetTransform(transform);
   builder.SetTransformOrigin(
       TransformOrigin(Length::Fixed(70), Length::Fixed(30), 0));
@@ -2145,7 +2146,7 @@ TEST_P(PaintPropertyTreeUpdateTest, AnchorPositioningScrollUpdate) {
     <div id="anchor" style="
         anchor-name: --a; width: 100px; height: 100px"></div>
     <div id="target" style="
-        position: fixed; anchor-default: --a;
+        position: fixed; position-anchor: --a;
         width: 100px; height: 100px; bottom: anchor(--a top)"></div>
   )HTML");
 

@@ -7,7 +7,9 @@
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
+#include "base/metrics/histogram_base.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
@@ -24,6 +26,7 @@
 #include "chrome/browser/ash/login/test/user_policy_mixin.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/webui_login_view.h"
+#include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/policy/core/device_local_account.h"
 #include "chrome/browser/ash/policy/core/device_policy_builder.h"
@@ -339,6 +342,10 @@ class ManagedUserTosScreenTest : public OobeBaseTest {
     original_callback_ = screen->get_exit_callback_for_testing();
     screen->set_exit_callback_for_testing(base::BindRepeating(
         &ManagedUserTosScreenTest::HandleScreenExit, base::Unretained(this)));
+    LoginDisplayHost::default_host()
+        ->GetWizardContext()
+        ->knowledge_factor_setup.auth_setup_flow =
+        WizardContext::AuthChangeFlow::kReauthentication;
   }
 
   void WaitForScreenShown() {

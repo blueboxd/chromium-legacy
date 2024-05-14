@@ -10,19 +10,17 @@ import {SeaPenTemplateChip, SeaPenTemplateId, SeaPenTemplateOption} from './sea_
 
 export type Query = 'Query';
 
-/**
- * An interface for the data of a recent sea pen image.
- */
-export interface RecentSeaPenData {
-  url: Url;
-  queryInfo: string;
-}
+// SeaPen images are identified by a positive integer. For a newly generated
+// thumbnail, this is `SeaPenThumbnail.id`.
+export type SeaPenImageId = number;
 
 export interface SeaPenOption {
   // `value` is the actual option value to be sent to the server side.
   value: SeaPenTemplateOption;
   // `translation` is the translated value to be displayed in the UI.
   translation: string;
+  // The preview image url of the option.
+  previewUrl?: string;
 }
 
 export interface SeaPenTemplate {
@@ -60,9 +58,13 @@ export function getSeaPenTemplates(): SeaPenTemplate[] {
  * Split the template string into an array of strings, where each string is
  * either a literal string or a placeholder for a chip.
  * @example
- * // returns ['A park in ', '<city>', ' in the style of ', '<style>']
+ * // returns ['A park in', '<city>', 'in the style of', '<style>']
  * parseTemplateText('A park in <city> in the style of <style>');
  */
 export function parseTemplateText(template: string): string[] {
-  return template.split(/(<\w+>)/g);
+  return template.split(/(<\w+>)/g)
+      .filter(function(entry) {
+        return entry.trim() != '';
+      })
+      .map(entry => entry.trim());
 }

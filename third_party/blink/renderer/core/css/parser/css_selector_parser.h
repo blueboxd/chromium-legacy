@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/parser/css_nesting_type.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
 
 namespace blink {
 
@@ -86,10 +87,10 @@ class CORE_EXPORT CSSSelectorParser {
   static CSSSelector::PseudoType ParsePseudoType(const AtomicString&,
                                                  bool has_arguments,
                                                  const Document*);
-  static PseudoId ParsePseudoElement(const String&, const Node*);
-  // Returns the argument of a parameterized pseudo-element. For example, for
-  // '::highlight(foo)' it returns 'foo'.
-  static AtomicString ParsePseudoElementArgument(const String&);
+
+  static PseudoId ParsePseudoElement(const String&,
+                                     const Node*,
+                                     AtomicString& argument);
 
   // https://drafts.csswg.org/css-cascade-6/#typedef-scope-start
   // https://drafts.csswg.org/css-cascade-6/#typedef-scope-end

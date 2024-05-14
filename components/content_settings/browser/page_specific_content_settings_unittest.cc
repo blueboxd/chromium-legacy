@@ -1236,6 +1236,35 @@ TEST_F(PageSpecificContentSettingsWithFencedFrameTest,
   ff_pscs->OnContentAllowed(ContentSettingsType::COOKIES);
 }
 
+TEST_F(PageSpecificContentSettingsTest,
+       MediaIndicatorsBlockedDoNotOverrideInUse) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      content_settings::features::kLeftHandSideActivityIndicators);
+
+  NavigateAndCommit(GURL("http://google.com"));
+
+  PageSpecificContentSettings* pscs = PageSpecificContentSettings::GetForFrame(
+      web_contents()->GetPrimaryMainFrame());
+  ASSERT_NE(pscs, nullptr);
+
+  pscs->OnMediaStreamPermissionSet(
+      web_contents()->GetLastCommittedURL(),
+      {PageSpecificContentSettings::kCameraAccessed});
+
+  EXPECT_TRUE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kCameraAccessed));
+
+  pscs->OnMediaStreamPermissionSet(
+      web_contents()->GetLastCommittedURL(),
+      {PageSpecificContentSettings::kMicrophoneAccessed,
+       PageSpecificContentSettings::kMicrophoneBlocked});
+
+  EXPECT_FALSE(pscs->GetMicrophoneCameraState().HasAny(
+      {PageSpecificContentSettings::kMicrophoneAccessed,
+       PageSpecificContentSettings::kMicrophoneBlocked}));
+}
+
 TEST_F(PageSpecificContentSettingsTest, MediaIndicatorsMinHoldDurationDelay) {
   NavigateAndCommit(GURL("http://google.com"));
 
@@ -1546,6 +1575,36 @@ TEST_F(PageSpecificContentSettingsTest,
       ContentSettingsType::MEDIASTREAM_MIC));
   EXPECT_FALSE(pscs->GetMicrophoneCameraState().Has(
       PageSpecificContentSettings::kMicrophoneAccessed));
+  EXPECT_FALSE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kMicrophoneBlocked));
+}
+
+// Tests that a permission blocked state is reset after media started to be
+// used.
+TEST_F(PageSpecificContentSettingsTest, MediaBlockedStateIsResetIfMediaUsed) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      content_settings::features::kLeftHandSideActivityIndicators);
+
+  NavigateAndCommit(GURL("http://google.com"));
+
+  PageSpecificContentSettings* pscs = PageSpecificContentSettings::GetForFrame(
+      web_contents()->GetPrimaryMainFrame());
+  ASSERT_NE(pscs, nullptr);
+
+  PageSpecificContentSettings::MicrophoneCameraState
+      blocked_microphone_camera_state = {
+          PageSpecificContentSettings::kMicrophoneAccessed,
+          PageSpecificContentSettings::kMicrophoneBlocked};
+  pscs->OnMediaStreamPermissionSet(GURL("http://google.com"),
+                                   blocked_microphone_camera_state);
+
+  EXPECT_TRUE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kMicrophoneBlocked));
+
+  // Camera is capturing, it should reset blocked microphone state.
+  pscs->OnCapturingStateChanged(ContentSettingsType::MEDIASTREAM_CAMERA, true);
+
   EXPECT_FALSE(pscs->GetMicrophoneCameraState().Has(
       PageSpecificContentSettings::kMicrophoneBlocked));
 }

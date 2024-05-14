@@ -175,8 +175,11 @@ extern const char kBlueDotPromoOverflowMenuDismissed[];
 // row.
 extern const char kBlueDotPromoSettingsDismissed[];
 
-// The user snoozed the Credential Provider Extension Promo
+// The user snoozed the Credential Provider Extension Promo.
 extern const char kCredentialProviderExtensionPromoSnoozed[];
+
+// The user tapped Remind Me Later on the Docking Promo.
+extern const char kDockingPromoRemindMeLater[];
 
 // The user opened an url from omnibox.
 extern const char kOpenUrlFromOmnibox[];
@@ -224,6 +227,19 @@ extern const char kIOSBackForwardButtonTapped[];
 
 // The user has swiped from the edge to navigate backward or forward on a tab.
 extern const char kIOSSwipeBackForwardUsed[];
+
+// The user has tapped on an adjacent tab in the tab grid.
+extern const char kIOSTabGridAdjacentTabTapped[];
+
+// The user has swipped the toolbar to go to an adjacent tab.
+extern const char kIOSSwipeToolbarToChangeTabUsed[];
+
+// The user has opened the Overflow Menu customization screen.
+extern const char kIOSOverflowMenuCustomizationUsed[];
+
+// The user has used ann Overflow Menu item where customizing the menu could
+// have helped.
+extern const char kIOSOverflowMenuOffscreenItemUsed[];
 
 #endif  // BUILDFLAG(IS_IOS)
 

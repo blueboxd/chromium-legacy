@@ -5,6 +5,7 @@
 <translation id="1036348656032585052">Desactivar</translation>
 <translation id="1044891598689252897">Los sitios funcionarán normalmente</translation>
 <translation id="1073417869336441572">Cuéntanos por qué habilitaste las cookies de terceros para ayudarnos a mejorar Chrome. <ph name="BEGIN_LINK" />Enviar comentarios<ph name="END_LINK" /></translation>
+<translation id="1113435009358629918">Ocultar tarjeta de reducción de precio</translation>
 <translation id="1178581264944972037">Detener</translation>
 <translation id="1181037720776840403">Quitar</translation>
 <translation id="1192844206376121885">Esta acción borrará todos los datos y cookies que almacenó <ph name="ORIGIN" />.</translation>
@@ -21,7 +22,6 @@
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1384959399684842514">Descarga detenida</translation>
 <translation id="1415402041810619267">URL acortada</translation>
-<translation id="1434873037477293673">tarjeta de reducción de precio</translation>
 <translation id="1448064542941920355">Reducir zoom</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{<ph name="SITE_COUNT" /> sitio}other{<ph name="SITE_COUNT" /> sitios}}</translation>
 <translation id="1510341833810331442">Los sitios no pueden guardar datos en tu dispositivo</translation>
@@ -93,12 +93,14 @@
 <translation id="2498359688066513246">Ayuda y comentarios</translation>
 <translation id="2501278716633472235">Ir atrás</translation>
 <translation id="2546283357679194313">Datos de sitios y cookies</translation>
+<translation id="2550801787432930915">Tarjeta de reducción de precio</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie bloqueada}other{# cookies bloqueadas}}</translation>
 <translation id="2570922361219980984">El acceso a la ubicación también está desactivado en este dispositivo. Actívalo en la <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Expandido; haz clic para contraer.</translation>
 <translation id="2586657967955657006">Portapapeles</translation>
 <translation id="2597457036804169544">No aplicar el Tema oscuro para los sitios</translation>
 <translation id="2606760465469169465">Verificación automática</translation>
+<translation id="2613007545732217283"><ph name="HOST_NAME" /> <ph name="SEPARATOR" /> <ph name="RECENCY" /></translation>
 <translation id="2621115761605608342">Permitir la ejecución de JavaScript para un sitio específico</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2677748264148917807">Abandonar</translation>
@@ -121,7 +123,6 @@
 <translation id="2979365474350987274">Las cookies de terceros están limitadas</translation>
 <translation id="3008272652534848354">Restablecer permisos</translation>
 <translation id="301521992641321250">Bloqueado de forma automática</translation>
-<translation id="3025010840409371499"><ph name="RECENCY" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="3069226013421428034">Permite el acceso de terceros a un sitio específico.</translation>
 <translation id="3082992102194421695">{COUNT,plural, =1{Vence mañana}other{Vence en # días}}</translation>
 <translation id="310297983047869047">Diapositiva anterior</translation>
@@ -188,7 +189,6 @@
 <translation id="4149994727733219643">Vista simplificada para páginas web</translation>
 <translation id="4151930093518524179">Zoom predeterminado</translation>
 <translation id="4165986682804962316">Configuración de sitios</translation>
-<translation id="4169019654293892025">Ocultar <ph name="TITLE_OF_MODULE" /></translation>
 <translation id="4169549551965910670">Se conectó a un dispositivo USB</translation>
 <translation id="4194328954146351878">Preguntar antes de permitir que los sitios vean y cambien la información de los dispositivos NFC (recomendado)</translation>
 <translation id="4200726100658658164">Abrir la configuración de la ubicación</translation>
@@ -213,6 +213,7 @@
 <translation id="4566417217121906555">Silenciar micrófono</translation>
 <translation id="4570913071927164677">Detalles</translation>
 <translation id="4598549027014564149">Cuando está activado el modo Incógnito, los sitios no pueden usar tus cookies para ver tu actividad de navegación en sitios, ni siquiera en sitios relacionados. Tu actividad de navegación no se usa, por ejemplo, para personalizar anuncios. Es posible que algunas funciones no puedan utilizarse en algunos sitios.</translation>
+<translation id="4619615317237390068">Pestañas de otros dispositivos</translation>
 <translation id="4644713492825682049">Borrar y restablecer</translation>
 <translation id="4645575059429386691">Administrado por tus padres</translation>
 <translation id="4670064810192446073">Realidad virtual</translation>
@@ -344,6 +345,7 @@
 <translation id="6612358246767739896">Contenido protegido</translation>
 <translation id="662080504995468778">Permanecer aquí</translation>
 <translation id="6653342741369270081">Toca el botón Atrás para salir de la pantalla completa.</translation>
+<translation id="6670377348676659110">{TILE_COUNT,plural, =1{Ocultar la opción Continuar con esta pestaña}other{Ocultar la opción Continuar con estas pestañas}}</translation>
 <translation id="6689172468748959065">Fotos de perfil</translation>
 <translation id="6697925417670533197">Descargas activas</translation>
 <translation id="6722828510648505498">Bloquea los mensajes de acceso de servicios de identidad.</translation>
@@ -366,6 +368,7 @@
 <translation id="702275896380648118">Este sitio determina lo que te gusta y, luego, sugiere anuncios a otros sitios. Este sitio también obtiene tus temas de anuncios de Chrome para mostrarte anuncios más relevantes.</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 seleccionado}other{# seleccionados}}</translation>
+<translation id="708014373017851679">"<ph name="APP_NAME" />" está desactualizada. Actualiza la app.</translation>
 <translation id="7087918508125750058">Elementos seleccionados: <ph name="ITEM_COUNT" />. Opciones disponibles cerca de la parte superior de la pantalla</translation>
 <translation id="7141896414559753902">Bloquea las ventanas emergentes y los redireccionamientos en los sitios (recomendado)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -402,6 +405,7 @@
 <translation id="7667547420449112975">El maravilloso mago de Oz</translation>
 <translation id="7684642910516280563">No permitir que un sitio utilice cookies de terceros</translation>
 <translation id="7719367874908701697">Zoom de página</translation>
+<translation id="7759147511335618829">Control y reprogramación de MIDI</translation>
 <translation id="7781829728241885113">Ayer</translation>
 <translation id="7791543448312431591">Agregar</translation>
 <translation id="7801888679188438140">{TILE_COUNT,plural, =1{Continúa con esta pestaña}other{Continúa con estas pestañas}}</translation>

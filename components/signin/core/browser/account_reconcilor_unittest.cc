@@ -627,8 +627,16 @@ class BaseAccountReconcilorTestTable : public AccountReconcilorTest {
       EXPECT_EQ(CoreAccountId(), primary_account_id);
   }
 
+  virtual bool ShouldSkipTest(const std::vector<Token>& tokens) {
+    return false;
+  }
+
   void SetupTokens(const char* tokens_string) {
     std::vector<Token> tokens = ParseTokenString(tokens_string);
+    if (ShouldSkipTest(tokens)) {
+      GTEST_SKIP();
+    }
+
     Token primary_account;
     for (const Token& token : tokens) {
       CoreAccountId account_id;
@@ -727,7 +735,9 @@ class BaseAccountReconcilorTestTable : public AccountReconcilorTest {
     // Setup tokens. This triggers listing cookies so we need to setup cookies
     // before that.
     SetupTokens(param.tokens);
-
+    if (testing::Test::IsSkipped()) {
+      return;
+    }
     CreateReconclior();
 
     // Setup expectations.
@@ -1577,35 +1587,92 @@ const std::vector<AccountReconcilorTestTableParam>
     kDiceParamsUnoPreChromeSignIn = {
         // clang-format off
         // See `kDiceParams` above for detailed params format.
-        {  "",     "A",    IsFirstReconcile::kBoth,  "",  "",   "A"    },
-        {  "AB",   "",     IsFirstReconcile::kBoth,  "",  "" ,  ""     },
-        {  "AB",   "A",    IsFirstReconcile::kBoth,  "",  "A",  "A"    },
-        {  "A",    "B",    IsFirstReconcile::kBoth,  "",  "" ,  "B"    },
-        {  "xA",   "A",    IsFirstReconcile::kBoth,  "",  "",   "A"    },
-        {  "xAB",  "A",    IsFirstReconcile::kBoth,  "",  "",   "A"    },
+        // First account in cookie doesn't have a token.
+        {  "",     "A",     IsFirstReconcile::kBoth,      "X",   "",   ""     },
+        {  "xA",   "A",     IsFirstReconcile::kBoth,      "X",   "",   ""     },
+        {  "B",    "AB",    IsFirstReconcile::kFirst,     "UB",  "B",  "B"    },
+        {  "B",    "AB",    IsFirstReconcile::kNotFirst,  "X",   "",   ""     },
+        {  "xAB",  "A",     IsFirstReconcile::kBoth,      "X",   "" ,  ""     },
 
-        // Account marked as invalid in cookies.
-        {  "A",    "xA",   IsFirstReconcile::kBoth,  "",  "",   "xA"   },
-        {  "AB",   "AxB",  IsFirstReconcile::kBoth,  "",  "A",  "AxB"  },
-        {  "xA",   "xA",   IsFirstReconcile::kBoth,  "",  "",   "xA"   },
+        // Invalid first account in cookie doesn't have a token.
+        {  "xA",   "xA",    IsFirstReconcile::kBoth,      "",    "",   "xA"   },
+        {  "",     "xAB",   IsFirstReconcile::kBoth,      "X",   "",   ""     },
+        {  "B",    "xAB",   IsFirstReconcile::kBoth,      "",    "B",  "xAB"  },
+        {  "B",    "xABC",  IsFirstReconcile::kBoth,      "UB",  "B",  "B"    },
+
+        // Invalid first account in cookie.
+        {  "A",    "xA",    IsFirstReconcile::kBoth,      "",    "",   "xA"   },
+        {  "A",    "xAB",   IsFirstReconcile::kBoth,      "X",   "",   ""     },
+        {  "AB",   "xABC",  IsFirstReconcile::kBoth,      "UB",  "B",  "B"    },
+
+        // Tokens not in the cookie.
+        {  "CB",   "B",     IsFirstReconcile::kBoth,      "",    "B",  "B"    },
+        {  "AB",   "",      IsFirstReconcile::kBoth,      "",    "" ,  ""     },
+        {  "AB",   "AxB",   IsFirstReconcile::kBoth,      "",    "A",  "AxB"  },
+
+        // Tokens and cookies need update.
+        {  "A",    "B",     IsFirstReconcile::kBoth,      "X",   "" ,  ""     },
+
+        // Secondary account without token.
+        {  "B",    "BC",    IsFirstReconcile::kBoth,      "UB",  "B",  "B"    },
+
+        // Consistent.
+        // Added to check Reconcile is Idempotent.
+        {  "B",    "B",    IsFirstReconcile::kBoth,       "",    "B",  "B"    },
+        {  "",     "",     IsFirstReconcile::kBoth,       "",    "",   ""     },
+        {  "",     "xA",   IsFirstReconcile::kBoth,       "",    "",   "xA"   },
+        {  "A",    "AxB",  IsFirstReconcile::kBoth,       "",    "A",  "AxB"  },
+
         // clang-format on
 };
-class AccountReconcilorTestDiceWithUnoPreChromeSignIn
+class AccountReconcilorTestDiceExplicitBrowserSignin
     : public AccountReconcilorTestTable {
+ public:
+  AccountReconcilorTestDiceExplicitBrowserSignin() {
+    consent_level_for_reconcile_ = signin::ConsentLevel::kSignin;
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_{switches::kUnoDesktop};
 };
 
+using AccountReconcilorTestDicePreChromeSignIn =
+    AccountReconcilorTestDiceExplicitBrowserSignin;
+
 // Checks one row of the `kDiceParamsUnoPreChromeSignIn` table above.
-TEST_P(AccountReconcilorTestDiceWithUnoPreChromeSignIn, TableRowTest) {
+TEST_P(AccountReconcilorTestDicePreChromeSignIn, TableRowTest) {
   SetAccountConsistency(signin::AccountConsistencyMethod::kDice);
+  CheckReconcileIdempotent(kDiceParamsUnoPreChromeSignIn, GetParam());
   RunRowTest(GetParam());
 }
 
 INSTANTIATE_TEST_SUITE_P(,
-                         AccountReconcilorTestDiceWithUnoPreChromeSignIn,
+                         AccountReconcilorTestDicePreChromeSignIn,
                          ::testing::ValuesIn(GenerateTestCasesFromParams(
                              kDiceParamsUnoPreChromeSignIn)));
+
+class AccountReconcilorTestExplicitBrowserSigninDiceMultiLogin
+    : public AccountReconcilorTestDiceExplicitBrowserSignin {
+ public:
+  bool ShouldSkipTest(const std::vector<Token>& tokens) override {
+    // We use the same set of `kDiceParams`.
+    // In this test suite, the consent level is signin, skip the tests where
+    // there is no authenticated primary account.
+    return !base::ranges::any_of(
+        tokens, [](const Token& token) { return token.is_authenticated; });
+  }
+};
+
+TEST_P(AccountReconcilorTestExplicitBrowserSigninDiceMultiLogin, TableRowTest) {
+  SetAccountConsistency(signin::AccountConsistencyMethod::kDice);
+  CheckReconcileIdempotent(kDiceParams, GetParam());
+  RunRowTest(GetParam());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    AccountReconcilorTestExplicitBrowserSigninDiceMultiLogin,
+    ::testing::ValuesIn(GenerateTestCasesFromParams(kDiceParams)));
 
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 

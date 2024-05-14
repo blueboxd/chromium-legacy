@@ -4,6 +4,7 @@
 
 #include "chrome/browser/file_system_access/chrome_file_system_access_permission_context.h"
 
+#include <iterator>
 #include <memory>
 #include <optional>
 #include <string>
@@ -487,6 +488,7 @@ InterpretSafeBrowsingResult(safe_browsing::DownloadCheckResult result) {
     case Result::BLOCKED_TOO_LARGE:
     case Result::BLOCKED_UNSUPPORTED_FILE_TYPE:
     case Result::DANGEROUS_ACCOUNT_COMPROMISE:
+    case Result::BLOCKED_SCAN_FAILED:
       return ChromeFileSystemAccessPermissionContext::AfterWriteCheckResult::
           kBlock;
 
@@ -499,6 +501,7 @@ InterpretSafeBrowsingResult(safe_browsing::DownloadCheckResult result) {
     case Result::PROMPT_FOR_SCANNING:
     case Result::PROMPT_FOR_LOCAL_PASSWORD_SCANNING:
     case Result::DEEP_SCANNED_FAILED:
+    case Result::IMMEDIATE_DEEP_SCAN:
       NOTREACHED();
       return ChromeFileSystemAccessPermissionContext::AfterWriteCheckResult::
           kAllow;
@@ -779,7 +782,6 @@ class ChromeFileSystemAccessPermissionContext::PermissionGrantImpl
           context_->GetGrantedObject(origin_, PathAsPermissionKey(path_));
       auto opposite_type =
           type_ == GrantType::kRead ? GrantType::kWrite : GrantType::kRead;
-
       if (new_status == PermissionStatus::GRANTED) {
         if (object) {
           // Persisted permissions include both read and write information in
@@ -1164,6 +1166,29 @@ bool ChromeFileSystemAccessPermissionContext::RevokeActiveGrants(
     }
   }
   return grant_revoked;
+}
+
+void ChromeFileSystemAccessPermissionContext::RevokeAllActiveGrants() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  for (auto& [origin, origin_state] : active_permissions_map_) {
+    for (auto& [_, grant] : origin_state.read_grants) {
+      grant->SetStatus(
+          PermissionStatus::ASK,
+          PersistedPermissionOptions::kDoNotUpdatePersistedPermission);
+    }
+    for (auto& [_, grant] : origin_state.write_grants) {
+      grant->SetStatus(
+          PermissionStatus::ASK,
+          PersistedPermissionOptions::kDoNotUpdatePersistedPermission);
+    }
+    // Only update `persisted_grant_status` if the state has not already been
+    // set via tab backgrounding.
+    if (origin_state.persisted_grant_status !=
+        PersistedGrantStatus::kBackgrounded) {
+      origin_state.persisted_grant_status = PersistedGrantStatus::kLoaded;
+    }
+  }
 }
 
 scoped_refptr<content::FileSystemAccessPermissionGrant>
@@ -1555,6 +1580,83 @@ void ChromeFileSystemAccessPermissionContext::ConfirmSensitiveEntryAccess(
   CheckPathAgainstBlocklist(path_type, path, handle_type,
                             std::move(after_blocklist_check_callback));
 }
+
+void ChromeFileSystemAccessPermissionContext::CheckPathsAgainstEnterprisePolicy(
+    std::vector<PathInfo> entries,
+    content::GlobalRenderFrameHostId frame_id,
+    EntriesAllowedByEnterprisePolicyCallback callback) {
+#if BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
+  // Get WebContents pointer in order to perform enterprise content analysis.
+  content::WebContents* web_contents = nullptr;
+  if (!entries.empty()) {
+    content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(frame_id);
+    if (rfh && rfh->IsActive()) {
+      web_contents = content::WebContents::FromRenderFrameHost(rfh);
+    }
+  }
+
+  if (!web_contents) {
+    std::move(callback).Run(std::move(entries));
+    return;
+  }
+
+  enterprise_connectors::ContentAnalysisDelegate::Data data;
+  if (!enterprise_connectors::ContentAnalysisDelegate::IsEnabled(
+          Profile::FromBrowserContext(profile()),
+          web_contents->GetLastCommittedURL(), &data,
+          enterprise_connectors::AnalysisConnector::FILE_ATTACHED)) {
+    std::move(callback).Run(std::move(entries));
+    return;
+  }
+
+  data.reason =
+      enterprise_connectors::ContentAnalysisRequest::FILE_PICKER_DIALOG;
+
+  // Move the paths from `entries` to `data.paths` to minimize memory copies.
+  // Later the paths will be recombined with the type left in `entries` for
+  // those files that pass enterprise policy checks.
+  std::transform(std::make_move_iterator(entries.begin()),
+                 std::make_move_iterator(entries.end()),
+                 std::back_inserter(data.paths),
+                 [](PathInfo&& entry) { return std::move(entry.path); });
+
+  // TODO: crbug.com/326618625 - Handle kExternal files correctly.
+  // CreateForFilesInWebContents() only handles real OS files, so these entries
+  // are ignored and passed directly to OnContentAnalysisComplete() unchanged.
+  // kExternal files only exist in ChromeOS.
+  enterprise_connectors::ContentAnalysisDelegate::CreateForFilesInWebContents(
+      web_contents, std::move(data),
+      base::BindOnce(
+          &ChromeFileSystemAccessPermissionContext::OnContentAnalysisComplete,
+          weak_factory_.GetWeakPtr(), std::move(entries), std::move(callback)),
+      safe_browsing::DeepScanAccessPoint::UPLOAD);
+#else
+  std::move(callback).Run(std::move(entries));
+#endif  // BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
+}
+
+#if BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
+
+void ChromeFileSystemAccessPermissionContext::OnContentAnalysisComplete(
+    std::vector<PathInfo> entries,
+    EntriesAllowedByEnterprisePolicyCallback callback,
+    std::vector<base::FilePath> paths,
+    std::vector<bool> allowed) {
+  CHECK_EQ(paths.size(), allowed.size());
+  CHECK_EQ(paths.size(), entries.size());
+
+  std::vector<PathInfo> result_entries;
+  for (size_t i = 0; i < paths.size(); ++i) {
+    if (allowed[i]) {
+      result_entries.emplace_back(
+          PathInfo{.type = entries[i].type, .path = std::move(paths[i])});
+    }
+  }
+
+  std::move(callback).Run(std::move(result_entries));
+}
+
+#endif  // BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
 
 void ChromeFileSystemAccessPermissionContext::CheckPathAgainstBlocklist(
     PathType path_type,

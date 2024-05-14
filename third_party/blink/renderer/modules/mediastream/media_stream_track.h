@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -61,7 +62,7 @@ class MODULES_EXPORT MediaStreamTrack
 
   // For carrying data to the FromTransferredState method.
   struct TransferredValues {
-    raw_ptr<const WrapperTypeInfo, ExperimentalRenderer> track_impl_subtype;
+    raw_ptr<const WrapperTypeInfo> track_impl_subtype;
     base::UnguessableToken session_id;
     base::UnguessableToken transfer_id;
     String kind;
@@ -106,10 +107,11 @@ class MODULES_EXPORT MediaStreamTrack
   virtual MediaTrackSettings* getSettings() const = 0;
   virtual MediaStreamTrackVideoStats* stats() = 0;
   virtual CaptureHandle* getCaptureHandle() const = 0;
-  virtual ScriptPromise applyConstraints(ScriptState*,
-                                         const MediaTrackConstraints*) = 0;
+  virtual ScriptPromiseTyped<IDLUndefined> applyConstraints(
+      ScriptState*,
+      const MediaTrackConstraints*) = 0;
 
-  virtual void applyConstraints(ScriptPromiseResolver*,
+  virtual void applyConstraints(ScriptPromiseResolverTyped<IDLUndefined>*,
                                 const MediaTrackConstraints*) = 0;
   virtual void SetInitialConstraints(const MediaConstraints& constraints) = 0;
   virtual void SetConstraints(const MediaConstraints& constraints) = 0;
@@ -176,7 +178,7 @@ class MODULES_EXPORT MediaStreamTrack
 
   virtual std::unique_ptr<AudioSourceProvider> CreateWebAudioSource(
       int context_sample_rate,
-      uint32_t context_buffer_size) = 0;
+      base::TimeDelta platform_buffer_duration) = 0;
 
   virtual ImageCapture* GetImageCapture() = 0;
   virtual std::optional<const MediaStreamDevice> device() const = 0;

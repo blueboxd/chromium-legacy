@@ -4327,11 +4327,9 @@ TEST_F(HistoryBackendTest, AddClusters_GetCluster) {
   visit_3.annotated_visit.visit_row.visit_id = 3;
 
   ClusterKeywordData keyword_data_1 = {
-      ClusterKeywordData::ClusterKeywordType::kEntityAlias,
-      .4,
-      {"entity1", "entity2"}};
+      ClusterKeywordData::ClusterKeywordType::kEntityAlias, .4};
   ClusterKeywordData keyword_data_2 = {
-      ClusterKeywordData::ClusterKeywordType::kEntityCategory, .6, {}};
+      ClusterKeywordData::ClusterKeywordType::kEntityCategory, .6};
 
   backend_->db_->AddClusters(
       {{0,
@@ -4352,13 +4350,9 @@ TEST_F(HistoryBackendTest, AddClusters_GetCluster) {
             ClusterKeywordData::ClusterKeywordType::kEntityAlias);
   EXPECT_EQ(cluster.keyword_to_data_map[u"keyword1"].score, .4f);
   // Only the 1st keyword entity should be preserved.
-  EXPECT_THAT(cluster.keyword_to_data_map[u"keyword1"].entity_collections,
-              UnorderedElementsAre("entity1"));
   EXPECT_EQ(cluster.keyword_to_data_map[u"keyword2"].type,
             ClusterKeywordData::ClusterKeywordType::kEntityCategory);
   EXPECT_EQ(cluster.keyword_to_data_map[u"keyword2"].score, .6f);
-  EXPECT_TRUE(
-      cluster.keyword_to_data_map[u"keyword2"].entity_collections.empty());
   // Verify duplicate visits.
   ASSERT_EQ(cluster.visits[0].duplicate_visits.size(), 1u);
   EXPECT_EQ(cluster.visits[0].duplicate_visits[0].visit_id, 2);
@@ -5477,6 +5471,35 @@ TEST_F(HistoryBackendTest, QueryURLs) {
   EXPECT_EQ(1U, results.size());
   ASSERT_TRUE(results[0].success);
   EXPECT_EQ(url, results[0].row.url());
+}
+
+TEST_F(HistoryBackendTest, GetMostRecentVisitForEachURL) {
+  ASSERT_TRUE(backend_.get());
+
+  GURL url("http://www.testquery.com");
+
+  // Clear all history.
+  backend_->DeleteAllHistory();
+
+  // Visit the url after typing it with a past date.
+  backend_->AddPageVisit(
+      url, base::Time::Now() - base::Days(1), /*referring_visit=*/0,
+      /*external_referrer_url=*/GURL(), ui::PAGE_TRANSITION_TYPED, false,
+      SOURCE_BROWSED, true, false, true);
+
+  base::Time curr_time = base::Time::Now();
+
+  // Visit the url after typing it.
+  backend_->AddPageVisit(url, curr_time, /*referring_visit=*/0,
+                         /*external_referrer_url=*/GURL(),
+                         ui::PAGE_TRANSITION_TYPED, false, SOURCE_BROWSED, true,
+                         false, true);
+
+  std::map<GURL, VisitRow> visits =
+      backend_->GetMostRecentVisitForEachURL({url});
+
+  EXPECT_EQ(1U, visits.size());
+  EXPECT_EQ(curr_time, visits[url].visit_time);
 }
 
 // We want to test with the VisitedLinkDatabase enabled and disabled.

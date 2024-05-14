@@ -7,6 +7,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/version.h"
 #include "chrome/browser/component_updater/cros_component_manager.h"
+#include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace {
@@ -71,7 +72,7 @@ void FakeBrowserManager::SetGetFeedbackDataResponse(
 }
 
 void FakeBrowserManager::SignalMojoDisconnected() {
-  SetState(State::TERMINATING);
+  OnMojoDisconnected();
 }
 
 void FakeBrowserManager::StartRunning() {

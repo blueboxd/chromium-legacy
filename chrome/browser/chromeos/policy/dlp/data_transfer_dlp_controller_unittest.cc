@@ -239,7 +239,7 @@ TEST_F(DataTransferDlpControllerTest, PasteIfAllowed_Allow) {
   ::testing::StrictMock<base::MockOnceCallback<void(bool)>> callback;
   EXPECT_CALL(callback, Run(true));
 
-  absl::variant<size_t, std::vector<base::FilePath>> pasted_content = 0;
+  absl::variant<size_t, std::vector<base::FilePath>> pasted_content = 0u;
   auto web_contents = CreateTestWebContents(testing_profile_.get());
   dlp_controller_->PasteIfAllowed(
       &data_src, &data_dst, std::move(pasted_content),
@@ -253,7 +253,7 @@ TEST_F(DataTransferDlpControllerTest, PasteIfAllowed_NullWebContents) {
   ::testing::StrictMock<base::MockOnceCallback<void(bool)>> callback;
   EXPECT_CALL(callback, Run(false));
 
-  absl::variant<size_t, std::vector<base::FilePath>> pasted_content = 0;
+  absl::variant<size_t, std::vector<base::FilePath>> pasted_content = 0u;
   dlp_controller_->PasteIfAllowed(
       &data_src, &data_dst, std::move(pasted_content), nullptr, callback.Get());
 }
@@ -275,7 +275,7 @@ TEST_F(DataTransferDlpControllerTest, PasteIfAllowed_WarnDst) {
       .WillRepeatedly(testing::Return(false));
   EXPECT_CALL(*dlp_controller_, WarnOnBlinkPaste);
 
-  absl::variant<size_t, std::vector<base::FilePath>> pasted_content = 0;
+  absl::variant<size_t, std::vector<base::FilePath>> pasted_content = 0u;
   dlp_controller_->PasteIfAllowed(
       &data_src, &data_dst, std::move(pasted_content),
       web_contents->GetPrimaryMainFrame(), callback.Get());
@@ -309,7 +309,7 @@ TEST_F(DataTransferDlpControllerTest, PasteIfAllowed_ProceedDst) {
       .WillRepeatedly(testing::Return(false));
 
   EXPECT_CALL(callback, Run(true));
-  absl::variant<size_t, std::vector<base::FilePath>> pasted_content = 0;
+  absl::variant<size_t, std::vector<base::FilePath>> pasted_content = 0u;
   dlp_controller_->PasteIfAllowed(
       &data_src, &data_dst, std::move(pasted_content),
       web_contents->GetPrimaryMainFrame(), callback.Get());
@@ -338,7 +338,7 @@ TEST_F(DataTransferDlpControllerTest, PasteIfAllowed_CancelDst) {
       .WillRepeatedly(testing::Return(true));
 
   EXPECT_CALL(callback, Run(false));
-  absl::variant<size_t, std::vector<base::FilePath>> pasted_content = 0;
+  absl::variant<size_t, std::vector<base::FilePath>> pasted_content = 0u;
   dlp_controller_->PasteIfAllowed(
       &data_src, &data_dst, std::move(pasted_content),
       web_contents->GetPrimaryMainFrame(), callback.Get());
@@ -387,8 +387,9 @@ TEST_F(DataTransferDlpControllerTest, DropFile_Blocked) {
   ui::DataTransferEndpoint data_dst((GURL(kExample1Url)));
 
   MockFilesController files_controller(*rules_manager_);
-  std::vector<ui::FileInfo> file_names;
-  ASSERT_TRUE(drag_data.GetFilenames(&file_names));
+  std::optional<std::vector<ui::FileInfo>> file_names =
+      drag_data.GetFilenames();
+  ASSERT_TRUE(file_names.has_value());
 
   EXPECT_CALL(*rules_manager_, GetDlpFilesController)
       .WillOnce(testing::Return(&files_controller));
@@ -412,8 +413,9 @@ TEST_F(DataTransferDlpControllerTest, DropFile_Allowed) {
   ui::DataTransferEndpoint data_dst((GURL(kExample1Url)));
 
   MockFilesController files_controller(*rules_manager_);
-  std::vector<ui::FileInfo> file_names;
-  ASSERT_TRUE(drag_data.GetFilenames(&file_names));
+  std::optional<std::vector<ui::FileInfo>> file_names =
+      drag_data.GetFilenames();
+  ASSERT_TRUE(file_names.has_value());
 
   EXPECT_CALL(*rules_manager_, GetDlpFilesController)
       .WillOnce(testing::Return(&files_controller));

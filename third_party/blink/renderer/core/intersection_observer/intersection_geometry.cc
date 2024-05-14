@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/intersection_observer/intersection_geometry.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -12,6 +13,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
@@ -711,6 +713,15 @@ void IntersectionGeometry::ComputeGeometry(const RootGeometry& root_geometry,
         root_and_target, target_to_view_transform,
         root_geometry.root_to_view_transform, thresholds, scroll_margin);
     cached_rects->valid = true;
+
+    UMA_HISTOGRAM_COUNTS_1000(
+        "Blink.IntersectionObservation.MinScrollDeltaToUpdateX",
+        base::saturated_cast<int>(
+            cached_rects->min_scroll_delta_to_update.x()));
+    UMA_HISTOGRAM_COUNTS_1000(
+        "Blink.IntersectionObservation.MinScrollDeltaToUpdateY",
+        base::saturated_cast<int>(
+            cached_rects->min_scroll_delta_to_update.y()));
 
 #if CHECK_SKIPPED_UPDATE_ON_SCROLL()
     // TODO(wangxianzhu): Remove or clean up this code after fixing

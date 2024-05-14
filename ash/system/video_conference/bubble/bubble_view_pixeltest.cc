@@ -67,7 +67,8 @@ class BubbleViewPixelTest
   void SetUp() override {
     std::vector<base::test::FeatureRef> enabled_features{
         features::kVideoConference, features::kCameraEffectsSupportedByHardware,
-        chromeos::features::kJelly};
+        ::features::kChromeRefresh2023, ::features::kChromeRefreshSecondary2023,
+        ::features::kChromeRefresh2023NTB};
     std::vector<base::test::FeatureRef> disabled_features{};
     if (IsVcDlcUiEnabled()) {
       enabled_features.push_back(features::kVcDlcUi);

@@ -90,6 +90,7 @@ void ActionTypeButton::RefreshColors() {
 }
 
 void ActionTypeButton::Layout(PassKey) {
+  LayoutSuperclass<Button>(this);
   SizeToPreferredSize();
   gfx::Rect local_bounds = GetLocalBounds();
   gfx::Rect local_content_bounds(local_bounds);
@@ -111,7 +112,6 @@ void ActionTypeButton::Layout(PassKey) {
   image_container_view()->SetBoundsRect(gfx::Rect(
       image_origin, gfx::Size(kActionTypeIconSize, kActionTypeIconSize)));
   label->SetBoundsRect(gfx::Rect(label_origin, label_size));
-  LayoutSuperclass<Button>(this);
 }
 
 gfx::ImageSkia ActionTypeButton::GetImage(ButtonState for_state) const {

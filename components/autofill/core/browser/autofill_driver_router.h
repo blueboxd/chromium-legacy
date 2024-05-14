@@ -256,24 +256,24 @@ class AutofillDriverRouter {
   // Keep in alphabetic order.
   base::flat_set<FieldGlobalId> ApplyFormAction(
       AutofillDriver* source,
-      mojom::ActionType action_type,
+      mojom::FormActionType action_type,
       mojom::ActionPersistence action_persistence,
       const FormData& data,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, FieldType>& field_type_map,
       void (*callback)(AutofillDriver* target,
-                       mojom::ActionType action_type,
+                       mojom::FormActionType action_type,
                        mojom::ActionPersistence action_persistence,
-                       const FormData::FillData& form));
+                       const std::vector<FormFieldData::FillData>& fields));
   void ApplyFieldAction(
       AutofillDriver* source,
+      mojom::FieldActionType action_type,
       mojom::ActionPersistence action_persistence,
-      mojom::TextReplacement text_replacement,
       const FieldGlobalId& field,
       const std::u16string& value,
       void (*callback)(AutofillDriver* target,
+                       mojom::FieldActionType action_type,
                        mojom::ActionPersistence action_persistence,
-                       mojom::TextReplacement text_replacement,
                        const FieldRendererId& field,
                        const std::u16string& value));
   using BrowserFormHandler = AutofillDriver::BrowserFormHandler;
@@ -340,15 +340,6 @@ class AutofillDriverRouter {
       const std::vector<FormDataPredictions>& type_predictions,
       void (*callback)(AutofillDriver* target,
                        const std::vector<FormDataPredictions>& predictions));
-
-  // Event called by the browser, passed to the browser:
-  void OnContextMenuShownInField(
-      AutofillDriver* source,
-      const FormGlobalId& form_global_id,
-      const FieldGlobalId& field_global_id,
-      void (*callback)(AutofillDriver* target,
-                       const FormGlobalId& form_global_id,
-                       const FieldGlobalId& field_global_id));
 
   // Returns the underlying renderer forms of `browser_form`.
   // Note that this function is intended for use outside of the `autofill`

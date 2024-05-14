@@ -5,10 +5,11 @@
 import 'chrome://os-settings/lazy_load.js';
 
 import {PrivacyHubBrowserProxyImpl, SettingsPrivacyHubGeolocationSubpage} from 'chrome://os-settings/lazy_load.js';
-import {appPermissionHandlerMojom, CrLinkRowElement, GeolocationAccessLevel, Router, routes, setAppPermissionProviderForTesting, SettingsPrivacyHubSystemServiceRow} from 'chrome://os-settings/os_settings.js';
+import {appPermissionHandlerMojom, CrLinkRowElement, GeolocationAccessLevel, LocalizedLinkElement, Router, routes, setAppPermissionProviderForTesting, SettingsDropdownMenuElement, SettingsPrivacyHubSystemServiceRow} from 'chrome://os-settings/os_settings.js';
 import {PermissionType, TriState} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {DomRepeat, flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {assertEquals, assertNotReached, assertNull, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals, assertLT, assertNotReached, assertNull, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {FakeMetricsPrivate} from '../fake_metrics_private.js';
@@ -102,6 +103,16 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
     return privacyHubGeolocationSubpage.shadowRoot!.querySelector('#appList');
   }
 
+  function getNthAppName(i: number): string|null {
+    const appPermissionRows =
+        privacyHubGeolocationSubpage.shadowRoot!.querySelectorAll(
+            '#appsSection > div > settings-privacy-hub-app-permission-row');
+    assertLT(i, appPermissionRows.length);
+
+    return appPermissionRows[i]!.shadowRoot!.querySelector(
+                                                '#appName')!.textContent;
+  }
+
   function checkService(
       systemService: SettingsPrivacyHubSystemServiceRow, nameVarName: string,
       expectedName: string, allowedTextVarName: string, allowedText: string,
@@ -141,13 +152,15 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
     assertEquals(4, systemServices.length);
     checkService(
         systemServices[0]!, 'privacyHubSystemServicesAutomaticTimeZoneName',
-        'Automatic time zone', 'privacyHubSystemServicesAllowedText', 'Allowed',
+        'Automatic time zone based on Wi-Fi or mobile networks',
+        'privacyHubSystemServicesAllowedText', 'Allowed',
         'Blocked. Time zone is currently set to ' +
             'Test Time Zone' +
             ' and can only be updated manually.');
     checkService(
         systemServices[1]!, 'privacyHubSystemServicesSunsetScheduleName',
-        'Sunset schedule', 'privacyHubSystemServicesAllowedText', 'Allowed',
+        'Automatic sunset schedule', 'privacyHubSystemServicesAllowedText',
+        'Allowed',
         'Blocked. Schedule is currently set to 7:00AM - 8:00PM' +
             ' and can only be updated manually.');
     checkService(
@@ -156,9 +169,62 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
         'Blocked');
     checkService(
         systemServices[3]!, 'privacyHubSystemServicesDarkThemeName',
-        'Dark theme', 'privacyHubSystemServicesAllowedText', 'Allowed',
-        'Blocked');
+        'Automatic light/dark theme', 'privacyHubSystemServicesAllowedText',
+        'Allowed', 'Blocked');
   }
+
+  test('Geolocation sub-label updates on location change', async () => {
+    await initPage();
+
+    let subLabelElement: LocalizedLinkElement|null;
+    let subLabel: string;
+
+    // Helper function to remove HTML tags from the localizedString.
+    const removeAnchorTags = (text: string) =>
+        text.replace('<a>', '').replace('</a>', '');
+
+    // Check "Allowed"
+    assertTrue(getGeolocationAccessLevel() === GeolocationAccessLevel.ALLOWED);
+    subLabelElement =
+        privacyHubGeolocationSubpage.shadowRoot!
+            .querySelector<LocalizedLinkElement>(
+                '#geolocationModeDescriptionDiv > localized-link');
+    assertTrue(!!subLabelElement);
+    subLabel = subLabelElement.localizedString.toString();
+    assertEquals(
+        privacyHubGeolocationSubpage.i18n('geolocationAllowedModeDescription'),
+        removeAnchorTags(subLabel));
+
+    // Check "Allowed For System Services"
+    setGeolocationAccessLevel(GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM);
+    assertTrue(
+        getGeolocationAccessLevel() ===
+        GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM);
+    subLabelElement =
+        privacyHubGeolocationSubpage.shadowRoot!
+            .querySelector<LocalizedLinkElement>(
+                '#geolocationModeDescriptionDiv > localized-link');
+    assertTrue(!!subLabelElement);
+    subLabel = subLabelElement.localizedString.toString();
+    assertEquals(
+        privacyHubGeolocationSubpage.i18n(
+            'geolocationOnlyAllowedForSystemModeDescription'),
+        removeAnchorTags(subLabel));
+
+    // Check "Blocked for all"
+    setGeolocationAccessLevel(GeolocationAccessLevel.DISALLOWED);
+    assertTrue(
+        getGeolocationAccessLevel() === GeolocationAccessLevel.DISALLOWED);
+    subLabelElement =
+        privacyHubGeolocationSubpage.shadowRoot!
+            .querySelector<LocalizedLinkElement>(
+                '#geolocationModeDescriptionDiv > localized-link');
+    assertTrue(!!subLabelElement);
+    subLabel = subLabelElement.localizedString.toString();
+    assertEquals(
+        privacyHubGeolocationSubpage.i18n('geolocationBlockedModeDescription'),
+        removeAnchorTags(subLabel));
+  });
 
   test('App list displayed when geolocation allowed', async () => {
     await initPage();
@@ -251,6 +317,32 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
     assertEquals(0, getAppList()!.items!.length);
   });
 
+  test('AppList is alphabetically sorted', async () => {
+    await initPage();
+    const app1 = createApp(
+        'app1_id', 'app1_name', PermissionType.kLocation, TriState.kAllow);
+    const app2 = createApp(
+        'app2_id', 'app2_name', PermissionType.kLocation, TriState.kAsk);
+    const app3 = createApp(
+        'app3_id', 'app3_name', PermissionType.kLocation, TriState.kAsk);
+    const app4 = createApp(
+        'app4_id', 'app4_name', PermissionType.kLocation, TriState.kBlock);
+
+
+    await initializeObserver();
+    simulateAppUpdate(app3);
+    simulateAppUpdate(app1);
+    simulateAppUpdate(app4);
+    simulateAppUpdate(app2);
+    await flushTasks();
+
+    assertEquals(4, getAppList()!.items!.length);
+    assertEquals(app1.name, getNthAppName(0));
+    assertEquals(app2.name, getNthAppName(1));
+    assertEquals(app3.name, getNthAppName(2));
+    assertEquals(app4.name, getNthAppName(3));
+  });
+
   test('Metric recorded when clicked', async () => {
     await initPage();
 
@@ -289,6 +381,11 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
         1,
         metrics.countMetricValue(histogram(), GeolocationAccessLevel.ALLOWED));
   });
+
+  function getGeolocationDropdown(): SettingsDropdownMenuElement|null {
+    return privacyHubGeolocationSubpage.shadowRoot!
+        .querySelector<SettingsDropdownMenuElement>('#geolocationDropdown');
+  }
 
   function getManagePermissionsInChromeRow(): CrLinkRowElement|null {
     return privacyHubGeolocationSubpage.shadowRoot!
@@ -430,5 +527,16 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
         sunsetScheduleString(secondSunsetSchedule),
         getSystemServicePermissionText(systemServices[1]!));
   });
+
+  test('Location control is disabled for secondary users', async () => {
+    // Simulate secondary user flow.
+    loadTimeData.overrideValues({
+      isSecondaryUser: true,
+    });
+    await initPage();
+
+    assertTrue(getGeolocationDropdown()!.disabled);
+  });
+
 
 });

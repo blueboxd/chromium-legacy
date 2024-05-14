@@ -98,8 +98,6 @@ RequestTypeForUma GetUmaValueForRequestType(RequestType request_type) {
       return RequestTypeForUma::PERMISSION_IDLE_DETECTION;
     case RequestType::kMicStream:
       return RequestTypeForUma::PERMISSION_MEDIASTREAM_MIC;
-    case RequestType::kMidi:
-      return RequestTypeForUma::PERMISSION_MIDI;
     case RequestType::kMidiSysex:
       return RequestTypeForUma::PERMISSION_MIDI_SYSEX;
     case RequestType::kMultipleDownloads:
@@ -142,6 +140,8 @@ RequestTypeForUma GetUmaValueForRequestType(RequestType request_type) {
     case RequestType::kCapturedSurfaceControl:
       return RequestTypeForUma::CAPTURED_SURFACE_CONTROL;
 #endif
+    case RequestType::kIdentityProvider:
+      return RequestTypeForUma::PERMISSION_IDENTITY_PROVIDER;
   }
 }
 
@@ -159,8 +159,6 @@ std::string GetPermissionRequestString(RequestTypeForUma type) {
       return "RegisterProtocolHandler";
     case RequestTypeForUma::PERMISSION_GEOLOCATION:
       return "Geolocation";
-    case RequestTypeForUma::PERMISSION_MIDI:
-      return "Midi";
     case RequestTypeForUma::PERMISSION_MIDI_SYSEX:
       return "MidiSysEx";
     case RequestTypeForUma::PERMISSION_NOTIFICATIONS:
@@ -203,6 +201,8 @@ std::string GetPermissionRequestString(RequestTypeForUma type) {
       return "SmartCard";
     case RequestTypeForUma::PERMISSION_WEB_PRINTING:
       return "WebPrinting";
+    case RequestTypeForUma::PERMISSION_IDENTITY_PROVIDER:
+      return "IdentityProvider";
 
     case RequestTypeForUma::UNKNOWN:
     case RequestTypeForUma::PERMISSION_FLASH:
@@ -648,6 +648,48 @@ void PermissionUmaUtil::PermissionRequested(ContentSettingsType content_type) {
 
   base::UmaHistogramEnumeration("ContentSettings.PermissionRequested",
                                 permission, PermissionType::NUM);
+}
+
+void PermissionUmaUtil::RecordActivityIndicator(
+    std::set<ContentSettingsType> permissions,
+    bool blocked,
+    bool blocked_system_level,
+    bool clicked) {
+  DCHECK(!permissions.empty());
+  DCHECK(permissions.contains(ContentSettingsType::MEDIASTREAM_CAMERA) ||
+         permissions.contains(ContentSettingsType::MEDIASTREAM_MIC));
+
+  ActivityIndicatorState state;
+  if (blocked) {
+    if (blocked_system_level) {
+      state = ActivityIndicatorState::kBlockedOnSystemLevel;
+    } else {
+      state = ActivityIndicatorState::kBlockedOnSiteLevel;
+    }
+  } else {
+    state = ActivityIndicatorState::kInUse;
+  }
+
+  std::string indicators_type;
+
+  if (permissions.size() > 1) {
+    indicators_type = "AudioAndVideoCapture";
+  } else if (permissions.contains(ContentSettingsType::MEDIASTREAM_CAMERA)) {
+    indicators_type = "VideoCapture";
+  } else {
+    indicators_type = "AudioCapture";
+  }
+
+  std::string action;
+  if (clicked) {
+    action = "Click";
+  } else {
+    action = "Show";
+  }
+
+  base::UmaHistogramEnumeration(
+      "Permissions.ActivityIndicator.LHS." + indicators_type + "." + action,
+      state);
 }
 
 void PermissionUmaUtil::RecordPermissionRequestedFromFrame(
@@ -1172,10 +1214,6 @@ void PermissionUmaUtil::RecordPermissionAction(
       base::UmaHistogramEnumeration("Permissions.Action.Notifications", action,
                                     PermissionAction::NUM);
       break;
-    case ContentSettingsType::MIDI:
-      base::UmaHistogramEnumeration("Permissions.Action.Midi", action,
-                                    PermissionAction::NUM);
-      break;
     case ContentSettingsType::MIDI_SYSEX:
       base::UmaHistogramEnumeration("Permissions.Action.MidiSysEx", action,
                                     PermissionAction::NUM);
@@ -1688,6 +1726,24 @@ void PermissionUmaUtil::RecordPermissionsUsageSourceAndPolicyConfiguration(
             {usage_histogram, ".CrossOriginFrame.TopLevelHeaderPolicy"}),
         render_frame_host);
   }
+}
+
+// static
+void PermissionUmaUtil::RecordElementAnchoredBubbleDismiss(
+    const std::vector<raw_ptr<PermissionRequest, VectorExperimental>>& requests,
+    DismissedReason reason) {
+  CHECK(!requests.empty());
+
+  RequestTypeForUma type =
+      GetUmaValueForRequestType(requests[0]->request_type());
+  if (requests.size() > 1) {
+    type = RequestTypeForUma::MULTIPLE;
+  }
+
+  base::UmaHistogramEnumeration("Permissions.Prompt." +
+                                    GetPermissionRequestString(type) +
+                                    ".ElementAnchoredBubble.DismissedReason",
+                                reason);
 }
 
 // static

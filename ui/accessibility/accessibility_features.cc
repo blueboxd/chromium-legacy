@@ -15,14 +15,6 @@
 
 namespace features {
 
-BASE_FEATURE(kAblateSendPendingAccessibilityEvents,
-             "AblateSendPendingAccessibilityEvents",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-bool IsAblateSendPendingAccessibilityEventsEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kAblateSendPendingAccessibilityEvents);
-}
-
 BASE_FEATURE(kAccessibilityFocusHighlight,
              "AccessibilityFocusHighlight",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -43,9 +35,17 @@ bool IsAccessibilityPdfOcrForSelectToSpeakEnabled() {
       ::features::kAccessibilityPdfOcrForSelectToSpeak);
 }
 
+BASE_FEATURE(kAccessibilityPruneRedundantInlineText,
+             "AccessibilityPruneRedundantInlineText",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+bool IsAccessibilityPruneRedundantInlineTextEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kAccessibilityPruneRedundantInlineText);
+}
+
 BASE_FEATURE(kAugmentExistingImageLabels,
              "AugmentExistingImageLabels",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 bool IsAugmentExistingImageLabelsEnabled() {
   return base::FeatureList::IsEnabled(::features::kAugmentExistingImageLabels);
 }
@@ -146,20 +146,20 @@ bool IsDictationOfflineAvailable() {
       ash::features::kOnDeviceSpeechRecognition);
 }
 
-BASE_FEATURE(kAccessibilityAcceleratorNotificationsTimeout,
-             "AccessibilityAcceleratorNotificationsTimeout",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-bool IsAccessibilityAcceleratorNotificationsTimeoutEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kAccessibilityAcceleratorNotificationsTimeout);
-}
-
 BASE_FEATURE(kAccessibilityDictationKeyboardImprovements,
              "AccessibilityDictationKeyboardImprovements",
              base::FEATURE_ENABLED_BY_DEFAULT);
 bool IsAccessibilityDictationKeyboardImprovementsEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kAccessibilityDictationKeyboardImprovements);
+}
+
+BASE_FEATURE(kAccessibilityReducedAnimations,
+             "AccessibilityReducedAnimations",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+bool IsAccessibilityReducedAnimationsEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kAccessibilityReducedAnimations);
 }
 
 BASE_FEATURE(kAccessibilityFaceGaze,
@@ -203,7 +203,7 @@ bool IsExperimentalAccessibilityGoogleTtsLanguagePacksEnabled() {
 
 BASE_FEATURE(kAccessibilityExtraLargeCursor,
              "AccessibilityExtraLargeCursor",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 bool IsAccessibilityExtraLargeCursorEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kAccessibilityExtraLargeCursor);
@@ -215,6 +215,21 @@ BASE_FEATURE(kAccessibilityMagnifierFollowsSts,
 bool IsAccessibilityMagnifierFollowsStsEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kAccessibilityMagnifierFollowsSts);
+}
+
+BASE_FEATURE(kAccessibilityMouseKeys,
+             "AccessibilityMouseKeys",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+bool IsAccessibilityMouseKeysEnabled() {
+  return base::FeatureList::IsEnabled(::features::kAccessibilityMouseKeys);
+}
+
+BASE_FEATURE(kAccessibilityCaretBlinkIntervalSetting,
+             "AccessibilityCaretBlinkIntervalSetting",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+bool IsAccessibilityCaretBlinkIntervalSettingEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kAccessibilityCaretBlinkIntervalSetting);
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -298,6 +313,14 @@ bool IsReadAnythingOmniboxIconEnabled() {
   return base::FeatureList::IsEnabled(::features::kReadAnythingOmniboxIcon);
 }
 
+BASE_FEATURE(kReadAnythingDelaySidePanelLoad,
+             "ReadAnythingDelaySidePanelLoad",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+bool IsReadAnythingDelaySidePanelLoadEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kReadAnythingDelaySidePanelLoad);
+}
+
 BASE_FEATURE(kReadAnythingReadAloud,
              "ReadAnythingReadAloud",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -326,6 +349,15 @@ bool IsReadAnythingWithAlgorithmEnabled() {
   return base::FeatureList::IsEnabled(::features::kReadAnythingWithAlgorithm);
 }
 
+BASE_FEATURE(kReadAnythingImagesViaAlgorithm,
+             "ReadAnythingImagesViaAlgorithm",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+bool IsReadAnythingImagesViaAlgorithmEnabled() {
+  return base::FeatureList::IsEnabled(
+             ::features::kReadAnythingImagesViaAlgorithm) &&
+         IsReadAnythingWithAlgorithmEnabled();
+}
+
 // This feature is only for debug purposes and for security/privacy reasons,
 // should be never enabled by default .
 BASE_FEATURE(kScreenAIDebugMode,
@@ -341,6 +373,14 @@ BASE_FEATURE(kScreenAITestMode,
              base::FEATURE_DISABLED_BY_DEFAULT);
 bool IsScreenAITestModeEnabled() {
   return base::FeatureList::IsEnabled(::features::kScreenAITestMode);
+}
+
+// This feature is only used in tests and must not be enabled by default.
+BASE_FEATURE(kMainNodeAnnotations,
+             "MainNodeAnnotations",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+bool IsMainNodeAnnotationsEnabled() {
+  return base::FeatureList::IsEnabled(::features::kMainNodeAnnotations);
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 

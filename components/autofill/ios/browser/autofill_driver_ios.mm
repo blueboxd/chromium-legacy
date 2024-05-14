@@ -47,11 +47,11 @@ AutofillDriverIOS::AutofillDriverIOS(web::WebState* web_state,
                                      id<AutofillDriverIOSBridge> bridge,
                                      const std::string& app_locale)
     : web_state_(web_state),
+      web_frame_id_(web_frame ? web_frame->GetFrameId() : ""),
       bridge_(bridge),
-      client_(client),
-      browser_autofill_manager_(
-          std::make_unique<BrowserAutofillManager>(this, client, app_locale)) {
-  web_frame_id_ = web_frame ? web_frame->GetFrameId() : "";
+      client_(*client),
+      manager_(std::make_unique<BrowserAutofillManager>(this, app_locale)) {
+  manager_observation_.Observe(manager_.get());
 
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillAcrossIframesIos)) {
@@ -88,8 +88,12 @@ AutofillDriverIOS* AutofillDriverIOS::GetParent() {
   return parent_.get();
 }
 
+AutofillClient& AutofillDriverIOS::GetAutofillClient() {
+  return *client_;
+}
+
 BrowserAutofillManager& AutofillDriverIOS::GetAutofillManager() {
-  return *browser_autofill_manager_;
+  return *manager_;
 }
 
 // Return true as iOS has no MPArch.
@@ -115,16 +119,16 @@ bool AutofillDriverIOS::CanShowAutofillUi() const {
 }
 
 base::flat_set<FieldGlobalId> AutofillDriverIOS::ApplyFormAction(
-    mojom::ActionType action_type,
+    mojom::FormActionType action_type,
     mojom::ActionPersistence action_persistence,
     const FormData& data,
     const url::Origin& triggered_origin,
     const base::flat_map<FieldGlobalId, FieldType>& field_type_map) {
   switch (action_type) {
-    case mojom::ActionType::kUndo:
+    case mojom::FormActionType::kUndo:
       // TODO(crbug.com/1441410) Add Undo support on iOS.
       return {};
-    case mojom::ActionType::kFill:
+    case mojom::FormActionType::kFill:
       web::WebFrame* frame = web_frame();
       if (frame) {
         [bridge_ fillFormData:data inFrame:frame];
@@ -138,8 +142,8 @@ base::flat_set<FieldGlobalId> AutofillDriverIOS::ApplyFormAction(
 }
 
 void AutofillDriverIOS::ApplyFieldAction(
+    mojom::FieldActionType action_type,
     mojom::ActionPersistence action_persistence,
-    mojom::TextReplacement text_replacement,
     const FieldGlobalId& field,
     const std::u16string& value) {
   // For now, only support filling.
@@ -164,25 +168,6 @@ void AutofillDriverIOS::ExtractForm(
         response_callback) {
   // TODO(crbug.com/1490670): Implement ExtractForm().
   NOTIMPLEMENTED();
-}
-
-void AutofillDriverIOS::HandleParsedForms(const std::vector<FormData>& forms) {
-  const std::map<FormGlobalId, std::unique_ptr<FormStructure>>& map =
-      browser_autofill_manager_->form_structures();
-  std::vector<raw_ptr<FormStructure, VectorExperimental>> form_structures;
-  form_structures.reserve(forms.size());
-
-  for (const FormData& form : forms) {
-    auto it = map.find(form.global_id());
-    if (it != map.end())
-      form_structures.push_back(it->second.get());
-  }
-
-  web::WebFrame* frame = web_frame();
-  if (!frame) {
-    return;
-  }
-  [bridge_ handleParsedForms:form_structures inFrame:frame];
 }
 
 void AutofillDriverIOS::SendAutofillTypePredictionsToRenderer(
@@ -333,6 +318,28 @@ void AutofillDriverIOS::SetSelfAsParent(LocalFrameToken token) {
       FromWebStateAndLocalFrameToken(web_state_, token);
   if (child_driver) {
     child_driver->SetParent(weak_ptr_factory_.GetWeakPtr());
+  }
+}
+
+void AutofillDriverIOS::OnAutofillManagerDestroyed(AutofillManager& manager) {
+  manager_observation_.Reset();
+}
+
+void AutofillDriverIOS::OnAfterFormsSeen(AutofillManager& manager,
+                                         base::span<const FormGlobalId> forms) {
+  DCHECK_EQ(&manager, manager_.get());
+  if (forms.empty()) {
+    return;
+  }
+  std::vector<raw_ptr<FormStructure, VectorExperimental>> form_structures;
+  form_structures.reserve(forms.size());
+  for (const FormGlobalId& form : forms) {
+    if (FormStructure* form_structure = manager.FindCachedFormById(form)) {
+      form_structures.push_back(form_structure);
+    }
+  }
+  if (web::WebFrame* frame = web_frame()) {
+    [bridge_ handleParsedForms:form_structures inFrame:frame];
   }
 }
 

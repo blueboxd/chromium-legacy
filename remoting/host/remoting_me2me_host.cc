@@ -8,11 +8,11 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <optional>
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -70,6 +70,7 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/config_file_watcher.h"
 #include "remoting/host/config_watcher.h"
+#include "remoting/host/corp_host_status_logger.h"
 #include "remoting/host/crash_process.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/desktop_session_connector.h"
@@ -363,6 +364,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool OnMaxSessionDurationPolicyUpdate(const base::Value::Dict& policies);
   bool OnMaxClipboardSizePolicyUpdate(const base::Value::Dict& policies);
   bool OnUrlForwardingPolicyUpdate(const base::Value::Dict& policies);
+  bool OnAllowPinAuthenticationUpdate(const base::Value::Dict& policies);
 
   void InitializeSignaling();
 
@@ -437,6 +439,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool allow_pairing_ = true;
   bool enable_user_interface_ = true;
   bool allow_remote_access_connections_ = true;
+  std::optional<bool> allow_pin_auth_;
 
   DesktopEnvironmentOptions desktop_environment_options_;
   ThirdPartyAuthConfig third_party_auth_config_;
@@ -474,6 +477,9 @@ class HostProcess : public ConfigWatcher::Delegate,
   std::unique_ptr<HostUTMPLogger> host_utmp_logger_;
 #endif
   std::unique_ptr<HostPowerSaveBlocker> power_save_blocker_;
+
+  // Only set if |is_googler_| is true.
+  std::unique_ptr<CorpHostStatusLogger> corp_host_status_logger_;
 
   std::unique_ptr<ChromotingHost> host_;
 
@@ -811,23 +817,13 @@ void HostProcess::CreateAuthenticatorFactory() {
 
   auto auth_config = std::make_unique<protocol::HostAuthenticationConfig>(
       local_certificate, key_pair_);
-  // TODO: b/323068262 - add a new host setting for enabling PIN auth for corp.
-  // The logic should be:
-  //   is_googler_ && allow_pin_auth_ ->
-  //     host supports all methods (may or may not include 3P auth) except
-  //     SessionAuthz
-  //   is_googler_ && !allow_pin_auth_ ->
-  //     host only supports SessionAuthz and maybe 3P auth
-  // The current logic does not remove PIN and pairing auth for Googlers, but
-  // it should work as if no one has PIN exemption as long as the host lists
-  // SessionAuthz as the first supported auth method.
-  if (is_googler_) {
+  if (is_googler_ && (!allow_pin_auth_.value_or(false) || pin_hash_.empty())) {
     auth_config->AddSessionAuthzAuth(
         base::MakeRefCounted<CorpSessionAuthzServiceClientFactory>(
             context_->url_loader_factory(), service_account_email_,
             oauth_refresh_token_));
   }
-  if (third_party_auth_config_.is_null()) {
+  if (allow_pin_auth_.value_or(!is_googler_) && !pin_hash_.empty()) {
     scoped_refptr<PairingRegistry> pairing_registry;
     if (allow_pairing_) {
       // On Windows |pairing_registry_| is initialized in
@@ -850,7 +846,8 @@ void HostProcess::CreateAuthenticatorFactory() {
     auth_config->AddPairingAuth(pairing_registry);
     auth_config->AddSharedSecretAuth(pin_hash_);
     host_->set_pairing_registry(pairing_registry);
-  } else {
+  }
+  if (!third_party_auth_config_.is_null()) {
     // ThirdPartyAuthConfig::Parse() leaves the config in a valid state, so
     // these URLs are both valid.
     DCHECK(third_party_auth_config_.token_url.is_valid());
@@ -1263,6 +1260,7 @@ void HostProcess::OnPolicyUpdate(base::Value::Dict policies) {
   restart_required |= OnMaxSessionDurationPolicyUpdate(policies);
   restart_required |= OnMaxClipboardSizePolicyUpdate(policies);
   restart_required |= OnUrlForwardingPolicyUpdate(policies);
+  restart_required |= OnAllowPinAuthenticationUpdate(policies);
 
   policy_state_ = POLICY_LOADED;
 
@@ -1640,6 +1638,35 @@ bool HostProcess::OnUrlForwardingPolicyUpdate(
   return true;
 }
 
+bool HostProcess::OnAllowPinAuthenticationUpdate(
+    const base::Value::Dict& policies) {
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+
+  const base::Value* allow_pin_auth =
+      policies.Find(policy::key::kRemoteAccessHostAllowPinAuthentication);
+  if (!allow_pin_auth) {
+    return false;
+  }
+
+  // Save the value until we have parsed the host config since the default
+  // behavior depends on whether the user is a googler.
+  if (allow_pin_auth->is_none()) {
+    // The policy has been unset.
+    allow_pin_auth_.reset();
+  } else {
+    allow_pin_auth_ = allow_pin_auth->GetIfBool();
+    DCHECK(allow_pin_auth_.has_value());
+    if (*allow_pin_auth_) {
+      HOST_LOG << "Policy allows PIN and pairing authentication methods.";
+    } else {
+      HOST_LOG << "Policy disallows PIN or pairing authentication methods.";
+    }
+  }
+
+  // Restart required.
+  return true;
+}
+
 bool HostProcess::OnEnableUserInterfacePolicyUpdate(
     const base::Value::Dict& policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
@@ -1853,6 +1880,10 @@ void HostProcess::StartHost() {
     // externally, we don't want to apply this policy for non-Googlers.
     desktop_environment_options_.set_enable_user_interface(
         enable_user_interface_);
+    corp_host_status_logger_ = std::make_unique<CorpHostStatusLogger>(
+        context_->url_loader_factory(), service_account_email_,
+        oauth_refresh_token_);
+    corp_host_status_logger_->StartObserving(*session_manager);
   }
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
@@ -1994,6 +2025,7 @@ void HostProcess::GoOffline(const std::string& host_offline_reason) {
   host_event_logger_.reset();
   host_status_logger_.reset();
   power_save_blocker_.reset();
+  corp_host_status_logger_.reset();
   ftl_host_change_notification_listener_.reset();
 
   // Before shutting down HostSignalingManager, send the |host_offline_reason|

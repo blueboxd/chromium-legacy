@@ -176,7 +176,7 @@ class QuickSettingsHeader::ManagedStateView : public views::Button {
   const raw_ref<const gfx::VectorIcon> icon_;
 };
 
-BEGIN_METADATA(QuickSettingsHeader, ManagedStateView, views::Button)
+BEGIN_METADATA(QuickSettingsHeader, ManagedStateView)
 END_METADATA
 
 class QuickSettingsHeader::EnterpriseManagedView
@@ -234,7 +234,6 @@ class QuickSettingsHeader::EnterpriseManagedView
     const std::string account_domain_manager = model->account_domain_manager();
 
     const bool visible = session_controller->ShouldDisplayManagedUI() ||
-                         model->active_directory_managed() ||
                          !enterprise_domain_manager.empty() ||
                          !account_domain_manager.empty();
     SetVisible(visible);
@@ -277,7 +276,7 @@ class QuickSettingsHeader::EnterpriseManagedView
   bool narrow_layout_ = false;
 };
 
-BEGIN_METADATA(QuickSettingsHeader, EnterpriseManagedView, ManagedStateView)
+BEGIN_METADATA(QuickSettingsHeader, EnterpriseManagedView)
 END_METADATA
 
 QuickSettingsHeader::QuickSettingsHeader(

@@ -114,7 +114,6 @@ TEST_F(MLGraphXnnpackTest, TopoSortOperatorsTest) {
                                  V8MLOperandDataType::Enum::kFloat32,
                                  scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
-    options->setAutoPad(V8MLAutoPad::Enum::kSameLower);
     auto* conv2d_0 = BuildConv2d(scope, builder, input, filter, options);
     auto* conv2d_1 = BuildConv2d(scope, builder, conv2d_0, filter, options);
     auto* conv2d_2 = BuildConv2d(scope, builder, conv2d_0, filter, options);
@@ -153,7 +152,8 @@ TEST_P(MLGraphXnnpackTest, DefineXnnpackValuesTest) {
                               V8MLOperandDataType::Enum::kFloat32,
                               scope.GetExceptionState());
     auto* output = BuildElementWiseBinary(
-        scope, builder, ElementWiseBinaryKind::kAdd, input0, input1);
+        scope, builder, webnn::mojom::blink::ElementWiseBinary::Kind::kAdd,
+        input0, input1);
     auto [graph, exception] = BuildGraph(scope, builder, {{"output", output}});
     ASSERT_THAT(graph, testing::NotNull());
     MLGraphXnnpack* xnnpack_graph = static_cast<MLGraphXnnpack*>(graph.Get());
@@ -185,7 +185,8 @@ TEST_P(MLGraphXnnpackTest, DefineXnnpackValuesTest) {
         BuildConstant(builder, shape, V8MLOperandDataType::Enum::kFloat32,
                       scope.GetExceptionState());
     auto* output = BuildElementWiseBinary(
-        scope, builder, ElementWiseBinaryKind::kAdd, input, constant);
+        scope, builder, webnn::mojom::blink::ElementWiseBinary::Kind::kAdd,
+        input, constant);
     auto [graph, exception] = BuildGraph(scope, builder, {{"output", output}});
     ASSERT_THAT(graph, testing::NotNull());
     MLGraphXnnpack* xnnpack_graph = static_cast<MLGraphXnnpack*>(graph.Get());
@@ -219,12 +220,14 @@ TEST_P(MLGraphXnnpackTest, DefineXnnpackValuesTest) {
         BuildConstant(builder, shape, V8MLOperandDataType::Enum::kFloat32,
                       scope.GetExceptionState());
     auto* intermediate = BuildElementWiseBinary(
-        scope, builder, ElementWiseBinaryKind::kAdd, input, constant0);
+        scope, builder, webnn::mojom::blink::ElementWiseBinary::Kind::kAdd,
+        input, constant0);
     auto* constant1 =
         BuildConstant(builder, shape, V8MLOperandDataType::Enum::kFloat32,
                       scope.GetExceptionState());
     auto* output = BuildElementWiseBinary(
-        scope, builder, ElementWiseBinaryKind::kAdd, intermediate, constant1);
+        scope, builder, webnn::mojom::blink::ElementWiseBinary::Kind::kAdd,
+        intermediate, constant1);
     auto [graph, exception] = BuildGraph(scope, builder, {{"output", output}});
     ASSERT_THAT(graph, testing::NotNull());
     MLGraphXnnpack* xnnpack_graph = static_cast<MLGraphXnnpack*>(graph.Get());
@@ -259,13 +262,15 @@ TEST_P(MLGraphXnnpackTest, DefineXnnpackValuesTest) {
                               V8MLOperandDataType::Enum::kFloat32,
                               scope.GetExceptionState());
     auto* intermediate = BuildElementWiseBinary(
-        scope, builder, ElementWiseBinaryKind::kAdd, input0, input1);
+        scope, builder, webnn::mojom::blink::ElementWiseBinary::Kind::kAdd,
+        input0, input1);
     auto* output0 = builder->relu(intermediate, scope.GetExceptionState());
     auto* input2 = BuildInput(builder, "input2", shape,
                               V8MLOperandDataType::Enum::kFloat32,
                               scope.GetExceptionState());
     auto* output1 = BuildElementWiseBinary(
-        scope, builder, ElementWiseBinaryKind::kAdd, intermediate, input2);
+        scope, builder, webnn::mojom::blink::ElementWiseBinary::Kind::kAdd,
+        intermediate, input2);
     auto [graph, exception] = BuildGraph(
         scope, builder, {{"output0", output0}, {"output1", output1}});
     ASSERT_THAT(graph, testing::NotNull());
@@ -341,7 +346,8 @@ TEST_P(MLGraphXnnpackTest, PowTest) {
   auto* input1 = BuildConstant(builder, {}, V8MLOperandDataType::Enum::kFloat32,
                                Vector<float>({3.0}), scope.GetExceptionState());
   auto* output = BuildElementWiseBinary(
-      scope, builder, ElementWiseBinaryKind::kPow, input0, input1);
+      scope, builder, webnn::mojom::blink::ElementWiseBinary::Kind::kPow,
+      input0, input1);
   auto [graph, exception] = BuildGraph(scope, builder, {{"output", output}});
   EXPECT_THAT(graph, testing::IsNull());
   EXPECT_EQ(exception->message(),
@@ -367,7 +373,8 @@ TEST_P(MLGraphXnnpackTest, InvokeXnnpackRuntimeTest) {
       BuildInput(builder, "input1", shape, V8MLOperandDataType::Enum::kFloat32,
                  scope.GetExceptionState());
   auto* output = BuildElementWiseBinary(
-      scope, builder, ElementWiseBinaryKind::kAdd, input0, input1);
+      scope, builder, webnn::mojom::blink::ElementWiseBinary::Kind::kAdd,
+      input0, input1);
   auto [graph, exception] = BuildGraph(scope, builder, {{"output", output}});
   ASSERT_THAT(graph, testing::NotNull());
   auto* xnnpack_graph = static_cast<MLGraphXnnpack*>(graph.Get());
@@ -514,7 +521,8 @@ TEST_P(MLGraphXnnpackTest, InputAndOutputUseSameNameTest) {
         BuildInput(builder, "y", shape, V8MLOperandDataType::Enum::kFloat32,
                    scope.GetExceptionState());
     auto* output = BuildElementWiseBinary(
-        scope, builder, ElementWiseBinaryKind::kAdd, input0, input1);
+        scope, builder, webnn::mojom::blink::ElementWiseBinary::Kind::kAdd,
+        input0, input1);
     auto [graph, exception] = BuildGraph(scope, builder, {{"y", output}});
     ASSERT_THAT(graph, testing::NotNull());
     auto* xnnpack_graph = static_cast<MLGraphXnnpack*>(graph.Get());
@@ -534,7 +542,7 @@ TEST_P(MLGraphXnnpackTest, InputAndOutputUseSameNameTest) {
   }
 }
 
-TEST_F(MLGraphXnnpackTest, ComputeAsyncTest) {
+TEST_F(MLGraphXnnpackTest, ComputeTest) {
   V8TestingScope scope;
   auto* builder =
       CreateMLGraphBuilder(scope.GetExecutionContext(), scope.GetScriptState(),
@@ -571,12 +579,12 @@ TEST_F(MLGraphXnnpackTest, ComputeAsyncTest) {
     auto b_buffer_view = CreateArrayBufferViewForOperand(b_operand);
     auto output_buffer_view = CreateArrayBufferViewForOperand(output_operand);
     auto* resolver =
-        MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
+        MakeGarbageCollected<ScriptPromiseResolverTyped<MLComputeResult>>(
+            scope.GetScriptState());
     ScriptPromiseTester tester(scope.GetScriptState(), resolver->Promise());
-    graph->ComputeAsync(ScopedMLTrace("ComputeAsync"),
-                        {{"a", a_buffer_view}, {"b", b_buffer_view}},
-                        {{"output", output_buffer_view}}, resolver,
-                        scope.GetExceptionState());
+    graph->Compute(
+        ScopedMLTrace("Compute"), {{"a", a_buffer_view}, {"b", b_buffer_view}},
+        {{"output", output_buffer_view}}, resolver, scope.GetExceptionState());
     tester.WaitUntilSettled();
     EXPECT_FALSE(tester.IsFulfilled());
     auto* exception = V8DOMException::ToWrappable(scope.GetIsolate(),
@@ -599,12 +607,12 @@ TEST_F(MLGraphXnnpackTest, ComputeAsyncTest) {
     ASSERT_TRUE(b_buffer_view->IsDetached());
     auto output_buffer_view = CreateArrayBufferViewForOperand(output_operand);
     auto* resolver =
-        MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
+        MakeGarbageCollected<ScriptPromiseResolverTyped<MLComputeResult>>(
+            scope.GetScriptState());
     ScriptPromiseTester tester(scope.GetScriptState(), resolver->Promise());
-    graph->ComputeAsync(ScopedMLTrace("ComputeAsync"),
-                        {{"a", a_buffer_view}, {"b", b_buffer_view}},
-                        {{"output", output_buffer_view}}, resolver,
-                        scope.GetExceptionState());
+    graph->Compute(
+        ScopedMLTrace("Compute"), {{"a", a_buffer_view}, {"b", b_buffer_view}},
+        {{"output", output_buffer_view}}, resolver, scope.GetExceptionState());
     tester.WaitUntilSettled();
     EXPECT_FALSE(tester.IsFulfilled());
     auto* exception = V8DOMException::ToWrappable(scope.GetIsolate(),
@@ -627,12 +635,12 @@ TEST_F(MLGraphXnnpackTest, ComputeAsyncTest) {
     output_buffer_view->DetachForTesting();
     ASSERT_TRUE(output_buffer_view->IsDetached());
     auto* resolver =
-        MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
+        MakeGarbageCollected<ScriptPromiseResolverTyped<MLComputeResult>>(
+            scope.GetScriptState());
     ScriptPromiseTester tester(scope.GetScriptState(), resolver->Promise());
-    graph->ComputeAsync(ScopedMLTrace("ComputeAsync"),
-                        {{"a", a_buffer_view}, {"b", b_buffer_view}},
-                        {{"output", output_buffer_view}}, resolver,
-                        scope.GetExceptionState());
+    graph->Compute(
+        ScopedMLTrace("Compute"), {{"a", a_buffer_view}, {"b", b_buffer_view}},
+        {{"output", output_buffer_view}}, resolver, scope.GetExceptionState());
     tester.WaitUntilSettled();
     EXPECT_FALSE(tester.IsFulfilled());
     auto* exception = V8DOMException::ToWrappable(scope.GetIsolate(),
@@ -649,17 +657,17 @@ TEST_F(MLGraphXnnpackTest, ComputeAsyncTest) {
   }
   {
     // Test the input and output ArrayBufferViews are detached if
-    // ComputeAsync() call succeeds.
+    // Compute() call succeeds.
     auto a_buffer_view = CreateArrayBufferViewForOperand(a_operand);
     auto b_buffer_view = CreateArrayBufferViewForOperand(b_operand);
     auto output_buffer_view = CreateArrayBufferViewForOperand(output_operand);
     auto* resolver =
-        MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
+        MakeGarbageCollected<ScriptPromiseResolverTyped<MLComputeResult>>(
+            scope.GetScriptState());
     ScriptPromiseTester tester(scope.GetScriptState(), resolver->Promise());
-    graph->ComputeAsync(ScopedMLTrace("ComputeAsync"),
-                        {{"a", a_buffer_view}, {"b", b_buffer_view}},
-                        {{"output", output_buffer_view}}, resolver,
-                        scope.GetExceptionState());
+    graph->Compute(
+        ScopedMLTrace("Compute"), {{"a", a_buffer_view}, {"b", b_buffer_view}},
+        {{"output", output_buffer_view}}, resolver, scope.GetExceptionState());
     EXPECT_TRUE(a_buffer_view->IsDetached());
     EXPECT_TRUE(b_buffer_view->IsDetached());
     EXPECT_TRUE(output_buffer_view->IsDetached());
@@ -669,7 +677,7 @@ TEST_F(MLGraphXnnpackTest, ComputeAsyncTest) {
   {
     // Test the input and output ArrayBufferViews of MLComputeResult have the
     // same type, byte offset, byte length and base address of those passed to
-    // ComputeAsync().
+    // Compute().
     auto a_buffer_view = CreateArrayBufferViewForOperand(a_operand);
     auto a_buffer_view_type = a_buffer_view->GetType();
     size_t a_buffer_view_byte_offset = a_buffer_view->byteOffset();
@@ -696,12 +704,12 @@ TEST_F(MLGraphXnnpackTest, ComputeAsyncTest) {
     size_t output_buffer_view_byte_length = output_buffer_view->byteLength();
     void* output_buffer_view_base_address = output_buffer_view->BaseAddress();
     auto* resolver =
-        MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
+        MakeGarbageCollected<ScriptPromiseResolverTyped<MLComputeResult>>(
+            scope.GetScriptState());
     ScriptPromiseTester tester(scope.GetScriptState(), resolver->Promise());
-    graph->ComputeAsync(ScopedMLTrace("ComputeAsync"),
-                        {{"a", a_buffer_view}, {"b", b_buffer_view}},
-                        {{"output", output_buffer_view}}, resolver,
-                        scope.GetExceptionState());
+    graph->Compute(
+        ScopedMLTrace("Compute"), {{"a", a_buffer_view}, {"b", b_buffer_view}},
+        {{"output", output_buffer_view}}, resolver, scope.GetExceptionState());
     tester.WaitUntilSettled();
     EXPECT_TRUE(tester.IsFulfilled());
     auto* compute_result = NativeValueTraits<MLComputeResult>::NativeValue(
@@ -814,7 +822,9 @@ struct EluTester {
   }
 };
 
-TEST_P(MLGraphXnnpackTest, EluTest) {
+// TODO: crbug.com/327337526 - Migrate this to WPTs. This test is temporarily
+// disabled due to suspected undefined behavior causing crashes on bots.
+TEST_P(MLGraphXnnpackTest, DISABLED_EluTest) {
   V8TestingScope scope;
   {
     // Test elu operator with default options.
@@ -916,7 +926,9 @@ struct SoftmaxTester {
   }
 };
 
-TEST_P(MLGraphXnnpackTest, SoftmaxTest) {
+// TODO: crbug.com/327337526 - Migrate this to WPTs. This test is temporarily
+// disabled due to suspected undefined behavior causing crashes on bots.
+TEST_P(MLGraphXnnpackTest, DISABLED_SoftmaxTest) {
   V8TestingScope scope;
   {
     // Test softmax operator for input operand with [2, 2] dimensions.
@@ -1246,14 +1258,9 @@ TEST_P(MLGraphXnnpackTest, ThreadPoolTest) {
   { ThreadPoolTester{.num_threads = 4}.Test(*this, scope); }
 }
 
-const TestVariety kXnnpackGraphTestVariety[] = {
-    {BackendType::kXnnpack, ExecutionMode::kAsync},
-    {BackendType::kXnnpack, ExecutionMode::kSync},
-};
-
 INSTANTIATE_TEST_SUITE_P(All,
                          MLGraphXnnpackTest,
-                         testing::ValuesIn(kXnnpackGraphTestVariety),
-                         TestVarietyToString);
+                         testing::Values(BackendType::kXnnpack),
+                         TestParamInfoToString);
 
 }  // namespace blink

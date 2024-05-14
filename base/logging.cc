@@ -33,7 +33,6 @@
 #include "base/debug/stack_trace.h"
 #include "base/debug/task_trace.h"
 #include "base/functional/callback.h"
-#include "base/gtest_prod_util.h"
 #include "base/immediate_crash.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
@@ -598,13 +597,13 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
   // default log file will re-initialize to the new options.
   CloseLogFileUnlocked();
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN)
   if (settings.log_file) {
     DCHECK(!settings.log_file_path);
     g_log_file = settings.log_file;
     return true;
   }
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN)
 
   DCHECK(settings.log_file_path) << "LOG_TO_FILE set but no log_file_path!";
 
@@ -757,10 +756,8 @@ void LogMessage::Flush() {
   size_t stack_start = stream_.str().length();
 #if !defined(OFFICIAL_BUILD) && !BUILDFLAG(IS_NACL) && !defined(__UCLIBC__) && \
     !BUILDFLAG(IS_AIX)
-  // Include a stack trace on a fatal, unless running within a death test proc
-  // or a debugger is attached.
-  if (severity_ == LOGGING_FATAL && !::base::internal::InDeathTestChild() &&
-      !base::debug::BeingDebugged()) {
+  // Include a stack trace on a fatal, unless a debugger is attached.
+  if (severity_ == LOGGING_FATAL && !base::debug::BeingDebugged()) {
     base::debug::StackTrace stack_trace;
     stream_ << std::endl;  // Newline to separate from log message.
     stack_trace.OutputToStream(&stream_);
@@ -1326,6 +1323,24 @@ FILE* DuplicateLogFILE() {
     return nullptr;
   }
   std::ignore = dup_fd.release();
+  return duplicate;
+}
+#endif
+
+#if BUILDFLAG(IS_WIN)
+HANDLE DuplicateLogFileHandle() {
+  // `g_log_file` should only be valid, or nullptr, but be very careful that we
+  // do not duplicate INVALID_HANDLE_VALUE as it aliases the process handle.
+  if (!(g_logging_destination & LOG_TO_FILE) || !g_log_file ||
+      g_log_file == INVALID_HANDLE_VALUE) {
+    return nullptr;
+  }
+  HANDLE duplicate = nullptr;
+  if (!::DuplicateHandle(::GetCurrentProcess(), g_log_file,
+                         ::GetCurrentProcess(), &duplicate, 0,
+                         /*bInheritHandle=*/TRUE, DUPLICATE_SAME_ACCESS)) {
+    return nullptr;
+  }
   return duplicate;
 }
 #endif

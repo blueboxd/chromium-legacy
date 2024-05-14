@@ -302,6 +302,19 @@ class AutofillMetrics {
     NUM_FIELD_TYPE_QUALITY_METRICS
   };
 
+  // Defines email prediction confusion matrix enums used by UMA records.
+  // Entries should not be renumbered and numeric values should never be reused.
+  // Please update "EmailPredictionConfusionMatrix" in
+  // `tools/metrics/histograms/enums.xml` when new enums are added.
+  enum class EmailPredictionConfusionMatrix {
+    kTruePositive = 0,
+    kFalsePositive = 1,
+    kTrueNegative = 2,
+    kFalseNegative = 3,
+    // Required by UMA histogram macro.
+    kMaxValue = kFalseNegative
+  };
+
   // Metrics measuring how well rationalization has performed given user's
   // actual input.
   enum RationalizationQualityMetric {
@@ -935,6 +948,7 @@ class AutofillMetrics {
       const FormStructure& form,
       const AutofillField& field,
       QualityMetricType metric_type);
+  static void LogEmailFieldPredictionMetrics(const AutofillField& field);
 
   static void LogServerQueryMetric(ServerQueryMetric metric);
 
@@ -1093,10 +1107,6 @@ class AutofillMetrics {
   // always offered, regardless of how recently they have been used.
   static void LogNumberOfAddressesSuppressedForDisuse(size_t num_profiles);
 
-  // Log the number of Autofill address suggestions presented to the user when
-  // filling a form.
-  static void LogAddressSuggestionsCount(size_t num_suggestions);
-
   // Log the reason for which the Autofill popup disappeared.
   static void LogAutofillPopupHidingReason(PopupHidingReason reason);
 
@@ -1105,9 +1115,6 @@ class AutofillMetrics {
 
   // Log the number of days since an Autocomplete suggestion was last used.
   static void LogAutocompleteDaysSinceLastUse(size_t days);
-
-  // Log the index of the selected Autocomplete suggestion in the popup.
-  static void LogAutocompleteSuggestionAcceptedIndex(int index);
 
   // Log the fact that an autocomplete popup was shown.
   static void OnAutocompleteSuggestionsShown();
@@ -1222,18 +1229,7 @@ class AutofillMetrics {
   static void LogServerCardLinkClicked(PaymentsSigninState sync_state);
 
   // Records if an autofilled field of a specific type was edited by the user.
-  // TODO(crbug.com/1368096): This metric is the successor of
-  // LogEditedAutofilledFieldAtSubmissionDeprecated which is defective. Remove
-  // comment once the old metric was removed.
   static void LogEditedAutofilledFieldAtSubmission(
-      FormInteractionsUkmLogger* form_interactions_ukm_logger,
-      const FormStructure& form,
-      const AutofillField& field);
-
-  // Records if an autofilled field of a specific type was edited by the user.
-  // TODO(crbug.com/1368096): This metric is defective because it is falsely
-  // conditioned on having a detected field type. Remove after M112.
-  static void LogEditedAutofilledFieldAtSubmissionDeprecated(
       FormInteractionsUkmLogger* form_interactions_ukm_logger,
       const FormStructure& form,
       const AutofillField& field);
@@ -1264,15 +1260,6 @@ class AutofillMetrics {
   LogNumberOfAutofilledFieldsWithAutocompleteUnrecognizedAtSubmission(
       size_t number_of_accepted_fields,
       size_t number_of_corrected_fields);
-
-  // Logs that local heuristics matched phone number fields using `grammar_id`.
-  // `suffix_matched` indicates if the special case handling for phone number
-  // suffixes was triggered.
-  // `num_grammars` indicates the total number of phone number grammars. It is
-  // not logged and used for validation.
-  static void LogPhoneNumberGrammarMatched(int grammar_id,
-                                           bool suffix_matched,
-                                           int num_grammars);
 
   // Logs when the virtual card metadata for one card have been updated.
   static void LogVirtualCardMetadataSynced(bool existing_card);
@@ -1321,17 +1308,6 @@ class AutofillMetrics {
       absl::variant<AutofillClient::PaymentsRpcCardType, CreditCard::RecordType>
           card_type);
 
-  // Logs the context menu impressions based on the autofill type as well as
-  // based on the autocomplete type.
-  static void LogContextMenuImpressionsForField(
-      FieldType field_type,
-      AutocompleteState autocomplete_state);
-
-  // Logs the context menu impressions for a submitted form. Mainly logs the
-  // number of fields in the form where the context menu was shown.
-  static void LogContextMenuImpressionsForForm(
-      int num_of_fields_with_context_menu_shown);
-
   // Returns 64-bit hash of the string of form global id, which consists of
   // |frame_token| and |renderer_id|.
   static uint64_t FormGlobalIdToHash64Bit(const FormGlobalId& form_global_id);
@@ -1356,8 +1332,7 @@ class AutofillMetrics {
   // accessory.
   static void LogDeleteAddressProfileFromKeyboardAccessory();
 
- private:
-  static void Log(AutocompleteEvent event);
+  static void LogAutocompleteEvent(AutocompleteEvent event);
 };
 
 #if defined(UNIT_TEST)

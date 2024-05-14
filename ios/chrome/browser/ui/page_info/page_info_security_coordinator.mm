@@ -17,16 +17,21 @@
 
 @implementation PageInfoSecurityCoordinator {
   PageInfoSecurityViewController* _viewController;
+  PageInfoSiteSecurityDescription* _siteSecurityDescription;
 }
 
 @synthesize baseNavigationController = _baseNavigationController;
 
 - (instancetype)initWithBaseNavigationController:
                     (UINavigationController*)navigationController
-                                         browser:(Browser*)browser {
+                                         browser:(Browser*)browser
+                         siteSecurityDescription:
+                             (PageInfoSiteSecurityDescription*)
+                                 siteSecurityDescription {
   if (self = [super initWithBaseViewController:navigationController
                                        browser:browser]) {
     _baseNavigationController = navigationController;
+    _siteSecurityDescription = siteSecurityDescription;
   }
   return self;
 }
@@ -34,17 +39,13 @@
 #pragma mark - ChromeCoordinator
 
 - (void)start {
-  web::WebState* webState =
-      self.browser->GetWebStateList()->GetActiveWebState();
-
-  PageInfoSiteSecurityDescription* siteSecurityDescription =
-      [PageInfoSiteSecurityMediator configurationForWebState:webState];
-
   _viewController = [[PageInfoSecurityViewController alloc]
-      initWithSiteSecurityDescription:siteSecurityDescription];
+      initWithSiteSecurityDescription:_siteSecurityDescription];
 
   _viewController.pageInfoCommandsHandler = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), PageInfoCommands);
+  _viewController.pageInfoPresentationHandler =
+      self.pageInfoPresentationHandler;
 
   [self.baseNavigationController pushViewController:_viewController
                                            animated:YES];

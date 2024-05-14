@@ -7,6 +7,7 @@
 #include <aura-shell-client-protocol.h>
 #include <string>
 
+#include "base/nix/xdg_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -243,32 +244,32 @@ void WaylandToplevelWindow::Maximize() {
 }
 
 void WaylandToplevelWindow::Minimize() {
-  // Do not allow to minimize the window if it has never been configured. That
-  // is, if the browser is minimized (there are at least two windows) and the
-  // session is restored after crash or logout, which forced the browser to
-  // close, the session will only restore one window, while all the other
-  // windows will be set to minimized. That means windows will be never ack
-  // configured and they will stay forever minimized as a Wayland compositor
-  // will not activate those windows (upon user interaction) because the before
-  // mentioned initial configure/ack_configure messaging hasn't happened.
-  //
-  // TODO(crbug.com/1293740): find a solution to this workaround.
-  if (IsSurfaceConfigured()) {
-    fullscreen_display_id_ = display::kInvalidDisplayId;
-    shell_toplevel_->SetMinimized();
-    if (!SupportsConfigureMinimizedState()) {
-      // Wayland standard does not have API to notify client apps about
-      // window minimized, while exo has an extension (in
-      // zaura_shell::configure) for it.
-      // In the former case we update the window state here synchronously,
-      // while in the latter case update the window state in the handler of
-      // configure (HandleAuraToplevelConfigure) asynchronously.
-      previous_state_ = state_;
-      state_ = PlatformWindowState::kMinimized;
-      delegate()->OnWindowStateChanged(previous_state_, state_);
-    }
-  } else {
-    SetWindowState(PlatformWindowState::kNormal, display::kInvalidDisplayId);
+  if (!shell_toplevel_) {
+    // TODO(crbug.com/1466385): Store `PlatformWindowState::kMinimized` to a
+    // pending state.
+    return;
+  }
+
+  fullscreen_display_id_ = display::kInvalidDisplayId;
+  shell_toplevel_->SetMinimized();
+
+  if (!SupportsConfigureMinimizedState() && IsSurfaceConfigured()) {
+    // Wayland standard does not have API to notify client apps about
+    // window minimized, while exo has an extension (in
+    // zaura_shell::configure) for it.
+    // In the former case we update the window state here synchronously,
+    // while in the latter case update the window state in the handler of
+    // configure (HandleAuraToplevelConfigure) asynchronously.
+    // We also need to check if the surface is already configured in case of a
+    // synchronous minimize because a minimized window cannot ack configure.
+    // This can happen if a minimized window is restored by a session restore.
+    //
+    // TODO(crbug.com/1293740): Verify that the claim about a window initialized
+    // as a minimized window cannot ack configure. If not
+    // `IsSurfaceConfigured()` condition can be removed.
+    previous_state_ = state_;
+    state_ = PlatformWindowState::kMinimized;
+    delegate()->OnWindowStateChanged(previous_state_, state_);
   }
 }
 
@@ -292,6 +293,17 @@ PlatformWindowState WaylandToplevelWindow::GetPlatformWindowState() const {
   return state_;
 }
 
+std::optional<std::string> WaylandToplevelWindow::TakeActivationToken() const {
+  if (!connection()->xdg_activation() ||
+      // xdg-activation implementation in some compositors is still buggy and
+      // Mutter crashes were observed when windows are activated during window
+      // dragging sessions. See https://crbug.com/1366504.
+      connection()->IsDragInProgress()) {
+    return std::nullopt;
+  }
+  return base::nix::TakeXdgActivationToken();
+}
+
 void WaylandToplevelWindow::Activate() {
   // Activation is supported through optional protocol extensions and hence may
   // or may not work depending on the compositor.  The details depend on the
@@ -305,12 +317,8 @@ void WaylandToplevelWindow::Activate() {
     shell_toplevel_->Activate();
   } else if (zaura_surface && zaura_surface->SupportsActivate()) {
     zaura_surface->Activate();
-  } else if (connection()->xdg_activation()) {
-    // xdg-activation implementation in some compositors is still buggy and
-    // Mutter crashes were observed when windows are activated during window
-    // dragging sessions. See https://crbug.com/1366504.
-    if (!connection()->IsDragInProgress())
-      connection()->xdg_activation()->Activate(root_surface()->surface());
+  } else if (auto token = TakeActivationToken()) {
+    connection()->xdg_activation()->Activate(root_surface()->surface(), *token);
   } else if (gtk_surface1_) {
     gtk_surface1_->RequestFocus();
   }
@@ -842,6 +850,12 @@ void WaylandToplevelWindow::StartWindowDraggingSessionIfNeeded(
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 void WaylandToplevelWindow::SetImmersiveFullscreenStatus(bool status) {
+  // Skip if `status` is same as the last request.
+  if (last_requested_immersive_status_ == status) {
+    return;
+  }
+  last_requested_immersive_status_ = std::make_optional(status);
+
   if (shell_toplevel_) {
     shell_toplevel_->SetUseImmersiveMode(status);
   } else {
@@ -882,6 +896,10 @@ void WaylandToplevelWindow::SetShadowCornersRadii(
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+PlatformWindowDelegate::State WaylandToplevelWindow::GetLatchedState() const {
+  return latched_state();
+}
 
 void WaylandToplevelWindow::RoundTripQueue() {
   connection()->RoundTripQueue();
@@ -1222,7 +1240,15 @@ void WaylandToplevelWindow::SetUpShellIntegration() {
   if (connection()->zaura_shell()) {
     if (auto* zaura_surface = root_surface()->CreateZAuraSurface()) {
       zaura_surface->set_delegate(AsWeakPtr());
-      zaura_surface->SetOcclusionTracking();
+
+      // If the server does not support the synchronized occlusion pathway,
+      // enable the unsynchronized occlusion pathway and disable native
+      // occlusion.
+      if (!shell_toplevel_->IsSupportedOnAuraToplevel(
+              ZAURA_TOPLEVEL_CONFIGURE_OCCLUSION_STATE_SINCE_VERSION)) {
+        zaura_surface->SetOcclusionTracking();
+        delegate()->DisableNativeWindowOcclusion();
+      }
     }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

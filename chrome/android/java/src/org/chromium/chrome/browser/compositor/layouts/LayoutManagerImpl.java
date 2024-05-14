@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationCoordinator;
 import org.chromium.chrome.browser.layouts.CompositorModelChangeProcessor;
@@ -62,6 +61,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
+import org.chromium.chrome.browser.toolbar.ToolbarFeatures;
 import org.chromium.chrome.browser.toolbar.bottom.ScrollingBottomViewSceneLayer;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarOverlayCoordinator;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
@@ -331,7 +331,7 @@ public class LayoutManagerImpl
 
         // Overlays are ordered back (closest to the web content) to front.
         Class[] overlayOrder;
-        if (ChromeFeatureList.sDynamicTopChrome.isEnabled()) {
+        if (ToolbarFeatures.isDynamicTopChromeEnabled()) {
             // When DynamicTopChrome is enabled, place the tab strip behind the toolbar scene layer
             // as during transition, the toolbar will move up and cover the tab strip.
             overlayOrder =
@@ -796,22 +796,21 @@ public class LayoutManagerImpl
             float previousWidth = getActiveLayout().getWidth();
             float previousHeight = getActiveLayout().getHeight();
 
-            float oldViewportTop = mCachedWindowViewport.top;
+            float oldWindowViewportTop = mCachedWindowViewport.top;
+            float oldVisibleViewportTop = mCachedVisibleViewport.top;
             mHost.getWindowViewport(mCachedWindowViewport);
             mHost.getVisibleViewport(mCachedVisibleViewport);
-            getActiveLayout()
-                    .sizeChanged(
-                            mCachedVisibleViewport,
-                            mCachedWindowViewport,
-                            mHost.getTopControlsHeightPixels(),
-                            mHost.getBottomControlsHeightPixels(),
-                            getOrientation());
+            getActiveLayout().sizeChanged(mCachedWindowViewport, getOrientation());
 
             float width = mCachedWindowViewport.width() * mPxToDp;
             float height = mCachedWindowViewport.height() * mPxToDp;
             if (width != previousWidth
                     || height != previousHeight
-                    || oldViewportTop != mCachedVisibleViewport.top) {
+                    // TODO (crbug.com/325501037) - Clean up this odd check comparing the window
+                    // and visible viewport values after fixing the contextual search menu's
+                    // reliance on it.
+                    || oldWindowViewportTop != mCachedVisibleViewport.top
+                    || oldVisibleViewportTop != mCachedVisibleViewport.top) {
                 for (int i = 0; i < mSceneOverlays.size(); i++) {
                     mSceneOverlays
                             .get(i)

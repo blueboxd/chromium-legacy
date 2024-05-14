@@ -27,9 +27,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_form_element.h"
+#include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
@@ -131,8 +133,8 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
   // Records whether FocusNoLongerOnForm() get called.
   bool did_unfocus_form_{false};
 
-  // Records value of |had_interacted_form| on last call to
-  // FocusNoLongerOnForm(). Meaningless if |did_unfocus_form_| is false.
+  // Records value of `had_interacted_form` on last call to
+  // FocusNoLongerOnForm(). Meaningless if `did_unfocus_form_` is false.
   bool had_interacted_form_{false};
 
   // Records the form data received via FormSubmitted() call.
@@ -149,7 +151,7 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
 
 // Helper function to verify the form-related messages received from the
 // renderer. The same data is expected in both messages. Depending on
-// |expect_submitted_message|, will verify presence of FormSubmitted message.
+// `expect_submitted_message`, will verify presence of FormSubmitted message.
 void VerifyReceivedRendererMessages(
     const FakeContentAutofillDriver& fake_driver,
     const std::string& fname,
@@ -228,6 +230,17 @@ FormData CreateAutofillFormData(blink::WebLocalFrame* main_frame) {
   return data;
 }
 
+std::vector<FormFieldData::FillData> GetFieldsForFilling(
+    const std::vector<FormData>& forms) {
+  std::vector<FormFieldData::FillData> fields;
+  for (const FormData& form : forms) {
+    for (const FormFieldData& field : form.fields) {
+      fields.emplace_back(field);
+    }
+  }
+  return fields;
+}
+
 void SimulateFillForm(const FormData& form_data,
                       autofill::AutofillAgent* autofill_agent,
                       blink::WebLocalFrame* main_frame) {
@@ -242,9 +255,9 @@ void SimulateFillForm(const FormData& form_data,
   autofill_agent->FormControlElementClicked(
       fname_element.To<WebInputElement>());
 
-  autofill_agent->ApplyFormAction(mojom::ActionType::kFill,
-                                  mojom::ActionPersistence::kFill,
-                                  FormData::FillData(form_data));
+  autofill_agent->ApplyFieldsAction(mojom::FormActionType::kFill,
+                                    mojom::ActionPersistence::kFill,
+                                    GetFieldsForFilling({form_data}));
 }
 
 // Simulates receiving a message from the browser to fill a form.
@@ -305,9 +318,9 @@ void SimulateFillFormWithNonFillableFields(
   autofill_agent->FormControlElementClicked(
       fname_element.To<WebInputElement>());
 
-  autofill_agent->ApplyFormAction(mojom::ActionType::kFill,
-                                  mojom::ActionPersistence::kFill,
-                                  FormData::FillData(form));
+  autofill_agent->ApplyFieldsAction(mojom::FormActionType::kFill,
+                                    mojom::ActionPersistence::kFill,
+                                    GetFieldsForFilling({form}));
 }
 
 class FormAutocompleteTest : public ChromeRenderViewTest {
@@ -347,6 +360,12 @@ class FormAutocompleteTest : public ChromeRenderViewTest {
     ASSERT_FALSE(element.IsNull());
     WebInputElement fname_element = element.To<WebInputElement>();
     SimulateUserInputChangeForElement(&fname_element, value);
+  }
+
+  // This triggers a layout update to apply JS changes like display = 'none'.
+  void ForceLayoutUpdate() {
+    GetWebFrameWidget()->UpdateAllLifecyclePhases(
+        blink::DocumentUpdateReason::kTest);
   }
 
   std::string GetFocusLog() {
@@ -539,7 +558,7 @@ TEST_F(FormAutocompleteTest, AcceptDataListSuggestion) {
     WebElement element = document.GetElementById(WebString::FromUTF8(c.id));
     ASSERT_FALSE(element.IsNull());
     WebInputElement input_element = element.To<WebInputElement>();
-    // Select this element in |autofill_agent_|.
+    // Select this element in `autofill_agent_`.
     autofill_agent_->FormControlElementClicked(input_element);
 
     autofill_agent_->AcceptDataListSuggestion(
@@ -702,7 +721,7 @@ TEST_F(FormAutocompleteTest, SelectControlChanged) {
 }
 
 // Parameterized test for submission detection. The parameter dictates whether
-// the tests run with `kAutofillImproveSubmissionDetection` enabled or not.
+// the tests run with `kAutofillReplaceFormElementObserver` enabled or not.
 class FormAutocompleteSubmissionTest
     : public FormAutocompleteTest,
       public testing::WithParamInterface<bool> {
@@ -712,11 +731,11 @@ class FormAutocompleteSubmissionTest
       scoped_feature_list_.InitWithFeatures(
           /*enabled_features=*/
           {features::kAutofillReplaceCachedWebElementsByRendererIds,
-           features::kAutofillImproveSubmissionDetection},
+           features::kAutofillReplaceFormElementObserver},
           /*disabled_features=*/{});
     } else {
       scoped_feature_list_.InitAndDisableFeature(
-          features::kAutofillImproveSubmissionDetection);
+          features::kAutofillReplaceFormElementObserver);
     }
   }
 
@@ -1029,6 +1048,7 @@ TEST_P(FormAutocompleteSubmissionTest, AjaxSucceeded_FormlessElements) {
   ExecuteJavaScriptForTests(
       "var element = document.getElementById('fname');"
       "element.style.display = 'none';");
+  ForceLayoutUpdate();
 
   // Simulate AJAX request.
   static_cast<blink::WebAutofillClient*>(autofill_agent_)->AjaxSucceeded();
@@ -1122,8 +1142,8 @@ TEST_P(FormAutocompleteSubmissionTest, FormSubmittedByDOMMutationAfterXHR) {
   std::string hide_elements =
       "var address = document.getElementById('address_field');"
       "address.style = 'display:none';";
-
   ExecuteJavaScriptForTests(hide_elements.c_str());
+  ForceLayoutUpdate();
   base::RunLoop().RunUntilIdle();
 
   VerifyReceivedAddressRendererMessages(fake_driver_, "City",

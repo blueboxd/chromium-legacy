@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,7 @@ chrome.automation.EventType = {
   ALERT: 'alert',
   ARIA_ATTRIBUTE_CHANGED_DEPRECATED: 'ariaAttributeChangedDeprecated',
   ARIA_CURRENT_CHANGED: 'ariaCurrentChanged',
+  ARIA_NOTIFICATIONS_POSTED: 'ariaNotificationsPosted',
   ATOMIC_CHANGED: 'atomicChanged',
   AUTO_COMPLETE_CHANGED: 'autoCompleteChanged',
   AUTOCORRECTION_OCCURED: 'autocorrectionOccured',
@@ -37,7 +38,6 @@ chrome.automation.EventType = {
   CHECKED_STATE_CHANGED: 'checkedStateChanged',
   CHECKED_STATE_DESCRIPTION_CHANGED: 'checkedStateDescriptionChanged',
   CHILDREN_CHANGED: 'childrenChanged',
-  CLASS_NAME_CHANGED: 'classNameChanged',
   CLICKED: 'clicked',
   COLLAPSED: 'collapsed',
   CONTROLS_CHANGED: 'controlsChanged',
@@ -99,7 +99,6 @@ chrome.automation.EventType = {
   NAME_CHANGED: 'nameChanged',
   OBJECT_ATTRIBUTE_CHANGED: 'objectAttributeChanged',
   ORIENTATION_CHANGED: 'orientationChanged',
-  OTHER_ATTRIBUTE_CHANGED: 'otherAttributeChanged',
   PARENT_CHANGED: 'parentChanged',
   PLACEHOLDER_CHANGED: 'placeholderChanged',
   PORTAL_ACTIVATED: 'portalActivated',
@@ -179,8 +178,8 @@ chrome.automation.RoleType = {
   DATE_TIME: 'dateTime',
   DEFINITION: 'definition',
   DESCRIPTION_LIST: 'descriptionList',
-  DESCRIPTION_LIST_DETAIL: 'descriptionListDetail',
-  DESCRIPTION_LIST_TERM: 'descriptionListTerm',
+  DESCRIPTION_LIST_DETAIL: 'descriptionListDetailDeprecated',
+  DESCRIPTION_LIST_TERM_DEPRECATED: 'descriptionListTermDeprecated',
   DESKTOP: 'desktop',
   DETAILS: 'details',
   DIALOG: 'dialog',

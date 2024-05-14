@@ -139,7 +139,7 @@ void TranslateScript::OnScriptFetchComplete(bool success,
                         server_params.c_str());
 
     GURL security_origin = translate::GetTranslateSecurityOrigin();
-    base::StringAppendF(&data_, "var securityOrigin = '%s';",
+    base::StringAppendF(&data_, "var securityOrigin = '%s';\n",
                         security_origin.spec().c_str());
 
     // Load embedded translate.js.

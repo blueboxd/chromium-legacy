@@ -27,6 +27,11 @@
     white-space: var(--cr-input-error-white-space);
     width: 256px;
   }
+
+  :host-context([chrome-refresh-2023]) #inputSuffix {
+    top: 140px;
+  }
+
 </style>
 <div class="subsection" id="subsection">
   <template is="dom-repeat"
@@ -51,7 +56,9 @@
         on-keydown="onKeyDownInRenamingDialog_"
         invalid="[[buttonNameInvalid_]]"
         value="{{selectedButtonName_}}"
-        aria-label="$i18n{buttonRenamingDialogTitle}">
+        aria-description=
+            "[[i18n('buttonRemappingRenamingDialogInputDescription',
+                maxInputLength)]]">
       </cr-input>
       <div id="inputSuffix">
         <span id="duplicateNameError" hidden="[[!duplicateButtonName_]]">

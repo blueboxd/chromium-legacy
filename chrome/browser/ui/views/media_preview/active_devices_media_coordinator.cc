@@ -60,7 +60,11 @@ ActiveDevicesMediaCoordinator::ActiveDevicesMediaCoordinator(
     : view_type_(view_type),
       stream_type_(view_type_ == MediaCoordinator::ViewType::kCameraOnly
                        ? blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE
-                       : blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE) {
+                       : blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE),
+      media_preview_metrics_context_(
+          media_preview_metrics::UiLocation::kPageInfo,
+          media_coordinator::GetPreviewTypeFromMediaCoordinatorViewType(
+              view_type_)) {
   CHECK(web_contents);
   web_contents_ = web_contents->GetWeakPtr();
 
@@ -70,17 +74,24 @@ ActiveDevicesMediaCoordinator::ActiveDevicesMediaCoordinator(
   CHECK(scroll_contents);
 
   container_ = scroll_contents->AddChildView(std::make_unique<MediaView>());
-  container_->SetProperty(
-      views::kMarginsKey,
-      gfx::Insets::VH(ChromeLayoutProvider::Get()->GetDistanceMetric(
-                          views::DISTANCE_RELATED_CONTROL_VERTICAL),
-                      0));
+  auto distance_related_control =
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_RELATED_CONTROL_VERTICAL);
+  container_->SetBetweenChildSpacing(distance_related_control);
+  container_->SetProperty(views::kMarginsKey,
+                          gfx::Insets::VH(distance_related_control, 0));
 
   MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
   UpdateMediaCoordinatorList();
+
+  media_preview_start_time_ = base::TimeTicks::Now();
 }
 
 ActiveDevicesMediaCoordinator::~ActiveDevicesMediaCoordinator() {
+  media_preview_metrics::RecordMediaPreviewDuration(
+      media_preview_metrics_context_,
+      base::TimeTicks::Now() - media_preview_start_time_);
+
   MediaCaptureDevicesDispatcher::GetInstance()->RemoveObserver(this);
 }
 
@@ -107,12 +118,23 @@ void ActiveDevicesMediaCoordinator::UpdateMediaCoordinatorList() {
       stream_type_,
       base::BindOnce(
           &ActiveDevicesMediaCoordinator::GotDeviceIdsOpenedForWebContents,
-          base::Unretained(this)));
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ActiveDevicesMediaCoordinator::GotDeviceIdsOpenedForWebContents(
     std::vector<std::string> active_device_ids) {
+  if (view_type_ == MediaCoordinator::ViewType::kCameraOnly) {
+    media_preview_metrics::RecordPageInfoCameraNumInUseDevices(
+        active_device_ids.size());
+  } else {
+    media_preview_metrics::RecordPageInfoMicNumInUseDevices(
+        active_device_ids.size());
+  }
+
   if (active_device_ids.empty()) {
+    if (media_coordinators_.contains(kMutableCoordinatorId)) {
+      return;
+    }
     media_coordinators_.clear();
     separators_.clear();
     // RemoveAllChildViews() is called to delete all separators.
@@ -166,9 +188,12 @@ void ActiveDevicesMediaCoordinator::AddMediaCoordinatorForDevice(
   auto coordinator_key = active_device_id.value_or(kMutableCoordinatorId);
   auto* prefs = user_prefs::UserPrefs::Get(web_contents_->GetBrowserContext());
   media_coordinators_.emplace(
-      coordinator_key, std::make_unique<MediaCoordinator>(
-                           view_type_, *container_,
-                           /*is_subsection=*/true, eligible_devices, *prefs));
+      coordinator_key,
+      std::make_unique<MediaCoordinator>(
+          view_type_, *container_,
+          /*is_subsection=*/true, eligible_devices, *prefs,
+          /*allow_device_selection=*/!active_device_id.has_value(),
+          media_preview_metrics_context_));
   separators_.emplace(coordinator_key,
                       container_->AddChildView(CreateSeparator()));
 }

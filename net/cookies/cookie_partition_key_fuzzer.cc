@@ -8,17 +8,12 @@
 
 #include <fuzzer/FuzzedDataProvider.h>
 
-#include "base/test/scoped_feature_list.h"
-#include "net/base/features.h"
 #include "net/cookies/cookie_partition_key.h"
 #include "url/origin.h"
 
 namespace net {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPartitionedCookies);
-
   FuzzedDataProvider data_provider(data, size);
 
   std::string url_str = data_provider.ConsumeRandomLengthString(800);
@@ -30,10 +25,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       std::make_optional(CookiePartitionKey::FromURLForTesting(url));
 
   bool is_opaque = url::Origin::Create(url).opaque();
-  std::string tmp;
-  CHECK_NE(is_opaque, CookiePartitionKey::Serialize(partition_key, tmp));
+  CHECK_NE(is_opaque, CookiePartitionKey::Serialize(partition_key).has_value());
 
-  CHECK_NE(is_opaque, CookiePartitionKey::Deserialize(url_str, partition_key));
+  CHECK_NE(is_opaque,
+           CookiePartitionKey::FromUntrustedInput(url_str).has_value());
 
   if (!is_opaque) {
     CHECK(std::make_optional(CookiePartitionKey::FromURLForTesting(url)) ==

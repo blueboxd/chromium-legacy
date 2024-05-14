@@ -17,7 +17,6 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/time/time.h"
-#import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/browser/bookmark_utils.h"
 #import "components/signin/public/identity_manager/account_info.h"
 #import "components/sync/base/features.h"
@@ -25,8 +24,9 @@
 #import "components/sync/service/sync_service_utils.h"
 #import "ios/chrome/browser/bookmarks/model/account_bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/model/bookmarks_utils.h"
+#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
-#import "ios/chrome/browser/default_browser/model/utils.h"
+#import "ios/chrome/browser/default_browser/model/default_browser_interest_signals.h"
 #import "ios/chrome/browser/metrics/model/new_tab_page_uma.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -36,6 +36,7 @@
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_navigation_controller.h"
+#import "ios/chrome/browser/shared/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/url_with_title.h"
 #import "ios/chrome/browser/signin/model/authentication_service_factory.h"
@@ -64,7 +65,6 @@
 #import "ios/web/public/web_state.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
-using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
 namespace {
@@ -138,9 +138,9 @@ enum class PresentedState {
   base::WeakPtr<ChromeBrowserState> _browserState;
 
   // Profile bookmark model.
-  base::WeakPtr<bookmarks::BookmarkModel> _localOrSyncableBookmarkModel;
+  base::WeakPtr<LegacyBookmarkModel> _localOrSyncableBookmarkModel;
   // Account bookmark model.
-  base::WeakPtr<bookmarks::BookmarkModel> _accountBookmarkModel;
+  base::WeakPtr<LegacyBookmarkModel> _accountBookmarkModel;
   // Coordinator of manage sync settings.
   ManageSyncSettingsCoordinator* _manageSyncSettingsCoordinator;
 }
@@ -161,7 +161,7 @@ enum class PresentedState {
         ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
             _browserState.get())
             ->AsWeakPtr();
-    BookmarkModel* accountBookmarkModel =
+    LegacyBookmarkModel* accountBookmarkModel =
         ios::AccountBookmarkModelFactory::GetForBrowserState(
             _browserState.get());
     if (accountBookmarkModel) {
@@ -258,6 +258,7 @@ enum class PresentedState {
       showSnackbarMessage:[self.mediator addBookmarkWithTitle:title
                                                           URL:bookmarkedURL
                                                    editAction:editAction]];
+  default_browser::NotifyBookmarkAddOrEdit();
 }
 
 - (void)presentBookmarkEditorForURL:(const GURL&)URL {
@@ -273,12 +274,17 @@ enum class PresentedState {
     return;
   }
   [self presentEditorForURLNode:bookmark];
+
+  default_browser::NotifyBookmarkAddOrEdit();
 }
 
 - (void)presentBookmarks {
-  [self presentBookmarksAtDisplayedFolderNode:_localOrSyncableBookmarkModel
-                                                  ->root_node()
+  [self presentBookmarksAtDisplayedFolderNode:
+            _localOrSyncableBookmarkModel
+                ->subtle_root_node_with_unspecified_children()
                             selectingBookmark:nil];
+
+  default_browser::NotifyBookmarkManagerOpened();
 }
 
 - (void)presentFolderChooser {
@@ -303,8 +309,11 @@ enum class PresentedState {
   DCHECK_EQ(node->type(), BookmarkNode::URL);
   [self dismissSnackbar];
   self.currentPresentedState = PresentedState::BOOKMARK_EDITOR;
+  UIViewController* baseViewController =
+      top_view_controller::TopPresentedViewControllerFrom(
+          self.baseViewController);
   self.bookmarkEditorCoordinator = [[BookmarksEditorCoordinator alloc]
-      initWithBaseViewController:self.baseViewController
+      initWithBaseViewController:baseViewController
                          browser:self.browser
                             node:node
          snackbarCommandsHandler:self.snackbarCommandsHandler];
@@ -501,12 +510,14 @@ enum class PresentedState {
 
   [self stopBookmarksFolderChooserCoordinator];
 
-  bookmarks::StorageType type = bookmark_utils_ios::GetBookmarkModelType(
+  BookmarkModelType type = bookmark_utils_ios::GetBookmarkModelType(
       folder, _localOrSyncableBookmarkModel.get(), _accountBookmarkModel.get());
   SetLastUsedBookmarkFolder(_browserState->GetPrefs(), folder, type);
   [self.snackbarCommandsHandler
       showSnackbarMessage:[self.mediator addBookmarks:_URLs toFolder:folder]];
   _URLs = nil;
+
+  default_browser::NotifyBookmarkAddOrEdit();
 }
 
 - (void)bookmarksFolderChooserCoordinatorDidCancel:
@@ -561,7 +572,7 @@ enum class PresentedState {
           new_tab_page_uma::ACTION_OPENED_BOOKMARK);
       base::RecordAction(
           base::UserMetricsAction("MobileBookmarkManagerEntryOpened"));
-      LogBookmarkUseForDefaultBrowserPromo();
+      default_browser::NotifyURLFromBookmarkOpened();
 
       if (newTab ||
           ((!!inIncognito) != _currentBrowserState->IsOffTheRecord())) {
@@ -784,7 +795,9 @@ enum class PresentedState {
     // after the model is finished loading.
     self.bookmarkBrowser.displayedFolderNode = displayedFolderNode;
     [self.bookmarkBrowser setExternalBookmark:bookmarkNode];
-    if (displayedFolderNode == _localOrSyncableBookmarkModel->root_node()) {
+    if (displayedFolderNode ==
+        _localOrSyncableBookmarkModel
+            ->subtle_root_node_with_unspecified_children()) {
       replacementViewControllers =
           [self.bookmarkBrowser cachedViewControllerStack];
     }

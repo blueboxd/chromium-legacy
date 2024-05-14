@@ -238,6 +238,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kSafeBrowsingDeepScanningEnabled, true);
   registry->RegisterBooleanPref(
       prefs::kSafeBrowsingEsbOptInWithFriendlierSettings, false);
+  registry->RegisterBooleanPref(
+      prefs::kSafeBrowsingAutomaticDeepScanningIPHSeen, false);
 }
 
 const base::Value::Dict& GetExtensionTelemetryConfig(const PrefService& prefs) {
@@ -415,10 +417,15 @@ void GetPasswordProtectionLoginURLsPref(const PrefService& prefs,
   const base::Value::List& pref_value =
       prefs.GetList(prefs::kPasswordProtectionLoginURLs);
   out_login_url_list->clear();
+#if BUILDFLAG(IS_CHROMEOS)
+  // Include known authn URL by default.
+  out_login_url_list->push_back(GURL("chrome://os-settings"));
+#endif
   for (const base::Value& value : pref_value) {
     GURL login_url(value.GetString());
-    // Skip invalid or none-http/https login URLs.
-    if (login_url.is_valid() && login_url.SchemeIsHTTPOrHTTPS()) {
+    // Skip invalid or none-http/https/chrome login URLs.
+    if (login_url.is_valid() &&
+        (login_url.SchemeIsHTTPOrHTTPS() || login_url.SchemeIs("chrome"))) {
       out_login_url_list->push_back(login_url);
     }
   }

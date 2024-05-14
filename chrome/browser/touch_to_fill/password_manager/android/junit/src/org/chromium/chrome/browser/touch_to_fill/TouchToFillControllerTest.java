@@ -62,7 +62,6 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.task.test.ShadowPostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -155,19 +154,19 @@ public class TouchToFillControllerTest {
 
     private TestImageFetcher mImageFetcher = spy(new TestImageFetcher());
     private final Context mContext = ContextUtils.getApplicationContext();
-    private final TouchToFillMediator mMediator = new TouchToFillMediator(mImageFetcher);
+    private final TouchToFillMediator mMediator = new TouchToFillMediator();
     private final PropertyModel mModel =
             TouchToFillProperties.createDefaultModel(mMediator::onDismissed);
 
     @Before
     public void setUp() {
-        UmaRecorderHolder.resetForTesting();
         MockitoAnnotations.initMocks(this);
 
         mMediator.initialize(
                 mContext,
                 mMockDelegate,
                 mModel,
+                mImageFetcher,
                 mMockIconBridge,
                 DESIRED_FAVICON_SIZE,
                 mMockFocusHelper);

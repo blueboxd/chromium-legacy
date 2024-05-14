@@ -89,7 +89,6 @@ namespace mojom {
 class DisplayPrivate;
 class ExternalBeginFrameController;
 }  // namespace mojom
-class ContextProvider;
 class HostFrameSinkManager;
 class LocalSurfaceId;
 class RasterContextProvider;
@@ -116,11 +115,6 @@ class COMPOSITOR_EXPORT ContextFactory {
   // by calling RemoveCompositor when the compositor gets destroyed.
   virtual void CreateLayerTreeFrameSink(
       base::WeakPtr<Compositor> compositor) = 0;
-
-  // Return a reference to a shared offscreen context provider usable from the
-  // main thread.
-  virtual scoped_refptr<viz::ContextProvider>
-  SharedMainThreadContextProvider() = 0;
 
   // Return a reference to a shared offscreen context provider usable from the
   // main thread.
@@ -371,8 +365,8 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
   // Registers a callback that is run when the next frame successfully makes it
   // to the screen (it's entirely possible some frames may be dropped between
   // the time this is called and the callback is run).
-  using SuccessfulPresentationTimeCallback =
-      base::OnceCallback<void(base::TimeTicks)>;
+  using SuccessfulPresentationTimeCallback = base::OnceCallback<void(
+      const viz::FrameTimingDetails& frame_timing_details)>;
   void RequestSuccessfulPresentationTimeForNextFrame(
       SuccessfulPresentationTimeCallback callback);
 
@@ -424,7 +418,7 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
   void DidCompletePageScaleAnimation(int source_frame_number) override {}
   void DidPresentCompositorFrame(
       uint32_t frame_token,
-      const gfx::PresentationFeedback& feedback) override;
+      const viz::FrameTimingDetails& frame_timing_details) override;
   void RecordStartOfFrameMetrics() override {}
   void RecordEndOfFrameMetrics(
       base::TimeTicks frame_begin_time,
@@ -455,8 +449,8 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
   void StartThroughputTracker(
       TrackerId tracker_id,
       ThroughputTrackerHost::ReportCallback callback) override;
-  bool StopThroughtputTracker(TrackerId tracker_id) override;
-  void CancelThroughtputTracker(TrackerId tracker_id) override;
+  bool StopThroughputTracker(TrackerId tracker_id) override;
+  void CancelThroughputTracker(TrackerId tracker_id) override;
 
   // base::PowerSuspendObserver:
   void OnResume() override;
@@ -608,7 +602,7 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
 
   bool animations_are_enabled_ = true;
 
-  // This together with the animatinos observer list carries the "last
+  // This together with the animations observer list carries the "last
   // animation finished" state to the next BeginMainFrame so that it could
   // notify observers if needed. It is set in AddAnimationObserver and
   // Cleared in BeginMainFrame when there are no animation observers.

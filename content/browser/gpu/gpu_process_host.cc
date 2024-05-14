@@ -101,7 +101,8 @@
 #include "base/win/access_token.h"
 #include "base/win/security_descriptor.h"
 #include "base/win/win_util.h"
-#include "components/app_launch_prefetch/app_launch_prefetch.h"
+#include "content/browser/child_process_launcher_helper.h"
+#include "content/public/common/prefetch_type_win.h"
 #include "sandbox/policy/win/sandbox_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/window.h"
@@ -137,6 +138,7 @@ static_assert(RESULT_CODE_HUNG == static_cast<int>(gpu::RESULT_CODE_HUNG),
 namespace {
 
 // UMA histogram names.
+constexpr char kFallbackEventCause[] = "GPU.FallbackEventCause";
 constexpr char kProcessLifetimeEventsHardwareAccelerated[] =
     "GPU.ProcessLifetimeEvents.HardwareAccelerated";
 constexpr char kProcessLifetimeEventsSwiftShader[] =
@@ -243,25 +245,22 @@ static const char* const kSwitchNames[] = {
 #if BUILDFLAG(IS_WIN)
     switches::kDisableHighResTimer,
     switches::kRaiseTimerFrequency,
+    switches::kUseRedistributableDirectML,
 #endif  // BUILDFLAG(IS_WIN)
     switches::kEnableANGLEFeatures,
     switches::kDisableANGLEFeatures,
     switches::kDisableBreakpad,
     switches::kDisableGpuRasterization,
     switches::kDisableGLExtensions,
-    switches::kDisableLogging,
     switches::kDisableMipmapGeneration,
     switches::kDisableShaderNameHashing,
     switches::kDisableSkiaRuntimeOpts,
-    switches::kDisableWebRtcHWEncoding,
     switches::kDRMVirtualConnectorIsExternal,
     switches::kEnableBackgroundThreadPool,
     switches::kEnableGpuRasterization,
     switches::kEnableSkiaGraphite,
-    switches::kEnableLogging,
     switches::kDoubleBufferCompositing,
     switches::kHeadless,
-    switches::kLoggingLevel,
     switches::kEnableLowEndDeviceMode,
     switches::kDisableSkiaGraphite,
     switches::kDisableLowEndDeviceMode,
@@ -278,8 +277,6 @@ static const char* const kSwitchNames[] = {
     switches::kUseAdapterLuid,
     switches::kUseFakeMjpegDecodeAccelerator,
     switches::kUseGpuInTests,
-    switches::kV,
-    switches::kVModule,
     switches::kWatchDirForScrollJankReport,
     switches::kWebViewDrawFunctorUsesVulkan,
 #if BUILDFLAG(IS_MAC)
@@ -317,6 +314,14 @@ static const char* const kSwitchNames[] = {
     switches::kLacrosUseChromeosProtectedMedia,
     switches::kLacrosUseChromeosProtectedAv1,
 #endif
+};
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class GPUFallbackEventCauseType {
+  kFailureToInit = 0,
+  kCrashLimit = 1,
+  kMaxValue = kCrashLimit,
 };
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -1037,8 +1042,11 @@ void GpuProcessHost::DidInitialize(
 
 void GpuProcessHost::DidFailInitialize() {
   did_fail_initialize_ = true;
-  if (kind_ == GPU_PROCESS_KIND_SANDBOXED)
+  if (kind_ == GPU_PROCESS_KIND_SANDBOXED) {
+    base::UmaHistogramEnumeration(kFallbackEventCause,
+                                  GPUFallbackEventCauseType::kFailureToInit);
     GpuDataManagerImpl::GetInstance()->FallBackToNextGpuMode();
+  }
 }
 
 void GpuProcessHost::DidCreateContextSuccessfully() {
@@ -1283,11 +1291,11 @@ bool GpuProcessHost::LaunchGpuProcess() {
   if (kind_ == GPU_PROCESS_KIND_INFO_COLLECTION &&
       base::FeatureList::IsEnabled(
           features::kGpuInfoCollectionSeparatePrefetch)) {
-    cmd_line->AppendArgNative(app_launch_prefetch::GetPrefetchSwitch(
-        app_launch_prefetch::SubprocessType::kGPUInfo));
+    cmd_line->AppendArg(internal::ChildProcessLauncherHelper::GetPrefetchSwitch(
+        AppLaunchPrefetchType::kGPUInfo));
   } else {
-    cmd_line->AppendArgNative(app_launch_prefetch::GetPrefetchSwitch(
-        app_launch_prefetch::SubprocessType::kGPU));
+    cmd_line->AppendArg(internal::ChildProcessLauncherHelper::GetPrefetchSwitch(
+        AppLaunchPrefetchType::kGPU));
   }
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -1442,6 +1450,8 @@ void GpuProcessHost::RecordProcessCrash() {
   // GPU process crashed too many times, fallback on a different GPU process
   // mode.
   if (recent_crash_count_ >= GetFallbackCrashLimit() && !disable_crash_limit) {
+    base::UmaHistogramEnumeration(kFallbackEventCause,
+                                  GPUFallbackEventCauseType::kCrashLimit);
     GpuDataManagerImpl::GetInstance()->FallBackToNextGpuMode();
   }
 }

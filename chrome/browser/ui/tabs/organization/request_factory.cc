@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/tabs/organization/logging_util.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_request.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_session.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "components/optimization_guide/core/model_quality/feature_type_map.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_model_executor.h"
@@ -137,10 +138,12 @@ void PerformTabOrganizationExecution(
   }
 
   optimization_guide::proto::TabOrganizationRequest tab_organization_request;
+  int valid_tabs = 0;
   for (const std::unique_ptr<TabData>& tab_data : request->tab_datas()) {
     if (!tab_data->IsValidForOrganizing()) {
       continue;
     }
+    valid_tabs++;
 
     auto* tab = tab_organization_request.add_tabs();
     tab->set_tab_id(tab_data->tab_id());
@@ -148,9 +151,29 @@ void PerformTabOrganizationExecution(
     tab->set_url(tab_data->original_url().spec());
   }
 
+  if (valid_tabs < 2) {
+    std::move(on_failure).Run();
+    return;
+  }
+
+  for (const std::unique_ptr<GroupData>& group_data : request->group_datas()) {
+    auto* group = tab_organization_request.add_pre_existing_tab_groups();
+    group->set_group_id(group_data->id.ToString());
+    group->set_label(base::UTF16ToUTF8(group_data->label));
+    for (const std::unique_ptr<TabData>& tab_data : group_data->tabs) {
+      auto* tab = group->add_tabs();
+      tab->set_tab_id(tab_data->tab_id());
+      tab->set_title(base::UTF16ToUTF8(tab_data->web_contents()->GetTitle()));
+      tab->set_url(tab_data->original_url().spec());
+    }
+  }
+
   if (request->base_tab_id().has_value()) {
     tab_organization_request.set_active_tab_id(request->base_tab_id().value());
   }
+
+  tab_organization_request.set_allow_reorganizing_existing_groups(
+      base::FeatureList::IsEnabled(features::kTabReorganization));
 
   OptimizationGuideKeyedService* optimization_guide_keyed_service =
       OptimizationGuideKeyedServiceFactory::GetForProfile(profile);

@@ -30,7 +30,7 @@
 
 namespace media {
 
-class VideoFrame;
+class FrameResource;
 
 // Implements the VideoDecodeAccelerator backed by a VideoDecoder.
 // Currently GpuArcVideoDecodeAccelerator bridges the video codec from
@@ -112,9 +112,9 @@ class MEDIA_GPU_EXPORT VdVideoDecodeAccelerator
   static void OnFrameReleasedThunk(
       std::optional<base::WeakPtr<VdVideoDecodeAccelerator>> weak_this,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      scoped_refptr<VideoFrame> origin_frame);
+      scoped_refptr<FrameResource> origin_frame);
   // Called when a frame gets destroyed.
-  void OnFrameReleased(scoped_refptr<VideoFrame> origin_frame);
+  void OnFrameReleased(scoped_refptr<FrameResource> origin_frame);
 
   // Called when any error occurs. Notify |client_| an error occurred.
   void OnError(base::Location location, Error error);
@@ -141,8 +141,8 @@ class MEDIA_GPU_EXPORT VdVideoDecodeAccelerator
   gfx::Size coded_size_;
   std::optional<VideoFrameLayout> layout_;
 
-  // Mapping from VideoFrame's GpuMemoryBufferId to picture buffer id.
-  std::map<gfx::GpuMemoryBufferId, int32_t /* picture_buffer_id */>
+  // Mapping from a frame's GenericSharedMemoryId to picture buffer id.
+  std::map<gfx::GenericSharedMemoryId, int32_t /* picture_buffer_id */>
       frame_id_to_picture_id_;
   // Record how many times the picture is sent to the client, and keep a refptr
   // of corresponding VideoFrame when the client owns the buffers.

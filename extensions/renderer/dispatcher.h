@@ -82,7 +82,7 @@ class Dispatcher : public content::RenderThreadObserver,
                    public NativeExtensionBindingsSystem::Delegate {
  public:
   Dispatcher(std::unique_ptr<DispatcherDelegate> delegate,
-             std::vector<std::unique_ptr<ExtensionsRendererAPIProvider>>
+             std::vector<std::unique_ptr<const ExtensionsRendererAPIProvider>>
                  api_providers);
 
   Dispatcher(const Dispatcher&) = delete;
@@ -198,19 +198,6 @@ class Dispatcher : public content::RenderThreadObserver,
                    mojom::LocalFrame::ExecuteCodeCallback callback,
                    content::RenderFrame* render_frame);
 
-  struct JsResourceInfo {
-    const char* name = nullptr;
-    int id = 0;
-  };
-  // Returns a list of resources for the JS modules to add to the source map.
-  static std::vector<JsResourceInfo> GetJsResources();
-  static void RegisterNativeHandlers(
-      ModuleSystem* module_system,
-      ScriptContext* context,
-      Dispatcher* dispatcher,
-      NativeExtensionBindingsSystem* bindings_system,
-      V8SchemaRegistry* v8_schema_registry);
-
   NativeExtensionBindingsSystem* bindings_system() {
     return bindings_system_.get();
   }
@@ -325,10 +312,6 @@ class Dispatcher : public content::RenderThreadObserver,
   // |context|.
   void RequireGuestViewModules(ScriptContext* context);
 
-  // Returns true if one of the API providers is able to provide a WebView
-  // module.
-  bool RequireWebViewModulesFromProviders(ScriptContext* context);
-
   // Creates the NativeExtensionBindingsSystem. Note: this may be called on any
   // thread, and thus cannot mutate any state or rely on state which can be
   // mutated in Dispatcher.
@@ -342,7 +325,15 @@ class Dispatcher : public content::RenderThreadObserver,
   std::unique_ptr<DispatcherDelegate> delegate_;
 
   // The list of embedder API providers.
-  std::vector<std::unique_ptr<ExtensionsRendererAPIProvider>> api_providers_;
+  // This list is accessed on multiple threads, since these API providers are
+  // used in the initialization of script contexts (which can be both main-
+  // thread contexts and worker-thread contexts).
+  // This is safe, since this list is established on Dispatcher construction
+  // (which happens before any access on worker threads), the Dispatcher should
+  // not be destroyed, and this list is immutable. This is enforced by the
+  // `const`s below.
+  const std::vector<std::unique_ptr<const ExtensionsRendererAPIProvider>>
+      api_providers_;
 
   // The IDs of extensions that failed to load, mapped to the error message
   // generated on failure.
@@ -403,8 +394,7 @@ class Dispatcher : public content::RenderThreadObserver,
   // TODO(bashi): Consider to have a separate class to put this logic?
   struct PendingServiceWorker {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner;
-    raw_ptr<blink::WebServiceWorkerContextProxy, ExperimentalRenderer>
-        context_proxy;
+    raw_ptr<blink::WebServiceWorkerContextProxy> context_proxy;
 
     PendingServiceWorker(blink::WebServiceWorkerContextProxy* context_proxy);
     ~PendingServiceWorker();

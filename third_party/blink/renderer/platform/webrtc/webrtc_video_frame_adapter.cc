@@ -82,8 +82,8 @@ class Context : public media::RenderableGpuMemoryBufferVideoFramePool::Context {
       return nullptr;
     }
     auto client_shared_image = sii->CreateSharedImage(
-        si_format, gpu_memory_buffer->GetSize(), color_space, surface_origin,
-        alpha_type, usage, "WebRTCVideoFramePool",
+        {si_format, gpu_memory_buffer->GetSize(), color_space, surface_origin,
+         alpha_type, usage, "WebRTCVideoFramePool"},
         gpu_memory_buffer->CloneHandle());
     CHECK(client_shared_image);
     sync_token = sii->GenVerifiedSyncToken();
@@ -102,8 +102,9 @@ class Context : public media::RenderableGpuMemoryBufferVideoFramePool::Context {
     if (!sii)
       return nullptr;
     auto client_shared_image = sii->CreateSharedImage(
-        gpu_memory_buffer, GpuMemoryBufferManager(), plane, color_space,
-        surface_origin, alpha_type, usage, "WebRTCVideoFramePool");
+        gpu_memory_buffer, GpuMemoryBufferManager(), plane,
+        {color_space, surface_origin, alpha_type, usage,
+         "WebRTCVideoFramePool"});
     CHECK(client_shared_image);
     sync_token = sii->GenVerifiedSyncToken();
     return client_shared_image;
@@ -129,8 +130,7 @@ class Context : public media::RenderableGpuMemoryBufferVideoFramePool::Context {
     return manager;
   }
 
-  raw_ptr<media::GpuVideoAcceleratorFactories, ExperimentalRenderer>
-      gpu_factories_;
+  raw_ptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
   scoped_refptr<viz::RasterContextProvider> raster_context_provider_;
 };
 

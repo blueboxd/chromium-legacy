@@ -10,6 +10,7 @@
 
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
+#include "components/attribution_reporting/privacy_math.h"
 #include "content/browser/attribution_reporting/attribution_config.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate.h"
@@ -43,8 +44,7 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
       attribution_reporting::mojom::SourceType,
       const attribution_reporting::TriggerSpecs&,
       attribution_reporting::MaxEventLevelReports,
-      attribution_reporting::EventLevelEpsilon,
-      base::Time source_time) const override;
+      attribution_reporting::EventLevelEpsilon) const override;
   std::vector<NullAggregatableReport> GetNullAggregatableReports(
       const AttributionTrigger&,
       base::Time trigger_time,
@@ -76,7 +76,7 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
   // is controlled deterministically by `set_randomized_response()`.
   void set_randomized_response_rate(double rate);
 
-  void set_randomized_response(RandomizedResponse);
+  void set_randomized_response(attribution_reporting::RandomizedResponse);
   void set_exceeds_channel_capacity_limit(bool);
 
   void set_null_aggregatable_reports(std::vector<NullAggregatableReport>);
@@ -112,7 +112,8 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
 
   double randomized_response_rate_ GUARDED_BY_CONTEXT(sequence_checker_) = 0.0;
 
-  RandomizedResponse randomized_response_ GUARDED_BY_CONTEXT(sequence_checker_);
+  attribution_reporting::RandomizedResponse randomized_response_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   bool exceeds_channel_capacity_limit_ GUARDED_BY_CONTEXT(sequence_checker_) =
       false;

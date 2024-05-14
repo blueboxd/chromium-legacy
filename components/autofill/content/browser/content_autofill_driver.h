@@ -155,34 +155,18 @@ class ContentAutofillDriver : public AutofillDriver,
   LocalFrameToken GetFrameToken() const override;
   std::optional<LocalFrameToken> Resolve(FrameToken query) override;
   ContentAutofillDriver* GetParent() override;
+  ContentAutofillClient& GetAutofillClient() override;
   AutofillManager& GetAutofillManager() override;
   bool IsInActiveFrame() const override;
   bool IsInAnyMainFrame() const override;
   bool IsPrerendering() const override;
   bool HasSharedAutofillPermission() const override;
   bool CanShowAutofillUi() const override;
-  void HandleParsedForms(const std::vector<FormData>& forms) override {}
   void PopupHidden() override;
   net::IsolationInfo IsolationInfo() override;
 
   // Called on certain types of navigations by ContentAutofillDriverFactory.
   void Reset();
-
-  // Called to inform the browser that in the field with `form_global_id` and
-  // `field_global_id`, the context menu was triggered. This is different from
-  // the usual Autofill flow where the renderer calls the browser or the browser
-  // informs the renderer of some event.
-  //
-  // This is tricky because the context-menu event may refer to a renderer form
-  // in a certain frame, but the form is managed by the AutofillManager of
-  // another frame.
-  //
-  // TODO(crbug.com/1490899): Let callers call AutofillManager directly once
-  // AutofillManager is per-tab.
-  //
-  // Virtual for testing.
-  virtual void OnContextMenuShownInField(const FormGlobalId& form_global_id,
-                                         const FieldGlobalId& field_global_id);
 
  private:
   friend class ContentAutofillDriverTestApi;
@@ -220,13 +204,13 @@ class ContentAutofillDriver : public AutofillDriver,
   // Group (1b): browser -> renderer events, routed (see comment above).
   // autofill::AutofillDriver:
   base::flat_set<FieldGlobalId> ApplyFormAction(
-      mojom::ActionType action_type,
+      mojom::FormActionType action_type,
       mojom::ActionPersistence action_persistence,
       const FormData& data,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, FieldType>& field_type_map) override;
-  void ApplyFieldAction(mojom::ActionPersistence action_persistence,
-                        mojom::TextReplacement text_replacement,
+  void ApplyFieldAction(mojom::FieldActionType action_type,
+                        mojom::ActionPersistence action_persistence,
                         const FieldGlobalId& field_id,
                         const std::u16string& value) override;
   void ExtractForm(FormGlobalId form,

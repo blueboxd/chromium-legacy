@@ -6,10 +6,14 @@ static_library("browser") {
   sources = [
     "copying_file_stream.cc",
     "copying_file_stream.h",
+    "ruleset_version.cc",
+    "ruleset_version.h",
     "subresource_filter_constants.cc",
     "subresource_filter_constants.h",
     "subresource_filter_features.cc",
     "subresource_filter_features.h",
+    "verified_ruleset_dealer.cc",
+    "verified_ruleset_dealer.h",
   ]
   deps = [
     "//base",
@@ -38,7 +42,11 @@ static_library("test_support") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "subresource_filter_features_unittest.cc" ]
+  sources = [
+    "ruleset_version_unittest.cc",
+    "subresource_filter_features_unittest.cc",
+    "verified_ruleset_dealer_unittest.cc",
+  ]
   deps = [
     ":browser",
     ":test_support",

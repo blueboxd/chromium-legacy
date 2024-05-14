@@ -22,8 +22,6 @@ source_set("quick_answers") {
     "ui/quick_answers_view.h",
     "ui/rich_answers_definition_view.cc",
     "ui/rich_answers_definition_view.h",
-    "ui/rich_answers_pre_target_handler.cc",
-    "ui/rich_answers_pre_target_handler.h",
     "ui/rich_answers_translation_view.cc",
     "ui/rich_answers_translation_view.h",
     "ui/rich_answers_unit_conversion_view.cc",
@@ -39,6 +37,7 @@ source_set("quick_answers") {
   deps = [
     "//chrome/browser:browser_process",
     "//chrome/browser/profiles:profile",
+    "//chrome/browser/ui/chromeos/read_write_cards",
     "//chrome/browser/ui/color:color_headers",
     "//chrome/browser/ui/views/editor_menu",
     "//chrome/browser/ui/views/editor_menu:utils",
@@ -53,7 +52,6 @@ source_set("quick_answers") {
     "//components/omnibox/browser:vector_icons",
     "//components/prefs",
     "//content/public/browser",
-    "//ui/chromeos/styles:cros_tokens_color_mappings_generator",
     "//ui/views/controls/webview",
     "//ui/wm",
   ]

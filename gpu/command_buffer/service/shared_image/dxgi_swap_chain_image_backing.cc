@@ -61,6 +61,10 @@ std::unique_ptr<DXGISwapChainImageBacking> DXGISwapChainImageBacking::Create(
     SkAlphaType alpha_type,
     uint32_t usage,
     std::string debug_label) {
+  if (!d3d11_device) {
+    return nullptr;
+  }
+
   Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
   d3d11_device.As(&dxgi_device);
   DCHECK(dxgi_device);
@@ -261,7 +265,7 @@ bool DXGISwapChainImageBacking::DidBeginWriteAccess(
 
 bool DXGISwapChainImageBacking::Present(
     bool should_synchronize_present_with_vblank) {
-  if (!pending_swap_rect_.has_value()) {
+  if (!pending_swap_rect_.has_value() || pending_swap_rect_.value().IsEmpty()) {
     DVLOG(1) << "Skipping present without an update rect";
     return true;
   }

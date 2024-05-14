@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/containers/contains.h"
+#include "base/containers/to_value_list.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/bind.h"
@@ -21,6 +22,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
@@ -53,6 +55,7 @@
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
@@ -121,6 +124,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -145,15 +149,6 @@ using ::testing::UnorderedElementsAre;
 using ::testing::UnorderedElementsAreArray;
 
 constexpr char kDefaultRulesetID[] = "id";
-
-template <class T>
-base::Value::List VectorToList(const std::vector<T>& values) {
-  base::Value::List lv;
-  for (const auto& value : values) {
-    lv.Append(value);
-  }
-  return lv;
-}
 
 // Returns true if |window.scriptExecuted| is true for the given frame.
 bool WasFrameWithScriptLoaded(content::RenderFrameHost* render_frame_host) {
@@ -328,35 +323,44 @@ class DeclarativeNetRequestBrowserTest
 
   void set_config_flags(unsigned flags) { flags_ = flags; }
 
-  // Loads an extension with the given |rulesets| in the given |directory|.
-  // Generates a fatal failure if the extension failed to load. |hosts|
-  // specifies the host permissions the extensions should have. Waits till the
+  // Loads an extension with the given `rulesets` in the given `directory`.
+  // Generates a fatal failure if the extension failed to load. `hosts`
+  // specifies the host permissions the extensions should have. Waits until the
   // ruleset is loaded.
   void LoadExtensionWithRulesets(const std::vector<TestRulesetInfo>& rulesets,
                                  const std::string& directory,
                                  const std::vector<std::string>& hosts) {
+    bool has_enabled_rulesets = base::ranges::any_of(
+        rulesets,
+        [](const TestRulesetInfo& ruleset) { return ruleset.enabled; });
+
     size_t expected_extensions_with_rulesets_count_change =
-        rulesets.empty() ? 0 : 1;
+        has_enabled_rulesets ? 1 : 0;
     LoadExtensionInternal(rulesets, directory, hosts,
                           expected_extensions_with_rulesets_count_change,
-                          false /* has_dynamic_ruleset */,
-                          false /* is_extension_update */);
+                          /*has_dynamic_ruleset=*/false,
+                          /*is_extension_update=*/false,
+                          /*is_delayed_update=*/false);
   }
 
   // Similar to LoadExtensionWithRulesets above but updates the last loaded
-  // extension instead. |expected_extensions_with_rulesets_count_change|
+  // extension instead. `expected_extensions_with_rulesets_count_change`
   // corresponds to the expected change in the number of extensions with
-  // rulesets after extension update. |has_dynamic_ruleset| should be true if
-  // the installed extension has a dynamic ruleset.
+  // rulesets after extension update. `has_dynamic_ruleset` should be true if
+  // the installed extension has a dynamic ruleset. If `is_delayed_update` is
+  // set to true, then a delayed update will be simulated by receiving the new
+  // version's update first, then reloading the extension to finish the update.
   void UpdateLastLoadedExtension(
       const std::vector<TestRulesetInfo>& new_rulesets,
       const std::string& new_directory,
       const std::vector<std::string>& new_hosts,
       int expected_extensions_with_rulesets_count_change,
-      bool has_dynamic_ruleset) {
+      bool has_dynamic_ruleset,
+      bool is_delayed_update) {
     LoadExtensionInternal(new_rulesets, new_directory, new_hosts,
                           expected_extensions_with_rulesets_count_change,
-                          has_dynamic_ruleset, true /* is_extension_update */);
+                          has_dynamic_ruleset, /*is_extension_update=*/true,
+                          is_delayed_update);
   }
 
   // Specialization of LoadExtensionWithRulesets above for an extension with a
@@ -462,8 +466,8 @@ class DeclarativeNetRequestBrowserTest
           });
     )";
 
-    base::Value::List ids_to_disable = VectorToList(rule_ids_to_disable);
-    base::Value::List ids_to_enable = VectorToList(rule_ids_to_enable);
+    base::Value::List ids_to_disable = base::ToValueList(rule_ids_to_disable);
+    base::Value::List ids_to_enable = base::ToValueList(rule_ids_to_enable);
 
     const std::string script = content::JsReplace(
         kScript, ruleset_id, base::Value(std::move(ids_to_disable)),
@@ -505,7 +509,7 @@ class DeclarativeNetRequestBrowserTest
                 : ['expected:', expected, '; actual:', actual].join(''));
           });
     )";
-    base::Value::List expected = VectorToList(expected_disabled_rule_ids);
+    base::Value::List expected = base::ToValueList(expected_disabled_rule_ids);
     std::string result = ExecuteScriptInBackgroundPageAndReturnString(
         extension_id,
         content::JsReplace(kScript, ruleset_id_string, std::move(expected)));
@@ -519,6 +523,13 @@ class DeclarativeNetRequestBrowserTest
 
     CompositeMatcher* composite_matcher =
         ruleset_manager()->GetMatcherForExtension(extension->id());
+    if (!composite_matcher) {
+      // The extension could've been loaded with no enabled rulesets. This is
+      // the only case where `composite_matcher` may be null.
+      ASSERT_TRUE(expected_ruleset_ids.empty());
+      return;
+    }
+
     ASSERT_TRUE(composite_matcher);
     EXPECT_THAT(GetPublicRulesetIDs(*extension, *composite_matcher),
                 UnorderedElementsAreArray(expected_ruleset_ids));
@@ -743,15 +754,6 @@ class DeclarativeNetRequestBrowserTest
         });
     )";
 
-    // Serialize |rules_to_add|.
-    base::Value::List rules_to_add_builder;
-    for (const auto& rule : rules_to_add)
-      rules_to_add_builder.Append(rule.ToValue());
-
-    // Serialize |rule_ids|.
-    base::Value::List rule_ids_to_remove_value =
-        VectorToList(rule_ids_to_remove);
-
     const char* function_name = nullptr;
     switch (scope) {
       case RulesetScope::kDynamic:
@@ -764,21 +766,22 @@ class DeclarativeNetRequestBrowserTest
 
     const std::string script =
         content::JsReplace(base::StringPrintf(kScript, function_name),
-                           base::Value(std::move(rules_to_add_builder)),
-                           base::Value(std::move(rule_ids_to_remove_value)));
+                           base::ToValueList(rules_to_add, &TestRule::ToValue),
+                           base::ToValueList(rule_ids_to_remove));
     ASSERT_EQ("success", ExecuteScriptInBackgroundPageAndReturnString(
                              extension_id, script));
   }
 
-  // Helper to load an extension. |has_dynamic_ruleset| should be true if the
-  // extension has a dynamic ruleset on load. If |is_extension_update|, the last
+  // Helper to load an extension. `has_dynamic_ruleset` should be true if the
+  // extension has a dynamic ruleset on load. If `is_extension_update`, the last
   // loaded extension is updated.
   void LoadExtensionInternal(const std::vector<TestRulesetInfo>& rulesets,
                              const std::string& directory,
                              const std::vector<std::string>& hosts,
                              int expected_extensions_with_rulesets_count_change,
                              bool has_dynamic_ruleset,
-                             bool is_extension_update) {
+                             bool is_extension_update,
+                             bool is_delayed_update) {
     CHECK(!is_extension_update || GetParam() == ExtensionLoadType::PACKED);
 
     // The "crx" directory is reserved for use by this test fixture.
@@ -819,11 +822,28 @@ class DeclarativeNetRequestBrowserTest
 
         if (is_extension_update) {
           const ExtensionId& extension_id = last_loaded_extension_id();
-          extension =
-              UpdateExtension(extension_id, crx_path, 0 /* expected_change */);
+          if (is_delayed_update) {
+            // TODO(kelvinjiang): When background script goes away, a different
+            // method will be needed to trigger a delayed update.
+            ASSERT_TRUE(flags_ & kConfig_HasBackgroundScript);
+            ASSERT_TRUE(flags_ & kConfig_ListenForOnUpdateAvailable);
+            UpdateExtensionWaitForIdle(extension_id, crx_path,
+                                       /*expected_change=*/0);
+
+            // Force a reload of the extension to complete the delayed update.
+            // This invalidates the existing `extension` pointer so it needs to
+            // be set again after the reload.
+            extension_service()->ReloadExtension(extension_id);
+            extension =
+                ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(
+                    extension_id);
+          } else {
+            extension = UpdateExtension(extension_id, crx_path,
+                                        /*expected_change=*/0);
+          }
         } else {
           extension = InstallExtensionWithPermissionsGranted(
-              crx_path, 1 /* expected_change */);
+              crx_path, /*expected_change=*/1);
         }
         break;
       }
@@ -839,10 +859,13 @@ class DeclarativeNetRequestBrowserTest
 
     size_t expected_enabled_rulesets_count = has_dynamic_ruleset ? 1 : 0;
     size_t expected_manifest_enabled_rules_count = 0;
+
+    bool has_enabled_rulesets = false;
     for (const TestRulesetInfo& info : rulesets) {
       size_t rules_count = info.rules_value.GetList().size();
 
       if (info.enabled) {
+        has_enabled_rulesets = true;
         expected_enabled_rulesets_count++;
         expected_manifest_enabled_rules_count += rules_count;
       }
@@ -850,19 +873,19 @@ class DeclarativeNetRequestBrowserTest
 
     // The histograms below are not logged for unpacked extensions.
     if (GetParam() == ExtensionLoadType::PACKED) {
-      size_t expected_histogram_counts = rulesets.empty() ? 0 : 1;
+      size_t expected_histogram_counts = has_enabled_rulesets ? 1 : 0;
 
       tester.ExpectTotalCount(kIndexAndPersistRulesTimeHistogram,
                               expected_histogram_counts);
       tester.ExpectBucketCount(kManifestEnabledRulesCountHistogram,
-                               expected_manifest_enabled_rules_count /*sample*/,
+                               /*sample=*/expected_manifest_enabled_rules_count,
                                expected_histogram_counts);
     }
     tester.ExpectTotalCount(
         "Extensions.DeclarativeNetRequest.CreateVerifiedMatcherTime",
         expected_enabled_rulesets_count);
     tester.ExpectUniqueSample(kLoadRulesetResultHistogram,
-                              LoadRulesetResult::kSuccess /*sample*/,
+                              /*sample=*/LoadRulesetResult::kSuccess,
                               expected_enabled_rulesets_count);
 
     auto ruleset_filter = FileBackedRulesetSource::RulesetFilter::kIncludeAll;
@@ -898,12 +921,9 @@ class DeclarativeNetRequestBrowserTest
       });
     )";
 
-    base::Value::List ids_to_remove = VectorToList(ruleset_ids_to_remove);
-    base::Value::List ids_to_add = VectorToList(ruleset_ids_to_add);
-
     const std::string script =
-        content::JsReplace(kScript, base::Value(std::move(ids_to_remove)),
-                           base::Value(std::move(ids_to_add)));
+        content::JsReplace(kScript, base::ToValueList(ruleset_ids_to_remove),
+                           base::ToValueList(ruleset_ids_to_add));
     return ExecuteScriptInBackgroundPageAndReturnString(extension_id, script);
   }
 
@@ -4970,7 +4990,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   ASSERT_NO_FATAL_FAILURE(UpdateLastLoadedExtension(
       new_rulesets, kDirectory2, {} /* hosts */,
       0 /* expected_extensions_with_rulesets_count_change */,
-      true /* has_dynamic_ruleset */));
+      true /* has_dynamic_ruleset */, false /* is_delayed_update */));
   extension = extension_registry()->enabled_extensions().GetByID(extension_id);
 
   composite_matcher = ruleset_manager()->GetMatcherForExtension(extension_id);
@@ -5040,7 +5060,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   ASSERT_NO_FATAL_FAILURE(UpdateLastLoadedExtension(
       {} /* new_rulesets */, kDirectory2, {} /* hosts */,
       -1 /* expected_extensions_with_rulesets_count_change */,
-      false /* has_dynamic_ruleset */));
+      false /* has_dynamic_ruleset */, false /* is_delayed_update */));
   extension = extension_registry()->enabled_extensions().GetByID(extension_id);
 
   composite_matcher = ruleset_manager()->GetMatcherForExtension(extension_id);
@@ -5092,7 +5112,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   ASSERT_NO_FATAL_FAILURE(UpdateLastLoadedExtension(
       rulesets, kDirectory2, {} /* hosts */,
       0 /* expected_extensions_with_rulesets_count_change */,
-      false /* has_dynamic_ruleset */));
+      false /* has_dynamic_ruleset */, false /* is_delayed_update */));
   extension = last_loaded_extension();
 
   composite_matcher =
@@ -5104,6 +5124,74 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
 
   EXPECT_THAT(GetDisabledRuleIdsFromMatcher(ruleset_id), testing::IsEmpty());
   VerifyGetDisabledRuleIds(last_loaded_extension_id(), ruleset_id, {});
+}
+
+// Tests that prefs from the older version of the extension such as ruleset
+// checksums and enabled static rulesets are reset when the extension goes
+// through a delayed update.
+// Regression for crbug.com/40285683.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
+                       RemoveStalePrefsOnDelayedUpdate) {
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript |
+                   ConfigFlag::kConfig_ListenForOnUpdateAvailable);
+  const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+
+  auto is_checksum_in_prefs = [this, prefs](const RulesetID& ruleset_id) {
+    int checksum;
+    return prefs->GetDNRStaticRulesetChecksum(last_loaded_extension_id(),
+                                              ruleset_id, &checksum);
+  };
+
+  // Load one extension with one ruleset that is disabled by default.
+  std::string ruleset_id = "ruleset1";
+  std::vector<TestRulesetInfo> rulesets = {
+      TestRulesetInfo(ruleset_id, ToListValue({CreateGenericRule(1)}), false)};
+  static constexpr char kDirectory1[] = "dir1";
+  ASSERT_NO_FATAL_FAILURE(
+      LoadExtensionWithRulesets(rulesets, kDirectory1, {} /* hosts */));
+
+  VerifyPublicRulesetIds(last_loaded_extension(), {});
+
+  // Now enable the ruleset and check that prefs are updated with the ruleset's
+  // checksum and the extension's set of enabled rulesets.
+  ASSERT_NO_FATAL_FAILURE(
+      UpdateEnabledRulesets(last_loaded_extension_id(), {}, {ruleset_id}));
+
+  VerifyPublicRulesetIds(last_loaded_extension(), {ruleset_id});
+  std::optional<std::set<RulesetID>> enabled_static_rulesets =
+      prefs->GetDNREnabledStaticRulesets(last_loaded_extension_id());
+  EXPECT_THAT(
+      enabled_static_rulesets.value_or(std::set<RulesetID>()),
+      UnorderedElementsAre(RulesetID(kMinValidStaticRulesetID.value())));
+  EXPECT_TRUE(is_checksum_in_prefs(kMinValidStaticRulesetID));
+
+  // Update the extension with a slightly different ruleset that's disabled by
+  // default (so the checksum changes) and make it a delayed update.
+  static constexpr char kDirectory2[] = "dir2";
+  ASSERT_NO_FATAL_FAILURE(UpdateLastLoadedExtension(
+      {TestRulesetInfo(ruleset_id, ToListValue({CreateGenericRule(2)}), false)},
+      kDirectory2, {} /* hosts */,
+      -1 /* expected_extensions_with_rulesets_count_change */, false,
+      true /* is_delayed_update */));
+
+  // Verify that no rulesets are enabled and the prefs contain no checksums nor
+  // any enabled ruleset ids.
+  VerifyPublicRulesetIds(last_loaded_extension(), {});
+  EXPECT_FALSE(prefs->GetDNREnabledStaticRulesets(last_loaded_extension_id()));
+  EXPECT_FALSE(is_checksum_in_prefs(kMinValidStaticRulesetID));
+
+  // Enable the ruleset again (this operation should succeed) and check the
+  // updated state.
+  ASSERT_NO_FATAL_FAILURE(
+      UpdateEnabledRulesets(last_loaded_extension_id(), {}, {ruleset_id}));
+
+  VerifyPublicRulesetIds(last_loaded_extension(), {ruleset_id});
+  enabled_static_rulesets =
+      prefs->GetDNREnabledStaticRulesets(last_loaded_extension_id());
+  EXPECT_THAT(
+      enabled_static_rulesets.value_or(std::set<RulesetID>()),
+      UnorderedElementsAre(RulesetID(kMinValidStaticRulesetID.value())));
+  EXPECT_TRUE(is_checksum_in_prefs(kMinValidStaticRulesetID));
 }
 
 // Fixture to test the "allowAllRequests" action.
@@ -5349,7 +5437,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   ASSERT_NO_FATAL_FAILURE(UpdateLastLoadedExtension(
       {} /* new_rulesets */, "new_dir" /* new_directory */, {} /* new_hosts */,
       -1 /* expected_extensions_with_rulesets_count_change */,
-      false /* has_dynamic_ruleset */));
+      false /* has_dynamic_ruleset */, false /* is_delayed_update */));
 
   // Verify that the extension doesn't have any enabled rulesets since it lacks
   // the declarativeNetRequest permission.
@@ -5362,7 +5450,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   ASSERT_NO_FATAL_FAILURE(UpdateLastLoadedExtension(
       {} /* new_rulesets */, "new_dir2" /* new_directory */, {} /* new_hosts */,
       1 /* expected_extensions_with_rulesets_count_change */,
-      true /* has_dynamic_ruleset */));
+      true /* has_dynamic_ruleset */, false /* is_delayed_update */));
   VerifyPublicRulesetIds(last_loaded_extension(),
                          {dnr_api::DYNAMIC_RULESET_ID});
 }
@@ -6290,7 +6378,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestGlobalRulesBrowserTest_Packed,
   UpdateLastLoadedExtension(
       rulesets, "test_extension2", {} /* hosts */,
       0 /* expected_extensions_with_rulesets_count_change */,
-      false /* has_dynamic_ruleset */);
+      false /* has_dynamic_ruleset */, false /* is_delayed_update */);
 
   VerifyPublicRulesetIds(last_loaded_extension(), {"ruleset_1"});
   VerifyExtensionAllocationInPrefs(last_loaded_extension_id(), 2);
@@ -6343,7 +6431,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestGlobalRulesBrowserTest_Packed,
   UpdateLastLoadedExtension(
       rulesets, "test_extension2", {} /* hosts */,
       0 /* expected_extensions_with_rulesets_count_change */,
-      false /* has_dynamic_ruleset */);
+      false /* has_dynamic_ruleset */, false /* is_delayed_update */);
 
   VerifyPublicRulesetIds(last_loaded_extension(), {"ruleset_1"});
   VerifyExtensionAllocationInPrefs(last_loaded_extension_id(), 1);
@@ -6422,7 +6510,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestGlobalRulesBrowserTest_Packed,
   UpdateLastLoadedExtension(
       rulesets, "test_extension2", {} /* hosts */,
       0 /* expected_extensions_with_rulesets_count_change */,
-      false /* has_dynamic_ruleset */);
+      false /* has_dynamic_ruleset */, false /* is_delayed_update */);
 
   VerifyPublicRulesetIds(last_loaded_extension(), {"ruleset_1", "ruleset_2"});
   VerifyExtensionAllocationInPrefs(last_loaded_extension_id(), 2);
@@ -6957,6 +7045,410 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBackForwardCacheBrowserTest,
   bfcache_render_frame_host_delete_observer->WaitUntilDeleted();
 }
 
+class DeclarativeNetRequestControllableResponseTest
+    : public DeclarativeNetRequestBrowserTest {
+ public:
+  DeclarativeNetRequestControllableResponseTest() = default;
+
+  void SetUpOnMainThread() override {
+    // The controllable response handler needs to be set up first before the
+    // test server can be started, which is why the SetUpOnMainThread from the
+    // super class which starts the test server is called afterwards here.
+    controllable_http_response_.emplace(embedded_test_server(),
+                                        "/pages_with_script/index.html");
+    DeclarativeNetRequestBrowserTest::SetUpOnMainThread();
+  }
+
+ protected:
+  net::test_server::ControllableHttpResponse& controllable_http_response() {
+    return *controllable_http_response_;
+  }
+
+ private:
+  std::optional<net::test_server::ControllableHttpResponse>
+      controllable_http_response_;
+};
+
+// Test that DNR actions from an extension are cleaned up when the extension is
+// disabled. This fixes a crash/bug where DNR actions such as modifyHeaders
+// which are created on the OnBeforeRequest phase when an extension was enabled
+// are supposed to take effect in a later request stage but the extension may no
+// longer be enabled at that point.
+// Regression for crbug.com/40072083 which would've caused a crash in this test.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestControllableResponseTest,
+                       EraseActionsOnExtensionDisabled) {
+  // Create an extension with a rule that modifies response headers. This
+  // extension will match its rule during OnBeforeRequest but the rule would not
+  // be applied until OnHeadersReceived which is after when the request is sent
+  // and the response has started.
+  TestRule headers_rule = CreateModifyHeadersRule(
+      kMinValidID, kMinValidPriority, "google.com", std::nullopt,
+      std::vector<TestHeaderInfo>(
+          {TestHeaderInfo("resp-header", "append", "resp-value")}));
+  headers_rule.condition->resource_types =
+      std::vector<std::string>({"main_frame"});
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      {headers_rule}, "extension_1", {URLPattern::kAllUrlsPattern}));
+  const ExtensionId& extension_id = last_loaded_extension_id();
+
+  const GURL page_url = embedded_test_server()->GetURL(
+      "google.com", "/pages_with_script/index.html");
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), page_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+
+  controllable_http_response().WaitForRequest();
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  controllable_http_response().Send(net::HTTP_OK, "text/html",
+                                    "<html>Hello, World!</html>");
+
+  // Disable the extension after the response has been sent but before the
+  // request has finished.
+  DisableExtension(extension_id);
+
+  controllable_http_response().Done();
+
+  // Block until the web contents have been fully loaded to be certain that the
+  // web request event router finishes processing all events after the request
+  // has finished, such as OnHeadersReceived, and that the extension will be
+  // disabled at that point. The test should not crash at this point.
+  // TODO(crbug.com/40072083): Follow up with verifying the values of response
+  // headers. This may require initiating a request from a JS script injected
+  // into the page.
+  ASSERT_TRUE(content::WaitForLoadStop(web_contents));
+  EXPECT_FALSE(extension_service()->IsExtensionEnabled(extension_id));
+}
+
+class DNRMatchResponseHeadersBrowserTest
+    : public DeclarativeNetRequestBrowserTest {
+ public:
+  DNRMatchResponseHeadersBrowserTest() {
+    // TODO(crbug.com/40727004): Once feature is launched to stable and feature
+    // flag can be removed, replace usages of this test class with just
+    // DeclarativeNetRequestBrowserTest.
+    scoped_feature_list_.InitAndEnableFeature(
+        extensions_features::kDeclarativeNetRequestResponseHeaderMatching);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Test that requests matching rules' response header conditions will be
+// blocked.
+IN_PROC_BROWSER_TEST_P(DNRMatchResponseHeadersBrowserTest, BlockRequests) {
+  struct {
+    std::string filter;
+    int id;
+    std::string type;
+    std::vector<TestHeaderCondition> response_header_condition;
+  } rules_data[] = {
+      // A rule that allows all requests to setcookie.com if the set-cookie
+      // header is present with value "cookie=oreo".
+      {"setcookie.com", 1, "allow",
+       std::vector<TestHeaderCondition>(
+           {TestHeaderCondition("set-cookie", {"cookie=oreo"}, {})})},
+      // A rule that blocks all requests to setcookie.com if the set-cookie
+      // header is present. Note that if both this and the allow rule above
+      // matches a request, the allow rule has higher priority and will override
+      // this rule due to its action type.
+      {"setcookie.com", 2, "block",
+       std::vector<TestHeaderCondition>(
+           {TestHeaderCondition("set-cookie", {}, {})})},
+  };
+
+  // Load the extension.
+  std::vector<TestRule> rules;
+  for (const auto& rule_data : rules_data) {
+    TestRule rule = CreateGenericRule(rule_data.id);
+    rule.action->type = rule_data.type;
+
+    rule.condition->url_filter = rule_data.filter;
+    rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+
+    rule.condition->response_headers = rule_data.response_header_condition;
+    rules.push_back(std::move(rule));
+  }
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(std::move(rules)));
+
+  struct {
+    std::string hostname;
+    std::string path;
+    bool expect_main_frame_loaded;
+  } test_cases[] = {
+      // First test case does not have a set-cookie header and will not match
+      // with any rules.
+      {"setcookie.com", "/pages_with_script/index.html", true},
+      // Second test case will be blocked as it matches with the block rule with
+      // id 2.
+      {"setcookie.com", "/set-cookie?cookie=sugar", false},
+      // Third test case will not be blocked since it matches with the allow
+      // rule with id 1 which has higher "priority" than the block rule due to
+      // its action type.
+      {"setcookie.com", "/set-cookie?cookie=oreo", true}};
+
+  // Verify that the extension correctly intercepts network requests.
+  for (const auto& test_case : test_cases) {
+    GURL url =
+        embedded_test_server()->GetURL(test_case.hostname, test_case.path);
+    SCOPED_TRACE(base::StringPrintf("Testing %s", url.spec().c_str()));
+
+    content::TestNavigationObserver nav_observer(web_contents());
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+    content::PageType expected_page_type = test_case.expect_main_frame_loaded
+                                               ? content::PAGE_TYPE_NORMAL
+                                               : content::PAGE_TYPE_ERROR;
+    EXPECT_EQ(expected_page_type, GetPageType());
+
+    auto expected_code = test_case.expect_main_frame_loaded
+                             ? net::OK
+                             : net::ERR_BLOCKED_BY_CLIENT;
+    EXPECT_EQ(expected_code, nav_observer.last_net_error_code());
+  }
+}
+
+// Ensures that any <img> elements blocked by the API are collapsed based on
+// response header matching.
+IN_PROC_BROWSER_TEST_P(DNRMatchResponseHeadersBrowserTest, ImageCollapsed) {
+  // Loads a page with an image and returns whether the image was collapsed.
+  auto is_image_collapsed = [this](const std::string& host_name) {
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL(host_name, "/image.html")));
+    EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
+    const std::string script = "!!window.imageCollapsed;";
+    return content::EvalJs(web_contents(), script).ExtractBool();
+  };
+
+  // Initially the image shouldn't be collapsed.
+  EXPECT_FALSE(is_image_collapsed("matchheader.com"));
+  EXPECT_FALSE(is_image_collapsed("matchnoheader.com"));
+
+  // Load an extension which blocks all images on matchheader.com if there
+  // exists a set-cookie header, and all on matchnoheaders.com if there is no
+  // set-cookie header. Note that the image.html path will not have a set-cookie
+  // header.
+  TestRule match_header_rule = CreateGenericRule(kMinValidID);
+  match_header_rule.condition->url_filter = "matchheader.com";
+  match_header_rule.condition->resource_types =
+      std::vector<std::string>({"image"});
+  match_header_rule.condition->response_headers =
+      std::vector<TestHeaderCondition>(
+          {TestHeaderCondition("set-cookie", {}, {})});
+
+  TestRule match_no_header_rule = CreateGenericRule(kMinValidID + 1);
+  match_no_header_rule.condition->url_filter = "matchnoheader.com";
+  match_no_header_rule.condition->resource_types =
+      std::vector<std::string>({"image"});
+  match_no_header_rule.condition->excluded_response_headers =
+      std::vector<TestHeaderCondition>(
+          {TestHeaderCondition("set-cookie", {}, {})});
+
+  std::vector<TestRule> rules;
+  rules.push_back(std::move(match_header_rule));
+  rules.push_back(std::move(match_no_header_rule));
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(std::move(rules)));
+
+  // Verify that only `match_no_header_rule` will match the request and cause
+  // the image to be collapsed.
+  EXPECT_FALSE(is_image_collapsed("matchheader.com"));
+  EXPECT_TRUE(is_image_collapsed("matchnoheader.com"));
+}
+
+// Test that requests can be redirected and upgraded based on response headers.
+IN_PROC_BROWSER_TEST_P(DNRMatchResponseHeadersBrowserTest, RedirectAndUpgrade) {
+  GURL match_header_url = embedded_test_server()->GetURL(
+      "matchheader.com", "/pages_with_script/index.html");
+  GURL denied_url = embedded_test_server()->GetURL(
+      "denied.com", "/pages_with_script/index.html");
+  GURL upgraded_url = embedded_test_server()->GetURL(
+      "upgraded.com", "/pages_with_script/index.html");
+
+  struct {
+    std::string filter;
+    int id;
+    int priority;
+    std::string type;
+    std::optional<std::string> redirect_url;
+    std::optional<std::vector<TestHeaderCondition>> response_header_condition;
+  } rules_data[] = {
+      // A rule for requests made to "matchheader.com" which redirects to
+      // `denied_url` if a set-cookie header is present but its value is not
+      // equal to "upgrade-token=valid".
+      {"matchheader.com", 1, kMinValidPriority, "redirect", denied_url.spec(),
+       std::vector<TestHeaderCondition>(
+           {TestHeaderCondition("set-cookie", {}, {"upgrade-token=valid"})})},
+
+      // A rule for requests made to "matchheader.com" which upgrades from HTTP
+      // to HTTPS if a set-cookie header is present with a value of
+      // "upgrade-token=valid".
+      {"matchheader.com", 2, kMinValidPriority, "upgradeScheme", std::nullopt,
+       std::vector<TestHeaderCondition>(
+           {TestHeaderCondition("set-cookie", {"upgrade-token=valid"}, {})})},
+
+      // A rule which redirects all URLs with https scheme to `upgraded_url`.
+      // Used to test if requests have been upgraded.
+      // TODO(kelvinjiang): See if we can eliminate this rule by using
+      // https_server().
+      {"|https*", 3, kMinValidPriority + 100, "redirect", upgraded_url.spec(),
+       std::nullopt}};
+
+  // Load the extension.
+  std::vector<TestRule> rules;
+  for (const auto& rule_data : rules_data) {
+    TestRule rule = CreateGenericRule(rule_data.id);
+    rule.action->type = rule_data.type;
+    rule.priority = rule_data.priority;
+
+    rule.condition->url_filter = rule_data.filter;
+    rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+
+    if (rule_data.redirect_url) {
+      rule.action->redirect.emplace();
+      rule.action->redirect->url = rule_data.redirect_url;
+    }
+
+    if (rule_data.response_header_condition) {
+      rule.condition->response_headers = rule_data.response_header_condition;
+    }
+    rules.push_back(std::move(rule));
+  }
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      rules, "test_extension", {URLPattern::kAllUrlsPattern}));
+
+  struct {
+    std::string hostname;
+    std::string path;
+    GURL expected_final_url;
+  } test_cases[] = {
+      // Test a request that does not have a set-cookie header, so no rules
+      // match and a redirect does not happen.
+      {"matchheader.com", "/pages_with_script/index.html", match_header_url},
+
+      // Test a request that does not have a "valid" upgrade token cookie, so it
+      // gets redirected.
+      {"matchheader.com", "/set-cookie?upgrade-token=other", denied_url},
+
+      // Test a request that has a "valid" upgrade token that will match with
+      // the upgrade rule with id 2: HTTPS requests can be verified in this
+      // testing environment by redirecting them to `upgraded_url`.
+      {"matchheader.com", "/set-cookie?upgrade-token=valid", upgraded_url},
+  };
+
+  for (const auto& test_case : test_cases) {
+    GURL url =
+        embedded_test_server()->GetURL(test_case.hostname, test_case.path);
+    SCOPED_TRACE(base::StringPrintf("Testing %s", url.spec().c_str()));
+
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+    EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
+
+    const GURL& final_url = web_contents()->GetLastCommittedURL();
+    EXPECT_EQ(test_case.expected_final_url, final_url);
+  }
+}
+
+// Test interactions between rules that match in the onBeforeRequest phase vs
+// the onHeadersReceived phase.
+IN_PROC_BROWSER_TEST_P(DNRMatchResponseHeadersBrowserTest,
+                       DifferentRequestPhaseRuleInteractions) {
+  GURL redirected_url = embedded_test_server()->GetURL(
+      "redirected.com", "/pages_with_script/index.html");
+
+  struct {
+    std::string filter;
+    int id;
+    int priority;
+    std::string type;
+    std::optional<std::string> redirect_url = std::nullopt;
+    std::optional<std::vector<TestHeaderCondition>>
+        excluded_response_header_condition = std::nullopt;
+  } rules_data[] = {
+      // For google.com, there is a block rule in onBeforeRequest and a redirect
+      // rule in onHeadersReceived. The block rule should take precedence even
+      // though the redirect rule has higher priority, because
+      // the block rule will block the request in an earlier request stage than
+      // when the redirect rule will be matched.
+      {"google.com", 1, kMinValidPriority, "block"},
+      {"google.com", 2, kMinValidPriority + 10, "redirect",
+       redirected_url.spec(),
+       std::vector<TestHeaderCondition>(
+           {TestHeaderCondition("nonsense-header", {}, {})})},
+
+      // For example.com, there is a redirect rule in onBeforeRequest and a
+      // block rule in onHeadersReceived. The redirect rule should take
+      // precedence because it redirects the request in an earlier request stage
+      // than when the block rule would be matched.
+      {"example.com", 3, kMinValidPriority, "redirect", redirected_url.spec()},
+      {"example.com", 4, kMinValidPriority + 10, "block", std::nullopt,
+       std::vector<TestHeaderCondition>(
+           {TestHeaderCondition("nonsense-header", {}, {})})}};
+
+  // Load the extension.
+  std::vector<TestRule> rules;
+  for (const auto& rule_data : rules_data) {
+    TestRule rule = CreateGenericRule(rule_data.id);
+    rule.action->type = rule_data.type;
+
+    rule.condition->url_filter = rule_data.filter;
+    rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+
+    if (rule_data.redirect_url) {
+      rule.action->redirect.emplace();
+      rule.action->redirect->url = rule_data.redirect_url;
+    }
+
+    if (rule_data.excluded_response_header_condition) {
+      rule.condition->excluded_response_headers =
+          rule_data.excluded_response_header_condition;
+    }
+    rules.push_back(std::move(rule));
+  }
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      rules, "test_extension", {URLPattern::kAllUrlsPattern}));
+
+  GURL google_url = embedded_test_server()->GetURL(
+      "google.com", "/pages_with_script/index.html");
+  GURL example_url = embedded_test_server()->GetURL(
+      "example.com", "/pages_with_script/index.html");
+  struct {
+    std::string hostname;
+    std::string path;
+    bool expect_main_frame_loaded;
+    GURL expected_final_url;
+  } test_cases[] = {
+      // The request should be blocked since rule with id 1 should take action
+      // in the onBeforeRequest stage and rule with id 2 should never be
+      // matched.
+      {"google.com", "/pages_with_script/index.html", false, google_url},
+
+      // The request should be redirected since rule with id 3 should take
+      // action in the onBeforeRequest stage and rule with id 4 should never be
+      // matched.
+      {"example.com", "/pages_with_script/index.html", true, redirected_url}};
+
+  // Verify that the extension correctly intercepts network requests.
+  for (const auto& test_case : test_cases) {
+    GURL url =
+        embedded_test_server()->GetURL(test_case.hostname, test_case.path);
+    SCOPED_TRACE(base::StringPrintf("Testing %s", url.spec().c_str()));
+
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+    content::PageType expected_page_type = test_case.expect_main_frame_loaded
+                                               ? content::PAGE_TYPE_NORMAL
+                                               : content::PAGE_TYPE_ERROR;
+    EXPECT_EQ(expected_page_type, GetPageType());
+    const GURL& final_url = web_contents()->GetLastCommittedURL();
+    EXPECT_EQ(test_case.expected_final_url, final_url);
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(All,
                          DeclarativeNetRequestBrowserTest,
                          ::testing::Values(ExtensionLoadType::PACKED,
@@ -6999,6 +7491,16 @@ INSTANTIATE_TEST_SUITE_P(All,
 
 INSTANTIATE_TEST_SUITE_P(All,
                          DeclarativeNetRequestBackForwardCacheBrowserTest,
+                         ::testing::Values(ExtensionLoadType::PACKED,
+                                           ExtensionLoadType::UNPACKED));
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         DeclarativeNetRequestControllableResponseTest,
+                         ::testing::Values(ExtensionLoadType::PACKED,
+                                           ExtensionLoadType::UNPACKED));
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         DNRMatchResponseHeadersBrowserTest,
                          ::testing::Values(ExtensionLoadType::PACKED,
                                            ExtensionLoadType::UNPACKED));
 

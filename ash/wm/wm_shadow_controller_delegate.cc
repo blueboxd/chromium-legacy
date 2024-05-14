@@ -6,7 +6,6 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
@@ -91,8 +90,7 @@ bool WmShadowControllerDelegate::ShouldShowShadowForWindow(
     // Windows in overview that are not moving out of the active desk should not
     // have shadows.
     auto* overview_item = overview_session->GetOverviewItemForWindow(window);
-    if (desks_util::BelongsToActiveDesk(const_cast<aura::Window*>(window)) &&
-        overview_item && !overview_item->is_moving_to_another_desk()) {
+    if (overview_item && !overview_item->is_moving_to_another_desk()) {
       return false;
     }
   }
@@ -123,11 +121,9 @@ bool WmShadowControllerDelegate::ShouldUpdateShadowOnWindowPropertyChange(
     const aura::Window* window,
     const void* key,
     intptr_t old) {
-  return (key == chromeos::kIsShowingInOverviewKey &&
-          window->GetProperty(chromeos::kIsShowingInOverviewKey) != old) ||
-         (key == chromeos::kWindowStateTypeKey &&
-          window->GetProperty(chromeos::kWindowStateTypeKey) !=
-              static_cast<chromeos::WindowStateType>(old));
+  return key == chromeos::kWindowStateTypeKey &&
+         window->GetProperty(chromeos::kWindowStateTypeKey) !=
+             static_cast<chromeos::WindowStateType>(old);
 }
 
 void WmShadowControllerDelegate::ApplyColorThemeToWindowShadow(

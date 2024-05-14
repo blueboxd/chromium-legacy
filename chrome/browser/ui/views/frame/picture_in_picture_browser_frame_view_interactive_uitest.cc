@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/views/frame/picture_in_picture_browser_frame_view.h"
 
+#include <optional>
+
 #include "base/memory/raw_ptr.h"
+#include "base/strings/strcat.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/picture_in_picture/auto_picture_in_picture_tab_helper.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_occlusion_tracker.h"
@@ -18,10 +21,18 @@
 #include "content/public/browser/document_picture_in_picture_window_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/gfx/animation/animation_test_api.h"
+
+#if BUILDFLAG(IS_LINUX)
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
+#include "ui/linux/fake_linux_ui.h"
+#include "ui/linux/linux_ui_getter.h"
+#endif
 
 namespace {
 
@@ -53,7 +64,8 @@ class PictureInPictureBrowserFrameViewTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  void SetUpDocumentPIP() {
+  void SetUpDocumentPIP(
+      std::optional<bool> disallow_return_to_opener = std::nullopt) {
     // Navigate to test url.
     GURL test_page_url = ui_test_utils::GetTestUrl(
         base::FilePath(base::FilePath::kCurrentDirectory),
@@ -67,7 +79,15 @@ class PictureInPictureBrowserFrameViewTest : public InProcessBrowserTest {
     // Enter document pip.
     auto* pip_window_controller_ = content::PictureInPictureWindowController::
         GetOrCreateDocumentPictureInPictureController(active_web_contents);
-    ASSERT_EQ(true, EvalJs(active_web_contents, "createDocumentPipWindow()"));
+    std::string disallow_return_to_opener_js_string =
+        (disallow_return_to_opener.has_value()
+             ? (*disallow_return_to_opener ? "true" : "false")
+             : "undefined");
+    ASSERT_EQ(true,
+              EvalJs(active_web_contents,
+                     base::StrCat(
+                         {"createDocumentPipWindow({disallowReturnToOpener: ",
+                          disallow_return_to_opener_js_string, "})"})));
     ASSERT_NE(nullptr, pip_window_controller_);
 
     auto* child_web_contents = pip_window_controller_->GetChildWebContents();
@@ -350,6 +370,91 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureBrowserFrameViewTest,
       u"Document Picture-in-Picture",
       pip_frame_view()->browser_view()->browser()->GetWindowTitleForCurrentTab(
           /*include_app_name=*/false));
+}
+
+#if BUILDFLAG(IS_LINUX)
+
+class FakeLinuxUiGetter : public ui::LinuxUiGetter {
+ public:
+  FakeLinuxUiGetter() = default;
+
+  ui::LinuxUiTheme* GetForWindow(aura::Window* window) override {
+    return &fake_linux_ui_;
+  }
+
+  ui::LinuxUiTheme* GetForProfile(Profile* profile) override {
+    return &fake_linux_ui_;
+  }
+
+ private:
+  class LinuxUiWithoutNativeDecoration : public ui::FakeLinuxUi {
+   public:
+    ui::NativeTheme* GetNativeTheme() const override {
+      return ui::NativeTheme::GetInstanceForNativeUi();
+    }
+
+    ui::WindowFrameProvider* GetWindowFrameProvider(bool solid_frame,
+                                                    bool tiled) override {
+      // The test relies on this returning null.
+      return nullptr;
+    }
+  };
+
+  LinuxUiWithoutNativeDecoration fake_linux_ui_;
+};
+
+class PictureInPictureBrowserFrameViewLinuxNoClientNativeDecorationsTest
+    : public PictureInPictureBrowserFrameViewTest {
+ public:
+  void SetUpOnMainThread() override {
+    // Create a fake UI getter, which will automatically set itself as the
+    // default. This has to wait until `SetUpOnMainThread()` so browser startup
+    // doesn't overwrite it with the real getter.
+    linux_ui_getter_ = std::make_unique<FakeLinuxUiGetter>();
+    ThemeServiceFactory::GetForProfile(browser()->profile())->UseSystemTheme();
+    PictureInPictureBrowserFrameViewTest::SetUpOnMainThread();
+  }
+
+ private:
+  std::unique_ptr<ui::LinuxUiGetter> linux_ui_getter_;
+};
+
+// Regression test for https://crbug.com/325459394:
+// PiP should not crash if the Linux native theme does not draw client-side
+// frame decorations.
+IN_PROC_BROWSER_TEST_F(
+    PictureInPictureBrowserFrameViewLinuxNoClientNativeDecorationsTest,
+    DoesNotCrash) {
+  ASSERT_NO_FATAL_FAILURE(SetUpDocumentPIP());
+}
+
+#endif
+
+IN_PROC_BROWSER_TEST_F(PictureInPictureBrowserFrameViewTest,
+                       RespectsDisallowReturnToOpenerWhenDefault) {
+  ASSERT_NO_FATAL_FAILURE(SetUpDocumentPIP());
+
+  // The back-to-tab button should exist when `disallowReturnToOpener` is not
+  // specified.
+  EXPECT_NE(nullptr, pip_frame_view()->GetBackToTabButtonForTesting());
+}
+
+IN_PROC_BROWSER_TEST_F(PictureInPictureBrowserFrameViewTest,
+                       RespectsDisallowReturnToOpenerWhenTrue) {
+  ASSERT_NO_FATAL_FAILURE(SetUpDocumentPIP(/*disallow_return_to_opener=*/true));
+
+  // The back-to-tab button should not exist when `disallowReturnToOpener` is
+  // true.
+  EXPECT_EQ(nullptr, pip_frame_view()->GetBackToTabButtonForTesting());
+}
+
+IN_PROC_BROWSER_TEST_F(PictureInPictureBrowserFrameViewTest,
+                       RespectsDisallowReturnToOpenerWhenFalse) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetUpDocumentPIP(/*disallow_return_to_opener=*/false));
+
+  // The back-to-tab button should exist when `disallowReturnToOpener` is false.
+  EXPECT_NE(nullptr, pip_frame_view()->GetBackToTabButtonForTesting());
 }
 
 }  // namespace

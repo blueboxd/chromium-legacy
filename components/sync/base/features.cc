@@ -14,12 +14,12 @@ BASE_FEATURE(kDeferredSyncStartupCustomDelay,
 
 BASE_FEATURE(kIgnoreSyncEncryptionKeysLongMissing,
              "IgnoreSyncEncryptionKeysLongMissing",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kPassExplicitSyncPassphraseToGmsCore,
              "PassExplicitSyncPassphraseToGmsCore",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 BASE_FEATURE(kSharingOfferKeyPairBootstrap,
@@ -42,6 +42,10 @@ BASE_FEATURE(kSyncAutofillWalletUsageData,
 
 BASE_FEATURE(kSyncAutofillWalletCredentialData,
              "SyncAutofillWalletCredentialData",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSyncPlusAddress,
+             "SyncPlusAddress",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSyncSegmentationDataType,
@@ -214,15 +218,10 @@ BASE_FEATURE(kRestoreSyncedPlaceholderTabs,
 
 BASE_FEATURE(kSyncSessionOnVisibilityChanged,
              "SyncSessionOnVisibilityChanged",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSyncDecoupleAddressPaymentSettings,
              "SyncDecoupleAddressPaymentSettings",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// TODO(crbug.com/1374718): Delete feature toggle after a grace period.
-BASE_FEATURE(kSyncAlwaysForceImmediateStartIfTransportDataMissing,
-             "SyncAlwaysForceImmediateStartIfTransportDataMissing",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSyncIncreaseNudgeDelayForSingleClient,

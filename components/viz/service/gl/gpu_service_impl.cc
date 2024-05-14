@@ -39,7 +39,6 @@
 #include "gpu/command_buffer/service/shared_image/shared_image_manager.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
-#include "gpu/config/dx_diag_node.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
@@ -152,12 +151,6 @@
 namespace viz {
 
 namespace {
-
-// Whether to crash the GPU service on context loss when running in-process with
-// ANGLE.
-BASE_FEATURE(kCrashOnInProcessANGLEContextLoss,
-             "CrashOnInProcessANGLEContextLoss",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // The names emitted for GPU initialization trace events.
 // This code may be removed after the following investigation:
@@ -326,31 +319,28 @@ bool WillGetGmbConfigFromGpu() {
 }  // namespace
 
 GpuServiceImpl::GpuServiceImpl(
-    const gpu::GPUInfo& gpu_info,
-    std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread,
-    scoped_refptr<base::SingleThreadTaskRunner> io_runner,
-    const gpu::GpuFeatureInfo& gpu_feature_info,
     const gpu::GpuPreferences& gpu_preferences,
+    const gpu::GPUInfo& gpu_info,
+    const gpu::GpuFeatureInfo& gpu_feature_info,
     const std::optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
     const std::optional<gpu::GpuFeatureInfo>& gpu_feature_info_for_hardware_gpu,
     const gfx::GpuExtraInfo& gpu_extra_info,
-    gpu::VulkanImplementation* vulkan_implementation,
-    base::OnceCallback<void(ExitCode)> exit_callback)
+    InitParams init_params)
     : main_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()),
-      io_runner_(std::move(io_runner)),
-      watchdog_thread_(std::move(watchdog_thread)),
+      io_runner_(std::move(init_params.io_runner)),
+      watchdog_thread_(std::move(init_params.watchdog_thread)),
       gpu_preferences_(gpu_preferences),
       gpu_info_(gpu_info),
       gpu_feature_info_(gpu_feature_info),
       gpu_driver_bug_workarounds_(
-          gpu_feature_info.enabled_gpu_driver_bug_workarounds),
+          gpu_feature_info_.enabled_gpu_driver_bug_workarounds),
       gpu_info_for_hardware_gpu_(gpu_info_for_hardware_gpu),
       gpu_feature_info_for_hardware_gpu_(gpu_feature_info_for_hardware_gpu),
       gpu_extra_info_(gpu_extra_info),
 #if BUILDFLAG(ENABLE_VULKAN)
-      vulkan_implementation_(vulkan_implementation),
+      vulkan_implementation_(init_params.vulkan_implementation),
 #endif
-      exit_callback_(std::move(exit_callback)) {
+      exit_callback_(std::move(init_params.exit_callback)) {
   DCHECK(!io_runner_->BelongsToCurrentThread());
   DCHECK(exit_callback_);
 
@@ -377,7 +367,7 @@ GpuServiceImpl::GpuServiceImpl(
     vulkan_context_provider_ = VulkanInProcessContextProvider::Create(
         vulkan_implementation_, gpu_preferences_.vulkan_heap_memory_limit,
         gpu_preferences_.vulkan_sync_cpu_memory_limit, is_thread_safe,
-        (is_native_vulkan && is_native_gl) ? &gpu_info : nullptr);
+        (is_native_vulkan && is_native_gl) ? &gpu_info_ : nullptr);
     if (!vulkan_context_provider_) {
       DLOG(ERROR) << "Failed to create Vulkan context provider.";
     }
@@ -391,20 +381,21 @@ GpuServiceImpl::GpuServiceImpl(
 
   if (gpu_preferences_.gr_context_type == gpu::GrContextType::kGraphiteDawn) {
 #if BUILDFLAG(SKIA_USE_DAWN)
-    // GpuServiceImpl holds the instance of DawnContextProvider, so it outlives
-    // the DawnContextProvider.
-    auto cache_blob_callback = base::BindRepeating(
-        [](GpuServiceImpl* self, gpu::GpuDiskCacheType type,
-           const std::string& key, const std::string& blob) {
-          self->StoreBlobToDisk(gpu::kGraphiteDawnGpuDiskCacheHandle, key,
-                                blob);
-        },
-        base::Unretained(this));
-    dawn_context_provider_ = gpu::DawnContextProvider::Create(
-        gpu_preferences, gpu_driver_bug_workarounds_,
-        dawn_caching_interface_factory_.get(), std::move(cache_blob_callback));
-    if (!dawn_context_provider_) {
-      DLOG(ERROR) << "Failed to create Dawn context provider for Graphite.";
+    dawn_context_provider_ = std::move(init_params.dawn_context_provider);
+
+    if (dawn_context_provider_) {
+      // GpuServiceImpl holds the instance of DawnContextProvider, so it
+      // outlives the DawnContextProvider.
+      auto cache_blob_callback = base::BindRepeating(
+          [](GpuServiceImpl* self, gpu::GpuDiskCacheType type,
+             const std::string& key, const std::string& blob) {
+            self->StoreBlobToDisk(gpu::kGraphiteDawnGpuDiskCacheHandle, key,
+                                  blob);
+          },
+          base::Unretained(this));
+      auto caching_interface = dawn_caching_interface_factory_->CreateInstance(
+          gpu::kGraphiteDawnGpuDiskCacheHandle, std::move(cache_blob_callback));
+      dawn_context_provider_->SetCachingInterface(std::move(caching_interface));
     }
 #endif  // BUILDFLAG(SKIA_USE_DAWN)
   } else if (gpu_preferences_.gr_context_type ==
@@ -663,16 +654,6 @@ void GpuServiceImpl::InitializeWithHost(
   // initialized.
   gl::DirectCompositionOverlayCapsMonitor::GetInstance()->AddObserver(this);
 #endif
-
-  if (in_host_process() &&
-      gpu_channel_manager_->use_passthrough_cmd_decoder()) {
-    // Check `kCrashOnInProcessANGLEContextLoss` to ensure registration within
-    // the experiment - the check done at the time of MaybeExitOnContextLost()
-    // doesn't cause clients in the enabled arm to become registered in the
-    // experiment due to it being followed by an immediate crash.
-    [[maybe_unused]] bool unused =
-        base::FeatureList::IsEnabled(kCrashOnInProcessANGLEContextLoss);
-  }
 }
 
 void GpuServiceImpl::Bind(
@@ -920,7 +901,15 @@ void GpuServiceImpl::BindClientGmbInterface(
 void GpuServiceImpl::BindWebNNContextProvider(
     mojo::PendingReceiver<webnn::mojom::WebNNContextProvider> pending_receiver,
     int client_id) {
-  webnn::WebNNContextProviderImpl::Create(std::move(pending_receiver));
+  if (!main_runner_->BelongsToCurrentThread()) {
+    main_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&GpuServiceImpl::BindWebNNContextProvider, weak_ptr_,
+                       std::move(pending_receiver), client_id));
+    return;
+  }
+  webnn::WebNNContextProviderImpl::Create(std::move(pending_receiver),
+                                          GetContextState(), gpu_feature_info_);
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 
@@ -1124,24 +1113,6 @@ void GpuServiceImpl::MaybeExitOnContextLost(
   DCHECK(main_runner_->BelongsToCurrentThread());
 
   if (in_host_process()) {
-    // When running with ANGLE, crash on a backend context loss if
-    // `kCrashOnInProcessANGLEContextLoss` is enabled. This enables evaluation
-    // of the hypothesis that as ANGLE is currently unable to recover from
-    // context loss when running within Chrome, it is better to crash in this
-    // case than enter into a loop of context loss events leading to undefined
-    // behavior. Note that it *is* possible to recover from a context loss
-    // event that was generated by Chrome rather than being due to an actual
-    // backend context loss. In general, this is context losses where
-    // `synthetic_loss is true - the one exception is if `context_lost_reason`
-    // is `kMakeCurrentFailed`, which we regard as an unrecoverable context
-    // loss even though `synthetic_loss` will be set to true.
-    if (gpu_channel_manager_->use_passthrough_cmd_decoder() &&
-        (!synthetic_loss ||
-         context_lost_reason == gpu::error::kMakeCurrentFailed) &&
-        base::FeatureList::IsEnabled(kCrashOnInProcessANGLEContextLoss)) {
-      CHECK(false);
-    }
-
     // We can't restart the GPU process when running in the host process;
     // instead, just hope for recovery from the context loss.
     return;
@@ -1784,5 +1755,11 @@ void GpuServiceImpl::SetHostProcessId(base::ProcessId pid) {
   host_process_id_ = pid;
 }
 #endif
+
+GpuServiceImpl::InitParams::InitParams() = default;
+GpuServiceImpl::InitParams::InitParams(InitParams&& other) = default;
+GpuServiceImpl::InitParams& GpuServiceImpl::InitParams::operator=(
+    InitParams&& other) = default;
+GpuServiceImpl::InitParams::~InitParams() = default;
 
 }  // namespace viz

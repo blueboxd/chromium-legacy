@@ -16,13 +16,16 @@
 #import "components/sync_sessions/session_sync_service.h"
 #import "ios/chrome/browser/favicon/model/favicon_loader.h"
 #import "ios/chrome/browser/favicon/model/ios_chrome_favicon_loader_factory.h"
+#import "ios/chrome/browser/intents/intents_donation_helper.h"
 #import "ios/chrome/browser/metrics/model/new_tab_page_uma.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp_tiles/model/tab_resumption/tab_resumption_prefs.h"
 #import "ios/chrome/browser/sessions/session_util.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_backed_boolean.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
+#import "ios/chrome/browser/shared/model/utils/observable_boolean.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -57,7 +60,8 @@ NSString* kStartSurfaceSceneEnterIntoBackgroundTime =
 
 }  // namespace
 
-@interface TabResumptionMediator () <StartSurfaceRecentTabObserving,
+@interface TabResumptionMediator () <BooleanObserver,
+                                     StartSurfaceRecentTabObserving,
                                      SyncedSessionsObserver,
                                      IdentityManagerObserverBridgeDelegate,
                                      SyncObserverModelBridge,
@@ -101,6 +105,7 @@ NSString* kStartSurfaceSceneEnterIntoBackgroundTime =
       _identityManagerObserverBridge;
   std::unique_ptr<synced_sessions::SyncedSessionsObserverBridge>
       _syncedSessionsObserverBridge;
+  PrefBackedBoolean* _tabResumptionDisabled;
 }
 
 - (instancetype)initWithLocalState:(PrefService*)localState
@@ -117,6 +122,11 @@ NSString* kStartSurfaceSceneEnterIntoBackgroundTime =
     _sceneState = _browser->GetSceneState();
     _webStateList = _browser->GetWebStateList();
     _isOffTheRecord = _browser->GetBrowserState()->IsOffTheRecord();
+
+    _tabResumptionDisabled = [[PrefBackedBoolean alloc]
+        initWithPrefService:_localState
+                   prefName:tab_resumption_prefs::kTabResumptioDisabledPref];
+    [_tabResumptionDisabled setObserver:self];
 
     ChromeBrowserState* browserState = _browser->GetBrowserState();
     _sessionSyncService =
@@ -155,6 +165,8 @@ NSString* kStartSurfaceSceneEnterIntoBackgroundTime =
   _recentTabBrowserAgent = nullptr;
   _syncObserverModelBridge.reset();
   _identityManagerObserverBridge.reset();
+  [_tabResumptionDisabled setObserver:nil];
+  _tabResumptionDisabled = nil;
 }
 
 #pragma mark - Public methods
@@ -173,6 +185,7 @@ NSString* kStartSurfaceSceneEnterIntoBackgroundTime =
       break;
     case TabResumptionItemType::kMostRecentTab: {
       [self.NTPMetricsDelegate recentTabTileOpened];
+      [IntentDonationHelper donateIntent:IntentType::kOpenLatestTab];
       web::NavigationManager::WebLoadParams webLoadParams =
           web::NavigationManager::WebLoadParams(item.tabURL);
       UrlLoadParams params = UrlLoadParams::SwitchToTab(webLoadParams);
@@ -209,13 +222,20 @@ NSString* kStartSurfaceSceneEnterIntoBackgroundTime =
 
 - (void)disableModule {
   tab_resumption_prefs::DisableTabResumption(_localState);
-  [self.delegate removeTabResumptionModule];
 }
 
 - (void)setDelegate:(id<TabResumptionHelperDelegate>)delegate {
   _delegate = delegate;
   if (_delegate) {
     [self fetchLastTabResumptionItem];
+  }
+}
+
+#pragma mark - Boolean Observer
+
+- (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
+  if (observableBoolean == _tabResumptionDisabled && observableBoolean.value) {
+    [self.delegate removeTabResumptionModule];
   }
 }
 
@@ -315,8 +335,9 @@ NSString* kStartSurfaceSceneEnterIntoBackgroundTime =
   }
 
   web::WebState* activeWebState = _webStateList->GetActiveWebState();
-  bool canShowMostRecentItem = NewTabPageTabHelper::FromWebState(activeWebState)
-                                   ->ShouldShowStartSurface();
+  bool canShowMostRecentItem =
+      activeWebState && NewTabPageTabHelper::FromWebState(activeWebState)
+                            ->ShouldShowStartSurface();
   // If both times have not been updated, that means there is no item to return.
   if (mostRecentTabOpenedTime == base::Time::UnixEpoch() &&
       lastSyncedTabSyncedTime == base::Time::UnixEpoch()) {
@@ -339,9 +360,19 @@ NSString* kStartSurfaceSceneEnterIntoBackgroundTime =
       /*fallback_to_google_server=*/true, ^(FaviconAttributes* attributes) {
         TabResumptionMediator* strongSelf = weakSelf;
         if (strongSelf && !attributes.usesDefaultImage) {
+          if ([UIImagePNGRepresentation(item.faviconImage)
+                  isEqual:UIImagePNGRepresentation(attributes.faviconImage)]) {
+            return;
+          }
           item.faviconImage = attributes.faviconImage;
+          TabResumptionItem* previousItem = strongSelf.itemConfig;
           strongSelf.itemConfig = item;
-          [strongSelf.delegate tabResumptionHelperDidReceiveItem];
+          if (previousItem) {
+            [strongSelf.delegate
+                tabResumptionHelperDidReplaceItem:previousItem];
+          } else {
+            [strongSelf.delegate tabResumptionHelperDidReceiveItem];
+          }
         }
       });
 }

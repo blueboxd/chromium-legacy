@@ -211,7 +211,7 @@ bool IdleSpellCheckController::NeedsHotModeCheckingUnderCurrentSelection()
   // already fully checked the current element.
   DCHECK(needs_invocation_for_changed_selection_);
   const Position& position =
-      GetWindow().GetFrame()->Selection().GetSelectionInDOMTree().Extent();
+      GetWindow().GetFrame()->Selection().GetSelectionInDOMTree().Focus();
   const auto* element = DynamicTo<Element>(HighestEditableRoot(position));
   if (!element || !element->isConnected())
     return false;
@@ -228,7 +228,7 @@ void IdleSpellCheckController::HotModeInvocation(IdleDeadline* deadline) {
 
   if (NeedsHotModeCheckingUnderCurrentSelection()) {
     requester.CheckSpellingAt(
-        GetWindow().GetFrame()->Selection().GetSelectionInDOMTree().Extent());
+        GetWindow().GetFrame()->Selection().GetSelectionInDOMTree().Focus());
   }
 
   const uint64_t watermark = last_processed_undo_step_sequence_;
@@ -245,7 +245,7 @@ void IdleSpellCheckController::HotModeInvocation(IdleDeadline* deadline) {
     // before using it.
     if (!step->EndingSelection().IsValidFor(GetDocument()))
       continue;
-    requester.CheckSpellingAt(step->EndingSelection().Extent());
+    requester.CheckSpellingAt(step->EndingSelection().Focus());
   }
 
   needs_invocation_for_changed_selection_ = false;
@@ -280,7 +280,7 @@ void IdleSpellCheckController::Invoke(IdleDeadline* deadline) {
     static auto* state_data = base::debug::AllocateCrashKeyString(
         "spellchecker-state-on-invocation", base::debug::CrashKeySize::Size32);
     base::debug::SetCrashKeyString(state_data, GetStateAsString());
-    NOTREACHED() << GetStateAsString();
+    DUMP_WILL_BE_NOTREACHED_NORETURN() << GetStateAsString();
     Deactivate();
   }
 }

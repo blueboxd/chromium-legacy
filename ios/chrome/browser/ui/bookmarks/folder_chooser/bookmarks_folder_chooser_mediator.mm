@@ -6,10 +6,11 @@
 
 #import "base/containers/contains.h"
 #import "base/memory/raw_ptr.h"
-#import "components/bookmarks/browser/bookmark_model.h"
+#import "components/bookmarks/browser/bookmark_node.h"
 #import "components/bookmarks/common/bookmark_features.h"
 #import "components/sync/base/features.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_model_bridge_observer.h"
+#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
 #import "ios/chrome/browser/signin/model/authentication_service_observer_bridge.h"
 #import "ios/chrome/browser/sync/model/sync_observer_bridge.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
@@ -19,7 +20,6 @@
 #import "ios/chrome/browser/ui/bookmarks/folder_chooser/bookmarks_folder_chooser_mutator.h"
 #import "ios/chrome/browser/ui/bookmarks/folder_chooser/bookmarks_folder_chooser_sub_data_source_impl.h"
 
-using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
 @interface BookmarksFolderChooserMediator () <
@@ -49,8 +49,9 @@ using bookmarks::BookmarkNode;
 
 - (instancetype)
     initWithLocalOrSyncableBookmarkModel:
-        (BookmarkModel*)localOrSyncableBookmarkModel
-                    accountBookmarkModel:(BookmarkModel*)accountBookmarkModel
+        (LegacyBookmarkModel*)localOrSyncableBookmarkModel
+                    accountBookmarkModel:
+                        (LegacyBookmarkModel*)accountBookmarkModel
                              editedNodes:
                                  (std::set<const BookmarkNode*>)editedNodes
                    authenticationService:(AuthenticationService*)authService
@@ -155,9 +156,10 @@ using bookmarks::BookmarkNode;
   }
 }
 
-- (void)bookmarkModelWillRemoveAllNodes:(const BookmarkModel*)bookmarkModel {
+- (void)bookmarkModelWillRemoveAllNodes:
+    (const LegacyBookmarkModel*)bookmarkModel {
   auto nodeInModel = [bookmarkModel](const BookmarkNode* node) {
-    return node->HasAncestor(bookmarkModel->root_node());
+    return bookmarkModel->IsNodePartOfModel(node);
   };
   // Remove will-be removed nodes (in `model`) from `_editedNodes`.
   std::erase_if(_editedNodes, nodeInModel);
@@ -166,7 +168,7 @@ using bookmarks::BookmarkNode;
     // if `_editedNodes` becomes empty, nothing to move.  Exit the folder
     // chooser.
     [_delegate bookmarksFolderChooserMediatorWantsDismissal:self];
-  } else if (_selectedFolderNode->HasAncestor(bookmarkModel->root_node())) {
+  } else if (bookmarkModel->IsNodePartOfModel(_selectedFolderNode)) {
     // The selected folder will be deleted. Unset `_selectedFolderNode`.
     _selectedFolderNode = nil;
   }

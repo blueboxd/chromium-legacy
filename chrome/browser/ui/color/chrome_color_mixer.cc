@@ -122,6 +122,8 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       ui::kColorAlertHighSeverity, kColorToolbar);
   mixer[kColorAvatarButtonHighlightSyncPaused] = {
       kColorAvatarButtonHighlightNormal};
+  mixer[kColorAvatarButtonHighlightSigninPaused] = {
+      kColorAvatarButtonHighlightNormal};
   mixer[kColorAvatarStrokeLight] = {SK_ColorWHITE};
   mixer[kColorBookmarkBarBackground] = {kColorToolbar};
   mixer[kColorBookmarkBarForeground] = {kColorToolbarText};
@@ -293,9 +295,26 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorOmniboxAnswerIconForeground] = {
       ui::kColorButtonForegroundProminent};
   mixer[kColorOmniboxChipBackground] = {kColorTabBackgroundActiveFrameActive};
-  mixer[kColorOmniboxChipForegroundLowVisibility] = {kColorToolbarButtonIcon};
-  mixer[kColorOmniboxChipForegroundNormalVisibility] = {
-      ui::kColorButtonForeground};
+  mixer[kColorOmniboxChipBlockedActivityIndicatorBackground] = {
+      kColorInfoBarBackground};
+  mixer[kColorOmniboxChipBlockedActivityIndicatorForeground] = {
+      kColorTabForegroundActiveFrameActive};
+  mixer[kColorOmniboxChipInUseActivityIndicatorBackground] = {
+      ui::kColorButtonBackgroundProminent};
+  mixer[kColorOmniboxChipInUseActivityIndicatorForeground] = {
+      ui::kColorButtonForegroundProminent};
+  mixer[kColorOmniboxChipOnSystemBlockedActivityIndicatorBackground] = {
+      kColorInfoBarBackground};
+  mixer[kColorOmniboxChipOnSystemBlockedActivityIndicatorForeground] =
+      ui::PickGoogleColor(
+          ui::kColorSysError,
+          kColorOmniboxChipOnSystemBlockedActivityIndicatorBackground,
+          color_utils::kMinimumReadableContrastRatio);
+  mixer[kColorOmniboxChipForegroundLowVisibility] = {
+      kColorTabForegroundActiveFrameActive};
+  mixer[kColorOmniboxChipForegroundNormalVisibility] = ui::PickGoogleColor(
+      ui::kColorButtonForeground, kColorOmniboxChipBackground,
+      color_utils::kMaximumPossibleContrast);
   // This color ID is only for Material Refresh 2023, but is a fallback when
   // themes are used.
   mixer[kColorOmniboxChipInkDropHover] = {
@@ -769,6 +788,17 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   // The Read Anything themes need to be hard coded because they do not
   // change with the chrome theme, which is the purpose of the Read Anything
   // feature.
+  mixer[kColorReadAnythingCurrentReadAloudHighlight] = {
+      dark_mode ? kColorReadAnythingCurrentReadAloudHighlightDark
+                : kColorReadAnythingCurrentReadAloudHighlightLight};
+  mixer[kColorReadAnythingCurrentReadAloudHighlightDark] = {
+      SkColorSetARGB(46, 253, 252, 251)};
+  mixer[kColorReadAnythingCurrentReadAloudHighlightLight] = {
+      SkColorSetARGB(46, 6, 46, 111)};
+  mixer[kColorReadAnythingCurrentReadAloudHighlightBlue] = {
+      SkColorSetARGB(46, 6, 46, 111)};
+  mixer[kColorReadAnythingCurrentReadAloudHighlightYellow] = {
+      SkColorSetARGB(46, 6, 46, 111)};
   mixer[kColorReadAnythingForeground] = {
       dark_mode ? kColorReadAnythingForegroundDark
                 : kColorReadAnythingForegroundLight};
@@ -776,23 +806,17 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorReadAnythingForegroundDark] = {SkColorSetRGB(227, 227, 227)};
   mixer[kColorReadAnythingForegroundLight] = {SkColorSetRGB(31, 31, 31)};
   mixer[kColorReadAnythingForegroundYellow] = {SkColorSetRGB(31, 31, 31)};
-  mixer[kColorCurrentReadAloudHighlight] = {
-      dark_mode ? kColorCurrentReadAloudHighlightDark
-                : kColorCurrentReadAloudHighlightLight};
-  mixer[kColorCurrentReadAloudHighlightDark] = {
-      SkColorSetARGB(25, 253, 252, 251)};
-  mixer[kColorCurrentReadAloudHighlightLight] = {
-      SkColorSetARGB(15, 31, 31, 31)};
-  mixer[kColorCurrentReadAloudHighlightBlue] = {SkColorSetARGB(15, 31, 31, 31)};
-  mixer[kColorCurrentReadAloudHighlightYellow] = {
-      SkColorSetARGB(15, 31, 31, 31)};
-  mixer[kColorPreviousReadAloudHighlight] = {
-      dark_mode ? kColorPreviousReadAloudHighlightDark
-                : kColorPreviousReadAloudHighlightLight};
-  mixer[kColorPreviousReadAloudHighlightDark] = {SkColorSetRGB(199, 199, 199)};
-  mixer[kColorPreviousReadAloudHighlightLight] = {SkColorSetRGB(71, 71, 71)};
-  mixer[kColorPreviousReadAloudHighlightBlue] = {SkColorSetRGB(71, 71, 71)};
-  mixer[kColorPreviousReadAloudHighlightYellow] = {SkColorSetRGB(71, 71, 71)};
+  mixer[kColorReadAnythingPreviousReadAloudHighlight] = {
+      dark_mode ? kColorReadAnythingPreviousReadAloudHighlightDark
+                : kColorReadAnythingPreviousReadAloudHighlightLight};
+  mixer[kColorReadAnythingPreviousReadAloudHighlightDark] = {
+      SkColorSetRGB(199, 199, 199)};
+  mixer[kColorReadAnythingPreviousReadAloudHighlightLight] = {
+      SkColorSetRGB(71, 71, 71)};
+  mixer[kColorReadAnythingPreviousReadAloudHighlightBlue] = {
+      SkColorSetRGB(71, 71, 71)};
+  mixer[kColorReadAnythingPreviousReadAloudHighlightYellow] = {
+      SkColorSetRGB(71, 71, 71)};
   mixer[kColorReadAnythingSeparator] = {dark_mode
                                             ? kColorReadAnythingSeparatorDark
                                             : kColorReadAnythingSeparatorLight};

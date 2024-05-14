@@ -15,6 +15,7 @@
 #include "base/functional/callback.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "components/attribution_reporting/suitable_origin.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
@@ -65,9 +66,8 @@ class MockAttributionManager : public AttributionManager {
               (override));
 
   MOCK_METHOD(void,
-              SendReportsForWebUI,
-              (const std::vector<AttributionReport::Id>&,
-               base::OnceClosure done),
+              SendReportForWebUI,
+              (AttributionReport::Id, base::OnceClosure done),
               (override));
 
   MOCK_METHOD(void,
@@ -96,6 +96,14 @@ class MockAttributionManager : public AttributionManager {
               SetDebugMode,
               (std::optional<bool> enabled, base::OnceClosure done),
               (override));
+  MOCK_METHOD(void,
+              ReportRegistrationHeaderError,
+              (attribution_reporting::SuitableOrigin reporting_origin,
+               const attribution_reporting::RegistrationHeaderError&,
+               const attribution_reporting::SuitableOrigin& context_origin,
+               bool is_within_fenced_frame,
+               GlobalRenderFrameHostId),
+              (override));
 
   void AddObserver(AttributionObserver*) override;
   void RemoveObserver(AttributionObserver*) override;
@@ -111,7 +119,6 @@ class MockAttributionManager : public AttributionManager {
                         bool is_debug_report,
                         const SendResult&);
   void NotifyTriggerHandled(
-      const AttributionTrigger&,
       const CreateReportResult&,
       std::optional<uint64_t> cleared_debug_key = std::nullopt);
   void NotifyDebugReportSent(const AttributionDebugReport&,

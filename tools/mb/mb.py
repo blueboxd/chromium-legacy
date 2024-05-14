@@ -201,6 +201,10 @@ class MetaBuildWrapper:
                            'as a JSON object.')
     subp.add_argument('--json-output',
                       help='Write errors to json.output')
+    subp.add_argument('--write-ide-json',
+                      action='store_true',
+                      help='Write project target information to a file at '
+                      'project.json in the build dir.')
     subp.set_defaults(func=self.CmdAnalyze)
 
     subp = subps.add_parser('export',
@@ -260,10 +264,12 @@ class MetaBuildWrapper:
                            'in file as .isolate and .isolated.gen.json files. '
                            'Targets should be listed by name, separated by '
                            'newline.')
-    subp.add_argument('--json-output',
-                      help='Write errors to json.output')
-    subp.add_argument('path',
-                      help='path to generate build into')
+    subp.add_argument('--write-ide-json',
+                      action='store_true',
+                      help='Write project target information to a file at '
+                      'project.json in the build dir.')
+    subp.add_argument('--json-output', help='Write errors to json.output')
+    subp.add_argument('path', help='path to generate build into')
     subp.set_defaults(func=self.CmdGen)
 
     subp = subps.add_parser('isolate-everything',
@@ -283,10 +289,12 @@ class MetaBuildWrapper:
                       help='Do not build, just isolate')
     subp.add_argument('-j', '--jobs', type=int,
                       help='Number of jobs to pass to ninja')
-    subp.add_argument('path',
-                      help='path build was generated into')
-    subp.add_argument('target',
-                      help='ninja target to generate the isolate for')
+    subp.add_argument('--write-ide-json',
+                      action='store_true',
+                      help='Write project target information to a file at '
+                      'project.json in the build dir.')
+    subp.add_argument('path', help='path build was generated into')
+    subp.add_argument('target', help='ninja target to generate the isolate for')
     subp.set_defaults(func=self.CmdIsolate)
 
     subp = subps.add_parser('lookup',
@@ -374,9 +382,13 @@ class MetaBuildWrapper:
     subp.add_argument('--no-default-dimensions', action='store_false',
                       dest='default_dimensions', default=True,
                       help='Do not automatically add dimensions to the task')
-    subp.add_argument('target',
-                      help='ninja target to build and run')
-    subp.add_argument('extra_args', nargs='*',
+    subp.add_argument('--write-ide-json',
+                      action='store_true',
+                      help='Write project target information to a file at '
+                      'project.json in the build dir.')
+    subp.add_argument('target', help='ninja target to build and run')
+    subp.add_argument('extra_args',
+                      nargs='*',
                       help=('extra args to pass to the isolate to run. Use '
                             '"--" as the first arg if you need to pass '
                             'switches'))
@@ -1124,6 +1136,9 @@ class MetaBuildWrapper:
 
     # Write all generated targets to a JSON file called project.json
     # in the build dir.
+    # TODO(crbug.com/330760869): Enable this conditional once the bots that
+    # need it are passing down the "--write-ide-json" flag.
+    #if self.args.write_ide_json:
     cmd.append('--ide=json')
     cmd.append('--json-file-name=project.json')
 
@@ -1238,14 +1253,17 @@ class MetaBuildWrapper:
     def _list(root, prefix, res):
       for k, v in root.items():
         if v == {}:
-          res.append('%s/%s' % (prefix, k))
+          res.append('%s%s' % (prefix, k))
           continue
-        _list(v, '%s/%s' % (prefix, k), res)
+        _list(v, '%s%s' % (prefix, k), res)
       return res
 
     root = {}
     for d in deps:
-      q = collections.deque(d.rstrip('/').split('/'))
+      parts = [di + '/' for di in d.split('/') if di]
+      if not d.endswith('/'):
+        parts[-1] = parts[-1].rstrip('/')
+      q = collections.deque(parts)
       _add(root, q)
     return [p.lstrip('/') for p in _list(root, '', [])]
 
@@ -1383,6 +1401,7 @@ class MetaBuildWrapper:
       # FIXME: Can remove this check if/when use_goma is removed.
       if 'The gn arg use_goma=true will be deprecated by EOY 2023' not in l:
         runtime_deps.append(l)
+    runtime_deps = self._DedupDependencies(runtime_deps)
 
     ret = self.WriteIsolateFiles(build_dir, command, target, runtime_deps, vals,
                                  extra_files)
@@ -1443,6 +1462,7 @@ class MetaBuildWrapper:
               'chromevox_test_data/',
               'gen/ui/file_manager/file_manager/',
               'lacros_clang_x64/resources/accessibility/',
+              'resources/accessibility/',
               'resources/chromeos/',
               'resources/chromeos/accessibility/accessibility_common/',
               'resources/chromeos/accessibility/chromevox/',
@@ -1460,6 +1480,8 @@ class MetaBuildWrapper:
               'ChromiumUpdater.app/',
               'ChromiumUpdater_test.app/',
               'Content Shell.app/',
+              'Google Chrome for Testing Framework.framework/',
+              'Google Chrome for Testing.app/',
               'Google Chrome Framework.framework/',
               'Google Chrome Helper (Alerts).app/',
               'Google Chrome Helper (GPU).app/',
@@ -1621,6 +1643,7 @@ class MetaBuildWrapper:
     msan = 'is_msan=true' in vals['gn_args']
     tsan = 'is_tsan=true' in vals['gn_args']
     cfi_diag = 'use_cfi_diag=true' in vals['gn_args']
+    full_mte = 'use_full_mte=true' in vals['gn_args']
     # Treat sanitizer warnings as test case failures (crbug/1442587).
     fail_on_san_warnings = 'fail_on_san_warnings=true' in vals['gn_args']
     clang_coverage = 'use_clang_coverage=true' in vals['gn_args']
@@ -1673,6 +1696,8 @@ class MetaBuildWrapper:
     if is_android and test_type != 'script':
       if asan:
         cmdline += [os.path.join('bin', 'run_with_asan'), '--']
+      if full_mte:
+        cmdline += [os.path.join('bin', 'run_with_mte'), '--']
       cmdline += [
           vpython_exe, '../../build/android/test_wrapper/logdog_wrapper.py',
           '--target', target, '--logdog-bin-cmd',

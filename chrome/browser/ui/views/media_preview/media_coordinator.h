@@ -11,6 +11,7 @@
 #include <string>
 
 #include "chrome/browser/ui/views/media_preview/camera_preview/camera_coordinator.h"
+#include "chrome/browser/ui/views/media_preview/media_preview_metrics.h"
 #include "chrome/browser/ui/views/media_preview/mic_preview/mic_coordinator.h"
 #include "components/prefs/pref_service.h"
 
@@ -40,7 +41,9 @@ class MediaCoordinator {
                    views::View& parent_view,
                    bool is_subsection,
                    EligibleDevices eligible_devices,
-                   PrefService& prefs);
+                   PrefService& prefs,
+                   bool allow_device_selection,
+                   media_preview_metrics::Context metrics_context);
   MediaCoordinator(const MediaCoordinator&) = delete;
   MediaCoordinator& operator=(const MediaCoordinator&) = delete;
   ~MediaCoordinator();
@@ -48,9 +51,20 @@ class MediaCoordinator {
   void UpdateDevicePreferenceRanking();
 
  private:
-  raw_ptr<views::View> media_view_ = nullptr;
+  void RecordPreviewDurationForPermissionPrompt();
+
+  const ViewType view_type_;
+  raw_ptr<MediaView> media_view_ = nullptr;
   std::optional<CameraCoordinator> camera_coordinator_;
   std::optional<MicCoordinator> mic_coordinator_;
+  std::optional<base::TimeTicks> permission_prompt_start_time_;
 };
+
+namespace media_coordinator {
+
+media_preview_metrics::PreviewType GetPreviewTypeFromMediaCoordinatorViewType(
+    MediaCoordinator::ViewType view_type);
+
+}  // namespace media_coordinator
 
 #endif  // CHROME_BROWSER_UI_VIEWS_MEDIA_PREVIEW_MEDIA_COORDINATOR_H_

@@ -23,7 +23,9 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/flat_tree.h"
+#include "base/containers/map_util.h"
 #include "base/containers/span.h"
+#include "base/containers/to_vector.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
@@ -676,6 +678,8 @@ apps::AppPtr WebAppPublisherHelper::CreateWebApp(const WebApp* web_app) {
 
   // Web App's publisher_id the start url.
   app->publisher_id = web_app->start_url().spec();
+  app->installer_package_id =
+      apps::PackageId(apps::AppType::kWeb, web_app->manifest_id().spec());
 
   app->icon_key = apps::IconKey(GetIconEffects(web_app));
 
@@ -689,6 +693,9 @@ apps::AppPtr WebAppPublisherHelper::CreateWebApp(const WebApp* web_app) {
   app->policy_ids = GetPolicyIds(*web_app);
 
   app->permissions = CreatePermissions(web_app);
+
+  // Isolated web apps can only be opened in window.
+  app->allow_window_mode_selection = !web_app->isolation_data().has_value();
 
   SetWebAppShowInFields(web_app, *app);
 
@@ -1764,12 +1771,9 @@ std::vector<std::string> WebAppPublisherHelper::GetPolicyIds(
   base::flat_map<webapps::AppId, base::flat_set<GURL>> installed_apps =
       registrar().GetExternallyInstalledApps(
           ExternalInstallSource::kExternalPolicy);
-  if (auto it = installed_apps.find(app_id); it != installed_apps.end()) {
-    const auto& install_urls = it->second;
-    DCHECK(!install_urls.empty());
-
-    base::ranges::transform(install_urls, std::back_inserter(policy_ids),
-                            &GURL::spec);
+  if (auto* install_urls = base::FindOrNull(installed_apps, app_id)) {
+    DCHECK(!install_urls->empty());
+    base::Extend(policy_ids, base::ToVector(*install_urls, &GURL::spec));
   }
 
   return policy_ids;

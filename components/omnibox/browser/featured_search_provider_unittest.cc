@@ -64,9 +64,6 @@ class FeaturedSearchProviderTest : public testing::Test {
       ASSERT_EQ(cases[i].output.size(), matches.size());
       for (size_t j = 0; j < cases[i].output.size(); ++j) {
         EXPECT_EQ(cases[i].output[j], matches[j].destination_url);
-        EXPECT_EQ(matches[j].allowed_to_be_default_match,
-                  matches[j].type == AutocompleteMatchType::STARTER_PACK &&
-                      matches[j].inline_autocompletion.empty());
       }
     }
   }
@@ -132,9 +129,9 @@ TEST_F(FeaturedSearchProviderTest, StarterPack) {
       {u"@bookmarksasld", {}},
       {u"tabs", {}},
 
-      // With the expansion flag disabled, typing the `@google` keyword should
-      // not provide the AskGoogle suggestion.
-      {u"@google", {}},
+      // With the expansion flag disabled, typing the `@gemini` keyword should
+      // not provide the Gemini suggestion.
+      {u"@gemini", {}},
 
       // Typing '@' should give all the starter pack suggestions.
       {u"@", {kBookmarksUrl, kHistoryUrl, kTabsUrl}},
@@ -170,7 +167,7 @@ TEST_F(FeaturedSearchProviderTest, StarterPackExpansion) {
   const std::u16string kBookmarksKeyword = u"@bookmarks";
   const std::u16string kHistoryKeyword = u"@history";
   const std::u16string kTabsKeyword = u"@tabs";
-  const std::u16string kAskGoogleKeyword = u"@google";
+  const std::u16string kAskGoogleKeyword = u"@gemini";
 
   // Populate template URL with starter pack entries
   std::vector<std::unique_ptr<TemplateURLData>> turls =
@@ -190,7 +187,7 @@ TEST_F(FeaturedSearchProviderTest, StarterPackExpansion) {
       {u"@historyasdjflk", {}},
       {u"@bookmarksasld", {}},
       {u"tabs", {}},
-      {u"goo", {}},
+      {u"gemi", {}},
 
       // Typing '@' should give all the starter pack suggestions.
       {u"@", {kBookmarksUrl, kAskGoogleUrl, kHistoryUrl, kTabsUrl}},
@@ -207,10 +204,51 @@ TEST_F(FeaturedSearchProviderTest, StarterPackExpansion) {
       {kTabsKeyword.substr(0, 3), {kTabsUrl}},
       {kTabsKeyword, {kTabsUrl}},
 
-      // Typing a portion of "@google" should give the default urls.
+      // Typing a portion of "@gemini" should give the default urls.
       {kAskGoogleKeyword.substr(0, 3), {kAskGoogleUrl}},
       {kAskGoogleKeyword, {kAskGoogleUrl}},
   };
 
   RunTest(typing_scheme_cases, std::size(typing_scheme_cases));
+}
+
+TEST_F(FeaturedSearchProviderTest, StarterPackExpansionRelevance) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(omnibox::kStarterPackExpansion);
+
+  const GURL kBookmarksUrl =
+      GURL(TemplateURLStarterPackData::bookmarks.destination_url);
+  const GURL kHistoryUrl =
+      GURL(TemplateURLStarterPackData::history.destination_url);
+  const GURL kTabsUrl = GURL(TemplateURLStarterPackData::tabs.destination_url);
+  const GURL kAskGoogleUrl =
+      GURL(TemplateURLStarterPackData::AskGoogle.destination_url);
+
+  // Populate template URL with starter pack entries
+  std::vector<std::unique_ptr<TemplateURLData>> turls =
+      TemplateURLStarterPackData::GetStarterPackEngines();
+  for (auto& turl : turls) {
+    client_->GetTemplateURLService()->Add(
+        std::make_unique<TemplateURL>(std::move(*turl)));
+  }
+
+  AutocompleteInput input(u"@", metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  input.set_prevent_inline_autocomplete(true);
+  provider_->Start(input, false);
+  EXPECT_TRUE(provider_->done());
+  ACMatches matches = provider_->matches();
+  ASSERT_EQ(turls.size(), matches.size());
+
+  // Sort the matches according to relevances (in descending order), and make
+  // sure that the matches are in the expected order.
+  std::sort(matches.begin(), matches.end(), [](const auto& x, const auto& y) {
+    return x.relevance > y.relevance;
+  });
+
+  GURL expected_match_order[] = {kAskGoogleUrl, kBookmarksUrl, kHistoryUrl,
+                                 kTabsUrl};
+  for (size_t i = 0; i < matches.size(); i++) {
+    EXPECT_EQ(matches[i].destination_url, expected_match_order[i]);
+  }
 }

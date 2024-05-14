@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.autofill.settings.SettingsLauncherHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.HomepageManager;
-import org.chromium.chrome.browser.magic_stack.ModuleRegistry;
+import org.chromium.chrome.browser.magic_stack.HomeModulesConfigManager;
 import org.chromium.chrome.browser.night_mode.NightModeMetrics.ThemeSettingsEntry;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.night_mode.settings.ThemeSettingsFragment;
@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
 import org.chromium.chrome.browser.password_manager.settings.PasswordsPreference;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.chrome.browser.signin.SigninAndHistoryOptInActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.ProfileDataCache;
@@ -49,6 +50,7 @@ import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarStatePredictor;
 import org.chromium.chrome.browser.tracing.settings.DeveloperSettings;
 import org.chromium.chrome.browser.ui.signin.SyncPromoController;
+import org.chromium.components.autofill.AutofillFeatures;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
@@ -94,6 +96,7 @@ public class MainSettings extends ChromeBaseSettingsFragment
     public static final String PREF_AUTOFILL_ADDRESSES = "autofill_addresses";
     public static final String PREF_AUTOFILL_PAYMENTS = "autofill_payment_methods";
     public static final String PREF_PLUS_ADDRESSES = "plus_addresses";
+    public static final String PREF_SAFETY_HUB = "safety_hub";
 
     private final Map<String, Preference> mAllPreferences = new HashMap<>();
 
@@ -188,16 +191,11 @@ public class MainSettings extends ChromeBaseSettingsFragment
                 new SyncPromoController(
                         getProfile(),
                         SigninAccessPoint.SETTINGS,
-                        SyncConsentActivityLauncherImpl.get()));
+                        SyncConsentActivityLauncherImpl.get(),
+                        SigninAndHistoryOptInActivityLauncherImpl.get()));
 
         SignInPreference signInPreference = findPreference(PREF_SIGN_IN);
-        signInPreference.initialize(
-                profileDataCache,
-                accountManagerFacade,
-                UserPrefs.get(getProfile()),
-                SyncServiceFactory.getForProfile(getProfile()),
-                signinManager,
-                identityManager);
+        signInPreference.initialize(getProfile(), profileDataCache, accountManagerFacade);
 
         cachePreferences();
 
@@ -254,6 +252,11 @@ public class MainSettings extends ChromeBaseSettingsFragment
 
         if (BuildInfo.getInstance().isAutomotive) {
             getPreferenceScreen().removePreference(findPreference(PREF_SAFETY_CHECK));
+            getPreferenceScreen().removePreference(findPreference(PREF_SAFETY_HUB));
+        } else if (!ChromeFeatureList.sSafetyHub.isEnabled()) {
+            getPreferenceScreen().removePreference(findPreference(PREF_SAFETY_HUB));
+        } else {
+            getPreferenceScreen().removePreference(findPreference(PREF_SAFETY_CHECK));
         }
     }
 
@@ -292,7 +295,7 @@ public class MainSettings extends ChromeBaseSettingsFragment
         Preference homepagePref = addPreferenceIfAbsent(PREF_HOMEPAGE);
         setOnOffSummary(homepagePref, HomepageManager.isHomepageEnabled());
 
-        if (ModuleRegistry.getInstance().hasCustomizableModule()) {
+        if (HomeModulesConfigManager.getInstance().hasModuleShownInSettings()) {
             addPreferenceIfAbsent(PREF_HOME_MODULES_CONFIG);
         } else {
             removePreferenceIfPresent(PREF_HOME_MODULES_CONFIG);
@@ -332,7 +335,14 @@ public class MainSettings extends ChromeBaseSettingsFragment
                         IdentityServicesProvider.get()
                                 .getIdentityManager(getProfile())
                                 .getPrimaryAccountInfo(ConsentLevel.SIGNIN));
-        boolean showManageSync = primaryAccountName != null;
+
+        SyncService syncService = SyncServiceFactory.getForProfile(getProfile());
+
+        boolean showManageSync =
+                primaryAccountName != null
+                        && (!ChromeFeatureList.isEnabled(
+                                        ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+                                || syncService.hasSyncConsent());
         mManageSync.setVisible(showManageSync);
         if (!showManageSync) return;
 
@@ -342,14 +352,14 @@ public class MainSettings extends ChromeBaseSettingsFragment
                                 .getPrimaryAccountInfo(ConsentLevel.SYNC)
                         != null;
 
-        SyncService syncService = SyncServiceFactory.getForProfile(getProfile());
+        mManageSync.setIcon(SyncSettingsUtils.getSyncStatusIcon(getActivity(), getProfile()));
+        mManageSync.setSummary(SyncSettingsUtils.getSyncStatusSummary(getActivity(), getProfile()));
 
-        mManageSync.setIcon(SyncSettingsUtils.getSyncStatusIcon(getActivity(), syncService));
-        mManageSync.setSummary(SyncSettingsUtils.getSyncStatusSummary(getActivity(), syncService));
         mManageSync.setOnPreferenceClickListener(
                 pref -> {
                     Context context = getContext();
-                    if (syncService.isSyncDisabledByEnterprisePolicy()) {
+                    if (SyncServiceFactory.getForProfile(getProfile())
+                            .isSyncDisabledByEnterprisePolicy()) {
                         SyncSettingsUtils.showSyncDisabledByAdministratorToast(context);
                     } else if (isSyncConsentAvailable) {
                         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
@@ -387,7 +397,7 @@ public class MainSettings extends ChromeBaseSettingsFragment
     private void updateAutofillPreferences() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 && ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.AUTOFILL_VIRTUAL_VIEW_STRUCTURE_ANDROID)) {
+                        AutofillFeatures.AUTOFILL_VIRTUAL_VIEW_STRUCTURE_ANDROID)) {
             addPreferenceIfAbsent(PREF_AUTOFILL_OPTIONS);
             Preference preference = findPreference(PREF_AUTOFILL_OPTIONS);
             preference.setFragment(null);
@@ -419,6 +429,7 @@ public class MainSettings extends ChromeBaseSettingsFragment
                 preference -> {
                     PasswordManagerLauncher.showPasswordSettings(
                             getActivity(),
+                            getProfile(),
                             ManagePasswordsReferrer.CHROME_SETTINGS,
                             mModalDialogManagerSupplier,
                             /* managePasskeys= */ false);

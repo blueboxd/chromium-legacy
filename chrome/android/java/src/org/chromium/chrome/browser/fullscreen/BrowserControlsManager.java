@@ -8,10 +8,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.app.Activity;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
@@ -369,8 +366,26 @@ public class BrowserControlsManager implements ActivityStateListener, BrowserCon
             return;
         }
         try (TraceEvent e = TraceEvent.scoped("BrowserControlsManager.setBottomControlsHeight")) {
+            final int oldBottomControlsHeight = mBottomControlContainerHeight;
+            final int oldBottomControlsMinHeight = mBottomControlsMinHeight;
             mBottomControlContainerHeight = bottomControlsHeight;
             mBottomControlsMinHeight = bottomControlsMinHeight;
+
+            if (!canAnimateNativeBrowserControls()) {
+                if (shouldAnimateBrowserControlsHeightChanges()) {
+                    runBrowserDrivenBottomControlsHeightChangeAnimation(
+                            oldBottomControlsHeight, oldBottomControlsMinHeight);
+                } else {
+                    updateBrowserControlsOffsets(
+                            /* toNonFullscreen= */ false,
+                            0,
+                            0,
+                            getTopControlsHeight(),
+                            getTopControlsMinHeight(),
+                            getBottomControlsMinHeight());
+                }
+            }
+
             for (BrowserControlsStateProvider.Observer obs : mControlsObservers) {
                 obs.onBottomControlsHeightChanged(
                         mBottomControlContainerHeight, mBottomControlsMinHeight);
@@ -538,7 +553,6 @@ public class BrowserControlsManager implements ActivityStateListener, BrowserCon
         mHidingTokenHolder.releaseToken(token);
     }
 
-    @SuppressWarnings("NoDynamicStringsInTraceEventCheck")
     private boolean shouldShowAndroidControls() {
         if (mControlContainer == null) return false;
         if (mHidingTokenHolder.hasTokens()) {
@@ -546,24 +560,7 @@ public class BrowserControlsManager implements ActivityStateListener, BrowserCon
         }
         if (offsetOverridden()) return true;
 
-        boolean showControls = !BrowserControlsUtils.drawControlsAsTexture(this);
-        ViewGroup contentView = mTab != null ? mTab.getContentView() : null;
-        if (contentView == null) return showControls;
-
-        for (int i = 0; i < contentView.getChildCount(); i++) {
-            View child = contentView.getChildAt(i);
-            if (!(child.getLayoutParams() instanceof FrameLayout.LayoutParams)) continue;
-
-            FrameLayout.LayoutParams layoutParams =
-                    (FrameLayout.LayoutParams) child.getLayoutParams();
-            if (Gravity.TOP == (layoutParams.gravity & Gravity.FILL_VERTICAL)) {
-                TraceEvent.instant("BCM::showAndroidControls" + child.getId());
-                showControls = true;
-                break;
-            }
-        }
-
-        return showControls;
+        return !BrowserControlsUtils.drawControlsAsTexture(this);
     }
 
     /**
@@ -825,6 +822,27 @@ public class BrowserControlsManager implements ActivityStateListener, BrowserCon
 
     private void runBrowserDrivenTopControlsHeightChangeAnimation(
             int oldTopControlsHeight, int oldTopControlsMinHeight) {
+        runBrowserDrivenControlsAnimation(
+                oldTopControlsHeight,
+                oldTopControlsMinHeight,
+                getBottomControlsHeight(),
+                getBottomControlsMinHeight());
+    }
+
+    private void runBrowserDrivenBottomControlsHeightChangeAnimation(
+            int oldBottomControlsHeight, int oldBottomControlsMinHeight) {
+        runBrowserDrivenControlsAnimation(
+                getTopControlsHeight(),
+                getTopControlsMinHeight(),
+                oldBottomControlsHeight,
+                oldBottomControlsMinHeight);
+    }
+
+    private void runBrowserDrivenControlsAnimation(
+            int oldTopControlsHeight,
+            int oldTopControlsMinHeight,
+            int oldBottomControlsHeight,
+            int oldBottomControlsMinHeight) {
         if (mControlsAnimator != null) return;
         assert getContentOffset() == oldTopControlsHeight
                 : "Height change animations are implemented for fully shown controls only!";
@@ -833,27 +851,39 @@ public class BrowserControlsManager implements ActivityStateListener, BrowserCon
 
         final int newTopControlsHeight = getTopControlsHeight();
         final int newTopControlsMinHeight = getTopControlsMinHeight();
+        final int newBottomControlsHeight = getBottomControlsHeight();
+        final int newBottomControlsMinHeight = getBottomControlsMinHeight();
 
         mControlsAnimator = ValueAnimator.ofFloat(0.f, 1.f);
         mControlsAnimator.addUpdateListener(
                 (animator) -> {
+                    final float topValue = (float) animator.getAnimatedValue();
                     final float topControlsMinHeightOffset =
-                            oldTopControlsMinHeight
-                                    + (float) animator.getAnimatedValue()
-                                            * (newTopControlsMinHeight - oldTopControlsMinHeight);
+                            interpolate(topValue, oldTopControlsMinHeight, newTopControlsMinHeight);
                     final float topContentOffset =
-                            oldTopControlsHeight
-                                    + (float) animator.getAnimatedValue()
-                                            * (newTopControlsHeight - oldTopControlsHeight);
+                            interpolate(topValue, oldTopControlsHeight, newTopControlsHeight);
                     final float topControlsOffset = topContentOffset - newTopControlsHeight;
+
+                    // Bottom controls offsets need to change in the opposite direction, so use the
+                    // same calculations but with animation progress going from 1 to 0 instead of 0
+                    // to 1.
+                    final float bottomValue = 1.f - topValue;
+                    final float bottomControlsMinHeightOffset =
+                            interpolate(
+                                    bottomValue,
+                                    oldBottomControlsMinHeight,
+                                    newBottomControlsMinHeight);
+                    final float bottomControlsOffset =
+                            interpolate(
+                                    bottomValue, oldBottomControlsHeight, newBottomControlsHeight);
 
                     updateBrowserControlsOffsets(
                             false,
                             (int) topControlsOffset,
-                            getBottomControlOffset(),
+                            (int) bottomControlsOffset,
                             (int) topContentOffset,
                             (int) topControlsMinHeightOffset,
-                            getBottomControlsMinHeightOffset());
+                            (int) bottomControlsMinHeightOffset);
                 });
         mControlsAnimator.setDuration(CONTROLS_ANIMATION_DURATION_MS);
         mControlsAnimator.addListener(
@@ -871,6 +901,10 @@ public class BrowserControlsManager implements ActivityStateListener, BrowserCon
                     }
                 });
         mControlsAnimator.start();
+    }
+
+    private static float interpolate(float progress, float oldValue, float newValue) {
+        return oldValue + progress * (newValue - oldValue);
     }
 
     private boolean canAnimateNativeBrowserControls() {

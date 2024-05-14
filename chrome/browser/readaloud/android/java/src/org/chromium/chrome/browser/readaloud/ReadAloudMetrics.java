@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.readaloud;
 
 import androidx.annotation.IntDef;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -14,26 +13,25 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 public class ReadAloudMetrics {
-    @VisibleForTesting public static String IS_READABLE = "ReadAloud.IsPageReadable";
-
-    @VisibleForTesting
+    public static String IS_READABLE = "ReadAloud.IsPageReadable";
     public static String READABILITY_SUCCESS = "ReadAloud.IsPageReadabilitySuccessful";
-
-    @VisibleForTesting
     public static String INELIGIBILITY_REASON = "ReadAloud.Eligibility.IneligiblityReason";
-
-    @VisibleForTesting
     public static String IS_USER_ELIGIBLE = "ReadAloud.Eligibility.IsUserEligible";
-
-    @VisibleForTesting
     public static String IS_TAB_PLAYBACK_CREATION_SUCCESSFUL =
             "ReadAloud.IsTabPlaybackCreationSuccessful";
+    public static String HAS_TAP_TO_SEEK_FOUND_MATCH = "ReadAloud.HasTapToSeekFoundMatch";
+
+    public static String TAB_PLAYBACK_CREATION_SUCCESS = "ReadAloud.TabPlaybackCreationSuccess";
+    public static String TAB_PLAYBACK_CREATION_FAILURE = "ReadAloud.TabPlaybackCreationFailure";
+    public static String TAB_PLAYBACK_WITHOUT_READABILITY_CHECK_ERROR =
+            "ReadAloud.ReadAloudPlaybackWithoutReadabilityCheckError";
     public static String VOICE_CHANGED = "ReadAloud.VoiceChanged.";
     public static String VOICE_PREVIEWED = "ReadAloud.VoicePreviewed.";
     public static String TIME_SPENT_LISTENING = "ReadAloud.DurationListened";
     public static String TIME_SPENT_LISTENING_LOCKED_SCREEN =
             "ReadAloud.DurationListened.LockedScreen";
     public static String HAS_DATE_MODIFIED = "ReadAloud.HasDateModified";
+    public static String READABILITY_SERVER_SIDE = "ReadAloud.ServerReadabilityResult";
 
     /**
      * The reason why we clear the prepared message.
@@ -114,6 +112,10 @@ public class ReadAloudMetrics {
         RecordHistogram.recordBooleanHistogram(IS_READABLE, successful);
     }
 
+    public static void recordServerReadabilityResult(boolean successful) {
+        RecordHistogram.recordBooleanHistogram(READABILITY_SERVER_SIDE, successful);
+    }
+
     public static void recordIsPageReadabilitySuccessful(boolean successful) {
         RecordHistogram.recordBooleanHistogram(READABILITY_SUCCESS, successful);
     }
@@ -141,6 +143,25 @@ public class ReadAloudMetrics {
 
     public static void recordIsTabPlaybackCreationSuccessful(boolean successful) {
         RecordHistogram.recordBooleanHistogram(IS_TAB_PLAYBACK_CREATION_SUCCESSFUL, successful);
+    }
+
+    public static void recordHasTapToSeekFoundMatch(boolean matchFound) {
+        RecordHistogram.recordBooleanHistogram(HAS_TAP_TO_SEEK_FOUND_MATCH, matchFound);
+    }
+
+    public static void recordTabCreationSuccess(int entrypoint, int maxVal) {
+        RecordHistogram.recordEnumeratedHistogram(
+                TAB_PLAYBACK_CREATION_SUCCESS, entrypoint, maxVal);
+    }
+
+    public static void recordTabCreationFailure(int entrypoint, int maxVal) {
+        RecordHistogram.recordEnumeratedHistogram(
+                TAB_PLAYBACK_CREATION_FAILURE, entrypoint, maxVal);
+    }
+
+    public static void recordPlaybackWithoutReadabilityCheck(int entrypoint, int maxVal) {
+        RecordHistogram.recordEnumeratedHistogram(
+                TAB_PLAYBACK_WITHOUT_READABILITY_CHECK_ERROR, entrypoint, maxVal);
     }
 
     public static void recordSpeedChange(float speed) {

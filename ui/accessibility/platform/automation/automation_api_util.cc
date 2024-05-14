@@ -104,6 +104,7 @@ bool ShouldIgnoreGeneratedEventForAutomation(
     case AXEventGenerator::Event::ACTIVE_DESCENDANT_CHANGED:
     case AXEventGenerator::Event::ALERT:
     case AXEventGenerator::Event::ARIA_CURRENT_CHANGED:
+    case AXEventGenerator::Event::ARIA_NOTIFICATIONS_POSTED:
     case AXEventGenerator::Event::ATOMIC_CHANGED:
     case AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
     case AXEventGenerator::Event::AUTOFILL_AVAILABILITY_CHANGED:
@@ -112,7 +113,6 @@ bool ShouldIgnoreGeneratedEventForAutomation(
     case AXEventGenerator::Event::CHECKED_STATE_CHANGED:
     case AXEventGenerator::Event::CHECKED_STATE_DESCRIPTION_CHANGED:
     case AXEventGenerator::Event::CHILDREN_CHANGED:
-    case AXEventGenerator::Event::CLASS_NAME_CHANGED:
     case AXEventGenerator::Event::COLLAPSED:
     case AXEventGenerator::Event::CONTROLS_CHANGED:
     case AXEventGenerator::Event::DETAILS_CHANGED:
@@ -150,7 +150,6 @@ bool ShouldIgnoreGeneratedEventForAutomation(
     case AXEventGenerator::Event::NAME_CHANGED:
     case AXEventGenerator::Event::OBJECT_ATTRIBUTE_CHANGED:
     case AXEventGenerator::Event::ORIENTATION_CHANGED:
-    case AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
     case AXEventGenerator::Event::PARENT_CHANGED:
     case AXEventGenerator::Event::PLACEHOLDER_CHANGED:
     case AXEventGenerator::Event::PORTAL_ACTIVATED:

@@ -44,7 +44,8 @@ class MediaKeySystemAccessInitializer final
     : public MediaKeySystemAccessInitializerBase {
  public:
   MediaKeySystemAccessInitializer(
-      ScriptState*,
+      ExecutionContext*,
+      ScriptPromiseResolver*,
       const String& key_system,
       const HeapVector<Member<MediaKeySystemConfiguration>>&
           supported_configurations);
@@ -69,11 +70,13 @@ class MediaKeySystemAccessInitializer final
 };
 
 MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(
-    ScriptState* script_state,
+    ExecutionContext* context,
+    ScriptPromiseResolver* resolver,
     const String& key_system,
     const HeapVector<Member<MediaKeySystemConfiguration>>&
         supported_configurations)
-    : MediaKeySystemAccessInitializerBase(script_state,
+    : MediaKeySystemAccessInitializerBase(context,
+                                          resolver,
                                           key_system,
                                           supported_configurations) {}
 
@@ -84,7 +87,7 @@ void MediaKeySystemAccessInitializer::RequestSucceeded(
   if (!IsExecutionContextValid())
     return;
 
-  resolver_->Resolve(
+  resolver_->DowncastTo<MediaKeySystemAccess>()->Resolve(
       MakeGarbageCollected<MediaKeySystemAccess>(std::move(access)));
   resolver_.Clear();
 }
@@ -117,7 +120,8 @@ void MediaKeySystemAccessInitializer::StartRequestAsync() {
 
 }  // namespace
 
-ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
+ScriptPromiseTyped<MediaKeySystemAccess>
+NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     ScriptState* script_state,
     Navigator& navigator,
     const String& key_system,
@@ -138,7 +142,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
         kEncryptedMediaPermissionsPolicyConsoleWarning));
     exception_state.ThrowSecurityError(
         "requestMediaKeySystemAccess is disabled by permissions policy.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<MediaKeySystemAccess>();
   }
 
   // From https://w3c.github.io/encrypted-media/#requestMediaKeySystemAccess
@@ -147,7 +151,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   //    newly created TypeError.
   if (key_system.empty()) {
     exception_state.ThrowTypeError("The keySystem parameter is empty.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<MediaKeySystemAccess>();
   }
 
   // 2. If supportedConfigurations is empty, return a promise rejected with
@@ -155,7 +159,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   if (!supported_configurations.size()) {
     exception_state.ThrowTypeError(
         "The supportedConfigurations parameter is empty.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<MediaKeySystemAccess>();
   }
 
   // 3. Let document be the calling context's Document.
@@ -164,7 +168,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "The context provided is not associated with a page.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<MediaKeySystemAccess>();
   }
 
   UseCounter::Count(*window, WebFeature::kEncryptedMediaSecureOrigin);
@@ -175,10 +179,13 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   //    (Passed with the execution context.)
 
   // 5. Let promise be a new promise.
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<MediaKeySystemAccess>>(
+          script_state);
   MediaKeySystemAccessInitializer* initializer =
       MakeGarbageCollected<MediaKeySystemAccessInitializer>(
-          script_state, key_system, supported_configurations);
-  ScriptPromise promise = initializer->Promise();
+          window, resolver, key_system, supported_configurations);
+  auto promise = resolver->Promise();
 
   // Defer to determine support until the prerendering page is activated.
   if (window->document()->IsPrerendering()) {

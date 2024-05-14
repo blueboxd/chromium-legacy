@@ -27,7 +27,8 @@ std::optional<StyleColor> ColorFromKeyword(CSSValueID css_value_id) {
   }
 
   Color color = StyleColor::ColorFromKeyword(css_value_id,
-                                             mojom::blink::ColorScheme::kLight);
+                                             mojom::blink::ColorScheme::kLight,
+                                             /*color_provider=*/nullptr);
   return (StyleColor(color));
 }
 
@@ -129,7 +130,7 @@ InterpolationValue CSSScrollbarColorInterpolationType::MaybeConvertInherit(
   std::optional<StyleScrollbarColor> inherited_scrollbar_color =
       state.ParentStyle()->ScrollbarColor();
   conversion_checkers.push_back(
-      std::make_unique<InheritedScrollbarColorChecker>(
+      MakeGarbageCollected<InheritedScrollbarColorChecker>(
           inherited_scrollbar_color));
 
   if (!inherited_scrollbar_color.has_value()) {

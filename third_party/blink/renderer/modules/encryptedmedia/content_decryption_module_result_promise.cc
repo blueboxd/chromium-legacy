@@ -39,12 +39,10 @@ ExceptionCode WebCdmExceptionToExceptionCode(
 }
 
 ContentDecryptionModuleResultPromise::ContentDecryptionModuleResultPromise(
-    ScriptState* script_state,
+    ScriptPromiseResolver* resolver,
     const MediaKeysConfig& config,
     EmeApiType api_type)
-    : resolver_(MakeGarbageCollected<ScriptPromiseResolver>(script_state)),
-      config_(config),
-      api_type_(api_type) {}
+    : resolver_(resolver), config_(config), api_type_(api_type) {}
 
 ContentDecryptionModuleResultPromise::~ContentDecryptionModuleResultPromise() =
     default;
@@ -122,11 +120,6 @@ void ContentDecryptionModuleResultPromise::CompleteWithError(
 
   Reject(WebCdmExceptionToExceptionCode(exception_code), result.ToString());
 }
-
-ScriptPromise ContentDecryptionModuleResultPromise::Promise() {
-  return resolver_->Promise();
-}
-
 void ContentDecryptionModuleResultPromise::Reject(ExceptionCode code,
                                                   const String& error_message) {
   DCHECK(IsValidToFulfillPromise());

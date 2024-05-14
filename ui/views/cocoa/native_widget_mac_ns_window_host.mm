@@ -195,7 +195,7 @@ class BridgedNativeWidgetHostDummy
   void GetRootViewAccessibilityToken(
       GetRootViewAccessibilityTokenCallback callback) override {
     std::vector<uint8_t> token;
-    int64_t pid = 0;
+    base::ProcessId pid = base::kNullProcessId;
     std::move(callback).Run(pid, token);
   }
   void ValidateUserInterfaceItem(
@@ -1258,6 +1258,14 @@ void NativeWidgetMacNSWindowHost::OnWindowKeyStatusChanged(
     bool is_key,
     bool is_content_first_responder,
     bool full_keyboard_access_enabled) {
+  // We need `setRemoteUIApp` to YES to support some accessibility
+  // features on out-of-process remote cocoa windows like those used
+  // for PWAs. However this breaks accessibility on in-process windows,
+  // so set it back to NO when a local window gains focus. See
+  // https://crbug.com/41485830.
+  if (is_key && features::IsAccessibilityRemoteUIAppEnabled()) {
+    [NSAccessibilityRemoteUIElement setRemoteUIApp:!!application_host_];
+  }
   // Explicitly set the keyboard accessibility state on regaining key
   // window status.
   if (is_key && is_content_first_responder)
@@ -1416,15 +1424,10 @@ void NativeWidgetMacNSWindowHost::SetRemoteAccessibilityTokens(
       ui::RemoteAccessibility::GetRemoteElementFromToken(view_token);
   [remote_view_accessible_ setWindowUIElement:remote_window_accessible_];
   [remote_view_accessible_ setTopLevelUIElement:remote_window_accessible_];
-
-  if (features::IsAccessibilityRemoteUIAppEnabled() &&
-      ![NSAccessibilityRemoteUIElement isRemoteUIApp]) {
-    [NSAccessibilityRemoteUIElement setRemoteUIApp:YES];
-  }
 }
 
 bool NativeWidgetMacNSWindowHost::GetRootViewAccessibilityToken(
-    int64_t* pid,
+    base::ProcessId* pid,
     std::vector<uint8_t>* token) {
   *pid = getpid();
   id element_id = GetNativeViewAccessible();
@@ -1613,7 +1616,7 @@ void NativeWidgetMacNSWindowHost::GetWindowFrameTitlebarHeight(
 void NativeWidgetMacNSWindowHost::GetRootViewAccessibilityToken(
     GetRootViewAccessibilityTokenCallback callback) {
   std::vector<uint8_t> token;
-  int64_t pid;
+  base::ProcessId pid;
   GetRootViewAccessibilityToken(&pid, &token);
   std::move(callback).Run(pid, token);
 }

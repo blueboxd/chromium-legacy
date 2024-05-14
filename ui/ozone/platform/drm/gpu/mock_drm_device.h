@@ -28,6 +28,23 @@
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/page_flip_request.h"
 
+// Private types defined in libdrm. Define them here so we can peek at the
+// commit and ensure the expected state has been set correctly.
+struct drmModeAtomicReqItem {
+  uint32_t object_id;
+  uint32_t property_id;
+  uint64_t value;
+  uint32_t cursor;
+};
+
+typedef drmModeAtomicReqItem* drmModeAtomicReqItemPtr;
+
+struct _drmModeAtomicReq {
+  uint32_t cursor;
+  uint32_t size_items;
+  drmModeAtomicReqItemPtr items;
+};
+
 namespace ui {
 
 using ResolutionAndRefreshRate = std::pair<gfx::Size, uint32_t>;
@@ -222,7 +239,9 @@ class MockDrmDevice : public DrmDevice {
 
   uint32_t current_framebuffer() const { return current_framebuffer_; }
 
-  const std::vector<sk_sp<SkSurface>> buffers() const { return buffers_; }
+  const base::flat_map<uint32_t, sk_sp<SkSurface>> buffers() const {
+    return buffers_;
+  }
 
   int last_planes_committed_count() const {
     return last_planes_committed_count_;
@@ -348,6 +367,9 @@ class MockDrmDevice : public DrmDevice {
   void SetDriverName(std::optional<std::string> name);
   uint32_t GetFramebufferForCrtc(uint32_t crtc_id) const;
 
+ protected:
+  ~MockDrmDevice() override;
+
  private:
   // Properties of the plane associated with a fb.
   struct FramebufferProps {
@@ -355,8 +377,6 @@ class MockDrmDevice : public DrmDevice {
     uint32_t height = 0;
     uint64_t modifier = 0;
   };
-
-  ~MockDrmDevice() override;
 
   bool UpdateProperty(uint32_t id,
                       uint64_t value,
@@ -393,7 +413,7 @@ class MockDrmDevice : public DrmDevice {
 
   std::optional<std::string> driver_name_ = "mock";
 
-  std::vector<sk_sp<SkSurface>> buffers_;
+  base::flat_map<uint32_t /*handle*/, sk_sp<SkSurface>> buffers_;
 
   std::map<uint32_t, uint32_t> crtc_cursor_map_;
 

@@ -4,30 +4,56 @@
 
 package org.chromium.chrome.browser.firstrun;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
+import android.widget.FrameLayout;
 
 import androidx.fragment.app.Fragment;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.signin.history_sync.HistorySyncCoordinator;
+import org.chromium.components.signin.metrics.SigninAccessPoint;
 
 public class HistorySyncFirstRunFragment extends Fragment
         implements FirstRunFragment, HistorySyncCoordinator.HistorySyncDelegate {
     private HistorySyncCoordinator mHistorySyncCoordinator;
+    private FrameLayout mFragmentView;
 
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        assert getPageDelegate().getProfileProviderSupplier().get() != null;
-        Profile profile = getPageDelegate().getProfileProviderSupplier().get().getOriginalProfile();
-        mHistorySyncCoordinator = new HistorySyncCoordinator(inflater, container, this, profile);
+        mFragmentView = new FrameLayout(getActivity());
 
-        return mHistorySyncCoordinator.getView();
+        return mFragmentView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        createCoordinatorAndAddToFragment();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mHistorySyncCoordinator != null) {
+            mHistorySyncCoordinator.destroy();
+            mHistorySyncCoordinator = null;
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (mHistorySyncCoordinator == null) {
+            return;
+        }
+        createCoordinatorAndAddToFragment();
     }
 
     /** Implements {@link FirstRunFragment}. */
@@ -42,7 +68,27 @@ public class HistorySyncFirstRunFragment extends Fragment
 
     /** Implements {@link HistorySyncDelegate} */
     @Override
-    public void dismiss() {
+    public void dismissHistorySync() {
         getPageDelegate().advanceToNextPage();
+        mHistorySyncCoordinator.destroy();
+        mHistorySyncCoordinator = null;
+    }
+
+    @Override
+    public boolean isLargeScreen() {
+        return !getPageDelegate().canUseLandscapeLayout();
+    }
+
+    private void createCoordinatorAndAddToFragment() {
+        if (mHistorySyncCoordinator != null) {
+            mHistorySyncCoordinator.destroy();
+        }
+        assert getPageDelegate().getProfileProviderSupplier().get() != null;
+        Profile profile = getPageDelegate().getProfileProviderSupplier().get().getOriginalProfile();
+        mHistorySyncCoordinator =
+                new HistorySyncCoordinator(
+                        getContext(), this, profile, SigninAccessPoint.START_PAGE, false);
+        mFragmentView.removeAllViews();
+        mFragmentView.addView(mHistorySyncCoordinator.getView());
     }
 }

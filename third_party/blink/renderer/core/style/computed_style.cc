@@ -1446,6 +1446,49 @@ void ComputedStyle::LoadDeferredImages(Document& document) const {
   }
 }
 
+ETransformBox ComputedStyle::UsedTransformBox(
+    TransformBoxContext box_context) const {
+  ETransformBox transform_box = TransformBox();
+  if (box_context == TransformBoxContext::kSvg) {
+    // For SVG elements without associated CSS layout box, the used value for
+    // content-box is fill-box and for border-box is stroke-box.
+    switch (transform_box) {
+      case ETransformBox::kContentBox:
+        transform_box = ETransformBox::kFillBox;
+        break;
+      case ETransformBox::kBorderBox:
+        transform_box = ETransformBox::kStrokeBox;
+        break;
+      case ETransformBox::kFillBox:
+      case ETransformBox::kStrokeBox:
+      case ETransformBox::kViewBox:
+        break;
+    }
+    // If transform-box is stroke-box and the element has "vector-effect:
+    // non-scaling-stroke", then the used transform-box is fill-box.
+    if (transform_box == ETransformBox::kStrokeBox &&
+        VectorEffect() == EVectorEffect::kNonScalingStroke) {
+      transform_box = ETransformBox::kFillBox;
+    }
+  } else {
+    // For elements with associated CSS layout box, the used value for fill-box
+    // is content-box and for stroke-box and view-box is border-box.
+    switch (transform_box) {
+      case ETransformBox::kContentBox:
+      case ETransformBox::kBorderBox:
+        break;
+      case ETransformBox::kFillBox:
+        transform_box = ETransformBox::kContentBox;
+        break;
+      case ETransformBox::kStrokeBox:
+      case ETransformBox::kViewBox:
+        transform_box = ETransformBox::kBorderBox;
+        break;
+    }
+  }
+  return transform_box;
+}
+
 void ComputedStyle::ApplyTransform(
     gfx::Transform& result,
     const LayoutBox* box,
@@ -2313,10 +2356,12 @@ Length ComputedStyle::LineHeight() const {
 }
 
 float ComputedStyle::ComputedLineHeight(const Length& lh, const Font& font) {
-  // Negative value means the line height is not set. Use the font's built-in
-  // spacing, if available.
-  if (lh.IsNegative() && font.PrimaryFont()) {
-    return font.PrimaryFont()->GetFontMetrics().LineSpacing();
+  // For "normal" line-height use the font's built-in spacing if available.
+  if (lh.IsAuto()) {
+    if (font.PrimaryFont()) {
+      return font.PrimaryFont()->GetFontMetrics().LineSpacing();
+    }
+    return 0.0f;
   }
 
   if (lh.IsPercentOrCalc()) {
@@ -2334,10 +2379,12 @@ float ComputedStyle::ComputedLineHeight() const {
 LayoutUnit ComputedStyle::ComputedLineHeightAsFixed(const Font& font) const {
   const Length& lh = LineHeight();
 
-  // Negative value means the line height is not set. Use the font's built-in
-  // spacing, if available.
-  if (lh.IsNegative() && font.PrimaryFont()) {
-    return font.PrimaryFont()->GetFontMetrics().FixedLineSpacing();
+  // For "normal" line-height use the font's built-in spacing if available.
+  if (lh.IsAuto()) {
+    if (font.PrimaryFont()) {
+      return font.PrimaryFont()->GetFontMetrics().FixedLineSpacing();
+    }
+    return LayoutUnit();
   }
 
   if (lh.IsPercentOrCalc()) {
@@ -2435,6 +2482,42 @@ Color ComputedStyle::VisitedDependentColor(const Longhand& color_property,
   return Color::FromColorSpace(visited_color.GetColorSpace(),
                                visited_color.Param0(), visited_color.Param1(),
                                visited_color.Param2(), unvisited_color.Alpha());
+}
+
+blink::Color ComputedStyle::VisitedDependentContextFill(
+    const SVGPaint& context_paint,
+    const ComputedStyle& context_style) const {
+  return VisitedDependentContextPaint(context_paint,
+                                      context_style.InternalVisitedFillPaint());
+}
+
+blink::Color ComputedStyle::VisitedDependentContextStroke(
+    const SVGPaint& context_paint,
+    const ComputedStyle& context_style) const {
+  return VisitedDependentContextPaint(
+      context_paint, context_style.InternalVisitedStrokePaint());
+}
+
+blink::Color ComputedStyle::VisitedDependentContextPaint(
+    const SVGPaint& context_paint,
+    const SVGPaint& context_visited_paint) const {
+  blink::Color unvisited_color =
+      ShouldForceColor(context_paint.GetColor())
+          ? GetInternalForcedCurrentColor(nullptr)
+          : context_paint.GetColor().Resolve(GetCurrentColor(),
+                                             UsedColorScheme(), nullptr);
+  if (InsideLink() != EInsideLink::kInsideVisitedLink) {
+    return unvisited_color;
+  }
+
+  if (!context_visited_paint.HasColor()) {
+    return unvisited_color;
+  }
+  if (ShouldForceColor(context_visited_paint.GetColor())) {
+    return GetInternalForcedVisitedCurrentColor(nullptr);
+  }
+  return context_visited_paint.GetColor().Resolve(
+      GetInternalVisitedCurrentColor(), UsedColorScheme(), nullptr);
 }
 
 blink::Color ComputedStyle::ResolvedColor(const StyleColor& color,
@@ -2683,7 +2766,8 @@ bool ComputedStyle::CanMatchSizeContainerQueries(const Element& element) const {
 bool ComputedStyle::IsInterleavingRoot(const ComputedStyle* style) {
   const ComputedStyle* unensured = ComputedStyle::NullifyEnsured(style);
   return unensured && (unensured->IsContainerForSizeContainerQueries() ||
-                       unensured->PositionFallback());
+                       unensured->GetPositionTryOptions() ||
+                       unensured->HasAnchorFunctions());
 }
 
 bool ComputedStyle::CalculateIsStackingContextWithoutContainment() const {

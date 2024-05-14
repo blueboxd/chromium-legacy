@@ -59,6 +59,8 @@ webapps::AppId ManifestIdStrToAppId(const std::string& manifest_id) {
 namespace {
 
 constexpr base::TimeDelta kRecentAppMaxAge = base::Days(30);
+constexpr char kSyncedWebApkAdditionHistogramName[] =
+    "WebApk.Sync.SyncedWebApkAddition";
 
 const WebApkProto* GetAppById(const Registry& registry,
                               const webapps::AppId& app_id) {
@@ -96,6 +98,16 @@ std::unique_ptr<WebApkProto> CloneWebApkProto(const WebApkProto& app) {
   *mutable_specifics = app.sync_data();
 
   return clone;
+}
+
+// Returns true if the specifics' timestamp is at most kRecentAppMaxAge before
+// |time|. In other words, if |time| is Now, then this returns whether the
+// specifics is at most kRecentAppMaxAge old.
+bool AppWasUsedRecentlyComparedTo(const sync_pb::WebApkSpecifics* specifics,
+                                  const base::Time time) {
+  base::Time app_last_used = base::Time::FromDeltaSinceWindowsEpoch(
+      base::Microseconds(specifics->last_used_time_windows_epoch_micros()));
+  return time - app_last_used < kRecentAppMaxAge;
 }
 
 }  // anonymous namespace
@@ -161,9 +173,7 @@ WebApkSyncBridge::CreateMetadataChangeList() {
 
 bool WebApkSyncBridge::AppWasUsedRecently(
     const sync_pb::WebApkSpecifics* specifics) const {
-  base::Time app_last_used = base::Time::FromDeltaSinceWindowsEpoch(
-      base::Microseconds(specifics->last_used_time_windows_epoch_micros()));
-  return clock_->Now() - app_last_used < kRecentAppMaxAge;
+  return AppWasUsedRecentlyComparedTo(specifics, clock_->Now());
 }
 
 void WebApkSyncBridge::OnDataWritten(CommitCallback callback, bool success) {
@@ -232,14 +242,9 @@ std::optional<syncer::ModelError> WebApkSyncBridge::MergeFullSyncData(
 
   const std::vector<std::unique_ptr<sync_pb::WebApkSpecifics>> installed_apps =
       webapk_specifics_fetcher_->GetWebApkSpecifics();
-  if (SyncDataContainsNewApps(installed_apps, entity_changes)) {
-    // There are apps stored in Sync that aren't currently installed on the
-    // device.
-    WebappRegistry
-        webapp_registry;  // TODO(crbug.com/1497527): WebappRegistry is supposed
-                          // to be owned by ChromeBrowsingDataRemoverDelegate.
-    webapp_registry.SetNeedsPwaRestore();
-  }
+
+  WebappRegistry::SetNeedsPwaRestore(
+      SyncDataContainsNewApps(installed_apps, entity_changes));
 
   // Since we're using "account-only" semantics for Transport Mode, we just call
   // through to ApplyIncrementalSyncChanges().
@@ -330,13 +335,15 @@ std::optional<syncer::ModelError> WebApkSyncBridge::ApplyIncrementalSyncChanges(
 }
 
 void WebApkSyncBridge::OnWebApkUsed(
-    std::unique_ptr<sync_pb::WebApkSpecifics> app_specifics) {
+    std::unique_ptr<sync_pb::WebApkSpecifics> app_specifics,
+    bool is_install) {
   if (!change_processor()->IsTrackingMetadata()) {
     return;
   }
 
   AddOrModifyAppInSync(
-      WebApkProtoFromSpecifics(app_specifics.get(), true /* installed */));
+      WebApkProtoFromSpecifics(app_specifics.get(), true /* installed */),
+      is_install);
 }
 
 void WebApkSyncBridge::OnWebApkUninstalled(const std::string& manifest_id) {
@@ -352,7 +359,7 @@ void WebApkSyncBridge::OnWebApkUninstalled(const std::string& manifest_id) {
   }
 
   if (!AppWasUsedRecently(&app->sync_data())) {
-    DeleteAppFromSync(app_id);
+    DeleteAppsFromSync(std::vector<webapps::AppId>{app_id});
     return;
   }
 
@@ -371,6 +378,18 @@ void WebApkSyncBridge::OnWebApkUninstalled(const std::string& manifest_id) {
       syncer::ModelTypeStore::WriteBatch::CreateMetadataChangeList(),
       base::BindOnce(&WebApkSyncBridge::OnDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), base::DoNothing()));
+}
+
+std::vector<std::vector<std::string>> WebApkSyncBridge::GetRestorableAppsInfo()
+    const {
+  std::vector<std::vector<std::string>> results;
+  for (auto const& [appId, proto] : registry_) {
+    if (!proto->is_locally_installed() &&
+        AppWasUsedRecently(&proto->sync_data())) {
+      results.push_back({appId, proto->sync_data().name()});
+    }
+  }
+  return results;
 }
 
 void WebApkSyncBridge::GetData(StorageKeyList storage_keys,
@@ -422,8 +441,26 @@ void WebApkSyncBridge::ApplyDisableSyncChanges(
   registry_.clear();
 }
 
-void WebApkSyncBridge::AddOrModifyAppInSync(std::unique_ptr<WebApkProto> app) {
+void WebApkSyncBridge::RemoveOldWebAPKsFromSync(
+    int64_t current_time_ms_since_unix_epoch) {
+  std::vector<webapps::AppId> app_ids;
+  for (const auto& appListing : registry_) {
+    const webapps::AppId app_id = appListing.first;
+    const WebApkProto& app = *appListing.second;
+    if (!AppWasUsedRecentlyComparedTo(
+            &app.sync_data(), base::Time::FromMillisecondsSinceUnixEpoch(
+                                  current_time_ms_since_unix_epoch))) {
+      app_ids.push_back(app_id);
+    }
+  }
+  DeleteAppsFromSync(app_ids);
+}
+
+void WebApkSyncBridge::AddOrModifyAppInSync(std::unique_ptr<WebApkProto> app,
+                                            bool is_install) {
   webapps::AppId app_id = ManifestIdStrToAppId(app->sync_data().manifest_id());
+  RecordSyncedWebApkAdditionHistogram(is_install, registry_.count(app_id) > 0);
+
   std::unique_ptr<syncer::EntityData> entity_data =
       CreateSyncEntityDataFromSpecifics(app->sync_data());
 
@@ -444,14 +481,21 @@ void WebApkSyncBridge::AddOrModifyAppInSync(std::unique_ptr<WebApkProto> app) {
   ApplyIncrementalSyncChangesToRegistry(std::move(registry_update));
 }
 
-void WebApkSyncBridge::DeleteAppFromSync(const webapps::AppId& app_id) {
+void WebApkSyncBridge::DeleteAppsFromSync(
+    const std::vector<webapps::AppId>& app_ids) {
+  if (app_ids.size() > 0) {
+    RecordSyncedWebApkRemovalCountHistogram(app_ids.size());
+  }
+
   std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
       syncer::ModelTypeStore::WriteBatch::CreateMetadataChangeList();
-  change_processor()->Delete(app_id, metadata_change_list.get());
-
   std::unique_ptr<RegistryUpdateData> registry_update =
       std::make_unique<RegistryUpdateData>();
-  registry_update->apps_to_delete.push_back(app_id);
+
+  for (const webapps::AppId& app_id : app_ids) {
+    change_processor()->Delete(app_id, metadata_change_list.get());
+    registry_update->apps_to_delete.push_back(app_id);
+  }
 
   database_.Write(
       *registry_update, std::move(metadata_change_list),
@@ -461,6 +505,10 @@ void WebApkSyncBridge::DeleteAppFromSync(const webapps::AppId& app_id) {
   ApplyIncrementalSyncChangesToRegistry(std::move(registry_update));
 }
 
+void WebApkSyncBridge::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
+  clock_ = std::move(clock);
+}
+
 const Registry& WebApkSyncBridge::GetRegistryForTesting() const {
   return registry_;
 }
@@ -468,6 +516,34 @@ const Registry& WebApkSyncBridge::GetRegistryForTesting() const {
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 WebApkSyncBridge::GetModelTypeControllerDelegate() {
   return change_processor()->GetControllerDelegate();
+}
+
+void WebApkSyncBridge::RecordSyncedWebApkAdditionHistogram(
+    bool is_install,
+    bool already_exists_in_sync) const {
+  if (is_install && !already_exists_in_sync) {
+    base::UmaHistogramEnumeration(
+        kSyncedWebApkAdditionHistogramName,
+        AddOrModifyType::kNewInstallOnDeviceAndNewAddToSync);
+  } else if (is_install && already_exists_in_sync) {
+    base::UmaHistogramEnumeration(
+        kSyncedWebApkAdditionHistogramName,
+        AddOrModifyType::kNewInstallOnDeviceAndModificationToSync);
+  } else if (!is_install && !already_exists_in_sync) {
+    base::UmaHistogramEnumeration(
+        kSyncedWebApkAdditionHistogramName,
+        AddOrModifyType::kLaunchOnDeviceAndNewAddToSync);
+  } else {
+    base::UmaHistogramEnumeration(
+        kSyncedWebApkAdditionHistogramName,
+        AddOrModifyType::kLaunchOnDeviceAndModificationToSync);
+  }
+}
+
+void WebApkSyncBridge::RecordSyncedWebApkRemovalCountHistogram(
+    int num_web_apks_removed) const {
+  base::UmaHistogramExactLinear("WebApk.Sync.SyncedWebApkRemovalCount",
+                                num_web_apks_removed, 51 /* max_count */);
 }
 
 }  // namespace webapk

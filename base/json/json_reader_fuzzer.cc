@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/json/json_reader.h"
+
+#include <optional>
+#include <string_view>
+
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 
@@ -19,7 +22,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::unique_ptr<char[]> input(new char[size - 1]);
   memcpy(input.get(), data, size - 1);
 
-  StringPiece input_string(input.get(), size - 1);
+  std::string_view input_string(input.get(), size - 1);
 
   const int options = data[size - 1];
 
@@ -32,8 +35,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     std::string serialized;
     CHECK(JSONWriter::Write(value, &serialized));
 
-    absl::optional<Value> deserialized =
-        JSONReader::Read(StringPiece(serialized));
+    std::optional<Value> deserialized =
+        JSONReader::Read(std::string_view(serialized));
     CHECK(deserialized);
     CHECK_EQ(value, deserialized.value());
   }

@@ -196,6 +196,7 @@ class WebThemeEngine {
         WebScrollbarOverlayColorTheme::kWebScrollbarOverlayColorThemeDark;
     std::optional<SkColor> thumb_color;
     bool is_thumb_minimal_mode = false;
+    bool is_web_test = false;
   };
 
   struct ScrollbarButtonExtraParams {
@@ -212,7 +213,6 @@ class WebThemeEngine {
   struct SystemColorInfoState {
     bool is_dark_mode = false;
     bool forced_colors = false;
-    std::map<SystemThemeColor, uint32_t> colors;
   };
 
 #if BUILDFLAG(IS_MAC)
@@ -295,32 +295,16 @@ class WebThemeEngine {
       const ui::ColorProvider*,
       const std::optional<SkColor>& accent_color = std::nullopt) {}
 
-  virtual std::optional<SkColor> GetSystemColor(
-      SystemThemeColor system_theme) const {
-    return std::nullopt;
-  }
-
   virtual std::optional<SkColor> GetAccentColor() const { return std::nullopt; }
 
   virtual ForcedColors GetForcedColors() const { return ForcedColors::kNone; }
-  virtual void OverrideForcedColorsTheme(bool is_dark_theme) {}
+  virtual void OverrideForcedColorsTheme() {}
   virtual void SetForcedColors(const blink::ForcedColors forced_colors) {}
   virtual void ResetToSystemColors(
       SystemColorInfoState system_color_info_state) {}
   virtual SystemColorInfoState GetSystemColorInfo() {
     SystemColorInfoState state;
     return state;
-  }
-  virtual void EmulateForcedColors(bool is_dark_theme, bool is_web_test) {}
-
-  // Updates the WebThemeEngine's global light, dark and forced colors
-  // ColorProvider instances using the RendererColorMaps provided. Returns true
-  // if new ColorProviders were created, returns false otherwise.
-  virtual bool UpdateColorProviders(
-      const ui::RendererColorMap& light_colors,
-      const ui::RendererColorMap& dark_colors,
-      const ui::RendererColorMap& forced_colors_map) {
-    return false;
   }
 };
 

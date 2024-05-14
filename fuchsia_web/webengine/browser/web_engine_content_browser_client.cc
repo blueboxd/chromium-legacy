@@ -222,15 +222,17 @@ void WebEngineContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
   PopulateFuchsiaFrameBinders(map);
 }
 
-void WebEngineContentBrowserClient::
-    RegisterNonNetworkNavigationURLLoaderFactories(
-        int frame_tree_node_id,
-        NonNetworkURLLoaderFactoryMap* factories) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableContentDirectories)) {
-    factories->emplace(kFuchsiaDirScheme,
-                       ContentDirectoryLoaderFactory::Create());
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
+WebEngineContentBrowserClient::CreateNonNetworkNavigationURLLoaderFactory(
+    const std::string& scheme,
+    int frame_tree_node_id) {
+  if (scheme == kFuchsiaDirScheme) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableContentDirectories)) {
+      return ContentDirectoryLoaderFactory::Create();
+    }
   }
+  return {};
 }
 
 void WebEngineContentBrowserClient::
@@ -339,7 +341,7 @@ WebEngineContentBrowserClient::CreateURLLoaderThrottles(
     const base::RepeatingCallback<content::WebContents*()>& wc_getter,
     content::NavigationUIData* navigation_ui_data,
     int frame_tree_node_id,
-    absl::optional<int64_t> navigation_id) {
+    std::optional<int64_t> navigation_id) {
   if (frame_tree_node_id == content::RenderFrameHost::kNoFrameTreeNodeId) {
     // TODO(crbug.com/1378791): Add support for Shared and Service Workers.
     return {};

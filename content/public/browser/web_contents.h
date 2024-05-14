@@ -49,6 +49,8 @@
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_mode.h"
+#include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/platform/inspect/ax_api_type.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/color/color_provider_key.h"
 #include "ui/display/types/display_constants.h"
@@ -69,6 +71,7 @@ namespace blink {
 namespace web_pref {
 struct WebPreferences;
 }
+class WebInputEvent;
 struct UserAgentOverride;
 struct RendererPreferences;
 }  // namespace blink
@@ -598,8 +601,16 @@ class WebContents : public PageNavigator,
   // Observers will receive a new accessibility tree.
   virtual void ResetAccessibility() = 0;
 
+  // Returns a pointer to the root node of the live accessibility tree for the
+  // main frame, if accessibility is turned on. Otherwise, returns nullptr.
+  virtual ui::AXNode* GetAccessibilityRootNode() = 0;
+
   virtual std::string DumpAccessibilityTree(
       bool internal,
+      std::vector<ui::AXPropertyFilter> property_filters) = 0;
+
+  virtual std::string DumpAccessibilityTree(
+      ui::AXApiType::Type api_type,
       std::vector<ui::AXPropertyFilter> property_filters) = 0;
 
   // A callback that takes a string which contains accessibility event
@@ -617,6 +628,10 @@ class WebContents : public PageNavigator,
       bool start_recording,
       std::optional<AccessibilityEventCallback> callback) = 0;
 
+  virtual void RecordAccessibilityEvents(
+      ui::AXApiType::Type api_type,
+      bool start_recording,
+      std::optional<AccessibilityEventCallback> callback) = 0;
   // Tab navigation state ------------------------------------------------------
 
   // Returns the current navigation properties, which if a navigation is
@@ -979,7 +994,7 @@ class WebContents : public PageNavigator,
   // the tab in the screen coordinate system.
   virtual gfx::Rect GetContainerBounds() = 0;
 
-  // Get the bounds of the View, relative to the parent.
+  // Get the bounds of the View in the global screen position.
   virtual gfx::Rect GetViewBounds() = 0;
 
   // Resize a WebContents to |new_bounds|.
@@ -1362,9 +1377,17 @@ class WebContents : public PageNavigator,
   virtual bool HasRecentInteraction() = 0;
 
   // Causes the WebContents to ignore input events for at least as long as the
-  // token exists.  In the event of multiple calls, input events will be ignored
+  // token exists. In the event of multiple calls, input events will be ignored
   // until all tokens have been destroyed.
-  [[nodiscard]] virtual ScopedIgnoreInputEvents IgnoreInputEvents() = 0;
+  // If WebInputEventAuditCallback is given, it can audits WebInputEvent based
+  // input events and ignore only events that the callback returns false for the
+  // event. Other kind of events, such as focus event or ui::Events will be
+  // always ignored without asking the callback. The given callback will be
+  // invoked only while the returned ScopedIgnoreInputEvents alives.
+  using WebInputEventAuditCallback =
+      base::RepeatingCallback<bool(const blink::WebInputEvent&)>;
+  [[nodiscard]] virtual ScopedIgnoreInputEvents IgnoreInputEvents(
+      std::optional<WebInputEventAuditCallback> audit_callback) = 0;
 
   // Returns the group id for all audio streams that correspond to a single
   // WebContents. This can be used to determine if a AudioOutputStream was
@@ -1462,10 +1485,9 @@ class WebContents : public PageNavigator,
       ui::PageTransition page_transition,
       PreloadingHoldbackStatus holdback_status_override,
       PreloadingAttempt* preloading_attempt,
-      std::optional<base::RepeatingCallback<bool(const GURL&)>>
-          url_match_predicate = std::nullopt,
-      std::optional<base::RepeatingCallback<void(NavigationHandle&)>>
-          prerender_navigation_handle_callback = std::nullopt) = 0;
+      base::RepeatingCallback<bool(const GURL&)> url_match_predicate = {},
+      base::RepeatingCallback<void(NavigationHandle&)>
+          prerender_navigation_handle_callback = {}) = 0;
 
   // May be called when the embedder believes that it is likely that the user
   // will perform a back navigation due to the trigger indicated by `predictor`

@@ -35,14 +35,13 @@
 #include "third_party/blink/renderer/core/css/css_media_rule.h"
 #include "third_party/blink/renderer/core/css/css_namespace_rule.h"
 #include "third_party/blink/renderer/core/css/css_page_rule.h"
-#include "third_party/blink/renderer/core/css/css_position_fallback_rule.h"
+#include "third_party/blink/renderer/core/css/css_position_try_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_rule.h"
 #include "third_party/blink/renderer/core/css/css_scope_rule.h"
 #include "third_party/blink/renderer/core/css/css_starting_style_rule.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/css_supports_rule.h"
-#include "third_party/blink/renderer/core/css/css_try_rule.h"
 #include "third_party/blink/renderer/core/css/css_view_transition_rule.h"
 #include "third_party/blink/renderer/core/css/parser/container_query_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
@@ -60,6 +59,9 @@
 #include "third_party/blink/renderer/core/css/style_rule_namespace.h"
 #include "third_party/blink/renderer/core/css/style_rule_view_transition.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
@@ -73,13 +75,17 @@ struct SameSizeAsStyleRuleBase final
 ASSERT_SIZE(StyleRuleBase, SameSizeAsStyleRuleBase);
 
 CSSRule* StyleRuleBase::CreateCSSOMWrapper(wtf_size_t position_hint,
-                                           CSSStyleSheet* parent_sheet) const {
-  return CreateCSSOMWrapper(position_hint, parent_sheet, nullptr);
+                                           CSSStyleSheet* parent_sheet,
+                                           bool trigger_use_counters) const {
+  return CreateCSSOMWrapper(position_hint, parent_sheet, nullptr,
+                            trigger_use_counters);
 }
 
 CSSRule* StyleRuleBase::CreateCSSOMWrapper(wtf_size_t position_hint,
-                                           CSSRule* parent_rule) const {
-  return CreateCSSOMWrapper(position_hint, nullptr, parent_rule);
+                                           CSSRule* parent_rule,
+                                           bool trigger_use_counters) const {
+  return CreateCSSOMWrapper(position_hint, nullptr, parent_rule,
+                            trigger_use_counters);
 }
 
 bool StyleRuleBase::IsInvisible() const {
@@ -155,20 +161,20 @@ void StyleRuleBase::Trace(Visitor* visitor) const {
     case kCounterStyle:
       To<StyleRuleCounterStyle>(this)->TraceAfterDispatch(visitor);
       return;
-    case kPositionFallback:
-      To<StyleRulePositionFallback>(this)->TraceAfterDispatch(visitor);
-      return;
-    case kTry:
-      To<StyleRuleTry>(this)->TraceAfterDispatch(visitor);
-      return;
     case kStartingStyle:
       To<StyleRuleStartingStyle>(this)->TraceAfterDispatch(visitor);
       return;
     case kViewTransition:
       To<StyleRuleViewTransition>(this)->TraceAfterDispatch(visitor);
       return;
+    case kFunction:
+      To<StyleRuleFunction>(this)->TraceAfterDispatch(visitor);
+      return;
+    case kPositionTry:
+      To<StyleRulePositionTry>(this)->TraceAfterDispatch(visitor);
+      return;
   }
-  NOTREACHED();
+  DUMP_WILL_BE_NOTREACHED_NORETURN();
 }
 
 void StyleRuleBase::FinalizeGarbageCollectedObject() {
@@ -233,17 +239,17 @@ void StyleRuleBase::FinalizeGarbageCollectedObject() {
     case kCounterStyle:
       To<StyleRuleCounterStyle>(this)->~StyleRuleCounterStyle();
       return;
-    case kPositionFallback:
-      To<StyleRulePositionFallback>(this)->~StyleRulePositionFallback();
-      return;
-    case kTry:
-      To<StyleRuleTry>(this)->~StyleRuleTry();
-      return;
     case kStartingStyle:
       To<StyleRuleStartingStyle>(this)->~StyleRuleStartingStyle();
       return;
     case kViewTransition:
       To<StyleRuleViewTransition>(this)->~StyleRuleViewTransition();
+      return;
+    case kFunction:
+      To<StyleRuleFunction>(this)->~StyleRuleFunction();
+      return;
+    case kPositionTry:
+      To<StyleRulePositionTry>(this)->~StyleRulePositionTry();
       return;
   }
   NOTREACHED();
@@ -287,20 +293,19 @@ StyleRuleBase* StyleRuleBase::Copy() const {
       return To<StyleRuleNamespace>(this)->Copy();
     case kCharset:
     case kKeyframe:
+    case kFunction:
       NOTREACHED();
       return nullptr;
     case kContainer:
       return To<StyleRuleContainer>(this)->Copy();
     case kCounterStyle:
       return To<StyleRuleCounterStyle>(this)->Copy();
-    case kPositionFallback:
-      return To<StyleRulePositionFallback>(this)->Copy();
     case kStartingStyle:
       return To<StyleRuleStartingStyle>(this)->Copy();
     case kViewTransition:
       return To<StyleRuleViewTransition>(this)->Copy();
-    case kTry:
-      return To<StyleRuleTry>(this)->Copy();
+    case kPositionTry:
+      return To<StyleRulePositionTry>(this)->Copy();
   }
   NOTREACHED();
   return nullptr;
@@ -308,7 +313,8 @@ StyleRuleBase* StyleRuleBase::Copy() const {
 
 CSSRule* StyleRuleBase::CreateCSSOMWrapper(wtf_size_t position_hint,
                                            CSSStyleSheet* parent_sheet,
-                                           CSSRule* parent_rule) const {
+                                           CSSRule* parent_rule,
+                                           bool trigger_use_counters) const {
   CSSRule* rule = nullptr;
   StyleRuleBase* self = const_cast<StyleRuleBase*>(this);
   switch (GetType()) {
@@ -317,6 +323,10 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(wtf_size_t position_hint,
                                                 parent_sheet, position_hint);
       break;
     case kPage:
+      if (trigger_use_counters && parent_sheet) {
+        UseCounter::Count(parent_sheet->OwnerDocument(),
+                          WebFeature::kCSSPageRule);
+      }
       rule = MakeGarbageCollected<CSSPageRule>(To<StyleRulePage>(self),
                                                parent_sheet);
       break;
@@ -376,10 +386,6 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(wtf_size_t position_hint,
       rule = MakeGarbageCollected<CSSCounterStyleRule>(
           To<StyleRuleCounterStyle>(self), parent_sheet);
       break;
-    case kPositionFallback:
-      rule = MakeGarbageCollected<CSSPositionFallbackRule>(
-          To<StyleRulePositionFallback>(self), parent_sheet);
-      break;
     case kStartingStyle:
       rule = MakeGarbageCollected<CSSStartingStyleRule>(
           To<StyleRuleStartingStyle>(self), parent_sheet);
@@ -388,15 +394,15 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(wtf_size_t position_hint,
       rule = MakeGarbageCollected<CSSViewTransitionRule>(
           To<StyleRuleViewTransition>(self), parent_sheet);
       break;
-    case kTry:
-      // @try rules must be child rules of @position-fallback.
-      CHECK(!parent_sheet);
-      rule = MakeGarbageCollected<CSSTryRule>(To<StyleRuleTry>(self));
+    case kPositionTry:
+      rule = MakeGarbageCollected<CSSPositionTryRule>(
+          To<StyleRulePositionTry>(self), parent_sheet);
       break;
     case kFontFeature:
     case kKeyframe:
     case kCharset:
     case kPageMargin:
+    case kFunction:
       NOTREACHED();
       return nullptr;
   }
@@ -605,11 +611,11 @@ void StyleRuleBase::Reparent(StyleRule* old_parent, StyleRule* new_parent) {
     case kLayerStatement:
     case kNamespace:
     case kCounterStyle:
-    case kPositionFallback:
-    case kTry:
     case kKeyframe:
     case kCharset:
     case kViewTransition:
+    case kFunction:
+    case kPositionTry:
       // Cannot have any child rules.
       break;
   }
@@ -931,5 +937,20 @@ void StyleRuleContainer::TraceAfterDispatch(blink::Visitor* visitor) const {
 StyleRuleStartingStyle::StyleRuleStartingStyle(
     HeapVector<Member<StyleRuleBase>> rules)
     : StyleRuleGroup(kStartingStyle, std::move(rules)) {}
+
+StyleRuleFunction::StyleRuleFunction(
+    AtomicString name,
+    Vector<StyleRuleFunction::Parameter> parameters,
+    scoped_refptr<CSSVariableData> function_body,
+    StyleRuleFunction::Type return_type)
+    : StyleRuleBase(kFunction),
+      name_(std::move(name)),
+      parameters_(std::move(parameters)),
+      function_body_(function_body),
+      return_type_(return_type) {}
+
+void StyleRuleFunction::TraceAfterDispatch(blink::Visitor* visitor) const {
+  StyleRuleBase::TraceAfterDispatch(visitor);
+}
 
 }  // namespace blink

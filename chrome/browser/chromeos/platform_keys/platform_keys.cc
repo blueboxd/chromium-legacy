@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -219,7 +220,7 @@ std::string KeystoreErrorToString(crosapi::mojom::KeystoreError error) {
 
 std::string GetSubjectPublicKeyInfo(
     const scoped_refptr<net::X509Certificate>& certificate) {
-  base::StringPiece spki_bytes;
+  std::string_view spki_bytes;
   if (!net::asn1::ExtractSPKIFromDERCert(
           net::x509_util::CryptoBufferAsStringPiece(certificate->cert_buffer()),
           &spki_bytes))
@@ -229,7 +230,7 @@ std::string GetSubjectPublicKeyInfo(
 
 std::vector<uint8_t> GetSubjectPublicKeyInfoBlob(
     const scoped_refptr<net::X509Certificate>& certificate) {
-  base::StringPiece spki_bytes;
+  std::string_view spki_bytes;
   if (!net::asn1::ExtractSPKIFromDERCert(
           net::x509_util::CryptoBufferAsStringPiece(certificate->cert_buffer()),
           &spki_bytes))
@@ -431,7 +432,7 @@ GetPublicKeyAndAlgorithmOutput GetPublicKeyAndAlgorithm(
   }
 
   std::optional<base::Value::Dict> algorithm =
-      BuildWebCrypAlgorithmDictionary(key_info);
+      BuildWebCryptoAlgorithmDictionary(key_info);
   DCHECK(algorithm.has_value());
   output.algorithm = std::move(algorithm.value());
 
@@ -478,7 +479,7 @@ net::X509Certificate::PublicKeyType GetKeyTypeForAlgorithm(
   return net::X509Certificate::kPublicKeyTypeUnknown;
 }
 
-std::optional<base::Value::Dict> BuildWebCrypAlgorithmDictionary(
+std::optional<base::Value::Dict> BuildWebCryptoAlgorithmDictionary(
     const PublicKeyInfo& key_info) {
   switch (key_info.key_type) {
     case net::X509Certificate::kPublicKeyTypeRSA: {

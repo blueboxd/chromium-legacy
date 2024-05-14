@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
+#include "chrome/browser/vr/ui_host/vr_ui_host_impl.h"
 #include "content/public/browser/browser_xr_runtime.h"
 #include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/xr_install_helper.h"
@@ -24,9 +25,7 @@
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
-#if BUILDFLAG(IS_WIN)
-#include "chrome/browser/vr/ui_host/vr_ui_host_impl.h"
-#elif BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(ENABLE_ARCORE)
 #include "chrome/browser/android/vr/ar_jni_headers/ArCompositorDelegateProviderImpl_jni.h"
 #include "components/webxr/android/ar_compositor_delegate_provider.h"
@@ -37,11 +36,11 @@
 #include "chrome/browser/android/vr/vr_jni_headers/VrCompositorDelegateProviderImpl_jni.h"
 #include "components/webxr/android/cardboard_device_provider.h"
 #include "components/webxr/android/vr_compositor_delegate_provider.h"
-#endif
+#endif  // BUILDFLAG(ENABLE_CARDBOARD)
 #if BUILDFLAG(ENABLE_OPENXR)
 #include "components/webxr/android/openxr_device_provider.h"
-#endif
-#endif  // BUILDFLAG(IS_WIN)
+#endif  // BUILDFLAG(ENABLE_OPENXR)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 namespace {
 
@@ -169,11 +168,10 @@ ChromeXrIntegrationClient::CreateRuntimeObserver() {
   return std::make_unique<CameraIndicationObserver>();
 }
 
-#if BUILDFLAG(IS_WIN)
 std::unique_ptr<content::VrUiHost> ChromeXrIntegrationClient::CreateVrUiHost(
-    device::mojom::XRDeviceId device_id,
-    mojo::PendingRemote<device::mojom::XRCompositorHost> compositor) {
-  return std::make_unique<VRUiHostImpl>(device_id, std::move(compositor));
+    content::WebContents& contents,
+    const std::vector<device::mojom::XRViewPtr>& views,
+    mojo::PendingRemote<device::mojom::ImmersiveOverlay> overlay) {
+  return std::make_unique<VRUiHostImpl>(contents, views, std::move(overlay));
 }
-#endif
 }  // namespace vr

@@ -28,9 +28,9 @@ import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
 
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.js';
 import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.js';
-import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.js';
+import {OobeI18nMixin, OobeI18nMixinInterface} from '../../components/mixins/oobe_i18n_mixin.js';
 import {OobeModalDialog} from '../../components/dialogs/oobe_modal_dialog.js';
-import {OOBE_UI_STATE} from '../../components/display_manager_types.js';
+import {OobeUiState} from '../../components/display_manager_types.js';
 import {ContentType, WebViewHelper} from '../../components/web_view_helper.js';
 import {WebViewLoader} from '../../components/web_view_loader.js';
 import {Oobe} from '../../cr_ui.js';
@@ -83,13 +83,12 @@ enum ConsolidatedConsentUserAction {
 }
 
 const ConsolidatedConsentScreenElementBase = mixinBehaviors(
-                                                 [
-                                                   OobeI18nBehavior,
-                                                   LoginScreenBehavior,
-                                                   MultiStepBehavior,
-                                                 ],
-                                                 PolymerElement) as {
-  new (): PolymerElement & OobeI18nBehaviorInterface &
+  [
+    LoginScreenBehavior,
+    MultiStepBehavior,
+  ],
+  OobeI18nMixin(PolymerElement)) as {
+  new (): PolymerElement & OobeI18nMixinInterface &
       LoginScreenBehaviorInterface & MultiStepBehaviorInterface,
 };
 
@@ -97,6 +96,7 @@ const ConsolidatedConsentScreenElementBase = mixinBehaviors(
  * Data that is passed to the screen during onBeforeShow.
  */
 interface ConsolidatedConsentScreenData {
+  isPrivacyHubLocationEnabled: boolean;
   isArcEnabled: boolean;
   isDemo: boolean;
   isChildAccount: boolean;
@@ -120,6 +120,11 @@ export class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
 
   static get properties(): PolymerElementProperties {
     return {
+      isPrivacyHubLocationEnabled: {
+        type: Boolean,
+        value: false,
+      },
+
       isArcEnabled: {
         type: Boolean,
         value: true,
@@ -192,6 +197,7 @@ export class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
     };
   }
 
+  private isPrivacyHubLocationEnabled: boolean;
   private isArcEnabled: boolean;
   private isDemo: boolean;
   private isChildAccount: boolean;
@@ -256,8 +262,8 @@ export class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
 
   /** Initial UI State for screen */
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  override getOobeUIInitialState(): OOBE_UI_STATE {
-    return OOBE_UI_STATE.ONBOARDING;
+  override getOobeUIInitialState(): OobeUiState {
+    return OobeUiState.ONBOARDING;
   }
 
   override ready(): void {
@@ -269,6 +275,7 @@ export class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
   onBeforeShow(data: ConsolidatedConsentScreenData): void {
     window.setTimeout(this.applyOobeConfiguration);
 
+    this.isPrivacyHubLocationEnabled = data['isPrivacyHubLocationEnabled'];
     this.isArcEnabled = data['isArcEnabled'];
     this.isDemo = data['isDemo'];
     this.isChildAccount = data['isChildAccount'];
@@ -585,8 +592,8 @@ export class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
         description.innerHTML, {tags: ['a'], attrs: ['id', 'is', 'class']});
   }
 
-  private getTitle(
-      locale: string, isTosHidden: boolean, isChildAccount: boolean): string {
+  private getTitle(locale: string, isTosHidden: boolean,
+      isChildAccount: boolean): TrustedHTML {
     if (isTosHidden) {
       return this.i18nAdvancedDynamic(
           locale, 'consolidatedConsentHeaderManaged');
@@ -599,9 +606,8 @@ export class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
     return this.i18nAdvancedDynamic(locale, 'consolidatedConsentHeader');
   }
 
-  private getUsageLearnMoreText(
-      locale: string, isChildAccount: boolean, isArcEnabled: boolean,
-      isDemo: boolean): string {
+  private getUsageLearnMoreText(locale: string, isChildAccount: boolean,
+      isArcEnabled: boolean, isDemo: boolean): TrustedHTML {
     if (this.isArcOptInsHidden(isArcEnabled, isDemo)) {
       if (isChildAccount) {
         return this.i18nAdvancedDynamic(
@@ -619,7 +625,7 @@ export class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
   }
 
   private getBackupLearnMoreText(locale: string, isChildAccount: boolean):
-      string {
+      TrustedHTML {
     if (isChildAccount) {
       return this.i18nAdvancedDynamic(
           locale, 'consolidatedConsentBackupOptInLearnMoreChild');
@@ -629,7 +635,7 @@ export class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
   }
 
   private getLocationLearnMoreText(locale: string, isChildAccount: boolean):
-      string {
+      TrustedHTML {
     if (isChildAccount) {
       return this.i18nAdvancedDynamic(
           locale, 'consolidatedConsentLocationOptInLearnMoreChild');
@@ -640,6 +646,24 @@ export class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
 
   private isArcOptInsHidden(isArcEnabled: boolean, isDemo: boolean): boolean {
     return !isArcEnabled || isDemo;
+  }
+
+  private isArcBackupOptInHidden(isArcEnabled: boolean, isDemo: boolean):
+      boolean {
+    return this.isArcOptInsHidden(isArcEnabled, isDemo);
+  }
+
+  private isLocationOptInHidden(isArcEnabled: boolean, isDemo: boolean):
+      boolean {
+    if (this.isPrivacyHubLocationEnabled) {
+      // Skip ToS in Demo mode.
+      if (isDemo) {
+        return true;
+      }
+      return false;
+    }
+
+    return this.isArcOptInsHidden(isArcEnabled, isDemo);
   }
 
   private setUsageMode(enabled: boolean, managed: boolean): void {

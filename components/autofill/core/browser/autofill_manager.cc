@@ -151,13 +151,11 @@ void AutofillManager::LogAutofillTypePredictionsAvailable(
                       << std::move(buffer);
 }
 
-AutofillManager::AutofillManager(AutofillDriver* driver, AutofillClient* client)
+AutofillManager::AutofillManager(AutofillDriver* driver)
     : driver_(CHECK_DEREF(driver)),
-      client_(CHECK_DEREF(client)),
-      log_manager_(client->GetLogManager()),
+      log_manager_(unsafe_client().GetLogManager()),
       form_interactions_ukm_logger_(CreateFormInteractionsUkmLogger()) {
-  translate::TranslateDriver* translate_driver = client->GetTranslateDriver();
-  if (translate_driver) {
+  if (auto* translate_driver = unsafe_client().GetTranslateDriver()) {
     translate_observation_.Observe(translate_driver);
   }
 }
@@ -318,8 +316,6 @@ void AutofillManager::OnFormsParsed(const std::vector<FormData>& forms) {
   DCHECK(!forms.empty());
   OnBeforeProcessParsedForms();
 
-  driver().HandleParsedForms(forms);
-
   std::vector<raw_ptr<FormStructure, VectorExperimental>> non_queryable_forms;
   std::vector<raw_ptr<FormStructure, VectorExperimental>> queryable_forms;
   DenseSet<FormType> form_types;
@@ -435,9 +431,13 @@ void AutofillManager::OnFocusOnFormField(const FormData& form,
                                          const gfx::RectF& bounding_box) {
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
+  NotifyObservers(&Observer::OnBeforeFocusOnFormField, form.global_id(),
+                  field.global_id(), form);
   ParseFormAsync(form, ParsingCallback(&AutofillManager::OnFocusOnFormFieldImpl,
                                        field, bounding_box)
-                           .Then(NotifyNoObserversCallback()));
+                           .Then(NotifyObserversCallback(
+                               &Observer::OnAfterFocusOnFormField,
+                               form.global_id(), field.global_id())));
 }
 
 void AutofillManager::OnFocusNoLongerOnForm(bool had_interacted_form) {

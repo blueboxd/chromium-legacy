@@ -62,6 +62,7 @@ if (safe_browsing_mode > 0) {
       "//components/security_interstitials/core",
       "//components/security_interstitials/core:unsafe_resource",
       "//content/public/browser",
+      "//services/metrics/public/cpp:ukm_builders",
     ]
   }
 }
@@ -127,6 +128,7 @@ source_set("browser") {
     "//components/security_interstitials/content:security_interstitial_page",
     "//components/security_interstitials/core",
     "//components/security_interstitials/core:unsafe_resource",
+    "//components/sessions",
     "//components/signin/public/identity_manager",
     "//components/unified_consent",
     "//components/version_info",
@@ -280,6 +282,7 @@ source_set("client_side_detection") {
     ":client_side_detection_images_cache",
     ":client_side_detection_service",
     "//base:base",
+    "//components/permissions:permissions",
     "//components/prefs",
     "//components/safe_browsing:buildflags",
     "//components/safe_browsing/content/browser",

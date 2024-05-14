@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
+#include "third_party/blink/renderer/core/css/resolver/cascade_filter.h"
 #include "third_party/blink/renderer/core/css/style_recalc_change.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
@@ -96,6 +97,7 @@ class ElementIntersectionObserverData;
 class ElementRareDataVector;
 class ExceptionState;
 class FocusOptions;
+class HTMLElement;
 class HTMLTemplateElement;
 class Image;
 class InputDeviceCapabilities;
@@ -158,7 +160,7 @@ enum class ElementFlags {
   kNumberOfElementFlags = 8,  // Size of bitfield used to store the flags.
 };
 
-enum class ShadowRootType;
+enum class ShadowRootMode;
 
 enum class SlotAssignmentMode { kManual, kNamed };
 enum class FocusDelegation { kNone, kDelegateFocus };
@@ -248,7 +250,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // This is only exposed as an implementation detail to AXRelationCache, which
   // computes aria-owns differently for element reflection.
   bool HasExplicitlySetAttrAssociatedElements(const QualifiedName& name);
-  Element* GetElementAttribute(const QualifiedName& name);
+  Element* GetElementAttribute(const QualifiedName& name) const;
   void SetElementAttribute(const QualifiedName&, Element*);
   HeapVector<Member<Element>>* GetAttrAssociatedElements(
       const QualifiedName& name);
@@ -442,7 +444,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   AccessibleNode* ExistingAccessibleNode() const;
   AccessibleNode* accessibleNode();
 
-  void ariaNotify(const String announcement, const AriaNotificationOptions*);
+  void ariaNotify(const String& announcement,
+                  const AriaNotificationOptions* options);
 
   void DidMoveToNewDocument(Document&) override;
 
@@ -733,14 +736,15 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   // Returns true if the attachment was successful.
   bool AttachDeclarativeShadowRoot(HTMLTemplateElement&,
-                                   ShadowRootType,
+                                   ShadowRootMode,
                                    FocusDelegation,
                                    SlotAssignmentMode,
                                    bool serializable,
                                    bool clonable);
 
-  ShadowRoot& CreateUserAgentShadowRoot();
-  ShadowRoot& AttachShadowRootInternal(ShadowRootType,
+  ShadowRoot& CreateUserAgentShadowRoot(
+      SlotAssignmentMode = SlotAssignmentMode::kNamed);
+  ShadowRoot& AttachShadowRootInternal(ShadowRootMode,
                                        FocusDelegation,
                                        SlotAssignmentMode,
                                        CustomElementRegistry*,
@@ -748,7 +752,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                                        bool clonable);
   // This version is for testing only, and allows easy attachment of a shadow
   // root, specifying only the type and none of the other arguments.
-  ShadowRoot& AttachShadowRootForTesting(ShadowRootType type) {
+  ShadowRoot& AttachShadowRootForTesting(ShadowRootMode type) {
     return AttachShadowRootInternal(type, FocusDelegation::kNone,
                                     SlotAssignmentMode::kNamed,
                                     /*registry*/ nullptr,
@@ -763,7 +767,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   ShadowRoot* AuthorShadowRoot() const;
   ShadowRoot* UserAgentShadowRoot() const;
 
-  ShadowRoot& EnsureUserAgentShadowRoot();
+  ShadowRoot& EnsureUserAgentShadowRoot(
+      SlotAssignmentMode = SlotAssignmentMode::kNamed);
 
   // Implements manual slot assignment for user agent shadow roots.
   virtual void ManuallyAssignSlots() { DCHECK(false); }
@@ -859,6 +864,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void FocusVisibleStateChanged();
   void FocusWithinStateChanged();
   void ActiveViewTransitionStateChanged();
+  void ActiveViewTransitionTypeStateChanged();
   void SetDragged(bool) override;
 
   void UpdateSelectionOnFocus(SelectionBehaviorOnFocus);
@@ -915,6 +921,13 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       const AtomicString& event_type,
       Element* new_focused_element,
       InputDeviceCapabilities* source_capabilities = nullptr);
+
+  // This allows customization of how Invokes are handled, per element.
+  // See: crbug.com/1490919, https://open-ui.org/components/invokers.explainer/
+  virtual bool HandleInvokeInternal(HTMLElement& invoker,
+                                    AtomicString& action) {
+    return false;
+  }
 
   // The implementations of |innerText()| and |GetInnerTextWithoutUpdate()| are
   // found in "element_inner_text.cc".
@@ -1022,12 +1035,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       const ComputedStyle& originating_style,
       const PseudoId pseudo_id,
       const AtomicString& pseudo_argument = g_null_atom);
-
-  // Returns the ComputedStyle after applying the declarations in the @try block
-  // at the given index. Returns nullptr if the current element doesn't use
-  // position fallback, or if the index is out of bound.
-  // The style is computed on demand and cached on the ComputedStyle of |this|.
-  const ComputedStyle* StyleForPositionFallback(unsigned index);
 
   virtual bool CanGeneratePseudoElement(PseudoId) const;
 
@@ -1265,8 +1272,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void SetAffectedByLogicalCombinationsInHas();
   bool AffectedByMultipleHas() const;
   void SetAffectedByMultipleHas();
-  bool AncestorsOrSiblingsAffectedByActiveViewTransitionInHas() const;
-  void SetAncestorsOrSiblingsAffectedByActiveViewTransitionInHas();
 
   // This is meant to be used by document's resize observer to notify that the
   // size has changed.
@@ -1292,7 +1297,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   // Returns true if the element has the 'inert' attribute, forcing itself and
   // all its subtree to be inert.
-  bool IsInertRoot();
+  bool IsInertRoot() const;
 
   FocusgroupFlags GetFocusgroupFlags() const;
 
@@ -1308,7 +1313,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   // Retrieves the element pointed to by this element's 'anchor' content
   // attribute, if that element exists.
-  Element* anchorElement();
+  Element* anchorElement() const;
   void setAnchorElement(Element*);
 
   AnchorPositionScrollData& EnsureAnchorPositionScrollData();
@@ -1325,7 +1330,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   }
 
   // https://drafts.csswg.org/css-anchor-1/#implicit-anchor-element
-  Element* ImplicitAnchorElement();
+  Element* ImplicitAnchorElement() const;
 
   void UpdateDirectionalityAndDescendant(TextDirection direction);
   void UpdateDescendantHasDirAutoAttribute(bool has_dir_auto);
@@ -1354,6 +1359,17 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void AddConsoleMessage(mojom::blink::ConsoleMessageSource source,
                          mojom::blink::ConsoleMessageLevel level,
                          const String& message);
+
+  // These update every scroll container that is an ancestor of
+  // of this element, letting them know which snap area of theirs, if any,
+  // either is a targeted[1] element or contains a targeted[1] element.
+  // [1]https://drafts.csswg.org/selectors/#the-target-pseudo
+  void SetTargetedSnapAreaIdsForSnapContainers();
+  void ClearTargetedSnapAreaIdsForSnapContainers();
+
+  // Subclasses can override this method to specify a CascadeFilter to
+  // filter out any unwanted CSS properties.
+  virtual CascadeFilter GetCascadeFilter() const { return CascadeFilter(); }
 
  protected:
   bool HasElementData() const { return static_cast<bool>(element_data_); }
@@ -1619,7 +1635,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // ShouldAdjustDirectionalityForInsert().
   bool DoesChildTextNodesDirectionMatchThis(const Node& node) const;
 
-  ShadowRoot& CreateAndAttachShadowRoot(ShadowRootType);
+  ShadowRoot& CreateAndAttachShadowRoot(
+      ShadowRootMode,
+      SlotAssignmentMode = SlotAssignmentMode::kNamed);
 
   // FIXME: Everyone should allow author shadows.
   virtual bool AreAuthorShadowsAllowed() const { return true; }

@@ -6,9 +6,11 @@
 
 #import "base/apple/foundation_util.h"
 #import "base/ios/ios_util.h"
+#import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "build/build_config.h"
 #import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_model_type.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
@@ -49,6 +51,19 @@ using chrome_test_util::TabGridEditButton;
 using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 namespace chrome_test_util {
+
+// Returns the label for the folder entry in the bookmark/folder editor.
+NSString* FolderLabel(NSString* folderName, chrome_test_util::KindOfTest kind) {
+  switch (kind) {
+    case chrome_test_util::KindOfTest::kLocal:
+      return l10n_util::GetNSStringF(
+          IDS_IOS_BOOKMARKS_FOLDER_NAME_WITH_CLOUD_SLASH_ICON_LABEL,
+          base::SysNSStringToUTF16(folderName));
+    case chrome_test_util::KindOfTest::kAccount:
+    case chrome_test_util::KindOfTest::kSignedOut:
+      return folderName;
+  }
+}
 
 id<GREYMatcher> BookmarksContextMenuEditButton() {
   // Making sure the edit button we're selecting is not on the bottom bar via
@@ -154,7 +169,7 @@ id<GREYMatcher> SearchIconButton() {
       performAction:grey_tap()];
 }
 
-- (void)addFolderWithName:(NSString*)name {
+- (void)addFolderWithName:(NSString*)name inModel:(BookmarkModelType)model {
   // Wait for folder picker to appear.
   [[EarlGrey
       selectElementWithMatcher:
@@ -162,9 +177,11 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Tap on "Create New Folder."
-  [[EarlGrey selectElementWithMatcher:
-                 grey_accessibilityID(
-                     kBookmarkCreateNewLocalOrSyncableFolderCellIdentifier)]
+  NSString* accessibilityId =
+      (model == BookmarkModelType::kLocalOrSyncable)
+          ? kBookmarkCreateNewLocalOrSyncableFolderCellIdentifier
+          : kBookmarkCreateNewAccountFolderCellIdentifier;
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(accessibilityId)]
       performAction:grey_tap()];
 
   // Verify the folder creator is displayed.
@@ -200,7 +217,11 @@ id<GREYMatcher> SearchIconButton() {
              @"Waiting for bookmark to go away");
 }
 
-- (void)waitForUndoToastToGoAway {
+- (void)closeUndoSnackbarAndWait {
+  id<GREYMatcher> snackbar_matcher =
+      grey_accessibilityID(@"MDCSnackbarMessageTitleAutomationIdentifier");
+  [[EarlGrey selectElementWithMatcher:snackbar_matcher]
+      performAction:grey_tap()];
   // Wait until it's gone.
   ConditionBlock condition = ^{
     NSError* error = nil;
@@ -506,10 +527,23 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notVisible()];
 }
 
+- (void)assertChangeFolderIsCorrectlySet:(NSString*)parentName
+                              kindOfTest:
+                                  (chrome_test_util::KindOfTest)kindOfTest {
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(@"Change Folder"),
+                                   grey_accessibilityLabel(
+                                       FolderLabel(parentName, kindOfTest)),
+                                   grey_sufficientlyVisible(), nil)]
+      assertWithMatcher:grey_notNil()];
+}
+
 - (void)tapOnContextMenuButton:(int)menuButtonId
                     openEditor:(NSString*)editorId
              setParentFolderTo:(NSString*)destinationFolder
-                          from:(NSString*)sourceFolder {
+                          from:(NSString*)sourceFolder
+                    kindOfTest:(chrome_test_util::KindOfTest)kindOfTest {
   // Tap context menu.
   [[EarlGrey
       selectElementWithMatcher:ContextBarCenterButtonWithLabel(
@@ -525,11 +559,7 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notNil()];
 
   // Verify current parent folder for is correct.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"Change Folder"),
-                                   grey_accessibilityLabel(sourceFolder), nil)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+  [self assertChangeFolderIsCorrectlySet:sourceFolder kindOfTest:kindOfTest];
 
   // Tap on Folder to open folder picker.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
@@ -557,12 +587,8 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notVisible()];
 
   // Verify parent folder has been changed in edit page.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"Change Folder"),
-                                   grey_accessibilityLabel(destinationFolder),
-                                   nil)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+  [self assertChangeFolderIsCorrectlySet:destinationFolder
+                              kindOfTest:kindOfTest];
 
   // Dismiss edit page (editor).
   id<GREYMatcher> dismissMatcher = BookmarksSaveEditDoneButton();
@@ -577,8 +603,7 @@ id<GREYMatcher> SearchIconButton() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(editorId)]
       assertWithMatcher:grey_notVisible()];
 
-  // Wait for Undo toast to go away from screen.
-  [BookmarkEarlGreyUI waitForUndoToastToGoAway];
+  [BookmarkEarlGreyUI closeUndoSnackbarAndWait];
 }
 
 - (void)tapOnLongPressContextMenuButton:(id<GREYMatcher>)actionMatcher

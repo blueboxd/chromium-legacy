@@ -21,6 +21,7 @@
 #include "components/attribution_reporting/aggregatable_trigger_config.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
 #include "components/attribution_reporting/aggregatable_values.h"
+#include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/features.h"
 #include "components/attribution_reporting/filters.h"
@@ -34,14 +35,6 @@ namespace {
 
 using ::attribution_reporting::mojom::TriggerRegistrationError;
 
-constexpr char kAggregationCoordinatorOrigin[] =
-    "aggregation_coordinator_origin";
-constexpr char kAggregatableDeduplicationKeys[] =
-    "aggregatable_deduplication_keys";
-constexpr char kAggregatableTriggerData[] = "aggregatable_trigger_data";
-constexpr char kAggregatableValues[] = "aggregatable_values";
-constexpr char kEventTriggerData[] = "event_trigger_data";
-
 base::expected<std::optional<SuitableOrigin>, TriggerRegistrationError>
 ParseAggregationCoordinator(const base::Value* value) {
   // The default value is used for backward compatibility prior to this
@@ -54,14 +47,14 @@ ParseAggregationCoordinator(const base::Value* value) {
   const std::string* str = value->GetIfString();
   if (!str) {
     return base::unexpected(
-        TriggerRegistrationError::kAggregationCoordinatorWrongType);
+        TriggerRegistrationError::kAggregationCoordinatorValueInvalid);
   }
 
   std::optional<url::Origin> aggregation_coordinator =
       aggregation_service::ParseAggregationCoordinator(*str);
   if (!aggregation_coordinator.has_value()) {
     return base::unexpected(
-        TriggerRegistrationError::kAggregationCoordinatorUnknownValue);
+        TriggerRegistrationError::kAggregationCoordinatorValueInvalid);
   }
   auto aggregation_coordinator_origin =
       SuitableOrigin::Create(*aggregation_coordinator);
@@ -113,12 +106,11 @@ base::expected<std::vector<T>, TriggerRegistrationError> ParseList(
 }  // namespace
 
 void RecordTriggerRegistrationError(TriggerRegistrationError error) {
-  static_assert(
-      TriggerRegistrationError::kMaxValue ==
-          TriggerRegistrationError::
-              kTriggerContextIdInvalidSourceRegistrationTimeConfig,
-      "Bump version of Conversions.TriggerRegistrationError9 histogram.");
-  base::UmaHistogramEnumeration("Conversions.TriggerRegistrationError9", error);
+  static_assert(TriggerRegistrationError::kMaxValue ==
+                    TriggerRegistrationError::kEventValueInvalid,
+                "Update ConversionTriggerRegistrationError enum.");
+  base::UmaHistogramEnumeration("Conversions.TriggerRegistrationError11",
+                                error);
 }
 
 // static
@@ -128,24 +120,23 @@ TriggerRegistration::Parse(base::Value::Dict dict) {
 
   ASSIGN_OR_RETURN(registration.filters, FilterPair::FromJSON(dict));
 
-  ASSIGN_OR_RETURN(
-      registration.aggregatable_dedup_keys,
-      ParseList<AggregatableDedupKey>(
-          dict.Find(kAggregatableDeduplicationKeys),
-          TriggerRegistrationError::kAggregatableDedupKeyListWrongType,
-          &AggregatableDedupKey::FromJSON));
+  ASSIGN_OR_RETURN(registration.aggregatable_dedup_keys,
+                   ParseList<AggregatableDedupKey>(
+                       dict.Find(kAggregatableDeduplicationKeys),
+                       TriggerRegistrationError::kAggregatableDedupKeyWrongType,
+                       &AggregatableDedupKey::FromJSON));
 
   ASSIGN_OR_RETURN(registration.event_triggers,
                    ParseList<EventTriggerData>(
                        dict.Find(kEventTriggerData),
-                       TriggerRegistrationError::kEventTriggerDataListWrongType,
+                       TriggerRegistrationError::kEventTriggerDataWrongType,
                        &EventTriggerData::FromJSON));
 
   ASSIGN_OR_RETURN(
       registration.aggregatable_trigger_data,
       ParseList<AggregatableTriggerData>(
           dict.Find(kAggregatableTriggerData),
-          TriggerRegistrationError::kAggregatableTriggerDataListWrongType,
+          TriggerRegistrationError::kAggregatableTriggerDataWrongType,
           &AggregatableTriggerData::FromJSON));
 
   ASSIGN_OR_RETURN(
@@ -217,9 +208,7 @@ base::Value::Dict TriggerRegistration::ToJson() const {
   SerializeListIfNotEmpty(dict, kAggregatableTriggerData,
                           aggregatable_trigger_data);
 
-  if (!aggregatable_values.values().empty()) {
-    dict.Set(kAggregatableValues, aggregatable_values.ToJson());
-  }
+  SerializeListIfNotEmpty(dict, kAggregatableValues, aggregatable_values);
 
   SerializeDebugKey(dict, debug_key);
 

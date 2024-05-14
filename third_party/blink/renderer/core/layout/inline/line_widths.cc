@@ -57,8 +57,7 @@ bool LineWidths::Set(const InlineNode& node,
         }
         const ShapeResult* shape_result = item.TextShapeResult();
         DCHECK(shape_result);
-        if (shape_result->PrimaryFont() != primary_font ||
-            shape_result->HasFallbackFonts()) {
+        if (shape_result->HasFallbackFonts(primary_font)) {
           // Compute the metrics. It may have different metrics if fonts are
           // different.
           DCHECK(item.Style());
@@ -91,6 +90,8 @@ bool LineWidths::Set(const InlineNode& node,
       case InlineItem::kControl:
       case InlineItem::kOutOfFlowPositioned:
       case InlineItem::kBidiControl:
+      case InlineItem::kOpenRubyColumn:
+      case InlineItem::kCloseRubyColumn:
         // These items don't affect line heights.
         break;
       case InlineItem::kFloating:

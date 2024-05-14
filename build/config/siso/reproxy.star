@@ -23,6 +23,7 @@ def __parse_rewrapper_cmdline(ctx, cmd):
     # Example command:
     #   ../../buildtools/reclient/rewrapper
     #     -cfg=../../buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg
+    #     -inputs=build/config/unsafe_buffers_paths.txt
     #     -exec_root=/path/to/your/chromium/src/
     #     ../../third_party/llvm-build/Release+Asserts/bin/clang++
     #     [rest of clang args]
@@ -30,11 +31,20 @@ def __parse_rewrapper_cmdline(ctx, cmd):
     #   -exec_root: Siso already knows this.
     wrapped_command_pos = -1
     cfg_file = None
+    skip = ""
+    rw_ops = {}
     for i, arg in enumerate(cmd.args):
         if i == 0:
             continue
         if arg.startswith("-cfg="):
             cfg_file = ctx.fs.canonpath(arg.removeprefix("-cfg="))
+            continue
+        if arg.startswith("-inputs=") or skip == "-inputs":
+            rw_ops["inputs"] = arg.removeprefix("-inputs=").split(",")
+            skip = ""
+            continue
+        if arg == "-inputs":
+            skip = arg
             continue
         if not arg.startswith("-"):
             wrapped_command_pos = i
@@ -42,8 +52,12 @@ def __parse_rewrapper_cmdline(ctx, cmd):
     if wrapped_command_pos < 1:
         fail("couldn't find first non-arg passed to rewrapper for %s" % str(cmd.args))
     if not cfg_file:
-        return cmd.args[wrapped_command_pos:], None, True
-    return cmd.args[wrapped_command_pos:], rewrapper_cfg.parse(ctx, cfg_file), True
+        return cmd.args[wrapped_command_pos:], rw_ops, True
+    rw_cfg_opts = rewrapper_cfg.parse(ctx, cfg_file)
+
+    # Command line options have higher priority than the ones in the cfg file.
+    rw_cfg_opts.update(rw_ops)
+    return cmd.args[wrapped_command_pos:], rw_cfg_opts, True
 
 def __parse_cros_rewrapper_cmdline(ctx, cmd):
     # fix cros sdk clang command line and extract rewrapper cfg.
@@ -80,6 +94,7 @@ def __parse_cros_rewrapper_cmdline(ctx, cmd):
         path.join(toolchainpath, "bin"),
         path.join(toolchainpath, "lib"),
         path.join(toolchainpath, "usr/bin"),
+        path.join(toolchainpath, "usr/lib64/clang"),
         # TODO: b/320189180 - Simple Chrome builds should use libraries under usr/lib64.
         # But, Ninja/Reclient also don't use them unexpectedly.
     ])
@@ -96,6 +111,7 @@ def __parse_clang_code_coverage_wrapper_cmdline(ctx, cmd):
     #     --files_to_instrument=...
     #     ../../buildtools/reclient/rewrapper
     #     -cfg=../../buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg
+    #     -inputs=build/config/unsafe_buffers_paths.txt
     #     -exec_root=/path/to/your/chromium/src/
     #     ../../third_party/llvm-build/Release+Asserts/bin/clang++
     #     [rest of clang args]
@@ -105,6 +121,8 @@ def __parse_clang_code_coverage_wrapper_cmdline(ctx, cmd):
     rewrapper_pos = -1
     wrapped_command_pos = -1
     cfg_file = None
+    skip = None
+    rw_ops = {}
     for i, arg in enumerate(cmd.args):
         if i < 2:
             continue
@@ -113,6 +131,13 @@ def __parse_clang_code_coverage_wrapper_cmdline(ctx, cmd):
             continue
         if rewrapper_pos > 0 and arg.startswith("-cfg="):
             cfg_file = ctx.fs.canonpath(arg.removeprefix("-cfg="))
+            continue
+        if arg.startswith("-inputs=") or skip == "-inputs":
+            rw_ops["inputs"] = arg.removeprefix("-inputs=").split(",")
+            skip = ""
+            continue
+        if arg == "-inputs":
+            skip = arg
             continue
         if rewrapper_pos > 0 and not arg.startswith("-"):
             wrapped_command_pos = i
@@ -128,7 +153,11 @@ def __parse_clang_code_coverage_wrapper_cmdline(ctx, cmd):
     if len(clang_command) > 1 and "/chrome-sdk/" in clang_command[0]:
         # TODO: implement cros sdk support under code coverage wrapper
         fail("need to fix handler for cros sdk under code coverage wrapper")
-    return clang_command, rewrapper_cfg.parse(ctx, cfg_file)
+    rw_cfg_opts = rewrapper_cfg.parse(ctx, cfg_file)
+
+    # Command line options have higher priority than the ones in the cfg file.
+    rw_cfg_opts.update(rw_ops)
+    return clang_command, rw_cfg_opts
 
 def __rewrite_rewrapper(ctx, cmd, use_large = False):
     # If clang-coverage, needs different handling.
@@ -182,52 +211,10 @@ def __strip_rewrapper(ctx, cmd):
             return
     ctx.actions.fix(args = args)
 
-def __rewrite_action_remote_py(ctx, cmd):
-    # Example command:
-    #   python3
-    #     ../../build/util/action_remote.py
-    #     ../../buildtools/reclient/rewrapper
-    #     --custom_processor=mojom_parser
-    #     --cfg=../../buildtools/reclient_cfgs/python/rewrapper_linux.cfg
-    #     --exec_root=/path/to/your/chromium/src/
-    #     --input_list_paths=gen/gpu/ipc/common/surface_handle__parser__remote_inputs.rsp
-    #     --output_list_paths=gen/gpu/ipc/common/surface_handle__parser__remote_outputs.rsp
-    #     python3
-    #     ../../mojo/public/tools/mojom/mojom_parser.py
-    #     [rest of mojo args]
-    # We don't need to care about:
-    #   --exec_root: Siso already knows this.
-    #   --custom_processor: Used by action_remote.py to apply mojo handling.
-    #   --[input,output]_list_paths: We should always use mojo.star for Siso.
-    wrapped_command_pos = -1
-    cfg_file = None
-    for i, arg in enumerate(cmd.args):
-        if i < 3:
-            continue
-
-        # TODO: b/300046750 - Fix GN args and/or implement input processor.
-        if arg == "--custom_processor=mojom_parser":
-            print("--custom_processor=mojom_parser is not supported. " +
-                  "Running locally. cmd=%s" % " ".join(cmd.args))
-            return
-        if arg.startswith("--cfg="):
-            cfg_file = ctx.fs.canonpath(arg.removeprefix("--cfg="))
-            continue
-        if not arg.startswith("-"):
-            wrapped_command_pos = i
-            break
-    if wrapped_command_pos < 1:
-        fail("couldn't find action command in %s" % str(cmd.args))
-    ctx.actions.fix(
-        args = cmd.args[wrapped_command_pos:],
-        reproxy_config = json.encode(rewrapper_cfg.parse(ctx, cfg_file)),
-    )
-
 __handlers = {
     "rewrite_rewrapper": __rewrite_rewrapper,
     "rewrite_rewrapper_large": __rewrite_rewrapper_large,
     "strip_rewrapper": __strip_rewrapper,
-    "rewrite_action_remote_py": __rewrite_action_remote_py,
 }
 
 def __use_remoteexec(ctx):
@@ -253,13 +240,6 @@ def __step_config(ctx, step_config):
             ],
             "remote": False,
             "handler": "strip_rewrapper",
-        },
-        # Handle generic action_remote calls.
-        {
-            "name": "action_remote",
-            "command_prefix": platform.python_bin + " ../../build/util/action_remote.py ../../buildtools/reclient/rewrapper",
-            "handler": "rewrite_action_remote_py",
-            "remote_command": "python3",
         },
     ]
 
@@ -298,6 +278,7 @@ def __step_config(ctx, step_config):
                 "action": rule["action"],
                 "exclude_input_patterns": rule.get("exclude_input_patterns"),
                 "handler": "rewrite_rewrapper",
+                "input_root_absolute_path": rule.get("input_root_absolute_path"),
             }
             new_rules.append(new_rule)
             continue

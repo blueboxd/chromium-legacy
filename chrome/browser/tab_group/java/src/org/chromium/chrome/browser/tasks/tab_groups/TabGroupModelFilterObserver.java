@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_groups;
 
 import org.chromium.base.Token;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.tab_groups.TabGroupColorId;
 
 import java.util.List;
 
@@ -19,6 +20,14 @@ public interface TabGroupModelFilterObserver {
      * @param newRootId The new root id of the group after merge.
      */
     default void willMergeTabToGroup(Tab movedTab, int newRootId) {}
+
+    /**
+     * This method is called before a group is moved.
+     *
+     * @param tabModelOldIndex The old index of the {@code movedTab} in the {@link TabModel}.
+     * @param tabModelNewIndex The new index of the {@code movedTab} in the {@link TabModel}.
+     */
+    default void willMoveTabGroup(int tabModelOldIndex, int tabModelNewIndex) {}
 
     /**
      * This method is called before a tab within a group is moved out of the group.
@@ -73,19 +82,38 @@ public interface TabGroupModelFilterObserver {
      * @param tabOriginalRootId The original root id for each modified tab.
      * @param tabOriginalTabGroupId The original tab group id for each modified tab.
      * @param destinationGroupTitle The original destination group title.
+     * @param destinationGroupColorId The original destination group color id.
      */
     default void didCreateGroup(
             List<Tab> tabs,
             List<Integer> tabOriginalIndex,
             List<Integer> tabOriginalRootId,
             List<Token> tabOriginalTabGroupId,
-            String destinationGroupTitle) {}
+            String destinationGroupTitle,
+            int destinationGroupColorId) {}
 
     /**
      * This method is called after a new tab group is created, either through drag and drop, the tab
      * selection editor, or by longpressing a link on a tab and using the context menu.
      *
-     * @param newRootId The new root id of the group after merge.
+     * @param destinationTab The destination tab of the group after merge.
+     * @param filter The {@link TabGroupModelFilter} that the new group event triggers on.
      */
-    default void didCreateNewGroup(int newRootId) {}
+    default void didCreateNewGroup(Tab destinationTab, TabGroupModelFilter filter) {}
+
+    /**
+     * This method is called after a new title is set on a tab group.
+     *
+     * @param rootId The current rootId of the tab group.
+     * @param newTitle The new title.
+     */
+    default void didChangeTabGroupTitle(int rootId, String newTitle) {}
+
+    /**
+     * This method is called after a new color is set on a tab group.
+     *
+     * @param rootId The current rootId of the tab group.
+     * @param newColor The new color.
+     */
+    default void didChangeTabGroupColor(int rootId, @TabGroupColorId int newColor) {}
 }

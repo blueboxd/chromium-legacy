@@ -34,6 +34,7 @@
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/study_filtering.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_layers.h"
 #include "components/variations/variations_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -163,6 +164,7 @@ class TestOverrideStringCallback {
 class ChromeEnvironment {
  public:
   bool HasHighEntropy() { return true; }
+  bool HasLimitedEntropy() { return true; }
 
   void CreateTrialsFromSeed(
       const VariationsSeed& seed,
@@ -171,16 +173,17 @@ class ChromeEnvironment {
     auto client_state = CreateTestClientFilterableState();
     client_state->platform = Study::PLATFORM_ANDROID;
 
-    // TODO(crbug.com/1518674): Add test cases for seeds with a layer of LIMITED
-    // entropy mode.
     MockEntropyProviders entropy_providers({
         .low_entropy = kAlwaysUseLastGroup,
         .high_entropy = kAlwaysUseFirstGroup,
+        .limited_entropy = kAlwaysUseFirstGroup,
     });
+
+    VariationsLayers layers(seed, entropy_providers);
     // This should mimic the call through SetUpFieldTrials from
     // components/variations/service/variations_service.cc
     VariationsSeedProcessor().CreateTrialsFromSeed(
-        seed, *client_state, callback, entropy_providers, feature_list);
+        seed, *client_state, callback, entropy_providers, layers, feature_list);
   }
 };
 
@@ -189,6 +192,7 @@ class ChromeEnvironment {
 class WebViewEnvironment {
  public:
   bool HasHighEntropy() { return false; }
+  bool HasLimitedEntropy() { return false; }
 
   void CreateTrialsFromSeed(
       const VariationsSeed& seed,
@@ -200,10 +204,12 @@ class WebViewEnvironment {
     MockEntropyProviders entropy_providers({
         .low_entropy = kAlwaysUseLastGroup,
     });
+
+    VariationsLayers layers(seed, entropy_providers);
     // This should mimic the call through SetUpFieldTrials from
     // android_webview/browser/aw_feature_list_creator.cc
     VariationsSeedProcessor().CreateTrialsFromSeed(
-        seed, *client_state, callback, entropy_providers, feature_list);
+        seed, *client_state, callback, entropy_providers, layers, feature_list);
   }
 };
 
@@ -905,6 +911,41 @@ TYPED_TEST(VariationsSeedProcessorTest, LowEntropyStudyTest) {
   // Since an experiment in study2 has google_web_experiment_id set, it will use
   // the low entropy provider, which selects the default group.
   EXPECT_EQ(kDefaultName, base::FieldTrialList::FindFullName(kTrial2Name));
+}
+
+TYPED_TEST(VariationsSeedProcessorTest, LimitedEntropyStudyTest) {
+  VariationsSeed seed;
+  Layer* layer = seed.add_layers();
+  layer->set_id(42);
+  layer->set_num_slots(100);
+  layer->set_entropy_mode(Layer::LIMITED);
+  Layer::LayerMember* member = layer->add_members();
+  member->set_id(82);
+  Layer::LayerMember::SlotRange* slot = member->add_slots();
+  slot->set_start(0);
+  slot->set_end(99);
+
+  Study* study = seed.add_study();
+  study->set_name("MyStudy");
+  study->set_consistency(Study::PERMANENT);
+  study->set_default_experiment_name("Default");
+  AddExperiment("Group1", 50, study);
+  AddExperiment(study->default_experiment_name(), 50, study);
+  LayerMemberReference* layer_member_reference = study->mutable_layer();
+  layer_member_reference->set_layer_id(layer->id());
+  layer_member_reference->set_layer_member_id(member->id());
+
+  this->CreateTrialsFromSeed(seed);
+
+  if (this->env.HasLimitedEntropy()) {
+    // Expect the first group to be selected when using the limited entropy
+    // provider from the setup (`kAlwaysUseFirstGroup`).
+    EXPECT_EQ("Group1", base::FieldTrialList::FindFullName(study->name()));
+  } else {
+    // The study should be dropped on clients without a limited entropy
+    // provider.
+    EXPECT_FALSE(base::FieldTrialList::IsTrialActive(study->name()));
+  }
 }
 
 TYPED_TEST(VariationsSeedProcessorTest, StudyWithInvalidLayer) {

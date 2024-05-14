@@ -48,7 +48,7 @@
 #include "chrome/browser/trusted_vault/trusted_vault_service_factory.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
-#include "chrome/browser/web_data_service_factory.h"
+#include "chrome/browser/webdata_services/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
@@ -61,6 +61,8 @@
 #include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "components/password_manager/core/browser/sharing/password_receiver_service.h"
 #include "components/password_manager/core/browser/sharing/password_sender_service.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/plus_addresses/webdata/plus_address_webdata_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
@@ -255,7 +257,9 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile)
       LocalOrSyncableBookmarkSyncServiceFactory::GetForProfile(profile_),
       AccountBookmarkSyncServiceFactory::GetForProfile(profile_),
       PowerBookmarkServiceFactory::GetForBrowserContext(profile_),
-      supervised_user_settings_service);
+      supervised_user_settings_service,
+      WebDataServiceFactory::GetPlusAddressWebDataForProfile(
+          profile_, ServiceAccessType::IMPLICIT_ACCESS));
 }
 
 ChromeSyncClient::~ChromeSyncClient() = default;
@@ -628,7 +632,7 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
     BUILDFLAG(IS_WIN)
     case syncer::SAVED_TAB_GROUP: {
       DCHECK(base::FeatureList::IsEnabled(features::kTabGroupsSave));
-      return SavedTabGroupServiceFactory::GetForProfile(profile_)
+      return tab_groups::SavedTabGroupServiceFactory::GetForProfile(profile_)
           ->bridge()
           ->change_processor()
           ->GetControllerDelegate();
@@ -740,6 +744,34 @@ void ChromeSyncClient::OnLocalSyncTransportDataCleared() {
   if (google_groups_updater != nullptr) {
     google_groups_updater->ClearSigninScopedState();
   }
+}
+
+bool ChromeSyncClient::IsPasswordSyncAllowed() {
+#if BUILDFLAG(IS_ANDROID)
+  return profile_->GetPrefs()->GetInteger(
+             password_manager::prefs::kPasswordsUseUPMLocalAndSeparateStores) !=
+         static_cast<int>(
+             password_manager::prefs::UseUpmLocalAndSeparateStoresState::
+                 kOffAndMigrationPending);
+#else
+  return true;
+#endif  // BUILDFLAG(IS_ANDROID)
+}
+
+void ChromeSyncClient::SetPasswordSyncAllowedChangeCb(
+    const base::RepeatingClosure& cb) {
+#if BUILDFLAG(IS_ANDROID)
+  CHECK(!upm_pref_change_registrar_.prefs())
+      << "SetPasswordSyncAllowedChangeCb() must be called at most once";
+  upm_pref_change_registrar_.Init(profile_->GetPrefs());
+  // This overfires: the kPasswordsUseUPMLocalAndSeparateStores pref might have
+  // changed value, but not IsPasswordSyncAllowed(). That's fine, `cb` should
+  // handle this case.
+  upm_pref_change_registrar_.Add(
+      password_manager::prefs::kPasswordsUseUPMLocalAndSeparateStores, cb);
+#else
+  // IsPasswordSyncAllowed() doesn't change outside of Android.
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

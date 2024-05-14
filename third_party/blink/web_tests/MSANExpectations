@@ -1,4 +1,4 @@
-# tags: [ Android Fuchsia Linux Mac Mac11 Mac12 Mac13 Mac13-arm64 Win Win10.20h2 Win11 Win11-arm64 ]
+# tags: [ Android Fuchsia Linux Mac Mac11 Mac12 Mac13 Mac13-arm64 Mac14 Mac14-arm64 Win Win10.20h2 Win11 Win11-arm64 ]
 # tags: [ Release Debug ]
 # results: [ Timeout Crash Pass Failure Slow Skip ]
 
@@ -113,3 +113,4 @@ crbug.com/1378044 [ Linux ] external/wpt/html/semantics/scripting-1/the-script-e
 
 
 crbug.com/1457275 [ Linux ] external/wpt/dom/ranges/Range-surroundContents.html [ Skip ]
+

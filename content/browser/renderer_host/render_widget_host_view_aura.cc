@@ -113,6 +113,7 @@
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/base/ime/virtual_keyboard_controller.h"
 #include "ui/base/ime/virtual_keyboard_controller_observer.h"
+#include "ui/base/ime/win/tsf_input_scope.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/gdi_util.h"
@@ -563,12 +564,11 @@ void RenderWidgetHostViewAura::NotifyHostAndDelegateOnWasShown(
   DCHECK_NE(visibility_, Visibility::VISIBLE);
 
   auto* wth = window()->GetHost();
-  if (wth && allocate_local_surface_id_on_next_show_) {
+  if (wth && !wth->window()->GetLocalSurfaceId().is_valid()) {
     wth->window()->AllocateLocalSurfaceId();
     wth->compositor()->SetLocalSurfaceIdFromParent(
         wth->window()->GetLocalSurfaceId());
   }
-  allocate_local_surface_id_on_next_show_ = false;
 
   visibility_ = Visibility::VISIBLE;
 
@@ -685,6 +685,11 @@ void RenderWidgetHostViewAura::
 
   host()->CancelSuccessfulPresentationTimeRequest();
   delegated_frame_host_->CancelSuccessfulPresentationTimeRequest();
+}
+
+viz::SurfaceId RenderWidgetHostViewAura::GetFallbackSurfaceIdForTesting()
+    const {
+  return delegated_frame_host_->GetFallbackSurfaceIdForTesting();  // IN-TEST
 }
 
 bool RenderWidgetHostViewAura::ShouldSkipCursorUpdate() const {
@@ -889,6 +894,12 @@ void RenderWidgetHostViewAura::ShowWithVisibility(
       legacy_render_widget_host_HWND_) {
     legacy_render_widget_host_HWND_->Hide();
   }
+
+  if (window_->GetHost() && GetInputMethod() && !ShouldDoLearning()) {
+    ui::tsf_inputscope::SetPrivateInputScope(
+        RenderWidgetHostViewAura::GetHostWindowHWND());
+  }
+
 #endif  // BUILDFLAG(IS_WIN)
 }
 
@@ -1691,7 +1702,7 @@ ukm::SourceId RenderWidgetHostViewAura::GetClientSourceForMetrics() const {
 }
 
 bool RenderWidgetHostViewAura::ShouldDoLearning() {
-  return GetTextInputManager() && GetTextInputManager()->should_do_learning();
+  return host_->delegate() && host_->delegate()->ShouldDoLearning();
 }
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -2184,8 +2195,9 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
     // We need to honor input bypass if the associated tab does not want input.
     // This gives the current focused window a chance to be the text input
     // client and handle events.
-    if (host()->IsIgnoringInputEvents())
+    if (host()->IsIgnoringInputEvents()) {
       return;
+    }
 
     host()->GotFocus();
     UpdateActiveState(true);

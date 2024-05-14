@@ -103,6 +103,10 @@
   "chrome/browser/nearby_sharing/internal/nearby_share_internal_strings.grd": {
     "messages": [2260],
   },
+  "chrome/browser/platform_experience/win/resources/resources.grd": {
+    "includes": [2270],
+    "messages": [2275],
+  },
   "chrome/browser/recent_tabs/internal/android/java/strings/android_restore_tabs_strings.grd": {
     "messages": [2280],
   },
@@ -216,18 +220,13 @@
   "chrome/browser/resources/chromeos/app_icon/app_icon_resources.grd": {
     "structures": [2800],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/login/oobe_conditional_resources.grd": {
-    "META": {"sizes": {"includes": [150], "structures": [300]}},
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/login/resources.grd": {
+    "META": {"sizes": {"includes": [300],}},
     "includes": [2820],
-    "structures": [2840],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/lock_screen_reauth/resources.grd": {
     "META": {"sizes": {"includes": [30]}},
     "includes": [2860],
-  },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/login/oobe_unconditional_resources.grd": {
-    "META": {"sizes": {"includes": [350]}},
-    "includes": [2880],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/multidevice_internals/resources.grd": {
     "META": {"sizes": {"includes": [35]}},
@@ -419,6 +418,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/performance_controls/resources.grd": {
     "META": {"sizes": {"includes": [20],}},
     "includes": [3860],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/ash/extended_updates/resources.grd": {
+    "META": {"sizes": {"includes": [20]}},
+    "includes": [3865],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/ash/inline_login/resources.grd": {
     "META": {"sizes": {"includes": [20]}},
@@ -686,15 +689,15 @@
     "includes": [5140],
   },
   "<(SHARED_INTERMEDIATE_DIR)/components/metrics/debug/resources.grd": {
-    "META": {"sizes": {"includes": [10]}},
+    "META": {"sizes": {"includes": [15]}},
     "includes": [5160],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/lens/resources.grd": {
     "META": {"sizes": {"includes": [10]}},
     "includes": [5180],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/lens/untrusted_resources.grd": {
-    "META": {"sizes": {"includes": [10]}},
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/lens/overlay/resources.grd": {
+    "META": {"sizes": {"includes": [20]}},
     "includes": [5200],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/enterprise_reporting/resources.grd": {
@@ -977,6 +980,9 @@
     "includes": [7220]
   },
 
+  "components/privacy_sandbox_strings.grd": {
+    "messages": [7240],
+  },
   "components/search_engine_descriptions_strings.grd": {
     "messages": [7260],
   },
@@ -1129,6 +1135,9 @@
   "ash/public/cpp/resources/ash_public_unscaled_resources.grd": {
     "includes": [7580],
     "structures": [7600],
+  },
+  "ash/system/mahi/resources/mahi_resources.grd": {
+    "structures":[7610],
   },
   "base/tracing/protos/resources.grd": {
     "includes": [7620],

@@ -6,7 +6,6 @@
 #define IOS_WEB_PUBLIC_TEST_FAKES_FAKE_WEB_STATE_H_
 
 #import <Foundation/Foundation.h>
-
 #include <stdint.h>
 
 #include <memory>
@@ -38,6 +37,8 @@ class FakeWebState : public WebState {
 
   // WebState implementation.
   void SerializeToProto(proto::WebStateStorage& storage) const override;
+  void SerializeMetadataToProto(
+      proto::WebStateMetadataStorage& storage) const override;
   WebStateDelegate* GetDelegate() override;
   void SetDelegate(WebStateDelegate* delegate) override;
   std::unique_ptr<WebState> Clone() const override;

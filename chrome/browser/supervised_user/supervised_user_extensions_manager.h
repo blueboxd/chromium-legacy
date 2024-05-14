@@ -50,8 +50,11 @@ class SupervisedUserExtensionsManager : public ExtensionRegistryObserver,
   // Returns whether the extension is allowed by the parent.
   bool IsExtensionAllowed(const Extension& extension) const;
 
-  // Returns whether the supervised user can install extensions based on
-  // existing parental controls.
+  // Returns whether the supervised user can install extensions.
+  // If the feature that allows skipping parent approval is enabled, supervised
+  // user are always allowed to install extensions.
+  // If the feature is disabled, the permission to install is based on existing
+  // Family Link parental controls ("Permissions" switch).
   bool CanInstallExtensions() const;
 
   // Records the state of extension approvals.
@@ -72,7 +75,6 @@ class SupervisedUserExtensionsManager : public ExtensionRegistryObserver,
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const Extension* extension,
                               UninstallReason reason) override;
-
  private:
   // These enum values represent operations to manage the
   // kSupervisedUserApprovedExtensions user pref, which stores parent approved
@@ -131,12 +133,40 @@ class SupervisedUserExtensionsManager : public ExtensionRegistryObserver,
   // idempotent.
   void ChangeExtensionStateIfNecessary(const std::string& extension_id);
 
-  // Returns whether we should block an extension based on the state of the
-  // "Permissions for sites, apps and extensions" toggle.
+  // Returns whether we should block an extension.
+  // If the toggle "Permissions for sites, apps and extensions" toggle
+  // is used to manage supervised user extensions, the result depends on the
+  // value of the toggle.
+  // If the new toggle "Extensions" is used to manage supervised user
+  // extensions, this method return always false.
+  // TODO(b/321239324): De-release when the "Extensions" toggle-management is
+  // launched.
   bool ShouldBlockExtension(const std::string& extension_id) const;
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  // Triggers an one-time migration of the present extensions as parent-approved
+  // when the feature
+  // `kEnableSupervisedUserSkipParentApprovalToInstallExtensions` becomes
+  // enabled.
+  void MaybeMarkExtensionsLocallyParentApproved();
+
+  // Marks the extensions available to the child user as locally parent-approved
+  // on a preference on this device.
+  void DoExtensionsMigrationToParentApproved();
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+
+  // Returns true if the given `extension_id` has been marked locally parent
+  // approved.
+  bool IsLocallyParentApprovedExtension(const std::string& extension_id) const;
+
+  // Removes from the locally approved extension preference the given
+  // `extension_ids`. The input `extension_ids` doesn't have to be a subset of
+  // the locally approved extensions: the method will remove those that are
+  // locally approved and ignore the rest.
+  void RemoveLocalParentalApproval(const std::set<std::string> extension_ids);
+
   // The current state of registration of this class as a management policy.
-  bool is_active_policy_for_supervised_users_;
+  bool is_active_policy_for_supervised_users_ = false;
 
   const raw_ptr<content::BrowserContext> context_;
   raw_ptr<ExtensionPrefs> extension_prefs_;

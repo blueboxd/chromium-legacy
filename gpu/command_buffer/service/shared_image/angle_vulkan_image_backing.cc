@@ -284,7 +284,8 @@ bool AngleVulkanImageBacking::Initialize(
       SHARED_IMAGE_USAGE_GLES2_READ | SHARED_IMAGE_USAGE_GLES2_WRITE |
       SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
       SHARED_IMAGE_USAGE_RASTER_READ | SHARED_IMAGE_USAGE_RASTER_WRITE |
-      SHARED_IMAGE_USAGE_OOP_RASTERIZATION | SHARED_IMAGE_USAGE_WEBGPU;
+      SHARED_IMAGE_USAGE_OOP_RASTERIZATION | SHARED_IMAGE_USAGE_WEBGPU_READ |
+      SHARED_IMAGE_USAGE_WEBGPU_WRITE;
   VkImageUsageFlags vk_usage = VK_IMAGE_USAGE_SAMPLED_BIT |
                                VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
                                VK_IMAGE_USAGE_TRANSFER_DST_BIT;
@@ -313,7 +314,7 @@ bool AngleVulkanImageBacking::Initialize(
       return false;
     }
 
-    vk_textures_.emplace_back(std::move(vulkan_image), color_space());
+    vk_textures_.emplace_back(std::move(vulkan_image), format(), color_space());
   }
 
   if (!data.empty()) {
@@ -351,7 +352,7 @@ bool AngleVulkanImageBacking::InitializeWihGMB(
     return false;
   }
 
-  vk_textures_.emplace_back(std::move(vulkan_image), color_space());
+  vk_textures_.emplace_back(std::move(vulkan_image), format(), color_space());
 
   SetCleared();
 

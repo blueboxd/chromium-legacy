@@ -126,6 +126,12 @@ chromium-metrics-reviews@google.com.
   <int value="23" label="SignedInWithNoDeviceAccount">
     User has signed in to Chrome, from a state without any on-device account.
   </int>
+  <int value="24" label="ConfirmManagementShown">
+    User was shown the confirm management screen on signin.
+  </int>
+  <int value="25" label="ConfirmManagementAccepted">
+    User accepted management on signin.
+  </int>
 </enum>
 
 <enum name="AccountReauthenticationEvent">
@@ -345,6 +351,7 @@ chromium-metrics-reviews@google.com.
       label="Should not Show: Secondary account (deprecated 02-2024)"/>
   <int value="4" label="Should not Show: Unknown access point"/>
   <int value="5" label="Should not Show: Not from web sign in"/>
+  <int value="6" label="Should not Show: User choice"/>
 </enum>
 
 <enum name="SigninAccessPoint">
@@ -504,6 +511,11 @@ chromium-metrics-reviews@google.com.
   <int value="20" label="Abort: signed out during interception"/>
   <int value="21"
       label="Abort: not the first account but there is no primary account."/>
+</enum>
+
+<enum name="SigninInterceptionDismissReason">
+  <int value="0" label="Pressing the Escape key"/>
+  <int value="1" label="Pressing the identity pill"/>
 </enum>
 
 <enum name="SigninInterceptResult">
@@ -721,6 +733,18 @@ chromium-metrics-reviews@google.com.
     value included `sign_out`. When the user has been idle for the time
     specified in the policy value, they will be signed out.
   </int>
+  <int value="32"
+      label="User cancelled sync confirmation removes primary account">
+    User added the primary account through the sync flow. On abort, the primary
+    account is cleared.
+  </int>
+  <int value="33"
+      label="Move primary account in some cases of signin interception and
+             sync merge data confirmation">
+    The primary account might be moved to another profile in some cases e.g.
+    profile switch, enterprise related interception or sync merge data
+    confirmation.
+  </int>
 </enum>
 
 <enum name="SigninSSOIdentityListRequestCacheState">
@@ -774,6 +798,26 @@ chromium-metrics-reviews@google.com.
   <int value="19" label="LogoutTabHelper::DidFinishNavigation"/>
   <int value="20" label="ForceSigninReauthWithDifferentAccount"/>
   <int value="21" label="AccountReconcilor::RevokeTokensNotInCookies"/>
+</enum>
+
+<enum name="SyncButtonClicked">
+  <int value="0" label="Equal weighted sync opt-in button clicked"/>
+  <int value="1" label="Equal weighted sync cancel button clicked"/>
+  <int value="2" label="Equal weighted sync settings button clicked"/>
+  <int value="3" label="Not-Equal weighted sync opt-in button clicked"/>
+  <int value="4" label="Not-Equal weighted sync cancel button clicked"/>
+  <int value="5" label="Not-Equal weighted sync settings button clicked"/>
+  <int value="6" label="Equal weighted history sync opt-in button clicked"/>
+  <int value="7" label="Equal weighted history sync cancel button clicked"/>
+  <int value="8" label="Not-Equal weighted history sync opt-in button clicked"/>
+  <int value="9" label="Not-Equal weighted history sync cancel button clicked"/>
+</enum>
+
+<enum name="SyncButtonsType">
+  <int value="0" label="Equal weighted buttons on sync screen"/>
+  <int value="1" label="Not-Equal weighted buttons on sync screen"/>
+  <int value="2" label="Equal weighted buttons on history sync screen"/>
+  <int value="3" label="Not-Equal weighted buttons on history sync screen"/>
 </enum>
 
 <enum name="SyncErrorPromptUIAction">

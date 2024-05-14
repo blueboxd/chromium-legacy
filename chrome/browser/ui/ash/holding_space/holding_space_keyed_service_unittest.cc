@@ -2982,6 +2982,10 @@ TEST_P(HoldingSpaceKeyedServiceAddAndRemoveItemTest, AddAndRemoveItem) {
   // Verify a holding space item has been added to the model.
   ASSERT_EQ(model->items().size(), 1u);
 
+  HoldingSpaceKeyedService* const service = GetService(profile);
+  ASSERT_TRUE(service);
+  EXPECT_TRUE(service->ContainsItem(id));
+
   // Verify holding space `item` metadata.
   HoldingSpaceItem* const item = model->items()[0].get();
   EXPECT_EQ(item->id(), id);
@@ -3018,16 +3022,22 @@ TEST_P(HoldingSpaceKeyedServiceAddAndRemoveItemTest, AddAndRemoveItem) {
     // For suggestion items, the new suggestions should always replace old ones.
     EXPECT_NE(model->items()[0].get(), item);
     EXPECT_NE(id, id2);
+    EXPECT_FALSE(service->ContainsItem(id));
+    EXPECT_TRUE(service->ContainsItem(id2));
   } else {
     // For non-suggestion items, attempts to add already represented items
     // should be ignored.
     EXPECT_EQ(model->items()[0].get(), item);
     EXPECT_EQ(id, id2);
+    EXPECT_TRUE(service->ContainsItem(id));
+    EXPECT_TRUE(service->ContainsItem(id2));
   }
 
   // Remove the holding space item.
-  GetService(profile)->RemoveItem(is_suggestion ? id2 : id);
+  service->RemoveItem(is_suggestion ? id2 : id);
   EXPECT_TRUE(model->items().empty());
+  EXPECT_FALSE(service->ContainsItem(id));
+  EXPECT_FALSE(service->ContainsItem(id2));
 
   // Verify `expected_histograms` after "waiting" for metrics debounce.
   // NOTE: Histograms are cumulative so we need to merge `expected_histograms`
@@ -3612,6 +3622,7 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, SuggestionRemoval) {
       FileSuggestionType::kDriveFile,
       /*suggestions=*/std::vector<FileSuggestData>{
           {FileSuggestionType::kDriveFile, file_path_1,
+           FileSuggestionJustificationType::kUnknown,
            /*new_prediction_reason=*/std::nullopt,
            /*timestamp=*/std::nullopt,
            /*secondary_timestamp=*/std::nullopt,
@@ -3620,6 +3631,7 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, SuggestionRemoval) {
       FileSuggestionType::kLocalFile,
       /*suggestions=*/std::vector<FileSuggestData>{
           {FileSuggestionType::kLocalFile, file_path_2,
+           FileSuggestionJustificationType::kUnknown,
            /*new_prediction_reason=*/std::nullopt,
            /*timestamp=*/std::nullopt,
            /*secondary_timestamp=*/std::nullopt,
@@ -3650,6 +3662,7 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, VerifySuggestionsInModel) {
       FileSuggestionType::kDriveFile,
       /*suggestions=*/std::vector<FileSuggestData>{
           {FileSuggestionType::kDriveFile, file_path_1,
+           FileSuggestionJustificationType::kUnknown,
            /*new_prediction_reason=*/std::nullopt,
            /*timestamp=*/std::nullopt,
            /*secondary_timestamp=*/std::nullopt,
@@ -3678,6 +3691,7 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, VerifySuggestionsInModel) {
       FileSuggestionType::kLocalFile,
       /*suggestions=*/std::vector<FileSuggestData>{
           {FileSuggestionType::kLocalFile, file_path_2,
+           FileSuggestionJustificationType::kUnknown,
            /*new_prediction_reason=*/std::nullopt,
            /*timestamp=*/std::nullopt,
            /*secondary_timestamp=*/std::nullopt,
@@ -3697,11 +3711,13 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, VerifySuggestionsInModel) {
       FileSuggestionType::kDriveFile,
       /*suggestions=*/
       std::vector<FileSuggestData>{{FileSuggestionType::kDriveFile, file_path_1,
+                                    FileSuggestionJustificationType::kUnknown,
                                     /*new_prediction_reason=*/std::nullopt,
                                     /*timestamp=*/std::nullopt,
                                     /*secondary_timestamp=*/std::nullopt,
                                     /*new_score=*/std::nullopt},
                                    {FileSuggestionType::kDriveFile, file_path_3,
+                                    FileSuggestionJustificationType::kUnknown,
                                     /*new_prediction_reason=*/std::nullopt,
                                     /*timestamp=*/std::nullopt,
                                     /*secondary_timestamp=*/std::nullopt,
@@ -3751,16 +3767,19 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, DownloadsFolderNotSuggested) {
       FileSuggestionType::kLocalFile,
       /*suggestions=*/std::vector<FileSuggestData>{
           {FileSuggestionType::kLocalFile, downloads_path,
+           ash::FileSuggestionJustificationType::kUnknown,
            /*new_prediction_reason=*/std::nullopt,
            /*timestamp=*/std::nullopt,
            /*secondary_timestamp=*/std::nullopt,
            /*new_score=*/std::nullopt},
           {FileSuggestionType::kLocalFile, other_folder_path,
+           ash::FileSuggestionJustificationType::kUnknown,
            /*new_prediction_reason=*/std::nullopt,
            /*timestamp=*/std::nullopt,
            /*secondary_timestamp=*/std::nullopt,
            /*new_score=*/std::nullopt},
           {FileSuggestionType::kLocalFile, file_path,
+           ash::FileSuggestionJustificationType::kUnknown,
            /*new_prediction_reason=*/std::nullopt,
            /*timestamp=*/std::nullopt,
            /*secondary_timestamp=*/std::nullopt,
@@ -3790,6 +3809,7 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, PinAndUnpinSuggestions) {
       FileSuggestionType::kDriveFile,
       /*suggestions=*/std::vector<FileSuggestData>{
           {FileSuggestionType::kDriveFile, file_path_1,
+           FileSuggestionJustificationType::kUnknown,
            /*new_prediction_reason=*/std::nullopt,
            /*timestamp=*/std::nullopt,
            /*secondary_timestamp=*/std::nullopt,
@@ -3818,6 +3838,7 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, PinAndUnpinSuggestions) {
       FileSuggestionType::kLocalFile,
       /*suggestions=*/std::vector<FileSuggestData>{
           {FileSuggestionType::kLocalFile, file_path_2,
+           FileSuggestionJustificationType::kUnknown,
            /*new_prediction_reason=*/std::nullopt,
            /*timestamp=*/std::nullopt,
            /*secondary_timestamp=*/std::nullopt,
@@ -3939,6 +3960,7 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, RestoreSuggestions) {
       ->SetSuggestionsForType(FileSuggestionType::kLocalFile,
                               /*suggestions=*/std::vector<FileSuggestData>{
                                   {FileSuggestionType::kLocalFile, local_file,
+                                   FileSuggestionJustificationType::kUnknown,
                                    /*new_prediction_reason=*/std::nullopt,
                                    /*timestamp=*/std::nullopt,
                                    /*secondary_timestamp=*/std::nullopt,
@@ -4001,6 +4023,7 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, UpdateSuggestionsWithDelayedMount) {
       ->SetSuggestionsForType(FileSuggestionType::kLocalFile,
                               /*suggestions=*/std::vector<FileSuggestData>{
                                   {FileSuggestionType::kLocalFile, local_file,
+                                   FileSuggestionJustificationType::kUnknown,
                                    /*new_prediction_reason=*/std::nullopt,
                                    /*timestamp=*/std::nullopt,
                                    /*secondary_timestamp=*/std::nullopt,

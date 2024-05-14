@@ -1484,10 +1484,10 @@
     Follow instructions on your phone to verify the code
   </message>
   <message name="IDS_LOGIN_QUICK_START_WIFI_TRANSFER_TITLE" desc="A title used on OOBE's Quick Start screen when WiFi credentials are being transferred to the Chromebook from the Android device.">
-    Connecting to Wi-Fi...
+    Receiving Wi-Fi info...
   </message>
   <message name="IDS_LOGIN_QUICK_START_WIFI_TRANSFER_SUBTITLE" desc="A subtitle used on OOBE's Quick Start screen when WiFi credentials are being transferred to the Chromebook from the Android device.">
-    Transfering Wi-Fi from your Android phone
+    Your Android phone has you covered. Your WiFi and password are being transferred over.
   </message>
   <message name="IDS_LOGIN_QUICK_START_NETWORK_NEEDED_SUBTITLE" desc="A subtitle used on OOBE's Quick Start flow prompting the user to connect to a WiFi network in order to continue the Chromebook setup using the Android device.">
     To continue setup with your Android device, connect your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> to a network
@@ -1615,11 +1615,14 @@
   <message name="IDS_APP_START_WAIT_FOR_APP_WINDOW_MESSAGE" desc="Message displayed while waiting for the application to create its window in kiosk mode.">
     Waiting for application window...
   </message>
-  <message name="IDS_PASSWORD_SELECTION_TITLE" desc="Message displayed on the password selection screen.">
-    Use a password to sign in to your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+  <message name="IDS_PASSWORD_SELECTION_TITLE" desc="Title displayed on the password selection screen.">
+    Set a <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password to make it easier to sign in
+  </message>
+  <message name="IDS_PASSWORD_SELECTION_SUBTITLE" desc="Message displayed on the password selection screen.">
+    Instead of entering your Google Account password to sign in, you can create <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password for this device
   </message>
   <message name="IDS_PASSWORD_SELECTION_LOCAL_PASSWORD_LABEL" desc="Label for the local password option on the password selection screen.">
-    Create <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password
+    Create password for this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
   <message name="IDS_PASSWORD_SELECTION_GAIA_PASSWORD_LABEL" desc="Label for the online password option on the password selection screen.">
     Use Google Account password
@@ -1747,7 +1750,10 @@
     Please re-enter your password to update your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> profile.
   </message>
   <message name="IDS_LOGIN_LOCAL_PASSWORD_SETUP_TITLE" desc="Title for the local password setup dialog.">
-    Set <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password
+    Set a <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password to make it easier to sign in
+  </message>
+  <message name="IDS_LOGIN_LOCAL_PASSWORD_SETUP_SUBTITLE" desc="Subtitle for the local password setup dialog.">
+    Instead of entering your Google Account password to sign in, you can create a <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password for this device
   </message>
   <message name="IDS_LOGIN_LOCAL_PASSWORD_RESET_TITLE" desc="Title for the local password reset dialog.">
     Reset <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password
@@ -3411,156 +3417,6 @@
     Use another account
   </message>
 
-  <!-- Administrator facing strings for Active Directory screens. -->
-  <message name="IDS_AD_DEVICE_NAME_INPUT_LABEL" desc="Admin-facing. Label for device name input field on the Active Directory domain join screen. User should tell us the name of their device.">
-    Chromebook device name
-  </message>
-  <message name="IDS_AD_DOMAIN_JOIN_WELCOME_MESSAGE" desc="Admin-facing. Welcome message on the Active Directory domain join screen.">
-    Join device to domain
-  </message>
-  <message name="IDS_AD_MORE_OPTIONS_BUTTON" desc="Admin-facing. Text on the 'More options' button on the Active Directory domain join screen.">
-    More options
-  </message>
-  <message name="IDS_AD_UNLOCK_TITLE_MESSAGE" desc="Admin-facing. Title on the configuration password step on the Active Directory domain join screen.">
-    Get configuration info
-  </message>
-  <message name="IDS_AD_UNLOCK_SUBTITLE_MESSAGE" desc="Admin-facing. Subtitle on the configuration password step on the Active Directory domain join screen.">
-    Enter admin-provided password to get configuration info
-  </message>
-  <message name="IDS_AD_UNLOCK_CONFIG_PASSWORD" desc="Admin-facing. Label for unlocking password input field on the Active Directory domain join screen.">
-    Enter admin-provided password
-  </message>
-  <message name="IDS_AD_UNLOCK_INCORRECT_PASSWORD" desc="Admin-facing. Error that is shown when incorrect unlocking password was entered.">
-    Wrong password, try again
-  </message>
-  <message name="IDS_AD_UNLOCK_PASSWORD_SKIP" desc="Admin-facing. Text on the button which skips entering unlocking password step.">
-    Skip
-  </message>
-  <message name="IDS_AD_ORG_UNIT_HINT" desc="Admin-facing. Hint for the Active Directory Organizational units input on the 'More options' dialog.">
-    Device OU (e.g. OU=Chromebooks,DC=example,DC=com)
-  </message>
-  <message name="IDS_AD_ENCRYPTION_SELECTION_SELECT" desc="Admin-facing. Title for kerberos encryption types selection.">
-    Select encryption types
-  </message>
-  <message name="IDS_AD_CONFIG_SELECTION_SELECT" desc="Admin-facing. Title for configuration selection.">
-    Select configuration
-  </message>
-  <message name="IDS_AD_CONFIG_SELECTION_CUSTOM" desc="Admin-facing. Title for a custom option of domain join config.">
-    Custom
-  </message>
-  <message name="IDS_AD_ENCRYPTION_STRONG_TITLE" desc="Admin-facing. Title for 'Strong' kerberos types option.">
-    Strong
-  </message>
-  <message name="IDS_AD_ENCRYPTION_STRONG_SUBTITLE" desc="Admin-facing. Subtitle describing 'Strong' option.">
-    Enforce AES encryption (recommended).
-  </message>
-  <message name="IDS_AD_ENCRYPTION_ALL_TITLE" desc="Admin-facing. Title for 'All' kerberos types option.">
-    All (insecure)
-  </message>
-  <message name="IDS_AD_ENCRYPTION_ALL_SUBTITLE" desc="Admin-facing. Subtitle describing 'All' option.">
-    Allow AES and RC4 encryption. Using this option increases your risk, as the RC4 ciphers are insecure.
-  </message>
-  <message name="IDS_AD_ENCRYPTION_LEGACY_TITLE" desc="Admin-facing. Title for 'Legacy' kerberos types option.">
-    Legacy (insecure)
-  </message>
-  <message name="IDS_AD_ENCRYPTION_LEGACY_SUBTITLE" desc="Admin-facing. Subtitle describing 'Legacy' option.">
-    Enforce RC4 encryption. Using this option increases your risk, as the RC4 ciphers are insecure.
-  </message>
-  <message name="IDS_AD_DOMAIN_JOIN_UNKNOWN_ERROR" desc="Admin-facing. Default error text on the Active Directory join screen">
-    Oops!  Something went wrong when trying to join the domain. Please try again.
-  </message>
-  <message name="IDS_AD_DEVICE_NAME_INVALID" desc="Admin-facing alert message. Admin entered a bad device name.">
-    The device name is invalid. Enter a valid device name to try again.
-  </message>
-  <message name="IDS_AD_DEVICE_NAME_TOO_LONG" desc="Admin-facing alert message. Admin entered a device name that was too long.">
-    The device name is too long. Enter a shorter name to try again.
-  </message>
-  <message name="IDS_AD_DEVICE_NAME_INVALID_FORMAT" desc="Admin-facing. Alert message about device name does not match regular expression">
-    Incorrect format, please try again
-  </message>
-  <message name="IDS_AD_USER_DENIED_TO_JOIN_DEVICE" desc="Admin-facing alert message. Admin doesn’t have privileges to add devices to the domain. 'Devices' refers to Chromebook computers. 'Domain' is the Windows domain that accounts are registered to.">
-    Can't join the domain. Check your account to see if you have sufficient privileges to add devices.
-  </message>
-  <message name="IDS_AD_USER_HIT_JOIN_QUOTA" desc="Admin-facing alert message. Administrator has reached the limit of devices that can be added.">
-    Can't join the device to the domain. Make sure you haven’t exceeded the number of devices you can add.
-  </message>
-  <message name="IDS_AD_OU_DOES_NOT_EXIST" desc="Admin-facing alert message.  Admin entered the name of the organizational unit incorrectly.">
-    Can’t find an organizational unit with that name. Please try again.
-  </message>
-  <message name="IDS_AD_OU_ACCESS_DENIED" desc="Admin-facing alert message. The admin is using an account that doesn’t have privileges to add devices to the organizational unit.">
-    Can't join the device to the domain. Check your account to make sure you have privileges to add devices.
-  </message>
-  <message name="IDS_AD_OU_SETTING_FAILED" desc="Admin-facing alert message. Settings for the organizational unit are incorrect.">
-    Can’t join the domain. Make sure the settings are correct for the organizational unit.
-  </message>
-  <message name="IDS_AD_NOT_SUPPORTED_ENCRYPTION" desc="Admin-facing. Alert message that user could not join the device to due to not supported encryption types.">
-    Can't join the device to the domain. The server does not support specified Kerberos encryption types. Check "More options" for encryption settings.
-  </message>
-  <message name="IDS_AD_BOARD_NOT_SUPPORTED" desc="Admin-facing. Alert message that the Chromebook model is not supported for Active Directory">
-    Chrome <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> integration is only supported on x86_64 platforms. Chromebooks built on top of an ARM or x86 platform do not support this functionality.
-  </message>
-  <!-- User facing strings for Active Directory screens. -->
-  <message name="IDS_AD_DOMAIN_AUTH_WELCOME_MESSAGE" desc="Welcome message on the Active Directory Authentication user screen. Include the domain (realm) the device joined to.">
-    Sign in to <ph name="REALM">$1<ex>example.com</ex></ph>
-  </message>
-  <message name="IDS_AD_AUTH_LOGIN_USER" desc="Label for userPrincipalName input field on the Active Directory authentication user screen.">
-    Username
-  </message>
-  <message name="IDS_AD_LOGIN_PASSWORD" desc="Label for Password input field on both Active Directory domain join and Active Directory Authorization user screens.">
-    Password
-  </message>
-  <message name="IDS_AD_PASSWORD_CHANGE_OLD_PASSWORD_HINT" desc="Old password field hint on the Active Directory password change dialog.">
-    Enter old password
-  </message>
-  <message name="IDS_AD_PASSWORD_CHANGE_NEW_PASSWORD_HINT" desc="New password field hint on the Active Directory password change dialog.">
-    Enter new password
-  </message>
-  <message name="IDS_AD_PASSWORD_CHANGE_REPEAT_NEW_PASSWORD_HINT" desc="Repeat of the new password field hint on the Active Directory password change dialog.">
-    Confirm new password
-  </message>
-  <message name="IDS_AD_PASSWORD_CHANGE_MESSAGE" desc="Message to the user that the Active Directory administrator requires the user to change their password.">
-    <ph name="USER_NAME">$1</ph>, your administrator requires you to change your password.
-  </message>
-  <message name="IDS_AD_PASSWORD_CHANGE_INVALID_PASSWORD_ERROR" desc="Error message for the old password field on the Active Directory password change dialog.">
-    The password you entered is incorrect.
-  </message>
-  <message name="IDS_AD_PASSWORD_CHANGE_NEW_PASSWORD_REJECTED_SHORT_ERROR" desc="Error message in case new password was rejected by the server. Shown under the password input.">
-    The password you entered was rejected by the server.
-  </message>
-  <message name="IDS_AD_PASSWORD_CHANGE_NEW_PASSWORD_REJECTED_LONG_ERROR" desc="Error message in case new password was rejected by the server. Shown in the separate popup.">
-    The password you entered was rejected by the server. Possible reasons include: The password is too short. The password must include numbers or symbols. The password must be different from previous passwords.
-  </message>
-  <message name="IDS_AD_PASSWORD_CHANGE_PASSWORDS_MISMATCH_ERROR" desc="Error message in case new password fields does not match on the Active Directory password change dialog.">
-    Passwords do not match.
-  </message>
-  <message name="IDS_AD_SAVE_BUTTON" desc="Text on the 'Save' button on the 'More options' dialog.">
-    Save
-  </message>
-  <message name="IDS_AD_CANCEL_BUTTON" desc="Text on the 'Cancel' button on the 'More options' dialog.">
-    Cancel
-  </message>
-  <message name="IDS_AD_INVALID_USERNAME" desc="Alert message about invalid username on the Active Directory domain join screen.">
-    Please enter a valid username
-  </message>
-  <message name="IDS_AD_INVALID_PASSWORD" desc="Alert message about mismatching username and password in the Active Directory">
-    The username and password you entered do not match
-  </message>
-  <message name="IDS_AD_PASSWORD_EXPIRED" desc="Alert message about expired password in the Active Directory">
-    Oops!  Looks like your password expired. Please renew it on another device and try again.
-  </message>
-  <message name="IDS_AD_AUTH_NETWORK_ERROR" desc="Error message to show when there is a problem contacting the logon server when authenticating for Active Directory enrollment.">
-    Oops!  There was a problem contacting the logon server. Please check your network connection and the domain name, then try again.
-  </message>
-  <message name="IDS_AD_JOIN_CONFIG_NOT_PARSED" desc="Alert message to say unlocked configuration could not be parsed.">
-    Can't parse the configuration to join domain. Please contact your administrator.
-  </message>
-  <message name="IDS_AD_AUTH_NOT_SUPPORTED_ENCRYPTION" desc="Alert message that user could not sign in due to not supported encryption types.">
-    Failed to login. The server does not support specified Kerberos encryption types. Please contact your administrator.
-  </message>
-  <message name="IDS_AD_AUTH_UNKNOWN_ERROR" desc="Error message to show that occurs something a user could not fix.">
-    Oops!  An unknown error occurred. Please try again later or contact your administrator if the issue persists.
-  </message>
-
   <message name="IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_EXPLANATION" desc="Device attribute message to be shown on attribute update prompt screen.">
     Enter new or update existing information to be associated with this device.
   </message>
@@ -3939,11 +3795,11 @@
   <message name="IDS_ARC_OPT_IN_LOCATION_SETTING_CHILD" desc="Message in the opt-in dialog for Android apps for the user to turn on Google location services, and a child account is in use.">
     Use location. Allow apps and services with location permission to use this device’s location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-location-service"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
-  <message name="IDS_ARC_OOBE_LOCATION_SETTING" desc="Message in the opt-in dialog for Android apps for the user to turn on Google location services.">
-      Use location. Allow apps and services with location permission to use your device’s location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services.
+  <message name="IDS_CROS_OPT_IN_LOCATION_SETTING" desc="Message in the opt-in dialog for Android apps for the user to turn on Google location services.">
+    Use location. Allow ChromeOS and Android apps, websites, and services with location permission to use your device's location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-location-service"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
-  <message name="IDS_ARC_OOBE_LOCATION_SETTING_CHILD" desc="Message in the opt-in dialog for Android apps for the user to turn on Google location services, and a child account is in use.">
-      Use location. Allow apps and services with location permission to use this device’s location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services.
+  <message name="IDS_CROS_OPT_IN_LOCATION_SETTING_CHILD" desc="Message in the opt-in dialog for Android apps for the user to turn on Google location services, and a child account is in use.">
+    Use location. Allow ChromeOS and Android apps, websites, and services with location permission to use this device's location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-location-service"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OPT_IN_PAI" desc="Message in the opt-in dialog for Play auto install.">
     Install updates &#38; apps. By continuing, you agree that this device may also automatically download and install updates and apps from Google, your carrier, and your device's manufacturer, possibly using cellular data. Some of these apps may offer in-app purchases. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-pai"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
@@ -4052,17 +3908,13 @@
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate this device’s location.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off Location by turning off the main Location setting on this device. You can also turn off the use of Wi-Fi, mobile networks, and sensors for location in location settings.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
-  <message name="IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES_P1" desc="First paragraph of message shown in pop up overlay dialog when user clicks learn more location services">
-    Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate your device’s location.
+  <message name="IDS_CROS_OPT_IN_LEARN_MORE_LOCATION_SERVICES" desc="Message shown in pop up overlay dialog when user clicks learn more location services">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate your device’s location.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off Location by turning off the main Location setting on your device. You can also turn off the use of Wi-Fi, mobile networks, and sensors for location in location settings.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
-  <message name="IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES_P2" desc="Second paragraph of message shown in pop up overlay dialog when user clicks learn more location services">
-    You can turn off Location by turning off the main Location setting on your device. You can also turn off the use of Wi-Fi, mobile networks, and sensors for location in location settings.
-  </message>
-  <message name="IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES_CHILD_P1" desc="First paragragh of message shown in pop up overlay dialog when user clicks learn more location services, and a child account is in use">
-    Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate this device’s location.
-  </message>
-  <message name="IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES_CHILD_P2" desc="Second paragragh of message shown in pop up overlay dialog when user clicks learn more location services, and a child account is in use">
-    You can turn off Location by turning off the main Location setting on this device. You can also turn off the use of Wi-Fi, mobile networks, and sensors for location in location settings.
+  <message name="IDS_CROS_OPT_IN_LEARN_MORE_LOCATION_SERVICES_CHILD" desc="Message shown in pop up overlay dialog when user clicks learn more location services, and a child account is in use">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate this device’s location.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off Location by turning off the main Location setting on this device. You can also turn off the use of Wi-Fi, mobile networks, and sensors for location in location settings.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_PAI_SERVICE_TITLE" desc="Title for pop up overlay dialog when user clicks learn more play auto install services">
     Install Updates and Apps
@@ -4530,22 +4382,39 @@
   <message name="IDS_CONSOLIDATED_CONSENT_RECOVERY_OPT_IN" desc="Message in the consolidated consent screen to opt-in for setting up recovery.">
     If you forget your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password, you can still restore your local data. You'll need to sign in to your Google Account or use account recovery.
   </message>
-  <message name="IDS_CONSOLIDATED_CONSENT_LOCATION_OPT_IN_TITLE" desc="Title for the message in the consolidated consent screen to opt-in for location services.">
+  <message name="IDS_CONSOLIDATED_CONSENT_ARC_LOCATION_OPT_IN_TITLE" desc="Title for the message in the consolidated consent screen to opt-in for location services.">
     Use location for Android apps and services.
   </message>
-  <message name="IDS_CONSOLIDATED_CONSENT_LOCATION_OPT_IN" desc="Message in the consolidated consent screen to opt-in for location services.">
+  <message name="IDS_CONSOLIDATED_CONSENT_CROS_LOCATION_OPT_IN_TITLE" desc="Title for the message in the consolidated consent screen to opt-in for location services.">
+    Use location for ChromeOS and Android apps and services.
+  </message>
+  <message name="IDS_CONSOLIDATED_CONSENT_ARC_LOCATION_OPT_IN" desc="Message in the consolidated consent screen to opt-in for location services.">
     Allow Android apps and services with location permission to use your device's location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services.
   </message>
-  <message name="IDS_CONSOLIDATED_CONSENT_LOCATION_OPT_IN_CHILD" desc="Message in the consolidated consent screen to opt-in for location services for child accounts.">
+  <message name="IDS_CONSOLIDATED_CONSENT_CROS_LOCATION_OPT_IN" desc="Message in the consolidated consent screen to opt-in for location services.">
+    Allow ChromeOS and Android apps and services with location permission to use your device's location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services.
+  </message>
+  <message name="IDS_CONSOLIDATED_CONSENT_ARC_LOCATION_OPT_IN_CHILD" desc="Message in the consolidated consent screen to opt-in for location services for child accounts.">
     Allow Android apps and services with location permission to use this device's location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services.
   </message>
-  <message name="IDS_CONSOLIDATED_CONSENT_LOCATION_OPT_IN_LEARN_MORE" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for location services opt-in.">
+  <message name="IDS_CONSOLIDATED_CONSENT_CROS_LOCATION_OPT_IN_CHILD" desc="Message in the consolidated consent screen to opt-in for location services for child accounts.">
+    Allow ChromeOS and Android apps and services with location permission to use this device's location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services.
+  </message>
+  <message name="IDS_CONSOLIDATED_CONSENT_ARC_LOCATION_OPT_IN_LEARN_MORE" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for location services opt-in.">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate your device's location.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off Android location on your device at any time by going to Settings &gt; Apps &gt; Google Play Store &gt; Manage Android preferences &gt; Security &amp; location &gt; Location. You can also turn off the use of Wi-Fi, mobile networks, and sensors for Android location by turning off “Google Location Accuracy” in the same menu.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
-  <message name="IDS_CONSOLIDATED_CONSENT_LOCATION_OPT_IN_LEARN_MORE_CHILD" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for location services opt-in. for a child account">
+  <message name="IDS_CONSOLIDATED_CONSENT_ARC_LOCATION_OPT_IN_LEARN_MORE_CHILD" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for location services opt-in. for a child account">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate this device's location.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off Android location on this device at any time by going to Settings &gt; Apps &gt; Google Play Store &gt; Manage Android preferences &gt; Security &amp; location &gt; Location. You can also turn off the use of Wi-Fi, mobile networks, and sensors for Android location by turning off “Google Location Accuracy” in the same menu.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+  </message>
+  <message name="IDS_CONSOLIDATED_CONSENT_CROS_LOCATION_OPT_IN_LEARN_MORE" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for location services opt-in.">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate your device's location.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off ChromeOS and Android location on your device at any time by going to Settings &gt; Privacy and security &gt; Privacy controls &gt; Location access. You can also turn off the use of Wi-Fi, mobile networks, and sensors for Android location by turning off "Improve location accuracy" under "Advanced location settings" in the same menu.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+  </message>
+  <message name="IDS_CONSOLIDATED_CONSENT_CROS_LOCATION_OPT_IN_LEARN_MORE_CHILD" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for location services opt-in. for a child account">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate this device's location.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off ChromeOS and Android location on this device at any time by going to Settings &gt; Privacy and security &gt; Privacy controls &gt; Location access. You can also turn off the use of Wi-Fi, mobile networks, and sensors for Android location by turning off "Improve location accuracy" under "Advanced location settings" in the same menu.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
   <message name="IDS_CONSOLIDATED_CONSENT_LOCATION_OPT_IN_LEARN_MORE_LINK" desc="Learn more about location opt in">
     Learn more about using location
@@ -4851,6 +4720,28 @@
 
   <message name="IDS_NETWORK_SCANNING_MESSAGE" desc="Label for spinner whose purpose is to indicate to the user that the device is currently scanning for nearby networks (e.g. Wi-Fi).">
     Searching for networks...
+  </message>
+
+
+  <!-- Scanning DLC Installation Notification -->
+  <message name="IDS_SCANNING_DLC_NOTIFICATION_DISPLAY_SOURCE" desc="The context title of scanning DLC download notifications.">
+    Scan
+  </message>
+
+  <message name="IDS_SCANNING_DLC_NOTIFICATION_INSTALLING_TITLE" desc="Title of Scanner DLC installing progress bar">
+    Installing scanner software
+  </message>
+
+  <message name="IDS_SCANNING_DLC_NOTIFICATION_INSTALLED_TITLE" desc="Title of Scanner DLC successfully completed notification">
+    Scanner software installed
+  </message>
+
+  <message name="IDS_SCANNING_DLC_NOTIFICATION_INSTALL_FAILED_TITLE" desc="Title of Scanner DLC failed notification">
+    Can't install scanner software
+  </message>
+
+  <message name="IDS_SCANNING_DLC_NOTIFICATION_INSTALL_FAILED_MESSAGE" desc="Message of Scanner DLC failed notification">
+    Unplug the scanner's USB cable and re-plug it to retry
   </message>
 
   <!-- HaTS Strings -->
@@ -7064,8 +6955,11 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   <message name="IDS_OFFICE_FALLBACK_TRY_AGAIN" desc="Label for the button that retries opening the office file with the original application.">
     Try again
   </message>
-  <message name="IDS_OFFICE_FALLBACK_OPEN_WITH_OFFLINE_EDITOR" desc="Label for the button that uses the offline editor fallback to open the office file.">
-    Open in offline editor
+  <message name="IDS_OFFICE_FALLBACK_OK" desc="Label for the office fallback dialog's OK button.">
+    OK
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_OPEN_IN_BASIC_EDITOR" desc="Label for the button that uses the basic fallback editor to open the office file.">
+    Open in basic editor
   </message>
 
   <message name="IDS_OFFICE_FALLBACK_TITLE_OFFLINE" desc="Title for a dialog that appears when an office file is unable to be opened due to the system being offline.">
@@ -7075,7 +6969,7 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
     The application <ph name="APPLICATION_NAME">$1<ex>Google Docs</ex></ph> isn’t available offline.
   </message>
   <message name="IDS_OFFICE_FALLBACK_INSTRUCTIONS_OFFLINE" desc="Office Fallback dialog instructions for the choices (and buttons) the user has available to open the office file when the system is offline.">
-    Check your internet connection and choose "Try again", or choose "Open in offline editor" to use limited view and editing options.
+    Check your internet connection and choose "Try again", or choose "Open in basic editor" to use limited view and editing options.
   </message>
   <message name="IDS_OFFICE_FALLBACK_TITLE_METERED" desc="Title for a dialog that appears when an office file is unable to be uploaded to Google Drive due to the system being on a metered network (network where bandwidth usage incurs cost to the user).">
     Can't open <ph name="FILE_NAMES">$1<ex>file.docx</ex></ph> while on a metered connection
@@ -7084,7 +6978,7 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
     Can't upload files while on a metered connection.
   </message>
   <message name="IDS_OFFICE_FALLBACK_INSTRUCTIONS_METERED" desc="Office Fallback dialog instructions for the choices (and buttons) the user has available to open the office file when the system is on a metered network (network where bandwidth usage incurs cost to the user).">
-    Change your internet connection and choose "Try again", or choose "Open in offline editor" to use limited view and editing options.
+    Change your internet connection and choose "Try again", or choose "Open in basic editor" to use limited view and editing options.
   </message>
   <message name="IDS_OFFICE_FALLBACK_TITLE_DRIVE_UNAVAILABLE" desc="Title for a dialog that appears when an office file is unable to be opened due to Google Drive not being available.">
     Can't open <ph name="FILE_NAMES">$1<ex>file.docx</ex></ph> when Google Drive is not available
@@ -7093,16 +6987,31 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
     The application <ph name="APPLICATION_NAME">$1<ex>Google Docs</ex></ph> requires Google Drive to be available.
   </message>
   <message name="IDS_OFFICE_FALLBACK_INSTRUCTIONS_DISABLE_DRIVE_PREFERENCE" desc="Office Fallback dialog instructions for the choices (buttons) the user has available when Google Drive is disabled in settings.">
-    Try enabling Google Drive in Settings and choose "Try again", or choose "Open in offline editor" to use limited view and editing options.
+    Try enabling Google Drive in Settings and choose "Try again", or choose "Open in basic editor" to use limited view and editing options.
   </message>
   <message name="IDS_OFFICE_FALLBACK_REASON_DRIVE_DISABLED_FOR_ACCOUNT" desc="Explanation for a dialog that appears when Google Drive is not available for the account type.">
     Google Drive is disabled for this account type.
   </message>
   <message name="IDS_OFFICE_FALLBACK_INSTRUCTIONS_DRIVE_DISABLED_FOR_ACCOUNT" desc="Office Fallback dialog instructions for the choices (buttons) the user has available when Google Drive is not available for the account type.">
-    Choose "Open in offline editor" to use limited view and editing options.
+    Choose "Open in basic editor" to use limited view and editing options.
   </message>
   <message name="IDS_OFFICE_FALLBACK_INSTRUCTIONS" desc="Office Fallback dialog instructions for the choices (buttons) the user has available to open the office file.">
-    Choose "Try again", or choose "Open in offline editor" to use limited view and editing options.
+    Choose "Try again", or choose "Open in basic editor" to use limited view and editing options.
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_TITLE_WAITING_FOR_UPLOAD" desc="Title for a dialog that appears when a user attempts to open a file in Web Drive before it is fully synced.">
+    Can't open <ph name="FILE_NAMES">$1<ex>file.docx</ex></ph>
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_REASON_WAITING_FOR_UPLOAD" desc="Explanation for a dialog that appears when a user attempts to open a file in Web Drive before it is fully synced.">
+    The file is still being synced to Drive.
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_INSTRUCTIONS_WAITING_FOR_UPLOAD" desc="Office Fallback dialog instructions when a user attempts to open a file in Web Drive before it is fully synced.">
+    Try again after the file has finished syncing.
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_TITLE_ANDROID_ONE_DRIVE_LOCATION_NOT_SUPPORTED" desc="Title for a dialog that appears when a user attempts to open a file from an unsupported location in the Android OneDrive app.">
+    Microsoft 365 can't open <ph name="FILE_NAMES">$1<ex>file.docx</ex></ph> from this folder
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_INSTRUCTIONS_ANDROID_ONE_DRIVE_LOCATION_NOT_SUPPORTED" desc="Office Fallback dialog instructions when a user attempts to open a file from an unsupported location in the Android OneDrive app.">
+    Try opening the file from another folder, or choose "Open in basic editor" to use limited view and editing options.
   </message>
 
   <!-- Office file handler selection dialog -->
@@ -7345,6 +7254,9 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   <message name="IDS_OFFICE_UPLOAD_ERROR_REAUTHENTICATION_REQUIRED" desc="Error message for uploading office files indicating that the needs to sign in to Microsoft first before uploading the files.">
     Sign in to your Microsoft account and then try again
   </message>
+  <message name="IDS_OFFICE_UPLOAD_ERROR_NOT_A_VALID_DOCUMENT" desc="Error message for opening office files indicating that the file is not an valid document.">
+    File is not a valid document
+  </message>
   <message name="IDS_OFFICE_UPLOAD_ERROR_CANT_OPEN_FILE" desc="Error message for uploading office files indicating that file cannot be open.">
     {NUM_OF_FILES, plural,
       =1 {Can't open file}
@@ -7367,7 +7279,11 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
     Your Google Account is the same account you use for Gmail, YouTube, Chrome, and other Google products.
     Use your account to easily access all of your bookmarks, files, and more. If you don't have an account, you can create one on the next screen.
   </message>
-  <message name="IDS_GAIA_INFO_DESCRIPTION_QUICK_START" desc="Additional description of the Gaia Info screen for quick start flow.">
+  <message name="IDS_GAIA_INFO_DESCRIPTION_QUICK_START_P1" desc="Paragraph 1 of description of the Gaia Info screen for quick start flow.">
+    Your Google Account is the same account you use for Gmail, YouTube, Chrome, and other Google products.
+    Use your account to easily access all of your bookmarks, files, and more.
+  </message>
+  <message name="IDS_GAIA_INFO_DESCRIPTION_QUICK_START_P2" desc="Paragraph 2 of description of the Gaia Info screen for quick start flow.">
     If you don't have an account, select the first option to create one.
   </message>
   <message name="IDS_GAIA_INFO_MANUAL_FLOW" desc="Label for the option on the Gaia Info screen to manually enter account and credentials.">
@@ -7454,6 +7370,23 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   </message>
   <message name="IDS_STANDALONE_WINDOW_MIGRATION_UX_GOT_IT" desc="Used for Got it text on button for users to click to acknowledge the standalone window nudge">
     Got it
+  </message>
+
+  <!-- App install dialog -->
+  <message name="IDS_OPEN_APP" desc="Button label in the app install dialog that opens the app that was just installed.">
+    Open app
+  </message>
+  <message name="IDS_DEVELOPER_INFORMATION" desc="Label in the app install dialog that is displayed in front of the app URL to give the user information about the app developer.">
+    Developer information:
+  </message>
+  <message name="IDS_INSTALL_DIALOG_TITLE" desc="Title shown in the app install dialog asking the user if they want to install the app to their device.">
+    Install app to your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+  </message>
+  <message name="IDS_INSTALLING_APP" desc="Title shown in the app install dialog after the user has confirmed they want to install the app. It is only displayed for a couple of seconds while the app installs.">
+    Installing app...
+  </message>
+  <message name="IDS_APP_INSTALLED" desc="Title shown in the app install dialog after the app has finished installing.">
+    App installed
   </message>
 
 </grit-part>

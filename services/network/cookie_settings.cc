@@ -63,7 +63,22 @@ net::CookieInclusionStatus::ExemptionReason GetExemptionReason(
       return net::CookieInclusionStatus::ExemptionReason::kUserSetting;
     case CookieSettings::ThirdPartyCookieAllowMechanism::kAllowBy3PCDHeuristics:
       return net::CookieInclusionStatus::ExemptionReason::k3PCDHeuristics;
-    case CookieSettings::ThirdPartyCookieAllowMechanism::kAllowBy3PCDMetadata:
+    case CookieSettings::ThirdPartyCookieAllowMechanism::
+        kAllowBy3PCDMetadataSourceUnspecified:
+    case CookieSettings::ThirdPartyCookieAllowMechanism::
+        kAllowBy3PCDMetadataSourceTest:
+    case CookieSettings::ThirdPartyCookieAllowMechanism::
+        kAllowBy3PCDMetadataSource1pDt:
+    case CookieSettings::ThirdPartyCookieAllowMechanism::
+        kAllowBy3PCDMetadataSource3pDt:
+    case CookieSettings::ThirdPartyCookieAllowMechanism::
+        kAllowBy3PCDMetadataSourceDogFood:
+    case CookieSettings::ThirdPartyCookieAllowMechanism::
+        kAllowBy3PCDMetadataSourceCriticalSector:
+    case CookieSettings::ThirdPartyCookieAllowMechanism::
+        kAllowBy3PCDMetadataSourceCuj:
+    case CookieSettings::ThirdPartyCookieAllowMechanism::
+        kAllowBy3PCDMetadataSourceGovEduTld:
       return net::CookieInclusionStatus::ExemptionReason::k3PCDMetadata;
     case CookieSettings::ThirdPartyCookieAllowMechanism::kAllowBy3PCD:
     case CookieSettings::ThirdPartyCookieAllowMechanism::kAllowByTopLevel3PCD:
@@ -142,13 +157,12 @@ void CookieSettings::set_content_settings(
     ContentSettingsType type,
     const ContentSettingsForOneType& settings) {
   CHECK(IsValidType(type)) << static_cast<int>(type);
-  if (base::FeatureList::IsEnabled(
-          content_settings::features::kHostIndexedMetadataGrants)) {
+  // EntryIndex is only used if kHostIndexedMetadataGrants is enabled. Check
+  // holds_alternative<>, not the flag, because b/328475709 is changing the flag
+  // value during execution and leading to "bad variant access".
+  if (absl::holds_alternative<EntryIndex>(content_settings_)) {
     absl::get<EntryIndex>(content_settings_)[type] =
         content_settings::HostIndexedContentSettings::Create(settings);
-    if (type == ContentSettingsType::COOKIES) {
-      cookie_settings_ = settings;
-    }
   } else {
     absl::get<EntryMap>(content_settings_)[type] = settings;
   }
@@ -159,17 +173,16 @@ void CookieSettings::set_content_settings(
         settings.back().primary_pattern != ContentSettingsPattern::Wildcard() ||
         settings.back().secondary_pattern !=
             ContentSettingsPattern::Wildcard()) {
-      if (base::FeatureList::IsEnabled(
-              content_settings::features::kHostIndexedMetadataGrants)) {
-        absl::get<EntryIndex>(content_settings_)[type].back().SetValue(
-            ContentSettingsPattern::Wildcard(),
-            ContentSettingsPattern::Wildcard(),
-            base::Value(CONTENT_SETTING_ALLOW), /*metadata=*/{});
-        cookie_settings_->emplace_back(ContentSettingsPattern::Wildcard(),
-                                       ContentSettingsPattern::Wildcard(),
-                                       base::Value(CONTENT_SETTING_ALLOW),
-                                       /*source=*/std::string(),
-                                       /*incognito=*/false);
+      // EntryIndex is only used if kHostIndexedMetadataGrants is enabled. Check
+      // holds_alternative<>, not the flag, because b/328475709 is changing the
+      // flag value during execution and leading to "bad variant access".
+      if (absl::holds_alternative<EntryIndex>(content_settings_)) {
+        auto& index =
+            absl::get<EntryIndex>(content_settings_)[type].emplace_back(
+                "default", false);
+        index.SetValue(ContentSettingsPattern::Wildcard(),
+                       ContentSettingsPattern::Wildcard(),
+                       base::Value(CONTENT_SETTING_ALLOW), /*metadata=*/{});
       } else {
         absl::get<EntryMap>(content_settings_)[type].emplace_back(
             ContentSettingsPattern::Wildcard(),
@@ -184,12 +197,26 @@ void CookieSettings::set_content_settings(
 
 DeleteCookiePredicate CookieSettings::CreateDeleteCookieOnExitPredicate()
     const {
-  if (!HasSessionOnlyOrigins())
+  if (!HasSessionOnlyOrigins()) {
     return DeleteCookiePredicate();
+  }
   ContentSettingsForOneType settings;
-  if (base::FeatureList::IsEnabled(
-          content_settings::features::kHostIndexedMetadataGrants)) {
-    settings = *cookie_settings_;
+  // EntryIndex is only used if kHostIndexedMetadataGrants is enabled. Check
+  // holds_alternative<>, not the flag, because b/328475709 is changing the flag
+  // value during execution and leading to "bad variant access".
+  if (absl::holds_alternative<EntryIndex>(content_settings_)) {
+    // TODO(b/316530672): Ideally, clear on exit would work with the index
+    // directly to benefit from faster lookup times instead of iterating over
+    // a vector of content settings.
+    for (const auto& index :
+         GetHostIndexedContentSettings(ContentSettingsType::COOKIES)) {
+      for (const auto& entry : index) {
+        settings.emplace_back(entry.first.primary_pattern,
+                              entry.first.secondary_pattern,
+                              entry.second.value.Clone(), *index.source(),
+                              *index.off_the_record(), entry.second.metadata);
+      }
+    }
   } else {
     settings = GetContentSettings(ContentSettingsType::COOKIES);
   }
@@ -403,8 +430,10 @@ bool CookieSettings::AnnotateAndMoveUserBlockedCookies(
 }
 
 bool CookieSettings::HasSessionOnlyOrigins() const {
-  if (base::FeatureList::IsEnabled(
-          content_settings::features::kHostIndexedMetadataGrants)) {
+  // EntryIndex is only used if kHostIndexedMetadataGrants is enabled. Check
+  // holds_alternative<>, not the flag, because b/328475709 is changing the flag
+  // value during execution and leading to "bad variant access".
+  if (absl::holds_alternative<EntryIndex>(content_settings_)) {
     for (const auto& index :
          GetHostIndexedContentSettings(ContentSettingsType::COOKIES)) {
       for (const auto& entry : index) {
@@ -424,7 +453,15 @@ bool CookieSettings::HasSessionOnlyOrigins() const {
 
 const ContentSettingsForOneType& CookieSettings::GetContentSettings(
     ContentSettingsType type) const {
-  CHECK(IsValidType(type)) << static_cast<int>(type);
+  CHECK(IsValidType(type)) << "network::CookieSettings::GetContentSettings() "
+                              "called with invalid type "
+                           << type;
+  CHECK(absl::holds_alternative<EntryMap>(content_settings_))
+      << "network::CookieSettings::content_settings_ held an EntryIndex "
+         "instead of an EntryMap";
+  CHECK(absl::get<EntryMap>(content_settings_).contains(type))
+      << "network::CookieSettings::content_settings_ did not contain type "
+      << type;
   return absl::get<EntryMap>(content_settings_).at(type);
 }
 
@@ -441,8 +478,10 @@ ContentSetting CookieSettings::GetContentSetting(
     content_settings::SettingInfo* info) const {
   SCOPED_UMA_HISTOGRAM_TIMER_MICROS(
       "ContentSettings.GetContentSetting.Network.Duration");
-  if (base::FeatureList::IsEnabled(
-          content_settings::features::kHostIndexedMetadataGrants)) {
+  // EntryIndex is only used if kHostIndexedMetadataGrants is enabled. Check
+  // holds_alternative<>, not the flag, because b/328475709 is changing the flag
+  // value during execution and leading to "bad variant access".
+  if (absl::holds_alternative<EntryIndex>(content_settings_)) {
     for (const auto& index : GetHostIndexedContentSettings(content_type)) {
       const content_settings::RuleEntry* result =
           index.Find(primary_url, secondary_url);
@@ -491,10 +530,8 @@ bool CookieSettings::IsThirdPartyPhaseoutEnabled() const {
 }
 
 bool CookieSettings::MitigationsEnabledFor3pcd() const {
-  if (net::cookie_util::IsForceThirdPartyCookieBlockingEnabled()) {
-    return true;
-  }
-  return mitigations_enabled_for_3pcd_;
+  return net::cookie_util::IsForceThirdPartyCookieBlockingEnabled() ||
+         mitigations_enabled_for_3pcd_;
 }
 
 bool CookieSettings::IsStorageAccessApiEnabled() const {

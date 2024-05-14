@@ -150,7 +150,7 @@ void TextIteratorTextNodeHandler::HandleTextNodeWithLayoutNG() {
     // Bail if |offset_| isn't advanced; Otherwise we enter a dead loop.
     // However, this shouldn't happen and should be fixed once reached.
     if (offset_ == initial_offset) {
-      NOTREACHED();
+      DUMP_WILL_BE_NOTREACHED_NORETURN();
       offset_ = end_offset_;
       return;
     }
@@ -173,7 +173,8 @@ void TextIteratorTextNodeHandler::HandleTextNodeInRange(const Text* node,
   const OffsetMapping* const mapping =
       OffsetMapping::ForceGetFor(Position(node, offset_));
   if (UNLIKELY(!mapping)) {
-    NOTREACHED() << "We have LayoutText outside LayoutBlockFlow " << text_node_;
+    DUMP_WILL_BE_NOTREACHED_NORETURN()
+        << "We have LayoutText outside LayoutBlockFlow " << text_node_;
     return;
   }
 

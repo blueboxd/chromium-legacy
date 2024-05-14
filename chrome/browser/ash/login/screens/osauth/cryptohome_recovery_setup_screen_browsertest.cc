@@ -11,7 +11,9 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/test/shell_test_api.h"
+#include "base/metrics/histogram_base.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ash/login/screen_manager.h"
@@ -171,36 +173,6 @@ IN_PROC_BROWSER_TEST_F(CryptohomeRecoverySetupScreenTest,
   EXPECT_TRUE(LoginDisplayHost::default_host()
                   ->GetWizardContextForTesting()
                   ->extra_factors_token.has_value());
-
-  ContinueScreenExit();
-  EXPECT_EQ(result_.value(), CryptohomeRecoverySetupScreen::Result::DONE);
-  histogram_tester.ExpectTotalCount(
-      "OOBE.StepCompletionTimeByExitReason.Cryptohome-recovery-setup.Done", 1);
-  histogram_tester.ExpectTotalCount(
-      "OOBE.StepCompletionTime.Cryptohome-recovery-setup", 1);
-}
-
-// If user opts in to recovery, the screen should be shown.
-// The PIN setup screen is skipped due to policy. In this case
-// auth session should be cleared.
-IN_PROC_BROWSER_TEST_F(CryptohomeRecoverySetupScreenTest,
-                       ShowClearsAuthSession) {
-  LoginAsRegularUser();
-  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  prefs->SetList(prefs::kQuickUnlockModeAllowlist, base::Value::List());
-  prefs->SetList(prefs::kWebAuthnFactors, base::Value::List());
-  LoginDisplayHost::default_host()
-      ->GetWizardContextForTesting()
-      ->recovery_setup.ask_about_recovery_consent = true;
-  LoginDisplayHost::default_host()
-      ->GetWizardContextForTesting()
-      ->recovery_setup.recovery_factor_opted_in = true;
-  base::HistogramTester histogram_tester;
-
-  ShowScreen();
-  EXPECT_FALSE(LoginDisplayHost::default_host()
-                   ->GetWizardContextForTesting()
-                   ->extra_factors_token.has_value());
 
   ContinueScreenExit();
   EXPECT_EQ(result_.value(), CryptohomeRecoverySetupScreen::Result::DONE);

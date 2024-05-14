@@ -94,7 +94,6 @@ export class OsSettingsPrivacyPageElement extends
         type: Object,
         value: () => new Set<Setting>([
           Setting.kVerifiedAccess,
-          Setting.kUsageStatsAndCrashReports,
         ]),
       },
 
@@ -178,18 +177,6 @@ export class OsSettingsPrivacyPageElement extends
         type: Boolean,
         value: function() {
           return loadTimeData.getBoolean('showSecureDnsSetting');
-        },
-        readOnly: true,
-      },
-
-      /**
-       * Whether privacy hub should be displayed.
-       */
-      showPrivacyHubPage_: {
-        type: Boolean,
-        value: function() {
-          return loadTimeData.getBoolean('showPrivacyHubPage') &&
-              !loadTimeData.getBoolean('isGuest');
         },
         readOnly: true,
       },
@@ -289,7 +276,6 @@ export class OsSettingsPrivacyPageElement extends
   private section_: Section;
   private showDisableProtectionDialog_: boolean;
   private showPasswordPromptDialog_: boolean;
-  private showPrivacyHubPage_: boolean;
   private showSecureDnsSetting_: boolean;
   private showSyncSettingsRevamp_: boolean;
   private syncBrowserProxy_: SyncBrowserProxy;

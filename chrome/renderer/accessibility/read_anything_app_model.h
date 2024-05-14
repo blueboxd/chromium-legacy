@@ -81,6 +81,10 @@ class ReadAnythingAppModel {
   void set_requires_post_process_selection(bool value) {
     requires_post_process_selection_ = value;
   }
+  ui::AXNodeID image_to_update_node_id() { return image_to_update_node_id_; }
+  void reset_image_to_update_node_id() {
+    image_to_update_node_id_ = ui::kInvalidAXNodeID;
+  }
   bool selection_from_action() { return selection_from_action_; }
   void set_selection_from_action(bool value) { selection_from_action_ = value; }
 
@@ -139,10 +143,10 @@ class ReadAnythingAppModel {
     return selection_node_ids_;
   }
 
-  // Returns the active tree id. For PDFs, this will return the tree id of the
-  // PDF iframe, since that is where the PDF contents are. If that tree id is
-  // not yet in the model, AXTreeIDUnknown will be returned.
-  ui::AXTreeID GetActiveTreeId() const;
+  const ui::AXTreeID active_tree_id() const { return active_tree_id_; }
+  void set_active_tree_id(const ui::AXTreeID active_tree_id) {
+    active_tree_id_ = active_tree_id;
+  }
 
   void SetDistillationInProgress(bool distillation) {
     distillation_in_progress_ = distillation;
@@ -151,8 +155,6 @@ class ReadAnythingAppModel {
     active_tree_selectable_ = active_tree_selectable;
   }
   void SetActiveUkmSourceId(ukm::SourceId source_id);
-
-  void SetActiveTreeId(ui::AXTreeID tree_id) { active_tree_id_ = tree_id; }
 
   ui::AXNode* GetAXNode(ui::AXNodeID ax_node_id) const;
   bool IsNodeIgnoredForReadAnything(ui::AXNodeID ax_node_id) const;
@@ -222,24 +224,16 @@ class ReadAnythingAppModel {
   void ToggleLinksEnabled();
 
   std::string GetHtmlTag(ui::AXNodeID ax_node_id) const;
+  std::string GetAltText(ui::AXNodeID ax_node_id) const;
+  std::string GetImageDataUrl(ui::AXNodeID ax_node_id) const;
 
   // Returns the index of the next sentence of the given text, such that the
   // next sentence is equivalent to text.substr(0, <returned_index>).
   int GetNextSentence(const std::u16string& text);
 
   // PDF handling.
-  void SetIsPdf(const GURL& url);
+  void set_is_pdf(bool is_pdf) { is_pdf_ = is_pdf; }
   bool is_pdf() const { return is_pdf_; }
-  ui::AXTreeID GetPDFWebContents() const;
-
-  // Checks assumptions made about the PDF's structure, specifically that the
-  // main web contents AXTree has one child (the pdf web contents), and that
-  // the pdf web contents AXTree has one child (the pdf iframe). If there is
-  // not enough information to check a certain assumption, ie the model does
-  // not contain a certain tree, this function could still return true. When
-  // tree updates are received for the missing tree(s), this function should
-  // be ran again to check for the correct structure.
-  bool IsPDFFormatted() const;
 
   // Google Docs need special handling.
   void set_is_google_docs(bool is_google_docs) { is_docs_ = is_google_docs; }
@@ -248,7 +242,7 @@ class ReadAnythingAppModel {
   // Returns the next valid AXNodePosition.
   ui::AXNodePosition::AXPositionInstance
   GetNextValidPositionFromCurrentPosition(
-      ReadAnythingAppModel::ReadAloudCurrentGranularity current_granularity);
+      ReadAnythingAppModel::ReadAloudCurrentGranularity& current_granularity);
 
   // Inits the AXPosition with a starting node.
   // TODO(crbug.com/1474951): We should be able to use AXPosition in a way
@@ -299,7 +293,9 @@ class ReadAnythingAppModel {
   void InsertSelectionNode(ui::AXNodeID node);
   void UpdateSelection();
   void ComputeSelectionNodeIds();
+  bool NoCurrentSelection();
   bool SelectionInsideDisplayNodes();
+  bool ContentNodesOnlyContainHeadings();
 
   void AddPendingUpdates(const ui::AXTreeID tree_id,
                          const std::vector<ui::AXTreeUpdate>& updates);
@@ -326,14 +322,15 @@ class ReadAnythingAppModel {
 
   // Uses the current AXNodePosition to return the next node that should be
   // spoken by Read Aloud.
-  ui::AXNode* GetNodeFromCurrentPosition();
+  ui::AXNode* GetNodeFromCurrentPosition() const;
 
   void ResetReadAloudState();
 
   bool IsTextForReadAnything(ui::AXNodeID ax_node_id) const;
 
-  bool ShouldSplitAtParagraph(ui::AXNodePosition::AXPositionInstance& position,
-                              ReadAloudCurrentGranularity& current_granularity);
+  bool ShouldSplitAtParagraph(
+      ui::AXNodePosition::AXPositionInstance& position,
+      ReadAloudCurrentGranularity& current_granularity) const;
 
   // Returns true if the node was previously spoken or we expect to speak it
   // to be spoken once the current run of #GetCurrentText which called
@@ -351,21 +348,22 @@ class ReadAnythingAppModel {
   // process them as 5, 10. Without checking for previously spoken nodes,
   // id 5 will be spoken twice.
   bool NodeBeenOrWillBeSpoken(
-      ReadAnythingAppModel::ReadAloudCurrentGranularity current_granularity,
-      ui::AXNodeID id);
+      ReadAnythingAppModel::ReadAloudCurrentGranularity& current_granularity,
+      ui::AXNodeID id) const;
 
   // Helper method to get the correct anchor node from an AXPositionInstance
   // that should be used by Read Aloud. AXPosition can sometimes return
   // leaf nodes that don't actually correspond to the AXNodes we're using
   // in Reading Mode, so we need to get a parent node from the AXPosition's
   // returned anchor when this happens.
-  ui::AXNode* GetAnchorNode(ui::AXNodePosition::AXPositionInstance& position);
+  ui::AXNode* GetAnchorNode(
+      ui::AXNodePosition::AXPositionInstance& position) const;
 
-  bool IsOpeningPunctuation(char c);
+  bool IsOpeningPunctuation(char& c) const;
 
-  bool IsValidAXPosition(
-      ui::AXNodePosition::AXPositionInstance& positin,
-      ReadAnythingAppModel::ReadAloudCurrentGranularity& current_granularity);
+  bool IsValidAXPosition(ui::AXNodePosition::AXPositionInstance& positin,
+                         ReadAnythingAppModel::ReadAloudCurrentGranularity&
+                             current_granularity) const;
 
   // State.
   // Store AXTrees of web contents in the browser's tab strip as AXTreeManagers.
@@ -444,6 +442,7 @@ class ReadAnythingAppModel {
   int32_t end_offset_ = -1;
   bool requires_distillation_ = false;
   bool requires_post_process_selection_ = false;
+  ui::AXNodeID image_to_update_node_id_ = ui::kInvalidAXNodeID;
   bool selection_from_action_ = false;
 
   std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder_;

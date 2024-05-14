@@ -12,6 +12,7 @@
 #include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
+#include "base/types/to_address.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/favicon/favicon_utils.h"
@@ -63,6 +64,8 @@
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
 
+namespace tab_groups {
+
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(SavedTabGroupButton,
                                       kDeleteGroupMenuItem);
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(SavedTabGroupButton,
@@ -89,7 +92,7 @@ constexpr float kEmptyChipCornerRadius = 2.0f;
 
 SavedTabGroupButton::SavedTabGroupButton(
     const SavedTabGroup& group,
-    base::RepeatingCallback<content::PageNavigator*()> page_navigator,
+    base::RepeatingCallback<content::PageNavigator*()> page_navigator_callback,
     PressedCallback callback,
     Browser* browser,
     bool animations_enabled)
@@ -101,7 +104,7 @@ SavedTabGroupButton::SavedTabGroupButton(
       browser_(*browser),
       service_(
           *SavedTabGroupServiceFactory::GetForProfile(browser_->profile())),
-      page_navigator_callback_(std::move(page_navigator)),
+      page_navigator_callback_(std::move(page_navigator_callback)),
       context_menu_controller_(
           this,
           base::BindRepeating(
@@ -153,9 +156,7 @@ void SavedTabGroupButton::UpdateButtonData(const SavedTabGroup& group) {
 }
 
 std::u16string SavedTabGroupButton::GetTooltipText(const gfx::Point& p) const {
-  return label()->GetPreferredSize().width() > label()->size().width()
-             ? GetText()
-             : std::u16string();
+  return GetAccessibleNameForButton();
 }
 
 bool SavedTabGroupButton::OnKeyPressed(const ui::KeyEvent& event) {
@@ -169,6 +170,12 @@ bool SavedTabGroupButton::OnKeyPressed(const ui::KeyEvent& event) {
   }
 
   return false;
+}
+
+bool SavedTabGroupButton::IsTriggerableEvent(const ui::Event& e) {
+  return e.type() == ui::ET_GESTURE_TAP ||
+         e.type() == ui::ET_GESTURE_TAP_DOWN ||
+         event_utils::IsPossibleDispositionEvent(e);
 }
 
 void SavedTabGroupButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -199,7 +206,7 @@ void SavedTabGroupButton::PaintButtonContents(gfx::Canvas* canvas) {
                         kEmptyChipCornerRadius, flags);
 }
 
-std::u16string SavedTabGroupButton::GetAccessibleNameForButton() {
+std::u16string SavedTabGroupButton::GetAccessibleNameForButton() const {
   const std::u16string& opened_state =
       local_group_id_.has_value()
           ? l10n_util::GetStringUTF16(IDS_SAVED_GROUP_AX_LABEL_OPENED)
@@ -308,15 +315,26 @@ void SavedTabGroupButton::MoveGroupToNewWindowPressed(int event_flags) {
       local_group_id_.has_value()
           ? SavedTabGroupUtils::GetBrowserWithTabGroupId(
                 local_group_id_.value())
-          : std::to_address(browser_);
+          : &*browser_;
+
+  // Retrieve the SavedTabGroup before `guid_` goes out of scope if the group is
+  // opened in the browser. When a saved group is opened in the browser it is
+  // updated with the local id of that group. This change causes
+  // SavedTabGroupBar::SavedTabGroupUpdated to be called. That will
+  // invalidates the layout which closes the overflow menu if it was open,
+  // destroying this button in the process. We keep a pointer so we can access
+  // the groups data to safely perform the remaining behaviors in this function.
+  const SavedTabGroup* group = service_->model()->Get(guid_);
 
   if (!local_group_id_.has_value()) {
     // Open the group in the browser the button was pressed.
+    // NOTE: This action could cause `this` to be deleted. Make sure lines
+    // following this have either copied data by value or hold pointers to the
+    // objects it needs.
     service_->OpenSavedTabGroupInBrowser(browser_with_local_group_id, guid_);
   }
 
   // Move the open group to a new browser window.
-  const SavedTabGroup* group = service_->model()->Get(guid_);
   browser_with_local_group_id->tab_strip_model()
       ->delegate()
       ->MoveGroupToNewWindow(group->local_group_id().value());
@@ -411,3 +429,5 @@ SavedTabGroupButton::CreateDialogModelForContextMenu() {
 
 BEGIN_METADATA(SavedTabGroupButton)
 END_METADATA
+
+}  // namespace tab_groups

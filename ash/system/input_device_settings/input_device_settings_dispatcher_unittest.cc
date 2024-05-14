@@ -107,6 +107,12 @@ class MockInputController : public ui::InputController {
               (std::vector<int> device_ids),
               (override));
 
+  MOCK_METHOD(std::unique_ptr<ui::ScopedDisableInputDevices>,
+              DisableInputDevices,
+              (),
+              (override));
+  MOCK_METHOD(bool, AreInputDevicesEnabled, (), (const override));
+
  private:
   bool HasMouse() override { return false; }
   bool HasPointingStick() override { return false; }
@@ -121,7 +127,9 @@ class MockInputController : public ui::InputController {
                          const base::TimeDelta& interval) override {}
   void GetAutoRepeatRate(base::TimeDelta* delay,
                          base::TimeDelta* interval) override {}
-  void SetCurrentLayoutByName(const std::string& layout_name) override {}
+  void SetCurrentLayoutByName(
+      const std::string& layout_name,
+      base::OnceCallback<void(bool)> callback) override {}
   void SetKeyboardKeyBitsMapping(
       base::flat_map<int, std::vector<uint64_t>> key_bits_mapping) override {}
   std::vector<uint64_t> GetKeyboardKeyBits(int id) override {
@@ -376,7 +384,7 @@ TEST_F(InputDeviceSettingsDispatcherTest, DuplicateIdsBlockModifiers) {
   auto mouse_settings =
       input_device_settings_controller->GetMouseSettings(duplicate_1_1.id)
           ->Clone();
-  mouse_settings->button_remappings[0]->remapping_action =
+  mouse_settings->button_remappings.back()->remapping_action =
       mojom::RemappingAction::NewStaticShortcutAction(
           mojom::StaticShortcutAction::kDisable);
   input_device_settings_controller->SetMouseSettings(duplicate_1_1.id,
@@ -390,7 +398,7 @@ TEST_F(InputDeviceSettingsDispatcherTest, DuplicateIdsBlockModifiers) {
   mouse_settings =
       input_device_settings_controller->GetMouseSettings(duplicate_1_1.id)
           ->Clone();
-  mouse_settings->button_remappings[0]->remapping_action = nullptr;
+  mouse_settings->button_remappings.back()->remapping_action = nullptr;
   input_device_settings_controller->SetMouseSettings(duplicate_1_1.id,
                                                      std::move(mouse_settings));
 
@@ -438,7 +446,7 @@ TEST_F(InputDeviceSettingsDispatcherTest, DuplicateIdsDontBlockModifiers) {
   auto mouse_settings =
       input_device_settings_controller->GetMouseSettings(duplicate_2_1.id)
           ->Clone();
-  mouse_settings->button_remappings[0]->remapping_action =
+  mouse_settings->button_remappings.back()->remapping_action =
       mojom::RemappingAction::NewStaticShortcutAction(
           mojom::StaticShortcutAction::kDisable);
   input_device_settings_controller->SetMouseSettings(duplicate_2_1.id,
@@ -451,7 +459,7 @@ TEST_F(InputDeviceSettingsDispatcherTest, DuplicateIdsDontBlockModifiers) {
   mouse_settings =
       input_device_settings_controller->GetMouseSettings(duplicate_2_1.id)
           ->Clone();
-  mouse_settings->button_remappings[0]->remapping_action = nullptr;
+  mouse_settings->button_remappings.back()->remapping_action = nullptr;
   input_device_settings_controller->SetMouseSettings(duplicate_2_1.id,
                                                      std::move(mouse_settings));
 

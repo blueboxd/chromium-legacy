@@ -35,8 +35,8 @@
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/affiliations/core/browser/fake_affiliation_service.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/password_manager/core/browser/affiliation/fake_affiliation_service.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
@@ -327,7 +327,7 @@ class PasswordCheckDelegateTest : public ::testing::Test {
   TestEventRouterObserver event_router_observer_{
       extensions::EventRouterFactory::GetForBrowserContext(profile_.get())};
   IdGenerator credential_id_generator_;
-  password_manager::FakeAffiliationService affiliation_service_;
+  affiliations::FakeAffiliationService affiliation_service_;
   SavedPasswordsPresenter presenter_{&affiliation_service_,
                                      ProfilePasswordStoreFactory::GetForProfile(
                                          profile_.get(),
@@ -675,7 +675,7 @@ TEST_F(PasswordCheckDelegateTest, OnLeakFoundDoesNotCreateCredential) {
       LeakCheckCredential(kUsername1, kPassword1), IsLeaked(true));
   RunUntilIdle();
 
-  EXPECT_TRUE(store().stored_passwords().at(kExampleCom).empty());
+  EXPECT_THAT(store().stored_passwords(), IsEmpty());
 }
 
 // Test that we don't create an entry in the password store if IsLeaked is
@@ -1015,7 +1015,7 @@ TEST_F(PasswordCheckDelegateTest,
 
   // Use a local delegate instead of |delegate()| so that the Password Store can
   // be set-up prior to constructing the object.
-  password_manager::FakeAffiliationService affiliation_service;
+  affiliations::FakeAffiliationService affiliation_service;
   SavedPasswordsPresenter new_presenter(&affiliation_service, &store(),
                                         /*account_store=*/nullptr);
   PasswordCheckDelegate delegate = CreateDelegate(&new_presenter);

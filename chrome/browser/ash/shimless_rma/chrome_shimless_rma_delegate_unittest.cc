@@ -22,13 +22,14 @@
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_source.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/variations/scoped_variations_ids_provider.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/fake_service_worker_context.h"
@@ -109,20 +110,19 @@ class FakeWebAppCommandScheduler : public web_app::WebAppCommandScheduler {
 
   void InstallIsolatedWebApp(
       const web_app::IsolatedWebAppUrlInfo& url_info,
-      const web_app::IsolatedWebAppLocation& location,
+      const web_app::IsolatedWebAppInstallSource& install_source,
       const std::optional<base::Version>& expected_version,
       std::unique_ptr<ScopedKeepAlive> keep_alive,
       std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive,
       web_app::WebAppCommandScheduler::InstallIsolatedWebAppCallback callback,
       const base::Location& call_location) override {
-    web_app::IsolatedWebAppLocation destination_location =
-        web_app::InstalledBundle{
-            .path = base::FilePath{FILE_PATH_LITERAL("/some/random/path")}};
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(callback),
-                       web_app::InstallIsolatedWebAppCommandSuccess(
-                           base::Version{}, std::move(destination_location))));
+        base::BindOnce(
+            std::move(callback),
+            web_app::InstallIsolatedWebAppCommandSuccess(
+                base::Version{}, web_app::IwaStorageOwnedBundle{
+                                     "random_folder", /*dev_mode=*/false})));
   }
 };
 
@@ -179,7 +179,6 @@ class ChromeShimlessRmaDelegatePrepareDiagnosticsAppProfileTest
         {
             ash::features::kShimlessRMA3pDiagnostics,
             ash::features::kShimlessRMA3pDiagnosticsDevMode,
-            chromeos::features::kIWAForTelemetryExtensionAPI,
         },
         {});
     ASSERT_TRUE(testing_profile_manager_.SetUp());

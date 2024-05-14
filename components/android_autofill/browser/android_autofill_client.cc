@@ -12,6 +12,7 @@
 #include "base/android/locale_utils.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/check_op.h"
+#include "base/feature_list.h"
 #include "base/functional/function_ref.h"
 #include "base/notreached.h"
 #include "base/types/cxx23_to_underlying.h"
@@ -25,6 +26,7 @@
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/aliases.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
@@ -35,6 +37,9 @@
 #include "ui/android/view_android.h"
 #include "ui/gfx/geometry/rect_f.h"
 
+using autofill::features::kAutofillVirtualViewStructureAndroid;
+using autofill::features::
+    kAutofillVirtualViewStructureAndroidSkipsCompatibilityCheck;
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::JavaParamRef;
@@ -55,12 +60,25 @@ void AndroidAutofillClient::CreateForWebContents(
   }
 }
 
+// static
+bool AndroidAutofillClient::AllowedForAutofillService() {
+  if (!base::FeatureList::IsEnabled(kAutofillVirtualViewStructureAndroid)) {
+    return false;
+  }
+  if (kAutofillVirtualViewStructureAndroidSkipsCompatibilityCheck.Get()) {
+    return true;
+  }
+  return Java_AndroidAutofillClient_allowedForAutofillService(
+      AttachCurrentThread());
+}
+
 AndroidAutofillClient::~AndroidAutofillClient() {
   HideAutofillPopup(autofill::PopupHidingReason::kTabGone);
 }
 
-bool AndroidAutofillClient::IsOffTheRecord() {
-  return GetWebContents().GetBrowserContext()->IsOffTheRecord();
+bool AndroidAutofillClient::IsOffTheRecord() const {
+  auto* mutable_this = const_cast<AndroidAutofillClient*>(this);
+  return mutable_this->GetWebContents().GetBrowserContext()->IsOffTheRecord();
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -113,11 +131,6 @@ signin::IdentityManager* AndroidAutofillClient::GetIdentityManager() {
 }
 
 autofill::FormDataImporter* AndroidAutofillClient::GetFormDataImporter() {
-  return nullptr;
-}
-
-autofill::payments::PaymentsNetworkInterface*
-AndroidAutofillClient::GetPaymentsNetworkInterface() {
   return nullptr;
 }
 
@@ -240,13 +253,6 @@ std::vector<autofill::Suggestion> AndroidAutofillClient::GetPopupSuggestions()
 
 void AndroidAutofillClient::PinPopupView() {
   NOTIMPLEMENTED();
-}
-
-autofill::AutofillClient::PopupOpenArgs
-AndroidAutofillClient::GetReopenPopupArgs(
-    autofill::AutofillSuggestionTriggerSource trigger_source) const {
-  NOTIMPLEMENTED();
-  return {};
 }
 
 void AndroidAutofillClient::UpdatePopup(
@@ -402,12 +408,7 @@ content::WebContents& AndroidAutofillClient::GetWebContents() const {
 std::unique_ptr<autofill::AutofillManager> AndroidAutofillClient::CreateManager(
     base::PassKey<autofill::ContentAutofillDriver> pass_key,
     autofill::ContentAutofillDriver& driver) {
-  return base::WrapUnique(new autofill::AndroidAutofillManager(&driver, this));
-}
-
-void AndroidAutofillClient::InitAgent(
-    base::PassKey<autofill::ContentAutofillDriverFactory> pass_key,
-    const mojo::AssociatedRemote<autofill::mojom::AutofillAgent>& agent) {
+  return base::WrapUnique(new autofill::AndroidAutofillManager(&driver));
 }
 
 }  // namespace android_autofill

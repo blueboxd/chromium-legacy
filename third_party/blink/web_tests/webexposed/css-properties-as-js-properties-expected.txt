@@ -8,7 +8,6 @@ alignItems
 alignSelf
 alignmentBaseline
 all
-anchorDefault
 anchorName
 animation
 animationComposition
@@ -355,14 +354,16 @@ pointerEvents
 popoverHideDelay
 popoverShowDelay
 position
-positionFallback
+positionAnchor
 positionFallbackBounds
+positionTry
 positionTryOptions
 positionTryOrder
 prefix
 quotes
 r
 range
+readingOrderItems
 removeProperty
 resize
 right
@@ -444,6 +445,7 @@ textAlign
 textAlignLast
 textAnchor
 textAutospace
+textBoxEdge
 textBoxTrim
 textCombineUpright
 textDecoration

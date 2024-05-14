@@ -22,9 +22,11 @@
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/privacy_hub/privacy_hub_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
@@ -171,9 +173,15 @@ bool ConsolidatedConsentScreen::MaybeSkip(WizardContext& context) {
     return true;
   }
 
+  // Do not skip the screen, if the system location toggle can be configured by
+  // the active user. Returns false when the Privacy Hub Location is disabled.
+  if (ash::privacy_hub_util::IsCrosLocationOobeNegotiationNeeded()) {
+    return false;
+  }
+
   // Admins are required to accept ToS on the server side.
-  // So, if the profile is affiliated and arc negotiation is needed, skip the
-  // screen.
+  // So, if the profile is affiliated and arc negotiation is not needed, skip
+  // the screen.
 
   // Do not skip the screen if ARC negotiaition is needed.
   if (arc::IsArcTermsOfServiceOobeNegotiationNeeded())
@@ -205,6 +213,10 @@ void ConsolidatedConsentScreen::ShowImpl() {
 
   base::Value::Dict data;
 
+  // If Privacy Hub is enabled, location ToS will no longer be tied to ARC and
+  // instead will affect both ChromeOS and ARC.
+  data.Set("isPrivacyHubLocationEnabled",
+           ash::features::IsCrosPrivacyHubLocationEnabled());
   // If ARC is enabled, show the ARC ToS and the related opt-ins.
   data.Set("isArcEnabled", arc::IsArcTermsOfServiceOobeNegotiationNeeded());
   // In demo mode, don't show any opt-ins related to ARC and allow showing the
@@ -328,7 +340,9 @@ void ConsolidatedConsentScreen::OnOwnershipStatusCheckDone(
 
   const bool is_demo = arc::IsArcDemoModeSetupFlow();
   const bool is_negotiation_needed =
-      arc::IsArcTermsOfServiceOobeNegotiationNeeded();
+      ash::features::IsCrosPrivacyHubLocationEnabled()
+          ? true
+          : arc::IsArcTermsOfServiceOobeNegotiationNeeded();
 
   if (!is_demo && is_negotiation_needed) {
     // Enable ARC to match ArcSessionManager logic. ArcSessionManager expects
@@ -339,7 +353,9 @@ void ConsolidatedConsentScreen::OnOwnershipStatusCheckDone(
     Profile* profile = ProfileManager::GetActiveUserProfile();
     DCHECK(profile);
 
-    arc::SetArcPlayStoreEnabledForProfile(profile, true);
+    if (arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
+      arc::SetArcPlayStoreEnabledForProfile(profile, true);
+    }
 
     pref_handler_ = std::make_unique<arc::ArcOptInPreferenceHandler>(
         this, profile->GetPrefs(), g_browser_process->metrics_service());
@@ -406,20 +422,24 @@ void ConsolidatedConsentScreen::RecordConsents(
   }
 
   if (params.record_location_consent) {
-    ArcGoogleLocationServiceConsent location_service_consent;
-    location_service_consent.set_confirmation_grd_id(
-        IDS_CONSOLIDATED_CONSENT_ACCEPT_AND_CONTINUE);
-    location_service_consent.add_description_grd_ids(
-        IDS_CONSOLIDATED_CONSENT_LOCATION_OPT_IN_TITLE);
-    location_service_consent.add_description_grd_ids(
-        is_child_account_ ? IDS_CONSOLIDATED_CONSENT_LOCATION_OPT_IN_CHILD
-                          : IDS_CONSOLIDATED_CONSENT_LOCATION_OPT_IN);
-    location_service_consent.set_status(params.location_accepted
-                                            ? UserConsentTypes::GIVEN
-                                            : UserConsentTypes::NOT_GIVEN);
+    // TODO(b/327350824): Stop sending ARC controls to consent auditor.
+    if (!features::IsCrosPrivacyHubLocationEnabled()) {
+      ArcGoogleLocationServiceConsent location_service_consent;
+      location_service_consent.set_confirmation_grd_id(
+          IDS_CONSOLIDATED_CONSENT_ACCEPT_AND_CONTINUE);
 
-    consent_auditor->RecordArcGoogleLocationServiceConsent(
-        account_id, location_service_consent);
+      location_service_consent.add_description_grd_ids(
+          IDS_CONSOLIDATED_CONSENT_ARC_LOCATION_OPT_IN_TITLE);
+      location_service_consent.add_description_grd_ids(
+          is_child_account_ ? IDS_CONSOLIDATED_CONSENT_ARC_LOCATION_OPT_IN_CHILD
+                            : IDS_CONSOLIDATED_CONSENT_ARC_LOCATION_OPT_IN);
+      location_service_consent.set_status(params.location_accepted
+                                              ? UserConsentTypes::GIVEN
+                                              : UserConsentTypes::NOT_GIVEN);
+
+      consent_auditor->RecordArcGoogleLocationServiceConsent(
+          account_id, location_service_consent);
+    }
   }
 }
 
@@ -489,7 +509,11 @@ void ConsolidatedConsentScreen::OnAccept(bool enable_stats_usage,
 }
 
 void ConsolidatedConsentScreen::ExitScreenWithAcceptedResult() {
-  RecordRecoveryOptinResult(context()->recovery_setup);
+  if (!chrome_user_manager_util::IsManagedGuestSessionOrEphemeralLogin()) {
+    // Recovery is not set up for ephemeral users, don't send metrics in this
+    // case.
+    RecordRecoveryOptinResult(context()->recovery_setup);
+  }
   StartupUtils::MarkEulaAccepted();
   network_portal_detector::GetInstance()->Enable();
 

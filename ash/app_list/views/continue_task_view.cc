@@ -141,7 +141,7 @@ ContinueTaskView::ContinueTaskView(AppListViewDelegate* view_delegate,
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
-  GetViewAccessibility().OverrideRole(ax::mojom::Role::kListItem);
+  GetViewAccessibility().SetRole(ax::mojom::Role::kListItem);
 
   icon_ = AddChildView(std::make_unique<views::ImageView>());
   icon_->SetVerticalAlignment(views::ImageView::Alignment::kCenter);
@@ -265,7 +265,7 @@ void ContinueTaskView::UpdateResult() {
   if (!result()) {
     title_->SetText(std::u16string());
     subtitle_->SetText(std::u16string());
-    GetViewAccessibility().OverrideName(
+    GetViewAccessibility().SetName(
         std::u16string(), ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
     return;
   }
@@ -274,8 +274,8 @@ void ContinueTaskView::UpdateResult() {
   subtitle_->SetText(result()->details());
   subtitle_->SetVisible(!result()->details().empty());
 
-  GetViewAccessibility().OverrideName(result()->title() + u" " +
-                                      result()->details());
+  GetViewAccessibility().SetName(result()->title() + u" " + result()->details(),
+                                 ax::mojom::NameFrom::kAttribute);
 }
 
 void ContinueTaskView::OnResultDestroying() {

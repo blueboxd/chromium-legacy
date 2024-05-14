@@ -4,10 +4,13 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//testing/test.gni")
 
 mojom("mojom") {
   sources = [
+    "os_registration_error.mojom",
     "registration_eligibility.mojom",
+    "registration_header_type.mojom",
     "source_registration_error.mojom",
     "source_registration_time_config.mojom",
     "summary_window_operator.mojom",
@@ -65,6 +68,15 @@ component("attribution_reporting") {
     "os_registration.h",
     "parsing_utils.cc",
     "parsing_utils.h",
+    "privacy_math.cc",
+    "privacy_math.h",
+    "registrar.h",
+    "registrar_info.cc",
+    "registrar_info.h",
+    "registration_header_error.cc",
+    "registration_header_error.h",
+    "registration_info.cc",
+    "registration_info.h",
     "source_registration.cc",
     "source_registration.h",
     "source_type.cc",
@@ -91,7 +103,11 @@ component("attribution_reporting") {
     "//url",
   ]
 
-  deps = [ ":is_origin_suitable" ]
+  deps = [
+    ":is_origin_suitable",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom:mojom_headers",
+  ]
 
   defines = [ "IS_ATTRIBUTION_REPORTING_IMPL" ]
 }
@@ -129,6 +145,10 @@ source_set("unit_tests") {
     "max_event_level_reports_unittest.cc",
     "os_registration_unittest.cc",
     "parsing_utils_unittest.cc",
+    "privacy_math_unittest.cc",
+    "registrar_info_unittest.cc",
+    "registration_header_error_unittest.cc",
+    "registration_info_unittest.cc",
     "source_registration_unittest.cc",
     "suitable_origin_unittest.cc",
     "summary_buckets_unittest.cc",
@@ -141,6 +161,7 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//services/network/public/mojom:mojom_headers",
     "//testing/gtest",
   ]
 }
@@ -159,6 +180,18 @@ source_set("test_support") {
   ]
 
   deps = [ "//base" ]
+}
+
+fuzzer_test("parse_info_header_fuzzer") {
+  sources = [ "parse_info_header_fuzzer.cc" ]
+  deps = [
+    ":attribution_reporting",
+    "//base",
+    "//base:i18n",
+  ]
+
+  seed_corpus =
+      "//components/attribution_reporting/parse_info_header_fuzzer_corpus/"
 }
 
 fuzzer_test("parse_os_header_fuzzer") {
@@ -286,6 +319,12 @@ mojom("registration_mojom") {
               "namespace attribution_reporting { struct AggregatableDedupKey; }"
         },
         {
+          mojom = "attribution_reporting.mojom.AggregatableValues"
+          cpp = "::attribution_reporting::AggregatableValues"
+          forward_declaration =
+              "namespace attribution_reporting { class AggregatableValues; }"
+        },
+        {
           mojom = "attribution_reporting.mojom.TriggerRegistration"
           cpp = "::attribution_reporting::TriggerRegistration"
           forward_declaration =
@@ -310,6 +349,8 @@ mojom("registration_mojom") {
         {
           mojom = "attribution_reporting.mojom.OsRegistrationItem"
           cpp = "::attribution_reporting::OsRegistrationItem"
+          forward_declaration =
+              "namespace attribution_reporting { struct OsRegistrationItem; }"
         },
         {
           mojom = "attribution_reporting.mojom.EventReportWindows"
@@ -328,6 +369,11 @@ mojom("registration_mojom") {
           cpp = "::attribution_reporting::TriggerSpecs"
           forward_declaration =
               "namespace attribution_reporting { class TriggerSpecs; }"
+        },
+        {
+          mojom = "attribution_reporting.mojom.RegistrationHeaderError"
+          cpp = "::attribution_reporting::RegistrationHeaderError"
+          forward_declaration = "namespace attribution_reporting { struct RegistrationHeaderError; }"
         },
       ]
       traits_headers = [ "registration_mojom_traits.h" ]
@@ -365,4 +411,28 @@ mojom("source_type_mojom") {
   webui_module_path = "/"
   disallow_interfaces = true
   generate_java = false
+}
+
+source_set("fuzzer_support") {
+  testonly = true
+
+  sources = [ "fuzz_utils.h" ]
+
+  public_deps = [
+    ":attribution_reporting",
+    "//third_party/fuzztest",
+  ]
+}
+
+test("privacy_math_fuzztest") {
+  sources = [ "privacy_math_fuzztest.cc" ]
+
+  fuzztests = [ "PrivacyMathTest.SingleSpecNumStatesMatchesRecursive" ]
+
+  deps = [
+    ":attribution_reporting",
+    ":fuzzer_support",
+    ":test_support",
+    "//third_party/fuzztest:fuzztest_gtest_main",
+  ]
 }

@@ -1023,25 +1023,6 @@ TEST_F(ArcVmClientAdapterTest, StartMiniArc_UreadaheadByDefault) {
   EXPECT_TRUE(ops[1].env.empty());
 }
 
-// Tests that StartMiniArc()'s JOB_STOP_AND_START for
-// |kArcVmPreLoginServicesJobName| has DISABLE_UREADAHEAD variable.
-TEST_F(ArcVmClientAdapterTest, StartMiniArc_DisableUreadahead) {
-  StartParams start_params(GetPopulatedStartParams());
-  start_params.disable_ureadahead = true;
-  ash::FakeUpstartClient::Get()->StartRecordingUpstartOperations();
-  StartMiniArcWithParams(true, std::move(start_params));
-
-  const auto& ops =
-      ash::FakeUpstartClient::Get()->GetRecordedUpstartOperationsForJob(
-          kArcVmPreLoginServicesJobName);
-  ASSERT_EQ(ops.size(), 2u);
-  EXPECT_EQ(ops[0].type, ash::FakeUpstartClient::UpstartOperationType::STOP);
-  EXPECT_EQ(ops[1].type, ash::FakeUpstartClient::UpstartOperationType::START);
-  const auto it_ureadahead =
-      base::ranges::find(ops[1].env, "DISABLE_UREADAHEAD=1");
-  EXPECT_NE(ops[1].env.end(), it_ureadahead);
-}
-
 // Tests that StartMiniArc() handles arcvm-post-vm-start-services stop failures
 // properly.
 TEST_F(ArcVmClientAdapterTest,
@@ -2189,7 +2170,8 @@ TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeWithPercentageParam) {
   StartParams start_params(GetPopulatedStartParams());
   StartMiniArcWithParams(true, std::move(start_params));
   const auto& request = GetTestConciergeClient()->start_arc_vm_request();
-  EXPECT_EQ(request.memory_mib(), total_mib / 4);
+  // shift_mib is -500 by default
+  EXPECT_EQ(request.memory_mib(), total_mib / 4 - 500);
 }
 
 // Test that ARCMVM size is set by both ram_percentage and shift_mib.
@@ -2501,8 +2483,9 @@ TEST_F(ArcVmClientAdapterTest, ArcGuestZramSizeByPercentage_5GbSystem) {
   StartMiniArcWithParams(true, std::move(start_params));
 
   const auto& request = GetTestConciergeClient()->start_arc_vm_request();
-  // 5GB system should result in 4GB VM size => 2GB ZRAM.
-  EXPECT_EQ(2048u, request.guest_zram_mib());
+  // As shift_mib for memory size is -500 by default,
+  // 5GB system should result in 4.5GB VM size => 2.25GB ZRAM.
+  EXPECT_EQ(2310u, request.guest_zram_mib());
 }
 
 TEST_F(ArcVmClientAdapterTest, ArcGuestZramSizeByPercentage_4GbSystem) {
@@ -2525,8 +2508,9 @@ TEST_F(ArcVmClientAdapterTest, ArcGuestZramSizeByPercentage_4GbSystem) {
   StartMiniArcWithParams(true, std::move(start_params));
 
   const auto& request = GetTestConciergeClient()->start_arc_vm_request();
-  // 4GB system should result in 3GB VM size => 1.5GB ZRAM.
-  EXPECT_EQ(1536u, request.guest_zram_mib());
+  // As shift_mib for memory size is -500 by default,
+  // 4GB system should result in 3.5GB VM size => 1.75GB ZRAM.
+  EXPECT_EQ(1798u, request.guest_zram_mib());
 }
 
 TEST_F(ArcVmClientAdapterTest, ArcGuestZramSizeByPercentage_CustomMem) {
@@ -2877,37 +2861,6 @@ TEST_F(ArcVmClientAdapterTest, ArcLmkPerceptibleMinStateUpdateEnabled) {
   UpgradeArcWithParams(true, std::move(upgrade_params));
   EXPECT_TRUE(base::Contains(boot_notification_server()->received_data(),
                              "ro.boot.arc.lmk.perceptible_min_state_update=1"));
-}
-
-TEST_F(ArcVmClientAdapterTest, ForcePostBootDexOpDisabled) {
-  StartMiniArc();
-  UpgradeParams upgrade_params = GetPopulatedUpgradeParams();
-  upgrade_params.force_post_boot_dex_opt = false;
-  UpgradeArcWithParams(true, std::move(upgrade_params));
-  EXPECT_FALSE(base::Contains(boot_notification_server()->received_data(),
-                              "ro.boot.force_post_boot_dexopt"));
-}
-
-TEST_F(ArcVmClientAdapterTest, ForcePostBootDexOpEnabledArcT) {
-  base::test::ScopedChromeOSVersionInfo version(
-      "CHROMEOS_ARC_ANDROID_SDK_VERSION=33", base::Time::Now());
-  StartMiniArc();
-  UpgradeParams upgrade_params = GetPopulatedUpgradeParams();
-  upgrade_params.force_post_boot_dex_opt = true;
-  UpgradeArcWithParams(true, std::move(upgrade_params));
-  EXPECT_TRUE(base::Contains(boot_notification_server()->received_data(),
-                             "ro.boot.force_post_boot_dexopt=1"));
-}
-
-TEST_F(ArcVmClientAdapterTest, ForcePostBootDexOpEnabledArcR) {
-  base::test::ScopedChromeOSVersionInfo version(
-      "CHROMEOS_ARC_ANDROID_SDK_VERSION=30", base::Time::Now());
-  StartMiniArc();
-  UpgradeParams upgrade_params = GetPopulatedUpgradeParams();
-  upgrade_params.force_post_boot_dex_opt = true;
-  UpgradeArcWithParams(true, std::move(upgrade_params));
-  EXPECT_FALSE(base::Contains(boot_notification_server()->received_data(),
-                              "ro.boot.force_post_boot_dexopt"));
 }
 
 TEST_F(ArcVmClientAdapterTest, DefaultDexOptCacheSetup) {

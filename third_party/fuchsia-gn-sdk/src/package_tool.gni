@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/fuchsia/gn_configs.gni")
+import("gn_configs.gni")
 import("gn_sdk_configs.gni")
 
 # Template for running the ffx package-tool tool for building and archiving
@@ -85,12 +85,11 @@ template("fuchsia_package_tool") {
         "--depfile",
       ]
 
-      if (fuchsia_target_api_level != -1) {
-        args += [
-          "--api-level",
-          "${fuchsia_target_api_level}",
-        ]
-      }
+      assert(fuchsia_target_api_level >= 1)
+      args += [
+        "--api-level",
+        "${fuchsia_target_api_level}",
+      ]
     } else if (command == "archive") {
       # "ffx package archive create" flow
       _final_far_file = "$_pkg_out_dir/${package_name}.far"

@@ -28,6 +28,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_INTERNALS_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
@@ -78,7 +79,6 @@ class Page;
 class Range;
 class ReadableStream;
 class RecordTest;
-class ScriptPromiseResolver;
 class ScriptState;
 class SequenceTest;
 class ShadowRoot;
@@ -111,13 +111,15 @@ class Internals final : public ScriptWrappable {
   bool isLoading(const String& url);
   bool isLoadingFromMemoryCache(const String& url);
 
-  ScriptPromise getInitialResourcePriority(ScriptState*,
-                                           const String& url,
-                                           Document*,
-                                           bool new_load_only = false);
-  ScriptPromise getInitialResourcePriorityOfNewLoad(ScriptState*,
-                                                    const String& url,
-                                                    Document*);
+  ScriptPromiseTyped<IDLLong> getInitialResourcePriority(
+      ScriptState*,
+      const String& url,
+      Document*,
+      bool new_load_only = false);
+  ScriptPromiseTyped<IDLLong> getInitialResourcePriorityOfNewLoad(
+      ScriptState*,
+      const String& url,
+      Document*);
   String getResourceHeader(const String& url, const String& header, Document*);
 
   bool doesWindowHaveUrlFragment(DOMWindow*);
@@ -134,7 +136,7 @@ class Internals final : public ScriptWrappable {
   ShadowRoot* createUserAgentShadowRoot(Element* host);
 
   ShadowRoot* shadowRoot(Element* host);
-  String shadowRootType(const Node*, ExceptionState&) const;
+  String ShadowRootMode(const Node*, ExceptionState&) const;
   uint32_t countElementShadow(const Node*, ExceptionState&) const;
   const AtomicString& shadowPseudoId(Element*);
 
@@ -165,6 +167,7 @@ class Internals final : public ScriptWrappable {
   unsigned styleForElementCount(ExceptionState&) const;
   unsigned needsLayoutCount(ExceptionState&) const;
   unsigned layoutCountForTesting(ExceptionState&) const;
+  bool nodeNeedsStyleRecalc(Node*, ExceptionState&) const;
   unsigned hitTestCount(Document*, ExceptionState&) const;
   unsigned hitTestCacheHits(Document*, ExceptionState&) const;
   Element* elementFromPoint(Document*,
@@ -177,7 +180,6 @@ class Internals final : public ScriptWrappable {
 
   Element* innerEditorElement(Element* container, ExceptionState&) const;
 
-  String visiblePlaceholder(Element*);
   bool isValidationMessageVisible(Element*);
   void selectColorInColorChooser(Element*, const String& color_value);
   void endColorChooser(Element*);
@@ -477,24 +479,28 @@ class Internals final : public ScriptWrappable {
 
   void setShouldRevealPassword(Element*, bool, ExceptionState&);
 
-  ScriptPromise createResolvedPromise(ScriptState*, ScriptValue);
+  ScriptPromiseTyped<IDLAny> createResolvedPromise(ScriptState*, ScriptValue);
   ScriptPromise createRejectedPromise(ScriptState*, ScriptValue);
   ScriptPromise addOneToPromise(ScriptState*, ScriptPromise);
-  ScriptPromise promiseCheck(ScriptState*,
-                             int32_t,
-                             bool,
-                             const ScriptValue&,
-                             const String&,
-                             const Vector<String>&,
-                             ExceptionState&);
-  ScriptPromise promiseCheckWithoutExceptionState(ScriptState*,
-                                                  const ScriptValue&,
-                                                  const String&,
-                                                  const Vector<String>&);
-  ScriptPromise promiseCheckRange(ScriptState*, int32_t);
-  ScriptPromise promiseCheckOverload(ScriptState*, Location*);
-  ScriptPromise promiseCheckOverload(ScriptState*, Document*);
-  ScriptPromise promiseCheckOverload(ScriptState*, Location*, int32_t, int32_t);
+  ScriptPromiseTyped<IDLAny> promiseCheck(ScriptState*,
+                                          int32_t,
+                                          bool,
+                                          const ScriptValue&,
+                                          const String&,
+                                          const Vector<String>&,
+                                          ExceptionState&);
+  ScriptPromiseTyped<IDLAny> promiseCheckWithoutExceptionState(
+      ScriptState*,
+      const ScriptValue&,
+      const String&,
+      const Vector<String>&);
+  ScriptPromiseTyped<IDLAny> promiseCheckRange(ScriptState*, int32_t);
+  ScriptPromiseTyped<IDLAny> promiseCheckOverload(ScriptState*, Location*);
+  ScriptPromiseTyped<IDLAny> promiseCheckOverload(ScriptState*, Document*);
+  ScriptPromiseTyped<IDLAny> promiseCheckOverload(ScriptState*,
+                                                  Location*,
+                                                  int32_t,
+                                                  int32_t);
 
   void Trace(Visitor*) const override;
 
@@ -536,7 +542,9 @@ class Internals final : public ScriptWrappable {
   // Observes changes on Document's UseCounter. Returns a promise that is
   // resolved when |feature| is counted. When |feature| was already counted,
   // it's immediately resolved.
-  ScriptPromise observeUseCounter(ScriptState*, Document*, uint32_t feature);
+  ScriptPromiseTyped<IDLUndefined> observeUseCounter(ScriptState*,
+                                                     Document*,
+                                                     uint32_t feature);
 
   // Used by the iterable<>.
   unsigned length() const { return 5; }
@@ -630,7 +638,9 @@ class Internals final : public ScriptWrappable {
   // the LCPScriptObserver Probe.
   Vector<String> getCreatorScripts(HTMLImageElement* img);
 
-  ScriptPromise LCPPrediction(ScriptState*, Document* document);
+  ScriptPromiseTyped<IDLString> LCPPrediction(ScriptState*, Document* document);
+
+  ScriptPromise exemptUrlFromNetworkRevocation(ScriptState*, const String& url);
 
  private:
   Document* ContextDocument() const;
@@ -648,10 +658,13 @@ class Internals final : public ScriptWrappable {
                            const String& marker_type,
                            unsigned index,
                            ExceptionState&);
-  void ResolveResourcePriority(ScriptPromiseResolver*,
+  void ResolveResourcePriority(ScriptPromiseResolverTyped<IDLLong>*,
                                int resource_load_priority);
+  void ExemptUrlFromNetworkRevocationComplete(ScriptPromiseResolver* resolver);
+
   Member<InternalRuntimeFlags> runtime_flags_;
   Member<Document> document_;
+  std::optional<ColorSchemeHelper> color_scheme_helper_;
 };
 
 }  // namespace blink

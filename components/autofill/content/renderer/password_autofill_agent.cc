@@ -340,17 +340,13 @@ bool HasPasswordField(const WebLocalFrame& frame) {
   };
 
   WebDocument doc = frame.GetDocument();
-  return base::ranges::any_of(doc.Forms(), ContainsPasswordField,
-                              &WebFormElement::GetFormControlElements) ||
+  return base::ranges::any_of(
+             base::FeatureList::IsEnabled(
+                 blink::features::kAutofillIncludeFormElementsInShadowDom)
+                 ? doc.GetTopLevelForms()
+                 : doc.Forms(),
+             ContainsPasswordField, &WebFormElement::GetFormControlElements) ||
          ContainsPasswordField(doc.UnassociatedFormControls());
-}
-
-// Returns the owning form element for a given input.
-WebFormElement GetFormElement(const WebInputElement& element) {
-  return base::FeatureList::IsEnabled(
-             password_manager::features::kShadowDomSupport)
-             ? form_util::GetOwningForm(element)
-             : element.Form();
 }
 
 // Returns the closest visible autocompletable non-password text element
@@ -363,7 +359,8 @@ WebInputElement FindUsernameElementPrecedingPasswordElement(
 
   std::vector<WebFormControlElement> elements =
       form_util::GetAutofillableFormControlElements(
-          frame->GetDocument(), GetFormElement(password_element));
+          frame->GetDocument(),
+          form_util::GetFormElementForPasswordInput(password_element));
 
   auto iter = base::ranges::find(elements, password_element);
   if (iter == elements.end())
@@ -523,7 +520,7 @@ mojom::SubmissionReadinessState CalculateSubmissionReadiness(
   size_t number_of_elements = form_data.fields.size();
   if (username_index == number_of_elements ||
       password_index == number_of_elements) {
-    // This is unexpected. |form_data| is supposed to contain username and
+    // This is unexpected. `form_data` is supposed to contain username and
     // password elements.
     return mojom::SubmissionReadinessState::kError;
   }
@@ -665,7 +662,7 @@ class PasswordAutofillAgent::DeferringPasswordManagerDriver
              form_renderer_id, result);
   }
 
-  raw_ptr<PasswordAutofillAgent, ExperimentalRenderer> agent_ = nullptr;
+  raw_ptr<PasswordAutofillAgent> agent_ = nullptr;
   base::WeakPtrFactory<DeferringPasswordManagerDriver> weak_ptr_factory_{this};
 };
 
@@ -674,12 +671,12 @@ class PasswordAutofillAgent::DeferringPasswordManagerDriver
 
 PasswordAutofillAgent::PasswordAutofillAgent(
     content::RenderFrame* render_frame,
-    blink::AssociatedInterfaceRegistry* registry)
+    blink::AssociatedInterfaceRegistry* registry,
+    EnableHeavyFormDataScraping enable_heavy_form_data_scraping)
     : content::RenderFrameObserver(render_frame),
+      enable_heavy_form_data_scraping_(enable_heavy_form_data_scraping),
       last_supplied_password_info_iter_(web_input_to_password_info_.end()),
       logging_state_active_(false),
-      username_autofill_state_(WebAutofillState::kNotFilled),
-      password_autofill_state_(WebAutofillState::kNotFilled),
       sent_request_to_store_(false),
       checked_safe_browsing_reputation_(false),
       password_generation_agent_(nullptr) {
@@ -773,13 +770,14 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
 
 void PasswordAutofillAgent::UpdatePasswordStateForTextChange(
     const WebInputElement& element) {
-  InformBrowserAboutUserInput(GetFormElement(element), element);
+  InformBrowserAboutUserInput(
+      form_util::GetFormElementForPasswordInput(element), element);
 
   if (element.IsPasswordFieldForAutofill()) {
     auto iter = password_to_username_.find(element);
     if (iter != password_to_username_.end()) {
       web_input_to_password_info_[iter->second].password_was_edited_last = true;
-      // Note that the suggested value of |mutable_element| was reset when its
+      // Note that the suggested value of `mutable_element` was reset when its
       // value changed.
       // TODO(crbug.com/415449): Do this through const WebInputElement.
       WebInputElement mutable_element = element;  // We need a non-const.
@@ -790,12 +788,6 @@ void PasswordAutofillAgent::UpdatePasswordStateForTextChange(
   }
 
   // Notify PasswordManager about potential username fields for UFF.
-  // Do not consider fields that have no names or ids to avoid aggregation
-  // of multiple unrelated fields. (crbug.com/1209143)
-  if (element.NameForAutofill().IsEmpty()) {
-    return;
-  }
-
   // Exclude 1-symbol inputs, as they are unlikely to be usernames and likely
   // to be characters/digits of OTPs.
   // Exclude too large inputs, as they are usually not usernames.
@@ -810,6 +802,13 @@ void PasswordAutofillAgent::UpdatePasswordStateForTextChange(
   static base::NoDestructor<WebString> kName("name");
   std::u16string name_attribute = element.GetAttribute(*kName).Utf16();
   std::u16string id_attribute = element.GetIdAttribute().Utf16();
+  static base::NoDestructor<WebString> kLabel("label");
+  std::u16string label_attribute = element.GetAttribute(*kLabel).Utf16();
+
+  if (!password_manager::util::CanBeConsideredAsSingleUsername(
+          name_attribute, id_attribute, label_attribute)) {
+    return;
+  }
 
   bool is_likely_otp =
       autofill::MatchesRegex<password_manager::constants::kOneTimePwdRe>(
@@ -850,6 +849,8 @@ void PasswordAutofillAgent::FillPasswordSuggestion(
     return;
   }
 
+  ClearPreviewedForm();
+
   password_info->password_was_edited_last = false;
   if (element.IsPasswordFieldForAutofill()) {
     password_info->password_field_suggestion_was_accepted = true;
@@ -865,11 +866,11 @@ void PasswordAutofillAgent::FillPasswordSuggestion(
                           element.IsPasswordFieldForAutofill()) &&
       !(username.empty() && element.IsPasswordFieldForAutofill()) &&
       username_element.Value().Utf16() != username) {
-    FillField(&username_element, username);
+    DoFillField(username_element, username);
   }
 
   if (!password_element.IsNull()) {
-    FillPasswordFieldAndSave(&password_element, password);
+    FillPasswordFieldAndSave(password_element, password);
 
     // TODO(crbug.com/1319364): As Touch-To-Fill and auto-submission don't
     // currently support filling single username fields, the code below is
@@ -899,42 +900,78 @@ void PasswordAutofillAgent::FillIntoFocusedField(
     return;
   }
   if (!is_password) {
-    FillField(&focused_input_element, credential);
+    DoFillField(focused_input_element, credential);
   }
   if (!focused_input_element.IsPasswordFieldForAutofill()) {
     return;
   }
-  FillPasswordFieldAndSave(&focused_input_element, credential);
+  FillPasswordFieldAndSave(focused_input_element, credential);
 }
 
-void PasswordAutofillAgent::FillField(WebInputElement* input,
-                                      const std::u16string& credential) {
-  DCHECK(input);
-  DCHECK(!input->IsNull());
-  input->SetAutofillValue(WebString::FromUTF16(credential));
+void PasswordAutofillAgent::PreviewField(FieldRendererId field_id,
+                                         const std::u16string& value) {
+  WebInputElement input = form_util::GetFormControlByRendererId(field_id)
+                              .DynamicTo<WebInputElement>();
+  if (input.IsNull() || !IsElementEditable(input)) {
+    return;
+  }
+  DoPreviewField(input, value,
+                 /*is_password=*/input.IsPasswordFieldForAutofill());
+}
+
+void PasswordAutofillAgent::FillField(FieldRendererId field_id,
+                                      const std::u16string& value) {
+  WebFormControlElement form_control =
+      form_util::GetFormControlByRendererId(field_id);
+  WebInputElement input_element = form_control.DynamicTo<WebInputElement>();
+  if (input_element.IsNull() || input_element.IsReadOnly()) {
+    // Early return for non-input fields such as textarea.
+    return;
+  }
+  DoFillField(input_element, value);
+}
+
+void PasswordAutofillAgent::DoPreviewField(WebInputElement& input,
+                                           const std::u16string& credential,
+                                           bool is_password) {
+  CHECK(!input.IsNull());
+  previewed_elements_.emplace_back(PreviewInfo{
+      .field_id = form_util::GetFieldRendererId(input),
+      .autofill_state = input.GetAutofillState(),
+      .is_password = is_password,
+  });
+  input.SetSuggestedValue(WebString::FromUTF16(credential));
+}
+
+void PasswordAutofillAgent::DoFillField(WebInputElement& input,
+                                        const std::u16string& credential) {
+  CHECK(!input.IsNull());
+  input.SetAutofillValue(WebString::FromUTF16(credential));
   field_data_manager().UpdateFieldDataMap(
-      form_util::GetFieldRendererId(*input), credential,
+      form_util::GetFieldRendererId(input), credential,
       FieldPropertiesFlags::kAutofilledOnUserTrigger);
-  TrackAutofilledElement(*input);
+  TrackAutofilledElement(input);
 }
 
 void PasswordAutofillAgent::FillPasswordFieldAndSave(
-    WebInputElement* password_input,
+    WebInputElement& password_input,
     const std::u16string& credential) {
-  DCHECK(password_input);
-  DCHECK(password_input->IsPasswordFieldForAutofill());
-  FillField(password_input, credential);
-  InformBrowserAboutUserInput(GetFormElement(*password_input), *password_input);
+  CHECK(password_input.IsPasswordFieldForAutofill());
+  DoFillField(password_input, credential);
+  InformBrowserAboutUserInput(
+      form_util::GetFormElementForPasswordInput(password_input),
+      password_input);
 }
 
-bool PasswordAutofillAgent::PreviewSuggestion(
+void PasswordAutofillAgent::PreviewSuggestion(
     const WebFormControlElement& control_element,
-    const WebString& username,
-    const WebString& password) {
+    const std::u16string& username,
+    const std::u16string& password) {
   // The element in context of the suggestion popup.
   const WebInputElement element = control_element.DynamicTo<WebInputElement>();
-  if (element.IsNull())
-    return false;
+  if (element.IsNull()) {
+    return;
+  }
 
   WebInputElement username_element;
   WebInputElement password_element;
@@ -944,7 +981,7 @@ bool PasswordAutofillAgent::PreviewSuggestion(
                                   &username_element, &password_element,
                                   &password_info) ||
       (!password_element.IsNull() && !IsElementEditable(password_element))) {
-    return false;
+    return;
   }
 
   if (IsUsernameAmendable(username_element,
@@ -952,37 +989,29 @@ bool PasswordAutofillAgent::PreviewSuggestion(
     if (username_query_prefix_.empty())
       username_query_prefix_ = username_element.Value().Utf16();
 
-    username_autofill_state_ = username_element.GetAutofillState();
-    username_element.SetSuggestedValue(username);
-    form_util::PreviewSuggestion(username_element.SuggestedValue().Utf16(),
-                                 username_query_prefix_, username_element);
+    DoPreviewField(username_element, username, /*is_password=*/false);
   }
   if (!password_element.IsNull()) {
-    password_autofill_state_ = password_element.GetAutofillState();
-    password_element.SetSuggestedValue(password);
+    DoPreviewField(password_element, password, /*is_password=*/true);
   }
-
-  return true;
 }
 
-bool PasswordAutofillAgent::DidClearAutofillSelection(
-    const WebFormControlElement& control_element) {
-  const WebInputElement element = control_element.DynamicTo<WebInputElement>();
-  if (element.IsNull())
-    return false;
-
-  WebInputElement username_element;
-  WebInputElement password_element;
-  PasswordInfo* password_info;
-
-  if (!FindPasswordInfoForElement(element, UseFallbackData(true),
-                                  &username_element, &password_element,
-                                  &password_info)) {
-    return false;
+void PasswordAutofillAgent::ClearPreviewedForm() {
+  for (const PreviewInfo& preview_info : previewed_elements_) {
+    WebInputElement element =
+        form_util::GetFormControlByRendererId(preview_info.field_id)
+            .DynamicTo<WebInputElement>();
+    if (element.IsNull()) {
+      continue;
+    }
+    if (preview_info.is_password &&
+        base::FeatureList::IsEnabled(blink::features::kPasswordStrongLabel)) {
+      element.SetShouldShowStrongPasswordLabel(false);
+    }
+    element.SetSuggestedValue(WebString());
+    element.SetAutofillState(preview_info.autofill_state);
   }
-
-  ClearPreview(&username_element, &password_element);
-  return true;
+  previewed_elements_.clear();
 }
 
 bool PasswordAutofillAgent::FindPasswordInfoForElement(
@@ -1056,7 +1085,8 @@ void PasswordAutofillAgent::MaybeCheckSafeBrowsingReputation(
   checked_safe_browsing_reputation_ = true;
   WebLocalFrame* frame = render_frame()->GetWebFrame();
   GURL frame_url = GURL(frame->GetDocument().Url());
-  WebFormElement form_element = GetFormElement(element);
+  WebFormElement form_element =
+      form_util::GetFormElementForPasswordInput(element);
   GURL action_url = form_element.IsNull()
                         ? GURL()
                         : form_util::GetCanonicalActionForForm(form_element);
@@ -1097,9 +1127,10 @@ bool PasswordAutofillAgent::TryToShowKeyboardReplacingSurface(
       !password_element.IsNull() && IsElementEditable(password_element);
   CHECK(has_amendable_username_element || has_editable_password_element);
 
-  WebFormElement form = !password_element.IsNull()
-                            ? GetFormElement(password_element)
-                            : GetFormElement(username_element);
+  WebFormElement form =
+      !password_element.IsNull()
+          ? form_util::GetFormElementForPasswordInput(password_element)
+          : form_util::GetFormElementForPasswordInput(username_element);
   std::unique_ptr<FormData> form_data =
       form.IsNull() ? GetFormDataFromUnownedInputElements()
                     : GetFormDataFromWebForm(form);
@@ -1204,7 +1235,8 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
 
   // Make sure that this security origin is allowed to use password manager.
-  blink::WebSecurityOrigin origin = frame->GetDocument().GetSecurityOrigin();
+  WebDocument doc = frame->GetDocument();
+  blink::WebSecurityOrigin origin = doc.GetSecurityOrigin();
   if (logger) {
     logger->LogURL(Logger::STRING_SECURITY_ORIGIN,
                    GURL(origin.ToString().Utf8()));
@@ -1220,7 +1252,11 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
     return;
   }
 
-  WebVector<WebFormElement> forms = frame->GetDocument().Forms();
+  WebVector<WebFormElement> forms =
+      base::FeatureList::IsEnabled(
+          blink::features::kAutofillIncludeFormElementsInShadowDom)
+          ? doc.GetTopLevelForms()
+          : doc.Forms();
 
   if (IsShowAutofillSignaturesEnabled())
     AnnotateFormsAndFieldsWithSignatures(forms);
@@ -1270,8 +1306,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
   bool add_unowned_inputs = true;
   if (only_visible) {
     std::vector<WebFormControlElement> control_elements =
-        form_util::GetAutofillableFormControlElements(frame->GetDocument(),
-                                                      WebFormElement());
+        form_util::GetAutofillableFormControlElements(doc, WebFormElement());
     add_unowned_inputs = base::ranges::any_of(
         control_elements, &IsWebElementFocusableForAutofill);
     LogBoolean(logger.get(), Logger::STRING_UNOWNED_INPUTS_VISIBLE,
@@ -1296,7 +1331,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
     // store. Therefore, saved passwords will be available for filling on click.
     if (!sent_request_to_store_ && password_forms_data.empty() &&
         HasPasswordField(*frame)) {
-      // Set everything that |FormDigest| needs.
+      // Set everything that `FormDigest` needs.
       password_forms_data.emplace_back();
     }
     if (!password_forms_data.empty()) {
@@ -1308,9 +1343,10 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   // Provide warnings about the accessibility of password forms on the page.
   if (!password_forms_data.empty() &&
-      (frame->GetDocument().Url().ProtocolIs(url::kHttpScheme) ||
-       frame->GetDocument().Url().ProtocolIs(url::kHttpsScheme)))
+      (doc.Url().ProtocolIs(url::kHttpScheme) ||
+       doc.Url().ProtocolIs(url::kHttpsScheme))) {
     page_passwords_analyser_.AnalyseDocumentDOM(frame);
+  }
 #endif
 }
 
@@ -1522,9 +1558,7 @@ PasswordAutofillAgent::GetFormDataFromUnownedInputElements() {
     return nullptr;
   return CreateFormDataFromUnownedInputElements(
       *web_frame, field_data_manager(), &username_detector_cache_,
-      autofill_agent_->is_heavy_form_data_scraping_enabled()
-          ? &button_titles_cache_
-          : nullptr);
+      *enable_heavy_form_data_scraping_ ? &button_titles_cache_ : nullptr);
 }
 
 void PasswordAutofillAgent::InformAboutFormClearing(
@@ -1553,7 +1587,8 @@ void PasswordAutofillAgent::InformAboutFieldClearing(
     return;
   }
 
-  WebFormElement form = GetFormElement(cleared_element);
+  WebFormElement form =
+      form_util::GetFormElementForPasswordInput(cleared_element);
   if (form.IsNull()) {
     // Process password field clearing for fields outside the <form> tag.
     if (auto unowned_form_data = GetFormDataFromUnownedInputElements())
@@ -1712,8 +1747,7 @@ void PasswordAutofillAgent::CleanupOnDocumentShutdown() {
   last_supplied_password_info_iter_ = web_input_to_password_info_.end();
   should_show_popup_without_passwords_ = false;
   field_data_manager().ClearData();
-  username_autofill_state_ = WebAutofillState::kNotFilled;
-  password_autofill_state_ = WebAutofillState::kNotFilled;
+  previewed_elements_.clear();
   sent_request_to_store_ = false;
   checked_safe_browsing_reputation_ = false;
   username_query_prefix_.clear();
@@ -1721,8 +1755,6 @@ void PasswordAutofillAgent::CleanupOnDocumentShutdown() {
   forms_structure_cache_.clear();
   autofilled_elements_cache_.clear();
   all_autofilled_elements_.clear();
-  last_updated_field_renderer_id_ = FieldRendererId();
-  last_updated_form_renderer_id_ = FormRendererId();
   field_renderer_id_to_submit_ = FieldRendererId();
 #if BUILDFLAG(IS_ANDROID)
   keyboard_replacing_surface_state_ =
@@ -1733,30 +1765,12 @@ void PasswordAutofillAgent::CleanupOnDocumentShutdown() {
 #endif
 }
 
-void PasswordAutofillAgent::ClearPreview(WebInputElement* username,
-                                         WebInputElement* password) {
-  if (!username->IsNull() && !username->SuggestedValue().IsEmpty()) {
-    username->SetSuggestedValue(WebString());
-    username->SetAutofillState(username_autofill_state_);
-    username->SetSelectionRange(
-        base::checked_cast<unsigned>(username_query_prefix_.length()),
-        base::checked_cast<unsigned>(username->Value().length()));
-  }
-  if (!password->IsNull() && !password->SuggestedValue().IsEmpty()) {
-    if (base::FeatureList::IsEnabled(blink::features::kPasswordStrongLabel)) {
-      password->SetShouldShowStrongPasswordLabel(false);
-    }
-    password->SetSuggestedValue(WebString());
-    password->SetAutofillState(password_autofill_state_);
-  }
-}
 void PasswordAutofillAgent::InformBrowserAboutUserInput(
     const WebFormElement& form,
     const WebInputElement& element) {
   DCHECK(!form.IsNull() || !element.IsNull());
   if (!FrameCanAccessPasswordManager())
     return;
-  SetLastUpdatedFormAndField(form, element);
   std::unique_ptr<FormData> form_data =
       form.IsNull() ? GetFormDataFromUnownedInputElements()
                     : GetFormDataFromWebForm(form);
@@ -2182,14 +2196,6 @@ void PasswordAutofillAgent::AutofillField(const std::u16string& value,
       field_id, value, FieldPropertiesFlags::kAutofilledOnPageLoad);
   autofilled_elements_cache_.emplace(field_id, WebString::FromUTF16(value));
   all_autofilled_elements_.insert(field_id);
-}
-
-void PasswordAutofillAgent::SetLastUpdatedFormAndField(
-    const WebFormElement& form,
-    const WebFormControlElement& input) {
-  last_updated_form_renderer_id_ = GetFormRendererId(form);
-  last_updated_field_renderer_id_ =
-      input.IsNull() ? FieldRendererId() : GetFieldRendererId(input);
 }
 
 bool PasswordAutofillAgent::CanShowPopupWithoutPasswords(

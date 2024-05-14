@@ -53,6 +53,10 @@ namespace WTF {
 const char* const Partitions::kAllocatedObjectPoolName =
     "partition_alloc/allocated_objects";
 
+BASE_FEATURE(kBlinkUseLargeEmptySlotSpanRingForBufferRoot,
+             "BlinkUseLargeEmptySlotSpanRingForBufferRoot",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 #if BUILDFLAG(USE_STARSCAN)
 // Runs PCScan on WTF partitions.
 BASE_FEATURE(kPCScanBlinkPartitions,
@@ -81,14 +85,10 @@ partition_alloc::PartitionOptions PartitionOptionsFromFeatures() {
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   const auto brp_mode = base::features::kBackupRefPtrModeParam.Get();
   const bool process_affected_by_brp_flag =
-#if BUILDFLAG(FORCIBLY_ENABLE_BACKUP_REF_PTR_IN_ALL_PROCESSES)
-      true;
-#else
       base::features::kBackupRefPtrEnabledProcessesParam.Get() ==
           BackupRefPtrEnabledProcesses::kAllProcesses ||
       base::features::kBackupRefPtrEnabledProcessesParam.Get() ==
           BackupRefPtrEnabledProcesses::kBrowserAndRenderer;
-#endif  // BUILDFLAG(FORCIBLY_ENABLE_BACKUP_REF_PTR_IN_ALL_PROCESSES)
   const bool enable_brp = base::FeatureList::IsEnabled(
                               base::features::kPartitionAllocBackupRefPtr) &&
                           (brp_mode == BackupRefPtrMode::kEnabled) &&
@@ -105,12 +105,23 @@ partition_alloc::PartitionOptions PartitionOptionsFromFeatures() {
   const auto memory_tagging =
       enable_memory_tagging ? partition_alloc::PartitionOptions::kEnabled
                             : partition_alloc::PartitionOptions::kDisabled;
+#if BUILDFLAG(USE_FREELIST_POOL_OFFSETS)
+  const bool pool_offset_freelists_enabled =
+      base::FeatureList::IsEnabled(base::features::kUsePoolOffsetFreelists);
+#else
+  const bool pool_offset_freelists_enabled = false;
+#endif  // BUILDFLAG(USE_FREELIST_POOL_OFFSETS)
+  const auto use_pool_offset_freelists =
+      pool_offset_freelists_enabled
+          ? partition_alloc::PartitionOptions::kEnabled
+          : partition_alloc::PartitionOptions::kDisabled;
   // No need to call ChangeMemoryTaggingModeForAllThreadsPerProcess() as it will
   // be handled in ReconfigureAfterFeatureListInit().
   PartitionOptions opts;
   opts.star_scan_quarantine = PartitionOptions::kAllowed;
   opts.backup_ref_ptr = brp_setting;
   opts.memory_tagging = {.enabled = memory_tagging};
+  opts.use_pool_offset_freelists = use_pool_offset_freelists;
   return opts;
 }
 
@@ -139,6 +150,10 @@ bool Partitions::InitializeOnce() {
   static base::NoDestructor<partition_alloc::PartitionAllocator>
       buffer_allocator(options);
   buffer_root_ = buffer_allocator->root();
+  if (base::FeatureList::IsEnabled(
+          kBlinkUseLargeEmptySlotSpanRingForBufferRoot)) {
+    buffer_root_->EnableLargeEmptySlotSpanRing();
+  }
 
   if (base::FeatureList::IsEnabled(
           base::features::kPartitionAllocDisableBRPInBufferPartition)) {
@@ -473,6 +488,32 @@ void Partitions::HandleOutOfMemory(size_t size) {
     PartitionsOutOfMemoryUsing16M(size);
   }
   PartitionsOutOfMemoryUsingLessThan16M(size);
+}
+
+// static
+void Partitions::AdjustPartitionsForForeground() {
+  DCHECK(initialized_);
+  if (base::FeatureList::IsEnabled(
+          base::features::kPartitionAllocAdjustSizeWhenInForeground)) {
+    array_buffer_root_->AdjustForForeground();
+    buffer_root_->AdjustForForeground();
+    if (fast_malloc_root_) {
+      fast_malloc_root_->AdjustForForeground();
+    }
+  }
+}
+
+// static
+void Partitions::AdjustPartitionsForBackground() {
+  DCHECK(initialized_);
+  if (base::FeatureList::IsEnabled(
+          base::features::kPartitionAllocAdjustSizeWhenInForeground)) {
+    array_buffer_root_->AdjustForBackground();
+    buffer_root_->AdjustForBackground();
+    if (fast_malloc_root_) {
+      fast_malloc_root_->AdjustForBackground();
+    }
+  }
 }
 
 }  // namespace WTF

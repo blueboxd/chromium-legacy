@@ -4,6 +4,7 @@
 
 #include "services/webnn/dml/graph_impl.h"
 
+#include <winerror.h>
 #include <algorithm>
 #include <array>
 #include <limits>
@@ -18,7 +19,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
-#include "base/types/expected.h"
+#include "components/ml/webnn/graph_validation_utils.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/webnn/dml/command_queue.h"
 #include "services/webnn/dml/command_recorder.h"
@@ -31,13 +32,13 @@
 #include "services/webnn/webnn_utils.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/fp16/src/include/fp16.h"
-#include "ui/gl/gl_angle_util_win.h"
 
 namespace webnn::dml {
 namespace {
 
 using Microsoft::WRL::ComPtr;
 using mojom::ComputeResult;
+using mojom::CreateGraphResult;
 using mojom::Operand;
 using mojom::OperandPtr;
 using mojom::Operation;
@@ -51,6 +52,12 @@ using IdToNodeOutputMap = std::map<uint64_t, const NodeOutput*>;
 
 constexpr const uint32_t kNhwcToNchwPermutation[] = {0, 3, 1, 2};
 constexpr const uint32_t kNchwToNhwcPermutation[] = {0, 2, 3, 1};
+// The `nhwc` input layout of regular conv2d is `ohwi` filter layout by default
+// that need to be transposed to `oihw`.
+constexpr const uint32_t kOhwiToOihwPermutation[] = {0, 3, 1, 2};
+// The `nhwc` input layout of depthwise conv2d is `ihwo` filter layout by
+// default that need to be transposed to `oihw`.
+constexpr const uint32_t kIhwoToOihwPermutation[] = {3, 0, 1, 2};
 
 DML_TENSOR_DATA_TYPE GetTensorDataType(Operand::DataType type) {
   switch (type) {
@@ -744,12 +751,13 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForConv2d(
 
   const NodeOutput* filter =
       GetNodeOutputForOperand(id_to_node_output_map, conv2d->filter_operand_id);
-  const auto& filter_tensor_desc = filter->GetTensorDesc();
+  auto filter_tensor_desc = filter->GetTensorDesc();
 
   uint64_t output_id = conv2d->output_operand_id;
   // The output tensor description may be transposed.
   auto output_tensor_desc =
       CreateOutputTensorDesc(id_to_operand_map, output_id);
+  CHECK_EQ(output_tensor_desc.GetDimensions().size(), 4u);
 
   std::vector<const NodeOutput*> inputs = {input, filter};
   std::optional<TensorDesc> reshaped_bias_tensor_desc;
@@ -789,6 +797,19 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForConv2d(
     // To support other layouts, we can transpose the input and output
     // tensors
     case mojom::InputOperandLayout::kChannelsLast: {
+      if (conv2d->kind == mojom::Conv2d::Kind::kDirect) {
+        const uint32_t input_channels = input_tensor_desc.GetDimensions()[3];
+        const uint32_t output_channels = output_tensor_desc.GetDimensions()[3];
+        const bool depthwise = webnn::IsDepthwiseConv2d(
+            input_channels, output_channels, conv2d->groups);
+        if (depthwise) {
+          // The filter layout is `ihwo` for depthwise conv2d.
+          filter_tensor_desc.Transpose(kIhwoToOihwPermutation);
+        } else {
+          // The filter layout is `ohwi` for regular conv2d.
+          filter_tensor_desc.Transpose(kOhwiToOihwPermutation);
+        }
+      }
       input_tensor_desc.Transpose(kNhwcToNchwPermutation);
       output_tensor_desc.Transpose(kNhwcToNchwPermutation);
       break;
@@ -828,12 +849,12 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForConv2d(
   }
 
   DML_CONVOLUTION_DIRECTION conv2d_direction;
-  switch (conv2d->type) {
-    case mojom::Conv2d_Type::kDirect:
+  switch (conv2d->kind) {
+    case mojom::Conv2d::Kind::kDirect:
       conv2d_direction =
           DML_CONVOLUTION_DIRECTION::DML_CONVOLUTION_DIRECTION_FORWARD;
       break;
-    case mojom::Conv2d_Type::kTransposed:
+    case mojom::Conv2d::Kind::kTransposed:
       conv2d_direction =
           DML_CONVOLUTION_DIRECTION::DML_CONVOLUTION_DIRECTION_BACKWARD;
       break;
@@ -1188,19 +1209,39 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForPool2d(
       break;
     }
     case mojom::Pool2d::Kind::kMaxPool2d: {
-      DML_MAX_POOLING2_OPERATOR_DESC max_pooling_desc = {
-          .InputTensor = &input_tensor_desc.GetDMLTensorDesc(),
-          .OutputTensor = &output_tensor_desc.GetDMLTensorDesc(),
-          .OutputIndicesTensor = nullptr,
-          .DimensionCount =
-              base::checked_cast<uint32_t>(window_dimensions.size()),
-          .Strides = strides.data(),
-          .WindowSize = window_dimensions.data(),
-          .StartPadding = start_padding.data(),
-          .EndPadding = end_padding.data(),
-          .Dilations = dilations.data()};
-      pool2d_node = graph_builder.CreateOperatorNode(DML_OPERATOR_MAX_POOLING2,
-                                                     &max_pooling_desc, inputs);
+      // If the dilations are { 1, 1 } by default, prefer using
+      // `DML_MAX_POOLING_OPERATOR_DESC` without dilations supported for best
+      // compatibility.
+      // https://learn.microsoft.com/en-us/windows/win32/api/directml/ns-directml-dml_max_pooling_operator_desc.
+      // TODO(issues.chromium.org/327244278): Remove the workaround of using
+      // `DML_MAX_POOLING_OPERATOR_DESC` without dilations.
+      if (dilations[0] == 1 && dilations[1] == 1) {
+        DML_MAX_POOLING_OPERATOR_DESC max_pooling_desc = {
+            .InputTensor = &input_tensor_desc.GetDMLTensorDesc(),
+            .OutputTensor = &output_tensor_desc.GetDMLTensorDesc(),
+            .DimensionCount =
+                base::checked_cast<uint32_t>(window_dimensions.size()),
+            .Strides = strides.data(),
+            .WindowSize = window_dimensions.data(),
+            .StartPadding = start_padding.data(),
+            .EndPadding = end_padding.data()};
+        pool2d_node = graph_builder.CreateOperatorNode(
+            DML_OPERATOR_MAX_POOLING, &max_pooling_desc, inputs);
+      } else {
+        DML_MAX_POOLING2_OPERATOR_DESC max_pooling2_desc = {
+            .InputTensor = &input_tensor_desc.GetDMLTensorDesc(),
+            .OutputTensor = &output_tensor_desc.GetDMLTensorDesc(),
+            .OutputIndicesTensor = nullptr,
+            .DimensionCount =
+                base::checked_cast<uint32_t>(window_dimensions.size()),
+            .Strides = strides.data(),
+            .WindowSize = window_dimensions.data(),
+            .StartPadding = start_padding.data(),
+            .EndPadding = end_padding.data(),
+            .Dilations = dilations.data()};
+        pool2d_node = graph_builder.CreateOperatorNode(
+            DML_OPERATOR_MAX_POOLING2, &max_pooling2_desc, inputs);
+      }
       break;
     }
     default:
@@ -1870,11 +1911,11 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForGemm(
     IdToNodeOutputMap& id_to_node_output_map) {
   const NodeOutput* input_a_node_output =
       GetNodeOutputForOperand(id_to_node_output_map, gemm->a_operand_id);
-  const auto& input_a_tensor_desc = input_a_node_output->GetTensorDesc();
+  auto input_a_tensor_desc = input_a_node_output->GetTensorDesc();
 
   const NodeOutput* input_b_node_output =
       GetNodeOutputForOperand(id_to_node_output_map, gemm->b_operand_id);
-  const auto& input_b_tensor_desc = input_b_node_output->GetTensorDesc();
+  auto input_b_tensor_desc = input_b_node_output->GetTensorDesc();
 
   std::vector<const NodeOutput*> inputs{input_a_node_output,
                                         input_b_node_output};
@@ -1907,13 +1948,28 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForGemm(
     }
   }
 
+  // Use 4D GEMM which is available since feature level 1.0 for best
+  // compatibility. There is no performance difference in the shader between
+  // 2D/3D/4D, as 2D is just a variant of 4D with a batch/channel size of 1.
+  // https://learn.microsoft.com/en-us/windows/win32/api/directml/ns-directml-dml_gemm_operator_desc.
+  // TODO(issues.chromium.org/327244277): Remove the workaround of coercing
+  // GEMM's tensors to 4D.
+  input_a_tensor_desc.EnsureMinimumRank(4, TensorDesc::Alignment::kTrailing);
+  input_b_tensor_desc.EnsureMinimumRank(4, TensorDesc::Alignment::kTrailing);
+  if (input_c_tensor_desc) {
+    input_c_tensor_desc->EnsureMinimumRank(4, TensorDesc::Alignment::kTrailing);
+  }
+  auto expanded_output_tensor_desc = output_tensor_desc;
+  expanded_output_tensor_desc.EnsureMinimumRank(
+      4, TensorDesc::Alignment::kTrailing);
+
   DML_GEMM_OPERATOR_DESC gemm_operator_desc{
       .ATensor = &input_a_tensor_desc.GetDMLTensorDesc(),
       .BTensor = &input_b_tensor_desc.GetDMLTensorDesc(),
       .CTensor = input_c_tensor_desc.has_value()
                      ? &input_c_tensor_desc->GetDMLTensorDesc()
                      : nullptr,
-      .OutputTensor = &output_tensor_desc.GetDMLTensorDesc(),
+      .OutputTensor = &expanded_output_tensor_desc.GetDMLTensorDesc(),
       .TransA = (gemm->a_transpose) ? DML_MATRIX_TRANSFORM_TRANSPOSE
                                     : DML_MATRIX_TRANSFORM_NONE,
       .TransB = (gemm->b_transpose) ? DML_MATRIX_TRANSFORM_TRANSPOSE
@@ -2276,11 +2332,25 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForMatmul(
   CHECK_EQ(input_a_tensor_desc.GetDimensions().size(),
            output_tensor_dims.size());
 
+  // Use 4D GEMM which is available since feature level 1.0 for best
+  // compatibility. There is no performance difference in the shader between
+  // 2D/3D/4D, as 2D is just a variant of 4D with a batch/channel size of 1.
+  // https://learn.microsoft.com/en-us/windows/win32/api/directml/ns-directml-dml_gemm_operator_desc.
+  // TODO(issues.chromium.org/327244277): Remove the workaround of coercing
+  // GEMM's tensors to 4D.
+  auto expanded_output_tensor_desc = output_tensor_desc;
+  if (output_tensor_dims.size() < 4) {
+    input_a_tensor_desc.EnsureMinimumRank(4, TensorDesc::Alignment::kTrailing);
+    input_b_tensor_desc.EnsureMinimumRank(4, TensorDesc::Alignment::kTrailing);
+    expanded_output_tensor_desc.EnsureMinimumRank(
+        4, TensorDesc::Alignment::kTrailing);
+  }
+
   DML_GEMM_OPERATOR_DESC matmul_operator_desc{
       .ATensor = &input_a_tensor_desc.GetDMLTensorDesc(),
       .BTensor = &input_b_tensor_desc.GetDMLTensorDesc(),
       .CTensor = nullptr,
-      .OutputTensor = &output_tensor_desc.GetDMLTensorDesc(),
+      .OutputTensor = &expanded_output_tensor_desc.GetDMLTensorDesc(),
       .TransA = DML_MATRIX_TRANSFORM_NONE,
       .TransB = DML_MATRIX_TRANSFORM_NONE,
       .Alpha = 1.0f,
@@ -2443,6 +2513,34 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForWhere(
   return base::ok();
 }
 
+// If graph creation fails, log the error message and report it.
+void HandleGraphCreationFailure(
+    const std::string& error_message,
+    mojom::WebNNContext::CreateGraphCallback callback) {
+  DLOG(ERROR) << error_message;
+  std::move(callback).Run(CreateGraphResult::NewError(
+      CreateError(mojom::Error::Code::kUnknownError, error_message)));
+}
+
+// Similar to the method above, if graph creation fails, report the error
+// message and log it with the system error code `hr`. In addition, log and
+// report the out of memory error message if there is.
+void HandleGraphCreationFailure(
+    const std::string& error_message,
+    HRESULT hr,
+    mojom::WebNNContext::CreateGraphCallback callback) {
+  DLOG(ERROR) << error_message << " " << logging::SystemErrorCodeToString(hr);
+  if (hr == E_OUTOFMEMORY) {
+    DLOG(ERROR) << "No enough memory resources are available.";
+    std::move(callback).Run(CreateGraphResult::NewError(CreateError(
+        mojom::Error::Code::kUnknownError,
+        error_message + " No enough memory resources are available.")));
+  } else {
+    std::move(callback).Run(CreateGraphResult::NewError(
+        CreateError(mojom::Error::Code::kUnknownError, error_message)));
+  }
+}
+
 }  // namespace
 
 GraphImpl::GraphBufferBindingInfo::GraphBufferBindingInfo() = default;
@@ -2502,7 +2600,7 @@ GraphImpl::ComputeResources::ComputeResources(
 GraphImpl::ComputeResources::~ComputeResources() = default;
 
 // static
-std::unique_ptr<GraphImpl::ComputeResources>
+base::expected<std::unique_ptr<GraphImpl::ComputeResources>, HRESULT>
 GraphImpl::AllocateComputeResources(
     CommandRecorder* command_recorder,
     IDMLCompiledOperator* compiled_operator,
@@ -2513,7 +2611,7 @@ GraphImpl::AllocateComputeResources(
   DML_BINDING_PROPERTIES execution_binding_properties =
       compiled_operator->GetBindingProperties();
   ComPtr<ID3D12DescriptorHeap> descriptor_heap;
-  RETURN_NULL_IF_FAILED(command_recorder->CreateDescriptorHeap(
+  RETURN_UNEXPECTED_IF_FAILED(command_recorder->CreateDescriptorHeap(
       execution_binding_properties.RequiredDescriptorCount,
       L"WebNN_Descriptor_Heap_For_Execution", descriptor_heap));
 
@@ -2525,7 +2623,7 @@ GraphImpl::AllocateComputeResources(
           compute_resource_info.input_name_to_byte_length_map);
   if (!aligned_byte_length_of_inputs) {
     DLOG(ERROR) << "Failed to calculate the aligned byte length of inputs.";
-    return nullptr;
+    return base::unexpected(E_INVALIDARG);
   }
 
   size_t total_byte_length_of_inputs =
@@ -2541,18 +2639,18 @@ GraphImpl::AllocateComputeResources(
       // create a resource to map the heap. CPU writes the input data into this
       // resource which could be bound as graph input for GPU reading during
       // execution.
-      RETURN_NULL_IF_FAILED(command_recorder->CreateCustomUploadBuffer(
+      RETURN_UNEXPECTED_IF_FAILED(command_recorder->CreateCustomUploadBuffer(
           total_byte_length_of_inputs, L"WebNN_Custom_Upload_Buffer_Inputs",
           input_buffer));
     } else {
       // Create the upload heap that can be written by CPU and read from GPU,
       // and create a resource to map the heap.
-      RETURN_NULL_IF_FAILED(command_recorder->CreateUploadBuffer(
+      RETURN_UNEXPECTED_IF_FAILED(command_recorder->CreateUploadBuffer(
           total_byte_length_of_inputs, L"WebNN_Upload_Buffer_Inputs",
           upload_buffer));
       // Create the default heap that only can be accessed by GPU not provide
       // CPU access, and create a resource to map the heap.
-      RETURN_NULL_IF_FAILED(command_recorder->CreateDefaultBuffer(
+      RETURN_UNEXPECTED_IF_FAILED(command_recorder->CreateDefaultBuffer(
           total_byte_length_of_inputs, L"WebNN_Default_Buffer_Inputs",
           input_buffer));
     }
@@ -2566,7 +2664,7 @@ GraphImpl::AllocateComputeResources(
           compute_resource_info.output_name_to_byte_length_map);
   if (!aligned_byte_length_of_outputs) {
     DLOG(ERROR) << "Failed to calculate the aligned byte length of outputs.";
-    return nullptr;
+    return base::unexpected(E_INVALIDARG);
   }
 
   // Create the output buffer which will be bound for the graph execution.
@@ -2579,17 +2677,17 @@ GraphImpl::AllocateComputeResources(
     // create a resource to map the heap. This resource could be bound as graph
     // execution output for GPU writing. And CPU could read the output data from
     // this resource after GPU execution.
-    RETURN_NULL_IF_FAILED(command_recorder->CreateCustomReadbackBuffer(
+    RETURN_UNEXPECTED_IF_FAILED(command_recorder->CreateCustomReadbackBuffer(
         total_byte_length_of_outputs, L"WebNN_Custom_Readback_Buffer_Outputs",
         output_buffer));
   } else {
     // Create the output buffer which will be written by GPU.
-    RETURN_NULL_IF_FAILED(command_recorder->CreateDefaultBuffer(
+    RETURN_UNEXPECTED_IF_FAILED(command_recorder->CreateDefaultBuffer(
         total_byte_length_of_outputs, L"WebNN_Default_Buffer_Outputs",
         output_buffer));
 
     // Create the readback buffer which will be read by CPU.
-    RETURN_NULL_IF_FAILED(command_recorder->CreateReadbackBuffer(
+    RETURN_UNEXPECTED_IF_FAILED(command_recorder->CreateReadbackBuffer(
         total_byte_length_of_outputs, L"WebNN_ReadBack_Buffer_Outputs",
         readback_buffer));
   }
@@ -2599,7 +2697,7 @@ GraphImpl::AllocateComputeResources(
   uint64_t temporary_buffer_byte_length =
       execution_binding_properties.TemporaryResourceSize;
   if (temporary_buffer_byte_length > 0) {
-    RETURN_NULL_IF_FAILED(command_recorder->CreateDefaultBuffer(
+    RETURN_UNEXPECTED_IF_FAILED(command_recorder->CreateDefaultBuffer(
         temporary_buffer_byte_length, L"WebNN_Temporary_Buffer_For_Execution",
         temporary_buffer));
   }
@@ -2731,9 +2829,14 @@ GraphImpl::GraphImpl(std::unique_ptr<CommandRecorder> command_recorder,
 GraphImpl::~GraphImpl() = default;
 
 ComPtr<IDMLCompiledOperator> GraphImpl::CompileOnBackgroundThread(
-    GraphBuilder graph_builder) {
+    GraphBuilder graph_builder,
+    const bool pass_dml_execution_disable_meta_commands) {
   TRACE_EVENT0("gpu", "dml::GraphImpl::CompileOnBackgroundThread");
-  return graph_builder.Compile(DML_EXECUTION_FLAG_NONE);
+  DML_EXECUTION_FLAGS flags = DML_EXECUTION_FLAG_NONE;
+  if (pass_dml_execution_disable_meta_commands) {
+    flags |= DML_EXECUTION_FLAG_DISABLE_META_COMMANDS;
+  }
+  return graph_builder.Compile(flags);
 }
 
 // static
@@ -2747,19 +2850,15 @@ void GraphImpl::OnCompilationComplete(
     ComPtr<IDMLCompiledOperator> compiled_operator) {
   TRACE_EVENT0("gpu", "dml::GraphImpl::OnCompilationComplete");
   if (!compiled_operator) {
-    DLOG(ERROR) << "Failed to compile the graph.";
-    std::move(callback).Run(mojom::CreateGraphResult::NewError(CreateError(
-        mojom::Error::Code::kUnknownError, "Failed to compile the graph.")));
+    HandleGraphCreationFailure("Failed to compile the graph.",
+                               std::move(callback));
     return;
   }
 
   HRESULT hr = command_recorder->Open();
   if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to open the command recorder: "
-                << logging::SystemErrorCodeToString(hr);
-    std::move(callback).Run(mojom::CreateGraphResult::NewError(
-        CreateError(mojom::Error::Code::kUnknownError,
-                    "Failed to open the command recorder.")));
+    HandleGraphCreationFailure("Failed to open the command recorder.", hr,
+                               std::move(callback));
     return;
   }
 
@@ -2788,11 +2887,9 @@ void GraphImpl::OnCompilationComplete(
         aligned_byte_length_of_constants =
             CalculateAlignedByteLength(constant_id_to_byte_length_map);
     if (!aligned_byte_length_of_constants) {
-      DLOG(ERROR)
-          << "Failed to calculate the aligned byte length of constants.";
-      std::move(callback).Run(mojom::CreateGraphResult::NewError(CreateError(
-          mojom::Error::Code::kUnknownError,
-          "Failed to calculate the aligned byte length of constants.")));
+      HandleGraphCreationFailure(
+          "Failed to calculate the aligned byte length of constants.",
+          std::move(callback));
       return;
     }
 
@@ -2810,11 +2907,9 @@ void GraphImpl::OnCompilationComplete(
           total_byte_length_of_constants,
           L"WebNN_Custom_Upload_Buffer_Constants", cpu_buffer);
       if (FAILED(hr)) {
-        DLOG(ERROR) << "Failed to create custom upload buffer for constants: "
-                    << logging::SystemErrorCodeToString(hr);
-        std::move(callback).Run(mojom::CreateGraphResult::NewError(CreateError(
-            mojom::Error::Code::kUnknownError,
-            "Failed to create custom upload buffer for constants.")));
+        HandleGraphCreationFailure(
+            "Failed to create custom upload buffer for constants.", hr,
+            std::move(callback));
         return;
       }
       buffer_variant = std::move(cpu_buffer);
@@ -2826,11 +2921,9 @@ void GraphImpl::OnCompilationComplete(
           total_byte_length_of_constants, L"WebNN_Upload_Buffer_Constants",
           upload_buffer);
       if (FAILED(hr)) {
-        DLOG(ERROR) << "Failed to create upload buffer for constants: "
-                    << logging::SystemErrorCodeToString(hr);
-        std::move(callback).Run(mojom::CreateGraphResult::NewError(
-            CreateError(mojom::Error::Code::kUnknownError,
-                        "Failed to create upload buffer for constants.")));
+        HandleGraphCreationFailure(
+            "Failed to create upload buffer for constants.", hr,
+            std::move(callback));
         return;
       }
       // Create the default heap that only can be accessed by GPU not provide
@@ -2840,11 +2933,9 @@ void GraphImpl::OnCompilationComplete(
           total_byte_length_of_constants, L"WebNN_Default_Buffer_Constants",
           default_buffer);
       if (FAILED(hr)) {
-        DLOG(ERROR) << "Failed to create default input buffer for constants: "
-                    << logging::SystemErrorCodeToString(hr);
-        std::move(callback).Run(mojom::CreateGraphResult::NewError(CreateError(
-            mojom::Error::Code::kUnknownError,
-            "Failed to create default input buffer for constants.")));
+        HandleGraphCreationFailure(
+            "Failed to create default input buffer for constants.", hr,
+            std::move(callback));
         return;
       }
       buffer_variant =
@@ -2856,10 +2947,8 @@ void GraphImpl::OnCompilationComplete(
         command_recorder.get(), constant_id_to_buffer_map,
         aligned_byte_length_of_constants.value(), std::move(buffer_variant));
     if (!constant_buffer_binding) {
-      DLOG(ERROR) << "Failed to upload constant weight data.";
-      std::move(callback).Run(mojom::CreateGraphResult::NewError(
-          CreateError(mojom::Error::Code::kUnknownError,
-                      "Failed to upload constant weight data.")));
+      HandleGraphCreationFailure("Failed to upload constant weight data.",
+                                 std::move(callback));
       return;
     }
     // The constant tensor must be bound to the binding table during operator
@@ -2894,12 +2983,9 @@ void GraphImpl::OnCompilationComplete(
         persistent_buffer_size, L"WebNN_Default_Persistent_Buffer",
         persistent_buffer);
     if (FAILED(hr)) {
-      DLOG(ERROR)
-          << "Failed to create the default buffer for persistent resource: "
-          << logging::SystemErrorCodeToString(hr);
-      std::move(callback).Run(mojom::CreateGraphResult::NewError(CreateError(
-          mojom::Error::Code::kUnknownError,
-          "Failed to create the default buffer for persistent resource.")));
+      HandleGraphCreationFailure(
+          "Failed to create the default buffer for persistent resource.", hr,
+          std::move(callback));
       return;
     }
 
@@ -2913,21 +2999,15 @@ void GraphImpl::OnCompilationComplete(
                                             input_buffer_binding_desc,
                                             persistent_buffer_binding_desc);
   if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to initialize the operator: "
-                << logging::SystemErrorCodeToString(hr);
-    std::move(callback).Run(mojom::CreateGraphResult::NewError(
-        CreateError(mojom::Error::Code::kUnknownError,
-                    "Failed to initialize the operator.")));
+    HandleGraphCreationFailure("Failed to initialize the operator.", hr,
+                               std::move(callback));
     return;
   }
 
   hr = command_recorder->CloseAndExecute();
   if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to close and execute the command list: "
-                << logging::SystemErrorCodeToString(hr);
-    std::move(callback).Run(mojom::CreateGraphResult::NewError(
-        CreateError(mojom::Error::Code::kUnknownError,
-                    "Failed to close and execute the command list.")));
+    HandleGraphCreationFailure("Failed to close and execute the command list.",
+                               hr, std::move(callback));
     return;
   }
 
@@ -2952,37 +3032,37 @@ void GraphImpl::OnInitializationComplete(
     HRESULT hr) {
   TRACE_EVENT0("gpu", "dml::GraphImpl::OnInitializationComplete");
   if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to wait for the initialization to complete: "
-                << logging::SystemErrorCodeToString(hr);
-    std::move(callback).Run(mojom::CreateGraphResult::NewError(
-        CreateError(mojom::Error::Code::kUnknownError,
-                    "Failed to wait for the initialization to complete.")));
+    HandleGraphCreationFailure(
+        "Failed to wait for the initialization to complete.", hr,
+        std::move(callback));
     return;
   }
 
   // Release the resources used for graph initialization.
   command_recorder->GetCommandQueue()->ReleaseCompletedResources();
 
-  std::unique_ptr<ComputeResources> compute_resources =
-      AllocateComputeResources(command_recorder.get(), compiled_operator.Get(),
-                               compute_resource_info);
-  if (!compute_resources) {
-    std::move(callback).Run(mojom::CreateGraphResult::NewError(
-        CreateError(mojom::Error::Code::kUnknownError,
-                    "Failed to allocate compute resource.")));
+  base::expected<std::unique_ptr<ComputeResources>, HRESULT>
+      compute_resources_allocation_result = AllocateComputeResources(
+          command_recorder.get(), compiled_operator.Get(),
+          compute_resource_info);
+  if (!compute_resources_allocation_result.has_value()) {
+    HandleGraphCreationFailure(
+        "Failed to allocate compute resource.",
+        std::move(compute_resources_allocation_result.error()),
+        std::move(callback));
     return;
   }
+  std::unique_ptr<ComputeResources> compute_resources =
+      std::move(compute_resources_allocation_result.value());
+  CHECK(compute_resources);
 
   hr = RecordGraphExecution(compiled_operator.Get(), command_recorder.get(),
                             compute_resources.get(), persistent_resource.get(),
                             graph_buffer_binding_info);
   if (FAILED(hr)) {
-    DLOG(ERROR)
-        << "Failed to record commands and bind resources for execution: "
-        << logging::SystemErrorCodeToString(hr);
-    std::move(callback).Run(mojom::CreateGraphResult::NewError(CreateError(
-        mojom::Error::Code::kUnknownError,
-        "Failed to record commands and bind resources for execution.")));
+    HandleGraphCreationFailure(
+        "Failed to record commands and bind resources for execution.", hr,
+        std::move(callback));
     return;
   }
 
@@ -2999,7 +3079,7 @@ void GraphImpl::OnInitializationComplete(
       blink_remote.InitWithNewPipeAndPassReceiver());
   command_queue->ReleaseCompletedResources();
   std::move(callback).Run(
-      mojom::CreateGraphResult::NewGraphRemote(std::move(blink_remote)));
+      CreateGraphResult::NewGraphRemote(std::move(blink_remote)));
 }
 
 // static
@@ -3007,16 +3087,15 @@ void GraphImpl::CreateAndBuild(
     scoped_refptr<CommandQueue> command_queue,
     ComPtr<IDMLDevice> dml_device,
     mojom::GraphInfoPtr graph_info,
-    mojom::WebNNContext::CreateGraphCallback callback) {
+    mojom::WebNNContext::CreateGraphCallback callback,
+    const bool pass_dml_execution_disable_meta_commands) {
   TRACE_EVENT0("gpu", "dml::GraphImpl::CreateAndBuild");
   // `CommandRecorder` would keep reference of command queue and DML device.
   std::unique_ptr<CommandRecorder> command_recorder =
       CommandRecorder::Create(command_queue, dml_device);
   if (!command_recorder) {
-    DLOG(ERROR) << "Failed to open the command recorder.";
-    std::move(callback).Run(mojom::CreateGraphResult::NewError(
-        CreateError(mojom::Error::Code::kUnknownError,
-                    "Failed to open the command recorder.")));
+    HandleGraphCreationFailure("Failed to open the command recorder.",
+                               std::move(callback));
     return;
   }
 
@@ -3307,7 +3386,7 @@ void GraphImpl::CreateAndBuild(
       }
     }
     if (!create_operator_result.has_value()) {
-      std::move(callback).Run(mojom::CreateGraphResult::NewError(
+      std::move(callback).Run(CreateGraphResult::NewError(
           std::move(create_operator_result.error())));
       return;
     }
@@ -3340,9 +3419,8 @@ void GraphImpl::CreateAndBuild(
                               DML_OPERATOR_ELEMENT_WISE_IDENTITY>(
               output_tensor_desc, identity_tensor_desc, output, graph_builder);
       if (!identity_node) {
-        std::move(callback).Run(mojom::CreateGraphResult::NewError(
-            CreateError(mojom::Error::Code::kUnknownError,
-                        "Failed to create identity operator.")));
+        HandleGraphCreationFailure("Failed to create identity operator.",
+                                   std::move(callback));
         return;
       }
 
@@ -3364,7 +3442,8 @@ void GraphImpl::CreateAndBuild(
       {base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&GraphImpl::CompileOnBackgroundThread,
-                     std::move(graph_builder)),
+                     std::move(graph_builder),
+                     pass_dml_execution_disable_meta_commands),
       base::BindOnce(&GraphImpl::OnCompilationComplete, std::move(callback),
                      std::move(command_recorder),
                      std::move(graph_info->constant_id_to_buffer_map),
@@ -3388,8 +3467,15 @@ void GraphImpl::HandleComputationFailure(
     mojom::WebNNGraph::ComputeCallback callback) {
   DLOG(ERROR) << error_message << " " << logging::SystemErrorCodeToString(hr);
   command_recorder_.reset();
-  std::move(callback).Run(ComputeResult::NewError(
-      CreateError(mojom::Error::Code::kUnknownError, error_message)));
+  if (hr == E_OUTOFMEMORY) {
+    DLOG(ERROR) << "No enough memory resources are available.";
+    std::move(callback).Run(ComputeResult::NewError(CreateError(
+        mojom::Error::Code::kUnknownError,
+        error_message + " No enough memory resources are available.")));
+  } else {
+    std::move(callback).Run(ComputeResult::NewError(
+        CreateError(mojom::Error::Code::kUnknownError, error_message)));
+  }
 }
 
 void GraphImpl::ComputeImpl(
@@ -3424,14 +3510,18 @@ void GraphImpl::ComputeImpl(
   std::unique_ptr<ComputeResources> compute_resources =
       std::move(compute_resources_);
   if (!compute_resources) {
-    compute_resources = AllocateComputeResources(command_recorder.get(),
-                                                 compiled_operator_.Get(),
-                                                 compute_resource_info());
-    if (!compute_resources) {
-      HandleComputationFailure("Failed to allocate compute resource.",
-                               std::move(callback));
+    base::expected<std::unique_ptr<ComputeResources>, HRESULT>
+        compute_resources_allocation_result = AllocateComputeResources(
+            command_recorder.get(), compiled_operator_.Get(),
+            compute_resource_info());
+    if (!compute_resources_allocation_result.has_value()) {
+      HandleComputationFailure(
+          "Failed to allocate compute resource.",
+          std::move(compute_resources_allocation_result.error()),
+          std::move(callback));
       return;
     }
+    compute_resources = std::move(compute_resources_allocation_result.value());
     is_command_recording_needed = true;
   }
   CHECK(compute_resources);

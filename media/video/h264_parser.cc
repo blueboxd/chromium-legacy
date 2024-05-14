@@ -68,6 +68,10 @@ H264SPS::H264SPS() {
   memset(this, 0, sizeof(*this));
 }
 
+H264SPS& H264SPS::operator=(const H264SPS&) = default;
+
+H264SPS::H264SPS(H264SPS&&) noexcept = default;
+
 // Based on T-REC-H.264 7.4.2.1.1, "Sequence parameter set data semantics",
 // available from http://www.itu.int/rec/T-REC-H.264.
 std::optional<gfx::Size> H264SPS::GetCodedSize() const {
@@ -205,6 +209,8 @@ bool H264SPS::CheckIndicatedLevelWithinTarget(uint8_t target_level) const {
 H264PPS::H264PPS() {
   memset(this, 0, sizeof(*this));
 }
+
+H264PPS::H264PPS(H264PPS&&) noexcept = default;
 
 H264SliceHeader::H264SliceHeader() {
   memset(this, 0, sizeof(*this));
@@ -1109,17 +1115,23 @@ H264Parser::Result H264Parser::ParsePPS(int* pps_id) {
         (encrypted_ranges_.IntersectionWith(pps_range).size() == 0);
   }
   if (pps_remainder_unencrypted && br_.HasMoreRBSPData()) {
-    READ_BOOL_OR_RETURN(&pps->transform_8x8_mode_flag);
-    READ_BOOL_OR_RETURN(&pps->pic_scaling_matrix_present_flag);
+    if (sps->profile_idc == H264SPS::kProfileIDCBaseline ||
+        sps->profile_idc == H264SPS::kProfileIDCConstrainedBaseline ||
+        sps->profile_idc == H264SPS::kProfileIDCMain) {
+      DVLOG(1) << "Invalid stream, ignored unexpected RBSB data in PPS frame";
+    } else {
+      READ_BOOL_OR_RETURN(&pps->transform_8x8_mode_flag);
+      READ_BOOL_OR_RETURN(&pps->pic_scaling_matrix_present_flag);
 
-    if (pps->pic_scaling_matrix_present_flag) {
-      DVLOG(4) << "Picture scaling matrix present";
-      res = ParsePPSScalingLists(*sps, pps.get());
-      if (res != kOk)
-        return res;
+      if (pps->pic_scaling_matrix_present_flag) {
+        DVLOG(4) << "Picture scaling matrix present";
+        res = ParsePPSScalingLists(*sps, pps.get());
+        if (res != kOk)
+          return res;
+      }
+
+      READ_SE_OR_RETURN(&pps->second_chroma_qp_index_offset);
     }
-
-    READ_SE_OR_RETURN(&pps->second_chroma_qp_index_offset);
   }
 
   // If a PPS with the same id already exists, replace it.

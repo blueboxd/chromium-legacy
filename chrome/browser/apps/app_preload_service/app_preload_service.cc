@@ -22,7 +22,6 @@
 #include "chrome/browser/apps/app_preload_service/app_preload_service_factory.h"
 #include "chrome/browser/apps/app_preload_service/preload_app_definition.h"
 #include "chrome/browser/apps/app_service/app_install/app_install_service.h"
-#include "chrome/browser/apps/app_service/app_install/web_app_installer.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,6 +31,7 @@
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/user_manager/user_manager.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
 
@@ -75,6 +75,10 @@ BASE_FEATURE(kAppPreloadServiceForceRun,
 
 BASE_FEATURE(kAppPreloadServiceEnableTestApps,
              "AppPreloadServiceEnableTestApps",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAppPreloadServiceEnableArcApps,
+             "AppPreloadServiceEnableArcApps",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 AppPreloadService::AppPreloadService(Profile* profile)
@@ -177,7 +181,7 @@ void AppPreloadService::OnGetAppsForFirstLoginCompleted(
   AppInstallService& install_service =
       AppServiceProxyFactory::GetForProfile(profile_)->AppInstallService();
   for (const PreloadAppDefinition* app : apps_to_install) {
-    install_service.InstallApp(
+    install_service.InstallAppHeadless(
         app->IsDefaultApp() ? AppInstallSurface::kAppPreloadServiceDefault
                             : AppInstallSurface::kAppPreloadServiceOem,
         app->ToAppInstallData(), install_barrier_callback);
@@ -208,8 +212,12 @@ void AppPreloadService::OnFirstLoginFlowComplete(base::TimeTicks start_time,
 }
 
 bool AppPreloadService::ShouldInstallApp(const PreloadAppDefinition& app) {
-  // We currently only preload web apps.
-  if (app.GetPlatform() != AppType::kWeb) {
+  // We preload android apps (when feature enabled) and web apps.
+  if (app.GetPlatform() == AppType::kArc) {
+    if (!base::FeatureList::IsEnabled(apps::kAppPreloadServiceEnableArcApps)) {
+      return false;
+    }
+  } else if (app.GetPlatform() != AppType::kWeb) {
     return false;
   }
 
@@ -225,6 +233,12 @@ bool AppPreloadService::ShouldInstallApp(const PreloadAppDefinition& app) {
   // If the app is already installed with the relevant install reason, we do not
   // need to reinstall it. This avoids extra work in the case where we are
   // retrying the flow after an install error for a different app.
+
+  // TODO(crbug.com/329144520) Implement already installed check for android.
+  if (app.GetPlatform() == AppType::kArc) {
+    return true;
+  }
+
   InstallReason expected_reason =
       app.IsDefaultApp() ? InstallReason::kDefault : InstallReason::kOem;
   AppServiceProxy* proxy = AppServiceProxyFactory::GetForProfile(profile_);

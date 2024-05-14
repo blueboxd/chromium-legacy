@@ -6,8 +6,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include <optional>
-
 #include "base/apple/foundation_util.h"
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
@@ -225,10 +223,12 @@ void OSExchangeDataProviderMac::SetPickledData(
   [GetPasteboard() setData:ns_data forType:format.ToNSString()];
 }
 
-std::optional<std::u16string> OSExchangeDataProviderMac::GetString() const {
+bool OSExchangeDataProviderMac::GetString(std::u16string* data) const {
+  DCHECK(data);
   NSString* item = [GetPasteboard() stringForType:NSPasteboardTypeString];
   if (item) {
-    return base::SysNSStringToUTF16(item);
+    *data = base::SysNSStringToUTF16(item);
+    return true;
   }
 
   // There was no NSString, check for an NSURL.
@@ -240,7 +240,7 @@ std::optional<std::u16string> OSExchangeDataProviderMac::GetString() const {
     *data = base::UTF8ToUTF16(url.spec());
   }
 
-  return std::nullopt;
+  return result;
 }
 
 bool OSExchangeDataProviderMac::GetURLAndTitle(FilenameToURLPolicy policy,
@@ -272,6 +272,22 @@ bool OSExchangeDataProviderMac::GetURLAndTitle(FilenameToURLPolicy policy,
   }
 
   return false;
+}
+
+std::optional<std::vector<GURL>> OSExchangeDataProviderMac::GetURLs(
+    FilenameToURLPolicy policy) const {
+  NSArray<NSString*> *urls;
+  ClipboardUtil::URLsAndTitlesFromPasteboard(
+      GetPasteboard(), &urls, NULL);
+  if (!urls.count) {
+    return std::nullopt;
+  }
+
+  std::vector<GURL> local_urls;
+  for (NSString* url in urls) {
+    local_urls.emplace_back(base::SysNSStringToUTF8(url));
+  }
+  return local_urls;
 }
 
 bool OSExchangeDataProviderMac::GetFilename(base::FilePath* path) const {
@@ -314,11 +330,14 @@ bool OSExchangeDataProviderMac::GetPickledData(
 }
 
 bool OSExchangeDataProviderMac::HasString() const {
-  return GetString().has_value();
+  std::u16string string;
+  return GetString(&string);
 }
 
 bool OSExchangeDataProviderMac::HasURL(FilenameToURLPolicy policy) const {
-  return GetURLAndTitle(policy).has_value();
+  GURL url;
+  std::u16string title;
+  return GetURLAndTitle(policy, &url, &title);
 }
 
 bool OSExchangeDataProviderMac::HasFile() const {
@@ -336,10 +355,11 @@ void OSExchangeDataProviderMac::SetFileContents(
   NOTIMPLEMENTED();
 }
 
-std::optional<OSExchangeDataProvider::FileContentsInfo>
-OSExchangeDataProviderMac::GetFileContents() const {
+bool OSExchangeDataProviderMac::GetFileContents(
+    base::FilePath* filename,
+    std::string* file_contents) const {
   NOTIMPLEMENTED();
-  return std::nullopt;
+  return false;
 }
 
 bool OSExchangeDataProviderMac::HasFileContents() const {

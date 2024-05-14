@@ -136,7 +136,7 @@ class SSLPlatformKeyCSSM : public ThreadedSSLPrivateKey::Delegate {
     hash_data.Length = digest_len;
     hash_data.Data = digest;
 
-    absl::optional<std::vector<uint8_t>> pss_storage;
+    std::optional<std::vector<uint8_t>> pss_storage;
     bssl::UniquePtr<uint8_t> free_digest_info;
     if (cssm_key_->KeyHeader.AlgorithmId == CSSM_ALGID_RSA) {
       if (SSL_is_signature_algorithm_rsa_pss(algorithm)) {

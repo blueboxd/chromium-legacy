@@ -112,7 +112,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdCredentialStore
   // matches a credential if its transports() set is either empty or contains
   // FidoTransportProtocol::kInternal, and if its id() is the credential ID.
   // The returned credentials may be discoverable or non-discoverable. If any
-  // unexpected keychain API error occurs, absl::nullopt is returned instead.
+  // unexpected keychain API error occurs, std::nullopt is returned instead.
   API_AVAILABLE(macosx(10.12.2))
   std::optional<std::list<Credential>>
   FindCredentialsFromCredentialDescriptorList(
@@ -124,12 +124,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdCredentialStore
   // credentials are returned. nullopt is returned if an error occurred.
   API_AVAILABLE(macosx(10.12.2))
   std::optional<std::list<Credential>> FindResidentCredentials(
-      const absl::optional<std::string>& rp_id) const;
+      const std::optional<std::string>& rp_id) const;
 
   // UnsealMetadata returns the CredentialMetadata for the given credential's
-  // ID if it was encoded for the given RP ID, or absl::nullopt otherwise.
+  // ID if it was encoded for the given RP ID, or std::nullopt otherwise.
   API_AVAILABLE(macosx(10.12.2))
-  absl::optional<CredentialMetadata> UnsealMetadata(
+  std::optional<CredentialMetadata> UnsealMetadata(
       const std::string& rp_id,
       const Credential& credential) const;
 
@@ -168,7 +168,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdCredentialStore
  private:
   API_AVAILABLE(macosx(10.12.2))
   std::optional<std::list<Credential>> FindCredentialsImpl(
-      const absl::optional<std::string>& rp_id,
+      const std::optional<std::string>& rp_id,
       const std::set<std::vector<uint8_t>>& credential_ids) const;
 
   AuthenticatorConfig config_;

@@ -428,11 +428,10 @@ void ClipboardMac::WritePortableAndPlatformRepresentations(
     ClipboardBuffer buffer,
     const ObjectMap& objects,
     std::vector<Clipboard::PlatformRepresentation> platform_representations,
-    std::unique_ptr<DataTransferEndpoint> data_src,
-    uint32_t privacy_types) {
+    std::unique_ptr<DataTransferEndpoint> data_src) {
   WritePortableAndPlatformRepresentationsInternal(
       buffer, objects, std::move(platform_representations), std::move(data_src),
-      GetPasteboard(), privacy_types);
+      GetPasteboard());
 }
 
 void ClipboardMac::WritePortableAndPlatformRepresentationsInternal(
@@ -440,8 +439,7 @@ void ClipboardMac::WritePortableAndPlatformRepresentationsInternal(
     const ObjectMap& objects,
     std::vector<Clipboard::PlatformRepresentation> platform_representations,
     std::unique_ptr<DataTransferEndpoint> data_src,
-    NSPasteboard* pasteboard,
-    uint32_t privacy_types) {
+    NSPasteboard* pasteboard) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
 

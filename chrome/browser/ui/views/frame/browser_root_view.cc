@@ -537,11 +537,11 @@ void BrowserRootView::SetOnFilteringCompleteClosureForTesting(
 
 std::optional<GURL> BrowserRootView::GetPasteAndGoURL(
     const ui::OSExchangeData& data) {
-  std::optional<std::u16string> text_result = data.GetString();
-  if (!text_result.has_value() || text_result->empty()) {
+  std::u16string text;
+  if (!data.GetString(&text) || text.empty()) {
     return std::nullopt;
   }
-  std::u16string text = AutocompleteMatch::SanitizeString(*text_result);
+  text = AutocompleteMatch::SanitizeString(text);
 
   AutocompleteMatch match;
   AutocompleteClassifierFactory::GetForProfile(

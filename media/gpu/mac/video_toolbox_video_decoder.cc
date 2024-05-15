@@ -42,9 +42,12 @@ namespace media {
 namespace {
 
 bool SupportsH264() {
-  return VTIsHardwareDecodeSupported(kCMVideoCodecType_H264);
+  if (__builtin_available(macOS 10.13, *)) {
+    return VTIsHardwareDecodeSupported(kCMVideoCodecType_H264);
+  } else {
+    return false;
+  }
 }
-
 bool InitializeVP9() {
 #if BUILDFLAG(IS_MAC)
   // TODO(crbug.com/1449877): Enable VP9 on iOS.
@@ -62,7 +65,11 @@ bool SupportsVP9() {
 }
 
 bool SupportsAV1() {
-  return VTIsHardwareDecodeSupported(kCMVideoCodecType_AV1);
+  if (__builtin_available(macOS 10.13, *)) {
+    return VTIsHardwareDecodeSupported(kCMVideoCodecType_AV1);
+  } else {
+    return false;
+  }
 }
 
 #if BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)

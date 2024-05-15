@@ -2457,8 +2457,10 @@ VTVideoDecodeAccelerator::GetSupportedProfiles(
       if (!base::FeatureList::IsEnabled(kVideoToolboxAv1Decoding)) {
         continue;
       }
-      if (!VTIsHardwareDecodeSupported(kCMVideoCodecType_AV1)) {
-        continue;
+      if (__builtin_available(macOS 10.13, *)) {
+        if (!VTIsHardwareDecodeSupported(kCMVideoCodecType_AV1)) {
+          continue;
+        }
       }
 
       // Success! We have AV1 hardware decoding support.

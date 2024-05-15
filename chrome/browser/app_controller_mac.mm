@@ -416,7 +416,6 @@ Profile* GetLastProfileMac() {
 - (void)registerServicesMenuTypesTo:(NSApplication*)app;
 - (void)getUrl:(NSAppleEventDescriptor*)event
      withReply:(NSAppleEventDescriptor*)reply;
-- (void)activeSpaceDidChange:(NSNotification*)inNotification;
 - (void)checkForAnyKeyWindows;
 - (BOOL)userWillWaitForInProgressDownloads:(int)downloadCount;
 - (BOOL)shouldQuitWithInProgressDownloads;
@@ -760,6 +759,16 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 // the profile is loaded or any preferences have been registered). Defer any
 // user-data initialization until -applicationDidFinishLaunching:.
 - (void)mainMenuCreated {
+  // We need to register the handlers early to catch events fired on launch.
+  NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
+  [em setEventHandler:self
+          andSelector:@selector(getUrl:withReply:)
+        forEventClass:kInternetEventClass
+           andEventID:kAEGetURL];
+  [em setEventHandler:self
+          andSelector:@selector(getUrl:withReply:)
+        forEventClass:'WWW!'    // A particularly ancient AppleEvent that dates
+           andEventID:'OURL'];  // back to the Spyglass days.
 
   NSNotificationCenter* notificationCenter = NSNotificationCenter.defaultCenter;
   [notificationCenter

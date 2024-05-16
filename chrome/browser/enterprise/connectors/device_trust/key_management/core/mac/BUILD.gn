@@ -34,9 +34,12 @@ source_set("mac") {
 
   frameworks = [
     "CoreFoundation.framework",
-    "CryptoTokenKit.framework",
     "Foundation.framework",
     "Security.framework",
+  ]
+
+  weak_frameworks = [
+    "CryptoTokenKit.framework",
   ]
 }
 

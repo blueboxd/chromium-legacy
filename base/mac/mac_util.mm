@@ -111,16 +111,16 @@ class LoginItemsFileList {
     }
   }
 
-    apple::ScopedCFTypeRef<LSSharedFileListItemRef> GetLoginItemForMainApp() {
-      NSURL* url = [NSURL fileURLWithPath:base::apple::MainBundle().bundlePath];
-      return GetLoginItemForApp(url);
-    }
+  apple::ScopedCFTypeRef<LSSharedFileListItemRef> GetLoginItemForMainApp() {
+    NSURL* url = [NSURL fileURLWithPath:base::apple::MainBundle().bundlePath];
+    return GetLoginItemForApp(url);
+  }
 
-   private:
-    apple::ScopedCFTypeRef<LSSharedFileListRef> login_items_;
-  };
+ private:
+  apple::ScopedCFTypeRef<LSSharedFileListRef> login_items_;
+};
 
-  bool IsHiddenLoginItem(LSSharedFileListItemRef item) {
+bool IsHiddenLoginItem(LSSharedFileListItemRef item) {
 #pragma clang diagnostic push  // https://crbug.com/1154377
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
   apple::ScopedCFTypeRef<CFBooleanRef> hidden(

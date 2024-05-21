@@ -455,6 +455,10 @@ struct AutocompleteMatch {
   // Checks if this match is a trend suggestion based on the match subtypes.
   bool IsTrendSuggestion() const;
 
+  // Checks if this match is an informational IPH suggestion based on the match
+  // and provider type.
+  bool IsIPHSuggestion() const;
+
   // Returns true if this match may attach one or more `actions`.
   // This method is used to keep actions off of matches with types that don't
   // mix well with Pedals or other actions (e.g. entities).
@@ -911,6 +915,12 @@ struct AutocompleteMatch {
 
   // Signals for ML scoring.
   std::optional<ScoringSignals> scoring_signals;
+
+  // A flag that's set during the de-duplication process in order to forcibly
+  // exclude this match from ML scoring (e.g. this match is ML-eligible, but one
+  // of the matches in `duplicate_matches` is not). Furthermore, when this flag
+  // is set, ML scoring signals will NOT be logged for this particular match.
+  bool force_skip_ml_scoring = false;
 
   // A flag to mark whether this would've been excluded from the "original" list
   // of matches. Traditionally, providers limit the number of suggestions they

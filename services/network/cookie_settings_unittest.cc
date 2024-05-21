@@ -119,7 +119,6 @@ enum BlockSource {
 enum TestVariables {
   kGrantSource,
   kBlockSource,
-  kHostIndexedMetadataGrantsEnabled
 };
 
 class CookieSettingsTestBase : public testing::Test {
@@ -159,41 +158,15 @@ class CookieSettingsTestBase : public testing::Test {
 // Default test class to be used by most tests. If you want to add a new
 // parameter, consider whether all test cases actually require this parameter
 // or whether it is sufficient to add a new subclass of CookieSettingsTestBase.
-class CookieSettingsTest
-    : public CookieSettingsTestBase,
-      public testing::WithParamInterface<
-          std::tuple</*kHostIndexedMetadataGrantsEnabled*/ bool>> {
- public:
-  CookieSettingsTest() {
-    std::vector<base::test::FeatureRefAndParams> enabled_features;
-    std::vector<base::test::FeatureRef> disabled_features;
-
-    if (IsHostIndexedMetadataGrantsEnabled()) {
-      enabled_features.push_back(
-          {content_settings::features::kHostIndexedMetadataGrants, {}});
-    } else {
-      disabled_features.push_back(
-          content_settings::features::kHostIndexedMetadataGrants);
-    }
-
-    feature_list_.InitWithFeaturesAndParameters(enabled_features,
-                                                disabled_features);
-  }
-
-  bool IsHostIndexedMetadataGrantsEnabled() const {
-    return std::get<0>(GetParam());
-  }
-};
+class CookieSettingsTest : public CookieSettingsTestBase {};
 
 // Parameterized class that tests combinations of StorageAccess grants and 3pcd
 // grants. Tests that don't need the whole range of combinations should create
 // their own parameterized subclasses.
-class CookieSettingsTestP
-    : public CookieSettingsTestBase,
-      public testing::WithParamInterface<
-          std::tuple</*kGrantSource*/ GrantSource,
-                     /*kBlockSource*/ BlockSource,
-                     /*kHostIndexedMetadataGrantsEnabled*/ bool>> {
+class CookieSettingsTestP : public CookieSettingsTestBase,
+                            public testing::WithParamInterface<
+                                std::tuple</*kGrantSource*/ GrantSource,
+                                           /*kBlockSource*/ BlockSource>> {
  public:
   CookieSettingsTestP() {
     std::vector<base::test::FeatureRefAndParams> enabled_features;
@@ -204,14 +177,6 @@ class CookieSettingsTestP
           {net::features::kForceThirdPartyCookieBlocking, {}});
       enabled_features.push_back(
           {net::features::kThirdPartyStoragePartitioning, {}});
-    }
-
-    if (IsHostIndexedMetadataGrantsEnabled()) {
-      enabled_features.push_back(
-          {content_settings::features::kHostIndexedMetadataGrants, {}});
-    } else {
-      disabled_features.push_back(
-          content_settings::features::kHostIndexedMetadataGrants);
     }
 
     feature_list_.InitWithFeaturesAndParameters(enabled_features,
@@ -243,11 +208,6 @@ class CookieSettingsTestP
   bool IsTopLevelStorageAccessGrantEligible() const {
     return std::get<TestVariables::kGrantSource>(GetParam()) ==
            GrantSource::kTopLevelStorageAccessGrantEligible;
-  }
-
-  bool IsHostIndexedMetadataGrantsEnabled() const {
-    return std::get<TestVariables::kHostIndexedMetadataGrantsEnabled>(
-        GetParam());
   }
 
   net::CookieSettingOverrides GetCookieSettingOverrides() const {
@@ -305,14 +265,14 @@ class CookieSettingsTestP
   }
 };
 
-TEST_P(CookieSettingsTest, GetCookieSettingDefault) {
+TEST_F(CookieSettingsTest, GetCookieSettingDefault) {
   CookieSettings settings;
   EXPECT_EQ(settings.GetCookieSetting(GURL(kURL), GURL(kURL),
                                       net::CookieSettingOverrides(), nullptr),
             CONTENT_SETTING_ALLOW);
 }
 
-TEST_P(CookieSettingsTest, GetCookieSetting) {
+TEST_F(CookieSettingsTest, GetCookieSetting) {
   CookieSettings settings;
   settings.set_content_settings(
       ContentSettingsType::COOKIES,
@@ -322,7 +282,7 @@ TEST_P(CookieSettingsTest, GetCookieSetting) {
             CONTENT_SETTING_BLOCK);
 }
 
-TEST_P(CookieSettingsTest, GetCookieSettingMultipleProviders) {
+TEST_F(CookieSettingsTest, GetCookieSettingMultipleProviders) {
   CookieSettings settings;
   settings.set_content_settings(
       ContentSettingsType::COOKIES,
@@ -342,7 +302,7 @@ TEST_P(CookieSettingsTest, GetCookieSettingMultipleProviders) {
             CONTENT_SETTING_BLOCK);
 }
 
-TEST_P(CookieSettingsTest, GetCookieSettingOtrProviders) {
+TEST_F(CookieSettingsTest, GetCookieSettingOtrProviders) {
   CookieSettings settings;
   settings.set_content_settings(
       ContentSettingsType::COOKIES,
@@ -383,7 +343,7 @@ TEST_P(CookieSettingsTestP, GetCookieSettingMustMatchBothPatterns) {
             CONTENT_SETTING_BLOCK);
 }
 
-TEST_P(CookieSettingsTest, GetCookieSettingGetsFirstSetting) {
+TEST_F(CookieSettingsTest, GetCookieSettingGetsFirstSetting) {
   CookieSettings settings;
   settings.set_content_settings(
       ContentSettingsType::COOKIES,
@@ -394,7 +354,7 @@ TEST_P(CookieSettingsTest, GetCookieSettingGetsFirstSetting) {
             CONTENT_SETTING_BLOCK);
 }
 
-TEST_P(CookieSettingsTest, GetCookieSettingDontBlockThirdParty) {
+TEST_F(CookieSettingsTest, GetCookieSettingDontBlockThirdParty) {
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectTotalCount(kAllowedRequestsHistogram, 0);
 
@@ -411,7 +371,7 @@ TEST_P(CookieSettingsTest, GetCookieSettingDontBlockThirdParty) {
       net::cookie_util::StorageAccessResult::ACCESS_ALLOWED, 1);
 }
 
-TEST_P(CookieSettingsTest, GetCookieSettingBlockThirdParty) {
+TEST_F(CookieSettingsTest, GetCookieSettingBlockThirdParty) {
   CookieSettings settings;
   settings.set_content_settings(
       ContentSettingsType::COOKIES,
@@ -438,7 +398,7 @@ TEST_P(CookieSettingsTestP,
             SettingWithSaaOverride(CONTENT_SETTING_SESSION_ONLY));
 }
 
-TEST_P(CookieSettingsTest, GetCookieSettingDontBlockThirdPartyWithException) {
+TEST_F(CookieSettingsTest, GetCookieSettingDontBlockThirdPartyWithException) {
   CookieSettings settings;
   settings.set_content_settings(
       ContentSettingsType::COOKIES,
@@ -790,12 +750,12 @@ TEST_P(CookieSettingsTestP, GetCookieSettingSAAExpiredGrant) {
             CONTENT_SETTING_BLOCK);
 }
 
-TEST_P(CookieSettingsTest, CreateDeleteCookieOnExitPredicateNoSettings) {
+TEST_F(CookieSettingsTest, CreateDeleteCookieOnExitPredicateNoSettings) {
   CookieSettings settings;
   EXPECT_FALSE(settings.CreateDeleteCookieOnExitPredicate());
 }
 
-TEST_P(CookieSettingsTest, CreateDeleteCookieOnExitPredicateNoSessionOnly) {
+TEST_F(CookieSettingsTest, CreateDeleteCookieOnExitPredicateNoSessionOnly) {
   CookieSettings settings;
   settings.set_content_settings(
       ContentSettingsType::COOKIES,
@@ -803,7 +763,7 @@ TEST_P(CookieSettingsTest, CreateDeleteCookieOnExitPredicateNoSessionOnly) {
   EXPECT_FALSE(settings.CreateDeleteCookieOnExitPredicate());
 }
 
-TEST_P(CookieSettingsTest, CreateDeleteCookieOnExitPredicateSessionOnly) {
+TEST_F(CookieSettingsTest, CreateDeleteCookieOnExitPredicateSessionOnly) {
   CookieSettings settings;
   settings.set_content_settings(
       ContentSettingsType::COOKIES,
@@ -812,7 +772,7 @@ TEST_P(CookieSettingsTest, CreateDeleteCookieOnExitPredicateSessionOnly) {
       "foo.com", net::CookieSourceScheme::kNonSecure));
 }
 
-TEST_P(CookieSettingsTest, CreateDeleteCookieOnExitPredicateExceptionOnly) {
+TEST_F(CookieSettingsTest, CreateDeleteCookieOnExitPredicateExceptionOnly) {
   CookieSettings settings;
   settings.set_content_settings(
       ContentSettingsType::COOKIES,
@@ -824,7 +784,7 @@ TEST_P(CookieSettingsTest, CreateDeleteCookieOnExitPredicateExceptionOnly) {
       "other.com", net::CookieSourceScheme::kSecure));
 }
 
-TEST_P(CookieSettingsTest, CreateDeleteCookieOnExitPredicateAllow) {
+TEST_F(CookieSettingsTest, CreateDeleteCookieOnExitPredicateAllow) {
   CookieSettings settings;
   settings.set_content_settings(
       ContentSettingsType::COOKIES,
@@ -834,7 +794,7 @@ TEST_P(CookieSettingsTest, CreateDeleteCookieOnExitPredicateAllow) {
       "foo.com", net::CookieSourceScheme::kNonSecure));
 }
 
-TEST_P(CookieSettingsTest, GetCookieSettingSecureOriginCookiesAllowed) {
+TEST_F(CookieSettingsTest, GetCookieSettingSecureOriginCookiesAllowed) {
   CookieSettings settings;
   settings.set_secure_origin_cookies_allowed_schemes({"chrome"});
   settings.set_block_third_party_cookies(true);
@@ -858,7 +818,7 @@ TEST_P(CookieSettingsTest, GetCookieSettingSecureOriginCookiesAllowed) {
       CONTENT_SETTING_BLOCK);
 }
 
-TEST_P(CookieSettingsTest, GetCookieSettingWithThirdPartyCookiesAllowedScheme) {
+TEST_F(CookieSettingsTest, GetCookieSettingWithThirdPartyCookiesAllowedScheme) {
   CookieSettings settings;
   settings.set_third_party_cookies_allowed_schemes({"chrome-extension"});
   settings.set_block_third_party_cookies(true);
@@ -882,7 +842,7 @@ TEST_P(CookieSettingsTest, GetCookieSettingWithThirdPartyCookiesAllowedScheme) {
       CONTENT_SETTING_BLOCK);
 }
 
-TEST_P(CookieSettingsTest, GetCookieSettingMatchingSchemeCookiesAllowed) {
+TEST_F(CookieSettingsTest, GetCookieSettingMatchingSchemeCookiesAllowed) {
   CookieSettings settings;
   settings.set_matching_scheme_cookies_allowed_schemes({"chrome-extension"});
   settings.set_block_third_party_cookies(true);
@@ -906,7 +866,7 @@ TEST_P(CookieSettingsTest, GetCookieSettingMatchingSchemeCookiesAllowed) {
       CONTENT_SETTING_BLOCK);
 }
 
-TEST_P(CookieSettingsTest, LegacyCookieAccessDefault) {
+TEST_F(CookieSettingsTest, LegacyCookieAccessDefault) {
   CookieSettings settings;
 
   EXPECT_EQ(settings.GetSettingForLegacyCookieAccess(kDomain),
@@ -915,7 +875,7 @@ TEST_P(CookieSettingsTest, LegacyCookieAccessDefault) {
             settings.GetCookieAccessSemanticsForDomain(kDomain));
 }
 
-TEST_P(CookieSettingsTest, CookieAccessSemanticsForDomain) {
+TEST_F(CookieSettingsTest, CookieAccessSemanticsForDomain) {
   CookieSettings settings;
   settings.set_content_settings(
       ContentSettingsType::LEGACY_COOKIE_ACCESS,
@@ -937,7 +897,7 @@ TEST_P(CookieSettingsTest, CookieAccessSemanticsForDomain) {
   }
 }
 
-TEST_P(CookieSettingsTest, CookieAccessSemanticsForDomainWithWildcard) {
+TEST_F(CookieSettingsTest, CookieAccessSemanticsForDomainWithWildcard) {
   CookieSettings settings;
   settings.set_content_settings(
       ContentSettingsType::LEGACY_COOKIE_ACCESS,
@@ -1497,7 +1457,7 @@ TEST_P(CookieSettingsTestP, AnnotateAndMoveUserBlockedCookies_CrossSiteEmbed) {
   }
 }
 
-TEST_P(CookieSettingsTest,
+TEST_F(CookieSettingsTest,
        AnnotateAndMoveUserBlockedCookies_CrossSiteEmbed_3PCAllowed) {
   CookieSettings settings;
   settings.set_block_third_party_cookies(false);
@@ -1540,7 +1500,7 @@ TEST_P(CookieSettingsTest,
                   _, _, _))));
 }
 
-TEST_P(CookieSettingsTest,
+TEST_F(CookieSettingsTest,
        AnnotateAndMoveUserBlockedCookies_SameSiteEmbed_3PCAllowed) {
   CookieSettings settings;
   settings.set_block_third_party_cookies(false);
@@ -1560,18 +1520,22 @@ TEST_P(CookieSettingsTest,
       net::CookieSettingOverrides(), maybe_included_cookies, excluded_cookies));
 
   // Verify that the allowed cookie does not have the 3PC warning reason.
-  EXPECT_THAT(maybe_included_cookies,
-              ElementsAre(MatchesCookieWithAccessResult(
-                  net::MatchesCookieWithName("cookie"),
-                  MatchesCookieAccessResult(
-                      AllOf(net::IsInclude(),
-                            Not(net::HasWarningReason(
-                                net::CookieInclusionStatus::WarningReason::
-                                    WARN_THIRD_PARTY_PHASEOUT))),
-                      _, _, _))));
+  EXPECT_THAT(
+      maybe_included_cookies,
+      ElementsAre(MatchesCookieWithAccessResult(
+          net::MatchesCookieWithName("cookie"),
+          MatchesCookieAccessResult(
+              AllOf(net::IsInclude(),
+                    Not(net::HasWarningReason(
+                        net::CookieInclusionStatus::WarningReason::
+                            WARN_THIRD_PARTY_PHASEOUT)),
+                    net::HasExactlyExemptionReason(
+                        net::CookieInclusionStatus::ExemptionReason::kNone)),
+              _, _, _))));
 
   // This is a third-party context, even though the request URL and the
   // top-frame URL are same-site with each other.
+  maybe_included_cookies[0].access_result.status = net::CookieInclusionStatus();
   EXPECT_TRUE(settings.AnnotateAndMoveUserBlockedCookies(
       GURL(kSubDomainURL), net::SiteForCookies(), &origin,
       net::FirstPartySetMetadata(
@@ -1589,6 +1553,88 @@ TEST_P(CookieSettingsTest,
                                 net::CookieInclusionStatus::WarningReason::
                                     WARN_THIRD_PARTY_PHASEOUT)),
                       _, _, _))));
+}
+
+TEST_P(CookieSettingsTestP,
+       AnnotateAndMoveUserBlockedCookies_SameSiteEmbed_FirstPartyContext) {
+  CookieSettings settings;
+  settings.set_block_third_party_cookies(true);
+  if (IsTrackingProtectionEnabledFor3pcd()) {
+    settings.set_tracking_protection_enabled_for_3pcd(true);
+  }
+
+  net::CookieAccessResultList maybe_included_cookies = {
+      {*MakeCanonicalSameSiteNoneCookie("third_party", kURL), {}},
+      {*MakeCanonicalCookie("cookie", kURL), {}}};
+  net::CookieAccessResultList excluded_cookies = {
+      {*MakeCanonicalSameSiteNoneCookie("excluded_other", kURL),
+       // The ExclusionReason below is irrelevant, as long as there is
+       // one.
+       net::CookieAccessResult(net::CookieInclusionStatus(
+           net::CookieInclusionStatus::ExclusionReason::EXCLUDE_SECURE_ONLY))},
+      {*MakeCanonicalCookie("excluded_samesitelax", kURL),
+       // The ExclusionReason below is irrelevant, as long as there is
+       // one.
+       net::CookieAccessResult(net::CookieInclusionStatus(
+           net::CookieInclusionStatus::ExclusionReason::EXCLUDE_SECURE_ONLY))},
+  };
+  url::Origin origin = url::Origin::Create(GURL(kURL));
+
+  // Note that `url` does not match the `top_frame_origin`.
+  EXPECT_TRUE(settings.AnnotateAndMoveUserBlockedCookies(
+      GURL(kURL), net::SiteForCookies::FromUrl(GURL(kURL)), &origin,
+      net::FirstPartySetMetadata(
+          /*frame_entry=*/nullptr,
+          /*top_frame_entry=*/nullptr),
+      GetCookieSettingOverrides(), maybe_included_cookies, excluded_cookies));
+
+  EXPECT_THAT(
+      maybe_included_cookies,
+      UnorderedElementsAre(
+          MatchesCookieWithAccessResult(
+              net::MatchesCookieWithName("cookie"),
+              // This cookie really ought to be excluded based on SameSite
+              // rules, but those are not enforced by CookieSettings.
+              MatchesCookieAccessResult(
+                  AllOf(
+                      net::IsInclude(),
+                      Not(net::HasWarningReason(
+                          net::CookieInclusionStatus::WarningReason::
+                              WARN_THIRD_PARTY_PHASEOUT)),
+                      net::HasExactlyExemptionReason(
+                          net::CookieInclusionStatus::ExemptionReason::kNone)),
+                  _, _, _)),
+          MatchesCookieWithAccessResult(
+              net::MatchesCookieWithName("third_party"),
+              MatchesCookieAccessResult(
+                  AllOf(
+                      net::IsInclude(),
+                      Not(net::HasWarningReason(
+                          net::CookieInclusionStatus::WarningReason::
+                              WARN_THIRD_PARTY_PHASEOUT)),
+                      net::HasExactlyExemptionReason(
+                          net::CookieInclusionStatus::ExemptionReason::kNone)),
+                  _, _, _))));
+
+  EXPECT_THAT(
+      excluded_cookies,
+      UnorderedElementsAre(
+          MatchesCookieWithAccessResult(
+              net::MatchesCookieWithName("excluded_other"),
+              MatchesCookieAccessResult(
+                  HasExactlyExclusionReasonsForTesting(
+                      std::vector<net::CookieInclusionStatus::ExclusionReason>{
+                          net::CookieInclusionStatus::ExclusionReason::
+                              EXCLUDE_SECURE_ONLY}),
+                  _, _, _)),
+          MatchesCookieWithAccessResult(
+              net::MatchesCookieWithName("excluded_samesitelax"),
+              MatchesCookieAccessResult(
+                  HasExactlyExclusionReasonsForTesting(
+                      std::vector<net::CookieInclusionStatus::ExclusionReason>{
+                          net::CookieInclusionStatus::ExclusionReason::
+                              EXCLUDE_SECURE_ONLY}),
+                  _, _, _))));
 }
 
 TEST_P(CookieSettingsTestP,
@@ -1870,7 +1916,7 @@ net::CookieAccessResultList MakePartitionedCookie() {
 
 }  // namespace
 
-TEST_P(CookieSettingsTest,
+TEST_F(CookieSettingsTest,
        AnnotateAndMoveUserBlockedCookies_PartitionedCookies) {
   CookieSettings settings;
 
@@ -1965,11 +2011,6 @@ TEST_P(CookieSettingsTest,
   EXPECT_THAT(excluded_cookies, IsEmpty());
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
-    CookieSettingsTest,
-    testing::Combine(testing::Bool()));
-
 // NOTE: These tests will fail if their FINAL name is of length greater than 256
 // characters. Thus, try to avoid (unnecessary) generalized parameterization
 // when possible.
@@ -1981,9 +2022,7 @@ std::string CustomTestName(
       << "GrantSource_"
       << std::get<TestVariables::kGrantSource>(info.param)
       << "_BlockSource_"
-      << std::get<TestVariables::kBlockSource>(info.param)
-      << "_HostIndexed_"
-      << std::get<TestVariables::kHostIndexedMetadataGrantsEnabled>(info.param);
+      << std::get<TestVariables::kBlockSource>(info.param);
   // clang-format on
   return custom_test_name.str();
 }
@@ -1994,8 +2033,7 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Combine(testing::Range(GrantSource::kNoneGranted,
                                     GrantSource::kGrantSourceCount),
                      testing::Range(BlockSource::kNoneBlocked,
-                                    BlockSource::kBlockSourceCount),
-                     testing::Bool()),
+                                    BlockSource::kBlockSourceCount)),
     CustomTestName);
 
 class CookieSettingsTpcdMetadataGrantsTest

@@ -62,6 +62,7 @@ build_webui_tests("build") {
     "controls/settings_slider_test.ts",
     "controls/settings_toggle_button_test.ts",
 
+    "controls/v2/base_row_mixin_test.ts",
     "controls/v2/pref_control_mixin_internal_test.ts",
     "controls/v2/settings_dropdown_v2_test.ts",
     "controls/v2/settings_toggle_v2_test.ts",
@@ -244,7 +245,9 @@ build_webui_tests("build") {
     "os_apps_page/app_notifications_page/fake_app_notification_handler.ts",
 
     "os_apps_page/app_parental_controls_page/app_parental_controls_subpage_test.ts",
+    "os_apps_page/app_parental_controls_page/block_app_item_test.ts",
     "os_apps_page/app_parental_controls_page/fake_app_parental_controls_handler.ts",
+    "os_apps_page/app_parental_controls_page/test_utils.ts",
 
     "os_apps_page/manage_isolated_web_apps_page/manage_isolated_web_apps_subpage_test.ts",
 

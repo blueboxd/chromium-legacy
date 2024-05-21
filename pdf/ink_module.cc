@@ -70,7 +70,7 @@ std::unique_ptr<InkBrush> CreateBrush() {
 
 }  // namespace
 
-InkModule::InkModule() {
+InkModule::InkModule(Client& client) : client_(client) {
   CHECK(base::FeatureList::IsEnabled(features::kPdfInk2));
 }
 
@@ -120,6 +120,7 @@ bool InkModule::OnMessage(const base::Value::Dict& message) {
 
   static constexpr auto kMessageHandlers =
       base::MakeFixedFlatMap<std::string_view, MessageHandler>({
+          {"setAnnotationBrush", &InkModule::HandleSetAnnotationBrushMessage},
           {"setAnnotationMode", &InkModule::HandleSetAnnotationModeMessage},
       });
 
@@ -143,6 +144,11 @@ bool InkModule::OnMouseDown(const blink::WebMouseEvent& event) {
 
   // TODO(crbug.com/335517471): Adjust `point` if needed.
   gfx::PointF point = normalized_event.PositionInWidget();
+  if (client_->VisiblePageIndexFromPoint(point) < 0) {
+    // Do not draw when not on a page.
+    return false;
+  }
+
   CHECK(!ink_start_time_.has_value());
   ink_start_time_ = base::Time::Now();
   ink_inputs_.push_back({
@@ -165,20 +171,9 @@ bool InkModule::OnMouseUp(const blink::WebMouseEvent& event) {
     return false;
   }
 
-  auto stroke = InkInProgressStroke::Create();
-  std::unique_ptr<InkBrush> brush = CreateBrush();
-  CHECK(brush);
-  stroke->Start(*brush);
-  // TODO(crbug.com/335524380): Add `event` to `ink_inputs_`?
-  auto input_batch = InkStrokeInputBatch::Create(ink_inputs_);
-  CHECK(input_batch);
-  bool enqueue_results = stroke->EnqueueInputs(input_batch.get(), nullptr);
-  CHECK(enqueue_results);
-  stroke->FinishInputs();
-  bool update_results = stroke->UpdateShape(0);
-  CHECK(update_results);
-  ink_strokes_.push_back(stroke->CopyToStroke());
+  ConvertInkInputsIntoStroke();
 
+  // Reset input fields.
   ink_inputs_.clear();
 
   ink_start_time_ = std::nullopt;
@@ -206,9 +201,31 @@ bool InkModule::OnMouseMove(const blink::WebMouseEvent& event) {
   return true;
 }
 
+void InkModule::HandleSetAnnotationBrushMessage(
+    const base::Value::Dict& message) {
+  // TODO(crbug.com/335524382): Implement setting the brush for Ink2.
+}
+
 void InkModule::HandleSetAnnotationModeMessage(
     const base::Value::Dict& message) {
   enabled_ = message.FindBool("enable").value();
+}
+
+void InkModule::ConvertInkInputsIntoStroke() {
+  auto stroke = InkInProgressStroke::Create();
+  CHECK(stroke);
+  std::unique_ptr<InkBrush> brush = CreateBrush();
+  CHECK(brush);
+  stroke->Start(*brush);
+  // TODO(crbug.com/335524380): Add `event` to `ink_inputs_`?
+  auto input_batch = InkStrokeInputBatch::Create(ink_inputs_);
+  CHECK(input_batch);
+  bool enqueue_results = stroke->EnqueueInputs(input_batch.get(), nullptr);
+  CHECK(enqueue_results);
+  stroke->FinishInputs();
+  bool update_results = stroke->UpdateShape(0);
+  CHECK(update_results);
+  ink_strokes_.push_back(stroke->CopyToStroke());
 }
 
 }  // namespace chrome_pdf

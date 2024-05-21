@@ -497,6 +497,15 @@ void SavedTabGroupBar::OnWidgetDestroying(views::Widget* widget) {
 
 void SavedTabGroupBar::Layout(PassKey) {
   LayoutSuperclass<views::View>(this);
+
+  // The box layout manager has applied a vertical inset of `kButtonPadding` to
+  // the `overflow_button_`. This is not what we want. So manually layout
+  // `overflow_button_` again to make sure it gets the same height as `this`
+  // height and vertically centered.
+  const auto overflow_button_bounds = overflow_button_->bounds();
+  overflow_button_->SetBounds(overflow_button_bounds.x(), 0,
+                              overflow_button_bounds.width(), height());
+
   const int stg_bar_width = width();
   bool should_show_overflow = ShouldShowOverflowButtonForWidth(stg_bar_width);
   const int overflow_button_width =
@@ -752,7 +761,8 @@ void SavedTabGroupBar::MaybeShowOverflowMenu() {
   // 2. Create the bubble / background which will hold the overflow menu.
   // TODO(dljames): Set the background color to match the current theme.
   auto bubble_delegate = std::make_unique<views::BubbleDialogDelegate>(
-      overflow_button_, views::BubbleBorder::TOP_LEFT);
+      overflow_button_, views::BubbleBorder::TOP_LEFT,
+      views::BubbleBorder::DIALOG_SHADOW, true);
   bubble_delegate->set_fixed_width(200);
   bubble_delegate->set_margins(gfx::Insets());
   bubble_delegate->set_adjust_if_offscreen(true);
@@ -808,8 +818,6 @@ void SavedTabGroupBar::UpdateOverflowMenu() {
   if (overflow_menu_->GetWidget()) {
     if (overflow_menu_->children().empty()) {
       overflow_menu_->GetWidget()->Close();
-    } else {
-      bubble_delegate_->SizeToContents();
     }
   }
 }

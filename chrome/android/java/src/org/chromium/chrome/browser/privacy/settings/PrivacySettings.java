@@ -195,9 +195,6 @@ public class PrivacySettings extends ChromeBaseSettingsFragment
                                             .settings_https_first_mode_with_advanced_protection_summary));
         }
 
-        Preference secureDnsPref = findPreference(PREF_SECURE_DNS);
-        secureDnsPref.setVisible(SecureDnsSettings.isUiEnabled());
-
         Preference syncAndServicesLink = findPreference(PREF_SYNC_AND_SERVICES_LINK);
         syncAndServicesLink.setSummary(buildSyncAndServicesLink());
 
@@ -397,7 +394,9 @@ public class PrivacySettings extends ChromeBaseSettingsFragment
 
     private boolean showTrackingProtectionUI() {
         return UserPrefs.get(getProfile()).getBoolean(Pref.TRACKING_PROTECTION3PCD_ENABLED)
-                || ChromeFeatureList.isEnabled(ChromeFeatureList.TRACKING_PROTECTION_3PCD);
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.TRACKING_PROTECTION_3PCD)
+                || ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.TRACKING_PROTECTION_SETTINGS_LAUNCH);
     }
 
     private boolean shouldShowIpProtectionUI() {

@@ -156,7 +156,7 @@ class CORE_EXPORT ViewTransitionUtils {
       case kPseudoIdViewTransitionNew:
         break;
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
     }
   }
 
@@ -189,10 +189,6 @@ class CORE_EXPORT ViewTransitionUtils {
   // Returns true if the given layout object corresponds to the root
   // ::view-transition pseudo element of a view transition hierarchy.
   static bool IsViewTransitionRoot(const LayoutObject& object);
-
-  // Returns true if this object represents an element that is a view transition
-  // participant.
-  static bool IsViewTransitionParticipant(const LayoutObject& object);
 
   // Returns true if this element is a view transition participant. This is a
   // slow check that walks all of the view transition elements in the

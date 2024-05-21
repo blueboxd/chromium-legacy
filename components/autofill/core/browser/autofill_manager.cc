@@ -322,7 +322,7 @@ void AutofillManager::OnFormsParsed(const std::vector<FormData>& forms) {
   for (const FormData& form : forms) {
     FormStructure* form_structure = FindCachedFormById(form.global_id());
     if (!form_structure) {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       continue;
     }
 
@@ -357,6 +357,22 @@ void AutofillManager::OnFormsParsed(const std::vector<FormData>& forms) {
       NotifyObservers(&Observer::OnAfterLoadedServerPredictions);
     }
   }
+}
+
+void AutofillManager::OnCaretMovedInFormField(const FormData& form,
+                                              const FormFieldData& field,
+                                              const gfx::Rect& caret_bounds) {
+  if (!IsValidFormData(form)) {
+    return;
+  }
+  NotifyObservers(&Observer::OnBeforeCaretMovedInFormField, form.global_id(),
+                  field.global_id(), caret_bounds);
+  ParseFormAsync(
+      form, ParsingCallback(&AutofillManager::OnCaretMovedInFormFieldImpl,
+                            field, caret_bounds)
+                .Then(NotifyObserversCallback(
+                    &Observer::OnAfterCaretMovedInFormField, form.global_id(),
+                    field.global_id(), caret_bounds)));
 }
 
 void AutofillManager::OnTextFieldDidChange(const FormData& form,
@@ -404,6 +420,7 @@ void AutofillManager::OnSelectControlDidChange(const FormData& form,
 void AutofillManager::OnAskForValuesToFill(
     const FormData& form,
     const FormFieldData& field,
+    const gfx::Rect& caret_bounds,
     AutofillSuggestionTriggerSource trigger_source) {
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
@@ -412,7 +429,7 @@ void AutofillManager::OnAskForValuesToFill(
   ParseFormAsync(
       form,
       ParsingCallback(&AutofillManager::OnAskForValuesToFillImpl, field,
-                      trigger_source)
+                      caret_bounds, trigger_source)
           .Then(NotifyObserversCallback(&Observer::OnAfterAskForValuesToFill,
                                         form.global_id(), field.global_id())));
 }

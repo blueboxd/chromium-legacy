@@ -22,6 +22,7 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/file_system_access_permission_context.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/web_contents.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_directory_handle.mojom.h"
@@ -110,7 +111,10 @@ FileSystemAccessObserverObservation::FileSystemAccessObserverObservation(
     mojo::PendingRemote<blink::mojom::FileSystemAccessObserver> remote,
     absl::variant<std::unique_ptr<FileSystemAccessDirectoryHandleImpl>,
                   std::unique_ptr<FileSystemAccessFileHandleImpl>> handle)
-    : host_(host),
+    : WebContentsObserver(
+          WebContents::FromRenderFrameHost(RenderFrameHostImpl::FromID(
+              AsHandleBase(handle).context().frame_id))),
+      host_(host),
       handle_(std::move(handle)),
       observation_(std::move(observation)),
       remote_(std::move(remote)) {
@@ -153,6 +157,7 @@ void FileSystemAccessObserverObservation::OnChanges(
   GlobalRenderFrameHostId render_frame_host_id = binding_context.frame_id;
   RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(render_frame_host_id);
   if (!rfh || !rfh->IsActive()) {
+    received_changes_while_in_bf_cache_ = true;
     return;
   }
 
@@ -161,10 +166,10 @@ void FileSystemAccessObserverObservation::OnChanges(
   const storage::FileSystemURL& handle_url = AsHandleBase(handle_).url();
 
   // Do not relay changes if the site has lost read permission to the handle.
-  // TODO(crbug.com/40283887): Add tests for this.
+  // TODO(crbug.com/321980366): Add tests for this.
   if (handle_state.read_grant->GetStatus() !=
       blink::mojom::PermissionStatus::GRANTED) {
-    // TODO(crbug.com/40283887): Proactively listen for permission
+    // TODO(crbug.com/321980366): Proactively listen for permission
     // changes, rather than (or perhaps in addition to) checking on each change.
     return;
   }
@@ -172,9 +177,8 @@ void FileSystemAccessObserverObservation::OnChanges(
   std::vector<blink::mojom::FileSystemAccessChangePtr> mojo_changes;
   for (const auto& change : changes) {
     if (change.type->is_errored()) {
-      // TODO(crbug.com/40105284): Consider destroying `observation_`...
-      // Or don't bother passing along errored changes from the WatcherManager
-      // to its Observations in the first place.
+      // TODO(crbug.com/341123799): Invoke the callback with error type, and
+      // mark this observation as errored so that no further events are sent.
       continue;
     }
 
@@ -227,6 +231,48 @@ void FileSystemAccessObserverObservation::OnChanges(
   }
 
   remote_->OnFileChanges(std::move(mojo_changes));
+}
+
+void FileSystemAccessObserverObservation::RenderFrameHostStateChanged(
+    RenderFrameHost* render_frame_host,
+    RenderFrameHost::LifecycleState old_state,
+    RenderFrameHost::LifecycleState new_state) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  bool transitioned_from_bf_cache_to_active =
+      new_state == RenderFrameHost::LifecycleState::kActive &&
+      old_state == RenderFrameHost::LifecycleState::kInBackForwardCache;
+
+  if (render_frame_host !=
+          RenderFrameHost::FromID(AsHandleBase(handle_).context().frame_id) ||
+      !transitioned_from_bf_cache_to_active ||
+      !received_changes_while_in_bf_cache_) {
+    return;
+  }
+
+  // RFH's state changed to kActive from kInBackForwardCache. File System
+  // changes are not sent while the page is in BFCache. So, we use
+  // ChangeType::kUnknown to signal to the renderer that some changes could be
+  // missing.
+  std::vector<blink::mojom::FileSystemAccessChangePtr> mojo_changes;
+  FileSystemAccessManagerImpl* manager = AsHandleBase(handle_).manager();
+  const FileSystemAccessManagerImpl::BindingContext& binding_context =
+      AsHandleBase(handle_).context();
+  const FileSystemAccessManagerImpl::SharedHandleState& handle_state =
+      AsHandleBase(handle_).handle_state();
+  const storage::FileSystemURL& handle_url = AsHandleBase(handle_).url();
+
+  mojo_changes.emplace_back(blink::mojom::FileSystemAccessChange::New(
+      blink::mojom::FileSystemAccessChangeMetadata::New(
+          CreateEntryForUrl(*manager, binding_context, handle_state, handle_url,
+                            GetHandleType(handle_)),
+          CreateEntryForUrl(*manager, binding_context, handle_state, handle_url,
+                            GetHandleType(handle_)),
+          std::vector<std::string>()),
+      blink::mojom::FileSystemAccessChangeType::NewUnknown(
+          blink::mojom::FileSystemAccessChangeTypeUnknown::New())));
+  remote_->OnFileChanges(std::move(mojo_changes));
+  received_changes_while_in_bf_cache_ = false;
 }
 
 void FileSystemAccessObserverObservation::OnReceiverDisconnect() {

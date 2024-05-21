@@ -20,9 +20,11 @@ class GURL;
 
 namespace chromeos {
 
-struct MahiOutline {
+struct COMPONENT_EXPORT(MAHI_PUBLIC_CPP) MahiOutline {
   int id;
   std::u16string outline_content;
+
+  bool operator==(const MahiOutline&) const;
 };
 
 // List os possible response statuses for a Mahi request.
@@ -98,6 +100,10 @@ class COMPONENT_EXPORT(MAHI_PUBLIC_CPP) MahiManager {
 
   // Check if the feature is enabled.
   virtual bool IsEnabled() = 0;
+
+  // Called when a Media app pdf window is focused, to notify Mahi about the
+  // refresh avaiablity.
+  virtual void SetMediaAppPDFFocused() = 0;
 
  protected:
   MahiManager();

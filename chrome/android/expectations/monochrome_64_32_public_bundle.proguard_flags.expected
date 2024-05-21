@@ -442,6 +442,13 @@
   @org.jni_zero.CalledByNativeUnchecked <methods>;
 }
 
+# Allow unused native methods to be removed, but prevent renaming on those that
+# are kept.
+# TODO(crbug.com/315973491): Restrict the broad scope of this rule.
+-keepclasseswithmembernames,includedescriptorclasses,allowaccessmodification class ** {
+  native <methods>;
+}
+
 # File: ../../chrome/android/features/start_surface/proguard.flags
 # Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
@@ -594,6 +601,27 @@
 # Allow R8 / ProGuard to remove debugging code.
 -assumevalues class androidx.mediarouter.** {
   static boolean DEBUG return false;
+}
+
+# File: obj/third_party/androidx/androidx_privacysandbox_ads_ads_adservices_java/proguard.txt
+# Copyright (C) 2024 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# A rule that will keep the internal ContinuationOutcomeReceiver class used to
+# work with AdServicesOutcomeReceiver on Android R
+-keep class androidx.privacysandbox.ads.adservices.internal.ContinuationOutcomeReceiver {
+  <methods>;
 }
 
 # File: obj/third_party/androidx/androidx_recyclerview_recyclerview_java/proguard.txt
@@ -931,20 +959,6 @@
 # WARNING: rules in this file are applied to entire third-party APKs, not just
 # Chromium code. They MUST be scoped appropriately to avoid side effects on app
 # code that we do not own.
-
-# Allow unused native methods to be removed, but prevent renaming on those that
-# are kept.
--keepclasseswithmembernames,includedescriptorclasses,allowaccessmodification class !cr_allowunused,** {
-  native <methods>;
-}
-
-# Use assumevalues block instead of assumenosideeffects block because Google3
-# proguard cannot parse assumenosideeffects blocks which overwrite return
-# value. Keep this in shared_with_cronet.flags rather than remove_logging.flags
-# so that it's included in cronet.
--assumevalues class org.chromium.base.Log {
-  static boolean isDebug() return false;
-}
 
 # Keep all CREATOR fields within Parcelable that are kept.
 -keepclassmembers class !cr_allowunused,org.chromium.** implements android.os.Parcelable {

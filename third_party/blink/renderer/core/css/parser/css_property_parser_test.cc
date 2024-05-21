@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_stream.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
@@ -46,11 +47,10 @@ static int ComputeNumberOfTracks(const CSSValueList* value_list) {
 static bool IsValidPropertyValueForStyleRule(CSSPropertyID property_id,
                                              const String& value) {
   CSSTokenizer tokenizer(value);
-  const auto tokens = tokenizer.TokenizeToEOF();
-  const CSSParserTokenRange range(tokens);
+  CSSParserTokenStream stream(tokenizer);
   HeapVector<CSSPropertyValue, 64> parsed_properties;
   return CSSPropertyParser::ParseValue(
-      property_id, /*allow_important_annotation=*/false, {range, value},
+      property_id, /*allow_important_annotation=*/false, stream,
       StrictCSSParserContext(SecureContextMode::kSecureContext),
       parsed_properties, StyleRule::RuleType::kStyle);
 }
@@ -1005,12 +1005,11 @@ bool ParseCSSValue(CSSPropertyID property_id,
                    const String& value,
                    const CSSParserContext* context) {
   CSSTokenizer tokenizer(value);
-  const auto tokens = tokenizer.TokenizeToEOF();
-  const CSSParserTokenRange range(tokens);
+  CSSParserTokenStream stream(tokenizer);
   HeapVector<CSSPropertyValue, 64> parsed_properties;
   return CSSPropertyParser::ParseValue(
-      property_id, /*allow_important_annotation=*/false, {range, value},
-      context, parsed_properties, StyleRule::RuleType::kStyle);
+      property_id, /*allow_important_annotation=*/false, stream, context,
+      parsed_properties, StyleRule::RuleType::kStyle);
 }
 
 }  // namespace
@@ -1049,10 +1048,10 @@ TEST(CSSPropertyParserTest, ParseRevert) {
 
   String string = " revert";
   CSSTokenizer tokenizer(string);
-  const auto tokens = tokenizer.TokenizeToEOF();
+  CSSParserTokenStream stream(tokenizer);
 
   const CSSValue* value = CSSPropertyParser::ParseSingleValue(
-      CSSPropertyID::kMarginLeft, CSSParserTokenRange(tokens), context);
+      CSSPropertyID::kMarginLeft, stream, context);
   ASSERT_TRUE(value);
   EXPECT_TRUE(value->IsRevertValue());
 }
@@ -1063,10 +1062,10 @@ TEST(CSSPropertyParserTest, ParseRevertLayer) {
 
   String string = " revert-layer";
   CSSTokenizer tokenizer(string);
-  const auto tokens = tokenizer.TokenizeToEOF();
+  CSSParserTokenStream stream(tokenizer);
 
   const CSSValue* value = CSSPropertyParser::ParseSingleValue(
-      CSSPropertyID::kMarginLeft, CSSParserTokenRange(tokens), context);
+      CSSPropertyID::kMarginLeft, stream, context);
   ASSERT_TRUE(value);
   EXPECT_TRUE(value->IsRevertLayerValue());
 }

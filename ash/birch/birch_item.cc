@@ -8,6 +8,8 @@
 #include <sstream>
 #include <string>
 
+#include "ash/birch/birch_icon_cache.h"
+#include "ash/birch/birch_model.h"
 #include "ash/public/cpp/image_downloader.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
@@ -32,8 +34,11 @@ namespace {
 
 // Handles when an `image` is downloaded, by converting it to a ui::ImageModel
 // and running `callback`.
-void OnImageDownloaded(base::OnceCallback<void(const ui::ImageModel&)> callback,
+void OnImageDownloaded(const GURL& url,
+                       base::OnceCallback<void(const ui::ImageModel&)> callback,
                        const gfx::ImageSkia& image) {
+  // Add the image to the cache.
+  Shell::Get()->birch_model()->icon_cache()->Put(url.spec(), image);
   std::move(callback).Run(ui::ImageModel::FromImageSkia(image));
 }
 
@@ -47,6 +52,16 @@ void DownloadImageFromUrl(
     return;
   }
 
+  // Look for the icon in the cache.
+  gfx::ImageSkia icon =
+      Shell::Get()->birch_model()->icon_cache()->Get(url.spec());
+  if (!icon.isNull()) {
+    // Use the cached icon.
+    std::move(callback).Run(ui::ImageModel::FromImageSkia(icon));
+    return;
+  }
+
+  // Download the icon.
   const UserSession* active_user_session =
       Shell::Get()->session_controller()->GetUserSession(0);
   CHECK(active_user_session);
@@ -55,7 +70,7 @@ void DownloadImageFromUrl(
   ImageDownloader::Get()->Download(
       url, MISSING_TRAFFIC_ANNOTATION,
       active_user_session->user_info.account_id,
-      base::BindOnce(&OnImageDownloaded, std::move(callback)));
+      base::BindOnce(&OnImageDownloaded, url, std::move(callback)));
 }
 
 }  // namespace
@@ -111,6 +126,7 @@ BirchCalendarItem::BirchCalendarItem(const std::u16string& title,
     : BirchItem(title, GetSubtitle(start_time, end_time, all_day_event)),
       start_time_(start_time),
       end_time_(end_time),
+      all_day_event_(all_day_event),
       calendar_url_(calendar_url),
       conference_url_(conference_url),
       event_id_(event_id) {
@@ -279,7 +295,7 @@ void BirchAttachmentItem::PerformAction() {
 }
 
 void BirchAttachmentItem::PerformSecondaryAction() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void BirchAttachmentItem::LoadIcon(LoadIconCallback callback) const {
@@ -343,7 +359,7 @@ void BirchFileItem::PerformAction() {
 }
 
 void BirchFileItem::PerformSecondaryAction() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void BirchFileItem::LoadIcon(LoadIconCallback callback) const {
@@ -399,7 +415,7 @@ void BirchWeatherItem::PerformAction() {
 }
 
 void BirchWeatherItem::PerformSecondaryAction() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void BirchWeatherItem::LoadIcon(LoadIconCallback callback) const {
@@ -457,7 +473,7 @@ void BirchTabItem::PerformAction() {
 }
 
 void BirchTabItem::PerformSecondaryAction() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void BirchTabItem::LoadIcon(LoadIconCallback callback) const {
@@ -485,6 +501,92 @@ std::u16string BirchTabItem::GetSubtitle(const std::string& session_name,
   std::u16string suffix =
       l10n_util::GetStringFUTF16(IDS_ASH_BIRCH_RECENT_TAB_SUBTITLE_SUFFIX,
                                  base::UTF8ToUTF16(session_name));
+  return prefix + u" · " + suffix;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+BirchSelfShareItem::BirchSelfShareItem(const std::u16string& guid,
+                                       const std::u16string& title,
+                                       const GURL& url,
+                                       const base::Time& shared_time,
+                                       const std::u16string& device_name,
+                                       GURL& favicon_url)
+    : BirchItem(title, GetSubtitle(device_name, shared_time)),
+      guid_(guid),
+      url_(url),
+      shared_time_(shared_time),
+      favicon_url_(favicon_url) {}
+
+BirchSelfShareItem::BirchSelfShareItem(BirchSelfShareItem&&) = default;
+
+BirchSelfShareItem::BirchSelfShareItem(const BirchSelfShareItem&) = default;
+
+BirchSelfShareItem& BirchSelfShareItem::operator=(const BirchSelfShareItem&) =
+    default;
+
+bool BirchSelfShareItem::operator==(const BirchSelfShareItem& rhs) const =
+    default;
+
+BirchSelfShareItem::~BirchSelfShareItem() = default;
+
+BirchItemType BirchSelfShareItem::GetType() const {
+  return BirchItemType::kSelfShare;
+}
+
+std::string BirchSelfShareItem::ToString() const {
+  std::stringstream ss;
+  ss << "Self Share item: {ranking: " << ranking()
+     << ", Title: " << base::UTF16ToUTF8(title())
+     << ", Device Name: " << base::UTF16ToUTF8(subtitle())
+     << ", GUID: " << guid_ << ", Shared Time: " << shared_time_
+     << ", URL: " << url_ << ", Favicon URL: " << favicon_url_;
+  return ss.str();
+}
+
+void BirchSelfShareItem::PerformAction() {
+  // TODO(b/333412417): Scope how to mark entry opened.
+  if (!url_.is_valid()) {
+    LOG(ERROR) << "No valid URL for self "
+                  "share item";
+    return;
+  }
+  RecordActionMetrics();
+  NewWindowDelegate::GetPrimary()->OpenUrl(
+      url_, NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+      NewWindowDelegate::Disposition::kSwitchToTab);
+}
+
+void BirchSelfShareItem::PerformSecondaryAction() {
+  NOTREACHED_IN_MIGRATION();
+}
+
+void BirchSelfShareItem::LoadIcon(LoadIconCallback callback) const {
+  // TODO(b/333412417): Set a generic website icon if empty image result.
+  DownloadImageFromUrl(favicon_url_, std::move(callback));
+}
+
+// static
+std::u16string BirchSelfShareItem::GetSubtitle(
+    const std::u16string& device_name,
+    base::Time shared_time) {
+  std::u16string prefix;
+  if (shared_time < base::Time::Now().LocalMidnight()) {
+    // Builds the string "Yesterday". We only show tabs within the last 24 hours
+    // so we don't need to worry about days before yesterday.
+    prefix =
+        l10n_util::GetStringUTF16(IDS_ASH_BIRCH_RECENT_TAB_SUBTITLE_YESTERDAY);
+  } else {
+    // Builds a string like "12 hours ago". We only show tabs within the last
+    // 24 hours so we don't need to worry about a day count.
+    const int hours = (base::Time::Now() - shared_time).InHours();
+    prefix = l10n_util::GetPluralStringFUTF16(
+        IDS_ASH_BIRCH_RECENT_TAB_SUBTITLE_PREFIX, hours);
+  }
+
+  // Builds a string like "From Chromebook".
+  std::u16string suffix = l10n_util::GetStringFUTF16(
+      IDS_ASH_BIRCH_RECENT_TAB_SUBTITLE_SUFFIX, device_name);
   return prefix + u" · " + suffix;
 }
 
@@ -526,7 +628,7 @@ void BirchReleaseNotesItem::PerformAction() {
 }
 
 void BirchReleaseNotesItem::PerformSecondaryAction() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void BirchReleaseNotesItem::LoadIcon(LoadIconCallback callback) const {

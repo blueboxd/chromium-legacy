@@ -97,7 +97,7 @@ class PaymentsNetworkInterface : public PaymentsNetworkInterfaceBase {
     bool offer_fido_opt_in = false;
     // Public Key Credential Request Options required for authentication.
     // https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrequestoptions
-    std::optional<base::Value::Dict> fido_request_options;
+    base::Value::Dict fido_request_options;
     // Set of credit cards ids that are eligible for FIDO Authentication.
     std::set<std::string> fido_eligible_card_ids;
   };
@@ -136,7 +136,7 @@ class PaymentsNetworkInterface : public PaymentsNetworkInterfaceBase {
     std::optional<url::Origin> merchant_domain_for_footprints;
     // The token received in the final redirect of a PaymentsWindowManager flow,
     // which is the only scenario where this field should be populated.
-    PaymentsWindowManager::RedirectCompletionProof redirect_completion_proof;
+    PaymentsWindowManager::RedirectCompletionResult redirect_completion_result;
   };
 
   // Information retrieved from an UnmaskRequest.
@@ -170,7 +170,7 @@ class PaymentsNetworkInterface : public PaymentsNetworkInterfaceBase {
     std::string expiration_year;
     // Challenge required for authorizing user for FIDO authentication for
     // future card unmasking.
-    std::optional<base::Value::Dict> fido_request_options;
+    base::Value::Dict fido_request_options;
     // An opaque token used to logically chain consecutive UnmaskCard and
     // OptChange calls together.
     std::string card_authorization_token;
@@ -544,17 +544,19 @@ class PaymentsNetworkInterface : public PaymentsNetworkInterfaceBase {
   // of the IBAN, representing its country of origin. `callback` is the
   // callback function that is triggered when a response is received from the
   // server, and the callback is triggered with that response's result. The
-  // legal message will always be returned upon a successful response via
-  // `callback`. A successful response does not guarantee that the legal
-  // message is valid, callers should parse the legal message and use it to
-  // decide if IBAN upload save should be offered.
+  // `validation_regex` is used to validate whether the given IBAN can be saved
+  // to the server. The legal message will always be returned upon a successful
+  // response via `callback`. A successful response does not guarantee that the
+  // legal message is valid, callers should parse the legal message and use it
+  // to decide if IBAN upload save should be offered.
   virtual void GetIbanUploadDetails(
       const std::string& app_locale,
       int64_t billing_customer_number,
       int billable_service_number,
       const std::string& country_code,
-      base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                              const std::u16string&,
+      base::OnceCallback<void(AutofillClient::PaymentsRpcResult result,
+                              const std::u16string& validation_regex,
+                              const std::u16string& context_token,
                               std::unique_ptr<base::Value::Dict>)> callback);
 
   // The user has indicated that they would like to upload an IBAN. This request

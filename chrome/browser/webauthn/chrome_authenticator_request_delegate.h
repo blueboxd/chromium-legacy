@@ -57,9 +57,8 @@ class PrefRegistrySyncable;
 
 // ChromeWebAuthenticationDelegate is the //chrome layer implementation of
 // content::WebAuthenticationDelegate.
-class ChromeWebAuthenticationDelegate
-    : public content::WebAuthenticationDelegate,
-      base::SupportsWeakPtr<ChromeWebAuthenticationDelegate> {
+class ChromeWebAuthenticationDelegate final
+    : public content::WebAuthenticationDelegate {
  public:
 #if BUILDFLAG(IS_MAC)
   // Returns a configuration struct for instantiating the macOS WebAuthn
@@ -222,6 +221,8 @@ class ChromeAuthenticatorRequestDelegate
                                  credential_list) override;
   void SetUserEntityForMakeCredentialRequest(
       const device::PublicKeyCredentialUserEntity& user_entity) override;
+  std::vector<std::unique_ptr<device::FidoDiscoveryBase>>
+  CreatePlatformDiscoveries() override;
 
   // device::FidoRequestHandlerBase::Observer:
   void OnTransportAvailabilityEnumerated(

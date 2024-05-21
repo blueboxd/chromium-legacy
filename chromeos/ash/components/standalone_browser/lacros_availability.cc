@@ -54,7 +54,7 @@ std::string_view GetLacrosAvailabilityPolicyName(LacrosAvailability value) {
     }
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return std::string_view();
 }
 
@@ -65,6 +65,7 @@ bool IsGoogleInternal(const user_manager::User* user) {
 
   const std::string_view email = user->GetAccountId().GetUserEmail();
   return gaia::IsGoogleInternalAccountEmail(email) ||
+         gaia::IsGoogleRobotAccountEmail(email) ||
          gaia::ExtractDomainName(gaia::SanitizeEmail(email)) ==
              "managedchrome.com";
 }

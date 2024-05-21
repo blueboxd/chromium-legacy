@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.privacy_sandbox;
 
 import android.content.Context;
 
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.site_settings.ChromeSiteSettingsDelegate;
@@ -39,6 +40,43 @@ public class ChromeTrackingProtectionDelegate implements TrackingProtectionDeleg
     @Override
     public void setDoNotTrack(boolean enabled) {
         UserPrefs.get(mProfile).setBoolean(Pref.ENABLE_DO_NOT_TRACK, enabled);
+    }
+
+    @Override
+    public boolean shouldDisplayIpProtection() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.TRACKING_PROTECTION_SETTINGS_LAUNCH)
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.IP_PROTECTION_V1);
+    }
+
+    @Override
+    public boolean isIpProtectionEnabled() {
+        return UserPrefs.get(mProfile).getBoolean(Pref.IP_PROTECTION_ENABLED)
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.IP_PROTECTION_V1);
+    }
+
+    @Override
+    public void setIpProtection(boolean enabled) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.IP_PROTECTION_V1)) return;
+        UserPrefs.get(mProfile).setBoolean(Pref.IP_PROTECTION_ENABLED, enabled);
+    }
+
+    @Override
+    public boolean shouldDisplayFingerprintingProtection() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.TRACKING_PROTECTION_SETTINGS_LAUNCH)
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.FINGERPRINTING_PROTECTION_SETTING);
+    }
+
+    @Override
+    public boolean isFingerprintingProtectionEnabled() {
+        return UserPrefs.get(mProfile).getBoolean(Pref.FINGERPRINTING_PROTECTION_ENABLED)
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.FINGERPRINTING_PROTECTION_SETTING);
+    }
+
+    @Override
+    public void setFingerprintingProtection(boolean enabled) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.FINGERPRINTING_PROTECTION_SETTING))
+            return;
+        UserPrefs.get(mProfile).setBoolean(Pref.FINGERPRINTING_PROTECTION_ENABLED, enabled);
     }
 
     @Override

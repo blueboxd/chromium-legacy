@@ -30,7 +30,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import org.chromium.base.supplier.LazyOneshotSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -105,6 +104,7 @@ public class TabSwitcherMessageManagerUnitTest {
                 .addObserver(mMultiWindowModeObserverCaptor.capture());
         doNothing().when(mTabModelFilter).addObserver(mTabModelObserverCaptor.capture());
         doReturn(mTabModel).when(mTabModelFilter).getTabModel();
+        doReturn(mProfile).when(mTabModel).getProfile();
         mCurrentTabModelFilterSupplier.set(mTabModelFilter);
 
         mActivityScenarioRule.getScenario().onActivity(this::onActivityReady);
@@ -118,18 +118,16 @@ public class TabSwitcherMessageManagerUnitTest {
                         activity,
                         mActivityLifecycleDispatcher,
                         mCurrentTabModelFilterSupplier,
-                        container,
                         mMultiWindowModeStateDispatcher,
                         mSnackbarManager,
-                        mModalDialogManager,
-                        mTabListCoordinator,
-                        LazyOneshotSupplier.fromValue(mTabListEditorController),
-                        mPriceWelcomeMessageReviewActionProvider,
-                        TabListMode.GRID);
+                        mModalDialogManager);
+        mMessageManager.registerMessages(mTabListCoordinator);
+        mMessageManager.bind(
+                mTabListCoordinator, container, mPriceWelcomeMessageReviewActionProvider);
         mMessageManager.addObserver(mMessageUpdateObserver);
 
         mMessageManager.setPriceMessageServiceForTesting(mPriceMessageService);
-        mMessageManager.initWithNative(mProfile);
+        mMessageManager.initWithNative(mProfile, TabListMode.GRID);
 
         assertTrue(mCurrentTabModelFilterSupplier.hasObservers());
     }
@@ -178,10 +176,6 @@ public class TabSwitcherMessageManagerUnitTest {
                 .removeSpecialListItem(
                         TabProperties.UiType.LARGE_MESSAGE,
                         MessageService.MessageType.INCOGNITO_REAUTH_PROMO_MESSAGE);
-        verify(mTabListCoordinator)
-                .removeSpecialListItem(
-                        TabProperties.UiType.LARGE_MESSAGE,
-                        MessageService.MessageType.TAB_SUGGESTION);
         verify(mMessageUpdateObserver).onRemoveAllAppendedMessage();
     }
 
@@ -212,10 +206,6 @@ public class TabSwitcherMessageManagerUnitTest {
                 .removeSpecialListItem(
                         TabProperties.UiType.LARGE_MESSAGE,
                         MessageService.MessageType.INCOGNITO_REAUTH_PROMO_MESSAGE);
-        verify(mTabListCoordinator)
-                .removeSpecialListItem(
-                        TabProperties.UiType.LARGE_MESSAGE,
-                        MessageService.MessageType.TAB_SUGGESTION);
         verify(mMessageUpdateObserver).onRemoveAllAppendedMessage();
     }
 

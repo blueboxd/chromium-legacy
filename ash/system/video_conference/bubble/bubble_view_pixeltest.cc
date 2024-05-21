@@ -5,7 +5,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/constants/app_types.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/style/icon_button.h"
@@ -67,9 +66,7 @@ class BubbleViewPixelTest
   // AshTestBase:
   void SetUp() override {
     std::vector<base::test::FeatureRef> enabled_features{
-        features::kFeatureManagementVideoConference,
-        ::features::kChromeRefresh2023,
-        ::features::kChromeRefreshSecondary2023};
+        features::kFeatureManagementVideoConference};
     // TODO(b/334375880): Add a specific pixel test for the feature
     // VcBackgroundReplace.
     std::vector<base::test::FeatureRef> disabled_features{

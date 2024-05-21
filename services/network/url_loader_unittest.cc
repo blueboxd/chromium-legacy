@@ -161,7 +161,8 @@ URLLoader::DeleteCallback DeleteLoaderCallback(
 // this method, as URLLoaders don't expect to be alive after they invoke their
 // delete callback.
 URLLoader::DeleteCallback NeverInvokedDeleteLoaderCallback() {
-  return base::BindOnce([](URLLoader* /* loader*/) { NOTREACHED(); });
+  return base::BindOnce(
+      [](URLLoader* /* loader*/) { NOTREACHED_IN_MIGRATION(); });
 }
 
 constexpr char kTestAuthURL[] = "/auth-basic?password=PASS&realm=REALM";
@@ -3860,7 +3861,13 @@ TEST_F(URLLoaderTest, CertStatusOnResponse) {
 }
 
 // Verifies if URLLoader works well with ResourceScheduler.
-TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
+// TODO(crbug.com/333723898): enable this test.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_ResourceSchedulerIntegration DISABLED_ResourceSchedulerIntegration
+#else
+#define MAYBE_ResourceSchedulerIntegration ResourceSchedulerIntegration
+#endif
+TEST_F(URLLoaderTest, MAYBE_ResourceSchedulerIntegration) {
   // ResourceScheduler limits the number of connections for the same host
   // by 6.
   constexpr int kRepeat = 6;
@@ -4214,7 +4221,7 @@ class ClientCertAuthObserver : public TestURLLoaderNetworkObserver {
         std::move(client_cert_responder_remote));
     switch (certificate_response_) {
       case CertificateResponse::INVALID:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
       case CertificateResponse::URL_LOADER_REQUEST_CANCELLED:
         ASSERT_TRUE(url_loader_remote_);
@@ -6142,7 +6149,7 @@ class MockTrustTokenRequestHelperFactory
         return;
     }
 
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
  private:

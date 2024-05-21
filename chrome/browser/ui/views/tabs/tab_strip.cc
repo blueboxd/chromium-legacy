@@ -89,7 +89,6 @@
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/color/color_provider.h"
 #include "ui/display/display.h"
 #include "ui/gfx/animation/throb_animation.h"
@@ -567,9 +566,9 @@ class TabStrip::TabDragContextImpl : public TabDragContext,
     // Reset the layout size as we've effectively laid out a different size.
     // This ensures a layout happens after the drag is done.
     tab_strip_->tab_container_->InvalidateIdealBounds();
-    if (views[0]->group().has_value()) {
+    if (views.at(0)->group().has_value()) {
       tab_strip_->tab_container_->UpdateTabGroupVisuals(
-          views[0]->group().value());
+          views.at(0)->group().value());
     }
   }
 
@@ -1260,7 +1259,7 @@ bool TabStrip::ShouldDrawStrokes() const {
   // The Tabstrip in the refreshed style does not meet the contrast ratio
   // requirements listed below but does not have strokes for Tabs or the bottom
   // border.
-  if (features::IsChromeRefresh2023() && !using_system_theme) {
+  if (!using_system_theme) {
     return false;
   }
 

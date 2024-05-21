@@ -86,8 +86,6 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
   // drag controller.
   bool IsDragInProgress() const;
 
-  void OnToplevelWindowCreated(WaylandToplevelWindow* window);
-
   // Tells if "extended drag" extension is available.
   bool IsExtendedDragAvailable() const;
 
@@ -222,6 +220,9 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
   // happens, |origin_surface_| takes ownership of its surface and ensure it
   // is kept alive until the end of the session.
   std::unique_ptr<WaylandSurface> origin_surface_;
+
+  // In outgoing sessions, tracks if any drag enter has already been received.
+  bool has_received_enter_ = false;
 
   std::unique_ptr<ScopedEventDispatcher> nested_dispatcher_;
   base::OnceClosure quit_loop_closure_;

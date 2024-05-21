@@ -68,7 +68,6 @@
 <translation id="2241587408274973373">Yeni sekme sayfası kartları</translation>
 <translation id="2241634353105152135">Sadece bir defa</translation>
 <translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> öğesini kaldır</translation>
-<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{1 site engellendi}other{# site engellendi}}</translation>
 <translation id="228293613124499805">Ziyaret ettiğiniz çoğu site, genellikle tercihlerinizi veya siteyle paylaştığınız bilgileri kaydederek deneyiminizi iyileştirmek için cihazınıza veri kaydeder. Bu ayarı açık tutmanızı öneririz.</translation>
 <translation id="2289270750774289114">Bir site yakındaki Bluetooth cihazları bulmak istediğinde sor (önerilir)</translation>
 <translation id="2315043854645842844">İstemci tarafı sertifika seçimi, işletim sistemi tarafından desteklenmiyor.</translation>
@@ -305,6 +304,7 @@
 <translation id="6015775454662021376">Bu sitenin cihazınıza erişimini kontrol edin</translation>
 <translation id="6040143037577758943">Kapat</translation>
 <translation id="6042308850641462728">Daha fazla</translation>
+<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Son sekmeniz</translation>
 <translation id="6064125863973209585">Tamamlanan indirme işlemleri</translation>
 <translation id="6071501408666570960">Bu sitede oturumunuz kapatılabilir</translation>
 <translation id="6120483543004435978">Bu düğme açıkken siteler cihazınızı etkin olarak kullandığınız zamanı bilmek isteyebilir. Düğme kapalıyken siteler cihazınızı etkin olarak kullandığınız zamanı bilemez.</translation>
@@ -426,6 +426,7 @@
 <translation id="7986741934819883144">Kişi seçin</translation>
 <translation id="7990211076305263060">Bu düğme açıkken siteler mikrofonunuzu kullanmak isteyebilir. Düğme kapalıyken siteler mikrofonunuzu kullanamaz.</translation>
 <translation id="8007176423574883786">Bu cihaz için kapatıldı</translation>
+<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Cihaz: <ph name="FROM_DEVICE" /></translation>
 <translation id="802154636333426148">İndirilemedi</translation>
 <translation id="8042586301629853791">Sıralama ölçütü:</translation>
 <translation id="8067883171444229417">Videoyu oynat</translation>
@@ -480,7 +481,6 @@
 <translation id="8721719390026067591">Bu düğme açıkken siteler Bluetooth cihazları aramak isteyebilir. Düğme kapalıyken siteler Bluetooth cihazları arayamaz.</translation>
 <translation id="8725066075913043281">Yeniden dene</translation>
 <translation id="8730621377337864115">Bitti</translation>
-<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{1 siteye izin veriliyor}other{# siteye izin veriliyor}}</translation>
 <translation id="8751914237388039244">Resim seçin</translation>
 <translation id="8800034312320686233">Site çalışmıyor mu?</translation>
 <translation id="8801436777607969138">JavaScript'i belirli bir site için engelleyin.</translation>

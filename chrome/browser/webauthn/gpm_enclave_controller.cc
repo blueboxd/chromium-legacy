@@ -442,19 +442,22 @@ void GPMEnclaveController::OnEnclaveLoaded() {
     return;
   }
 
-  if (enclave_manager_->is_ready()) {
-    FIDO_LOG(EVENT) << "Enclave is ready";
-    SetAccountStateReady();
-    SetActive(true);
-    return;
-  }
+  // TODO(enclave): even for kGetAssertion, when using a GPM PIN for UV we will
+  // want to probe the security domain service to learn when the PIN changes.
+  if (request_type_ == device::FidoRequestType::kGetAssertion) {
+    if (enclave_manager_->is_ready()) {
+      FIDO_LOG(EVENT) << "Enclave is ready";
+      SetAccountStateReady();
+      SetActive(true);
+      return;
+    }
 
-  if (base::FeatureList::IsEnabled(device::kWebAuthnGpmPin) &&
-      request_type_ == device::FidoRequestType::kGetAssertion) {
-    // For get() requests, progress the UI now because, with GPM PIN support,
-    // we can handle the account in any state and we'll block the UI if needed
-    // when the user selects a GPM credential.
-    SetActive(true);
+    if (device::kWebAuthnGpmPin.Get()) {
+      // For get() requests, progress the UI now because, with GPM PIN support,
+      // we can handle the account in any state and we'll block the UI if needed
+      // when the user selects a GPM credential.
+      SetActive(true);
+    }
   }
 
   FIDO_LOG(EVENT) << "Checking for UV key capability";
@@ -468,8 +471,7 @@ void GPMEnclaveController::OnUVCapabilityKnown(bool can_make_uv_keys) {
 
   can_make_uv_keys_ = can_make_uv_keys;
 
-  if (!can_make_uv_keys &&
-      !base::FeatureList::IsEnabled(device::kWebAuthnGpmPin)) {
+  if (!can_make_uv_keys && !device::kWebAuthnGpmPin.Get()) {
     // Without the ability to do user verification, we cannot enroll the current
     // device.
     account_state_ = AccountState::kNone;
@@ -481,8 +483,14 @@ void GPMEnclaveController::OnUVCapabilityKnown(bool can_make_uv_keys) {
 }
 
 void GPMEnclaveController::DownloadAccountState() {
-  std::optional<DownloadedAccountState> maybe_cached =
-      GetAccountStateCache()->Get(clock_);
+  std::optional<DownloadedAccountState> maybe_cached;
+  // If the enclave_manager isn't ready then a cached account state can be used
+  // to reduce load on the security domain service. If it is ready then this
+  // must be a create() request, and we want to check that the security domain
+  // epoch hasn't changed and so don't use a cached state.
+  if (!enclave_manager_->is_ready()) {
+    maybe_cached = GetAccountStateCache()->Get(clock_);
+  }
   if (maybe_cached) {
     FIDO_LOG(EVENT) << "Using cached account state";
     OnHaveAccountState(std::move(*maybe_cached));
@@ -521,8 +529,15 @@ void GPMEnclaveController::DownloadAccountState() {
 void GPMEnclaveController::OnAccountStateTimeOut() {
   FIDO_LOG(ERROR) << "Fetching the account state timed out.";
   download_account_state_request_.reset();
-  account_state_ = AccountState::kNone;
-  SetActive(false);
+  if (enclave_manager_->is_ready()) {
+    // If we were checking the security domain just to check whether the epoch
+    // has changed then we assume that it hasn't.
+    SetAccountStateReady();
+    SetActive(true);
+  } else {
+    account_state_ = AccountState::kNone;
+    SetActive(false);
+  }
 }
 
 void GPMEnclaveController::OnAccountStateDownloaded(
@@ -546,6 +561,14 @@ void GPMEnclaveController::OnAccountStateDownloaded(
                           : "<none>")
                   << ", iCloud Keychain keys: " << result.icloud_keys.size();
 
+  if (enclave_manager_->is_ready() &&
+      enclave_manager_->ConsiderSecurityDomainState(result,
+                                                    base::DoNothing())) {
+    SetAccountStateReady();
+    SetActive(true);
+    return;
+  }
+
   DownloadedAccountState downloaded(std::move(result));
   GetAccountStateCache()->Put(clock_, downloaded);
 
@@ -559,7 +582,7 @@ void GPMEnclaveController::OnHaveAccountState(DownloadedAccountState result) {
                   << ", has PIN: " << result.gpm_pin_metadata.has_value()
                   << ", iCloud Keychain keys: " << result.icloud_keys.size();
 
-  if (!base::FeatureList::IsEnabled(device::kWebAuthnGpmPin) &&
+  if (!device::kWebAuthnGpmPin.Get() &&
       result.state == Result::State::kRecoverable &&
       !result.lskf_expiries.empty() &&
       base::ranges::all_of(result.lskf_expiries, ExpiryTooSoon)) {
@@ -596,7 +619,7 @@ void GPMEnclaveController::OnHaveAccountState(DownloadedAccountState result) {
   }
   security_domain_icloud_recovery_keys_ = std::move(result.icloud_keys);
 
-  if (base::FeatureList::IsEnabled(device::kWebAuthnGpmPin)) {
+  if (device::kWebAuthnGpmPin.Get()) {
     SetActive(account_state_ != AccountState::kNone);
   } else {
     SetActive(account_state_ == AccountState::kRecoverable);
@@ -706,6 +729,7 @@ void GPMEnclaveController::EnrollICloudRecoveryKey(
   if (!key) {
     FIDO_LOG(ERROR) << "Could not create iCloud recovery key";
     OnEnclaveAccountSetUpComplete();
+    return;
   }
   enclave_manager_->AddICloudRecoveryKey(
       std::move(key), base::IgnoreArgs<bool>(base::BindOnce(

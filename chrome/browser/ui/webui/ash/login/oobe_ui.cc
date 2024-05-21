@@ -107,6 +107,7 @@
 #include "chrome/browser/ui/webui/ash/login/packaged_license_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/parental_handoff_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/password_selection_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/personalized_recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/pin_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/quick_start_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/recommend_apps_screen_handler.h"
@@ -406,7 +407,8 @@ std::string GetDisplayType(const GURL& url) {
   std::string path = url.path().size() ? url.path().substr(1) : "";
 
   if (!base::Contains(kKnownDisplayTypes, path)) {
-    NOTREACHED() << "Unknown display type '" << path << "'. Setting default.";
+    NOTREACHED_IN_MIGRATION()
+        << "Unknown display type '" << path << "'. Setting default.";
     return OobeUI::kOobeDisplay;
   }
   return path;
@@ -609,6 +611,8 @@ void OobeUI::ConfigureOobeDisplay() {
 
   if (features::IsOobePersonalizedOnboardingEnabled()) {
     AddScreenHandler(std::make_unique<CategoriesSelectionScreenHandler>());
+    AddScreenHandler(
+        std::make_unique<PersonalizedRecommendAppsScreenHandler>());
   }
 
   AddScreenHandler(std::make_unique<AddChildScreenHandler>());

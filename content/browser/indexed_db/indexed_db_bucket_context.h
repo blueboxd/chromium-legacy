@@ -329,8 +329,6 @@ class CONTENT_EXPORT IndexedDBBucketContext
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  bool force_close_called_for_testing() const { return skip_closing_sequence_; }
-
   TransactionalLevelDBFactory& transactional_leveldb_factory() const {
     return *transactional_leveldb_factory_;
   }
@@ -510,6 +508,9 @@ class CONTENT_EXPORT IndexedDBBucketContext
 
   // True if there's already a task queued to call `RunTasks()`.
   bool task_run_queued_ = false;
+
+  // Debug field. TODO(crbug/340398745): remove.
+  size_t backing_store_open_count_ = 0;
 
   mojo::ReceiverSet<blink::mojom::IDBFactory, ReceiverContext> receivers_;
 

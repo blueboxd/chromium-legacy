@@ -72,7 +72,6 @@ class ChromeAutofillClientIOS : public AutofillClient {
   AutofillCrowdsourcingManager* GetCrowdsourcingManager() override;
   PersonalDataManager* GetPersonalDataManager() override;
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
-  CreditCardRiskBasedAuthenticator* GetRiskBasedAuthenticator() override;
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;
   syncer::SyncService* GetSyncService() override;
@@ -159,6 +158,10 @@ class ChromeAutofillClientIOS : public AutofillClient {
       const VirtualCardEnrollmentFields& virtual_card_enrollment_fields,
       base::OnceClosure accept_virtual_card_callback,
       base::OnceClosure decline_virtual_card_callback) override;
+  PasswordFormType ClassifyAsPasswordForm(
+      AutofillManager& manager,
+      FormGlobalId form_id,
+      FieldGlobalId field_id) const override;
 
  private:
   // Returns the account email of the signed-in user, or nullopt if there is no
@@ -184,7 +187,6 @@ class ChromeAutofillClientIOS : public AutofillClient {
   CardExpirationDateFixFlowControllerImpl
       card_expiration_date_fix_flow_controller_;
   std::unique_ptr<payments::MandatoryReauthManager> payments_reauth_manager_;
-  std::unique_ptr<CreditCardRiskBasedAuthenticator> risk_based_authenticator_;
 
   // A weak reference to the view controller used to present UI.
   __weak UIViewController* base_view_controller_;

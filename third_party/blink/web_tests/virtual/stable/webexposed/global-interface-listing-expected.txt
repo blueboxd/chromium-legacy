@@ -612,7 +612,7 @@ interface CSSNumericValue : CSSStyleValue
     method to
     method toSum
     method type
-interface CSSPageRule : CSSRule
+interface CSSPageRule : CSSGroupingRule
     attribute @@toStringTag
     getter selectorText
     getter style
@@ -6770,6 +6770,10 @@ interface PromiseRejectionEvent : Event
     getter promise
     getter reason
     method constructor
+interface ProtectedAudience
+    attribute @@toStringTag
+    method constructor
+    method queryFeatureSupport
 interface PublicKeyCredential : Credential
     static method isConditionalMediationAvailable
     static method isUserVerifyingPlatformAuthenticatorAvailable

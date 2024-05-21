@@ -160,6 +160,14 @@ EnumTraits<media::mojom::VideoCapturePixelFormat,
       return media::mojom::VideoCapturePixelFormat::YUV444AP10;
     case media::VideoPixelFormat::PIXEL_FORMAT_NV12A:
       return media::mojom::VideoCapturePixelFormat::NV12A;
+    case media::VideoPixelFormat::PIXEL_FORMAT_NV16:
+      return media::mojom::VideoCapturePixelFormat::NV16;
+    case media::VideoPixelFormat::PIXEL_FORMAT_NV24:
+      return media::mojom::VideoCapturePixelFormat::NV24;
+    case media::VideoPixelFormat::PIXEL_FORMAT_P216LE:
+      return media::mojom::VideoCapturePixelFormat::P216LE;
+    case media::VideoPixelFormat::PIXEL_FORMAT_P416LE:
+      return media::mojom::VideoCapturePixelFormat::P416LE;
   }
   NOTREACHED_NORETURN();
 }
@@ -280,6 +288,18 @@ bool EnumTraits<media::mojom::VideoCapturePixelFormat,
       return true;
     case media::mojom::VideoCapturePixelFormat::NV12A:
       *output = media::PIXEL_FORMAT_NV12A;
+      return true;
+    case media::mojom::VideoCapturePixelFormat::NV16:
+      *output = media::PIXEL_FORMAT_NV16;
+      return true;
+    case media::mojom::VideoCapturePixelFormat::NV24:
+      *output = media::PIXEL_FORMAT_NV16;
+      return true;
+    case media::mojom::VideoCapturePixelFormat::P216LE:
+      *output = media::PIXEL_FORMAT_P216LE;
+      return true;
+    case media::mojom::VideoCapturePixelFormat::P416LE:
+      *output = media::PIXEL_FORMAT_P416LE;
       return true;
   }
   NOTREACHED_NORETURN();
@@ -1683,7 +1703,7 @@ bool EnumTraits<media::mojom::VideoCaptureFrameDropReason,
       return true;
     case media::mojom::VideoCaptureFrameDropReason::
         kResolutionAdapterTimestampTooCloseToPrevious_DEPRECATED:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return false;
     case media::mojom::VideoCaptureFrameDropReason::
         kResolutionAdapterFrameRateIsHigherThanRequested:

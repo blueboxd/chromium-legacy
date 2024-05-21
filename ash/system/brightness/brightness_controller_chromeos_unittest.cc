@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/login_data_dispatcher.h"
@@ -13,7 +14,9 @@
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/power/power_status.h"
 #include "ash/test/ash_test_base.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
@@ -114,6 +117,7 @@ bool GetDisplayAmbientLightSensorEnabledPrefValue(
 
 constexpr char kUserEmail[] = "user@example.com";
 constexpr char kUserEmailSecondary[] = "user2@example.com";
+constexpr char kUserEmailTertiary[] = "user3@example.com";
 constexpr double kInitialBrightness = 51.0;
 
 }  // namespace
@@ -141,6 +145,7 @@ class BrightnessControllerChromeosTest : public AshTestBase {
  protected:
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   base::RunLoop run_loop_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   void AdvanceClock(base::TimeDelta time) {
     task_environment()->AdvanceClock(time);
@@ -154,6 +159,32 @@ class BrightnessControllerChromeosTest : public AshTestBase {
     brightness_change.set_cause(cause);
     power_manager_client()->set_screen_brightness_percent(brightness_percent);
     power_manager_client()->SendScreenBrightnessChanged(brightness_change);
+  }
+
+  void ExpectAmbientLightSensorEnabled(bool expected_value,
+                                       const std::string error_message) {
+    brightness_control_delegate()->GetAmbientLightSensorEnabled(
+        base::BindLambdaForTesting([expected_value, error_message](
+                                       std::optional<bool> sensor_enabled) {
+          EXPECT_EQ(sensor_enabled.value(), expected_value) << error_message;
+        }));
+  }
+
+  void ExpectBrightnessPercent(double expected_value,
+                               const std::string error_message) {
+    brightness_control_delegate()->GetBrightnessPercent(
+        base::BindLambdaForTesting(
+            [expected_value,
+             error_message](std::optional<double> brightness_percent) {
+              EXPECT_EQ(brightness_percent.value(), expected_value)
+                  << error_message;
+            }));
+  }
+
+  // On the login screen, focus the given account.
+  void LoginScreenFocusAccount(const AccountId account_id) {
+    login_data_dispatcher()->NotifyFocusPod(account_id);
+    run_loop_.RunUntilIdle();
   }
 };
 
@@ -819,6 +850,238 @@ TEST_F(BrightnessControllerChromeosTest, SetBrightnessPercent_Cause) {
       power_manager_client()->requested_screen_brightness_cause(),
       power_manager::
           SetBacklightBrightnessRequest_Cause_USER_REQUEST_FROM_SETTINGS_APP);
+}
+
+TEST_F(BrightnessControllerChromeosTest,
+       RestoreBrightnessSettingsFromPref_FlagEnabled) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kEnableBrightnessControlInSettings);
+
+  // Set initial ALS status and brightness level.
+  power_manager_client()->SetAmbientLightSensorEnabled(true);
+  power_manager_client()->set_screen_brightness_percent(kInitialBrightness);
+
+  // Clear user sessions and reset to the primary login screen.
+  ClearLogin();
+
+  // On the login screen, focus the first user.
+  AccountId first_account = AccountId::FromUserEmail(kUserEmail);
+  LoginScreenFocusAccount(first_account);
+  ExpectAmbientLightSensorEnabled(
+      true, "ALS should be enabled for first user by default.");
+  ExpectBrightnessPercent(
+      kInitialBrightness,
+      "Brightness should be unchanged for first user after initial focus.");
+
+  // Then, focus the second user.
+  AccountId second_account = AccountId::FromUserEmail(kUserEmailSecondary);
+  LoginScreenFocusAccount(second_account);
+  ExpectAmbientLightSensorEnabled(
+      true, "ALS should be enabled for second user by default.");
+  ExpectBrightnessPercent(
+      kInitialBrightness,
+      "Brightness should be unchanged for second user after initial focus.");
+
+  // Switch back to the first user, then disable ALS by changing the brightness.
+  LoginScreenFocusAccount(first_account);
+  const double first_brightness_change_percent = 12.0;
+  brightness_control_delegate()->SetBrightnessPercent(
+      first_brightness_change_percent, /*gradual=*/false,
+      BrightnessControlDelegate::BrightnessChangeSource::kQuickSettings);
+  // Wait for callbacks to finish executing.
+  run_loop_.RunUntilIdle();
+  ExpectAmbientLightSensorEnabled(
+      false, "ALS should be disabled for first user after brightness change.");
+  ExpectBrightnessPercent(first_brightness_change_percent,
+                          "Brightness should be equal to the previously-set "
+                          "value for the first user.");
+
+  LoginScreenFocusAccount(second_account);
+  ExpectAmbientLightSensorEnabled(true,
+                                  "ALS should be enabled for second user "
+                                  "despite being disabled for first user.");
+  ExpectBrightnessPercent(
+      first_brightness_change_percent,
+      "Brightness should remain the same after switching to the second user.");
+
+  // Switch to a third user.
+  AccountId third_account = AccountId::FromUserEmail(kUserEmailTertiary);
+  LoginScreenFocusAccount(third_account);
+  ExpectAmbientLightSensorEnabled(true,
+                                  "ALS should be enabled for third user "
+                                  "despite being disabled for first user.");
+  ExpectBrightnessPercent(
+      first_brightness_change_percent,
+      "Brightness should remain the same after switching to the second user.");
+
+  // Set the brightness for the third user.
+  const double second_brightness_change_percent = 77.0;
+  brightness_control_delegate()->SetBrightnessPercent(
+      second_brightness_change_percent, /*gradual=*/false,
+      BrightnessControlDelegate::BrightnessChangeSource::kQuickSettings);
+  // Wait for callbacks to finish executing.
+  run_loop_.RunUntilIdle();
+
+  ExpectAmbientLightSensorEnabled(
+      false, "ALS should be disabled for third user after brightness change.");
+  ExpectBrightnessPercent(
+      second_brightness_change_percent,
+      "Brightness for the third user should be equal to the last-set value.");
+
+  LoginScreenFocusAccount(first_account);
+  ExpectAmbientLightSensorEnabled(false,
+                                  "ALS should be disabled for first user after "
+                                  "switching back from second user.");
+  ExpectBrightnessPercent(
+      first_brightness_change_percent,
+      "Brightness should be equal to the previously-set value for the first "
+      "user, even after focusing the second user.");
+
+  LoginScreenFocusAccount(third_account);
+  ExpectAmbientLightSensorEnabled(false,
+                                  "ALS should be disabled for third user after "
+                                  "switching back from first user.");
+  ExpectBrightnessPercent(
+      second_brightness_change_percent,
+      "Brightness should be restored to the previously-set value for the third "
+      "user, even after focusing the first user (which has its own set "
+      "brightness value).");
+
+  // Simulate a reboot, which resets the value of the ambient light sensor and
+  // the screen brightness.
+  ClearLogin();
+  power_manager_client()->SetAmbientLightSensorEnabled(true);
+  power_manager_client()->set_screen_brightness_percent(kInitialBrightness);
+
+  LoginScreenFocusAccount(second_account);
+  ExpectAmbientLightSensorEnabled(
+      true, "After reboot, ALS should be still be enabled for second user.");
+  ExpectBrightnessPercent(kInitialBrightness,
+                          "After reboot, brightness should be equal to the "
+                          "initial value for the second user.");
+
+  LoginScreenFocusAccount(first_account);
+  ExpectAmbientLightSensorEnabled(
+      false, "After reboot, ALS should be still be disabled for first user.");
+  ExpectBrightnessPercent(first_brightness_change_percent,
+                          "After reboot, brightness should be equal to the "
+                          "previously-set value for the first user.");
+
+  LoginScreenFocusAccount(second_account);
+  ExpectAmbientLightSensorEnabled(
+      true, "After reboot, ALS should be still be enabled for second user.");
+  ExpectBrightnessPercent(first_brightness_change_percent,
+                          "After switching to the second user (after reboot), "
+                          "brightness should be equal to the "
+                          "last value set (since auto-brightness is enabled).");
+
+  LoginScreenFocusAccount(first_account);
+  ExpectAmbientLightSensorEnabled(
+      false,
+      "After reboot and after switching back from second user, ALS should be "
+      "still be disabled for first user.");
+  ExpectBrightnessPercent(
+      first_brightness_change_percent,
+      "After reboot, brightness should be equal to the previously-set value "
+      "for the first user, even after focusing the second user.");
+
+  LoginScreenFocusAccount(third_account);
+  ExpectAmbientLightSensorEnabled(
+      false, "After reboot, ALS should be still be disabled for third user.");
+  ExpectBrightnessPercent(second_brightness_change_percent,
+                          "After reboot, brightness should be equal to the "
+                          "previously-set value for the third user, even after "
+                          "focusing the first user.");
+}
+
+TEST_F(BrightnessControllerChromeosTest,
+       RestoreBrightnessSettingsFromPref_FlagDisabled) {
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kEnableBrightnessControlInSettings);
+
+  // Set initial ALS status and brightness level.
+  power_manager_client()->SetAmbientLightSensorEnabled(true);
+  power_manager_client()->set_screen_brightness_percent(kInitialBrightness);
+
+  // Clear user sessions and reset to the primary login screen.
+  ClearLogin();
+
+  // On the login screen, focus the first user.
+  AccountId first_account = AccountId::FromUserEmail(kUserEmail);
+  LoginScreenFocusAccount(first_account);
+  ExpectAmbientLightSensorEnabled(
+      true, "ALS should be enabled for first user by default.");
+  ExpectBrightnessPercent(
+      kInitialBrightness,
+      "Brightness should be unchanged for first user after initial focus.");
+
+  // Then, focus the second user.
+  AccountId second_account = AccountId::FromUserEmail(kUserEmailSecondary);
+  LoginScreenFocusAccount(second_account);
+  ExpectAmbientLightSensorEnabled(
+      true, "ALS should be enabled for second user by default.");
+  ExpectBrightnessPercent(
+      kInitialBrightness,
+      "Brightness should be unchanged for second user after initial focus.");
+
+  // Switch back to the first user, then disable ALS by changing the brightness.
+  LoginScreenFocusAccount(first_account);
+  const double brightness_change_percent = 12.0;
+  brightness_control_delegate()->SetBrightnessPercent(
+      brightness_change_percent, /*gradual=*/false,
+      BrightnessControlDelegate::BrightnessChangeSource::kQuickSettings);
+  // Wait for callbacks to finish executing.
+  run_loop_.RunUntilIdle();
+  ExpectAmbientLightSensorEnabled(
+      false, "ALS should be disabled for first user after brightness change.");
+  ExpectBrightnessPercent(brightness_change_percent,
+                          "Brightness should be equal to the previously-set "
+                          "value for the first user.");
+
+  LoginScreenFocusAccount(second_account);
+  ExpectAmbientLightSensorEnabled(
+      false,
+      "ALS should be disabled for second user because the ALS value is not "
+      "being restored from prefs.");
+  ExpectBrightnessPercent(brightness_change_percent,
+                          "After switching to the second user, the previous "
+                          "brightness should not be restored.");
+
+  LoginScreenFocusAccount(first_account);
+  ExpectAmbientLightSensorEnabled(false,
+                                  "ALS should be disabled for first user after "
+                                  "switching back from second user.");
+  ExpectBrightnessPercent(brightness_change_percent,
+                          "After switching back to the first user, the "
+                          "previous brightness should not be restored.");
+
+  // Simulate a reboot, which resets the value of the ambient light sensor and
+  // the screen brightness.
+  ClearLogin();
+  power_manager_client()->SetAmbientLightSensorEnabled(true);
+  power_manager_client()->set_screen_brightness_percent(kInitialBrightness);
+
+  LoginScreenFocusAccount(first_account);
+  ExpectAmbientLightSensorEnabled(
+      true, "After reboot, ALS should be enabled for first user by default.");
+  ExpectBrightnessPercent(kInitialBrightness,
+                          "After reboot, the brightness level should be equal "
+                          "to the initial brightness for the first user.");
+
+  LoginScreenFocusAccount(second_account);
+  ExpectAmbientLightSensorEnabled(
+      true, "After reboot, ALS should be enabled for second user by default.");
+  ExpectBrightnessPercent(kInitialBrightness,
+                          "After reboot, the brightness level should be equal "
+                          "to the initial brightness for the second user.");
+
+  LoginScreenFocusAccount(first_account);
+  ExpectAmbientLightSensorEnabled(
+      true, "After reboot, ALS should be enabled for first user by default.");
+  ExpectBrightnessPercent(kInitialBrightness,
+                          "After reboot, the brightness level should be equal "
+                          "to the initial brightness for the first user (after "
+                          "switching from the second user).");
 }
 
 }  // namespace ash

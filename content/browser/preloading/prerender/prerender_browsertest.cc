@@ -40,7 +40,7 @@
 #include "content/browser/back_forward_cache_test_util.h"
 #include "content/browser/preloading/prefetch/prefetch_features.h"
 #include "content/browser/preloading/prefetch/prefetch_service.h"
-#include "content/browser/preloading/prefetch/prefetch_test_utils.h"
+#include "content/browser/preloading/prefetch/prefetch_test_util_internal.h"
 #include "content/browser/preloading/preloading.h"
 #include "content/browser/preloading/preloading_attempt_impl.h"
 #include "content/browser/preloading/preloading_data_impl.h"
@@ -829,7 +829,8 @@ class PrerenderBrowserTest : public ContentBrowserTest,
 class NoVarySearchPrerenderBrowserTest : public PrerenderBrowserTest {
  public:
   NoVarySearchPrerenderBrowserTest() {
-    feature_list_.InitAndEnableFeature(features::kPrerender2NoVarySearch);
+    feature_list_.InitAndEnableFeature(
+        blink::features::kPrerender2NoVarySearch);
   }
 
   ~NoVarySearchPrerenderBrowserTest() override = default;
@@ -1382,7 +1383,7 @@ IN_PROC_BROWSER_TEST_P(PrerenderAndPrefetchBrowserTest,
       current_frame_host()->GetFrameTreeNodeId());
   ASSERT_TRUE(prefetch_service);
   base::RunLoop run_loop;
-  prefetch_service->SetOnPrefetchResponseCompletedForTesting(
+  PrefetchService::SetPrefetchResponseCompletedCallbackForTesting(
       base::BindRepeating(
           [](base::RunLoop* run_loop, const GURL& url,
              base::WeakPtr<PrefetchContainer> prefetch_container) {

@@ -80,7 +80,11 @@ _NON_BASE_DEPENDENT_PATHS = (
 # (best effort).
 _TEST_CODE_EXCLUDED_PATHS = (
     r'.*/(fake_|test_|mock_).+%s' % _IMPLEMENTATION_EXTENSIONS,
-    r'.+_test_(base|support|util)%s' % _IMPLEMENTATION_EXTENSIONS,
+    # Test support files, like:
+    # foo_test_support.cc
+    # bar_test_util_linux.cc (suffix)
+    # baz_test_base.cc
+    r'.+_test_(base|support|util)(_[a-z]+)?%s' % _IMPLEMENTATION_EXTENSIONS,
     # Test suite files, like:
     # foo_browsertest.cc
     # bar_unittest_mac.cc (suffix)
@@ -1858,7 +1862,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       explanation = (
         'Do not directly use ContentSettingsType::TRACKING_PROTECTION to check '
         'for tracking protection exceptions. Instead rely on the '
-        'privacy_sandbox::TrackingProtectionSettings API.'
+        'privacy_sandbox::TrackingProtectionSettings API.',
       ),
       treat_as_error = False,
       excluded_paths = (
@@ -1959,6 +1963,67 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
           'performance implications, see https://docs.google.com/document/d/1jN4itpCe_bDXF0BhFaYwv4xVLsCWkL9eULdzjmLzkuk/edit#heading=h.pwth3nbwdub0.',
       ),
       treat_as_error = False,
+    ),
+)
+
+_DEPRECATED_SYNC_CONSENT_FUNCTION_WARNING = (
+  'Used a predicate related to signin::ConsentLevel::kSync which will always '
+  'return false in the future (crbug.com/40066949). Prefer using a predicate '
+  'that also supports signin::ConsentLevel::kSignin when appropriate. It is '
+  'safe to ignore this warning if you are just moving an existing call, or if '
+  'you want special handling for users in the legacy state. In doubt, reach '
+  'out to //components/sync/OWNERS.'
+)
+
+# C++ functions related to signin::ConsentLevel::kSync which are deprecated.
+_DEPRECATED_SYNC_CONSENT_CPP_FUNCTIONS : Sequence[BanRule] = (
+    BanRule(
+      'HasSyncConsent',
+      _DEPRECATED_SYNC_CONSENT_FUNCTION_WARNING,
+      False,
+    ),
+    BanRule(
+      'CanSyncFeatureStart',
+      _DEPRECATED_SYNC_CONSENT_FUNCTION_WARNING,
+      False,
+    ),
+    BanRule(
+      'IsSyncFeatureEnabled',
+      (
+      _DEPRECATED_SYNC_CONSENT_FUNCTION_WARNING,
+      ),
+      False,
+    ),
+    BanRule(
+      'IsSyncFeatureActive',
+      (
+      _DEPRECATED_SYNC_CONSENT_FUNCTION_WARNING,
+      ),
+      False,
+    ),
+)
+
+# Java functions related to signin::ConsentLevel::kSync which are deprecated.
+_DEPRECATED_SYNC_CONSENT_JAVA_FUNCTIONS : Sequence[BanRule] = (
+    BanRule(
+      'hasSyncConsent',
+      _DEPRECATED_SYNC_CONSENT_FUNCTION_WARNING,
+      False,
+    ),
+    BanRule(
+      'canSyncFeatureStart',
+      _DEPRECATED_SYNC_CONSENT_FUNCTION_WARNING,
+      False,
+    ),
+    BanRule(
+      'isSyncFeatureEnabled',
+      _DEPRECATED_SYNC_CONSENT_FUNCTION_WARNING,
+      False,
+    ),
+    BanRule(
+      'isSyncFeatureActive',
+      _DEPRECATED_SYNC_CONSENT_FUNCTION_WARNING,
+      False,
     ),
 )
 
@@ -2731,6 +2796,26 @@ def CheckNoBannedFunctions(input_api, output_api):
             for ban_rule in _BANNED_CPP_FUNCTIONS:
                 CheckForMatch(f, line_num, line, ban_rule)
 
+    # As of 05/2024, iOS fully migrated ConsentLevel::kSync to kSignin, and
+    # Android is in the process of preventing new users from entering kSync.
+    # So the warning is restricted to those platforms.
+    ios_pattern = input_api.re.compile('(^|[\W_])ios[\W_]')
+    file_filter = lambda f: (f.LocalPath().endswith(('.cc', '.mm', '.h')) and
+                             ('android' in f.LocalPath() or
+                             # Simply checking for an 'ios' substring would
+                             # catch unrelated cases, use a regex.
+                              ios_pattern.search(f.LocalPath())))
+    for f in input_api.AffectedFiles(file_filter=file_filter):
+        for line_num, line in f.ChangedContents():
+            for ban_rule in _DEPRECATED_SYNC_CONSENT_CPP_FUNCTIONS:
+                CheckForMatch(f, line_num, line, ban_rule)
+
+    file_filter = lambda f: f.LocalPath().endswith(('.java'))
+    for f in input_api.AffectedFiles(file_filter=file_filter):
+        for line_num, line in f.ChangedContents():
+            for ban_rule in _DEPRECATED_SYNC_CONSENT_JAVA_FUNCTIONS:
+                CheckForMatch(f, line_num, line, ban_rule)
+
     file_filter = lambda f: f.LocalPath().endswith(('.mojom'))
     for f in input_api.AffectedFiles(file_filter=file_filter):
         for line_num, line in f.ChangedContents():
@@ -3442,8 +3527,8 @@ def CheckSpamLogging(input_api, output_api):
             r"^remoting/base/logging\.h$",
             r"^remoting/host/.*",
             r"^sandbox/linux/.*",
-            r"^services/webnn/tflite/graph_impl\.cc$",
-            r"^services/webnn/coreml/graph_impl\.mm$",
+            r"^services/webnn/tflite/graph_impl_tflite\.cc$",
+            r"^services/webnn/coreml/graph_impl_coreml\.mm$",
             r"^storage/browser/file_system/dump_file_system\.cc$",
             r"^tools/",
             r"^ui/base/resource/data_pack\.cc$",
@@ -3544,8 +3629,9 @@ def CheckForAnonymousVariables(input_api, output_api):
 
 def CheckUniquePtrOnUpload(input_api, output_api):
     # Returns whether |template_str| is of the form <T, U...> for some types T
-    # and U. Assumes that |template_str| is already in the form <...>.
-    def HasMoreThanOneArg(template_str):
+    # and U, or is invalid due to mismatched angle bracket pairs. Assumes that
+    # |template_str| is already in the form <...>.
+    def HasMoreThanOneArgOrInvalid(template_str):
         # Level of <...> nesting.
         nesting = 0
         for c in template_str:
@@ -3555,6 +3641,9 @@ def CheckUniquePtrOnUpload(input_api, output_api):
                 nesting -= 1
             elif c == ',' and nesting == 1:
                 return True
+        if nesting != 0:
+          # Invalid.
+          return True
         return False
 
     file_inclusion_pattern = [r'.+%s' % _IMPLEMENTATION_EXTENSIONS]
@@ -3611,7 +3700,7 @@ def CheckUniquePtrOnUpload(input_api, output_api):
             # bar = std::unique_ptr<T, U>(foo);
             local_path = f.LocalPath()
             return_construct_result = return_construct_pattern.search(line)
-            if return_construct_result and not HasMoreThanOneArg(
+            if return_construct_result and not HasMoreThanOneArgOrInvalid(
                     return_construct_result.group('template_arg')):
                 problems_constructor.append(
                     '%s:%d\n    %s' % (local_path, line_number, line.strip()))

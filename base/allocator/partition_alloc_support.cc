@@ -50,6 +50,7 @@
 #include "partition_alloc/partition_alloc_buildflags.h"
 #include "partition_alloc/partition_alloc_check.h"
 #include "partition_alloc/partition_alloc_config.h"
+#include "partition_alloc/partition_alloc_constants.h"
 #include "partition_alloc/partition_lock.h"
 #include "partition_alloc/partition_root.h"
 #include "partition_alloc/pointers/instance_tracer.h"
@@ -1236,6 +1237,10 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
            partition_alloc::TagViolationReportingMode::kDisabled));
   }
 
+  allocator_shim::UseSmallSingleSlotSpans use_small_single_slot_spans(
+      base::FeatureList::IsEnabled(
+          features::kPartitionAllocUseSmallSingleSlotSpans));
+
   allocator_shim::ConfigurePartitions(
       allocator_shim::EnableBrp(brp_config.enable_brp),
       allocator_shim::EnableMemoryTagging(enable_memory_tagging),
@@ -1243,7 +1248,8 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
       allocator_shim::SchedulerLoopQuarantine(scheduler_loop_quarantine),
       scheduler_loop_quarantine_branch_capacity_in_bytes,
       allocator_shim::ZappingByFreeFlags(zapping_by_free_flags),
-      allocator_shim::UsePoolOffsetFreelists(use_pool_offset_freelists));
+      allocator_shim::UsePoolOffsetFreelists(use_pool_offset_freelists),
+      use_small_single_slot_spans);
 
   const uint32_t extras_size = allocator_shim::GetMainPartitionRootExtrasSize();
   // As per description, extras are optional and are expected not to
@@ -1476,7 +1482,7 @@ void PartitionAllocSupport::OnBackgrounded() {
   // Performance matters less for background renderers, don't pay the memory
   // cost.
   ::partition_alloc::ThreadCache::SetLargestCachedSize(
-      ::partition_alloc::ThreadCacheLimits::kDefaultSizeThreshold);
+      ::partition_alloc::kThreadCacheDefaultSizeThreshold);
 
   // In renderers, memory reclaim uses the "idle time" task runner to run
   // periodic reclaim. This does not always run when the renderer is idle, and

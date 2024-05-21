@@ -51,6 +51,7 @@ import './os_apps_page/app_management_page/app_management_page.js';
 import './os_apps_page/app_management_page/dom_switch.js';
 import './os_apps_page/app_management_page/main_view.js';
 import './os_apps_page/app_parental_controls/app_parental_controls_subpage.js';
+import './os_apps_page/app_parental_controls/block_app_item.js';
 import './os_search_page/google_assistant_subpage.js';
 import './os_search_page/search_subpage.js';
 import './os_people_page/account_manager_subpage.js';
@@ -147,6 +148,7 @@ export {SmbBrowserProxy, SmbBrowserProxyImpl, SmbMountResult} from 'chrome://res
 export {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
 export {AppLanguageSelectionDialogElement} from './common/app_language_selection_dialog/app_language_selection_dialog.js';
 export {AppLanguageSelectionItemElement} from './common/app_language_selection_dialog/app_language_selection_item.js';
+export {MediaDevicesProxy} from './common/media_devices_proxy.js';
 /**
  * With the optimize_webui() build step, the generated JS files are bundled
  * into a single JS file. The exports below are necessary so they can be
@@ -270,6 +272,7 @@ export {AppNotificationRowElement} from './os_apps_page/app_notifications_page/a
 export {SettingsAppNotificationsManagerSubpage} from './os_apps_page/app_notifications_page/app_notifications_manager_subpage.js';
 export {AppNotificationsSubpage} from './os_apps_page/app_notifications_page/app_notifications_subpage.js';
 export {SettingsAppParentalControlsSubpageElement} from './os_apps_page/app_parental_controls/app_parental_controls_subpage.js';
+export {BlockAppItemElement} from './os_apps_page/app_parental_controls/block_app_item.js';
 export {ManageIsolatedWebAppsSubpageElement} from './os_apps_page/manage_isolated_web_apps_page/manage_isolated_web_apps_subpage.js';
 export {SettingsBluetoothChangeDeviceNameDialogElement} from './os_bluetooth_page/os_bluetooth_change_device_name_dialog.js';
 export {SettingsBluetoothDeviceDetailSubpageElement} from './os_bluetooth_page/os_bluetooth_device_detail_subpage.js';
@@ -328,7 +331,6 @@ export {OsSettingsPrintingPageElement} from './os_printing_page/os_printing_page
 export {computePrinterState, getStatusReasonFromPrinterStatus, PrinterState, PrinterStatus, PrinterStatusReason, PrinterStatusSeverity} from './os_printing_page/printer_status.js';
 export {PrintingSettingsCardElement} from './os_printing_page/printing_settings_card.js';
 export {SettingsManageUsersSubpageElement} from './os_privacy_page/manage_users_subpage.js';
-export {MediaDevicesProxy} from './os_privacy_page/media_devices_proxy.js';
 export {PrivacyHubBrowserProxy, PrivacyHubBrowserProxyImpl} from './os_privacy_page/privacy_hub_browser_proxy.js';
 export {SettingsPrivacyHubCameraSubpage} from './os_privacy_page/privacy_hub_camera_subpage.js';
 export {SettingsPrivacyHubGeolocationAdvancedSubpage} from './os_privacy_page/privacy_hub_geolocation_advanced_subpage.js';

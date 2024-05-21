@@ -83,7 +83,7 @@ UnionTraits<autofill::mojom::SectionValueDataView,
   if (absl::holds_alternative<autofill::Section::FieldIdentifier>(r))
     return autofill::mojom::SectionValueDataView::Tag::kFieldIdentifier;
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return autofill::mojom::SectionValueDataView::Tag::kDefaultSection;
 }
 
@@ -332,6 +332,8 @@ bool StructTraits<
     }
     out->set_user_input(std::move(user_input));
   }
+
+  out->set_allows_writing_suggestions(data.allows_writing_suggestions());
 
   {
     std::vector<autofill::SelectOption> options;

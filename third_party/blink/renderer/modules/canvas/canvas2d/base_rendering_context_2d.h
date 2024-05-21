@@ -56,7 +56,6 @@ struct V8CanvasStyle;
 enum class V8CanvasStyleType;
 class GPUTexture;
 class V8UnionCanvasFilterOrString;
-using cc::UsePaintCache;
 
 class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
  public:
@@ -282,20 +281,15 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
   // WebGPU pipeline. The canvas' image can be used as a texture, or the texture
   // can be bound as a color attachment and modified. After beginWebGPUAccess is
   // called, the Canvas2D context will become unavailable until endWebGPUAccess
-  // is called. All other method calls to the context (including additional
-  // calls to beginWebGPUAccess) will throw InvalidStateError.
+  // is called.
   GPUTexture* beginWebGPUAccess(const CanvasWebGPUAccessOption*,
                                 ExceptionState& exception_state);
 
-  // Returns the canvas' back-buffer texture to Canvas2D after a prior call
-  // to beginWebGPUAccess. The GPUTexture becomes inaccessible to WebGPU; any
-  // modifications made to the texture will be preserved. The Canvas2D context
-  // is restored, and Canvas2D method calls will function normally once more.
-  // Throws InvalidStateError if a matching call to beginWebGPUAccess was not
-  // performed.
-  // Generates a GPUValidationError if the GPUTexture is used after
+  // Replaces the canvas' back-buffer texture with the passed-in GPUTexture.
+  // The GPUTexture immediately becomes inaccessible to WebGPU.
+  // A GPUValidationError will occur if the GPUTexture is used after
   // endWebGPUAccess is called.
-  void endWebGPUAccess(ExceptionState& exception_state);
+  void endWebGPUAccess(blink::GPUTexture* tex, ExceptionState& exception_state);
 
   // Returns the format of the GPUTexture that beginWebGPUAccess will return.
   // This is useful if you need to create the WebGPU render pipeline before
@@ -355,7 +349,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
   virtual bool HasAlpha() const = 0;
 
   virtual bool IsDesynchronized() const {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return false;
   }
 
@@ -541,11 +535,11 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
                            size_t row_bytes,
                            int x,
                            int y) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return false;
   }
   virtual scoped_refptr<StaticBitmapImage> GetImage(FlushReason) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return nullptr;
   }
 
@@ -715,7 +709,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
   void DrawPathInternal(const CanvasPath&,
                         CanvasRenderingContext2DState::PaintType,
                         SkPathFillType,
-                        UsePaintCache);
+                        cc::UsePaintCache);
   void DrawImageInternal(cc::PaintCanvas*,
                          CanvasImageSource*,
                          Image*,
@@ -725,7 +719,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
                          const cc::PaintFlags*);
   void ClipInternal(const Path&,
                     const String& winding_rule_string,
-                    UsePaintCache);
+                    cc::UsePaintCache);
 
   bool IsPointInPathInternal(const Path&,
                              const double x,
@@ -757,7 +751,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
                     const gfx::Rect& source_rect,
                     const gfx::Vector2d& dest_offset);
   virtual bool IsCanvas2DBufferValid() const {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return false;
   }
 
@@ -786,7 +780,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
       CanvasResourceProvider& resource_provider);
 
   bool origin_tainted_by_content_ = false;
-  UsePaintCache path2d_use_paint_cache_;
+  cc::UsePaintCache path2d_use_paint_cache_;
   int num_readbacks_performed_ = 0;
   unsigned read_count_ = 0;
   base::HashingLRUCache<String, CachedColor> color_cache_{8};

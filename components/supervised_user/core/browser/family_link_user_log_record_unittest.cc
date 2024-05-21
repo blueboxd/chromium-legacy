@@ -44,7 +44,7 @@ class FamilyLinkUserLogRecordTest : public ::testing::Test {
 
     return std::make_unique<FamilyLinkUserLogRecord>(
         FamilyLinkUserLogRecord::Create(identity_test_env_.identity_manager(),
-                                        &filter));
+                                        pref_service_, &filter));
   }
 
   std::unique_ptr<FamilyLinkUserLogRecord> CreateSupervisedUserWithWebFilter(
@@ -76,13 +76,13 @@ class FamilyLinkUserLogRecordTest : public ::testing::Test {
             supervised_user::FilteringBehavior::kBlock);
         break;
       case WebFilterType::kMixed:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
     }
 
     return std::make_unique<FamilyLinkUserLogRecord>(
         FamilyLinkUserLogRecord::Create(identity_test_env_.identity_manager(),
-                                        &filter));
+                                        pref_service_, &filter));
   }
 
  private:

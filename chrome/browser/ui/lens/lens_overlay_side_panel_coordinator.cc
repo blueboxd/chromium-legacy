@@ -8,14 +8,16 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/lens/lens_overlay_controller.h"
+#include "chrome/browser/ui/lens/lens_overlay_dismissal_source.h"
+#include "chrome/browser/ui/lens/lens_overlay_invocation_source.h"
 #include "chrome/browser/ui/lens/lens_overlay_url_builder.h"
 #include "chrome/browser/ui/lens/lens_untrusted_ui.h"
 #include "chrome/browser/ui/side_panel/side_panel_ui.h"
+#include "chrome/browser/ui/views/side_panel/lens/lens_overlay_side_panel_web_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_content_proxy.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_util.h"
-#include "chrome/browser/ui/views/side_panel/side_panel_web_ui_view.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/common/google_util.h"
@@ -24,18 +26,13 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/referrer.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/view_class_properties.h"
-
-using SidePanelWebUIViewT_LensUntrustedUI =
-    SidePanelWebUIViewT<lens::LensUntrustedUI>;
-BEGIN_TEMPLATE_METADATA(SidePanelWebUIViewT_LensUntrustedUI,
-                        SidePanelWebUIViewT)
-END_METADATA
 
 namespace lens {
 
@@ -91,10 +88,9 @@ LensOverlaySidePanelCoordinator::CreateSidePanelActionCallback(
         // Toggle the Lens overlay. There's no need to show or hide the side
         // panel as the overlay controller will handle that.
         if (controller->IsOverlayShowing()) {
-          controller->CloseUIAsync(
-              LensOverlayController::DismissalSource::kToolbar);
+          controller->CloseUIAsync(lens::LensOverlayDismissalSource::kToolbar);
         } else {
-          controller->ShowUI(LensOverlayController::InvocationSource::kToolbar);
+          controller->ShowUI(lens::LensOverlayInvocationSource::kToolbar);
         }
       },
       browser);
@@ -170,6 +166,9 @@ void LensOverlaySidePanelCoordinator::DidOpenRequestedURL(
 
 void LensOverlaySidePanelCoordinator::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
+  // Focus the web contents immediately, so that hotkey presses (i.e. escape)
+  // are handled.
+  GetSidePanelWebContents()->Focus();
   // We only care about the navigation if it is the results frame, is HTTPS,
   // renderer initiated and NOT a same document navigation.
   if (!navigation_handle->IsRendererInitiated() ||
@@ -276,13 +275,8 @@ std::unique_ptr<views::View>
 LensOverlaySidePanelCoordinator::CreateLensOverlayResultsView() {
   // TODO(b/328295358): Change task manager string ID in view creation when
   // available.
-  auto view = std::make_unique<SidePanelWebUIViewT<lens::LensUntrustedUI>>(
-      base::RepeatingClosure(), base::RepeatingClosure(),
-      std::make_unique<WebUIContentsWrapperT<lens::LensUntrustedUI>>(
-          GURL(chrome::kChromeUILensUntrustedSidePanelURL),
-          tab_browser_->profile(), IDS_SIDE_PANEL_COMPANION_TITLE,
-          /*webui_resizes_host=*/false,
-          /*esc_closes_ui=*/false));
+  auto view =
+      std::make_unique<LensOverlaySidePanelWebView>(tab_browser_->profile());
   view->SetProperty(views::kElementIdentifierKey,
                     LensOverlayController::kOverlaySidePanelWebViewId);
   side_panel_web_view_ = view.get();

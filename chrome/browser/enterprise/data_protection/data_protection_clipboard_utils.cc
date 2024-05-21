@@ -227,32 +227,26 @@ void PasteIfAllowedByContentAnalysis(
   }
 }
 
-bool DataControlsAppliedToMachineScope(
-    content::BrowserContext* browser_context) {
-  DCHECK(browser_context);
-  return Profile::FromBrowserContext(browser_context)
-             ->GetPrefs()
-             ->GetInteger(data_controls::kDataControlsRulesScopePref) ==
-         policy::PolicyScope::POLICY_SCOPE_MACHINE;
-}
-
 void MaybeReportDataControlsPaste(const content::ClipboardEndpoint& source,
                                   const content::ClipboardEndpoint& destination,
                                   const content::ClipboardMetadata& metadata,
-                                  const data_controls::Verdict& verdict) {
-  // If the "DataControlsRules" is applied to the entire browser, the verdict
-  // only needs to be reported once for the keyed service of `destination`. If
-  // `destination` is incognito, that means no reporting will be done.
-  if (DataControlsAppliedToMachineScope(destination.browser_context())) {
-    auto* reporting_service =
-        data_controls::ReportingServiceFactory::GetForBrowserContext(
-            destination.browser_context());
-    if (reporting_service) {
-      reporting_service->ReportPaste(source, destination, metadata, verdict);
-    }
+                                  const data_controls::Verdict& verdict,
+                                  bool bypassed = false) {
+  auto* reporting_service =
+      data_controls::ReportingServiceFactory::GetForBrowserContext(
+          destination.browser_context());
+
+  // `reporting_service` can be null for incognito browser contexts, so since
+  // there's no reporting in that case we just return early.
+  if (!reporting_service) {
     return;
+  }
+
+  if (bypassed) {
+    reporting_service->ReportPasteWarningBypassed(source, destination, metadata,
+                                                  verdict);
   } else {
-    // TODO(b/303640183): Handle per-profile rule trigger reporting.
+    reporting_service->ReportPaste(source, destination, metadata, verdict);
   }
 }
 
@@ -260,12 +254,18 @@ void OnDataControlsPasteWarning(
     const content::ClipboardEndpoint& source,
     const content::ClipboardEndpoint& destination,
     const content::ClipboardMetadata& metadata,
+    data_controls::Verdict verdict,
     content::ClipboardPasteData clipboard_paste_data,
     content::ContentBrowserClient::IsClipboardPasteAllowedCallback callback,
     bool bypassed) {
   if (!bypassed || SkipDataControlOrContentAnalysisChecks(destination)) {
     std::move(callback).Run(std::nullopt);
     return;
+  }
+
+  if (bypassed && verdict.level() == data_controls::Rule::Level::kWarn) {
+    MaybeReportDataControlsPaste(source, destination, metadata, verdict,
+                                 /*bypassed=*/true);
   }
 
   PasteIfAllowedByContentAnalysis(destination.web_contents(), destination,
@@ -294,20 +294,23 @@ void PasteIfAllowedByDataControls(
   }
 
   if (verdict.level() == data_controls::Rule::Level::kBlock) {
+    MaybeReportDataControlsPaste(source, destination, metadata, verdict);
     data_controls::DataControlsDialog::Show(
         destination.web_contents(),
         data_controls::DataControlsDialog::Type::kClipboardPasteBlock);
-    MaybeReportDataControlsPaste(source, destination, metadata, verdict);
     std::move(callback).Run(std::nullopt);
     return;
   } else if (verdict.level() == data_controls::Rule::Level::kWarn) {
+    MaybeReportDataControlsPaste(source, destination, metadata, verdict);
     data_controls::DataControlsDialog::Show(
         destination.web_contents(),
         data_controls::DataControlsDialog::Type::kClipboardPasteWarn,
         base::BindOnce(&OnDataControlsPasteWarning, source, destination,
-                       metadata, std::move(clipboard_paste_data),
-                       std::move(callback)));
+                       metadata, std::move(verdict),
+                       std::move(clipboard_paste_data), std::move(callback)));
     return;
+  } else if (verdict.level() == data_controls::Rule::Level::kReport) {
+    MaybeReportDataControlsPaste(source, destination, metadata, verdict);
   }
 
   // If the data currently being pasted was replaced when it was initially

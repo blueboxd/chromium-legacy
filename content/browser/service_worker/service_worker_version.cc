@@ -97,7 +97,8 @@ void RunCallbackAfterStartWorker(base::WeakPtr<ServiceWorkerVersion> version,
       version->running_status() != blink::EmbeddedWorkerStatus::kRunning) {
     // We've tried to start the worker (and it has succeeded), but
     // it looks it's not running yet.
-    NOTREACHED() << "The worker's not running after successful StartWorker";
+    NOTREACHED_IN_MIGRATION()
+        << "The worker's not running after successful StartWorker";
     std::move(callback).Run(
         blink::ServiceWorkerStatusCode::kErrorStartWorkerFailed);
     return;
@@ -391,7 +392,7 @@ void ServiceWorkerVersion::SetStatus(Status status) {
     switch (status_) {
       case NEW:
         // |skip_waiting_| should not be set before the version is NEW.
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         return;
       case INSTALLING:
         // Do nothing until INSTALLED time.
@@ -622,7 +623,7 @@ void ServiceWorkerVersion::StopWorker(base::OnceClosure callback) {
       RunSoon(std::move(callback));
       return;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void ServiceWorkerVersion::TriggerIdleTerminationAsap() {
@@ -1000,8 +1001,8 @@ void ServiceWorkerVersion::OnControlleeNavigationCommitted(
 void ServiceWorkerVersion::MoveControlleeToBackForwardCacheMap(
     const std::string& client_uuid) {
   DCHECK(IsBackForwardCacheEnabled());
-  DCHECK(base::Contains(controllee_map_, client_uuid));
-  DCHECK(!base::Contains(bfcached_controllee_map_, client_uuid));
+  CHECK(base::Contains(controllee_map_, client_uuid));
+  CHECK(!base::Contains(bfcached_controllee_map_, client_uuid));
   bfcached_controllee_map_[client_uuid] = controllee_map_[client_uuid];
   RemoveControllee(client_uuid);
 }
@@ -1038,8 +1039,12 @@ void ServiceWorkerVersion::RestoreControlleeFromBackForwardCacheMap(
 
 void ServiceWorkerVersion::RemoveControlleeFromBackForwardCacheMap(
     const std::string& client_uuid) {
-  DCHECK(IsBackForwardCacheEnabled());
-  DCHECK(base::Contains(bfcached_controllee_map_, client_uuid));
+  CHECK(IsBackForwardCacheEnabled());
+  // TODO(crbug.com/341322515): Investigate why sometimes
+  // `bfcache_controllee_map_` does not contain the client.
+  SCOPED_CRASH_KEY_BOOL("ServiceWorkerBfcache", "in_controllee_map",
+                        base::Contains(controllee_map_, client_uuid));
+  CHECK(base::Contains(bfcached_controllee_map_, client_uuid));
   bfcached_controllee_map_.erase(client_uuid);
 }
 
@@ -2087,7 +2092,7 @@ bool ServiceWorkerVersion::IsInstalled(ServiceWorkerVersion::Status status) {
     case ServiceWorkerVersion::ACTIVATED:
       return true;
   }
-  NOTREACHED() << "Unexpected status: " << status;
+  NOTREACHED_IN_MIGRATION() << "Unexpected status: " << status;
   return false;
 }
 
@@ -2108,7 +2113,7 @@ std::string ServiceWorkerVersion::VersionStatusToString(
     case ServiceWorkerVersion::REDUNDANT:
       return "redundant";
   }
-  NOTREACHED() << status;
+  NOTREACHED_IN_MIGRATION() << status;
   return std::string();
 }
 
@@ -3161,7 +3166,7 @@ ServiceWorkerVersion::GetControllerMode() const {
     case ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN:
       // UNKNOWN means the controller is still installing. It's not possible to
       // have a controller that hasn't finished installing.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return blink::mojom::ControllerServiceWorkerMode::kNoController;
   }
 }

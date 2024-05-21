@@ -218,20 +218,29 @@ void MediaDialogView::HideMediaItem(const std::string& id) {
   }
 }
 
-// TODO(yrw): Implement changes for `updated_items_`.
 void MediaDialogView::RefreshMediaItem(
     const std::string& id,
     base::WeakPtr<media_message_center::MediaNotificationItem> item) {
-  if (!observed_items_[id]) {
+  if (observed_items_.find(id) == observed_items_.end() &&
+      updated_items_.find(id) == updated_items_.end()) {
     return;
   }
   bool show_devices =
       entry_point_ == GlobalMediaControlsEntryPoint::kPresentation;
-  observed_items_[id]->UpdateFooterView(
-      BuildFooter(id, item, profile_, media_color_theme_));
-  observed_items_[id]->UpdateDeviceSelector(
-      BuildDeviceSelector(id, item, service_, service_, profile_, entry_point_,
-                          show_devices, media_color_theme_));
+
+  if (media_color_theme_.has_value()) {
+    updated_items_[id]->UpdateFooterView(
+        BuildFooter(id, item, profile_, media_color_theme_));
+    updated_items_[id]->UpdateDeviceSelectorView(
+        BuildDeviceSelector(id, item, service_, service_, profile_,
+                            entry_point_, show_devices, media_color_theme_));
+  } else {
+    observed_items_[id]->UpdateFooterView(
+        BuildFooter(id, item, profile_, media_color_theme_));
+    observed_items_[id]->UpdateDeviceSelector(
+        BuildDeviceSelector(id, item, service_, service_, profile_,
+                            entry_point_, show_devices, media_color_theme_));
+  }
 
   UpdateBubbleSize();
 }
@@ -275,6 +284,7 @@ gfx::Size MediaDialogView::CalculatePreferredSize(
 }
 
 void MediaDialogView::UpdateBubbleSize() {
+  SizeToContents();
   if (!captions::IsLiveCaptionFeatureSupported()) {
     return;
   }
@@ -398,10 +408,7 @@ MediaDialogView::MediaDialogView(
     Profile* profile,
     content::WebContents* contents,
     global_media_controls::GlobalMediaControlsEntryPoint entry_point)
-    : BubbleDialogDelegateView(anchor_view,
-                               anchor_position,
-                               views::BubbleBorder::DIALOG_SHADOW,
-                               true),
+    : BubbleDialogDelegateView(anchor_view, anchor_position),
       service_(service),
       profile_(profile->GetOriginalProfile()),
       active_sessions_view_(AddChildView(
@@ -714,7 +721,8 @@ MediaDialogView::BuildMediaItemUIUpdatedView(
   return std::make_unique<global_media_controls::MediaItemUIUpdatedView>(
       id, item, media_color_theme_.value(),
       BuildDeviceSelector(id, item, service_, service_, profile_, entry_point_,
-                          show_devices, media_color_theme_));
+                          show_devices, media_color_theme_),
+      BuildFooter(id, item, profile_, media_color_theme_));
 }
 
 BEGIN_METADATA(MediaDialogView)

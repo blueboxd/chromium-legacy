@@ -40,7 +40,10 @@ GpuChannelSharedImageInterface::GpuChannelSharedImageInterface(
   DETACH_FROM_SEQUENCE(gpu_sequence_checker_);
 }
 
-GpuChannelSharedImageInterface::~GpuChannelSharedImageInterface() = default;
+GpuChannelSharedImageInterface::~GpuChannelSharedImageInterface() {
+  scheduler_->DestroySequence(sequence_);
+  sync_point_client_state_->Destroy();
+}
 
 const SharedImageCapabilities&
 GpuChannelSharedImageInterface::GetCapabilities() {
@@ -434,7 +437,7 @@ GpuChannelSharedImageInterface::CreateSwapChain(
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
     uint32_t usage) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return GpuChannelSharedImageInterface::SwapChainSharedImages(nullptr,
                                                                nullptr);
 }
@@ -442,7 +445,7 @@ GpuChannelSharedImageInterface::CreateSwapChain(
 void GpuChannelSharedImageInterface::PresentSwapChain(
     const SyncToken& sync_token,
     const Mailbox& mailbox) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 #if BUILDFLAG(IS_FUCHSIA)
@@ -452,7 +455,7 @@ void GpuChannelSharedImageInterface::RegisterSysmemBufferCollection(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     bool register_with_image_pipe) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 #endif  // BUILDFLAG(IS_FUCHSIA)
 
@@ -556,7 +559,7 @@ void GpuChannelSharedImageInterface::Flush() {
 
 scoped_refptr<gfx::NativePixmap>
 GpuChannelSharedImageInterface::GetNativePixmap(const gpu::Mailbox& mailbox) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 
@@ -570,7 +573,7 @@ void GpuChannelSharedImageInterface::ScheduleGpuTask(
 scoped_refptr<ClientSharedImage>
 GpuChannelSharedImageInterface::ImportSharedImage(
     const ExportedSharedImage& exported_shared_image) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 

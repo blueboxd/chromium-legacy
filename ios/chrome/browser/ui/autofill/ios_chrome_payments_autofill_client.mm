@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/autofill/ios_chrome_payments_autofill_client.h"
 
+#import <optional>
+
 #import "base/check_deref.h"
 #import "base/functional/callback.h"
 #import "base/memory/raw_ref.h"
@@ -14,6 +16,7 @@
 #import "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
 #import "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
 #import "components/autofill/core/browser/payments/credit_card_otp_authenticator.h"
+#import "components/autofill/core/browser/payments/credit_card_risk_based_authenticator.h"
 #import "components/autofill/core/browser/payments/otp_unmask_delegate.h"
 #import "components/autofill/core/browser/payments/otp_unmask_result.h"
 #import "components/autofill/core/browser/payments/payments_network_interface.h"
@@ -56,7 +59,9 @@ void IOSChromePaymentsAutofillClient::LoadRiskData(
 }
 
 void IOSChromePaymentsAutofillClient::CreditCardUploadCompleted(
-    bool card_saved) {
+    bool card_saved,
+    std::optional<OnConfirmationClosedCallback>
+        on_confirmation_closed_callback) {
   NOTIMPLEMENTED();
 }
 
@@ -170,7 +175,7 @@ void IOSChromePaymentsAutofillClient::OnUnmaskVerificationResult(
       // Do nothing
       break;
     case AutofillClient::PaymentsRpcResult::kNone:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return;
   }
 }
@@ -203,6 +208,15 @@ IOSChromePaymentsAutofillClient::GetOtpAuthenticator() {
         std::make_unique<CreditCardOtpAuthenticator>(&client_.get());
   }
   return otp_authenticator_.get();
+}
+
+CreditCardRiskBasedAuthenticator*
+IOSChromePaymentsAutofillClient::GetRiskBasedAuthenticator() {
+  if (!risk_based_authenticator_) {
+    risk_based_authenticator_ =
+        std::make_unique<CreditCardRiskBasedAuthenticator>(&client_.get());
+  }
+  return risk_based_authenticator_.get();
 }
 
 }  // namespace autofill::payments

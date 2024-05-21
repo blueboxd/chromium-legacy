@@ -144,13 +144,16 @@ ClusterManager::ClusterManager(
   obs_.Observe(product_specification_service);
 }
 
-ClusterManager::~ClusterManager() = default;
+ClusterManager::~ClusterManager() {
+  observers_.Clear();
+}
 
 void ClusterManager::OnProductSpecificationsSetAdded(
     const ProductSpecificationsSet& product_specifications_set) {
   base::Uuid uuid = product_specifications_set.uuid();
   product_group_map_[uuid] =
-      std::make_unique<ProductGroup>(uuid, product_specifications_set.urls(),
+      std::make_unique<ProductGroup>(uuid, product_specifications_set.name(),
+                                     product_specifications_set.urls(),
                                      product_specifications_set.update_time());
   const std::set<GURL>& urls = product_group_map_[uuid]->member_products;
   if (urls.size() == 0) {

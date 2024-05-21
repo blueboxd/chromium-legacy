@@ -23,6 +23,7 @@ class VaapiWrapper;
 class Vp8ReferenceFrameVector;
 struct VAContextAndScopedVASurfaceDeleter;
 struct Vp8FrameHeader;
+class VASurface;
 
 // Class to map a given VABuffer, identified by |buffer_id|, for its lifetime.
 // The |lock_| might be null depending on the user of this class. If |lock_| is
@@ -163,8 +164,10 @@ class ScopedVASurface {
 
   ScopedVASurface(const ScopedVASurface&) = delete;
   ScopedVASurface& operator=(const ScopedVASurface&) = delete;
-
   ~ScopedVASurface();
+
+  // Empties the current object into a ref-counted VASurface.
+  scoped_refptr<VASurface> AsVASurface();
 
   bool IsValid() const;
   VASurfaceID id() const { return va_surface_id_; }
@@ -174,7 +177,7 @@ class ScopedVASurface {
  private:
   friend struct VAContextAndScopedVASurfaceDeleter;
   const scoped_refptr<VaapiWrapper> vaapi_wrapper_;
-  const VASurfaceID va_surface_id_;
+  VASurfaceID va_surface_id_;
   const gfx::Size size_;
   const unsigned int va_rt_format_;
 };

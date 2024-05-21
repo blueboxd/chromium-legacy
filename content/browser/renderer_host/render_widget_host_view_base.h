@@ -127,6 +127,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       override;
   display::ScreenInfo GetScreenInfo() const override;
   display::ScreenInfos GetScreenInfos() const override;
+  virtual void ResetGestureDetection();
 
   // RenderWidgetHostViewInput implementation
   base::WeakPtr<RenderWidgetHostViewInput> GetInputWeakPtr() override;
@@ -456,6 +457,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   virtual void SetDisplayFeatureForTesting(
       const DisplayFeature* display_feature) = 0;
+
+  // By default, returns false.
+  virtual bool IsTestRenderWidgetHostView() const;
 
   DevicePosturePlatformProvider* GetDevicePosturePlatformProvider();
 

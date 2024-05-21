@@ -7,8 +7,6 @@
 
 #include <ostream>
 
-#include "components/autofill/core/common/dense_set.h"
-
 namespace autofill {
 
 // This enum defines item identifiers for Autofill suggestion controller.
@@ -18,7 +16,8 @@ enum class SuggestionType {
   kAutocompleteEntry,
 
   // Autofill profile suggestions.
-  // Fill the whole for the current address. On Desktop, it is triggered from the main (i.e. root popup) suggestion.
+  // Fill the whole for the current address. On Desktop, it is triggered from
+  // the main (i.e. root popup) suggestion.
   kAddressEntry,
   // Fills all address related fields, e.g ADDRESS_HOME_LINE1,
   // ADDRESS_HOME_HOUSE_NUMBER etc.
@@ -43,12 +42,16 @@ enum class SuggestionType {
   kDeleteAddressProfile,
   kAutofillOptions,
 
-  // Compose suggestions.
-  kCompose,
+  // Compose popup suggestion shown when no Compose session exists.
+  kComposeProactiveNudge,
+  // Compose popup suggestion shown when there is an existing Compose session.
+  kComposeResumeNudge,
+  // Compose popup suggestion shown after the Compose dialog closes.
+  kComposeSavedStateNotification,
+  // Compose sub-menu suggestions
   kComposeDisable,
   kComposeGoToSettings,
   kComposeNeverShowOnThisSiteAgain,
-  kComposeSavedStateNotification,
 
   // Datalist suggestions.
   kDatalistEntry,
@@ -105,16 +108,6 @@ enum class SuggestionType {
 };
 
 std::ostream& operator<<(std::ostream& os, SuggestionType type);
-
-// Set of `SuggestionType`s that trigger filling a value into an input element
-// when the user selects a suggestion with that id.
-inline constexpr auto kItemsTriggeringFieldFilling = DenseSet(
-    {SuggestionType::kAccountStoragePasswordEntry, SuggestionType::kAddressEntry,
-     SuggestionType::kAutocompleteEntry, SuggestionType::kCompose,
-     SuggestionType::kCreditCardEntry, SuggestionType::kDatalistEntry,
-     SuggestionType::kFillEverythingFromAddressProfile,
-     SuggestionType::kMerchantPromoCodeEntry, SuggestionType::kPasswordEntry,
-     SuggestionType::kVirtualCreditCardEntry});
 
 }  // namespace autofill
 

@@ -162,6 +162,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHDiscardRingFeature,
     &kIPHDownloadEsbPromoFeature,
     &kIPHExperimentalAIPromoFeature,
+    &kIPHExplicitBrowserSigninPreferenceRememberedFeature,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     &kIPHExtensionsMenuFeature,
     &kIPHExtensionsRequestAccessButtonFeature,
@@ -178,6 +179,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHPasswordsWebAppProfileSwitchFeature,
     &kIPHPasswordManagerShortcutFeature,
     &kIPHPasswordSharingFeature,
+    &kIPHPerformanceInterventionDialogFeature,
     &kIPHPowerBookmarksSidePanelFeature,
     &kIPHPriceInsightsPageActionIconLabelFeature,
     &kIPHPriceTrackingEmailConsentFeature,

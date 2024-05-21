@@ -379,6 +379,8 @@ class CORE_EXPORT WebFrameWidgetImpl
   void ClearEditCommands() override;
   bool IsPasting() override;
   bool HandlingSelectRange() override;
+  void CalculateSelectionBounds(gfx::Rect& anchor_in_root_frame,
+                                gfx::Rect& focus_in_root_frame) override;
   void ReleaseMouseLockAndPointerCaptureForTesting() override;
   const viz::FrameSinkId& GetFrameSinkId() override;
   WebHitTestResult HitTestResultAt(const gfx::PointF&) override;
@@ -417,6 +419,7 @@ class CORE_EXPORT WebFrameWidgetImpl
       const cc::LayerTreeSettings* settings,
       WebFrameWidget& previous_widget) override;
   void SetCompositorVisible(bool visible) override;
+  void WarmUpCompositor() override;
   gfx::Size Size() override;
   void Resize(const gfx::Size& size_with_dsf) override;
   void SetCursor(const ui::Cursor& cursor) override;
@@ -642,11 +645,11 @@ class CORE_EXPORT WebFrameWidgetImpl
   ScreenMetricsEmulator* DeviceEmulator();
 
   // Calculates the selection bounds in the root frame. Returns bounds unchanged
-  // when there is no focused frame or no selection.
-  void CalculateSelectionBounds(
-      gfx::Rect& anchor_in_root_frame,
-      gfx::Rect& focus_in_root_frame,
-      gfx::Rect* bounding_box_in_root_frame = nullptr);
+  // when there is no focused frame. Returns the caret bounds if the selection
+  // range is empty.
+  void CalculateSelectionBounds(gfx::Rect& anchor_in_root_frame,
+                                gfx::Rect& focus_in_root_frame,
+                                gfx::Rect* bounding_box_in_root_frame);
 
   // Returns if auto resize mode is enabled.
   bool AutoResizeMode();

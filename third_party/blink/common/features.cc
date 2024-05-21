@@ -168,15 +168,6 @@ BASE_FEATURE(kAudioWorkletThreadPool,
              "AudioWorkletThreadPool",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// If enabled, blink will not set the autofill state of a field after JS
-// modifies its value, and will instead leave it to the WebAutofillClient to
-// take care of the state setting.
-// This feature should be enabled with
-// autofill::features::kAutofillFixCachingOnJavaScriptChanges.
-BASE_FEATURE(kAutofillDontSetAutofillStateAfterJavaScriptChanges,
-             "AutofillDontSetAutofillStateAfterJavaScriptChanges",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // When enabled, extraction of unassociated listed elements includes elements
 // inside Shadow DOM.
 BASE_FEATURE(kAutofillIncludeShadowDomInUnassociatedListedElements,
@@ -297,8 +288,8 @@ BASE_FEATURE(kBackForwardCacheWithKeepaliveRequest,
 BASE_FEATURE(kBackgroundResourceFetch,
              "BackgroundResourceFetch",
              base::FEATURE_DISABLED_BY_DEFAULT);
-const base::FeatureParam<bool> kBackgroundResponseProcessor{
-    &kBackgroundResourceFetch, "background-response-processor", true};
+const base::FeatureParam<bool> kBackgroundScriptResponseProcessor{
+    &kBackgroundResourceFetch, "background-script-response-processor", true};
 
 // Redefine the oklab and oklch spaces to have gamut mapping baked into them.
 // https://crbug.com/1508329
@@ -616,6 +607,8 @@ BASE_FEATURE(kContentCaptureConstantStreaming,
 BASE_FEATURE(kCorrectFloatExtensionTestForWebGL,
              "CorrectFloatExtensionTestForWebGL",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCrabbyAvif, "CrabbyAvif", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, add a new option, {imageOrientation: 'none'}, to
 // createImageBitmap, which ignores the image orientation metadata of the source
@@ -952,10 +945,6 @@ BASE_FEATURE(kFilteringScrollPrediction,
 const base::FeatureParam<std::string> kFilteringScrollPredictionFilterParam{
     &kFilteringScrollPrediction, "filter", "one_euro_filter"};
 
-BASE_FEATURE(kFixGestureScrollQueuingBug,
-             "FixGestureScrollQueuingBug",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // See https://github.com/WICG/turtledove/blob/main/FLEDGE.md
 // Enables FLEDGE implementation. See https://crbug.com/1186444.
 BASE_FEATURE(kFledge, "Fledge", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1205,7 +1194,7 @@ const base::FeatureParam<int> kInterestGroupStorageMaxOpsBeforeMaintenance{
 // sandboxes are isolated.
 BASE_FEATURE(kIsolateSandboxedIframes,
              "IsolateSandboxedIframes",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 const base::FeatureParam<IsolateSandboxedIframesGrouping>::Option
     isolated_sandboxed_iframes_grouping_types[] = {
         {IsolateSandboxedIframesGrouping::kPerSite, "per-site"},
@@ -1353,6 +1342,8 @@ const base::FeatureParam<LcppDeferUnusedPreloadTiming>::Option
         {LcppDeferUnusedPreloadTiming::kPostTask, "post_task"},
         {LcppDeferUnusedPreloadTiming::kLcpTimingPredictor,
          "lcp_timing_predictor"},
+        {LcppDeferUnusedPreloadTiming::kLcpTimingPredictorWithPostTask,
+         "lcp_timing_predictor_with_post_task"},
 };
 
 const base::FeatureParam<LcppDeferUnusedPreloadTiming>
@@ -1382,6 +1373,9 @@ const base::FeatureParam<bool> kLCPPFontURLPredictorEnablePrefetch{
 // Negative value is used for disabling this threshold.
 const base::FeatureParam<double> kLCPPFontURLPredictorThresholdInMbps{
     &kLCPPFontURLPredictor, "lcpp_font_prefetch_threshold", -1};
+
+const base::FeatureParam<std::string> kLCPPFontURLPredictorExcludedHosts{
+    &kLCPPFontURLPredictor, "lcpp_font_prefetch_excluded_hosts", ""};
 
 BASE_FEATURE(kLCPPLazyLoadImagePreload,
              "LCPPLazyLoadImagePreload",
@@ -1775,6 +1769,14 @@ BASE_FEATURE(
     "IsPartitioned",
     base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kPreInitializePageAndFrameForSVGImage,
+             "PreInitializePageAndFrameForSVGImage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+constexpr base::FeatureParam<int>
+    kMaxCountOfPreInitializePageAndFrameForSVGImage{
+        &kPreInitializePageAndFrameForSVGImage, "max_pre_initialize_count", 5};
+
 BASE_FEATURE(kPrecompileInlineScripts,
              "PrecompileInlineScripts",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1845,6 +1847,10 @@ const char kPrerender2MemoryAcceptablePercentOfSystemMemoryParamName[] =
 
 BASE_FEATURE(kPrerender2EarlyDocumentLifecycleUpdate,
              "Prerender2EarlyDocumentLifecycleUpdate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kPrerender2NoVarySearch,
+             "Prerender2NoVarySearch",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable limiting previews loading hints to specific resource types.
@@ -1948,10 +1954,6 @@ BASE_FEATURE(kConsumeCompileHints,
 BASE_FEATURE(kLocalCompileHints,
              "LocalCompileHints",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kQueueBlockingGestureScrolls,
-             "QueueBlockingGestureScrolls",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kQuoteEmptySecChUaStringHeadersConsistently,
              "QuoteEmptySecChUaStringHeadersConsistently",
@@ -2309,10 +2311,6 @@ BASE_FEATURE(kStylusRichGestures,
              "StylusRichGestures",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSystemColorChooser,
-             "SystemColorChooser",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables third party script regex matching for detecting technologies.
 BASE_FEATURE(kThirdPartyScriptDetection,
              "ThirdPartyScriptDetection",
@@ -2527,10 +2525,6 @@ BASE_FEATURE(kWebRtcHideLocalIpsWithMdns,
 BASE_FEATURE(kWebRtcIgnoreUnspecifiedColorSpace,
              "WebRtcIgnoreUnspecifiedColorSpace",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kWebRtcInitializeEncoderOnFirstFrame,
-             "WebRtcInitializeEncoderOnFirstFrame",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kWebRtcThreadsUseResourceEfficientType,
              "WebRtcThreadsUseResourceEfficientType",

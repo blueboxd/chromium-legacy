@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_filter.h"
 #include "third_party/blink/renderer/core/css/style_recalc_change.h"
+#include "third_party/blink/renderer/core/css/style_request.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/dom/element_data.h"
@@ -52,6 +53,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/bindings/transform_view.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/region_capture_crop_id.h"
@@ -122,7 +124,6 @@ class StyleHighlightData;
 class StylePropertyMap;
 class StylePropertyMapReadOnly;
 class StyleRecalcContext;
-class StyleRequest;
 class StyleScopeData;
 class TextVisitor;
 class V8UnionBooleanOrScrollIntoViewOptions;
@@ -140,6 +141,15 @@ enum class DocumentUpdateReason;
 struct FocusParams;
 
 using ScrollOffset = gfx::Vector2dF;
+
+struct AttributeToNameTransform {
+  String operator()(const Attribute& attr) const {
+    return attr.GetName().ToString();
+  }
+};
+
+using AttributeNamesView =
+    bindings::TransformedView<AttributeCollection, AttributeToNameTransform>;
 
 enum SpellcheckAttributeState {
   kSpellcheckAttributeTrue,
@@ -602,7 +612,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   // For exposing to DOM only.
   NamedNodeMap* attributesForBindings() const;
-  Vector<AtomicString> getAttributeNames() const;
+  AttributeNamesView getAttributeNames() const;
 
   enum class AttributeModificationReason {
     kDirectly,
@@ -1077,7 +1087,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   const ComputedStyle* StyleForPseudoElement(const StyleRecalcContext&,
                                              const StyleRequest&);
 
-  // This is used by ResolveStyle with Highlight Inheritance when caching
+  // These are used by ResolveStyle with Highlight Inheritance when caching
   // is not used.
   const ComputedStyle* StyleForHighlightPseudoElement(
       const StyleRecalcContext& style_recalc_context,
@@ -1085,6 +1095,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       const ComputedStyle& originating_style,
       const PseudoId pseudo_id,
       const AtomicString& pseudo_argument = g_null_atom);
+  const ComputedStyle* StyleForSearchTextPseudoElement(
+      const StyleRecalcContext& style_recalc_context,
+      const ComputedStyle* highlight_parent,
+      const ComputedStyle& originating_style,
+      StyleRequest::SearchTextRequest search_text_request);
 
   virtual bool CanGeneratePseudoElement(PseudoId) const;
 

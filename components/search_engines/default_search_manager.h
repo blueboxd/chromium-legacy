@@ -36,9 +36,6 @@ class DefaultSearchManager {
   static constexpr char kDefaultSearchProviderDataPrefName[] =
       "default_search_provider_data.template_url_data";
 
-  static constexpr char kDefaultSearchProviderChoiceLocationPrefName[] =
-      "default_search_provider_data.choice_location";
-
   static const char kID[];
   static const char kShortName[];
   static const char kKeyword[];
@@ -84,6 +81,12 @@ class DefaultSearchManager {
   static const char kIsActive[];
   static const char kStarterPackId[];
   static const char kEnforcedByPolicy[];
+
+  // This value is not read / written using `TemplateURLDataToDictionary` and
+  // `TemplateURLDataFromDictionary` as it's related to the default search
+  // engine state and not the template url one.
+  // It is only written when `SetUserSelectedDefaultSearchEngine` is called.
+  static const char kChoiceLocation[];
 
   enum Source {
     // Default search engine chosen either from prepopulated engines set for

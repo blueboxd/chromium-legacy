@@ -20,6 +20,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
+#include "chrome/browser/extensions/bookmark_app_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -35,7 +36,6 @@
 #include "chrome/browser/ui/webui/app_home/app_home.mojom-shared.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/web_applications/extension_status_utils.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/browser/web_applications/locks/app_lock.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -60,6 +60,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition_utils.h"
 #include "url/gurl.h"
+
+static_assert(BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX));
 
 using content::WebUI;
 using extensions::Extension;
@@ -376,11 +378,9 @@ app_home::mojom::AppInfoPtr AppHomePageHandler::CreateAppInfoPtrFromExtension(
   app_info->start_url = start_url;
 
   bool deprecated_app = false;
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   auto* context = extension_system_->extension_service()->GetBrowserContext();
   deprecated_app =
       extensions::IsExtensionUnsupportedDeprecatedApp(context, extension->id());
-#endif
 
   if (deprecated_app) {
     app_info->name =
@@ -439,7 +439,6 @@ void AppHomePageHandler::FillExtensionInfoList(
       continue;
     }
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
     auto* context = extension_system_->extension_service()->GetBrowserContext();
     const bool is_deprecated_app =
         extensions::IsExtensionUnsupportedDeprecatedApp(context,
@@ -448,7 +447,6 @@ void AppHomePageHandler::FillExtensionInfoList(
                                  context, extension->id(), nullptr)) {
       deprecated_app_ids_.insert(extension->id());
     }
-#endif
     result->emplace_back(CreateAppInfoPtrFromExtension(extension.get()));
   }
 }

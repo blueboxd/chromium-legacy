@@ -94,7 +94,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.DefaultBrowserFromSource"
-    enum="IOSDefaultBrowserSettingsPageSource" expires_after="2024-09-01">
+    enum="IOSDefaultBrowserSettingsPageSource" expires_after="2024-11-10">
   <owner>gayane@google.com</owner>
   <owner>bling-mony-pod@google.com</owner>
   <summary>
@@ -758,6 +758,17 @@ chromium-metrics-reviews@google.com.
     Safe Browsing Card is located on Safety Check page in settings and can be in
     one of the multiple states. This is the Safe Browsing Card state recorded on
     click.
+  </summary>
+</histogram>
+
+<histogram name="Settings.SafetyHub.UnusedSitePermissionsModule.AutoRevoked"
+    enum="SafetyHubPermissionType" expires_after="2024-11-14">
+  <owner>sideyilmaz@chromium.org</owner>
+  <owner>aisulu@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
+  <summary>
+    The type of permission auto-revoked by the unused site permissions module of
+    Safety Hub. Recorded during the auto-revocation run.
   </summary>
 </histogram>
 

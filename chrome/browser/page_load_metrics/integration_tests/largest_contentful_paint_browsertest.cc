@@ -832,7 +832,13 @@ IN_PROC_BROWSER_TEST_F(LargestContentfulPaintTypeTest, ImageType_WebP) {
   TestImage(imgSrc, flag_set);
 }
 
-IN_PROC_BROWSER_TEST_F(LargestContentfulPaintTypeTest, ImageType_GIF) {
+// TODO(crbug.com/333963663): Flaky on Win.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_ImageType_GIF DISABLED_ImageType_GIF
+#else
+#define MAYBE_ImageType_GIF ImageType_GIF
+#endif
+IN_PROC_BROWSER_TEST_F(LargestContentfulPaintTypeTest, MAYBE_ImageType_GIF) {
   auto flag_set = blink::LargestContentfulPaintType::kImage |
                   blink::LargestContentfulPaintType::kGIF |
                   blink::LargestContentfulPaintType::kAnimatedImage;
@@ -1276,7 +1282,8 @@ IN_PROC_BROWSER_TEST_F(LcpBreakdownTimingsTest, MAYBE_PreloadedImage) {
   Validate();
 }
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
+// TODO(crbug.com/333963663): Flaky on multiple platforms.
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 #define MAYBE_PreloadedCacheableImage DISABLED_PreloadedCacheableImage
 #else
 #define MAYBE_PreloadedCacheableImage PreloadedCacheableImage
@@ -1291,11 +1298,12 @@ IN_PROC_BROWSER_TEST_F(LcpBreakdownTimingsTest, MAYBE_PreloadedCacheableImage) {
   ValidateForMemCacheLoadedImages();
 }
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_MAC)
 #define MAYBE_NativeLazyLoadingImage DISABLED_NativeLazyLoadingImage
 #else
 #define MAYBE_NativeLazyLoadingImage NativeLazyLoadingImage
 #endif
+// TODO(crbug.com/335901379): Re-enable test
 IN_PROC_BROWSER_TEST_F(LcpBreakdownTimingsTest, MAYBE_NativeLazyLoadingImage) {
   std::string test_url =
       "/lcp_breakdown_timings_native_lazy_loading_images.html";
@@ -1329,7 +1337,7 @@ IN_PROC_BROWSER_TEST_F(LcpBreakdownTimingsTest, MAYBE_CssBackgroundImage) {
 }
 
 // TODO(crbug.com/41495170): Flaky test.
-#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 #define MAYBE_WrittenAsInnerHtmlImage DISABLED_WrittenAsInnerHtmlImage
 #else
 #define MAYBE_WrittenAsInnerHtmlImage WrittenAsInnerHtmlImage

@@ -7,7 +7,7 @@ load("//lib/args.star", "args")
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builder_health_indicators.star", "health_spec")
-load("//lib/builders.star", "os", "reclient", "sheriff_rotations")
+load("//lib/builders.star", "os", "sheriff_rotations", "siso")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
@@ -15,6 +15,9 @@ load("//lib/gn_args.star", "gn_args")
 ci.defaults.set(
     executable = ci.DEFAULT_EXECUTABLE,
     builder_group = "chromium.chromiumos",
+    builder_config_settings = builder_config.ci_settings(
+        retry_failed_shards = True,
+    ),
     pool = ci.DEFAULT_POOL,
     cores = 8,
     os = os.LINUX_DEFAULT,
@@ -28,12 +31,11 @@ ci.defaults.set(
             ),
         ),
     }),
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
-    reclient_jobs = reclient.jobs.DEFAULT,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     shadow_service_account = ci.DEFAULT_SHADOW_SERVICE_ACCOUNT,
     siso_enabled = True,
-    siso_remote_jobs = reclient.jobs.DEFAULT,
+    siso_project = siso.project.DEFAULT_TRUSTED,
+    siso_remote_jobs = siso.remote_jobs.DEFAULT,
 )
 
 consoles.console_view(
@@ -137,7 +139,7 @@ ci.builder(
     ),
     main_console_view = "main",
     contact_team_email = "chrome-sanitizer-builder-owners@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -190,7 +192,7 @@ ci.builder(
             ),
         ),
     }),
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -235,7 +237,7 @@ ci.builder(
     main_console_view = "main",
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "chromeos-sw-engprod@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -283,7 +285,7 @@ ci.builder(
     main_console_view = "main",
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "chrome-desktop-engprod@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -334,7 +336,7 @@ ci.builder(
     main_console_view = "main",
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "chromeos-sw-engprod@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.thin_tester(
@@ -370,7 +372,7 @@ ci.thin_tester(
     main_console_view = "main",
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "chromeos-sw-engprod@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.thin_tester(
@@ -410,7 +412,7 @@ ci.thin_tester(
     main_console_view = "main",
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "chromeos-sw-engprod@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -453,7 +455,7 @@ ci.builder(
     ),
     main_console_view = "main",
     contact_team_email = "chromeos-sw-engprod@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -490,7 +492,7 @@ ci.builder(
     main_console_view = "main",
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "chromeos-sw-engprod@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -583,7 +585,7 @@ This builder builds chromium and tests it on the public CrOS image on skylab DUT
     ),
     main_console_view = "main",
     contact_team_email = "chromeos-velocity@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -641,7 +643,7 @@ This builder builds chromium and tests it on the public CrOS image on skylab DUT
     ),
     main_console_view = "main",
     contact_team_email = "chromeos-velocity@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -693,7 +695,7 @@ ci.builder(
     main_console_view = "main",
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "chrome-desktop-engprod@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.thin_tester(
@@ -736,7 +738,7 @@ ci.thin_tester(
     main_console_view = "main",
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "chrome-desktop-engprod@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.thin_tester(
@@ -783,7 +785,7 @@ ci.thin_tester(
     main_console_view = "main",
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "chromeos-sw-engprod@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -835,7 +837,7 @@ ci.builder(
     main_console_view = "main",
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "chrome-desktop-engprod@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -883,7 +885,7 @@ ci.builder(
     main_console_view = "main",
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "chrome-desktop-engprod@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -933,7 +935,7 @@ ci.builder(
     main_console_view = "main",
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "chrome-desktop-engprod@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -982,7 +984,7 @@ ci.builder(
     main_console_view = "main",
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "chrome-desktop-engprod@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -1032,7 +1034,7 @@ ci.builder(
     ),
     main_console_view = "main",
     cq_mirrors_console_view = "mirrors",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -1057,9 +1059,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
-    builder_config_settings = builder_config.ci_settings(
-        retry_failed_shards = True,
-    ),
     gn_args = gn_args.config(
         configs = [
             "chromeos_with_codecs",
@@ -1082,7 +1081,7 @@ ci.builder(
             ),
         ),
     }),
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -1126,7 +1125,7 @@ ci.builder(
     main_console_view = "main",
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "chromeos-sw-engprod@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -1169,7 +1168,7 @@ ci.builder(
     main_console_view = "main",
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "chrome-desktop-engprod@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.thin_tester(
@@ -1196,9 +1195,6 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.CHROMEOS,
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
-    ),
-    builder_config_settings = builder_config.ci_settings(
-        retry_failed_shards = True,
     ),
     tree_closing = False,
     console_view_entry = consoles.console_view_entry(
@@ -1250,7 +1246,7 @@ ci.builder(
     main_console_view = "main",
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "chrome-desktop-engprod@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 # For Chromebox for meetings(CfM)
@@ -1289,5 +1285,5 @@ ci.builder(
     ),
     main_console_view = "main",
     contact_team_email = "core-devices-eng@google.com",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )

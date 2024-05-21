@@ -592,9 +592,11 @@ class ChromeDriverBaseTest(unittest.TestCase):
     if browser_name is None:
       browser_name = _BROWSER_NAME
 
+    if 'http_timeout' not in kwargs:
+      kwargs['http_timeout'] = _HTTP_TIMEOUT
+
     driver = chromedriver.ChromeDriver(server_url, server_pid,
                                        chrome_binary=_CHROME_BINARY,
-                                       http_timeout=_HTTP_TIMEOUT,
                                        browser_name=browser_name,
                                        android_package=android_package,
                                        android_activity=android_activity,
@@ -1176,6 +1178,35 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       self._driver.ExecuteScript("return arguments[0];", shadow)
     with self.assertRaises(chromedriver.DetachedShadowRoot):
       self._driver.ExecuteScript("return true;", shadow)
+
+  def testExecuteAsyncScriptWithResolve(self):
+    self.assertEqual(
+        10,
+        self._driver.ExecuteAsyncScript(
+            'arguments[0](10)'))
+    self.assertEqual(
+        'one',
+        self._driver.ExecuteAsyncScript(
+            'arguments[0]("one")'))
+    self.assertEqual(
+        0.123,
+        self._driver.ExecuteAsyncScript(
+            'arguments[0](0.123)'))
+    self.assertEqual(
+        [1, 2.2, 'three'],
+        self._driver.ExecuteAsyncScript(
+            'arguments[0]([1, 2.2, "three"])'))
+
+  def testExecuteAsyncScriptNoResolve(self):
+    self._driver.SetTimeouts({'script': 10})
+    with self.assertRaises(chromedriver.ScriptTimeout):
+      self._driver.ExecuteAsyncScript('10')
+    with self.assertRaises(chromedriver.ScriptTimeout):
+      self._driver.ExecuteAsyncScript('"one"')
+    with self.assertRaises(chromedriver.ScriptTimeout):
+      self._driver.ExecuteAsyncScript('0.123')
+    with self.assertRaises(chromedriver.ScriptTimeout):
+      self._driver.ExecuteAsyncScript('[1, 2.2, "three"]')
 
   def testExecuteAsyncScript(self):
     self._driver.SetTimeouts({'script': 3000})
@@ -2460,8 +2491,32 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.ExecuteScript('window.onbeforeunload=function(){return true}')
     self._driver.FindElement('tag name', 'body').Click()
     self._driver.GoBack()
-    self.assertTrue(self._driver.IsAlertOpen())
-    self._driver.HandleAlert(True)
+    self.assertFalse(self._driver.IsAlertOpen())
+
+  def testAlertHandlingOnNavigation(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
+    self._driver.ExecuteScript('window.onbeforeunload=function(){return true}')
+    self._driver.FindElement('tag name', 'body').Click()
+    self._driver.ExecuteAsyncScript('''
+        const [url, resolve] = arguments;
+        window.location.href = url;
+        resolve(url);
+    ''', self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self.assertFalse(self._driver.IsAlertOpen())
+
+  def testAlertHandlingOnNavigationNoResolve(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
+    self._driver.ExecuteScript('window.onbeforeunload=function(){return true}')
+    self._driver.FindElement('tag name', 'body').Click()
+    self._driver.SetTimeouts({'script': 100})
+
+    # The following script never calls resolve. Therefore it times out.
+    with self.assertRaises(chromedriver.ScriptTimeout):
+      self._driver.ExecuteAsyncScript('''
+          const [url, resolve] = arguments;
+          window.location.href = url;
+      ''', self.GetHttpUrlForFile('/chromedriver/empty.html'))
+
     self.assertFalse(self._driver.IsAlertOpen())
 
   def testRefresh(self):
@@ -2493,10 +2548,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.ExecuteScript('window.onbeforeunload=function(){return true}')
     self._driver.FindElement('tag name', 'body').Click()
     self._driver.Refresh()
-    self.assertTrue(self._driver.IsAlertOpen())
-    self.assertRaises(chromedriver.UnsupportedOperation,
-                 self._driver.HandleAlert,
-                 True, 'textToOnBeforeUnload')
+    self.assertFalse(self._driver.IsAlertOpen())
 
   def testAlertOnNewWindow(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -5649,6 +5701,16 @@ class ChromeDriverPageLoadTimeoutTest(ChromeDriverBaseTestWithWebServer):
     self._CheckPageLoadTimeout(self._driver.GoForward)
     self.assertEqual(self._initial_url, self._driver.GetCurrentUrl())
 
+  def testHistoryNavigationAndLoadWithPageLoadTimeout(self):
+    # Allow the page to load for the first time.
+    self._handler.send_response_event.set()
+    self._LoadHangingUrl()
+    self.assertTrue(self._handler.request_received_event.wait(1))
+
+    self._driver.GoBack()
+    self._CheckPageLoadTimeout(self._LoadHangingUrl)
+    self.assertEqual(self._initial_url, self._driver.GetCurrentUrl())
+
   def testRefreshWithPageLoadTimeout(self):
     # Allow the page to load for the first time.
     self._handler.send_response_event.set()
@@ -7090,6 +7152,57 @@ class PureBidiTest(ChromeDriverBaseTestWithWebServer):
         'params': {
         }
       })
+
+  def testCloseWithUserPromptOpened(self):
+    connection = self.createWebSocketConnection()
+    connection.SetTimeout(60)  # 1 min as the test is likely to timeout
+    response = connection.SendCommand(self.createSessionNewCommand())
+    context1 = connection.SendCommand({
+        'method': 'browsingContext.create',
+        'params': {
+            'type': 'tab'
+        }
+    })
+    context_id1 = context1["context"]
+    context2 = connection.SendCommand({
+        'method': 'browsingContext.create',
+        'params': {
+            'type': 'tab'
+        }
+    })
+    context_id2 = context2["context"]
+
+    url = "data:text/html,<script>alert('Blocking')</script>"
+
+    connection.SendCommand({
+        'method': 'browsingContext.navigate',
+        'params': {
+            'url': url,
+            'context': context_id1
+        }
+    })
+    connection.SendCommand({
+        'method': 'browsingContext.navigate',
+        'params': {
+            'url': url,
+            'context': context_id2
+        }
+    })
+
+    connection.SendCommand({
+        'method': 'browsingContext.close',
+        'params': {
+            'context': context_id1
+        }
+    })
+
+    # Should be able to make further calls to BiDi
+    connection.SendCommand({
+          'method': 'browsingContext.getTree',
+          'params': {
+          }
+      })
+
 
 class BidiTest(ChromeDriverBaseTestWithWebServer):
 

@@ -62,8 +62,7 @@ constexpr char kExtensionsWebStoreUrl[] =
     "https://chromewebstore.google.com/category/extensions";
 constexpr char kGoogleChromeAiUrl[] =
     "https://www.google.com/chrome/ai-innovations";
-constexpr char kGoogleChromePrivacyUrl[] =
-    "https://www.google.com/chrome/privacy-on-the-web/";
+constexpr char kGoogleChromeSafetyUrl[] = "https://www.google.com/chrome/#safe";
 constexpr char kGooglePasswordsUrl[] = "https://passwords.google";
 constexpr char kThemesWebStoreUrl[] =
     "https://chromewebstore.google.com/category/themes";
@@ -72,8 +71,8 @@ constexpr char kThemesWebStoreUrl[] =
 Browser* ContextToBrowser(ui::ElementContext ctx) {
   Browser* const browser = chrome::FindBrowserWithUiElementContext(ctx);
   if (!browser) {
-    NOTREACHED() << "Promo attempted to open a side panel but the "
-                    "browser context was invalid.";
+    NOTREACHED_IN_MIGRATION() << "Promo attempted to open a side panel but the "
+                                 "browser context was invalid.";
   }
   return browser;
 }
@@ -93,8 +92,9 @@ content::WebContents* NavigateToPage(Browser* browser, const GURL& url) {
   navigate_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&navigate_params);
   if (!navigate_params.navigated_or_inserted_contents) {
-    NOTREACHED() << "Promo attempted to open a page, but did not receive a "
-                    "navigation handle.";
+    NOTREACHED_IN_MIGRATION()
+        << "Promo attempted to open a page, but did not receive a "
+           "navigation handle.";
   }
   return navigate_params.navigated_or_inserted_contents;
 }
@@ -259,7 +259,7 @@ FeaturePromoSpecification CreateLowUsagePromoSpecification(Profile* profile) {
       // 9.
       CreateNavigatePromo(IDS_REENGAGEMENT_PROMO_SAFETY,
                           IDS_REENGAGEMENT_PROMO_VIEW_SAFETY_FEATURES_ACTION,
-                          GURL(kGoogleChromePrivacyUrl)),
+                          GURL(kGoogleChromeSafetyUrl)),
 
       // 2.
       CreateSidePanelPromo(IDS_REENGAGEMENT_PROMO_CUSTOMIZE_COLOR,

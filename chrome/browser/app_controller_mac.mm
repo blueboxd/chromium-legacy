@@ -801,7 +801,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 }
 
 - (void)dealloc {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 - (NSMenu*)fileMenu {

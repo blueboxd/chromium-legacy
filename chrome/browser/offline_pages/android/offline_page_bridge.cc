@@ -31,7 +31,6 @@
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/offline_pages/recent_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_key_android.h"
 #include "components/offline_pages/core/archive_validator.h"
@@ -182,7 +181,7 @@ void ValidateFileCallback(
           offline_pages::OfflinePageHeader::Reason::NET_ERROR_SUGGESTION;
       break;
     case offline_items_collection::LaunchLocation::DOWNLOAD_SHELF:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
     case offline_items_collection::LaunchLocation::DOWNLOAD_INTERSTITIAL:
       offline_header.reason =

@@ -7,7 +7,6 @@
 #include <cmath>
 #include <utility>
 
-#include "ash/constants/app_types.h"
 #include "ash/constants/ash_features.h"
 #include "ash/metrics/pip_uma.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -39,10 +38,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/ranges/algorithm.h"
+#include "chromeos/ui/base/app_types.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
 #include "chromeos/utils/haptics_util.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -163,7 +162,7 @@ int CoordinateAlongSecondaryAxis(SecondaryMagnetismEdge edge,
     case SECONDARY_MAGNETISM_EDGE_NONE:
       return none;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return none;
 }
 
@@ -558,8 +557,8 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   // from the caption. This is because ARC does not currently handle setting
   // bounds on a maximized window well.
   if (maximized &&
-      window_state->window()->GetProperty(aura::client::kAppType) ==
-          static_cast<int>(AppType::ARC_APP) &&
+      window_state->window()->GetProperty(chromeos::kAppTypeKey) ==
+          chromeos::AppType::ARC_APP &&
       window_component == HTCAPTION) {
     return nullptr;
   }
@@ -917,7 +916,7 @@ void WorkspaceWindowResizer::CompleteDrag() {
         window_state()->TrackDragToMaximizeBehavior();
         break;
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         type = WM_EVENT_MAXIMIZE;
         break;
     }
@@ -1529,7 +1528,7 @@ int WorkspaceWindowResizer::PrimaryAxisCoordinate(int x, int y) const {
     case HTBOTTOM:
       return y;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
   return 0;
 }
@@ -1606,7 +1605,7 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(
       phantom_bounds = display.work_area();
       break;
     case SnapType::kNone:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 
@@ -1755,7 +1754,7 @@ void WorkspaceWindowResizer::SetWindowStateTypeFromGesture(
       }
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 }
 

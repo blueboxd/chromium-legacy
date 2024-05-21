@@ -20,6 +20,8 @@ namespace input_method {
 class ImeKeyboard;
 }
 
+enum class PickerModeType;
+
 class ASH_EXPORT PickerModel {
  public:
   enum class EditorStatus { kEnabled, kDisabled };
@@ -33,11 +35,14 @@ class ASH_EXPORT PickerModel {
 
   std::vector<PickerCategory> GetAvailableCategories() const;
 
+  std::vector<PickerCategory> GetRecentResultsCategories() const;
+
   std::u16string_view selected_text() const;
 
-  bool HasSelectedText() const;
+  PickerModeType GetMode() const;
 
  private:
+  bool has_focus_;
   std::u16string selected_text_;
   bool is_caps_lock_enabled_;
   EditorStatus editor_status_;

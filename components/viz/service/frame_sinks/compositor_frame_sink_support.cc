@@ -30,6 +30,7 @@
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/video_capture_target.h"
+#include "components/viz/common/viz_utils.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_counter.h"
@@ -126,7 +127,9 @@ CompositorFrameSinkSupport::CompositorFrameSinkSupport(
       frame_sink_id_(frame_sink_id),
       surface_resource_holder_(this),
       is_root_(is_root),
-      allow_copy_output_requests_(is_root) {
+      allow_copy_output_requests_(is_root),
+      use_blit_request_for_view_transition_(base::FeatureList::IsEnabled(
+          features::kBlitRequestsForViewTransition)) {
   // This may result in SetBeginFrameSource() being called.
   frame_sink_manager_->RegisterCompositorFrameSinkSupport(frame_sink_id_, this);
 }
@@ -608,6 +611,10 @@ void CompositorFrameSinkSupport::UpdateThreadIdsPostVerification(
     bool passed_verification) {
   if (passed_verification) {
     thread_ids_ = std::move(thread_ids);
+  } else {
+    TRACE_EVENT_INSTANT("viz,android.adpf",
+                        "FailedToUpdateThreadIdsPostVerification", "thread_ids",
+                        thread_ids);
   }
 }
 
@@ -691,8 +698,8 @@ void CompositorFrameSinkSupport::SubmitCompositorFrameLocally(
   pending_frames_.push_back(FrameData{.local_frame = true});
   Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
 
-  auto frame_rejected_callback =
-      base::ScopedClosureRunner(base::BindOnce([] { NOTREACHED(); }));
+  auto frame_rejected_callback = base::ScopedClosureRunner(
+      base::BindOnce([] { NOTREACHED_IN_MIGRATION(); }));
   auto frame_index = ++last_frame_index_;
   Surface::QueueFrameResult result = surface->QueueFrame(
       std::move(frame), frame_index, std::move(frame_rejected_callback));
@@ -918,6 +925,15 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
               &RemoveSurfaceReferenceAndDispatchCopyOutputRequestCallback,
               frame_sink_manager_->GetWeakPtr(), surface_info.id(),
               frame.metadata.screenshot_destination.value()));
+      if (const auto& size_for_testing =
+              frame_sink_manager_
+                  ->copy_output_request_result_size_for_testing();  // IN-TEST
+          UNLIKELY(!size_for_testing.IsEmpty())) {
+        SetCopyOutoutRequestResultSize(copy_request.get(), gfx::Rect(),
+                                       size_for_testing,
+                                       prev_surface->size_in_pixels());
+      }
+
       copy_request->set_result_task_runner(
           base::SequencedTaskRunner::GetCurrentDefault());
 
@@ -1423,7 +1439,7 @@ const char* CompositorFrameSinkSupport::GetSubmitResultAsString(
     case SubmitResult::SURFACE_OWNED_BY_ANOTHER_CLIENT:
       return "Surface belongs to another client";
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 
@@ -1584,7 +1600,9 @@ void CompositorFrameSinkSupport::ProcessCompositorFrameTransitionDirective(
       view_transition_token_to_animation_manager_[transition_token] =
           SurfaceAnimationManager::CreateWithSave(
               directive, surface, frame_sink_manager_->shared_bitmap_manager(),
-              frame_sink_manager_->GetSharedImageInterface(),
+              use_blit_request_for_view_transition_
+                  ? frame_sink_manager_->GetSharedImageInterface()
+                  : nullptr,
               frame_sink_manager_->reserved_resource_id_tracker(),
               base::BindOnce(&CompositorFrameSinkSupport::
                                  OnSaveTransitionDirectiveProcessed,

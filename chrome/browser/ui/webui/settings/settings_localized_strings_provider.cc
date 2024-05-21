@@ -277,26 +277,34 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_OVERSCROLL_HISTORY_NAVIGATION_TITLE},
       {"overscrollHistoryNavigationSubtitle",
        IDS_SETTINGS_OVERSCROLL_HISTORY_NAVIGATION_SUBTITLE},
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+      {"mainNodeAnnotationsDownloadCompleteLabel",
+       IDS_SETTINGS_MAIN_NODE_ANNOTATIONS_DOWNLOAD_COMPLETE},
+      {"mainNodeAnnotationsDownloadErrorLabel",
+       IDS_SETTINGS_MAIN_NODE_ANNOTATIONS_DOWNLOAD_ERROR},
+      {"mainNodeAnnotationsDownloadProgressLabel",
+       IDS_SETTINGS_MAIN_NODE_ANNOTATIONS_DOWNLOAD_PROGRESS},
+      {"mainNodeAnnotationsDownloadingLabel",
+       IDS_SETTINGS_MAIN_NODE_ANNOTATIONS_DOWNLOADING},
+      {"mainNodeAnnotationsTitle", IDS_SETTINGS_MAIN_NODE_ANNOTATIONS_TITLE},
+      {"mainNodeAnnotationsSubtitle",
+       IDS_SETTINGS_MAIN_NODE_ANNOTATIONS_SUBTITLE},
       {"pdfOcrDownloadCompleteLabel", IDS_SETTINGS_PDF_OCR_DOWNLOAD_COMPLETE},
       {"pdfOcrDownloadErrorLabel", IDS_SETTINGS_PDF_OCR_DOWNLOAD_ERROR},
       {"pdfOcrDownloadProgressLabel", IDS_SETTINGS_PDF_OCR_DOWNLOAD_PROGRESS},
       {"pdfOcrDownloadingLabel", IDS_SETTINGS_PDF_OCR_DOWNLOADING},
       {"pdfOcrTitle", IDS_SETTINGS_PDF_OCR_TITLE},
       {"pdfOcrSubtitle", IDS_SETTINGS_PDF_OCR_SUBTITLE},
+#endif  // BULDFLAG(ENABLE_SCREEN_AI_SERVICE)
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
-#if BUILDFLAG(IS_WIN)
-  html_source->AddBoolean("isWindows10OrNewer", true);
-#endif
-
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if (BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)) && \
+    BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   html_source->AddBoolean(
-      "showFocusHighlightOption",
-      base::FeatureList::IsEnabled(features::kAccessibilityFocusHighlight));
-#endif
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+      "mainNodeAnnotationsEnabled",
+      base::FeatureList::IsEnabled(features::kMainNodeAnnotations));
   html_source->AddBoolean("pdfOcrEnabled",
                           base::FeatureList::IsEnabled(features::kPdfOcr));
 #endif
@@ -436,7 +444,6 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
 
   html_source->AddString("presetZoomFactors",
                          zoom::GetPresetZoomFactorsAsJSON());
-  html_source->AddBoolean("showSidePanelOptions", true);
   html_source->AddBoolean(
       "showHoverCardImagesOption",
       base::FeatureList::IsEnabled(features::kTabHoverCardImages));
@@ -1021,32 +1028,6 @@ void AddOnStartupStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
 
-bool IsFidoAuthenticationAvailable(autofill::PersonalDataManager* personal_data,
-                                   content::WebContents* web_contents) {
-  // Don't show toggle switch if user is unable to downstream cards.
-  if (!personal_data->payments_data_manager().IsPaymentsDownloadActive()) {
-    return false;
-  }
-
-  // If |autofill_manager| is not available, then don't show toggle switch.
-  autofill::ContentAutofillDriverFactory* autofill_driver_factory =
-      autofill::ContentAutofillDriverFactory::FromWebContents(web_contents);
-  if (!autofill_driver_factory) {
-    return false;
-  }
-  autofill::ContentAutofillDriver* autofill_driver =
-      autofill_driver_factory->DriverForFrame(
-          web_contents->GetPrimaryMainFrame());
-  if (!autofill_driver) {
-    return false;
-  }
-
-  // Show the toggle switch only if FIDO authentication is available. Once
-  // returned, this decision may be overridden (from true to false) by the
-  // caller in the payments section if no platform authenticator is found.
-  return ::autofill::IsCreditCardFidoAuthenticationEnabled();
-}
-
 bool CheckDeviceAuthAvailability(content::WebContents* web_contents) {
   // If `client` is not available, then don't show toggle switch.
   autofill::ContentAutofillClient* client =
@@ -1082,9 +1063,6 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"enableCreditCardsLabel", IDS_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_LABEL},
       {"enableCreditCardsSublabel",
        IDS_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_SUBLABEL},
-      {"enableCreditCardFIDOAuthLabel", IDS_ENABLE_CREDIT_CARD_FIDO_AUTH_LABEL},
-      {"enableCreditCardFIDOAuthSublabel",
-       IDS_ENABLE_CREDIT_CARD_FIDO_AUTH_SUBLABEL},
       {"enableCvcStorageLabel",
        IDS_AUTOFILL_SETTINGS_PAGE_ENABLE_CVC_STORAGE_LABEL},
       {"enableCvcStorageAriaLabelForNoCvcSaved",
@@ -1328,14 +1306,6 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       l10n_util::GetStringFUTF16(
           IDS_AUTOFILL_SETTINGS_PAGE_CARD_BENEFITS_TOGGLE_SUBLABEL_WITH_LEARN_LINK,
           l10n_util::GetStringUTF16(IDS_SETTINGS_OPENS_IN_NEW_TAB)));
-
-  // TODO(crbug.com/288458283): Clean up mandatory reauth code branch and remove
-  // the FIDO toggle.
-  html_source->AddBoolean("autofillEnablePaymentsMandatoryReauth", true);
-
-  html_source->AddBoolean(
-      "fidoAuthenticationAvailableForAutofill",
-      IsFidoAuthenticationAvailable(personal_data, web_contents));
 
   ui::Accelerator undo_accelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
   html_source->AddString(
@@ -1725,10 +1695,6 @@ bool ShouldLinkSecureDnsOsSettings() {
 #endif
 }
 
-bool IsSecureDnsAvailable() {
-  return features::kDnsOverHttpsShowUiParam.Get();
-}
-
 void AddPrivacyStrings(content::WebUIDataSource* html_source,
                        Profile* profile) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
@@ -1963,13 +1929,10 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   html_source->AddString("enhancedProtectionHelpCenterURL",
                          chrome::kSafeBrowsingInChromeHelpCenterURL);
 
-  bool show_secure_dns = IsSecureDnsAvailable();
   bool link_secure_dns = ShouldLinkSecureDnsOsSettings();
-  html_source->AddBoolean("showSecureDnsSetting",
-                          show_secure_dns && !link_secure_dns);
+  html_source->AddBoolean("showSecureDnsSetting", !link_secure_dns);
 #if BUILDFLAG(IS_CHROMEOS)
-  html_source->AddBoolean("showSecureDnsSettingLink",
-                          show_secure_dns && link_secure_dns);
+  html_source->AddBoolean("showSecureDnsSettingLink", link_secure_dns);
   html_source->AddString(
       "chromeOSPrivacyAndSecuritySectionPath",
       chromeos::settings::mojom::kPrivacyAndSecuritySectionPath);
@@ -2216,6 +2179,14 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_REMOVED_THREE_PERMISSIONS_LABEL},
       {"safetyCheckUnusedSitePermissionsRemovedFourOrMorePermissionsLabel",
        IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_REMOVED_FOUR_OR_MORE_PERMISSIONS_LABEL},
+      {"safetyHubUnusedSitePermissionsRemovedOnePermissionLabel",
+       IDS_SETTINGS_SAFETY_HUB_UNUSED_SITE_PERMISSIONS_REMOVED_ONE_PERMISSION_LABEL},
+      {"safetyHubUnusedSitePermissionsRemovedTwoPermissionsLabel",
+       IDS_SETTINGS_SAFETY_HUB_UNUSED_SITE_PERMISSIONS_REMOVED_TWO_PERMISSIONS_LABEL},
+      {"safetyHubUnusedSitePermissionsRemovedThreePermissionsLabel",
+       IDS_SETTINGS_SAFETY_HUB_UNUSED_SITE_PERMISSIONS_REMOVED_THREE_PERMISSIONS_LABEL},
+      {"safetyHubUnusedSitePermissionsRemovedFourOrMorePermissionsLabel",
+       IDS_SETTINGS_SAFETY_HUB_UNUSED_SITE_PERMISSIONS_REMOVED_FOUR_OR_MORE_PERMISSIONS_LABEL},
       {"safetyCheckUnusedSitePermissionsToastLabel",
        IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_TOAST_LABEL},
       {"safetyCheckUnusedSitePermissionsUndoLabel",
@@ -2224,6 +2195,8 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_SETTING_LABEL},
       {"safetyCheckUnusedSitePermissionsSettingSublabel",
        IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_SETTING_SUBLABEL},
+      {"safetyHubAbusiveNotificationPermissionsSettingSublabel",
+       IDS_SETTINGS_SAFETY_HUB_ABUSIVE_NOTIFICATION_PERMISSIONS_SETTING_SUBLABEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
@@ -3276,6 +3249,12 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_OFFER_WRITING_HELP_ENABLED_SUB_LABEL},
       {"siteSettingsOfferWritingHelpDisabledSublabel",
        IDS_SETTINGS_OFFER_WRITING_HELP_DISABLED_SUB_LABEL},
+      {"offerWritingHelpDisabledSitesLabel",
+       IDS_SETTINGS_OFFER_WRITING_HELP_DISABLED_SITES_LABEL},
+      {"offerWritingHelpNoDisabledSites",
+       IDS_SETTINGS_OFFER_WRITING_HELP_NO_DISABLED_SITES},
+      {"offerWritingHelpRemoveDisabledSiteAriaLabel",
+       IDS_SETTINGS_OFFER_WRITING_HELP_REMOVE_SITE_ARIA_LABEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -3354,6 +3333,22 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   // crbug.com/1095878.
   html_source->AddString("addSiteExceptionPlaceholder", "[*.]example.com");
 }
+
+#if BUILDFLAG(CHROME_ROOT_STORE_CERT_MANAGEMENT_UI)
+void AddCertificateManagerV2Strings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"certificateManagerV2ClientCerts",
+       IDS_SETTINGS_CERTIFICATE_MANAGER_V2_CLIENT_CERTIFICATES},
+      {"certificateManagerV2LocalCerts",
+       IDS_SETTINGS_CERTIFICATE_MANAGER_V2_LOCAL_CERTIFICATES},
+      {"certificateManagerV2CRSCerts",
+       IDS_SETTINGS_CERTIFICATE_MANAGER_V2_CRS_CERTIFICATES},
+      {"certificateManagerV2HashCopiedToast",
+       IDS_SETTINGS_CERTIFICATE_MANAGER_V2_HASH_COPIED_TOAST},
+  };
+  html_source->AddLocalizedStrings(kLocalizedStrings);
+}
+#endif  // BUILDFLAG(CHROME_ROOT_STORE_CERT_MANAGEMENT_UI)
 
 void AddStorageAccessStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
@@ -3658,6 +3653,9 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
 #if BUILDFLAG(USE_NSS_CERTS)
   certificate_manager::AddLocalizedStrings(html_source);
 #endif
+#if BUILDFLAG(CHROME_ROOT_STORE_CERT_MANAGEMENT_UI)
+  AddCertificateManagerV2Strings(html_source);
+#endif  // BUILDFLAG(CHROME_ROOT_STORE_CERT_MANAGEMENT_UI)
 
   policy_indicator::AddLocalizedStrings(html_source);
   AddSecurityKeysStrings(html_source);

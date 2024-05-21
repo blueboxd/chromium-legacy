@@ -369,7 +369,9 @@ void CanvasResourceSharedBitmap::NotifyResourceLost() {
 
 const gpu::Mailbox& CanvasResourceSharedBitmap::GetOrCreateGpuMailbox(
     MailboxSyncMode sync_mode) {
-  return shared_bitmap_id_;
+  // By contract this method is valid to call only if
+  // SupportsAcceleratedCompositing() is true.
+  NOTREACHED_NORETURN();
 }
 
 void CanvasResourceSharedBitmap::TakeSkImage(sk_sp<SkImage> image) {
@@ -875,7 +877,7 @@ void ExternalCanvasResource::Abandon() {
 }
 
 void ExternalCanvasResource::TakeSkImage(sk_sp<SkImage> image) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 scoped_refptr<StaticBitmapImage> ExternalCanvasResource::Bitmap() {
@@ -1007,7 +1009,7 @@ bool CanvasResourceSwapChain::IsValid() const {
 }
 
 void CanvasResourceSwapChain::TakeSkImage(sk_sp<SkImage> image) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 scoped_refptr<StaticBitmapImage> CanvasResourceSwapChain::Bitmap() {

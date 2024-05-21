@@ -570,7 +570,9 @@ ALWAYS_INLINE static unsigned ParsePositiveDouble(const LChar* string,
 }
 
 // Parse a float and clamp it upwards to max_value. Optimized for having
-// no decimal part.
+// no decimal part. Returns true if the parse was successful (though it
+// may not consume the entire string; you'll need to check string != end
+// yourself if that is the intention).
 ALWAYS_INLINE static bool ParseFloatWithMaxValue(const LChar*& string,
                                                  const LChar* end,
                                                  int max_value,
@@ -603,11 +605,7 @@ ALWAYS_INLINE static bool ParseFloatWithMaxValue(const LChar*& string,
     value = new_value;
   }
 
-  if (current == end) {
-    return false;
-  }
-
-  if (*current == '.') {
+  if (current != end && *current == '.') {
     // We already parsed the integral part, try to parse
     // the fraction part.
     double fractional = 0;
@@ -1026,7 +1024,7 @@ static bool FastParseColorInternal(Color& color,
         hue *= 360.0;
         break;
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         return false;
     }
 
@@ -1335,6 +1333,9 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kInternalTextareaAuto ||
              (RuntimeEnabledFeatures::CSSResizeAutoEnabled() &&
               value_id == CSSValueID::kAuto);
+    case CSSPropertyID::kScrollMarkers:
+      return value_id == CSSValueID::kNone || value_id == CSSValueID::kAfter ||
+             value_id == CSSValueID::kBefore;
     case CSSPropertyID::kScrollBehavior:
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kSmooth;
     case CSSPropertyID::kShapeRendering:
@@ -1661,7 +1662,7 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueID::kNone || value_id == CSSValueID::kStart ||
              value_id == CSSValueID::kEnd || value_id == CSSValueID::kBoth;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return false;
   }
 }
@@ -1720,6 +1721,7 @@ CSSBitset CSSParserFastPaths::handled_by_keyword_fast_paths_properties_{{
     CSSPropertyID::kPositionTryOrder,
     CSSPropertyID::kReadingOrderItems,
     CSSPropertyID::kResize,
+    CSSPropertyID::kScrollMarkers,
     CSSPropertyID::kScrollBehavior,
     CSSPropertyID::kOverscrollBehaviorInline,
     CSSPropertyID::kOverscrollBehaviorBlock,

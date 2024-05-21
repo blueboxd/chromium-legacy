@@ -158,15 +158,51 @@ class MouseKeysTest : public AshTestBase {
     EXPECT_EQ(mouse_events[7].location(), position);
   }
 
+  void ExpectClick(const std::vector<ui::MouseEvent>& mouse_events,
+                   int buttons,
+                   const gfx::Point& position) {
+    ASSERT_EQ(2u, mouse_events.size());
+    ExpectClick(mouse_events[0], mouse_events[1], buttons, false, position);
+  }
+
+  void ExpectDoubleClick(const std::vector<ui::MouseEvent>& mouse_events,
+                         const gfx::Point& position) {
+    ASSERT_EQ(4u, mouse_events.size());
+    ExpectClick(mouse_events[0], mouse_events[1], ui::EF_LEFT_MOUSE_BUTTON,
+                false, position);
+    ExpectClick(mouse_events[2], mouse_events[3], ui::EF_LEFT_MOUSE_BUTTON,
+                true, position);
+  }
+
+  void ExpectClick(const ui::MouseEvent& mouse_event0,
+                   const ui::MouseEvent& mouse_event1,
+                   int buttons,
+                   bool is_double_click,
+                   const gfx::Point& position) {
+    EXPECT_EQ(ui::ET_MOUSE_PRESSED, mouse_event0.type());
+    EXPECT_TRUE(buttons & mouse_event0.flags());
+    EXPECT_EQ(mouse_event0.location(), position);
+    EXPECT_EQ(ui::ET_MOUSE_RELEASED, mouse_event1.type());
+    EXPECT_TRUE(buttons & mouse_event1.flags());
+    EXPECT_EQ(mouse_event1.location(), position);
+    if (is_double_click) {
+      EXPECT_TRUE(ui::EF_IS_DOUBLE_CLICK & mouse_event0.flags());
+      EXPECT_TRUE(ui::EF_IS_DOUBLE_CLICK & mouse_event1.flags());
+    } else {
+      EXPECT_FALSE(ui::EF_IS_DOUBLE_CLICK & mouse_event0.flags());
+      EXPECT_FALSE(ui::EF_IS_DOUBLE_CLICK & mouse_event1.flags());
+    }
+  }
+
   MouseKeysController* GetMouseKeysController() {
     return Shell::Get()->mouse_keys_controller();
   }
 
-  void SetDisableInTextFields(bool value) {
+  void SetUsePrimaryKeys(bool value) {
     PrefService* prefs =
         Shell::Get()->session_controller()->GetLastActiveUserPrefService();
 
-    prefs->SetBoolean(prefs::kAccessibilityMouseKeysDisableInTextFields, value);
+    prefs->SetBoolean(prefs::kAccessibilityMouseKeysUsePrimaryKeys, value);
   }
 
   void SetLeftHanded(bool value) {
@@ -336,15 +372,9 @@ TEST_F(MouseKeysTest, Click) {
   SetEnabled(true);
   EXPECT_TRUE(GetMouseKeysController()->enabled());
   PressAndReleaseKey(ui::VKEY_I);
-  auto mouse_events = CheckForMouseEvents();
   EXPECT_EQ(0u, CheckForKeyEvents().size());
-  ASSERT_EQ(2u, mouse_events.size());
-  EXPECT_EQ(ui::ET_MOUSE_PRESSED, mouse_events[0].type());
-  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & mouse_events[0].flags());
-  EXPECT_EQ(mouse_events[0].location(), kDefaultPosition);
-  EXPECT_EQ(ui::ET_MOUSE_RELEASED, mouse_events[1].type());
-  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & mouse_events[1].flags());
-  EXPECT_EQ(mouse_events[1].location(), kDefaultPosition);
+  ExpectClick(CheckForMouseEvents(), ui::EF_LEFT_MOUSE_BUTTON,
+              kDefaultPosition);
 
   // We should not get any more events.
   ClearEvents();
@@ -356,6 +386,143 @@ TEST_F(MouseKeysTest, Click) {
   EXPECT_FALSE(GetMouseKeysController()->enabled());
   PressAndReleaseKey(ui::VKEY_I);
   EXPECT_EQ(0u, CheckForMouseEvents().size());
+}
+
+TEST_F(MouseKeysTest, DoubleClick) {
+  SetEnabled(true);
+  GetEventGenerator()->MoveMouseToWithNative(kDefaultPosition,
+                                             kDefaultPosition);
+
+  // Enable Mouse Keys, and we should be able to double click by pressing /.
+  ClearEvents();
+  PressAndReleaseKey(ui::VKEY_OEM_2);
+  EXPECT_EQ(0u, CheckForKeyEvents().size());
+  ExpectDoubleClick(CheckForMouseEvents(), kDefaultPosition);
+
+  // Switch to right mouse button, we shouldn't get a double click.
+  PressAndReleaseKey(ui::VKEY_OEM_COMMA);
+  ClearEvents();
+  PressAndReleaseKey(ui::VKEY_OEM_2);
+  EXPECT_EQ(0u, CheckForKeyEvents().size());
+  EXPECT_EQ(0u, CheckForMouseEvents().size());
+
+  // Switch to both mouse buttons, we shouldn't get a double click.
+  PressAndReleaseKey(ui::VKEY_OEM_COMMA);
+  ClearEvents();
+  PressAndReleaseKey(ui::VKEY_OEM_2);
+  EXPECT_EQ(0u, CheckForKeyEvents().size());
+  EXPECT_EQ(0u, CheckForMouseEvents().size());
+}
+
+TEST_F(MouseKeysTest, SelectButtonRightHand) {
+  GetEventGenerator()->MoveMouseToWithNative(kDefaultPosition,
+                                             kDefaultPosition);
+  SetEnabled(true);
+  SetLeftHanded(false);
+
+  // Initial click should be the left button.
+  ClearEvents();
+  PressAndReleaseKey(ui::VKEY_I);
+  EXPECT_EQ(0u, CheckForKeyEvents().size());
+  ExpectClick(CheckForMouseEvents(), ui::EF_LEFT_MOUSE_BUTTON,
+              kDefaultPosition);
+
+  // Press , and the mouse action should be the right button.
+  ClearEvents();
+  PressAndReleaseKey(ui::VKEY_OEM_COMMA);
+  PressAndReleaseKey(ui::VKEY_I);
+  EXPECT_EQ(0u, CheckForKeyEvents().size());
+  ExpectClick(CheckForMouseEvents(), ui::EF_RIGHT_MOUSE_BUTTON,
+              kDefaultPosition);
+
+  // Press , and the mouse action should be both buttons.
+  ClearEvents();
+  PressAndReleaseKey(ui::VKEY_OEM_COMMA);
+  PressAndReleaseKey(ui::VKEY_I);
+  EXPECT_EQ(0u, CheckForKeyEvents().size());
+  ExpectClick(CheckForMouseEvents(),
+              ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON,
+              kDefaultPosition);
+
+  // Press , and the mouse action should be the left button.
+  ClearEvents();
+  PressAndReleaseKey(ui::VKEY_OEM_COMMA);
+  PressAndReleaseKey(ui::VKEY_I);
+  EXPECT_EQ(0u, CheckForKeyEvents().size());
+  ExpectClick(CheckForMouseEvents(), ui::EF_LEFT_MOUSE_BUTTON,
+              kDefaultPosition);
+}
+
+TEST_F(MouseKeysTest, SelectButtonLeftHand) {
+  GetEventGenerator()->MoveMouseToWithNative(kDefaultPosition,
+                                             kDefaultPosition);
+  SetEnabled(true);
+  SetLeftHanded(true);
+
+  // Initial click should be the left button.
+  ClearEvents();
+  PressAndReleaseKey(ui::VKEY_W);
+  EXPECT_EQ(0u, CheckForKeyEvents().size());
+  ExpectClick(CheckForMouseEvents(), ui::EF_LEFT_MOUSE_BUTTON,
+              kDefaultPosition);
+
+  // Press , and the mouse action should be the right button.
+  ClearEvents();
+  PressAndReleaseKey(ui::VKEY_X);
+  PressAndReleaseKey(ui::VKEY_W);
+  EXPECT_EQ(0u, CheckForKeyEvents().size());
+  ExpectClick(CheckForMouseEvents(), ui::EF_RIGHT_MOUSE_BUTTON,
+              kDefaultPosition);
+
+  // Press , and the mouse action should be both buttons.
+  ClearEvents();
+  PressAndReleaseKey(ui::VKEY_W);
+  PressAndReleaseKey(ui::VKEY_X);
+  EXPECT_EQ(0u, CheckForKeyEvents().size());
+  ExpectClick(CheckForMouseEvents(),
+              ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON,
+              kDefaultPosition);
+
+  // Press , and the mouse action should be the left button.
+  ClearEvents();
+  PressAndReleaseKey(ui::VKEY_W);
+  PressAndReleaseKey(ui::VKEY_X);
+  EXPECT_EQ(0u, CheckForKeyEvents().size());
+  ExpectClick(CheckForMouseEvents(), ui::EF_LEFT_MOUSE_BUTTON,
+              kDefaultPosition);
+}
+
+TEST_F(MouseKeysTest, SelectButtonNumPad) {
+  GetEventGenerator()->MoveMouseToWithNative(kDefaultPosition,
+                                             kDefaultPosition);
+  SetEnabled(true);
+
+  SetUsePrimaryKeys(false);
+
+  // Press - and the mouse action should be the right button.
+  ClearEvents();
+  PressAndReleaseKey(ui::VKEY_SUBTRACT);
+  PressAndReleaseKey(ui::VKEY_NUMPAD5);
+  EXPECT_EQ(0u, CheckForKeyEvents().size());
+  ExpectClick(CheckForMouseEvents(), ui::EF_RIGHT_MOUSE_BUTTON,
+              kDefaultPosition);
+
+  // Press * and the mouse action should be both buttons.
+  ClearEvents();
+  PressAndReleaseKey(ui::VKEY_MULTIPLY);
+  PressAndReleaseKey(ui::VKEY_NUMPAD5);
+  EXPECT_EQ(0u, CheckForKeyEvents().size());
+  ExpectClick(CheckForMouseEvents(),
+              ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON,
+              kDefaultPosition);
+
+  // Press / and the mouse action should be the left button.
+  ClearEvents();
+  PressAndReleaseKey(ui::VKEY_DIVIDE);
+  PressAndReleaseKey(ui::VKEY_NUMPAD5);
+  EXPECT_EQ(0u, CheckForKeyEvents().size());
+  ExpectClick(CheckForMouseEvents(), ui::EF_LEFT_MOUSE_BUTTON,
+              kDefaultPosition);
 }
 
 TEST_F(MouseKeysTest, IgnoreKeyRepeat) {
@@ -475,15 +642,9 @@ TEST_F(MouseKeysTest, KeyboardLayout) {
   // Click
   PressAndReleaseColemakKey(ui::VKEY_U);
 
-  mouse_events = CheckForMouseEvents();
   EXPECT_EQ(0u, CheckForKeyEvents().size());
-  ASSERT_EQ(2u, mouse_events.size());
-  EXPECT_EQ(ui::ET_MOUSE_PRESSED, mouse_events[0].type());
-  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & mouse_events[0].flags());
-  EXPECT_EQ(mouse_events[0].location(), kDefaultPosition);
-  EXPECT_EQ(ui::ET_MOUSE_RELEASED, mouse_events[1].type());
-  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & mouse_events[1].flags());
-  EXPECT_EQ(mouse_events[1].location(), kDefaultPosition);
+  ExpectClick(CheckForMouseEvents(), ui::EF_LEFT_MOUSE_BUTTON,
+              kDefaultPosition);
 
   ClearEvents();
   // Unmapped
@@ -680,15 +841,9 @@ TEST_F(MouseKeysTest, LeftHanded) {
   // We should be able to click by pressing w.
   ClearEvents();
   PressAndReleaseKey(ui::VKEY_W);
-  auto mouse_events = CheckForMouseEvents();
   EXPECT_EQ(0u, CheckForKeyEvents().size());
-  ASSERT_EQ(2u, mouse_events.size());
-  EXPECT_EQ(ui::ET_MOUSE_PRESSED, mouse_events[0].type());
-  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & mouse_events[0].flags());
-  EXPECT_EQ(mouse_events[0].location(), kDefaultPosition);
-  EXPECT_EQ(ui::ET_MOUSE_RELEASED, mouse_events[1].type());
-  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & mouse_events[1].flags());
-  EXPECT_EQ(mouse_events[1].location(), kDefaultPosition);
+  ExpectClick(CheckForMouseEvents(), ui::EF_LEFT_MOUSE_BUTTON,
+              kDefaultPosition);
 
   // Enable Mouse Keys, and we should be able to move the mouse with 1, 2, 3, q,
   // e, a, s, d.
@@ -712,18 +867,15 @@ TEST_F(MouseKeysTest, NumPad) {
   GetEventGenerator()->MoveMouseToWithNative(kDefaultPosition,
                                              kDefaultPosition);
 
+  // Switch to the num pad.
+  SetUsePrimaryKeys(false);
+
   // We should be able to click with the num pad 5.
   ClearEvents();
   PressAndReleaseKey(ui::VKEY_NUMPAD5);
-  auto mouse_events = CheckForMouseEvents();
   EXPECT_EQ(0u, CheckForKeyEvents().size());
-  ASSERT_EQ(2u, mouse_events.size());
-  EXPECT_EQ(ui::ET_MOUSE_PRESSED, mouse_events[0].type());
-  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & mouse_events[0].flags());
-  EXPECT_EQ(mouse_events[0].location(), kDefaultPosition);
-  EXPECT_EQ(ui::ET_MOUSE_RELEASED, mouse_events[1].type());
-  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & mouse_events[1].flags());
-  EXPECT_EQ(mouse_events[1].location(), kDefaultPosition);
+  ExpectClick(CheckForMouseEvents(), ui::EF_LEFT_MOUSE_BUTTON,
+              kDefaultPosition);
 
   // We should be able to move the mouse with the num pad.
   ClearEvents();
@@ -740,129 +892,47 @@ TEST_F(MouseKeysTest, NumPad) {
                                     kMoveDeltaDIP);
 }
 
-TEST_F(MouseKeysTest, NoDisableInTextFields) {
-  raw_ptr<TestTextInputView> text_input_view = new TestTextInputView;
-  views::Widget* widget = views::Widget::CreateWindowWithContext(
-      text_input_view, Shell::GetPrimaryRootWindow(),
-      gfx::Rect(100, 200, 80, 80));
-  widget->Show();
-
+TEST_F(MouseKeysTest, UsePrimaryKeyboard) {
+  SetEnabled(true);
   GetEventGenerator()->MoveMouseToWithNative(kDefaultPosition,
                                              kDefaultPosition);
-  SetEnabled(true);
-  SetDisableInTextFields(false);
-  EXPECT_FALSE(GetMouseKeysController()->disable_in_text_fields());
-  text_input_view->FocusOnTextInput();
+
+  // Turn off the primary keyboard.
+  SetUsePrimaryKeys(false);
+
+  // Switch to left handed.
+  SetLeftHanded(true);
 
   ClearEvents();
-  PressAndReleaseKey(ui::VKEY_7);
-  PressAndReleaseKey(ui::VKEY_8);
-  PressAndReleaseKey(ui::VKEY_9);
-  PressAndReleaseKey(ui::VKEY_U);
-  PressAndReleaseKey(ui::VKEY_O);
-  PressAndReleaseKey(ui::VKEY_J);
-  PressAndReleaseKey(ui::VKEY_K);
-  PressAndReleaseKey(ui::VKEY_L);
-  EXPECT_EQ(0u, CheckForKeyEvents().size());
-
-  ExpectMouseMovedInCircularPattern(CheckForMouseEvents(), kDefaultPosition,
-                                    kMoveDeltaDIP);
-
-  // No text should be entered.
-  EXPECT_EQ(text_input_view->GetText(), u"");
-}
-
-TEST_F(MouseKeysTest, DisableInTextFields) {
-  raw_ptr<TestTextInputView> text_input_view = new TestTextInputView;
-  views::Widget* widget = views::Widget::CreateWindowWithContext(
-      text_input_view, Shell::GetPrimaryRootWindow(),
-      gfx::Rect(100, 200, 80, 80));
-  widget->Show();
-
-  GetEventGenerator()->MoveMouseToWithNative(kDefaultPosition,
-                                             kDefaultPosition);
-  SetEnabled(true);
-  SetDisableInTextFields(true);
-  EXPECT_TRUE(GetMouseKeysController()->disable_in_text_fields());
-  text_input_view->FocusOnTextInput();
-
-  ClearEvents();
-  PressAndReleaseKey(ui::VKEY_I);
-  PressAndReleaseKey(ui::VKEY_7);
-  PressAndReleaseKey(ui::VKEY_8);
-  PressAndReleaseKey(ui::VKEY_9);
-  PressAndReleaseKey(ui::VKEY_U);
-  PressAndReleaseKey(ui::VKEY_O);
-  PressAndReleaseKey(ui::VKEY_J);
-  PressAndReleaseKey(ui::VKEY_K);
-  PressAndReleaseKey(ui::VKEY_L);
+  // We should not see any mouse events from the left hand.
+  PressAndReleaseKey(ui::VKEY_1);
+  PressAndReleaseKey(ui::VKEY_2);
+  PressAndReleaseKey(ui::VKEY_3);
+  PressAndReleaseKey(ui::VKEY_Q);
+  PressAndReleaseKey(ui::VKEY_E);
+  PressAndReleaseKey(ui::VKEY_A);
+  PressAndReleaseKey(ui::VKEY_S);
+  PressAndReleaseKey(ui::VKEY_D);
+  PressAndReleaseKey(ui::VKEY_W);
   EXPECT_EQ(0u, CheckForMouseEvents().size());
   EXPECT_EQ(18u, CheckForKeyEvents().size());
 
-  // "789uojkl" should be entered.
-  EXPECT_EQ(text_input_view->GetText(), u"i789uojkl");
-}
-
-TEST_F(MouseKeysTest, EscapeToResumeInTextfield) {
-  raw_ptr<TestTextInputView> text_input_view = new TestTextInputView;
-  views::Widget* widget = views::Widget::CreateWindowWithContext(
-      text_input_view, Shell::GetPrimaryRootWindow(),
-      gfx::Rect(100, 200, 80, 80));
-  widget->Show();
-
-  GetEventGenerator()->MoveMouseToWithNative(kDefaultPosition,
-                                             kDefaultPosition);
-  SetEnabled(true);
-  SetDisableInTextFields(true);
-  EXPECT_TRUE(GetMouseKeysController()->disable_in_text_fields());
-  text_input_view->FocusOnTextInput();
+  // Switch to right handed.
+  SetLeftHanded(false);
 
   ClearEvents();
-  PressAndReleaseKey(ui::VKEY_I);
-  PressAndReleaseKey(ui::VKEY_L);
-  PressAndReleaseKey(ui::VKEY_K);
-  PressAndReleaseKey(ui::VKEY_J);
-  PressAndReleaseKey(ui::VKEY_O);
-  PressAndReleaseKey(ui::VKEY_U);
-  PressAndReleaseKey(ui::VKEY_9);
-  PressAndReleaseKey(ui::VKEY_8);
+  // We should not see any mouse events from the right hand.
   PressAndReleaseKey(ui::VKEY_7);
+  PressAndReleaseKey(ui::VKEY_8);
+  PressAndReleaseKey(ui::VKEY_9);
+  PressAndReleaseKey(ui::VKEY_U);
+  PressAndReleaseKey(ui::VKEY_O);
+  PressAndReleaseKey(ui::VKEY_J);
+  PressAndReleaseKey(ui::VKEY_K);
+  PressAndReleaseKey(ui::VKEY_L);
+  PressAndReleaseKey(ui::VKEY_I);
   EXPECT_EQ(0u, CheckForMouseEvents().size());
   EXPECT_EQ(18u, CheckForKeyEvents().size());
-
-  // "lkjou987" should be entered.
-  EXPECT_EQ(text_input_view->GetText(), u"ilkjou987");
-
-  PressAndReleaseKey(ui::VKEY_ESCAPE);
-
-  ClearEvents();
-  PressAndReleaseKey(ui::VKEY_I);
-  auto mouse_events = CheckForMouseEvents();
-  EXPECT_EQ(0u, CheckForKeyEvents().size());
-  ASSERT_EQ(2u, mouse_events.size());
-  EXPECT_EQ(ui::ET_MOUSE_PRESSED, mouse_events[0].type());
-  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & mouse_events[0].flags());
-  EXPECT_EQ(mouse_events[0].location(), kDefaultPosition);
-  EXPECT_EQ(ui::ET_MOUSE_RELEASED, mouse_events[1].type());
-  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & mouse_events[1].flags());
-  EXPECT_EQ(mouse_events[1].location(), kDefaultPosition);
-
-  ClearEvents();
-  PressAndReleaseKey(ui::VKEY_7);
-  PressAndReleaseKey(ui::VKEY_8);
-  PressAndReleaseKey(ui::VKEY_9);
-  PressAndReleaseKey(ui::VKEY_U);
-  PressAndReleaseKey(ui::VKEY_O);
-  PressAndReleaseKey(ui::VKEY_J);
-  PressAndReleaseKey(ui::VKEY_K);
-  PressAndReleaseKey(ui::VKEY_L);
-  EXPECT_EQ(0u, CheckForKeyEvents().size());
-
-  ExpectMouseMovedInCircularPattern(CheckForMouseEvents(), kDefaultPosition,
-                                    kMoveDeltaDIP);
-
-  // Text should be unchanged.
-  EXPECT_EQ(text_input_view->GetText(), u"ilkjou987");
 }
 
 }  // namespace ash

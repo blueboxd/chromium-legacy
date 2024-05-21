@@ -68,7 +68,6 @@
 <translation id="2241587408274973373">Naujų skirtukų puslapių kortelės</translation>
 <translation id="2241634353105152135">Tik vieną kartą</translation>
 <translation id="2253414712144136228">Pašalinti „<ph name="NAME_OF_LIST_ITEM" />“</translation>
-<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{Užblokuota viena svetainė}one{Užblokuota # svetainė}few{Užblokuotos # svetainės}many{Užblokuota # svetainės}other{Užblokuota # svetainių}}</translation>
 <translation id="228293613124499805">Paprastai dauguma svetainių, kuriose lankotės, išsaugo duomenis įrenginyje, pvz., išsaugo jūsų nuostatas ar informaciją, kurią bendrinate su svetaine, kad jums būtų patogiau naudotis svetainių funkcijomis. Rekomenduojame palikti šį nustatymą įjungtą.</translation>
 <translation id="2289270750774289114">Paklausti, kai svetainė nori atrasti netoliese esančius „Bluetooth“ įrenginius (rekomenduojama)</translation>
 <translation id="2315043854645842844">Kliento pasirinkto sertifikato nepalaiko operacinė sistema.</translation>
@@ -305,6 +304,7 @@
 <translation id="6015775454662021376">Valdykite šios svetainės prieigą prie jūsų įrenginio</translation>
 <translation id="6040143037577758943">Uždaryti</translation>
 <translation id="6042308850641462728">Daugiau</translation>
+<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Jūsų paskutinis skirtukas</translation>
 <translation id="6064125863973209585">Baigti atsisiuntimai</translation>
 <translation id="6071501408666570960">Galite būti atjungti šioje svetainėje</translation>
 <translation id="6120483543004435978">Įjungus svetainėse gali būti prašoma leisti sužinoti, kada aktyviai naudojate įrenginį. Išjungus svetainės nežino, kada aktyviai naudojate įrenginį.</translation>
@@ -426,6 +426,7 @@
 <translation id="7986741934819883144">Pasirinkite kontaktą</translation>
 <translation id="7990211076305263060">Įjungus svetainėse gali būti prašoma naudoti mikrofoną. Išjungus svetainės negali naudoti mikrofono.</translation>
 <translation id="8007176423574883786">Išjungta šiame įrenginyje</translation>
+<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Iš „<ph name="FROM_DEVICE" />“</translation>
 <translation id="802154636333426148">Įvyko atsisiuntimo klaida</translation>
 <translation id="8042586301629853791">Rūšiuoti pagal:</translation>
 <translation id="8067883171444229417">Leisti vaizdo įrašą</translation>
@@ -480,7 +481,6 @@
 <translation id="8721719390026067591">Įjungus svetainėse gali būti prašoma ieškoti „Bluetooth“ įrenginių. Išjungus svetainėse negalima ieškoti „Bluetooth“ įrenginių.</translation>
 <translation id="8725066075913043281">Bandyti dar kartą</translation>
 <translation id="8730621377337864115">Atlikta</translation>
-<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{Leidžiama viena svetainė}one{Leidžiama # svetainė}few{Leidžiamos # svetainės}many{Leidžiama # svetainės}other{Leidžiama # svetainių}}</translation>
 <translation id="8751914237388039244">Pasirinkti vaizdą</translation>
 <translation id="8800034312320686233">Neveikia svetainė?</translation>
 <translation id="8801436777607969138">Blokuoti „JavaScript“ konkrečioje svetainėje.</translation>

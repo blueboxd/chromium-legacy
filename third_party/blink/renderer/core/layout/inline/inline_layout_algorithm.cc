@@ -341,18 +341,31 @@ void InlineLayoutAlgorithm::CheckBoxStates(const LineInfo& line_info) const {
 #endif
 
 ALWAYS_INLINE bool InlineLayoutAlgorithm::ShouldLineClamp(
-    const LineInfo* line_info) const {
+    const LineInfo* line_info,
+    LayoutUnit line_height) const {
   if (line_info->IsBlockInInline()) {
     return false;
   }
 
   LineClampData line_clamp_data = GetConstraintSpace().GetLineClampData();
   if (line_clamp_data.IsLineClampContext()) {
-    return line_clamp_data.IsAtClampPoint();
+    LayoutUnit line_start_offset =
+        container_builder_.LineBoxBfcBlockOffset().value_or(
+            GetConstraintSpace().GetBfcOffset().block_offset);
+    return line_clamp_data.IsAtClampPoint(line_start_offset + line_height);
   } else {
     return line_info->HasOverflow() &&
            node_.GetLayoutBlockFlow()->ShouldTruncateOverflowingText();
   }
+}
+
+ALWAYS_INLINE bool InlineLayoutAlgorithm::ShouldHideLine(
+    LayoutUnit line_height) const {
+  LayoutUnit line_start_offset =
+      container_builder_.LineBoxBfcBlockOffset().value_or(
+          GetConstraintSpace().GetBfcOffset().block_offset);
+  return GetConstraintSpace().GetLineClampData().ShouldHideForPaint(
+      line_start_offset + line_height);
 }
 
 void InlineLayoutAlgorithm::CreateLine(const LineLayoutOpportunity& opportunity,
@@ -382,10 +395,24 @@ void InlineLayoutAlgorithm::CreateLine(const LineLayoutOpportunity& opportunity,
     container_builder_.SetHangInlineSize(hang_width);
   }
 
+  // Force an editable empty line or a line with ruby annotations to have
+  // metrics, so that is has a height.
+  if (UNLIKELY(line_info->HasLineEvenIfEmpty() ||
+               !box_states_->RubyColumnList().empty())) {
+    box_states_->LineBoxState().EnsureTextMetrics(
+        line_info->LineStyle(), *box_states_->LineBoxState().font,
+        baseline_type_);
+  } else if (UNLIKELY(line_builder.InitialLetterItemResult()) &&
+             box_states_->LineBoxState().metrics.IsEmpty()) {
+    box_states_->LineBoxState().metrics = FontHeight();
+  }
+
+  const FontHeight& line_box_metrics = box_states_->LineBoxState().metrics;
+
   // Truncate the line if:
   //  - 'text-overflow: ellipsis' is set and we *aren't* a line-clamp context.
   //  - If we've reached the line-clamp limit.
-  if (UNLIKELY(ShouldLineClamp(line_info))) {
+  if (UNLIKELY(ShouldLineClamp(line_info, line_box_metrics.LineHeight()))) {
     DCHECK(!line_info->IsBlockInInline());
     LineTruncator truncator(*line_info);
     auto* input =
@@ -400,7 +427,7 @@ void InlineLayoutAlgorithm::CreateLine(const LineLayoutOpportunity& opportunity,
 
   // With the CSSLineClamp feature, if we're past the clamp point, we mark every
   // inline item in the line as hidden for paint.
-  if (UNLIKELY(GetConstraintSpace().GetLineClampData().ShouldHideForPaint())) {
+  if (UNLIKELY(ShouldHideLine(line_box_metrics.LineHeight()))) {
     container_builder_.SetIsHiddenForPaint(true);
     for (auto& child : *line_box) {
       child.is_hidden_for_paint = true;
@@ -425,20 +452,6 @@ void InlineLayoutAlgorithm::CreateLine(const LineLayoutOpportunity& opportunity,
 
     container_builder_.SetBfcLineOffset(bfc_line_offset);
   }
-
-  // Force an editable empty line or a line with ruby annotations to have
-  // metrics, so that is has a height.
-  if (UNLIKELY(line_info->HasLineEvenIfEmpty() ||
-               !box_states_->RubyColumnList().empty())) {
-    box_states_->LineBoxState().EnsureTextMetrics(
-        line_info->LineStyle(), *box_states_->LineBoxState().font,
-        baseline_type_);
-  } else if (UNLIKELY(line_builder.InitialLetterItemResult()) &&
-             box_states_->LineBoxState().metrics.IsEmpty()) {
-    box_states_->LineBoxState().metrics = FontHeight();
-  }
-
-  const FontHeight& line_box_metrics = box_states_->LineBoxState().metrics;
 
   if (UNLIKELY(Node().HasRuby() && !line_info->IsEmptyLine())) {
     std::optional<FontHeight> annotation_metrics;
@@ -585,29 +598,59 @@ void InlineLayoutAlgorithm::CreateLine(const LineLayoutOpportunity& opportunity,
   container_builder_.SetInlineSize(inline_size);
 }
 
-void InlineLayoutAlgorithm::ApplyTextBoxTrim(const LineInfo& line_info) {
+void InlineLayoutAlgorithm::ApplyTextBoxTrim(LineInfo& line_info) {
   const ConstraintSpace& space = GetConstraintSpace();
-  DCHECK(space.ShouldTextBoxTrimStart() || space.ShouldTextBoxTrimEnd());
-  if (space.ShouldTextBoxTrimStart() && line_info.IsFirstFormattedLine()) {
+  const bool should_apply_start =
+      space.ShouldTextBoxTrimStart() && line_info.IsFirstFormattedLine();
+  const bool should_apply_end =
+      space.ShouldTextBoxTrimEnd() && !line_info.GetBreakToken();
+  if (!should_apply_start && !should_apply_end) {
+    return;
+  }
+
+  const ComputedStyle& line_style = line_info.LineStyle();
+  const bool is_flipped_line = line_style.IsFlippedLinesWritingMode();
+  bool should_apply_over = should_apply_start;
+  bool should_apply_under = should_apply_end;
+  if (UNLIKELY(is_flipped_line)) {
+    should_apply_over = should_apply_end;
+    should_apply_under = should_apply_start;
+  }
+
+  const FontHeight line_box_metrics = container_builder_.Metrics();
+  FontHeight intrinsic_metrics = line_box_metrics;
+  InlineBoxState::AdjustEdges(line_style, line_style.GetFont(), baseline_type_,
+                              should_apply_over, should_apply_under,
+                              intrinsic_metrics);
+
+  container_builder_.SetIntrinsicMetrics(intrinsic_metrics);
+  container_builder_.SetIsTextBoxTrimApplied();
+
+  if (should_apply_start) {
     // Apply `text-box-trim: start` if this is the first formatted line.
-    // TODO(crbug.com/40254880): The edge should be determined by
-    // `text-box-edge` property.
-    const FontHeight line_box_metrics = container_builder_.Metrics();
-    FontHeight intrinsic_metrics = Node().Style().GetFontHeight(baseline_type_);
-    LayoutUnit offset_for_trimming_box =
-        intrinsic_metrics.ascent - line_box_metrics.ascent;
-    container_builder_.SetIntrinsicMetrics(intrinsic_metrics);
+    const LayoutUnit offset_for_trimming_box =
+        UNLIKELY(is_flipped_line)
+            ? intrinsic_metrics.descent - line_box_metrics.descent
+            : intrinsic_metrics.ascent - line_box_metrics.ascent;
     container_builder_.SetLineBoxBfcBlockOffset(
         container_builder_.LineBoxBfcBlockOffset()
             ? offset_for_trimming_box +
                   container_builder_.LineBoxBfcBlockOffset().value()
             : offset_for_trimming_box);
-    container_builder_.SetIsTextBoxTrimApplied();
+
+    // Cancel adjusting the block start for the initial letters and Ruby
+    // annotation. The use of the `text-box-trim` accepts the risk of collisions
+    // for the finer control of the alignment of the body text in the block
+    // direction.
+    line_info.SetAnnotationBlockStartAdjustment(LayoutUnit());
+    line_info.SetInitialLetterBlockStartAdjustment(LayoutUnit());
   }
-  if (space.ShouldTextBoxTrimEnd() && !line_info.GetBreakToken()) {
-    // Apply `text-box-trim: end` if this is the last line.
-    container_builder_.SetIsTextBoxTrimApplied();
+
+  if (should_apply_end) {
+    // Ask the block layout algorithm to trim the end of the line box.
+    container_builder_.SetIsBlockEndTrimmed();
   }
+
   // TODO(crbug.com/40254880): Block-in-inline case probably needs a logic.
 }
 
@@ -1381,8 +1424,14 @@ PositionedFloat InlineLayoutAlgorithm::PositionFloat(
   BfcOffset origin_bfc_offset = {space.GetBfcOffset().line_offset,
                                  origin_bfc_block_offset};
 
+  // The BFC offset passed to `ShouldHideForPaint` should be the bottom offset
+  // of the line, which we don't know at this point. However, since block layout
+  // will relayout to fix the clamp BFC offset to the bottom of the last line
+  // before clamp, we now that if the line's BFC offset is equal or greater than
+  // the clamp BFC offset in the final relayout, the line will be hidden.
   bool is_hidden_for_paint =
-      GetConstraintSpace().GetLineClampData().ShouldHideForPaint();
+      GetConstraintSpace().GetLineClampData().ShouldHideForPaint(
+          origin_bfc_block_offset, /*is_float*/ true);
   UnpositionedFloat unpositioned_float(
       BlockNode(To<LayoutBox>(floating_object)),
       /* break_token */ nullptr, space.AvailableSize(),

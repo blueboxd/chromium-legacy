@@ -202,6 +202,8 @@ protocol::DOM::PseudoType InspectorDOMAgent::ProtocolPseudoElementType(
       return protocol::DOM::PseudoTypeEnum::Backdrop;
     case kPseudoIdSelection:
       return protocol::DOM::PseudoTypeEnum::Selection;
+    case kPseudoIdSearchText:
+      return protocol::DOM::PseudoTypeEnum::SearchText;
     case kPseudoIdTargetText:
       return protocol::DOM::PseudoTypeEnum::TargetText;
     case kPseudoIdSpellingError:
@@ -226,8 +228,8 @@ protocol::DOM::PseudoType InspectorDOMAgent::ProtocolPseudoElementType(
       return protocol::DOM::PseudoTypeEnum::ScrollbarCorner;
     case kPseudoIdScrollMarker:
       return protocol::DOM::PseudoTypeEnum::ScrollMarker;
-    case kPseudoIdScrollMarkers:
-      return protocol::DOM::PseudoTypeEnum::ScrollMarkers;
+    case kPseudoIdScrollMarkerGroup:
+      return protocol::DOM::PseudoTypeEnum::ScrollMarkerGroup;
     case kPseudoIdResizer:
       return protocol::DOM::PseudoTypeEnum::Resizer;
     case kPseudoIdInputListButton:
@@ -1803,7 +1805,7 @@ protocol::DOM::ShadowRootType InspectorDOMAgent::GetShadowRootType(
     case ShadowRootMode::kClosed:
       return protocol::DOM::ShadowRootTypeEnum::Closed;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return protocol::DOM::ShadowRootTypeEnum::UserAgent;
 }
 
@@ -1818,7 +1820,7 @@ InspectorDOMAgent::GetDocumentCompatibilityMode(Document* document) {
     case Document::CompatibilityMode::kNoQuirksMode:
       return protocol::DOM::CompatibilityModeEnum::NoQuirksMode;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return protocol::DOM::CompatibilityModeEnum::NoQuirksMode;
 }
 

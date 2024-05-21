@@ -44,12 +44,12 @@
           "builder": "mac-arm64-on-arm64-rel",
           "group": "tryserver.chromium.mac"
         }
-      ]
+      ],
+      "retry_failed_shards": true
     }
   },
   "$build/reclient": {
     "instance": "rbe-chromium-trusted",
-    "jobs": 250,
     "metrics_project": "chromium-reclient-metrics",
     "scandeps_server": true
   },

@@ -302,7 +302,7 @@ DriveMountStatus ConvertMountFailure(
     case drivefs::DriveFsHost::MountObserver::MountFailure::kUnknown:
       return DriveMountStatus::kUnknownFailure;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void UmaEmitMountStatus(DriveMountStatus status) {
@@ -715,7 +715,7 @@ void DriveIntegrationService::SetEnabled(bool enabled) {
         AddDriveMountPoint();
         return;
     }
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   } else {
     RemoveDriveMountPoint();
     enabled_ = false;
@@ -1724,6 +1724,29 @@ void DriveIntegrationService::GetDocsOfflineStats(
   }
 
   GetDriveFsInterface()->GetDocsOfflineStats(std::move(callback));
+}
+
+void DriveIntegrationService::GetMirrorSyncStatusForFile(
+    const base::FilePath& path,
+    DriveFs::GetMirrorSyncStatusForFileCallback callback) {
+  if (!IsMounted() || !GetDriveFsInterface()) {
+    std::move(callback).Run(drivefs::mojom::MirrorItemSyncingStatus::kUnknown);
+    return;
+  }
+
+  GetDriveFsInterface()->GetMirrorSyncStatusForFile(path, std::move(callback));
+}
+
+void DriveIntegrationService::GetMirrorSyncStatusForDirectory(
+    const base::FilePath& path,
+    DriveFs::GetMirrorSyncStatusForDirectoryCallback callback) {
+  if (!IsMounted() || !GetDriveFsInterface()) {
+    std::move(callback).Run(drivefs::mojom::MirrorItemSyncingStatus::kUnknown);
+    return;
+  }
+
+  GetDriveFsInterface()->GetMirrorSyncStatusForDirectory(path,
+                                                         std::move(callback));
 }
 
 void DriveIntegrationService::OnNetworkChanged() {

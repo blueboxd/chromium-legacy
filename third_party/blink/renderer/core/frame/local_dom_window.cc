@@ -603,7 +603,9 @@ void LocalDOMWindow::ReportPermissionsPolicyViolation(
   }
 
   // Construct the permissions policy violation report.
-  const String& feature_name = GetNameForFeature(feature);
+  bool is_isolated_context =
+      GetExecutionContext() && GetExecutionContext()->IsIsolatedContext();
+  const String& feature_name = GetNameForFeature(feature, is_isolated_context);
   const String& disp_str =
       (disposition == mojom::blink::PolicyDisposition::kReport ? "report"
                                                                : "enforce");
@@ -915,11 +917,6 @@ void LocalDOMWindow::DispatchPagehideEvent(
 
 void LocalDOMWindow::EnqueueHashchangeEvent(const String& old_url,
                                             const String& new_url) {
-  DCHECK(GetFrame());
-  if (SoftNavigationHeuristics* heuristics =
-          SoftNavigationHeuristics::From(*this)) {
-    heuristics->SameDocumentNavigationStarted();
-  }
   // https://html.spec.whatwg.org/C/#history-traversal
   EnqueueWindowEvent(*HashChangeEvent::Create(old_url, new_url),
                      TaskType::kDOMManipulation);
@@ -2204,7 +2201,7 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   // as well here.
   if (!BindingSecurity::ShouldAllowAccessTo(entered_window, this)) {
     // Trigger DCHECK() failure, while gracefully failing on release builds.
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kWindowOpenRealmMismatch);
     return nullptr;
@@ -2355,7 +2352,7 @@ DOMWindow* LocalDOMWindow::openPictureInPictureWindow(
   // as well here.
   if (!BindingSecurity::ShouldAllowAccessTo(entered_window, this)) {
     // Trigger DCHECK() failure, while gracefully failing on release builds.
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kWindowOpenRealmMismatch);
     return nullptr;
@@ -2447,11 +2444,6 @@ ukm::SourceId LocalDOMWindow::UkmSourceID() const {
 
 void LocalDOMWindow::SetStorageKey(const BlinkStorageKey& storage_key) {
   storage_key_ = storage_key;
-}
-
-void LocalDOMWindow::SetSessionStorageKey(
-    const BlinkStorageKey& session_storage_key) {
-  session_storage_key_ = session_storage_key;
 }
 
 bool LocalDOMWindow::IsPaymentRequestTokenActive() const {

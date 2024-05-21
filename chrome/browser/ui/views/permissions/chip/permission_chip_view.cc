@@ -98,22 +98,23 @@ void PermissionChipView::ResetAnimation(double value) {
   OnAnimationValueMaybeChanged();
 }
 
-// TODO(crbug.com/40232718): Respect `available_size`.
 gfx::Size PermissionChipView::CalculatePreferredSize(
     const views::SizeBounds& available_size) const {
   const int icon_width = GetIconViewWidth();
+  const int extra_width = GetPadding().width() + icon_width;
+  views::SizeBound available_width =
+      std::max<views::SizeBound>(0, available_size.width() - extra_width);
   const int label_width =
-      label()
-          ->GetPreferredSize(views::SizeBounds(label()->width(), {}))
-          .width() +
-      GetPadding().width();
+      label()->GetPreferredSize(views::SizeBounds(available_width, {})).width();
+  const int collapsable_width = label_width + GetPadding().width();
 
   const int width =
-      base_width_ +
-      base::ClampRound(label_width * animation_->GetCurrentValue()) +
-      icon_width;
+      base_width_ + icon_width +
+      base::ClampRound(collapsable_width * animation_->GetCurrentValue());
 
-  return gfx::Size(width, GetHeightForWidth(width));
+  return gfx::Size(width, views::LabelButton::CalculatePreferredSize(
+                              views::SizeBounds(width, {}))
+                              .height());
 }
 
 void PermissionChipView::OnThemeChanged() {

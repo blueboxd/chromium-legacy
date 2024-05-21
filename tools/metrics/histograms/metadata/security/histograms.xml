@@ -130,7 +130,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.DataDecoder.Json.DecodingTime" units="ms"
-    expires_after="2024-06-30">
+    expires_after="M128">
   <owner>djmitche@chromium.org</owner>
   <owner>dadrian@chromium.org</owner>
   <summary>
@@ -235,7 +235,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.HttpsFirstMode.SettingChanged2"
-    enum="HttpsFirstModeSetting" expires_after="2024-09-15">
+    enum="HttpsFirstModeSetting" expires_after="2024-11-17">
   <owner>cthomp@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -258,7 +258,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.HttpsFirstMode.SettingEnabledAtStartup2"
-    enum="HttpsFirstModeSetting" expires_after="2024-09-15">
+    enum="HttpsFirstModeSetting" expires_after="2024-11-17">
   <owner>cthomp@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -339,7 +339,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.JSONParser.ParsingTime" units="microseconds"
-    expires_after="M127">
+    expires_after="M128">
   <owner>djmitche@chromium.org</owner>
   <owner>chrome-platform-security@google.com</owner>
   <summary>
@@ -359,7 +359,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.NavigationRequestSecurityLevel"
-    enum="NavigationRequestSecurityLevel" expires_after="2024-09-15">
+    enum="NavigationRequestSecurityLevel" expires_after="2024-11-17">
   <owner>jdeblasio@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -793,7 +793,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Security.TimeOnPage2" units="ms"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -921,13 +921,25 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="SiteIsolation.ProcessPerSiteWithMainFrameThreshold.BlockReason"
     enum="ProcessPerSiteWithMainFrameThresholdBlockReason"
-    expires_after="2024-06-30">
+    expires_after="2024-10-30">
   <owner>bashi@chromium.org</owner>
   <owner>blink-network-stack@google.com</owner>
   <summary>
     The reason why process sharing is disallowed when
     ProcessPerSiteUpToMainFrameThreshold feature is enabled. Recorded when
     initializing a frame tree or getting a site instance for navigation.
+  </summary>
+</histogram>
+
+<histogram
+    name="SiteIsolation.ProcessPerSiteWithMainFrameThreshold.IsDevToolsUser"
+    enum="Boolean" expires_after="2024-10-30">
+  <owner>dtapuska@chromium.org</owner>
+  <owner>blink-network-stack@google.com</owner>
+  <summary>
+    Whether any profile exists with devtools preferences and
+    ProcessPerSiteWithMainFrameThreshold feature will be opted out because of
+    this. This is logged once per browser process launch.
   </summary>
 </histogram>
 

@@ -509,16 +509,16 @@ class ExpectInvalidUtf8Client : public network::mojom::WebSocketClient {
   void OnDataFrame(bool fin,
                    network::mojom::WebSocketMessageType,
                    uint64_t data_length) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   void OnDropChannel(bool was_clean,
                      uint16_t code,
                      const std::string& reason) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
-  void OnClosingHandshake() override { NOTREACHED(); }
+  void OnClosingHandshake() override { NOTREACHED_IN_MIGRATION(); }
 
  private:
   void OnDisconnect(uint32_t reason, const std::string& message) {

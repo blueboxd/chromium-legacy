@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/picker/picker_asset_fetcher.h"
 #include "ash/picker/picker_clipboard_provider.h"
 #include "ash/picker/views/picker_category_type.h"
 #include "ash/picker/views/picker_icons.h"
@@ -47,68 +48,25 @@
 #include "ui/views/view_utils.h"
 
 namespace ash {
-namespace {
-constexpr base::TimeDelta kClipboardRecency = base::Seconds(60);
-
-std::unique_ptr<PickerListItemView> CreateListItemViewForClipboardResult(
-    const PickerSearchResult::ClipboardData& data,
-    PickerListItemView::SelectItemCallback callback) {
-  auto item_view = std::make_unique<PickerListItemView>(std::move(callback));
-  item_view->SetLeadingIcon(ui::ImageModel::FromVectorIcon(
-      kClipboardIcon, cros_tokens::kCrosSysOnSurface));
-  item_view->SetSecondaryText(
-      l10n_util::GetStringUTF16(IDS_PICKER_FROM_CLIPBOARD_TEXT));
-  switch (data.display_format) {
-    case PickerSearchResult::ClipboardData::DisplayFormat::kFile:
-    case PickerSearchResult::ClipboardData::DisplayFormat::kText:
-      item_view->SetPrimaryText(data.display_text);
-      break;
-    case PickerSearchResult::ClipboardData::DisplayFormat::kImage:
-      if (!data.display_image.has_value()) {
-        return nullptr;
-      }
-      item_view->SetPrimaryImage(
-          std::make_unique<views::ImageView>(*data.display_image));
-      break;
-    case PickerSearchResult::ClipboardData::DisplayFormat::kHtml:
-      item_view->SetPrimaryText(
-          l10n_util::GetStringUTF16(IDS_PICKER_HTML_CONTENT));
-      break;
-  }
-  return item_view;
-}
-
-std::unique_ptr<PickerListItemView> CreateListItemViewForSearchResult(
-    const PickerSearchResult& result,
-    PickerListItemView::SelectItemCallback callback) {
-  // Only supports Clipboard results right now.
-  if (auto* data =
-          std::get_if<PickerSearchResult::ClipboardData>(&result.data())) {
-    return CreateListItemViewForClipboardResult(*data, std::move(callback));
-  }
-  return nullptr;
-}
-
-}  // namespace
 
 PickerZeroStateView::PickerZeroStateView(
     PickerZeroStateViewDelegate* delegate,
     base::span<const PickerCategory> available_categories,
-    bool show_suggested_results,
-    int picker_view_width)
+    base::span<const PickerCategory> recent_results_categories,
+    int picker_view_width,
+    PickerAssetFetcher* asset_fetcher)
     : delegate_(delegate) {
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical);
 
-  section_list_view_ =
-      AddChildView(std::make_unique<PickerSectionListView>(picker_view_width));
+  section_list_view_ = AddChildView(std::make_unique<PickerSectionListView>(
+      picker_view_width, asset_fetcher));
 
-  if (show_suggested_results) {
-    clipboard_provider_ = std::make_unique<PickerClipboardProvider>();
-    clipboard_provider_->FetchResults(
-        base::BindRepeating(&PickerZeroStateView::OnFetchSuggestedResults,
-                            weak_ptr_factory_.GetWeakPtr()),
-        u"", kClipboardRecency);
+  for (PickerCategory category : recent_results_categories) {
+    delegate_->GetZeroStateRecentResults(
+        category,
+        base::BindRepeating(&PickerZeroStateView::OnFetchRecentResults,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (base::Contains(available_categories, PickerCategory::kEditorRewrite)) {
@@ -269,9 +227,8 @@ void PickerZeroStateView::OnCategorySelected(PickerCategory category) {
   delegate_->SelectZeroStateCategory(category);
 }
 
-void PickerZeroStateView::OnSuggestedResultSelected(
-    const PickerSearchResult& result) {
-  delegate_->SelectSuggestedZeroStateResult(result);
+void PickerZeroStateView::OnResultSelected(const PickerSearchResult& result) {
+  delegate_->SelectZeroStateResult(result);
 }
 
 void PickerZeroStateView::SetPseudoFocusedView(views::View* view) {
@@ -312,24 +269,20 @@ void PickerZeroStateView::ScrollPseudoFocusedViewToVisible() {
   }
 }
 
-void PickerZeroStateView::OnFetchSuggestedResults(
+void PickerZeroStateView::OnFetchRecentResults(
     std::vector<PickerSearchResult> results) {
   if (results.empty()) {
     return;
   }
-  if (!suggested_section_view_) {
-    suggested_section_view_ = section_list_view_->AddSectionAt(0);
-    suggested_section_view_->AddTitleLabel(
-        l10n_util::GetStringUTF16(IDS_PICKER_SUGGESTED_SECTION_TITLE));
+  if (!recent_section_view_) {
+    recent_section_view_ = section_list_view_->AddSectionAt(0);
+    recent_section_view_->AddTitleLabel(
+        GetSectionTitleForPickerSectionType(PickerSectionType::kNone));
   }
   for (const auto& result : results) {
-    if (std::unique_ptr<PickerListItemView> item_view =
-            CreateListItemViewForSearchResult(
-                result, base::BindRepeating(
-                            &PickerZeroStateView::OnSuggestedResultSelected,
-                            weak_ptr_factory_.GetWeakPtr(), result))) {
-      suggested_section_view_->AddListItem(std::move(item_view));
-    }
+    recent_section_view_->AddResult(
+        result, base::BindRepeating(&PickerZeroStateView::OnResultSelected,
+                                    weak_ptr_factory_.GetWeakPtr(), result));
   }
   SetPseudoFocusedView(section_list_view_->GetTopItem());
 }
@@ -348,7 +301,7 @@ void PickerZeroStateView::OnFetchZeroStateEditorResults(
     CHECK(editor_data);
 
     auto item_view = std::make_unique<PickerListItemView>(
-        base::BindRepeating(&PickerZeroStateView::OnSuggestedResultSelected,
+        base::BindRepeating(&PickerZeroStateView::OnResultSelected,
                             weak_ptr_factory_.GetWeakPtr(), result));
     item_view->SetPrimaryText(editor_data->display_name);
     if (editor_data->category.has_value()) {

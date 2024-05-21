@@ -189,9 +189,6 @@ source_set("browser_sources") {
     "api/scripting/scripting_constants.h",
     "api/scripting/scripting_utils.cc",
     "api/scripting/scripting_utils.h",
-    "api/storage/settings_namespace.cc",
-    "api/storage/settings_namespace.h",
-    "api/storage/settings_observer.h",
     "api/system_display/display_info_provider.cc",
     "api/system_display/display_info_provider.h",
     "api/system_display/system_display_api.cc",
@@ -625,6 +622,8 @@ source_set("browser_sources") {
     "//content/public/browser:browser",
     "//content/public/common",
     "//extensions:extensions_browser_resources",
+    "//extensions/browser/api/storage:settings_namespace",
+    "//extensions/browser/api/storage:settings_observer",
     "//extensions/browser/api/virtual_keyboard_private:virtual_keyboard_delegate",
     "//extensions/browser/guest_view/web_view/web_ui",
     "//extensions/browser/updater:keepalive",
@@ -778,7 +777,7 @@ source_set("browser_tests") {
   if (is_chromeos_ash) {
     sources += [
       "api/audio/audio_apitest_chromeos.cc",
-      "api/cec_private/cec_private_apitest.cc",
+      "api/cec_private/cec_private_ash_apitest.cc",
       "api/media_perception_private/media_perception_private_apitest.cc",
       "api/virtual_keyboard/virtual_keyboard_apitest.cc",
     ]
@@ -798,6 +797,14 @@ source_set("browser_tests") {
       "//chromeos/dbus/power:power_manager_proto",
       "//components/crash/content/browser/error_reporting:mock_crash_endpoint",
       "//extensions/common:mojom",
+    ]
+  }
+
+  if (is_chromeos_lacros) {
+    sources += [ "api/cec_private/cec_private_lacros_apitest.cc" ]
+    deps += [
+      "//chromeos/crosapi/mojom",
+      "//chromeos/lacros",
     ]
   }
 }
@@ -998,6 +1005,7 @@ source_set("unit_tests") {
     "//extensions:extensions_browser_resources",
     "//extensions:test_support",
     "//extensions/browser/api/declarative_net_request/filter_list_converter:unit_tests",
+    "//extensions/browser/api/storage:settings_namespace",
     "//extensions/browser/updater:updater",
     "//extensions/buildflags",
     "//extensions/common",

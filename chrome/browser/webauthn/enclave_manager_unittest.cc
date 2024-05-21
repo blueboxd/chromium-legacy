@@ -32,6 +32,7 @@
 #include "components/trusted_vault/proto/vault.pb.h"
 #include "components/trusted_vault/proto_string_bytes_conversion.h"
 #include "components/trusted_vault/securebox.h"
+#include "components/trusted_vault/trusted_vault_connection.h"
 #include "components/trusted_vault/trusted_vault_server_constants.h"
 #include "crypto/scoped_fake_user_verifying_key_provider.h"
 #include "crypto/scoped_mock_unexportable_key_provider.h"
@@ -123,6 +124,13 @@ std::unique_ptr<sync_pb::WebauthnCredentialSpecifics> GetTestEntity() {
 
 std::string StringOfZeros(size_t len) {
   return std::string(len, '0');
+}
+
+enclave::SigningCallback AlwaysFailsSigningCallback() {
+  return base::BindOnce(
+      [](enclave::SignedMessage,
+         base::OnceCallback<void(std::optional<enclave::ClientSignature>)>
+             callback) { std::move(callback).Run(std::nullopt); });
 }
 
 webauthn_pb::EnclaveLocalState::WrappedPIN GetTestWrappedPIN() {
@@ -339,8 +347,10 @@ class EnclaveManagerTest : public testing::Test, EnclaveManager::Observer {
         *manager_.GetWrappedSecret(/*version=*/kSecretVersion);
     ui_request->entity = std::move(entity);
     ui_request->claimed_pin = std::move(claimed_pin);
-    ui_request->save_passkey_callback = base::BindOnce(
-        [](sync_pb::WebauthnCredentialSpecifics) { NOTREACHED(); });
+    ui_request->save_passkey_callback =
+        base::BindOnce([](sync_pb::WebauthnCredentialSpecifics) {
+          NOTREACHED_IN_MIGRATION();
+        });
 
     enclave::EnclaveAuthenticator authenticator(
         std::move(ui_request), /*network_context_factory=*/
@@ -870,6 +880,109 @@ TEST_F(EnclaveManagerTest, RenewPIN) {
                                     *recovery_key_store_);
   CHECK(security_domain_secret.has_value());
   EXPECT_EQ(manager_.TakeSecret()->second, *security_domain_secret);
+}
+
+TEST_F(EnclaveManagerTest, EpochChanged) {
+  ASSERT_TRUE(Register());
+
+  BoolCallback setup_callback;
+  manager_.SetupWithPIN("123456", setup_callback.callback());
+  setup_callback.WaitForCallback();
+  EXPECT_TRUE(manager_.is_ready());
+
+  trusted_vault::DownloadAuthenticationFactorsRegistrationStateResult state;
+  state.state = trusted_vault::
+      DownloadAuthenticationFactorsRegistrationStateResult::State::kRecoverable;
+  state.key_version = kSecretVersion;
+
+  EXPECT_TRUE(manager_.ConsiderSecurityDomainState(state, base::DoNothing()));
+  EXPECT_TRUE(manager_.is_idle());
+
+  BoolCallback update_callback;
+  state.key_version = kSecretVersion + 1;
+  EXPECT_FALSE(
+      manager_.ConsiderSecurityDomainState(state, update_callback.callback()));
+  update_callback.WaitForCallback();
+  EXPECT_FALSE(manager_.is_ready());
+}
+
+TEST_F(EnclaveManagerTest, PINChanged) {
+  ASSERT_TRUE(Register());
+
+  BoolCallback setup_callback;
+  manager_.SetupWithPIN("123456", setup_callback.callback());
+  setup_callback.WaitForCallback();
+  EXPECT_TRUE(manager_.is_ready());
+
+  const webauthn_pb::EnclaveLocalState::User& user =
+      manager_.local_state_for_testing().users().begin()->second;
+  webauthn_pb::EnclaveLocalState::WrappedPIN wrapped_pin = user.wrapped_pin();
+  wrapped_pin.set_generation(wrapped_pin.generation() + 1);
+
+  trusted_vault::DownloadAuthenticationFactorsRegistrationStateResult state;
+  state.state = trusted_vault::
+      DownloadAuthenticationFactorsRegistrationStateResult::State::kRecoverable;
+  state.key_version = kSecretVersion;
+  state.gpm_pin_metadata.emplace(user.pin_public_key(),
+                                 wrapped_pin.SerializeAsString(),
+                                 /*expiry=*/base::Time::FromTimeT(1));
+
+  BoolCallback update_callback;
+  EXPECT_TRUE(
+      manager_.ConsiderSecurityDomainState(state, update_callback.callback()));
+  update_callback.WaitForCallback();
+  EXPECT_TRUE(manager_.is_ready());
+  const webauthn_pb::EnclaveLocalState::User& updated_user =
+      manager_.local_state_for_testing().users().begin()->second;
+  EXPECT_EQ(updated_user.wrapped_pin().generation(), wrapped_pin.generation());
+}
+
+TEST_F(EnclaveManagerTest, SigningFails) {
+  auto ui_request = std::make_unique<enclave::CredentialRequest>();
+  ui_request->signing_callback = AlwaysFailsSigningCallback();
+  ui_request->wrapped_secret = {1, 2, 3};
+  ui_request->key_version = 1;
+
+  enclave::EnclaveAuthenticator authenticator(
+      std::move(ui_request), /*network_context_factory=*/
+      base::BindLambdaForTesting([&]() -> network::mojom::NetworkContext* {
+        return network_context_.get();
+      }));
+
+  std::vector<device::PublicKeyCredentialParams::CredentialInfo> pub_key_params;
+  pub_key_params.emplace_back();
+
+  device::MakeCredentialOptions ctap_options;
+  ctap_options.json = JSONFromString(R"({
+        "attestation": "none",
+        "challenge": "xHyLYEorFsaL6vb",
+        "extensions": { "credProps": true }
+      })");
+
+  auto quit_closure = task_env_.QuitClosure();
+  std::optional<device::CtapDeviceResponseCode> status;
+  std::optional<device::AuthenticatorMakeCredentialResponse> response;
+  authenticator.MakeCredential(
+      /*request=*/{R"({"foo": "bar"})",
+                   /*rp=*/{"rpid", "rpname"},
+                   /*user=*/{{'u', 'i', 'd'}, "user", "display name"},
+                   device::PublicKeyCredentialParams(
+                       std::move(pub_key_params))},
+      std::move(ctap_options),
+      base::BindLambdaForTesting(
+          [&quit_closure, &status, &response](
+              device::CtapDeviceResponseCode in_status,
+              std::optional<device::AuthenticatorMakeCredentialResponse>
+                  in_responses) {
+            status = in_status;
+            response = std::move(in_responses);
+            quit_closure.Run();
+          }));
+  task_env_.RunUntilQuit();
+
+  ASSERT_TRUE(status.has_value());
+  ASSERT_EQ(status, device::CtapDeviceResponseCode::kCtap2ErrOperationDenied);
+  ASSERT_FALSE(response.has_value());
 }
 
 #if BUILDFLAG(IS_MAC)

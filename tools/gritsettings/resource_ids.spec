@@ -777,6 +777,14 @@
   "chromeos/ash/resources/internal/ash_internal_strings.grd": {
     "messages": [5780],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/boca_ui/resources/prod/resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+    "includes": [5790],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/boca_ui/resources/resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+    "includes": [5795],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/camera_app_ui/ash_camera_app_resources.grd": {
     "META": {"sizes": {"includes": [300],}},
     "includes": [5800],
@@ -881,6 +889,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/sample_system_web_app_ui/resources/untrusted/resources.grd": {
     "META": {"sizes": {"includes": [50],}},
     "includes": [6180],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/sanitize_ui/resources/resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+    "includes": [6190],
   },
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/scanning/resources/resources.grd": {
     "META": {"sizes": {"includes": [100],}},

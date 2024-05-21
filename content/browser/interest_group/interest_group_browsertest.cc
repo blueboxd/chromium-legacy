@@ -644,7 +644,8 @@ std::unique_ptr<net::test_server::HttpResponse> HandleWellKnownRequest(
     response->set_content(
         R"({"joinAdInterestGroup" : true, "leaveAdInterestGroup" : true})");
   } else {
-    NOTREACHED() << "Unexpected host_header: " << host_header->second;
+    NOTREACHED_IN_MIGRATION()
+        << "Unexpected host_header: " << host_header->second;
   }
   return response;
 }
@@ -3399,36 +3400,6 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   }
   return 'done';
 })())"));
-  WaitForAccessObserved({});
-}
-
-IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
-                       JoinInterestGroupInvalidPriorityVector) {
-  GURL url = embedded_https_test_server().GetURL("a.test", "/echo");
-  std::string origin_string = url::Origin::Create(url).Serialize();
-  ASSERT_TRUE(NavigateToURL(shell(), url));
-  AttachInterestGroupObserver();
-
-  EXPECT_EQ(
-      "TypeError: Failed to execute 'joinAdInterestGroup' on 'Navigator': "
-      "Failed to read the 'priorityVector' property from "
-      "'AuctionAdInterestGroup': The provided double value is non-finite.",
-      EvalJs(shell(), JsReplace(R"(
-(async function() {
-  try {
-    await navigator.joinAdInterestGroup(
-        {
-          name: 'cars',
-          owner: $1,
-          priorityVector: {'foo': 'invalid'},
-        },
-        /*joinDurationSec=*/1);
-  } catch (e) {
-    return e.toString();
-  }
-  return 'done';
-})())",
-                                origin_string.c_str())));
   WaitForAccessObserved({});
 }
 
@@ -6389,19 +6360,6 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   AttachInterestGroupObserver();
 
   EXPECT_EQ(
-      "TypeError: Failed to execute 'runAdAuction' on 'Navigator': Failed to "
-      "read the 'perBuyerPrioritySignals' property from 'AuctionAdConfig': The "
-      "provided double value is non-finite.",
-      RunAuctionAndWait(R"({
-      seller: 'https://test.com',
-      decisionLogicURL: 'https://test.com',
-      perBuyerPrioritySignals: {
-          'https://foo.com/':{"key": "Values must be numbers"}
-      }
-  })"));
-  WaitForAccessObserved({});
-
-  EXPECT_EQ(
       "TypeError: Failed to execute 'runAdAuction' on 'Navigator': "
       "perBuyerPrioritySignals key 'browserSignals.thisPrefixIsReserved' for "
       "AuctionAdConfig with seller 'https://test.com' must not start with "
@@ -6413,6 +6371,131 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           'https://foo.com/':{"browserSignals.thisPrefixIsReserved": 1}
       }
   })"));
+  WaitForAccessObserved({});
+}
+
+// Note -- this property is enforced by using the `double` WebIDL type.
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, NonFiniteValuesRejected) {
+  GURL url = embedded_https_test_server().GetURL("a.test", "/echo");
+  std::string origin_string = url::Origin::Create(url).Serialize();
+  ASSERT_TRUE(NavigateToURL(shell(), url));
+  AttachInterestGroupObserver();
+
+  std::string test_cases[] = {
+      "NaN",
+      "Infinity",
+      "-Infinity",
+      "'Values must be numbers'",
+  };
+  for (const std::string& test_case : test_cases) {
+    SCOPED_TRACE(test_case);
+
+    EXPECT_EQ(
+        "TypeError: Failed to execute 'joinAdInterestGroup' on 'Navigator': "
+        "Failed to read the 'priority' property from 'AuctionAdInterestGroup': "
+        "The provided double value is non-finite.",
+        EvalJs(shell(),
+               base::StringPrintf(R"(
+(async function() {
+  try {
+    await navigator.joinAdInterestGroup(
+        {
+          name: 'cars',
+          owner: '%s',
+          priority: %s,
+        },
+        /*joinDurationSec=*/1);
+  } catch (e) {
+    return e.toString();
+  }
+  return 'done';
+})())",
+                                  origin_string.c_str(), test_case.c_str())));
+
+    EXPECT_EQ(
+        "TypeError: Failed to execute 'joinAdInterestGroup' on 'Navigator': "
+        "Failed to read the 'priorityVector' property from "
+        "'AuctionAdInterestGroup': The provided double value is non-finite.",
+        EvalJs(shell(),
+               base::StringPrintf(R"(
+(async function() {
+  try {
+    await navigator.joinAdInterestGroup(
+        {
+          name: 'cars',
+          owner: '%s',
+          priorityVector: {'foo': %s},
+        },
+        /*joinDurationSec=*/1);
+  } catch (e) {
+    return e.toString();
+  }
+  return 'done';
+})())",
+                                  origin_string.c_str(), test_case.c_str())));
+
+    EXPECT_EQ(
+        "TypeError: Failed to execute 'joinAdInterestGroup' on 'Navigator': "
+        "Failed to read the 'prioritySignalsOverrides' property from "
+        "'AuctionAdInterestGroup': The provided double value is non-finite.",
+        EvalJs(shell(),
+               base::StringPrintf(R"(
+(async function() {
+  try {
+    await navigator.joinAdInterestGroup(
+        {
+          name: 'cars',
+          owner: '%s',
+          prioritySignalsOverrides: {'foo': %s},
+        },
+        /*joinDurationSec=*/1);
+  } catch (e) {
+    return e.toString();
+  }
+  return 'done';
+})())",
+                                  origin_string.c_str(), test_case.c_str())));
+
+    EXPECT_EQ(
+        "TypeError: Failed to execute 'runAdAuction' on 'Navigator': Failed to "
+        "read the 'perBuyerPrioritySignals' property from 'AuctionAdConfig': "
+        "The provided double value is non-finite.",
+        RunAuctionAndWait(base::StringPrintf(R"({
+      seller: 'https://test.com',
+      decisionLogicURL: 'https://test.com',
+      perBuyerPrioritySignals: {
+          'https://foo.com/':{'key': %s}
+      }
+  })",
+                                             test_case.c_str())));
+
+    EXPECT_EQ(
+        "TypeError: Failed to execute 'runAdAuction' on 'Navigator': Failed to "
+        "read the 'perBuyerPrioritySignals' property from 'AuctionAdConfig': "
+        "The provided double value is non-finite.",
+        RunAuctionAndWait(base::StringPrintf(R"({
+      seller: 'https://test.com',
+      decisionLogicURL: 'https://test.com',
+      perBuyerPrioritySignals: {
+          '*':{'key': %s}
+      }
+  })",
+                                             test_case.c_str())));
+
+    EXPECT_EQ(
+        "TypeError: Failed to execute 'runAdAuction' on 'Navigator': Failed to "
+        "read the 'auctionReportBuyers' property from 'AuctionAdConfig': "
+        "Failed to read the 'scale' property from 'AuctionReportBuyersConfig': "
+        "The provided double value is non-finite.",
+        RunAuctionAndWait(base::StringPrintf(R"({
+      seller: 'https://test.com',
+      decisionLogicURL: 'https://test.com',
+      auctionReportBuyers: {
+          'interestGroupCount':{'bucket': 0n, 'scale': %s}
+      }
+  })",
+                                             test_case.c_str())));
+  }
   WaitForAccessObserved({});
 }
 
@@ -24392,10 +24475,103 @@ class AuctionConfigRealTimeReportingEnabledTest
   base::test::ScopedFeatureList feature_list_;
 };
 
+// Opted-in buyers will receive real time histograms. Since real time reporting
+// URLs have same path and different reporting origins, but this browser test
+// always replaces requests' hosts to "127.0.0.1" and only handles requests
+// based on their paths, we cannot test different origin sellers' and buyers'
+// real time reports at the same time (they'll be treated as the same request).
 IN_PROC_BROWSER_TEST_F(AuctionConfigRealTimeReportingEnabledTest,
                        RealTimeReporting) {
   const char kHostA[] = "a.test";
   const char kHostB[] = "b.test";
+
+  // Setting a small reporting interval to run the test faster.
+  manager_->set_reporting_interval_for_testing(base::Milliseconds(1));
+  manager_->set_max_report_queue_length_for_testing(50);
+  manager_->set_max_active_report_requests_for_testing(50);
+
+  URLLoaderMonitor url_loader_monitor;
+
+  GURL test_url =
+      embedded_https_test_server().GetURL(kHostA, "/page_with_iframe.html");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+  url::Origin test_origin = url::Origin::Create(test_url);
+  GURL ad_url =
+      embedded_https_test_server().GetURL(kHostA, "/echo?render_cars");
+  url::Origin test_origin_b =
+      url::Origin::Create(embedded_https_test_server().GetURL(kHostB, "/echo"));
+
+  EXPECT_EQ(
+      kSuccess,
+      JoinInterestGroupAndVerify(
+          /*owner=*/test_origin,
+          /*name=*/"cars",
+          /*priority=*/0.0,
+          /*execution_mode=*/
+          blink::InterestGroup::ExecutionMode::kCompatibilityMode,
+          /*bidding_url=*/
+          embedded_https_test_server().GetURL(
+              kHostA,
+              "/interest_group/bidding_logic_with_real_time_reporting.js"),
+          /*ads=*/{{{ad_url, /*metadata=*/std::nullopt}}}));
+
+  // Only opt in buyer, otherwise seller will send a real time report as well.
+  const char kConfigTemplate[] = R"({
+    seller: $1,
+    decisionLogicURL: $2,
+    interestGroupBuyers: [$3],
+    perBuyerRealTimeReportingConfig: {
+      $3: {type: 'default-local-reporting'}
+    }
+  })";
+
+  std::string auction_config = JsReplace(
+      kConfigTemplate, test_origin_b,
+      embedded_https_test_server().GetURL(
+          kHostB, "/interest_group/decision_logic_with_real_time_reporting.js"),
+      test_origin);
+  RunAuctionAndWaitForURLAndNavigateIframe(auction_config, ad_url);
+
+  const GURL expected_report_url = embedded_https_test_server().GetURL(
+      "a.test", "/.well-known/interest-group/real-time-report");
+
+  WaitForUrl(expected_report_url);
+  std::optional<network::ResourceRequest> request =
+      url_loader_monitor.WaitForUrl(expected_report_url);
+  ASSERT_TRUE(request);
+  EXPECT_EQ(net::HttpRequestHeaders::kPostMethod, request->method);
+  EXPECT_EQ(network::mojom::CredentialsMode::kOmit, request->credentials_mode);
+  EXPECT_EQ(network::mojom::RedirectMode::kError, request->redirect_mode);
+  EXPECT_EQ(test_origin, request->request_initiator);
+
+  std::string content_type;
+  EXPECT_TRUE(request->headers.GetHeader(net::HttpRequestHeaders::kContentType,
+                                         &content_type));
+  EXPECT_EQ("application/json", content_type);
+
+  ASSERT_TRUE(request->trusted_params);
+  const net::IsolationInfo& isolation_info =
+      request->trusted_params->isolation_info;
+  EXPECT_EQ(net::IsolationInfo::RequestType::kOther,
+            isolation_info.request_type());
+  EXPECT_TRUE(isolation_info.network_isolation_key().IsTransient());
+  EXPECT_TRUE(isolation_info.site_for_cookies().IsNull());
+}
+
+// Opted-in sellers will receive real time histograms, even though they don't
+// call the API (same for buyers).
+IN_PROC_BROWSER_TEST_F(AuctionConfigRealTimeReportingEnabledTest,
+                       RealTimeReportingWithoutCallingAPI) {
+  const char kHostA[] = "a.test";
+  const char kHostB[] = "b.test";
+
+  // Setting a small reporting interval to run the test faster.
+  manager_->set_reporting_interval_for_testing(base::Milliseconds(1));
+  manager_->set_max_report_queue_length_for_testing(50);
+  manager_->set_max_active_report_requests_for_testing(50);
+
+  URLLoaderMonitor url_loader_monitor;
+
   GURL test_url =
       embedded_https_test_server().GetURL(kHostA, "/page_with_iframe.html");
   ASSERT_TRUE(NavigateToURL(shell(), test_url));
@@ -24422,9 +24598,6 @@ IN_PROC_BROWSER_TEST_F(AuctionConfigRealTimeReportingEnabledTest,
     decisionLogicURL: $2,
     interestGroupBuyers: [$3],
     sellerRealTimeReportingConfig: {type: 'default-local-reporting'},
-    perBuyerRealTimeReportingConfig: {
-      $3: {type: 'default-local-reporting'}
-    }
   })";
 
   std::string auction_config =
@@ -24434,18 +24607,30 @@ IN_PROC_BROWSER_TEST_F(AuctionConfigRealTimeReportingEnabledTest,
                 test_origin);
   RunAuctionAndWaitForURLAndNavigateIframe(auction_config, ad_url);
 
-  // Both the buyer and the seller will receive a real time histogram, even
-  // though they didn't call the API, since they both opted-in.
-  const GURL kExpectedRealTimeReportUrls[] = {
-      embedded_https_test_server().GetURL(
-          "a.test", "/.well-known/interest-group/real-time-report"),
-      embedded_https_test_server().GetURL(
-          "b.test", "/.well-known/interest-group/real-time-report")};
+  const GURL expected_report_url = embedded_https_test_server().GetURL(
+      "b.test", "/.well-known/interest-group/real-time-report");
 
-  for (const auto& expected_report_url : kExpectedRealTimeReportUrls) {
-    SCOPED_TRACE(expected_report_url);
-    WaitForUrl(expected_report_url);
-  }
+  WaitForUrl(expected_report_url);
+  std::optional<network::ResourceRequest> request =
+      url_loader_monitor.WaitForUrl(expected_report_url);
+  ASSERT_TRUE(request);
+  EXPECT_EQ(net::HttpRequestHeaders::kPostMethod, request->method);
+  EXPECT_EQ(network::mojom::CredentialsMode::kOmit, request->credentials_mode);
+  EXPECT_EQ(network::mojom::RedirectMode::kError, request->redirect_mode);
+  EXPECT_EQ(test_origin, request->request_initiator);
+
+  std::string content_type;
+  EXPECT_TRUE(request->headers.GetHeader(net::HttpRequestHeaders::kContentType,
+                                         &content_type));
+  EXPECT_EQ("application/json", content_type);
+
+  ASSERT_TRUE(request->trusted_params);
+  const net::IsolationInfo& isolation_info =
+      request->trusted_params->isolation_info;
+  EXPECT_EQ(net::IsolationInfo::RequestType::kOther,
+            isolation_info.request_type());
+  EXPECT_TRUE(isolation_info.network_isolation_key().IsTransient());
+  EXPECT_TRUE(isolation_info.site_for_cookies().IsNull());
 }
 
 }  // namespace

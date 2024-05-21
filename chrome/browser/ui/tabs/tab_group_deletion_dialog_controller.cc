@@ -13,8 +13,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_keyed_service.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_pref_names.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/dialog_model.h"
 
 namespace tab_groups {
@@ -23,39 +28,38 @@ DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kDeletionDialogCancelButtonId);
 DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kDeletionDialogOkButtonId);
 
 namespace {
-
-// TODO(b/331254038) replace these hardcoded strings with IDS strings.
-
 // The text that shows on the checkbox.
-constexpr char16_t kDontAsk[] = u"Don't ask again";
+constexpr int kDontAskId = IDS_TAB_GROUP_DELETION_DIALOG_DONT_ASK;
+
+// Body text for all delete actions.
+constexpr int kDeleteBodySyncedId =
+    IDS_TAB_GROUP_DELETION_DIALOG_BODY_SYNCED_DELETE;
+constexpr int kDeleteBodyNotSyncedId =
+    IDS_TAB_GROUP_DELETION_DIALOG_BODY_NOT_SYNCED_DELETE;
 
 // For deletion, the text that shows on the dialog
-constexpr char16_t kDeleteTitle[] = u"Delete tab group?";
-constexpr char16_t kDeleteBody[] =
-    u"Deleting the group will remove it from this device and other devices "
-    u"using the same Google Account";
-constexpr char16_t kDeleteOkText[] = u"Delete";
+constexpr int kDeleteTitleId = IDS_TAB_GROUP_DELETION_DIALOG_TITLE_DELETE;
+constexpr int kDeleteOkTextId = IDS_TAB_GROUP_DELETION_DIALOG_OK_TEXT_DELETE;
 
 // For ungrouping, the text that shows on the dialog.
-constexpr char16_t kUngroupTitle[] = u"Are you sure you want to ungroup?";
-constexpr char16_t kUngroupBody[] =
-    u"Ungrouping will leave the tabs open on this device but delete the group "
-    u"on this device and other devices using the same Google Account";
-constexpr char16_t kUngroupOkText[] = u"Ungroup";
+constexpr int kUngroupTitleId = IDS_TAB_GROUP_DELETION_DIALOG_TITLE_UNGROUP;
+constexpr int kUngroupSyncedBodyId =
+    IDS_TAB_GROUP_DELETION_DIALOG_BODY_SYNCED_UNGROUP;
+constexpr int kUngroupNotSyncedBodyId =
+    IDS_TAB_GROUP_DELETION_DIALOG_BODY_NOT_SYNCED_UNGROUP;
+constexpr int kUngroupOkTextId = IDS_TAB_GROUP_DELETION_DIALOG_OK_TEXT_UNGROUP;
 
 // For closing the last tab, the text that shows on the dialog.
-constexpr char16_t kCloseTabAndDeleteTitle[] = u"Close tab and delete group?";
-constexpr char16_t kCloseTabAndDeleteBody[] =
-    u"Closing the last tab will also delete the group from this device and "
-    u"other devices using the same Google Account";
-constexpr char16_t kCloseTabAndDeleteOkText[] = u"Close and delete group";
+constexpr int kCloseTabAndDeleteTitleId =
+    IDS_TAB_GROUP_DELETION_DIALOG_TITLE_CLOSE_TAB_AND_DELETE;
+constexpr int kCloseTabAndDeleteOkTextId =
+    IDS_TAB_GROUP_DELETION_DIALOG_OK_TEXT_DELETE;
 
 // For removing the last tab, the text that shows on the dialog.
-constexpr char16_t kRemoveTabAndDeleteTitle[] = u"Remove tab and delete group?";
-constexpr char16_t kRemoveTabAndDeleteBody[] =
-    u"Removing the last tab will also delete the group from this device and "
-    u"other devices using the same Google Account";
-constexpr char16_t kRemoveTabAndDeleteOkText[] = u"Remove and delete group";
+constexpr int kRemoveTabAndDeleteTitleId =
+    IDS_TAB_GROUP_DELETION_DIALOG_TITLE_REMOVE_TAB_AND_DELETE;
+constexpr int kRemoveTabAndDeleteOkTextId =
+    IDS_TAB_GROUP_DELETION_DIALOG_OK_TEXT_DELETE;
 
 struct DialogText {
   const std::u16string title;
@@ -64,21 +68,41 @@ struct DialogText {
 };
 
 // Returns the list of strings that are needed for a given dialog type.
-DialogText GetDialogText(DeletionDialogController::DialogType type) {
+DialogText GetDialogText(Profile* profile,
+                         DeletionDialogController::DialogType type) {
+  tab_groups::SavedTabGroupKeyedService* const saved_tab_group_service =
+      tab_groups::SavedTabGroupServiceFactory::GetForProfile(profile);
+  bool is_sync_enabled = saved_tab_group_service &&
+                         saved_tab_group_service->AreSavedTabGroupsSynced();
+
   switch (type) {
     case DeletionDialogController::DialogType::DeleteSingle: {
-      return DialogText{kDeleteTitle, kDeleteBody, kDeleteOkText};
+      return DialogText{
+          l10n_util::GetStringUTF16(kDeleteTitleId),
+          l10n_util::GetStringUTF16(is_sync_enabled ? kDeleteBodySyncedId
+                                                    : kDeleteBodyNotSyncedId),
+          l10n_util::GetStringUTF16(kDeleteOkTextId)};
     }
     case DeletionDialogController::DialogType::UngroupSingle: {
-      return DialogText{kUngroupTitle, kUngroupBody, kUngroupOkText};
+      return DialogText{
+          l10n_util::GetStringUTF16(kUngroupTitleId),
+          l10n_util::GetStringUTF16(is_sync_enabled ? kUngroupSyncedBodyId
+                                                    : kUngroupNotSyncedBodyId),
+          l10n_util::GetStringUTF16(kUngroupOkTextId)};
     }
     case DeletionDialogController::DialogType::RemoveTabAndDelete: {
-      return DialogText{kRemoveTabAndDeleteTitle, kRemoveTabAndDeleteBody,
-                        kRemoveTabAndDeleteOkText};
+      return DialogText{
+          l10n_util::GetStringUTF16(kRemoveTabAndDeleteTitleId),
+          l10n_util::GetStringUTF16(is_sync_enabled ? kDeleteBodySyncedId
+                                                    : kDeleteBodyNotSyncedId),
+          l10n_util::GetStringUTF16(kRemoveTabAndDeleteOkTextId)};
     }
     case DeletionDialogController::DialogType::CloseTabAndDelete: {
-      return DialogText{kCloseTabAndDeleteTitle, kCloseTabAndDeleteBody,
-                        kCloseTabAndDeleteOkText};
+      return DialogText{
+          l10n_util::GetStringUTF16(kCloseTabAndDeleteTitleId),
+          l10n_util::GetStringUTF16(is_sync_enabled ? kDeleteBodySyncedId
+                                                    : kDeleteBodyNotSyncedId),
+          l10n_util::GetStringUTF16(kCloseTabAndDeleteOkTextId)};
     }
   }
 }
@@ -93,19 +117,19 @@ bool IsDialogSkippedByUserSettings(Profile* profile,
   switch (type) {
     case DeletionDialogController::DialogType::DeleteSingle: {
       return pref_service->GetBoolean(
-          prefs::kTabGroupsDeletionSkipDialogOnDelete);
+          saved_tab_groups::prefs::kTabGroupsDeletionSkipDialogOnDelete);
     }
     case DeletionDialogController::DialogType::UngroupSingle: {
       return pref_service->GetBoolean(
-          prefs::kTabGroupsDeletionSkipDialogOnUngroup);
+          saved_tab_groups::prefs::kTabGroupsDeletionSkipDialogOnUngroup);
     }
     case DeletionDialogController::DialogType::RemoveTabAndDelete: {
       return pref_service->GetBoolean(
-          prefs::kTabGroupsDeletionSkipDialogOnRemoveTab);
+          saved_tab_groups::prefs::kTabGroupsDeletionSkipDialogOnRemoveTab);
     }
     case DeletionDialogController::DialogType::CloseTabAndDelete: {
       return pref_service->GetBoolean(
-          prefs::kTabGroupsDeletionSkipDialogOnCloseTab);
+          saved_tab_groups::prefs::kTabGroupsDeletionSkipDialogOnCloseTab);
     }
   }
 }
@@ -121,19 +145,23 @@ void SetSkipDialogForType(Profile* profile,
   switch (type) {
     case DeletionDialogController::DialogType::DeleteSingle: {
       return pref_service->SetBoolean(
-          prefs::kTabGroupsDeletionSkipDialogOnDelete, new_value);
+          saved_tab_groups::prefs::kTabGroupsDeletionSkipDialogOnDelete,
+          new_value);
     }
     case DeletionDialogController::DialogType::UngroupSingle: {
       return pref_service->SetBoolean(
-          prefs::kTabGroupsDeletionSkipDialogOnUngroup, new_value);
+          saved_tab_groups::prefs::kTabGroupsDeletionSkipDialogOnUngroup,
+          new_value);
     }
     case DeletionDialogController::DialogType::RemoveTabAndDelete: {
       return pref_service->SetBoolean(
-          prefs::kTabGroupsDeletionSkipDialogOnRemoveTab, new_value);
+          saved_tab_groups::prefs::kTabGroupsDeletionSkipDialogOnRemoveTab,
+          new_value);
     }
     case DeletionDialogController::DialogType::CloseTabAndDelete: {
       return pref_service->SetBoolean(
-          prefs::kTabGroupsDeletionSkipDialogOnCloseTab, new_value);
+          saved_tab_groups::prefs::kTabGroupsDeletionSkipDialogOnCloseTab,
+          new_value);
     }
   }
 }
@@ -203,13 +231,13 @@ void DeletionDialogController::OnDialogCancel() {
 
 std::unique_ptr<ui::DialogModel> DeletionDialogController::BuildDialogModel(
     DialogType type) {
-  DialogText strings = GetDialogText(type);
+  DialogText strings = GetDialogText(browser_->profile(), type);
 
   return ui::DialogModel::Builder()
       .SetTitle(strings.title)
       .AddParagraph(ui::DialogModelLabel(strings.body))
       .AddCheckbox(kDeletionDialogDontAskCheckboxId,
-                   ui::DialogModelLabel(kDontAsk))
+                   ui::DialogModelLabel(l10n_util::GetStringUTF16(kDontAskId)))
       .AddCancelButton(base::BindOnce(&DeletionDialogController::OnDialogCancel,
                                       base::Unretained(this)),
                        ui::DialogModel::Button::Params().SetEnabled(true).SetId(
@@ -220,6 +248,11 @@ std::unique_ptr<ui::DialogModel> DeletionDialogController::BuildDialogModel(
                        .SetLabel(strings.ok_text)
                        .SetEnabled(true)
                        .SetId(kDeletionDialogOkButtonId))
+      .SetCloseActionCallback(base::BindOnce(
+          [](DeletionDialogController* dialog_controller) {
+            dialog_controller->state_.reset();
+          },
+          base::Unretained(this)))
       .Build();
 }
 

@@ -26,7 +26,9 @@
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/content_settings/core/common/third_party_site_data_access_type.h"
+#include "components/fingerprinting_protection_filter/browser/fingerprinting_protection_web_contents_helper.h"
 #include "components/prefs/pref_service.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/privacy_sandbox/tracking_protection_settings.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "content/public/browser/browser_context.h"
@@ -135,21 +137,22 @@ void CookieControlsController::Update(content::WebContents* web_contents) {
     SetUserChangedCookieBlockingForSite(false);
   }
   auto status = GetStatus(web_contents);
-  int third_party_allowed_sites = GetAllowedThirdPartyCookiesSitesCount();
-  int third_party_blocked_sites = GetBlockedThirdPartyCookiesSitesCount();
   for (auto& observer : observers_) {
     observer.OnStatusChanged(status.controls_visible, status.protections_on,
                              status.enforcement, status.blocking_status,
                              status.expiration);
-    observer.OnSitesCountChanged(third_party_allowed_sites,
-                                 third_party_blocked_sites);
     observer.OnCookieControlsIconStatusChanged(
-        ShouldUserBypassIconBeVisible(
-            status.protections_on, status.controls_visible,
-            third_party_allowed_sites + third_party_blocked_sites),
+        ShouldUserBypassIconBeVisible(status.protections_on,
+                                      status.controls_visible),
         status.protections_on, status.blocking_status,
         ShouldHighlightUserBypass());
   }
+}
+
+void CookieControlsController::OnSubresourceBlocked() {
+  // When a subresource is blocked by fingerprinting protection,
+  // `UpdateUserBypass` will show the User Bypass.
+  UpdateUserBypass();
 }
 
 CookieControlsController::Status CookieControlsController::GetStatus(
@@ -246,13 +249,21 @@ void CookieControlsController::OnCookieBlockingEnabledForSite(
   if (block_third_party_cookies) {
     base::RecordAction(UserMetricsAction("CookieControls.Bubble.TurnOn"));
     cookie_settings_->ResetThirdPartyCookieSetting(url);
+    if (base::FeatureList::IsEnabled(
+            privacy_sandbox::kTrackingProtectionContentSetting)) {
+      tracking_protection_settings_->RemoveTrackingProtectionException(url);
+    }
     return;
   }
 
   CHECK(!block_third_party_cookies);
   base::RecordAction(UserMetricsAction("CookieControls.Bubble.TurnOff"));
   cookie_settings_->SetCookieSettingForUserBypass(url);
-
+  if (base::FeatureList::IsEnabled(
+          privacy_sandbox::kTrackingProtectionContentSetting)) {
+    tracking_protection_settings_->AddTrackingProtectionException(
+        url, /*is_user_bypass_exception=*/true);
+  }
   // Record expiration metadata for the newly created exception, and increased
   // the activation count.
   base::Value::Dict metadata = GetMetadata(settings_map_, url);
@@ -323,25 +334,20 @@ int CookieControlsController::GetStatefulBounceCount() const {
   }
 }
 
-bool CookieControlsController::SiteDataAccessed(int third_party_allowed_sites,
-                                                int third_party_blocked_sites) {
-  return third_party_allowed_sites + third_party_blocked_sites +
-             GetStatefulBounceCount() !=
-         0;
+bool CookieControlsController::GetIsSubresourceBlocked() const {
+  auto* fpf_web_contents_helper = fingerprinting_protection_filter::
+      FingerprintingProtectionWebContentsHelper::FromWebContents(
+          GetWebContents());
+  return fpf_web_contents_helper != nullptr &&
+         fpf_web_contents_helper->is_subresource_blocked();
 }
 
-void CookieControlsController::PresentBlockedCookieCounter() {
+void CookieControlsController::UpdateUserBypass() {
   auto status = GetStatus(GetWebContents());
-  int third_party_allowed_sites = GetAllowedThirdPartyCookiesSitesCount();
-  int third_party_blocked_sites = GetBlockedThirdPartyCookiesSitesCount();
-
   for (auto& observer : observers_) {
-    observer.OnSitesCountChanged(third_party_allowed_sites,
-                                 third_party_blocked_sites);
     observer.OnCookieControlsIconStatusChanged(
-        ShouldUserBypassIconBeVisible(
-            status.protections_on, status.controls_visible,
-            third_party_allowed_sites + third_party_blocked_sites),
+        ShouldUserBypassIconBeVisible(status.protections_on,
+                                      status.controls_visible),
         status.protections_on, status.blocking_status,
         ShouldHighlightUserBypass());
   }
@@ -435,10 +441,9 @@ void CookieControlsController::RecordActivationMetrics() {
       "Privacy.CookieControlsActivated.SiteEngagementScore",
       GetSiteEngagementScore(), 100);
 
-  int third_party_allowed_sites = GetAllowedThirdPartyCookiesSitesCount();
-  int third_party_blocked_sites = GetBlockedThirdPartyCookiesSitesCount();
-  auto site_data_access_type = GetSiteDataAccessType(third_party_allowed_sites,
-                                                     third_party_blocked_sites);
+  auto site_data_access_type =
+      GetSiteDataAccessType(GetAllowedThirdPartyCookiesSitesCount(),
+                            GetBlockedThirdPartyCookiesSitesCount());
   base::UmaHistogramEnumeration(
       "Privacy.CookieControlsActivated.SiteDataAccessType",
       site_data_access_type);
@@ -508,23 +513,25 @@ bool CookieControlsController::ShouldHighlightUserBypass() {
 
 bool CookieControlsController::ShouldUserBypassIconBeVisible(
     bool protections_on,
-    bool controls_visible,
-    int third_party_sites_count) {
+    bool controls_visible) {
   // If no 3P sites have attempted to access site data, nor were any stateful
   // bounces recorded, the icon should not be displayed. Take into account both
   // allow and blocked counts, since the breakage might be related to storage
   // partitioning. Partitioned site will be allowed to access partitioned
   // storage.
   bool site_data_access_attempted =
-      third_party_sites_count + GetStatefulBounceCount() != 0;
+      GetAllowedThirdPartyCookiesSitesCount() +
+          GetBlockedThirdPartyCookiesSitesCount() + GetStatefulBounceCount() !=
+      0;
 
   // 3PCD prevents SameSite=None cookies from being sent when the top-level
   // document is sandboxed without `allow-origin`. For instance when loaded
   // with: `Content-Security-Policy: sandbox`. In that case, we render the UI to
   // allow the user to opt into sending SameSite=None cookies again in those
   // contexts.
-  return controls_visible && (HasOriginSandboxedTopLevelDocument() ||
-                              !protections_on || site_data_access_attempted);
+  return controls_visible &&
+         (HasOriginSandboxedTopLevelDocument() || !protections_on ||
+          site_data_access_attempted || GetIsSubresourceBlocked());
 }
 
 CookieControlsController::TabObserver::TabObserver(
@@ -536,14 +543,23 @@ CookieControlsController::TabObserver::TabObserver(
       cookie_controls_(cookie_controls) {
   last_visited_url_ =
       content::WebContentsObserver::web_contents()->GetVisibleURL();
+  auto* fpf_web_contents_helper = fingerprinting_protection_filter::
+      FingerprintingProtectionWebContentsHelper::FromWebContents(web_contents);
+  if (fpf_web_contents_helper) {
+    fpf_observation_.Observe(fpf_web_contents_helper);
+  }
 }
 
 CookieControlsController::TabObserver::~TabObserver() = default;
 
+void CookieControlsController::TabObserver::WebContentsDestroyed() {
+  fpf_observation_.Reset();
+}
+
 void CookieControlsController::TabObserver::OnSiteDataAccessed(
     const AccessDetails& access_details) {
   if (access_details.site_data_type != SiteDataType::kCookies) {
-    cookie_controls_->PresentBlockedCookieCounter();
+    cookie_controls_->UpdateUserBypass();
     return;
   }
 
@@ -566,11 +582,15 @@ void CookieControlsController::TabObserver::OnSiteDataAccessed(
     return;
   }
   cookie_accessed_set_.insert(access_details);
-  cookie_controls_->PresentBlockedCookieCounter();
+  cookie_controls_->UpdateUserBypass();
 }
 
 void CookieControlsController::TabObserver::OnStatefulBounceDetected() {
-  cookie_controls_->PresentBlockedCookieCounter();
+  cookie_controls_->UpdateUserBypass();
+}
+
+void CookieControlsController::TabObserver::OnSubresourceBlocked() {
+  cookie_controls_->OnSubresourceBlocked();
 }
 
 void CookieControlsController::TabObserver::PrimaryPageChanged(

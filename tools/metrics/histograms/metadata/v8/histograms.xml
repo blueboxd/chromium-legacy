@@ -199,7 +199,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.CompileScriptMicroSeconds" units="microseconds"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>leszeks@chromium.org</owner>
   <owner>v8-runtime@google.com</owner>
   <summary>
@@ -1072,7 +1072,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.TimeToCollectionOnBackground" units="microseconds"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>dinfuehr@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -1089,7 +1089,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.TimeToSafepoint" units="microseconds"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>dinfuehr@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -1177,14 +1177,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GCMarkCompactReason" enum="GarbageCollectionReason"
-    expires_after="2024-09-01">
+    expires_after="2024-11-17">
   <owner>mlippautz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>Reason a mark-compact garbage collection was started in V8.</summary>
 </histogram>
 
 <histogram name="V8.LiftoffBailoutReasons" enum="LiftoffBailoutReason"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>ecmziegler@chromium.org</owner>
   <owner>adamk@chromium.org</owner>
   <owner>clemensb@chromium.org</owner>
@@ -1628,7 +1628,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.TurboFanOptimizeTotalBackground" units="microseconds"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>tebbi@chromium.org</owner>
   <owner>mslekova@chromium.org</owner>
   <summary>
@@ -1640,7 +1640,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.TurboFanOptimizeTotalForeground" units="microseconds"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>tebbi@chromium.org</owner>
   <owner>mslekova@chromium.org</owner>
   <summary>
@@ -1652,7 +1652,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.TurboFanOptimizeTotalTime" units="microseconds"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>tebbi@chromium.org</owner>
   <owner>mslekova@chromium.org</owner>
   <summary>
@@ -2030,7 +2030,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.WasmModuleCodeSizeKiB" units="KB"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>ecmziegler@chromium.org</owner>
   <owner>clemensb@chromium.org</owner>
   <owner>wasm-v8@google.com</owner>
@@ -2125,7 +2125,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.WasmNumLazyCompilations120Sec" units="count"
-    expires_after="2024-08-01">
+    expires_after="2024-11-10">
   <owner>ahaas@chromium.org</owner>
   <owner>clemensb@chromium.org</owner>
   <owner>ecmziegler@chromium.org</owner>
@@ -2236,7 +2236,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.WasmSumLazyCompilationTime20SecMilliSeconds" units="ms"
-    expires_after="2024-08-01">
+    expires_after="2024-11-10">
   <owner>ahaas@chromium.org</owner>
   <owner>clemensb@chromium.org</owner>
   <owner>ecmziegler@chromium.org</owner>

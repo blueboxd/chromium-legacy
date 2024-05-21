@@ -204,7 +204,7 @@ std::optional<V8VideoPixelFormat> ToV8VideoPixelFormat(
     case media::PIXEL_FORMAT_XRGB:
       return V8VideoPixelFormat(V8VideoPixelFormat::Enum::kBGRX);
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return std::nullopt;
   }
 }
@@ -685,7 +685,7 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
           source_frame = wmp->GetCurrentFrameThenUpdate();
         break;
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
     }
 
     if (!source_frame) {
@@ -767,7 +767,7 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
 
   SourceImageStatus status = kInvalidSourceImageStatus;
   auto image = image_source->GetSourceImageForCanvas(
-      FlushReason::kCreateVideoFrame, &status, source_size);
+      FlushReason::kCreateVideoFrame, &status, source_size, kPremultiplyAlpha);
   if (!image || status != kNormalSourceImageStatus) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Invalid source state");
@@ -1203,7 +1203,7 @@ void VideoFrame::ConvertAndCopyToRGB(scoped_refptr<media::VideoFrame> frame,
                                      PredefinedColorSpace target_color_space) {
   DCHECK(media::IsRGB(dest_layout.Format()));
   SkColorType skia_pixel_format = media::SkColorTypeForPlane(
-      dest_layout.Format(), media::VideoFrame::kARGBPlane);
+      dest_layout.Format(), media::VideoFrame::Plane::kARGB);
 
   if (frame->visible_rect() != src_rect) {
     frame = media::VideoFrame::WrapVideoFrame(frame, frame->format(), src_rect,

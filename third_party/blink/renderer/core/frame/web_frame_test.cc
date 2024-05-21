@@ -11722,19 +11722,19 @@ class BlobRegistryForSaveImageFromDataURL : public mojom::blink::BlobRegistry {
       mojo::ScopedDataPipeConsumerHandle,
       mojo::PendingAssociatedRemote<mojom::blink::ProgressClient>,
       RegisterFromStreamCallback) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   void GetBlobFromUUID(mojo::PendingReceiver<mojom::blink::Blob>,
                        const String& uuid,
                        GetBlobFromUUIDCallback) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   void URLStoreForOrigin(
       const scoped_refptr<const SecurityOrigin>&,
       mojo::PendingAssociatedReceiver<mojom::blink::BlobURLStore>) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 };
 
@@ -12081,12 +12081,11 @@ class MultipleDataChunkDelegate : public URLLoaderTestDelegate {
 
   // URLLoaderTestDelegate:
   void DidReceiveData(URLLoaderClient* original_client,
-                      const char* data,
-                      size_t data_length) override {
-    EXPECT_GT(data_length, 16u);
-    original_client->DidReceiveData(data, 16);
+                      base::span<const char> data) override {
+    EXPECT_GT(data.size(), 16u);
+    original_client->DidReceiveData(data.subspan(0, 16));
     // This didReceiveData call shouldn't crash due to a failed assertion.
-    original_client->DidReceiveData(data + 16, data_length - 16);
+    original_client->DidReceiveData(data.subspan(16));
   }
 };
 
@@ -14581,6 +14580,40 @@ TEST_F(WebFrameSimTest, SetModifiedFeaturesInOverrideContext) {
   override_context =
       frame->GetFrame()->DomWindow()->GetRuntimeFeatureStateOverrideContext();
   EXPECT_EQ(override_context->GetOverrideValuesForTesting(), modified_features);
+}
+
+TEST_F(WebFrameTest, IframeMoveBeforeConnectedSubframeCount) {
+  frame_test_helpers::WebViewHelper web_view_helper;
+  web_view_helper.Initialize();
+
+  WebViewImpl* web_view = web_view_helper.GetWebView();
+  web_view->Resize(gfx::Size(800, 800));
+  auto* frame = web_view->MainFrameImpl()->GetFrame();
+  InitializeWithHTML(*frame, R"HTML(
+    <!DOCTYPE html>
+    <body>
+      <div id=oldParent><iframe></iframe></div>
+      <div id=newParent></div>
+    </body>
+  )HTML");
+
+  frame->View()->UpdateAllLifecyclePhasesForTest();
+
+  Element* body = frame->GetDocument()->body();
+  Element* iframe = frame->GetDocument()->QuerySelector(AtomicString("iframe"));
+  Element* old_parent =
+      frame->GetDocument()->getElementById(AtomicString("oldParent"));
+  Element* new_parent =
+      frame->GetDocument()->getElementById(AtomicString("newParent"));
+
+  EXPECT_EQ(body->ConnectedSubframeCount(), 1u);
+  EXPECT_EQ(old_parent->ConnectedSubframeCount(), 1u);
+  EXPECT_EQ(new_parent->ConnectedSubframeCount(), 0u);
+
+  new_parent->moveBefore(iframe, nullptr, ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(body->ConnectedSubframeCount(), 1u);
+  EXPECT_EQ(old_parent->ConnectedSubframeCount(), 0u);
+  EXPECT_EQ(new_parent->ConnectedSubframeCount(), 1u);
 }
 
 }  // namespace blink

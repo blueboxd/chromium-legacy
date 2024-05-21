@@ -25,6 +25,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_util.h"
+#include "chrome/browser/ash/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/office_file_tasks.h"
@@ -354,7 +355,7 @@ void OnWaitingForAndroidUnsupportedPathFallbackChoiceReceived(
     std::unique_ptr<ash::cloud_upload::CloudOpenMetrics> cloud_open_metrics,
     std::optional<const std::string> choice) {
   if (!IsOpenInOfficeTask(task)) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return;
   }
 
@@ -432,6 +433,14 @@ CloudOpenTask::CloudOpenTask(
 }
 
 CloudOpenTask::~CloudOpenTask() {
+  auto* event_router =
+      file_manager::EventRouterFactory::GetForProfile(profile_);
+  DCHECK(!file_urls_.empty());
+  if (event_router) {
+    event_router->RemoveCloudOpenTask(file_urls_.front());
+  } else {
+    LOG(ERROR) << "Cannot get EventRouter";
+  }
   BrowserList::RemoveObserver(this);
 }
 
@@ -444,6 +453,20 @@ bool CloudOpenTask::ExecuteInternal() {
     LOG(ERROR) << "No files to open";
     cloud_open_metrics_->LogTaskResult(OfficeTaskResult::kNoFilesToOpen);
     return false;
+  }
+
+  auto* event_router =
+      file_manager::EventRouterFactory::GetForProfile(profile_);
+  // TODO(b/242685536) add support for multiple files.
+  if (event_router) {
+    if (!event_router->AddCloudOpenTask(file_urls_.front())) {
+      LOG(ERROR) << "File already being opened";
+      cloud_open_metrics_->LogTaskResult(
+          OfficeTaskResult::kFileAlreadyBeingOpened);
+      return false;
+    }
+  } else {
+    LOG(ERROR) << "Cannot get EventRouter";
   }
 
   // Run the setup flow if we don't have explicit default file handlers set for
@@ -470,13 +493,12 @@ bool CloudOpenTask::MaybeRunFixupFlow() {
     // TODO(cassycc): Use page specifically for fix up.
     return InitAndShowSetupOrMoveDialog(SetupOrMoveDialogPage::kOneDriveSetup);
   }
-  OpenOrMoveFiles();
-  return true;
+  return OpenOrMoveFiles();
 }
 
 // Opens office files if they are in the correct cloud already. Otherwise moves
 // the files before opening.
-void CloudOpenTask::OpenOrMoveFiles() {
+bool CloudOpenTask::OpenOrMoveFiles() {
   // Record the source volume type of the opened file.
   OfficeFilesSourceVolume source_volume;
   if (UrlIsOnODFS(file_urls_.front())) {
@@ -502,16 +524,22 @@ void CloudOpenTask::OpenOrMoveFiles() {
     cloud_open_metrics_->LogTransferRequired(
         OfficeFilesTransferRequired::kNotRequired);
     OpenAlreadyHostedDriveUrls();
-  } else if (cloud_provider_ == CloudProvider::kOneDrive &&
-             source_volume == OfficeFilesSourceVolume::kMicrosoftOneDrive) {
+    return true;
+  }
+
+  if (cloud_provider_ == CloudProvider::kOneDrive &&
+      source_volume == OfficeFilesSourceVolume::kMicrosoftOneDrive) {
     // The files are on OneDrive already, selected from ODFS.
     transfer_required_ = OfficeFilesTransferRequired::kNotRequired;
     cloud_open_metrics_->LogTransferRequired(
         OfficeFilesTransferRequired::kNotRequired);
     OpenODFSUrls(OfficeTaskResult::kOpened);
-  } else if (cloud_provider_ == CloudProvider::kOneDrive &&
-             source_volume ==
-                 OfficeFilesSourceVolume::kAndroidOneDriveDocumentsProvider) {
+    return true;
+  }
+
+  if (cloud_provider_ == CloudProvider::kOneDrive &&
+      source_volume ==
+          OfficeFilesSourceVolume::kAndroidOneDriveDocumentsProvider) {
     // The files are on OneDrive already, selected from Android OneDrive.
     transfer_required_ = OfficeFilesTransferRequired::kNotRequired;
     cloud_open_metrics_->LogTransferRequired(
@@ -522,7 +550,9 @@ void CloudOpenTask::OpenOrMoveFiles() {
         GetODFS(profile_),
         base::BindOnce(&CloudOpenTask::CheckEmailAndOpenAndroidOneDriveURLs,
                        this));
-  } else {
+    return true;
+  }
+
     // The files need to be moved.
     auto operation =
         GetUploadType(profile_, file_urls_.front()) == UploadType::kCopy
@@ -530,8 +560,7 @@ void CloudOpenTask::OpenOrMoveFiles() {
             : OfficeFilesTransferRequired::kMove;
     transfer_required_ = operation;
     cloud_open_metrics_->LogTransferRequired(operation);
-    ConfirmMoveOrStartUpload();
-  }
+    return ConfirmMoveOrStartUpload();
 }
 
 void CloudOpenTask::OpenAlreadyHostedDriveUrls() {
@@ -656,21 +685,21 @@ bool CloudOpenTask::ShouldShowConfirmationDialog() {
     return force_show_confirmation_dialog ||
            !fm_tasks::GetAlwaysMoveOfficeFilesToOneDrive(profile_);
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return true;
 }
 
-void CloudOpenTask::ConfirmMoveOrStartUpload() {
+bool CloudOpenTask::ConfirmMoveOrStartUpload() {
   bool show_confirmation_dialog = ShouldShowConfirmationDialog();
   if (show_confirmation_dialog) {
     SetupOrMoveDialogPage dialog_page =
         cloud_provider_ == CloudProvider::kGoogleDrive
             ? SetupOrMoveDialogPage::kMoveConfirmationGoogleDrive
             : SetupOrMoveDialogPage::kMoveConfirmationOneDrive;
-    InitAndShowSetupOrMoveDialog(dialog_page);
-  } else {
-    StartUpload();
+    return InitAndShowSetupOrMoveDialog(dialog_page);
   }
+  StartUpload();
+  return true;
 }
 
 bool ShouldFixUpOffice(Profile* profile, const CloudProvider cloud_provider) {
@@ -1489,7 +1518,7 @@ void CloudUploadDialog::GetDialogSize(gfx::Size* size) const {
     size->set_width(kDialogWidthForConnectToOneDrive);
     size->set_height(kDialogHeightForConnectToOneDrive);
   } else {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 }
 

@@ -61,6 +61,7 @@
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/scheduler_sequence.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
+#include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_latency_info.pbzero.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -707,9 +708,12 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
     }
   }
 
-  base::ScopedClosureRunner visual_debugger_sync_scoped_exit(
-      base::BindOnce(&VisualDebuggerSync, current_display_transform,
-                     current_surface_size_, last_presented_trace_id_));
+  absl::Cleanup visual_debugger_sync_scoped_exit =
+      [current_display_transform, current_surface_size = current_surface_size_,
+       last_presented_trace_id = last_presented_trace_id_] {
+        VisualDebuggerSync(current_display_transform, current_surface_size,
+                           last_presented_trace_id);
+      };
 
   // During aggregation, SurfaceAggregator marks all resources used for a draw
   // in the resource provider.  This has the side effect of deleting unused
@@ -923,13 +927,6 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
     swap_frame_data.seq =
         current_surface_id_.local_surface_id().parent_sequence_number();
     swap_frame_data.choreographer_vsync_id = params.choreographer_vsync_id;
-    if (frame.top_controls_visible_height.has_value()) {
-      swap_frame_data.top_controls_visible_height_changed =
-          last_top_controls_visible_height_ !=
-          *frame.top_controls_visible_height;
-      last_top_controls_visible_height_ = *frame.top_controls_visible_height;
-    }
-
     swap_frame_data.swap_trace_id = swapped_trace_id_;
 
     TRACE_EVENT(

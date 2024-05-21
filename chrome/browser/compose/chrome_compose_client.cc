@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/functional/bind.h"
+#include "base/json/values_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/segmentation_platform/segmentation_platform_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/browser.h"
@@ -75,11 +77,15 @@ std::u16string RemoveLastCharIfInvalid(std::u16string str) {
 ChromeComposeClient::ChromeComposeClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       content::WebContentsUserData<ChromeComposeClient>(*web_contents),
-      translate_language_provider_(new TranslateLanguageProvider()) {
+      translate_language_provider_(new TranslateLanguageProvider()),
+      profile_(
+          Profile::FromBrowserContext(GetWebContents().GetBrowserContext())),
+      nudge_tracker_(segmentation_platform::SegmentationPlatformServiceFactory::
+                         GetForProfile(profile_),
+                     this) {
   auto ukm_source_id =
       GetWebContents().GetPrimaryMainFrame()->GetPageUkmSourceId();
   page_ukm_tracker_ = std::make_unique<compose::PageUkmTracker>(ukm_source_id);
-  profile_ = Profile::FromBrowserContext(GetWebContents().GetBrowserContext());
   opt_guide_ = OptimizationGuideKeyedServiceFactory::GetForProfile(profile_);
   pref_service_ = profile_->GetPrefs();
   proactive_nudge_enabled_.Init(prefs::kEnableProactiveNudge, pref_service_);
@@ -106,7 +112,12 @@ ChromeComposeClient::ChromeComposeClient(content::WebContents* web_contents)
   nudge_tracker_.StartObserving(web_contents);
 }
 
-ChromeComposeClient::~ChromeComposeClient() = default;
+ChromeComposeClient::~ChromeComposeClient() {
+  // Sessions may call back during destruction through ComposeSession::Observer.
+  // Let's ensure that happens before destroying anything else.
+  sessions_.clear();
+  debug_session_.reset();
+}
 
 void ChromeComposeClient::BindComposeDialog(
     mojo::PendingReceiver<compose::mojom::ComposeClientUntrustedPageHandler>
@@ -123,7 +134,8 @@ void ChromeComposeClient::BindComposeDialog(
       url::Origin::Create(GURL(chrome::kChromeUIUntrustedComposeUrl))) {
     debug_session_ = std::make_unique<ComposeSession>(
         &GetWebContents(), GetModelExecutor(), GetModelQualityLogsUploader(),
-        GetSessionId(), GetInnerTextProvider(), autofill::FieldRendererId(-1));
+        GetSessionId(), GetInnerTextProvider(), autofill::FieldRendererId(-1),
+        this);
     debug_session_->set_collect_inner_text(false);
     debug_session_->set_fre_complete(
         pref_service_->GetBoolean(prefs::kPrefHasCompletedComposeFRE));
@@ -322,7 +334,7 @@ void ChromeComposeClient::CreateOrUpdateSession(
     auto new_session = std::make_unique<ComposeSession>(
         &GetWebContents(), GetModelExecutor(), GetModelQualityLogsUploader(),
         GetSessionId(), GetInnerTextProvider(),
-        trigger_field.global_id().renderer_id, std::move(callback));
+        trigger_field.global_id().renderer_id, this, std::move(callback));
     current_session = new_session.get();
     sessions_.insert_or_assign(active_compose_ids_.value().first,
                                std::move(new_session));
@@ -365,6 +377,7 @@ void ChromeComposeClient::CreateOrUpdateSession(
     compose::LogComposeProactiveNudgeCtr(
         compose::ComposeProactiveNudgeCtrEvent::kDialogOpened);
     current_session->set_started_with_proactive_nudge();
+    page_ukm_tracker_->ProactiveNudgeOpened();
   }
 }
 
@@ -505,7 +518,8 @@ bool ChromeComposeClient::ShouldTriggerPopup(
   bool ongoing_session = HasSession(form_field_data.global_id());
 
   auto should_show_nudge = compose_enabling_->ShouldTriggerPopup(
-      form_field_data.autocomplete_attribute(), profile_, pref_service_,
+      form_field_data.autocomplete_attribute(),
+      form_field_data.allows_writing_suggestions(), profile_, pref_service_,
       translate_manager, ongoing_session,
       top_level_frame->GetLastCommittedOrigin(), form_field_data.origin(), url,
       trigger_source, GetMSBBStateFromPrefs());
@@ -533,11 +547,13 @@ bool ChromeComposeClient::ShouldTriggerPopup(
   if (nudge_can_show) {
     compose::LogComposeProactiveNudgeCtr(
         compose::ComposeProactiveNudgeCtrEvent::kNudgeDisplayed);
+    page_ukm_tracker_->ProactiveNudgeShown();
   }
   return nudge_can_show;
 }
 
 void ChromeComposeClient::DisableProactiveNudge() {
+  nudge_tracker_.OnUserDisabledNudge(/*single_site_only=*/false);
   proactive_nudge_enabled_.SetValue(false);
 }
 
@@ -552,6 +568,13 @@ void ChromeComposeClient::OpenProactiveNudgeSettings() {
   chrome::ShowSettingsSubPage(browser, chrome::kOfferWritingHelpSubpage);
 }
 
+void ChromeComposeClient::AddSiteToNeverPromptList(const url::Origin& origin) {
+  nudge_tracker_.OnUserDisabledNudge(/*single_site_only=*/true);
+  ScopedDictPrefUpdate update(pref_service_,
+                              prefs::kProactiveNudgeDisabledSitesWithTime);
+  update->Set(origin.Serialize(), base::TimeToValue(base::Time::Now()));
+}
+
 bool ChromeComposeClient::ShouldTriggerContextMenu(
     content::RenderFrameHost* rfh,
     content::ContextMenuParams& params) {
@@ -563,6 +586,14 @@ bool ChromeComposeClient::ShouldTriggerContextMenu(
     page_ukm_tracker_->MenuItemShown();
   }
   return allow_context_menu;
+}
+
+void ChromeComposeClient::OnSessionComplete(
+    autofill::FieldRendererId field_renderer_id,
+    compose::ComposeSessionCloseReason close_reason,
+    const compose::ComposeSessionEvents& events) {
+  nudge_tracker_.ComposeSessionCompleted(field_renderer_id, close_reason,
+                                         events);
 }
 
 void ChromeComposeClient::OnAfterFocusOnFormField(
@@ -646,6 +677,8 @@ void ChromeComposeClient::PrimaryPageChanged(content::Page& page) {
 
   page_ukm_tracker_ = std::make_unique<compose::PageUkmTracker>(
       page.GetMainDocument().GetPageUkmSourceId());
+
+  nudge_tracker_.Clear();
 
   compose::ComposeTextUsageLogger::GetOrCreateForCurrentDocument(
       &page.GetMainDocument());

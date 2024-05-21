@@ -279,13 +279,18 @@ class SyncServiceImpl : public SyncService,
     // kSetSyncAllowedByPlatform = 5,
     kCredentialsChanged = 6,
     kResetLocalData = 7,
+    kNotSignedIn = 8,
+    kEnterprisePolicy = 9,
+    kDisableSyncOnClient = 10,
 
-    kMaxValue = kResetLocalData
+    kMaxValue = kDisableSyncOnClient
   };
   // LINT.ThenChange(/tools/metrics/histograms/metadata/sync/enums.xml:SyncResetEngineReason)
 
-  // static
-  ShutdownReason ShutdownReasonForResetEngineReason(
+  static ShutdownReason ShutdownReasonForResetEngineReason(
+      ResetEngineReason reset_reason);
+
+  static bool ShouldClearTransportDataForAccount(
       ResetEngineReason reset_reason);
 
   // Records UMA histograms related to download status during browser startup.
@@ -318,6 +323,8 @@ class SyncServiceImpl : public SyncService,
     // during browser startup. Used for metrics only.
     ModelTypeSet data_types_to_track_;
   };
+
+  void StopAndClear(ResetEngineReason reset_engine_reason);
 
   // Callbacks for SyncAuthManager.
   void AccountStateChanged();

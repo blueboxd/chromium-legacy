@@ -96,6 +96,8 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/keyboard_lock_controller.h"
 #include "chrome/browser/ui/lens/lens_overlay_controller.h"
+#include "chrome/browser/ui/lens/lens_overlay_image_helper.h"
+#include "chrome/browser/ui/lens/lens_overlay_invocation_source.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble.h"
@@ -283,7 +285,7 @@
 
 #if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
 #include "chrome/browser/lens/region_search/lens_region_search_controller.h"
-#include "chrome/browser/ui/lens/lens_side_panel_helper.h"
+#include "chrome/browser/ui/views/lens/lens_side_panel_helper.h"
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #endif
@@ -829,6 +831,8 @@ DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(RenderViewContextMenu,
                                       kExitFullscreenMenuItem);
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(RenderViewContextMenu, kComposeMenuItem);
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(RenderViewContextMenu, kRegionSearchItem);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(RenderViewContextMenu,
+                                      kSearchForImageItem);
 
 RenderViewContextMenu::RenderViewContextMenu(
     content::RenderFrameHost& render_frame_host,
@@ -1175,10 +1179,9 @@ void RenderViewContextMenu::InitMenu() {
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_SEARCH_PROVIDER) &&
       params_.misspelled_word.empty() &&
-      (params_.page_url !=
-           chrome::GetSettingsUrl(chrome::kPasswordManagerSubPage) &&
-       params_.page_url !=
-           chrome::GetSettingsUrl(chrome::kPasswordCheckSubPage))) {
+      (params_.page_url != GetGooglePasswordManagerSubPageURLStr() &&
+       params_.page_url != chrome::kChromeUIPasswordManagerCheckupURL &&
+       params_.page_url != chrome::kChromeUIPasswordManagerSettingsURL)) {
     AppendSearchProvider();
   }
 
@@ -1432,7 +1435,7 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
   int enum_id =
       FindUMAEnumValueForCommand(id, UmaEnumIdLookupType::GeneralEnumId);
   if (enum_id == -1) {
-    NOTREACHED() << "Update GetIdcToUmaMap. Unhandled IDC: " << id;
+    NOTREACHED_IN_MIGRATION() << "Update GetIdcToUmaMap. Unhandled IDC: " << id;
     return;
   }
 
@@ -1769,11 +1772,9 @@ void RenderViewContextMenu::AppendLinkItems() {
     }
 
 #if !BUILDFLAG(IS_ANDROID)
-    // TODO(b:315076421): Remove "New" badge for preview.
     if (base::FeatureList::IsEnabled(blink::features::kLinkPreview)) {
       menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKPREVIEW,
                                       IDS_CONTENT_CONTEXT_OPENLINKPREVIEW);
-      menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
       // We don't show in-production-help for ChromeOS for now because we should
       // use a different trigger.
       //
@@ -2023,14 +2024,14 @@ void RenderViewContextMenu::AppendSearchWebForImageItems() {
     return;
   }
 
+  const int search_for_image_idc = GetSearchForImageIdc();
   menu_model_.AddItem(
-      GetSearchForImageIdc(),
+      search_for_image_idc,
       l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHLENSFORIMAGE,
                                  provider->short_name()));
-
-  if (companion::IsNewBadgeEnabledForSearchMenuItem(GetBrowser())) {
-    menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
-  }
+  const int command_index =
+      menu_model_.GetIndexOfCommandId(search_for_image_idc).value();
+  menu_model_.SetElementIdentifierAt(command_index, kSearchForImageItem);
 
   MaybePrepareForLensQuery();
 
@@ -2104,7 +2105,6 @@ void RenderViewContextMenu::AppendVideoItems() {
         GetSearchForVideoFrameIdc(),
         l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHFORVIDEOFRAME,
                                    GetImageSearchProviderName(provider)));
-    menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
     MaybePrepareForLensQuery();
   }
 }
@@ -2282,7 +2282,6 @@ void RenderViewContextMenu::AppendMediaRouterItem() {
 void RenderViewContextMenu::AppendReadingModeItem() {
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE,
                                   IDS_CONTENT_CONTEXT_READING_MODE);
-  menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
 }
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -2361,9 +2360,6 @@ void RenderViewContextMenu::AppendSearchProvider() {
           l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
                                      default_provider->short_name(),
                                      printable_selection_text));
-      if (companion::IsNewBadgeEnabledForSearchMenuItem(GetBrowser())) {
-        menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
-      }
       if (companion::IsSearchWebInCompanionSidePanelSupported(GetBrowser())) {
         // Add an "in new tab" item performing the non-side panel behavior.
         if (base::FeatureList::IsEnabled(
@@ -2430,8 +2426,8 @@ void RenderViewContextMenu::AppendSpellingAndSearchSuggestionItems() {
       // TODO(b/303646344): Remove new feature tag when no longer new.
       menu_model_.SetIsNewFeatureAt(
           menu_model_.GetItemCount() - 1,
-          GetBrowser()->window()->MaybeShowNewBadgeFor(
-              compose::features::kEnableCompose));
+          UserEducationService::MaybeShowNewBadge(
+              GetBrowserContext(), compose::features::kEnableCompose));
       render_separator = true;
     }
   }
@@ -2693,10 +2689,6 @@ void RenderViewContextMenu::AppendRegionSearchItem() {
     menu_model_.AddItem(region_search_idc,
                         l10n_util::GetStringFUTF16(
                             resource_id, GetImageSearchProviderName(provider)));
-    if (companion::IsNewBadgeEnabledForSearchMenuItem(GetBrowser())) {
-      menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
-    }
-
     menu_model_.SetElementIdentifierAt(
         menu_model_.GetIndexOfCommandId(region_search_idc).value(),
         kRegionSearchItem);
@@ -3016,7 +3008,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
              !chromeos::clipboard_history::QueryItemDescriptors().empty();
     }
 #else
-      NOTREACHED() << "Unhandled id: " << id;
+      NOTREACHED_IN_MIGRATION() << "Unhandled id: " << id;
       return false;
 #endif
 
@@ -3507,7 +3499,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
       ShowClipboardHistoryMenu(event_flags);
 #else
-      NOTREACHED() << "Unhandled id: " << id;
+      NOTREACHED_IN_MIGRATION() << "Unhandled id: " << id;
 #endif  // BUILDFLAG(IS_CHROMEOS)
       break;
     }
@@ -3823,6 +3815,10 @@ bool RenderViewContextMenu::IsQRCodeGeneratorEnabled() const {
 }
 
 bool RenderViewContextMenu::IsRegionSearchEnabled() const {
+  if (!GetBrowser()) {
+    return false;
+  }
+
   if (LensOverlayController::IsEnabled(GetProfile())) {
     return GetBrowser()->is_type_normal();
   }
@@ -4199,7 +4195,7 @@ void RenderViewContextMenu::ExecSaveAs() {
 void RenderViewContextMenu::ExecExitFullscreen() {
   Browser* browser = GetBrowser();
   if (!browser) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return;
   }
 
@@ -4231,13 +4227,54 @@ void RenderViewContextMenu::ExecSearchLensForImage(bool is_image_translate) {
   lens::RecordAmbientSearchQuery(
       lens::AmbientSearchEntryPoint::
           CONTEXT_MENU_SEARCH_IMAGE_WITH_GOOGLE_LENS);
-  core_tab_helper->SearchWithLens(
-      render_frame_host, params().src_url,
-      is_image_translate
-          ? lens::EntryPoint::
-                CHROME_TRANSLATE_IMAGE_WITH_GOOGLE_LENS_CONTEXT_MENU_ITEM
-          : lens::EntryPoint::CHROME_SEARCH_WITH_GOOGLE_LENS_CONTEXT_MENU_ITEM,
-      is_image_translate);
+
+  if (LensOverlayController::IsEnabled(GetProfile()) &&
+      lens::features::UseLensOverlayForImageSearch()) {
+    auto view_bounds = render_frame_host->GetView()->GetViewBounds();
+    auto tab_bounds = source_web_contents_->GetViewBounds();
+    float device_scale_factor =
+        render_frame_host->GetView()->GetDeviceScaleFactor();
+    mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame>
+        chrome_render_frame;
+    render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
+        &chrome_render_frame);
+    // Bind the InterfacePtr into the callback so that it's kept alive until
+    // there's either a connection error or a response.
+    auto* frame = chrome_render_frame.get();
+
+    frame->RequestBoundsForContextNodeDiagnostic(base::BindOnce(
+        &RenderViewContextMenu::OpenLensOverlayWithBounds,
+        weak_pointer_factory_.GetWeakPtr(), std::move(chrome_render_frame),
+        tab_bounds, view_bounds, device_scale_factor));
+  } else {
+    core_tab_helper->SearchWithLens(
+        render_frame_host, params().src_url,
+        is_image_translate
+            ? lens::EntryPoint::
+                  CHROME_TRANSLATE_IMAGE_WITH_GOOGLE_LENS_CONTEXT_MENU_ITEM
+            : lens::EntryPoint::
+                  CHROME_SEARCH_WITH_GOOGLE_LENS_CONTEXT_MENU_ITEM,
+        is_image_translate);
+  }
+}
+
+void RenderViewContextMenu::OpenLensOverlayWithBounds(
+    mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame>
+        chrome_render_frame,
+    const gfx::Rect& tab_bounds,
+    const gfx::Rect& view_bounds,
+    float device_scale_factor,
+    const gfx::Rect& image_bounds) {
+  // Scale the image bounds, which are in physical pixels, to device pixels.
+  auto scaled_image_bounds =
+      gfx::ScaleToEnclosedRect(image_bounds, 1.f / device_scale_factor);
+  LensOverlayController* const controller =
+      LensOverlayController::GetController(source_web_contents_);
+  CHECK(controller);
+  controller->ShowUIWithPendingRegion(
+      lens::LensOverlayInvocationSource::kContentAreaContextMenuImage,
+      lens::GetCenterRotatedBoxFromTabViewAndImageBounds(
+          tab_bounds, view_bounds, scaled_image_bounds));
 }
 
 void RenderViewContextMenu::ExecAddANote() {
@@ -4256,7 +4293,7 @@ void RenderViewContextMenu::ExecRegionSearch(
         LensOverlayController::GetController(source_web_contents_);
     CHECK(controller);
     controller->ShowUI(
-        LensOverlayController::InvocationSource::kContentAreaContextMenuPage);
+        lens::LensOverlayInvocationSource::kContentAreaContextMenuPage);
     UserEducationService::MaybeNotifyPromoFeatureUsed(
         GetBrowserContext(), lens::features::kLensOverlay);
     return;

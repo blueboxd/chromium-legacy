@@ -33,7 +33,9 @@
 #include "ash/wm/window_restore/pine_constants.h"
 #include "ash/wm/window_restore/window_restore_metrics.h"
 #include "ash/wm/window_restore/window_restore_util.h"
-#include "base/command_line.h"
+#include "ash/wm/workspace/backdrop_controller.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
@@ -174,7 +176,7 @@ void DeletePineImage(base::OnceClosure& for_test_callback,
 
 // TODO(minch): Check whether the screenshot should be taken in kiosk mode.
 // Returns true if the pine screenshot should be taken on shutdown.
-bool ShouldTakePineScreeshot() {
+bool ShouldTakePineScreenshot() {
   auto* shell = Shell::Get();
   // Do not take the pine screenshot if it is in overview mode, lock screen,
   // home launcher or pinned mode.
@@ -305,6 +307,21 @@ void LockStateController::RemoveObserver(LockStateObserver* observer) {
 void LockStateController::StartLockAnimation() {
   if (animating_lock_) {
     return;
+  }
+
+  views::MenuController* active_menu_controller =
+      views::MenuController::GetActiveInstance();
+
+  if (active_menu_controller) {
+    // TODO(http://b/328064674): Please remove the below crash keys once the
+    // the crash is fixed. It seems after post lock animation finished there
+    // is active menu. This check is moved to the StartLockAnimation, since it
+    // seems the check in the post lock animation is too late.
+
+    views::Widget* owner = active_menu_controller->owner();
+    SCOPED_CRASH_KEY_STRING256("LockStateController", "StartLockAnimation",
+                               owner ? owner->GetName() : "ownerless");
+    CHECK(false);
   }
 
   animating_lock_ = true;
@@ -686,19 +703,6 @@ void LockStateController::PostLockAnimationFinished(bool aborted) {
   OnLockStateEvent(LockStateObserver::EVENT_LOCK_ANIMATION_FINISHED);
   if (!lock_screen_displayed_callback_.is_null())
     std::move(lock_screen_displayed_callback_).Run();
-  views::MenuController* active_menu_controller =
-      views::MenuController::GetActiveInstance();
-
-  if (active_menu_controller) {
-    // TODO(http://b/328064674): Please remove the below crash keys once the
-    // the crash is fixed. It seems after post lock animation finished there
-    // is active menu.
-
-    views::Widget* owner = active_menu_controller->owner();
-    SCOPED_CRASH_KEY_STRING256("LockStateController", "PostLockAnimation",
-                               owner ? owner->GetName() : "ownerless");
-    CHECK(false);
-  }
 }
 
 void LockStateController::UnlockAnimationAfterLockUIDestroyedFinished(
@@ -827,7 +831,7 @@ void LockStateController::ShutdownOnPine(bool cancelable_shutdown) {
 void LockStateController::TakePineImageAndShutdown(bool cancelable_shutdown) {
   const base::FilePath file_path = GetShutdownPineImagePath();
 
-  if (!ShouldTakePineScreeshot()) {
+  if (!ShouldTakePineScreenshot()) {
     DeletePineImage(pine_image_callback_for_test_, file_path);
     StartShutdownProcess(cancelable_shutdown);
     return;
@@ -884,6 +888,14 @@ void LockStateController::OnDlpRestrictionCheckedAtScreenCapture(
         FROM_HERE, kTakeScreenshotFailTimeout,
         base::BindOnce(&LockStateController::OnTakeScreenshotFailTimeout,
                        base::Unretained(this), cancelable_shutdown));
+  }
+
+  if (auto* workspace_controller = GetWorkspaceController(
+          desks_util::GetActiveDeskContainerForRoot(root))) {
+    if (BackdropController* backdrop_controller =
+            workspace_controller->layout_manager()->backdrop_controller()) {
+      backdrop_controller->HideOnTakingPineScreenshot();
+    }
   }
 
   // Take the screenshot on the shutdown screenshot container, thus the float

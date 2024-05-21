@@ -201,6 +201,13 @@ chromium-metrics-reviews@google.com.
   <int value="7" label="Required credential field missing"/>
 </enum>
 
+<enum name="ChromeSigninSettingModification">
+  <int value="0" label="No modifications"/>
+  <int value="1" label="Modified to always ask"/>
+  <int value="2" label="Modified to always sign in"/>
+  <int value="3" label="Modified to never sign in"/>
+</enum>
+
 <enum name="FRESigninEvents">
   <int value="0" label="Checking managed status"/>
   <int value="1" label="Signing in - unmanaged"/>
@@ -566,6 +573,11 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="Revoked on load due to cookie settings"/>
 </enum>
 
+<enum name="SigninPendingResolution">
+  <int value="0" label="Sign in (reauth)"/>
+  <int value="1" label="Sign out"/>
+</enum>
+
 <enum name="SigninReason">
   <int value="0" label="Signin primary account"/>
   <int value="1" label="Add secondary account"/>
@@ -835,13 +847,23 @@ chromium-metrics-reviews@google.com.
   <int value="7" label="Equal weighted history sync cancel button clicked"/>
   <int value="8" label="Not-Equal weighted history sync opt-in button clicked"/>
   <int value="9" label="Not-Equal weighted history sync cancel button clicked"/>
+  <int value="10" label="Unknown weighted sync settings button clicked"/>
 </enum>
 
 <enum name="SyncButtonsType">
-  <int value="0" label="Equal weighted buttons on sync screen"/>
-  <int value="1" label="Not-Equal weighted buttons on sync screen"/>
-  <int value="2" label="Equal weighted buttons on history sync screen"/>
-  <int value="3" label="Not-Equal weighted buttons on history sync screen"/>
+  <int value="0" label="Equal weighted buttons on sync screen (deprecated)"/>
+  <int value="1"
+      label="Not-Equal weighted buttons on sync screen (Android, Windows, Mac
+             and Linux)"/>
+  <int value="2" label="Equal weighted buttons on history sync screen (iOS)"/>
+  <int value="3"
+      label="Not-Equal weighted buttons on history sync screen (iOS)"/>
+  <int value="4"
+      label="Equal weighted buttons on sync screen from deadline (Android,
+             Windows, Mac and Linux)"/>
+  <int value="5"
+      label="Equal weighted buttons on sync screen from capability (Android,
+             Windows, Mac and Linux)"/>
 </enum>
 
 <enum name="SyncErrorPromptUIAction">

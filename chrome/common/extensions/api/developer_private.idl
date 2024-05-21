@@ -266,6 +266,7 @@ namespace developerPrivate {
     DOMString? path;
     Permissions permissions;
     DOMString? prettifiedPath;
+    DOMString? recommendationsUrl;
     RuntimeError[] runtimeErrors;
     DOMString[] runtimeWarnings;
     ExtensionState state;
@@ -281,6 +282,7 @@ namespace developerPrivate {
     boolean acknowledgeSafetyCheckWarning;
     boolean? pinnedToToolbar;
     boolean isAffectedByMV2Deprecation;
+    boolean didAcknowledgeMV2DeprecationWarning;
   };
 
   dictionary ProfileInfo {
@@ -289,6 +291,7 @@ namespace developerPrivate {
     boolean isDeveloperModeControlledByPolicy;
     boolean isIncognitoAvailable;
     boolean isChildAccount;
+    boolean isMv2DeprecationWarningDismissed;
   };
 
   // DEPRECATED: Prefer ExtensionInfo.
@@ -348,6 +351,7 @@ namespace developerPrivate {
 
   dictionary ProfileConfigurationUpdate {
     boolean? inDeveloperMode;
+    boolean? isMv2DeprecationWarningDismissed;
   };
 
   dictionary ExtensionCommandUpdate {

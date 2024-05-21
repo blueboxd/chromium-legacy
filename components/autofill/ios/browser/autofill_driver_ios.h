@@ -29,6 +29,30 @@ class WebState;
 
 namespace autofill {
 
+// Histogram for recording the renderer event used to infer a form submission.
+inline constexpr char kAutofillSubmissionDetectionSourceHistogram[] =
+    "Autofill.SubmissionDetectionSource.AutofillAgent";
+
+// Histogram for recording whether the form detected as submitted after a form
+// removal event was the synthetic form. Recorded when a submission is detected
+// after a form removal event.
+inline constexpr char kFormlessSubmissionAfterFormRemovalHistogram[] =
+    "Autofill.iOS.FormRemoval.SubmissionDetected.IsFormless";
+
+// Histogram for recording whether a form submission was detected after a form
+// removal event.
+inline constexpr char kFormSubmissionAfterFormRemovalHistogram[] =
+    "Autofill.iOS.FormRemoval.SubmissionDetected";
+
+// Histogram for recording the number of removed forms in a form removal event.
+inline constexpr char kFormRemovalRemovedFormsHistogram[] =
+    "Autofill.iOS.FormRemoval.RemovedForms";
+
+// Histogram for recording the number of removed unowned fields in a form
+// removal event.
+inline constexpr char kFormRemovalRemovedUnownedFieldsHistogram[] =
+    "Autofill.iOS.FormRemoval.RemovedUnownedFields";
+
 class AutofillDriverIOSFactory;
 
 // AutofillDriverIOS drives the Autofill flow in the browser process based
@@ -128,6 +152,9 @@ class AutofillDriverIOS : public AutofillDriver,
   void FormSubmitted(const FormData& form,
                      bool known_success,
                      mojom::SubmissionSource submission_source);
+  void CaretMovedInFormField(const FormData& form,
+                             const FormFieldData& field,
+                             const gfx::Rect& caret_bounds);
   void TextFieldDidChange(const FormData& form,
                           const FormFieldData& field,
                           base::TimeTicks timestamp);
@@ -196,6 +223,11 @@ class AutofillDriverIOS : public AutofillDriver,
   void OnAutofillManagerDestroyed(AutofillManager& manager) override;
   void OnAfterFormsSeen(AutofillManager& manager,
                         base::span<const FormGlobalId> forms) override;
+
+  // Logs metrics related to form removal events.
+  void RecordFormRemoval(bool submission_detected,
+                         int removed_forms_count,
+                         int removed_unowned_fields_count);
 
   // The WebState with which this object is associated.
   raw_ptr<web::WebState> web_state_ = nullptr;

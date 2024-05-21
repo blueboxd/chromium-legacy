@@ -47,7 +47,7 @@ String EncryptedMediaUtils::ConvertFromInitDataType(
       return String();
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return String();
 }
 
@@ -73,11 +73,11 @@ String EncryptedMediaUtils::ConvertFromSessionType(
       return kPersistentLicense;
     case WebEncryptedMediaSessionType::kUnknown:
       // Unexpected session type from Chromium.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return String();
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return String();
 }
 
@@ -101,7 +101,7 @@ String EncryptedMediaUtils::ConvertKeyStatusToString(
       return "internal-error";
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return "internal-error";
 }
 
@@ -136,7 +136,7 @@ EncryptedMediaUtils::ConvertToMediaKeysRequirement(const String& requirement) {
   if (requirement == "not-allowed")
     return WebMediaKeySystemConfiguration::Requirement::kNotAllowed;
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return WebMediaKeySystemConfiguration::Requirement::kOptional;
 }
 
@@ -152,47 +152,8 @@ String EncryptedMediaUtils::ConvertMediaKeysRequirementToString(
       return "not-allowed";
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return "not-allowed";
-}
-
-// static
-const char* EncryptedMediaUtils::GetInterfaceName(EmeApiType type) {
-  switch (type) {
-    case EmeApiType::kCreateMediaKeys:
-      return "MediaKeySystemAccess";
-    case EmeApiType::kSetServerCertificate:
-    case EmeApiType::kGetStatusForPolicy:
-      return "MediaKeys";
-    case EmeApiType::kGenerateRequest:
-    case EmeApiType::kLoad:
-    case EmeApiType::kUpdate:
-    case EmeApiType::kClose:
-    case EmeApiType::kRemove:
-      return "MediaKeySession";
-  }
-}
-
-// static
-const char* EncryptedMediaUtils::GetPropertyName(EmeApiType type) {
-  switch (type) {
-    case EmeApiType::kCreateMediaKeys:
-      return "createMediaKeys";
-    case EmeApiType::kSetServerCertificate:
-      return "setServerCertificate";
-    case EmeApiType::kGetStatusForPolicy:
-      return "getStatusForPolicy";
-    case EmeApiType::kGenerateRequest:
-      return "generateRequest";
-    case EmeApiType::kLoad:
-      return "load";
-    case EmeApiType::kUpdate:
-      return "update";
-    case EmeApiType::kClose:
-      return "close";
-    case EmeApiType::kRemove:
-      return "remove";
-  }
 }
 
 WebEncryptedMediaClient*

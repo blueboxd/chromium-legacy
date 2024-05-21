@@ -32,6 +32,7 @@
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/android_image_backing.h"
 #include "gpu/command_buffer/service/shared_image/dawn_ahardwarebuffer_image_representation.h"
+#include "gpu/command_buffer/service/shared_image/dawn_egl_image_representation.h"
 #include "gpu/command_buffer/service/shared_image/gl_texture_android_image_representation.h"
 #include "gpu/command_buffer/service/shared_image/gl_texture_passthrough_android_image_representation.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
@@ -169,7 +170,7 @@ unsigned int AHardwareBufferFormat(viz::SharedImageFormat format) {
     return AHARDWAREBUFFER_FORMAT_R10G10B10A2_UNORM;
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM;
 }
 
@@ -482,7 +483,7 @@ AHardwareBufferImageBacking::ProduceSkiaGraphite(
       std::move(dawn_representation), context_state,
       context_state->gpu_main_graphite_recorder(), manager, this, tracker);
 #else
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 #endif
 }
@@ -553,7 +554,25 @@ AHardwareBufferImageBacking::ProduceDawn(
   // backing.
   DCHECK(hardware_buffer_handle_.is_valid());
 
-  // Only Vulkan is supported on Android currently
+#if BUILDFLAG(USE_DAWN) && BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
+  if (backend_type == wgpu::BackendType::OpenGLES) {
+    std::unique_ptr<GLTextureImageRepresentationBase> gl_representation;
+    if (use_passthrough_) {
+      gl_representation = ProduceGLTexturePassthrough(manager, tracker);
+    } else {
+      gl_representation = ProduceGLTexture(manager, tracker);
+    }
+
+    gl::ScopedEGLImage egl_image =
+        CreateEGLImageFromAHardwareBuffer(hardware_buffer_handle_.get());
+
+    auto result = std::make_unique<DawnEGLImageRepresentation>(
+        std::move(gl_representation), std::move(egl_image), manager, this,
+        tracker, device);
+    return result;
+  }
+#endif
+
   DCHECK_EQ(backend_type, wgpu::BackendType::Vulkan);
   wgpu::TextureFormat webgpu_format = ToDawnFormat(format());
   if (webgpu_format == wgpu::TextureFormat::Undefined) {

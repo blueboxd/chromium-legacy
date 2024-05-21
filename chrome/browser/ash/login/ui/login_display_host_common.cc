@@ -154,7 +154,7 @@ void SetGaiaInputMethods(const AccountId& account_id) {
 int ErrorToMessageId(SigninError error) {
   switch (error) {
     case SigninError::kCaptivePortalError:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return 0;
     case SigninError::kGoogleAccountNotAllowed:
       return IDS_LOGIN_ERROR_GOOGLE_ACCOUNT_NOT_ALLOWED;
@@ -447,18 +447,6 @@ void LoginDisplayHostCommon::CancelPasswordChangedFlow() {
   }
 
   OnCancelPasswordChangedFlow();
-}
-
-void LoginDisplayHostCommon::MigrateUserData(const std::string& old_password) {
-  if (GetExistingUserController()) {
-    GetExistingUserController()->MigrateUserData(old_password);
-  }
-}
-
-void LoginDisplayHostCommon::ResyncUserData() {
-  if (GetExistingUserController()) {
-    GetExistingUserController()->ResyncUserData();
-  }
 }
 
 bool LoginDisplayHostCommon::HandleAccelerator(LoginAcceleratorAction action) {

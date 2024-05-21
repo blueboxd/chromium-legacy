@@ -123,14 +123,8 @@ void SoftwareRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
   TRACE_EVENT0("viz", "SoftwareRenderer::SwapBuffers");
   OutputSurfaceFrame output_frame;
   output_frame.latency_info = std::move(swap_frame_data.latency_info);
-  output_frame.top_controls_visible_height_changed =
-      swap_frame_data.top_controls_visible_height_changed;
   output_frame.data.swap_trace_id = swap_frame_data.swap_trace_id;
   output_surface_->SwapBuffers(std::move(output_frame));
-}
-
-bool SoftwareRenderer::FlippedFramebuffer() const {
-  return false;
 }
 
 void SoftwareRenderer::EnsureScissorTestDisabled() {
@@ -234,7 +228,7 @@ void SoftwareRenderer::BeginDrawingRenderPass(
     const AggregatedRenderPass* render_pass,
     bool needs_clear,
     const gfx::Rect& render_pass_update_rect) {
-  if (render_pass_update_rect == current_viewport_rect_) {
+  if (render_pass_update_rect == gfx::Rect(current_viewport_size_)) {
     EnsureScissorTestDisabled();
   } else {
     SetScissorTestRect(render_pass_update_rect);
@@ -330,7 +324,7 @@ void SoftwareRenderer::DoDrawQuad(const DrawQuad* quad,
     case DrawQuad::Material::kCompositorRenderPass:
       // At this point, all RenderPassDrawQuads should be converted to
       // AggregatedRenderPassDrawQuads.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
     case DrawQuad::Material::kSolidColor:
       DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad));
@@ -344,13 +338,13 @@ void SoftwareRenderer::DoDrawQuad(const DrawQuad* quad,
     case DrawQuad::Material::kSurfaceContent:
       // Surface content should be fully resolved to other quad types before
       // reaching a direct renderer.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
     case DrawQuad::Material::kInvalid:
     case DrawQuad::Material::kYuvVideoContent:
     case DrawQuad::Material::kSharedElement:
       DrawUnsupportedQuad(quad);
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
     case DrawQuad::Material::kVideoHole:
       // VideoHoleDrawQuad should only be used by Cast, and should

@@ -246,7 +246,7 @@ void TextFragmentPainter::PaintSymbol(const LayoutObject* layout_object,
     path.Translate(gfx::Vector2dF(marker_rect.X(), marker_rect.Y()));
     context.FillPath(path, auto_dark_mode);
   } else {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 }
 
@@ -468,7 +468,7 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
   // highlight overlay system, such as composition highlights. They use physical
   // coordinates, so are painted before GraphicsContext rotation.
   if (paint_marker_backgrounds) {
-    highlight_painter.Paint(HighlightPainter::kBackground);
+    highlight_painter.PaintNonCssMarkers(HighlightPainter::kBackground);
   }
 
   if (rotation) {
@@ -559,7 +559,7 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
   // Paint foregrounds for document markers that don’t participate in the CSS
   // highlight overlay system, such as composition highlights.
   if (paint_info.phase == PaintPhase::kForeground) {
-    highlight_painter.Paint(HighlightPainter::kForeground);
+    highlight_painter.PaintNonCssMarkers(HighlightPainter::kForeground);
   }
 
   // Paint ::selection foreground only.
@@ -583,7 +583,7 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
         break;
       case HighlightPainter::kFastSpellingGrammar:
       case HighlightPainter::kNoHighlights:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
     }
   }
 }

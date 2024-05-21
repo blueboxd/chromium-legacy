@@ -153,8 +153,8 @@ enum class ComposeShowStatus {
   kAutocompleteOff = 14,
   kWritingSuggestionsFalse = 15,
   kProactiveNudgeFeatureDisabled = 16,
-  kPractiveNudgeDisabledGloballyByUserPreference = 17,
-  kPractiveNudgeDisabledForSiteByUserPreference = 18,
+  kProactiveNudgeDisabledGloballyByUserPreference = 17,
+  kProactiveNudgeDisabledForSiteByUserPreference = 18,
   kPractiveNudgeDisabledByServerConfig = 19,
   kPractiveNudgeUnknownServerConfig = 20,
   kRandomlyBlocked = 21,
@@ -208,6 +208,26 @@ enum class ComposeRequestFeedback {
   kMaxValue = kRequestError,
 };
 
+// The output metric for the proactive nudge segmentation model. Represents what
+// effect the nudge had on the user's engagement. Stored as
+// "Compose.ProactiveNudge.DerivedEngagement".
+enum class ProactiveNudgeDerivedEngagement {
+  // The user didn't interact with the nudge.
+  kIgnored,
+  // The user disabled the nudge on this site using the three-dot menu.
+  kNudgeDisabledOnSingleSite,
+  // The user disabled the nudge on all sites using the three-dot menu.
+  kNudgeDisabledOnAllSites,
+  // User clicked the nudge, but didn't press generate in Compose.
+  kOpenedComposeMinimalUse,
+  // User clicked the nudge, pressed generate at least once, but didn't accept
+  // the suggestion.
+  kGeneratedComposeSuggestion,
+  // User clicked, pressed generate, and accepted a suggestion.
+  kAcceptedComposeSuggestion,
+  kMaxValue = kAcceptedComposeSuggestion,
+};
+
 // Struct containing event and logging information for an individual
 // |ComposeSession|.
 struct ComposeSessionEvents {
@@ -252,6 +272,8 @@ struct ComposeSessionEvents {
   // True if the MSBB was enabled in the session.
   bool msbb_enabled_in_session = false;
 
+  // True if the session started from the proactive nudge.
+  bool started_with_proactive_nudge = false;
   // True if the session started with selected text.
   bool has_initial_text = false;
   // True if thumbs up was ever clicked during the session.
@@ -330,6 +352,16 @@ class PageUkmTracker {
   // proactive nudge could be shown even if the nudge is eventually blocked.
   void ComposeProactiveNudgeShouldShow();
 
+  // The compose proactive nudge was shown.
+  void ProactiveNudgeShown();
+
+  // The compose proactive nudge was opened.
+  void ProactiveNudgeOpened();
+
+  // Mark that proactive nudge preferences were set during this page load.
+  void ProactiveNudgeDisabledGlobally();
+  void ProactiveNudgeDisabledForSite();
+
   // The compose dialog was requested but not shown due to problems obtaining
   // form data from Autofill.
   void ShowDialogAbortedDueToMissingFormData();
@@ -343,8 +375,16 @@ class PageUkmTracker {
   bool event_was_recorded_ = false;
   unsigned int menu_item_shown_count_ = 0;
   unsigned int menu_item_clicked_count_ = 0;
+
   unsigned int compose_text_inserted_count_ = 0;
-  unsigned int compose_proactive_nudge_should_show_ = 0;
+
+  unsigned int proactive_nudge_should_show_count_ = 0;
+  unsigned int proactive_nudge_shown_count_ = 0;
+  unsigned int proactive_nudge_opened_count_ = 0;
+
+  bool proactive_nudge_disabled_globally_ = false;
+  bool proactive_nudge_disabled_for_site_ = false;
+
   unsigned int missing_form_data_count_ = 0;
   unsigned int missing_form_field_data_count_ = 0;
 

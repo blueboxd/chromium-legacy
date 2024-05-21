@@ -28,6 +28,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "base/trace_event/base_tracing.h"
 #include "components/embedder_support/android/util/features.h"
 #include "components/embedder_support/android/util/input_stream.h"
 #include "components/embedder_support/android/util/web_resource_response.h"
@@ -169,7 +170,7 @@ void RfhToIoThreadClientMap::Erase(RenderFrameHost* rfh) {
   HostsAndWeakGlobalRefPair& current_entry =
       frame_tree_node_to_weak_global_ref_[frame_tree_node_id];
   size_t num_erased = current_entry.first.erase(rfh);
-  DCHECK(num_erased == 1);
+  DCHECK_EQ(num_erased, 1u);
   // Only remove this entry from the FrameTreeNodeId map if there are no more
   // live RenderFrameHosts.
   if (current_entry.first.empty()) {
@@ -184,10 +185,6 @@ void RfhToIoThreadClientMap::Erase(RenderFrameHost* rfh) {
 void RfhToIoThreadClientMap::RenderFrameHostChanged(RenderFrameHost* old_rfh,
                                                     RenderFrameHost* new_rfh) {
   // Handles FrameTree swap, which occurs only in prerender activation.
-
-  if (!base::FeatureList::IsEnabled(features::kWebViewPrerender2)) {
-    return;
-  }
 
   if (old_rfh == nullptr) {
     return;
@@ -396,6 +393,7 @@ AwContentsIoThreadClient::InterceptResponseData NoInterceptRequest() {
 AwContentsIoThreadClient::InterceptResponseData RunShouldInterceptRequest(
     AwWebResourceRequest request,
     JavaObjectWeakGlobalRef ref) {
+  TRACE_EVENT0("android_webview", "RunShouldInterceptRequest");
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 

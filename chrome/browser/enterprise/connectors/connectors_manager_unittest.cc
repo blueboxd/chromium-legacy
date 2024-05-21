@@ -18,7 +18,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/connectors/analysis/content_analysis_features.h"
 #include "chrome/browser/enterprise/connectors/common.h"
-#include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/enterprise/connectors/reporting/browser_crash_event_router.h"
 #include "chrome/browser/enterprise/connectors/reporting/extension_install_event_router.h"
@@ -28,6 +27,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/enterprise/buildflags/buildflags.h"
+#include "components/enterprise/connectors/connectors_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/core/common/features.h"
@@ -594,7 +594,7 @@ class ConnectorsManagerConnectorPoliciesSourceDestinationTest
                volume_pair == &kNoDlpMalwareVolumePair2) {
       settings.tags = {{"malware", TagSettings()}};
     } else {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
     }
 
     // The "local_user_agent" service provider doesn't support the "malware"
@@ -759,7 +759,7 @@ TEST_P(ConnectorsManagerAnalysisConnectorsTest, NamesAndConfigs) {
     EXPECT_TRUE(configs[0]->region_urls.empty());
     EXPECT_TRUE(configs[0]->local_path);
   } else {
-    NOTREACHED() << "Unexpected service provider name";
+    NOTREACHED_IN_MIGRATION() << "Unexpected service provider name";
   }
 }
 

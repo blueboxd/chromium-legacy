@@ -226,10 +226,10 @@ static EDisplay EquivalentBlockDisplay(EDisplay display) {
     case EDisplay::kRubyText:
       return EDisplay::kBlock;
     case EDisplay::kNone:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return display;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return EDisplay::kBlock;
 }
 
@@ -283,10 +283,10 @@ static EDisplay EquivalentInlineDisplay(EDisplay display) {
       return display;
 
     case EDisplay::kNone:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return display;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return EDisplay::kBlock;
 }
 
@@ -1188,9 +1188,10 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     element->AdjustStyle(base::PassKey<StyleAdjuster>(), builder);
   }
 
-  if (element &&
+  // We need to use styled element here to ensure coverage for pseudo-elements.
+  if (state.GetStyledElement() &&
       ViewTransitionUtils::IsViewTransitionElementExcludingRootFromSupplement(
-          *element)) {
+          *state.GetStyledElement())) {
     builder.SetElementIsViewTransitionParticipant();
   }
 

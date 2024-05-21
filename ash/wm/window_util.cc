@@ -7,7 +7,6 @@
 #include <memory>
 #include <tuple>
 
-#include "ash/constants/app_types.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/multi_user/multi_user_window_manager_impl.h"
@@ -43,7 +42,9 @@
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/ui/base/app_types.h"
 #include "chromeos/ui/base/chromeos_ui_constants.h"
+#include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
 #include "chromeos/ui/frame/interior_resize_handler_targeter.h"
@@ -77,29 +78,6 @@
 
 namespace ash::window_util {
 namespace {
-
-// This window targeter reserves space for the portion of the resize handles
-// that extend within a top level window.
-class InteriorResizeHandleTargeterAsh
-    : public chromeos::InteriorResizeHandleTargeter {
- public:
-  InteriorResizeHandleTargeterAsh() = default;
-  InteriorResizeHandleTargeterAsh(const InteriorResizeHandleTargeterAsh&) =
-      delete;
-  InteriorResizeHandleTargeterAsh& operator=(
-      const InteriorResizeHandleTargeterAsh&) = delete;
-  ~InteriorResizeHandleTargeterAsh() override = default;
-
-  bool ShouldUseExtendedBounds(const aura::Window* target) const override {
-    // Fullscreen/maximized windows can't be drag-resized.
-    const WindowState* window_state = WindowState::Get(window());
-    if (window_state && window_state->IsMaximizedOrFullscreenOrPinned())
-      return false;
-
-    // The shrunken hit region only applies to children of |window()|.
-    return InteriorResizeHandleTargeter::ShouldUseExtendedBounds(target);
-  }
-};
 
 // Returns true if `window` has any descendant that is a system modal window or
 // is itself a system modal window.
@@ -344,7 +322,7 @@ bool MoveWindowToDisplay(aura::Window* window, int64_t display_id) {
 
   aura::Window* root = Shell::GetRootWindowForDisplayId(display_id);
   if (!root || root == window->GetRootWindow()) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return false;
   }
 
@@ -402,7 +380,13 @@ void CloseWidgetForWindow(aura::Window* window) {
 }
 
 void InstallResizeHandleWindowTargeterForWindow(aura::Window* window) {
-  window->SetEventTargeter(std::make_unique<InteriorResizeHandleTargeterAsh>());
+  window->SetEventTargeter(
+      std::make_unique<chromeos::InteriorResizeHandleTargeter>(
+          base::BindRepeating([](const aura::Window* window) {
+            const WindowState* window_state = WindowState::Get(window);
+            return window_state ? window_state->GetStateType()
+                                : chromeos::WindowStateType::kDefault;
+          })));
 }
 
 bool IsDraggingTabs(const aura::Window* window) {
@@ -655,9 +639,9 @@ bool ShouldMinimizeTopWindowOnBack() {
 
   // ARC and crostini apps will handle the back event that follows on the client
   // side and will minimize/close the window there.
-  const int app_type = window->GetProperty(aura::client::kAppType);
-  if (app_type == static_cast<int>(AppType::ARC_APP) ||
-      app_type == static_cast<int>(AppType::CROSTINI_APP)) {
+  const chromeos::AppType app_type = window->GetProperty(chromeos::kAppTypeKey);
+  if (app_type == chromeos::AppType::ARC_APP ||
+      app_type == chromeos::AppType::CROSTINI_APP) {
     return false;
   }
 

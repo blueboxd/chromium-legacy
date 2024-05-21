@@ -684,7 +684,9 @@ void WebRTCInternals::FileSelected(const ui::SelectedFileInfo& file,
       EnableAudioDebugRecordingsOnAllRenderProcessHosts();
       break;
     }
-    default: { NOTREACHED(); }
+    default: {
+      NOTREACHED_IN_MIGRATION();
+    }
   }
 }
 
@@ -700,7 +702,7 @@ void WebRTCInternals::FileSelectionCanceled(void* params) {
                  base::Value());
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
   select_file_dialog_ = nullptr;
 }

@@ -71,7 +71,6 @@
 #include "ui/views/controls/throbber.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/box_layout_view.h"
-#include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_class_properties.h"
@@ -421,7 +420,9 @@ TranslateBubbleView::TranslateBubbleView(
     translate::TranslateErrors error_type,
     content::WebContents* web_contents,
     base::OnceClosure on_closing)
-    : LocationBarBubbleDelegateView(anchor_view, web_contents),
+    : LocationBarBubbleDelegateView(anchor_view,
+                                    web_contents,
+                                    /*autosize=*/true),
       model_(std::move(model)),
       error_type_(error_type),
       is_in_incognito_window_(
@@ -472,7 +473,6 @@ void TranslateBubbleView::ConfirmAdvancedOptions() {
   model_->SetAlwaysTranslate(should_always_translate_);
   if (model_->IsPageTranslatedInCurrentLanguages()) {
     SwitchView(TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE);
-    SizeToContents();
   } else {
     std::u16string source_language_name;
     std::u16string target_language_name;
@@ -527,10 +527,6 @@ void TranslateBubbleView::UpdateChildVisibilities() {
   for (views::View* view : children()) {
     view->SetVisible(view == GetCurrentView());
   }
-
-  // BoxLayout only considers visible children, so ensure any newly visible
-  // child views are positioned correctly.
-  DeprecatedLayoutImmediately();
 }
 
 std::unique_ptr<views::View> TranslateBubbleView::CreateEmptyPane() {
@@ -831,6 +827,8 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvanced(
     // only happen on non-Chrome-branded builds.
     auto* icon_view =
         view->AddChildView(std::make_unique<views::BoxLayoutView>());
+    icon_view->SetCrossAxisAlignment(
+        views::BoxLayout::CrossAxisAlignment::kStart);
     icon_view->SetOrientation(views::BoxLayout::Orientation::kVertical);
     icon_view->AddChildView(std::move(language_icon));
     icon_view->SetProperty(views::kMarginsKey,
@@ -999,7 +997,6 @@ void TranslateBubbleView::SwitchView(
   }
 
   UpdateChildVisibilities();
-  SizeToContents();
 
   if (view_state == TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE) {
     AnnounceTextToScreenReader(l10n_util::GetStringFUTF16(

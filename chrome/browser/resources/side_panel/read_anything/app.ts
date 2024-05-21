@@ -296,7 +296,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   private lastDownloadedLang_: string;
   private emptyStateSubheading_: string;
 
-  private previousHighlight_: HTMLElement[] = [];
+  private previousHighlights_: HTMLElement[] = [];
   private currentColorSuffix_: string;
   private isHighlightOn_: boolean = true;
 
@@ -387,6 +387,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
   override connectedCallback() {
     super.connectedCallback();
+
     // onConnected should always be called first in connectedCallback to ensure
     // we're not blocking onConnected on anything else during WebUI setup.
     if (chrome.readingMode) {
@@ -412,6 +413,15 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     this.showLoading();
 
     if (this.isReadAloudEnabled_) {
+      // Clear state. We don't do this in disconnectedCallback because that's
+      // not always reliabled called.
+      this.synth.cancel();
+      this.hasContent_ = false;
+      this.firstUtteranceSpoken = false;
+      this.firstTextNodeSetForReadAloud = null;
+      this.domNodeToAxNodeIdMap_.clear();
+      this.clearReadAloudState();
+
       this.synth.onvoiceschanged = () => {
         this.getVoices(/*refresh =*/ true);
         // If the selected voice is now unavailable, such as after an install,
@@ -471,12 +481,12 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       // If speech is resumed, this won't be restored.
       // TODO(b/40927698): Restore the previous highlight after speech
       // is resumed after a selection.
-      this.previousHighlight_.forEach((element) => {
+      this.previousHighlights_.forEach((element) => {
         if (element) {
-          element.className = '';
+          element.classList.remove(previousReadHighlightClass);
         }
       });
-      this.previousHighlight_ = [];
+      this.previousHighlights_ = [];
 
     };
 
@@ -529,11 +539,10 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     }
 
     let ancestor;
-    if (node.parentElement.className === parentOfHighlightClass) {
+    if (node.parentElement.classList.contains(parentOfHighlightClass)) {
       ancestor = node.parentNode;
-    } else if (
-        node.parentElement.parentElement?.className ===
-        parentOfHighlightClass) {
+    } else if (node.parentElement.parentElement?.classList.contains(
+                   parentOfHighlightClass)) {
       ancestor = node.parentNode.parentNode;
     }
 
@@ -1261,6 +1270,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   private logSpeechPlaySession() {
     // Don't log a playback session just in case something has gotten out of
     // sync and we call stopSpeech before playSpeech.
+    assert(this.playSessionStartTime > 0, 'invalid speech playing start time');
     if (this.playSessionStartTime > 0) {
       chrome.readingMode.logLongMetric(
           Date.now() - this.playSessionStartTime,
@@ -1313,7 +1323,10 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
         this.synth.resume();
       } else {
         this.synth.cancel();
-        this.highlightAndPlayInterruptedMessage();
+        if (!this.highlightAndPlayInterruptedMessage()) {
+          // Ensure we're updating Read Aloud state if there's no text to speak.
+          this.onSpeechFinished();
+        }
       }
 
       this.speechPlayingState = {
@@ -1357,21 +1370,40 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       if (this.firstTextNodeSetForReadAloud) {
         chrome.readingMode.initAxPositionWithNode(
             this.firstTextNodeSetForReadAloud);
-        this.highlightAndPlayMessage();
+        if (!this.highlightAndPlayMessage()) {
+          // Ensure we're updating Read Aloud state if there's no text to speak.
+          this.onSpeechFinished();
+        }
       }
     }
   }
 
   // TODO: Should this be merged with highlightAndPlayMessage?
-  highlightAndPlayInterruptedMessage() {
+  highlightAndPlayInterruptedMessage(): boolean {
     // getCurrentText gets the AX Node IDs of text that should be spoken and
     // highlighted.
     const axNodeIds: number[] = chrome.readingMode.getCurrentText();
 
+    // If there aren't any valid ax node ids returned by getCurrentText,
+    // speech should stop.
+    if (axNodeIds.length === 0) {
+      return false;
+    }
+
     const utteranceText = this.extractTextOf(axNodeIds);
     // Return if the utterance is empty or null.
     if (!utteranceText) {
-      return false;
+      // TODO(b/332694565): This fallback should never be needed, but it is.
+      // Investigate root cause of Read Aloud / Reading Mode mismatch.
+      chrome.readingMode.movePositionToNextGranularity();
+      return this.highlightAndPlayInterruptedMessage();
+    }
+
+    // The TTS engine may not like attempts to speak whitespace, so move to the
+    // next utterance.
+    if (utteranceText.trim().length === 0) {
+      chrome.readingMode.movePositionToNextGranularity();
+      return this.highlightAndPlayInterruptedMessage();
     }
 
     if (this.wordBoundaryState.mode === WordBoundaryMode.BOUNDARY_DETECTED) {
@@ -1379,11 +1411,24 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
           this.wordBoundaryState.speechUtteranceStartIndex;
       this.wordBoundaryState.previouslySpokenIndex = 0;
       this.wordBoundaryState.speechUtteranceStartIndex = substringIndex;
-      this.playText(utteranceText.substring(substringIndex));
+      const utteranceTextForWordBoundary =
+          utteranceText.substring(substringIndex);
+      // Don't use the word boundary if it's going to cause a TTS engine issue.
+      if (utteranceTextForWordBoundary.trim().length === 0) {
+        this.playText(utteranceText);
+      } else {
+        this.playText(utteranceText.substring(substringIndex));
+      }
     } else {
       this.playText(utteranceText);
     }
-    this.highlightNodes(axNodeIds);
+    if (this.wordBoundaryState.mode ===
+            WordBoundaryMode.BOUNDARIES_NOT_SUPPORTED ||
+        !this.shouldUseWordHighlighting()) {
+      this.highlightNodes(axNodeIds);
+    } else {
+      this.highlightNodesForWordBoundary();
+    }
     return true;
   }
 
@@ -1410,6 +1455,13 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     if (!utteranceText) {
       // TODO(b/332694565): This fallback should never be needed, but it is.
       // Investigate root cause of Read Aloud / Reading Mode mismatch.
+      chrome.readingMode.movePositionToNextGranularity();
+      return this.highlightAndPlayMessage();
+    }
+
+    // The TTS engine may not like attempts to speak whitespace, so move to the
+    // next utterance.
+    if (utteranceText.trim().length === 0) {
       chrome.readingMode.movePositionToNextGranularity();
       return this.highlightAndPlayMessage();
     }
@@ -1716,7 +1768,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       highlightStart: number, highlightEnd: number,
       currentNode: HTMLElement): void {
     const parentOfHighlight = document.createElement('span');
-    parentOfHighlight.className = parentOfHighlightClass;
+    parentOfHighlight.classList.add(parentOfHighlightClass);
 
     // First pull out any text within this node before the highlighted section.
     // Since it's already been highlighted, we fade it out.
@@ -1724,15 +1776,16 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
         currentNode.textContent!.substring(0, highlightStart);
     if (highlightPrefix.length > 0) {
       const prefixNode = document.createElement('span');
-      prefixNode.className = previousReadHighlightClass;
+      prefixNode.classList.add(previousReadHighlightClass);
       prefixNode.textContent = highlightPrefix;
+      this.previousHighlights_.push(prefixNode);
       parentOfHighlight.appendChild(prefixNode);
     }
 
     // Then get the section of text to highlight and mark it for
     // highlighting.
     const readingHighlight = document.createElement('span');
-    readingHighlight.className = currentReadHighlightClass;
+    readingHighlight.classList.add(currentReadHighlightClass);
     const textNode = document.createTextNode(
         currentNode.textContent!.substring(highlightStart, highlightEnd));
     readingHighlight.appendChild(textNode);
@@ -1750,7 +1803,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
     // Replace the current node in the tree with the split up version of the
     // node.
-    this.previousHighlight_.push(readingHighlight);
+    this.previousHighlights_.push(readingHighlight);
     this.replaceElement(currentNode, parentOfHighlight);
 
     // Automatically scroll the text so the highlight stays roughly centered.
@@ -1776,7 +1829,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       speechStarted: false,
       speechActuallyPlaying: false,
     };
-    this.previousHighlight_ = [];
+    this.previousHighlights_ = [];
     this.resetToDefaultWordBoundaryState();
   }
 
@@ -1889,9 +1942,9 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     // The most recent highlight could have been spread across multiple segments
     // so clear the formatting for all of the segments.
     for (let i = 0; i < chrome.readingMode.getCurrentText().length; i++) {
-      const lastElement = this.previousHighlight_.pop();
+      const lastElement = this.previousHighlights_.pop();
       if (lastElement) {
-        lastElement.className = '';
+        lastElement.classList.remove(currentReadHighlightClass);
       }
     }
 
@@ -1899,9 +1952,10 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   }
 
   private resetPreviousHighlight() {
-    this.previousHighlight_.forEach((element) => {
+    this.previousHighlights_.forEach((element) => {
       if (element) {
-        element.className = previousReadHighlightClass;
+        element.classList.add(previousReadHighlightClass);
+        element.classList.remove(currentReadHighlightClass);
       }
     });
   }
@@ -1909,8 +1963,10 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   restoreSettingsFromPrefs() {
     if (this.isReadAloudEnabled_) {
       this.updateSpeechRate_(chrome.readingMode.speechRate);
-      this.selectPreferredVoice_();
+      // We need to restore enabled languages prior to selecting the preferred
+      // voice to ensure we have the right voices available.
       this.restoreEnabledLanguagesFromPref_();
+      this.selectPreferredVoice_();
     }
     this.updateLineSpacing_(chrome.readingMode.lineSpacing);
     this.updateLetterSpacing_(chrome.readingMode.letterSpacing);
@@ -1996,8 +2052,9 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
     const selectedVoice = this.getVoices()
                               .filter(voice => voice.name === storedVoiceName);
-
-    this.selectedVoice = selectedVoice ? selectedVoice[0] : this.defaultVoice();
+    this.selectedVoice = selectedVoice && (selectedVoice.length > 0) ?
+        selectedVoice[0] :
+        this.defaultVoice();
   }
 
   private onLineSpacingChange_(event: CustomEvent<{data: number}>) {

@@ -436,7 +436,8 @@ void MockSellerWorklet::ReportResult(
 }
 
 void MockSellerWorklet::ConnectDevToolsAgent(
-    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent) {
+    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent,
+    uint32_t thread_index) {
   ADD_FAILURE()
       << "ConnectDevToolsAgent should not be called on MockSellerWorklet";
 }
@@ -560,8 +561,9 @@ void MockAuctionProcessManager::LoadBidderWorklet(
 void MockAuctionProcessManager::LoadSellerWorklet(
     mojo::PendingReceiver<auction_worklet::mojom::SellerWorklet>
         seller_worklet_receiver,
-    mojo::PendingRemote<auction_worklet::mojom::AuctionSharedStorageHost>
-        shared_storage_host_remote,
+    std::vector<
+        mojo::PendingRemote<auction_worklet::mojom::AuctionSharedStorageHost>>
+        shared_storage_hosts,
     bool should_pause_on_start,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         pending_url_loader_factory,

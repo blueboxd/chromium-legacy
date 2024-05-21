@@ -147,8 +147,8 @@ class NotificationViewTest : public views::ViewObserver,
         u"display source", GURL(),
         NotifierId(NotifierType::APPLICATION, "extension_id"), optional_fields,
         delegate_);
-    notification->set_small_image(gfx::test::CreateImage(/*size=*/16));
-    notification->set_image(gfx::test::CreateImage(320, 240));
+    notification->SetSmallImage(gfx::test::CreateImage(/*size=*/16));
+    notification->SetImage(gfx::test::CreateImage(320, 240));
 
     return notification;
   }
@@ -375,7 +375,7 @@ TEST_F(NotificationViewTest, LeftContentResizeForIcon) {
   // Create a notification without an icon.
   std::unique_ptr<Notification> notification = CreateSimpleNotification();
   notification->set_icon(ui::ImageModel());
-  notification->set_image(gfx::Image());
+  notification->SetImage(gfx::Image());
   UpdateNotificationViews(*notification);
 
   // Capture the width of the left content without an icon.
@@ -463,11 +463,8 @@ TEST_F(NotificationViewTest, InlineSettingsBlockAll) {
   EXPECT_TRUE(delegate_->disable_notification_called());
 }
 
-// TODO (crbug/1521442): Test fails under ChromeRefresh2023. Fix and re-enable.
-TEST_F(NotificationViewTest, TestAccentColor) {
-  if (features::IsChromeRefresh2023()) {
-    GTEST_SKIP();
-  }
+// TODO (crbug/1521442): Test fails post-ChromeRefresh2023. Fix and re-enable.
+TEST_F(NotificationViewTest, DISABLED_TestAccentColor) {
   std::unique_ptr<Notification> notification = CreateSimpleNotification();
   notification->set_buttons(CreateButtons(2));
 
@@ -612,8 +609,8 @@ TEST_F(NotificationViewTest, AppIconWebAppNotification) {
       u"message",
       ui::ImageModel::FromImage(gfx::test::CreateImage(/*size=*/80)),
       u"display source", GURL(), notifier_id, data, delegate_);
-  notification->set_small_image(gfx::Image::CreateFrom1xBitmap(small_bitmap));
-  notification->set_image(gfx::test::CreateImage(320, 240));
+  notification->SetSmallImage(gfx::Image::CreateFrom1xBitmap(small_bitmap));
+  notification->SetImage(gfx::test::CreateImage(320, 240));
 
   notification->set_origin_url(web_app_url);
 

@@ -439,7 +439,7 @@ Node* Node::PseudoAwarePreviousSibling() const {
     case kPseudoIdViewTransitionOld:
       return nullptr;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return nullptr;
   }
 }
@@ -494,7 +494,7 @@ Node* Node::PseudoAwareNextSibling() const {
     case kPseudoIdViewTransitionNew:
       return nullptr;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return nullptr;
   }
 }
@@ -589,8 +589,9 @@ Node* Node::PseudoAwareLastChild() const {
 }
 
 Node& Node::TreeRoot() const {
-  if (IsInTreeScope())
-    return ContainingTreeScope().RootNode();
+  if (IsInTreeScope()) {
+    return GetTreeScope().RootNode();
+  }
   const Node* node = this;
   while (node->parentNode())
     node = node->parentNode();
@@ -758,7 +759,7 @@ static Node* NodeOrStringToNode(
         return Text::Create(document,
                             node_or_string->GetAsTrustedScript()->toString());
     }
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return nullptr;
   }
 
@@ -1566,9 +1567,8 @@ void Node::DetachLayoutTree(bool performing_reattach) {
          GetDocument().GetStyleEngine().InRebuildLayoutTree());
   DocumentLifecycle::DetachScope will_detach(GetDocument().Lifecycle());
 
-  // Review: under what conditions should we call this?
   if (auto* cache = GetDocument().ExistingAXObjectCache()) {
-    cache->RemoveAXObjectsInLayoutSubtree(this);
+    cache->RemoveSubtree(this);
   }
 
   if (performing_reattach) {
@@ -2021,7 +2021,7 @@ void Node::setTextContentForBinding(const V8UnionStringOrTrustedScript* value,
       return setTextContent(value->GetAsTrustedScript()->toString());
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void Node::setTextContent(const String& text) {
@@ -2062,7 +2062,7 @@ void Node::setTextContent(const String& text) {
       // Do nothing.
       return;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 uint16_t Node::compareDocumentPosition(const Node* other_node,
@@ -2114,7 +2114,7 @@ uint16_t Node::compareDocumentPosition(const Node* other_node,
                kDocumentPositionPreceding;
     }
 
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return kDocumentPositionDisconnected;
   }
 
@@ -2249,8 +2249,9 @@ void Node::RemovedFrom(ContainerNode& insertion_point) {
     insertion_point.GetDocument().DecrementNodeCount();
 #endif
   }
-  if (IsInShadowTree() && !ContainingTreeScope().RootNode().IsShadowRoot())
+  if (IsInShadowTree() && !GetTreeScope().RootNode().IsShadowRoot()) {
     ClearFlag(kIsInShadowTreeFlag);
+  }
   if (auto* cache = GetDocument().ExistingAXObjectCache()) {
     cache->Remove(this);
   }
@@ -3149,7 +3150,7 @@ void Node::SetCustomElementState(CustomElementState new_state) {
 
   switch (new_state) {
     case CustomElementState::kUncustomized:
-      NOTREACHED();  // Everything starts in this state
+      NOTREACHED_IN_MIGRATION();  // Everything starts in this state
       return;
 
     case CustomElementState::kUndefined:
@@ -3332,11 +3333,6 @@ void Node::RemovedFromFlatTree() {
     DetachLayoutTree();
   }
   GetDocument().GetStyleEngine().FlatTreePositionChanged(*this);
-
-  // Ensure removal from accessibility cache even if it doesn't have layout.
-  if (auto* cache = GetDocument().ExistingAXObjectCache()) {
-    cache->RemoveSubtreeWhenSafe(this);
-  }
 }
 
 void Node::RegisterScrollTimeline(ScrollTimeline* timeline) {

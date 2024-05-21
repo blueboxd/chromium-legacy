@@ -1730,10 +1730,14 @@ TEST_F(ManagePasswordsUIControllerTest, DiscardUnsyncedCredentials) {
 
 TEST_F(ManagePasswordsUIControllerTest, OpenBubbleForMovableForm) {
   base::HistogramTester histogram_tester;
+  // TODO crbug/40943570: Remove after feature is fully rolled out.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      password_manager::features::kButterOnDesktopFollowup);
+
   std::vector<PasswordForm> matches = {test_local_form()};
   auto test_form_manager =
       CreateFormManagerWithBestMatches(matches, &submitted_form());
-  MockPasswordFormManagerForUI* form_manager = test_form_manager.get();
 
   // A submitted form triggers the move dialog.
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility()).Times(2);
@@ -1743,7 +1747,12 @@ TEST_F(ManagePasswordsUIControllerTest, OpenBubbleForMovableForm) {
       password_manager::ui::MOVE_CREDENTIAL_AFTER_LOG_IN_STATE);
 
   // A user confirms the move which closes the dialog.
-  EXPECT_CALL(*form_manager, MoveCredentialsToAccountStore);
+  EXPECT_CALL(*controller(),
+              CreateMovePasswordToAccountStoreHelper(
+                  controller()->GetPendingPassword(),
+                  password_manager::metrics_util::MoveToAccountStoreTrigger::
+                      kSuccessfulLoginWithProfileStorePassword,
+                  _));
   controller()->MovePasswordToAccountStore();
   EXPECT_FALSE(controller()->opened_automatic_bubble());
   ExpectIconAndControllerStateIs(password_manager::ui::MANAGE_STATE);
@@ -2417,10 +2426,14 @@ TEST_F(ManagePasswordsUIControllerWithBrowserTestExplicitBrowserSignin,
   // Set up form manager and save password to profile store.
   std::vector<PasswordForm> matches;
   auto test_form_manager = CreateFormManagerWithBestMatches(matches, &form());
+  EXPECT_CALL(*test_form_manager, Save()).WillOnce(testing::Invoke([this] {
+    client().GetProfilePasswordStore()->AddLogin(form());
+  }));
+  controller()->OnPasswordSubmitted(std::move(test_form_manager));
+
   auto profile_store_waiter =
       password_manager::PasswordStoreWaiter(client().GetProfilePasswordStore());
-  controller()->SaveUnsyncedCredentialsInProfileStore({form()});
-  controller()->OnPasswordSubmitted(std::move(test_form_manager));
+  controller()->SavePassword(form().username_value, form().password_value);
   profile_store_waiter.WaitOrReturn();
 
   // Check if password was properly saved to profile store.
@@ -2457,7 +2470,7 @@ TEST_F(ManagePasswordsUIControllerWithBrowserTestExplicitBrowserSignin,
   // account on the web.
   auto account_store_waiter =
       password_manager::PasswordStoreWaiter(client().GetAccountPasswordStore());
-  controller()->SignIn(account_info);
+  controller()->SignIn(account_info, form());
   account_store_waiter.WaitOrReturn();
 
   // Check that the user was signed in to Chrome.

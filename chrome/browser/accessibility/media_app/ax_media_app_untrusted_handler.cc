@@ -31,9 +31,11 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "services/screen_ai/public/mojom/screen_ai_service.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_action_handler_registry.h"
+#include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -80,6 +82,7 @@ AXMediaAppUntrustedHandler::AXMediaAppUntrustedHandler(
   }
   ocr_ = screen_ai::OpticalCharacterRecognizer::CreateWithStatusCallback(
       Profile::FromBrowserContext(base::to_address(browser_context_)),
+      screen_ai::mojom::OcrClientType::kMediaApp,
       base::BindOnce(&AXMediaAppUntrustedHandler::OnOCRServiceInitialized,
                      weak_ptr_factory_.GetWeakPtr()));
   ax_mode_observation_.Observe(&ui::AXPlatform::GetInstance());
@@ -202,7 +205,8 @@ void AXMediaAppUntrustedHandler::PerformAction(
       }
       CHECK_NE(action_data.target_node_id, ui::kInvalidAXNodeID);
       CHECK_EQ(pages_.size(), document_.GetRoot()->GetUnignoredChildCount() -
-                                  (has_landmark_node_ ? 1u : 0u));
+                                  (has_landmark_node_ ? 1u : 0u) -
+                                  (has_postamble_page_ ? 1u : 0u));
       for (int32_t page_index = 0; const auto& page : pages_) {
         const std::unique_ptr<ui::AXTreeManager>& page_manager = page.second;
         if (page_manager->GetTreeID() != action_data.target_tree_id) {
@@ -422,16 +426,13 @@ size_t AXMediaAppUntrustedHandler::ComputePagesPerBatch() const {
 
 std::vector<ui::AXNodeData>
 AXMediaAppUntrustedHandler::CreateStatusNodesWithLandmark() const {
-  std::vector<ui::AXNodeData> status_nodes;
-
   ui::AXNodeData banner;
   banner.role = ax::mojom::Role::kBanner;
   banner.id = kMaxPages;
   banner.relative_bounds.bounds = gfx::RectF(-1, -1, 1, 1);
   banner.relative_bounds.offset_container_id = kDocumentRootNodeId;
   banner.AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag, "div");
-  banner.AddIntAttribute(ax::mojom::IntAttribute::kTextAlign,
-                         static_cast<int32_t>(ax::mojom::TextAlign::kLeft));
+  banner.SetTextAlign(ax::mojom::TextAlign::kLeft);
   banner.AddBoolAttribute(ax::mojom::BoolAttribute::kIsPageBreakingObject,
                           true);
   banner.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
@@ -454,8 +455,7 @@ AXMediaAppUntrustedHandler::CreateStatusNodesWithLandmark() const {
   status.AddBoolAttribute(ax::mojom::BoolAttribute::kContainerLiveAtomic, true);
   status.AddBoolAttribute(ax::mojom::BoolAttribute::kContainerLiveBusy, false);
   status.AddBoolAttribute(ax::mojom::BoolAttribute::kLiveAtomic, true);
-  status.AddIntAttribute(ax::mojom::IntAttribute::kTextAlign,
-                         static_cast<int>(ax::mojom::TextAlign::kLeft));
+  status.SetTextAlign(ax::mojom::TextAlign::kLeft);
   status.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
                           true);
   status.AddBoolAttribute(ax::mojom::BoolAttribute::kHasAriaAttribute, true);
@@ -480,9 +480,7 @@ AXMediaAppUntrustedHandler::CreateStatusNodesWithLandmark() const {
   static_text.AddBoolAttribute(ax::mojom::BoolAttribute::kContainerLiveBusy,
                                false);
   static_text.AddBoolAttribute(ax::mojom::BoolAttribute::kLiveAtomic, true);
-  static_text.AddIntAttribute(
-      ax::mojom::IntAttribute::kTextAlign,
-      static_cast<int32_t>(ax::mojom::TextAlign::kLeft));
+  static_text.SetTextAlign(ax::mojom::TextAlign::kLeft);
   static_text.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
                                true);
   status.child_ids = {static_text.id};
@@ -492,9 +490,7 @@ AXMediaAppUntrustedHandler::CreateStatusNodesWithLandmark() const {
   inline_text_box.id = static_text.id + 1;
   inline_text_box.relative_bounds.bounds = gfx::RectF(0, 0, 1, 1);
   inline_text_box.relative_bounds.offset_container_id = static_text.id;
-  inline_text_box.AddIntAttribute(
-      ax::mojom::IntAttribute::kTextAlign,
-      static_cast<int32_t>(ax::mojom::TextAlign::kLeft));
+  inline_text_box.SetTextAlign(ax::mojom::TextAlign::kLeft);
   inline_text_box.AddIntAttribute(
       ax::mojom::IntAttribute::kNameFrom,
       static_cast<int32_t>(ax::mojom::NameFrom::kContents));
@@ -519,12 +515,42 @@ AXMediaAppUntrustedHandler::CreateStatusNodesWithLandmark() const {
         l10n_util::GetStringUTF8(IDS_PDF_OCR_IN_PROGRESS));
   }
 
-  status_nodes.push_back(banner);
-  status_nodes.push_back(status);
-  status_nodes.push_back(static_text);
-  status_nodes.push_back(inline_text_box);
+  return {banner, status, static_text, inline_text_box};
+}
 
-  return status_nodes;
+std::vector<ui::AXNodeData> AXMediaAppUntrustedHandler::CreatePostamblePage()
+    const {
+  ui::AXNodeData page;
+  page.id = kMaxPages + 4;
+  page.role = ax::mojom::Role::kRegion;
+  page.SetRestriction(ax::mojom::Restriction::kReadOnly);
+  page.AddBoolAttribute(ax::mojom::BoolAttribute::kIsPageBreakingObject, true);
+
+  ui::AXNodeData paragraph;
+  paragraph.id = page.id + 1;
+  paragraph.role = ax::mojom::Role::kParagraph;
+  paragraph.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
+                             true);
+  page.child_ids = {paragraph.id};
+
+  const std::string postamble_message =
+      l10n_util::GetStringUTF8(IDS_PDF_OCR_POSTAMBLE_PAGE);
+
+  ui::AXNodeData static_text;
+  static_text.id = paragraph.id + 1;
+  static_text.role = ax::mojom::Role::kStaticText;
+  static_text.SetRestriction(ax::mojom::Restriction::kReadOnly);
+  static_text.SetNameChecked(postamble_message);
+  paragraph.child_ids = {static_text.id};
+
+  ui::AXNodeData inline_text_box;
+  inline_text_box.id = static_text.id + 1;
+  inline_text_box.role = ax::mojom::Role::kInlineTextBox;
+  inline_text_box.SetRestriction(ax::mojom::Restriction::kReadOnly);
+  inline_text_box.SetNameChecked(postamble_message);
+  static_text.child_ids = {inline_text_box.id};
+
+  return {page, paragraph, static_text, inline_text_box};
 }
 
 void AXMediaAppUntrustedHandler::SendAXTreeToAccessibilityService(
@@ -638,10 +664,12 @@ void AXMediaAppUntrustedHandler::UpdateDocumentTree() {
   // Remove all the deleted pages.
   std::erase_if(pages_in_order, [](const auto& page) { return !page.first; });
 
-  // TODO(b/319536234): Populate the title with the PDF's filename by
-  // retrieving it from the Media App.
-  document_root_data.SetNameChecked(base::StringPrintf(
-      "PDF document containing %zu pages", pages_in_order.size()));
+  if (pages_in_order.size() > 0u) {
+    // TODO(b/319536234): Populate the title with the PDF's filename by
+    // retrieving it from the Media App.
+    document_root_data.SetNameChecked(base::StringPrintf(
+        "PDF document containing %zu pages", pages_in_order.size()));
+  }
   std::vector<int32_t> child_ids((has_landmark_node_ ? 1u : 0u) +
                                  pages_in_order.size());
   std::vector<ui::AXNodeData> status_nodes;
@@ -652,7 +680,13 @@ void AXMediaAppUntrustedHandler::UpdateDocumentTree() {
   }
   std::iota(std::begin(child_ids) + (has_landmark_node_ ? 1u : 0u),
             std::end(child_ids), kStartPageAXNodeId);
-  document_root_data.child_ids = child_ids;
+  std::vector<ui::AXNodeData> postamble_page_nodes;
+  if (has_postamble_page_) {
+    postamble_page_nodes = CreatePostamblePage();
+    CHECK_GE(postamble_page_nodes.size(), 1u);
+    child_ids.push_back(postamble_page_nodes.at(0).id);
+  }
+  document_root_data.child_ids.swap(child_ids);
 
   gfx::RectF document_location;
   for (const auto& [_, page] : pages_in_order) {
@@ -701,6 +735,11 @@ void AXMediaAppUntrustedHandler::UpdateDocumentTree() {
     }
     document_update.nodes.push_back(page_data);
     ++page_index;
+  }
+  if (has_postamble_page_) {
+    document_update.nodes.insert(std::end(document_update.nodes),
+                                 std::begin(postamble_page_nodes),
+                                 std::end(postamble_page_nodes));
   }
 
   // It wouldn't make sense to send an update with only a root node in it.
@@ -774,6 +813,9 @@ void AXMediaAppUntrustedHandler::OcrNextDirtyPageIfAny() {
   if (!IsOcrServiceEnabled()) {
     return;
   }
+  if (pages_ocred_on_initial_load_ == page_metadata_.size()) {
+    has_postamble_page_ = false;
+  }
   // If there are no more dirty pages, we can assume all pages have up-to-date
   // page locations. Update the document tree information to reflect that.
   if (dirty_page_ids_.empty() ||
@@ -810,10 +852,10 @@ void AXMediaAppUntrustedHandler::OcrNextDirtyPageIfAny() {
 void AXMediaAppUntrustedHandler::OnBitmapReceived(
     const std::string& dirty_page_id,
     const SkBitmap& bitmap) {
-  // If there was a failure getting a page's bitmap, the app will return a null
-  // value which shows up as an empty bitmap here. To prevent the entire app
-  // crashing just because one page failed to render, send it to ScreenAI
-  // anyway, which should just produce an empty A11y tree.
+  if (bitmap.drawsNothing()) {
+    OnPageOcred(dirty_page_id, ui::AXTreeUpdate());
+    return;
+  }
   ocr_->PerformOCR(
       bitmap, base::BindOnce(&AXMediaAppUntrustedHandler::OnPageOcred,
                              weak_ptr_factory_.GetWeakPtr(), dirty_page_id));

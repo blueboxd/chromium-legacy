@@ -19,65 +19,29 @@ import java.util.Set;
  * A {@link Transition} into a {@link Station}, either from another {@link Station} or as an entry
  * point.
  */
-public class Trip extends Transition {
+class Trip extends Transition {
     private static final String TAG = "Transit";
     private final int mId;
 
-    @Nullable private final Station mOrigin;
+    private final Station mOrigin;
     private final Station mDestination;
 
     private List<ConditionWait> mWaits;
 
     private static int sLastTripId;
 
-    private Trip(
-            @Nullable Station origin,
-            Station destination,
-            TransitionOptions options,
-            Trigger trigger) {
+    Trip(Station origin, Station destination, TransitionOptions options, Trigger trigger) {
         super(options, trigger);
         mOrigin = origin;
         mDestination = destination;
         mId = ++sLastTripId;
     }
 
-    /**
-     * Starts a transition from a {@link Station} to another (or from no {@link Station} if at an
-     * entry point). Runs the transition |trigger|, and blocks until the destination {@link Station}
-     * is considered ACTIVE (enter Conditions are fulfilled), the origin {@link Station} is
-     * considered FINISHED (exit Conditions are fulfilled), and the {@link Trip}'s transition
-     * conditions are fulfilled.
-     *
-     * @param origin the {@link Facility} to depart from, null if at an entry point.
-     * @param destination the {@link Facility} to arrive at.
-     * @param trigger the trigger to start the transition (e.g. clicking a view).
-     * @return the destination {@link Station}, now ACTIVE.
-     * @param <T> the type of the destination {@link Station}.
-     */
-    public static <T extends Station> T travelSync(
-            @Nullable Station origin, T destination, Trigger trigger) {
-        Trip trip = new Trip(origin, destination, TransitionOptions.DEFAULT, trigger);
-        trip.travelSyncInternal();
-        return destination;
-    }
-
-    /** Version of #travelSync() with extra TransitionOptions. */
-    public static <T extends Station> T travelSync(
-            @Nullable Station origin, T destination, TransitionOptions options, Trigger trigger) {
-        Trip trip = new Trip(origin, destination, options, trigger);
-        trip.travelSyncInternal();
-        return destination;
-    }
-
-    private void travelSyncInternal() {
+    void transitionSync() {
         // TODO(crbug.com/333735412): Unify Trip#travelSyncInternal(), FacilityCheckIn#enterSync()
         // and FacilityCheckOut#exitSync().
         embark();
-        if (mOrigin != null) {
-            Log.i(TAG, "Trip %d: Embarked at %s towards %s", mId, mOrigin, mDestination);
-        } else {
-            Log.i(TAG, "Trip %d: Starting at entry point %s", mId, mDestination);
-        }
+        Log.i(TAG, "Trip %d: Embarked at %s towards %s", mId, mOrigin, mDestination);
 
         if (mOptions.mTries == 1) {
             triggerTransition();
@@ -111,12 +75,11 @@ public class Trip extends Transition {
     }
 
     private void embark() {
-        if (mOrigin != null) {
-            mOrigin.setStateTransitioningFrom();
-        }
+        mOrigin.setStateTransitioningFrom();
         mDestination.setStateTransitioningTo();
 
         mWaits = calculateConditionWaits(mOrigin, mDestination, getTransitionConditions());
+        ConditionWaiter.preCheck(mWaits, mOptions, mTrigger);
         for (ConditionWait wait : mWaits) {
             wait.getCondition().onStartMonitoring();
         }
@@ -132,9 +95,7 @@ public class Trip extends Transition {
             throw newTransitionException(e);
         }
 
-        if (mOrigin != null) {
-            mOrigin.setStateFinished();
-        }
+        mOrigin.setStateFinished();
         mDestination.setStateActive();
         for (ConditionWait waits : mWaits) {
             waits.getCondition().onStopMonitoring();
@@ -144,13 +105,11 @@ public class Trip extends Transition {
     }
 
     private static ArrayList<ConditionWait> calculateConditionWaits(
-            @Nullable Station origin, Station destination, List<Condition> transitionConditions) {
+            Station origin, Station destination, List<Condition> transitionConditions) {
         ArrayList<ConditionWait> waits = new ArrayList<>();
 
         Elements originElements =
-                origin != null
-                        ? origin.getElementsIncludingFacilitiesWithPhase(Phase.TRANSITIONING_FROM)
-                        : Elements.EMPTY;
+                origin.getElementsIncludingFacilitiesWithPhase(Phase.TRANSITIONING_FROM);
         Elements destinationElements =
                 destination.getElementsIncludingFacilitiesWithPhase(Phase.TRANSITIONING_TO);
 
@@ -194,8 +153,6 @@ public class Trip extends Transition {
 
     @Override
     public String toDebugString() {
-        return String.format(
-                "Trip from %s to %s",
-                mOrigin != null ? mOrigin.toString() : "<entry point>", mDestination);
+        return String.format("Trip from %s to %s", mOrigin, mDestination);
     }
 }

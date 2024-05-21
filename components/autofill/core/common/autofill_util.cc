@@ -173,7 +173,7 @@ SubmissionIndicatorEvent ToSubmissionIndicatorEvent(SubmissionSource source) {
       return SubmissionIndicatorEvent::DOM_MUTATION_AFTER_AUTOFILL;
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return SubmissionIndicatorEvent::NONE;
 }
 
@@ -209,6 +209,12 @@ bool IsPasswordsAutofillManuallyTriggered(
     AutofillSuggestionTriggerSource trigger_source) {
   return trigger_source ==
          AutofillSuggestionTriggerSource::kManualFallbackPasswords;
+}
+
+bool IsPlusAddressesManuallyTriggered(
+    AutofillSuggestionTriggerSource trigger_source) {
+  return trigger_source ==
+         AutofillSuggestionTriggerSource::kManualFallbackPlusAddresses;
 }
 
 }  // namespace autofill

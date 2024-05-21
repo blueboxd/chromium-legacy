@@ -76,6 +76,8 @@ component("cpp") {
     "empty_url_loader_client.h",
     "features.cc",
     "features.h",
+    "fence_event_reporting_parser.cc",
+    "fence_event_reporting_parser.h",
     "header_util.cc",
     "header_util.h",
     "initiator_lock_compatibility.cc",
@@ -505,6 +507,7 @@ component("cpp_base") {
       "p2p_socket_type.h",
     ]
 
+    deps += [ "//services/network/public/mojom:mojom_shared" ]
     public_deps += [ "//third_party/webrtc_overrides:webrtc_component" ]
   }
 
@@ -580,6 +583,7 @@ source_set("tests") {
     "digitally_signed_mojom_traits_unittest.cc",
     "document_isolation_policy_parser_unittest.cc",
     "empty_url_loader_client_unittest.cc",
+    "fence_event_reporting_parser_unittest.cc",
     "file_enumeration_entry_mojom_traits_unittest.cc",
     "first_party_sets_mojom_traits_unittest.cc",
     "hash_value_mojom_traits_unittest.cc",

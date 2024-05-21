@@ -196,7 +196,7 @@ String IgnoredReasonName(AXIgnoredReason reason) {
     case kAXUninteresting:
       return "uninteresting";
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return "";
 }
 
@@ -821,7 +821,7 @@ void AXObject::SetParent(AXObject* new_parent) {
         break;
       }
     }
-    NOTREACHED() << message.str();
+    NOTREACHED_IN_MIGRATION() << message.str();
   }
 
   if (new_parent) {
@@ -919,7 +919,7 @@ AXObject* AXObject::ComputeParentOrNull() const {
 
   AXObject* ax_parent = nullptr;
   if (IsAXInlineTextBox()) {
-    NOTREACHED()
+    NOTREACHED_IN_MIGRATION()
         << "AXInlineTextBox box tried to compute a new parent, but they are "
            "not allowed to exist even temporarily without a parent, as their "
            "existence depends on the parent text object. Parent text = "
@@ -1408,14 +1408,6 @@ void AXObject::Serialize(ui::AXNodeData* node_data,
 
   SerializeAriaNotificationAttributes(
       AXObjectCache().RetrieveAriaNotifications(this), node_data);
-
-  // Return early. The following attributes are unnecessary for ignored nodes.
-  // Exception: focusable ignored nodes are fully serialized, so that reasonable
-  // verbalizations can be made if they actually receive focus.
-  if (IsIgnored() &&
-      !node_data->HasState(ax::mojom::blink::State::kFocusable)) {
-    return;
-  }
 }
 
 void AXObject::SerializeBoundingBoxAttributes(ui::AXNodeData& dst) const {
@@ -3037,7 +3029,7 @@ bool AXObject::IsIgnored() {
   UpdateCachedAttributeValuesIfNeeded();
 #if defined(AX_FAIL_FAST_BUILD)
   if (!cached_is_ignored_ && IsDetached()) {
-    NOTREACHED()
+    NOTREACHED_IN_MIGRATION()
         << "A detached node cannot be ignored: " << this
         << "\nThe Detach() method sets cached_is_ignored_ to true, but "
            "something has recomputed it.";
@@ -3137,18 +3129,15 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
   // dependent on having the correct new cached value.
   bool is_inert = ComputeIsInertViaStyle(style);
   bool is_aria_hidden = ComputeIsAriaHidden();
-  bool is_hidden_by_child_tree = ComputeIsHiddenByChildTree();
   bool is_descendant_of_disabled_node = ComputeIsDescendantOfDisabledNode();
   bool is_changing_inherited_values = false;
   if (cached_is_inert_ != is_inert ||
       cached_is_aria_hidden_ != is_aria_hidden ||
-      cached_is_hidden_by_child_tree_ != is_hidden_by_child_tree ||
       cached_is_descendant_of_disabled_node_ !=
           is_descendant_of_disabled_node) {
     is_changing_inherited_values = true;
     cached_is_inert_ = is_inert;
     cached_is_aria_hidden_ = is_aria_hidden;
-    cached_is_hidden_by_child_tree_ = is_hidden_by_child_tree;
     cached_is_descendant_of_disabled_node_ = is_descendant_of_disabled_node;
   }
 
@@ -3179,6 +3168,18 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
   bool is_ignored_but_included_in_tree =
       is_ignored && ComputeIsIgnoredButIncludedInTree();
   bool is_included_in_tree = !is_ignored || is_ignored_but_included_in_tree;
+#if DCHECK_IS_ON()
+  if (!is_included_in_tree && GetNode()) {
+    Node* dom_parent = NodeTraversal::Parent(*GetNode());
+    DCHECK(dom_parent)
+        << "A node with no DOM parent must be included in the tree, so that it "
+           "can be found while traversing descendants.";
+    Node* flat_tree_parent = LayoutTreeBuilderTraversal::Parent(*GetNode());
+    DCHECK_EQ(dom_parent, flat_tree_parent)
+        << "\nA node with a different flat tree parent must be included in the "
+           "tree, so that it can be found while traversing descendants.";
+  }
+#endif
   bool included_in_tree_changed = is_included_in_tree != was_included_in_tree;
   bool notify_included_in_tree_changed = false;
   if (included_in_tree_changed) {
@@ -3367,13 +3368,6 @@ bool AXObject::ShouldIgnoreForHiddenOrInert(
     return true;
   }
 
-  if (cached_is_hidden_by_child_tree_) {
-    if (ignored_reasons) {
-      ignored_reasons->emplace_back(kAXHiddenByChildTree);
-    }
-    return true;
-  }
-
   if (cached_is_hidden_via_style_) {
     if (ignored_reasons) {
       ignored_reasons->push_back(
@@ -3540,26 +3534,6 @@ bool AXObject::ComputeIsAriaHidden(IgnoredReasons* ignored_reasons) const {
   return false;
 }
 
-bool AXObject::IsHiddenByChildTree() {
-  CheckCanAccessCachedValues();
-  UpdateCachedAttributeValuesIfNeeded();
-  return cached_is_hidden_by_child_tree_;
-}
-
-bool AXObject::ComputeIsHiddenByChildTree(IgnoredReasons* ignored_reasons) {
-  const AXObject* parent = ParentObject();
-  if (!parent) {
-    return false;
-  }
-  if (parent->child_tree_id()) {
-    if (ignored_reasons) {
-      ignored_reasons->emplace_back(kAXHiddenByChildTree, parent);
-    }
-    return true;
-  }
-  return parent->IsHiddenByChildTree();
-}
-
 bool AXObject::IsModal() const {
   if (RoleValue() != ax::mojom::blink::Role::kDialog &&
       RoleValue() != ax::mojom::blink::Role::kAlertDialog)
@@ -3609,8 +3583,7 @@ bool AXObject::IsBlockedByAriaModalDialog(
 bool AXObject::IsVisible() const {
   // TODO(accessibility) Consider exposing inert objects as visible, since they
   // are visible. It should be fine, since the objexcts are ignored.
-  return !IsDetached() && !IsAriaHidden() && !IsHiddenByChildTree() &&
-         !IsInert() && !IsHiddenViaStyle();
+  return !IsDetached() && !IsAriaHidden() && !IsInert() && !IsHiddenViaStyle();
 }
 
 const AXObject* AXObject::AriaHiddenRoot() const {
@@ -3855,33 +3828,37 @@ bool AXObject::ComputeIsIgnoredButIncludedInTree() {
     return true;
   }
 
-  // UA form controls can use aria-hidden to prune a11y subtrees.
-  if (node->IsInUserAgentShadowRoot() && IsAriaHidden()) {
-    return false;
+  Node* dom_parent = NodeTraversal::Parent(*node);
+  if (!dom_parent) {
+    // No DOM parent, so will not be able to reach this node when cleaning uo
+    // subtrees.
+    return true;
   }
 
-  // Custom elements and their children are included in the tree.
-  // <slot>s and their children are included in the tree.
-  // Also children of <label> elements, for accname calculation purposes.
-  // This checks to see whether this is a child of one of those.
-  if (Node* parent_node = LayoutTreeBuilderTraversal::Parent(*node)) {
-    if (parent_node->IsCustomElement() || IsA<HTMLSlotElement>(parent_node)) {
-      return true;
-    }
-    // <span>s are ignored because they are considered uninteresting. Do not add
-    // them back inside labels.
-    if (IsA<HTMLLabelElement>(parent_node) && !IsA<HTMLSpanElement>(node)) {
-      return true;
-    }
-    // Simplify AXNodeObject::AddImageMapChildren() -- it will only need to deal
-    // with included children.
-    if (IsA<HTMLMapElement>(parent_node)) {
-      return true;
-    }
-    // Necessary to calculate the accessible description of a ruby node.
-    if (parent_node->HasTagName(html_names::kRtTag)) {
-      return true;
-    }
+  if (dom_parent != LayoutTreeBuilderTraversal::Parent(*node)) {
+    // If the flat tree parent from LayoutTreeBuilderTraversal is different than
+    // the DOM parent, we must include this object in the tree so that we can
+    // find it using cached children_. Otherwise, the object could be missed --
+    // LayoutTreeBuilderTraversal and its cousin FlatTreeTraversal cannot
+    // always be safely used, e.g. when slot assignments are pending.
+    return true;
+  }
+
+  // Include children of <label> elements, for accname calculation purposes.
+  // <span>s are ignored because they are considered uninteresting. Do not add
+  // them back inside labels.
+  if (IsA<HTMLLabelElement>(dom_parent) && !IsA<HTMLSpanElement>(node)) {
+    return true;
+  }
+
+  // Always include the children of a map.
+  if (IsA<HTMLMapElement>(dom_parent)) {
+    return true;
+  }
+
+  // Necessary to calculate the accessible description of a ruby node.
+  if (dom_parent->HasTagName(html_names::kRtTag)) {
+    return true;
   }
 
   if (const Element* owner = node->OwnerShadowHost()) {
@@ -3911,26 +3888,6 @@ bool AXObject::ComputeIsIgnoredButIncludedInTree() {
 
   Element* element = GetElement();
 
-  // Custom elements and their children are included in the tree.
-  if (element && element->IsCustomElement()) {
-    return true;
-  }
-
-  // <slot>s and their children are included in the tree.
-  // Detailed explanation:
-  // <slot> elements are placeholders marking locations in a shadow tree where
-  // users of a web component can insert their own custom nodes. Inserted nodes
-  // (also known as distributed nodes) become children of their respective slots
-  // in the accessibility tree. In other words, the accessibility tree mirrors
-  // the flattened DOM tree or the layout tree, not the original DOM tree.
-  // Distributed nodes still maintain their parent relations and computed style
-  // information with their original location in the DOM. Therefore, we need to
-  // ensure that in the accessibility tree no remnant information from the
-  // unflattened DOM tree remains, such as the cached parent.
-  if (IsA<HTMLSlotElement>(element)) {
-    return true;
-  }
-
   // Include all pseudo element content. Any anonymous subtree is included
   // from above, in the condition where there is no node.
   if (element && element->IsPseudoElement()) {
@@ -3947,10 +3904,6 @@ bool AXObject::ComputeIsIgnoredButIncludedInTree() {
                   element->GetPseudoElement(kPseudoIdAfter) ||
                   element->GetPseudoElement(kPseudoIdMarker))) {
     return true;
-  }
-
-  if (IsHiddenByChildTree()) {
-    return false;
   }
 
   if (IsUsedForLabelOrDescription()) {
@@ -4694,7 +4647,7 @@ String AXObject::AriaTextAlternative(
         AXObjectSet visited_copy = visited;
         text_alternative = TextFromElements(
             true, visited_copy, elements_from_attribute, related_objects);
-        if (!text_alternative.IsNull()) {
+        if (!text_alternative.ContainsOnlyWhitespaceOrEmpty()) {
           if (name_sources) {
             NameSource& source = name_sources->back();
             source.type = name_from;
@@ -4759,10 +4712,8 @@ void AXObject::CheckSubtreeIsForLabelOrDescription(const AXObject* obj) const {
 
   if (obj->GetNode()) {
     // Also check unincluded children.
-    for (Node* child_node =
-             LayoutTreeBuilderTraversal::FirstChild(*obj->GetNode());
-         child_node;
-         child_node = LayoutTreeBuilderTraversal::NextSibling(*child_node)) {
+    for (Node* child_node = NodeTraversal::FirstChild(*obj->GetNode());
+         child_node; child_node = NodeTraversal::NextSibling(*child_node)) {
       // Get the child object that should be detached from this parent.
       // Do not invalidate from layout, because it may be unsafe to check layout
       // at this time. However, do allow invalidations if an object changes its
@@ -5487,9 +5438,10 @@ const AXObject::AXObjectVector AXObject::UnignoredChildren() {
   UpdateChildrenIfNecessary();
 
   if (!IsIncludedInTree()) {
-    NOTREACHED() << "We don't support finding the unignored children of "
-                    "objects excluded from the accessibility tree: "
-                 << this;
+    NOTREACHED_IN_MIGRATION()
+        << "We don't support finding the unignored children of "
+           "objects excluded from the accessibility tree: "
+        << this;
     return {};
   }
 
@@ -5545,7 +5497,7 @@ AXObject* AXObject::LastChildIncludingIgnored() const {
 
 AXObject* AXObject::DeepestFirstChildIncludingIgnored() const {
   if (IsDetached()) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return nullptr;
   }
   if (!ChildCountIncludingIgnored())
@@ -5560,7 +5512,7 @@ AXObject* AXObject::DeepestFirstChildIncludingIgnored() const {
 
 AXObject* AXObject::DeepestLastChildIncludingIgnored() const {
   if (IsDetached()) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return nullptr;
   }
   if (!ChildCountIncludingIgnored())
@@ -5575,9 +5527,10 @@ AXObject* AXObject::DeepestLastChildIncludingIgnored() const {
 
 AXObject* AXObject::NextSiblingIncludingIgnored() const {
   if (!IsIncludedInTree()) {
-    NOTREACHED() << "We don't support iterating children of objects excluded "
-                    "from the accessibility tree: "
-                 << this;
+    NOTREACHED_IN_MIGRATION()
+        << "We don't support iterating children of objects excluded "
+           "from the accessibility tree: "
+        << this;
     return nullptr;
   }
 
@@ -5593,9 +5546,10 @@ AXObject* AXObject::NextSiblingIncludingIgnored() const {
 
 AXObject* AXObject::PreviousSiblingIncludingIgnored() const {
   if (!IsIncludedInTree()) {
-    NOTREACHED() << "We don't support iterating children of objects excluded "
-                    "from the accessibility tree: "
-                 << this;
+    NOTREACHED_IN_MIGRATION()
+        << "We don't support iterating children of objects excluded "
+           "from the accessibility tree: "
+        << this;
     return nullptr;
   }
 
@@ -5611,9 +5565,10 @@ AXObject* AXObject::PreviousSiblingIncludingIgnored() const {
 
 AXObject* AXObject::CachedPreviousSiblingIncludingIgnored() const {
   if (!IsIncludedInTree()) {
-    NOTREACHED() << "We don't support iterating children of objects excluded "
-                    "from the accessibility tree: "
-                 << this;
+    NOTREACHED_IN_MIGRATION()
+        << "We don't support iterating children of objects excluded "
+           "from the accessibility tree: "
+        << this;
     return nullptr;
   }
 
@@ -5664,9 +5619,10 @@ AXObject* AXObject::NextInPreOrderIncludingIgnored(
 AXObject* AXObject::PreviousInPreOrderIncludingIgnored(
     const AXObject* within) const {
   if (!IsIncludedInTree()) {
-    NOTREACHED() << "We don't support iterating children of objects excluded "
-                    "from the accessibility tree: "
-                 << this;
+    NOTREACHED_IN_MIGRATION()
+        << "We don't support iterating children of objects excluded "
+           "from the accessibility tree: "
+        << this;
     return nullptr;
   }
   if (within == this)
@@ -5684,9 +5640,10 @@ AXObject* AXObject::PreviousInPreOrderIncludingIgnored(
 AXObject* AXObject::PreviousInPostOrderIncludingIgnored(
     const AXObject* within) const {
   if (!IsIncludedInTree()) {
-    NOTREACHED() << "We don't support iterating children of objects excluded "
-                    "from the accessibility tree: "
-                 << this;
+    NOTREACHED_IN_MIGRATION()
+        << "We don't support iterating children of objects excluded "
+           "from the accessibility tree: "
+        << this;
     return nullptr;
   }
 
@@ -5772,10 +5729,11 @@ AXObject* AXObject::UnignoredNextSibling() const {
 
 AXObject* AXObject::UnignoredPreviousSibling() const {
   if (IsIgnored()) {
-    NOTREACHED() << "We don't support finding unignored siblings for ignored "
-                    "objects because it is not clear whether to search for the "
-                    "sibling in the unignored tree or in the whole tree: "
-                 << this;
+    NOTREACHED_IN_MIGRATION()
+        << "We don't support finding unignored siblings for ignored "
+           "objects because it is not clear whether to search for the "
+           "sibling in the unignored tree or in the whole tree: "
+        << this;
     return nullptr;
   }
 
@@ -5832,6 +5790,19 @@ AXObject* AXObject::UnignoredPreviousInPreOrder() const {
 AXObject* AXObject::ParentObject() const {
   DUMP_WILL_BE_CHECK(!IsDetached());
   DUMP_WILL_BE_CHECK(!IsMissingParent()) << "Missing parent: " << this;
+
+  return parent_;
+}
+
+AXObject* AXObject::ParentObject() {
+  DUMP_WILL_BE_CHECK(!IsDetached());
+
+  // TODO(crbug.com/337178753): this should not be necessary once subtree
+  // removals can be immediate, complete and safe.
+  if (IsMissingParent()) {
+    AXObjectCache().RemoveSubtree(GetNode());
+    return nullptr;
+  }
   return parent_;
 }
 
@@ -5999,11 +5970,11 @@ void AXObject::CheckIncludedObjectConnectedToRoot() const {
           parent_for_repair->CheckIncludedObjectConnectedToRoot();
         }
 
-        NOTREACHED() << "Cannot find included child in parents children:\n"
-                     << "\n* Child: " << included_child
-                     << "\n* Parent:  " << included_parent
-                     << "\n--------------\n"
-                     << included_parent->GetAXTreeForThis();
+        NOTREACHED_IN_MIGRATION()
+            << "Cannot find included child in parents children:\n"
+            << "\n* Child: " << included_child
+            << "\n* Parent:  " << included_parent << "\n--------------\n"
+            << included_parent->GetAXTreeForThis();
       }
       if (included_parent->IsRoot()) {
         return;
@@ -6012,9 +5983,10 @@ void AXObject::CheckIncludedObjectConnectedToRoot() const {
     }
   }
 
-  NOTREACHED() << "Did not find included parent path to root:"
-               << "\n* Last found included parent: " << included_parent
-               << "\n* Current object in tree: " << GetAXTreeForThis();
+  NOTREACHED_IN_MIGRATION()
+      << "Did not find included parent path to root:"
+      << "\n* Last found included parent: " << included_parent
+      << "\n* Current object in tree: " << GetAXTreeForThis();
 }
 #endif
 
@@ -6105,17 +6077,10 @@ void AXObject::SetChildTree(const ui::AXTreeID& child_tree_id) {
     return;
   }
   child_tree_id_ = child_tree_id;
-  // Child objects inherit their cached_is_hidden_by_child_tree_ from their
-  // parents. However, this is not true for the direct children of the root,
-  // because the root itself is not hidden by the child tree. Therefore the
-  // root's direct children must inherit cached_is_hidden_by_child_tree_ from
-  // the presence of a child tree id on their parent (the root). Calling
-  // OnInheritedCachedValuesChanged() as we set child_tree_id_ will cause
-  // cached_is_hidden_by_child_tree_ as well as ignored/included changes from
-  // that to propagate to the children, and further propagation to descendants
-  // wil result from changes to cached_is_hidden_by_child_tree_.
+  // A node with a child tree is automatically considered a leaf, and
+  // CanHaveChildren() will return false for it.
   AXObjectCache().MarkAXObjectDirtyWithCleanLayout(this);
-  OnInheritedCachedValuesChanged();
+  AXObjectCache().RemoveSubtree(GetNode(), /*remove_root*/ false);
   AXObjectCache().UpdateAXForAllDocuments();
 }
 
@@ -6164,42 +6129,15 @@ void AXObject::ClearChildren() {
   children_.clear();
 
   Node* node = GetNode();
-  if (!node)
-    return;
-
-  if (!CanSafelyUseFlatTreeTraversalNow(*GetDocument())) {
-    // Cannot use layout tree builder traversal now, will have to rely on
-    // RepairParent() at a later point.
+  if (!node) {
     return;
   }
-
-  // <slot> content is always included in the tree, so there is no need to
-  // iterate through the nodes. This also protects us against slot use "after
-  // poison", where attempts to access assigned nodes triggers a DCHECK.
-
-  // Detailed explanation:
-  // <slot> elements are placeholders marking locations in a shadow tree where
-  // users of a web component can insert their own custom nodes. Inserted nodes
-  // (also known as distributed nodes) become children of their respective slots
-  // in the accessibility tree. In other words, the accessibility tree mirrors
-  // the flattened DOM tree or the layout tree, not the original DOM tree.
-  // Distributed nodes still maintain their parent relations and computed style
-  // information with their original location in the DOM. Therefore, we need to
-  // ensure that in the accessibility tree no remnant information from the
-  // unflattened DOM tree remains, such as the cached parent.
-
-  // TODO(crbug.com/1209216): Figure out why removing this causes a
-  // use-after-poison and possibly replace it with a better check.
-  HTMLSlotElement* slot = ToHTMLSlotElementIfSupportsAssignmentOrNull(node);
-  if (slot)
-    return;
 
   // Detach unincluded children from their parent (this).
   // These are children that were not cleared from first loop, as well as
   // children that will be included once the parent next updates its children.
-  for (Node* child_node = LayoutTreeBuilderTraversal::FirstChild(*node);
-       child_node;
-       child_node = LayoutTreeBuilderTraversal::NextSibling(*child_node)) {
+  for (Node* child_node = NodeTraversal::FirstChild(*node); child_node;
+       child_node = NodeTraversal::NextSibling(*child_node)) {
     // Get the child object that should be detached from this parent.
     // Do not invalidate from layout, because it may be unsafe to check layout
     // at this time. However, do allow invalidations if an object changes its
@@ -6465,7 +6403,7 @@ void AXObject::Scroll(ax::mojom::blink::Action scroll_action) const {
       x = std::min(initial.x() + page_x, max.x());
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 
   SetScrollOffset(gfx::Point(x, y));
@@ -6915,9 +6853,6 @@ bool AXObject::PerformAction(const ui::AXActionData& action_data) {
       Scroll(action_data.action);
       return true;
     case ax::mojom::blink::Action::kStitchChildTree:
-      if (action_data.target_node_id == static_cast<int32_t>(AXID())) {
-        return false;
-      }
       if (action_data.child_tree_id == ui::AXTreeIDUnknown()) {
         return false;  // No child tree ID provided.;
       }
@@ -7183,7 +7118,7 @@ void AXObject::DispatchKeyboardEvent(LocalDOMWindow* local_dom_window,
       key.native_key_code = key.windows_key_code = blink::VKEY_NEXT;
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
   GetNode()->DispatchEvent(
       *blink::KeyboardEvent::Create(key, local_dom_window, true));
@@ -7856,6 +7791,7 @@ void AXObject::PreSerializationConsistencyCheck() const{
   CHECK(!IsDetached()) << "Do not serialize detached nodes: " << this;
   CHECK(AXObjectCache().IsFrozen());
   CHECK(!NeedsToUpdateCachedValues()) << "Stale values on: " << this;
+  CHECK(!IsMissingParent());
   if (!IsIncludedInTree()) {
     AXObject* included_parent = ParentObjectIncludedInTree();
     // TODO(accessibility): Return to CHECK once it has been resolved,
@@ -8016,10 +7952,6 @@ String AXObject::ToString(bool verbose) const {
       }
     } else if (AriaHiddenRoot()) {
       string_builder = string_builder + " ariaHiddenRootExtra";
-    }
-    if (cached_values_only ? cached_is_hidden_by_child_tree_
-                           : IsHiddenByChildTree()) {
-      string_builder = string_builder + " isHiddenByChildTree";
     }
     if (cached_values_only ? cached_is_hidden_via_style_ : IsHiddenViaStyle()) {
       string_builder = string_builder + " isHiddenViaCSS";

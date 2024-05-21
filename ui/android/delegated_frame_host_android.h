@@ -23,6 +23,7 @@
 #include "third_party/blink/public/common/page/content_to_visible_time_reporter.h"
 #include "third_party/blink/public/mojom/widget/record_content_to_visible_time_request.mojom.h"
 #include "ui/android/ui_android_export.h"
+#include "ui/android/window_android_compositor.h"
 
 namespace cc::slim {
 class SurfaceLayer;
@@ -40,9 +41,9 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
     : public viz::HostFrameSinkClient,
       public viz::FrameEvictorClient {
  public:
-  class Client {
+  class Client : public WindowAndroidCompositor::FrameSubmissionObserver {
    public:
-    virtual ~Client() {}
+    ~Client() override {}
     virtual void OnFrameTokenChanged(uint32_t frame_token,
                                      base::TimeTicks activation_time) = 0;
     virtual void WasEvicted() = 0;
@@ -166,8 +167,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   // Called when the page has just entered BFCache.
   void DidEnterBackForwardCache();
 
-  void SetTopControlsVisibleHeight(float height);
-
   viz::SurfaceId GetFallbackSurfaceIdForTesting() const;
 
   viz::SurfaceId GetCurrentSurfaceIdForTesting() const;
@@ -214,8 +213,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   const raw_ptr<viz::HostFrameSinkManager> host_frame_sink_manager_;
   raw_ptr<WindowAndroidCompositor> registered_parent_compositor_ = nullptr;
   raw_ptr<Client> client_;
-
-  float top_controls_visible_height_ = 0.f;
 
   scoped_refptr<cc::slim::SurfaceLayer> content_layer_;
 

@@ -244,7 +244,7 @@ class FocusNavigation : public GarbageCollected<FocusNavigation> {
     // If no previous child owned by root is found, return null. This shouldn't
     // happen because all items in reading_order_previous_elements_ are owned
     // by root.
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return nullptr;
   }
 
@@ -347,7 +347,7 @@ class FocusNavigation : public GarbageCollected<FocusNavigation> {
       owner = owner_slot_or_reading_order_container;
     } else if (IsA<HTMLSlotElement>(node.parentNode())) {
       owner = node.ParentOrShadowHostElement();
-    } else if (&node == node.ContainingTreeScope().RootNode()) {
+    } else if (&node == node.GetTreeScope().RootNode()) {
       owner = TreeOwner(&node);
     } else if (IsOpenPopoverWithInvoker(&node)) {
       owner = DynamicTo<HTMLElement>(node)->GetPopoverData()->invoker();
@@ -514,8 +514,9 @@ ScopedFocusNavigation ScopedFocusNavigation::CreateFor(
     return ScopedFocusNavigation(const_cast<Element&>(*popover), &current,
                                  owner_map);
   }
-  return ScopedFocusNavigation(current.ContainingTreeScope().RootNode(),
-                               &current, owner_map);
+  DCHECK(current.IsInTreeScope());
+  return ScopedFocusNavigation(current.GetTreeScope().RootNode(), &current,
+                               owner_map);
 }
 
 ScopedFocusNavigation ScopedFocusNavigation::CreateForDocument(
@@ -1344,7 +1345,7 @@ bool FocusController::AdvanceFocus(
       // Fallthrough - SpatialNavigation should use
       // SpatialNavigationController.
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 
   return false;

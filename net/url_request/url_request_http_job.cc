@@ -509,7 +509,7 @@ PrivacyMode URLRequestHttpJob::DeterminePrivacyMode() const {
     case NetworkDelegate::PrivacySetting::kStateDisallowed:
       return PRIVACY_MODE_ENABLED;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return PRIVACY_MODE_ENABLED;
 }
 
@@ -977,18 +977,9 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
 
     num_cookie_lines_left_++;
 
-    // For the block_truncated parameter, the value shouldn't matter here
-    // because HTTP requests containing NULLs causes an error before this code
-    // can be reached and unpaired carriage returns and line feed characters
-    // cause truncation during HTTP header processing before reaching this
-    // point, so DCHECK this assumption and just pass true for this parameter.
-    DCHECK(cookie_string.find('\0') == std::string::npos);
-    DCHECK(cookie_string.find('\r') == std::string::npos);
-    DCHECK(cookie_string.find('\n') == std::string::npos);
     std::unique_ptr<CanonicalCookie> cookie = net::CanonicalCookie::Create(
         request_->url(), cookie_string, base::Time::Now(), server_time,
-        request_->cookie_partition_key(),
-        /*block_truncated=*/true, net::CookieSourceType::kHTTP,
+        request_->cookie_partition_key(), net::CookieSourceType::kHTTP,
         &returned_status);
 
     std::optional<CanonicalCookie> cookie_to_return = std::nullopt;
@@ -1414,7 +1405,7 @@ std::unique_ptr<SourceStream> URLRequestHttpJob::SetUpSourceStream() {
         break;
       case SourceStream::TYPE_NONE:
       case SourceStream::TYPE_UNKNOWN:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         return nullptr;
     }
     if (downstream == nullptr)
@@ -1663,7 +1654,7 @@ IPEndPoint URLRequestHttpJob::GetResponseRemoteEndpoint() const {
 
 void URLRequestHttpJob::RecordTimer() {
   if (request_creation_time_.is_null()) {
-    NOTREACHED()
+    NOTREACHED_IN_MIGRATION()
         << "The same transaction shouldn't start twice without new timing.";
     return;
   }
@@ -1692,8 +1683,7 @@ void URLRequestHttpJob::RecordTimer() {
 
 void URLRequestHttpJob::ResetTimer() {
   if (!request_creation_time_.is_null()) {
-    NOTREACHED()
-        << "The timer was reset before it was recorded.";
+    NOTREACHED_IN_MIGRATION() << "The timer was reset before it was recorded.";
     return;
   }
   request_creation_time_ = base::Time::Now();

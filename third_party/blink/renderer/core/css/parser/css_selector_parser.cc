@@ -1111,6 +1111,8 @@ bool IsPseudoClassValidAfterPseudoElement(
     case CSSSelector::kPseudoViewTransitionOld:
     case CSSSelector::kPseudoViewTransitionNew:
       return pseudo_class == CSSSelector::kPseudoOnlyChild;
+    case CSSSelector::kPseudoSearchText:
+      return pseudo_class == CSSSelector::kPseudoCurrent;
     default:
       return false;
   }
@@ -1221,6 +1223,14 @@ base::span<CSSSelector> CSSSelectorParser::ConsumeCompoundSelector(
   const bool has_q_name = ConsumeName(range, element_name, namespace_prefix);
   if (context_->IsHTMLDocument()) {
     element_name = element_name.LowerASCII();
+  }
+
+  // A tag name is not valid following a pseudo-element. This can happen for
+  // e.g. :::part(x):is(div).
+  if (restricting_pseudo_element_ != CSSSelector::kPseudoUnknown &&
+      has_q_name) {
+    failed_parsing_ = true;
+    return {};  // Failure.
   }
 
   // Consume all the simple selectors that are not tag names.

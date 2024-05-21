@@ -27,6 +27,7 @@
 #include "chrome/browser/new_tab_page/modules/new_tab_page_modules.h"
 #include "chrome/browser/new_tab_page/modules/photos/photos_handler.h"
 #include "chrome/browser/new_tab_page/modules/recipes/recipes_handler.h"
+#include "chrome/browser/new_tab_page/modules/v2/calendar/google_calendar_page_handler.h"
 #include "chrome/browser/new_tab_page/modules/v2/history_clusters/history_clusters_page_handler_v2.h"
 #include "chrome/browser/new_tab_page/modules/v2/most_relevant_tab_resumption/most_relevant_tab_resumption_page_handler.h"
 #include "chrome/browser/new_tab_page/modules/v2/tab_resumption/tab_resumption_page_handler.h"
@@ -469,6 +470,14 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       {"modulesTodayCalendarHeader", IDS_NTP_MODULES_TODAY_CALENDAR_HEADER},
       {"modulesTodayCalendarDisableButtonText",
        IDS_NTP_MODULES_TODAY_CALENDAR_DISABLE_BUTTON_TEXT},
+      {"modulesTodayCalendarDismissButtonText",
+       IDS_NTP_MODULES_TODAY_CALENDAR_DISMISS_BUTTON_TEXT},
+      {"modulesTodayCalendarDismissToastMessage",
+       IDS_NTP_MODULES_TODAY_CALENDAR_DISMISS_TOAST_MESSAGE},
+      {"modulesTodayCalendarDisableToastMessage",
+       IDS_NTP_MODULES_TODAY_CALENDAR_DISABLE_TOAST_MESSAGE},
+      {"modulesTodayCalendarMoreActions",
+       IDS_NTP_MODULES_TODAY_CALENDAR_MORE_ACTIONS},
       {"modulesGoogleCalendarTitle", IDS_NTP_MODULES_GOOGLE_CALENDAR_TITLE},
       {"modulesGoogleCalendarDisableButtonText",
        IDS_NTP_MODULES_GOOGLE_CALENDAR_DISABLE_BUTTON_TEXT},
@@ -710,8 +719,6 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
   source->AddBoolean(
       "modulesVisibleManagedByPolicy",
       profile_->GetPrefs()->IsManagedPreference(prefs::kNtpModulesVisible));
-  source->AddBoolean("customizeChromeEnabled",
-                     customize_chrome::IsSidePanelEnabled());
   bool wallpaper_search_button_enabled =
       base::FeatureList::IsEnabled(ntp_features::kNtpWallpaperSearchButton) &&
       customize_chrome::IsWallpaperSearchEnabledForProfile(profile_);
@@ -764,13 +771,11 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
       ntp_custom_background_service_.get());
 
   // Create and register customize chrome entry on unified side panel
-  if (customize_chrome::IsSidePanelEnabled()) {
     auto* customize_chrome_tab_helper =
         CustomizeChromeTabHelper::FromWebContents(web_contents());
     if (customize_chrome_tab_helper) {
       customize_chrome_tab_helper->CreateAndRegisterEntry();
     }
-  }
 
   // Populates the load time data with basic info.
   OnColorProviderChanged();
@@ -781,10 +786,6 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
 WEB_UI_CONTROLLER_TYPE_IMPL(NewTabPageUI)
 
 NewTabPageUI::~NewTabPageUI() {
-  if (!customize_chrome::IsSidePanelEnabled()) {
-    return;
-  }
-
   // Deregister customize chrome entry on unified side panel, unless the
   // WebContents is showing another NewTabPageUI (e.g. in case of reloads).
   if (auto* web_ui = web_contents()->GetWebUI()) {
@@ -969,6 +970,13 @@ void NewTabPageUI::BindInterface(
         pending_page_handler) {
   tab_resumption_handler_ = std::make_unique<TabResumptionPageHandler>(
       std::move(pending_page_handler), web_contents());
+}
+
+void NewTabPageUI::BindInterface(
+    mojo::PendingReceiver<ntp::calendar::mojom::GoogleCalendarPageHandler>
+        pending_page_handler) {
+  google_calendar_handler_ = std::make_unique<GoogleCalendarPageHandler>(
+      std::move(pending_page_handler), profile_);
 }
 
 void NewTabPageUI::BindInterface(

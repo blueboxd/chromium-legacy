@@ -68,7 +68,6 @@
 <translation id="2241587408274973373">Yangi varaq sahifasi bildirgilari</translation>
 <translation id="2241634353105152135">Bir marta</translation>
 <translation id="2253414712144136228">Olib tashlash: <ph name="NAME_OF_LIST_ITEM" /></translation>
-<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{1 ta sayt bloklangan}other{# ta sayt bloklangan}}</translation>
 <translation id="228293613124499805">Siz ochgan saytlarning aksariyati sozlamalaringiz yoki ularga ulashgan axborotlar kabilarni qurilmangizda saqlashi mumkin. Koʻpincha bu qulayligingiz uchun amalga oshiriladi. Bu sozlamani oʻchirmaslikni tavsiya qilamiz.</translation>
 <translation id="2289270750774289114">Sayt atrofdagi Bluetooth qurilmalarni tekshirmoqchi boʻlsa, xabar berilsin (tavsiya etiladi)</translation>
 <translation id="2315043854645842844">Tanlangan mijoz sertifikati eskirgan va operatsion tizim tomonidan qo‘llab-quvvatlanmaydi.</translation>
@@ -305,6 +304,7 @@
 <translation id="6015775454662021376">Bu saytning qurilmangizni boshqarish ruxsatlarini boshqaring</translation>
 <translation id="6040143037577758943">Yopish</translation>
 <translation id="6042308850641462728">Yana</translation>
+<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Oxirgi varaq</translation>
 <translation id="6064125863973209585">Yuklab olinganlar</translation>
 <translation id="6071501408666570960">Bu saytda hisobingizdan chiqasiz</translation>
 <translation id="6120483543004435978">Yoqilsa, saytlar qachon qurilmadan faol foydalanishingizni soʻrashi mumkin. Oʻchirilsa, saytlar bu maʼlumotlarni bila olmaydi.</translation>
@@ -426,6 +426,7 @@
 <translation id="7986741934819883144">Kontaktni tanlang</translation>
 <translation id="7990211076305263060">Yoqilsa, saytlar mikrofondan foydalanishni soʻrashi mumkin. Oʻchirilsa, mikrofondan foydalana olmaydi.</translation>
 <translation id="8007176423574883786">Ushbu qurilma uchun o‘chirilgan</translation>
+<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Manba: <ph name="FROM_DEVICE" /></translation>
 <translation id="802154636333426148">Yuklab olib bo‘lmadi</translation>
 <translation id="8042586301629853791">Saralash:</translation>
 <translation id="8067883171444229417">Videoni ijro qilish</translation>
@@ -480,7 +481,6 @@
 <translation id="8721719390026067591">Yoqilsa, saytlar Bluetooth qurilmalarni qidirish uchun ruxsat soʻrashi mumkin. Oʻchirilsa, saytlar bunday qurilmalarni qidira olmaydi.</translation>
 <translation id="8725066075913043281">Qayta urinib ko‘ring</translation>
 <translation id="8730621377337864115">Tayyor</translation>
-<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{1 ta saytga ruxsat berilgan}other{# ta saytga ruxsat berilgan}}</translation>
 <translation id="8751914237388039244">Rasmni tanlang</translation>
 <translation id="8800034312320686233">Sayt ishlamayaptimi?</translation>
 <translation id="8801436777607969138">Muayyan saytda JavaScript kodini bloklash.</translation>

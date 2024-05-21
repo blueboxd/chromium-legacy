@@ -175,6 +175,7 @@ source_set("browser") {
     "//media/mojo:buildflags",
     "//media/mojo/clients",
     "//media/mojo/mojom",
+    "//media/mojo/mojom:web_speech_recognition",
     "//media/mojo/services",
     "//media/webrtc",
     "//mojo/core/embedder",
@@ -455,11 +456,13 @@ source_set("browser") {
     "attribution_reporting/attribution_report_network_sender.cc",
     "attribution_reporting/attribution_report_network_sender.h",
     "attribution_reporting/attribution_report_sender.h",
-    "attribution_reporting/attribution_storage.h",
-    "attribution_reporting/attribution_storage_delegate.cc",
-    "attribution_reporting/attribution_storage_delegate.h",
-    "attribution_reporting/attribution_storage_delegate_impl.cc",
-    "attribution_reporting/attribution_storage_delegate_impl.h",
+    "attribution_reporting/attribution_resolver.h",
+    "attribution_reporting/attribution_resolver_delegate.cc",
+    "attribution_reporting/attribution_resolver_delegate.h",
+    "attribution_reporting/attribution_resolver_delegate_impl.cc",
+    "attribution_reporting/attribution_resolver_delegate_impl.h",
+    "attribution_reporting/attribution_resolver_impl.cc",
+    "attribution_reporting/attribution_resolver_impl.h",
     "attribution_reporting/attribution_storage_sql.cc",
     "attribution_reporting/attribution_storage_sql.h",
     "attribution_reporting/attribution_storage_sql_migrations.cc",
@@ -1095,6 +1098,7 @@ source_set("browser") {
     "image_capture/image_capture_impl.h",
     "indexed_db/indexed_db_internals_ui.cc",
     "indexed_db/indexed_db_internals_ui.h",
+    "installedapp/fetch_related_apps_task.h",
     "installedapp/installed_app_provider_impl.cc",
     "installedapp/installed_app_provider_impl.h",
     "interest_group/ad_auction_document_data.cc",
@@ -2056,6 +2060,8 @@ source_set("browser") {
     "service_worker/url_loader_client_checker.h",
     "shared_storage/shared_storage_budget_charger.cc",
     "shared_storage/shared_storage_budget_charger.h",
+    "shared_storage/shared_storage_code_cache_host_proxy.cc",
+    "shared_storage/shared_storage_code_cache_host_proxy.h",
     "shared_storage/shared_storage_document_service_impl.cc",
     "shared_storage/shared_storage_document_service_impl.h",
     "shared_storage/shared_storage_event_params.cc",
@@ -2066,7 +2072,6 @@ source_set("browser") {
     "shared_storage/shared_storage_render_thread_worklet_driver.h",
     "shared_storage/shared_storage_url_loader_factory_proxy.cc",
     "shared_storage/shared_storage_url_loader_factory_proxy.h",
-    "shared_storage/shared_storage_worklet_driver.h",
     "shared_storage/shared_storage_worklet_host.cc",
     "shared_storage/shared_storage_worklet_host.h",
     "shared_storage/shared_storage_worklet_host_manager.cc",
@@ -2244,8 +2249,6 @@ source_set("browser") {
     "webauth/client_data_json.h",
     "webauth/webauth_request_security_checker.cc",
     "webauth/webauth_request_security_checker.h",
-    "webid/digital_credentials/digital_identity_provider_utils.cc",
-    "webid/digital_credentials/digital_identity_provider_utils.h",
     "webid/digital_credentials/digital_identity_request_impl.cc",
     "webid/digital_credentials/digital_identity_request_impl.h",
     "webid/fake_identity_request_dialog_controller.cc",
@@ -2799,8 +2802,11 @@ source_set("browser") {
       "device_posture/device_posture_registry_watcher_win.h",
       "font_access/font_enumeration_data_source_win.cc",
       "font_access/font_enumeration_data_source_win.h",
-      "installedapp/installed_app_provider_impl_win.cc",
-      "installedapp/installed_app_provider_impl_win.h",
+      "installedapp/fetch_related_win_apps_task.cc",
+      "installedapp/fetch_related_win_apps_task.h",
+      "installedapp/native_win_app_fetcher.h",
+      "installedapp/native_win_app_fetcher_impl.cc",
+      "installedapp/native_win_app_fetcher_impl.h",
       "media/dcomp_surface_registry_broker.cc",
       "media/dcomp_surface_registry_broker.h",
       "media/key_system_support_win.cc",
@@ -3196,8 +3202,6 @@ source_set("browser") {
       "web_contents/web_contents_android.h",
       "web_contents/web_contents_view_android.cc",
       "web_contents/web_contents_view_android.h",
-      "webid/digital_credentials/digital_identity_provider_android.cc",
-      "webid/digital_credentials/digital_identity_provider_android.h",
     ]
 
     deps += [
@@ -3246,6 +3250,11 @@ source_set("browser") {
       "hid/hid_service.cc",
       "hid/hid_service.h",
 
+      # These fetch web app tasks, used by getInstalledRelatedApps API, are not
+      # supported in Android.
+      "installedapp/fetch_related_web_apps_task.cc",
+      "installedapp/fetch_related_web_apps_task.h",
+
       # Non-Android platforms that don't presently support
       # enable_screen_capture, like Fuchsia, nevertheless compile
       # these files. This follows the pattern of #ifdef-ing around Android
@@ -3272,12 +3281,6 @@ source_set("browser") {
       "service_worker/service_worker_usb_delegate_observer.h",
 
       # Most speech code is non-Android.
-      "speech/endpointer/endpointer.cc",
-      "speech/endpointer/endpointer.h",
-      "speech/endpointer/energy_endpointer.cc",
-      "speech/endpointer/energy_endpointer.h",
-      "speech/endpointer/energy_endpointer_params.cc",
-      "speech/endpointer/energy_endpointer_params.h",
       "speech/network_speech_recognition_engine_impl.cc",
       "speech/network_speech_recognition_engine_impl.h",
       "speech/speech_recognition_engine.cc",
@@ -3318,6 +3321,8 @@ source_set("browser") {
         "speech/soda_speech_recognition_engine_impl.cc",
         "speech/soda_speech_recognition_engine_impl.h",
       ]
+
+      deps += [ "//media/mojo/mojom:web_speech_recognition" ]
     }
 
     deps += [

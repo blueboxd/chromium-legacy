@@ -291,7 +291,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.AdaptiveToolbarButton.Clicked"
-    enum="AdaptiveToolbarButtonVariant" expires_after="2024-09-15">
+    enum="AdaptiveToolbarButtonVariant" expires_after="2024-11-17">
   <owner>bttk@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -301,7 +301,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.AdaptiveToolbarButton.SessionVariant"
-    enum="AdaptiveToolbarButtonVariant" expires_after="2024-09-15">
+    enum="AdaptiveToolbarButtonVariant" expires_after="2024-11-17">
   <owner>bttk@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -657,8 +657,23 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.BackPress.Intercept.CustomTab{Task}"
+    enum="BackPressConsumer" expires_after="2025-05-15">
+  <owner>lazzzis@chromium.org</owner>
+  <owner>src/chrome/browser/back_press/android/OWNERS</owner>
+  <summary>
+    Recorded when a custom tabs feature intercepted the system's back press
+    gesture {Task}.
+  </summary>
+  <token key="Task">
+    <variant name=".SameTask" summary="custom tab is from the same task."/>
+    <variant name=".SeparateTask"
+        summary="custom tab is from a separate task."/>
+  </token>
+</histogram>
+
 <histogram name="Android.BackPress.Intercept{Direction}"
-    enum="BackPressConsumer" expires_after="2024-09-15">
+    enum="BackPressConsumer" expires_after="2024-11-17">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/chrome/browser/back_press/android/OWNERS</owner>
   <summary>
@@ -673,13 +688,28 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackPress.MinimizeAppAndCloseTab"
-    enum="MinimizeAppAndCloseTabType" expires_after="2024-09-15">
+    enum="MinimizeAppAndCloseTabType" expires_after="2024-11-17">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/chrome/browser/back_press/android/OWNERS</owner>
   <summary>
     Records that the back press causes the app to be minimized or the current
     tab to be closed.
   </summary>
+</histogram>
+
+<histogram name="Android.BackPress.MinimizeAppAndCloseTab.CustomTab.{Task}"
+    enum="MinimizeAppAndCloseTabType" expires_after="2025-05-15">
+  <owner>lazzzis@chromium.org</owner>
+  <owner>src/chrome/browser/back_press/android/OWNERS</owner>
+  <summary>
+    Records that the custom tabs back press causes the app to be minimized or
+    the current tab to be closed {Task}.
+  </summary>
+  <token key="Task">
+    <variant name=".SameTask" summary="custom tab is from the same task."/>
+    <variant name=".SeparateTask"
+        summary="custom tab is from a separate task."/>
+  </token>
 </histogram>
 
 <histogram name="Android.BackPress.SecondaryActivity" enum="SecondaryActivity"
@@ -1334,6 +1364,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.DragDrop.Tab.SourceWindowClosed" enum="Boolean"
+    expires_after="2025-05-13">
+  <owner>aishwaryarj@google.com</owner>
+  <owner>wenyufu@chromium.org</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    Records true when a tab drag/drop results in closing the source Chrome
+    window because it was the last tab in the window, false when the drop does
+    not close the source window. Only recorded when tab drag/drop is handled.
+  </summary>
+</histogram>
+
 <histogram name="Android.DragDrop.Tab.Type" enum="DragDropType"
     expires_after="2024-10-28">
   <owner>shuyng@google.com</owner>
@@ -1368,7 +1410,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DynamicTopChrome.TabStripTransition.Finished"
-    enum="Boolean" expires_after="2024-09-15">
+    enum="Boolean" expires_after="2024-11-17">
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1423,7 +1465,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.ExplicitViewIntentFinishedNewTabbedActivity"
-    enum="Boolean" expires_after="2024-09-15">
+    enum="Boolean" expires_after="2024-11-17">
   <owner>aishwaryarj@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1814,7 +1856,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.GridTabSwitcher.TimeToTabStateInitializedFromShown"
-    units="ms" expires_after="2024-06-30">
+    units="ms" expires_after="2024-11-30">
   <owner>ckitagawa@chromium.org</owner>
   <owner>clank-tab-dev@google.com</owner>
   <summary>
@@ -2760,6 +2802,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="Android.Omnibox.SearchActivity.SessionTerminationReason{IntentOrigin}"
+    enum="SearchActivityTerminationReason" expires_after="2024-09-01">
+  <owner>ender@chromium.org</owner>
+  <summary>
+    Records the reason SearchActivity was closed.
+
+    Captures the {IntentOrigin} SearchActivity metrics. Recorded exactly once
+    per SearchActivity session.
+  </summary>
+  <token key="IntentOrigin" variants="SearchActivityIntentOriginVariants"/>
+</histogram>
+
 <histogram name="Android.Omnibox.SetGeolocationHeadersTime" units="ms"
     expires_after="2024-04-28">
   <owner>spelchat@chromium.org</owner>
@@ -2797,7 +2852,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.SuggestionList.LayoutTime3" units="ms"
-    expires_after="2024-09-13">
+    expires_after="2024-11-17">
   <owner>ender@chromium.org</owner>
   <owner>pnoland@chromium.org</owner>
   <owner>gangwu@chromium.org</owner>
@@ -2848,7 +2903,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.SuggestionList.MeasureTime3" units="ms"
-    expires_after="2024-09-13">
+    expires_after="2024-11-17">
   <owner>ender@chromium.org</owner>
   <owner>pnoland@chromium.org</owner>
   <owner>gangwu@chromium.org</owner>
@@ -3116,7 +3171,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.Omnibox.{AndroidSearchPrefetch}.NumPrefetchesStartedInOmniboxSession.{AndroidNavigationPrefetchOnly}"
-    units="count" expires_after="2024-09-15">
+    units="count" expires_after="2024-11-17">
   <owner>nhiroki@chromium.org</owner>
   <owner>ryansturm@chromium.org</owner>
   <owner>curranmax@chromium.org</owner>
@@ -3265,7 +3320,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.PageSummary.Share.IsVisibleInShareSheet"
-    enum="PageSummaryShareSheetVisibility" expires_after="2024-06-30">
+    enum="PageSummaryShareSheetVisibility" expires_after="2024-11-10">
   <owner>salg@google.com</owner>
   <owner>ssid@google.com</owner>
   <summary>
@@ -4043,7 +4098,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.SelectFileDialogContentSelected"
-    enum="SelectFileDialogContent" expires_after="2024-09-15">
+    enum="SelectFileDialogContent" expires_after="2024-11-17">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -4055,7 +4110,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.SelectFileDialogImgCount" units="images"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -4067,7 +4122,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.SelectFileDialogScope" enum="SelectFileDialogScope"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>peter@chromium.org</owner>
   <owner>finnur@chromium.org</owner>
   <summary>
@@ -4367,7 +4422,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabMultiSelectV2.SharingState"
-    enum="TabListEditorShareActionState" expires_after="2024-06-30">
+    enum="TabListEditorShareActionState" expires_after="2024-09-01">
   <owner>ckitagawa@chromium.org</owner>
   <owner>bjfong@google.com</owner>
   <owner>fredmello@chromium.org</owner>
@@ -4378,7 +4433,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabMultiSelectV2.TimeSinceLastShown" units="ms"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
@@ -4439,7 +4494,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabStrip.DelayTempStripRemovalTimedOut"
-    enum="BooleanTimedOut" expires_after="2024-09-15">
+    enum="BooleanTimedOut" expires_after="2024-11-17">
   <owner>nemco@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>twellington@chromium.org</owner>
@@ -4517,7 +4572,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabStrip.PlaceholderStripVisibleDuration" units="ms"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>nemco@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>twellington@chromium.org</owner>
@@ -4538,7 +4593,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabStrip.TimeToBufferSwapAfterInitializeTabState"
-    units="ms" expires_after="2024-09-15">
+    units="ms" expires_after="2024-11-17">
   <owner>nemco@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>twellington@chromium.org</owner>
@@ -4553,7 +4608,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabStrip.TimeToInitializeTabStateAfterBufferSwap"
-    units="ms" expires_after="2024-09-15">
+    units="ms" expires_after="2024-11-17">
   <owner>nemco@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>twellington@chromium.org</owner>
@@ -4568,7 +4623,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabStrip.TimeToSwitchTab" units="ms"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>gauravjj@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
@@ -4603,7 +4658,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabSwitcher.CreationTime" units="ms"
-    expires_after="2024-06-30">
+    expires_after="2024-11-10">
   <owner>skavuluru@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
@@ -5351,6 +5406,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.WebView.DevUi.NetLogsCalled" enum="Boolean"
+    expires_after="2025-04-26">
+  <owner>ntfschr@chromium.org</owner>
+  <owner>thomasbull@chromium.org</owner>
+  <owner>torne@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records the number of times the Net Logs were captured. This only ever logs
+    the value &quot;true&quot; because we only care about the total count. This
+    is logged in the nonembedded AwNetLogService when the net-logs flag is
+    enabled and a webview is launched.
+  </summary>
+</histogram>
+
 <histogram base="true" name="Android.WebView.DevUi.SessionDuration2" units="ms"
     expires_after="2025-01-16">
 <!-- Name completed by histogram_suffixes
@@ -5539,12 +5608,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.InputStreamTime" units="ms"
-    expires_after="2023-12-04">
+    expires_after="2024-11-16">
   <owner>jam@chromium.org</owner>
   <owner>cduvall@chromium.org</owner>
+  <owner>stefanoduo@google.com</owner>
   <summary>
     Measures how long InputStreams take from creation to completion. This is
-    emitted for all streams whether they succeed or fail.
+    emitted for all streams whether they succeed or fail. This metric was
+    expired between December 2023 and May 2024. Data from that period will be
+    incomplete.
   </summary>
 </histogram>
 

@@ -68,7 +68,6 @@
 <translation id="2241587408274973373">Az Új lap oldal kártyái</translation>
 <translation id="2241634353105152135">Csak egyszer</translation>
 <translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> eltávolítása</translation>
-<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{1 letiltott webhely}other{# letiltott webhely}}</translation>
 <translation id="228293613124499805">A legtöbb felkeresett webhely valószínűleg ment adatokat az eszközére, gyakran azért, hogy a beállításai vagy a webhellyel megosztott adatai mentésével javítsa a felhasználói élményt. Javasoljuk, hogy tartsa bekapcsolva ezt a beállítást.</translation>
 <translation id="2289270750774289114">Kérdezzen rá, ha valamelyik webhely szeretné felfedezni a közeli Bluetooth-eszközöket (ajánlott)</translation>
 <translation id="2315043854645842844">Az ügyféloldali tanúsítványválasztást az operációs rendszer nem támogatja.</translation>
@@ -305,6 +304,7 @@
 <translation id="6015775454662021376">A webhelynek az eszközhöz való hozzáférésének vezérlése</translation>
 <translation id="6040143037577758943">Bezárás</translation>
 <translation id="6042308850641462728">Továbbiak</translation>
+<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> A legutóbbi lap</translation>
 <translation id="6064125863973209585">Befejezett letöltések</translation>
 <translation id="6071501408666570960">Előfordulhat, hogy a rendszer kijelentkezteti erről a webhelyről</translation>
 <translation id="6120483543004435978">Ha be van kapcsolva, a webhelyek lekérdezhetik, hogy Ön mikor használja aktívan az eszközét. Ha ki van kapcsolva, a webhelyek nem tudhatják, hogy Ön mikor használja aktívan az eszközt.</translation>
@@ -426,6 +426,7 @@
 <translation id="7986741934819883144">Válasszon ki egy névjegyet</translation>
 <translation id="7990211076305263060">Ha be van kapcsolva, a webhelyek hozzáférést kérhetnek az Ön mikrofonjához. Ha ki van kapcsolva, a webhelyek nem használhatják a mikrofont.</translation>
 <translation id="8007176423574883786">Kikapcsolva ezen az eszközön</translation>
+<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Innen: <ph name="FROM_DEVICE" /></translation>
 <translation id="802154636333426148">Nem sikerült a letöltés</translation>
 <translation id="8042586301629853791">Rendezés:</translation>
 <translation id="8067883171444229417">Videó lejátszása</translation>
@@ -480,7 +481,6 @@
 <translation id="8721719390026067591">Ha be van kapcsolva, a webhelyek engedélyt kérhetnek Bluetooth-eszközök keresésére. Ha ki van kapcsolva, a webhelyek nem tudnak Bluetooth-eszközöket keresni.</translation>
 <translation id="8725066075913043281">Újrapróbálás</translation>
 <translation id="8730621377337864115">Kész</translation>
-<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{1 engedélyezett webhely}other{# engedélyezett webhely}}</translation>
 <translation id="8751914237388039244">Válasszon képet</translation>
 <translation id="8800034312320686233">Nem működik a webhely?</translation>
 <translation id="8801436777607969138">JavaScript letiltása adott webhelynél.</translation>

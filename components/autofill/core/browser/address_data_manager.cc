@@ -21,6 +21,7 @@
 #include "components/autofill/core/browser/metrics/profile_deduplication_metrics.h"
 #include "components/autofill/core/browser/metrics/profile_token_quality_metrics.h"
 #include "components/autofill/core/browser/metrics/stored_profile_metrics.h"
+#include "components/autofill/core/browser/webdata/addresses/contact_info_precondition_checker.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
@@ -88,6 +89,13 @@ AddressDataManager::AddressDataManager(
     webdata_service_observer_.Observe(webdata_service_.get());
   }
 
+  if (sync_service_ && identity_manager_) {
+    contact_info_precondition_checker_ =
+        std::make_unique<ContactInfoPreconditionChecker>(
+            sync_service_, identity_manager_,
+            /*on_precondition_changed=*/base::DoNothing());
+  }
+
   SetPrefService(pref_service);
   SetStrikeDatabase(strike_database);
   // `IsAutofillProfileEnabled()` relies on the `pref_service_`, which is only
@@ -107,6 +115,7 @@ AddressDataManager::~AddressDataManager() {
 
 void AddressDataManager::Shutdown() {
   // These classes' sync observers needs to be unregistered.
+  contact_info_precondition_checker_.reset();
   address_data_cleaner_.reset();
 }
 
@@ -204,7 +213,7 @@ std::vector<AutofillProfile*> AddressDataManager::GetProfilesForSettings()
   return GetProfiles(ProfileOrder::kMostRecentlyModifiedDesc);
 }
 
-AutofillProfile* AddressDataManager::GetProfileByGUID(
+const AutofillProfile* AddressDataManager::GetProfileByGUID(
     const std::string& guid) const {
   std::vector<AutofillProfile*> profiles = GetProfiles();
   auto it = base::ranges::find(
@@ -304,6 +313,10 @@ bool AddressDataManager::IsEligibleForAddressAccountStorage() const {
 
 bool AddressDataManager::IsCountryEligibleForAccountStorage(
     std::string_view country_code) const {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableAccountStorageForIneligibleCountries)) {
+    return true;
+  }
   constexpr char const* kUnsupportedCountries[] = {"CU", "IR", "KP", "SD",
                                                    "SY"};
   return !base::Contains(kUnsupportedCountries, country_code);
@@ -333,7 +346,7 @@ void AddressDataManager::LoadProfiles() {
 }
 
 void AddressDataManager::RecordUseOf(const AutofillProfile& profile) {
-  AutofillProfile* adm_profile = GetProfileByGUID(profile.guid());
+  const AutofillProfile* adm_profile = GetProfileByGUID(profile.guid());
   if (!adm_profile) {
     return;
   }
@@ -352,7 +365,7 @@ AddressCountryCode AddressDataManager::GetDefaultCountryCodeForNewAddress()
 
 bool AddressDataManager::IsProfileMigrationBlocked(
     const std::string& guid) const {
-  AutofillProfile* profile = GetProfileByGUID(guid);
+  const AutofillProfile* profile = GetProfileByGUID(guid);
   DCHECK(profile == nullptr ||
          profile->source() == AutofillProfile::Source::kLocalOrSyncable);
   if (!GetProfileMigrationStrikeDatabase()) {
@@ -582,13 +595,38 @@ bool AddressDataManager::IsAutofillUserSelectableTypeEnabled() const {
 }
 
 bool AddressDataManager::IsAutofillSyncToggleAvailable() const {
-  return IsEligibleForAddressAccountStorage() && sync_service_ &&
-         !sync_service_->HasSyncConsent() &&
-         !sync_service_->GetUserSettings()->IsTypeManagedByPolicy(
-             syncer::UserSelectableType::kAutofill) &&
-         base::FeatureList::IsEnabled(
-             syncer::kSyncEnableContactInfoDataTypeInTransportMode) &&
-         pref_service_->GetBoolean(::prefs::kExplicitBrowserSignin);
+  // These checks should be removed once the feature is fully launched.
+  if (!base::FeatureList::IsEnabled(
+          syncer::kSyncEnableContactInfoDataTypeInTransportMode) ||
+      !pref_service_->GetBoolean(::prefs::kExplicitBrowserSignin)) {
+    return false;
+  }
+
+  if (!sync_service_) {
+    return false;
+  }
+
+  // Do not show the toggle if Sync is disabled on in error.
+  if (sync_service_->GetTransportState() ==
+          syncer::SyncService::TransportState::PAUSED ||
+      sync_service_->GetTransportState() ==
+          syncer::SyncService::TransportState::DISABLED) {
+    return false;
+  }
+
+  // Do not show the toggle for syncing users.
+  if (sync_service_->HasSyncConsent()) {
+    return false;
+  }
+
+  if (sync_service_->GetUserSettings()->IsTypeManagedByPolicy(
+          syncer::UserSelectableType::kAutofill)) {
+    return false;
+  }
+
+  return contact_info_precondition_checker_ &&
+         contact_info_precondition_checker_->GetPreconditionState() ==
+             syncer::ModelTypeController::PreconditionState::kPreconditionsMet;
 }
 
 void AddressDataManager::SetAutofillSelectableTypeEnabled(bool enabled) {
@@ -625,7 +663,7 @@ AddressDataManager::GetProfileStorage(AutofillProfile::Source source) const {
     case AutofillProfile::Source::kAccount:
       return account_profiles_;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void AddressDataManager::OnAutofillProfileChanged(

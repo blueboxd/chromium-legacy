@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/birch/birch_item.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
@@ -16,9 +17,8 @@
 #include "ash/wm/overview/birch/birch_chip_loader_view.h"
 #include "ash/wm/window_properties.h"
 #include "base/containers/contains.h"
-#include "base/functional/bind.h"
-#include "base/functional/callback_helpers.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
@@ -104,12 +104,13 @@ std::unique_ptr<views::Widget> BirchBarView::CreateBirchBarWidget(
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.activatable = views::Widget::InitParams::Activatable::kYes;
   params.accept_events = true;
+  params.activatable = features::IsOverviewNewFocusEnabled()
+                           ? views::Widget::InitParams::Activatable::kYes
+                           : views::Widget::InitParams::Activatable::kNo;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.context = root_window;
   params.name = "BirchBarWidget";
-  params.activatable = views::Widget::InitParams::Activatable::kNo;
   params.init_properties_container.SetProperty(kOverviewUiKey, true);
   params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
 
@@ -198,7 +199,8 @@ void BirchBarView::SetupChips(const std::vector<raw_ptr<BirchItem>>& items) {
 
 void BirchBarView::AddChip(BirchItem* item) {
   if (static_cast<int>(chips_.size()) == kMaxChipsNum) {
-    NOTREACHED() << "The number of birch chips reaches the limit of 4";
+    NOTREACHED_IN_MIGRATION()
+        << "The number of birch chips reaches the limit of 4";
     return;
   }
 
@@ -293,8 +295,7 @@ BirchBarView::LayoutType BirchBarView::GetExpectedLayoutType(
 }
 
 void BirchBarView::Relayout(RelayoutReason reason) {
-  base::ScopedClosureRunner scoped_closure(base::BindOnce(
-      &BirchBarView::OnRelayout, base::Unretained(this), reason));
+  absl::Cleanup scoped_on_relayout = [this, reason] { OnRelayout(reason); };
 
   const size_t primary_size =
       GetExpectedLayoutType(chips_.size()) == LayoutType::kOneByFour

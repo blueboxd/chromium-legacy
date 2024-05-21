@@ -9,7 +9,6 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/animation/animation_change_type.h"
-#include "ash/constants/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/screen_util.h"
@@ -334,6 +333,10 @@ aura::Window* BackdropController::GetTopmostWindowWithBackdrop() {
     return window;
   }
   return nullptr;
+}
+
+void BackdropController::HideOnTakingPineScreenshot() {
+  Hide(/*destroy=*/false, /*animate=*/false);
 }
 
 base::ScopedClosureRunner BackdropController::PauseUpdates() {

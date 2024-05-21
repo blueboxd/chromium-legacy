@@ -79,12 +79,6 @@
 namespace exo {
 namespace {
 
-bool IsRadiiUniform(const gfx::RoundedCornersF& radii) {
-  return radii.upper_left() == radii.upper_right() &&
-         radii.lower_left() == radii.lower_right() &&
-         radii.upper_left() == radii.lower_left();
-}
-
 // The accelerator keys used to close ShellSurfaces.
 const struct {
   ui::KeyboardCode keycode;
@@ -182,34 +176,15 @@ class CustomFrameView : public ash::NonClientFrameViewAsh {
           window_radii.value_or(shadow_radii.value_or(gfx::RoundedCornersF()));
 
       // TODO(crbug.com/40256581): Support variable window radii.
-      DCHECK(IsRadiiUniform(radii));
       corner_radius = radii.upper_left();
-    }
-
-    // TODO(b/302034956): Use `ApplyRoundedCornersToSurfaceTree()` to round pip
-    // window as well.
-    // Round a pip window. Pip windows are rounded by applying rounded corner
-    // to host window using ui::Layer API.
-    // When un-pipped (window state changed from pip), we must undo the
-    // rounded corners of the host_window.
-    const int pip_corner_radius =
-        window_state->IsPip() ? chromeos::kPipRoundedCornerRadius : 0;
-    const gfx::RoundedCornersF pip_radii(pip_corner_radius);
-
-    ui::Layer* layer = shell_surface_->host_window()->layer();
-    if (layer->rounded_corner_radii() != pip_radii) {
-      layer->SetRoundedCornerRadius(pip_radii);
-      layer->SetIsFastRoundedCorner(/*enable=*/!pip_radii.IsEmpty());
     }
 
     // Various window decorations are rounded using `kWindowCornerRadiusKey`
     // property.
     window->SetProperty(aura::client::kWindowCornerRadiusKey, corner_radius);
 
-    // If we have a pip window, ignore `window_radii`. If window_radii is null,
-    // skip rounding the window.
-    if (window_state->IsPip() ||
-        !chromeos::features::IsRoundedWindowsEnabled() || !window_radii) {
+    // If window_radii is null, skip rounding the window.
+    if (!window_radii) {
       return;
     }
 
@@ -2178,11 +2153,9 @@ void ShellSurfaceBase::UpdateShadowRoundedCorners() {
     // TODO(crbug.com/40256581): Revisit once all the clients have migrated.
     shadow_radii = shadow_corners_radii_dp_.value_or(
         window_corners_radii_dp_.value_or(gfx::RoundedCornersF()));
-
-    // TODO(crbug.com/40256581): Support shadow with variable radius corners.
-    DCHECK(IsRadiiUniform(shadow_radii));
   }
 
+  // TODO(crbug.com/40256581): Support shadow with variable radius corners.
   shadow->SetRoundedCornerRadius(shadow_radii.upper_left());
 }
 

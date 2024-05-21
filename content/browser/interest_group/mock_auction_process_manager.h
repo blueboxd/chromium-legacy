@@ -304,8 +304,8 @@ class MockSellerWorklet : public auction_worklet::mojom::SellerWorklet {
       uint64_t trace_id,
       ReportResultCallback report_result_callback) override;
   void ConnectDevToolsAgent(
-      mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent)
-      override;
+      mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent,
+      uint32_t thread_index) override;
 
   // Closes the receiver pipe with the provided reason.
   void ResetReceiverWithReason(const std::string& reason);
@@ -391,7 +391,7 @@ class MockAuctionProcessManager
       mojo::PendingReceiver<auction_worklet::mojom::BidderWorklet>
           bidder_worklet_receiver,
       mojo::PendingRemote<auction_worklet::mojom::AuctionSharedStorageHost>
-          shared_storage_host_remote,
+          shared_storage_host,
       bool pause_for_debugger_on_start,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_url_loader_factory,
@@ -408,8 +408,9 @@ class MockAuctionProcessManager
   void LoadSellerWorklet(
       mojo::PendingReceiver<auction_worklet::mojom::SellerWorklet>
           seller_worklet_receiver,
-      mojo::PendingRemote<auction_worklet::mojom::AuctionSharedStorageHost>
-          shared_storage_host_remote,
+      std::vector<
+          mojo::PendingRemote<auction_worklet::mojom::AuctionSharedStorageHost>>
+          shared_storage_hosts,
       bool should_pause_on_start,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_url_loader_factory,

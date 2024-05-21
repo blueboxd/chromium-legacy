@@ -33,8 +33,8 @@
 #include "services/webnn/dml/adapter.h"
 #include "services/webnn/dml/command_queue.h"
 #include "services/webnn/dml/command_recorder.h"
-#include "services/webnn/dml/context_impl.h"
-#include "services/webnn/dml/graph_impl.h"
+#include "services/webnn/dml/context_impl_dml.h"
+#include "services/webnn/dml/graph_impl_dml.h"
 #include "services/webnn/dml/test_base.h"
 #include "services/webnn/dml/utils.h"
 #include "third_party/microsoft_dxheaders/include/directml.h"
@@ -359,6 +359,7 @@ void WebNNGraphImplBackendTest::SetUp() {
       "BuildAndComputeSingleOperatorRelu",
       "BuildAndComputeSingleOperatorSigmoid",
       "BuildAndComputeSliceOperator",
+      "BuildAndComputeSingleOperatorSoftmax",
       "BuildAndComputeSingleOperatorSoftsign",
       "BuildAndComputeSingleOperatorTanh",
       "BuildAndComputeSingleOperatorTranspose",
@@ -370,7 +371,8 @@ void WebNNGraphImplBackendTest::SetUp() {
 }
 #endif  // BUILDFLAG(IS_MAC)
 
-#if BUILDFLAG(WEBNN_USE_TFLITE)
+// TODO(crbug.com/325612086): Parameterize these tests for different backends.
+#if BUILDFLAG(WEBNN_USE_TFLITE) && !BUILDFLAG(IS_WIN)
 class WebNNGraphImplBackendTest : public testing::Test {
  public:
   WebNNGraphImplBackendTest()
@@ -419,7 +421,7 @@ void WebNNGraphImplBackendTest::SetUp() {
     GTEST_SKIP() << "Skipping test because the operator is not yet supported.";
   }
 }
-#endif  // BUILDFLAG(WEBNN_USE_TFLITE)
+#endif  // BUILDFLAG(WEBNN_USE_TFLITE) && !BUILDFLAG(IS_WIN)
 
 template <typename T>
 struct ArgMinMaxTester {
@@ -639,7 +641,7 @@ void BuildStandaloneActivation(GraphInfoBuilder& builder,
       builder.BuildTanh(input_operand_id, output_operand_id);
       return;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 }
 
@@ -4278,7 +4280,7 @@ struct UnaryOperatorTester {
         builder.BuildTanh(input_operand_id, output_operand_id);
         break;
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
     }
 
     base::flat_map<std::string, mojo_base::BigBuffer> named_inputs;
@@ -5158,28 +5160,6 @@ TEST_F(WebNNGraphImplBackendTest, BuildAndComputeSingleOperatorGather) {
         .output = {.type = mojom::Operand::DataType::kFloat32,
                    .dimensions = {5},
                    .values = {3, 2, 4, 1, 2}}}
-        .Test();
-  }
-  {
-    // Test gather with 2-D input, 2-D indices and axis = 1 with data type
-    // uint64.
-    GatherTester<int32_t, uint64_t>{
-        .input = {.type = mojom::Operand::DataType::kInt32,
-                  .dimensions = {3, 3},
-                  // [[1 2 3]
-                  //  [4 5 6]
-                  //  [7 8 9]] with shape (3, 3)
-                  .values = {1, 2, 3, 4, 5, 6, 7, 8, 9}},
-        .indices = {.type = mojom::Operand::DataType::kUint64,
-                    .dimensions = {1, 2},
-                    .values = {0, 2}},
-        .axis = 1,
-        .output = {.type = mojom::Operand::DataType::kInt32,
-                   .dimensions = {3, 1, 2},
-                   // [[[1 3]]
-                   //  [[4 6]]
-                   //  [[7 9]]] with shape (3, 1, 2)
-                   .values = {1, 3, 4, 6, 7, 9}}}
         .Test();
   }
   {

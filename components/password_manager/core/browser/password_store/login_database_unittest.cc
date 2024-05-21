@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "base/containers/flat_map.h"
+#include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
@@ -31,6 +32,7 @@
 #include "components/os_crypt/sync/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_form.h"
+#include "components/password_manager/core/browser/password_manager_switches.h"
 #include "components/password_manager/core/browser/password_store/password_store_change.h"
 #include "components/password_manager/core/browser/password_store/psl_matching_helper.h"
 #include "components/password_manager/core/browser/sync/password_store_sync.h"
@@ -281,8 +283,8 @@ class LoginDatabaseTest : public testing::Test {
     file_ = temp_dir_.GetPath().AppendASCII("TestMetadataStoreMacDatabase");
     OSCryptMocker::SetUp();
 
-    db_ = std::make_unique<LoginDatabase>(file_, IsAccountStore(false),
-                                          is_empty_cb_.Get());
+    db_ = std::make_unique<LoginDatabase>(file_, IsAccountStore(false));
+    db_->SetIsEmptyCb(is_empty_cb_.Get());
     ASSERT_TRUE(db_->Init());
   }
 
@@ -292,9 +294,7 @@ class LoginDatabaseTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   base::FilePath file_;
-  NiceMock<base::MockCallback<base::RepeatingCallback<void(
-      LoginDatabase::LoginDatabaseEmptynessState)>>>
-      is_empty_cb_;
+  NiceMock<base::MockCallback<LoginDatabase::IsEmptyCallback>> is_empty_cb_;
   std::unique_ptr<LoginDatabase> db_;
   // A full TaskEnvironment is required instead of only
   // SingleThreadTaskEnvironment because on iOS,
@@ -2134,7 +2134,8 @@ INSTANTIATE_TEST_SUITE_P(MigrationToVCurrent,
                          LoginDatabaseMigrationTestBroken,
                          testing::Values(1, 2, 3, 24));
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_IOS) || \
+    BUILDFLAG(IS_WIN)
 class LoginDatabaseUndecryptableLoginsTest : public testing::Test {
  protected:
   LoginDatabaseUndecryptableLoginsTest() = default;
@@ -2236,10 +2237,9 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
       AddDummyLogin("foo3", GURL("https://foo3.com/"),
                     /*should_be_corrupted=*/true, /*blocklisted=*/true);
 
-  NiceMock<base::MockCallback<base::RepeatingCallback<void(
-      LoginDatabase::LoginDatabaseEmptynessState)>>>
-      is_empty_cb;
-  LoginDatabase db(database_path(), IsAccountStore(false), is_empty_cb.Get());
+  LoginDatabase db(database_path(), IsAccountStore(false));
+  NiceMock<base::MockCallback<LoginDatabase::IsEmptyCallback>> is_empty_cb;
+  db.SetIsEmptyCb(is_empty_cb.Get());
   base::HistogramTester histogram_tester;
   ASSERT_TRUE(db.Init());
 
@@ -2257,7 +2257,7 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
   // Delete undecryptable logins and make sure we can get valid logins.
   // `is_empty_cb_` is called more than once because DeleteUndecryptableLogins()
   // internally calls RemoveLogin() for each form.
-  EXPECT_CALL(is_empty_cb, Run(LoginDatabase::LoginDatabaseEmptynessState{
+  EXPECT_CALL(is_empty_cb, Run(LoginDatabase::LoginDatabaseEmptinessState{
                                .no_login_found = false,
                                .autofillable_credentials_exist = true}))
       .Times(AnyNumber());
@@ -2274,6 +2274,169 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
       1);
 #endif
 }
+
+#if BUILDFLAG(IS_LINUX)
+TEST_F(LoginDatabaseUndecryptableLoginsTest,
+       DontDeleteUndecryptableLoginsIfStoreSwitchTest) {
+  // Init with feature states allowing for password deletion.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureStates(
+      {{features::kSkipUndecryptablePasswords, false},
+       {features::kClearUndecryptablePasswords, true}});
+
+  // Set the password store switch
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      password_manager::kPasswordStore);
+
+  base::HistogramTester histogram_tester;
+  std::vector<PasswordForm> forms;
+  auto form1 =
+      AddDummyLogin("foo1", GURL("https://foo1.com/"),
+                    /*should_be_corrupted=*/false, /*blocklisted=*/false);
+  auto form2 =
+      AddDummyLogin("foo2", GURL("https://foo2.com/"),
+                    /*should_be_corrupted=*/true, /*blocklisted=*/false);
+  auto form3 =
+      AddDummyLogin("foo3", GURL("https://foo3.com/"),
+                    /*should_be_corrupted=*/false, /*blocklisted=*/false);
+  LoginDatabase db(database_path(), IsAccountStore(false));
+  ASSERT_TRUE(db.Init());
+
+  EXPECT_FALSE(db.GetAutoSignInLogins(&forms));
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.DeleteUndecryptableLoginsReturnValue", 0);
+}
+
+TEST_F(LoginDatabaseUndecryptableLoginsTest,
+       DontDeleteUndecryptableLoginsIfEncryptionSelectionSwitchTest) {
+  // Init with feature states allowing for password deletion.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureStates(
+      {{features::kSkipUndecryptablePasswords, false},
+       {features::kClearUndecryptablePasswords, true}});
+
+  // Set the ecryption selection switch
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      password_manager::kEnableEncryptionSelection);
+
+  base::HistogramTester histogram_tester;
+  std::vector<PasswordForm> forms;
+  auto form1 =
+      AddDummyLogin("foo1", GURL("https://foo1.com/"),
+                    /*should_be_corrupted=*/false, /*blocklisted=*/false);
+  auto form2 =
+      AddDummyLogin("foo2", GURL("https://foo2.com/"),
+                    /*should_be_corrupted=*/true, /*blocklisted=*/false);
+  auto form3 =
+      AddDummyLogin("foo3", GURL("https://foo3.com/"),
+                    /*should_be_corrupted=*/false, /*blocklisted=*/false);
+  LoginDatabase db(database_path(), IsAccountStore(false));
+  ASSERT_TRUE(db.Init());
+
+  EXPECT_FALSE(db.GetAutoSignInLogins(&forms));
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.DeleteUndecryptableLoginsReturnValue", 0);
+}
+
+TEST_F(LoginDatabaseUndecryptableLoginsTest,
+       DontDeleteUndecryptableLoginsIfEnvVariableSetTest) {
+  // Init with feature states allowing for password deletion.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureStates(
+      {{features::kSkipUndecryptablePasswords, false},
+       {features::kClearUndecryptablePasswords, true}});
+
+  // Set the home dir env variable.
+  std::string orig_chrome_config_home = "test/path";
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  env->SetVar("CHROME_CONFIG_HOME", orig_chrome_config_home);
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      password_manager::kEnableEncryptionSelection);
+
+  base::HistogramTester histogram_tester;
+  std::vector<PasswordForm> forms;
+  auto form1 =
+      AddDummyLogin("foo1", GURL("https://foo1.com/"),
+                    /*should_be_corrupted=*/false, /*blocklisted=*/false);
+  auto form2 =
+      AddDummyLogin("foo2", GURL("https://foo2.com/"),
+                    /*should_be_corrupted=*/true, /*blocklisted=*/false);
+  auto form3 =
+      AddDummyLogin("foo3", GURL("https://foo3.com/"),
+                    /*should_be_corrupted=*/false, /*blocklisted=*/false);
+  LoginDatabase db(database_path(), IsAccountStore(false));
+  ASSERT_TRUE(db.Init());
+
+  EXPECT_FALSE(db.GetAutoSignInLogins(&forms));
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.DeleteUndecryptableLoginsReturnValue", 0);
+}
+
+#endif  // BUILDFLAG(IS_LINUX)
+
+TEST_F(LoginDatabaseUndecryptableLoginsTest,
+       DontDeleteUndecryptableLoginsIfUserDataDirSwitchTest) {
+  // Init with feature states allowing for password deletion.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureStates(
+      {{features::kSkipUndecryptablePasswords, false},
+       {features::kClearUndecryptablePasswords, true}});
+
+  // Set the user data directory switch
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      password_manager::kUserDataDir);
+
+  base::HistogramTester histogram_tester;
+  std::vector<PasswordForm> forms;
+  auto form1 =
+      AddDummyLogin("foo1", GURL("https://foo1.com/"),
+                    /*should_be_corrupted=*/false, /*blocklisted=*/false);
+  auto form2 =
+      AddDummyLogin("foo2", GURL("https://foo2.com/"),
+                    /*should_be_corrupted=*/true, /*blocklisted=*/false);
+  auto form3 =
+      AddDummyLogin("foo3", GURL("https://foo3.com/"),
+                    /*should_be_corrupted=*/false, /*blocklisted=*/false);
+  LoginDatabase db(database_path(), IsAccountStore(false));
+  ASSERT_TRUE(db.Init());
+
+  EXPECT_FALSE(db.GetAutoSignInLogins(&forms));
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.DeleteUndecryptableLoginsReturnValue", 0);
+}
+
+#if BUILDFLAG(IS_MAC)
+TEST_F(LoginDatabaseUndecryptableLoginsTest,
+       DontDeleteUndecryptableLoginsIfEncryptionNotAvailiableTest) {
+  // Init with feature states allowing for password deletion.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureStates(
+      {{features::kSkipUndecryptablePasswords, false},
+       {features::kClearUndecryptablePasswords, true}});
+
+  base::HistogramTester histogram_tester;
+  std::vector<PasswordForm> forms;
+  auto form1 =
+      AddDummyLogin("foo1", GURL("https://foo1.com/"),
+                    /*should_be_corrupted=*/false, /*blocklisted=*/false);
+  auto form2 =
+      AddDummyLogin("foo2", GURL("https://foo2.com/"),
+                    /*should_be_corrupted=*/true, /*blocklisted=*/false);
+  auto form3 =
+      AddDummyLogin("foo3", GURL("https://foo3.com/"),
+                    /*should_be_corrupted=*/false, /*blocklisted=*/false);
+  LoginDatabase db(database_path(), IsAccountStore(false));
+  ASSERT_TRUE(db.Init());
+
+  // Make authentication not available.
+  OSCryptMocker::SetBackendLocked(true);
+
+  EXPECT_FALSE(db.GetAutoSignInLogins(&forms));
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.DeleteUndecryptableLoginsReturnValue", 0);
+}
+#endif  // BUILDFLAG(IS_MAC)
 
 TEST_F(LoginDatabaseUndecryptableLoginsTest,
        PasswordRecoveryDisabledGetLogins) {
@@ -2312,8 +2475,29 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, KeychainLockedTest) {
 }
 #endif  // BUILDFLAG(IS_MAC)
 
+// Tests getting various types of undecryptable credentials.
+// First test parameter is responsible for toggling kSkipUndecryptablePasswords
+// feature.
+// Second test parameter is responsible for toggling
+// kClearUndecryptablePasswords feature.
+class LoginDatabaseGetUndecryptableLoginsTest
+    : public LoginDatabaseUndecryptableLoginsTest,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
+ public:
+  LoginDatabaseGetUndecryptableLoginsTest() {
+    scoped_feature_list_.InitWithFeatureStates(
+        {{features::kSkipUndecryptablePasswords, std::get<0>(GetParam())},
+         {features::kClearUndecryptablePasswords, std::get<1>(GetParam())}});
+  }
+  ~LoginDatabaseGetUndecryptableLoginsTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 // Test getting auto sign in logins when there are undecryptable ones
-TEST_F(LoginDatabaseUndecryptableLoginsTest, GetAutoSignInLogins) {
+TEST_P(LoginDatabaseGetUndecryptableLoginsTest, GetAutoSignInLogins) {
+  base::HistogramTester histogram_tester;
   std::vector<PasswordForm> forms;
   auto form1 =
       AddDummyLogin("foo1", GURL("https://foo1.com/"),
@@ -2327,24 +2511,32 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, GetAutoSignInLogins) {
   LoginDatabase db(database_path(), IsAccountStore(false));
   ASSERT_TRUE(db.Init());
 
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(features::kSkipUndecryptablePasswords);
-
-    EXPECT_FALSE(db.GetAutoSignInLogins(&forms));
-  }
-  {
-    base::test::ScopedFeatureList feature_list(
-        features::kSkipUndecryptablePasswords);
-
+  if (base::FeatureList::IsEnabled(features::kClearUndecryptablePasswords)) {
     EXPECT_TRUE(db.GetAutoSignInLogins(&forms));
     EXPECT_THAT(forms, UnorderedElementsAre(HasPrimaryKeyAndEquals(form1),
                                             HasPrimaryKeyAndEquals(form3)));
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.DeleteUndecryptableLoginsReturnValue",
+        metrics_util::DeleteCorruptedPasswordsResult::kSuccessPasswordsDeleted,
+        1);
+  } else {
+    if (base::FeatureList::IsEnabled(features::kSkipUndecryptablePasswords)) {
+      EXPECT_TRUE(db.GetAutoSignInLogins(&forms));
+      EXPECT_THAT(forms, UnorderedElementsAre(HasPrimaryKeyAndEquals(form1),
+                                              HasPrimaryKeyAndEquals(form3)));
+      histogram_tester.ExpectTotalCount(
+          "PasswordManager.DeleteUndecryptableLoginsReturnValue", 0);
+    } else {
+      EXPECT_FALSE(db.GetAutoSignInLogins(&forms));
+      histogram_tester.ExpectTotalCount(
+          "PasswordManager.DeleteUndecryptableLoginsReturnValue", 0);
+    }
   }
 }
 
 // Test getting logins when there are undecryptable ones
-TEST_F(LoginDatabaseUndecryptableLoginsTest, GetLogins) {
+TEST_P(LoginDatabaseGetUndecryptableLoginsTest, GetLogins) {
+  base::HistogramTester histogram_tester;
   auto form1 =
       AddDummyLogin("user1", GURL("http://www.google.com/"),
                     /*should_be_corrupted=*/false, /*blocklisted=*/false);
@@ -2354,25 +2546,35 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, GetLogins) {
   LoginDatabase db(database_path(), IsAccountStore(false));
   ASSERT_TRUE(db.Init());
   std::vector<PasswordForm> result;
-
   PasswordForm form = GenerateExamplePasswordForm();
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(features::kSkipUndecryptablePasswords);
-    EXPECT_FALSE(db.GetLogins(PasswordFormDigest(form),
-                              /*should_PSL_matching_apply=*/false, &result));
-  }
-  {
-    base::test::ScopedFeatureList feature_list(
-        features::kSkipUndecryptablePasswords);
+
+  if (base::FeatureList::IsEnabled(features::kClearUndecryptablePasswords)) {
     EXPECT_TRUE(db.GetLogins(PasswordFormDigest(form),
                              /*should_PSL_matching_apply=*/false, &result));
     EXPECT_THAT(result, ElementsAre(HasPrimaryKeyAndEquals(form1)));
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.DeleteUndecryptableLoginsReturnValue",
+        metrics_util::DeleteCorruptedPasswordsResult::kSuccessPasswordsDeleted,
+        1);
+  } else {
+    if (base::FeatureList::IsEnabled(features::kSkipUndecryptablePasswords)) {
+      EXPECT_TRUE(db.GetLogins(PasswordFormDigest(form),
+                               /*should_PSL_matching_apply=*/false, &result));
+      EXPECT_THAT(result, ElementsAre(HasPrimaryKeyAndEquals(form1)));
+      histogram_tester.ExpectTotalCount(
+          "PasswordManager.DeleteUndecryptableLoginsReturnValue", 0);
+    } else {
+      EXPECT_FALSE(db.GetLogins(PasswordFormDigest(form),
+                                /*should_PSL_matching_apply=*/false, &result));
+      histogram_tester.ExpectTotalCount(
+          "PasswordManager.DeleteUndecryptableLoginsReturnValue", 0);
+    }
   }
 }
 
 // Test getting auto fillable logins when there are undecryptable ones
-TEST_F(LoginDatabaseUndecryptableLoginsTest, GetAutofillableLogins) {
+TEST_P(LoginDatabaseGetUndecryptableLoginsTest, GetAutofillableLogins) {
+  base::HistogramTester histogram_tester;
   std::vector<PasswordForm> result;
 
   auto form1 =
@@ -2388,19 +2590,33 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, GetAutofillableLogins) {
   LoginDatabase db(database_path(), IsAccountStore(false));
   ASSERT_TRUE(db.Init());
 
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(features::kSkipUndecryptablePasswords);
-    EXPECT_FALSE(db.GetAutofillableLogins(&result));
-  }
-  {
-    base::test::ScopedFeatureList feature_list(
-        features::kSkipUndecryptablePasswords);
+  if (base::FeatureList::IsEnabled(features::kClearUndecryptablePasswords)) {
     EXPECT_TRUE(db.GetAutofillableLogins(&result));
     EXPECT_THAT(result, ElementsAre(HasPrimaryKeyAndEquals(form1)));
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.DeleteUndecryptableLoginsReturnValue",
+        metrics_util::DeleteCorruptedPasswordsResult::kSuccessPasswordsDeleted,
+        1);
+  } else {
+    if (base::FeatureList::IsEnabled(features::kSkipUndecryptablePasswords)) {
+      EXPECT_TRUE(db.GetAutofillableLogins(&result));
+      EXPECT_THAT(result, ElementsAre(HasPrimaryKeyAndEquals(form1)));
+      histogram_tester.ExpectTotalCount(
+          "PasswordManager.DeleteUndecryptableLoginsReturnValue", 0);
+    } else {
+      EXPECT_FALSE(db.GetAutofillableLogins(&result));
+      histogram_tester.ExpectTotalCount(
+          "PasswordManager.DeleteUndecryptableLoginsReturnValue", 0);
+    }
   }
 }
-#endif  // #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_IOS)
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         LoginDatabaseGetUndecryptableLoginsTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
+
+#endif  // #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_IOS) ||
+        // BUILDFLAG(IS_WIN)
 
 // Test encrypted passwords are present in add change lists.
 TEST_F(LoginDatabaseTest, EncryptedPasswordAdd) {
@@ -2806,12 +3022,11 @@ TEST_F(LoginDatabaseTest, AddLoginWithNonEmptyInvalidURL) {
 }
 
 TEST_F(LoginDatabaseTest, IsEmptyCb_InitEmpty) {
-  NiceMock<base::MockCallback<base::RepeatingCallback<void(
-      LoginDatabase::LoginDatabaseEmptynessState)>>>
-      is_empty_cb;
   LoginDatabase db(temp_dir_.GetPath().AppendASCII("DbDirectory"),
-                   IsAccountStore(false), is_empty_cb.Get());
-  EXPECT_CALL(is_empty_cb, Run(LoginDatabase::LoginDatabaseEmptynessState{
+                   IsAccountStore(false));
+  NiceMock<base::MockCallback<LoginDatabase::IsEmptyCallback>> is_empty_cb;
+  db.SetIsEmptyCb(is_empty_cb.Get());
+  EXPECT_CALL(is_empty_cb, Run(LoginDatabase::LoginDatabaseEmptinessState{
                                .no_login_found = true,
                                .autofillable_credentials_exist = false}));
   db.Init();
@@ -2821,19 +3036,17 @@ TEST_F(LoginDatabaseTest, IsEmptyCb_InitNonEmpty) {
   base::FilePath directory = temp_dir_.GetPath().AppendASCII("DbDirectory");
   {
     // Simulate the DB being populated in a previous startup.
-    auto db = std::make_unique<LoginDatabase>(directory, IsAccountStore(false),
-                                              base::NullCallback());
+    auto db = std::make_unique<LoginDatabase>(directory, IsAccountStore(false));
     db->Init();
     std::ignore =
         db->AddLogin(GenerateExamplePasswordForm(), /*error=*/nullptr);
     db.reset();
   }
 
-  NiceMock<base::MockCallback<base::RepeatingCallback<void(
-      LoginDatabase::LoginDatabaseEmptynessState)>>>
-      is_empty_cb;
-  LoginDatabase db(directory, IsAccountStore(false), is_empty_cb.Get());
-  EXPECT_CALL(is_empty_cb, Run(LoginDatabase::LoginDatabaseEmptynessState{
+  LoginDatabase db(directory, IsAccountStore(false));
+  NiceMock<base::MockCallback<LoginDatabase::IsEmptyCallback>> is_empty_cb;
+  db.SetIsEmptyCb(is_empty_cb.Get());
+  EXPECT_CALL(is_empty_cb, Run(LoginDatabase::LoginDatabaseEmptinessState{
                                .no_login_found = false,
                                .autofillable_credentials_exist = true}));
   db.Init();
@@ -2842,7 +3055,7 @@ TEST_F(LoginDatabaseTest, IsEmptyCb_InitNonEmpty) {
 TEST_F(LoginDatabaseTest, IsEmptyCb_AddLogin) {
   ASSERT_TRUE(db().IsEmpty().no_login_found &&
               !db().IsEmpty().autofillable_credentials_exist);
-  EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptynessState{
+  EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptinessState{
                                 .no_login_found = false,
                                 .autofillable_credentials_exist = true}));
   std::ignore = db().AddLogin(GenerateExamplePasswordForm(), /*error=*/nullptr);
@@ -2853,7 +3066,7 @@ TEST_F(LoginDatabaseTest,
   ASSERT_TRUE(db().IsEmpty().no_login_found &&
               !db().IsEmpty().autofillable_credentials_exist);
   PasswordForm blocklist = GenerateBlocklistedForm();
-  EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptynessState{
+  EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptinessState{
                                 .no_login_found = false,
                                 .autofillable_credentials_exist = false}));
   std::ignore = db().AddLogin(blocklist, /*error=*/nullptr);
@@ -2864,7 +3077,7 @@ TEST_F(LoginDatabaseTest,
   ASSERT_TRUE(db().IsEmpty().no_login_found &&
               !db().IsEmpty().autofillable_credentials_exist);
   PasswordForm federated_credential = GenerateFederatedCredentialForm();
-  EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptynessState{
+  EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptinessState{
                                 .no_login_found = false,
                                 .autofillable_credentials_exist = false}));
   std::ignore = db().AddLogin(federated_credential, /*error=*/nullptr);
@@ -2875,7 +3088,7 @@ TEST_F(LoginDatabaseTest,
   ASSERT_TRUE(db().IsEmpty().no_login_found &&
               !db().IsEmpty().autofillable_credentials_exist);
   PasswordForm username_only = GenerateUsernameOnlyForm();
-  EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptynessState{
+  EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptinessState{
                                 .no_login_found = false,
                                 .autofillable_credentials_exist = false}));
   std::ignore = db().AddLogin(username_only, /*error=*/nullptr);
@@ -2897,12 +3110,12 @@ TEST_F(LoginDatabaseTest, IsEmptyCb_RemoveLogin) {
   testing::MockFunction<void(int)> check;
   {
     testing::InSequence in_sequence;
-    EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptynessState{
+    EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptinessState{
                                   .no_login_found = false,
                                   .autofillable_credentials_exist = false}))
         .Times(3);
     EXPECT_CALL(check, Call(1));
-    EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptynessState{
+    EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptinessState{
                                   .no_login_found = true,
                                   .autofillable_credentials_exist = false}));
   }
@@ -2937,12 +3150,12 @@ TEST_F(LoginDatabaseTest, IsEmptyCb_RemoveLoginByPrimaryKey) {
   testing::MockFunction<void(int)> check;
   {
     testing::InSequence in_sequence;
-    EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptynessState{
+    EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptinessState{
                                   .no_login_found = false,
                                   .autofillable_credentials_exist = false}))
         .Times(3);
     EXPECT_CALL(check, Call(1));
-    EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptynessState{
+    EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptinessState{
                                   .no_login_found = true,
                                   .autofillable_credentials_exist = false}));
   }
@@ -2963,7 +3176,7 @@ TEST_F(LoginDatabaseTest, IsEmptyCb_RemoveLoginsCreatedBetween) {
   std::ignore = db().AddLogin(GenerateExamplePasswordForm(), /*error=*/nullptr);
   ASSERT_TRUE(!db().IsEmpty().no_login_found &&
               db().IsEmpty().autofillable_credentials_exist);
-  EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptynessState{
+  EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptinessState{
                                 .no_login_found = true,
                                 .autofillable_credentials_exist = false}));
   std::ignore = db().RemoveLoginsCreatedBetween(base::Time(), base::Time::Now(),
@@ -2974,7 +3187,7 @@ TEST_F(LoginDatabaseTest, IsEmptyCb_DeleteAndRecreateDatabaseFile) {
   std::ignore = db().AddLogin(GenerateExamplePasswordForm(), /*error=*/nullptr);
   ASSERT_TRUE(!db().IsEmpty().no_login_found &&
               db().IsEmpty().autofillable_credentials_exist);
-  EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptynessState{
+  EXPECT_CALL(is_empty_cb_, Run(LoginDatabase::LoginDatabaseEmptinessState{
                                 .no_login_found = true,
                                 .autofillable_credentials_exist = false}));
   db().DeleteAndRecreateDatabaseFile();

@@ -1198,6 +1198,7 @@
 <translation id="5587506661873751671">جارٍ التنزيل (%<ph name="DOWNLOAD_PERCENT" />)</translation>
 <translation id="558849140439112033">يُرجى السحب لتحديد منطقة لالتقاط صورة لها.</translation>
 <translation id="5590609058453685222">ميزة "التذكير بإعادة صوت الميكروفون" مفعَّلة. ستتلقّى إشعارًا إذا كنت تتحدث وصوت الميكروفون مكتوم.</translation>
+<translation id="5592745162308462420">fn</translation>
 <translation id="5596627076506792578">خيارات إضافية</translation>
 <translation id="5599242528220103262">اختصار لوحة المفاتيح غير مفعَّل</translation>
 <translation id="5600837773213129531">‏اضغط على Ctrl + Alt + Z لإيقاف التعليقات والملاحظات المنطوقة</translation>
@@ -1374,6 +1375,7 @@
 <translation id="6232891689835436217">يستخدم "<ph name="APP_NAME" />" الكاميرا والميكروفون حاليًا.</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="62380141479352646">تم تفعيل "توفير شحن البطارية" بسبب انخفاض طاقتها</translation>
+<translation id="6240603910551255087">الزر الأعلى</translation>
 <translation id="6247728804802644171">فتح الإشعارات</translation>
 <translation id="6249795363855770621">تعذَّر وضع علامة "مكتمل". يُرجى إعادة المحاولة عند الاتصال بالإنترنت.</translation>
 <translation id="6254629735336163724">تم القفل على الوضع الأفقي</translation>
@@ -2077,6 +2079,7 @@
 <translation id="906458777597946297">تكبير النافذة</translation>
 <translation id="9065203028668620118">تعديل</translation>
 <translation id="9070640332319875144">إعدادات المساعد</translation>
+<translation id="9071966355747967534">ميزة "<ph name="FEATURE_NAME" />" غير متاحة</translation>
 <translation id="9072519059834302790"><ph name="TIME_LEFT" /> حتى تصبح البطارية فارغة.</translation>
 <translation id="9074432941673450836">‏استخدِم التطبيقات لتنفيذ كل مهامك المطلوبة على <ph name="PRODUCT_NAME" />. وانتقِل إلى "مشغِّل التطبيقات" للعثور على كل تطبيقاتك. يمكنك أيضًا الضغط على مفتاح "مشغّل التطبيقات" (فوق مفتاح Shift الأيسر) في لوحة المفاتيح.</translation>
 <translation id="9074739597929991885">بلوتوث</translation>

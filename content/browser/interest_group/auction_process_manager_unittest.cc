@@ -77,14 +77,15 @@ class TestAuctionProcessManager
       auction_worklet::mojom::AuctionWorkletPermissionsPolicyStatePtr
           permissions_policy_state,
       std::optional<uint16_t> experiment_id) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   void LoadSellerWorklet(
       mojo::PendingReceiver<auction_worklet::mojom::SellerWorklet>
           seller_worklet,
-      mojo::PendingRemote<auction_worklet::mojom::AuctionSharedStorageHost>
-          shared_storage_host_remote,
+      std::vector<
+          mojo::PendingRemote<auction_worklet::mojom::AuctionSharedStorageHost>>
+          shared_storage_hosts,
       bool should_pause_on_start,
       mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory,
       mojo::PendingRemote<auction_worklet::mojom::AuctionNetworkEventsHandler>
@@ -95,7 +96,7 @@ class TestAuctionProcessManager
       auction_worklet::mojom::AuctionWorkletPermissionsPolicyStatePtr
           permissions_policy_state,
       std::optional<uint16_t> experiment_id) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   size_t NumReceivers() {

@@ -6,7 +6,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/web_contents.h"
+#include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -14,8 +14,6 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features_generated.h"
-#include "third_party/blink/public/mojom/device_posture/device_posture_provider.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -23,6 +21,30 @@ namespace content {
 namespace {
 
 constexpr char kBaseDataDir[] = "content/test/data/device_posture";
+
+class TestRenderWidgetHostObserver : public RenderWidgetHostObserver {
+ public:
+  explicit TestRenderWidgetHostObserver(RenderWidgetHost* widget_host)
+      : widget_host_(widget_host) {
+    widget_host_->AddObserver(this);
+  }
+
+  ~TestRenderWidgetHostObserver() override {
+    widget_host_->RemoveObserver(this);
+  }
+
+  // RenderWidgetHostObserver:
+  void RenderWidgetHostDidUpdateVisualProperties(
+      RenderWidgetHost* widget_host) override {
+    run_loop_.Quit();
+  }
+
+  void WaitForVisualPropertiesUpdate() { run_loop_.Run(); }
+
+ private:
+  raw_ptr<RenderWidgetHost> widget_host_ = nullptr;
+  base::RunLoop run_loop_;
+};
 
 class FoldableAPIsOriginTrialBrowserTest : public ContentBrowserTest {
  public:
@@ -48,10 +70,6 @@ class FoldableAPIsOriginTrialBrowserTest : public ContentBrowserTest {
   }
 
   void SetUpFoldableState() {
-    web_contents_impl()
-        ->GetDevicePostureProvider()
-        ->OverrideDevicePostureForEmulation(
-            blink::mojom::DevicePostureType::kFolded);
     const int kDisplayFeatureLength = 10;
     DisplayFeature emulated_display_feature{
         DisplayFeature::Orientation::kVertical,
@@ -63,6 +81,11 @@ class FoldableAPIsOriginTrialBrowserTest : public ContentBrowserTest {
     RenderWidgetHostImpl* root_widget =
         root->current_frame_host()->GetRenderWidgetHost();
     root_widget->SynchronizeVisualProperties();
+    // We need to wait that visual properties are updated before we test the
+    // CSS APIs of Viewport Segments.
+    while (root_widget->visual_properties_ack_pending_for_testing()) {
+      TestRenderWidgetHostObserver(root_widget).WaitForVisualPropertiesUpdate();
+    }
   }
 
   void TearDownOnMainThread() override {
@@ -80,8 +103,11 @@ class FoldableAPIsOriginTrialBrowserTest : public ContentBrowserTest {
 
   bool HasDevicePostureCSSApi() {
     return EvalJs(shell(),
+                  "window.matchMedia('(device-posture: continuous)').matches")
+               .ExtractBool() ||
+           EvalJs(shell(),
                   "window.matchMedia('(device-posture: folded)').matches")
-        .ExtractBool();
+               .ExtractBool();
   }
 
   bool HasViewportSegmentsApi() {

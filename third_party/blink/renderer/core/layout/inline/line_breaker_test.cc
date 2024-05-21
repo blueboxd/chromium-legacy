@@ -1104,7 +1104,7 @@ TEST_F(LineBreakerTest, BreakAtTrailingSpacesAfterAtomicInline) {
 // crbug.com/338437458
 TEST_F(LineBreakerTest, WideContentInRuby) {
   InlineNode node = CreateInlineNode(R"HTML(
-      <div id=container>
+      <div id=container style="text-wrap:nowrap">
       <ruby><div style="width:109162843px; margin-right:1000px"></div><div>
       a</div><rt>a</ruby>
       </div>)HTML");
@@ -1156,8 +1156,8 @@ TEST_F(LineBreakerTest, SetInputRange) {
 TEST_F(LineBreakerTest, CreateSubLineInfoAvailableWidth) {
   LoadAhem();
   InlineNode node = CreateInlineNode(R"HTML(
-      <div id=container style="font: 40px Ahem"><ruby><b>
-      foo bar foo bar foo bar foo bar foo bar
+      <div id=container style="font: 40px Ahem"><ruby style="text-wrap:nowrap">
+      <b>foo bar foo bar foo bar foo bar foo bar
       foo bar foo bar foo bar foo bar foo bar
       <button style="float:left;">f</button></b>
       <rt>annotation</ruby></div>)HTML");
@@ -1174,6 +1174,21 @@ TEST_F(LineBreakerTest, CreateSubLineInfoAvailableWidth) {
   // The line should contain the whole text.
   EXPECT_EQ(InlineItem::kOpenRubyColumn, line_info.Results()[1].item->Type());
   EXPECT_GE(line_info.Results()[1].ruby_column->base_line.EndTextOffset(), 79u);
+}
+
+// crbug.com/341142174 A crash with an overflowing continuation ruby column.
+TEST_F(LineBreakerTest, OverflowingContinuationRuby) {
+  InlineNode node = CreateInlineNode(R"HTML(
+<div id="container" style="width:1px; font-variant:small-caps;">
+<ruby>
+<q>
+AxBxC AxBxC
+</q>
+<rt>C b
+C AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+</ruby>)HTML");
+  ComputeMinMaxSizes(node);
+  // This test passes if no CHECK failures.
 }
 
 struct CanBreakInsideTestData {

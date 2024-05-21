@@ -13,6 +13,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresExtension;
 
+import org.chromium.net.CronetException;
+import org.chromium.net.RequestFinishedInfo;
+
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
@@ -25,8 +28,7 @@ class AndroidBidirectionalStreamCallbackWrapper
 
     public AndroidBidirectionalStreamCallbackWrapper(
             org.chromium.net.BidirectionalStream.Callback backend) {
-        Objects.requireNonNull(backend, "Callback is required.");
-        this.mBackend = backend;
+        this.mBackend = Objects.requireNonNull(backend, "Callback is required.");
     }
 
     @Override
@@ -84,7 +86,17 @@ class AndroidBidirectionalStreamCallbackWrapper
             android.net.http.UrlResponseInfo urlResponseInfo) {
         AndroidUrlResponseInfoWrapper specializedResponseInfo =
                 AndroidUrlResponseInfoWrapper.createForBidirectionalStream(urlResponseInfo);
-        mBackend.onSucceeded(mWrappedStream, specializedResponseInfo);
+        try {
+            mBackend.onSucceeded(mWrappedStream, specializedResponseInfo);
+        } finally {
+            // In a scenario where this throws, the side effect is that it will be propagated to
+            // CronetUrlRequest as an error in the callback and mess with the FinalUserCallbackThrew
+            // metrics. Because we catch most the exceptions, this side effect is negligible enough
+            // to
+            // not try to figure out a workaround.
+            mWrappedStream.maybeReportMetrics(
+                    RequestFinishedInfo.SUCCEEDED, specializedResponseInfo, null);
+        }
     }
 
     @Override
@@ -94,10 +106,15 @@ class AndroidBidirectionalStreamCallbackWrapper
             HttpException e) {
         AndroidUrlResponseInfoWrapper specializedResponseInfo =
                 AndroidUrlResponseInfoWrapper.createForBidirectionalStream(urlResponseInfo);
-        mBackend.onFailed(
-                mWrappedStream,
-                specializedResponseInfo,
-                CronetExceptionTranslationUtils.translateCheckedAndroidCronetException(e));
+        CronetException exception =
+                CronetExceptionTranslationUtils.translateCheckedAndroidCronetException(e);
+        try {
+            mBackend.onFailed(mWrappedStream, specializedResponseInfo, exception);
+        } finally {
+            // See comment in onSucceeded.
+            mWrappedStream.maybeReportMetrics(
+                    RequestFinishedInfo.FAILED, specializedResponseInfo, exception);
+        }
     }
 
     @Override
@@ -106,7 +123,13 @@ class AndroidBidirectionalStreamCallbackWrapper
             @Nullable android.net.http.UrlResponseInfo urlResponseInfo) {
         AndroidUrlResponseInfoWrapper specializedResponseInfo =
                 AndroidUrlResponseInfoWrapper.createForBidirectionalStream(urlResponseInfo);
-        mBackend.onCanceled(mWrappedStream, specializedResponseInfo);
+        try {
+            mBackend.onCanceled(mWrappedStream, specializedResponseInfo);
+        } finally {
+            // See comment in onSucceeded.
+            mWrappedStream.maybeReportMetrics(
+                    RequestFinishedInfo.CANCELED, specializedResponseInfo, null);
+        }
     }
 
     void setStream(AndroidBidirectionalStreamWrapper stream) {

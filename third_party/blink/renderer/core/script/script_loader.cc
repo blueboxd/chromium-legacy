@@ -28,10 +28,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
-#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
-#include "third_party/blink/public/mojom/permissions_policy/policy_disposition.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -537,31 +534,8 @@ network::mojom::CredentialsMode ScriptLoader::ModuleScriptCredentialsMode(
     case kCrossOriginAttributeUseCredentials:
       return network::mojom::CredentialsMode::kInclude;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return network::mojom::CredentialsMode::kOmit;
-}
-
-// https://github.com/WICG/document-policy/issues/2
-bool ShouldBlockSyncScriptForDocumentPolicy(
-    const ScriptElementBase* element,
-    ScriptLoader::ScriptTypeAtPrepare script_type,
-    bool parser_inserted) {
-  if (element->GetExecutionContext()->IsFeatureEnabled(
-          mojom::blink::DocumentPolicyFeature::kSyncScript)) {
-    return false;
-  }
-
-  // Non-classic scripts don't block parsing.
-  if (script_type == ScriptLoader::ScriptTypeAtPrepare::kModule ||
-      script_type == ScriptLoader::ScriptTypeAtPrepare::kImportMap ||
-      script_type == ScriptLoader::ScriptTypeAtPrepare::kSpeculationRules ||
-      script_type == ScriptLoader::ScriptTypeAtPrepare::kWebBundle ||
-      !parser_inserted)
-    return false;
-
-  if (!element->HasSourceAttribute())
-    return true;
-  return !element->DeferAttributeValue() && !element->AsyncAttributeValue();
 }
 
 // <specdef href="https://html.spec.whatwg.org/C/#prepare-the-script-element">
@@ -683,15 +657,6 @@ PendingScript* ScriptLoader::PrepareScript(
   // Step 19.
   if (!IsScriptForEventSupported())
     return nullptr;
-
-  if (ShouldBlockSyncScriptForDocumentPolicy(element_.Get(), GetScriptType(),
-                                             parser_inserted_)) {
-    context_window->ReportDocumentPolicyViolation(
-        mojom::blink::DocumentPolicyFeature::kSyncScript,
-        mojom::blink::PolicyDisposition::kEnforce,
-        "Synchronous script execution is disabled by Document Policy");
-    return nullptr;
-  }
 
   // 14. is handled below.
 
@@ -888,7 +853,7 @@ PendingScript* ScriptLoader::PrepareScript(
     // <spec step="29.9">Switch on el's type:</spec>
     switch (GetScriptType()) {
       case ScriptTypeAtPrepare::kInvalid:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         return nullptr;
 
       case ScriptTypeAtPrepare::kImportMap:
@@ -1010,7 +975,7 @@ PendingScript* ScriptLoader::PrepareScript(
 
     switch (GetScriptType()) {
       case ScriptTypeAtPrepare::kInvalid:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         return nullptr;
 
       case ScriptTypeAtPrepare::kImportMap: {
@@ -1327,7 +1292,7 @@ PendingScript* ScriptLoader::PrepareScript(
     }
 
     case ScriptSchedulingType::kNotSet:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return nullptr;
   }
 }

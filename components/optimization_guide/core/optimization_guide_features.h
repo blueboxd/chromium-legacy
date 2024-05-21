@@ -445,10 +445,6 @@ bool IsFreeDiskSpaceTooLowForOnDeviceModelInstall(
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 bool GetOnDeviceModelRetractUnsafeContent();
 
-// Returns true if the safety model must be used.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-bool GetOnDeviceModelMustUseSafetyModel();
-
 // Whether we should initiate download of the text safety classifier model.
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 bool ShouldUseTextSafetyClassifierModel();
@@ -486,6 +482,9 @@ COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 int GetOnDeviceModelDefaultTopK();
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 double GetOnDeviceModelDefaultTemperature();
+
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+std::vector<uint32_t> GetOnDeviceModelAllowedAdaptationRanks();
 
 }  // namespace features
 }  // namespace optimization_guide

@@ -30,7 +30,8 @@ class AutofillSuggestionGeneratorTestApi {
           AutofillSuggestionTriggerSource::kFormControlElementClicked) {
     return suggestion_generator_->GetProfilesToSuggest(
         trigger_field_type, field_contents, field_is_autofilled, field_types,
-        trigger_source);
+        suggestion_generator_->GetProfilesToSuggestOptions(
+            trigger_field_type, field_contents, trigger_source));
   }
 
   std::vector<CreditCard> GetOrderedCardsToSuggest(
@@ -48,11 +49,11 @@ class AutofillSuggestionGeneratorTestApi {
       const std::vector<raw_ptr<const AutofillProfile, VectorExperimental>>&
           profiles,
       const FieldTypeSet& field_types,
-      std::optional<FieldTypeSet> last_targeted_fields,
+      SuggestionType suggestion_type,
       FieldType trigger_field_type,
       uint64_t trigger_field_max_length) {
     return suggestion_generator_->CreateSuggestionsFromProfiles(
-        profiles, field_types, last_targeted_fields, trigger_field_type,
+        profiles, field_types, suggestion_type, trigger_field_type,
         trigger_field_max_length);
   }
 

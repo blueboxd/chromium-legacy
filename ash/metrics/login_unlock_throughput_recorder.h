@@ -93,7 +93,7 @@ class ASH_EXPORT LoginUnlockThroughputRecorder : public SessionObserver,
   void ResetScopedThroughputReporterBlockerForTesting();
 
   const ui::TotalAnimationThroughputReporter*
-  login_animation_throughput_reporter() const {
+  GetLoginAnimationThroughputReporterForTesting() const {
     return login_animation_throughput_reporter_.get();
   }
 
@@ -139,7 +139,7 @@ class ASH_EXPORT LoginUnlockThroughputRecorder : public SessionObserver,
     const base::TimeTicks time_ = base::TimeTicks::Now();
   };
 
-  void OnLoginAnimationFinish(
+  void OnCompositorAnimationFinished(
       base::TimeTicks start,
       const cc::FrameSequenceMetrics::CustomReportData& data);
 
@@ -149,7 +149,7 @@ class ASH_EXPORT LoginUnlockThroughputRecorder : public SessionObserver,
 
   void MaybeReportLoginFinished();
 
-  void OnLoginAnimationFinishedTimerFired();
+  void OnPostLoginDeferredTaskTimerFired();
 
   void MaybeRestoreDataLoaded();
 
@@ -176,7 +176,8 @@ class ASH_EXPORT LoginUnlockThroughputRecorder : public SessionObserver,
   // was received.
   base::flat_set<int> restore_windows_presented_;
 
-  base::TimeTicks primary_user_logged_in_;
+  std::optional<base::TimeTicks> timestamp_on_auth_success_;
+  std::optional<base::TimeTicks> timestamp_primary_user_logged_in_;
 
   bool shelf_initialized_ = false;
 
@@ -238,9 +239,9 @@ class ASH_EXPORT LoginUnlockThroughputRecorder : public SessionObserver,
 
   std::vector<TimeMarker> login_time_markers_;
 
-  // Timer that sets the limit to wait for the login animation to finish
-  // before scheduling post-login tasks.
-  base::OneShotTimer login_animation_finished_timer_;
+  // Timer that triggers post-login tasks in case the login animation is taking
+  // longer time than expected.
+  base::OneShotTimer post_login_deferred_task_timer_;
 
   // Deferred task runner for the post-login tasks.
   scoped_refptr<base::DeferredSequencedTaskRunner>

@@ -4,7 +4,7 @@
 
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 
-import {DESTINATION_MANAGER_STATE_CHANGED, DestinationManager} from './data/destination_manager.js';
+import {DESTINATION_MANAGER_SESSION_INITIALIZED, DESTINATION_MANAGER_STATE_CHANGED, DestinationManager} from './data/destination_manager.js';
 import {createCustomEvent} from './utils/event_utils.js';
 
 /**
@@ -14,8 +14,8 @@ import {createCustomEvent} from './utils/event_utils.js';
  * `destination-select` element to update.
  */
 
-export const DESTINATION_SELECT_SHOW_LOADING_CHANGED =
-    'destination-select.show-loading-changed';
+export const DESTINATION_SELECT_SHOW_LOADING_UI_CHANGED =
+    'destination-select.show-loading-ui-changed';
 
 // DestinationSelectController defines functionality used to update the
 // `destination-select` element.
@@ -30,24 +30,36 @@ export class DestinationSelectController extends EventTarget {
     super();
     eventTracker.add(
         this.destinationManager, DESTINATION_MANAGER_STATE_CHANGED,
-        (e: Event): void => this.onDestinationManagerStateChanged(e));
+        (): void => this.onDestinationManagerStateChanged());
+    eventTracker.add(
+        this.destinationManager, DESTINATION_MANAGER_SESSION_INITIALIZED,
+        (): void => this.onDestinationManagerSessionInitialized());
   }
 
-  // Returns whether destination manager has fetched initial destinations.
-  shouldShowLoading(): boolean {
-    return !this.destinationManager.hasLoadedAnInitialDestination();
+  // Returns whether destination manager has fetched initial destinations and
+  // is initialized.
+  shouldShowLoadingUi(): boolean {
+    return !this.destinationManager.isSessionInitialized() ||
+        !this.destinationManager.hasLoadedAnInitialDestination();
   }
 
   // Handles notifying UI to update when destination manager
   // state changes.
-  private onDestinationManagerStateChanged(_event: Event): void {
+  private onDestinationManagerStateChanged(): void {
     this.dispatchEvent(
-        createCustomEvent(DESTINATION_SELECT_SHOW_LOADING_CHANGED));
+        createCustomEvent(DESTINATION_SELECT_SHOW_LOADING_UI_CHANGED));
+  }
+
+  // Handles notifying UI to update when destination manager
+  // initialized state changes.
+  private onDestinationManagerSessionInitialized(): void {
+    this.dispatchEvent(
+        createCustomEvent(DESTINATION_SELECT_SHOW_LOADING_UI_CHANGED));
   }
 }
 
 declare global {
   interface HTMLElementEventMap {
-    [DESTINATION_SELECT_SHOW_LOADING_CHANGED]: CustomEvent<void>;
+    [DESTINATION_SELECT_SHOW_LOADING_UI_CHANGED]: CustomEvent<void>;
   }
 }

@@ -2134,6 +2134,9 @@ chromium-metrics-reviews@google.com.
   <int value="1255" label="ContextualGoogleIntegrationsConfiguration"/>
   <int value="1256" label="PdfViewerOutOfProcessIframeEnabled"/>
   <int value="1257" label="LockScreenAutoStartOnlineReauth"/>
+  <int value="1258" label="KeyboardFocusableScrollersEnabled"/>
+  <int value="1259" label="ExtensibleEnterpriseSSOEnabled"/>
+  <int value="1260" label="CSSCustomStateDeprecatedSyntaxEnabled"/>
 </enum>
 
 <enum name="EnterprisePoliciesSources">
@@ -2151,6 +2154,17 @@ chromium-metrics-reviews@google.com.
   <int value="4" label="EnrollmentOnly">
     There is no policy except CBCM enrollment token and option.
   </int>
+</enum>
+
+<enum name="EnterprisePolicyDeviceIdValidity">
+  <summary>
+    Defined as PolicyDeviceIdValidity in
+    components/policy/core/common/cloud/enterprise_metrics.h.
+  </summary>
+  <int value="0" label="Valid"/>
+  <int value="1" label="Actual device ID is unknown"/>
+  <int value="2" label="Missing"/>
+  <int value="3" label="Invalid"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

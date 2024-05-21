@@ -169,6 +169,7 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/primary_account_policy_manager_factory.h"
+#include "chrome/browser/signin/signin_metrics_service_factory.h"
 #include "chrome/browser/signin/signin_profile_attributes_updater_factory.h"
 #include "chrome/browser/ssl/https_first_mode_settings_tracker.h"
 #include "chrome/browser/ssl/sct_reporting_service_factory.h"
@@ -263,6 +264,7 @@
 #include "chrome/browser/media/android/cdm/media_drm_origin_id_manager_factory.h"
 #include "chrome/browser/search_resumption/start_suggest_service_factory.h"
 #include "chrome/browser/signin/signin_manager_android_factory.h"
+#include "chrome/browser/visited_url_ranking/visited_url_ranking_service_factory.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/proto/merchant_signal_db_content.pb.h"
 #else
@@ -402,6 +404,7 @@
 #include "chrome/browser/lacros/remote_apps/remote_apps_proxy_lacros_factory.h"
 #include "chrome/browser/speech/tts_client_factory_lacros.h"
 #include "chrome/browser/ui/startup/first_run_service.h"
+#include "chrome/browser/ui/webui/print_preview/extension_printer_service_provider_factory_lacros.h"
 #endif
 
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
@@ -1184,6 +1187,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
   SigninManagerFactory::GetInstance();
 #endif
+  SigninMetricsServiceFactory::GetInstance();
   SigninProfileAttributesUpdaterFactory::GetInstance();
   if (site_engagement::SiteEngagementService::IsEnabled()) {
     site_engagement::SiteEngagementServiceFactory::GetInstance();
@@ -1244,6 +1248,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   TriggeredProfileResetterFactory::GetInstance();
 #endif
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+  printing::ExtensionPrinterServiceProviderFactoryLacros::GetInstance();
   TtsClientFactoryLacros::GetInstance();
 #endif
 #if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
@@ -1261,6 +1266,11 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if !BUILDFLAG(IS_ANDROID)
   user_notes::UserNoteServiceFactory::EnsureFactoryBuilt();
   UserEducationServiceFactory::GetInstance();
+#endif
+#if BUILDFLAG(IS_ANDROID)
+  // TODO(crbug.com/340893655) Fix dangling pointer issue (on Mac) and enable
+  // for non-Android architectures.
+  visited_url_ranking::VisitedURLRankingServiceFactory::GetInstance();
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   web_app::IsolatedWebAppReaderRegistryFactory::GetInstance();

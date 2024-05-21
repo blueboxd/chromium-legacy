@@ -3568,7 +3568,6 @@
           '--extra-browser-args=--use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough --force_high_performance_gpu --enable-features=SkiaGraphite',
           '$$MAGIC_SUBSTITUTION_GPUWebGLRuntimeFile',
         ],
-        'ci_only': True,
         'swarming': {
           'shards': 3,
         },
@@ -5282,6 +5281,7 @@
         'test': 'webview_instrumentation_test_apk',
         'args': [
           '--disable-field-trial-config',
+          '--use-apk-under-test-flags-file',
         ],
         'swarming': {
           'shards': 12,
@@ -6516,6 +6516,39 @@
       },
     },
 
+    'chromeos_betty_vmlab_tests': {
+      'chromeos_chrome_all_tast_tests': {
+        'variants': [
+          'CROS_RELEASE_LKGM',
+        ],
+      },
+      'chromeos_chrome_criticalstaging_tast_tests': {
+        'variants': [
+          'CROS_RELEASE_LKGM',
+        ],
+      },
+      'chromeos_chrome_disabled_tast_tests': {
+        'variants': [
+          'CROS_RELEASE_LKGM',
+        ],
+      },
+      'chromeos_integration_tests_suite': {
+        'variants': [
+          'CROS_RELEASE_LKGM',
+        ],
+      },
+      'chromeos_system_friendly_gtests': {
+        'variants': [
+          'CROS_RELEASE_LKGM',
+        ],
+      },
+      'chromeos_vaapi_gtests': {
+        'variants': [
+          'CROS_RELEASE_LKGM',
+        ],
+      },
+    },
+
     'chromeos_brya_preuprev_tests': {
       'chromeos_chrome_cq_medium_tast_tests': {
         'variants': [
@@ -7419,11 +7452,17 @@
 
     'lacros_skylab_arm64': {
       'chromeos_integration_tests_suite': {
+        'mixins': [
+          'skylab-cft',
+        ],
         'variants': [
           'CROS_STRONGBAD_RELEASE_LKGM',
         ],
       },
       'lacros_skylab_tests': {
+        'mixins': [
+          'skylab-cft',
+        ],
         'variants': [
           'CROS_STRONGBAD_RELEASE_LKGM',
         ],

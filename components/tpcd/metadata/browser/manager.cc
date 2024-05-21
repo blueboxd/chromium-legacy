@@ -60,15 +60,6 @@ Manager::Manager(Parser* parser,
 
   rand_generator_ = std::make_unique<RandGenerator>();
 
-  if (base::FeatureList::IsEnabled(
-          content_settings::features::kHostIndexedMetadataGrants)) {
-    base::AutoLock lock(grants_lock_);
-    grants_ = content_settings::HostIndexedContentSettings();
-  } else {
-    base::AutoLock lock(grants_lock_);
-    grants_ = ContentSettingsForOneType();
-  }
-
   parser_->AddObserver(this);
   if (!parser_->GetMetadata().empty()) {
     OnMetadataReady();
@@ -96,20 +87,14 @@ bool Manager::IsAllowed(const GURL& url,
 }
 
 void Manager::SetGrants(const ContentSettingsForOneType& grants) {
-  if (base::FeatureList::IsEnabled(
-          content_settings::features::kHostIndexedMetadataGrants)) {
-    auto indices = content_settings::HostIndexedContentSettings::Create(grants);
-    if (indices.empty()) {
-      base::AutoLock lock(grants_lock_);
-      grants_ = content_settings::HostIndexedContentSettings();
-    } else {
-      CHECK_EQ(indices.size(), 1u);
-      base::AutoLock lock(grants_lock_);
-      grants_ = std::move(indices.front());
-    }
-  } else {
+  auto indices = content_settings::HostIndexedContentSettings::Create(grants);
+  if (indices.empty()) {
     base::AutoLock lock(grants_lock_);
-    grants_ = grants;
+    grants_ = content_settings::HostIndexedContentSettings();
+  } else {
+    CHECK_EQ(indices.size(), 1u);
+    base::AutoLock lock(grants_lock_);
+    grants_ = std::move(indices.front());
   }
 
   if (grants_sync_callback_) {
@@ -120,8 +105,7 @@ void Manager::SetGrants(const ContentSettingsForOneType& grants) {
 ContentSettingsForOneType Manager::BuildGrantsWithPredicate(
     base::FunctionRef<bool(const MetadataEntry&)> predicate) {
   base::flat_set<std::string> remove_keys;
-  if (base::FeatureList::IsEnabled(
-          net::features::kTpcdMetadataStagedRollback) &&
+  if (base::FeatureList::IsEnabled(net::features::kTpcdMetadataStageControl) &&
       local_state_) {
     const base::Value::Dict& dict = local_state_->GetDict(prefs::kCohorts);
     for (const auto itr : dict) {
@@ -149,12 +133,15 @@ ContentSettingsForOneType Manager::BuildGrantsWithPredicate(
     rule_metadata.set_tpcd_metadata_rule_source(
         Parser::ToRuleSource(metadata_entry.source()));
 
+    uint32_t elected_dtrp = ElectedDtrp(metadata_entry);
+    rule_metadata.set_tpcd_metadata_elected_dtrp(elected_dtrp);
+
     std::optional<content_settings::mojom::TpcdMetadataCohort> cohort;
 
     if (!Parser::IsDtrpEligible(
             Parser::ToRuleSource(metadata_entry.source())) ||
         !base::FeatureList::IsEnabled(
-            net::features::kTpcdMetadataStagedRollback)) {
+            net::features::kTpcdMetadataStageControl)) {
       cohort = content_settings::mojom::TpcdMetadataCohort::DEFAULT;
     }
 
@@ -180,7 +167,7 @@ ContentSettingsForOneType Manager::BuildGrantsWithPredicate(
     }
 
     if (!cohort.has_value()) {
-      cohort = rand_generator_->Generate() <= ElectedDtrp(metadata_entry)
+      cohort = rand_generator_->Generate() <= elected_dtrp
                    ? content_settings::mojom::TpcdMetadataCohort::
                          GRACE_PERIOD_FORCED_OFF
                    : content_settings::mojom::TpcdMetadataCohort::
@@ -209,8 +196,7 @@ ContentSettingsForOneType Manager::BuildGrantsWithPredicate(
                         /*incognito=*/false, std::move(rule_metadata));
   }
 
-  if (base::FeatureList::IsEnabled(
-          net::features::kTpcdMetadataStagedRollback) &&
+  if (base::FeatureList::IsEnabled(net::features::kTpcdMetadataStageControl) &&
       local_state_) {
     ScopedDictPrefUpdate update(local_state_, prefs::kCohorts);
     for (const auto& key : remove_keys) {
@@ -235,20 +221,12 @@ ContentSettingsForOneType Manager::GetGrants() const {
     return ContentSettingsForOneType();
   }
 
-  if (base::FeatureList::IsEnabled(
-          content_settings::features::kHostIndexedMetadataGrants)) {
     base::AutoLock lock(grants_lock_);
-    return GetContentSettingForOneType(
-        absl::get<content_settings::HostIndexedContentSettings>(grants_));
-  }
-
-  base::AutoLock lock(grants_lock_);
-  return absl::get<ContentSettingsForOneType>(grants_);
+    return GetContentSettingForOneType(grants_);
 }
 
 void Manager::ResetCohorts() {
-  if (!base::FeatureList::IsEnabled(
-          net::features::kTpcdMetadataStagedRollback)) {
+  if (!base::FeatureList::IsEnabled(net::features::kTpcdMetadataStageControl)) {
     return;
   }
 

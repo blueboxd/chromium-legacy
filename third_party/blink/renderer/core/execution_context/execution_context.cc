@@ -124,6 +124,13 @@ CodeCacheHost* ExecutionContext::GetCodeCacheHostFromContext(
   }
 
   DCHECK(execution_context->IsWorkletGlobalScope());
+
+  if (execution_context->IsSharedStorageWorkletGlobalScope()) {
+    auto* global_scope =
+        DynamicTo<WorkerOrWorkletGlobalScope>(execution_context);
+    return global_scope->GetCodeCacheHost();
+  }
+
   return nullptr;
 }
 
@@ -465,7 +472,7 @@ void ExecutionContext::ParseAndSetReferrerPolicy(
     policy_is_valid = (SecurityPolicy::ReferrerPolicyFromString(
         policy, kSupportReferrerPolicyLegacyKeywords, &referrer_policy));
   } else {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return;
   }
 

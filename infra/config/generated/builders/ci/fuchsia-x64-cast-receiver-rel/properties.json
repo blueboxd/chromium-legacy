@@ -47,12 +47,12 @@
           "builder": "fuchsia-x64-cast-receiver-rel",
           "group": "tryserver.chromium.fuchsia"
         }
-      ]
+      ],
+      "retry_failed_shards": true
     }
   },
   "$build/reclient": {
     "instance": "rbe-chromium-trusted",
-    "jobs": 500,
     "metrics_project": "chromium-reclient-metrics",
     "scandeps_server": true
   },

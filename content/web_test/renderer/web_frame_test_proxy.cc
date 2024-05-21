@@ -715,7 +715,8 @@ void WebFrameTestProxy::HandleWebAccessibilityEventForTest(
     case ax::mojom::Event::kWindowDeactivated:
     case ax::mojom::Event::kWindowVisibilityChanged:
       // Never fired from Blink.
-      NOTREACHED() << "Event not expected from Blink: " << event.event_type;
+      NOTREACHED_IN_MIGRATION()
+          << "Event not expected from Blink: " << event.event_type;
   }
 
   blink::WebDocument document = GetWebFrame()->GetDocument();
@@ -786,14 +787,24 @@ void WebFrameTestProxy::BlockTestUntilStart() {
 void WebFrameTestProxy::StartTest() {
   CHECK(!should_block_parsing_in_next_commit_);
   GetWebFrame()->FlushInputForTesting(base::BindOnce(
-      [](base::WeakPtr<RenderFrameImpl> render_frame) {
-        if (!render_frame || !render_frame->GetWebFrame()) {
+      [](base::WeakPtr<RenderFrameImpl> render_frame,
+         const TestRunner* test_runner) {
+        if (!render_frame) {
           return;
         }
 
-        render_frame->GetWebFrame()->ResumeParserForTesting();
+        auto* web_frame = render_frame->GetWebFrame();
+        if (!web_frame) {
+          return;
+        }
+
+        web_frame->ResumeParserForTesting();
+
+        if (test_runner->IsPrinting()) {
+          web_frame->WillPrintSoon();
+        }
       },
-      GetWeakPtr()));
+      GetWeakPtr(), this->test_runner_));
 }
 
 blink::FrameWidgetTestHelper*

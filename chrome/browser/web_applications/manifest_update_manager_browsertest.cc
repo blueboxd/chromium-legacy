@@ -1168,9 +1168,9 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
   WebAppInstallManagerObserverAdapter install_observer(
       &GetProvider().install_manager());
   install_observer.SetWebAppInstalledDelegate(base::BindLambdaForTesting(
-      [](const webapps::AppId& app_id) { NOTREACHED(); }));
+      [](const webapps::AppId& app_id) { NOTREACHED_IN_MIGRATION(); }));
   install_observer.SetWebAppUninstalledDelegate(base::BindLambdaForTesting(
-      [](const webapps::AppId& app_id) { NOTREACHED(); }));
+      [](const webapps::AppId& app_id) { NOTREACHED_IN_MIGRATION(); }));
 
   // CSS #RRGGBBAA syntax.
   OverrideManifest(kManifestTemplate, {kInstallableIconList, "#00FF00F0"});
@@ -5521,7 +5521,7 @@ IN_PROC_BROWSER_TEST_P(
     ending_stage = starting_stage;  // No icon change.
     expected_shortcut_colors_if_updated = expected_shortcut_colors_before;
   } else {
-    NOTREACHED();  // Unhandled test input.
+    NOTREACHED_IN_MIGRATION();  // Unhandled test input.
   }
 
   OverrideManifest(kManifestTemplate, {app_name, starting_stage});
@@ -5536,7 +5536,7 @@ IN_PROC_BROWSER_TEST_P(
   } else if (IsWebApp()) {
     app_id = InstallWebApp();
   } else {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   const WebApp* web_app = GetProvider().registrar_unsafe().GetAppById(app_id);

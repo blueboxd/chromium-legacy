@@ -503,7 +503,7 @@ bool ChromePasswordProtectionService::IsInExcludedCountry() {
     return false;
   }
   return base::Contains(safe_browsing::GetExcludedCountries(),
-                        variations_service->GetStoredPermanentCountry());
+                        variations_service->GetLatestCountry());
 }
 
 void ChromePasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
@@ -660,7 +660,7 @@ void ChromePasswordProtectionService::OnUserAction(
           UserMetricsAction("PasswordProtection.ModalWarning.CloseWarning"));
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
   RemoveWarningRequestsByWebState(web_state);

@@ -11,7 +11,6 @@
 #include "base/strings/strcat.h"
 #include "content/browser/preloading/preloading.h"
 #include "content/browser/preloading/preloading_config.h"
-#include "content/browser/preloading/prerender/prerender_features.h"
 #include "content/public/browser/preloading.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -219,7 +218,8 @@ void PreloadingAttemptImpl::RecordPreloadingAttemptMetrics(
     // instance does not have the opportunity to set the
     // `is_accurate_triggering_` flag to true in this case.
     if (preloading_type_ != PreloadingType::kPrefetch) {
-      if (!base::FeatureList::IsEnabled(features::kPrerender2NoVarySearch)) {
+      if (!base::FeatureList::IsEnabled(
+              blink::features::kPrerender2NoVarySearch)) {
         // TODO(crbug.com/41494389): is_accurate_triggering_ needs to be updated
         // accordingly in the case when prerender is matched via No-Vary-Search
         // matching.

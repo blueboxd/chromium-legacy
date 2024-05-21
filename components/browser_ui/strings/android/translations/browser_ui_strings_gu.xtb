@@ -68,7 +68,6 @@
 <translation id="2241587408274973373">નવા ટૅબ પેજ કાર્ડ</translation>
 <translation id="2241634353105152135">માત્ર એક વખત</translation>
 <translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> કાઢી નાખો</translation>
-<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{1 સાઇટને બ્લૉક કરી}one{# સાઇટને બ્લૉક કરી}other{# સાઇટને બ્લૉક કરી}}</translation>
 <translation id="228293613124499805">તમે મુલાકાત લો છો તે મોટાભાગની સાઇટ કદાચ તમારા ડિવાઇસ પરનો ડેટા સાચવે છે, ઘણીવાર તમારી પસંદગીઓ કે તમે સાઇટ સાથે શેર કરો છો તે માહિતીને સાચવીને તમારા અનુભવને બહેતર બનાવવા માટે આમ કરવામાં આવે છે. અમે આ સેટિંગ ચાલુ રાખવાનો સુઝાવ આપીએ છીએ.</translation>
 <translation id="2289270750774289114">જ્યારે કોઈ સાઇટ નજીકના બ્લૂટૂથ ડિવાઇસને શોધવા માગે ત્યારે પૂછો (સુઝાવ આપેલ)</translation>
 <translation id="2315043854645842844">ઓપરેટિંગ સિસ્ટમ દ્વારા ક્લાઇન્ટ તરફની પ્રમાણપત્ર પસંદગી સપોર્ટ કરતી નથી.</translation>
@@ -305,6 +304,7 @@
 <translation id="6015775454662021376">આ સાઇટના તમારા ડિવાઇસના ઍક્સેસનું નિયંત્રણ કરો</translation>
 <translation id="6040143037577758943">બંધ કરો</translation>
 <translation id="6042308850641462728">વધુ</translation>
+<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> તમારું છેલ્લું ટૅબ</translation>
 <translation id="6064125863973209585">પૂર્ણ થયેલા ડાઉનલોડ</translation>
 <translation id="6071501408666570960">તમને આ સાઇટમાંથી સાઇન આઉટ કરવામાં આવી શકે છે</translation>
 <translation id="6120483543004435978">ચાલુ હોય ત્યારે, તમે સક્રિય રીતે ક્યારે તમારા ડિવાઇસનો ઉપયોગ કરો છે તે જાણવા માટે સાઇટ પૂછી શકે છે. બંધ હોય ત્યારે, તમે સક્રિય રીતે ક્યારે તમારા ડિવાઇસનો ઉપયોગ કરો છે તે જાણી શકતી નથી.</translation>
@@ -426,6 +426,7 @@
 <translation id="7986741934819883144">સંપર્ક પસંદ કરો</translation>
 <translation id="7990211076305263060">ચાલુ હોય ત્યારે, સાઇટ તમારા માઇક્રોફોનનો ઉપયોગ કરવાનું પૂછી શકે છે. બંધ હોય ત્યારે, સાઇટ તમારા માઇક્રોફોનનો ઉપયોગ કરી શકતી નથી.</translation>
 <translation id="8007176423574883786">આ ઉપકરણ માટે બંધ કર્યું</translation>
+<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> <ph name="FROM_DEVICE" />માંથી</translation>
 <translation id="802154636333426148">ડાઉનલોડ નિષ્ફળ થયું</translation>
 <translation id="8042586301629853791">આ પ્રમાણે સૉર્ટ કરો:</translation>
 <translation id="8067883171444229417">વીડિયો ચલાવો</translation>
@@ -480,7 +481,6 @@
 <translation id="8721719390026067591">ચાલુ હોય ત્યારે, સાઇટ બ્લૂટૂથ ડિવાઇસ શોધવાનું પૂછી શકે છે. બંધ હોય ત્યારે, સાઇટ બ્લૂટૂથ ડિવાઇસ શોધી શકતી નથી.</translation>
 <translation id="8725066075913043281">ફરી પ્રયાસ કરો</translation>
 <translation id="8730621377337864115">થઈ ગયું</translation>
-<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{1 સાઇટને મંજૂરી આપી}one{# સાઇટને મંજૂરી આપી}other{# સાઇટને મંજૂરી આપી}}</translation>
 <translation id="8751914237388039244">છબી પસંદ કરો</translation>
 <translation id="8800034312320686233">સાઇટ કામ નથી કરતી?</translation>
 <translation id="8801436777607969138">કોઈ ચોક્કસ સાઇટ માટે JavaScriptને બ્લૉક કરો.</translation>

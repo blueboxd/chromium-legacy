@@ -161,9 +161,14 @@ class Widget::PaintAsActiveLockImpl : public Widget::PaintAsActiveLock {
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, InitParams:
 
-Widget::InitParams::InitParams() = default;
+Widget::InitParams::InitParams()
+    : InitParams(NATIVE_WIDGET_OWNS_WIDGET, TYPE_WINDOW) {}
 
-Widget::InitParams::InitParams(Type type) : type(type) {}
+Widget::InitParams::InitParams(Type type)
+    : InitParams(NATIVE_WIDGET_OWNS_WIDGET, type) {}
+
+Widget::InitParams::InitParams(Ownership ownership, Type type)
+    : type(type), ownership(ownership) {}
 
 Widget::InitParams::InitParams(InitParams&& other) = default;
 
@@ -1097,6 +1102,10 @@ void Widget::RunShellDrag(View* view,
                           const gfx::Point& location,
                           int operation,
                           ui::mojom::DragEventSource source) {
+  if (view) {
+    CHECK_EQ(view->GetWidget(), this);
+  }
+
   if (!native_widget_)
     return;
   dragged_view_ = view;

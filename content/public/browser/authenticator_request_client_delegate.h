@@ -205,6 +205,10 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
     // unlike security keys) because, like hybrid, the user has taken some
     // action to send the request to the enclave.
     kEnclaveError,
+    // kEnclaveCancel means that the user canceled an enclave transaction.
+    // At the time of writing the only way to trigger this is to cancel the
+    // Windows Hello user verification dialog.
+    kEnclaveCancel,
   };
 
   // RequestSource enumerates the source of a request, which is either the Web
@@ -361,6 +365,12 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // Optionally configures the user entity passed for a makeCredential request.
   virtual void SetUserEntityForMakeCredentialRequest(
       const device::PublicKeyCredentialUserEntity& user_entity);
+
+  // Returns a list of `FidoDiscoveryBase` instances that can instantiate an
+  // embedder-specific platform authenticator for handling WebAuthn requests.
+  // The discoveries' `transport()` must be `FidoTransportProtocol::kInternal`.
+  virtual std::vector<std::unique_ptr<device::FidoDiscoveryBase>>
+  CreatePlatformDiscoveries();
 
   // device::FidoRequestHandlerBase::Observer:
   void OnTransportAvailabilityEnumerated(

@@ -119,7 +119,7 @@ void AccountSelectionModalView::AddProgressBar() {
   has_progress_bar_ = true;
 }
 
-void AccountSelectionModalView::UpdateModalPositionAndTitle() {
+void AccountSelectionModalView::UpdateDialogPosition() {
   constrained_window::UpdateWebContentsModalDialogPosition(
       GetWidget(),
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents_)
@@ -137,7 +137,7 @@ void AccountSelectionModalView::InitDialogWidget() {
   }
 
   if (dialog_widget_) {
-    UpdateModalPositionAndTitle();
+    UpdateDialogPosition();
     return;
   }
 
@@ -146,7 +146,7 @@ void AccountSelectionModalView::InitDialogWidget() {
   if (!widget) {
     return;
   }
-  UpdateModalPositionAndTitle();
+  UpdateDialogPosition();
 
   // Add the widget observer, if available. It is null in tests.
   if (widget_observer_) {
@@ -533,7 +533,7 @@ void AccountSelectionModalView::ShowFailureDialog(
     const std::optional<std::u16string>& iframe_for_display,
     const std::u16string& idp_for_display,
     const content::IdentityProviderMetadata& idp_metadata) {
-  NOTREACHED()
+  NOTREACHED_IN_MIGRATION()
       << "ShowFailureDialog is only implemented for AccountSelectionBubbleView";
 }
 
@@ -543,7 +543,7 @@ void AccountSelectionModalView::ShowErrorDialog(
     const std::u16string& idp_for_display,
     const content::IdentityProviderMetadata& idp_metadata,
     const std::optional<TokenError>& error) {
-  NOTREACHED()
+  NOTREACHED_IN_MIGRATION()
       << "ShowErrorDialog is only implemented for AccountSelectionBubbleView";
 }
 
@@ -591,8 +591,9 @@ void AccountSelectionModalView::ShowRequestPermissionDialog(
 
 void AccountSelectionModalView::ShowSingleReturningAccountDialog(
     const std::vector<IdentityProviderDisplayData>& idp_data_list) {
-  NOTREACHED() << "ShowSingleReturningAccountDialog is only implemented for "
-                  "AccountSelectionBubbleView";
+  NOTREACHED_IN_MIGRATION()
+      << "ShowSingleReturningAccountDialog is only implemented for "
+         "AccountSelectionBubbleView";
 }
 
 std::unique_ptr<views::View>

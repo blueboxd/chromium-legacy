@@ -190,7 +190,7 @@ DlpRulesManager::Level IsDataTransferAllowed(
     }
 
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 
   return level;
@@ -339,10 +339,11 @@ void DataTransferDlpController::PasteIfAllowed(
     return;
   }
 
-  if (absl::holds_alternative<size_t>(pasted_content)) {
-    size_t size = absl::get<size_t>(pasted_content);
-    ContinuePasteIfClipboardRestrictionsAllow(source, destination, size, rfh,
-                                              std::move(paste_cb));
+  if (absl::holds_alternative<size_t>(pasted_content) &&
+      absl::get<size_t>(pasted_content) > 0) {
+    ContinuePasteIfClipboardRestrictionsAllow(source, destination,
+                                              absl::get<size_t>(pasted_content),
+                                              rfh, std::move(paste_cb));
     return;
   }
 
@@ -421,7 +422,7 @@ void DataTransferDlpController::ReportWarningProceededEvent(
   }
 
   if (data_dst.has_value() && IsVM(data_dst->type())) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   } else {
     const std::string src_url = (data_src.has_value() && data_src->IsUrlType())
                                     ? data_src->GetURL()->spec()
@@ -626,7 +627,7 @@ void DataTransferDlpController::ContinueDropIfAllowed(
       break;
 
     case DlpRulesManager::Level::kNotSet:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 
   const bool is_drop_allowed = (level == DlpRulesManager::Level::kAllow) ||

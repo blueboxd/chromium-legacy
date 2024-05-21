@@ -782,7 +782,8 @@ void ExternalVideoEncoder::OnCreateVideoEncodeAccelerator(
       codec_profile = media::H264PROFILE_MAIN;
       break;
     case VideoCodec::kUnknown:
-      NOTREACHED() << "Fake software video encoder cannot be external";
+      NOTREACHED_IN_MIGRATION()
+          << "Fake software video encoder cannot be external";
       [[fallthrough]];
     default:
       cast_environment_->PostTask(
@@ -889,8 +890,8 @@ double QuantizerEstimator::EstimateForKeyFrame(const VideoFrame& frame) {
   const int row_skip = size.height() / rows_in_subset;
   int y = 0;
   for (int i = 0; i < rows_in_subset; ++i, y += row_skip) {
-    const uint8_t* const row_begin = frame.visible_data(VideoFrame::kYPlane) +
-                                     y * frame.stride(VideoFrame::kYPlane);
+    const uint8_t* const row_begin = frame.visible_data(VideoFrame::Plane::kY) +
+                                     y * frame.stride(VideoFrame::Plane::kY);
     const uint8_t* const row_end = row_begin + size.width();
     int left_hand_pixel_value = static_cast<int>(*row_begin);
     for (const uint8_t* p = row_begin + 1; p < row_end; ++p) {
@@ -935,8 +936,8 @@ double QuantizerEstimator::EstimateForDeltaFrame(const VideoFrame& frame) {
   const int row_skip = size.height() / rows_in_subset;
   int y = 0;
   for (int i = 0; i < rows_in_subset; ++i, y += row_skip) {
-    const uint8_t* const row_begin = frame.visible_data(VideoFrame::kYPlane) +
-                                     y * frame.stride(VideoFrame::kYPlane);
+    const uint8_t* const row_begin = frame.visible_data(VideoFrame::Plane::kY) +
+                                     y * frame.stride(VideoFrame::Plane::kY);
     const uint8_t* const row_end = row_begin + size.width();
     uint8_t* const last_frame_row_begin =
         last_frame_pixel_buffer_.get() + i * size.width();
@@ -962,7 +963,7 @@ double QuantizerEstimator::EstimateForDeltaFrame(const VideoFrame& frame) {
 // static
 bool QuantizerEstimator::CanExamineFrame(const VideoFrame& frame) {
   DCHECK_EQ(8, VideoFrame::PlaneHorizontalBitsPerPixel(frame.format(),
-                                                       VideoFrame::kYPlane));
+                                                       VideoFrame::Plane::kY));
   return media::IsYuvPlanar(frame.format()) && !frame.visible_rect().IsEmpty();
 }
 

@@ -46,6 +46,8 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/autofill/address_bubbles_controller.h"
 #include "chrome/browser/ui/autofill/autofill_field_promo_controller_impl.h"
+#include "chrome/browser/ui/autofill/delete_address_profile_dialog_controller_impl.h"
+#include "chrome/browser/ui/autofill/edit_address_profile_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/autofill_snackbar_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/chrome_payments_autofill_client.h"
 #include "chrome/browser/ui/autofill/payments/credit_card_scanner_controller.h"
@@ -67,6 +69,7 @@
 #include "components/autofill/content/browser/autofill_log_router_factory.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/content/browser/renderer_forms_with_server_predictions.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_optimization_guide.h"
 #include "components/autofill/core/browser/autofill_plus_address_delegate.h"
@@ -75,7 +78,6 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/form_data_importer.h"
-#include "components/autofill/core/browser/payments/credit_card_risk_based_authenticator.h"
 #include "components/autofill/core/browser/payments/iban_access_manager.h"
 #include "components/autofill/core/browser/payments/mandatory_reauth_manager.h"
 #include "components/autofill/core/browser/payments/offer_notification_options.h"
@@ -98,6 +100,8 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
+#include "components/password_manager/core/browser/form_parsing/form_data_parser.h"
+#include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_setting.h"
 #include "components/password_manager/core/browser/password_manager_settings_service.h"
@@ -121,8 +125,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
-#include "delete_address_profile_dialog_controller_impl.h"
-#include "edit_address_profile_dialog_controller_impl.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/origin.h"
@@ -321,15 +323,6 @@ MerchantPromoCodeManager* ChromeAutofillClient::GetMerchantPromoCodeManager() {
   return MerchantPromoCodeManagerFactory::GetForProfile(profile);
 }
 
-CreditCardRiskBasedAuthenticator*
-ChromeAutofillClient::GetRiskBasedAuthenticator() {
-  if (!risk_based_authenticator_) {
-    risk_based_authenticator_ =
-        std::make_unique<CreditCardRiskBasedAuthenticator>(this);
-  }
-  return risk_based_authenticator_.get();
-}
-
 PrefService* ChromeAutofillClient::GetPrefs() {
   return const_cast<PrefService*>(std::as_const(*this).GetPrefs());
 }
@@ -501,7 +494,7 @@ void ChromeAutofillClient::ShowAutofillSettings(
     case FillingProduct::kPassword:
     case FillingProduct::kPlusAddresses:
     case FillingProduct::kNone:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 #else
   Browser* browser = chrome::FindBrowserWithTab(web_contents());
@@ -520,7 +513,7 @@ void ChromeAutofillClient::ShowAutofillSettings(
       case FillingProduct::kPassword:
       case FillingProduct::kPlusAddresses:
       case FillingProduct::kNone:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
     }
   }
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -589,20 +582,6 @@ void ChromeAutofillClient::HideVirtualCardEnrollBubbleAndIconIfVisible() {
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
-void ChromeAutofillClient::ShowWebauthnOfferDialog(
-    WebauthnDialogCallback offer_dialog_callback) {
-  WebauthnDialogControllerImpl::GetOrCreateForPage(
-      web_contents()->GetPrimaryPage())
-      ->ShowOfferDialog(std::move(offer_dialog_callback));
-}
-
-void ChromeAutofillClient::ShowWebauthnVerifyPendingDialog(
-    WebauthnDialogCallback verify_pending_dialog_callback) {
-  WebauthnDialogControllerImpl::GetOrCreateForPage(
-      web_contents()->GetPrimaryPage())
-      ->ShowVerifyPendingDialog(std::move(verify_pending_dialog_callback));
-}
-
 void ChromeAutofillClient::UpdateWebauthnOfferDialogWithError() {
   WebauthnDialogControllerImpl* controller =
       WebauthnDialogControllerImpl::GetForPage(
@@ -852,7 +831,7 @@ void ChromeAutofillClient::HideTouchToFillCreditCard() {
   touch_to_fill_payment_method_controller_.Hide();
 #else
   // Touch To Fill is not supported on Desktop.
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 #endif
 }
 
@@ -1237,6 +1216,45 @@ void ChromeAutofillClient::set_test_addresses(
 base::span<const AutofillProfile> ChromeAutofillClient::GetTestAddresses()
     const {
   return test_addresses_;
+}
+
+AutofillClient::PasswordFormType ChromeAutofillClient::ClassifyAsPasswordForm(
+    AutofillManager& manager,
+    FormGlobalId form_id,
+    FieldGlobalId field_id) const {
+  // Find the form with `form_id` and decompose into renderer forms.
+  std::optional<RendererFormsWithServerPredictions> forms_and_predictions =
+      RendererFormsWithServerPredictions::FromBrowserForm(manager, form_id);
+  if (!forms_and_predictions) {
+    return PasswordFormType::kNoPasswordForm;
+  }
+
+  // Find the form to which `field_id` belongs.
+  auto it = base::ranges::find_if(
+      forms_and_predictions->renderer_forms,
+      [field_id](const std::pair<FormData, content::GlobalRenderFrameHostId>&
+                     form_rfh_pair) {
+        const FormData& form = form_rfh_pair.first;
+        return base::ranges::find(form.fields, field_id,
+                                  &FormFieldData::global_id) !=
+               form.fields.end();
+      });
+  if (it == forms_and_predictions->renderer_forms.end()) {
+    return PasswordFormType::kNoPasswordForm;
+  }
+
+  password_manager::FormDataParser parser;
+  // The driver id is irrelevant here because it would only be used by password
+  // manager logic that handles the `PasswordForm` returned by the parser.
+  parser.set_predictions(password_manager::ConvertToFormPredictions(
+      /*driver_id=*/0, it->first, forms_and_predictions->predictions));
+  // The parser can use stored usernames to identify a filled username field by
+  // the value it contains. Here it remains empty.
+  std::unique_ptr<password_manager::PasswordForm> pw_form =
+      parser.Parse(it->first, password_manager::FormDataParser::Mode::kFilling,
+                   /*stored_usernames=*/{});
+  return pw_form ? pw_form->GetPasswordFormType()
+                 : PasswordFormType::kNoPasswordForm;
 }
 
 }  // namespace autofill

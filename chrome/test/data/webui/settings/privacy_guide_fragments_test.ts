@@ -9,7 +9,7 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import type {PrivacyGuideCompletionFragmentElement, PrivacyGuideCookiesFragmentElement, PrivacyGuideDescriptionItemElement, PrivacyGuideHistorySyncFragmentElement, PrivacyGuideMsbbFragmentElement, PrivacyGuideSafeBrowsingFragmentElement, PrivacyGuideWelcomeFragmentElement, SettingsCollapseRadioButtonElement, SettingsRadioGroupElement} from 'chrome://settings/lazy_load.js';
 import {CookiePrimarySetting, SafeBrowsingSetting} from 'chrome://settings/lazy_load.js';
 import type {SettingsPrefsElement, SyncPrefs} from 'chrome://settings/settings.js';
-import {CrSettingsPrefs, MetricsBrowserProxyImpl, OpenWindowProxyImpl, PrivacyGuideInteractions, PrivacyGuideSettingsStates, Router, routes, SyncBrowserProxyImpl, syncPrefsIndividualDataTypes} from 'chrome://settings/settings.js';
+import {CrSettingsPrefs, MetricsBrowserProxyImpl, OpenWindowProxyImpl, PrivacyGuideInteractions, PrivacyGuideSettingsStates, resetRouterForTesting, Router, routes, SyncBrowserProxyImpl, syncPrefsIndividualDataTypes} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {TestOpenWindowProxy} from 'chrome://webui-test/test_open_window_proxy.js';
 import {eventToPromise, isChildVisible} from 'chrome://webui-test/test_util.js';
@@ -34,6 +34,8 @@ suite('WelcomeFragment', function() {
 
   setup(function() {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
+
+    assertTrue(loadTimeData.getBoolean('showPrivacyGuide'));
     fragment = document.createElement('privacy-guide-welcome-fragment');
     document.body.appendChild(fragment);
     return flushTasks();
@@ -64,10 +66,12 @@ suite('MsbbFragment', function() {
   });
 
   setup(function() {
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+
+    assertTrue(loadTimeData.getBoolean('showPrivacyGuide'));
     testMetricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.setInstance(testMetricsBrowserProxy);
 
-    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     fragment = document.createElement('privacy-guide-msbb-fragment');
     fragment.prefs = settingsPrefs.prefs!;
     document.body.appendChild(fragment);
@@ -154,13 +158,15 @@ suite('HistorySyncFragment', function() {
   let testMetricsBrowserProxy: TestMetricsBrowserProxy;
 
   setup(function() {
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+
+    assertTrue(loadTimeData.getBoolean('showPrivacyGuide'));
     testMetricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.setInstance(testMetricsBrowserProxy);
     syncBrowserProxy = new TestSyncBrowserProxy();
     syncBrowserProxy.testSyncStatus = null;
     SyncBrowserProxyImpl.setInstance(syncBrowserProxy);
 
-    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     fragment = document.createElement('privacy-guide-history-sync-fragment');
     document.body.appendChild(fragment);
 
@@ -393,15 +399,19 @@ suite('SafeBrowsingFragment', function() {
 
   suiteSetup(function() {
     loadTimeData.overrideValues({enableFriendlierSafeBrowsingSettings: true});
+    resetRouterForTesting();
+
     settingsPrefs = document.createElement('settings-prefs');
     return CrSettingsPrefs.initialized;
   });
 
   setup(function() {
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+
+    assertTrue(loadTimeData.getBoolean('showPrivacyGuide'));
     testMetricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.setInstance(testMetricsBrowserProxy);
 
-    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     fragment = document.createElement('privacy-guide-safe-browsing-fragment');
     fragment.prefs = settingsPrefs.prefs!;
     document.body.appendChild(fragment);
@@ -532,6 +542,7 @@ suite('SafeBrowsingFragment', function() {
         enableFriendlierSafeBrowsingSettings: true,
         enableHashPrefixRealTimeLookups: false,
       });
+      resetRouterForTesting();
     });
 
     test('StandardProtectionDescription', function() {
@@ -556,6 +567,7 @@ suite('SafeBrowsingFragment', function() {
         enableFriendlierSafeBrowsingSettings: true,
         enableHashPrefixRealTimeLookups: true,
       });
+      resetRouterForTesting();
     });
 
     test('StandardProtectionDescriptionWithProxy', function() {
@@ -569,6 +581,7 @@ suite('SafeBrowsingFragment', function() {
       assertEquals(spSubLabel, standardProtection.subLabel);
     });
   });
+
   // TODO(crbug.com/40923883): Remove once friendlier safe browsing settings
   // standard protection is launched.
   suite('HashPrefixRealTimeEnabled_FriendlierSettingsDisabled', function() {
@@ -577,6 +590,7 @@ suite('SafeBrowsingFragment', function() {
         enableFriendlierSafeBrowsingSettings: false,
         enableHashPrefixRealTimeLookups: true,
       });
+      resetRouterForTesting();
     });
 
     test('NotUpdatedStandardProtectionDescription', function() {
@@ -617,6 +631,7 @@ suite('SafeBrowsingFragment', function() {
         enableFriendlierSafeBrowsingSettings: false,
         enableHashPrefixRealTimeLookups: false,
       });
+      resetRouterForTesting();
     });
 
     // TODO(crbug.com/40923883): Remove once friendlier safe browsing settings
@@ -685,10 +700,12 @@ suite('CookiesFragment', function() {
   });
 
   setup(function() {
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+
+    assertTrue(loadTimeData.getBoolean('showPrivacyGuide'));
     testMetricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.setInstance(testMetricsBrowserProxy);
 
-    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     fragment = document.createElement('privacy-guide-cookies-fragment');
     fragment.prefs = settingsPrefs.prefs!;
     document.body.appendChild(fragment);
@@ -805,15 +822,18 @@ suite('CompletionFragment', function() {
       isPrivacySandboxRestricted: false,
       isPrivacySandboxRestrictedNoticeEnabled: false,
     });
+    resetRouterForTesting();
   });
 
   setup(function() {
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+
+    assertTrue(loadTimeData.getBoolean('showPrivacyGuide'));
     testMetricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.setInstance(testMetricsBrowserProxy);
     openWindowProxy = new TestOpenWindowProxy();
     OpenWindowProxyImpl.setInstance(openWindowProxy);
 
-    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     fragment = document.createElement('privacy-guide-completion-fragment');
     document.body.appendChild(fragment);
 
@@ -921,10 +941,13 @@ suite('CompletionFragmentPrivacySandboxRestricted', function() {
       isPrivacySandboxRestricted: true,
       isPrivacySandboxRestrictedNoticeEnabled: false,
     });
+    resetRouterForTesting();
   });
 
   setup(function() {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
+
+    assertTrue(loadTimeData.getBoolean('showPrivacyGuide'));
     fragment = document.createElement('privacy-guide-completion-fragment');
     document.body.appendChild(fragment);
 
@@ -967,10 +990,13 @@ suite(
           isPrivacySandboxRestricted: true,
           isPrivacySandboxRestrictedNoticeEnabled: true,
         });
+        resetRouterForTesting();
       });
 
       setup(function() {
         document.body.innerHTML = window.trustedTypes!.emptyHTML;
+
+        assertTrue(loadTimeData.getBoolean('showPrivacyGuide'));
         fragment = document.createElement('privacy-guide-completion-fragment');
         document.body.appendChild(fragment);
 
@@ -999,10 +1025,13 @@ suite('CompletionFragmentWithoutTrackingProtection', function() {
       isPrivacySandboxRestrictedNoticeEnabled: false,
       enableTrackingProtectionRolloutUx: false,
     });
+    resetRouterForTesting();
   });
 
   setup(function() {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
+
+    assertTrue(loadTimeData.getBoolean('showPrivacyGuide'));
     fragment = document.createElement('privacy-guide-completion-fragment');
     document.body.appendChild(fragment);
 

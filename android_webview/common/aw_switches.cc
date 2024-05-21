@@ -23,6 +23,10 @@ const char kWebViewSafebrowsingBlockAllResources[] =
 // tint. This is useful for identifying WebViews in an Android application.
 const char kHighlightAllWebViews[] = "highlight-all-webviews";
 
+// Enable net logging from WebView. This captures network activity for debugging
+// purposes, and stores the files in DevUi.
+const char kNetLog[] = "net-log";
+
 // WebView will log additional debugging information to logcat, such as
 // variations and commandline state.
 const char kWebViewVerboseLogging[] = "webview-verbose-logging";
@@ -90,5 +94,9 @@ const char kWebViewForceCrashJava[] = "webview-force-crash-java";
 
 // Enables crashes during WebView startup in the Native layer
 const char kWebViewForceCrashNative[] = "webview-force-crash-native";
+
+// Use WebView's context for resource lookups instead of the embedding app's.
+const char kWebViewUseSeparateResourceContext[] =
+    "webview-use-separate-resource-context";
 
 }  // namespace switches

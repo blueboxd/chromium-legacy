@@ -252,7 +252,7 @@ void StyleRuleBase::FinalizeGarbageCollectedObject() {
       To<StyleRulePositionTry>(this)->~StyleRulePositionTry();
       return;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 StyleRuleBase* StyleRuleBase::Copy() const {
@@ -281,7 +281,7 @@ StyleRuleBase* StyleRuleBase::Copy() const {
       return To<StyleRuleSupports>(this)->Copy();
     case kImport:
       // FIXME: Copy import rules.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return nullptr;
     case kKeyframes:
       return To<StyleRuleKeyframes>(this)->Copy();
@@ -294,7 +294,7 @@ StyleRuleBase* StyleRuleBase::Copy() const {
     case kCharset:
     case kKeyframe:
     case kFunction:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return nullptr;
     case kContainer:
       return To<StyleRuleContainer>(this)->Copy();
@@ -307,7 +307,7 @@ StyleRuleBase* StyleRuleBase::Copy() const {
     case kPositionTry:
       return To<StyleRulePositionTry>(this)->Copy();
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 
@@ -403,7 +403,7 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(wtf_size_t position_hint,
     case kCharset:
     case kPageMargin:
     case kFunction:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return nullptr;
   }
   if (parent_rule) {
@@ -707,7 +707,8 @@ void StyleRuleScope::SetPreludeText(const ExecutionContext* execution_context,
                                     StyleSheetContents* style_sheet) {
   auto* parser_context =
       MakeGarbageCollected<CSSParserContext>(*execution_context);
-  Vector<CSSParserToken, 32> tokens = CSSTokenizer(value).TokenizeToEOF();
+  CSSTokenizer tokenizer(value);
+  Vector<CSSParserToken, 32> tokens = tokenizer.TokenizeToEOF();
 
   StyleRule* old_parent = style_scope_->RuleForNesting();
   style_scope_ =
@@ -809,13 +810,12 @@ Vector<String> StyleRuleLayerStatement::GetNamesAsStrings() const {
 StyleRulePage::StyleRulePage(CSSSelectorList* selector_list,
                              CSSPropertyValueSet* properties,
                              HeapVector<Member<StyleRuleBase>> child_rules)
-    : StyleRuleBase(kPage),
+    : StyleRuleGroup(kPage, std::move(child_rules)),
       properties_(properties),
-      selector_list_(selector_list),
-      child_rules_(std::move(child_rules)) {}
+      selector_list_(selector_list) {}
 
 StyleRulePage::StyleRulePage(const StyleRulePage& page_rule)
-    : StyleRuleBase(page_rule),
+    : StyleRuleGroup(page_rule),
       properties_(page_rule.properties_->MutableCopy()),
       selector_list_(page_rule.selector_list_->Copy()) {}
 
@@ -830,8 +830,7 @@ void StyleRulePage::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(properties_);
   visitor->Trace(layer_);
   visitor->Trace(selector_list_);
-  visitor->Trace(child_rules_);
-  StyleRuleBase::TraceAfterDispatch(visitor);
+  StyleRuleGroup::TraceAfterDispatch(visitor);
 }
 
 StyleRulePageMargin::StyleRulePageMargin(CSSAtRuleID id,

@@ -353,13 +353,13 @@ class WebSocketStreamCreateHelper
   std::unique_ptr<WebSocketHandshakeStreamBase> CreateHttp2Stream(
       base::WeakPtr<SpdySession> session,
       std::set<std::string> dns_aliases) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return nullptr;
   }
   std::unique_ptr<WebSocketHandshakeStreamBase> CreateHttp3Stream(
       std::unique_ptr<QuicChromiumClientSession::Handle> session,
       std::set<std::string> dns_aliases) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return nullptr;
   }
 };
@@ -970,12 +970,12 @@ class TestBidirectionalDelegate : public BidirectionalStreamImpl::Delegate {
     response_headers_ = response_headers.Clone();
     loop_.Quit();
   }
-  void OnDataRead(int bytes_read) override { NOTREACHED(); }
-  void OnDataSent() override { NOTREACHED(); }
+  void OnDataRead(int bytes_read) override { NOTREACHED_IN_MIGRATION(); }
+  void OnDataSent() override { NOTREACHED_IN_MIGRATION(); }
   void OnTrailersReceived(const spdy::Http2HeaderBlock& trailers) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
-  void OnFailed(int error) override { NOTREACHED(); }
+  void OnFailed(int error) override { NOTREACHED_IN_MIGRATION(); }
   base::RunLoop loop_;
   spdy::Http2HeaderBlock response_headers_;
 };
@@ -1675,7 +1675,7 @@ TEST_F(HttpStreamFactoryTest,
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+      features::kPartitionConnectionsByNetworkIsolationKey);
 
   url::SchemeHostPort scheme_host_port("http", "myproxy.org", 443);
   auto session_deps = std::make_unique<SpdySessionDependencies>(

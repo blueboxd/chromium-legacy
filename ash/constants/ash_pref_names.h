@@ -176,6 +176,9 @@ inline constexpr char kEduCoexistenceToSVersion[] =
 inline constexpr char kEduCoexistenceToSAcceptedVersion[] =
     "family_link_user.edu_coexistence_tos_accepted_version";
 
+// A string pref that stores the PIN used to unlock parental app controls.
+inline constexpr char kOnDeviceAppControlsPin[] = "on_device_app_controls.pin";
+
 // A boolean pref indicating if a PIN has been set up for on-device apps
 // parental controls.
 inline constexpr char kOnDeviceAppControlsSetupCompleted[] =
@@ -508,10 +511,6 @@ inline constexpr char kAccessibilityMonoAudioEnabled[] =
 // A boolean pref which determines if mouse keys are enabled.
 inline constexpr char kAccessibilityMouseKeysEnabled[] =
     "settings.a11y.mouse_keys.enabled";
-// A boolean pref which determines if mouse keys is automatically disabled in
-// text fields.
-inline constexpr char kAccessibilityMouseKeysDisableInTextFields[] =
-    "settings.a11y.mouse_keys.disable_in_text_fields";
 // A double pref which determines the acceleration of mouse keys as a scale
 // factor ranging from 0-1 (0%-100%) inclusive.
 inline constexpr char kAccessibilityMouseKeysAcceleration[] =
@@ -520,6 +519,10 @@ inline constexpr char kAccessibilityMouseKeysAcceleration[] =
 // minimum speed.
 inline constexpr char kAccessibilityMouseKeysMaxSpeed[] =
     "settings.a11y.mouse_keys.max_speed";
+// A boolean pref which determines if you use mouse keys with the primary keys
+// or the num pad.
+inline constexpr char kAccessibilityMouseKeysUsePrimaryKeys[] =
+    "settings.a11y.mouse_keys.use_primary_keys";
 // An integer pref which determines if mouse keys uses left or right hand keys.
 // Values are from the ash::MouseKeysDominantHand enum.
 inline constexpr char kAccessibilityMouseKeysDominantHand[] =
@@ -2192,6 +2195,9 @@ inline constexpr char kBirchUseFileSuggest[] = "ash.birch.use_file_suggest";
 
 // A boolean pref indicating whether Birch should use recent tab data.
 inline constexpr char kBirchUseRecentTabs[] = "ash.birch.use_recent_tabs";
+
+// A boolean pref indicating whether Birch should use self share data.
+inline constexpr char kBirchUseSelfShare[] = "ash.birch.use_self_share";
 
 // A boolean pref indicating whether Birch should use weather data.
 inline constexpr char kBirchUseWeather[] = "ash.birch.use_weather";

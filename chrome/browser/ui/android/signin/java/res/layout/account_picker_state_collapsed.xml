@@ -15,16 +15,11 @@ found in the LICENSE file.
 
     <include layout="@layout/account_picker_bottom_sheet_header" />
 
-    <View
-        style="@style/HorizontalDivider"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"/>
-
     <LinearLayout
         android:id="@+id/account_picker_selected_account"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
+        android:foreground="?attr/selectableItemBackground"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:layout_marginTop="8dp"
@@ -36,6 +31,7 @@ found in the LICENSE file.
         <include layout="@layout/account_row" />
 
         <ImageView
+            android:id="@+id/account_picker_selected_account_expand_icon"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginStart="16dp"
@@ -53,5 +49,11 @@ found in the LICENSE file.
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"
         android:text="@string/signin_account_picker_dismiss_button" />
+
+    <Space
+        android:id="@+id/account_picker_dismiss_button_gone_margin_space"
+        android:visibility="gone"
+        android:layout_height="8dp"
+        android:layout_width="match_parent" />
 
 </LinearLayout>

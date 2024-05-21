@@ -433,7 +433,7 @@ String StylePropertySerializer::CommonShorthandChecks(
     const StylePropertyShorthand& shorthand) const {
   unsigned longhand_count = shorthand.length();
   if (!longhand_count || longhand_count > kMaxShorthandExpansion) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return g_empty_string;
   }
 
@@ -701,7 +701,7 @@ String StylePropertySerializer::SerializeShorthand(
     case CSSPropertyID::kPositionTry:
       return PositionTryValue();
     default:
-      NOTREACHED()
+      NOTREACHED_IN_MIGRATION()
           << "Shorthand property "
           << CSSPropertyName(property_id).ToAtomicString()
           << " must be handled in StylePropertySerializer::SerializeShorthand.";
@@ -808,7 +808,7 @@ bool StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
         result.Append(" / ");
         break;
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
     }
   }
   result.Append(value);
@@ -1647,7 +1647,9 @@ String StylePropertySerializer::GetLayeredShorthandValue(
         }
         omit_value = true;
       }
+
       if (property->IDEquals(CSSPropertyID::kTransitionBehavior)) {
+        CHECK_EQ(shorthand.id(), CSSPropertyID::kTransition);
         auto* ident = DynamicTo<CSSIdentifierValue>(value);
         CHECK(ident) << " transition-behavior should only have a "
                         "CSSIdentifierValue for a value. CssText: "
@@ -1659,6 +1661,36 @@ String StylePropertySerializer::GetLayeredShorthandValue(
           // TODO(http://crbug.com/501673): We should have a better solution
           // before fixing all CSS properties to fix the above bug.
           omit_value = true;
+        }
+      }
+      if (RuntimeEnabledFeatures::CSSTransitionShorterSerializationEnabled()) {
+        // The transition shorthand should only serialize values which aren't
+        // set to their default value:
+        // https://github.com/web-platform-tests/wpt/issues/43574
+        if (property->IDEquals(CSSPropertyID::kTransitionDelay) ||
+            property->IDEquals(CSSPropertyID::kTransitionDuration)) {
+          auto* numeric_value = DynamicTo<CSSNumericLiteralValue>(value);
+          if (numeric_value && numeric_value->IsZero()) {
+            omit_value = true;
+          }
+        } else if (property->IDEquals(
+                       CSSPropertyID::kTransitionTimingFunction)) {
+          if (auto* ident = DynamicTo<CSSIdentifierValue>(value)) {
+            if (ident->GetValueID() == CSSValueID::kEase) {
+              omit_value = true;
+            }
+          }
+        } else if (property->IDEquals(CSSPropertyID::kTransitionProperty)) {
+          if (auto* custom_ident = DynamicTo<CSSCustomIdentValue>(value)) {
+            if (custom_ident->IsKnownPropertyID() &&
+                custom_ident->ValueAsPropertyID() == CSSPropertyID::kAll) {
+              omit_value = true;
+            }
+          } else if (auto* ident = DynamicTo<CSSIdentifierValue>(value)) {
+            if (ident->GetValueID() == CSSValueID::kAll) {
+              omit_value = true;
+            }
+          }
         }
       }
 
@@ -1755,6 +1787,13 @@ String StylePropertySerializer::GetLayeredShorthandValue(
     }
     if (shorthand.id() == CSSPropertyID::kMask && layer_result.empty()) {
       layer_result.Append(getValueName(CSSValueID::kNone));
+    }
+    if (RuntimeEnabledFeatures::CSSTransitionShorterSerializationEnabled() &&
+        shorthand.id() == CSSPropertyID::kTransition && layer_result.empty()) {
+      // When serializing the transition shorthand, we omit all values which are
+      // set to their defaults. If everything is set to the default, then emit
+      // "all" instead of an empty string.
+      layer_result.Append("all");
     }
     if (!layer_result.empty()) {
       if (!result.empty()) {

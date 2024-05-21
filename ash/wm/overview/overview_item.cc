@@ -32,6 +32,7 @@
 #include "ash/wm/overview/scoped_overview_hide_windows.h"
 #include "ash/wm/raster_scale/raster_scale_controller.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
+#include "ash/wm/splitview/layout_divider_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_mini_view_header_view.h"
@@ -47,7 +48,9 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/user_metrics.h"
 #include "base/trace_event/trace_event.h"
+#include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
+#include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
@@ -388,31 +391,28 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
 
   // Run at the exit of this function to update rounded corners, shadow and the
   // cannot snap widget.
-  base::ScopedClosureRunner at_exit_runner(base::BindOnce(
-      [](base::WeakPtr<OverviewItem> item,
-         OverviewAnimationType animation_type) {
-        if (!item.get()) {
-          return;
-        }
+  // TODO(dcheng): This can probably just capture `this`.
+  absl::Cleanup at_exit_runner = [item = weak_ptr_factory_.GetWeakPtr(),
+                                  new_animation_type] {
+    CHECK(item);
 
-        // Shadow is normally set after an animation is finished. In the case of
-        // no animations, manually set the shadow. Shadow relies on both the
-        // window transform and `item_widget_`'s new bounds so set it after
-        // `SetItemBounds()` and `UpdateHeaderLayout()`. Do not apply the shadow
-        // for drop target.
-        if (animation_type == OVERVIEW_ANIMATION_NONE) {
-          item->UpdateRoundedCornersAndShadow();
-        }
+    // Shadow is normally set after an animation is finished. In the case of
+    // no animations, manually set the shadow. Shadow relies on both the
+    // window transform and `item_widget_`'s new bounds so set it after
+    // `SetItemBounds()` and `UpdateHeaderLayout()`. Do not apply the shadow
+    // for drop target.
+    if (new_animation_type == OVERVIEW_ANIMATION_NONE) {
+      item->UpdateRoundedCornersAndShadow();
+    }
 
-        if (RoundedLabelWidget* widget = item->cannot_snap_widget_.get()) {
-          SetWidgetBoundsAndMaybeAnimateTransform(
-              widget,
-              widget->GetBoundsCenteredIn(
-                  ToStableSizeRoundedRect(item->GetTargetBoundsWithInsets())),
-              animation_type, nullptr);
-        }
-      },
-      weak_ptr_factory_.GetWeakPtr(), new_animation_type));
+    if (RoundedLabelWidget* widget = item->cannot_snap_widget_.get()) {
+      SetWidgetBoundsAndMaybeAnimateTransform(
+          widget,
+          widget->GetBoundsCenteredIn(
+              ToStableSizeRoundedRect(item->GetTargetBoundsWithInsets())),
+          new_animation_type, nullptr);
+    }
+  };
 
   // For non minimized or tucked windows, we simply apply the transform and
   // update the header.
@@ -744,40 +744,18 @@ void OverviewItem::CloseWindows() {
 }
 
 void OverviewItem::Restack() {
+  aura::Window* parent_window = transform_window_.window()->parent();
+  aura::Window* stacking_target = GetStackBelowTarget();
   aura::Window* window = GetWindow();
-  aura::Window* parent_window = window->parent();
-  aura::Window* stacking_target = nullptr;
-
-  // Stack `window` below the split view window if split view is active.
-  SplitViewController* split_view_controller =
-      SplitViewController::Get(root_window_);
-  if (split_view_controller->InSplitViewMode()) {
-    aura::Window* snapped_window =
-        split_view_controller->GetDefaultSnappedWindow();
-    if (snapped_window->parent() == parent_window) {
-      stacking_target = snapped_window;
-    }
-  }
-  // Stack `window` below the last window in `overview_grid_` that comes before
-  // `window` and has the same parent.
-  for (const std::unique_ptr<OverviewItemBase>& overview_item :
-       overview_grid_->window_list()) {
-    if (overview_item.get() == this ||
-        overview_item.get() == overview_grid_->drop_target()) {
-      break;
-    }
-
-    if (overview_item->GetWindow()->parent() == parent_window) {
-      stacking_target = overview_item->item_widget()->GetNativeWindow();
-    }
-  }
-
   if (stacking_target) {
     DCHECK_EQ(parent_window, stacking_target->parent());
     parent_window->StackChildBelow(window, stacking_target);
   }
-  DCHECK_EQ(parent_window, item_widget_->GetNativeWindow()->parent());
-  parent_window->StackChildBelow(item_widget_->GetNativeWindow(), window);
+
+  auto* item_widget_window = item_widget_->GetNativeWindow();
+  DCHECK_EQ(parent_window, item_widget_window->parent());
+  parent_window->StackChildBelow(item_widget_window, window);
+
   if (cannot_snap_widget_) {
     DCHECK_EQ(parent_window, cannot_snap_widget_->GetNativeWindow()->parent());
     parent_window->StackChildAbove(cannot_snap_widget_->GetNativeWindow(),
@@ -1040,8 +1018,18 @@ void OverviewItem::OnWindowBoundsChanged(aura::Window* window,
   // Do not update the overview item if the window is to be snapped into split
   // view. It will be removed from overview soon and will update overview grid
   // at that moment.
-  if (SplitViewController::Get(window)->IsWindowInTransitionalState(window))
+  if (SplitViewController::Get(window)->IsWindowInTransitionalState(window)) {
     return;
+  }
+
+  // During the `OnWindowParentChanged()`, there's a possibility that the parent
+  // window might be null, leading to the OverviewItem not being correctly added
+  // to the intended display. Early return here so that The `OverviewItem` can
+  // be added to the correct display when `OnWindowParentChanged()` is called
+  // again and the parent window is not null.
+  if (root_window_ != window->GetRootWindow()) {
+    return;
+  }
 
   if (reason == ui::PropertyChangeReason::NOT_FROM_ANIMATION)
     overview_item_view_->RefreshPreviewView();
@@ -1125,9 +1113,9 @@ void OverviewItem::CreateItemWidget(
 
   item_widget_ = std::make_unique<views::Widget>();
   item_widget_->set_focus_on_creation(false);
-  item_widget_->Init(CreateOverviewItemWidgetParams(
-      transform_window_.window()->parent(), "OverviewItemWidget",
-      /*accept_events=*/true));
+  item_widget_->Init(CreateOverviewItemWidgetParams(GetWindow()->parent(),
+                                                    "OverviewItemWidget",
+                                                    /*accept_events=*/true));
   aura::Window* widget_window = item_widget_->GetNativeWindow();
   widget_window->parent()->StackChildBelow(widget_window, GetWindow());
   // Overview uses custom animations so remove the default ones.
@@ -1191,6 +1179,45 @@ void OverviewItem::OnItemBoundsAnimationEnded() {
   }
 }
 
+aura::Window* OverviewItem::GetStackBelowTarget() const {
+  aura::Window* stacking_target = nullptr;
+  aura::Window* window = transform_window_.window();
+  aura::Window* parent_window = window->parent();
+
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(root_window_);
+  if (split_view_controller->InSplitViewMode()) {
+    aura::Window* snapped_window =
+        split_view_controller->GetDefaultSnappedWindow();
+    if (snapped_window->parent() == parent_window) {
+      stacking_target = snapped_window;
+    }
+  }
+
+  // Find the last window in `overview_grid_` that comes before `window` and has
+  // the same parent.
+  for (const std::unique_ptr<OverviewItemBase>& overview_item :
+       overview_grid_->window_list()) {
+    // `overview_item` could represent an overview group item, which would never
+    // be strictly equal to this. However, the group item would contain `this`.
+    // Using `Contains()` ensures `this` check works correctly for both single
+    // overview items and group items.
+    if (overview_item->Contains(window) ||
+        overview_item.get() == overview_grid_->drop_target()) {
+      break;
+    }
+
+    // The parent window of `overview_item` can be different than
+    // `parent_window`, particularly when `overview_item` represents a float
+    // window.
+    if (overview_item->GetWindow()->parent() == parent_window) {
+      stacking_target = overview_item->item_widget()->GetNativeWindow();
+    }
+  }
+
+  return stacking_target;
+}
+
 void OverviewItem::PerformItemSpawnedAnimation(
     aura::Window* window,
     const gfx::Transform& target_transform) {
@@ -1244,7 +1271,7 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
 
   SCOPED_CRASH_KEY_NUMBER(
       "b/320479135", "win_type",
-      static_cast<int>(window->GetProperty(aura::client::kAppType)));
+      static_cast<int>(window->GetProperty(chromeos::kAppTypeKey)));
 
   SCOPED_CRASH_KEY_STRING32("b/320479135", "rw_bounds",
                             root_window_->GetBoundsInScreen().ToString());

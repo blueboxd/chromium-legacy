@@ -58,6 +58,7 @@ De tilladelser, du har givet til websites og apps, gælder muligvis for denne ko
 <translation id="2018879682492276940">Installationen mislykkedes. Prøv igen.</translation>
 <translation id="2020032459870799438">Du kan tjekke, om dine andre adgangskoder er beskyttet mod brud på datasikkerheden og andre sikkerhedsproblemer ved at <ph name="BEGIN_LINK" />logge ind på Chromium<ph name="END_LINK" />.</translation>
 <translation id="2049376729098081731">Vælg, om du vil inkludere Chromium-historikken for at få mere personligt tilpassede oplevelser i Googles tjenester</translation>
+<translation id="2065461321550902389">Log ind i Chromium for at gemme og bruge adgangskoder med mere på alle dine enheder. Denne adgangskode gemmes på din Google-konto, når du er logget ind.</translation>
 <translation id="2086476982681781442">Chromium har blokeret denne download, fordi filen er vildledende og kan foretage uventede ændringer på din enhed</translation>
 <translation id="2088953378266246249">Oplysninger om, hvordan Chromium administrerer sine rodcertifikater</translation>
 <translation id="2120965832000301375">{COUNT,plural, =1{Din organisation sletter automatisk browserdata, når Chromium ikke bruges i 1 minut. Disse kan omfatte historik, autofyld og downloads. Dine faner forbliver åbne.}one{Din organisation sletter automatisk browserdata, når Chromium ikke bruges i # minut. Disse kan omfatte historik, autofyld og downloads. Dine faner forbliver åbne.}other{Din organisation sletter automatisk browserdata, når Chromium ikke bruges i # minutter. Disse kan omfatte historik, autofyld og downloads. Dine faner forbliver åbne.}}</translation>
@@ -123,6 +124,7 @@ De tilladelser, du har givet til websites og apps, gælder muligvis for denne ko
 <translation id="3155163173539279776">Genstart Chromium</translation>
 <translation id="3179665906251668410">Åbn linket i et Chromium-inko&amp;gnitovindue</translation>
 <translation id="3185330573522821672">Tilpas din nye Chromium-profil</translation>
+<translation id="318879170965183683">Du kan bruge dine adgangskoder på din Google-konto i Chromium, når du er logget ind</translation>
 <translation id="3190315855212034486">Hov! Chromium er gået ned. Vil du genstarte nu?</translation>
 <translation id="3224847870593914902">Hvis du vil fjerne din Google-konto fra Chromium, skal du logge ud af Chromium på siden Indstillinger</translation>
 <translation id="3258596308407688501">Chromium kan ikke læse og skrive til sin datamappe:
@@ -144,6 +146,7 @@ De tilladelser, du har givet til websites og apps, gælder muligvis for denne ko
 <translation id="3474745554856756813">Denne handling sletter <ph name="ITEMS_COUNT" /> elementer på denne enhed. Hvis du senere vil hente dine data igen, skal du logge ind på Chromium som <ph name="USER_EMAIL" />.</translation>
 <translation id="3497319089134299931"><ph name="SHORTCUT" /> kan skifte mellem Chromium-profiler</translation>
 <translation id="3509308970982693815">Luk alle Chromium-vinduer, og prøv igen.</translation>
+<translation id="3530103706039034513"><ph name="EXISTING_USER" /> er allerede logget ind.  Hvis du vil holde din browsing adskilt, skal du logge ind i Chromium på din egen profil som <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="3533435340678213462">Vi sletter automatisk de interesser, der er ældre end 4 uger, for at beskytte dit privatliv. Mens du surfer, kan en interesse vises på listen igen. Du kan også fjerne interesser, som du ikke vil have, at Chromium skal tage med i betragtning.</translation>
 <translation id="3567254597502212821">Din browserhistorik, dvs. en oversigt over, hvilke websites du har besøgt i Chromium på denne enhed</translation>
 <translation id="3639635944603682591">Brugerens browserdata slettes fra denne enhed. Log ind på Chromium som <ph name="USER_EMAIL" /> for at gendanne dataene.</translation>
@@ -203,6 +206,8 @@ De tilladelser, du har givet til websites og apps, gælder muligvis for denne ko
 <translation id="4501471624619070934">Installationen mislykkedes, fordi der er begrænset adgang i dette land.</translation>
 <translation id="4510853178268397146">Denne udvidelse har ikke offentliggjort privatlivsprocedurer, f.eks. hvordan den indsamler og bruger data. Chromium anbefaler, at du fjerner den.</translation>
 <translation id="452711251841752011">Velkommen til Chromium – Et nyt browservindue er åbnet</translation>
+<translation id="4531137820806573936">Chromium skal have tilladelse til at registrere dine omgivelser og håndbevægelser</translation>
+<translation id="4536805923587466102">Du er allerede logget ind som <ph name="USER_EMAIL_ADDRESS" /> på en anden Chromium-profil</translation>
 <translation id="4544142686420020088">Chromium kunne ikke opdateres, da der opstod en fejl. <ph name="BEGIN_LINK" />Løs problemer med opdatering af Chromium og mislykkede opdateringer.<ph name="END_LINK" /></translation>
 <translation id="454579500955453258">Vil du fortsætte på en ny Chromium-profil?</translation>
 <translation id="4567424176335768812">Du er logget ind som <ph name="USER_EMAIL_ADDRESS" />. Nu kan du få adgang til dine bogmærker, din historik og andre indstillinger på alle de enheder, hvor du er logget ind.</translation>
@@ -304,7 +309,6 @@ De tilladelser, du har givet til websites og apps, gælder muligvis for denne ko
 <translation id="6248213926982192922">Gør Chromium til din standardbrowser</translation>
 <translation id="6266342355635466082">Chromium kan ikke søge efter opdateringer. Prøv at tjekke din internetforbindelse.</translation>
 <translation id="6268381023930128611">Vil du logge ud af Chromium?</translation>
-<translation id="6273793429163604305">Klar…</translation>
 <translation id="6281746429495226318">Tilpas din Chromium-profil</translation>
 <translation id="6290827346642914212">Giv din Chromium-profil et navn</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> kan være skadelig, så Chromium har blokeret den.</translation>
@@ -312,6 +316,7 @@ De tilladelser, du har givet til websites og apps, gælder muligvis for denne ko
 <translation id="6327105987658262776">Der er ingen opdatering tilgængelig.</translation>
 <translation id="6333502561965082103">En anden handling i Chromium er i gang. Prøv igen senere.</translation>
 <translation id="6334986366598267305">Det er nu blevet nemmere at bruge Chromium med din Google-konto og på delte computere.</translation>
+<translation id="6347933965114150440">Chromium-genvej</translation>
 <translation id="6366160072964553914">Chromium har blokeret denne download, fordi filen normalt ikke downloades og kan være skadelig</translation>
 <translation id="6373523479360886564">Er du sikker på, at du vil afinstallere Chromium?</translation>
 <translation id="6375219077595103062">Tilføj en genvej til Adgangs­kode­admin­istrator</translation>
@@ -376,7 +381,6 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="718435575166326686">Chromium skal have adgangstilladelse til kamera for at bruge dette website</translation>
 <translation id="7196312274710523067">Chromium kunne ikke startes. Prøv igen.</translation>
 <translation id="7197677400338048821">Chromium kan ikke tjekke dine adgangskoder. Prøv igen efter 24 timer.</translation>
-<translation id="7198365860059291213">Chromium skal have adgangstilladelse til omgivelsesforståelse og registrering af håndbevægelser for at starte en session i maksimaltilstand</translation>
 <translation id="7213407614656404070">Brug Chromium, hver gang du klikker på links i beskeder, dokumenter og andre apps</translation>
 <translation id="7223968959479464213">Jobliste – Chromium</translation>
 <translation id="7246575524853130370">Dine interesser, sådan som de er estimeret af Chromium</translation>
@@ -433,6 +437,7 @@ Chromium kan ikke gendanne dine præferencer.</translation>
 <translation id="81770708095080097">Denne fil er farlig, så Chromium har blokeret den.</translation>
 <translation id="8232193495299001329">Chromium kan ikke verificere, hvor denne udvidelse kommer fra, og den kan derfor være skadelig. Du bør fjerne udvidelsen fra Chromium, så den ikke længere kan se og ændre dine data på de websites, du besøger, bl.a. dine personlige oplysninger.</translation>
 <translation id="8248265253516264921">Hvis et billede ikke har en brugbar beskrivelse, forsøger Chromium at angive en for dig. Billederne sendes til Google, så der kan oprettes beskrivelser. Du kan til enhver tid deaktivere denne funktion i indstillingerne.</translation>
+<translation id="8254601181414348851">Vil du logge ind i Chromium med en ny profil?</translation>
 <translation id="8266560134891435528">Chromium kan ikke tjekke dine adgangskoder, da du ikke er logget ind</translation>
 <translation id="8286943863733751221"><ph name="BEGIN_LINK" />Chromium advarer dig<ph name="END_LINK" /> om usikre websites og downloads</translation>
 <translation id="8290862415967981663">Denne fil kan være farlig, så Chromium har blokeret den.</translation>
@@ -454,7 +459,6 @@ Chromium kan ikke gendanne dine præferencer.</translation>
 <translation id="8555465886620020932">Tjenestefejl: <ph name="SERVICE_ERROR" />.</translation>
 <translation id="8568283329061645092">Chromium kan tjekke dine adgangskoder, når du er logget ind med din Google-konto</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Forfatterne bag Chromium. Alle rettigheder forbeholdes.</translation>
-<translation id="858822505990366713">Tilpas Chromium</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />Sådan bruger vi disse data:<ph name="END_BOLD" /> Websites kan gemme oplysninger med Chromium om dine interesser. Hvis du f.eks. besøger et website for at købe sko til et maraton, kan websitet muligvis definere, at din interesse er at løbe maraton. Hvis du derefter besøger et andet website for at tilmelde dig et løb, kan det website vise dig en annonce for løbesko baseret på dine interesser.</translation>
 <translation id="8619360774459241877">Starter Chromium...</translation>
 <translation id="8621669128220841554">Installationen mislykkedes på grund af en uspecificeret fejl. Download Chromium igen.</translation>
@@ -473,7 +477,6 @@ Chromium kan ikke gendanne dine præferencer.</translation>
 <translation id="8907580949721785412">Chromium forsøger at vise adgangskoder. Angiv din Windows-adgangskode for at tillade dette.</translation>
 <translation id="8931379085695076764">Chromium kan estimere dine interesser baseret på din browserhistorik de seneste få uger. Disse oplysninger forbliver på din enhed.</translation>
 <translation id="8941642502866065432">Chromium kunne ikke opdateres</translation>
-<translation id="895999862145835951">Tilpas Chromium</translation>
 <translation id="897581876605952338">Chromium Enterprise-logo</translation>
 <translation id="8986207147630327271">Du er ved at føje en arbejdsprofil til denne browser, og du giver kun din administrator kontrol over arbejdsprofilen.</translation>
 <translation id="8988036198400390003">Administrer Chromium-profiler</translation>

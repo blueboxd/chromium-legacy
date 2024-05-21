@@ -283,18 +283,17 @@
       base_feature: "none",
     },
     {
-      // crbug.com/1500511
-      name: "AlignContentForBlocks",
-      status: "stable",
-    },
-    {
-      // crbug.com/331454369
-      name: "AlignContentForScrollableBlocks",
-      status: "stable",
-    },
-    {
       name: "AllowContentInitiatedDataUrlNavigations",
       base_feature: "none",
+    },
+    // If enabled, blink will not set the autofill state of a field after JS
+    // modifies its value, and will instead leave it to the WebAutofillClient to
+    // take care of the state setting.
+    // This feature should be enabled with
+    // autofill::features::kAutofillFixCachingOnJavaScriptChanges.
+    {
+      name: "AllowJavaScriptToResetAutofillState",
+      status: "experimental",
     },
     {
       name: "AllowURNsInIframes",
@@ -527,6 +526,13 @@
       status: "stable",
     },
     {
+      // Bypasses the enforcement of the Page Embedded Permission Control
+      // security checks. This flag is disabled by default and should only be
+      // enabled in automated tests in order to allow them to avoid needing to
+      // wait until the PEPC is validated and also to use JS-initiated clicks.
+      name: "BypassPepcSecurityForTesting",
+    },
+    {
       name: "CacheStorageCodeCacheHint",
       origin_trial_feature_name: "CacheStorageCodeCacheHint",
       status: "experimental",
@@ -743,6 +749,13 @@
       status: "stable",
     },
     {
+      // Support for the anchor-scope property.
+      // https://drafts.csswg.org/css-anchor-position-1/#anchor-scope
+      name: "CSSAnchorScope",
+      depends_on: ["CSSAnchorPositioning"],
+      status: "experimental",
+    },
+    {
       // Whether <image> values are allowed as counter style <symbol>
       name: "CSSAtRuleCounterStyleImageSymbols",
     },
@@ -792,7 +805,7 @@
     },
     {
       name: "CSSContentMultiArgAltText",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSContentVisibilityImpliesContainIntrinsicSizeAuto",
@@ -811,6 +824,7 @@
       // TODO(crbug.com/1514397): Remove this when the feature is fully launched.
       name: "CSSCustomStateDeprecatedSyntax",
       status: "stable",
+      public: true,
     },
     {
       // This flag controls whether the :state(foo) pseudo-class for custom
@@ -837,11 +851,6 @@
     },
     {
       name: "CSSExponentialFunctions",
-      status: "stable",
-    },
-    {
-      // crbug.com/1447058
-      name: "CssFieldSizing",
       status: "stable",
     },
     {
@@ -1059,6 +1068,15 @@
       depends_on: ["CSSTextAutoSpace"],
     },
     {
+      // Makes the transition shorthand omit longhands which have initial
+      // values as per a standards discussion.
+      // Shipped in M127, should be safe to remove in M132.
+      // https://issues.chromium.org/issues/41487057
+      // https://github.com/web-platform-tests/wpt/issues/43574
+      name: "CSSTransitionShorterSerialization",
+      status: "stable",
+    },
+    {
       // Support for tree-scoped [1] timeline names (e.g. produced by
       // scroll-timeline).
       //
@@ -1197,12 +1215,6 @@
       },
     },
     {
-      // Shipping in M123.  Flag should be removed after M123 has been
-      // shipping to stable for a few weeks.
-      name: "DirAutoNoInheritance",
-      status: "stable",
-    },
-    {
       name: "DirectSockets",
       public: true,
       status: "experimental",
@@ -1232,27 +1244,8 @@
       base_feature: "none",
     },
     {
-      // Bypasses the enforcement of the Page Embedded Permission Control
-      // security checks. This flag is disabled by default and should only be
-      // enabled in automated tests in order to allow them to avoid needing to
-      // wait until the PEPC is validated and also to use JS-initiated clicks.
-      name: "DisablePepcSecurityForTesting",
-    },
-    {
       name: "DisableSelectAllForEmptyText",
       status: "stable",
-    },
-    // This feature should only be enabled if
-    // DisableThirdPartyStoragePartitioning is enabled, but as
-    // DisableThirdPartyStoragePartitioning will be linked to a deprecation
-    // trial it isn't possible to set a `depends_on`.
-    {
-      name: "DisableThirdPartySessionStoragePartitioningAfterGeneralPartitioning",
-      origin_trial_feature_name: "DisableThirdPartySessionStoragePartitioningAfterGeneralPartitioning",
-      origin_trial_type: "deprecation",
-      origin_trial_allows_insecure: true,
-      status: "experimental",
-      base_feature: "none",
     },
     // This feature will represent the deprecation trial that allows first
     // parties to temporarily use unpartitioned storage in embeds loaded
@@ -1751,7 +1744,7 @@
       // Protected Audience ad auction config.
       name: "FledgeDeprecatedRenderURLReplacements",
       public: true,
-      status: "test",
+      status: "stable",
     },
     {
       name: "FledgeDirectFromSellerSignalsHeaderAdSlot",
@@ -2201,6 +2194,7 @@
       // keyboard focusable by default.
       name: "KeyboardFocusableScrollers",
       status: "experimental",
+      public: true,
     },
     {
       // TODO(crbug.com/40113891): Disables KeyboardFocusableScrollers.
@@ -2215,7 +2209,6 @@
       origin_trial_type: "deprecation",
       origin_trial_allows_insecure: true,
       origin_trial_allows_third_party: true,
-      public: true,
     },
     {
       // This feature makes HTMLLabelElement::DefaultEventHandler always call
@@ -2227,6 +2220,11 @@
     {
       name: "LangAttributeAwareFormControlUI",
       settable_from_internals: true,
+    },
+    {
+      name: "LastSuccessfulPositionOption",
+      depends_on: ["CSSAnchorPositioning"],
+      status: "stable",
     },
     {
       name: "LayoutBaselineFix",
@@ -2255,6 +2253,10 @@
     },
     {
       name: "LayoutSegmentationCache",
+      status: "stable",
+    },
+    {
+      name: "LayoutSegmentationFastPathForObjectReplacement",
       status: "stable",
     },
     {
@@ -3196,6 +3198,10 @@
       name: "ReadableStreamAsyncIterable",
       status: "stable",
     },
+    {
+      name: "RecollectInlinesReserveCapacity",
+      status: "stable",
+    },
     // If enabled, the Accept-Language header will be reduced.
     {
       name: "ReduceAcceptLanguage",
@@ -3389,6 +3395,12 @@
       status: "experimental",
     },
     {
+      // crbug.com/340041662
+      name: "RubyLineEdgeAlignment",
+      status: "experimental",
+      depends_on: ["RubyLineBreakable"],
+    },
+    {
       // Runs a microtask checkpoint before creating custom elements in
       // XMLDocumentParser. Should be safe to remove after M125
       name: "RunMicrotaskBeforeXmlCustomElement",
@@ -3470,6 +3482,10 @@
       name: "ScrollTopLeftInterop",
       status: "stable",
     },
+    {
+      name: "SearchTextHighlightPseudo",
+      status: "test",
+    },
     // SecurePaymentConfirmation has shipped on some platforms, but its
     // availability is controlled by the browser process (via the
     // SecurePaymentConfirmationBrowser feature), as it requires browser
@@ -3509,7 +3525,7 @@
       // Maintain author-defined ::selection highlight colors, even if they
       // match the text color.
       name: "SelectionRespectsColors",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "SendBeaconThrowForBlobWithNonSimpleType",
@@ -3544,6 +3560,9 @@
       base_feature: "none",
       origin_trial_feature_name: "ServiceWorkerStaticRouter",
       public: true,
+    },
+    {
+      name: "ServiceWorkerStaticRouterTimingInfo",
     },
     {
       name: "SetSequentialFocusStartingPoint",
@@ -3885,6 +3904,11 @@
       base_feature: "none",
       is_protected_feature: true,
     },
+    // For unit tests.
+    {
+      name: "TestFeatureStable",
+      status: "stable",
+    },
     {
       // crbug.com/331680200
       name: "TextAlignJustifyBidiIsolate",
@@ -4037,6 +4061,14 @@
       status: "experimental",
     },
     {
+      // Unblock queued blocking touchmove after the main thread handles the
+      // touchstart and the first touchmove and they didn't call
+      // preventDefault(), instead of waiting for the browser to send
+      // touchscrollstarted.
+      name: "UnblockTouchMoveEarlier",
+      status: "experimental",
+    },
+    {
       name: "UnclosedFormControlIsInvalid",
       status: "experimental",
     },
@@ -4108,10 +4140,10 @@
       },
     },
     {
-      // Makes the global root scrollbars follow the preferred color scheme
-      // by default. Please see more details: crbug.com/1423087.
+      // Makes root scrollbars follow the preferred color scheme by default.
+      // https://chromestatus.com/feature/5089486318075904
       name: "UsedColorSchemeRootScrollbars",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "UserActivationSameOriginVisibility",
@@ -4203,12 +4235,6 @@
     {
       name: "WebAnimationsSVG",
       status: "experimental",
-    },
-    {
-      name: "WebAppDarkMode",
-      origin_trial_feature_name: "WebAppDarkModeV2",
-      status: "experimental",
-      base_feature: "WebAppEnableDarkMode",
     },
     {
       name: "WebAppLaunchHandler",
@@ -4366,7 +4392,7 @@
     },
     {
       name: "WebCodecsCopyToRGB",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "WebCodecsHBDFormats",

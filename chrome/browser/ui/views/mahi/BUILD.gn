@@ -8,8 +8,6 @@ assert(is_chromeos)
 
 source_set("mahi") {
   sources = [
-    "magic_boost/magic_boost_opt_in_card.cc",
-    "magic_boost/magic_boost_opt_in_card.h",
     "mahi_condensed_menu_view.cc",
     "mahi_condensed_menu_view.h",
     "mahi_menu_constants.h",
@@ -22,10 +20,12 @@ source_set("mahi") {
   deps = [
     "//base",
     "//chrome/browser/chromeos",
+    "//chrome/browser/ui/chromeos/magic_boost",
     "//chrome/browser/ui/chromeos/read_write_cards",
     "//chrome/browser/ui/views/editor_menu:utils",
     "//chromeos/components/editor_menu/public/cpp",
     "//chromeos/components/mahi/public/cpp",
+    "//chromeos/constants:constants",
     "//chromeos/strings:strings_grit",
     "//chromeos/ui/vector_icons",
     "//ui/color",

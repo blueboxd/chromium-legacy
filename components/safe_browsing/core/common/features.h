@@ -41,6 +41,10 @@ BASE_DECLARE_FEATURE(kClientSideDetectionNotificationPrompt);
 // preclassification check conditions pass.
 BASE_DECLARE_FEATURE(kClientSideDetectionSamplePing);
 
+// Expand CSPP beyond phishing and trigger when vibration API is called on the
+// web page.
+BASE_DECLARE_FEATURE(kClientSideDetectionVibrationApi);
+
 // Creates and sends CSBRRs when notification permissions are accepted for an
 // abusive site whose interstitial has been bypassed.
 BASE_DECLARE_FEATURE(kCreateNotificationsAcceptedClientSafeBrowsingReports);
@@ -83,6 +87,10 @@ BASE_DECLARE_FEATURE(kDownloadWarningSurvey);
 // the value of DownloadWarningHatsType enum (see
 // //c/b/download/download_warning_desktop_hats_util.h).
 extern const base::FeatureParam<int> kDownloadWarningSurveyType;
+
+// The time interval after which to consider a download warning ignored, and
+// potentially show the survey for ignoring a download bubble warning.
+extern const base::FeatureParam<int> kDownloadWarningSurveyIgnoreDelaySeconds;
 
 // Controls whether Standard Safe Browsing users are permitted to provide
 // passwords for local decryption on encrypted archives.
@@ -161,9 +169,6 @@ BASE_DECLARE_FEATURE(kImprovedDownloadPageWarnings);
 
 // Enable logging of the account enhanced protection setting in Protego pings.
 BASE_DECLARE_FEATURE(kLogAccountEnhancedProtectionStateInProtegoPings);
-
-// If enabled, do not run Maldoca over downloaded office documents.
-BASE_DECLARE_FEATURE(kMaldocaSkipCheck);
 
 // If enabled, the Safe Browsing database will be stored in a separate file and
 // mapped into memory.

@@ -26,11 +26,9 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kWebViewInvokeZoomPickerOnGSU,
     &features::kWebViewMixedContentAutoupgrades,
     &features::kWebViewTestFeature,
-    &features::kWebViewJavaJsBridgeMojo,
     &features::kWebViewUseMetricsUploadService,
     &features::kWebViewUseMetricsUploadServiceOnlySdkRuntime,
     &features::kWebViewXRequestedWithHeaderControl,
-    &features::kWebViewXRequestedWithHeaderManifestAllowList,
     &features::kWebViewRestrictSensitiveContent,
     &metrics::kAndroidMetricsAsyncMetricLogging,
     &features::kWebViewZoomKeyboardShortcuts,
@@ -48,6 +46,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kWebViewReduceUAAndroidVersionDeviceModel,
     &features::kWebViewEnableCrash,
     &features::kWebViewPreloadClasses,
+    &features::kWebViewDoNotSendAccessibilityEventsOnGSU,
 };
 
 // static

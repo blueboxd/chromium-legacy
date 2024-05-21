@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/form_data_importer_test_api.h"
 #include "components/autofill/core/browser/metrics/form_events/credit_card_form_event_logger.h"
 #include "components/autofill/core/browser/metrics/payments/better_auth_metrics.h"
 #include "components/autofill/core/browser/metrics/payments/card_unmask_authentication_metrics.h"
@@ -439,7 +440,8 @@ class CreditCardAccessManagerTest : public testing::Test {
     // This checks risk-based authentication flow is successfully invoked,
     // because it is always the very first authentication flow in a VCN
     // unmasking flow.
-    EXPECT_TRUE(autofill_client_.risk_based_authentication_invoked());
+    EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                    ->risk_based_authentication_invoked());
     // Mock server response with information regarding VCN auth.
     payments::PaymentsNetworkInterface::UnmaskResponseDetails response;
     response.context_token = "fake_context_token";
@@ -543,7 +545,7 @@ class CreditCardAccessManagerTest : public testing::Test {
         EXPECT_TRUE(vcn_3ds_context.user_consent_already_given);
         break;
       case CardUnmaskChallengeOptionType::kUnknownType:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
     }
   }
@@ -820,7 +822,8 @@ TEST_P(CreditCardAccessManagerMandatoryReauthFunctionalTest,
   // This checks risk-based authentication flow is successfully invoked,
   // because it is always the very first authentication flow in a VCN
   // unmasking flow.
-  EXPECT_TRUE(autofill_client_.risk_based_authentication_invoked());
+  EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                  ->risk_based_authentication_invoked());
   // Mock server response with valid card information.
   payments::PaymentsNetworkInterface::UnmaskResponseDetails response;
   response.real_pan = "4111111111111111";
@@ -907,7 +910,8 @@ TEST_P(CreditCardAccessManagerMandatoryReauthFunctionalTest,
 
   // Ensures CreditCardRiskBasedAuthenticator::Authenticate is successfully
   // invoked.
-  EXPECT_TRUE(autofill_client_.risk_based_authentication_invoked());
+  EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                  ->risk_based_authentication_invoked());
 
   // Mock CreditCardRiskBasedAuthenticator::RiskBasedAuthenticationResponse to
   // successfully return the valid card number.
@@ -1163,8 +1167,8 @@ TEST_F(CreditCardAccessManagerTest, FetchLocalCardSuccess) {
   // There was no interactive authentication in this flow, so check that this
   // is signaled correctly.
   std::optional<NonInteractivePaymentMethodType> type =
-      autofill_client_.GetFormDataImporter()
-          ->GetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted();
+      test_api(*autofill_client_.GetFormDataImporter())
+          .payment_method_type_if_non_interactive_authentication_flow_completed();
   ASSERT_TRUE(type.has_value());
   ASSERT_EQ(type.value(), NonInteractivePaymentMethodType::kLocalCard);
 }
@@ -1230,8 +1234,8 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardCVCSuccess) {
     // Expect that we did not signal that there was no interactive
     // authentication.
     EXPECT_FALSE(
-        autofill_client_.GetFormDataImporter()
-            ->GetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted()
+        test_api(*autofill_client_.GetFormDataImporter())
+            .payment_method_type_if_non_interactive_authentication_flow_completed()
             .has_value());
   }
 }
@@ -3146,7 +3150,8 @@ class CreditCardAccessManagerRiskBasedMaskedServerCardUnmaskingTest
 
     // Ensures CreditCardRiskBasedAuthenticator::Authenticate is successfully
     // invoked.
-    EXPECT_TRUE(autofill_client_.risk_based_authentication_invoked());
+    EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                    ->risk_based_authentication_invoked());
     EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
                     ->autofill_progress_dialog_shown());
 
@@ -3183,7 +3188,8 @@ TEST_F(CreditCardAccessManagerRiskBasedMaskedServerCardUnmaskingTest,
 
   // Ensures CreditCardRiskBasedAuthenticator::Authenticate is successfully
   // invoked.
-  EXPECT_TRUE(autofill_client_.risk_based_authentication_invoked());
+  EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                  ->risk_based_authentication_invoked());
   EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
                   ->autofill_progress_dialog_shown());
 
@@ -3205,8 +3211,8 @@ TEST_F(CreditCardAccessManagerRiskBasedMaskedServerCardUnmaskingTest,
   // There was no interactive authentication in this flow, so check that this
   // is signaled correctly.
   std::optional<NonInteractivePaymentMethodType> type =
-      autofill_client_.GetFormDataImporter()
-          ->GetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted();
+      test_api(*autofill_client_.GetFormDataImporter())
+          .payment_method_type_if_non_interactive_authentication_flow_completed();
   EXPECT_THAT(type, testing::Optional(
                         NonInteractivePaymentMethodType::kMaskedServerCard));
 
@@ -3230,7 +3236,8 @@ TEST_F(CreditCardAccessManagerRiskBasedMaskedServerCardUnmaskingTest,
 
   // Ensures CreditCardRiskBasedAuthenticator::Authenticate is successfully
   // invoked.
-  EXPECT_TRUE(autofill_client_.risk_based_authentication_invoked());
+  EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                  ->risk_based_authentication_invoked());
   EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
                   ->autofill_progress_dialog_shown());
 
@@ -3266,7 +3273,8 @@ TEST_F(CreditCardAccessManagerRiskBasedMaskedServerCardUnmaskingTest,
 
   // Ensures CreditCardRiskBasedAuthenticator::Authenticate is successfully
   // invoked.
-  EXPECT_TRUE(autofill_client_.risk_based_authentication_invoked());
+  EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                  ->risk_based_authentication_invoked());
   EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
                   ->autofill_progress_dialog_shown());
 
@@ -3303,7 +3311,8 @@ TEST_F(
                                          accessor_->GetWeakPtr()));
 
   // Ensures CreditCardRiskBasedAuthenticator::Authenticate is not invoked.
-  ASSERT_FALSE(autofill_client_.risk_based_authentication_invoked());
+  ASSERT_FALSE(autofill_client_.GetPaymentsAutofillClient()
+                   ->risk_based_authentication_invoked());
 }
 
 TEST_F(
@@ -3348,8 +3357,8 @@ TEST_F(CreditCardAccessManagerRiskBasedMaskedServerCardUnmaskingTest,
 
   // Expect that we did not signal that there was no interactive authentication.
   EXPECT_FALSE(
-      autofill_client_.GetFormDataImporter()
-          ->GetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted()
+      test_api(*autofill_client_.GetFormDataImporter())
+          .payment_method_type_if_non_interactive_authentication_flow_completed()
           .has_value());
 }
 
@@ -3373,7 +3382,8 @@ TEST_F(CreditCardAccessManagerRiskBasedMaskedServerCardUnmaskingTest,
 
   // Ensures CreditCardRiskBasedAuthenticator::Authenticate is successfully
   // invoked.
-  EXPECT_TRUE(autofill_client_.risk_based_authentication_invoked());
+  EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                  ->risk_based_authentication_invoked());
   EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
                   ->autofill_progress_dialog_shown());
 
@@ -3403,8 +3413,8 @@ TEST_F(CreditCardAccessManagerRiskBasedMaskedServerCardUnmaskingTest,
 
   // Expect that we did not signal that there was no interactive authentication.
   EXPECT_FALSE(
-      autofill_client_.GetFormDataImporter()
-          ->GetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted()
+      test_api(*autofill_client_.GetFormDataImporter())
+          .payment_method_type_if_non_interactive_authentication_flow_completed()
           .has_value());
 
   histogram_tester.ExpectUniqueSample(
@@ -3494,8 +3504,8 @@ TEST_F(
 
   // Expect that we did not signal that there was no interactive authentication.
   EXPECT_FALSE(
-      autofill_client_.GetFormDataImporter()
-          ->GetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted()
+      test_api(*autofill_client_.GetFormDataImporter())
+          .payment_method_type_if_non_interactive_authentication_flow_completed()
           .has_value());
 }
 
@@ -3582,7 +3592,8 @@ TEST_F(
                                          accessor_->GetWeakPtr()));
 
   // Ensures CreditCardRiskBasedAuthenticator::Authenticate is not invoked.
-  ASSERT_FALSE(autofill_client_.risk_based_authentication_invoked());
+  ASSERT_FALSE(autofill_client_.GetPaymentsAutofillClient()
+                   ->risk_based_authentication_invoked());
 }
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
@@ -3688,7 +3699,8 @@ TEST_F(CreditCardAccessManagerTest,
   // This checks risk-based authentication flow is successfully invoked,
   // because it is always the very first authentication flow in a VCN
   // unmasking flow.
-  EXPECT_TRUE(autofill_client_.risk_based_authentication_invoked());
+  EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                  ->risk_based_authentication_invoked());
   // Mock server response with valid card information.
   payments::PaymentsNetworkInterface::UnmaskResponseDetails response;
   response.real_pan = "4111111111111111";
@@ -3710,8 +3722,8 @@ TEST_F(CreditCardAccessManagerTest,
   // There was no interactive authentication in this flow, so check that this
   // is signaled correctly.
   std::optional<NonInteractivePaymentMethodType> type =
-      autofill_client_.GetFormDataImporter()
-          ->GetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted();
+      test_api(*autofill_client_.GetFormDataImporter())
+          .payment_method_type_if_non_interactive_authentication_flow_completed();
   EXPECT_THAT(type,
               testing::Optional(NonInteractivePaymentMethodType::kVirtualCard));
 
@@ -3751,7 +3763,8 @@ TEST_F(CreditCardAccessManagerTest,
   // This checks risk-based authentication flow is successfully invoked,
   // because it is always the very first authentication flow in a VCN
   // unmasking flow.
-  EXPECT_TRUE(autofill_client_.risk_based_authentication_invoked());
+  EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                  ->risk_based_authentication_invoked());
   // Mock server response with valid card information.
   payments::PaymentsNetworkInterface::UnmaskResponseDetails response;
   response.real_pan = "4111111111111111";
@@ -3773,8 +3786,8 @@ TEST_F(CreditCardAccessManagerTest,
   // There was no interactive authentication in this flow, so check that this
   // is signaled correctly.
   std::optional<NonInteractivePaymentMethodType> type =
-      autofill_client_.GetFormDataImporter()
-          ->GetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted();
+      test_api(*autofill_client_.GetFormDataImporter())
+          .payment_method_type_if_non_interactive_authentication_flow_completed();
   EXPECT_THAT(type,
               testing::Optional(NonInteractivePaymentMethodType::kVirtualCard));
 
@@ -3816,8 +3829,8 @@ TEST_F(CreditCardAccessManagerTest,
 
   // Expect that we did not signal that there was no interactive authentication.
   EXPECT_FALSE(
-      autofill_client_.GetFormDataImporter()
-          ->GetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted()
+      test_api(*autofill_client_.GetFormDataImporter())
+          .payment_method_type_if_non_interactive_authentication_flow_completed()
           .has_value());
 
   // Expect accessor to successfully retrieve the CVC.
@@ -3859,8 +3872,8 @@ TEST_F(CreditCardAccessManagerTest,
 
   // Expect that we did not signal that there was no interactive authentication.
   EXPECT_FALSE(
-      autofill_client_.GetFormDataImporter()
-          ->GetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted()
+      test_api(*autofill_client_.GetFormDataImporter())
+          .payment_method_type_if_non_interactive_authentication_flow_completed()
           .has_value());
 
   // Expect the metrics are logged correctly.
@@ -3967,15 +3980,15 @@ TEST_F(CreditCardAccessManagerTest,
         break;
       case CardUnmaskChallengeOptionType::kEmailOtp:
       case CardUnmaskChallengeOptionType::kUnknownType:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
     }
   }
 
   // Expect that we did not signal that there was no interactive authentication.
   EXPECT_FALSE(
-      autofill_client_.GetFormDataImporter()
-          ->GetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted()
+      test_api(*autofill_client_.GetFormDataImporter())
+          .payment_method_type_if_non_interactive_authentication_flow_completed()
           .has_value());
 
   // Expect the metrics are logged correctly.
@@ -4073,7 +4086,8 @@ TEST_F(CreditCardAccessManagerTest,
   // This checks risk-based authentication flow is successfully invoked,
   // because it is always the very first authentication flow in a VCN
   // unmasking flow.
-  EXPECT_TRUE(autofill_client_.risk_based_authentication_invoked());
+  EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                  ->risk_based_authentication_invoked());
   // Mock server response with information regarding FIDO auth.
   payments::PaymentsNetworkInterface::UnmaskResponseDetails response;
   response.context_token = "fake_context_token";
@@ -4134,7 +4148,8 @@ TEST_F(
   // This checks risk-based authentication flow is successfully invoked,
   // because it is always the very first authentication flow in a VCN
   // unmasking flow.
-  EXPECT_TRUE(autofill_client_.risk_based_authentication_invoked());
+  EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                  ->risk_based_authentication_invoked());
   // Mock server response with information regarding both FIDO and OTP auth.
   payments::PaymentsNetworkInterface::UnmaskResponseDetails response;
   response.context_token = "fake_context_token";
@@ -4259,7 +4274,8 @@ TEST_F(
   // This checks risk-based authentication flow is successfully invoked,
   // because it is always the very first authentication flow in a VCN
   // unmasking flow.
-  EXPECT_TRUE(autofill_client_.risk_based_authentication_invoked());
+  EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                  ->risk_based_authentication_invoked());
   // Mock server response with information regarding FIDO auth.
   payments::PaymentsNetworkInterface::UnmaskResponseDetails response;
   response.context_token = "fake_context_token";
@@ -4309,7 +4325,8 @@ TEST_F(CreditCardAccessManagerTest,
   // This checks risk-based authentication flow is successfully invoked,
   // because it is always the very first authentication flow in a VCN
   // unmasking flow.
-  EXPECT_TRUE(autofill_client_.risk_based_authentication_invoked());
+  EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                  ->risk_based_authentication_invoked());
   // Mock server response with no challenge options.
   payments::PaymentsNetworkInterface::UnmaskResponseDetails response;
   response.context_token = "fake_context_token";
@@ -4356,7 +4373,8 @@ TEST_F(CreditCardAccessManagerTest,
   // This checks risk-based authentication flow is successfully invoked,
   // because it is always the very first authentication flow in a VCN
   // unmasking flow.
-  EXPECT_TRUE(autofill_client_.risk_based_authentication_invoked());
+  EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                  ->risk_based_authentication_invoked());
   // Mock server response with no challenge options.
   payments::PaymentsNetworkInterface::UnmaskResponseDetails response;
   credit_card_access_manager()
@@ -4442,7 +4460,8 @@ TEST_F(CreditCardAccessManagerTest,
   // This checks risk-based authentication flow is successfully invoked,
   // because it is always the very first authentication flow in a VCN
   // unmasking flow.
-  EXPECT_TRUE(autofill_client_.risk_based_authentication_invoked());
+  EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
+                  ->risk_based_authentication_invoked());
   // Mock that the flow was cancelled by the user.
   test_api(credit_card_access_manager()).OnVirtualCardUnmaskCancelled();
 
@@ -4469,13 +4488,13 @@ TEST_F(CreditCardAccessManagerTest, DestructorResetsCardIdentifier) {
       ->SetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted(
           NonInteractivePaymentMethodType::kLocalCard);
   EXPECT_TRUE(
-      form_data_importer
-          ->GetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted()
+      test_api(*form_data_importer)
+          .payment_method_type_if_non_interactive_authentication_flow_completed()
           .has_value());
   autofill_driver_.reset();
   EXPECT_FALSE(
-      form_data_importer
-          ->GetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted()
+      test_api(*form_data_importer)
+          .payment_method_type_if_non_interactive_authentication_flow_completed()
           .has_value());
 }
 

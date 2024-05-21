@@ -66,6 +66,8 @@ DataSharingService::PeopleGroupActionOutcome StatusToPeopleGroupActionOutcome(
     return DataSharingService::PeopleGroupActionOutcome::kSuccess;
   }
   switch (StatusToPeopleGroupActionFailure(status)) {
+    case DataSharingService::PeopleGroupActionFailure::kUnknown:
+      return DataSharingService::PeopleGroupActionOutcome::kUnknown;
     case DataSharingService::PeopleGroupActionFailure::kPersistentFailure:
       return DataSharingService::PeopleGroupActionOutcome::kPersistentFailure;
     case DataSharingService::PeopleGroupActionFailure::kTransientFailure:
@@ -81,11 +83,13 @@ DataSharingServiceImpl::DataSharingServiceImpl(
     signin::IdentityManager* identity_manager,
     syncer::OnceModelTypeStoreFactory model_type_store_factory,
     version_info::Channel channel,
-    std::unique_ptr<DataSharingSDKDelegate> sdk_delegate)
+    std::unique_ptr<DataSharingSDKDelegate> sdk_delegate,
+    std::unique_ptr<DataSharingUIDelegate> ui_delegate)
     : data_sharing_network_loader_(
           std::make_unique<DataSharingNetworkLoaderImpl>(url_loader_factory,
                                                          identity_manager)),
-      sdk_delegate_(std::move(sdk_delegate)) {
+      sdk_delegate_(std::move(sdk_delegate)),
+      ui_delegate_(std::move(ui_delegate)) {
   auto change_processor =
       std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
           syncer::COLLABORATION_GROUP,
@@ -477,7 +481,10 @@ bool DataSharingServiceImpl::ShouldInterceptNavigationForShareURL(
 
 void DataSharingServiceImpl::HandleShareURLNavigationIntercepted(
     const GURL& url) {
-  NOTIMPLEMENTED();
+  if (!ui_delegate_) {
+    return;
+  }
+  ui_delegate_->HandleShareURLIntercepted(url);
 }
 
 }  // namespace data_sharing

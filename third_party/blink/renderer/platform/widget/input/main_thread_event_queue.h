@@ -139,8 +139,6 @@ class PLATFORM_EXPORT MainThreadEventQueue
       mojom::blink::InputEventResultState ack_state) {
     return ack_state == mojom::blink::InputEventResultState::kNotConsumed ||
            ack_state ==
-               mojom::blink::InputEventResultState::kNotConsumedBlocking ||
-           ack_state ==
                mojom::blink::InputEventResultState::kSetNonBlockingDueToFling;
   }
 
@@ -171,6 +169,17 @@ class PLATFORM_EXPORT MainThreadEventQueue
   void RafFallbackTimerFired();
 
   void ClearRafFallbackTimerForTesting();
+
+  void UnblockQueuedBlockingTouchMovesIfNeeded(
+      const WebInputEvent& dispatched_event,
+      mojom::blink::InputEventResultState ack_result);
+
+  // Contains data that are read and written on the main thread only.
+  struct MainThreadOnly {
+    bool blocking_touch_start_not_consumed = false;
+    bool should_unblock_touch_moves = false;
+  } main_thread_only_;
+  MainThreadOnly& GetMainThreadOnly();
 
   friend class QueuedWebInputEvent;
   friend class MainThreadEventQueueTest;

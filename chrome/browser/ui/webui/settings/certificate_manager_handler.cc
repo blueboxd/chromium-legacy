@@ -18,6 +18,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "crypto/crypto_buildflags.h"
+#include "net/base/hash_value.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/ssl/client_cert_identity.h"
@@ -48,7 +49,7 @@
 namespace {
 
 void PopulateChromeRootStoreLogsAsync(
-    CertificateManagerPageHandler::GetChromeRootStoreCertsCallback callback,
+    CertificateManagerPageHandler::GetCertificatesCallback callback,
     cert_verifier::mojom::ChromeRootStoreInfoPtr info) {
   // TODO(crbug.com/40928765): store the info returned so we can use it in later
   // calls (e.g. the cert bytes will be needed when we view the details or
@@ -63,9 +64,10 @@ void PopulateChromeRootStoreLogsAsync(
   std::move(callback).Run(std::move(cert_infos));
 }
 
-void ViewCertificateAsync(std::string hash,
-                          base::WeakPtr<content::WebContents> web_contents,
-                          cert_verifier::mojom::ChromeRootStoreInfoPtr info) {
+void ViewCrsCertificateAsync(
+    std::string hash,
+    base::WeakPtr<content::WebContents> web_contents,
+    cert_verifier::mojom::ChromeRootStoreInfoPtr info) {
   // Containing web contents went away (e.g. user navigated away). Don't
   // try to open the dialog.
   if (!web_contents) {
@@ -88,7 +90,7 @@ void ViewCertificateAsync(std::string hash,
   }
 }
 
-void ExportCertificatesAsync(
+void ExportCrsCertificatesAsync(
     base::WeakPtr<content::WebContents> web_contents,
     cert_verifier::mojom::ChromeRootStoreInfoPtr info) {
   // Containing web contents went away (e.g. user navigated away). Don't
@@ -102,38 +104,53 @@ void ExportCertificatesAsync(
     export_certs.push_back(net::x509_util::CreateCryptoBuffer(cert_info->cert));
   }
 
-  // TODO(crbug.com/40928765): currently requires user to select a different
-  // export option because the default is to only save the first certificate.
-  // Should modify chrome/browser/ui/certificate_dialogs.h for a new option to
-  // make this more user-friendly.
-  ShowCertExportDialog(web_contents.get(),
-                       web_contents->GetTopLevelNativeWindow(),
-                       std::move(export_certs), "chrome_root_store_certs.pem");
+  ShowCertExportDialogSaveAll(
+      web_contents.get(), web_contents->GetTopLevelNativeWindow(),
+      std::move(export_certs), "chrome_root_store_certs.pem");
   return;
 }
 
-class ClientCertSource {
+class ChromeRootStoreCertSource
+    : public CertificateManagerPageHandler::CertSource {
  public:
-  virtual ~ClientCertSource() = default;
+  void GetCertificateInfos(
+      CertificateManagerPageHandler::GetCertificatesCallback callback)
+      override {
+    content::GetCertVerifierServiceFactory()->GetChromeRootStoreInfo(
+        base::BindOnce(&PopulateChromeRootStoreLogsAsync, std::move(callback)));
+  }
 
-  virtual void GetCerts(
-      base::OnceCallback<void(net::CertificateList)> callback) = 0;
+  void ViewCertificate(
+      const std::string& sha256_hex_hash,
+      base::WeakPtr<content::WebContents> web_contents) override {
+    // This should really use a cached set of info with other calls to
+    // GetChromeRootStoreInfo.
+    content::GetCertVerifierServiceFactory()->GetChromeRootStoreInfo(
+        base::BindOnce(&ViewCrsCertificateAsync, sha256_hex_hash,
+                       std::move(web_contents)));
+  }
+
+  void ExportCertificates(
+      base::WeakPtr<content::WebContents> web_contents) override {
+    // This should really use a cached set of info with other calls to
+    // GetChromeRootStoreInfo.
+    content::GetCertVerifierServiceFactory()->GetChromeRootStoreInfo(
+        base::BindOnce(&ExportCrsCertificatesAsync, web_contents));
+  }
 };
 
-// A ClientCertSource that wraps a ClientCertStore. Read-only.
-// Lifetimes note: The callback will not be called if the ClientCertStoreSource
+// A certificate loader that wraps a ClientCertStore. Read-only.
+// Lifetimes note: The callback will not be called if the ClientCertStoreLoader
 // (and thus, the ClientCertStore) is destroyed first.
-class ClientCertStoreSource : public ClientCertSource {
+class ClientCertStoreLoader {
  public:
-  explicit ClientCertStoreSource(std::unique_ptr<net::ClientCertStore> store)
+  explicit ClientCertStoreLoader(std::unique_ptr<net::ClientCertStore> store)
       : store_(std::move(store)) {}
-  ~ClientCertStoreSource() override = default;
 
-  void GetCerts(
-      base::OnceCallback<void(net::CertificateList)> callback) override {
+  void GetCerts(base::OnceCallback<void(net::CertificateList)> callback) {
     store_->GetClientCerts(
         base::MakeRefCounted<net::SSLCertRequestInfo>(),
-        base::BindOnce(&ClientCertStoreSource::HandleClientCertsResult,
+        base::BindOnce(&ClientCertStoreLoader::HandleClientCertsResult,
                        std::move(callback)));
   }
 
@@ -153,17 +170,17 @@ class ClientCertStoreSource : public ClientCertSource {
   std::unique_ptr<net::ClientCertStore> store_;
 };
 
-std::unique_ptr<ClientCertSource> CreatePlatformClientCertSource() {
+std::unique_ptr<ClientCertStoreLoader> CreatePlatformClientCertLoader() {
 #if BUILDFLAG(USE_NSS_CERTS)
-  return std::make_unique<ClientCertStoreSource>(
+  return std::make_unique<ClientCertStoreLoader>(
       std::make_unique<net::ClientCertStoreNSS>(
           base::BindRepeating(&CreateCryptoModuleBlockingPasswordDelegate,
                               kCryptoModulePasswordClientAuth)));
 #elif BUILDFLAG(IS_WIN)
-  return std::make_unique<ClientCertStoreSource>(
+  return std::make_unique<ClientCertStoreLoader>(
       std::make_unique<net::ClientCertStoreWin>());
 #elif BUILDFLAG(IS_MAC)
-  return std::make_unique<ClientCertStoreSource>(
+  return std::make_unique<ClientCertStoreLoader>(
       std::make_unique<net::ClientCertStoreMac>());
 #else
   return nullptr;
@@ -186,7 +203,7 @@ class NullClientCertStore : public net::ClientCertStore {
   }
 };
 
-std::unique_ptr<ClientCertSource> CreateProvisionedClientCertSource(
+std::unique_ptr<ClientCertStoreLoader> CreateProvisionedClientCertLoader(
     Profile* profile) {
   if (!profile || !client_certificates::features::
                       IsManagedClientCertificateForUserEnabled()) {
@@ -199,16 +216,15 @@ std::unique_ptr<ClientCertSource> CreateProvisionedClientCertSource(
     return nullptr;
   }
 
-  return std::make_unique<ClientCertStoreSource>(
+  return std::make_unique<ClientCertStoreLoader>(
       client_certificates::ClientCertificatesService::Create(
           provisioning_service, std::make_unique<NullClientCertStore>()));
 }
 #endif
 
-void PopulateClientCertsAsync(
-    std::unique_ptr<ClientCertSource> source,
-    CertificateManagerPageHandler::GetPlatformClientCertsCallback callback,
-    net::CertificateList certs) {
+void PopulateCertInfosFromCertificateList(
+    CertificateManagerPageHandler::GetCertificatesCallback callback,
+    const net::CertificateList& certs) {
   std::vector<certificate_manager_v2::mojom::SummaryCertInfoPtr> out_infos;
   for (const auto& cert : certs) {
     x509_certificate_model::X509CertificateModel model(
@@ -218,6 +234,68 @@ void PopulateClientCertsAsync(
   }
   std::move(callback).Run(std::move(out_infos));
 }
+
+class ClientCertSource : public CertificateManagerPageHandler::CertSource {
+ public:
+  explicit ClientCertSource(std::unique_ptr<ClientCertStoreLoader> loader)
+      : loader_(std::move(loader)) {}
+  ~ClientCertSource() override = default;
+
+  void GetCertificateInfos(
+      CertificateManagerPageHandler::GetCertificatesCallback callback)
+      override {
+    if (!loader_) {
+      std::move(callback).Run({});
+    }
+    if (certs_) {
+      PopulateCertInfosFromCertificateList(std::move(callback), *certs_);
+      return;
+    }
+    // Unretained is safe here as if `this` is destroyed, the ClientCertStore
+    // will be destroyed, and the ClientCertStore contract is that the callback
+    // will not be called after the ClientCertStore object is destroyed.
+    loader_->GetCerts(base::BindOnce(&ClientCertSource::SaveCertsAndRespond,
+                                     base::Unretained(this),
+                                     std::move(callback)));
+  }
+
+  void ViewCertificate(
+      const std::string& sha256_hex_hash,
+      base::WeakPtr<content::WebContents> web_contents) override {
+    if (!loader_ || !certs_ || !web_contents) {
+      return;
+    }
+
+    net::SHA256HashValue hash;
+    if (!base::HexStringToSpan(sha256_hex_hash, hash.data)) {
+      return;
+    }
+
+    for (const auto& cert : *certs_) {
+      if (net::X509Certificate::CalculateFingerprint256(cert->cert_buffer()) ==
+          hash) {
+        std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> view_certs;
+        view_certs.push_back(bssl::UpRef(cert->cert_buffer()));
+        CertificateViewerDialog::ShowConstrained(
+            std::move(view_certs),
+            /*cert_nicknames=*/{}, web_contents.get(),
+            web_contents->GetTopLevelNativeWindow());
+        return;
+      }
+    }
+  }
+
+ private:
+  void SaveCertsAndRespond(
+      CertificateManagerPageHandler::GetCertificatesCallback callback,
+      net::CertificateList certs) {
+    certs_ = std::move(certs);
+    PopulateCertInfosFromCertificateList(std::move(callback), *certs_);
+  }
+
+  std::unique_ptr<ClientCertStoreLoader> loader_;
+  std::optional<net::CertificateList> certs_;
+};
 
 }  // namespace
 
@@ -236,61 +314,49 @@ CertificateManagerPageHandler::CertificateManagerPageHandler(
 
 CertificateManagerPageHandler::~CertificateManagerPageHandler() = default;
 
-void CertificateManagerPageHandler::GetChromeRootStoreCerts(
-    GetChromeRootStoreCertsCallback callback) {
-  cert_verifier::mojom::CertVerifierServiceFactory* factory =
-      content::GetCertVerifierServiceFactory();
-  DCHECK(factory);
-  factory->GetChromeRootStoreInfo(
-      base::BindOnce(&PopulateChromeRootStoreLogsAsync, std::move(callback)));
+void CertificateManagerPageHandler::GetCertificates(
+    certificate_manager_v2::mojom::CertificateSource source_id,
+    GetCertificatesCallback callback) {
+  GetCertSource(source_id).GetCertificateInfos(std::move(callback));
 }
 
-// TODO(crbug.com/40928765): currently only handles CRS certs; will need to
-// expand to handle certs from other data sources.
 void CertificateManagerPageHandler::ViewCertificate(
+    certificate_manager_v2::mojom::CertificateSource source_id,
     const std::string& sha256hash_hex) {
-  cert_verifier::mojom::CertVerifierServiceFactory* factory =
-      content::GetCertVerifierServiceFactory();
-  DCHECK(factory);
-  // This should really use a cached set of info with other calls to
-  // GetChromeRootStoreInfo.
-  factory->GetChromeRootStoreInfo(base::BindOnce(
-      &ViewCertificateAsync, sha256hash_hex, web_contents_->GetWeakPtr()));
+  GetCertSource(source_id).ViewCertificate(sha256hash_hex,
+                                           web_contents_->GetWeakPtr());
 }
 
-void CertificateManagerPageHandler::GetPlatformClientCerts(
-    GetPlatformClientCertsCallback callback) {
-  std::unique_ptr<ClientCertSource> source = CreatePlatformClientCertSource();
-  if (!source) {
-    std::move(callback).Run({});
-    return;
-  }
-  ClientCertSource* source_ptr = source.get();
-  source_ptr->GetCerts(base::BindOnce(&PopulateClientCertsAsync,
-                                      std::move(source), std::move(callback)));
+void CertificateManagerPageHandler::ExportCertificates(
+    certificate_manager_v2::mojom::CertificateSource source_id) {
+  GetCertSource(source_id).ExportCertificates(web_contents_->GetWeakPtr());
 }
 
-void CertificateManagerPageHandler::ExportChromeRootStore() {
-  cert_verifier::mojom::CertVerifierServiceFactory* factory =
-      content::GetCertVerifierServiceFactory();
-  DCHECK(factory);
-  // This should really use a cached set of info with other calls to
-  // GetChromeRootStoreInfo.
-  factory->GetChromeRootStoreInfo(
-      base::BindOnce(&ExportCertificatesAsync, web_contents_->GetWeakPtr()));
-}
+CertificateManagerPageHandler::CertSource::~CertSource() = default;
 
+CertificateManagerPageHandler::CertSource&
+CertificateManagerPageHandler::GetCertSource(
+    certificate_manager_v2::mojom::CertificateSource source) {
+  std::unique_ptr<CertSource>& source_ptr =
+      cert_source_[static_cast<unsigned>(source)];
+  if (!source_ptr) {
+    switch (source) {
+      case certificate_manager_v2::mojom::CertificateSource::kChromeRootStore:
+        source_ptr = std::make_unique<ChromeRootStoreCertSource>();
+        break;
+      case certificate_manager_v2::mojom::CertificateSource::
+          kPlatformClientCert:
+        source_ptr = std::make_unique<ClientCertSource>(
+            CreatePlatformClientCertLoader());
+        break;
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-void CertificateManagerPageHandler::GetProvisionedClientCerts(
-    GetProvisionedClientCertsCallback callback) {
-  std::unique_ptr<ClientCertSource> source =
-      CreateProvisionedClientCertSource(profile_);
-  if (!source) {
-    std::move(callback).Run({});
-    return;
-  }
-  ClientCertSource* source_ptr = source.get();
-  source_ptr->GetCerts(base::BindOnce(&PopulateClientCertsAsync,
-                                      std::move(source), std::move(callback)));
-}
+      case certificate_manager_v2::mojom::CertificateSource::
+          kProvisionedClientCert:
+        source_ptr = std::make_unique<ClientCertSource>(
+            CreateProvisionedClientCertLoader(profile_));
+        break;
 #endif
+    }
+  }
+  return *source_ptr;
+}

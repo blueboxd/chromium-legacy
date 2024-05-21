@@ -110,6 +110,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/webauthn/chromeos/passkey_dialog_controller.h"
+#include "chrome/browser/webauthn/chromeos/passkey_discovery.h"
 #include "chrome/browser/webauthn/chromeos/passkey_service.h"
 #include "chrome/browser/webauthn/chromeos/passkey_service_factory.h"
 #include "chromeos/components/webauthn/webauthn_request_registrar.h"
@@ -752,6 +753,9 @@ bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(
       return dialog_controller_->OnNoPasskeys();
     case InterestingFailureReason::kEnclaveError:
       return dialog_controller_->OnEnclaveError();
+    case InterestingFailureReason::kEnclaveCancel:
+      dialog_model_->CancelAuthenticatorRequest();
+      break;
   }
   return true;
 }
@@ -818,7 +822,7 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
   // AuthenticatorCommon can't evaluate attestation decisions with the UI
   // disabled.
   if (disable_ui_) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     std::move(callback).Run(false);
     return;
   }
@@ -835,6 +839,18 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
 
   dialog_controller_->RequestAttestationPermission(is_enterprise_attestation,
                                                    std::move(callback));
+}
+
+std::vector<std::unique_ptr<device::FidoDiscoveryBase>>
+ChromeAuthenticatorRequestDelegate::CreatePlatformDiscoveries() {
+  std::vector<std::unique_ptr<device::FidoDiscoveryBase>> discoveries;
+#if BUILDFLAG(IS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(device::kChromeOsPasskeys)) {
+    discoveries.push_back(
+        std::make_unique<chromeos::PasskeyDiscovery>(GetRenderFrameHost()));
+  }
+#endif
+  return {};
 }
 
 void ChromeAuthenticatorRequestDelegate::ConfigureDiscoveries(
@@ -1301,9 +1317,13 @@ content::BrowserContext* ChromeAuthenticatorRequestDelegate::GetBrowserContext()
 void ChromeAuthenticatorRequestDelegate::ShowUI(
     device::FidoRequestHandlerBase::TransportAvailabilityInfo tai) {
   if (base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials) &&
+      !IsVirtualEnvironmentEnabled() &&
       (can_use_synced_phone_passkeys_ ||
-       (enclave_controller_ && enclave_controller_->is_active())) &&
-      !IsVirtualEnvironmentEnabled()) {
+       (enclave_controller_ && enclave_controller_->is_active())
+#if BUILDFLAG(IS_CHROMEOS)
+       || chromeos_passkey_controller_
+#endif
+       )) {
     GetPhoneContactableGpmPasskeysForRpId(&tai.recognized_credentials);
   }
   FilterRecognizedCredentials(&tai);

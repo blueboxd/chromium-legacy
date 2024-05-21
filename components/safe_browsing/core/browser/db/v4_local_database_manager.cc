@@ -165,8 +165,8 @@ ThreatSeverity GetThreatSeverity(const ListIdentifier& list_id) {
     case POTENTIALLY_HARMFUL_APPLICATION:
     case SOCIAL_ENGINEERING_PUBLIC:
     case THREAT_TYPE_UNSPECIFIED:
-      NOTREACHED() << "Unexpected ThreatType encountered: "
-                   << list_id.threat_type();
+      NOTREACHED_IN_MIGRATION()
+          << "Unexpected ThreatType encountered: " << list_id.threat_type();
       return kLeastSeverity;
   }
 }
@@ -192,7 +192,7 @@ ListIdentifier GetUrlIdFromSBThreatType(SBThreatType sb_threat_type) {
       return GetUrlBillingId();
 
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       // Compiler requires a return statement here.
       return GetUrlMalwareId();
   }
@@ -662,8 +662,12 @@ bool V4LocalDatabaseManager::IsDatabaseReady() const {
 //
 
 void V4LocalDatabaseManager::DatabaseReadyForChecks(
+    base::Time start_time,
     std::unique_ptr<V4Database, base::OnTaskRunnerDeleter> v4_database) {
   DCHECK(sb_task_runner()->RunsTasksInCurrentSequence());
+
+  base::UmaHistogramTimes("SafeBrowsing.V4DatabaseInitializationTime",
+                          base::Time::Now() - start_time);
 
   v4_database->InitializeOnSBThread();
 
@@ -914,7 +918,7 @@ void V4LocalDatabaseManager::HandleAllowlistCheckContinuation(
       RespondToClient(std::move(check));
     }
   } else {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 }
 
@@ -1225,7 +1229,8 @@ void V4LocalDatabaseManager::RespondToClientWithoutPendingCheckCleanup(
     }
 
     case ClientCallbackType::CHECK_OTHER:
-      NOTREACHED() << "Unexpected client_callback_type encountered";
+      NOTREACHED_IN_MIGRATION()
+          << "Unexpected client_callback_type encountered";
   }
 }
 
@@ -1239,7 +1244,7 @@ void V4LocalDatabaseManager::SetupDatabase() {
   // has been created, swap it out on the SB thread.
   NewDatabaseReadyCallback db_ready_callback =
       base::BindOnce(&V4LocalDatabaseManager::DatabaseReadyForChecks,
-                     weak_factory_.GetWeakPtr());
+                     weak_factory_.GetWeakPtr(), base::Time::Now());
   V4Database::Create(task_runner_, base_path_, list_infos_,
                      std::move(db_ready_callback));
 }

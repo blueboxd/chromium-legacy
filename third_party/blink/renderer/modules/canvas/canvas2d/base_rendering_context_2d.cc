@@ -92,6 +92,8 @@
 
 namespace blink {
 
+using ::cc::UsePaintCache;
+
 BASE_FEATURE(kDisableCanvasOverdrawOptimization,
              "DisableCanvasOverdrawOptimization",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1389,7 +1391,7 @@ static SkPathFillType ParseWinding(const String& winding_rule_string) {
   if (winding_rule_string == "evenodd")
     return SkPathFillType::kEvenOdd;
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return SkPathFillType::kEvenOdd;
 }
 
@@ -1980,7 +1982,8 @@ void BaseRenderingContext2D::drawImage(CanvasImageSource* image_source,
     }
   } else {
     image = image_source->GetSourceImageForCanvas(
-        FlushReason::kDrawImage, &source_image_status, default_object_size);
+        FlushReason::kDrawImage, &source_image_status, default_object_size,
+        kPremultiplyAlpha);
     if (source_image_status == kUndecodableSourceImageStatus) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kInvalidStateError,
@@ -2181,7 +2184,8 @@ CanvasPattern* BaseRenderingContext2D::createPattern(
   gfx::SizeF default_object_size(Width(), Height());
   scoped_refptr<Image> image_for_rendering =
       image_source->GetSourceImageForCanvas(FlushReason::kCreatePattern,
-                                            &status, default_object_size);
+                                            &status, default_object_size,
+                                            kPremultiplyAlpha);
 
   switch (status) {
     case kNormalSourceImageStatus:
@@ -2217,7 +2221,7 @@ CanvasPattern* BaseRenderingContext2D::createPattern(
           "layers are open in the source canvas.");
       return nullptr;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return nullptr;
   }
 
@@ -2310,7 +2314,7 @@ void BaseRenderingContext2D::drawMesh(
   SourceImageStatus source_image_status = kInvalidSourceImageStatus;
   scoped_refptr<Image> image = image_source->GetSourceImageForCanvas(
       FlushReason::kDrawMesh, &source_image_status,
-      gfx::SizeF(Width(), Height()));
+      gfx::SizeF(Width(), Height()), kPremultiplyAlpha);
   switch (source_image_status) {
     case kUndecodableSourceImageStatus:
       exception_state.ThrowDOMException(
@@ -2699,7 +2703,8 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
         return;
       }
       if (!converted_bitmap.writePixels(data_pixmap, 0, 0))
-        NOTREACHED() << "Failed to convert ImageData with writePixels.";
+        NOTREACHED_IN_MIGRATION()
+            << "Failed to convert ImageData with writePixels.";
 
       PutByteArray(converted_bitmap.pixmap(), source_rect, dest_offset);
       if (GetPaintCanvas()) {
@@ -3031,7 +3036,7 @@ static inline TextDirection ToTextDirection(
     case CanvasRenderingContext2DState::kDirectionLTR:
       return TextDirection::kLtr;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return TextDirection::kLtr;
 }
 
@@ -3502,19 +3507,45 @@ GPUTexture* BaseRenderingContext2D::beginWebGPUAccess(
     return nullptr;
   }
 
-  // We can't rely on the HTMLCanvasElement, because the canvas may not actually
-  // exist in the HTML. (e.g. `new OffscreenCanvas` has no HTML element.)
-  // We also can't use GetImage() here, because that will return null if the
-  // canvas is brand new. We always want an image, even if the canvas doesn't
-  // have a bridge yet.
+  // Prepare to flush the canvas to a WebGPU texture.
   FinalizeFrame(FlushReason::kWebGPUTexture);
+
+  // We will need to access the canvas' resource provider in order to snapshot
+  // its image below.
   CanvasRenderingContextHost* host = GetCanvasRenderingContextHost();
-  scoped_refptr<StaticBitmapImage> image =
-      host->GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU)
-          ->Snapshot(FlushReason::kWebGPUTexture);
-  if (!image) {
+  if (!host) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Unable to access canvas image.");
+    return nullptr;
+  }
+
+  // Ensure that the canvas host lives on the GPU. This call is a no-op if the
+  // host is already accelerated.
+  // TODO(crbug.com/340911120): if the user requested WillReadFrequently, do we
+  // want to behave differently here?
+  const bool host_is_accelerated = host->EnableAcceleration();
+
+  // A texture needs to exist on the GPU. If we aren't able to enable
+  // acceleration, the canvas pixels live on the CPU and we weren't able to
+  // transfer them; in that case, WebGPU access is not possible.
+  CanvasResourceProvider* provider =
+      host->GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU);
+  if (!host_is_accelerated || !provider || !provider->IsAccelerated()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Unable to transfer canvas to GPU.");
+    return nullptr;
+  }
+
+  // Snapshot the image from the CanvasResourceProvider.
+  // We use Snapshot instead of GetImage here to ensure that we get an image,
+  // even if the canvas is empty.
+  // TODO(crbug.com/340922308): when possible, we should steal the existing
+  // texture from the resource provider, instead of cloning it.
+  scoped_refptr<StaticBitmapImage> image =
+      provider->Snapshot(FlushReason::kWebGPUTexture);
+  if (!image) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Unable to snapshot the canvas image.");
     return nullptr;
   }
 
@@ -3527,7 +3558,7 @@ GPUTexture* BaseRenderingContext2D::beginWebGPUAccess(
           /*is_dummy_mailbox_texture=*/false);
   if (!texture) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Unable to access canvas texture.");
+                                      "Unable to transfer canvas to WebGPU.");
     return nullptr;
   }
 
@@ -3578,7 +3609,8 @@ bool BaseRenderingContext2D::CopyGPUTextureToResourceProvider(
   return true;
 }
 
-void BaseRenderingContext2D::endWebGPUAccess(ExceptionState& exception_state) {
+void BaseRenderingContext2D::endWebGPUAccess(blink::GPUTexture* tex,
+                                             ExceptionState& exception_state) {
   // If the context is lost or doesn't exist, this call should be a no-op.
   // We don't want to throw an exception or attempt any changes if
   // `endWebGPUAccess` is called during teardown.
@@ -3595,12 +3627,13 @@ void BaseRenderingContext2D::endWebGPUAccess(ExceptionState& exception_state) {
     return;
   }
 
-  // Prevent unbalanced calls to endWebGPUAccess without an earlier call to
-  // beginWebGPUAccess.
-  if (!webgpu_access_texture_) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "This canvas is not currently in use by WebGPU.");
+  // We allow the caller to pass in any reasonable texture.
+  // TODO(crbug.com/339846593): we do not yet honor the passed-in texture.
+  // Below this point, our code is still written in terms of
+  // `webgpu_access_texture_`. This will be fixed in a followup.
+  if (tex->Destroyed()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The texture has been destroyed.");
     return;
   }
 

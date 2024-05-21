@@ -107,8 +107,6 @@ class WebApkSyncBridgeTest : public ::testing::Test {
         .WillByDefault(testing::Return(true));
   }
 
-  void TearDown() override { DestroyManagers(); }
-
   void InitSyncBridge() {
     base::RunLoop loop;
 
@@ -130,15 +128,6 @@ class WebApkSyncBridgeTest : public ::testing::Test {
   }
 
  protected:
-  void DestroyManagers() {
-    if (sync_bridge_) {
-      sync_bridge_.reset();
-    }
-    if (database_factory_) {
-      database_factory_.reset();
-    }
-  }
-
   syncer::MockModelTypeChangeProcessor& processor() { return mock_processor_; }
   FakeWebApkDatabaseFactory& database_factory() { return *database_factory_; }
 
@@ -148,8 +137,8 @@ class WebApkSyncBridgeTest : public ::testing::Test {
   }
 
  private:
-  std::unique_ptr<WebApkSyncBridge> sync_bridge_;
   std::unique_ptr<FakeWebApkDatabaseFactory> database_factory_;
+  std::unique_ptr<WebApkSyncBridge> sync_bridge_;
   raw_ptr<FakeWebApkSpecificsFetcher>
       specifics_fetcher_;  // owned by sync_bridge_; should not be accessed
                            // before InitSyncBridge() or after sync_bridge_ is
@@ -1167,6 +1156,7 @@ TEST_F(WebApkSyncBridgeTest, GetRestorableAppsInfo) {
   const GURL manifest_id_2("https://example.com/app2");
   const GURL manifest_id_3("https://example.com/app3");
   const GURL manifest_id_4("https://example.com/app4");
+  const GURL icon_url("https://example.com/app2/icon");
 
   std::unique_ptr<WebApkProto> registry_app_1 =
       CreateWebApkProto(manifest_id_1.spec(), "registry_app_1");
@@ -1178,6 +1168,8 @@ TEST_F(WebApkSyncBridgeTest, GetRestorableAppsInfo) {
 
   std::unique_ptr<WebApkProto> registry_app_2 =
       CreateWebApkProto(manifest_id_2.spec(), "registry_app_2");
+  auto* icon = registry_app_2->mutable_sync_data()->add_icon_infos();
+  icon->set_url(icon_url.spec());
   registry_app_2->mutable_sync_data()->set_last_used_time_windows_epoch_micros(
       UnixTsSecToWindowsTsMsec(
           1136145845.0));  // Sun Jan 01 2006 15:04:05 GMT-0500 - slightly
@@ -1221,10 +1213,14 @@ TEST_F(WebApkSyncBridgeTest, GetRestorableAppsInfo) {
   EXPECT_EQ(result[0].app_id, ManifestIdStrToAppId(manifest_id_2.spec()));
   EXPECT_EQ(result[0].shortcut_info->manifest_id, manifest_id_2);
   EXPECT_EQ(result[0].shortcut_info->name, u"registry_app_2");
+  EXPECT_EQ(result[0].shortcut_info->best_primary_icon_url, icon_url);
 
   EXPECT_EQ(result[1].app_id, ManifestIdStrToAppId(manifest_id_3.spec()));
   EXPECT_EQ(result[1].shortcut_info->manifest_id, manifest_id_3);
   EXPECT_EQ(result[1].shortcut_info->name, u"registry_app_3");
+  // No icon url specified for apps 3, fallback to use start url as place
+  // holder.
+  EXPECT_EQ(result[1].shortcut_info->best_primary_icon_url, manifest_id_3);
 }
 
 }  // namespace webapk

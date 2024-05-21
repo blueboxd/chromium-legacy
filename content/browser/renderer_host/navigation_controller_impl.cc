@@ -163,7 +163,7 @@ bool ShouldOverrideUserAgent(
     case NavigationController::UA_OVERRIDE_FALSE:
       return false;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return false;
 }
 
@@ -462,7 +462,7 @@ void ValidateRequestMatchesEntry(NavigationRequest* request,
   FrameNavigationEntry* frame_entry =
       entry->GetFrameEntry(request->frame_tree_node());
   if (!frame_entry) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return;
   }
 
@@ -475,7 +475,7 @@ void ValidateRequestMatchesEntry(NavigationRequest* request,
                 frame_entry->redirect_chain()[i]);
     }
   } else {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 }
 #endif  // DCHECK_IS_ON()
@@ -1350,7 +1350,7 @@ base::WeakPtr<NavigationHandle> NavigationControllerImpl::LoadURLWithParams(
       break;
     case LOAD_TYPE_DATA:
       if (!params.url.SchemeIs(url::kDataScheme)) {
-        NOTREACHED() << "Data load must use data scheme.";
+        NOTREACHED_IN_MIGRATION() << "Data load must use data scheme.";
         return nullptr;
       }
       break;
@@ -1422,6 +1422,17 @@ bool NavigationControllerImpl::RendererDidNavigate(
     // be blocked by RenderFrameHostImpl::ValidateDidCommitParams() before
     // reaching here.
     CHECK(!is_same_document_navigation);
+
+    if (pending_entry_) {
+      // Before `entry_replaced_by_post_commit_error_` is moved back, make sure
+      // `pending_entry_` isn't pointing to the last committed entry.
+      // Instead, all reload approaches (e.g., in `Reload` and
+      // `LoadIfNecessary`) should attempt to load the
+      // `entry_replaced_by_post_commit_error_` instead of the post commit error
+      // entry itself.
+      CHECK_NE(pending_entry_, entries_[last_committed_entry_index_].get())
+          << "Incorrectly reloading the post commit error page entry.";
+    }
 
     // Any commit while a post-commit error page is showing should put the
     // original entry back, replacing the error page's entry.  This includes
@@ -1609,7 +1620,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
       }
       break;
     case NAVIGATION_TYPE_UNKNOWN:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 
@@ -3976,10 +3987,9 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
   blink::mojom::CommitNavigationParamsPtr commit_params =
       blink::mojom::CommitNavigationParams::New(
           std::nullopt,
-          // The correct storage key and session storage key will be computed
-          // before committing the navigation.
-          blink::StorageKey(), blink::StorageKey(), override_user_agent,
-          params.redirect_chain,
+          // The correct storage key will be computed before committing the
+          // navigation.
+          blink::StorageKey(), override_user_agent, params.redirect_chain,
           std::vector<network::mojom::URLResponseHeadPtr>(),
           std::vector<net::RedirectInfo>(), params.post_content_type,
           common_params->url, common_params->method,
@@ -4220,9 +4230,24 @@ void NavigationControllerImpl::LoadIfNecessary() {
                             needs_reload_type_);
 
   // Calling Reload() results in ignoring state, and not loading.
-  // Explicitly use NavigateToPendingEntry so that the renderer uses the
+  // Explicitly use NavigateToExistingPendingEntry so that the renderer uses the
   // cached state.
-  if (pending_entry_) {
+  if (entry_replaced_by_post_commit_error_) {
+    // If the current entry is a post commit error, we reload the entry it
+    // replaced instead. We leave the error entry in place until a commit
+    // replaces it, but the pending entry points to the original entry in the
+    // meantime. Note that NavigateToExistingPendingEntry is able to handle the
+    // case that pending_entry_ != entries_[pending_entry_index_].
+    // Note that this handling is similar to
+    // `NavigationControllerImpl::Reload()`.
+    pending_entry_ = entry_replaced_by_post_commit_error_.get();
+    pending_entry_index_ = GetCurrentEntryIndex();
+    NavigateToExistingPendingEntry(
+        ReloadType::NONE,
+        /*initiator_rfh=*/nullptr,
+        /*soft_navigation_heuristics_task_id=*/std::nullopt,
+        /*navigation_api_key=*/nullptr);
+  } else if (pending_entry_) {
     NavigateToExistingPendingEntry(
         ReloadType::NONE,
         /*initiator_rfh=*/nullptr,

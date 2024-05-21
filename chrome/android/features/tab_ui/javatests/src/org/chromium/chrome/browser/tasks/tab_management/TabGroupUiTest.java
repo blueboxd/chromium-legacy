@@ -55,6 +55,7 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Features.DisableFeatures;
@@ -67,7 +68,6 @@ import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -145,6 +145,7 @@ public class TabGroupUiTest {
     @Test
     @LargeTest
     @Feature({"RenderTest"})
+    @DisableIf.Build(supported_abis_includes = "x86")
     public void testRenderStrip_Select5thTabIn10Tabs() throws IOException {
         final ChromeTabbedActivity cta = sActivityTestRule.getActivity();
         AtomicReference<RecyclerView> recyclerViewReference = new AtomicReference<>();
@@ -292,9 +293,7 @@ public class TabGroupUiTest {
         finishActivity(sActivityTestRule.getActivity());
         createThumbnailBitmapAndWriteToFile(0, mBrowserControlsStateProvider);
         createThumbnailBitmapAndWriteToFile(1, mBrowserControlsStateProvider);
-        TabAttributeCache.setRootIdForTesting(0, 0);
-        TabAttributeCache.setRootIdForTesting(1, 0);
-        createTabStatesAndMetadataFile(new int[] {0, 1});
+        createTabStatesAndMetadataFile(new int[] {0, 1}, new int[] {0, 0});
 
         // Restart Chrome and make sure tab strip is showing.
         sActivityTestRule.startMainActivityFromLauncher();
@@ -336,9 +335,7 @@ public class TabGroupUiTest {
         finishActivity(sActivityTestRule.getActivity());
         createThumbnailBitmapAndWriteToFile(0, mBrowserControlsStateProvider);
         createThumbnailBitmapAndWriteToFile(1, mBrowserControlsStateProvider);
-        TabAttributeCache.setRootIdForTesting(0, 0);
-        TabAttributeCache.setRootIdForTesting(1, 0);
-        createTabStatesAndMetadataFile(new int[] {0, 1});
+        createTabStatesAndMetadataFile(new int[] {0, 1}, new int[] {0, 0});
 
         // Restart Chrome and make sure both tab strip and IPH text bubble are showing.
         sActivityTestRule.startMainActivityFromLauncher();
@@ -406,9 +403,7 @@ public class TabGroupUiTest {
         finishActivity(sActivityTestRule.getActivity());
         createThumbnailBitmapAndWriteToFile(0, mBrowserControlsStateProvider);
         createThumbnailBitmapAndWriteToFile(1, mBrowserControlsStateProvider);
-        TabAttributeCache.setRootIdForTesting(0, 0);
-        TabAttributeCache.setRootIdForTesting(1, 0);
-        createTabStatesAndMetadataFile(new int[] {0, 1});
+        createTabStatesAndMetadataFile(new int[] {0, 1}, new int[] {0, 0});
 
         // Restart Chrome and make sure tab strip is showing.
         sActivityTestRule.startMainActivityFromLauncher();

@@ -586,7 +586,7 @@ int BlockingNetworkDelegate::MaybeBlockStage(
                                     weak_factory_.GetWeakPtr()));
       return ERR_IO_PENDING;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return 0;
 }
 
@@ -3943,7 +3943,7 @@ class URLRequestTestHTTP : public URLRequestTest {
 
     std::unique_ptr<URLRequestJob> CreateJob(
         URLRequest* request) const override {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return nullptr;
     }
 
@@ -4290,7 +4290,7 @@ void NetworkDelegateCancelRequest(BlockingNetworkDelegate::BlockMode block_mode,
     } else if (stage == BlockingNetworkDelegate::ON_HEADERS_RECEIVED) {
       EXPECT_TRUE(r->proxy_chain().is_direct());
     } else {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
     }
     EXPECT_EQ(ERR_BLOCKED_BY_CLIENT, d.request_status());
     EXPECT_EQ(1, network_delegate.created_requests());
@@ -13051,10 +13051,8 @@ INSTANTIATE_TEST_SUITE_P(,
 class PartitionConnectionsByNetworkAnonymizationKey : public URLRequestTest {
  public:
   PartitionConnectionsByNetworkAnonymizationKey() {
-    scoped_feature_list_.InitWithFeatures(
-        {net::features::kPartitionConnectionsByNetworkIsolationKey,
-         net::features::kPartitionSSLSessionsByNetworkIsolationKey},
-        {});
+    scoped_feature_list_.InitAndEnableFeature(
+        net::features::kPartitionConnectionsByNetworkIsolationKey);
   }
   const SchemefulSite kTestSiteA = SchemefulSite(GURL("http://a.test/"));
   const SchemefulSite kTestSiteB = SchemefulSite(GURL("http://b.test/"));

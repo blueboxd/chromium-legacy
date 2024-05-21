@@ -33,6 +33,7 @@
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/mojom/page/draggable_region.mojom-forward.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_updates_and_events.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -406,7 +407,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual JavaScriptDialogManager* GetJavaScriptDialogManager(
       WebContents* source);
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   // Called when color chooser should open. Returns the opened color chooser.
   // Returns nullptr if we failed to open the color chooser. The color chooser
   // is supported/required for Android or iOS.
@@ -732,6 +733,16 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual NavigationController::UserAgentOverrideOption
   ShouldOverrideUserAgentForPrerender2();
 
+  // Returns true if the embedder allows initiator and transition type mismatch
+  // of prerender activation that activation navigation has no initiator
+  // (embedder-initiated).
+  //
+  // This mitigation is mainly for Android WebView (speculationrules +
+  // `WebView.loadUrl`), as WebView is intended to host embedder-trusted
+  // contents.
+  virtual bool ShouldAllowPartialParamMismatchOfPrerender2(
+      NavigationHandle& navigation_handle);
+
   // If |old_contents| is being inspected by a DevTools window, it updates the
   // window to inspect |new_contents| instead and calls |callback| after it
   // finishes asynchronously. If no window is present, or no update is
@@ -804,6 +815,10 @@ class CONTENT_EXPORT WebContentsDelegate {
   // later time.
   virtual bool MaybeCopyContentAreaAsBitmap(
       base::OnceCallback<void(const SkBitmap&)> callback);
+
+  // Processes accessibility updates and events, taking ownership of the data.
+  virtual void ProcessAccessibilityUpdatesAndEvents(
+      ui::AXUpdatesAndEvents& updates_and_events) {}
 
  protected:
   virtual ~WebContentsDelegate();

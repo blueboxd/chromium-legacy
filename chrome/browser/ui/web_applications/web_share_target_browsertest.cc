@@ -20,6 +20,7 @@
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
@@ -189,10 +190,7 @@ class WebShareTargetBrowserTest : public WebAppBrowserTestBase {
     ash::RecentModelFactory::GetForProfile(profile())->GetRecentFiles(
         file_system_context.get(),
         /*origin=*/GURL(),
-        /*query=*/"",
-        /*cutoff_days=*/base::Days(30),
-        /*file_type=*/ash::RecentModel::FileType::kAll,
-        /*invalidate_cache=*/false,
+        /*query=*/"", ash::RecentModelOptions{},
         base::BindLambdaForTesting(
             [&result, &run_loop](const std::vector<ash::RecentFile>& files) {
               result = files.size();

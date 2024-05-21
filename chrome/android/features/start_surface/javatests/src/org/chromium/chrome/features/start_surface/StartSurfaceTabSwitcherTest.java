@@ -62,7 +62,6 @@ import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutTestUtils;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
@@ -210,8 +209,6 @@ public class StartSurfaceTabSwitcherTest {
         TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
         StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0, mBrowserControlsStateProvider);
         StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(1, mBrowserControlsStateProvider);
-        TabAttributeCache.setRootIdForTesting(0, 0);
-        TabAttributeCache.setRootIdForTesting(1, 0);
         StartSurfaceTestUtils.createTabStatesAndMetadataFile(new int[] {0, 1});
 
         // Restart and open tab grid dialog.
@@ -319,11 +316,7 @@ public class StartSurfaceTabSwitcherTest {
         CriteriaHelper.pollUiThread(() -> cta.getLayoutManager() != null);
         StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
         StartSurfaceTestUtils.waitForTabModel(cta);
-        if (ChromeFeatureList.sSurfacePolish.isEnabled()) {
-            onViewWaiting(withId(R.id.search_provider_logo));
-        } else {
-            onViewWaiting(withId(R.id.logo));
-        }
+        onViewWaiting(withId(R.id.search_provider_logo));
         Tab tab1 = cta.getCurrentTabModel().getTabAt(0);
 
         // Launches the first site in MV tiles.

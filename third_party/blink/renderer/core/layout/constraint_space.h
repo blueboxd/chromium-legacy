@@ -86,6 +86,19 @@ enum class AutoSizeBehavior : uint8_t {
 // store a result in.
 enum class LayoutResultCacheSlot { kLayout, kMeasure };
 
+// How to resolve percentage-based margin and padding.
+enum class DecorationPercentageResolutionType {
+  // Resolve margins and padding on any side against the inline-size of the
+  // containing block. This is the default, and the behavior for regular CSS
+  // boxes.
+  kContainingBlockInlineSize,
+
+  // Resolve block margins and padding against the block-size of the containing
+  // block, and inline ones against the inline-size of the containing block.
+  // This is only used by @page boxes.
+  kContainingBlockSize
+};
+
 // The ConstraintSpace represents a set of constraints and available space
 // which a layout algorithm may produce a LogicalFragment within.
 class CORE_EXPORT ConstraintSpace final {
@@ -194,7 +207,7 @@ class CORE_EXPORT ConstraintSpace final {
     switch (
         static_cast<PercentageStorage>(bitfields_.percentage_inline_storage)) {
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         [[fallthrough]];
       case kSameAsAvailable:
         return available_size_.inline_size;
@@ -212,7 +225,7 @@ class CORE_EXPORT ConstraintSpace final {
     switch (
         static_cast<PercentageStorage>(bitfields_.percentage_block_storage)) {
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         [[fallthrough]];
       case kSameAsAvailable:
         return available_size_.block_size;
@@ -247,7 +260,7 @@ class CORE_EXPORT ConstraintSpace final {
         DCHECK(HasRareData());
         return rare_data_->replaced_percentage_resolution_block_size;
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
     }
 
     return available_size_.block_size;
@@ -261,12 +274,17 @@ class CORE_EXPORT ConstraintSpace final {
 
   // Return the size to use for percentage resolution for margin/padding.
   LogicalSize MarginPaddingPercentageResolutionSize() const {
+    if (GetDecorationPercentageResolutionType() ==
+        DecorationPercentageResolutionType::kContainingBlockSize) {
+      // @page margin and padding are different from those on regular CSS boxes.
+      // Inline percentages are resolved against the inline-size of the margin
+      // box, and block percentages are resolved against its block-size.
+      DCHECK(!IsOrthogonalWritingModeRoot());
+      return PercentageResolutionSize();
+    }
+
     // For regular CSS boxes, percentage-based margin and padding get computed
     // relatively to the inline-size of the containing block.
-    //
-    // TODO(mstensho): @page margin and padding resolution is different from the
-    // rest. Inline percentages are resolved against the inline-size of the
-    // margin box, and block percentages are resolved against its block-size.
     LayoutUnit cb_inline_size;
     if (!IsOrthogonalWritingModeRoot()) {
       cb_inline_size = PercentageResolutionInlineSize();
@@ -292,11 +310,6 @@ class CORE_EXPORT ConstraintSpace final {
       }
     }
     return LogicalSize(cb_inline_size, cb_inline_size);
-  }
-
-  std::optional<MinMaxSizes> OverrideMinMaxBlockSizes() const {
-    return HasRareData() ? rare_data_->OverrideMinMaxBlockSizes()
-                         : std::nullopt;
   }
 
   // True if we're using the "fallback" available inline-size. This typically
@@ -785,6 +798,16 @@ class CORE_EXPORT ConstraintSpace final {
     return HasRareData() && rare_data_->should_text_box_trim_end;
   }
 
+  // Return how percentage-based margins and padding should be resolved.
+  DecorationPercentageResolutionType GetDecorationPercentageResolutionType()
+      const {
+    if (!HasRareData()) {
+      return DecorationPercentageResolutionType::kContainingBlockInlineSize;
+    }
+    return static_cast<DecorationPercentageResolutionType>(
+        rare_data_->decoration_percentage_resolution_type);
+  }
+
   const GridLayoutSubtree* GetGridLayoutSubtree() const {
     return HasRareData() ? rare_data_->GetGridLayoutSubtree() : nullptr;
   }
@@ -914,7 +937,6 @@ class CORE_EXPORT ConstraintSpace final {
               other.replaced_percentage_resolution_block_size),
           block_start_annotation_space(other.block_start_annotation_space),
           bfc_offset(other.bfc_offset),
-          override_min_max_block_sizes(other.override_min_max_block_sizes),
           page_name(other.page_name),
           fragmentainer_block_size(other.fragmentainer_block_size),
           fragmentainer_offset(other.fragmentainer_offset),
@@ -937,8 +959,6 @@ class CORE_EXPORT ConstraintSpace final {
           is_past_break(other.is_past_break),
           min_block_size_should_encompass_intrinsic_size(
               other.min_block_size_should_encompass_intrinsic_size),
-          has_override_min_max_block_sizes(
-              other.has_override_min_max_block_sizes),
           uses_orthogonal_fallback_inline_size(
               other.uses_orthogonal_fallback_inline_size),
           min_break_appeal(other.min_break_appeal),
@@ -947,7 +967,9 @@ class CORE_EXPORT ConstraintSpace final {
           should_repeat(other.should_repeat),
           is_inside_repeatable_content(other.is_inside_repeatable_content),
           should_text_box_trim_start(other.should_text_box_trim_start),
-          should_text_box_trim_end(other.should_text_box_trim_end) {
+          should_text_box_trim_end(other.should_text_box_trim_end),
+          decoration_percentage_resolution_type(
+              other.decoration_percentage_resolution_type) {
       switch (GetDataUnionType()) {
         case DataUnionType::kNone:
           break;
@@ -974,7 +996,7 @@ class CORE_EXPORT ConstraintSpace final {
           new (&subgrid_data_) SubgridData(other.subgrid_data_);
           break;
         default:
-          NOTREACHED();
+          NOTREACHED_IN_MIGRATION();
       }
     }
     ~RareData() {
@@ -1003,7 +1025,7 @@ class CORE_EXPORT ConstraintSpace final {
           subgrid_data_.~SubgridData();
           break;
         default:
-          NOTREACHED();
+          NOTREACHED_IN_MIGRATION();
       }
     }
 
@@ -1030,7 +1052,9 @@ class CORE_EXPORT ConstraintSpace final {
           should_repeat != other.should_repeat ||
           is_inside_repeatable_content != other.is_inside_repeatable_content ||
           should_text_box_trim_start != other.should_text_box_trim_start ||
-          should_text_box_trim_end != other.should_text_box_trim_end) {
+          should_text_box_trim_end != other.should_text_box_trim_end ||
+          decoration_percentage_resolution_type !=
+              other.decoration_percentage_resolution_type) {
         return false;
       }
 
@@ -1052,7 +1076,7 @@ class CORE_EXPORT ConstraintSpace final {
         case DataUnionType::kSubgridData:
           return subgrid_data_.MaySkipLayout(other.subgrid_data_);
       }
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return false;
     }
 
@@ -1069,7 +1093,8 @@ class CORE_EXPORT ConstraintSpace final {
           min_break_appeal != kBreakAppealLastResort ||
           propagate_child_break_values || is_at_fragmentainer_start ||
           should_repeat || is_inside_repeatable_content ||
-          should_text_box_trim_start || should_text_box_trim_end) {
+          should_text_box_trim_start || should_text_box_trim_end ||
+          decoration_percentage_resolution_type) {
         return false;
       }
 
@@ -1091,7 +1116,7 @@ class CORE_EXPORT ConstraintSpace final {
         case DataUnionType::kSubgridData:
           return subgrid_data_.IsInitialForMaySkipLayout();
       }
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return false;
     }
 
@@ -1138,22 +1163,6 @@ class CORE_EXPORT ConstraintSpace final {
       return GetDataUnionType() == DataUnionType::kBlockData
                  ? block_data_.clearance_offset
                  : LayoutUnit::Min();
-    }
-
-    std::optional<MinMaxSizes> OverrideMinMaxBlockSizes() const {
-      if (has_override_min_max_block_sizes)
-        return override_min_max_block_sizes;
-      return std::nullopt;
-    }
-
-    void SetOverrideMinMaxBlockSizes(const MinMaxSizes& min_max_sizes) {
-      if (min_max_sizes.IsEmpty()) {
-        has_override_min_max_block_sizes = false;
-        return;
-      }
-      DCHECK_GE(min_max_sizes.max_size, min_max_sizes.min_size);
-      has_override_min_max_block_sizes = true;
-      override_min_max_block_sizes = min_max_sizes;
     }
 
     void SetClearanceOffset(LayoutUnit clearance_offset) {
@@ -1310,7 +1319,6 @@ class CORE_EXPORT ConstraintSpace final {
     LayoutUnit replaced_percentage_resolution_block_size;
     LayoutUnit block_start_annotation_space;
     BfcOffset bfc_offset;
-    MinMaxSizes override_min_max_block_sizes;
 
     AtomicString page_name;
     LayoutUnit fragmentainer_block_size = kIndefiniteSize;
@@ -1333,7 +1341,6 @@ class CORE_EXPORT ConstraintSpace final {
     unsigned is_in_column_bfc : 1 = false;
     unsigned is_past_break : 1 = false;
     unsigned min_block_size_should_encompass_intrinsic_size : 1 = false;
-    unsigned has_override_min_max_block_sizes : 1 = false;
     unsigned uses_orthogonal_fallback_inline_size : 1 = false;
     unsigned min_break_appeal
         : kBreakAppealBitsNeeded =
@@ -1344,6 +1351,8 @@ class CORE_EXPORT ConstraintSpace final {
     unsigned is_inside_repeatable_content : 1 = false;
     unsigned should_text_box_trim_start : 1 = false;
     unsigned should_text_box_trim_end : 1 = false;
+    unsigned decoration_percentage_resolution_type : 1 = static_cast<unsigned>(
+        DecorationPercentageResolutionType::kContainingBlockInlineSize);
 
    private:
     struct BlockData {

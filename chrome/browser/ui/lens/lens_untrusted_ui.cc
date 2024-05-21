@@ -6,9 +6,12 @@
 
 #include "base/strings/strcat.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/lens/lens_overlay_controller.h"
+#include "chrome/browser/ui/lens/lens_overlay_theme_utils.h"
 #include "chrome/browser/ui/webui/searchbox/realbox_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/lens_untrusted_resources.h"
@@ -22,6 +25,9 @@
 
 namespace lens {
 
+// The number of times to show cursor tooltips.
+constexpr int kNumTimesToShowCursorTooltips = 5;
+
 LensUntrustedUI::LensUntrustedUI(content::WebUI* web_ui)
     : UntrustedTopChromeWebUIController(web_ui) {
   // This code path is invoked for both the overlay WebUI and the sidepanel
@@ -32,18 +38,29 @@ LensUntrustedUI::LensUntrustedUI(content::WebUI* web_ui)
       content::WebUIDataSource::CreateAndAdd(
           web_ui->GetWebContents()->GetBrowserContext(),
           chrome::kChromeUILensUntrustedURL);
+  html_source->AddLocalizedString("backButton", IDS_ACCNAME_BACK);
   html_source->AddLocalizedString("close", IDS_CLOSE);
-  html_source->AddLocalizedString("sendFeedback", IDS_LENS_SEND_FEEDBACK_LABEL);
   html_source->AddLocalizedString("copy", IDS_LENS_OVERLAY_COPY);
   html_source->AddLocalizedString("copyToastMessage",
                                   IDS_LENS_OVERLAY_COPY_TOAST_MESSAGE);
   html_source->AddLocalizedString("dismiss",
                                   IDS_LENS_OVERLAY_TOAST_DISMISS_MESSAGE);
+  html_source->AddLocalizedString("info", IDS_LENS_OVERLAY_INFO_BUTTON_LABEL);
   html_source->AddLocalizedString("initialToastMessage",
                                   IDS_LENS_OVERLAY_INITIAL_TOAST_MESSAGE);
+  html_source->AddLocalizedString("sendFeedback", IDS_LENS_SEND_FEEDBACK_LABEL);
+  html_source->AddLocalizedString("cursorTooltipDragMessage",
+                                  IDS_LENS_OVERLAY_CURSOR_TOOLTIP_DRAG_MESSAGE);
+  html_source->AddLocalizedString(
+      "cursorTooltipTextHighlightMessage",
+      IDS_LENS_OVERLAY_CURSOR_TOOLTIP_TEXT_HIGHLIGHT_MESSAGE);
+  html_source->AddLocalizedString(
+      "cursorTooltipClickMessage",
+      IDS_LENS_OVERLAY_CURSOR_TOOLTIP_CLICK_MESSAGE);
+  html_source->AddLocalizedString(
+      "cursorTooltipLivePageMessage",
+      IDS_LENS_OVERLAY_CURSOR_TOOLTIP_LIVE_PAGE_MESSAGE);
   html_source->AddLocalizedString("translate", IDS_LENS_OVERLAY_TRANSLATE);
-  html_source->AddLocalizedString("translateSuffix",
-                                  IDS_LENS_OVERLAY_TRANSLATE_SUFFIX);
 
   // Add finch flags
   html_source->AddString(
@@ -51,8 +68,14 @@ LensUntrustedUI::LensUntrustedUI(content::WebUI* web_ui)
       lens::features::GetLensOverlayResultsSearchLoadingURL());
   html_source->AddBoolean("enableDebuggingMode",
                           lens::features::IsLensOverlayDebuggingEnabled());
+  html_source->AddBoolean(
+      "enablePreciseHighlight",
+      lens::features::IsLensOverlayPreciseHighlightEnabled());
   html_source->AddBoolean("enableShimmer",
                           lens::features::IsLensOverlayShimmerEnabled());
+  html_source->AddBoolean(
+      "enableShimmerSparkles",
+      lens::features::IsLensOverlayShimmerSparklesEnabled());
   html_source->AddBoolean(
       "enableSelectionDragging",
       lens::features::IsLensOverlaySelectionDraggingEnabled());
@@ -64,6 +87,10 @@ LensUntrustedUI::LensUntrustedUI(content::WebUI* web_ui)
                           lens::features::GetLensOverlayTapRegionHeight());
   html_source->AddInteger("tapRegionWidth",
                           lens::features::GetLensOverlayTapRegionWidth());
+  html_source->AddBoolean(
+      "darkMode",
+      lens::LensOverlayShouldUseDarkMode(
+          ThemeServiceFactory::GetForProfile(Profile::FromWebUI(web_ui))));
 
   // Allow FrameSrc from all Google subdomains as redirects can occur.
   GURL results_side_panel_url =
@@ -102,6 +129,14 @@ LensUntrustedUI::LensUntrustedUI(content::WebUI* web_ui)
   html_source->AddLocalizedString("searchBoxHint",
                                   IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MULTIMODAL);
   html_source->AddBoolean("searchboxInSidePanel", true);
+
+  // Determine if the cursor tooltip should appear.
+  Profile* profile = Profile::FromWebUI(web_ui);
+  int lens_overlay_start_count =
+      profile->GetPrefs()->GetInteger(prefs::kLensOverlayStartCount);
+  html_source->AddBoolean(
+      "canShowTooltipFromPrefs",
+      lens_overlay_start_count <= kNumTimesToShowCursorTooltips);
 }
 
 void LensUntrustedUI::BindInterface(

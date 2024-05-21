@@ -370,13 +370,11 @@ HEADLESS_PROTOCOL_TEST(LargeBrowserWindowSize,
 HEADLESS_PROTOCOL_TEST(ScreencastBasics, "sanity/screencast-basics.js")
 HEADLESS_PROTOCOL_TEST(ScreencastViewport, "sanity/screencast-viewport.js")
 
-// https://crbug.com/339788212
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_RequestFullscreen DISABLED_RequestFullscreen
-#else
-#define MAYBE_RequestFullscreen RequestFullscreen
+HEADLESS_PROTOCOL_TEST(RequestFullscreen, "sanity/request-fullscreen.js")
+
+#if !defined(HEADLESS_USE_EMBEDDED_RESOURCES)
+HEADLESS_PROTOCOL_TEST(AutoHyphenation, "sanity/auto-hyphenation.js")
 #endif
-HEADLESS_PROTOCOL_TEST(MAYBE_RequestFullscreen, "sanity/request-fullscreen.js")
 
 class HeadlessProtocolBrowserTestWithProxy
     : public HeadlessProtocolBrowserTest {

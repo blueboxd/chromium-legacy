@@ -285,6 +285,17 @@ TEST(CSSParsingUtilsTest, InternalColorsOnlyAllowedInUaMode) {
       {"-internal-grammar-error-color",
        CSSIdentifierValue::Create(CSSValueID::kInternalGrammarErrorColor),
        nullptr},
+      {"-internal-search-color",
+       CSSIdentifierValue::Create(CSSValueID::kInternalSearchColor), nullptr},
+      {"-internal-search-text-color",
+       CSSIdentifierValue::Create(CSSValueID::kInternalSearchTextColor),
+       nullptr},
+      {"-internal-current-search-color",
+       CSSIdentifierValue::Create(CSSValueID::kInternalCurrentSearchColor),
+       nullptr},
+      {"-internal-current-search-text-color",
+       CSSIdentifierValue::Create(CSSValueID::kInternalCurrentSearchTextColor),
+       nullptr},
   };
   for (auto& expectation : expectations) {
     EXPECT_EQ(ConsumeColorForTest(expectation.css_text, kHTMLStandardMode),
@@ -316,10 +327,10 @@ TEST(CSSParsingUtilsTest, ConsumeColorRangePreservation) {
 TEST(CSSParsingUtilsTest, InternalPositionTryOptionsInUAMode) {
   auto ConsumePositionTryOptionForTest = [](String css_text,
                                             CSSParserMode mode) {
-    auto tokens = CSSTokenizer(css_text).TokenizeToEOF();
-    CSSParserTokenRange range(tokens);
+    CSSTokenizer tokenizer(css_text);
+    CSSParserTokenStream stream(tokenizer);
     return css_parsing_utils::ConsumeSinglePositionTryOption(
-        range, *MakeContext(mode));
+        stream, *MakeContext(mode));
   };
 
   struct {

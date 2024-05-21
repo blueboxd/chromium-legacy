@@ -47,10 +47,14 @@ BASE_FEATURE(kModelExecutionCapabilityDisable,
 
 BASE_FEATURE(kModelAdaptationCompose,
              "ModelAdaptationCompose",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kOnDeviceModelTestFeature,
              "OnDeviceModelTestFeature",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kOnDeviceModelPromptApiFeature,
+             "OnDeviceModelPromptApiFeature",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsGraduatedFeature(UserVisibleFeatureKey feature) {
@@ -110,6 +114,8 @@ bool IsOnDeviceModelEnabled(ModelBasedCapabilityKey feature) {
     case ModelBasedCapabilityKey::kWallpaperSearch:
     case ModelBasedCapabilityKey::kTextSafety:
       return false;
+    case ModelBasedCapabilityKey::kPromptApi:
+      return true;
   }
 }
 
@@ -120,11 +126,30 @@ bool IsOnDeviceModelAdaptationEnabled(ModelBasedCapabilityKey feature) {
     case ModelBasedCapabilityKey::kTest:
       return base::GetFieldTrialParamByFeatureAsBool(
           kOnDeviceModelTestFeature, "enable_adaptation", false);
+    case ModelBasedCapabilityKey::kPromptApi:
+      return base::GetFieldTrialParamByFeatureAsBool(
+          kOnDeviceModelPromptApiFeature, "enable_adaptation", false);
     case ModelBasedCapabilityKey::kTabOrganization:
     case ModelBasedCapabilityKey::kWallpaperSearch:
     case ModelBasedCapabilityKey::kTextSafety:
       return false;
   }
+}
+
+proto::OptimizationTarget GetOptimizationTargetForModelAdaptation(
+    ModelBasedCapabilityKey feature) {
+  switch (feature) {
+    case ModelBasedCapabilityKey::kCompose:
+      return proto::OPTIMIZATION_TARGET_COMPOSE;
+    case ModelBasedCapabilityKey::kTest:
+      return proto::OPTIMIZATION_TARGET_MODEL_VALIDATION;
+    case ModelBasedCapabilityKey::kPromptApi:
+    case ModelBasedCapabilityKey::kTabOrganization:
+    case ModelBasedCapabilityKey::kWallpaperSearch:
+    case ModelBasedCapabilityKey::kTextSafety:
+      NOTREACHED_IN_MIGRATION();
+  }
+  return proto::OPTIMIZATION_TARGET_UNKNOWN;
 }
 
 }  // namespace internal

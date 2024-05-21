@@ -130,10 +130,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     // per-ASG task runner instead of the per-thread task runner.
     bool mbi_override_task_runner_handle;
 
-    // If enabled, per-AgentGroupScheduler CompositorTaskRunner will be used
-    // instead of per-MainThreadScheduler CompositorTaskRunner.
-    bool mbi_compositor_task_runner_per_agent_scheduling_group;
-
     // If ThreadedScrollPreventRenderingStarvation is enabled, this is set to
     // the policy set in the associated feature param, otherwise this is
     // equivalent to the existing behavior.
@@ -192,6 +188,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       base::RepeatingCallback<void(v8::Isolate* isolate)> callback) override;
   Vector<WebInputEventAttribution> GetPendingUserInputInfo(
       bool include_continuous) const override;
+  void ExecuteAfterCurrentTaskForTesting(
+      base::OnceClosure on_completion_task,
+      ExecuteAfterCurrentTaskRestricted) override;
   void StartIdlePeriodForTesting() override;
   void SetRendererBackgroundedForTesting(bool backgrounded) override;
 
@@ -237,7 +236,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       const WebInputEventAttribution& web_input_event_attribution);
   void DidHandleInputEventOnMainThread(const WebInputEvent& web_input_event,
                                        WebInputEventResult result);
-  void DidAnimateForInputOnCompositorThread();
 
   // Use a separate task runner so that IPC tasks are not logged via the same
   // task queue that executes them. Otherwise this would result in an infinite
@@ -514,10 +512,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // renderer has been hidden, before going to sleep for good.
   static const int kEndIdleWhenHiddenDelayMillis = 10000;
 
-  // The time we should stay in a priority-escalated mode after a call to
-  // DidAnimateForInputOnCompositorThread().
-  static const int kFlingEscalationLimitMillis = 100;
-
   // Schedules an immediate PolicyUpdate, if there isn't one already pending and
   // sets |policy_may_need_update_|. Note |any_thread_lock_| must be
   // locked.
@@ -561,9 +555,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // The task cost estimators and the UserModel need to be reset upon page
   // nagigation. This function does that. Must be called from the main thread.
   void ResetForNavigationLocked();
-
-  // Report an intervention to all WebViews in this process.
-  void BroadcastIntervention(const String& message);
 
   // Trigger an update to all task queues' priorities, throttling, and
   // enabled/disabled state based on current policy. When triggered from a
@@ -789,7 +780,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
     PendingUserInput::Monitor pending_input_monitor;
     base::TimeTicks last_idle_period_end_time;
-    base::TimeTicks fling_compositor_escalation_deadline;
     UserModel user_model;
     TraceableState<bool, TracingCategory::kInfo> awaiting_touch_start_response;
     TraceableState<bool, TracingCategory::kInfo> in_idle_period;

@@ -931,7 +931,7 @@ void MediaSessionImpl::OnSuspendInternal(SuspendType suspend_type,
               MediaSessionSuspendedSource::kSystemPermanent);
           break;
         case State::ACTIVE:
-          NOTREACHED();
+          NOTREACHED_IN_MIGRATION();
           break;
       }
       break;
@@ -1081,7 +1081,7 @@ MediaSessionImpl::GetMediaSessionInfoSync() {
   // used to differentiate webapp sessions for different handling.
   auto* web_contents_delegate = web_contents()->GetDelegate();
   info->ignore_for_active_session =
-      base::FeatureList::IsEnabled(features::kWebAppSystemMediaControlsWin) &&
+      base::FeatureList::IsEnabled(features::kWebAppSystemMediaControls) &&
       web_contents_delegate &&
       web_contents_delegate->ShouldUseInstancedSystemMediaControls();
 #else
@@ -1200,7 +1200,7 @@ void MediaSessionImpl::FinishSystemAudioFocusRequest(
       case AudioFocusType::kAmbient:
       case AudioFocusType::kGainTransient:
         // MediaSessionImpl does not use |kGainTransient| or |kAmbient|.
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
       case AudioFocusType::kGainTransientMayDuck:
         // The focus request failed, we should suspend any players that have

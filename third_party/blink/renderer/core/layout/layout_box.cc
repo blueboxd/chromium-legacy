@@ -579,10 +579,11 @@ void LayoutBox::StyleWillChange(StyleDifference diff,
           MarkContainerChainForLayout();
         }
 
-        if (old_style->GetPosition() == EPosition::kStatic)
+        if (old_style->GetPosition() == EPosition::kStatic) {
           SetShouldDoFullPaintInvalidation();
-        else if (new_style.HasOutOfFlowPosition())
+        } else if (new_style.HasOutOfFlowPosition()) {
           Parent()->SetChildNeedsLayout();
+        }
       }
 
       bool will_become_inflow = false;
@@ -683,7 +684,7 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
       //
       // For some controls, it depends on paddings.
       if (!old_style->BorderSizeEquals(new_style) ||
-          !old_style->BorderRadiusEqual(new_style) ||
+          diff.BorderRadiusChanged() ||
           (HasControlClip() && !old_style->PaddingEqual(new_style))) {
         SetNeedsPaintPropertyUpdate();
       }
@@ -1455,7 +1456,7 @@ PhysicalRect LayoutBox::PhysicalBackgroundRect(
     case EFillBox::kContent:
       return PhysicalContentBoxRect();
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
   return PhysicalRect();
 }
@@ -3334,7 +3335,7 @@ void LayoutBox::SetScrollableOverflowFromLayoutResults() {
         offset_adjust = {consumed_block_size, LayoutUnit()};
         break;
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
     }
 

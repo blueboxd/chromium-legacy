@@ -30,7 +30,7 @@ import org.robolectric.Robolectric;
 import org.chromium.base.FeatureList;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Features;
-import org.chromium.base.test.util.Features.EnableFeatures;
+import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feed.componentinterfaces.SurfaceCoordinator.StreamTabId;
@@ -41,6 +41,7 @@ import org.chromium.components.feature_engagement.Tracker;
 
 /** Test for the WebFeedFollowIntroView class. */
 @RunWith(BaseRobolectricTestRunner.class)
+@DisableFeatures({ChromeFeatureList.FEED_CONTAINMENT})
 public final class SectionHeaderViewTest {
     private SectionHeaderView mSectionHeaderView;
     private Activity mActivity;
@@ -91,7 +92,6 @@ public final class SectionHeaderViewTest {
 
     @Test
     @SmallTest
-    @EnableFeatures({ChromeFeatureList.SURFACE_POLISH})
     public void mainContentTopMarginTest() {
         mSectionHeaderView.onFinishInflate();
 

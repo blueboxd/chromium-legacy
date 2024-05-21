@@ -55,10 +55,10 @@ PaymentsNetworkInterface::UnmaskDetails& PaymentsNetworkInterface::UnmaskDetails
     const PaymentsNetworkInterface::UnmaskDetails& other) {
   unmask_auth_method = other.unmask_auth_method;
   offer_fido_opt_in = other.offer_fido_opt_in;
-  if (other.fido_request_options.has_value()) {
-    fido_request_options = other.fido_request_options->Clone();
+  if (other.fido_request_options.empty()) {
+    fido_request_options.clear();
   } else {
-    fido_request_options.reset();
+    fido_request_options = other.fido_request_options.Clone();
   }
   fido_eligible_card_ids = other.fido_eligible_card_ids;
   return *this;
@@ -98,7 +98,7 @@ PaymentsNetworkInterface::UnmaskRequestDetails::operator=(
   merchant_domain_for_footprints = other.merchant_domain_for_footprints;
   selected_challenge_option = other.selected_challenge_option;
   client_behavior_signals = other.client_behavior_signals;
-  redirect_completion_proof = other.redirect_completion_proof;
+  redirect_completion_result = other.redirect_completion_result;
   return *this;
 }
 
@@ -125,10 +125,10 @@ PaymentsNetworkInterface::UnmaskResponseDetails::operator=(
   dcvv = other.dcvv;
   expiration_month = other.expiration_month;
   expiration_year = other.expiration_year;
-  if (other.fido_request_options.has_value()) {
-    fido_request_options = other.fido_request_options->Clone();
+  if (other.fido_request_options.empty()) {
+    fido_request_options.clear();
   } else {
-    fido_request_options.reset();
+    fido_request_options = other.fido_request_options.Clone();
   }
   card_authorization_token = other.card_authorization_token;
   card_unmask_challenge_options = other.card_unmask_challenge_options;
@@ -341,7 +341,8 @@ void PaymentsNetworkInterface::GetIbanUploadDetails(
     int billable_service_number,
     const std::string& country_code,
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                            const std::u16string&,
+                            const std::u16string& validation_regex,
+                            const std::u16string& context_token,
                             std::unique_ptr<base::Value::Dict>)> callback) {
   IssueRequest(std::make_unique<GetIbanUploadDetailsRequest>(
       account_info_getter_->IsSyncFeatureEnabledForPaymentsServerMetrics(),

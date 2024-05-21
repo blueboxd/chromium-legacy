@@ -4,15 +4,15 @@
 
 #include "components/optimization_guide/core/model_execution/model_execution_util.h"
 
+#include "base/files/file_util.h"
 #include "components/optimization_guide/core/model_quality/feature_type_map.h"
 #include "components/optimization_guide/core/model_util.h"
+#include "components/optimization_guide/core/optimization_guide_constants.h"
 #include "components/prefs/pref_service.h"
 #include "services/on_device_model/public/mojom/on_device_model.mojom.h"
 #include "services/on_device_model/public/mojom/on_device_model_service.mojom.h"
 
 namespace optimization_guide {
-
-const char kModelOverrideSeparator[] = "|";
 
 // Helper method matches feature to corresponding FeatureTypeMap to set
 // LogAiDataRequest's request data.
@@ -33,9 +33,10 @@ void SetExecutionRequest(
       SetExecutionRequestTemplate<ComposeFeatureTypeMap>(log_ai_request,
                                                          request_metadata);
       return;
+    case ModelBasedCapabilityKey::kPromptApi:
     case ModelBasedCapabilityKey::kTextSafety:
     case ModelBasedCapabilityKey::kTest:
-      // Do not log request for test and text safety.
+      // Do not log requests for these features.
       return;
   }
 }
@@ -58,9 +59,10 @@ void SetExecutionResponse(ModelBasedCapabilityKey feature,
       SetExecutionResponseTemplate<ComposeFeatureTypeMap>(log_ai_request,
                                                           response_metadata);
       return;
+    case ModelBasedCapabilityKey::kPromptApi:
     case ModelBasedCapabilityKey::kTextSafety:
     case ModelBasedCapabilityKey::kTest:
-      // Do not log response for test and text safety.
+      // Do not log responses for these features.
       return;
   }
 }
@@ -75,56 +77,6 @@ GetGenAILocalFoundationalModelEnterprisePolicySettings(
               kGenAILocalFoundationalModelEnterprisePolicySettings));
 }
 
-std::optional<on_device_model::AdaptationAssetPaths>
-GetOnDeviceModelAdaptationOverride(proto::ModelExecutionFeature feature) {
-  auto adaptations_override_switch =
-      switches::GetOnDeviceModelAdaptationsOverride();
-  if (!adaptations_override_switch) {
-    return std::nullopt;
-  }
-
-  for (const auto& adaptation_override :
-       base::SplitString(*adaptations_override_switch, ",",
-                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
-    std::vector<std::string> override_parts =
-        base::SplitString(adaptation_override, kModelOverrideSeparator,
-                          base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    if (override_parts.size() != 2 && override_parts.size() != 3) {
-      // Input is malformed.
-      DLOG(ERROR) << "Invalid string format provided to the on-device model "
-                     "adaptations override";
-      return std::nullopt;
-    }
-    proto::ModelExecutionFeature this_feature;
-    if (!proto::ModelExecutionFeature_Parse(override_parts[0], &this_feature)) {
-      DLOG(ERROR) << "Invalid optimization target provided to the on-device "
-                     "model adaptations override";
-      return std::nullopt;
-    }
-    if (feature != this_feature) {
-      continue;
-    }
-    on_device_model::AdaptationAssetPaths adaptation_asset;
-    adaptation_asset.weights = *StringToFilePath(override_parts[1]);
-    if (!adaptation_asset.weights.IsAbsolute()) {
-      DLOG(ERROR)
-          << "Provided model adaptations weights file path must be absolute "
-          << adaptation_asset.weights;
-      return std::nullopt;
-    }
-    if (override_parts.size() == 3) {
-      adaptation_asset.model = *StringToFilePath(override_parts[2]);
-      if (!adaptation_asset.model.IsAbsolute()) {
-        DLOG(ERROR) << "Provided model adaptations file path must be absolute "
-                    << adaptation_asset.model;
-        return std::nullopt;
-      }
-    }
-    return adaptation_asset;
-  }
-  return std::nullopt;
-}
-
 OnDeviceModelLoadResult ConvertToOnDeviceModelLoadResult(
     on_device_model::mojom::LoadModelResult result) {
   switch (result) {
@@ -135,6 +87,21 @@ OnDeviceModelLoadResult ConvertToOnDeviceModelLoadResult(
     case on_device_model::mojom::LoadModelResult::kFailedToLoadLibrary:
       return OnDeviceModelLoadResult::kFailedToLoadLibrary;
   }
+}
+
+std::unique_ptr<proto::OnDeviceModelExecutionConfig>
+ReadOnDeviceModelExecutionConfig(const base::FilePath& config_path) {
+  // Unpack and verify model config file.
+  std::string binary_config_pb;
+  if (!base::ReadFileToString(config_path, &binary_config_pb)) {
+    return nullptr;
+  }
+
+  auto config = std::make_unique<proto::OnDeviceModelExecutionConfig>();
+  if (!config->ParseFromString(binary_config_pb)) {
+    return nullptr;
+  }
+  return config;
 }
 
 }  // namespace optimization_guide

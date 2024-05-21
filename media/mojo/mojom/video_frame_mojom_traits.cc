@@ -166,7 +166,7 @@ media::mojom::VideoFrameDataPtr MakeVideoFrameData(
     }
   }
 
-  NOTREACHED() << "Unsupported VideoFrame conversion";
+  NOTREACHED_IN_MIGRATION() << "Unsupported VideoFrame conversion";
   return nullptr;
 }
 
@@ -421,8 +421,9 @@ bool StructTraits<media::mojom::VideoFrameDataView,
       return false;
 
     gpu::MailboxHolder mailbox_holder_array[media::VideoFrame::kMaxPlanes];
-    for (size_t i = 0; i < media::VideoFrame::kMaxPlanes; i++)
+    for (size_t i = 0; i < media::VideoFrame::kMaxPlanes; i++) {
       mailbox_holder_array[i] = mailbox_holder[i];
+    }
 
     std::optional<gpu::VulkanYCbCrInfo> ycbcr_info;
     if (!mailbox_data.ReadYcbcrData(&ycbcr_info))

@@ -57,7 +57,12 @@ from blinkpy.common import path_finder
 from blinkpy.common.memoized import memoized
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.path import abspath_to_uri
-from blinkpy.w3c.wpt_manifest import WPTManifest, MANIFEST_NAME
+from blinkpy.w3c.wpt_manifest import (
+    FuzzyRange,
+    FuzzyParameters,
+    WPTManifest,
+    MANIFEST_NAME,
+)
 from blinkpy.web_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
 from blinkpy.web_tests.models.test_configuration import TestConfiguration
 from blinkpy.web_tests.models.test_run_results import TestRunException
@@ -74,9 +79,6 @@ from blinkpy.web_tests.servers import pywebsocket
 from blinkpy.web_tests.servers import wptserve
 
 _log = logging.getLogger(__name__)
-
-FuzzyRange = Tuple[int, int]
-FuzzyParameters = Tuple[Optional[FuzzyRange], Optional[FuzzyRange]]
 
 # Path relative to the build directory.
 CONTENT_SHELL_FONTS_DIR = "test_fonts"
@@ -1310,6 +1312,14 @@ class Port(object):
                 file_digest = ''
             hasher.update(f'{changed_file}:{file_digest}\n'.encode())
         return hasher.hexdigest()
+
+    @classmethod
+    def split_wpt_dir(cls, test: str) -> Tuple[Optional[str], str]:
+        """Split a test path into its WPT directory (if any) and the rest."""
+        for wpt_dir in cls.WPT_DIRS:
+            if test.startswith(wpt_dir):
+                return wpt_dir, test[len(f'{wpt_dir}/'):]
+        return None, test
 
     def is_wpt_file(self, path):
         """Returns whether a path is a WPT test file."""

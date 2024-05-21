@@ -402,6 +402,7 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
+    @DisableFeatures(ChromeFeatureList.PERMISSION_DEDICATED_CPSS_SETTING_ANDROID)
     public void testSetAllowLocationEnabled() throws Exception {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         LocationProviderOverrider.setLocationProviderImpl(new MockLocationProvider());
@@ -1646,6 +1647,7 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
+    @DisableFeatures(ChromeFeatureList.PERMISSION_DEDICATED_CPSS_SETTING_ANDROID)
     public void testOnlyExpectedPreferencesDeviceLocation() {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
 
@@ -1712,6 +1714,7 @@ public class SiteSettingsTest {
     @SmallTest
     @Feature({"Preferences"})
     @EnableFeatures("QuietNotificationPrompts")
+    @DisableFeatures(ChromeFeatureList.PERMISSION_DEDICATED_CPSS_SETTING_ANDROID)
     public void testOnlyExpectedPreferencesNotifications() {
         String[] notifications_enabled;
         String[] notifications_disabled;
@@ -2317,7 +2320,7 @@ public class SiteSettingsTest {
         Intent intent =
                 settingsLauncher.createSettingsActivityIntent(
                         context,
-                        SingleWebsiteSettings.class.getName(),
+                        SingleWebsiteSettings.class,
                         SingleWebsiteSettings.createFragmentArgsForSite(url));
         final SettingsActivity settingsActivity =
                 (SettingsActivity)
@@ -2444,7 +2447,7 @@ public class SiteSettingsTest {
         Intent intent =
                 settingsLauncher.createSettingsActivityIntent(
                         context,
-                        SingleWebsiteSettings.class.getName(),
+                        SingleWebsiteSettings.class,
                         SingleWebsiteSettings.createFragmentArgsForSite(rpUrl));
         final SettingsActivity settingsActivity =
                 (SettingsActivity)
@@ -2713,6 +2716,7 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"RenderTest"})
+    @DisableFeatures(ChromeFeatureList.PERMISSION_DEDICATED_CPSS_SETTING_ANDROID)
     public void testRenderLocationPage() throws Exception {
         createCookieExceptions();
         renderCategoryPage(

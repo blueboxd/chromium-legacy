@@ -78,6 +78,16 @@ extern const char kAutofillEnableRankingFormulaCreditCardsDescription[];
 extern const char kAutofillEnableRemadeDownstreamMetricsName[];
 extern const char kAutofillEnableRemadeDownstreamMetricsDescription[];
 
+// Title and description for the flag to enable loading and confirmation
+// for save card.
+extern const char kAutofillEnableSaveCardLoadingAndConfirmationName[];
+extern const char kAutofillEnableSaveCardLoadingAndConfirmationDescription[];
+
+// Title and description for the flag to enable fallback for save card failure
+// to upload and saves the card locally instead.
+extern const char kAutofillEnableSaveCardLocalSaveFallbackName[];
+extern const char kAutofillEnableSaveCardLocalSaveFallbackDescription[];
+
 // Title and description for the flag that controls whether Autofill handles
 // administrative area level 2 fields.
 extern const char kAutofillEnableSupportForAdminLevel2Name[];
@@ -97,6 +107,11 @@ extern const char kAutofillEnableSupportForLandmarkDescription[];
 // of issuer network) in Payments UI.
 extern const char kAutofillEnableCardProductNameName[];
 extern const char kAutofillEnableCardProductNameDescription[];
+
+// Title and description for the flag to enable loading and confirmation
+// for virtual card enrollment.
+extern const char kAutofillEnableVcnEnrollLoadingAndConfirmationName[];
+extern const char kAutofillEnableVcnEnrollLoadingAndConfirmationDescription[];
 
 // Title and description for flag to enable Verve card support for autofill.
 extern const char kAutofillEnableVerveCardSupportName[];
@@ -175,6 +190,12 @@ extern const char kSpotlightDonateNewIntentsDescription[];
 // reports is delayed.
 extern const char kBreakpadNoDelayInitialUploadName[];
 extern const char kBreakpadNoDelayInitialUploadDescription[];
+
+// Title and description for the flag to enable the content notification
+// experiments. This is a kill switcher that guarded the
+// ContentPushNotifications feature.
+extern const char kContentNotificationExperimentName[];
+extern const char kContentNotificationExperimentDescription[];
 
 // Title and description for the flag to enable the content notifications
 // feature.
@@ -256,11 +277,6 @@ extern const char kDefaultBrowserVideoInSettingsDescription[];
 // an external app.
 extern const char kDefaultBrowserIntentsShowSettingsName[];
 extern const char kDefaultBrowserIntentsShowSettingsDescription[];
-
-// Title and description for the flag to enable skipping the default browser
-// promo.
-extern const char kDefaultBrowserPromoForceShowPromoName[];
-extern const char kDefaultBrowserPromoForceShowPromoDescription[];
 
 // Title and description for default browser promo trigger criteria experiment.
 extern const char kDefaultBrowserTriggerCriteriaExperimentName[];
@@ -420,11 +436,6 @@ extern const char kFullscreenImprovementDescription[];
 extern const char kFullscreenPromosManagerSkipInternalLimitsName[];
 extern const char kFullscreenPromosManagerSkipInternalLimitsDescription[];
 
-// Title and description for the flag to enable IdleTimeout and
-// IdleTimeoutActions policies.
-extern const char kIdleTimeoutPoliciesName[];
-extern const char kIdleTimeoutPoliciesDescription[];
-
 // Title and description for the command line switch used to determine the
 // active fullscreen viewport adjustment mode.
 extern const char kFullscreenSmoothScrollingName[];
@@ -567,6 +578,10 @@ extern const char kIPHiOSSwipeToolbarToChangeTabFeatureDescription[];
 extern const char kIPHiOSTabGridSwipeRightForIncognitoName[];
 extern const char kIPHiOSTabGridSwipeRightForIncognitoDescription[];
 
+// Title and description for the flag to enable Lens circle to search feature.
+extern const char kLensCircleToSearchEnabledName[];
+extern const char kLensCircleToSearchEnabledDescription[];
+
 // Title and description for the flag to add Linked Services Setting to the Sync
 // Settings page.
 extern const char kLinkedServicesSettingIosName[];
@@ -637,10 +652,6 @@ extern const char kOmniboxCompanyEntityIconAdjustmentDescription[];
 // schemeless navigations.
 extern const char kOmniboxHttpsUpgradesName[];
 extern const char kOmniboxHttpsUpgradesDescription[];
-
-// Title and description for the Inspire Me omnibox flag.
-extern const char kOmniboxInspireMeName[];
-extern const char kOmniboxInspireMeDescription[];
 
 // Title and description for the Inspire Me for Signed Out Users omnibox flag.
 extern const char kOmniboxInspireMeSignedOutName[];

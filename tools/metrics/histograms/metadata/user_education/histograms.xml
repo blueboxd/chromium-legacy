@@ -31,6 +31,8 @@ chromium-metrics-reviews@google.com.
       summary="Lens Overlay entry points in app and web context menus."/>
   <variant name="NewBadgeTestFeature"
       summary="Used for testing purposes only."/>
+  <variant name="TabOrganization"
+      summary="Promotion for Organize Tabs in the app menu."/>
 </variants>
 
 <variants name="TutorialID">
@@ -71,7 +73,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tutorial{TutorialID}.Completion" enum="BooleanSuccess"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>dpenning@chromium.org</owner>
   <owner>dfried@chromium.org</owner>
   <summary>
@@ -113,6 +115,18 @@ chromium-metrics-reviews@google.com.
     Records what failure prevented an In-Product Help from being shown to the
     user. The failure defines the state of the User Education system, which can
     be many varieties (e.g. snoozed, disabled blocked by another promo, etc.).
+  </summary>
+</histogram>
+
+<histogram name="UserEducation.MessageNotShown.DesktopReEngagement.NoBrowser"
+    units="tries" expires_after="2024-12-01">
+  <owner>dfried@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <summary>
+    Records when the re-engagement promo is not shown because there is no
+    eligible browser. This is recorded on a new User Education session. The
+    value is the number of times the promo had attempted to show; typical values
+    are low (1-2) as the number of retries is limited.
   </summary>
 </histogram>
 

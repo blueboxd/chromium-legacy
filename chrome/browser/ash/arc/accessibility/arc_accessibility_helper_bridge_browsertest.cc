@@ -13,7 +13,6 @@
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/components/arc/test/arc_util_test_support.h"
 #include "ash/components/arc/test/connection_holder_util.h"
-#include "ash/constants/app_types.h"
 #include "ash/shell.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_base.h"
@@ -56,10 +55,11 @@ class MockAutomationEventRouter
   virtual ~MockAutomationEventRouter() = default;
 
   // extensions::AutomationEventRouterInterface:
-  void DispatchAccessibilityEvents(const ui::AXTreeID& tree_id,
-                                   std::vector<ui::AXTreeUpdate> updates,
-                                   const gfx::Point& mouse_location,
-                                   std::vector<ui::AXEvent> events) override {}
+  void DispatchAccessibilityEvents(
+      const ui::AXTreeID& tree_id,
+      const std::vector<ui::AXTreeUpdate>& updates,
+      const gfx::Point& mouse_location,
+      const std::vector<ui::AXEvent>& events) override {}
 
   void DispatchAccessibilityLocationChange(
       const ui::AXLocationChanges& details) override {}

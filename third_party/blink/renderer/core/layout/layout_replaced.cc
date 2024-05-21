@@ -94,7 +94,7 @@ void LayoutReplaced::StyleDidChange(StyleDifference diff,
 
   // Replaced elements can have border-radius clips without clipping overflow;
   // the overflow clipping case is already covered in LayoutBox::StyleDidChange
-  if (old_style && !old_style->BorderRadiusEqual(StyleRef())) {
+  if (old_style && diff.BorderRadiusChanged()) {
     SetNeedsPaintPropertyUpdate();
   }
 
@@ -345,7 +345,7 @@ PhysicalRect LayoutReplaced::ComputeObjectFitAndPositionRect(
     case EObjectFit::kFill:
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 
   LayoutUnit x_offset =

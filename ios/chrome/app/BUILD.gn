@@ -64,6 +64,10 @@ source_set("app") {
   frameworks = [ "Foundation.framework" ]
 }
 
+source_set("app_trampoline") {
+  sources = [ "chrome_exe_trampoline.mm" ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -533,6 +537,7 @@ source_set("app_internal") {
     "//components/prefs/ios",
     "//components/previous_session_info",
     "//components/proxy_config",
+    "//components/search_engines",
     "//components/signin/internal/identity_manager",
     "//components/sync",
     "//components/web_resource",
@@ -550,6 +555,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/browser_state/model",
     "//ios/chrome/browser/browsing_data/model",
     "//ios/chrome/browser/commerce/model/push_notification",
+    "//ios/chrome/browser/content_notification/model:util",
     "//ios/chrome/browser/content_settings/model",
     "//ios/chrome/browser/crash_report/model",
     "//ios/chrome/browser/crash_report/model:model_internal",
@@ -581,6 +587,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/search_engines/model",
     "//ios/chrome/browser/search_engines/model:extension_search_engine_data_updater",
     "//ios/chrome/browser/search_engines/model:search_engines_util",
+    "//ios/chrome/browser/search_engines/model:template_url_service_factory",
     "//ios/chrome/browser/sessions:features",
     "//ios/chrome/browser/sessions:session_restoration_service",
     "//ios/chrome/browser/sessions:session_restoration_service_factory",
@@ -814,13 +821,6 @@ chrome_app("chrome") {
     if (ios_enable_push_notification_service_extension) {
       deps += [ ":push_notification_service_extension_bundle" ]
     }
-    if (use_blink) {
-      deps += [
-        ":chrome_content_process_bundle",
-        ":chrome_gpu_process_bundle",
-        ":chrome_network_process_bundle",
-      ]
-    }
   }
 
   extra_substitutions = [
@@ -927,25 +927,6 @@ if (current_toolchain == default_toolchain && !ios_chrome_generate_order_file) {
     extension_bundle_data("push_notification_service_extension_bundle") {
       extension_name = "push_notification_service_extension.appex"
       extension_target = "//ios/chrome/push_notification_service_extension/appex(${_extension_toolchain})"
-    }
-  }
-
-  if (use_blink) {
-    _extension_toolchain = "${current_toolchain}_blink_app_ext"
-    extension_bundle_data("chrome_content_process_bundle") {
-      extension_dir = "Extensions"
-      extension_name = "chrome_content_process.appex"
-      extension_target = "//ios/chrome/app/content/appex:chrome_content_process(${_extension_toolchain})"
-    }
-    extension_bundle_data("chrome_network_process_bundle") {
-      extension_dir = "Extensions"
-      extension_name = "chrome_network_process.appex"
-      extension_target = "//ios/chrome/app/content/appex:chrome_network_process(${_extension_toolchain})"
-    }
-    extension_bundle_data("chrome_gpu_process_bundle") {
-      extension_dir = "Extensions"
-      extension_name = "chrome_gpu_process.appex"
-      extension_target = "//ios/chrome/app/content/appex:chrome_gpu_process(${_extension_toolchain})"
     }
   }
 }

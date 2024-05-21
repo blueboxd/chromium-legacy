@@ -170,7 +170,7 @@ BASE_FEATURE(kEvictionThrottlesDraw,
 
 BASE_FEATURE(kUseRecordedBoundsForTiling,
              "UseRecordedBoundsForTiling",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAdjustFastMainThreadThreshold,
              "AdjustFastMainThreadThreshold",
@@ -209,6 +209,10 @@ BASE_FEATURE(kNonBatchedCopySharedImage,
 
 BASE_FEATURE(kDontAlwaysPushPictureLayerImpls,
              "DontAlwaysPushPictureLayerImpls",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kWarmUpCompositor,
+             "WarmUpCompositor",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

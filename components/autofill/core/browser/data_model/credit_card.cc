@@ -80,6 +80,9 @@ std::u16string NetworkForFill(const std::string& network) {
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_TROY);
   if (network == kUnionPay)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_UNION_PAY);
+  if (network == kVerveCard) {
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_VERVE);
+  }
   if (network == kVisaCard)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_VISA);
 
@@ -147,6 +150,10 @@ Suggestion::Icon ConvertCardNetworkIntoIcon(std::string_view network) {
   }
   if (network == kUnionPay) {
     return Suggestion::Icon::kCardUnionPay;
+  }
+  if (network == kVerveCard &&
+      base::FeatureList::IsEnabled(features::kAutofillEnableVerveCardSupport)) {
+    return Suggestion::Icon::kCardVerve;
   }
   if (network == kVisaCard) {
     return Suggestion::Icon::kCardVisa;
@@ -283,6 +290,8 @@ int CreditCard::IconResourceId(Suggestion::Icon icon) {
     case Suggestion::Icon::kCardUnionPay:
       return get_icon(IDR_AUTOFILL_METADATA_CC_UNIONPAY,
                       IDR_AUTOFILL_CC_UNIONPAY);
+    case Suggestion::Icon::kCardVerve:
+      return get_icon(IDR_AUTOFILL_METADATA_CC_VERVE, IDR_AUTOFILL_CC_VERVE);
     case Suggestion::Icon::kCardVisa:
       return get_icon(IDR_AUTOFILL_METADATA_CC_VISA, IDR_AUTOFILL_CC_VISA);
     case Suggestion::Icon::kCardGeneric:
@@ -347,6 +356,7 @@ const char* CreditCard::GetCardNetwork(const std::u16string& number) {
   // MIR                    2200-2204                                  16
   // Troy                   22050-22052, 9792                          16
   // UnionPay               62                                         16-19
+  // Verve                  506099–506198,507865-507964,650002–650027  16,18,19
 
   // Determine the network for the given |number| by going from the longest
   // (most specific) prefix to the shortest (most general) prefix.
@@ -420,6 +430,14 @@ const char* CreditCard::GetCardNetwork(const std::u16string& number) {
     if (MatchesRegex<kEloRegexPattern>(
             base::NumberToString16(first_six_digits))) {
       return kEloCard;
+    }
+
+    if (((first_six_digits >= 506099 && first_six_digits <= 506198) ||
+         (first_six_digits >= 507865 && first_six_digits <= 507964) ||
+         (first_six_digits >= 650002 && first_six_digits <= 650027)) &&
+        base::FeatureList::IsEnabled(
+            features::kAutofillEnableVerveCardSupport)) {
+      return kVerveCard;
     }
   }
 
@@ -721,7 +739,8 @@ void CreditCard::SetRawInfoWithVerificationStatus(FieldType type,
       break;
 
     default:
-      NOTREACHED() << "Attempting to set unknown info-type " << type;
+      NOTREACHED_IN_MIGRATION()
+          << "Attempting to set unknown info-type " << type;
       break;
   }
 }

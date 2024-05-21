@@ -107,6 +107,7 @@ AutofillTriggerSource TriggerSourceFromSuggestionTriggerSource(
         kShowPromptAfterDialogClosedNonManualFallback:
     case AutofillSuggestionTriggerSource::kComposeDialogLostFocus:
     case AutofillSuggestionTriggerSource::kComposeDelayedProactiveNudge:
+    case AutofillSuggestionTriggerSource::kPasswordManagerProcessedFocusedField:
       // On Android, no popup exists. Instead, the keyboard accessory is used.
 #if BUILDFLAG(IS_ANDROID)
       return AutofillTriggerSource::kKeyboardAccessory;
@@ -181,10 +182,11 @@ bool AutofillExternalDelegate::IsAutofillAndFirstLayerSuggestionId(
     case SuggestionType::kAutocompleteEntry:
     case SuggestionType::kAutofillOptions:
     case SuggestionType::kClearForm:
-    case SuggestionType::kCompose:
+    case SuggestionType::kComposeResumeNudge:
     case SuggestionType::kComposeDisable:
     case SuggestionType::kComposeGoToSettings:
     case SuggestionType::kComposeNeverShowOnThisSiteAgain:
+    case SuggestionType::kComposeProactiveNudge:
     case SuggestionType::kComposeSavedStateNotification:
     case SuggestionType::kCreateNewPlusAddress:
     case SuggestionType::kDatalistEntry:
@@ -298,15 +300,17 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   }
 }
 
-std::optional<FieldTypeSet>
-AutofillExternalDelegate::GetLastFieldTypesToFillForSection(
+SuggestionType
+AutofillExternalDelegate::GetLastAcceptedSuggestionToFillForSection(
     const Section& section) const {
-  if (auto it =
-          last_field_types_to_fill_for_address_form_section_.find(section);
-      it != last_field_types_to_fill_for_address_form_section_.end()) {
+  if (auto it = last_accepted_address_suggestion_for_address_form_section_.find(
+          section);
+      it != last_accepted_address_suggestion_for_address_form_section_.end()) {
     return it->second;
   }
-  return std::nullopt;
+  // In case no suggestions were accepted for this section, default to full form
+  // filling suggestions.
+  return SuggestionType::kAddressEntry;
 }
 
 bool AutofillExternalDelegate::HasActiveScreenReader() const {
@@ -453,13 +457,29 @@ void AutofillExternalDelegate::DidSelectSuggestion(
                GetFieldTypesOfGroup(FieldTypeGroup::kEmail)});
       break;
     case SuggestionType::kAutocompleteEntry:
-    case SuggestionType::kIbanEntry:
-    case SuggestionType::kMerchantPromoCodeEntry:
-    case SuggestionType::kFillExistingPlusAddress:
       manager_->FillOrPreviewField(mojom::ActionPersistence::kPreview,
                                    mojom::FieldActionType::kReplaceAll,
                                    query_form_, query_field_,
-                                   suggestion.main_text.value, suggestion.type);
+                                   suggestion.main_text.value, suggestion.type,
+                                   /*field_type_used=*/std::nullopt);
+      break;
+    case SuggestionType::kIbanEntry:
+      manager_->FillOrPreviewField(
+          mojom::ActionPersistence::kPreview,
+          mojom::FieldActionType::kReplaceAll, query_form_, query_field_,
+          suggestion.main_text.value, suggestion.type, IBAN_VALUE);
+      break;
+    case SuggestionType::kMerchantPromoCodeEntry:
+      manager_->FillOrPreviewField(
+          mojom::ActionPersistence::kPreview,
+          mojom::FieldActionType::kReplaceAll, query_form_, query_field_,
+          suggestion.main_text.value, suggestion.type, MERCHANT_PROMO_CODE);
+      break;
+    case SuggestionType::kFillExistingPlusAddress:
+      manager_->FillOrPreviewField(
+          mojom::ActionPersistence::kPreview,
+          mojom::FieldActionType::kReplaceAll, query_form_, query_field_,
+          suggestion.main_text.value, suggestion.type, EMAIL_ADDRESS);
       break;
     case SuggestionType::kAddressFieldByFieldFilling:
     case SuggestionType::kCreditCardFieldByFieldFilling:
@@ -478,10 +498,11 @@ void AutofillExternalDelegate::DidSelectSuggestion(
     case SuggestionType::kEditAddressProfile:
     case SuggestionType::kDeleteAddressProfile:
     case SuggestionType::kAutofillOptions:
-    case SuggestionType::kCompose:
+    case SuggestionType::kComposeResumeNudge:
     case SuggestionType::kComposeDisable:
     case SuggestionType::kComposeGoToSettings:
     case SuggestionType::kComposeNeverShowOnThisSiteAgain:
+    case SuggestionType::kComposeProactiveNudge:
     case SuggestionType::kComposeSavedStateNotification:
     case SuggestionType::kDatalistEntry:
     case SuggestionType::kShowAccountCards:
@@ -568,10 +589,10 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
       autofill_metrics::LogSuggestionAcceptedIndex(
           position.row, FillingProduct::kAutocomplete,
           manager_->client().IsOffTheRecord());
-      manager_->FillOrPreviewField(mojom::ActionPersistence::kFill,
-                                   mojom::FieldActionType::kReplaceAll,
-                                   query_form_, query_field_,
-                                   suggestion.main_text.value, suggestion.type);
+      manager_->FillOrPreviewField(
+          mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
+          query_form_, query_field_, suggestion.main_text.value,
+          suggestion.type, /*field_type_used=*/std::nullopt);
       manager_->OnSingleFieldSuggestionSelected(suggestion.main_text.value,
                                                 suggestion.type, query_form_,
                                                 query_field_);
@@ -586,7 +607,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
       manager_->FillOrPreviewField(
           mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
           query_form_, query_field_, suggestion.main_text.value,
-          SuggestionType::kFillExistingPlusAddress);
+          SuggestionType::kFillExistingPlusAddress, EMAIL_ADDRESS);
       break;
     case SuggestionType::kCreateNewPlusAddress: {
       if (AutofillPlusAddressDelegate* plus_address_delegate =
@@ -604,7 +625,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
                   mojom::ActionPersistence::kFill,
                   mojom::FieldActionType::kReplaceAll, form, field,
                   base::UTF8ToUTF16(plus_address),
-                  SuggestionType::kCreateNewPlusAddress);
+                  SuggestionType::kCreateNewPlusAddress, EMAIL_ADDRESS);
             }
           },
           GetWeakPtr(), query_form_, query_field_);
@@ -613,7 +634,8 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
           std::move(callback));
       break;
     }
-    case SuggestionType::kCompose:
+    case SuggestionType::kComposeResumeNudge:
+    case SuggestionType::kComposeProactiveNudge:
     case SuggestionType::kComposeSavedStateNotification:
       if (AutofillComposeDelegate* delegate =
               manager_->client().GetComposeDelegate()) {
@@ -674,11 +696,11 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
 void AutofillExternalDelegate::DidPerformButtonActionForSuggestion(
     const Suggestion& suggestion) {
   switch (suggestion.type) {
-    case SuggestionType::kCompose:
+    case SuggestionType::kComposeResumeNudge:
       NOTIMPLEMENTED();
       return;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 }
 
@@ -719,10 +741,11 @@ bool AutofillExternalDelegate::RemoveSuggestion(const Suggestion& suggestion) {
     case SuggestionType::kAccountStoragePasswordEntry:
     case SuggestionType::kPasswordAccountStorageReSignin:
     case SuggestionType::kPasswordAccountStorageEmpty:
-    case SuggestionType::kCompose:
+    case SuggestionType::kComposeResumeNudge:
     case SuggestionType::kComposeDisable:
     case SuggestionType::kComposeGoToSettings:
     case SuggestionType::kComposeNeverShowOnThisSiteAgain:
+    case SuggestionType::kComposeProactiveNudge:
     case SuggestionType::kComposeSavedStateNotification:
     case SuggestionType::kDatalistEntry:
     case SuggestionType::kMerchantPromoCodeEntry:
@@ -773,10 +796,10 @@ base::WeakPtr<AutofillExternalDelegate> AutofillExternalDelegate::GetWeakPtr() {
 
 void AutofillExternalDelegate::ShowEditAddressProfileDialog(
     const std::string& guid) {
-  AutofillProfile* profile = manager_->client()
-                                 .GetPersonalDataManager()
-                                 ->address_data_manager()
-                                 .GetProfileByGUID(guid);
+  const AutofillProfile* profile = manager_->client()
+                                       .GetPersonalDataManager()
+                                       ->address_data_manager()
+                                       .GetProfileByGUID(guid);
   if (profile) {
     manager_->client().ShowEditAddressProfileDialog(
         *profile,
@@ -787,10 +810,10 @@ void AutofillExternalDelegate::ShowEditAddressProfileDialog(
 
 void AutofillExternalDelegate::ShowDeleteAddressProfileDialog(
     const std::string& guid) {
-  AutofillProfile* profile = manager_->client()
-                                 .GetPersonalDataManager()
-                                 ->address_data_manager()
-                                 .GetProfileByGUID(guid);
+  const AutofillProfile* profile = manager_->client()
+                                       .GetPersonalDataManager()
+                                       ->address_data_manager()
+                                       .GetProfileByGUID(guid);
   if (profile) {
     manager_->client().ShowDeleteAddressProfileDialog(
         *profile,
@@ -900,7 +923,8 @@ void AutofillExternalDelegate::PreviewAddressFieldByFieldFillingSuggestion(
   if (!filling_value.empty()) {
     manager_->FillOrPreviewField(
         mojom::ActionPersistence::kPreview, mojom::FieldActionType::kReplaceAll,
-        query_form_, query_field_, filling_value, suggestion.type);
+        query_form_, query_field_, filling_value, suggestion.type,
+        suggestion.field_by_field_filling_type_used);
   }
 }
 
@@ -916,9 +940,9 @@ void AutofillExternalDelegate::FillAddressFieldByFieldFillingSuggestion(
     // `last_field_types_to_fill_for_address_form_section_` to know the current
     // filling granularity. The exact type is not important, what matters here
     // is that the user targeted one ONE field, i.e, field-by-field filling.
-    last_field_types_to_fill_for_address_form_section_[autofill_trigger_field
-                                                           ->section()] = {
-        *suggestion.field_by_field_filling_type_used};
+    last_accepted_address_suggestion_for_address_form_section_
+        [autofill_trigger_field->section()] =
+            SuggestionType::kAddressFieldByFieldFilling;
   }
   const bool is_triggering_field_address =
       autofill_trigger_field &&
@@ -956,7 +980,8 @@ void AutofillExternalDelegate::FillAddressFieldByFieldFillingSuggestion(
   if (!filling_value.empty()) {
     manager_->FillOrPreviewField(
         mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
-        query_form_, query_field_, filling_value, suggestion.type);
+        query_form_, query_field_, filling_value, suggestion.type,
+        suggestion.field_by_field_filling_type_used);
   }
 }
 
@@ -964,7 +989,8 @@ void AutofillExternalDelegate::PreviewCreditCardFieldByFieldFillingSuggestion(
     const Suggestion& suggestion) {
   manager_->FillOrPreviewField(
       mojom::ActionPersistence::kPreview, mojom::FieldActionType::kReplaceAll,
-      query_form_, query_field_, suggestion.main_text.value, suggestion.type);
+      query_form_, query_field_, suggestion.main_text.value, suggestion.type,
+      suggestion.field_by_field_filling_type_used);
 }
 
 void AutofillExternalDelegate::FillCreditCardFieldByFieldFillingSuggestion(
@@ -979,7 +1005,8 @@ void AutofillExternalDelegate::FillCreditCardFieldByFieldFillingSuggestion(
   }
   manager_->FillOrPreviewField(
       mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
-      query_form_, query_field_, suggestion.main_text.value, suggestion.type);
+      query_form_, query_field_, suggestion.main_text.value, suggestion.type,
+      suggestion.field_by_field_filling_type_used);
 }
 
 void AutofillExternalDelegate::OnCreditCardFetched(
@@ -997,7 +1024,7 @@ void AutofillExternalDelegate::OnCreditCardFetched(
       mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
       query_form_, query_field_,
       credit_card->GetInfo(CREDIT_CARD_NUMBER, manager_->app_locale()),
-      SuggestionType::kCreditCardFieldByFieldFilling);
+      SuggestionType::kCreditCardFieldByFieldFilling, CREDIT_CARD_NUMBER);
 }
 
 void AutofillExternalDelegate::OnVirtualCreditCardFetched(
@@ -1031,9 +1058,8 @@ void AutofillExternalDelegate::FillAutofillFormData(
     const AutofillField* autofill_trigger_field = GetQueriedAutofillField();
     if (autofill_trigger_field && kAutofillAddressSuggestions.contains(type) &&
         !is_preview) {
-      last_field_types_to_fill_for_address_form_section_[autofill_trigger_field
-                                                             ->section()] =
-          trigger_details.field_types_to_fill;
+      last_accepted_address_suggestion_for_address_form_section_
+          [autofill_trigger_field->section()] = type;
     }
   }
 
@@ -1282,7 +1308,7 @@ void AutofillExternalDelegate::DidAcceptPaymentsSuggestion(
                       mojom::ActionPersistence::kFill,
                       mojom::FieldActionType::kReplaceAll,
                       delegate->query_form_, delegate->query_field_, value,
-                      SuggestionType::kIbanEntry);
+                      SuggestionType::kIbanEntry, IBAN_VALUE);
                 }
               },
               GetWeakPtr()));
@@ -1293,10 +1319,10 @@ void AutofillExternalDelegate::DidAcceptPaymentsSuggestion(
     case SuggestionType::kMerchantPromoCodeEntry:
       // User selected an Autocomplete or Merchant Promo Code field, so we fill
       // directly.
-      manager_->FillOrPreviewField(mojom::ActionPersistence::kFill,
-                                   mojom::FieldActionType::kReplaceAll,
-                                   query_form_, query_field_,
-                                   suggestion.main_text.value, suggestion.type);
+      manager_->FillOrPreviewField(
+          mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
+          query_form_, query_field_, suggestion.main_text.value,
+          suggestion.type, MERCHANT_PROMO_CODE);
       manager_->OnSingleFieldSuggestionSelected(suggestion.main_text.value,
                                                 suggestion.type, query_form_,
                                                 query_field_);

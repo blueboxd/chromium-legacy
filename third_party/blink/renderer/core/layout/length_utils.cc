@@ -114,10 +114,11 @@ LayoutUnit ResolveInlineLengthInternal(
     case Length::kDeviceWidth:
     case Length::kDeviceHeight:
     case Length::kExtendToZoom:
-      NOTREACHED() << "These should only be used for viewport definitions";
+      NOTREACHED_IN_MIGRATION()
+          << "These should only be used for viewport definitions";
       [[fallthrough]];
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return unresolvable_length_result;
   }
 }
@@ -128,7 +129,6 @@ LayoutUnit ResolveBlockLengthInternal(
     const BoxStrut& border_padding,
     const Length& original_length,
     const Length* auto_length,
-    bool use_intrinsic_size,
     LayoutUnit override_available_size,
     const LayoutUnit* override_percentage_resolution_size,
     IntrinsicBlockSizeFunctionRef unresolvable_block_size_func) {
@@ -169,7 +169,7 @@ LayoutUnit ResolveBlockLengthInternal(
           {.intrinsic_evaluator = [&](const Length& length_to_evaluate) {
             return ResolveBlockLengthInternal(
                 constraint_space, style, border_padding, length_to_evaluate,
-                auto_length, use_intrinsic_size, override_available_size,
+                auto_length, override_available_size,
                 override_percentage_resolution_size,
                 unresolvable_block_size_func);
           }});
@@ -184,8 +184,7 @@ LayoutUnit ResolveBlockLengthInternal(
     case Length::kMaxContent:
     case Length::kMinIntrinsic:
     case Length::kFitContent: {
-      LayoutUnit intrinsic_size =
-          use_intrinsic_size ? unresolvable_block_size_func() : kIndefiniteSize;
+      LayoutUnit intrinsic_size = unresolvable_block_size_func();
 #if DCHECK_IS_ON()
       // Due to how intrinsic_size is calculated, it should always include
       // border and padding. We cannot check for this if we are
@@ -204,10 +203,11 @@ LayoutUnit ResolveBlockLengthInternal(
     case Length::kDeviceWidth:
     case Length::kDeviceHeight:
     case Length::kExtendToZoom:
-      NOTREACHED() << "These should only be used for viewport definitions";
+      NOTREACHED_IN_MIGRATION()
+          << "These should only be used for viewport definitions";
       [[fallthrough]];
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return border_padding.BlockSum();
   }
 }
@@ -529,11 +529,6 @@ MinMaxSizes ComputeMinMaxBlockSizes(const ConstraintSpace& space,
                                     const ComputedStyle& style,
                                     const BoxStrut& border_padding,
                                     LayoutUnit override_available_size) {
-  if (const std::optional<MinMaxSizes> override_sizes =
-          space.OverrideMinMaxBlockSizes()) {
-    DCHECK_GE(override_sizes->max_size, override_sizes->min_size);
-    return *override_sizes;
-  }
   MinMaxSizes sizes = {
       ResolveMinBlockLength(space, style, border_padding,
                             style.LogicalMinHeight(), override_available_size,
@@ -921,7 +916,7 @@ LogicalSize ComputeReplacedSizeInternal(const BlockNode& node,
       size = ResolveMainInlineLength(
           space, style, border_padding,
           [](MinMaxSizesType) -> MinMaxSizesResult {
-            NOTREACHED();
+            NOTREACHED_IN_MIGRATION();
             return MinMaxSizesResult();
           },
           Length::FillAvailable(), /* auto_length */ nullptr,
@@ -1396,7 +1391,7 @@ LayoutUnit LineOffsetForTextAlign(ETextAlign text_align,
       return space_left;
     }
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return LayoutUnit();
   }
 }
@@ -1523,8 +1518,11 @@ LogicalSize CalculateChildAvailableSize(
   LogicalSize child_available_size =
       ShrinkLogicalSize(border_box_size, border_scrollbar_padding);
 
-  if (space.IsAnonymous() || node.IsAnonymousBlock())
+  if (space.IsAnonymous() ||
+      (node.IsAnonymousBlock() &&
+       child_available_size.block_size == kIndefiniteSize)) {
     child_available_size.block_size = space.AvailableSize().block_size;
+  }
 
   return child_available_size;
 }

@@ -168,7 +168,7 @@ wgpu::BackendType DawnContextProvider::GetDefaultBackendType() {
 #elif BUILDFLAG(IS_APPLE)
   return wgpu::BackendType::Metal;
 #else
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return wgpu::BackendType::Null;
 #endif
 }
@@ -485,7 +485,11 @@ bool DawnSharedState::Initialize(
       wgpu::FeatureName::DualSourceBlending,
       wgpu::FeatureName::FramebufferFetch,
       wgpu::FeatureName::MultiPlanarFormatExtendedUsages,
+      wgpu::FeatureName::MultiPlanarFormatNv16,
+      wgpu::FeatureName::MultiPlanarFormatNv24,
       wgpu::FeatureName::MultiPlanarFormatP010,
+      wgpu::FeatureName::MultiPlanarFormatP210,
+      wgpu::FeatureName::MultiPlanarFormatP410,
       wgpu::FeatureName::MultiPlanarFormatNv12a,
       wgpu::FeatureName::MultiPlanarRenderTargets,
       wgpu::FeatureName::Unorm16TextureFormats,

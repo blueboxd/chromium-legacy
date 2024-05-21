@@ -18,6 +18,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/containers/contains.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -635,7 +636,7 @@ TEST_F(InputDeviceSettingsNotificationControllerTest,
   EXPECT_EQ(
       nudge_manager->GetNudgeBodyTextForTest(kSixPackKeyNoMatchNudgeId),
       l10n_util::GetStringUTF16(
-          IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_SHIFT_BACKSPACE_NUDGE_DESCRIPTION));
+          IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_INSERT_NUDGE_DESCRIPTION));
   CancelNudge(kSixPackKeyNoMatchNudgeId);
   EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
 
@@ -650,7 +651,7 @@ TEST_F(InputDeviceSettingsNotificationControllerTest,
   EXPECT_EQ(
       nudge_manager->GetNudgeBodyTextForTest(kSixPackKeyNoMatchNudgeId),
       l10n_util::GetStringUTF16(
-          IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_ALT_PLUS_BACKSPACE_NUDGE_DESCRIPTION));
+          IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_DELETE_NUDGE_DESCRIPTION));
   CancelNudge(kSixPackKeyNoMatchNudgeId);
   EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
 
@@ -661,7 +662,7 @@ TEST_F(InputDeviceSettingsNotificationControllerTest,
   EXPECT_EQ(
       nudge_manager->GetNudgeBodyTextForTest(kSixPackKeyNoMatchNudgeId),
       l10n_util::GetStringUTF16(
-          IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_LEFT_NUDGE_DESCRIPTION));
+          IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_HOME_NUDGE_DESCRIPTION));
   CancelNudge(kSixPackKeyNoMatchNudgeId);
   EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
 
@@ -672,7 +673,7 @@ TEST_F(InputDeviceSettingsNotificationControllerTest,
   EXPECT_EQ(
       nudge_manager->GetNudgeBodyTextForTest(kSixPackKeyNoMatchNudgeId),
       l10n_util::GetStringUTF16(
-          IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_RIGHT_NUDGE_DESCRIPTION));
+          IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_END_NUDGE_DESCRIPTION));
   CancelNudge(kSixPackKeyNoMatchNudgeId);
   EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
 
@@ -683,7 +684,7 @@ TEST_F(InputDeviceSettingsNotificationControllerTest,
   EXPECT_EQ(
       nudge_manager->GetNudgeBodyTextForTest(kSixPackKeyNoMatchNudgeId),
       l10n_util::GetStringUTF16(
-          IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_ALT_PLUS_UP_NUDGE_DESCRIPTION));
+          IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_PAGE_UP_NUDGE_DESCRIPTION));
   CancelNudge(kSixPackKeyNoMatchNudgeId);
   EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
 
@@ -798,6 +799,28 @@ TEST_F(InputDeviceSettingsNotificationControllerTest,
 }
 
 TEST_F(InputDeviceSettingsNotificationControllerTest,
+       CorrectNotificationPrefUsed) {
+  mojom::MousePtr mojom_mouse = mojom::Mouse::New();
+  mojom_mouse->device_key = "0001:0001";
+  mojom_mouse->id = 1;
+  mojom_mouse->settings = mojom::MouseSettings::New();
+  controller()->NotifyMouseIsCustomizable(*mojom_mouse);
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(
+      "peripheral_customization_mouse_1"));
+  EXPECT_FALSE(message_center()->FindVisibleNotificationById(
+      "welcome_experience_mouse_1"));
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kWelcomeExperience);
+  mojom_mouse->id = 2;
+  mojom_mouse->device_key = "0001:0002";
+  controller()->NotifyMouseIsCustomizable(*mojom_mouse);
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(
+      "welcome_experience_mouse_2"));
+  EXPECT_FALSE(message_center()->FindVisibleNotificationById(
+      "peripheral_customization_mouse_2"));
+}
+
+TEST_F(InputDeviceSettingsNotificationControllerTest,
        NotifyTouchpadFirstTimeConnected) {
   size_t expected_notification_count = 1;
   mojom::TouchpadPtr mojom_touchpad = mojom::Touchpad::New();
@@ -876,6 +899,30 @@ TEST_F(InputDeviceSettingsNotificationControllerTest,
   EXPECT_EQ(expected_notification_count, message_center()->NotificationCount());
   EXPECT_TRUE(message_center()->FindVisibleNotificationById(
       "welcome_experience_pointing_stick_2"));
+}
+
+TEST_F(InputDeviceSettingsNotificationControllerTest,
+       NotificationsForBluetoothDevicesDisplaysBatteryLevel) {
+  size_t expected_notification_count = 1;
+  mojom::MousePtr mojom_mouse = mojom::Mouse::New();
+  mojom_mouse->device_key = "0001:0001";
+  mojom_mouse->id = 1;
+  mojom_mouse->settings = mojom::MouseSettings::New();
+  mojom_mouse->battery_info =
+      mojom::BatteryInfo::New(78, mojom::ChargeState::kDischarging);
+
+  controller()->NotifyMouseFirstTimeConnected(*mojom_mouse);
+  EXPECT_EQ(expected_notification_count++,
+            message_center()->NotificationCount());
+  const auto* notification = message_center()->FindVisibleNotificationById(
+      "peripheral_customization_mouse_1");
+  ASSERT_TRUE(notification);
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(
+          IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_WELCOME_EXPERIENCE_BATTERY_DESCRIPTION,
+          base::NumberToString16(
+              mojom_mouse->battery_info->battery_percentage)),
+      notification->message());
 }
 
 }  // namespace ash

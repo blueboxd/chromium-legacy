@@ -16,6 +16,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/actions/chrome_action_id.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_actions.h"
 #include "chrome/browser/ui/side_panel/companion/companion_tab_helper.h"
 #include "chrome/browser/ui/side_panel/companion/companion_utils.h"
 #include "chrome/browser/ui/side_panel/side_panel_enums.h"
@@ -23,7 +24,6 @@
 #include "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model_factory.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/frame/browser_actions.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
@@ -61,15 +61,10 @@ SearchCompanionSidePanelCoordinator::SearchCompanionSidePanelCoordinator(
       // TODO(b/269331995): Localize menu item label.
       name_(l10n_util::GetStringUTF16(IDS_SIDE_PANEL_COMPANION_TITLE)),
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-      icon_(features::IsChromeRefresh2023()
-                ? vector_icons::
-                      kGoogleSearchCompanionMonochromeLogoChromeRefreshIcon
-                : vector_icons::kGoogleSearchCompanionMonochromeLogoIcon),
+      icon_(
+          vector_icons::kGoogleSearchCompanionMonochromeLogoChromeRefreshIcon),
       disabled_icon_(
-          features::IsChromeRefresh2023()
-              ? vector_icons::
-                    kGoogleSearchCompanionMonochromeLogoChromeRefreshIcon
-              : vector_icons::kGoogleSearchCompanionMonochromeLogoIcon),
+          vector_icons::kGoogleSearchCompanionMonochromeLogoChromeRefreshIcon),
 #else
       icon_(vector_icons::kSearchIcon),
       disabled_icon_(vector_icons::kSearchIcon),
@@ -114,18 +109,8 @@ SearchCompanionSidePanelCoordinator::~SearchCompanionSidePanelCoordinator() =
 bool SearchCompanionSidePanelCoordinator::IsSupported(
     Profile* profile,
     bool include_runtime_checks) {
-  if (profile->IsIncognitoProfile() || profile->IsGuestSession()) {
-    return false;
-  }
-
-  if (!companion::IsCompanionFeatureEnabled()) {
-    return false;
-  }
-
-  if (include_runtime_checks) {
-    return companion::IsSearchInCompanionSidePanelSupportedForProfile(profile);
-  }
-  return true;
+  return companion::IsSearchInCompanionSidePanelSupportedForProfile(
+      profile, include_runtime_checks);
 }
 
 bool SearchCompanionSidePanelCoordinator::Show(
@@ -292,11 +277,11 @@ void SearchCompanionSidePanelCoordinator::
         CompanionSidePanelAvailabilityChanged::kUnavailableToUnavailable);
     return;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 actions::ActionItem* SearchCompanionSidePanelCoordinator::GetActionItem() {
-  BrowserActions* browser_actions = BrowserActions::FromBrowser(browser_);
+  BrowserActions* browser_actions = browser_->browser_actions();
   return actions::ActionManager::Get().FindAction(
       kActionSidePanelShowSearchCompanion, browser_actions->root_action_item());
 }

@@ -5,7 +5,7 @@
 #include "sql/sqlite_result_code.h"
 
 #include <cstddef>
-#include <ostream>  // Needed to compile NOTREACHED() with operator <<.
+#include <ostream>  // Needed to compile NOTREACHED_IN_MIGRATION() with operator <<.
 #include <set>
 #include <string>
 #include <string_view>
@@ -322,7 +322,8 @@ SqliteResultCodeMappingEntry FindResultCode(int sqlite_result_code) {
       });
 
   if (mapping_it == base::ranges::end(kResultCodeMapping)) {
-    NOTREACHED() << "Unsupported SQLite result code: " << sqlite_result_code;
+    NOTREACHED_IN_MIGRATION()
+        << "Unsupported SQLite result code: " << sqlite_result_code;
     return kUnknownResultCodeMappingEntry;
   }
   return *mapping_it;

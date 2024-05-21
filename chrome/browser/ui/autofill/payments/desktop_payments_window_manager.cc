@@ -7,6 +7,7 @@
 #include "base/check_deref.h"
 #include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
+#include "base/time/time.h"
 #include "base/types/expected.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/payments/view_factory.h"
@@ -15,6 +16,7 @@
 #include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/core/browser/autofill_progress_dialog_type.h"
 #include "components/autofill/core/browser/metrics/payments/payments_window_metrics.h"
+#include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
 #include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/autofill/core/browser/payments/payments_requests/unmask_card_request.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
@@ -59,6 +61,22 @@ void DesktopPaymentsWindowManager::InitVcn3dsAuthentication(
   CHECK_EQ(flow_type_, FlowType::kNoFlow);
   CHECK_EQ(context.card.record_type(), CreditCard::RecordType::kVirtualCard);
   CHECK(!context.completion_callback.is_null());
+
+  // The VCN 3DS metadata fields are returned from the Payments server. They
+  // must always be present, so that Chrome knows what params to look for on
+  // navigation. Since they are outside of Chrome's control, unexpected values
+  // must be gracefully handled by displaying an error dialog.
+  if (const std::optional<Vcn3dsChallengeOptionMetadata>& metadata =
+          context.challenge_option.vcn_3ds_metadata;
+      !metadata.has_value() || metadata->url_to_open.is_empty() ||
+      metadata->success_query_param_name.empty() ||
+      metadata->failure_query_param_name.empty()) {
+    client_->GetPaymentsAutofillClient()->ShowAutofillErrorDialog(
+        AutofillErrorDialogContext::WithVirtualCardPermanentOrTemporaryError(
+            /*is_permanent_error=*/false));
+    return;
+  }
+
   flow_type_ = FlowType::kVcn3ds;
   vcn_3ds_context_ = std::move(context);
   autofill_metrics::LogVcn3dsFlowEvent(
@@ -70,8 +88,9 @@ void DesktopPaymentsWindowManager::InitVcn3dsAuthentication(
         Vcn3dsFlowEvent::kUserConsentDialogSkipped,
         /*user_consent_already_given=*/vcn_3ds_context_
             ->user_consent_already_given);
-    CreatePopup(vcn_3ds_context_->challenge_option.url_to_open,
-                GetPopupSizeForVcn3ds());
+    CreatePopup(
+        vcn_3ds_context_->challenge_option.vcn_3ds_metadata->url_to_open,
+        GetPopupSizeForVcn3ds());
   } else {
     ShowVcn3dsConsentDialog();
   }
@@ -125,6 +144,9 @@ void DesktopPaymentsWindowManager::CreatePopup(const GURL& url,
 
   if (base::WeakPtr<content::NavigationHandle> navigation_handle =
           Navigate(&params)) {
+    if (flow_type_ == FlowType::kVcn3ds) {
+      vcn_3ds_popup_shown_timestamp_ = base::TimeTicks::Now();
+    }
     content::WebContentsObserver::Observe(navigation_handle->GetWebContents());
   } else {
     autofill_metrics::LogVcn3dsFlowEvent(
@@ -138,9 +160,11 @@ void DesktopPaymentsWindowManager::CreatePopup(const GURL& url,
 }
 
 void DesktopPaymentsWindowManager::OnDidFinishNavigationForVcn3ds() {
-  base::expected<RedirectCompletionProof,
+  base::expected<RedirectCompletionResult,
                  Vcn3dsAuthenticationPopupNonSuccessResult>
-      result = ParseUrlForVcn3ds(web_contents()->GetVisibleURL());
+      result = ParseUrlForVcn3ds(
+          web_contents()->GetVisibleURL(),
+          vcn_3ds_context_->challenge_option.vcn_3ds_metadata.value());
   if (result.has_value() ||
       result.error() ==
           Vcn3dsAuthenticationPopupNonSuccessResult::kAuthenticationFailed) {
@@ -155,13 +179,20 @@ void DesktopPaymentsWindowManager::OnDidFinishNavigationForVcn3ds() {
 }
 
 void DesktopPaymentsWindowManager::OnWebContentsDestroyedForVcn3ds() {
-  base::expected<RedirectCompletionProof,
+  CHECK(vcn_3ds_popup_shown_timestamp_.has_value());
+  base::expected<RedirectCompletionResult,
                  Vcn3dsAuthenticationPopupNonSuccessResult>
-      result = ParseUrlForVcn3ds(web_contents()->GetVisibleURL());
+      result = ParseUrlForVcn3ds(
+          web_contents()->GetVisibleURL(),
+          vcn_3ds_context_->challenge_option.vcn_3ds_metadata.value());
+
   // If the result implies that the authentication inside of the pop-up was
   // successful, continue the flow without resetting.
   if (result.has_value()) {
     CHECK(!result.value()->empty());
+    autofill_metrics::LogVcn3dsAuthLatency(
+        base::TimeTicks::Now() - vcn_3ds_popup_shown_timestamp_.value(),
+        /*success=*/true);
     client_->GetPaymentsAutofillClient()->ShowAutofillProgressDialog(
         AutofillProgressDialogType::kVirtualCardUnmaskProgressDialog,
         base::BindOnce(&DesktopPaymentsWindowManager::
@@ -186,6 +217,9 @@ void DesktopPaymentsWindowManager::OnWebContentsDestroyedForVcn3ds() {
         Vcn3dsFlowEvent::kAuthenticationInsidePopupFailed,
         /*user_consent_already_given=*/vcn_3ds_context_
             ->user_consent_already_given);
+    autofill_metrics::LogVcn3dsAuthLatency(
+        base::TimeTicks::Now() - vcn_3ds_popup_shown_timestamp_.value(),
+        /*success=*/false);
     client_->GetPaymentsAutofillClient()->ShowAutofillErrorDialog(
         AutofillErrorDialogContext::WithVirtualCardPermanentOrTemporaryError(
             /*is_permanent_error=*/true));
@@ -207,13 +241,13 @@ void DesktopPaymentsWindowManager::OnWebContentsDestroyedForVcn3ds() {
 }
 
 void DesktopPaymentsWindowManager::OnDidLoadRiskDataForVcn3ds(
-    RedirectCompletionProof redirect_completion_proof,
+    RedirectCompletionResult redirect_completion_result,
     const std::string& risk_data) {
   client_->GetPaymentsAutofillClient()
       ->GetPaymentsNetworkInterface()
       ->UnmaskCard(CreateUnmaskRequestDetailsForVcn3ds(
                        *client_, vcn_3ds_context_.value(),
-                       std::move(redirect_completion_proof)),
+                       std::move(redirect_completion_result)),
                    base::BindOnce(&DesktopPaymentsWindowManager::
                                       OnVcn3dsAuthenticationResponseReceived,
                                   weak_ptr_factory_.GetWeakPtr()));
@@ -281,7 +315,7 @@ void DesktopPaymentsWindowManager::OnVcn3dsConsentDialogAccepted() {
       Vcn3dsFlowEvent::kUserConsentDialogAccepted,
       /*user_consent_already_given=*/vcn_3ds_context_
           ->user_consent_already_given);
-  CreatePopup(vcn_3ds_context_->challenge_option.url_to_open,
+  CreatePopup(vcn_3ds_context_->challenge_option.vcn_3ds_metadata->url_to_open,
               GetPopupSizeForVcn3ds());
 }
 
@@ -300,6 +334,7 @@ void DesktopPaymentsWindowManager::OnVcn3dsConsentDialogCancelled() {
 void DesktopPaymentsWindowManager::Reset() {
   vcn_3ds_context_.reset();
   flow_type_ = FlowType::kNoFlow;
+  vcn_3ds_popup_shown_timestamp_.reset();
 }
 
 }  // namespace autofill::payments

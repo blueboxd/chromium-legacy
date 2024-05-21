@@ -10,8 +10,10 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
 import android.view.View;
@@ -34,6 +36,7 @@ import androidx.core.widget.ImageViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.MathUtils;
 import org.chromium.base.ResettersForTesting;
 import org.chromium.chrome.browser.tab_ui.TabThumbnailView;
 import org.chromium.chrome.tab_ui.R;
@@ -155,9 +158,11 @@ public class TabGridDialogView extends FrameLayout {
                             .isKeyboardShowing(mContext, this)) {
                         mParentWidth = mParent.getWidth();
                         mParentHeight = mParent.getHeight();
+                        updateDialogWithOrientation(mOrientation);
                     }
                 };
         mParent.getViewTreeObserver().addOnGlobalLayoutListener(mParentGlobalLayoutListener);
+        updateDialogWithOrientation(mOrientation);
         setVisibility(GONE);
     }
 
@@ -372,10 +377,10 @@ public class TabGridDialogView extends FrameLayout {
         mItemView = sourceView;
         Rect rect = new Rect();
         mItemView.getGlobalVisibleRect(rect);
-        // Offset by CompositeViewHolder top offset.
+        // Offset for status bar (top) and nav bar when landscape (left).
         Rect parentRect = new Rect();
         mParent.getGlobalVisibleRect(parentRect);
-        rect.offset(0, -parentRect.top);
+        rect.offset(-parentRect.left, -parentRect.top);
         // Setup a stand-in animation card that looks the same as the original tab grid card for
         // animation.
         updateAnimationCardView(mItemView);
@@ -708,19 +713,25 @@ public class TabGridDialogView extends FrameLayout {
 
     @VisibleForTesting
     void updateDialogWithOrientation(int orientation) {
+        Resources res = mContext.getResources();
+        int minMargin = res.getDimensionPixelSize(R.dimen.tab_grid_dialog_min_margin);
+        int maxMargin = res.getDimensionPixelSize(R.dimen.tab_grid_dialog_max_margin);
         if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-            mSideMargin =
-                    (int) mContext.getResources().getDimension(R.dimen.tab_grid_dialog_side_margin);
-            mTopMargin =
-                    (int) mContext.getResources().getDimension(R.dimen.tab_grid_dialog_top_margin);
+            mSideMargin = minMargin;
+            mTopMargin = clampMargin(Math.round(mParentHeight * 0.1f), minMargin, maxMargin);
         } else {
-            mSideMargin =
-                    (int) mContext.getResources().getDimension(R.dimen.tab_grid_dialog_top_margin);
-            mTopMargin =
-                    (int) mContext.getResources().getDimension(R.dimen.tab_grid_dialog_side_margin);
+            mSideMargin = clampMargin(Math.round(mParentWidth * 0.1f), minMargin, maxMargin);
+            mTopMargin = minMargin;
         }
         mContainerParams.setMargins(mSideMargin, mTopMargin, mSideMargin, mTopMargin);
         mOrientation = orientation;
+    }
+
+    private int clampMargin(int sizeAdjustedValue, int lowerBound, int upperBound) {
+        // In the event the parent isn't laid out yet just default to the upper bound.
+        if (sizeAdjustedValue == 0) return upperBound;
+
+        return MathUtils.clamp(sizeAdjustedValue, lowerBound, upperBound);
     }
 
     private void updateAnimationCardView(View view) {
@@ -743,9 +754,10 @@ public class TabGridDialogView extends FrameLayout {
         params.height = view.getHeight();
         if (view.findViewById(R.id.tab_title) == null) return;
 
-        mAnimationCardView
-                .findViewById(R.id.card_view)
-                .setBackground(view.findViewById(R.id.card_view).getBackground());
+        // Sometimes we get clip artifacting when sharing a drawable, unclear why, so make a copy.
+        Drawable backgroundCopy =
+                view.findViewById(R.id.card_view).getBackground().getConstantState().newDrawable();
+        mAnimationCardView.findViewById(R.id.card_view).setBackground(backgroundCopy);
 
         ImageView sourceCardFavicon = view.findViewById(R.id.tab_favicon);
         ImageView animationCardFavicon = mAnimationCardView.findViewById(R.id.tab_favicon);

@@ -468,6 +468,9 @@ std::unique_ptr<developer::ProfileInfo> DeveloperPrivateAPI::CreateProfileInfo(
   info->can_load_unpacked =
       ExtensionManagementFactory::GetForBrowserContext(profile)
           ->HasAllowlistedExtension();
+  info->is_mv2_deprecation_warning_dismissed =
+      ManifestV2ExperimentManager::Get(profile)
+          ->DidUserAcknowledgeWarningGlobally();
   return info;
 }
 
@@ -519,6 +522,10 @@ DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
   // callback on destruction.
   pref_change_registrar_.Add(
       prefs::kExtensionsUIDeveloperMode,
+      base::BindRepeating(&DeveloperPrivateEventRouter::OnProfilePrefChanged,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      kMV2DeprecationWarningAcknowledgedGloballyPref.name,
       base::BindRepeating(&DeveloperPrivateEventRouter::OnProfilePrefChanged,
                           base::Unretained(this)));
 }
@@ -1050,6 +1057,11 @@ DeveloperPrivateUpdateProfileConfigurationFunction::Run() {
     util::SetDeveloperModeForProfile(profile, *update.in_developer_mode);
   }
 
+  if (update.is_mv2_deprecation_warning_dismissed.value_or(false)) {
+    ManifestV2ExperimentManager::Get(browser_context())
+        ->MarkWarningAsAcknowledgedGlobally();
+  }
+
   return RespondNow(NoArguments());
 }
 
@@ -1109,7 +1121,7 @@ DeveloperPrivateUpdateExtensionConfigurationFunction::Run() {
         modifier.SetWithholdHostPermissions(false);
         break;
       case developer::HostAccess::kNone:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
     }
   }
   if (update.show_access_requests_in_toolbar) {
@@ -1138,6 +1150,14 @@ DeveloperPrivateUpdateExtensionConfigurationFunction::Run() {
     if (experiment_manager->GetCurrentExperimentStage() !=
         MV2ExperimentStage::kNone) {
       experiment_manager->MarkWarningAsAcknowledged(extension->id());
+    }
+    // There isn't a separate observer for the MV2 acknowledged state changing,
+    // but this is the only place it's changed. Just fire the event directly.
+    DeveloperPrivateEventRouter* event_router =
+        DeveloperPrivateAPI::Get(browser_context())
+            ->developer_private_event_router();
+    if (event_router) {
+      event_router->OnExtensionConfigurationChanged(extension->id());
     }
   }
   if (update.pinned_to_toolbar) {
@@ -1828,7 +1848,7 @@ ExtensionFunction::ResponseAction DeveloperPrivateChoosePathFunction::Run() {
     info.include_all_files = true;
     file_type_index = 1;
   } else {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   if (!ShowPicker(
@@ -2333,7 +2353,7 @@ DeveloperPrivateAddUserSpecifiedSitesFunction::Run() {
       return RespondNow(
           Error("Site set must be USER_PERMITTED or USER_RESTRICTED"));
     case developer::SiteSet::kNone:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 
   return RespondNow(NoArguments());
@@ -2372,7 +2392,7 @@ DeveloperPrivateRemoveUserSpecifiedSitesFunction::Run() {
       return RespondNow(
           Error("Site set must be USER_PERMITTED or USER_RESTRICTED"));
     case developer::SiteSet::kNone:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 
   return RespondNow(NoArguments());
@@ -2613,7 +2633,7 @@ DeveloperPrivateUpdateSiteAccessFunction::Run() {
         done_callback.Run();
         break;
       case developer::HostAccess::kNone:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
     }
   }
 

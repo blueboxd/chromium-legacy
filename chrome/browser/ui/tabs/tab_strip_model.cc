@@ -1552,7 +1552,7 @@ bool TabStripModel::IsContextMenuCommandEnabled(
       return true;
 
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
   return false;
 }
@@ -1723,9 +1723,24 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
 
       base::RecordAction(UserMetricsAction("TabContextMenu_AddToNewGroup"));
 
-      std::optional<tab_groups::TabGroupId> new_group_id =
-          AddToNewGroup(GetIndicesForCommand(context_index));
-      OpenTabGroupEditor(new_group_id.value());
+      std::vector<int> indices_to_add = GetIndicesForCommand(context_index);
+      std::vector<tab_groups::TabGroupId> groups_to_delete =
+          GetGroupsDestroyedFromRemovingIndices(indices_to_add);
+
+      base::OnceCallback<void()> callback = base::BindOnce(
+          [](TabStripModel* model, std::vector<int> indices) {
+            std::optional<tab_groups::TabGroupId> new_group_id =
+                model->AddToNewGroup(indices);
+            model->OpenTabGroupEditor(new_group_id.value());
+          },
+          base::Unretained(this), indices_to_add);
+      if (groups_to_delete.empty() ||
+          delegate_->ConfirmRemovingAllTabsFromGroups(groups_to_delete,
+                                                      std::move(callback))) {
+        std::optional<tab_groups::TabGroupId> new_group_id =
+            AddToNewGroup(indices_to_add);
+        OpenTabGroupEditor(new_group_id.value());
+      }
       break;
     }
 
@@ -1736,11 +1751,22 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
     }
 
     case CommandRemoveFromGroup: {
-      if (!group_model_)
+      if (!group_model_) {
         break;
+      }
 
       base::RecordAction(UserMetricsAction("TabContextMenu_RemoveFromGroup"));
-      RemoveFromGroup(GetIndicesForCommand(context_index));
+
+      std::vector<int> indices_to_remove = GetIndicesForCommand(context_index);
+      std::vector<tab_groups::TabGroupId> groups_to_delete =
+          GetGroupsDestroyedFromRemovingIndices(indices_to_remove);
+      if (groups_to_delete.empty() ||
+          delegate_->ConfirmRemovingAllTabsFromGroups(
+              groups_to_delete,
+              base::BindOnce(&TabStripModel::RemoveFromGroup,
+                             base::Unretained(this), indices_to_remove))) {
+        RemoveFromGroup(indices_to_remove);
+      }
       break;
     }
 
@@ -1753,7 +1779,17 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
     case CommandMoveTabsToNewWindow: {
       base::RecordAction(
           UserMetricsAction("TabContextMenu_MoveTabToNewWindow"));
-      delegate()->MoveTabsToNewWindow(GetIndicesForCommand(context_index));
+
+      std::vector<int> indices_to_move = GetIndicesForCommand(context_index);
+      std::vector<tab_groups::TabGroupId> groups_to_delete =
+          GetGroupsDestroyedFromRemovingIndices(indices_to_move);
+      if (groups_to_delete.empty() ||
+          delegate_->ConfirmRemovingAllTabsFromGroups(
+              groups_to_delete,
+              base::BindOnce(&TabStripModelDelegate::MoveTabsToNewWindow,
+                             base::Unretained(delegate()), indices_to_move))) {
+        delegate()->MoveTabsToNewWindow(GetIndicesForCommand(context_index));
+      }
       break;
     }
 
@@ -1766,6 +1802,7 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
       CHECK(service);
       UMA_HISTOGRAM_BOOLEAN("Tab.Organization.AllEntrypoints.Clicked", true);
       UMA_HISTOGRAM_BOOLEAN("Tab.Organization.TabContextMenu.Clicked", true);
+      browser->window()->NotifyPromoFeatureUsed(features::kTabOrganization);
 
       service->RestartSessionAndShowUI(
           browser, TabOrganizationEntryPoint::kTabContextMenu,
@@ -1814,7 +1851,7 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
     }
 
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 }
 

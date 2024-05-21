@@ -6,7 +6,6 @@
 
 #include <string_view>
 
-#include "ash/constants/app_types.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -28,6 +27,8 @@
 #include "chromeos/components/kiosk/kiosk_utils.h"
 #include "chromeos/components/mgs/managed_guest_session_utils.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/ui/base/app_types.h"
+#include "chromeos/ui/base/window_properties.h"
 #include "components/app_constants/constants.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
@@ -265,8 +266,8 @@ bool IsLacrosBrowserWindow(Profile* profile, aura::Window* window) {
 }
 
 bool IsLacrosWindow(aura::Window* window) {
-  return window->GetProperty(aura::client::kAppType) ==
-         static_cast<int>(ash::AppType::LACROS);
+  return window->GetProperty(chromeos::kAppTypeKey) ==
+         chromeos::AppType::LACROS;
 }
 
 bool IsAppOpenedInTab(AppTypeName app_type_name, const std::string& app_id) {
@@ -429,7 +430,7 @@ std::string GetInstallReason(InstallReason install_reason) {
   }
 }
 
-bool ShouldRecordUkm(Profile* profile) {
+bool ShouldRecordAppKM(Profile* profile) {
   // Bypass AppKM App Sync check for Demo Mode devices to collect app metrics.
   if (ash::DemoSession::IsDeviceInDemoMode()) {
     return true;
@@ -452,10 +453,10 @@ bool ShouldRecordUkm(Profile* profile) {
   }
 }
 
-bool ShouldRecordUkmForAppId(Profile* profile,
-                             const AppRegistryCache& cache,
-                             const std::string& app_id) {
-  if (!ShouldRecordUkm(profile)) {
+bool ShouldRecordAppKMForAppId(Profile* profile,
+                               const AppRegistryCache& cache,
+                               const std::string& app_id) {
+  if (!ShouldRecordAppKM(profile)) {
     return false;
   }
 
@@ -466,7 +467,7 @@ bool ShouldRecordUkmForAppId(Profile* profile,
   return true;
 }
 
-bool ShouldRecordUkmForAppTypeName(AppType app_type) {
+bool ShouldRecordAppKMForAppTypeName(AppType app_type) {
   switch (app_type) {
     case AppType::kArc:
     case AppType::kBuiltIn:

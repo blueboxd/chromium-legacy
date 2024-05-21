@@ -5,6 +5,7 @@
 #include "components/compose/core/browser/compose_manager_impl.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -50,7 +51,9 @@ void FillTextWithAutofill(base::WeakPtr<autofill::AutofillManager> manager,
   static_cast<autofill::BrowserAutofillManager*>(manager.get())
       ->FillOrPreviewField(autofill::mojom::ActionPersistence::kFill,
                            autofill::mojom::FieldActionType::kReplaceSelection,
-                           form, field, trimmed_text, SuggestionType::kCompose);
+                           form, field, trimmed_text,
+                           SuggestionType::kComposeResumeNudge,
+                           /*field_type_used=*/std::nullopt);
 }
 
 }  // namespace
@@ -167,7 +170,7 @@ std::optional<Suggestion> ComposeManagerImpl::GetSuggestion(
   }
   std::u16string suggestion_text;
   std::u16string label_text;
-  SuggestionType type = SuggestionType::kCompose;
+  SuggestionType type;
   // State is saved as a `ComposeSession` in the `ComposeClient`. A user can
   // resume where they left off in a field if the `ComposeClient` has a
   // `ComposeSession` for that field.
@@ -178,24 +181,32 @@ std::optional<Suggestion> ComposeManagerImpl::GetSuggestion(
     suggestion_text =
         l10n_util::GetStringUTF16(IDS_COMPOSE_SUGGESTION_SAVED_TEXT);
     label_text = l10n_util::GetStringUTF16(IDS_COMPOSE_SUGGESTION_SAVED_LABEL);
-    if (trigger_source ==
-        AutofillSuggestionTriggerSource::kComposeDialogLostFocus) {
-      type = SuggestionType::kComposeSavedStateNotification;
-    }
+    type = trigger_source ==
+                   AutofillSuggestionTriggerSource::kComposeDialogLostFocus
+               ? SuggestionType::kComposeSavedStateNotification
+               : SuggestionType::kComposeResumeNudge;
   } else {
     // Text for a new Compose session.
     suggestion_text =
         l10n_util::GetStringUTF16(IDS_COMPOSE_SUGGESTION_MAIN_TEXT);
     label_text = l10n_util::GetStringUTF16(IDS_COMPOSE_SUGGESTION_LABEL);
+    type = SuggestionType::kComposeProactiveNudge;
   }
   Suggestion suggestion(std::move(suggestion_text));
-  suggestion.labels = {{Suggestion::Text(std::move(label_text))}};
   suggestion.type = type;
   suggestion.icon = Suggestion::Icon::kPenSpark;
+  // Add footer label if not using compact ui.
+  if (!compose::GetComposeConfig().proactive_nudge_compact_ui) {
+    suggestion.labels = {{Suggestion::Text(std::move(label_text))}};
+  }
 
   if (!has_session &&
       base::FeatureList::IsEnabled(features::kEnableComposeProactiveNudge)) {
     // Add compose child suggestions
+    Suggestion never_show_on_site = Suggestion(
+        l10n_util::GetStringUTF16(
+            IDS_COMPOSE_DONT_SHOW_ON_THIS_SITE_CHILD_SUGGESTION_TEXT),
+        SuggestionType::kComposeNeverShowOnThisSiteAgain);
     Suggestion disable =
         Suggestion(l10n_util::GetStringUTF16(
                        IDS_COMPOSE_DISABLE_HELP_ME_WRITE_CHILD_SUGGESTION_TEXT),
@@ -204,22 +215,25 @@ std::optional<Suggestion> ComposeManagerImpl::GetSuggestion(
         Suggestion(l10n_util::GetStringUTF16(
                        IDS_COMPOSE_GO_TO_SETTINGS_CHILD_SUGGESTION_TEXT),
                    SuggestionType::kComposeGoToSettings);
-    suggestion.children = {std::move(disable), std::move(go_to_settings)};
+    suggestion.children = {std::move(never_show_on_site), std::move(disable),
+                           std::move(go_to_settings)};
   }
 
   return suggestion;
 }
 
 void ComposeManagerImpl::NeverShowComposeForOrigin(const url::Origin& origin) {
-  // TODO(b/333929225): Implement.
+  client_->AddSiteToNeverPromptList(origin);
   compose::LogComposeProactiveNudgeCtr(
       compose::ComposeProactiveNudgeCtrEvent::kUserDisabledSite);
+  client_->getPageUkmTracker()->ProactiveNudgeDisabledForSite();
 }
 
 void ComposeManagerImpl::DisableCompose() {
   client_->DisableProactiveNudge();
   compose::LogComposeProactiveNudgeCtr(
       compose::ComposeProactiveNudgeCtrEvent::kUserDisabledProactiveNudge);
+  client_->getPageUkmTracker()->ProactiveNudgeDisabledGlobally();
 }
 
 void ComposeManagerImpl::GoToSettings() {

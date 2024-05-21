@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "ash/accessibility/accessibility_controller.h"
-#include "ash/constants/app_types.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/metrics/histogram_macros.h"
@@ -97,6 +96,7 @@
 #include "components/app_restore/full_restore_utils.h"
 #include "overview_focus_cycler_old.h"
 #include "overview_session.h"
+#include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/compositor_observer.h"
@@ -323,8 +323,10 @@ std::unique_ptr<views::Widget> CreateSaveDeskButtonContainerWidget(
   // If Chromevox is on, let the widget be activatable.
   const bool spoken_feedback_enabled =
       Shell::Get()->accessibility_controller()->spoken_feedback().enabled();
-  if (spoken_feedback_enabled)
-    params.activatable = views::Widget::InitParams::Activatable::kYes;
+  params.activatable =
+      (spoken_feedback_enabled || features::IsOverviewNewFocusEnabled())
+          ? views::Widget::InitParams::Activatable::kYes
+          : views::Widget::InitParams::Activatable::kNo;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.name = "SaveDeskButtonContainerWidget";
@@ -362,7 +364,7 @@ float GetWantedDropTargetOpacity(
     case SplitViewDragIndicators::WindowDraggingState::kFromShelf:
       return 1.f;
     case SplitViewDragIndicators::WindowDraggingState::kFromFloat:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return 0.f;
   }
 }
@@ -825,7 +827,7 @@ void OverviewGrid::PositionWindows(
       animation_type = OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW;
       break;
     case OverviewTransition::kExit:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 
   int animate_count = 0;
@@ -1082,7 +1084,7 @@ void OverviewGrid::RemoveDropTarget() {
   CHECK(drop_target_);
 
   // Copy to a local first to avoid a dangling pointer.
-  OverviewDropTarget* drop_target_ptr = std::exchange(drop_target_, nullptr);
+  OverviewItemBase* drop_target_ptr = std::exchange(drop_target_, nullptr);
 
   size_t erased_count = std::erase_if(
       item_list_, base::MatchesUniquePtr<OverviewItemBase>(drop_target_ptr));
@@ -1730,7 +1732,7 @@ gfx::Insets OverviewGrid::GetGridVerticalPaddings() const {
 
   // Calculate the bottom padding according to the existence of birch bar,
   // shelf, and home launcher.
-  if (birch_bar_view_) {
+  if (birch_bar_view_ && birch_bar_view_->GetChipsNum()) {
     // If birch bar exists, add compact padding with the maximum birch bar
     // height and birch bar bottom padding to the bottom.
     vertical_paddings.set_bottom(GetBirchBarBottomPadding(root_window_) +
@@ -2334,12 +2336,11 @@ void OverviewGrid::UpdateSaveDeskButtons() {
 
   // Adds or removes the widget from the accessibility focus order when exiting
   // the scope. Skip the update if the widget's visibility hasn't changed.
-  base::ScopedClosureRunner update_accessibility_focus(base::BindOnce(
-      [](OverviewSession* session, bool widget_visibility_changed) {
-        if (widget_visibility_changed)
-          session->UpdateAccessibilityFocus();
-      },
-      overview_session_, visibility_changed));
+  absl::Cleanup update_accessibility_focus = [this, visibility_changed] {
+    if (visibility_changed) {
+      overview_session_->UpdateAccessibilityFocus();
+    }
+  };
 
   if (!target_visible) {
     if (visibility_changed && save_desk_button_container_widget_) {
@@ -2536,7 +2537,7 @@ gfx::Rect OverviewGrid::GetWallpaperClipBounds() const {
   // The bottom of the clipping bounds should be above the birch bar.
   gfx::Rect clipping_bounds = GetGridEffectiveBounds();
 
-  if (birch_bar_widget_) {
+  if (birch_bar_widget_ && birch_bar_view_->GetChipsNum()) {
     clipping_bounds.SetVerticalBounds(
         clipping_bounds.y(), birch_bar_widget_->GetWindowBoundsInScreen().y() -
                                  kCompactPaddingForEffectiveBounds);
@@ -3264,15 +3265,17 @@ void OverviewGrid::UpdateNumSavedDeskUnsupportedWindows(
     // its supported/incognito type and a proper fix is made.
     if (num_unsupported_windows_ < 0) {
       num_unsupported_windows_ = 0;
-      SCOPED_CRASH_KEY_NUMBER("OG_UNSDUW", "unsupported_app_type",
-                              window->GetProperty(aura::client::kAppType));
+      SCOPED_CRASH_KEY_NUMBER(
+          "OG_UNSDUW", "unsupported_app_type",
+          static_cast<int>(window->GetProperty(chromeos::kAppTypeKey)));
       SCOPED_CRASH_KEY_STRING32("OG_UNSDUW", "unsupported_app_id",
                                 ::full_restore::GetAppId(window));
       base::debug::DumpWithoutCrashing();
     } else if (num_incognito_windows_ < 0) {
       num_incognito_windows_ = 0;
-      SCOPED_CRASH_KEY_NUMBER("OG_UNSDUW", "incognito_app_type",
-                              window->GetProperty(aura::client::kAppType));
+      SCOPED_CRASH_KEY_NUMBER(
+          "OG_UNSDUW", "incognito_app_type",
+          static_cast<int>(window->GetProperty(chromeos::kAppTypeKey)));
       SCOPED_CRASH_KEY_STRING32("OG_UNSDUW", "incognito_app_id",
                                 ::full_restore::GetAppId(window));
       base::debug::DumpWithoutCrashing();
@@ -3343,6 +3346,9 @@ void OverviewGrid::UpdateFasterSplitViewWidget() {
 
   if (!faster_splitview_widget_) {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+    params.activatable = features::IsOverviewNewFocusEnabled()
+                             ? views::Widget::InitParams::Activatable::kYes
+                             : views::Widget::InitParams::Activatable::kNo;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.parent = desks_util::GetActiveDeskContainerForRoot(root_window_);
     params.name = "FasterSplitViewWidget";
@@ -3417,6 +3423,9 @@ void OverviewGrid::UpdateFeedbackButton() {
         &kFeedbackIcon);
 
     views::Widget::InitParams params;
+    params.activatable = features::IsOverviewNewFocusEnabled()
+                             ? views::Widget::InitParams::Activatable::kYes
+                             : views::Widget::InitParams::Activatable::kNo;
     params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
     params.init_properties_container.SetProperty(kOverviewUiKey, true);
     params.name = "PineFeedbackButton";

@@ -46,17 +46,16 @@ constexpr char kLoginThroughput[] = "LoginThroughput";
 constexpr char kLoginThroughputUnordered[] = "LoginThroughput-unordered";
 
 // A class used to wait for animations.
-class AnimationObserver : public views::BoundsAnimatorObserver {
+class ShelfAnimationObserver : public views::BoundsAnimatorObserver {
  public:
-  AnimationObserver(base::OnceClosure& on_animation_end)
-      : on_animation_end_(std::move(on_animation_end)) {}
+  ShelfAnimationObserver(base::OnceClosure& on_shelf_animation_end)
+      : on_shelf_animation_end_(std::move(on_shelf_animation_end)) {}
 
-  AnimationObserver(const AnimationObserver&) = delete;
-  AnimationObserver& operator=(const AnimationObserver&) = delete;
+  ShelfAnimationObserver(const ShelfAnimationObserver&) = delete;
+  ShelfAnimationObserver& operator=(const ShelfAnimationObserver&) = delete;
+  ~ShelfAnimationObserver() override = default;
 
-  ~AnimationObserver() override = default;
-
-  // ShelfViewObserver overrides:
+  // views::BoundsAnimatorObserver overrides:
   void OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) override {}
   void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override {
     GetShelfView()->RemoveAnimationObserver(this);
@@ -65,16 +64,18 @@ class AnimationObserver : public views::BoundsAnimatorObserver {
 
   void StartObserving() {
     ShelfView* shelf_view = GetShelfView();
-    if (shelf_view->IsAnimating()) {
-      shelf_view->AddAnimationObserver(this);
+
+    if (!shelf_view->IsAnimating()) {
+      RunCallbackAndDestroy();
       return;
     }
-    RunCallbackAndDestroy();
+
+    shelf_view->AddAnimationObserver(this);
   }
 
  private:
   void RunCallbackAndDestroy() {
-    std::move(on_animation_end_).Run();
+    std::move(on_shelf_animation_end_).Run();
     delete this;
   }
 
@@ -87,7 +88,7 @@ class AnimationObserver : public views::BoundsAnimatorObserver {
         ->shelf_view();
   }
 
-  base::OnceClosure on_animation_end_;
+  base::OnceClosure on_shelf_animation_end_;
 };
 
 std::string GetDeviceModeSuffix() {
@@ -234,18 +235,18 @@ void LoginUnlockThroughputRecorder::EnsureTracingSliceNamed() {
   if (login_time_markers_.empty()) {
     // The first event will name the tracing row.
     AddLoginTimeMarker(kLoginThroughput);
-    primary_user_logged_in_ = base::TimeTicks::Now();
   }
 }
 
 void LoginUnlockThroughputRecorder::OnAuthSuccess() {
   EnsureTracingSliceNamed();
+  timestamp_on_auth_success_ = base::TimeTicks::Now();
   AddLoginTimeMarker("OnAuthSuccess");
 }
 
 void LoginUnlockThroughputRecorder::OnAshRestart() {
   is_ash_restart_ = true;
-  login_animation_finished_timer_.Stop();
+  post_login_deferred_task_timer_.Stop();
   if (!post_login_deferred_task_runner_->Started()) {
     post_login_deferred_task_runner_->Start();
   }
@@ -261,8 +262,8 @@ void LoginUnlockThroughputRecorder::LoggedInStateChanged() {
   if (!login_state->IsUserLoggedIn())
     return;
 
-  const base::TimeTicks old_primary_user_logged_in = primary_user_logged_in_;
   EnsureTracingSliceNamed();
+  timestamp_primary_user_logged_in_ = base::TimeTicks::Now();
   AddLoginTimeMarker("UserLoggedIn");
 
   if (logged_in_user != LoginState::LOGGED_IN_USER_OWNER &&
@@ -288,9 +289,9 @@ void LoginUnlockThroughputRecorder::LoggedInStateChanged() {
   user_logged_in_ = true;
 
   // Report UserLoggedIn histogram if we had OnAuthSuccess() event previously.
-  if (!old_primary_user_logged_in.is_null()) {
+  if (timestamp_on_auth_success_.has_value()) {
     const base::TimeDelta duration =
-        base::TimeTicks::Now() - old_primary_user_logged_in;
+        base::TimeTicks::Now() - timestamp_on_auth_success_.value();
     base::UmaHistogramTimes("Ash.Login.LoggedInStateChanged", duration);
   }
 
@@ -299,8 +300,10 @@ void LoginUnlockThroughputRecorder::LoggedInStateChanged() {
 
   auto* rec = new ui::TotalAnimationThroughputReporter(
       primary_root->GetHost()->compositor(),
-      base::BindOnce(&LoginUnlockThroughputRecorder::OnLoginAnimationFinish,
-                     weak_ptr_factory_.GetWeakPtr(), primary_user_logged_in_),
+      base::BindOnce(
+          &LoginUnlockThroughputRecorder::OnCompositorAnimationFinished,
+          weak_ptr_factory_.GetWeakPtr(),
+          timestamp_primary_user_logged_in_.value()),
       /*should_delete=*/true);
   login_animation_throughput_reporter_ = rec->GetWeakPtr();
   DCHECK(!scoped_throughput_reporter_blocker_);
@@ -310,11 +313,11 @@ void LoginUnlockThroughputRecorder::LoggedInStateChanged() {
       login_animation_throughput_reporter_->NewScopedBlocker();
 
   constexpr base::TimeDelta kLoginAnimationDelayTimer = base::Seconds(20);
-  // login_animation_finished_timer_ is owned by this class so it's safe to
+  // post_login_deferred_task_timer_ is owned by this class so it's safe to
   // use unretained pointer here.
-  login_animation_finished_timer_.Start(
+  post_login_deferred_task_timer_.Start(
       FROM_HERE, kLoginAnimationDelayTimer, this,
-      &LoginUnlockThroughputRecorder::OnLoginAnimationFinishedTimerFired);
+      &LoginUnlockThroughputRecorder::OnPostLoginDeferredTaskTimerFired);
 }
 
 void LoginUnlockThroughputRecorder::AddScheduledRestoreWindow(
@@ -329,7 +332,7 @@ void LoginUnlockThroughputRecorder::AddScheduledRestoreWindow(
       }
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 }
 
@@ -342,9 +345,10 @@ void LoginUnlockThroughputRecorder::OnRestoredWindowCreated(
     return;
   }
   windows_to_restore_.erase(it);
-  if (windows_to_restore_.empty() && !primary_user_logged_in_.is_null()) {
+  if (windows_to_restore_.empty() &&
+      timestamp_primary_user_logged_in_.has_value()) {
     const base::TimeDelta duration_ms =
-        base::TimeTicks::Now() - primary_user_logged_in_;
+        base::TimeTicks::Now() - timestamp_primary_user_logged_in_.value();
     constexpr char kAshLoginSessionRestoreAllBrowserWindowsCreated[] =
         "Ash.LoginSessionRestore.AllBrowserWindowsCreated";
     UMA_HISTOGRAM_CUSTOM_TIMES(kAshLoginSessionRestoreAllBrowserWindowsCreated,
@@ -365,9 +369,9 @@ void LoginUnlockThroughputRecorder::OnBeforeRestoredWindowShown(
 
   restore_windows_not_shown_.erase(it);
   if (windows_to_restore_.empty() && restore_windows_not_shown_.empty() &&
-      !primary_user_logged_in_.is_null()) {
+      timestamp_primary_user_logged_in_.has_value()) {
     const base::TimeDelta duration_ms =
-        base::TimeTicks::Now() - primary_user_logged_in_;
+        base::TimeTicks::Now() - timestamp_primary_user_logged_in_.value();
     constexpr char kAshLoginSessionRestoreAllBrowserWindowsShown[] =
         "Ash.LoginSessionRestore.AllBrowserWindowsShown";
     UMA_HISTOGRAM_CUSTOM_TIMES("Ash.LoginSessionRestore.AllBrowserWindowsShown",
@@ -399,9 +403,9 @@ void LoginUnlockThroughputRecorder::OnRestoredWindowPresented(
   restore_windows_presentation_time_requested_.erase(it);
   if (windows_to_restore_.empty() && restore_windows_not_shown_.empty() &&
       restore_windows_presentation_time_requested_.empty() &&
-      !primary_user_logged_in_.is_null()) {
+      timestamp_primary_user_logged_in_.has_value()) {
     const base::TimeDelta duration_ms =
-        base::TimeTicks::Now() - primary_user_logged_in_;
+        base::TimeTicks::Now() - timestamp_primary_user_logged_in_.value();
     constexpr char kAshLoginSessionRestoreAllBrowserWindowsPresented[] =
         "Ash.LoginSessionRestore.AllBrowserWindowsPresented";
     // Headless units do not report presentation time, so we only report
@@ -439,13 +443,6 @@ void LoginUnlockThroughputRecorder::UpdateShelfIconList(
     return;
   }
 
-  // We do not collect this histogram from real users because it's not
-  // really universal. It is tied to the flow from the ui.LoginPerf tast test
-  // and therefore not listed in the histograms metadata.
-  base::UmaHistogramSparse(
-      "Ash.LoginSessionRestore.ExpectedShelfIconsInitialNumber",
-      model->item_count());
-
   OnAllExpectedShelfIconsLoaded();
 }
 
@@ -454,7 +451,7 @@ void LoginUnlockThroughputRecorder::
   scoped_throughput_reporter_blocker_.reset();
 }
 
-void LoginUnlockThroughputRecorder::OnLoginAnimationFinish(
+void LoginUnlockThroughputRecorder::OnCompositorAnimationFinished(
     base::TimeTicks start,
     const cc::FrameSequenceMetrics::CustomReportData& data) {
   login_animation_throughput_received_ = true;
@@ -523,11 +520,12 @@ void LoginUnlockThroughputRecorder::ScheduleWaitForShelfAnimationEndIfNeeded() {
     shelf_container->SchedulePaintInRect(bounds);
   }
 
-  base::OnceCallback on_animation_end = base::BindOnce(
+  base::OnceCallback on_shelf_animation_end = base::BindOnce(
       [](base::WeakPtr<LoginUnlockThroughputRecorder> self) {
         self->shelf_animation_finished_ = true;
         const base::TimeDelta duration_ms =
-            base::TimeTicks::Now() - self->primary_user_logged_in_;
+            base::TimeTicks::Now() -
+            self->timestamp_primary_user_logged_in_.value();
         constexpr char kAshLoginSessionRestoreShelfLoginAnimationEnd[] =
             "Ash.LoginSessionRestore.ShelfLoginAnimationEnd";
         UMA_HISTOGRAM_CUSTOM_TIMES(
@@ -540,7 +538,7 @@ void LoginUnlockThroughputRecorder::ScheduleWaitForShelfAnimationEndIfNeeded() {
       },
       weak_ptr_factory_.GetWeakPtr());
 
-  (new AnimationObserver(on_animation_end))->StartObserving();
+  (new ShelfAnimationObserver(on_shelf_animation_end))->StartObserving();
 
   // Unblock deferred task now.
   // TODO(b/328339021, b/323098858): This is the mitigation against a bug
@@ -548,9 +546,10 @@ void LoginUnlockThroughputRecorder::ScheduleWaitForShelfAnimationEndIfNeeded() {
   // Can be in a part of better architecture.
   AddLoginTimeMarker("BootTime.Login4");
   base::UmaHistogramCustomTimes(
-      "BootTime.Login4", base::TimeTicks::Now() - primary_user_logged_in_,
+      "BootTime.Login4",
+      base::TimeTicks::Now() - timestamp_primary_user_logged_in_.value(),
       base::Milliseconds(100), base::Seconds(100), 100);
-  login_animation_finished_timer_.Stop();
+  post_login_deferred_task_timer_.Stop();
   if (!post_login_deferred_task_runner_->Started()) {
     post_login_deferred_task_runner_->Start();
   }
@@ -564,7 +563,7 @@ void LoginUnlockThroughputRecorder::OnAllExpectedShelfIconsLoaded() {
 
   shelf_icons_loaded_ = true;
   const base::TimeDelta duration_ms =
-      base::TimeTicks::Now() - primary_user_logged_in_;
+      base::TimeTicks::Now() - timestamp_primary_user_logged_in_.value();
   constexpr char kAshLoginSessionRestoreAllShelfIconsLoaded[] =
       "Ash.LoginSessionRestore.AllShelfIconsLoaded";
   UMA_HISTOGRAM_CUSTOM_TIMES(kAshLoginSessionRestoreAllShelfIconsLoaded,
@@ -684,8 +683,15 @@ void LoginUnlockThroughputRecorder::FullSessionRestoreDataLoaded() {
 
 void LoginUnlockThroughputRecorder::ArcUiAvailableAfterLogin() {
   AddLoginTimeMarker("ArcUiAvailable");
+
+  // It seems that neither `OnAuthSuccess` nor `LoggedInStateChanged` is called
+  // on some ARC tests.
+  if (!timestamp_primary_user_logged_in_.has_value()) {
+    return;
+  }
+
   const base::TimeDelta duration =
-      base::TimeTicks::Now() - primary_user_logged_in_;
+      base::TimeTicks::Now() - timestamp_primary_user_logged_in_.value();
   base::UmaHistogramCustomTimes("Ash.Login.ArcUiAvailableAfterLogin.Duration",
                                 duration, base::Milliseconds(100),
                                 base::Seconds(30), 100);
@@ -716,16 +722,17 @@ void LoginUnlockThroughputRecorder::MaybeReportLoginFinished() {
 
   AddLoginTimeMarker("BootTime.Login3");
   base::UmaHistogramCustomTimes(
-      "BootTime.Login3", base::TimeTicks::Now() - primary_user_logged_in_,
+      "BootTime.Login3",
+      base::TimeTicks::Now() - timestamp_primary_user_logged_in_.value(),
       base::Milliseconds(100), base::Seconds(100), 100);
 
   LoginEventRecorder::Get()->RunScheduledWriteLoginTimes();
 }
 
-void LoginUnlockThroughputRecorder::OnLoginAnimationFinishedTimerFired() {
+void LoginUnlockThroughputRecorder::OnPostLoginDeferredTaskTimerFired() {
   TRACE_EVENT0(
       "startup",
-      "LoginUnlockThroughputRecorder::OnLoginAnimationFinishedTimerFired");
+      "LoginUnlockThroughputRecorder::OnPostLoginDeferredTaskTimerFired");
 
   // `post_login_deferred_task_runner_` could be started in tests in
   // `ScheduleWaitForShelfAnimationEndIfNeeded` where shelf is created

@@ -193,7 +193,7 @@ base::TimeDelta PasswordConfirmationFrequencyToTimeDelta(
     case PasswordConfirmationFrequency::WEEK:
       return base::Days(7);
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return base::TimeDelta();
 }
 
@@ -217,9 +217,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kPinUnlockMaximumLength, 0);
   registry->RegisterBooleanPref(prefs::kPinUnlockWeakPinsAllowed, true);
 
-  // Register as true by default only when the feature is enabled.
-  registry->RegisterBooleanPref(::prefs::kPinUnlockAutosubmitEnabled,
-                                features::IsPinAutosubmitFeatureEnabled());
+  registry->RegisterBooleanPref(::prefs::kPinUnlockAutosubmitEnabled, true);
 }
 
 bool IsPinDisabledByPolicy(PrefService* pref_service, Purpose purpose) {
@@ -263,7 +261,7 @@ FingerprintLocation GetFingerprintLocation() {
     return FingerprintLocation::LEFT_SIDE;
   if (location_info == "left-of-power-button-top-right")
     return FingerprintLocation::LEFT_OF_POWER_BUTTON_TOP_RIGHT;
-  NOTREACHED() << "Not handled value: " << location_info;
+  NOTREACHED_IN_MIGRATION() << "Not handled value: " << location_info;
   return default_location;
 }
 

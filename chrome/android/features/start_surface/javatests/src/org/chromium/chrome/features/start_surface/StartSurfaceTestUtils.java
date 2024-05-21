@@ -66,12 +66,11 @@ import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.tab_ui.TabContentManager;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
+import org.chromium.chrome.browser.tabmodel.TabPersistentStore.ActiveTabState;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.chrome.browser.tabpersistence.TabStateFileManager;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
-import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
-import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -224,7 +223,6 @@ public class StartSurfaceTestUtils {
             // Creating tabs and restart the activity would do the trick, but we cannot do that for
             // Instant start because we cannot unload native library.
             // Create fake TabState files to emulate having one tab in previous session.
-            TabAttributeCache.setTitleForTesting(0, "tab title");
             startMainActivityFromLauncher(activityTestRule);
         } else {
             assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(-1, false));
@@ -354,23 +352,40 @@ public class StartSurfaceTestUtils {
      * @param tabIds all the Tab IDs in the normal tab model.
      */
     public static void createTabStatesAndMetadataFile(int[] tabIds) throws IOException {
-        createTabStatesAndMetadataFile(tabIds, null, 0);
+        createTabStatesAndMetadataFile(tabIds, null, null, 0);
     }
 
     /**
      * Create all the files so that tab models can be restored.
      *
      * @param tabIds all the Tab IDs in the normal tab model.
+     * @param rootIds all the root IDs in the normal tab model.
+     */
+    public static void createTabStatesAndMetadataFile(int[] tabIds, @Nullable int[] rootIds)
+            throws IOException {
+        createTabStatesAndMetadataFile(tabIds, rootIds, null, 0);
+    }
+
+    /**
+     * Create all the files so that tab models can be restored.
+     *
+     * @param tabIds all the Tab IDs in the normal tab model.
+     * @param rootIds all the root IDs in the normal tab model.
      * @param urls all of the URLs in the normal tab model.
      * @param selectedIndex the selected index of normal tab model.
      */
     public static void createTabStatesAndMetadataFile(
-            int[] tabIds, @Nullable String[] urls, int selectedIndex) throws IOException {
-        createTabStatesAndMetadataFile(tabIds, urls, selectedIndex, true);
+            int[] tabIds, @Nullable int[] rootIds, @Nullable String[] urls, int selectedIndex)
+            throws IOException {
+        createTabStatesAndMetadataFile(tabIds, rootIds, urls, selectedIndex, true);
     }
 
     private static void createTabStatesAndMetadataFile(
-            int[] tabIds, @Nullable String[] urls, int selectedIndex, boolean createStateFile)
+            int[] tabIds,
+            int[] rootIds,
+            @Nullable String[] urls,
+            int selectedIndex,
+            boolean createStateFile)
             throws IOException {
         TabPersistentStore.TabModelMetadata normalInfo =
                 new TabPersistentStore.TabModelMetadata(selectedIndex);
@@ -380,36 +395,39 @@ public class StartSurfaceTestUtils {
             normalInfo.urls.add(url);
 
             if (createStateFile) {
-                saveTabState(tabIds[i], false);
+                int rootId = rootIds == null ? tabIds[i] : rootIds[i];
+                saveTabState(tabIds[i], rootId, false);
             }
         }
         TabPersistentStore.TabModelMetadata incognitoInfo =
                 new TabPersistentStore.TabModelMetadata(0);
 
-        byte[] listData = TabPersistentStore.serializeMetadata(normalInfo, incognitoInfo);
+        TabPersistentStore.TabModelSelectorMetadata selectorMetaData =
+                new TabPersistentStore.TabModelSelectorMetadata(normalInfo, incognitoInfo);
 
+        TabPersistentStore.saveTabModelPrefs(normalInfo, incognitoInfo, 0, ActiveTabState.OTHER);
         File metadataFile =
                 new File(
                         TabStateDirectory.getOrCreateTabbedModeStateDirectory(),
                         TabbedModeTabPersistencePolicy.getMetadataFileNameForIndex(0));
-        FileOutputStream output = new FileOutputStream(metadataFile);
-        output.write(listData);
-        output.close();
+        TabPersistentStore.saveListToFile(metadataFile, selectorMetaData);
     }
 
     /**
      * Creates a Tab state metadata file without creating Tab state files for the given Tab's info.
+     *
      * @param tabIds All the Tab IDs in the normal tab model.
      * @param urls All the Tab URLs in the normal tab model.
      * @param selectedIndex The selected index of normal tab model.
      */
     public static void prepareTabStateMetadataFile(
             int[] tabIds, @Nullable String[] urls, int selectedIndex) throws IOException {
-        createTabStatesAndMetadataFile(tabIds, urls, selectedIndex, false);
+        createTabStatesAndMetadataFile(tabIds, null, urls, selectedIndex, false);
     }
 
     /**
      * Create thumbnail bitmap of the tab based on the given id and write it to file.
+     *
      * @param tabId The id of the target tab.
      * @param browserControlsStateProvider For getting the top offset.
      * @return The bitmap created.
@@ -480,10 +498,10 @@ public class StartSurfaceTestUtils {
 
     /**
      * Scroll the start surface to make toolbar scrolled off.
+     *
      * @param cta The ChromeTabbedActivity under test.
      */
     public static void scrollToolbar(ChromeTabbedActivity cta) {
-        boolean isSurfacePolishEnabled = ChromeFeatureList.sSurfacePolish.isEnabled();
         // Toolbar layout should be hidden if start surface toolbar is shown on the top of the
         // screen.
         onView(withId(R.id.toolbar))
@@ -499,7 +517,7 @@ public class StartSurfaceTestUtils {
             logoInSurfaceHeight =
                     LogoUtils.getLogoTotalHeightForLogoPolish(
                             resources, StartSurfaceConfiguration.getLogoSizeForLogoPolish());
-        } else if (isSurfacePolishEnabled) {
+        } else {
             logoInSurfaceHeight = LogoUtils.getLogoTotalHeightPolished(resources);
         }
         float toY =
@@ -527,10 +545,7 @@ public class StartSurfaceTestUtils {
         // Check the toolbar's background color.
         ToolbarPhone toolbar = cta.findViewById(R.id.toolbar);
         int expectedToolbarColor =
-                isSurfacePolishEnabled
-                        ? ChromeColors.getSurfaceColor(
-                                cta, R.dimen.home_surface_background_color_elevation)
-                        : toolbar.getToolbarDataProvider().getPrimaryColor();
+                ChromeColors.getSurfaceColor(cta, R.dimen.home_surface_background_color_elevation);
         Assert.assertEquals(expectedToolbarColor, toolbar.getBackgroundDrawable().getColor());
     }
 
@@ -691,10 +706,12 @@ public class StartSurfaceTestUtils {
 
     /**
      * Create a file so that a TabState can be restored later.
+     *
      * @param tabId the Tab ID
+     * @param tabId the Root ID
      * @param encrypted for Incognito mode
      */
-    private static void saveTabState(int tabId, boolean encrypted) {
+    private static void saveTabState(int tabId, int rootId, boolean encrypted) {
         File file =
                 TabStateFileManager.getTabStateFile(
                         TabStateDirectory.getOrCreateTabbedModeStateDirectory(),
@@ -704,7 +721,7 @@ public class StartSurfaceTestUtils {
         writeFile(file, M26_GOOGLE_COM.encodedTabState);
 
         TabState tabState = TabStateFileManager.restoreTabStateInternal(file, false);
-        tabState.rootId = PseudoTab.fromTabId(tabId).getRootId();
+        tabState.rootId = rootId;
         TabStateFileManager.saveStateInternal(file, tabState, encrypted);
     }
 

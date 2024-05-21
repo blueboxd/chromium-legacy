@@ -167,6 +167,7 @@
 #include "third_party/blink/renderer/platform/runtime_feature_state/runtime_feature_state_override_context.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/task_attribution_info.h"
 #include "third_party/blink/renderer/platform/scheduler/public/task_attribution_tracker.h"
 #include "third_party/blink/renderer/platform/storage/blink_storage_key.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
@@ -273,7 +274,6 @@ struct SameSizeAsDocumentLoader
   scoped_refptr<SecurityOrigin> origin_to_commit;
   AtomicString origin_calculation_debug_info;
   BlinkStorageKey storage_key;
-  BlinkStorageKey session_storage_key;
   WebNavigationType navigation_type;
   DocumentLoadTiming document_load_timing;
   base::TimeTicks time_of_last_data_received;
@@ -516,7 +516,6 @@ DocumentLoader::DocumentLoader(
                             ? nullptr
                             : params_->origin_to_commit.Get()->IsolatedCopy()),
       storage_key_(std::move(params_->storage_key)),
-      session_storage_key_(std::move(params_->session_storage_key)),
       navigation_type_(navigation_type),
       document_load_timing_(*this),
       service_worker_network_provider_(
@@ -890,7 +889,7 @@ WebHistoryCommitType LoadTypeToCommitType(WebFrameLoadType type) {
     case WebFrameLoadType::kReloadBypassingCache:
       return kWebHistoryInertCommit;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return kWebHistoryInertCommit;
 }
 
@@ -901,7 +900,9 @@ void DocumentLoader::RunURLAndHistoryUpdateSteps(
     scoped_refptr<SerializedScriptValue> data,
     WebFrameLoadType type,
     bool is_browser_initiated,
-    bool is_synchronously_committed) {
+    bool is_synchronously_committed,
+    std::optional<scheduler::TaskAttributionId>
+        soft_navigation_heuristics_task_id) {
   // We use the security origin of this frame since callers of this method must
   // already have performed same origin checks.
   // is_browser_initiated is false and is_synchronously_committed is true
@@ -910,7 +911,7 @@ void DocumentLoader::RunURLAndHistoryUpdateSteps(
   UpdateForSameDocumentNavigation(
       new_url, history_item, same_document_navigation_type, std::move(data),
       type, frame_->DomWindow()->GetSecurityOrigin(), is_browser_initiated,
-      is_synchronously_committed, std::nullopt);
+      is_synchronously_committed, soft_navigation_heuristics_task_id);
 }
 
 void DocumentLoader::UpdateForSameDocumentNavigation(
@@ -1044,24 +1045,35 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
         soft_navigation_event_scope = heuristics->CreateEventScope(
             SoftNavigationHeuristics::EventScope::Type::kNavigate,
             /*is_new_interaction=*/true, script_state);
-        heuristics->SameDocumentNavigationStarted();
       }
     }
   }
 
-  scheduler::TaskAttributionInfo* parent_task = nullptr;
-  if (heuristics && soft_navigation_heuristics_task_id) {
-    // If `heuristics` exists, it means we're in an outermost main frame; if
-    // `soft_navigation_heuristics_task_id` exists, it means the task state
-    // being propagated was captured in a main world history API call.
+  scheduler::TaskAttributionInfo* navigation_task_state = nullptr;
+  if (heuristics) {
+    // If `heuristics` exists, it means we're in an outermost main frame.
     if (auto* tracker = scheduler::TaskAttributionTracker::From(
             frame_->DomWindow()->GetIsolate())) {
-      // Get the TaskId from tracker. We're passing that to dispatchEvent
-      // further down, but regardless, we want to get it and previous tasks out
-      // of the tracker's task queue, to enable them to get garbage collected if
-      // needed, even if popstate is never called.
-      parent_task = tracker->CommitSameDocumentNavigation(
-          soft_navigation_heuristics_task_id.value());
+      // There are three cases where the commit should be associated with a
+      // `SoftNavigationContext`:
+      //
+      //  1. `soft_navigation_heuristics_task_id` exists. This means the task
+      //  state being propagated was captured in a main world history API call.
+      //  The relevant context is the one captured when the navigation started,
+      //  which is is stored in `tracker` along with the id.
+      //
+      //  2. Browser-initiated navigations. In this case a new context would
+      //  have been created when the `EventScope` was created above, and the
+      //  relevant context will be stored in the current task state.
+      //
+      //  3. Synchronous navigations. In this case the context isn't registered
+      //  when the navigation started, but the relevant context is part of the
+      //  current task state.
+      navigation_task_state =
+          soft_navigation_heuristics_task_id
+              ? tracker->CommitSameDocumentNavigation(
+                    soft_navigation_heuristics_task_id.value())
+              : tracker->RunningTask();
     }
   }
 
@@ -1080,15 +1092,21 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
           history_item ? history_item->StateObject()
                        : SerializedScriptValue::NullValue();
       frame_->DomWindow()->DispatchPopstateEvent(std::move(state_object),
-                                                 parent_task);
+                                                 navigation_task_state);
     }
   }
-  if (heuristics && new_url != old_url) {
+
+  SoftNavigationContext* soft_navigation_context =
+      navigation_task_state ? navigation_task_state->GetSoftNavigationContext()
+                            : nullptr;
+  if (heuristics && new_url != old_url &&
+      type != WebFrameLoadType::kReplaceCurrentItem) {
     // if `heuristics` exists it means we're in an outermost main frame.
     //
     // TODO(crbug.com/1521100): `heuristics` existing does not imply this
     // navigation was initiated in the main world.
-    heuristics->SameDocumentNavigationCommitted(new_url);
+    heuristics->SameDocumentNavigationCommitted(new_url,
+                                                soft_navigation_context);
   }
 }
 
@@ -1599,6 +1617,8 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
     params->is_browser_initiated = is_browser_initiated;
     params->is_synchronously_committed_same_document =
         is_synchronously_committed;
+    params->soft_navigation_heuristics_task_id =
+        soft_navigation_heuristics_task_id;
     auto dispatch_result =
         frame_->DomWindow()->navigation()->DispatchNavigateEvent(params);
     if (dispatch_result == NavigationApi::DispatchResult::kAbort) {
@@ -2631,35 +2651,6 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
   // browser once the browser will be able to compute the origin in all cases.
   frame_->DomWindow()->SetStorageKey(storage_key.WithOrigin(security_origin));
 
-  if (storage_key == session_storage_key_ ||
-      storage_key.GetSecurityOrigin()->IsOpaque() ||
-      session_storage_key_.GetSecurityOrigin()->IsOpaque()) {
-    // If the `storage_key` and `session_storage_key_` match (or either are
-    // opaque), we should just use whatever storage key was built above as we
-    // aren't preventing partition.
-    frame_->DomWindow()->SetSessionStorageKey(
-        frame_->DomWindow()->GetStorageKey());
-  } else {
-    // Otherwise, we first must verify that the requested StorageKey to use for
-    // binding session storage has the same SecurityOrigin as the actual
-    // storage key. The purpose of this path is to change the partition for a
-    // given origin, not to allow access to another origin's data.
-    DCHECK(session_storage_key_ ==
-           BlinkStorageKey::CreateFirstParty(storage_key_.GetSecurityOrigin()));
-    // We use the renderer side origin when setting the StorageKey on the path
-    // above, so we check that the renderer's understanding of the origin
-    // matches the session storage StorageKey. This is another precaution to
-    // to prevent cross-origin partition binding.
-    // TODO(https://crbug.com/888079): Depend on the origin in the StorageKey.
-    if (session_storage_key_.GetSecurityOrigin()->IsSameOriginWith(
-            security_origin.get())) {
-      frame_->DomWindow()->SetSessionStorageKey(session_storage_key_);
-    } else {
-      frame_->DomWindow()->SetSessionStorageKey(
-          frame_->DomWindow()->GetStorageKey());
-    }
-  }
-
   // Conceptually, SecurityOrigin doesn't have to be initialized after sandbox
   // flags are applied, but there's a UseCounter in SetSecurityOrigin() that
   // wants to inspect sandbox flags.
@@ -3353,8 +3344,9 @@ void DocumentLoader::RecordUseCountersForCommit() {
 
 void DocumentLoader::RecordConsoleMessagesForCommit() {
   if (was_blocked_by_document_policy_) {
-    // TODO(chenleihu): Add which document policy violated in error string,
-    // instead of just displaying serialized required document policy.
+    // TODO(https://crbug.com/340616797): Add which document policy violated in
+    // error string, instead of just displaying serialized required document
+    // policy.
     ConsoleError(
         "Refused to display '" + response_.CurrentRequestUrl().ElidedString() +
         "' because it violates the following document policy "

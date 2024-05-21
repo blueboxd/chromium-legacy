@@ -638,7 +638,7 @@
 <translation id="3552189655002856821">Wi-Fi өчүрүлгөн</translation>
 <translation id="3554215588514239132">Иштеп чыгуучунун куралдарынын панелин көрсөтүү же жашыруу</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> кадалды</translation>
-<translation id="3558768885091059911">Камера менен микрофонду колдонууга уруксат берилсинби?</translation>
+<translation id="3558768885091059911">Камера менен микрофонду колдонууга уруксат бересизби?</translation>
 <translation id="3560174576767922131">Видео жаздыруу</translation>
 <translation id="3563775809269155755">Туташуу түйүнүн иштетүү</translation>
 <translation id="3566240529365775567">Жаңы эле ачылды</translation>
@@ -1138,7 +1138,7 @@
 <translation id="5363163447017455357"><ph name="DELIMITER" /> Бул өтмөккө өтүү</translation>
 <translation id="5364693579536176785">сактагыч</translation>
 <translation id="5369717264580061086">Файлды Files колдонмосунда алдын ала көрүү</translation>
-<translation id="5377367976106153749">Камераны колдонууга уруксат берилсинби?</translation>
+<translation id="5377367976106153749">Камераны колдонууга уруксат бересизби?</translation>
 <translation id="5379115545237091094">Өтө көп аракеттер аткарылды</translation>
 <translation id="5391307769715781764">Сакталган иш тактаны алмаштырасызбы?</translation>
 <translation id="5393156353051693207">Колдонмолоруңуздун иретин өзгөртүү үчүн каалаган жерди басып кармап туруңуз</translation>
@@ -1196,6 +1196,7 @@
 <translation id="5587506661873751671">Жүктөлүп алынууда: <ph name="DOWNLOAD_PERCENT" />%</translation>
 <translation id="558849140439112033">Сүрөткө тарткыңыз келген аймакты тандоо үчүн сүйрөңүз</translation>
 <translation id="5590609058453685222">Микрофонду күйгүз эскертүүсү күйүк. Үнү басылган режимде сүйлөсөңүз, билдирме аласыз.</translation>
+<translation id="5592745162308462420">fn</translation>
 <translation id="5596627076506792578">Дагы параметрлер</translation>
 <translation id="5599242528220103262">Ыкчам баскыч өчүк</translation>
 <translation id="5600837773213129531">Экрандагы текстти окуп берүүнү өчүрүү үчүн Ctrl + Alt + Z баскычтарын басыңыз.</translation>
@@ -1372,6 +1373,7 @@
 <translation id="6232891689835436217"><ph name="APP_NAME" /> учурда камера менен микрофонуңузду колдонуп жатат</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="62380141479352646">Батарея отурайын деп калды. Батареяны үнөмдөгүч күйгүзүлдү.</translation>
+<translation id="6240603910551255087">Жогорку баскыч</translation>
 <translation id="6247728804802644171">Билдирмелерди ачуу</translation>
 <translation id="6249795363855770621">Аткарылды деп белгиленген жок. Интернетке туташканда кайталап көрүңүз.</translation>
 <translation id="6254629735336163724">Тикесинен бекитилген</translation>

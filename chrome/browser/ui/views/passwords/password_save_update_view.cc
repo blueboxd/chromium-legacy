@@ -29,7 +29,6 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
-#include "components/signin/public/base/signin_buildflags.h"
 #include "components/user_education/common/feature_promo_specification.h"
 #include "components/user_education/common/help_bubble_params.h"
 #include "content/public/browser/storage_partition.h"
@@ -48,25 +47,6 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_class_properties.h"
-
-// TODO(crbug.com/40688828): come up with a more general solution for this.
-// This layout auto-resizes the host view to always adapt to changes in the size
-// of the child views.
-class PasswordSaveUpdateView::AutoResizingLayout : public views::FillLayout {
- public:
-  AutoResizingLayout() = default;
-
- private:
-  PasswordSaveUpdateView* bubble_view() {
-    return static_cast<PasswordSaveUpdateView*>(host_view());
-  }
-
-  void OnLayoutChanged() override {
-    FillLayout::OnLayoutChanged();
-    if (bubble_view()->GetWidget())
-      bubble_view()->SizeToContents();
-  }
-};
 
 PasswordSaveUpdateView::PasswordSaveUpdateView(
     content::WebContents* web_contents,
@@ -135,7 +115,7 @@ PasswordSaveUpdateView::PasswordSaveUpdateView(
     password_dropdown->SetCallback(base::BindRepeating(
         &PasswordSaveUpdateView::OnContentChanged, base::Unretained(this)));
     // Set up layout:
-    SetLayoutManager(std::make_unique<AutoResizingLayout>());
+    SetLayoutManager(std::make_unique<views::FillLayout>());
     views::View* root_view = AddChildView(std::make_unique<views::View>());
     views::AnimatingLayoutManager* animating_layout =
         root_view->SetLayoutManager(
@@ -232,6 +212,18 @@ const PasswordBubbleControllerBase* PasswordSaveUpdateView::GetController()
   return &controller_;
 }
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+bool PasswordSaveUpdateView::OnCloseRequested(
+    views::Widget::ClosedReason close_reason) {
+  if (is_signin_promo_bubble_ &&
+      (close_reason == views::Widget::ClosedReason::kCloseButtonClicked ||
+       close_reason == views::Widget::ClosedReason::kEscKeyPressed)) {
+    AutofillBubbleSignInPromoView::RecordSignInPromoDismissed(web_contents());
+  }
+  return true;
+}
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
 bool PasswordSaveUpdateView::CloseOrReplaceWithPromo() {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Close the bubble if the sign in promo should not be shown.
@@ -253,18 +245,16 @@ bool PasswordSaveUpdateView::CloseOrReplaceWithPromo() {
   SetShowIcon(false);
   SetButtons(ui::DIALOG_BUTTON_NONE);
   GetBubbleFrameView()->SetFootnoteView(nullptr);
-
-  // TODO(crbug/319411476): Should be changed to the correct string, moved
-  // inside the AutofillBubbleSignInPromoView and depending on autofill type.
-  SetTitle(IDS_PASSWORD_GENERATION_HELP_TEXT_TRUSTED_ADVICE);
+  SetTitle(IDS_AUTOFILL_SIGNIN_PROMO_TITLE_PASSWORD);
 
   // Show the sign in promo.
   auto sign_in_promo = std::make_unique<AutofillBubbleSignInPromoView>(
       controller_.GetWebContents(),
-      signin::SignInAutofillBubblePromoType::Passwords);
+      signin::SignInAutofillBubblePromoType::Passwords,
+      controller_.pending_password());
   AddChildView(std::move(sign_in_promo));
-  SizeToContents();
 
+  is_signin_promo_bubble_ = true;
   GetBubbleFrameView()->SetProperty(views::kElementIdentifierKey,
                                     kPasswordBubble);
 
@@ -534,10 +524,6 @@ void PasswordSaveUpdateView::OnContentChanged() {
 void PasswordSaveUpdateView::UpdateFootnote() {
   DCHECK(GetBubbleFrameView());
   GetBubbleFrameView()->SetFootnoteView(CreateFooterView());
-
-  // The footnote size could have changed since it depends on whether it
-  // affects the account store, and hence resize.
-  SizeToContents();
 }
 
 void PasswordSaveUpdateView::TogglePasswordRevealed() {

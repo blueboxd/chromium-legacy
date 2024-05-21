@@ -66,6 +66,8 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
+#include "third_party/blink/renderer/core/svg/svg_path_element.h"
+#include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "ui/base/ui_base_features.h"
 
@@ -437,6 +439,18 @@ void MenuListSelectType::CreateShadowSubtree(ShadowRoot& root) {
     default_button_icon->SetShadowPseudoId(
         shadow_element_names::kSelectFallbackButtonIcon);
     default_button_->AppendChild(default_button_icon);
+
+    auto* default_button_icon_svg = MakeGarbageCollected<SVGSVGElement>(doc);
+    default_button_icon_svg->setAttribute(svg_names::kViewBoxAttr,
+                                          AtomicString("0 0 20 16"));
+    default_button_icon_svg->setAttribute(svg_names::kFillAttr,
+                                          AtomicString("none"));
+    default_button_icon->AppendChild(default_button_icon_svg);
+
+    auto* svg_path = MakeGarbageCollected<SVGPathElement>(doc);
+    svg_path->setAttribute(svg_names::kDAttr,
+                           AtomicString("M4 6 L10 12 L 16 6"));
+    default_button_icon_svg->AppendChild(svg_path);
 
     datalist_slot_ = MakeGarbageCollected<HTMLSlotElement>(doc);
     datalist_slot_->SetIdAttribute(shadow_element_names::kSelectDatalist);
@@ -1664,12 +1678,12 @@ void SelectType::UpdateTextStyle() {}
 void SelectType::UpdateTextStyleAndContent() {}
 
 HTMLOptionElement* SelectType::OptionToBeShown() const {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 
 const ComputedStyle* SelectType::OptionStyle() const {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 
@@ -1680,7 +1694,7 @@ HTMLOptionElement* SelectType::SpatialNavigationFocusedOption() {
 }
 
 HTMLOptionElement* SelectType::ActiveSelectionEnd() const {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 
@@ -1689,7 +1703,7 @@ void SelectType::ScrollToSelection() {}
 void SelectType::ScrollToOption(HTMLOptionElement* option) {}
 
 void SelectType::SelectAll() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void SelectType::SaveListboxActiveSelection() {}
@@ -1701,7 +1715,7 @@ void SelectType::ListBoxOnChange() {}
 void SelectType::ClearLastOnChangeSelection() {}
 
 Element& SelectType::InnerElementForAppearanceAuto() const {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   // Returning select_ doesn't make sense, but we need to return an element
   // to compile this source. This function must not be called.
   return *select_;
@@ -1710,15 +1724,15 @@ Element& SelectType::InnerElementForAppearanceAuto() const {
 void SelectType::ShowPicker() {}
 
 void SelectType::ShowPopup(PopupMenu::ShowEventType) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void SelectType::HidePopup() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void SelectType::PopupDidHide() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 bool SelectType::PopupIsVisible() const {
@@ -1726,12 +1740,12 @@ bool SelectType::PopupIsVisible() const {
 }
 
 PopupMenu* SelectType::PopupForTesting() const {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 
 AXObject* SelectType::PopupRootAXObject() const {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 

@@ -124,7 +124,7 @@ bool UrlCheckerDelegateImpl::ShouldSkipRequestCheck(
 void UrlCheckerDelegateImpl::NotifySuspiciousSiteDetected(
     const base::RepeatingCallback<content::WebContents*()>&
         web_contents_getter) {
-  NOTREACHED();
+  // TODO(crbug.com/40817491): Implement reporting for suspicious sites.
 }
 
 const safe_browsing::SBThreatTypeSet& UrlCheckerDelegateImpl::GetThreatTypes() {
@@ -137,6 +137,6 @@ UrlCheckerDelegateImpl::GetDatabaseManager() {
 }
 
 safe_browsing::BaseUIManager* UrlCheckerDelegateImpl::GetUIManager() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }

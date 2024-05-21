@@ -248,7 +248,7 @@ NSPasteboard* ClipboardUtil::PasteboardFromBuffer(ClipboardBuffer buffer) {
       buffer_type = NSDragPboard;
       break;
     case ClipboardBuffer::kSelection:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 

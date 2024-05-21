@@ -20,19 +20,17 @@ public class ReadAloudMetrics {
     public static String IS_TAB_PLAYBACK_CREATION_SUCCESSFUL =
             "ReadAloud.IsTabPlaybackCreationSuccessful";
     public static String HAS_TAP_TO_SEEK_FOUND_MATCH = "ReadAloud.HasTapToSeekFoundMatch";
-
     public static String TAB_PLAYBACK_CREATION_SUCCESS = "ReadAloud.TabPlaybackCreationSuccess";
     public static String TAB_PLAYBACK_CREATION_FAILURE = "ReadAloud.TabPlaybackCreationFailure";
     public static String TAB_PLAYBACK_WITHOUT_READABILITY_CHECK_ERROR =
             "ReadAloud.ReadAloudPlaybackWithoutReadabilityCheckError";
-    public static String VOICE_CHANGED = "ReadAloud.VoiceChanged.";
-    public static String VOICE_PREVIEWED = "ReadAloud.VoicePreviewed.";
     public static String TIME_SPENT_LISTENING = "ReadAloud.DurationListened";
     public static String TIME_SPENT_LISTENING_LOCKED_SCREEN =
             "ReadAloud.DurationListened.LockedScreen";
     public static String HAS_DATE_MODIFIED = "ReadAloud.HasDateModified";
     public static String READABILITY_SERVER_SIDE = "ReadAloud.ServerReadabilityResult";
     public static String TAP_TO_SEEK_TIME = "ReadAloud.TapToSeekTime";
+    public static String EMPTY_URL_PLAYBACK = "ReadAloud.EmptyURLPlayback";
 
     /**
      * The reason why we clear the prepared message.
@@ -169,6 +167,10 @@ public class ReadAloudMetrics {
                 TAB_PLAYBACK_WITHOUT_READABILITY_CHECK_ERROR, entrypoint, maxVal);
     }
 
+    public static void recordEmptyURLPlayback(int entrypoint, int maxVal) {
+        RecordHistogram.recordEnumeratedHistogram(EMPTY_URL_PLAYBACK, entrypoint, maxVal);
+    }
+
     public static void recordSpeedChange(float speed) {
         for (int i = 0; i < sPlaybackSpeeds.length; i++) {
             if (speed == sPlaybackSpeeds[i]) {
@@ -180,14 +182,6 @@ public class ReadAloudMetrics {
 
     public static void recordPlaybackStarted() {
         RecordUserAction.record("ReadAloud.PlaybackStarted");
-    }
-
-    public static void recordVoiceChanged(String voiceID) {
-        RecordHistogram.recordBooleanHistogram(VOICE_CHANGED + voiceID, true);
-    }
-
-    public static void recordVoicePreviewed(String voiceID) {
-        RecordHistogram.recordBooleanHistogram(VOICE_PREVIEWED + voiceID, true);
     }
 
     public static void recordHasDateModified(boolean hasDateModified) {

@@ -88,6 +88,20 @@ struct ContextWithStyleScopeFrame {
     context.pseudo_id = pseudo_style_request->pseudo_id;
     context.pseudo_argument = &pseudo_style_request->pseudo_argument;
     context.vtt_originating_element = match_request.VTTOriginatingElement();
+    switch (pseudo_style_request->search_text_request) {
+      case StyleRequest::kNone:
+        DCHECK_NE(context.pseudo_id, kPseudoIdSearchText);
+        break;
+      case StyleRequest::kCurrent:
+        context.search_text_request_is_current = true;
+        break;
+      case StyleRequest::kNotCurrent:
+        context.search_text_request_is_current = false;
+        break;
+      default:
+        NOTREACHED_IN_MIGRATION();
+        break;
+    }
   }
 
   // This StyleScopeFrame is effectively ignored if the StyleRecalcContext
@@ -242,8 +256,9 @@ class CascadeLayerSeeker {
       return nullptr;
     }
     if (scope) {
-      DCHECK(scope->ContainingTreeScope().GetScopedStyleResolver());
-      return scope->ContainingTreeScope()
+      DCHECK(scope->IsInTreeScope());
+      DCHECK(scope->GetTreeScope().GetScopedStyleResolver());
+      return scope->GetTreeScope()
           .GetScopedStyleResolver()
           ->GetCascadeLayerMap();
     }
@@ -423,8 +438,9 @@ static bool RulesApplicableInCurrentTreeScope(
     const Element* element,
     const ContainerNode* scoping_node) {
   // Check if the rules come from a shadow style sheet in the same tree scope.
+  DCHECK(element->IsInTreeScope());
   return !scoping_node ||
-         element->ContainingTreeScope() == scoping_node->ContainingTreeScope();
+         element->GetTreeScope() == scoping_node->GetTreeScope();
 }
 
 bool SlowMatchWithNoResultFlags(

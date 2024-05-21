@@ -35,7 +35,7 @@ namespace {
 Suggestion CreatePasswordSuggestion(const std::u16string& main_text) {
   Suggestion suggestion(main_text, SuggestionType::kPasswordEntry);
   suggestion.icon = Suggestion::Icon::kKey;
-  suggestion.additional_label = u"****";
+  suggestion.labels = {{Suggestion::Text(u"****")}};
   return suggestion;
 }
 
@@ -70,7 +70,7 @@ const Suggestion kSuggestions[] = {
                "Minor text",
                "label",
                Suggestion::Icon::kMagic,
-               SuggestionType::kCompose),
+               SuggestionType::kComposeResumeNudge),
     Suggestion("Edit_address",
                "label",
                Suggestion::Icon::kEdit,

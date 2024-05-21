@@ -54,7 +54,7 @@ class SuggestionListViewBinder {
                     // appropriate visibility to freshly inflated container.
                     // This is later handled by subsequent calls to updateContainerVisibility()
                     // performed whenever the suggestion model list changes.
-                    updateContainerVisibility(model, view.container);
+                    updateContainerVisibility(model, view);
                 }
             } else {
                 UiUtils.removeViewFromParent(dropdownView);
@@ -92,13 +92,13 @@ class SuggestionListViewBinder {
                         @Override
                         public void onItemRangeInserted(
                                 ListObservable source, int index, int count) {
-                            updateContainerVisibility(model, view.container);
+                            updateContainerVisibility(model, view);
                         }
 
                         @Override
                         public void onItemRangeRemoved(
                                 ListObservable source, int index, int count) {
-                            updateContainerVisibility(model, view.container);
+                            updateContainerVisibility(model, view);
                         }
                     });
         } else if (SuggestionListProperties.COLOR_SCHEME.equals(propertyKey)) {
@@ -115,8 +115,11 @@ class SuggestionListViewBinder {
         }
     }
 
-    private static void updateContainerVisibility(PropertyModel model, ViewGroup container) {
+    private static void updateContainerVisibility(
+            PropertyModel model, SuggestionListViewHolder holder) {
         ModelList listItems = model.get(SuggestionListProperties.SUGGESTION_MODELS);
-        container.setVisibility(listItems.size() == 0 ? View.GONE : View.VISIBLE);
+        int visibility = listItems.size() == 0 ? View.GONE : View.VISIBLE;
+        holder.container.setVisibility(visibility);
+        holder.dropdown.setVisibility(visibility);
     }
 }

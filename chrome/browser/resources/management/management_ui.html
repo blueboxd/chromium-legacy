@@ -67,7 +67,7 @@
         width: 40px;
       }
 
-      .eol-section iron-icon {
+      .eol-section cr-icon {
         --iron-icon-fill-color: #E8710A;
         height: var(--cr-icon-size);
         width: var(--cr-icon-size);
@@ -130,7 +130,7 @@
         margin: 0;
       }
 
-      .report iron-icon {
+      .report cr-icon {
         height: 20px;
         margin-inline-end: 16px;
         width: 20px;
@@ -196,11 +196,12 @@
 
       .extension-permissions ul,
       .application-permissions ul,
-      .report ul {
+      .report ul.browser {
         list-style: none;
         margin: 0;
         padding: 0;
       }
+
     </style>
 
     <cr-toolbar page-name="$i18n{toolbarTitle}" role="banner" autofocus
@@ -223,7 +224,7 @@
 <if expr="chromeos_ash">
           <section class="eol-section" hidden="[[!eolMessage_]]">
             <div class="eol-warning-icon">
-              <iron-icon icon="cr20:banner-warning"></iron-icon>
+              <cr-icon icon="cr20:banner-warning"></cr-icon>
             </div>
             <div class="eol-message">
               <div>[[eolMessage_]]</div>
@@ -297,8 +298,8 @@
               <div class="content-indented">
                 <template is="dom-repeat" items="[[deviceReportingInfo_]]">
                   <div class="report">
-                    <iron-icon icon="[[getIconForDeviceReportingType_(
-                        item.reportingType)]]"></iron-icon>
+                    <cr-icon icon="[[getIconForDeviceReportingType_(
+                        item.reportingType)]]"></cr-icon>
                     <div
                       inner-h-t-m-l="[[getDeviceReportingHtmlContent_(item)]]">
                     </div>
@@ -323,8 +324,8 @@
               <div>
                 <template is="dom-repeat" items="[[browserReportingInfo_]]">
                   <div class="report">
-                    <iron-icon icon="[[item.icon]]"></iron-icon>
-                    <ul>
+                    <cr-icon icon="[[item.icon]]"></cr-icon>
+                    <ul class="browser">
                       <template is="dom-repeat" items="[[item.messageIds]]"
                           as="messageId">
                         <li inner-h-t-m-l="[[i18nAdvanced(messageId)]]"></li>
@@ -332,6 +333,26 @@
                     </ul>
                   </div>
                 </template>
+              </div>
+            </section>
+          </template>
+
+          <template is="dom-if"
+              if="[[showProfileReportingInfo_(profileReportingInfo_)]]">
+            <section>
+              <h2 class="cr-title-text">$i18n{browserReporting}</h2>
+              <div class="subtitle">
+                $i18n{profileReportingExplanation}
+              </div>
+              <div>
+                <div class="report">
+                  <ul class="profile">
+                    <template is="dom-repeat" items="[[profileReportingInfo_]]">
+                      <li inner-h-t-m-l="[[i18nAdvanced(item.messageIds.0)]]">
+                      </li>
+                    </template>
+                  </ul>
+                </div>
               </div>
             </section>
           </template>

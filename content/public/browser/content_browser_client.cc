@@ -92,6 +92,7 @@
 #include "content/public/browser/tts_environment_android.h"
 #else
 #include "services/video_effects/public/mojom/video_effects_processor.mojom-forward.h"
+#include "third_party/blink/public/mojom/installedapp/related_application.mojom.h"
 #endif
 
 using AttributionReportType =
@@ -159,6 +160,11 @@ bool ContentBrowserClient::ShouldUseProcessPerSite(
     const GURL& site_url) {
   DCHECK(browser_context);
   return false;
+}
+
+bool ContentBrowserClient::ShouldAllowProcessPerSiteForMultipleMainFrames(
+    BrowserContext* context) {
+  return true;
 }
 
 bool ContentBrowserClient::ShouldUseSpareRenderProcessHost(
@@ -1055,7 +1061,7 @@ void ContentBrowserClient::CreateWebSocket(
     mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
         handshake_client) {
   // NOTREACHED because WillInterceptWebSocket returns false.
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void ContentBrowserClient::WillCreateWebTransport(
@@ -1740,5 +1746,16 @@ void ContentBrowserClient::BindModelManager(
     mojo::PendingReceiver<blink::mojom::ModelManager> receiver) {
   MockModelManager::Create(rfh, std::move(receiver));
 }
+
+#if !BUILDFLAG(IS_ANDROID)
+void ContentBrowserClient::QueryInstalledWebAppsByManifestId(
+    const GURL& frame_url,
+    const GURL& manifest_id,
+    content::BrowserContext* browser_context,
+    base::OnceCallback<void(std::optional<blink::mojom::RelatedApplication>)>
+        callback) {
+  std::move(callback).Run(std::nullopt);
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace content

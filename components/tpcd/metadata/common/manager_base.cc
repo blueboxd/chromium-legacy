@@ -4,6 +4,7 @@
 
 #include "components/tpcd/metadata/common/manager_base.h"
 
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_rules.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/common/host_indexed_content_settings.h"
@@ -13,44 +14,55 @@ namespace tpcd::metadata::common {
 ManagerBase::ManagerBase() = default;
 ManagerBase::~ManagerBase() = default;
 
+// Whether to bypass any available grants from the Third Party Cookie
+// Deprecation TPCD Metadata.
+bool IgnoreTpcdDtGracePeriodMetadataGrant(
+    const content_settings::SettingInfo* info) {
+  switch (info->metadata.tpcd_metadata_cohort()) {
+    case content_settings::mojom::TpcdMetadataCohort::GRACE_PERIOD_FORCED_OFF:
+      return true;
+    case content_settings::mojom::TpcdMetadataCohort::DEFAULT:
+    case content_settings::mojom::TpcdMetadataCohort::GRACE_PERIOD_FORCED_ON:
+      return false;
+  }
+
+  NOTREACHED_NORETURN() << "Invalid enum value: "
+                        << info->metadata.tpcd_metadata_cohort();
+}
+
 ContentSetting ManagerBase::GetContentSetting(
-    const Grants& grants,
+    const content_settings::HostIndexedContentSettings& grants,
     const GURL& third_party_url,
     const GURL& first_party_url,
     content_settings::SettingInfo* out_info) const {
   ContentSetting result = CONTENT_SETTING_BLOCK;
 
   if (base::FeatureList::IsEnabled(net::features::kTpcdMetadataGrants)) {
-    if (absl::holds_alternative<content_settings::HostIndexedContentSettings>(
-            grants)) {
-      const content_settings::RuleEntry* found =
-          absl::get<content_settings::HostIndexedContentSettings>(grants).Find(
-              third_party_url, first_party_url);
-      if (found) {
-        result = content_settings::ValueToContentSetting(found->second.value);
-        if (out_info) {
-          out_info->SetAttributes(*found);
-        }
-      }
-    } else {
-      const ContentSettingPatternSource* found =
-          content_settings::FindContentSetting(
-              third_party_url, first_party_url,
-              absl::get<ContentSettingsForOneType>(grants));
-      if (found) {
-        result = found->GetContentSetting();
-        if (out_info) {
-          out_info->SetAttributes(*found);
-        }
+    const content_settings::RuleEntry* found =
+        grants.Find(third_party_url, first_party_url);
+    if (found) {
+      result = content_settings::ValueToContentSetting(found->second.value);
+      if (out_info) {
+        out_info->SetAttributes(*found);
       }
     }
   }
 
+  // The `first_party_url` and `third_party_url` wasn't granted access by any of
+  // the available metadata entries.
   if (out_info && result == CONTENT_SETTING_BLOCK) {
     out_info->primary_pattern = ContentSettingsPattern::Wildcard();
     out_info->secondary_pattern = ContentSettingsPattern::Wildcard();
     out_info->metadata = {};
   }
+
+  // The `first_party_url` and `third_party_url` was granted access by at least
+  // one of the available metadata entries, but shouldn't be considered as its
+  // grace period is forced off.
+  else if (out_info && IgnoreTpcdDtGracePeriodMetadataGrant(out_info)) {
+    result = CONTENT_SETTING_BLOCK;
+  }
+
   return result;
 }
 

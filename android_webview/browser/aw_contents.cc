@@ -235,6 +235,8 @@ AwRenderProcessGoneDelegate* AwRenderProcessGoneDelegate::FromWebContents(
 
 AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
     : content::WebContentsObserver(web_contents.get()),
+      AwSafeBrowsingAllowlistSetObserver(
+          AwBrowserProcess::GetInstance()->GetSafeBrowsingAllowlistManager()),
       browser_view_renderer_(this,
                              content::GetUIThreadTaskRunner({}),
                              content::GetIOThreadTaskRunner({})),
@@ -1295,7 +1297,7 @@ jint AwContents::GetEffectivePriority(JNIEnv* env) {
     case content::ChildProcessImportance::IMPORTANT:
       return static_cast<jint>(RendererPriority::HIGH);
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return 0;
 }
 
@@ -1315,6 +1317,7 @@ jint AwContents::AddDocumentStartJavaScript(
   std::vector<std::string> native_allowed_origin_rule_strings;
   AppendJavaStringArrayToStringVector(env, allowed_origin_rules,
                                       &native_allowed_origin_rule_strings);
+  web_contents()->GetController().GetBackForwardCache().Flush();
   auto result = GetJsCommunicationHost()->AddDocumentStartJavaScript(
       base::android::ConvertJavaStringToUTF16(env, script),
       native_allowed_origin_rule_strings);
@@ -1612,6 +1615,10 @@ AwContents::RenderProcessGoneResult AwContents::OnRenderProcessGone(
 
   return result ? RenderProcessGoneResult::kHandled
                 : RenderProcessGoneResult::kUnhandled;
+}
+
+void AwContents::OnSafeBrowsingAllowListSet() {
+  web_contents()->GetController().GetBackForwardCache().Flush();
 }
 
 }  // namespace android_webview

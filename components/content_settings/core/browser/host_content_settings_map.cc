@@ -218,6 +218,7 @@ enum class FlashPermissions {
 // is an affected histogram under the "ContentSetting" suffix.
 bool ShouldCollectFineGrainedExceptionHistograms(ContentSettingsType type) {
   switch (type) {
+    case ContentSettingsType::TRACKING_PROTECTION:
     case ContentSettingsType::COOKIES:
     case ContentSettingsType::POPUPS:
     case ContentSettingsType::ADS:
@@ -254,7 +255,7 @@ const char* ContentSettingToString(ContentSetting setting) {
       return "DetectImportantContent";
     case CONTENT_SETTING_DEFAULT:
     case CONTENT_SETTING_NUM_SETTINGS:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return nullptr;
   }
 }
@@ -530,7 +531,7 @@ void HostContentSettingsMap::SetWebsiteSettingCustomScope(
     DCHECK_EQ(value, clone);
 #endif
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 bool HostContentSettingsMap::CanSetNarrowestContentSetting(
@@ -1337,7 +1338,7 @@ void HostContentSettingsMap::DeleteNearlyExpiredSettingsAndMaybeScheduleNextRun(
     } else {
       // For non-modifiable providers there exists no expiry method and
       // SetWebsiteSettingCustomScope cannot work.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
     }
   }
 

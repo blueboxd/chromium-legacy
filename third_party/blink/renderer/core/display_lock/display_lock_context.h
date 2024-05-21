@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -390,7 +389,7 @@ class CORE_EXPORT DisplayLockContext final
     bool is_forced(ForcedPhase phase) const {
       switch (phase) {
         case ForcedPhase::kNone:
-          NOTREACHED();
+          NOTREACHED_IN_MIGRATION();
           return false;
         case ForcedPhase::kStyleAndLayoutTree:
           return style_update_forced_ || layout_update_forced_ ||

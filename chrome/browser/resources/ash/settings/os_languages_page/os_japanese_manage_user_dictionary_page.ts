@@ -8,13 +8,16 @@
  * methods.
  */
 
+import './os_japanese_dictionary_expand.js';
 import '../settings_shared.css.js';
+import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 
 import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import * as mojom from '../mojom-webui/input_method_user_data.mojom-webui.js';
 import {GlobalScrollTargetMixin} from '../common/global_scroll_target_mixin.js';
+import * as mojom from '../mojom-webui/input_method_user_data.mojom-webui.js';
+import {JapaneseDictionary} from '../mojom-webui/user_data_japanese_dictionary.mojom-webui.js';
 import {routes} from '../router.js';
 
 import {getTemplate} from './os_japanese_manage_user_dictionary_page.html.js';
@@ -53,6 +56,9 @@ class OsSettingsJapaneseManageUserDictionaryPageElement extends
 
   private userDataRemote_?: mojom.InputMethodUserDataServiceRemote = undefined;
 
+  // All Japanese user dictionary data that is loaded into the app.
+  private dictionaries_: JapaneseDictionary[] = [];
+
   // Loads the dictionary objects from IME user data service.
   private async getDictionaries_(): Promise<void> {
     if (!this.userDataRemote_) {
@@ -65,8 +71,8 @@ class OsSettingsJapaneseManageUserDictionaryPageElement extends
     }
 
     if (response.dictionaries !== undefined) {
-      // TODO(b/336226897): handle dictionaries value.
-      this.status = `number of dictionaries=${response.dictionaries.length}`;
+      this.dictionaries_ = [...response.dictionaries];
+      this.status = `number of dictionaries=${this.dictionaries_.length}`;
     }
   }
 }

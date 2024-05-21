@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_base_view.h"
-#include "chrome/browser/ui/views/autofill/popup/popup_no_suggestions_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_factory_utils.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_search_bar_view.h"
@@ -143,9 +142,8 @@ PopupViewViews::PopupViewViews(
                                         : kDefaultSubPopupSides,
                     /*show_arrow_pointer=*/false),
       controller_(controller),
-      parent_(parent),
-      search_bar_config_({}) {
-  InitViews();
+      parent_(parent) {
+  InitViews({});
 }
 
 PopupViewViews::PopupViewViews(
@@ -157,9 +155,8 @@ PopupViewViews::PopupViewViews(
                     search_bar_config.enabled
                         ? views::Widget::InitParams::Activatable::kYes
                         : views::Widget::InitParams::Activatable::kDefault),
-      controller_(controller),
-      search_bar_config_(std::move(search_bar_config)) {
-  InitViews();
+      controller_(controller) {
+  InitViews(search_bar_config);
 }
 
 PopupViewViews::~PopupViewViews() = default;
@@ -218,10 +215,28 @@ bool PopupViewViews::Show(
     absl::get<PopupWarningView*>(rows_[0])->NotifyAccessibilityEvent(
         ax::mojom::Event::kAlert, true);
   }
-  // Compose popups are announced separately.
+
+  // Compose has separate on show announcements.
+  // TODO(b/340359989): Replace with AutofillComposeDelegate::OnShow
   if (controller_->GetMainFillingProduct() == FillingProduct::kCompose) {
-    AxAnnounce(
-        l10n_util::GetStringUTF16(IDS_COMPOSE_SUGGESTION_AX_MESSAGE_ON_SHOW));
+    switch (controller_->GetSuggestionAt(0).type) {
+      case SuggestionType::kComposeResumeNudge:
+      case SuggestionType::kComposeSavedStateNotification:
+        AxAnnounce(l10n_util::GetStringUTF16(
+            IDS_COMPOSE_SUGGESTION_AX_MESSAGE_ON_SHOW_RESUME));
+        break;
+      case SuggestionType::kComposeProactiveNudge:
+        AxAnnounce(l10n_util::GetStringUTF16(
+            IDS_COMPOSE_SUGGESTION_AX_MESSAGE_ON_SHOW_PROACTIVE));
+        break;
+      case SuggestionType::kComposeDisable:
+      case SuggestionType::kComposeGoToSettings:
+      case SuggestionType::kComposeNeverShowOnThisSiteAgain:
+        break;
+      default:
+        // All Compose SuggestionTypes should already be handled.
+        NOTREACHED_NORETURN();
+    }
   }
 
   return !CanActivate() || (GetWidget() && GetWidget()->IsActive());
@@ -560,9 +575,8 @@ bool PopupViewViews::AcceptSelectedContentOrCreditCardCell() {
     return false;
   }
 
-  const SuggestionType type = controller_->GetSuggestionAt(index->first).type;
-  if (!base::Contains(kItemsTriggeringFieldFilling, type) &&
-      type != SuggestionType::kScanCreditCard) {
+  if (!IsStandaloneSuggestionType(
+          controller_->GetSuggestionAt(index->first).type)) {
     return false;
   }
 
@@ -808,14 +822,14 @@ bool PopupViewViews::HasPopupRowViewAt(size_t index) const {
          absl::holds_alternative<PopupRowView*>(rows_[index]);
 }
 
-void PopupViewViews::InitViews() {
+void PopupViewViews::InitViews(PopupViewSearchBarConfig search_bar_config) {
   SetNotifyEnterExitOnChild(true);
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
-  if (search_bar_config_.enabled) {
+  if (search_bar_config.enabled) {
     search_bar_ = AddChildView(std::make_unique<PopupSearchBarView>(
-        search_bar_config_.placeholder, *this));
+        search_bar_config.placeholder, *this));
     search_bar_->SetProperty(views::kMarginsKey,
                              gfx::Insets::VH(GetContentsVerticalPadding(), 0));
     AddChildView(std::make_unique<PopupSeparatorView>(/*vertical_padding=*/0));
@@ -848,17 +862,8 @@ void PopupViewViews::CreateSuggestionViews() {
 
   rows_.reserve(kSuggestions.size());
   size_t current_line_number = 0u;
-
-  // No suggestions (or only footer ones, which are not filterable) with
-  // a non-empty filter query means that there are no results matching
-  // the query. Show a corresponding message.
-  if ((kSuggestions.empty() || IsFooterItem(kSuggestions, 0u)) && search_bar_ &&
-      controller_->HasFilteredOutSuggestions()) {
-    suggestions_container_->AddChildView(
-        std::make_unique<PopupNoSuggestionsView>(
-            search_bar_config_.no_results_message));
-  }
-
+  // TODO(b/325246516): Add "No suggestions found" label if there is a filter
+  // and there are only footer suggestions in the list.
   // Add the body rows, if there are any.
   if (!kSuggestions.empty() && !IsFooterItem(kSuggestions, 0u)) {
     // Create a container to wrap the "regular" (non-footer) rows.
@@ -941,7 +946,8 @@ void PopupViewViews::CreateSuggestionViews() {
             .SetHorizontalScrollBarMode(
                 views::ScrollView::ScrollBarMode::kDisabled)
             .SetDrawOverflowIndicator(false)
-            .ClipHeightTo(0, body_container->GetPreferredSize().height())
+            .ClipHeightTo(
+                0, body_container->GetHeightForWidth(kAutofillPopupMaxWidth))
             .Build();
     body_container_ = scroll_view->SetContents(std::move(body_container));
     scroll_view_ = suggestions_container_->AddChildView(std::move(scroll_view));
@@ -1004,7 +1010,8 @@ void PopupViewViews::CreateSuggestionViews() {
   // Adjust the scrollable area height. Make sure this adjustment always goes
   // after changes that can affect `body_container_`'s size.
   if (scroll_view_ && body_container_ && IsFooterScrollable()) {
-    scroll_view_->ClipHeightTo(0, body_container_->GetPreferredSize().height());
+    scroll_view_->ClipHeightTo(
+        0, body_container_->GetHeightForWidth(kAutofillPopupMaxWidth));
   }
 }
 
@@ -1026,6 +1033,22 @@ int PopupViewViews::AdjustWidth(int width) const {
   }
 
   return width;
+}
+
+gfx::Size PopupViewViews::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
+  gfx::Size size = views::View::CalculatePreferredSize(available_size);
+  // Applies certain rounding rules to the given width, such as matching the
+  // element width when possible.
+  const int width = AdjustWidth(size.width());
+  if (size.width() > kAutofillPopupMaxWidth) {
+    // TODO(crbug.com/40232718): When we set the vertical axis to stretch,
+    // BoxLayout will occupy the entire vertical axis size. Two calculations are
+    // needed to correct this.
+    return views::View::CalculatePreferredSize(views::SizeBounds(width, {}));
+  }
+
+  return size;
 }
 
 bool PopupViewViews::DoUpdateBoundsAndRedrawPopup() {

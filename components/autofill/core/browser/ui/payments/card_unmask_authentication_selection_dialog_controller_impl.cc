@@ -28,6 +28,9 @@ CardUnmaskAuthenticationSelectionDialogControllerImpl::
           std::move(confirm_unmasking_method_callback)),
       cancel_unmasking_closure_(std::move(cancel_unmasking_closure)) {
   CHECK(!challenge_options_.empty());
+#if BUILDFLAG(IS_IOS)
+  selected_challenge_option_id_ = challenge_options_[0].id;
+#endif  // BUILDFLAG(IS_IOS)
 }
 
 CardUnmaskAuthenticationSelectionDialogControllerImpl::
@@ -161,7 +164,7 @@ void CardUnmaskAuthenticationSelectionDialogControllerImpl::
       case CardUnmaskChallengeOptionType::kThreeDomainSecure:
         // TODO(crbug.com/41494927): Add kThreeDomainSecure logic.
       case CardUnmaskChallengeOptionType::kUnknownType:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
     }
   }
@@ -207,7 +210,7 @@ std::u16string CardUnmaskAuthenticationSelectionDialogControllerImpl::
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_AUTHENTICATION_MODE_THREE_DOMAIN_SECURE);
     case CardUnmaskChallengeOptionType::kUnknownType:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return std::u16string();
   }
 }
@@ -227,7 +230,6 @@ CardUnmaskAuthenticationSelectionDialogControllerImpl::GetOkButtonLabel()
   auto selected_challenge_option =
       base::ranges::find(challenge_options_, selected_challenge_option_id_,
                          &CardUnmaskChallengeOption::id);
-
   switch (selected_challenge_option->type) {
     case CardUnmaskChallengeOptionType::kSmsOtp:
     case CardUnmaskChallengeOptionType::kEmailOtp:
@@ -238,7 +240,7 @@ CardUnmaskAuthenticationSelectionDialogControllerImpl::GetOkButtonLabel()
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_CARD_UNMASK_AUTHENTICATION_SELECTION_DIALOG_OK_BUTTON_LABEL_CONTINUE);
     case CardUnmaskChallengeOptionType::kUnknownType:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return std::u16string();
   }
 }

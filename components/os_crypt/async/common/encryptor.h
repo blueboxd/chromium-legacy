@@ -63,6 +63,7 @@ class COMPONENT_EXPORT(OS_CRYPT_ASYNC) Encryptor {
     friend class Encryptor;
     // OSCryptAsync and tests need to be able to Clone() keys.
     friend class OSCryptAsync;
+    friend class TestOSCryptAsync;
     friend class EncryptorTestBase;
     friend struct mojo::StructTraits<os_crypt_async::mojom::KeyDataView,
                                      os_crypt_async::Encryptor::Key>;
@@ -123,13 +124,16 @@ class COMPONENT_EXPORT(OS_CRYPT_ASYNC) Encryptor {
   [[nodiscard]] std::optional<std::string> DecryptData(
       base::span<const uint8_t> data) const;
 
-  // These two APIs are provided for backwards compatibility with OSCrypt. They
-  // just call the above functions. The two sets of functions are compatible
-  // with each other.
+  // These four APIs are provided for backwards compatibility with OSCrypt. They
+  // just call the above functions.
   [[nodiscard]] bool EncryptString(const std::string& plaintext,
                                    std::string* ciphertext) const;
   [[nodiscard]] bool DecryptString(const std::string& ciphertext,
                                    std::string* plaintext) const;
+  [[nodiscard]] bool EncryptString16(const std::u16string& plaintext,
+                                     std::string* ciphertext) const;
+  [[nodiscard]] bool DecryptString16(const std::string& ciphertext,
+                                     std::u16string* plaintext) const;
 
  private:
   friend class TestOSCryptAsync;

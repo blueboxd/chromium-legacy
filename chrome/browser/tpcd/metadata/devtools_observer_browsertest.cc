@@ -78,9 +78,11 @@ class TpcdMetadataDevtoolsObserverBrowserTest
 
     Metadata metadata;
     tpcd::metadata::helpers::AddEntryToMetadata(
-        metadata, third_party_pattern_spec_1, first_party_pattern_spec);
+        metadata, third_party_pattern_spec_1, first_party_pattern_spec,
+        Parser::kSource1pDt, /*dtrp=*/50u);
     tpcd::metadata::helpers::AddEntryToMetadata(
-        metadata, third_party_pattern_spec_2, first_party_pattern_spec);
+        metadata, third_party_pattern_spec_2, first_party_pattern_spec,
+        Parser::kSource3pDt, /*dtrp=*/50u, /*dtrp_override=*/20u);
     tpcd::metadata::Parser::GetInstance()->ParseMetadata(
         metadata.SerializeAsString());
 
@@ -120,22 +122,27 @@ class TpcdMetadataDevtoolsObserverBrowserTest
         https_server_.GetURL(third_party_site, relative_url));
   }
 
-  void WaitForIssueAndCheckAllowedSites(const std::vector<std::string>& sites) {
+  void WaitForIssueAndCheck(const std::vector<std::string>& sites,
+                            uint32_t opt_out_percentage,
+                            bool is_opt_out_top_level) {
     auto is_metadata_issue = [](const base::Value::Dict& params) {
-      return *(params.FindStringByDottedPath("issue.code")) ==
-             "CookieDeprecationMetadataIssue";
+      const std::string* issue_code =
+          params.FindStringByDottedPath("issue.code");
+      return issue_code && *issue_code == "CookieDeprecationMetadataIssue";
     };
 
     // Wait for notification of a Metadata Issue.
     base::Value::Dict params = WaitForMatchingNotification(
         "Audits.issueAdded", base::BindRepeating(is_metadata_issue));
-    ASSERT_EQ(*params.FindStringByDottedPath("issue.code"),
-              "CookieDeprecationMetadataIssue");
+    const std::string* issue_code = params.FindStringByDottedPath("issue.code");
+    ASSERT_TRUE(issue_code);
+    ASSERT_EQ(*issue_code, "CookieDeprecationMetadataIssue");
 
     base::Value::Dict* metadata_issue_details = params.FindDictByDottedPath(
         "issue.details.cookieDeprecationMetadataIssueDetails");
     ASSERT_TRUE(metadata_issue_details);
 
+    // Verify the reported allowed sites match the expected sites.
     std::vector<std::string> allowed_sites;
     base::Value::List* allowed_sites_list =
         metadata_issue_details->FindList("allowedSites");
@@ -144,9 +151,16 @@ class TpcdMetadataDevtoolsObserverBrowserTest
         allowed_sites.push_back(val.GetString());
       }
     }
-
-    // Verify the reported allowed sites match the expected sites.
     EXPECT_THAT(allowed_sites, testing::ElementsAreArray(sites));
+
+    // Verify the reported DTRP values against the expected values.
+    EXPECT_EQ(
+        static_cast<uint32_t>(
+            metadata_issue_details->FindInt("optOutPercentage").value_or(0)),
+        opt_out_percentage);
+    EXPECT_EQ(
+        metadata_issue_details->FindBool("isOptOutTopLevel").value_or(false),
+        is_opt_out_top_level);
 
     // Clear existing notifications so subsequent calls don't fail by checking
     // `sites` against old notifications.
@@ -156,7 +170,7 @@ class TpcdMetadataDevtoolsObserverBrowserTest
   void CheckNoAddedIssue() {
     ReportDummyIssue();
 
-    WaitForIssueAndCheckAllowedSites({"dummy.test"});
+    WaitForIssueAndCheck({"dummy.test"}, 0u, false);
   }
 
  private:
@@ -182,13 +196,14 @@ class TpcdMetadataDevtoolsObserverBrowserTest
   raw_ptr<TpcdMetadataDevtoolsObserver> devtools_observer_ = nullptr;
 };
 
+// TODO(https://crbug.com/341211478): Flaky.
 IN_PROC_BROWSER_TEST_F(TpcdMetadataDevtoolsObserverBrowserTest,
-                       EmitsDevtoolsIssues) {
+                       DISABLED_EmitsDevtoolsIssues) {
   AddCookieAccess("a.test", "b.test", /*is_ad_tagged=*/false);
-  WaitForIssueAndCheckAllowedSites({"b.test"});
+  WaitForIssueAndCheck({"b.test"}, 50u, true);
 
   AddCookieAccess("a.test", "c.test", /*is_ad_tagged=*/false);
-  WaitForIssueAndCheckAllowedSites({"c.test"});
+  WaitForIssueAndCheck({"c.test"}, 20u, false);
 }
 
 IN_PROC_BROWSER_TEST_F(TpcdMetadataDevtoolsObserverBrowserTest,

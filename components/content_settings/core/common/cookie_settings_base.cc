@@ -11,6 +11,7 @@
 #include "base/check.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/not_fatal_until.h"
 #include "base/notreached.h"
 #include "base/types/optional_util.h"
 #include "build/build_config.h"
@@ -81,6 +82,8 @@ constexpr StorageAccessResult GetStorageAccessResult(
       return StorageAccessResult::ACCESS_ALLOWED_TOP_LEVEL_STORAGE_ACCESS_GRANT;
     case ThirdPartyCookieAllowMechanism::kAllowByCORSException:
       return StorageAccessResult::ACCESS_ALLOWED_CORS_EXCEPTION;
+    case ThirdPartyCookieAllowMechanism::kAllowByScheme:
+      return StorageAccessResult::ACCESS_ALLOWED_SCHEME;
   }
 }
 
@@ -110,6 +113,7 @@ constexpr std::optional<SettingSource> GetSettingSource(
     case ThirdPartyCookieAllowMechanism::kAllowByStorageAccess:
     case ThirdPartyCookieAllowMechanism::kAllowByTopLevelStorageAccess:
     case ThirdPartyCookieAllowMechanism::kAllowByCORSException:
+    case ThirdPartyCookieAllowMechanism::kAllowByScheme:
       return std::nullopt;
   }
 }
@@ -192,6 +196,7 @@ bool CookieSettingsBase::IsAnyTpcdMetadataAllowMechanism(
     case ThirdPartyCookieAllowMechanism::kAllowByTopLevel3PCD:
     case ThirdPartyCookieAllowMechanism::
         kAllowByEnterprisePolicyCookieAllowedForUrls:
+    case ThirdPartyCookieAllowMechanism::kAllowByScheme:
       return false;
     case ThirdPartyCookieAllowMechanism::kAllowBy3PCDMetadataSourceUnspecified:
     case ThirdPartyCookieAllowMechanism::kAllowBy3PCDMetadataSourceTest:
@@ -246,6 +251,7 @@ bool CookieSettingsBase::Is1PDtRelatedAllowMechanism(
         kAllowBy3PCDMetadataSourceCuj:
     case CookieSettingsBase::ThirdPartyCookieAllowMechanism::
         kAllowBy3PCDMetadataSourceGovEduTld:
+    case CookieSettingsBase::ThirdPartyCookieAllowMechanism::kAllowByScheme:
       return false;
   }
 }
@@ -402,7 +408,7 @@ CookieSettingsBase::GetCookieAccessSemanticsForDomain(
     case CONTENT_SETTING_BLOCK:
       return net::CookieAccessSemantics::NONLEGACY;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
   return net::CookieAccessSemantics::UNKNOWN;
 }
@@ -498,53 +504,35 @@ bool CookieSettingsBase::IsAllowedByTopLevelStorageAccessGrant(
                            /*info=*/nullptr) == CONTENT_SETTING_ALLOW;
 }
 
-// Whether to bypass any available grants from the Third Party Cookie
-// Deprecation TPCD Metadata.
-bool IgnoreTpcdDtGracePeriodMetadataEntry(const SettingInfo& info) {
-  if (!base::FeatureList::IsEnabled(
-          net::features::kTpcdMetadataStagedRollback)) {
-    return false;
-  }
-
-  switch (info.metadata.tpcd_metadata_cohort()) {
-    case mojom::TpcdMetadataCohort::GRACE_PERIOD_FORCED_OFF:
-      return true;
-    case mojom::TpcdMetadataCohort::DEFAULT:
-    case mojom::TpcdMetadataCohort::GRACE_PERIOD_FORCED_ON:
-      return false;
-  }
-
-  NOTREACHED_NORETURN() << "Invalid enum value: "
-                        << info.metadata.tpcd_metadata_cohort();
-}
-
 absl::variant<CookieSettingsBase::AllowAllCookies,
               CookieSettingsBase::AllowPartitionedCookies,
               CookieSettingsBase::BlockAllCookies>
-CookieSettingsBase::DecideAccess(const GURL& url,
-                                 const GURL& first_party_url,
-                                 bool is_third_party_request,
-                                 net::CookieSettingOverrides overrides,
-                                 const ContentSetting& setting,
-                                 const SettingSource& setting_source,
-                                 bool is_explicit_setting) const {
+CookieSettingsBase::DecideAccess(
+    const GURL& url,
+    const GURL& first_party_url,
+    bool is_third_party_request,
+    net::CookieSettingOverrides overrides,
+    const ContentSetting& setting,
+    const SettingSource& setting_source,
+    bool is_explicit_setting,
+    bool global_setting_or_embedder_blocks_third_party_cookies) const {
   CHECK(!url.SchemeIsWSOrWSS());
 
   if (!IsAllowed(setting)) {
     return BlockAllCookies{};
   }
 
-  if (!ShouldBlockThirdPartyCookies() &&
-      !Are3pcsForceDisabledByOverride(overrides)) {
+  if (!is_third_party_request) {
+    return AllowAllCookies{ThirdPartyCookieAllowMechanism::kNone};
+  }
+
+  if (!global_setting_or_embedder_blocks_third_party_cookies) {
     return AllowAllCookies{
         ThirdPartyCookieAllowMechanism::kAllowByGlobalSetting};
   }
 
-  if (!is_third_party_request) {
-    return AllowAllCookies{ThirdPartyCookieAllowMechanism::kNone};
-  }
   if (IsThirdPartyCookiesAllowedScheme(first_party_url.scheme())) {
-    return AllowAllCookies{ThirdPartyCookieAllowMechanism::kNone};
+    return AllowAllCookies{ThirdPartyCookieAllowMechanism::kAllowByScheme};
   }
 
   // Site controlled mechanisms (ex: web APIs, deprecation trial):
@@ -584,8 +572,7 @@ CookieSettingsBase::DecideAccess(const GURL& url,
   // Chrome controlled mechanisms (ex. 3PCD Metadata Grants):
   SettingInfo tpcd_metadata_info;
   if (IsAllowedBy3pcdMetadataGrantsSettings(url, first_party_url, overrides,
-                                            &tpcd_metadata_info) &&
-      !IgnoreTpcdDtGracePeriodMetadataEntry(tpcd_metadata_info)) {
+                                            &tpcd_metadata_info)) {
     return AllowAllCookies{TpcdMetadataSourceToAllowMechanism(
         tpcd_metadata_info.metadata.tpcd_metadata_rule_source())};
   }
@@ -636,14 +623,34 @@ CookieSettingsBase::GetCookieSettingInternal(
       !setting_info.primary_pattern.MatchesAllHosts() ||
       !setting_info.secondary_pattern.MatchesAllHosts();
 
+  // `ShouldBlockThirdPartyCookies()` is true iff the 3PC are blocked globally
+  // (either by the user, or by 3PCD). `Are3pcsForceDisabledByOverride()` is
+  // true iff the embedder forcibly blocks 3PCs.
+  //
+  // This variable is a function of 3PC policy, but is not the final say. Some
+  // exemptions can allow 3PCs in this context, even when this variable is true.
+  const bool global_setting_or_embedder_blocks_third_party_cookies =
+      ShouldBlockThirdPartyCookies() ||
+      Are3pcsForceDisabledByOverride(overrides);
+
   const absl::variant<AllowAllCookies, AllowPartitionedCookies, BlockAllCookies>
-      choice = DecideAccess(url, first_party_url, is_third_party_request,
-                            overrides, cookie_setting, setting_info.source,
-                            is_explicit_setting);
+      choice =
+          DecideAccess(url, first_party_url, is_third_party_request, overrides,
+                       cookie_setting, setting_info.source, is_explicit_setting,
+                       global_setting_or_embedder_blocks_third_party_cookies);
 
   if (const AllowAllCookies* allow_cookies =
           absl::get_if<AllowAllCookies>(&choice)) {
     CHECK(IsAllowed(cookie_setting));
+    CHECK(!is_third_party_request ||
+              !global_setting_or_embedder_blocks_third_party_cookies ||
+              allow_cookies->mechanism != ThirdPartyCookieAllowMechanism::kNone,
+          base::NotFatalUntil::M128);
+    // `!is_third_party_request` implies that the exemption reason must be
+    // kNone. (It doesn't make sense to exempt a first-party cookie from 3PCD.)
+    CHECK(is_third_party_request ||
+              allow_cookies->mechanism == ThirdPartyCookieAllowMechanism::kNone,
+          base::NotFatalUntil::M128);
 
     FireStorageAccessHistogram(
         GetStorageAccessResult(allow_cookies->mechanism));
@@ -668,6 +675,11 @@ CookieSettingsBase::GetCookieSettingInternal(
   }
 
   if (absl::holds_alternative<AllowPartitionedCookies>(choice)) {
+    CHECK(is_third_party_request, base::NotFatalUntil::M128);
+    CHECK(global_setting_or_embedder_blocks_third_party_cookies,
+          base::NotFatalUntil::M128);
+    CHECK(!is_explicit_setting, base::NotFatalUntil::M128);
+
     FireStorageAccessHistogram(StorageAccessResult::ACCESS_BLOCKED);
 
     if (info) {
@@ -685,6 +697,7 @@ CookieSettingsBase::GetCookieSettingInternal(
   }
 
   CHECK(absl::holds_alternative<BlockAllCookies>(choice));
+  CHECK_EQ(cookie_setting, CONTENT_SETTING_BLOCK, base::NotFatalUntil::M128);
   FireStorageAccessHistogram(StorageAccessResult::ACCESS_BLOCKED);
 
   if (info) {

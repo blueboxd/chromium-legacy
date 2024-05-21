@@ -4,8 +4,8 @@
 
 import 'chrome://os-print/js/destination_select_controller.js';
 
-import {DESTINATION_MANAGER_STATE_CHANGED, DestinationManager} from 'chrome://os-print/js/data/destination_manager.js';
-import {DESTINATION_SELECT_SHOW_LOADING_CHANGED, DestinationSelectController} from 'chrome://os-print/js/destination_select_controller.js';
+import {DESTINATION_MANAGER_SESSION_INITIALIZED, DESTINATION_MANAGER_STATE_CHANGED, DestinationManager} from 'chrome://os-print/js/data/destination_manager.js';
+import {DESTINATION_SELECT_SHOW_LOADING_UI_CHANGED, DestinationSelectController} from 'chrome://os-print/js/destination_select_controller.js';
 import {FakeDestinationProvider} from 'chrome://os-print/js/fakes/fake_destination_provider.js';
 import {createCustomEvent} from 'chrome://os-print/js/utils/event_utils.js';
 import {setDestinationProviderForTesting} from 'chrome://os-print/js/utils/mojo_data_providers.js';
@@ -45,37 +45,61 @@ suite('DestinationSelectController', () => {
     assertTrue(controller instanceof EventTarget, 'Is event target');
   });
 
-  // Verify shouldShowLoading returns true by default.
-  test('shouldShowLoading returns true by default', () => {
-    assertTrue(controller.shouldShowLoading());
+  // Verify shouldShowLoadingUi returns true by default.
+  test('shouldShowLoadingUi returns true by default', () => {
+    assertTrue(controller.shouldShowLoadingUi());
   });
 
-  // Verify shouldShowLoading returns true if
+  // Verify shouldShowLoadingUi returns true if
   // DestinationManager's `hasLoadedAnInitialDestination` call is false.
   test(
-      'shouldShowLoading returns true when destination manager has not ' +
+      'shouldShowLoadingUi returns true when destination manager has not ' +
           'received initial destinations',
       () => {
         const hasDestinationsFn = mockController.createFunctionMock(
             destinationManager, 'hasLoadedAnInitialDestination');
         hasDestinationsFn.returnValue = false;
+        const initializedFn = mockController.createFunctionMock(
+            destinationManager, 'isSessionInitialized');
+        initializedFn.returnValue = true;
 
-        assertTrue(controller.shouldShowLoading(), 'Is fetching destinations');
+        assertTrue(
+            controller.shouldShowLoadingUi(), 'Is fetching destinations');
       });
 
-  // Verify shouldShowLoading returns false if
-  // DestinationManager's `hasLoadedAnInitialDestination` call is true.
+  // Verify shouldShowLoadingUi returns true if
+  // DestinationManager's `isSessionInitialized` call is false.
   test(
-      'shouldShowLoading returns false when destination manager has received ' +
-          'initial destinations',
+      'shouldShowLoadingUi returns true when destination manager has not ' +
+          'received initial destinations',
       () => {
         const hasDestinationsFn = mockController.createFunctionMock(
             destinationManager, 'hasLoadedAnInitialDestination');
         hasDestinationsFn.returnValue = true;
+        const initializedFn = mockController.createFunctionMock(
+            destinationManager, 'isSessionInitialized');
+        initializedFn.returnValue = false;
 
-        assertFalse(controller.shouldShowLoading(), 'Has fetched destinations');
+        assertTrue(controller.shouldShowLoadingUi(), 'Is initializing manager');
       });
 
+  // Verify shouldShowLoadingUi returns false if
+  // DestinationManager's `hasLoadedAnInitialDestination` and
+  // `isSessionInitialized` call is true.
+  test(
+      'shouldShowLoadingUi returns false when destination manager has ' +
+          'received initial destinations',
+      () => {
+        const hasDestinationsFn = mockController.createFunctionMock(
+            destinationManager, 'hasLoadedAnInitialDestination');
+        hasDestinationsFn.returnValue = true;
+        const initializedFn = mockController.createFunctionMock(
+            destinationManager, 'isSessionInitialized');
+        initializedFn.returnValue = true;
+
+        assertFalse(
+            controller.shouldShowLoadingUi(), 'Has fetched destinations');
+      });
 
   // Verify controller is listening to DESTINATION_MANAGER_STATE_CHANGED event.
   test(
@@ -84,27 +108,63 @@ suite('DestinationSelectController', () => {
       async () => {
         const onStateChangedFn = mockController.createFunctionMock(
             controller, 'onDestinationManagerStateChanged');
-        const testEvent = createCustomEvent(DESTINATION_MANAGER_STATE_CHANGED);
         const stateChanged = eventToPromise(
             DESTINATION_MANAGER_STATE_CHANGED, destinationManager);
-        onStateChangedFn.addExpectation(testEvent);
+        onStateChangedFn.addExpectation();
 
         // Simulate event being fired.
-        destinationManager.dispatchEvent(testEvent);
+        destinationManager.dispatchEvent(
+            createCustomEvent(DESTINATION_MANAGER_STATE_CHANGED));
         await stateChanged;
 
         mockController.verifyMocks();
       });
 
-  // Verify DESTINATION_SELECT_SHOW_LOADING_CHANGED emits when destination
+  // Verify DESTINATION_SELECT_SHOW_LOADING_UI_CHANGED emits when destination
   // manager state changes.
   test(
-      `emit ${DESTINATION_SELECT_SHOW_LOADING_CHANGED} ` +
+      `emit ${DESTINATION_SELECT_SHOW_LOADING_UI_CHANGED} ` +
           'on destination manager state changed',
       async () => {
-        const testEvent = createCustomEvent(DESTINATION_MANAGER_STATE_CHANGED);
-        const showLoadingChanged =
-            eventToPromise(DESTINATION_SELECT_SHOW_LOADING_CHANGED, controller);
+        const showLoadingChanged = eventToPromise(
+            DESTINATION_SELECT_SHOW_LOADING_UI_CHANGED, controller);
+
+        // Simulate event being fired.
+        destinationManager.dispatchEvent(
+            createCustomEvent(DESTINATION_MANAGER_STATE_CHANGED));
+        await showLoadingChanged;
+      });
+
+  // Verify controller is listening to DESTINATION_MANAGER_SESSION_INITIALIZED
+  // event.
+  test(
+      'onDestinationManagerSessionInitialized called on ' +
+          DESTINATION_MANAGER_SESSION_INITIALIZED,
+      async () => {
+        const onStateChangedFn = mockController.createFunctionMock(
+            controller, 'onDestinationManagerSessionInitialized');
+        const stateChanged = eventToPromise(
+            DESTINATION_MANAGER_SESSION_INITIALIZED, destinationManager);
+        onStateChangedFn.addExpectation();
+
+        // Simulate event being fired.
+        destinationManager.dispatchEvent(
+            createCustomEvent(DESTINATION_MANAGER_SESSION_INITIALIZED));
+        await stateChanged;
+
+        mockController.verifyMocks();
+      });
+
+  // Verify DESTINATION_SELECT_SHOW_LOADING_UI_CHANGED emits when destination
+  // manager initialized.
+  test(
+      `emit ${DESTINATION_SELECT_SHOW_LOADING_UI_CHANGED} ` +
+          'on destination manager initialized',
+      async () => {
+        const testEvent =
+            createCustomEvent(DESTINATION_MANAGER_SESSION_INITIALIZED);
+        const showLoadingChanged = eventToPromise(
+            DESTINATION_SELECT_SHOW_LOADING_UI_CHANGED, controller);
 
         // Simulate event being fired.
         destinationManager.dispatchEvent(testEvent);

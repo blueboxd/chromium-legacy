@@ -74,7 +74,7 @@ bool IsValidDefaultWebClientState(DefaultWebClientState state) {
     case NUM_DEFAULT_STATES:
       break;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return false;
 }
 
@@ -153,6 +153,7 @@ base::CommandLine CommandLineArgsForUrlShortcut(
   CHECK(url.is_valid());
   base::CommandLine new_cmd_line(chrome_exe_program);
   AppendProfileArgs(profile_path, &new_cmd_line);
+  new_cmd_line.AppendSwitch(switches::kIgnoreProfileDirectoryIfNotExists);
   new_cmd_line.AppendArg(url.spec());
 
   return new_cmd_line;

@@ -94,9 +94,6 @@ mojom::blink::InputEventResultState InputEventDispositionToAck(
     case InputHandlerProxy::DID_HANDLE:
       return mojom::blink::InputEventResultState::kConsumed;
     case InputHandlerProxy::DID_NOT_HANDLE:
-      if (base::FeatureList::IsEnabled(features::kFixGestureScrollQueuingBug)) {
-        return mojom::blink::InputEventResultState::kNotConsumedBlocking;
-      }
       return mojom::blink::InputEventResultState::kNotConsumed;
     case InputHandlerProxy::DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING:
       return mojom::blink::InputEventResultState::kSetNonBlockingDueToFling;
@@ -106,7 +103,7 @@ mojom::blink::InputEventResultState InputEventDispositionToAck(
       return mojom::blink::InputEventResultState::kSetNonBlocking;
     case InputHandlerProxy::REQUIRES_MAIN_THREAD_HIT_TEST:
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return mojom::blink::InputEventResultState::kUnknown;
   }
 }
@@ -382,10 +379,6 @@ void WidgetInputHandlerManager::FindScrollTargetOnMainThread(
 
   InputThreadTaskRunner(TaskRunnerType::kInputBlocking)
       ->PostTask(FROM_HERE, base::BindOnce(std::move(callback), element_id));
-}
-
-void WidgetInputHandlerManager::DidAnimateForInput() {
-  widget_scheduler_->DidAnimateForInputOnCompositorThread();
 }
 
 void WidgetInputHandlerManager::DidStartScrollingViewport() {
@@ -1034,8 +1027,7 @@ void WidgetInputHandlerManager::DidHandleInputEventSentToCompositor(
   if (ack_state == mojom::blink::InputEventResultState::kSetNonBlocking ||
       ack_state ==
           mojom::blink::InputEventResultState::kSetNonBlockingDueToFling ||
-      ack_state == mojom::blink::InputEventResultState::kNotConsumed ||
-      ack_state == mojom::blink::InputEventResultState::kNotConsumedBlocking) {
+      ack_state == mojom::blink::InputEventResultState::kNotConsumed) {
     DCHECK(!overscroll_params);
     DCHECK(!event->latency_info().coalesced());
     MainThreadEventQueue::DispatchType dispatch_type =

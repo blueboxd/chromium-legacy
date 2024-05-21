@@ -65,7 +65,7 @@ void ProcessPriorityAggregator::Data::Decrement(base::TaskPriority priority) {
     }
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void ProcessPriorityAggregator::Data::Increment(base::TaskPriority priority) {
@@ -87,7 +87,7 @@ void ProcessPriorityAggregator::Data::Increment(base::TaskPriority priority) {
     }
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 bool ProcessPriorityAggregator::Data::IsEmpty() const {
@@ -116,15 +116,7 @@ ProcessPriorityAggregator::ProcessPriorityAggregator() = default;
 
 ProcessPriorityAggregator::~ProcessPriorityAggregator() = default;
 
-void ProcessPriorityAggregator::OnBeforeGraphDestroyed(Graph* graph) {
-  auto* registry =
-      execution_context::ExecutionContextRegistry::GetFromGraph(graph);
-  if (registry && registry->HasObserver(this))
-    registry->RemoveObserver(this);
-}
-
 void ProcessPriorityAggregator::OnPassedToGraph(Graph* graph) {
-  graph->AddGraphObserver(this);
   graph->GetNodeDataDescriberRegistry()->RegisterDescriber(this,
                                                            kDescriberName);
   graph->AddProcessNodeObserver(this);
@@ -137,14 +129,13 @@ void ProcessPriorityAggregator::OnPassedToGraph(Graph* graph) {
 }
 
 void ProcessPriorityAggregator::OnTakenFromGraph(Graph* graph) {
-  // Call OnBeforeGraphDestroyed as well. This unregisters us from the
-  // ExecutionContextRegistry in case we're being removed from the graph prior
-  // to its destruction.
-  OnBeforeGraphDestroyed(graph);
+  auto* registry =
+      execution_context::ExecutionContextRegistry::GetFromGraph(graph);
+  CHECK(registry);
+  registry->RemoveObserver(this);
 
   graph->RemoveProcessNodeObserver(this);
   graph->GetNodeDataDescriberRegistry()->UnregisterDescriber(this);
-  graph->RemoveGraphObserver(this);
 }
 
 base::Value::Dict ProcessPriorityAggregator::DescribeProcessNodeData(

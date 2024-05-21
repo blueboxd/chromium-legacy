@@ -325,7 +325,7 @@ void PasswordAutofillManager::DidAcceptSuggestion(
 void PasswordAutofillManager::DidPerformButtonActionForSuggestion(
     const Suggestion&) {
   // Button actions do currently not exist for password entries.
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 bool PasswordAutofillManager::RemoveSuggestion(const Suggestion& suggestion) {
@@ -475,6 +475,10 @@ bool PasswordAutofillManager::PreviewSuggestionForTest(
 void PasswordAutofillManager::SetManualFallbackFlowForTest(
     std::unique_ptr<PasswordSuggestionFlow> manual_fallback_flow) {
   manual_fallback_flow_.swap(manual_fallback_flow);
+}
+
+base::WeakPtr<PasswordAutofillManager> PasswordAutofillManager::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

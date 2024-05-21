@@ -68,7 +68,6 @@
 <translation id="2241587408274973373">Nuwe oortjiebladsykaarte</translation>
 <translation id="2241634353105152135">Net een keer</translation>
 <translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> Verwyder</translation>
-<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{1 werf word geblokkeer}other{# werwe word geblokkeer}}</translation>
 <translation id="228293613124499805">Die meeste werwe wat jy besoek, stoor waarskynlik data op jou toestel – dikwels om jou ervaring te verbeter deur jou voorkeure of inligting wat jy met die werf deel, te stoor. Ons beveel aan dat hierdie instelling aan bly.</translation>
 <translation id="2289270750774289114">Vra wanneer 'n werf Bluetooth-toestelle in die omtrek wil ontdek (aanbeveel)</translation>
 <translation id="2315043854645842844">Bedryfstelsel steun nie die sertifikaat wat die kliënt gekies het nie.</translation>
@@ -305,6 +304,7 @@
 <translation id="6015775454662021376">Beheer hierdie werf se toegang tot jou toestel</translation>
 <translation id="6040143037577758943">Maak toe</translation>
 <translation id="6042308850641462728">Meer</translation>
+<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Jou jongste oortjie</translation>
 <translation id="6064125863973209585">Voltooide aflaaie</translation>
 <translation id="6071501408666570960">Jy kan dalk by hierdie werf afgemeld word</translation>
 <translation id="6120483543004435978">Wanneer dit aan is, kan werwe vra om te weet wanneer jy jou toestel aktief gebruik. Wanneer dit af is, kan werwe nie weet wanneer jy jou toestel aktief gebruik nie.</translation>
@@ -426,6 +426,7 @@
 <translation id="7986741934819883144">Kies 'n kontak</translation>
 <translation id="7990211076305263060">Wanneer dit aan is, kan werwe vra om jou mikrofoon te gebruik. Wanneer dit af is, kan werwe nie jou mikrofoon gebruik nie.</translation>
 <translation id="8007176423574883786">Afgeskakel vir hierdie toestel</translation>
+<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Vanaf <ph name="FROM_DEVICE" /></translation>
 <translation id="802154636333426148">Kon nie aflaai nie</translation>
 <translation id="8042586301629853791">Rangskik volgens:</translation>
 <translation id="8067883171444229417">Speel video</translation>
@@ -480,7 +481,6 @@
 <translation id="8721719390026067591">Wanneer dit aan is, kan werwe vra om Bluetooth-toestelle te soek. Wanneer dit af is, kan werwe nie Bluetooth-toestelle soek nie.</translation>
 <translation id="8725066075913043281">Probeer weer</translation>
 <translation id="8730621377337864115">Gedoen</translation>
-<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{1 werf word toegelaat}other{# werwe word toegelaat}}</translation>
 <translation id="8751914237388039244">Kies 'n prent</translation>
 <translation id="8800034312320686233">Werk werf nie?</translation>
 <translation id="8801436777607969138">Blokkeer JavaScript vir 'n spesifieke werf.</translation>

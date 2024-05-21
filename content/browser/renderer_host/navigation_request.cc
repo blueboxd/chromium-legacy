@@ -482,7 +482,7 @@ bool ShouldPropagateUserActivation(const url::Origin& previous_origin,
       UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram ".NewNavigation",    \
                                  duration, kMinTime, kMaxTime, kBuckets);     \
     } else {                                                                  \
-      NOTREACHED() << "Invalid page transition: " << transition;              \
+      NOTREACHED_IN_MIGRATION() << "Invalid page transition: " << transition; \
     }                                                                         \
     if (is_background.has_value()) {                                          \
       if (is_background.value()) {                                            \
@@ -734,11 +734,11 @@ network::mojom::RequestDestination GetDestinationFromFrameTreeNode(
       return network::mojom::RequestDestination::kFrame;
     // Main frames are handled above.
     case blink::FrameOwnerElementType::kNone:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return network::mojom::RequestDestination::kDocument;
       // Fenced frames are handled above.
     case blink::FrameOwnerElementType::kFencedframe:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return network::mojom::RequestDestination::kFencedframe;
   }
 }
@@ -1313,9 +1313,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   blink::mojom::CommitNavigationParamsPtr commit_params =
       blink::mojom::CommitNavigationParams::New(
           std::nullopt,
-          // The correct storage key and session storage key will be computed
-          // before committing the navigation.
-          blink::StorageKey(), blink::StorageKey(), override_user_agent,
+          // The correct storage key will be computed before committing the
+          // navigation.
+          blink::StorageKey(), override_user_agent,
           /*redirects=*/std::vector<GURL>(),
           /*redirect_response=*/
           std::vector<network::mojom::URLResponseHeadPtr>(),
@@ -1461,10 +1461,9 @@ NavigationRequest::CreateForSynchronousRendererCommit(
   blink::mojom::CommitNavigationParamsPtr commit_params =
       blink::mojom::CommitNavigationParams::New(
           std::nullopt,
-          // The correct storage key and session storage key are computed right
-          // after creating the NavigationRequest below.
-          blink::StorageKey(), blink::StorageKey(), is_overriding_user_agent,
-          redirects,
+          // The correct storage key is computed right after creating the
+          // NavigationRequest below.
+          blink::StorageKey(), is_overriding_user_agent, redirects,
           /*redirect_response=*/
           std::vector<network::mojom::URLResponseHeadPtr>(),
           /*redirect_infos=*/std::vector<net::RedirectInfo>(),
@@ -1564,9 +1563,6 @@ NavigationRequest::CreateForSynchronousRendererCommit(
       ->system_entropy_at_navigation_start =
       SystemEntropyUtils::ComputeSystemEntropyForFrameTreeNode(
           frame_tree_node, blink::mojom::SystemEntropy::kNormal);
-  navigation_request->commit_params_->session_storage_key =
-      frame_tree_node->frame_tree().GetSessionStorageKey(
-          navigation_request->commit_params_->storage_key);
   navigation_request->render_frame_host_ = render_frame_host->GetSafeRef();
   navigation_request->coep_reporter_ = std::move(coep_reporter);
   navigation_request->isolation_info_for_subresources_ =
@@ -2709,7 +2705,7 @@ void NavigationRequest::BeginNavigationImpl() {
     // - MHTML document, not supported by CSPEE (https://crbug.com/1164353).
     if (CheckCSPEmbeddedEnforcement() ==
         CSPEmbeddedEnforcementResult::BLOCK_RESPONSE) {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       base::debug::DumpWithoutCrashing();
     }
 
@@ -4885,7 +4881,7 @@ void NavigationRequest::SelectFrameHostForOnRequestFailedInternal(
       break;
     case ErrorPageProcess::kNotErrorPage:
     case ErrorPageProcess::kPostCommitErrorPage:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 
@@ -5875,9 +5871,6 @@ void NavigationRequest::CommitNavigation() {
 
   commit_params_->storage_key = GetRenderFrameHost()->CalculateStorageKey(
       origin_to_commit, base::OptionalToPtr(nonce));
-  commit_params_->session_storage_key =
-      frame_tree_node()->frame_tree().GetSessionStorageKey(
-          commit_params_->storage_key);
 
   if (topics_eligible_) {
     topics_eligible_ = false;
@@ -6083,14 +6076,9 @@ void NavigationRequest::CommitNavigation() {
   // cross-origin subframes to use their reporting metadata to send
   // `reportEvent()` beacons. The cross-origin subframes still require a
   // separate per-report opt-in.
-  {
-    std::string allow;
-    if (fenced_frame_properties_.has_value() && response() &&
-        response()->headers->GetNormalizedHeader(
-            "Allow-Cross-Origin-Event-Reporting", &allow) &&
-        allow == "true") {
-      fenced_frame_properties_->SetAllowCrossOriginEventReporting();
-    }
+  if (fenced_frame_properties_.has_value() && response_head_ &&
+      response_head_->parsed_headers->allow_cross_origin_event_reporting) {
+    fenced_frame_properties_->SetAllowCrossOriginEventReporting();
   }
 
   // Create a view of the fenced frame properties from the perspective of the
@@ -6686,12 +6674,6 @@ NavigationRequest::AboutSrcDocCheckResult NavigationRequest::CheckAboutSrcDoc()
   if (frame_tree_node_->IsMainFrame())
     return AboutSrcDocCheckResult::BLOCK_REQUEST;
 
-  if (!base::FeatureList::IsEnabled(
-          features::kBlockCrossOriginInitiatedAboutSrcdocNavigations)) {
-    // Retain previous behaviour if new behavior has been disabled.
-    return AboutSrcDocCheckResult::ALLOW_REQUEST;
-  }
-
   // There are 4 cases where we allow a navigation to about:srcdoc:
 
   // 1) We allow same-document navigations from any frame.
@@ -7023,7 +7005,7 @@ void NavigationRequest::OnNavigationEventProcessed(
       OnWillCommitWithoutUrlLoaderProcessed(result);
       return;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void NavigationRequest::OnWillStartRequestProcessed(
@@ -7256,7 +7238,7 @@ void NavigationRequest::CancelDeferredNavigationInternal(
       OnWillCommitWithoutUrlLoaderChecksComplete(result);
       return;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
   // DO NOT ADD CODE AFTER THIS, as the NavigationRequest might have been
   // deleted by the previous calls.
@@ -7787,10 +7769,6 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
   SetState(READY_TO_COMMIT);
   ready_to_commit_time_ = base::TimeTicks::Now();
   RestartCommitTimeout();
-
-  if (!IsSameDocument()) {
-    MaybeRegisterOriginForUnpartitionedSessionStorageAccess();
-  }
 
   if (!IsSameDocument() && !IsPageActivation())
     UpdatePrivateNetworkRequestPolicy();
@@ -9058,7 +9036,7 @@ bool NavigationRequest::CoopCoepSanityCheck() {
           network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep &&
       !CompatibleWithCrossOriginIsolated(
           policies.cross_origin_embedder_policy)) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     base::debug::DumpWithoutCrashing();
     return false;
   }
@@ -10178,32 +10156,6 @@ void NavigationRequest::PostResumeCommitTask() {
     base::SequencedTaskRunner::GetCurrentDefault()->PostNonNestableTask(
         FROM_HERE, std::move(resume_commit_closure_));
   }
-}
-
-void NavigationRequest::
-    MaybeRegisterOriginForUnpartitionedSessionStorageAccess() {
-  // If we are missing critical data or the frame isn't the main frame then
-  // we shouldn't try to check the origin trial token. We only read the origin
-  // trial token on the outermost main frame as the narrow issue this function
-  // seeks to address is related to an auth redirect flow (see crbug.com/1407150).
-  if (!common_params_ || !response_head_ || !response_head_->headers ||
-      !GetRenderFrameHost()->IsOutermostMainFrame()) {
-    return;
-  }
-  if (!blink::TrialTokenValidator().RequestEnablesDeprecatedFeature(
-          common_params_->url, response_head_->headers.get(),
-          "DisableThirdPartySessionStoragePartitioningAfterGeneralPartitioning",
-          base::Time::Now())) {
-    frame_tree_node()
-        ->frame_tree()
-        .UnregisterOriginForUnpartitionedSessionStorageAccess(
-            url::Origin::Create(common_params_->url));
-    return;
-  }
-  frame_tree_node()
-      ->frame_tree()
-      .RegisterOriginForUnpartitionedSessionStorageAccess(
-          url::Origin::Create(common_params_->url));
 }
 
 void NavigationRequest::CheckSoftNavigationHeuristicsInvariants() {

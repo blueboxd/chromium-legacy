@@ -35,6 +35,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/features_generated.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/web/web_autofill_state.h"
 #include "third_party/blink/public/web/web_form_control_element.h"
@@ -46,6 +47,7 @@ namespace {
 
 using ::testing::_;
 using ::testing::AllOf;
+using ::testing::DoAll;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::Eq;
@@ -56,6 +58,7 @@ using ::testing::Matcher;
 using ::testing::NiceMock;
 using ::testing::Optional;
 using ::testing::Property;
+using ::testing::SaveArg;
 using ::testing::SizeIs;
 
 class MockAutofillAgent : public AutofillAgent {
@@ -606,7 +609,6 @@ TEST_F(AutofillAgentTestWithFeatures, TriggerSuggestions) {
 // Tests that `AutofillDriver::TriggerSuggestions()` works for contenteditables.
 TEST_F(AutofillAgentTestWithFeatures, TriggerSuggestionsForContenteditable) {
   LoadHTML("<body><div id=ce contenteditable></div></body>");
-
   FormRendererId form_id = GetFormRendererIdById("ce");
   EXPECT_CALL(autofill_driver(), AskForValuesToFill);
   autofill_agent().TriggerSuggestions(
@@ -684,7 +686,7 @@ TEST_F(AutofillAgentTest, PreviewThenClear) {
 TEST_F(AutofillAgentTest, JavaScriptChangedValue_AutofillState) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {blink::features::kAutofillDontSetAutofillStateAfterJavaScriptChanges,
+      {blink::features::kAllowJavaScriptToResetAutofillState,
        features::kAutofillFixCachingOnJavaScriptChanges},
       /*disabled_features=*/{});
   LoadHTML(R"(
@@ -1273,6 +1275,195 @@ TEST_F(AutofillAgentTestFocus, FireFocusEventsForNullElement) {
   FocusedElementChanged("contenteditable");
   checkpoint.Call("null");
   FocusedElementChanged(blink::WebElement());
+}
+
+// Test fixture for caret position extraction and movement detection.
+class AutofillAgentTestCaret
+    : public AutofillAgentTest,
+      public ::testing::WithParamInterface<FormControlType> {
+ public:
+  FormControlType form_control_type() const { return GetParam(); }
+
+  void SetUp() override {
+    AutofillAgentTest::SetUp();
+    switch (form_control_type()) {
+      case FormControlType::kContentEditable:
+        LoadHTML(
+            R"(<div id=f contenteditable
+               style="width: 10em; height: 3ex;">012345</div>)");
+        break;
+      case FormControlType::kInputText:
+        LoadHTML(R"(<input id=f value=012345>)");
+        break;
+      case FormControlType::kTextArea:
+        LoadHTML(R"(<textarea id=f>012345</textarea>)");
+        break;
+      default:
+        NOTREACHED_NORETURN();
+    }
+  }
+
+  blink::WebElement GetElement() { return GetWebElementById("f"); }
+
+  void Focus() {
+    ExecuteJavaScriptForTests(R"(
+      document.getElementById('f').focus();
+    )");
+    task_environment_.FastForwardBy(base::Milliseconds(500));
+    task_environment_.RunUntilIdle();
+  }
+
+  void TriggerAskForValuesToFill() {
+    switch (form_control_type()) {
+      case FormControlType::kContentEditable:
+        test_api(autofill_agent())
+            .ShowSuggestionsForContentEditable(GetElement(), {});
+        break;
+      case FormControlType::kInputText:
+      case FormControlType::kTextArea:
+        test_api(autofill_agent())
+            .QueryAutofillSuggestions(
+                GetElement().DynamicTo<blink::WebFormControlElement>(), {});
+        break;
+      default:
+        NOTREACHED_NORETURN();
+    }
+    task_environment_.RunUntilIdle();
+  }
+
+  void SetCaret(int begin, int end, base::TimeDelta pause_for) {
+    switch (form_control_type()) {
+      case FormControlType::kContentEditable:
+        ExecuteJavaScriptForTests(base::StringPrintf(
+            R"(var c = document.getElementById('f').firstChild;
+               document.getSelection().setBaseAndExtent(c, %d, c, %d);)",
+            begin, end));
+        break;
+      case FormControlType::kInputText:
+      case FormControlType::kTextArea:
+        ExecuteJavaScriptForTests(base::StringPrintf(
+            R"(document.getElementById('f').setSelectionRange(%d, %d);)", begin,
+            end));
+        break;
+      default:
+        NOTREACHED_NORETURN();
+    }
+    task_environment_.FastForwardBy(pause_for);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_{
+      autofill::features::kAutofillCaretExtraction};
+};
+
+INSTANTIATE_TEST_SUITE_P(AutofillAgentTest,
+                         AutofillAgentTestCaret,
+                         ::testing::Values(FormControlType::kTextArea,
+                                           FormControlType::kContentEditable));
+
+// Tests that AskForValuesToFill() is parameterized with the caret position.
+TEST_P(AutofillAgentTestCaret, AskForValuesToFillContainsCaret) {
+  FormFieldData field;
+  gfx::Rect caret_bounds;
+  EXPECT_CALL(autofill_driver(), AskForValuesToFill)
+      .WillOnce(DoAll(SaveArg<1>(&field), SaveArg<2>(&caret_bounds)));
+  Focus();
+  TriggerAskForValuesToFill();
+  EXPECT_FALSE(field.bounds().IsEmpty());
+  EXPECT_FALSE(caret_bounds.origin().IsOrigin());
+  EXPECT_GT(caret_bounds.height(), 0);
+  EXPECT_TRUE(field.bounds().Contains(gfx::RectF(caret_bounds)));
+}
+
+// Tests that CaretMovedInFormField() is fired for each caret movement, provided
+// there's enough time between the movements.
+TEST_P(AutofillAgentTestCaret, MovingCaretSlowlyFiresEvent) {
+  std::array<FormFieldData, 3> fields;
+  std::array<gfx::Rect, 3> caret_bounds;
+  testing::MockFunction<void(std::string_view)> checkpoint;
+  {
+    testing::InSequence s;
+    EXPECT_CALL(checkpoint, Call("focus"));
+    EXPECT_CALL(autofill_driver(), CaretMovedInFormField)
+        .WillOnce(DoAll(SaveArg<1>(&fields[0]), SaveArg<2>(&caret_bounds[0])));
+    EXPECT_CALL(checkpoint, Call("first move"));
+    EXPECT_CALL(autofill_driver(), CaretMovedInFormField)
+        .WillOnce(DoAll(SaveArg<1>(&fields[1]), SaveArg<2>(&caret_bounds[1])));
+    EXPECT_CALL(checkpoint, Call("second move"));
+    EXPECT_CALL(autofill_driver(), CaretMovedInFormField)
+        .WillOnce(DoAll(SaveArg<1>(&fields[2]), SaveArg<2>(&caret_bounds[2])));
+    EXPECT_CALL(checkpoint, Call("done"));
+  }
+  checkpoint.Call("focus");
+  Focus();
+  checkpoint.Call("first move");
+  SetCaret(1, 1, /*pause_for=*/base::Seconds(1));
+  checkpoint.Call("second move");
+  SetCaret(2, 2, /*pause_for=*/base::Seconds(1));
+  checkpoint.Call("done");
+  EXPECT_TRUE(fields[0].bounds().Contains(gfx::RectF(caret_bounds[0])));
+  EXPECT_TRUE(fields[1].bounds().Contains(gfx::RectF(caret_bounds[1])));
+  EXPECT_TRUE(fields[2].bounds().Contains(gfx::RectF(caret_bounds[2])));
+  EXPECT_FALSE(caret_bounds[0].origin().IsOrigin());
+  EXPECT_FALSE(caret_bounds[1].origin().IsOrigin());
+  EXPECT_FALSE(caret_bounds[2].origin().IsOrigin());
+  EXPECT_NE(caret_bounds[0], caret_bounds[1]);
+  EXPECT_NE(caret_bounds[0], caret_bounds[2]);
+  EXPECT_NE(caret_bounds[1], caret_bounds[2]);
+}
+
+// Tests that CaretMovedInFormField() is fired in a throttled manner when the
+// caret moves fast.
+TEST_P(AutofillAgentTestCaret, MovingCaretFastThrottlesEvent) {
+  testing::MockFunction<void(std::string_view)> checkpoint;
+  {
+    testing::InSequence s;
+    EXPECT_CALL(checkpoint, Call("focus"));
+    EXPECT_CALL(autofill_driver(), CaretMovedInFormField);
+    EXPECT_CALL(checkpoint, Call("first move"));
+    EXPECT_CALL(autofill_driver(), CaretMovedInFormField);
+    EXPECT_CALL(checkpoint, Call("second move is ignored"));
+    EXPECT_CALL(autofill_driver(), CaretMovedInFormField).Times(0);
+    EXPECT_CALL(checkpoint, Call("third move is throttled"));
+    EXPECT_CALL(autofill_driver(), CaretMovedInFormField).Times(0);
+    EXPECT_CALL(checkpoint, Call("timer expires"));
+    EXPECT_CALL(autofill_driver(), CaretMovedInFormField);
+    EXPECT_CALL(checkpoint, Call("done"));
+  }
+  checkpoint.Call("focus");
+  Focus();
+  checkpoint.Call("first move");
+  SetCaret(1, 1, /*pause_for=*/base::Milliseconds(1));
+  checkpoint.Call("second move is ignored");
+  SetCaret(2, 2, /*pause_for=*/base::Milliseconds(1));
+  checkpoint.Call("third move is throttled");
+  SetCaret(3, 3, /*pause_for=*/base::Milliseconds(1));
+  checkpoint.Call("timer expires");
+  task_environment_.FastForwardBy(base::Seconds(1));
+  checkpoint.Call("done");
+}
+
+// Tests that selecting text fires CaretMovedInFormField() with the text
+// selection.
+TEST_P(AutofillAgentTestCaret, SelectionFiresEvent) {
+  testing::MockFunction<void(std::string_view)> checkpoint;
+  {
+    testing::InSequence s;
+    EXPECT_CALL(checkpoint, Call("focus"));
+    EXPECT_CALL(autofill_driver(),
+                CaretMovedInFormField(
+                    _, Property(&FormFieldData::selected_text, u""), _));
+    EXPECT_CALL(checkpoint, Call("selection"));
+    EXPECT_CALL(autofill_driver(),
+                CaretMovedInFormField(
+                    _, Property(&FormFieldData::selected_text, u"123"), _));
+    EXPECT_CALL(checkpoint, Call("done"));
+  }
+  checkpoint.Call("focus");
+  Focus();
+  checkpoint.Call("selection");
+  SetCaret(1, 4, /*pause_for=*/base::Seconds(1));
+  checkpoint.Call("done");
 }
 
 }  // namespace

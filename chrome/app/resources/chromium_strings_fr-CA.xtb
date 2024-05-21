@@ -126,6 +126,7 @@ Les autorisations que vous avez déjà accordées à des sites Web et à des app
 <translation id="3155163173539279776">Relancer Chromium</translation>
 <translation id="3179665906251668410">Ouvrir le lien dans une fenêtre de navi&amp;gation privée Chromium</translation>
 <translation id="3185330573522821672">Personnaliser votre nouveau profil Chromium</translation>
+<translation id="318879170965183683">Vous pouvez utiliser les mots de passe de votre compte Google dans Chromium lorsque vous êtes connecté</translation>
 <translation id="3190315855212034486">Google Chrome a planté. Voulez-vous le relancer maintenant?</translation>
 <translation id="3224847870593914902">Pour retirer votre compte Google de Chromium, déconnectez-vous de Chromium sur la page Paramètres</translation>
 <translation id="3258596308407688501">Chromium ne peut pas lire et écrire dans son répertoire de données :
@@ -147,6 +148,7 @@ Les autorisations que vous avez déjà accordées à des sites Web et à des app
 <translation id="3474745554856756813">Cette action entraînera la suppression de <ph name="ITEMS_COUNT" /> éléments de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chromium en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="3497319089134299931"><ph name="SHORTCUT" /> permet de basculer entre les profils Chromium</translation>
 <translation id="3509308970982693815">Veuillez fermer toutes les fenêtres Chromium et essayer de nouveau.</translation>
+<translation id="3530103706039034513">L'utilisateur (<ph name="EXISTING_USER" />) est déjà connecté.  Pour maintenir votre navigation séparée, connectez-vous à votre propre profil dans Chromium en tant que <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="3533435340678213462">Afin de protéger votre confidentialité, nous supprimons automatiquement vos centres d'intérêt ayant plus de quatre semaines. Au fur et à mesure que vous naviguez, un centre d'intérêt peut réapparaître sur la liste. Vous pouvez également retirer des centres d'intérêt si vous ne voulez pas que Chromium les prenne en compte.</translation>
 <translation id="3567254597502212821">Votre historique de navigation, soit un enregistrement des sites que vous avez visités à l'aide de Chromium sur cet appareil.</translation>
 <translation id="3639635944603682591">Les données de navigation de cette personne seront supprimées de cet appareil. Pour récupérer ces données, connectez-vous à Chromium en tant que <ph name="USER_EMAIL" />.</translation>
@@ -206,6 +208,8 @@ Les autorisations que vous avez déjà accordées à des sites Web et à des app
 <translation id="4501471624619070934">L'installation a échoué, car l'accès est restreint dans ce pays.</translation>
 <translation id="4510853178268397146">Cette extension n'a pas publié de pratiques en matière de confidentialité, telles que la manière dont elle collecte et utilise les données. Chromium vous recommande de la retirer.</translation>
 <translation id="452711251841752011">Bienvenue à Chromium, une nouvelle fenêtre de navigateur a été ouverte</translation>
+<translation id="4531137820806573936">Chromium a besoin d'une autorisation pour cartographier votre environnement et suivre vos mains</translation>
+<translation id="4536805923587466102">Vous êtes déjà connecté en tant que <ph name="USER_EMAIL_ADDRESS" /> dans un autre profil Chromium</translation>
 <translation id="4544142686420020088">La mise à jour de Chromium n'a pas été installée. Une erreur s'est produite. <ph name="BEGIN_LINK" />Découvrez comment résoudre les problèmes de mise à jour de Chromium.<ph name="END_LINK" /></translation>
 <translation id="454579500955453258">Continuer avec un nouveau profil Chromium?</translation>
 <translation id="4567424176335768812">Vous êtes connecté avec l'adresse de courriel <ph name="USER_EMAIL_ADDRESS" />. Vous pouvez maintenant accéder à vos favoris, à votre historique et à vos paramètres sur tous les appareils sur lesquels vous êtes connecté.</translation>
@@ -213,6 +217,7 @@ Les autorisations que vous avez déjà accordées à des sites Web et à des app
 <translation id="4594305310729380060">Dans le gestionnaire de mots de passe sur cet appareil</translation>
 <translation id="459535195905078186">Applications de Chromium</translation>
 <translation id="4613863813562375431">Version de Chromium OS</translation>
+<translation id="4617285639650863674">Pour partager votre écran, autorisez la fonctionnalité Enregistreur d'écran pour Chromium dans les préférences système</translation>
 <translation id="4621240073146040695">La mise à jour est presque terminée! Il ne reste plus qu'à relancer Chromium.</translation>
 <translation id="4665829708273112819">Avertissement : Chromium ne peut pas empêcher les extensions d'enregistrer votre historique de navigation. Pour désactiver cette extension en mode de navigation privée, désélectionnez cette option.</translation>
 <translation id="4673151026126227699">Si vous partagez aussi les rapports d'utilisation de Chromium, ceux-ci incluent les URL des pages que vous visitez</translation>
@@ -307,7 +312,6 @@ Les autorisations que vous avez déjà accordées à des sites Web et à des app
 <translation id="6248213926982192922">Faire de Chromium le navigateur par défaut</translation>
 <translation id="6266342355635466082">Chromium ne peut pas vérifier la présence de mises à jour. Essayez de vérifier votre connexion Internet.</translation>
 <translation id="6268381023930128611">Se déconnecter de Chromium?</translation>
-<translation id="6273793429163604305">À vos marques…</translation>
 <translation id="6281746429495226318">Personnaliser votre profil Chromium</translation>
 <translation id="6290827346642914212">Nommer votre profil Chromium</translation>
 <translation id="6295779123002464101">Chromium a bloqué le fichier <ph name="FILE_NAME" />, car il peut être dangereux.</translation>
@@ -379,7 +383,6 @@ Certaines fonctionnalités seront peut-être inaccessibles. Veuillez spécifier 
 <translation id="718435575166326686">Chromium requiert l'autorisation d'accéder à l'appareil photo pour ce site</translation>
 <translation id="7196312274710523067">Impossible de lancer Chromium. Réessayez.</translation>
 <translation id="7197677400338048821">Chromium ne peut pas vérifier vos mots de passe. Réessayez dans 24 heures.</translation>
-<translation id="7198365860059291213">Chromium a besoin d'une compréhension de la scène et d'une autorisation de suivi manuel pour démarrer une session immersive</translation>
 <translation id="7213407614656404070">Utilisez Chromium chaque fois que vous cliquez sur des liens dans des messages, des documents et d'autres applications</translation>
 <translation id="7223968959479464213">Gestionnaire de tâches – Chromium</translation>
 <translation id="7246575524853130370">Vos centres d'intérêt estimés par Chromium</translation>
@@ -401,6 +404,7 @@ Chromium est incapable de récupérer vos paramètres.</translation>
 <translation id="7483335560992089831">Vous ne pouvez pas installer la même version de Chromium qui est en cours d'exécution. Veuillez fermer Chromium et essayer à nouveau.</translation>
 <translation id="751935028865900641">Les sites fonctionneront probablement comme prévu. Vous serez déconnecté de la plupart des sites lorsque vous fermerez toutes les fenêtres Chromium, à l'exception de votre compte Google si vous êtes connecté à Chromium.</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium redémarrera dans 1 minute}one{Chromium redémarrera dans # minute}other{Chromium redémarrera dans # minutes}}</translation>
+<translation id="7553334751796114046">Pour partager votre fenêtre, autorisez la fonctionnalité Enregistreur d'écran pour Chromium dans les préférences système</translation>
 <translation id="7582945390259497898">Chromium peut estimer vos intérêts. Ultérieurement, un site que vous visitez peut demander à Chromium de voir vos centres d'intérêt afin de personnaliser les annonces que vous voyez.</translation>
 <translation id="7583399374488819119">Programme d'installation de <ph name="COMPANY_NAME" /></translation>
 <translation id="761356813943268536">Chromium utilise votre caméra et votre microphone</translation>
@@ -436,6 +440,7 @@ Chromium est incapable de récupérer vos paramètres.</translation>
 <translation id="81770708095080097">Chromium a bloqué ce fichier, car il est dangereux.</translation>
 <translation id="8232193495299001329">Chromium ne peut pas vérifier l'origine de cette extension et elle peut s'avérer dangereuse. Retirez-la de Chromium afin qu'elle ne puisse plus voir ni modifier vos données sur les sites que vous visitez, y compris vos renseignements personnels.</translation>
 <translation id="8248265253516264921">Si une image n'est pas accompagnée d'une description utile, Chromium essaiera de vous en proposer une. Pour créer des descriptions, les images sont envoyées à Google. Vous pouvez désactiver cette option dans les paramètres à tout moment.</translation>
+<translation id="8254601181414348851">Vous connecter à Chromium avec un nouveau profil?</translation>
 <translation id="8266560134891435528">Chromium ne peut pas vérifier vos mots de passe parce que vous n'êtes pas connecté.</translation>
 <translation id="8286943863733751221"><ph name="BEGIN_LINK" />Chromium vous avertit<ph name="END_LINK" /> au sujet des sites et des téléchargements dangereux</translation>
 <translation id="8290862415967981663">Chromium a bloqué ce fichier, car il peut être dangereux.</translation>
@@ -457,7 +462,6 @@ Chromium est incapable de récupérer vos paramètres.</translation>
 <translation id="8555465886620020932">Erreur liée au service : <ph name="SERVICE_ERROR" />.</translation>
 <translation id="8568283329061645092">Chromium peut vérifier vos mots de passe lorsque vous vous connectez avec votre compte Google</translation>
 <translation id="8586442755830160949">© <ph name="YEAR" /> Les auteurs de Chrome. Tous droits réservés.</translation>
-<translation id="858822505990366713">Personnaliser votre Chromium</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />Comment nous utilisons ces données :<ph name="END_BOLD" /> les sites peuvent stocker des renseignements sur vos centres d'intérêt dans Chromium. Par exemple, si vous visitez un site pour acheter des chaussures pour un marathon, le site pourrait définir votre centre d'intérêt comme la course de marathons. Ultérieurement, si vous visitez un autre site pour vous inscrire à une course, celui-ci peut vous montrer une annonce pour des chaussures de course en fonction de vos centres d'intérêt.</translation>
 <translation id="8619360774459241877">Lancement de Chromium en cours…</translation>
 <translation id="8621669128220841554">Échec de l'installation en raison d'une erreur non spécifiée. Veuillez télécharger Chromium à nouveau.</translation>
@@ -476,7 +480,6 @@ Chromium est incapable de récupérer vos paramètres.</translation>
 <translation id="8907580949721785412">Chromium essaie d'afficher les mots de passe. Pour autoriser cette action, entrez votre mot de passe Windows.</translation>
 <translation id="8931379085695076764">Chromium peut estimer vos centres intérêt en fonction de votre historique de navigation au cours des dernières semaines. Ces renseignements restent sur votre appareil.</translation>
 <translation id="8941642502866065432">Impossible de mettre à jour Chromium</translation>
-<translation id="895999862145835951">Personnaliser votre Chromium</translation>
 <translation id="897581876605952338">Logo de Chromium Enterprise</translation>
 <translation id="8986207147630327271">Vous ajoutez un profil professionnel à ce navigateur et vous octroyez uniquement le contrôle de ce profil à votre administrateur.</translation>
 <translation id="8988036198400390003">Gérer les profils Chromium</translation>

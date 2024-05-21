@@ -44,7 +44,8 @@
           "builder": "win_chromium_compile_dbg_ng",
           "group": "tryserver.chromium.win"
         }
-      ]
+      ],
+      "retry_failed_shards": true
     }
   },
   "$build/reclient": {
@@ -52,7 +53,6 @@
       "RBE_experimental_exit_on_stuck_actions": "true"
     },
     "instance": "rbe-chromium-trusted",
-    "jobs": 250,
     "metrics_project": "chromium-reclient-metrics",
     "scandeps_server": true
   },

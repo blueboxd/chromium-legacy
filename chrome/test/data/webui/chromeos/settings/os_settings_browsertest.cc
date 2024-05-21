@@ -698,6 +698,10 @@ IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, SettingsToggleButton) {
   RunSettingsTest("controls/settings_toggle_button_test.js");
 }
 
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, BaseRowMixin) {
+  RunSettingsTest("controls/v2/base_row_mixin_test.js");
+}
+
 IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, PrefControlMixinInternal) {
   RunSettingsTest("controls/v2/pref_control_mixin_internal_test.js");
 }
@@ -1490,6 +1494,13 @@ IN_PROC_BROWSER_TEST_P(
   RunSettingsTest(
       "os_apps_page/app_parental_controls_page/"
       "app_parental_controls_subpage_test.js");
+}
+
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTestAppParentalControlsEnabled,
+                       OsAppsPageAppParentalControlsPageBlockAppItem) {
+  RunSettingsTest(
+      "os_apps_page/app_parental_controls_page/"
+      "block_app_item_test.js");
 }
 
 IN_PROC_BROWSER_TEST_P(

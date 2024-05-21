@@ -319,7 +319,7 @@ std::string GetDisconnectConsoleErrorMessage(
     FedCmDisconnectStatus disconnect_status_for_metrics) {
   switch (disconnect_status_for_metrics) {
     case FedCmDisconnectStatus::kSuccess: {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return "";
     }
     case FedCmDisconnectStatus::kTooManyRequests: {
@@ -441,8 +441,7 @@ bool IsFedCmAuthzEnabled(RenderFrameHost& host, const url::Origin& idp_origin) {
       rfs_document_data->runtime_feature_state_read_context()
           .IsFedCmAuthzEnabled() ||
       rfs_document_data->runtime_feature_state_read_context()
-          .IsFedCmAuthzEnabledForThirdParty(host.GetLastCommittedOrigin(),
-                                            third_party_origins);
+          .IsFedCmAuthzEnabledForThirdParty(third_party_origins);
 
   bool flag_enabled = IsFedCmAuthzFlagEnabled();
   return runtime_enabled || flag_enabled;

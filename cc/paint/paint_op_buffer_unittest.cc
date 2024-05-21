@@ -1570,8 +1570,25 @@ void PushDrawLineOps(PaintOpBuffer* buffer) {
   EXPECT_THAT(*buffer, Each(PaintOpIs<DrawLineOp>()));
 }
 
+void PushDrawLineLiteOps(PaintOpBuffer* buffer) {
+  size_t len = std::min(test_floats.size() - 3, test_flags.size());
+  for (size_t i = 0; i < len; ++i) {
+    if (test_flags[i].CanConvertToCorePaintFlags()) {
+      buffer->push<DrawLineLiteOp>(test_floats[i], test_floats[i + 1],
+                                   test_floats[i + 2], test_floats[i + 3],
+                                   test_flags[i].ToCorePaintFlags());
+    } else {
+      buffer->push<DrawLineOp>(test_floats[i], test_floats[i + 1],
+                               test_floats[i + 2], test_floats[i + 3],
+                               test_flags[i]);
+    }
+  }
+  EXPECT_THAT(*buffer, Each(PaintOpIs<DrawLineLiteOp, DrawLineOp>()));
+}
+
 void PushDrawArcOps(PaintOpBuffer* buffer) {
-  size_t len = std::min(test_angles.size() / 2, test_flags.size());
+  size_t len =
+      std::min({test_rects.size(), test_angles.size() / 2, test_flags.size()});
   for (size_t i = 0; i < len; ++i) {
     buffer->push<DrawArcOp>(test_rects[i], test_angles[2 * i],
                             test_angles[2 * i + 1], test_flags[i]);
@@ -1579,8 +1596,24 @@ void PushDrawArcOps(PaintOpBuffer* buffer) {
   EXPECT_THAT(*buffer, Each(PaintOpIs<DrawArcOp>()));
 }
 
+void PushDrawArcLiteOps(PaintOpBuffer* buffer) {
+  size_t len =
+      std::min({test_rects.size(), test_angles.size() / 2, test_flags.size()});
+  for (size_t i = 0; i < len; ++i) {
+    if (test_flags[i].CanConvertToCorePaintFlags()) {
+      buffer->push<DrawArcLiteOp>(test_rects[i], test_angles[2 * i],
+                                  test_angles[2 * i + 1],
+                                  test_flags[i].ToCorePaintFlags());
+    } else {
+      buffer->push<DrawArcOp>(test_rects[i], test_angles[2 * i],
+                              test_angles[2 * i + 1], test_flags[i]);
+    }
+  }
+  EXPECT_THAT(*buffer, Each(PaintOpIs<DrawArcLiteOp, DrawArcOp>()));
+}
+
 void PushDrawOvalOps(PaintOpBuffer* buffer) {
-  size_t len = std::min(test_paths.size(), test_flags.size());
+  size_t len = std::min(test_rects.size(), test_flags.size());
   for (size_t i = 0; i < len; ++i)
     buffer->push<DrawOvalOp>(test_rects[i], test_flags[i]);
   EXPECT_THAT(*buffer, Each(PaintOpIs<DrawOvalOp>()));
@@ -1907,6 +1940,9 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
       case PaintOpType::kDrawArc:
         PushDrawArcOps(&buffer_);
         break;
+      case PaintOpType::kDrawArcLite:
+        PushDrawArcLiteOps(&buffer_);
+        break;
       case PaintOpType::kDrawColor:
         PushDrawColorOps(&buffer_);
         break;
@@ -1924,6 +1960,9 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
         break;
       case PaintOpType::kDrawLine:
         PushDrawLineOps(&buffer_);
+        break;
+      case PaintOpType::kDrawLineLite:
+        PushDrawLineLiteOps(&buffer_);
         break;
       case PaintOpType::kDrawOval:
         PushDrawOvalOps(&buffer_);
@@ -2101,8 +2140,12 @@ TEST_P(PaintOpSerializationTest, SmokeTest) {
 // Verify for all test ops that serializing into a smaller size aborts
 // correctly and doesn't write anything.
 TEST_P(PaintOpSerializationTest, SerializationFailures) {
-  if (!IsTypeSupported())
+  // The majority of the PaintFlags created by this test can not be converted
+  // to CorePaintFlags.
+  if (!IsTypeSupported() || GetParamType() == PaintOpType::kDrawArcLite ||
+      GetParamType() == PaintOpType::kDrawLineLite) {
     return;
+  }
 
   PushTestOps(GetParamType());
 
@@ -2145,8 +2188,12 @@ TEST_P(PaintOpSerializationTest, SerializationFailures) {
 // Verify that deserializing test ops from too small buffers aborts
 // correctly, in case the deserialized data is lying about how big it is.
 TEST_P(PaintOpSerializationTest, DeserializationFailures) {
-  if (!IsTypeSupported())
+  // The majority of the PaintFlags created by this test can not be converted
+  // to CorePaintFlags.
+  if (!IsTypeSupported() || GetParamType() == PaintOpType::kDrawArcLite ||
+      GetParamType() == PaintOpType::kDrawLineLite) {
     return;
+  }
 
   PushTestOps(GetParamType());
 
@@ -2201,7 +2248,7 @@ TEST_P(PaintOpSerializationTest, DeserializationFailures) {
       // Serizlized sizes are only valid if they are aligned.
       if (read_size >= serialized_size && read_size % kAlign == 0) {
         ASSERT_NE(nullptr, written);
-        ASSERT_LE(written->aligned_size, kOutputOpSize);
+        ASSERT_LE(written->AlignedSize(), kOutputOpSize);
         EXPECT_EQ(GetParamType(), written->GetType());
         EXPECT_EQ(read_size, bytes_read);
 
@@ -4404,7 +4451,7 @@ TEST(IteratorTest, OffsetIterationTest) {
   buffer.push<SetMatrixOp>(SkM44::Scale(1, 2));
 
   std::vector<size_t> offsets = {
-      0, static_cast<size_t>(op1.aligned_size + op2.aligned_size)};
+      0, static_cast<size_t>(op1.AlignedSize() + op2.AlignedSize())};
   EXPECT_THAT(PaintOpBuffer::OffsetIterator(buffer, offsets),
               ElementsAre(PaintOpEq<SaveOp>(),
                           PaintOpEq<SetMatrixOp>(SkM44::Scale(1, 2))));
@@ -4416,7 +4463,7 @@ TEST(IteratorTest, CompositeIterationTest) {
   const PaintOp& op2 = buffer.push<RestoreOp>();
   buffer.push<SetMatrixOp>(SkM44::Scale(1, 2));
   std::vector<size_t> offsets = {
-      0, static_cast<size_t>(op1.aligned_size + op2.aligned_size)};
+      0, static_cast<size_t>(op1.AlignedSize() + op2.AlignedSize())};
 
   EXPECT_THAT(PaintOpBuffer::CompositeIterator(buffer, /*offsets=*/nullptr),
               ElementsAre(PaintOpEq<SaveOp>(), PaintOpEq<RestoreOp>(),
@@ -4440,8 +4487,8 @@ TEST(IteratorTest, EqualityTest) {
 TEST(IteratorTest, OffsetEqualityTest) {
   PaintOpBuffer buffer;
   size_t offset = 0;
-  offset += buffer.push<SaveOp>().aligned_size;
-  offset += buffer.push<SetMatrixOp>(SkM44::Scale(1, 2)).aligned_size;
+  offset += buffer.push<SaveOp>().AlignedSize();
+  offset += buffer.push<SetMatrixOp>(SkM44::Scale(1, 2)).AlignedSize();
   buffer.push<NoopOp>();
 
   std::vector<size_t> offsets = {0, offset};
@@ -4466,8 +4513,8 @@ TEST(IteratorTest, CompositeEqualityTest) {
 TEST(IteratorTest, CompositeOffsetEqualityTest) {
   PaintOpBuffer buffer;
   size_t offset = 0;
-  offset += buffer.push<SaveOp>().aligned_size;
-  offset += buffer.push<SetMatrixOp>(SkM44::Scale(1, 2)).aligned_size;
+  offset += buffer.push<SaveOp>().AlignedSize();
+  offset += buffer.push<SetMatrixOp>(SkM44::Scale(1, 2)).AlignedSize();
   buffer.push<NoopOp>();
 
   std::vector<size_t> offsets = {0, offset};
@@ -4492,8 +4539,8 @@ TEST(IteratorTest, CompositeOffsetMixedTypeEqualityTest) {
 TEST(IteratorTest, CompositeOffsetBoolCheck) {
   PaintOpBuffer buffer;
   size_t offset = 0;
-  offset += buffer.push<SaveOp>().aligned_size;
-  offset += buffer.push<SetMatrixOp>(SkM44::Scale(1, 2)).aligned_size;
+  offset += buffer.push<SaveOp>().AlignedSize();
+  offset += buffer.push<SetMatrixOp>(SkM44::Scale(1, 2)).AlignedSize();
   buffer.push<NoopOp>();
 
   PaintOpBuffer::CompositeIterator iter(buffer, /*offsets=*/nullptr);

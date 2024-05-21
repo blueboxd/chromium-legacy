@@ -343,7 +343,7 @@ StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
   if (StartupBrowserCreator::ShouldLoadProfileWithoutWindow(*command_line_)) {
     // Checking the flags this late in the launch should be redundant.
     // TODO(crbug.com/40216113): Remove by M104.
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     base::debug::DumpWithoutCrashing();
     return LaunchResult::kNormally;
   }
@@ -520,8 +520,6 @@ StartupBrowserCreatorImpl::DetermineStartupTabs(
     // startup.
     bool has_first_run_experience = false;
     if (promotional_tabs_enabled) {
-      // TODO(b/337135021): Investigate whether the below build flag is causing
-      // a wrong behavior on Lacros.
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
       if (is_first_run_ == chrome::startup::IsFirstRun::kYes) {
         // We just showed the first run experience in the Desktop FRE window.

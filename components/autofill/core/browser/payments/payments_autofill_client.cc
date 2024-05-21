@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/payments/payments_autofill_client.h"
 
+#include <optional>
+
 #include "base/functional/callback.h"
 #include "components/autofill/core/browser/autofill_progress_dialog_type.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -38,16 +40,21 @@ void PaymentsAutofillClient::ShowLocalCardMigrationResults(
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
     MigrationDeleteCardCallback delete_local_card_callback) {}
 
-void PaymentsAutofillClient::VirtualCardEnrollCompleted(bool is_vcn_enrolled) {}
+void PaymentsAutofillClient::ShowWebauthnOfferDialog(
+    WebauthnDialogCallback offer_dialog_callback) {}
+
+void PaymentsAutofillClient::ShowWebauthnVerifyPendingDialog(
+    WebauthnDialogCallback verify_pending_dialog_callback) {}
 #endif  // BUILDFLAG(IS_ANDROID)
 
-void PaymentsAutofillClient::CreditCardUploadCompleted(bool card_saved) {}
+void PaymentsAutofillClient::CreditCardUploadCompleted(
+    bool card_saved,
+    std::optional<OnConfirmationClosedCallback>
+        on_confirmation_closed_callback) {}
 
-bool PaymentsAutofillClient::IsSaveCardPromptVisible() const {
-  return false;
-}
+void PaymentsAutofillClient::HideSaveCardPrompt() {}
 
-void PaymentsAutofillClient::HideSaveCardPromptPrompt() {}
+void PaymentsAutofillClient::VirtualCardEnrollCompleted(bool is_vcn_enrolled) {}
 
 void PaymentsAutofillClient::ConfirmSaveIbanLocally(
     const Iban& iban,
@@ -110,6 +117,11 @@ PaymentsAutofillClient::GetVirtualCardEnrollmentManager() {
 }
 
 CreditCardOtpAuthenticator* PaymentsAutofillClient::GetOtpAuthenticator() {
+  return nullptr;
+}
+
+CreditCardRiskBasedAuthenticator*
+PaymentsAutofillClient::GetRiskBasedAuthenticator() {
   return nullptr;
 }
 

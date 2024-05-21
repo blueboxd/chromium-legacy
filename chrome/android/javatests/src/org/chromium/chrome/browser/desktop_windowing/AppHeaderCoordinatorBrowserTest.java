@@ -18,6 +18,7 @@ import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageButton;
 
 import androidx.annotation.RequiresApi;
+import androidx.core.graphics.Insets;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.test.filters.MediumTest;
 import androidx.test.runner.lifecycle.Stage;
@@ -73,14 +74,19 @@ public class AppHeaderCoordinatorBrowserTest {
     private static final int APP_HEADER_LEFT_PADDING = 10;
     private static final int APP_HEADER_RIGHT_PADDING = 20;
 
+    private static final WindowInsetsCompat BOTTOM_NAV_BAR_INSETS =
+            new WindowInsetsCompat.Builder()
+                    .setInsets(
+                            WindowInsetsCompat.Type.navigationBars(),
+                            Insets.of(0, 0, 0, /* bottom= */ 100))
+                    .build();
+
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
 
     private @Mock InsetsRectProvider mInsetsRectProvider;
-    private @Mock InsetObserver mInsetObserver;
-    private @Mock WindowInsetsCompat mWindowInsets;
 
     private Rect mWidestUnoccludedRect = new Rect();
     private Rect mWindowRect = new Rect();
@@ -89,7 +95,7 @@ public class AppHeaderCoordinatorBrowserTest {
     @Before
     public void setup() {
         ToolbarFeatures.setIsTabStripLayoutOptimizationEnabledForTesting(true);
-        InsetObserver.setInitialRawWindowInsetsForTesting(mWindowInsets);
+        InsetObserver.setInitialRawWindowInsetsForTesting(BOTTOM_NAV_BAR_INSETS);
         AppHeaderCoordinator.setInsetsRectProviderForTesting(mInsetsRectProvider);
 
         doAnswer(args -> mWidestUnoccludedRect).when(mInsetsRectProvider).getWidestUnoccludedRect();
@@ -102,7 +108,7 @@ public class AppHeaderCoordinatorBrowserTest {
         Resources res = mActivityTestRule.getActivity().getResources();
         int tabStripHeight = res.getDimensionPixelSize(R.dimen.tab_strip_height);
         int reservedStripTopPadding =
-                res.getDimensionPixelOffset(R.dimen.tab_strip_reserved_top_padding);
+                res.getDimensionPixelSize(R.dimen.tab_strip_reserved_top_padding);
         mTestAppHeaderHeight = tabStripHeight + reservedStripTopPadding;
     }
 
@@ -324,8 +330,6 @@ public class AppHeaderCoordinatorBrowserTest {
     public void testRecreateActivitiesInDesktopWindow() {
         // Assume that the current activity enters desktop windowing mode.
         ChromeTabbedActivity firstActivity = mActivityTestRule.getActivity();
-        AppHeaderUtils.setAppInDesktopWindowForTesting(true);
-        firstActivity = ApplicationTestUtils.recreateActivity(firstActivity);
         triggerDesktopWindowingModeChange(firstActivity, true);
 
         // Create a new (desktop) window, that should gain focus and cause the first activity to
@@ -346,7 +350,8 @@ public class AppHeaderCoordinatorBrowserTest {
 
         // Trigger activity recreation in desktop windowing mode (an app theme change for eg. would
         // trigger this).
-        firstActivity = ApplicationTestUtils.recreateActivity(firstActivity);
+        mActivityTestRule.recreateActivity();
+        firstActivity = mActivityTestRule.getActivity();
         secondActivity = ApplicationTestUtils.recreateActivity(secondActivity);
 
         // Activity recreation will send an #onTopResumedActivityChanged(false) signal as the

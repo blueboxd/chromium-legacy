@@ -67,7 +67,7 @@ FaviconURL::IconType IconTypeFromContentIconType(
     case blink::mojom::FaviconIconType::kInvalid:
       return FaviconURL::IconType::kInvalid;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return FaviconURL::IconType::kInvalid;
 }
 
@@ -191,7 +191,7 @@ void ContentWebState::SerializeMetadataToProto(
 }
 
 WebStateDelegate* ContentWebState::GetDelegate() {
-  return nullptr;
+  return delegate_;
 }
 
 std::unique_ptr<WebState> ContentWebState::Clone() const {

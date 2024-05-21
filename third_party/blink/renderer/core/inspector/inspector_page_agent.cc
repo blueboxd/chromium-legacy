@@ -124,7 +124,7 @@ String ClientNavigationReasonToProtocol(ClientNavigationReason reason) {
     case ClientNavigationReason::kReload:
       return ReasonEnum::Reload;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
   return ReasonEnum::Reload;
 }
@@ -671,7 +671,8 @@ protocol::Response InspectorPageAgent::setAdBlockingEnabled(bool enable) {
 
 protocol::Response InspectorPageAgent::reload(
     Maybe<bool> optional_bypass_cache,
-    Maybe<String> optional_script_to_evaluate_on_load) {
+    Maybe<String> optional_script_to_evaluate_on_load,
+    Maybe<String> loader_id) {
   pending_script_to_evaluate_on_load_once_.Set(
       optional_script_to_evaluate_on_load.value_or(""));
   v8_session_->setSkipAllPauses(true);
@@ -892,7 +893,10 @@ protocol::Response InspectorPageAgent::getPermissionsPolicyState(
   auto feature_states = std::make_unique<
       protocol::Array<protocol::Page::PermissionsPolicyFeatureState>>();
 
-  for (const auto& entry : blink::GetDefaultFeatureNameMap()) {
+  bool is_isolated_context =
+      frame->DomWindow() && frame->DomWindow()->IsIsolatedContext();
+  for (const auto& entry :
+       blink::GetDefaultFeatureNameMap(is_isolated_context)) {
     const String& feature_name = entry.key;
     const mojom::blink::PermissionsPolicyFeature feature = entry.value;
 
@@ -905,7 +909,8 @@ protocol::Response InspectorPageAgent::getPermissionsPolicyState(
     std::unique_ptr<protocol::Page::PermissionsPolicyFeatureState>
         feature_state =
             protocol::Page::PermissionsPolicyFeatureState::create()
-                .setFeature(blink::PermissionsPolicyFeatureToProtocol(feature))
+                .setFeature(blink::PermissionsPolicyFeatureToProtocol(
+                    feature, frame->DomWindow()))
                 .setAllowed(!locator.has_value())
                 .build();
 

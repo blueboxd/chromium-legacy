@@ -4,6 +4,7 @@
 
 #include "ash/picker/model/picker_model.h"
 
+#include "ash/picker/model/picker_mode_type.h"
 #include "ash/public/cpp/picker/picker_category.h"
 #include "base/check_deref.h"
 #include "ui/base/ime/ash/ime_keyboard.h"
@@ -29,50 +30,82 @@ std::u16string GetSelectedText(ui::TextInputClient* client) {
 PickerModel::PickerModel(ui::TextInputClient* focused_client,
                          input_method::ImeKeyboard* ime_keyboard,
                          EditorStatus editor_status)
-    : selected_text_(GetSelectedText(focused_client)),
+    : has_focus_(focused_client != nullptr),
+      selected_text_(GetSelectedText(focused_client)),
       is_caps_lock_enabled_(CHECK_DEREF(ime_keyboard).IsCapsLockEnabled()),
       editor_status_(editor_status) {}
 
 std::vector<PickerCategory> PickerModel::GetAvailableCategories() const {
-  if (HasSelectedText()) {
-    std::vector<PickerCategory> categories;
-    if (editor_status_ == EditorStatus::kEnabled) {
-      categories.push_back(PickerCategory::kEditorRewrite);
+  switch (GetMode()) {
+    case PickerModeType::kUnfocused:
+      return std::vector<PickerCategory>{
+          is_caps_lock_enabled_ ? PickerCategory::kCapsOff
+                                : PickerCategory::kCapsOn,
+          PickerCategory::kLinks,
+          PickerCategory::kDriveFiles,
+          PickerCategory::kLocalFiles,
+      };
+    case PickerModeType::kHasSelection: {
+      std::vector<PickerCategory> categories;
+      if (editor_status_ == EditorStatus::kEnabled) {
+        categories.push_back(PickerCategory::kEditorRewrite);
+      }
+      categories.insert(categories.end(), {
+                                              PickerCategory::kUpperCase,
+                                              PickerCategory::kLowerCase,
+                                              PickerCategory::kSentenceCase,
+                                              PickerCategory::kTitleCase,
+                                          });
+      return categories;
     }
-    categories.insert(categories.end(), {
-                                            PickerCategory::kUpperCase,
-                                            PickerCategory::kLowerCase,
-                                            PickerCategory::kSentenceCase,
-                                            PickerCategory::kTitleCase,
-                                        });
-    return categories;
-  }
+    case PickerModeType::kNoSelection: {
+      std::vector<PickerCategory> categories{is_caps_lock_enabled_
+                                                 ? PickerCategory::kCapsOff
+                                                 : PickerCategory::kCapsOn};
+      if (editor_status_ == EditorStatus::kEnabled) {
+        categories.push_back(PickerCategory::kEditorWrite);
+      }
+      categories.insert(categories.end(), {
+                                              PickerCategory::kLinks,
+                                              PickerCategory::kExpressions,
+                                              PickerCategory::kClipboard,
+                                              PickerCategory::kDriveFiles,
+                                              PickerCategory::kLocalFiles,
+                                              PickerCategory::kDatesTimes,
+                                              PickerCategory::kUnitsMaths,
+                                          });
 
-  std::vector<PickerCategory> categories{is_caps_lock_enabled_
-                                             ? PickerCategory::kCapsOff
-                                             : PickerCategory::kCapsOn};
-  if (editor_status_ == EditorStatus::kEnabled) {
-    categories.push_back(PickerCategory::kEditorWrite);
+      return categories;
+    }
   }
-  categories.insert(categories.end(), {
-                                          PickerCategory::kLinks,
-                                          PickerCategory::kExpressions,
-                                          PickerCategory::kClipboard,
-                                          PickerCategory::kDriveFiles,
-                                          PickerCategory::kLocalFiles,
-                                          PickerCategory::kDatesTimes,
-                                          PickerCategory::kUnitsMaths,
-                                      });
-
-  return categories;
 }
 
-bool PickerModel::HasSelectedText() const {
-  return !selected_text_.empty();
+std::vector<PickerCategory> PickerModel::GetRecentResultsCategories() const {
+  if (GetMode() == PickerModeType::kHasSelection) {
+    return std::vector<PickerCategory>{};
+  }
+
+  return {
+      PickerCategory::kDriveFiles,
+      PickerCategory::kLocalFiles,
+      PickerCategory::kLinks,
+  };
 }
 
 std::u16string_view PickerModel::selected_text() const {
   return selected_text_;
+}
+
+PickerModeType PickerModel::GetMode() const {
+  if (!has_focus_) {
+    return PickerModeType::kUnfocused;
+  }
+
+  if (selected_text_.empty()) {
+    return PickerModeType::kNoSelection;
+  }
+
+  return PickerModeType::kHasSelection;
 }
 
 }  // namespace ash

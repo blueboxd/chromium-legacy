@@ -90,7 +90,7 @@ const base::FeatureParam<bool> kEnableArcIdleManagerIgnoreBatteryForPLT{
     &kEnableArcIdleManager, "ignore_battery_for_test", true};
 
 const base::FeatureParam<int> kEnableArcIdleManagerDelayMs{
-    &kEnableArcIdleManager, "delay_ms", 60 * 1000};
+    &kEnableArcIdleManager, "delay_ms", 360 * 1000};
 
 const base::FeatureParam<bool> kEnableArcIdleManagerPendingIdleReactivate{
     &kEnableArcIdleManager, "pending_idle_reactivate", false};
@@ -318,6 +318,11 @@ BASE_FEATURE(kRtVcpuQuadCore,
 // When enabled, tracing raw files are saved in order to help debug failures.
 BASE_FEATURE(kSaveRawFilesOnTracing,
              "ArcSaveRawFilesOnTracing",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, skip dropping ARCVM page cache after boot.
+BASE_FEATURE(kSkipDropCaches,
+             "ArcSkipDropPageCache",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, CertStoreService will talk to KeyMint instead of Keymaster on

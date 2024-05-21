@@ -61,6 +61,9 @@ BASE_FEATURE(kIPHDownloadEsbPromoFeature,
 BASE_FEATURE(kIPHExperimentalAIPromoFeature,
              "IPH_ExperimentalAIPromo",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHExplicitBrowserSigninPreferenceRememberedFeature,
+             "IPH_ExplicitBrowserSigninPreferenceRemembered",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 BASE_FEATURE(kIPHExtensionsMenuFeature,
              "IPH_ExtensionsMenu",
@@ -104,6 +107,9 @@ BASE_FEATURE(kIPHPasswordManagerShortcutFeature,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHPasswordSharingFeature,
              "IPH_PasswordSharingFeature",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHPerformanceInterventionDialogFeature,
+             "IPH_PerformanceInterventionDialogFeature",
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHPowerBookmarksSidePanelFeature,
              "IPH_PowerBookmarksSidePanel",

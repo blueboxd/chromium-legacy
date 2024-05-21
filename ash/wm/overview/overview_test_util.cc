@@ -7,6 +7,7 @@
 #include "ash/public/cpp/overview_test_api.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/shell.h"
+#include "ash/test/ash_test_util.h"
 #include "ash/utility/forest_util.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_focus_cycler_old.h"
@@ -14,6 +15,7 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_item_base.h"
 #include "ash/wm/overview/overview_utils.h"
+#include "ash/wm/window_util.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -38,23 +40,17 @@ void WaitForOverviewAnimationState(OverviewAnimationState state) {
 
 }  // namespace
 
-void SendKey(ui::KeyboardCode key, int flags) {
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  generator.PressKey(key, flags);
-  generator.ReleaseKey(key, flags);
-}
-
-bool FocusOverviewWindow(const aura::Window* window) {
+bool FocusOverviewWindow(const aura::Window* window,
+                         ui::test::EventGenerator* event_generator) {
   if (GetOverviewFocusedWindow() == nullptr) {
-    SendKey(ui::VKEY_TAB);
-    SendKey(ui::VKEY_TAB);
+    SendKey(ui::VKEY_TAB, event_generator, /*flags=*/0, /*count=*/2);
   }
   const aura::Window* start_window = GetOverviewFocusedWindow();
   if (start_window == window)
     return true;
   aura::Window* window_it = nullptr;
   do {
-    SendKey(ui::VKEY_TAB);
+    SendKey(ui::VKEY_TAB, event_generator);
     window_it = const_cast<aura::Window*>(GetOverviewFocusedWindow());
   } while (window_it != window && window_it != start_window);
   return window_it == window;
@@ -168,9 +164,11 @@ void DragItemToPoint(OverviewItemBase* item,
   }
 }
 
-void SendKeyUntilOverviewItemIsFocused(ui::KeyboardCode key) {
+void SendKeyUntilOverviewItemIsFocused(
+    ui::KeyboardCode key,
+    ui::test::EventGenerator* event_generator) {
   do {
-    SendKey(key);
+    SendKey(key, event_generator);
   } while (!GetOverviewFocusedWindow());
 }
 
@@ -191,6 +189,23 @@ bool IsWindowInItsCorrespondingOverviewGrid(aura::Window* window) {
   }
 
   return false;
+}
+
+views::View* GetFocusedView() {
+  if (!features::IsOverviewNewFocusEnabled()) {
+    auto* focused_view =
+        GetOverviewSession()->focus_cycler_old()->focused_view();
+    return focused_view ? focused_view->GetView() : nullptr;
+  }
+
+  aura::Window* active_window = window_util::GetActiveWindow();
+  if (!active_window) {
+    return nullptr;
+  }
+
+  views::Widget* widget =
+      views::Widget::GetWidgetForNativeWindow(active_window);
+  return widget ? widget->GetFocusManager()->GetFocusedView() : nullptr;
 }
 
 }  // namespace ash

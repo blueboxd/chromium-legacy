@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/crosapi/crosapi_id.h"
+#include "chrome/browser/ash/crosapi/extension_printer_service_ash.h"
 #include "chrome/browser/ash/smart_reader/smart_reader_manager_ash.h"
 #include "chromeos/crosapi/mojom/cros_display_config.mojom.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
@@ -54,6 +55,7 @@ class AutomationAsh;
 class BrowserServiceHostAsh;
 class BrowserVersionServiceAsh;
 class GuestOsSkForwarderFactoryAsh;
+class CecPrivateAsh;
 class CertDatabaseAsh;
 class CertProvisioningAsh;
 class ChapsServiceAsh;
@@ -80,6 +82,7 @@ class EchoPrivateAsh;
 class EmbeddedAccessibilityHelperClientAsh;
 class EmojiPickerAsh;
 class ExtensionInfoPrivateAsh;
+class ExtensionPrinterServiceAsh;
 class EyeDropperAsh;
 class FeedbackAsh;
 class FieldTrialServiceAsh;
@@ -192,6 +195,8 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::AppShortcutPublisher> receiver) override;
   void BindBrowserVersionService(
       mojo::PendingReceiver<mojom::BrowserVersionService> receiver) override;
+  void BindCecPrivate(
+      mojo::PendingReceiver<mojom::CecPrivate> receiver) override;
   void BindCertDatabase(
       mojo::PendingReceiver<mojom::CertDatabase> receiver) override;
   void BindCertProvisioning(
@@ -253,6 +258,8 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::EmojiPicker> receiver) override;
   void BindExtensionInfoPrivate(
       mojo::PendingReceiver<mojom::ExtensionInfoPrivate> receiver) override;
+  void BindExtensionPrinterService(
+      mojo::PendingReceiver<mojom::ExtensionPrinterService> receiver) override;
   void BindExtensionPublisher(
       mojo::PendingReceiver<mojom::AppPublisher> receiver) override;
   void BindEyeDropper(
@@ -463,6 +470,8 @@ class CrosapiAsh : public mojom::Crosapi {
     return browser_service_host_ash_.get();
   }
 
+  CecPrivateAsh* cec_private_ash() { return cec_private_ash_.get(); }
+
   CertDatabaseAsh* cert_database_ash() { return cert_database_ash_.get(); }
 
   CertProvisioningAsh* cert_provisioning_ash() {
@@ -515,6 +524,10 @@ class CrosapiAsh : public mojom::Crosapi {
 
   ExtensionInfoPrivateAsh* extension_info_private_ash() {
     return extension_info_private_ash_.get();
+  }
+
+  ExtensionPrinterServiceAsh* extension_printer_service_ash() {
+    return extension_printer_service_ash_.get();
   }
 
   FileSystemAccessCloudIdentifierProviderAsh*
@@ -669,6 +682,7 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<BrowserVersionServiceAsh> browser_version_service_ash_;
   std::unique_ptr<GuestOsSkForwarderFactoryAsh>
       guest_os_sk_forwarder_factory_ash_;
+  std::unique_ptr<CecPrivateAsh> cec_private_ash_;
   std::unique_ptr<CertDatabaseAsh> cert_database_ash_;
   std::unique_ptr<CertProvisioningAsh> cert_provisioning_ash_;
   std::unique_ptr<ChapsServiceAsh> chaps_service_ash_;
@@ -698,6 +712,7 @@ class CrosapiAsh : public mojom::Crosapi {
       embedded_accessibility_helper_client_ash_;
   std::unique_ptr<EmojiPickerAsh> emoji_picker_ash_;
   std::unique_ptr<ExtensionInfoPrivateAsh> extension_info_private_ash_;
+  std::unique_ptr<ExtensionPrinterServiceAsh> extension_printer_service_ash_;
   std::unique_ptr<EyeDropperAsh> eye_dropper_ash_;
   std::unique_ptr<FeedbackAsh> feedback_ash_;
   std::unique_ptr<FieldTrialServiceAsh> field_trial_service_ash_;

@@ -48,9 +48,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BookmarkManager.ResultsRenderedTime" units="ms"
-    expires_after="2024-04-28">
+    expires_after="2025-04-28">
   <owner>johntlee@chromium.org</owner>
-  <owner>dbeam@chromium.org</owner>
+  <owner>dpapad@chromium.org</owner>
   <summary>
     Records the time taken to load the bookmarks Web UI and render. This is
     roughly equivalent to 'time to first meaningful paint' for the bookmark
@@ -140,7 +140,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Bookmarks.BookmarkBar.NavigationOrActivationToFirstMeaningfulPaint"
-    units="ms" expires_after="2024-09-15">
+    units="ms" expires_after="2024-11-17">
   <owner>robertlin@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -419,7 +419,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.ParentFolderType" enum="BookmarkFolderType"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>emshack@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -438,7 +438,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.ReadingList.NumberOfReadItems" units="items"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>wylieb@chromium.org</owner>
   <summary>
     Logs the number of read items shown in the reading list on the Android

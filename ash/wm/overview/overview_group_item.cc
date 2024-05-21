@@ -18,16 +18,17 @@
 #include "ash/wm/overview/overview_item_view.h"
 #include "ash/wm/snap_group/snap_group.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
+#include "ash/wm/splitview/layout_divider_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_constants.h"
 #include "base/check_op.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
 #include "base/trace_event/trace_event.h"
+#include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/views/widget/widget.h"
@@ -182,13 +183,12 @@ void OverviewGroupItem::RestoreWindow(bool reset_transform, bool animate) {
 void OverviewGroupItem::SetBounds(const gfx::RectF& target_bounds,
                                   OverviewAnimationType animation_type) {
   // Run at the exit of this function to `UpdateRoundedCornersAndShadow()`.
-  base::ScopedClosureRunner exit_runner(base::BindOnce(
-      [](base::WeakPtr<OverviewGroupItem> overview_group_item) {
-        if (overview_group_item) {
-          overview_group_item->UpdateRoundedCornersAndShadow();
-        }
-      },
-      weak_ptr_factory_.GetWeakPtr()));
+  // TODO(dcheng): This can probably just capture `this`.
+  absl::Cleanup exit_runner = [overview_group_item =
+                                   weak_ptr_factory_.GetWeakPtr()] {
+    CHECK(overview_group_item);
+    overview_group_item->UpdateRoundedCornersAndShadow();
+  };
 
   target_bounds_ = target_bounds;
 
@@ -324,7 +324,11 @@ float OverviewGroupItem::GetItemScale(int height) {
 void OverviewGroupItem::ScaleUpSelectedItem(
     OverviewAnimationType animation_type) {}
 
-void OverviewGroupItem::EnsureVisible() {}
+void OverviewGroupItem::EnsureVisible() {
+  for (const auto& overview_item : overview_items_) {
+    overview_item->EnsureVisible();
+  }
+}
 
 std::vector<OverviewFocusableView*> OverviewGroupItem::GetFocusableViews()
     const {
@@ -383,7 +387,47 @@ void OverviewGroupItem::CloseWindows() {
   }
 }
 
-void OverviewGroupItem::Restack() {}
+void OverviewGroupItem::Restack() {
+  CHECK(!overview_items_.empty());
+
+  // Sort the items in `sorted_items` based on their stacking order, starting
+  // with the lowest.
+  std::vector<OverviewItem*> sorted_items;
+  for (const auto& overview_item : overview_items_) {
+    sorted_items.push_back(overview_item.get());
+  }
+
+  std::sort(sorted_items.begin(), sorted_items.end(),
+            [](OverviewItem* a, OverviewItem* b) {
+              return window_util::IsStackedBelow(a->GetWindow(),
+                                                 b->GetWindow());
+            });
+
+  for (auto* overview_item : sorted_items) {
+    overview_item->Restack();
+  }
+
+  // Then `sorted_items.front()` is the lowest, and `sorted_items.back()` is the
+  // topmost.
+  aura::Window* group_item_widget_window = item_widget_->GetNativeWindow();
+  aura::Window* group_item_widget_window_parent =
+      group_item_widget_window->parent();
+
+  // Adjust the stacking order between the two individual items and the group
+  // item and stack group item widget below the bottom window between the two.
+  group_item_widget_window_parent->StackChildBelow(
+      group_item_widget_window,
+      sorted_items.front()->item_widget()->GetNativeWindow());
+
+  // And stack the `cannot_snap_widget_` above the window of the topmost item.
+  if (cannot_snap_widget_) {
+    DCHECK_EQ(group_item_widget_window_parent,
+              cannot_snap_widget_->GetNativeWindow()->parent());
+    group_item_widget_window_parent->StackChildAbove(
+        cannot_snap_widget_->GetNativeWindow(),
+        sorted_items.back()->GetWindow());
+  }
+}
 
 void OverviewGroupItem::StartDrag() {
   for (const auto& item : overview_items_) {
@@ -401,6 +445,11 @@ void OverviewGroupItem::OnOverviewItemDragEnded(bool snap) {
   for (const auto& item : overview_items_) {
     item->OnOverviewItemDragEnded(snap);
   }
+
+  // Refreshes the stacking order of `this` so that the `item_widget_` window of
+  // the group is stacked below the two windows allowing the `OverviewItemView`
+  // to receive the events.
+  Restack();
 }
 
 void OverviewGroupItem::OnOverviewItemContinuousScroll(

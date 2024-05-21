@@ -97,6 +97,8 @@ static_library("test_support") {
     "../browser/first_party_sets/test/scoped_mock_first_party_sets_handler.h",
     "../browser/font_access/font_access_test_utils.cc",
     "../browser/font_access/font_access_test_utils.h",
+    "../browser/installedapp/test/installed_app_provider_impl_test_utils.cc",
+    "../browser/installedapp/test/installed_app_provider_impl_test_utils.h",
     "../browser/interest_group/additional_bids_test_util.cc",
     "../browser/interest_group/additional_bids_test_util.h",
     "../browser/interest_group/test_interest_group_observer.cc",
@@ -109,8 +111,10 @@ static_library("test_support") {
     "../browser/payments/stub_payment_credential.h",
     "../browser/preloading/prefetch/mock_prefetch_service_delegate.cc",
     "../browser/preloading/prefetch/mock_prefetch_service_delegate.h",
-    "../browser/preloading/prefetch/prefetch_test_utils.cc",
-    "../browser/preloading/prefetch/prefetch_test_utils.h",
+    "../browser/preloading/prefetch/prefetch_test_util.cc",
+    "../browser/preloading/prefetch/prefetch_test_util.h",
+    "../browser/preloading/prefetch/prefetch_test_util_internal.cc",
+    "../browser/preloading/prefetch/prefetch_test_util_internal.h",
     "../browser/presentation/presentation_test_utils.cc",
     "../browser/presentation/presentation_test_utils.h",
     "../browser/private_aggregation/private_aggregation_test_utils.cc",
@@ -329,6 +333,8 @@ static_library("test_support") {
     "../public/test/test_frame_navigation_observer.h",
     "../public/test/test_host_resolver.cc",
     "../public/test/test_host_resolver.h",
+    "../public/test/test_image_transport_factory.cc",
+    "../public/test/test_image_transport_factory.h",
     "../public/test/test_launcher.cc",
     "../public/test/test_launcher.h",
     "../public/test/test_media_session_client.cc",
@@ -566,6 +572,7 @@ static_library("test_support") {
     "//media",
     "//media/capture",
     "//media/capture/mojom:image_capture",
+    "//media/mojo/mojom:web_speech_recognition",
     "//mojo/core/embedder",
     "//mojo/public/cpp/test_support:test_utils",
     "//net:quic_test_tools",
@@ -712,20 +719,6 @@ static_library("test_support") {
       "//ui/aura:test_support",
       "//ui/resources:ui_test_pak",
       "//ui/wm",
-    ]
-  }
-
-  if (use_aura || is_apple) {
-    deps += [
-      "//components/viz/common",
-      "//components/viz/host",
-      "//third_party/libvpx",
-      "//ui/compositor",
-    ]
-
-    sources += [
-      "../browser/compositor/test/test_image_transport_factory.cc",
-      "../browser/compositor/test/test_image_transport_factory.h",
     ]
   }
 
@@ -2112,6 +2105,7 @@ test("content_browsertests") {
     deps += [
       "//components/soda:utils",
       "//content/public/browser:proto",
+      "//media/mojo/mojom:web_speech_recognition",
       "//ui/base/clipboard:clipboard_test_support",
     ]
 
@@ -2368,10 +2362,10 @@ test("content_unittests") {
     "../browser/attribution_reporting/attribution_manager_impl_unittest.cc",
     "../browser/attribution_reporting/attribution_report_network_sender_unittest.cc",
     "../browser/attribution_reporting/attribution_report_unittest.cc",
-    "../browser/attribution_reporting/attribution_storage_delegate_impl_unittest.cc",
+    "../browser/attribution_reporting/attribution_resolver_delegate_impl_unittest.cc",
+    "../browser/attribution_reporting/attribution_resolver_unittest.cc",
     "../browser/attribution_reporting/attribution_storage_sql_migrations_unittest.cc",
     "../browser/attribution_reporting/attribution_storage_sql_unittest.cc",
-    "../browser/attribution_reporting/attribution_storage_unittest.cc",
     "../browser/attribution_reporting/attribution_suitable_context_unittest.cc",
     "../browser/attribution_reporting/interop/interop_unittest.cc",
     "../browser/attribution_reporting/interop/parser_unittest.cc",
@@ -2480,6 +2474,7 @@ test("content_unittests") {
     "../browser/gpu/gpu_data_manager_testing_exceptions_autogen.h",
     "../browser/handwriting/handwriting_recognition_service_impl_unittest.cc",
     "../browser/idle/idle_manager_unittest.cc",
+    "../browser/installedapp/installed_app_provider_impl_unittest.cc",
     "../browser/interest_group/ad_auction_headers_util_unittest.cc",
     "../browser/interest_group/ad_auction_service_impl_unittest.cc",
     "../browser/interest_group/ad_auction_url_loader_interceptor_unittest.cc",
@@ -3349,12 +3344,14 @@ test("content_unittests") {
       "../browser/host_zoom_map_impl_unittest.cc",
       "../browser/picture_in_picture/document_picture_in_picture_navigation_throttle_unittest.cc",
       "../browser/serial/serial_unittest.cc",
-      "../browser/speech/endpointer/endpointer_unittest.cc",
       "../browser/speech/network_speech_recognition_engine_impl_unittest.cc",
       "../browser/speech/speech_recognizer_impl_unittest.cc",
       "../browser/tracing/tracing_ui_unittest.cc",
     ]
-    deps += [ "//components/speech:speech" ]
+    deps += [
+      "//components/speech:speech",
+      "//media/mojo/mojom:web_speech_recognition",
+    ]
 
     if (!is_fuchsia) {
       sources += [

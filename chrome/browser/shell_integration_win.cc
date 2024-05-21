@@ -37,6 +37,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_propvariant.h"
 #include "base/win/shlwapi.h"
 #include "base/win/shortcut.h"
@@ -226,7 +227,7 @@ DefaultWebClientState GetDefaultWebClientStateFromShellUtilDefaultState(
     case ShellUtil::OTHER_MODE_IS_DEFAULT:
       return DefaultWebClientState::OTHER_MODE_IS_DEFAULT;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return DefaultWebClientState::UNKNOWN_DEFAULT;
 }
 
@@ -630,12 +631,19 @@ void MigrateChromeAndChromeProxyShortcuts(
 }
 
 std::wstring GetHttpSchemeUserChoiceProgId() {
-  std::wstring prog_id;
-  base::win::RegKey key(HKEY_CURRENT_USER, ShellUtil::kRegVistaUrlPrefs,
-                        KEY_QUERY_VALUE);
-  if (key.Valid())
-    key.ReadValue(L"ProgId", &prog_id);
-  return prog_id;
+  Microsoft::WRL::ComPtr<IApplicationAssociationRegistration> registration;
+  HRESULT hr = ::SHCreateAssociationRegistration(IID_PPV_ARGS(&registration));
+  if (FAILED(hr)) {
+    return std::wstring();
+  }
+
+  base::win::ScopedCoMem<wchar_t> prog_id;
+  hr = registration->QueryCurrentDefault(L"http", AT_URLPROTOCOL, AL_EFFECTIVE,
+                                         &prog_id);
+  if (FAILED(hr)) {
+    return std::wstring();
+  }
+  return prog_id.get();
 }
 
 }  // namespace
@@ -752,7 +760,7 @@ void SetAsDefaultBrowserUsingSystemSettings(
     base::OnceClosure on_finished_callback) {
   base::FilePath chrome_exe;
   if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED() << "Error getting app exe path";
+    NOTREACHED_IN_MIGRATION() << "Error getting app exe path";
     std::move(on_finished_callback).Run();
     return;
   }
@@ -778,7 +786,7 @@ void SetAsDefaultClientForSchemeUsingSystemSettings(
     base::OnceClosure on_finished_callback) {
   base::FilePath chrome_exe;
   if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED() << "Error getting app exe path";
+    NOTREACHED_IN_MIGRATION() << "Error getting app exe path";
     std::move(on_finished_callback).Run();
     return;
   }
@@ -934,7 +942,7 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
         property_store->GetValue(PKEY_AppUserModel_ID, propvariant.Receive()) !=
             S_OK) {
       // When in doubt, prefer not updating the shortcut.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       continue;
     } else {
       switch (propvariant.get().vt) {
@@ -948,7 +956,7 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
             updated_properties.set_app_id(expected_app_id);
           break;
         default:
-          NOTREACHED();
+          NOTREACHED_IN_MIGRATION();
           continue;
       }
     }
@@ -963,7 +971,7 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
       if (property_store->GetValue(PKEY_AppUserModel_IsDualMode,
                                    propvariant.Receive()) != S_OK) {
         // When in doubt, prefer to not update the shortcut.
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         continue;
       }
       if (propvariant.get().vt == VT_BOOL &&

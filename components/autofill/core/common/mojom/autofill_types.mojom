@@ -377,6 +377,7 @@ struct FormFieldData {
   bool is_enabled;
   bool is_readonly;
   mojo_base.mojom.String16 user_input;
+  bool allows_writing_suggestions;
 
   array<SelectOption> options;
 
@@ -555,6 +556,8 @@ enum FieldActionType {
 // This then invokes `AutofillManager::OnAskForValuesToFill()` in the browser
 // process. In some cases, suggestions get updated. This happens solely in the
 // browser process.
+// Must stay in sync with AutofillSuggestionTriggerSource in
+// histograms/enums.xml. Do not reorder or remove items.
 enum AutofillSuggestionTriggerSource {
   // Used as a default value and cannot be used to trigger suggestions.
   kUnspecified,
@@ -622,4 +625,7 @@ enum AutofillSuggestionTriggerSource {
   // The compose proactive nudge is triggered after a delay by the compose
   // manager.
   kComposeDelayedProactiveNudge,
+  // Password manager renderer received password suggestions from the browser
+  // after the field was focused (likely due to autofocus on the page load).
+  kPasswordManagerProcessedFocusedField,
 };

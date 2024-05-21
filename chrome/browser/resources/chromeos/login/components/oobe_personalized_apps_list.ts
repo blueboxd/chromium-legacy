@@ -102,10 +102,13 @@ export class OobePersonalizedAppsList extends OobePersonalizedAppsListBase {
   }
 
   itemRenderedChanged(): void {
-    if (this.itemRendered === this.appsList.length &&
+    if (this.appsList.length !== 0 &&
+        // TODO: Found a better condition as with that one we never render full
+        // list of apps.
+        // this.itemRendered === this.appsList.length &&
         this.loadedIconsCount === this.appsList.length) {
-      this.dispatchEvent(new CustomEvent(
-          'apss-icons-loaded', {bubbles: true, composed: true}));
+      this.dispatchEvent(
+          new CustomEvent('icons-loaded', {bubbles: true, composed: true}));
     }
   }
 

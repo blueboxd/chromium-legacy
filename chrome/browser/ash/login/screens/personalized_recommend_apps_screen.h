@@ -10,6 +10,8 @@
 
 #include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ash/login/oobe_apps_service/oobe_apps_discovery_service.h"
+#include "chrome/browser/ash/login/oobe_apps_service/oobe_apps_types.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 
 namespace ash {
@@ -20,7 +22,7 @@ class PersonalizedRecommendAppsScreen : public BaseScreen {
  public:
   using TView = PersonalizedRecommendAppsScreenView;
 
-  enum class Result { kNext, kSkip, kNotApplicable };
+  enum class Result { kNext, kSkip, kBack, kNotApplicable };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
 
@@ -44,8 +46,16 @@ class PersonalizedRecommendAppsScreen : public BaseScreen {
   void HideImpl() override;
   void OnUserAction(const base::Value::List& args) override;
 
+  void OnResponseReceived(const std::vector<OOBEAppDefinition>& app_infos,
+                          const std::vector<OOBEDeviceUseCase>& use_cases,
+                          AppsFetchingResult result);
+
+  void OnInstall(base::Value::List selected_apps_package_ids) const;
+
   base::WeakPtr<PersonalizedRecommendAppsScreenView> view_;
   ScreenExitCallback exit_callback_;
+
+  base::WeakPtrFactory<PersonalizedRecommendAppsScreen> weak_factory_{this};
 };
 
 }  // namespace ash

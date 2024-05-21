@@ -19,7 +19,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/navigation_entry_restore_context_impl.h"
@@ -148,7 +150,7 @@ void RecursivelyGenerateFrameState(
   blink::ExplodedPageState exploded_page_state;
   if (!blink::DecodePageState(node->frame_entry->page_state().ToEncodedData(),
                               &exploded_page_state)) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return;
   }
   blink::ExplodedFrameState frame_state = exploded_page_state.top;
@@ -441,7 +443,19 @@ NavigationEntryImpl::NavigationEntryImpl(
               ? InitialNavigationEntryState::kInitialNotForSynchronousAboutBlank
               : InitialNavigationEntryState::kNonInitial) {}
 
-NavigationEntryImpl::~NavigationEntryImpl() {}
+NavigationEntryImpl::~NavigationEntryImpl() {
+  if (same_document_navigation_entry_screenshot_token_.has_value()) {
+    // We get here if:
+    // - `DidCommitSameDocumentNavigation` sets the token, promising a
+    //    screenshot was supposed to arrive.
+    // - However the navigation entry was destroyed before the screenshot could
+    //   arrive.
+    viz::HostFrameSinkManager* manager = GetHostFrameSinkManager();
+    CHECK(manager);
+    manager->InvalidateCopyOutputReadyCallback(
+        same_document_navigation_entry_screenshot_token_.value());
+  }
+}
 
 int NavigationEntryImpl::GetUniqueID() {
   return unique_id_;
@@ -926,10 +940,10 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
   blink::mojom::CommitNavigationParamsPtr commit_params =
       blink::mojom::CommitNavigationParams::New(
           std::nullopt,
-          // The correct storage key and session storage key will be computed
-          // before committing the navigation.
-          blink::StorageKey(), blink::StorageKey(), GetIsOverridingUserAgent(),
-          redirects, std::vector<network::mojom::URLResponseHeadPtr>(),
+          // The correct storage key will be computed before committing the
+          // navigation.
+          blink::StorageKey(), GetIsOverridingUserAgent(), redirects,
+          std::vector<network::mojom::URLResponseHeadPtr>(),
           std::vector<net::RedirectInfo>(), std::string(), original_url,
           original_method, GetCanLoadLocalResources(),
           frame_entry.page_state().ToEncodedData(), GetUniqueID(),
@@ -1241,6 +1255,18 @@ void NavigationEntryImpl::UpdateBackForwardCacheNotRestoredReasons(
 
 GURL NavigationEntryImpl::GetHistoryURLForDataURL() {
   return GetBaseURLForDataURL().is_empty() ? GURL() : GetVirtualURL();
+}
+
+void NavigationEntryImpl::SetSameDocumentNavigationEntryScreenshotToken(
+    const std::optional<blink::SameDocNavigationScreenshotDestinationToken>&
+        token) {
+  viz::HostFrameSinkManager* manager = GetHostFrameSinkManager();
+  CHECK(manager);
+  if (same_document_navigation_entry_screenshot_token_.has_value()) {
+    manager->InvalidateCopyOutputReadyCallback(
+        same_document_navigation_entry_screenshot_token_.value());
+  }
+  same_document_navigation_entry_screenshot_token_ = token;
 }
 
 }  // namespace content

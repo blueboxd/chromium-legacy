@@ -30,12 +30,15 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_stream.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 namespace blink {
 
 class CSSPropertyValue;
+class CSSParserTokenStream;
 class CSSValue;
 class ExecutionContext;
 
@@ -49,25 +52,25 @@ class CORE_EXPORT CSSPropertyParser {
   CSSPropertyParser(const CSSPropertyParser&) = delete;
   CSSPropertyParser& operator=(const CSSPropertyParser&) = delete;
 
-  // NOTE: The CSSTokenizedValue must have leading whitespace (and comments)
+  // NOTE: The stream must have leading whitespace (and comments)
   // stripped; it will strip any trailing whitespace (and comments) itself.
   // This is done because it's easy to strip tokens from the start when
   // tokenizing (but trailing comments is so rare that we can just as well
   // do that in a slow path).
   static bool ParseValue(CSSPropertyID,
                          bool allow_important_annotation,
-                         const CSSTokenizedValue&,
+                         CSSParserTokenStream&,
                          const CSSParserContext*,
                          HeapVector<CSSPropertyValue, 64>&,
                          StyleRule::RuleType);
 
   // Parses a non-shorthand CSS property
   static const CSSValue* ParseSingleValue(CSSPropertyID,
-                                          CSSParserTokenRange,
+                                          CSSParserTokenStream&,
                                           const CSSParserContext*);
 
  private:
-  CSSPropertyParser(const CSSTokenizedValue&,
+  CSSPropertyParser(CSSParserTokenStream&,
                     const CSSParserContext*,
                     HeapVector<CSSPropertyValue, 64>*);
 
@@ -82,7 +85,7 @@ class CORE_EXPORT CSSPropertyParser {
 
  private:
   // Inputs:
-  CSSTokenizedValue value_;
+  CSSParserTokenStream& stream_;
   const CSSParserContext* context_;
   // Outputs:
   HeapVector<CSSPropertyValue, 64>* parsed_properties_;

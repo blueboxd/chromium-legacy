@@ -231,6 +231,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoBefore,
     kPseudoChecked,
     kPseudoCornerPresent,
+    kPseudoCurrent,
     kPseudoDecrement,
     kPseudoDefault,
     kPseudoDetailsContent,
@@ -291,6 +292,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoScrollbarThumb,
     kPseudoScrollbarTrack,
     kPseudoScrollbarTrackPiece,
+    kPseudoSearchText,
     kPseudoSelectFallbackButton,
     kPseudoSelectFallbackButtonIcon,
     kPseudoSelectFallbackButtonText,
@@ -376,7 +378,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoViewTransitionOld,
     // Scroll markers pseudos for Carousel
     kPseudoScrollMarker,
-    kPseudoScrollMarkers,
+    kPseudoScrollMarkerGroup,
   };
 
   enum class AttributeMatchType : int {

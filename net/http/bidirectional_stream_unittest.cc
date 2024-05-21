@@ -333,11 +333,11 @@ class DeleteStreamDelegate : public TestDelegateBase {
     }
   }
 
-  void OnDataSent() override { NOTREACHED(); }
+  void OnDataSent() override { NOTREACHED_IN_MIGRATION(); }
 
   void OnDataRead(int bytes_read) override {
     if (phase_ == ON_HEADERS_RECEIVED) {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return;
     }
     TestDelegateBase::OnDataRead(bytes_read);
@@ -349,7 +349,7 @@ class DeleteStreamDelegate : public TestDelegateBase {
 
   void OnTrailersReceived(const spdy::Http2HeaderBlock& trailers) override {
     if (phase_ == ON_HEADERS_RECEIVED || phase_ == ON_DATA_READ) {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return;
     }
     TestDelegateBase::OnTrailersReceived(trailers);
@@ -361,7 +361,7 @@ class DeleteStreamDelegate : public TestDelegateBase {
 
   void OnFailed(int error) override {
     if (phase_ != ON_FAILED) {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return;
     }
     TestDelegateBase::OnFailed(error);

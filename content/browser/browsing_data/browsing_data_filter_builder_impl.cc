@@ -120,7 +120,7 @@ bool MatchesPluginSiteForRegisterableDomainsAndIPs(
 template <typename T>
 base::RepeatingCallback<bool(const T&)> NotReachedFilter() {
   return base::BindRepeating([](const T&) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return false;
   });
 }
@@ -219,9 +219,13 @@ bool BrowsingDataFilterBuilderImpl::MatchesWithSavedStorageKey(
 }
 
 bool BrowsingDataFilterBuilderImpl::MatchesAllOriginsAndDomains() {
-  return mode_ == Mode::kPreserve && origins_.empty() && domains_.empty() &&
-         !partitioned_cookies_only_ &&
-         cookie_partition_key_collection_.ContainsAllKeys() && !HasStorageKey();
+  return MatchesMostOriginsAndDomains() && origins_.empty() &&
+         domains_.empty() && cookie_partition_key_collection_.ContainsAllKeys();
+}
+
+bool BrowsingDataFilterBuilderImpl::MatchesMostOriginsAndDomains() {
+  return mode_ == Mode::kPreserve && !partitioned_cookies_only_ &&
+         !HasStorageKey();
 }
 
 bool BrowsingDataFilterBuilderImpl::MatchesNothing() {

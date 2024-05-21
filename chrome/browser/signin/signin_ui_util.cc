@@ -127,7 +127,7 @@ std::string GetReauthAccessPointHistogramSuffix(
     signin_metrics::ReauthAccessPoint access_point) {
   switch (access_point) {
     case signin_metrics::ReauthAccessPoint::kUnknown:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return std::string();
     case signin_metrics::ReauthAccessPoint::kAutofillDropdown:
       return "ToFillPassword";
@@ -198,7 +198,7 @@ void ShowReauthForPrimaryAccountWithAuthError(
     signin_metrics::AccessPoint access_point) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // On ChromeOS, sync errors are fixed by re-signing into the OS.
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 #else
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
@@ -236,7 +236,7 @@ void ShowExtensionSigninPrompt(Profile* profile,
                                bool enable_sync,
                                const std::string& email_hint) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 #elif BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // There is no sign-in flow for guest or system profile.
   if (profile->IsGuestSession() || profile->IsSystemProfile())
@@ -273,7 +273,7 @@ void ShowExtensionSigninPrompt(Profile* profile,
 void ShowSigninPromptFromPromo(Profile* profile,
                                signin_metrics::AccessPoint access_point) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 #elif BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
   CHECK_NE(signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN, access_point);
   CHECK(!profile->IsOffTheRecord());
@@ -349,7 +349,7 @@ void SignInFromSingleAccountPromo(Profile* profile,
       ->SetPrimaryAccount(account.account_id, signin::ConsentLevel::kSignin,
                           access_point);
 #else
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
@@ -411,17 +411,22 @@ void EnableSyncFromMultiAccountPromo(Profile* profile,
 
   // In the UNO model, if the account was in the web-only signed in state,
   // turning on sync will sign the account in the profile and show the sync
-  // confirmation dialog. Cancelling the sync confirmation should revert to the
-  // initial state, signing out the account from the profile and keeping it on
-  // the web only. Aborting the sync confirmation for a secondary account
-  // reverts the original primary account as primary, and keeps the secondary
-  // account.
+  // confirmation dialog.
+  // Cancelling the sync confirmation should revert to the initial state,
+  // signing out the account from the profile and keeping it on the web only,
+  // unless the source is the Profile menu, for which we would still want the
+  // user to be signed in, having sync as optional.
+  //  Aborting the sync confirmation for a secondary account reverts the
+  //  original primary account
+  // as primary, and keeps the secondary account.
   TurnSyncOnHelper::SigninAbortedMode signin_aborted_mode =
       switches::IsExplicitBrowserSigninUIOnDesktopEnabled() &&
               account.account_id !=
                   identity_manager
                       ->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin)
-                      .account_id
+                      .account_id &&
+              access_point != signin_metrics::AccessPoint::
+                                  ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN
           ? TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT_ON_WEB_ONLY
           : TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT;
   signin_metrics::LogSigninAccessPointStarted(access_point,

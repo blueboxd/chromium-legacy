@@ -460,7 +460,7 @@ class CORE_EXPORT Node : public EventTarget {
   };
   virtual void NotifyLoadedSheetAndAllCriticalSubresources(
       LoadedSheetErrorStatus) {}
-  virtual void SetToPendingState() { NOTREACHED(); }
+  virtual void SetToPendingState() { NOTREACHED_IN_MIGRATION(); }
 
   bool HasName() const {
     DCHECK(!IsTextNode());
@@ -650,11 +650,6 @@ class CORE_EXPORT Node : public EventTarget {
 
   TreeScope& GetTreeScope() const {
     DCHECK(tree_scope_);
-    return *tree_scope_;
-  }
-
-  TreeScope& ContainingTreeScope() const {
-    DCHECK(IsInTreeScope());
     return *tree_scope_;
   }
 
@@ -1003,20 +998,6 @@ class CORE_EXPORT Node : public EventTarget {
   }
   void SetCachedDirectionality(TextDirection direction);
 
-  bool DirAutoInheritsFromParent() const {
-    return GetFlag(kDirAutoInheritsFromParent);
-  }
-  void SetDirAutoInheritsFromParent() {
-    // When we remove the DirAutoNoInheritance feature flag (by enabling
-    // the code permanently), we can remove the
-    // kDirAutoInheritsFromParent node flag.
-    CHECK(!RuntimeEnabledFeatures::DirAutoNoInheritanceEnabled());
-    return SetFlag(kDirAutoInheritsFromParent);
-  }
-  void ClearDirAutoInheritsFromParent() {
-    return ClearFlag(kDirAutoInheritsFromParent);
-  }
-
   void Trace(Visitor*) const override;
 
   bool IsModifiedBySoftNavigation() const {
@@ -1070,15 +1051,14 @@ class CORE_EXPORT Node : public EventTarget {
 
     kSelfOrAncestorHasDirAutoAttribute = 1 << 27,
     kCachedDirectionalityIsRtl = 1 << 28,
-    kDirAutoInheritsFromParent = 1u << 29,
 
     // Indicates that the node was added in a task descendant of a potential
     // soft navigation.
-    kModifiedBySoftNavigation = 1u << 30,
+    kModifiedBySoftNavigation = 1u << 29,
 
     kDefaultNodeFlags = kIsFinishedParsingChildrenFlag,
 
-    // 1 bit(s) remaining.
+    // 2 bit(s) remaining.
   };
 
   ALWAYS_INLINE bool GetFlag(NodeFlags mask) const {

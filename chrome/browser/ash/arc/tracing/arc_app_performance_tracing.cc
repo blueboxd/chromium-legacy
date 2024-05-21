@@ -36,6 +36,7 @@
 #include "components/sync/service/sync_service.h"
 #include "components/sync/service/sync_user_settings.h"
 #include "ui/aura/window.h"
+#include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
 
 // Enable VLOG level 1.
@@ -147,6 +148,7 @@ ArcAppPerformanceTracing::ArcAppPerformanceTracing(
     exo::WMHelper::GetInstance()->AddActivationObserver(this);
   }
   ArcAppListPrefs::Get(context_)->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
 }
 
 // Releasing resources in DTOR is not safe, see |Shutdown|.
@@ -180,10 +182,15 @@ void ArcAppPerformanceTracing::SetCustomSessionReadyCallbackForTesting(
   custom_session_ready_callback_ = std::move(callback);
 }
 
-void ArcAppPerformanceTracing::Shutdown() {
-  CancelJankinessTracing();
+void ArcAppPerformanceTracing::MaybeCancelTracing() {
+  jankiness_timer_.Stop();
+  session_.reset();
+}
 
-  MaybeStopTracing();
+void ArcAppPerformanceTracing::Shutdown() {
+  display::Screen::GetScreen()->RemoveObserver(this);
+
+  MaybeCancelTracing();
 
   // |session_|. Make sure that |active_window_| is detached.
   DetachActiveWindow();
@@ -209,7 +216,8 @@ void ArcAppPerformanceTracing::OnCustomTraceDone(
           .Set("commitDeviation", success ? result->commit_deviation : 0)
           .Set("presentDeviation", success ? result->present_deviation : 0)
           .Set("renderQuality", success ? result->render_quality : 0)
-          .Set("janksPerMinute", success ? result->janks_per_minute : 0));
+          .Set("janksPerMinute", success ? result->janks_per_minute : 0)
+          .Set("janksPercentage", success ? result->janks_percentage : 0));
 }
 
 bool ExpectingPresentEvents() {
@@ -261,7 +269,7 @@ void ArcAppPerformanceTracing::OnWindowActivated(ActivationReason reason,
                                                  aura::Window* gained_active,
                                                  aura::Window* lost_active) {
   // Discard any active tracing if any.
-  MaybeStopTracing();
+  session_.reset();
 
   // Stop and report previous active window's jankiness tracing so far.
   FinalizeJankinessTracing(true /* stopped_early */);
@@ -319,9 +327,7 @@ void ArcAppPerformanceTracing::OnWindowDestroying(aura::Window* window) {
   // ARC++ window will be destroyed.
   DCHECK_EQ(active_window_, window);
 
-  CancelJankinessTracing();
-
-  MaybeStopTracing();
+  MaybeCancelTracing();
 
   DetachActiveWindow();
 }
@@ -382,8 +388,19 @@ void ArcAppPerformanceTracing::OnSurfaceDestroying(exo::Surface* surface) {
   DetachActiveWindow();
 }
 
-void ArcAppPerformanceTracing::CancelJankinessTracing() {
-  jankiness_timer_.Stop();
+// This method is invoked when a display changes between detected and not
+// detected. One can test manually on a Chromebook by turning off
+// sleep-on-lid-close in the Power settings and closing the lid during a trace.
+// Jankiness tracing is not affected, as this does not rely on frame present
+// events, and uses internal Android tracing.
+void ArcAppPerformanceTracing::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t changed_metrics) {
+  if (!ExpectingPresentEvents()) {
+    session_.reset();
+  } else {
+    MaybeStartTracing();
+  }
 }
 
 void ArcAppPerformanceTracing::FinalizeJankinessTracing(bool stopped_early) {
@@ -492,6 +509,10 @@ void ArcAppPerformanceTracing::MaybeStartTracing() {
     return;
   }
 
+  if (!ExpectingPresentEvents()) {
+    return;
+  }
+
   const auto it = task_id_to_app_id_.find(active_task_->id);
   if (it == task_id_to_app_id_.end()) {
     // It is normal that information might not be available at this time.
@@ -539,11 +560,6 @@ void ArcAppPerformanceTracing::MaybeStartTracing() {
   session_ = std::make_unique<ArcAppPerformanceTracingSession>(
       active_window_, *ticks_now_callback());
   reporting_.Schedule(session_.get(), category);
-}
-
-void ArcAppPerformanceTracing::MaybeStopTracing() {
-  // Reset tracing if it was set.
-  session_.reset();
 }
 
 void ArcAppPerformanceTracing::DetachActiveWindow() {

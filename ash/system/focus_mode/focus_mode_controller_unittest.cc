@@ -6,16 +6,13 @@
 
 #include <memory>
 
-#include "ash/api/tasks/fake_tasks_client.h"
-#include "ash/api/tasks/tasks_controller.h"
-#include "ash/api/tasks/tasks_types.h"
-#include "ash/api/tasks/test_tasks_delegate.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/ash_prefs.h"
 #include "ash/shell.h"
 #include "ash/system/focus_mode/focus_mode_controller.h"
 #include "ash/system/focus_mode/focus_mode_session.h"
+#include "ash/system/focus_mode/focus_mode_task_test_utils.h"
 #include "ash/system/focus_mode/focus_mode_tray.h"
 #include "ash/system/focus_mode/focus_mode_util.h"
 #include "ash/system/status_area_widget_test_helper.h"
@@ -192,11 +189,16 @@ TEST_F(FocusModeControllerMultiUserTest, FirstTimeUserFlow) {
 TEST_F(FocusModeControllerMultiUserTest, TasksFlow) {
   SimulateUserLogin(GetUser1AccountId());
 
-  const std::string task_id = "0";
+  const std::string task_list_id = "list1";
+  const std::string task_id = "task1";
   const std::string title = "Focus Task";
 
+  auto& tasks_client = CreateFakeTasksClient(GetUser1AccountId());
+  AddFakeTaskList(tasks_client, task_list_id);
+  AddFakeTask(tasks_client, task_list_id, task_id, title);
+
   FocusModeTask task;
-  task.task_list_id = "abc";
+  task.task_list_id = task_list_id;
   task.task_id = task_id;
   task.title = title;
   task.updated = base::Time::Now();
@@ -523,6 +525,56 @@ TEST_F(FocusModeControllerMultiUserTest, CheckDNDStateOnFocusEndHistogram) {
       /*sample=*/
       focus_mode_histogram_names::DNDStateOnFocusEndType::kTurnedOff,
       /*expected_count=*/1);
+}
+
+// Verify that when a session is over, the histogram will record how many
+// minutes the user extended during the session.
+TEST_F(FocusModeControllerMultiUserTest, CheckTimeAddedOnSessionEndHistogram) {
+  base::HistogramTester histogram_tester;
+  constexpr base::TimeDelta kShortDuration = base::Minutes(10);
+  constexpr base::TimeDelta kMediumDuration = base::Minutes(11);
+  constexpr base::TimeDelta kLongDuration = base::Minutes(30);
+
+  // 1. Start a session with 10 minutes and extend the session duration while in
+  // an active session.
+  auto* controller = FocusModeController::Get();
+  controller->SetInactiveSessionDuration(kShortDuration);
+  controller->ToggleFocusMode();
+  EXPECT_TRUE(controller->in_focus_session());
+  EXPECT_EQ(kShortDuration, controller->session_duration());
+
+  controller->ExtendSessionDuration();
+  controller->ToggleFocusMode();
+  EXPECT_FALSE(controller->in_focus_session());
+  histogram_tester.ExpectBucketCount(
+      focus_mode_histogram_names::kShortTimeAddedOnSessionEndHistogramName,
+      /*sample=*/10, /*expected_count=*/1);
+
+  // 2. Start a session with 11 minutes. Even not extending the session will
+  // still trigger the metric to be recorded.
+  controller->SetInactiveSessionDuration(kMediumDuration);
+  controller->ToggleFocusMode();
+  EXPECT_TRUE(controller->in_focus_session());
+  EXPECT_EQ(kMediumDuration, controller->session_duration());
+
+  controller->ToggleFocusMode();
+  EXPECT_FALSE(controller->in_focus_session());
+  histogram_tester.ExpectBucketCount(
+      focus_mode_histogram_names::kMediumTimeAddedOnSessionEndHistogramName,
+      /*sample=*/0, /*expected_count=*/1);
+
+  // 3. Start a session with 30 minutes and extend the session.
+  controller->SetInactiveSessionDuration(kLongDuration);
+  controller->ToggleFocusMode();
+  EXPECT_TRUE(controller->in_focus_session());
+  EXPECT_EQ(kLongDuration, controller->session_duration());
+
+  controller->ExtendSessionDuration();
+  controller->ToggleFocusMode();
+  EXPECT_FALSE(controller->in_focus_session());
+  histogram_tester.ExpectBucketCount(
+      focus_mode_histogram_names::kLongTimeAddedOnSessionEndHistogramName,
+      /*sample=*/10, /*expected_count=*/1);
 }
 
 }  // namespace ash

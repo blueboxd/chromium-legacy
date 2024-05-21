@@ -76,9 +76,12 @@ component("image_decoders") {
     sources += [
       "avif/avif_image_decoder.cc",
       "avif/avif_image_decoder.h",
+      "avif/crabbyavif_image_decoder.cc",
+      "avif/crabbyavif_image_decoder.h",
     ]
 
     deps += [
+      "//third_party/crabbyavif",
       "//third_party/libavif",
       "//third_party/libavifinfo",
     ]
@@ -120,7 +123,10 @@ source_set("unit_tests") {
   }
 
   if (enable_av1_decoder) {
-    sources += [ "avif/avif_image_decoder_test.cc" ]
+    sources += [
+      "avif/avif_image_decoder_test.cc",
+      "avif/crabbyavif_image_decoder_test.cc",
+    ]
   }
 }
 
@@ -135,6 +141,7 @@ fuzzer_test("blink_bmp_image_decoder_fuzzer") {
     "//third_party/blink/renderer/platform/wtf",
   ]
   seed_corpuses = [ "//third_party/blink/web_tests/images/bmp-suite/good" ]
+
   # TODO: crbug.com/324586211 - raise the memory limit to avoid OOMs in the
   # fuzzer harness. This can be removed once the global memory limit is raised.
   libfuzzer_options = [ "rss_limit_mb=4096" ]

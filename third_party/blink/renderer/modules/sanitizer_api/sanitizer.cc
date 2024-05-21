@@ -206,7 +206,7 @@ DocumentFragment* Sanitizer::PrepareFragment(LocalDOMWindow* window,
                         WebFeature::kSanitizerAPIFromFragment);
       return input->GetAsDocumentFragment();
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 
@@ -337,7 +337,7 @@ Node* Sanitizer::KeepElement(Element* element,
 
   if (Match(Wildcard(), node_name, config_.drop_attributes_)) {
     for (const auto& name : element->getAttributeNames()) {
-      element->removeAttribute(name);
+      element->removeAttribute(AtomicString(name));
       UseCounter::Count(window->GetExecutionContext(),
                         WebFeature::kSanitizerAPIActionTaken);
     }
@@ -384,7 +384,7 @@ Node* Sanitizer::KeepElement(Element* element,
       }
 
       if (drop) {
-        element->removeAttribute(name);
+        element->removeAttribute(AtomicString(name));
         UseCounter::Count(window->GetExecutionContext(),
                           WebFeature::kSanitizerAPIActionTaken);
       }

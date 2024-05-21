@@ -7,6 +7,7 @@
 
 #include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/scoped_refptr.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -17,13 +18,10 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-namespace viz {
-class TestSharedImageInterface;
-}
-
 namespace gpu {
 
 class ClientSharedImageInterface;
+class TestSharedImageInterface;
 
 // Controls whether all ClientSharedImage::GetTextureTarget*(...) variants call
 // through to ClientSharedImage::GetTextureTarget() under the hood.
@@ -88,7 +86,8 @@ class GPU_EXPORT ClientSharedImage
     // implementations  as the end goal after all clients using GMB are
     // converted to use the ScopedMapping and notion of GpuMemoryBuffer is being
     // removed.
-    raw_ptr<gfx::GpuMemoryBuffer> buffer_;
+    // RAW_PTR_EXCLUSION: Performance reasons (based on analysis of MotionMark).
+    RAW_PTR_EXCLUSION gfx::GpuMemoryBuffer* buffer_ = nullptr;
   };
 
   // Tests sometimes "fake" GMBs that are conceptually native with shared
@@ -237,7 +236,7 @@ class GPU_EXPORT ClientSharedImage
   // SharedImageInterface::ImportSharedImage().
   // `sii_holder` must not be null.
   friend class ClientSharedImageInterface;
-  friend class viz::TestSharedImageInterface;
+  friend class TestSharedImageInterface;
   ClientSharedImage(const Mailbox& mailbox,
                     const SharedImageMetadata& metadata,
                     const SyncToken& sync_token,
@@ -273,7 +272,7 @@ struct GPU_EXPORT ExportedSharedImage {
   friend class ClientSharedImage;
   friend class SharedImageInterface;
   friend class ClientSharedImageInterface;
-  friend class viz::TestSharedImageInterface;
+  friend class TestSharedImageInterface;
   friend struct mojo::StructTraits<gpu::mojom::ExportedSharedImageDataView,
                                    ExportedSharedImage>;
   FRIEND_TEST_ALL_PREFIXES(ClientSharedImageTest, ImportUnowned);

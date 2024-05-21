@@ -352,7 +352,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DevTools.LighthouseCategoryUsed"
-    enum="DevToolsLighthouseCategoryUsed" expires_after="2024-09-14">
+    enum="DevToolsLighthouseCategoryUsed" expires_after="2024-11-17">
   <owner>asraine@chromium.org</owner>
   <owner>paulirish@chromium.org</owner>
   <owner>cjamcl@chromium.org</owner>
@@ -420,16 +420,6 @@ chromium-metrics-reviews@google.com.
   <owner>mathias@chromium.org</owner>
   <summary>
     Recorded when a particular action was taken to launch DevTools.
-  </summary>
-</histogram>
-
-<histogram name="DevTools.PanelClosed" enum="DevToolsPanel"
-    expires_after="2024-06-30">
-  <owner>yangguo@chromium.org</owner>
-  <owner>bmeurer@google.com</owner>
-  <summary>
-    Specified DevTools panel was closed. Fires immediately after closing a panel
-    using the &quot;x&quot; button in the panel title.
   </summary>
 </histogram>
 
@@ -590,7 +580,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DevTools.StyleTextCopied" enum="DevToolsStyleTextCopied"
-    expires_after="2024-07-07">
+    expires_after="2024-11-10">
   <owner>changhaohan@chromium.org</owner>
   <owner>bmeurer@google.com</owner>
   <owner>yangguo@chromium.org</owner>

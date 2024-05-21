@@ -98,7 +98,7 @@ MEDIA_EXPORT extern const char kLacrosUseChromeosProtectedMedia[];
 MEDIA_EXPORT extern const char kLacrosUseChromeosProtectedAv1[];
 MEDIA_EXPORT extern const char kAllowRAInDevMode[];
 MEDIA_EXPORT extern const char kCrosWidevineBundledDir[];
-MEDIA_EXPORT extern const char kCrosWidevineComponentUpdatedDir[];
+MEDIA_EXPORT extern const char kCrosWidevineComponentUpdatedHintFile[];
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 namespace autoplay {
@@ -274,6 +274,9 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kHideIncognitoMediaMetadata);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kInternalMediaSession);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kKeyPressMonitoring);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kOnDeviceWebSpeech);
+#if BUILDFLAG(IS_CHROMEOS)
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kLacrosUseAshWidevine);
+#endif
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kLiveCaption);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kLiveCaptionAutomaticLanguageDownload);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kLiveCaptionRightClick);
@@ -306,7 +309,6 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kMemoryPressureBasedSourceBufferGC);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseWritePixelsYUV);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseMultiPlaneFormatForHardwareVideo);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseMultiPlaneFormatForSoftwareVideo);
-MEDIA_EXPORT BASE_DECLARE_FEATURE(kMultiPlaneSoftwareVideoSharedImages);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMultiPlaneVideoCaptureSharedImages);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kOverlayFullscreenVideo);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kPauseBackgroundMutedAudio);

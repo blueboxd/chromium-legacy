@@ -35,6 +35,7 @@
   E_CPONLY(kColorAvatarButtonHighlightSyncError) \
   E_CPONLY(kColorAvatarButtonHighlightSyncPaused) \
   E_CPONLY(kColorAvatarButtonHighlightSigninPaused) \
+  E_CPONLY(kColorAvatarButtonHighlightExplicitText) \
   E_CPONLY(kColorAvatarButtonHighlightIncognito) \
   E_CPONLY(kColorAvatarButtonHighlightNormalForeground) \
   E_CPONLY(kColorAvatarButtonHighlightDefaultForeground) \
@@ -391,6 +392,7 @@
   E_CPONLY(kColorProductSpecificationsDivider) \
   E_CPONLY(kColorProductSpecificationsPageBackground) \
   E_CPONLY(kColorProductSpecificationsPrimaryTitle) \
+  E_CPONLY(kColorProductSpecificationsIcon) \
   E_CPONLY(kColorProductSpecificationsSecondaryTitle) \
   E_CPONLY(kColorProductSpecificationsSummaryBackground) \
   /* Profile Menu colors. */ \

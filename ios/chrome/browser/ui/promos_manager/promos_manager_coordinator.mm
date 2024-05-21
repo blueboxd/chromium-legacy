@@ -145,7 +145,7 @@
           PromosManagerFactory::GetForBrowserState(browser->GetBrowserState());
       _mediator = [[PromosManagerMediator alloc]
           initWithPromosManager:promosManager
-          promoImpressionLimits:[self promoImpressionLimits]];
+                   promoConfigs:[self promoConfigs]];
     }
   }
 
@@ -209,7 +209,7 @@
 
 - (void)promoWasDismissed {
   if (_currentPromoData.has_value() && !_currentPromoData.value().was_forced) {
-    PromoConfigsSet configs = [self promoImpressionLimits];
+    PromoConfigsSet configs = [self promoConfigs];
     auto it = configs.find(_currentPromoData.value().promo);
     if (it == configs.end() || !it->feature_engagement_feature) {
       return;
@@ -580,10 +580,12 @@
   // Docking promo handler.
   _displayHandlerPromos[promos_manager::Promo::DockingPromo] =
       [[DockingPromoDisplayHandler alloc]
-          initWithHandler:_dockingPromoCommandHandler];
+                   initWithHandler:_dockingPromoCommandHandler
+          showRemindMeLaterVersion:NO];
   _displayHandlerPromos[promos_manager::Promo::DockingPromoRemindMeLater] =
       [[DockingPromoDisplayHandler alloc]
-          initWithHandler:_dockingPromoCommandHandler];
+                   initWithHandler:_dockingPromoCommandHandler
+          showRemindMeLaterVersion:YES];
 
   // Default browser promo handler.
   _displayHandlerPromos[promos_manager::Promo::DefaultBrowser] =
@@ -634,7 +636,7 @@
   [self registerStandardPromoAlertProviderPromos];
 }
 
-- (PromoConfigsSet)promoImpressionLimits {
+- (PromoConfigsSet)promoConfigs {
   PromoConfigsSet result;
 
   for (auto const& [promo, handler] : _displayHandlerPromos)

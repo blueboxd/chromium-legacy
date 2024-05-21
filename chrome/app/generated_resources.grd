@@ -560,18 +560,9 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_CONTENT_CONTEXT_LIVE_CAPTION_DISABLE" desc="The name of the Live Caption command in the content area context menu to disable Live Caption">
           &amp;Disable Live Caption
         </message>
-        <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_TITLE" desc="The title of the Autofill manual fallback for showing the Autofill suggestions in the content area context menu.">
-         Fill in form
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_ADDRESS" desc="The name of the Autofill manual fallback for showing address suggestions in the content area context menu.">
-         Addresses and more
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PAYMENTS" desc="The name of the Autofill manual fallback for payment methods attribute command in the content area context menu.">
-         Payment methods
-        </message>
         <!-- TODO(321678141): Finalize the strings and make them translatable -->
         <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PASSWORDS" desc="This is a context menu entry. Upon clicking, it triggers the password selection bubble (for non-syncing users) or a submenu with more entries (for syncing users)." translateable="false">
-         Passwords
+          Passwords
         </message>
         <if expr="not use_titlecase">
           <message name="IDS_CONTENT_CONTEXT_BACK" desc="The name of the Back command in the content area context menu">
@@ -874,7 +865,16 @@ are declared in tools/grit/grit_rule.gni.
             Open with <ph name="APP">$1<ex>Hangouts</ex></ph>
           </message>
           <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FEEDBACK" desc="The name of the Autofill Feedback command in the content area context menu">
-           Help improve autofill
+            Help improve autofill
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_TITLE" desc="The title of the Autofill manual fallback for showing the Autofill suggestions in the content area context menu.">
+            Fill in form
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_ADDRESS" desc="The name of the Autofill manual fallback for showing address suggestions in the content area context menu.">
+            Addresses and more
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PAYMENTS" desc="The name of the Autofill manual fallback for payment methods attribute command in the content area context menu.">
+            Payment methods
           </message>
           <!-- TODO(321678141): Finalize the strings and make them translatable -->
           <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PASSWORDS_SELECT_PASSWORD" desc="This is a context menu entry in the passwords submenu. It triggers the password selection bubble." translateable="false">
@@ -1194,8 +1194,17 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_CONTENT_CONTEXT_GENERATEPASSWORD" desc="In Title Case: The name of the Generate Password command in the content area context menu">
             Suggest Password...
           </message>
-          <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FEEDBACK" desc="The name of the Autofill Feedback command in the content area context menu">
-           Help Improve Autofill
+          <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FEEDBACK" desc="In Title Case: The name of the Autofill Feedback command in the content area context menu">
+            Help Improve Autofill
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_TITLE" desc="In Title Case: The title of the Autofill manual fallback for showing the Autofill suggestions in the content area context menu.">
+            Fill in Form
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_ADDRESS" desc="In Title Case: The name of the Autofill manual fallback for showing address suggestions in the content area context menu.">
+            Addresses and More
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PAYMENTS" desc="In Title Case: The name of the Autofill manual fallback for payment methods attribute command in the content area context menu.">
+            Payment Methods
           </message>
           <!-- TODO(321678141): Finalize the strings and make them translatable -->
           <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PASSWORDS_SELECT_PASSWORD" desc="In Title Case: This is a context menu entry in the passwords submenu. It triggers the password selection bubble." translateable="false">
@@ -3538,6 +3547,10 @@ are declared in tools/grit/grit_rule.gni.
                desc="Status text for a download item that is being checked for malware.">
         Checking for malware...
       </message>
+      <message name="IDS_DOWNLOAD_LOCAL_DECRYPTION_PROMPT_ALERT"
+               desc="Accessible alert announced when a local decryption prompt appears on a suspicious archive">
+        <ph name="FILENAME">$1<ex>bla.exe</ex></ph> may be dangerous. Add a password if you want Chrome to verify it or you can download it directly.
+      </message>
 
       <!-- Web App Window Title string -->
       <message name="IDS_WEB_APP_WITH_APP_TITLE" desc="Title of the web app window with app_title.">
@@ -4199,6 +4212,9 @@ are declared in tools/grit/grit_rule.gni.
         </message>
       </if>
 
+      <message name="IDS_CERT_EXPORT_TYPE_BASE64_ALL" desc="The description of saving multiple certificates in base64 encoding.">
+        Base64-encoded ASCII, multiple certificates
+      </message>
       <message name="IDS_CERT_EXPORT_TYPE_BASE64" desc="The description of saving a single certificate in base64 encoding.">
         Base64-encoded ASCII, single certificate
       </message>
@@ -8387,8 +8403,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_MODULES_TODAY_CALENDAR_HEADER" desc="Header of the Calendar module when showing today's calendar on the NTP." meaning="Header of the calendar module to indicate that the events shown are for today." translateable="false">
         Today's Calendar
       </message>
-      <message name="IDS_NTP_MODULES_TODAY_CALENDAR_DISABLE_BUTTON_TEXT" desc="Text shown on the disable button of a NTP Calendar card." translateable="false">
+      <message name="IDS_NTP_MODULES_TODAY_CALENDAR_DISABLE_BUTTON_TEXT" desc="Text shown on the disable button of a NTP card showing today's calendar." translateable="false">
         Don't show Today's Calendar
+      </message>
+      <message name="IDS_NTP_MODULES_TODAY_CALENDAR_DISMISS_BUTTON_TEXT" desc="Text shown on the dismiss button of a NTP card showing today's calendar." translateable="false">
+        Hide Today's Calendar
+      </message>
+      <message name="IDS_NTP_MODULES_TODAY_CALENDAR_DISMISS_TOAST_MESSAGE" desc="Text shown on the toast on the NTP indicating that a card showing today's calendar has been dismissed." translateable="false">
+        Today's Calendar hidden
+      </message>
+      <message name="IDS_NTP_MODULES_TODAY_CALENDAR_DISABLE_TOAST_MESSAGE" desc="Text shown on the toast on the NTP indicating that a card showing today's calendar has been disabled." translateable="false">
+        You won't see Today's Calendar on this page again
+      </message>
+      <message name="IDS_NTP_MODULES_TODAY_CALENDAR_MORE_ACTIONS" desc="Text shown on the tooltip for the 3 dot menu on the card showing today's calendar." translateable="false">
+        More actions for Today's Calendar
       </message>
       <message name="IDS_NTP_MODULES_GOOGLE_CALENDAR_TITLE" desc="Title of the Google Calendar module shown in various UIs for Customize Chrome and the NTP." meaning="Title of feature for showing a glimpse of a user's Google Calendar.">
         Google Calendar
@@ -9643,6 +9671,40 @@ Keep your key file in a safe place. You will need it to create new versions of y
             You can access it on Google Password Manager.
           </message>
           <message name="IDS_IOS_DESKTOP_PASSWORD_PROMO_BUBBLE_FOOTER_DESCRIPTION_QR" desc="The description for the iOS desktop password promo bubble footer which lets the user know how to use their saved passwords on their phone: follow the QR code, download Chrome for iOS and sign in to their account.">
+            Download Chrome with this QR code, and sign in to your Google Account.
+          </message>
+        </if>
+      </if>
+
+      <!--IOS Desktop address promo strings-->
+      <if expr="_google_chrome">
+        <if expr="not is_android">
+          <if expr="use_titlecase">
+            <message name="IDS_IOS_DESKTOP_ADDRESS_PROMO_BUBBLE_TITLE" desc="In Title Case: The title for the iOS desktop address promo bubble letting users know their address is saved.">
+              Your Address Is Saved
+            </message>
+            <message name="IDS_IOS_DESKTOP_ADDRESS_PROMO_BUBBLE_FOOTER_TITLE" desc="In Title Case: The title for the footer of the iOS desktop address promo bubble suggesting to users that they can use their addresses on their iOS devices.">
+              Use This Address On Your iPhone
+            </message>
+            <message name="IDS_IOS_DESKTOP_ADDRESS_PROMO_BUBBLE_BUTTON_DECLINE" desc="In Title Case: The text inside the button allowing the user to decline.">
+              No Thanks
+            </message>
+          </if>
+          <if expr="not use_titlecase">
+            <message name="IDS_IOS_DESKTOP_ADDRESS_PROMO_BUBBLE_TITLE" desc="The title for the iOS desktop address promo bubble letting users know their address is saved.">
+              Your address is saved
+            </message>
+            <message name="IDS_IOS_DESKTOP_ADDRESS_PROMO_BUBBLE_FOOTER_TITLE" desc="The title for the footer of the iOS desktop address promo bubble suggesting to users that they can use their addresses on their iOS devices.">
+              Use this address on your iPhone
+            </message>
+            <message name="IDS_IOS_DESKTOP_ADDRESS_PROMO_BUBBLE_BUTTON_DECLINE" desc="The text inside the button allowing the user to decline.">
+              No thanks
+            </message>
+          </if>
+          <message name="IDS_IOS_DESKTOP_ADDRESS_PROMO_BUBBLE_SUBTITLE" desc="The subtitle for the iOS desktop address promo bubble which lets the user know they can access their saved addresses.">
+            You can access it in your Saved Addresses.
+          </message>
+          <message name="IDS_IOS_DESKTOP_ADDRESS_PROMO_BUBBLE_FOOTER_DESCRIPTION_QR" desc="The description for the iOS desktop address promo bubble footer which lets the user know how to use their saved addresses on their phone: follow the QR code, download Chrome for iOS and sign in to their account.">
             Download Chrome with this QR code, and sign in to your Google Account.
           </message>
         </if>
@@ -11288,7 +11350,7 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
 
       <!-- Saved Tab Group V2 -->
       <message name="IDS_TABS_TITLE_CXMENU" desc="The label of the 'Tabs' title in the context menu of a saved tab group.">
-        Tabs
+        Tabs in group
       </message>
       <if expr="not use_titlecase">
         <message name="IDS_SAVED_TAB_GROUP_TABS_COUNT" desc="Title of unnamed saved tab group in Everything menu. [ICU_Syntax]">
@@ -11311,6 +11373,74 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         <message name="IDS_SAVED_TAB_GROUPS_MENU" desc="The title of the 'Tab Groups' menu in the App Menu.">
       Tab Groups
     </message>
+      </if>
+
+    <!-- Tab Group Editor Bubble -->
+      <message name="IDS_TAB_GROUP_DELETION_DIALOG_BODY_SYNCED_DELETE" desc=". Displayed in the Tab Group Deletion Dialog.">
+        This will delete the group from all devices signed into Chrome with this Google Account.
+      </message>
+      <message name="IDS_TAB_GROUP_DELETION_DIALOG_BODY_SYNCED_UNGROUP" desc="The body text for ungrouping. Displayed in the Tab Group Deletion Dialog.">
+        The tabs will remain open on this device but the group will be deleted from all devices signed into Chrome with this Google Account.
+      </message>
+
+      <message name="IDS_TAB_GROUP_DELETION_DIALOG_BODY_NOT_SYNCED_DELETE" desc=". Displayed in the Tab Group Deletion Dialog.">
+        This will permanently delete the group from your device.
+      </message>
+      <message name="IDS_TAB_GROUP_DELETION_DIALOG_BODY_NOT_SYNCED_UNGROUP" desc="The body text for ungrouping. Displayed in the Tab Group Deletion Dialog.">
+        The tabs will remain open on this device but the group will be permanently deleted.
+      </message>
+
+      <if expr="use_titlecase">
+        <!-- Dont Ask -->
+        <message name="IDS_TAB_GROUP_DELETION_DIALOG_DONT_ASK" desc="The label for a checkbox that prevents the dialg from ever showing again on this device. Displayed in the Tab Group Deletion Dialog.">
+          Don't Ask Again
+        </message>
+        <!-- Title -->
+        <message name="IDS_TAB_GROUP_DELETION_DIALOG_TITLE_DELETE" desc="The title for deleting. Displayed in the Tab Group Deletion Dialog.">
+          Delete Tab Group?
+        </message>
+        <message name="IDS_TAB_GROUP_DELETION_DIALOG_TITLE_UNGROUP" desc="The title for ungrouping. Displayed in the Tab Group Deletion Dialog.">
+          Ungroup Tab Group?
+        </message>
+        <message name="IDS_TAB_GROUP_DELETION_DIALOG_TITLE_CLOSE_TAB_AND_DELETE" desc="The title for closing the tab and deleting the group. Displayed in the Tab Group Deletion Dialog.">
+          Close Tab(s) and Delete Group?
+        </message>
+        <message name="IDS_TAB_GROUP_DELETION_DIALOG_TITLE_REMOVE_TAB_AND_DELETE" desc="The title for removing the tab and deleting the group. Displayed in the Tab Group Deletion Dialog.">
+          Remove Tab(s) and Delete Group?
+        </message>
+        <!-- OK Text -->
+        <message name="IDS_TAB_GROUP_DELETION_DIALOG_OK_TEXT_DELETE" desc=". Displayed in the Tab Group Deletion Dialog.">
+          Delete Group
+        </message>
+        <message name="IDS_TAB_GROUP_DELETION_DIALOG_OK_TEXT_UNGROUP" desc="The text displayed on the ok button for ungrouping. Displayed in the Tab Group Deletion Dialog.">
+          Ungroup
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <!-- Dont Ask -->
+        <message name="IDS_TAB_GROUP_DELETION_DIALOG_DONT_ASK" desc="The label for a checkbox that prevents the dialg from ever showing again on this device. Displayed in the Tab Group Deletion Dialog.">
+          Don't ask again
+        </message>
+        <!-- Title -->
+        <message name="IDS_TAB_GROUP_DELETION_DIALOG_TITLE_DELETE" desc="The title for deleting. Displayed in the Tab Group Deletion Dialog.">
+          Delete tab group?
+        </message>
+        <message name="IDS_TAB_GROUP_DELETION_DIALOG_TITLE_UNGROUP" desc="The title for ungrouping. Displayed in the Tab Group Deletion Dialog.">
+          Ungroup tab group?
+        </message>
+        <message name="IDS_TAB_GROUP_DELETION_DIALOG_TITLE_CLOSE_TAB_AND_DELETE" desc="The title for closing the tab and deleting the group. Displayed in the Tab Group Deletion Dialog.">
+          Close tab(s) and delete group?
+        </message>
+        <message name="IDS_TAB_GROUP_DELETION_DIALOG_TITLE_REMOVE_TAB_AND_DELETE" desc="The title for removing the tab and deleting the group. Displayed in the Tab Group Deletion Dialog.">
+          Remove tab(s) and delete group?
+        </message>
+        <!-- OK Text -->
+        <message name="IDS_TAB_GROUP_DELETION_DIALOG_OK_TEXT_DELETE" desc=". Displayed in the Tab Group Deletion Dialog.">
+          Delete group
+        </message>
+        <message name="IDS_TAB_GROUP_DELETION_DIALOG_OK_TEXT_UNGROUP" desc="The text displayed on the ok button for ungrouping. Displayed in the Tab Group Deletion Dialog.">
+          Ungroup
+        </message>
       </if>
 
       <!-- Tab Group Editor Bubble -->
@@ -12896,7 +13026,7 @@ This can include information about installed software, files, your browser, and 
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CONFIRM_SWITCH_BUTTON_LABEL" desc="Label of the profile switch button in the web signin interception bubble">
           Ok
         </message>
-        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CONFIRM_SWITCH_BUTTON_LABEL_V2" desc="Label of the profile switch button in the web signin interception bubble">
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_SWITCH_BUBBLE_CONTINUE_BUTTON_LABEL" desc="This string is the button for a dialog that appears when the user is already signed in to Chrome, but they just tried to sign in to a Google service (like Gmail) with a different Google Account that already has its own Chrome profile on this device. The button is after the 'Switch to existing Chrome profile?' string. When the user clicks this button, they will open a different existing Chrome profile that is already signed in to the other Google Account. The tone should be inviting and helpful.">
           Continue
         </message>
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_ACCEPT_TEXT" desc="Label of the Accept button of the Chrome Signin Bubble intercept that is shown when a signed out user signs in on the web with it's first account. It also uses the given name of the user.">
@@ -12908,14 +13038,33 @@ This can include information about installed software, files, your browser, and 
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_BUBBLE_DESC_MANAGED_BY_TOKEN" desc="Body of the web signin interception bubble when the new account is managed via a token">
           You just signed in a managed account, creating a new managed profile will allow you to access some resources linked to that account.
         </message>
-        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_SWITCH_BUBBLE_DESC_V2" desc="Description for the profile switch interception bubble">
-          <ph name="NAME">$2<ex>Bob</ex></ph>'s profile is linked to <ph name="EMAIL">$1<ex>bob@gmail.com</ex></ph>
-        </message>
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_MANAGED_DISCLAIMER" desc="Enterprise disclaimer for a managed account in the signin interception bubble.">
           This new profile will be managed by your organization. <ph name="BEGIN_LINK">&lt;a href="$1" target=&quot;_blank&quot;&gt;<ex>https://help.google.com/articleLink</ex></ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
         </message>
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_MANAGED_BY_DISCLAIMER" desc="Enterprise disclaimer for a managed account in the signin interception bubble, with the manager domain name.">
           This new profile will be managed by <ph name="DOMAIN">$1<ex>example.com</ex></ph>. <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;<ex>https://help.google.com/articleLink</ex></ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
+        </message>
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_IPH_TITLE_SIGNIN" desc="This string is the headline of a confirmation message, which is intended to help users understand that they have been signed in to Chrome. The user previously signed in to a Google service (like Gmail or Maps), and saw the Chrome Signin Bubble intercept; when asked whether the user wanted to sign in to Chrome as well, the user selected yes. Now, this confirmation appears at the top right of Chrome (pointing at the Profile Menu) to confirm that their choice was effective. This headline string comes before the 'When you sign in on this device, you get your passwords and more from your Google Account' string. We are focusing on the benefit that user enjoys, now that they're signed in to Chrome. The tone should be welcoming.">
+          Welcome, <ph name="PROFILE_NAME">$1<ex>Elisa</ex></ph>
+        </message>
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_IPH_TITLE_SIGNIN_REMINDER" desc="This string is the headline of a reminder message, which is intended to help users understand that they have been signed in to Chrome. The user previously signed in to a Google service (like Gmail or Maps), and saw the Chrome Signin Bubble intercept; when asked whether the user wanted to sign in to Chrome as well, the user selected yes. After a period of time, this reminder message appears at the top right of Chrome (pointing at the Profile Menu) to remind the user that they made this choice a while ago. This headline string comes before the 'You’re signed in to Chrome. You’ve got your passwords and more from your Google Account.' string. We are focusing on the benefit that user enjoys, now that they're signed in to Chrome. The tone should be welcoming.">
+          Welcome back, <ph name="PROFILE_NAME">$2<ex>Elisa</ex></ph>
+        </message>
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_IPH_TEXT_SIGNIN" desc="This string is the body text of a confirmation message, which is intended to help users understand that they have been signed in to Chrome. The user previously signed in to a Google service (like Gmail or Maps), and saw the Chrome Signin Bubble intercept; when asked whether the user wanted to sign in to Chrome as well, the user selected yes. Now, this confirmation appears at the top right of Chrome (pointing at the Profile Menu) to confirm that their choice was effective. This body text string comes after the 'Welcome, Elisa' string. We are focusing on the benefit that user enjoys, now that they're signed in to Chrome. The tone should be welcoming.">
+          When you sign in on this device, you get your passwords and more from your Google Account
+        </message>
+        <if expr="use_titlecase">
+          <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_IPH_OK_BUTTON" desc="This button appears on a confirmation message, which is intended to help users understand that they have been signed in to Chrome. The user previously signed in to a Google service (like Gmail or Maps), and saw the Chrome Signin Bubble intercept; when asked whether the user wanted to sign in to Chrome as well, the user selected yes. Now, this confirmation appears at the top right of Chrome (pointing at the Profile Menu) to confirm that their choice was effective. This button string comes after the 'Welcome, Elisa' and 'When you sign in on this device, you get your passwords and more from your Google Account' strings. Users click 'Got it' to convey that they saw the message and want to hide the message.">
+            Got It
+          </message>
+        </if>
+        <if expr="not use_titlecase">
+          <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_IPH_OK_BUTTON" desc="This button appears on a confirmation message, which is intended to help users understand that they have been signed in to Chrome. The user previously signed in to a Google service (like Gmail or Maps), and saw the Chrome Signin Bubble intercept; when asked whether the user wanted to sign in to Chrome as well, the user selected yes. Now, this confirmation appears at the top right of Chrome (pointing at the Profile Menu) to confirm that their choice was effective. This button string comes after the 'Welcome, Elisa' and 'When you sign in on this device, you get your passwords and more from your Google Account' strings. Users click 'Got it' to convey that they saw the message and want to hide the message.">
+            Got it
+          </message>
+        </if>
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_IPH_SETTINGS_BUTTON" desc="This button appears on a confirmation message, which is intended to help users understand that they have been signed in to Chrome. The user previously signed in to a Google service (like Gmail or Maps), and saw the Chrome Signin Bubble intercept; when asked whether the user wanted to sign in to Chrome as well, the user selected yes. Now, this confirmation appears at the top right of Chrome (pointing at the Profile Menu) to confirm that their choice was effective. This button string comes after the 'Welcome, Elisa' and 'When you sign in on this device, you get your passwords and more from your Google Account' strings. Users click 'Settings' to convey that they don't want Chrome to follow their choice in the future, so the user wants to go to Chrome's settings in order to change their choice.">
+          Settings
         </message>
 
         <!-- Chrome Signout Confirmation Prompt -->
@@ -13138,7 +13287,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
           {NUM_TABS, plural, =1 {<ph name="GROUP_TITLE">$1<ex>MyGroup</ex></ph> - 1 Tab} other {<ph name="GROUP_TITLE">$1<ex>MyGroup</ex></ph> - # Tabs}}
         </message>
         <message name="IDS_RECENTLY_CLOSED_GROUP_UNNAMED" desc="In Title Case: Title of recently closed group that does not have a name, in Recent Tabs menu. [ICU_Syntax]">
-          {NUM_TABS, plural, =1 {Unnamed Group - 1 Tab} other {Unnamed Group - # Tabs}}
+          {NUM_TABS, plural, =1 {1 Tab} other {# Tabs}}
         </message>
         <message name="IDS_RECENT_TABS_NO_DEVICE_TABS" desc="In Title Case: The label in the Recent Tabs menu in the wrench menu when there's no tabs from other devices.">
           No Tabs From Other Devices
@@ -13158,7 +13307,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
           {NUM_TABS, plural, =1 {<ph name="GROUP_TITLE">$1<ex>MyGroup</ex></ph> - 1 tab} other {<ph name="GROUP_TITLE">$1<ex>MyGroup</ex></ph> - # tabs}}
         </message>
         <message name="IDS_RECENTLY_CLOSED_GROUP_UNNAMED" desc="Title of recently closed group that does not have a name, in Recent Tabs menu. [ICU_Syntax]">
-          {NUM_TABS, plural, =1 {Unnamed group - 1 tab} other {Unnamed group - # tabs}}
+          {NUM_TABS, plural, =1 {1 tab} other {# tabs}}
         </message>
         <message name="IDS_RECENT_TABS_NO_DEVICE_TABS" desc="The label in the Recent Tabs menu in the wrench menu when there's no tabs from other devices.">
           No tabs from other devices
@@ -14707,6 +14856,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_MANAGED" desc="Text to display when picker choices have been limited by enterprise policies.">
         Options for sharing are managed by your organization. Some items may be hidden.
+      </message>
+      <message name="IDS_DESKTOP_MEDIA_PICKER_PERMISSION_BUTTON_MAC" desc="Text for a button to open the screen recording setting page in system preferences on Mac." >
+        Open System Preferences
       </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_RESELECT_SCREEN" desc="Text for a button appearing on the window picker dialog which is displayed when there is a secondary, system-level picker in which the user must select the content to share. Clicking this button will re-open the picker to allow the user to choose a new monitor/desktop/screen to share." >
         Choose a different screen
@@ -16733,11 +16885,23 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_LENS_OVERLAY_TRANSLATE" desc="Command in the Lens Overlay context menu to translate text.">
       Translate
     </message>
-    <message name="IDS_LENS_OVERLAY_TRANSLATE_SUFFIX" desc="String appended to search queries to trigger Google Translate.">
-      translate
+    <message name="IDS_LENS_OVERLAY_INFO_BUTTON_LABEL" desc="Text that is shown in the tooltip of the info button in the Lens Overlay.">
+      Learn more
     </message>
     <message name="IDS_LENS_OVERLAY_INITIAL_TOAST_MESSAGE" desc="Text that is shown in the Lens Overlay education bubble when starting the feature. Informs the user to tap an object or drag over the screen to select a region to search with Google Lens.">
-      Click or drag anywhere to search with Lens
+      Select anything to search with Google Lens
+    </message>
+    <message name="IDS_LENS_OVERLAY_CURSOR_TOOLTIP_DRAG_MESSAGE" desc="Text that is shown in the Lens Overlay tooltip that appears beneath the cursor. Informs the user to drag over the screen to select a region to search it.">
+      Drag to search
+    </message>
+    <message name="IDS_LENS_OVERLAY_CURSOR_TOOLTIP_TEXT_HIGHLIGHT_MESSAGE" desc="Text that is shown in the Lens Overlay tooltip that appears beneath the cursor. Informs the user to highlight text to search it.">
+      Select text to search
+    </message>
+    <message name="IDS_LENS_OVERLAY_CURSOR_TOOLTIP_CLICK_MESSAGE" desc="Text that is shown in the Lens Overlay tooltip that appears beneath the cursor. Informs the user to click on an object to search it.">
+      Click to search
+    </message>
+    <message name="IDS_LENS_OVERLAY_CURSOR_TOOLTIP_LIVE_PAGE_MESSAGE" desc="Text that is shown in the Lens Overlay tooltip that appears beneath the cursor. Informs the user to click to exit Google Lens.">
+      Click to exit Google Lens
     </message>
     <message name="IDS_LENS_SEND_FEEDBACK_LABEL" desc="Text that is shown in the tooltip of the send feedback button in the Lens Overlay.">
       Send feedback

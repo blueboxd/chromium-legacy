@@ -443,6 +443,7 @@ chromium-metrics-reviews@google.com.
   <int value="40" label="THROTTLING_APPLICATION"/>
   <int value="41" label="THROTTLING_UNKNOWN"/>
   <int value="42" label="FROZEN_ACCOUNT"/>
+  <int value="43" label="HTTP_PRECONDITION_FAILED"/>
 </enum>
 
 <enum name="FileSystemProviderMountType">
@@ -581,7 +582,7 @@ chromium-metrics-reviews@google.com.
 
 <enum name="OfficeFilesSourceVolume">
   <int value="0" label="Google Drive"/>
-  <int value="1" label="My Files"/>
+  <int value="1" label="This Chromebook"/>
   <int value="2" label="Removable Disk"/>
   <int value="3" label="Archive File"/>
   <int value="4" label="FileSystemProvider API"/>
@@ -835,6 +836,7 @@ chromium-metrics-reviews@google.com.
   <int value="18" label="Fallback (QuickOffice) after open attempt"/>
   <int value="19" label="Cancelled at fallback after open attempt"/>
   <int value="20" label="Cannot get fallback choice after open attempt"/>
+  <int value="21" label="File already being opened"/>
 </enum>
 
 <enum name="RestoreFailedNoParentType">

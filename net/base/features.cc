@@ -117,24 +117,8 @@ BASE_FEATURE(kSplitCodeCacheByNetworkIsolationKey,
              "SplitCodeCacheByNetworkIsolationKey",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSplitHostCacheByNetworkIsolationKey,
-             "SplitHostCacheByNetworkIsolationKey",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kPartitionConnectionsByNetworkIsolationKey,
              "PartitionConnectionsByNetworkIsolationKey",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kPartitionHttpServerPropertiesByNetworkIsolationKey,
-             "PartitionHttpServerPropertiesByNetworkIsolationKey",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kPartitionSSLSessionsByNetworkIsolationKey,
-             "PartitionSSLSessionsByNetworkIsolationKey",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kPartitionNelAndReportingByNetworkIsolationKey,
-             "PartitionNelAndReportingByNetworkIsolationKey",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableCrossSiteFlagNetworkIsolationKey,
@@ -237,10 +221,6 @@ BASE_FEATURE(kAncestorChainBitEnabledInPartitionedCookies,
              "AncestorChainBitEnabledInPartitionedCookies",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kBlockTruncatedCookies,
-             "BlockTruncatedCookies",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kStaticKeyPinningEnforcement,
              "StaticKeyPinningEnforcement",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -274,7 +254,7 @@ BASE_FEATURE(kTpcdMetadataGrants,
              "TpcdMetadataGrants",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kTpcdMetadataStagedRollback,
+BASE_FEATURE(kTpcdMetadataStageControl,
              "TpcdMetadataStageControl",
              base::FEATURE_DISABLED_BY_DEFAULT);
 

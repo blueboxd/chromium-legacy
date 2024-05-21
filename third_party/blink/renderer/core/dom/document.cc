@@ -271,6 +271,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/pagination_utils.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/lcp_critical_path_predictor/lcp_critical_path_predictor.h"
 #include "third_party/blink/renderer/core/loader/anchor_element_interaction_tracker.h"
@@ -1232,7 +1233,7 @@ AtomicString GetTypeExtension(
                         WebFeature::kDocumentCreateElement2ndArgStringHandling);
       return AtomicString(string_or_options->GetAsString());
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return AtomicString();
 }
 
@@ -1568,7 +1569,7 @@ String Document::readyState() const {
       return complete;
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return String();
 }
 
@@ -1772,6 +1773,9 @@ CaretPosition* Document::caretPositionFromPoint(
   }
 
   Node* anchor_node = position_with_affinity.AnchorNode();
+  if (TextControlElement* text_control = EnclosingTextControl(anchor_node)) {
+    anchor_node = text_control;
+  }
   bool adjust_position = false;
   while (anchor_node->IsInShadowTree() &&
          !shadow_roots.Contains(anchor_node->GetTreeScope())) {
@@ -2376,9 +2380,6 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
     if (!needs_layout_tree_update) {
       // Early out for no-op calls before the UMA/UKM measurement is set up to
       // avoid a large number of close-to-zero samples.
-      if (AXObjectCache* cache = ExistingAXObjectCache()) {
-        cache->ProcessSubtreeRemovals();
-      }
       advance_to_style_clean();
       return;
     }
@@ -2397,10 +2398,6 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
     needs_layout_tree_update = NeedsLayoutTreeUpdateForThisDocument();
   }
 
-  if (AXObjectCache* cache = ExistingAXObjectCache()) {
-    cache->ProcessSubtreeRemovals();
-  }
-
   if (!needs_layout_tree_update) {
     advance_to_style_clean();
     return;
@@ -2414,7 +2411,8 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
   SlotAssignmentRecalcForbiddenScope forbid_slot_recalc(*this);
 
   if (InStyleRecalc()) {
-    NOTREACHED() << "We should not re-enter style recalc for the same document";
+    NOTREACHED_IN_MIGRATION()
+        << "We should not re-enter style recalc for the same document";
     return;
   }
 
@@ -2893,19 +2891,6 @@ void Document::ClearFocusedElementTimerFired(TimerBase*) {
     focused_element_->blur();
 }
 
-const ComputedStyle* Document::StyleForPage(uint32_t page_index) {
-  AtomicString page_name;
-  if (const LayoutView* layout_view = GetLayoutView())
-    page_name = layout_view->NamedPageAtIndex(page_index);
-  return StyleForPage(page_index, page_name);
-}
-
-const ComputedStyle* Document::StyleForPage(uint32_t page_index,
-                                            const AtomicString& page_name) {
-  return GetStyleEngine().GetStyleResolver().StyleForPage(page_index,
-                                                          page_name);
-}
-
 void Document::EnsurePaintLocationDataValidForNode(
     const Node* node,
     DocumentUpdateReason reason) {
@@ -2914,82 +2899,7 @@ void Document::EnsurePaintLocationDataValidForNode(
 
 WebPrintPageDescription Document::GetPageDescription(uint32_t page_index) {
   View()->UpdateLifecycleToLayoutClean(DocumentUpdateReason::kUnknown);
-  return GetPageDescriptionNoLifecycleUpdate(*StyleForPage(page_index));
-}
-
-WebPrintPageDescription Document::GetPageDescriptionNoLifecycleUpdate(
-    const ComputedStyle& style) {
-  DocumentLifecycle::DisallowTransitionScope scope(Lifecycle());
-  const WebPrintParams& print_params = GetFrame()->GetPrintParams();
-  WebPrintPageDescription description = print_params.default_page_description;
-
-  // TODO(mstensho): We may want to adjust page_size_type accordingly if we
-  // decide to disregard the specified @page size below.
-  description.page_size_type = style.GetPageSizeType();
-
-  switch (style.GetPageSizeType()) {
-    case PageSizeType::kAuto:
-      break;
-    case PageSizeType::kLandscape:
-      if (description.size.width() < description.size.height()) {
-        description.size.Transpose();
-      }
-      break;
-    case PageSizeType::kPortrait:
-      if (description.size.width() > description.size.height()) {
-        description.size.Transpose();
-      }
-      break;
-    case PageSizeType::kFixed: {
-      gfx::SizeF css_size = style.PageSize();
-      if (!print_params.ignore_page_size) {
-        description.size = css_size;
-        break;
-      }
-      if ((css_size.width() > css_size.height()) !=
-          (description.size.width() > description.size.height())) {
-        // Keep the page size, but match orientation.
-        description.size.Transpose();
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
-
-  if (!style.MarginTop().IsAuto()) {
-    description.margin_top =
-        FloatValueForLength(style.MarginTop(), description.size.height());
-  }
-  if (!style.MarginRight().IsAuto()) {
-    description.margin_right =
-        FloatValueForLength(style.MarginRight(), description.size.width());
-  }
-  if (!style.MarginBottom().IsAuto()) {
-    description.margin_bottom =
-        FloatValueForLength(style.MarginBottom(), description.size.height());
-  }
-  if (!style.MarginLeft().IsAuto()) {
-    description.margin_left =
-        FloatValueForLength(style.MarginLeft(), description.size.width());
-  }
-
-  float page_area_width = description.size.width() -
-                          (description.margin_left + description.margin_right);
-  float page_area_height = description.size.height() -
-                           (description.margin_top + description.margin_bottom);
-
-  if (page_area_width < 1 || page_area_height < 1) {
-    // The resulting page area size would become zero (or very close to
-    // it). Ignore CSS, and use the default values provided as input. There are
-    // tests that currently expect this behavior. But see
-    // https://github.com/w3c/csswg-drafts/issues/8335
-    description = print_params.default_page_description;
-  }
-
-  description.orientation = style.GetPageOrientation();
-
-  return description;
+  return GetPageDescriptionFromLayout(*this, page_index);
 }
 
 void Document::SetIsXrOverlay(bool val, Element* overlay_element) {
@@ -3463,7 +3373,24 @@ bool Document::WillPrintSoon() {
     loading_for_print_ = loading_for_print_ || view->LoadAllLazyLoadedIframes();
   }
 
+  loading_for_print_ =
+      loading_for_print_ || InitiateStyleOrLayoutDependentLoadForPrint();
+
   return loading_for_print_;
+}
+
+bool Document::InitiateStyleOrLayoutDependentLoadForPrint() {
+  if (auto* view = View()) {
+    view->AdjustMediaTypeForPrinting(true);
+    UpdateStyleAndLayout(DocumentUpdateReason::kPrinting);
+
+    view->AdjustMediaTypeForPrinting(false);
+    UpdateStyleAndLayout(DocumentUpdateReason::kPrinting);
+
+    return !ShouldComplete();
+  }
+
+  return false;
 }
 
 void Document::SetPrinting(PrintingState state) {
@@ -3512,9 +3439,6 @@ void Document::open(LocalDOMWindow* entered_window,
         "Custom Element constructor should not use open().");
     return;
   }
-
-  if (!AllowedToUseDynamicMarkUpInsertion("open", exception_state))
-    return;
 
   if (entered_window && !entered_window->GetFrame())
     return;
@@ -3984,9 +3908,6 @@ void Document::close(ExceptionState& exception_state) {
         "Custom Element constructor should not use close().");
     return;
   }
-
-  if (!AllowedToUseDynamicMarkUpInsertion("close", exception_state))
-    return;
 
   close();
 }
@@ -4468,7 +4389,7 @@ Document::PageDismissalType Document::PageDismissalEventBeingDispatched()
     case kUnloadEventHandled:
       return kNoDismissal;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return kNoDismissal;
 }
 
@@ -4594,9 +4515,6 @@ void Document::writeln(const String& text,
 void Document::write(v8::Isolate* isolate,
                      const Vector<String>& text,
                      ExceptionState& exception_state) {
-  if (!AllowedToUseDynamicMarkUpInsertion("write", exception_state))
-    return;
-
   StringBuilder builder;
   for (const String& string : text)
     builder.Append(string);
@@ -4611,9 +4529,6 @@ void Document::write(v8::Isolate* isolate,
 void Document::writeln(v8::Isolate* isolate,
                        const Vector<String>& text,
                        ExceptionState& exception_state) {
-  if (!AllowedToUseDynamicMarkUpInsertion("writeln", exception_state))
-    return;
-
   StringBuilder builder;
   for (const String& string : text)
     builder.Append(string);
@@ -7522,12 +7437,17 @@ void Document::FinishedParsing() {
       // of sync. Loader()->HasLoadedNonInitialEmptyDocument() is more correct.
       // Keeping both for now behind a flag so that it's finch-testable.
       if (GetFrame()->IsMainFrame() ||
-
           Loader()->HasLoadedNonInitialEmptyDocument() ||
           !base::FeatureList::IsEnabled(
               blink::features::
                   kAvoidForcedLayoutOnInitialEmptyDocumentInSubframe)) {
         UpdateStyleAndLayoutTree();
+        if (base::FeatureList::IsEnabled(
+                features::kPrerender2EarlyDocumentLifecycleUpdate) &&
+            IsPrerendering()) {
+          View()->UpdateAllLifecyclePhasesExceptPaint(
+              DocumentUpdateReason::kPrerender);
+        }
       }
     }
 
@@ -7575,7 +7495,7 @@ void Document::BeginLifecycleUpdatesIfRenderingReady() {
   if (auto* view = View()) {
     view->BeginLifecycleUpdates();
   } else {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     base::debug::DumpWithoutCrashing();
   }
 }
@@ -7636,7 +7556,7 @@ Vector<IconURL> Document::IconURLs(int icon_types_mask) {
         secondary_icons.push_back(first_touch_precomposed_icon);
       first_touch_precomposed_icon = new_url;
     } else {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
     }
   }
 
@@ -7786,32 +7706,6 @@ HTMLLinkElement* Document::LinkCanonical() const {
   return GetLinkElement(this, [](HTMLLinkElement& link_element) {
     return link_element.RelAttribute().IsCanonical();
   });
-}
-
-bool Document::AllowedToUseDynamicMarkUpInsertion(
-    const char* api_name,
-    ExceptionState& exception_state) {
-  if (!RuntimeEnabledFeatures::ExperimentalPoliciesEnabled()) {
-    return true;
-  }
-  if (!GetFrame() || GetExecutionContext()->IsFeatureEnabled(
-                         mojom::blink::DocumentPolicyFeature::kDocumentWrite,
-                         ReportOptions::kReportOnFailure)) {
-    return true;
-  }
-
-  // TODO(ekaramad): Throwing an exception seems an ideal resolution to mishaps
-  // in using the API against the policy. But this cannot be applied to cross-
-  // origin as there are security risks involved. We should perhaps unload the
-  // whole frame instead of throwing.
-  exception_state.ThrowDOMException(
-      DOMExceptionCode::kNotAllowedError,
-      String::Format(
-          "The use of method '%s' has been blocked by permissions policy. The "
-          "feature "
-          "'document-write' is disabled in this document.",
-          api_name));
-  return false;
 }
 
 ukm::UkmRecorder* Document::UkmRecorder() {

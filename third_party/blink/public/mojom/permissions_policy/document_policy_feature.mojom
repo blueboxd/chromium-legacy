@@ -23,15 +23,15 @@ enum DocumentPolicyFeature {
   kOversizedImages = 6,
   // Controls the layout size of intrinsically sized images and videos. When
   // disabled, default size (300 x 150) is used to prevent relayout.
-  kUnsizedMedia = 7,
+  // kUnsizedMedia = 7, // Removed.
   // Restricts the usage of layout-causing animations in a document.
-  kLayoutAnimations = 8,
+  // kLayoutAnimations = 8, // Removed.
   // Controls the ability of the document to use several dynamic markup API
   // which interfere with document's input stream (document.write(),
   // document.close(), etc.).
-  kDocumentWrite = 9,
+  // kDocumentWrite = 9, // Removed.
   // Controls whether synchronous script elements will run.
-  kSyncScript = 10,
+  // kSyncScript = 10, // Removed.
   // Controls whether or not the JS Self-Profiling API is enabled.
   kJSProfiling = 11,
   // Controls use of synchronous XMLHTTPRequest API.

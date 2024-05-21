@@ -53,6 +53,7 @@
 #include "sql/sqlite_result_code_values.h"
 #include "sql/statement.h"
 #include "sql/statement_id.h"
+#include "sql/transaction.h"
 #include "third_party/sqlite/sqlite3.h"
 
 #if BUILDFLAG(IS_WIN)
@@ -565,7 +566,7 @@ base::FilePath Database::DbPath() const {
 #elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   return base::FilePath(db_path);
 #else
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return base::FilePath();
 #endif
 }
@@ -617,7 +618,7 @@ std::string Database::CollectErrorInfo(int sqlite_error_code,
     diagnostics->last_errno = last_errno;
   }
 #else
-  NOTREACHED();  // Add appropriate log info.
+  NOTREACHED_IN_MIGRATION();  // Add appropriate log info.
 #endif
 
   if (stmt) {
@@ -782,12 +783,13 @@ bool Database::GetMmapAltStatus(int64_t* status) {
 }
 
 bool Database::SetMmapAltStatus(int64_t status) {
-  if (!BeginTransaction())
+  Transaction transaction(this);
+  if (!transaction.Begin()) {
     return false;
+  }
 
   // View may not exist on first run.
   if (!Execute("DROP VIEW IF EXISTS MmapStatus")) {
-    RollbackTransaction();
     return false;
   }
 
@@ -798,11 +800,10 @@ bool Database::SetMmapAltStatus(int64_t status) {
   const std::string create_view_sql = base::StringPrintf(
       "CREATE VIEW MmapStatus (value) AS SELECT %" PRId64, status);
   if (!Execute(create_view_sql.c_str())) {
-    RollbackTransaction();
     return false;
   }
 
-  return CommitTransaction();
+  return transaction.Commit();
 }
 
 size_t Database::ComputeMmapSizeForOpen() {
@@ -921,8 +922,7 @@ size_t Database::ComputeMmapSizeForOpen() {
 }
 
 int Database::SqlitePrepareFlags() const {
-  return options_.enable_virtual_tables_discouraged ? 0
-                                                    : SQLITE_PREPARE_NO_VTAB;
+  return enable_virtual_tables_ ? 0 : SQLITE_PREPARE_NO_VTAB;
 }
 
 sqlite3_file* Database::GetSqliteVfsFile() {
@@ -1009,8 +1009,6 @@ bool Database::Raze() {
       .page_size = options_.page_size,
       .cache_size = 0,
       .enable_views_discouraged = options_.enable_views_discouraged,
-      .enable_virtual_tables_discouraged =
-          options_.enable_virtual_tables_discouraged,
   });
   if (!null_db.OpenInMemory()) {
     DLOG(FATAL) << "Unable to open in-memory database.";
@@ -1205,7 +1203,7 @@ bool Database::Delete(const base::FilePath& path) {
   return !journal_exists && !wal_exists && !path_exists;
 }
 
-bool Database::BeginTransaction() {
+bool Database::BeginTransaction(InternalApiToken) {
   TRACE_EVENT0("sql", "Database::BeginTransaction");
 
   if (needs_rollback_) {
@@ -1229,7 +1227,7 @@ bool Database::BeginTransaction() {
   return success;
 }
 
-void Database::RollbackTransaction() {
+void Database::RollbackTransaction(InternalApiToken) {
   TRACE_EVENT0("sql", "Database::RollbackTransaction");
 
   DCHECK_GE(transaction_nesting_, 0);
@@ -1250,7 +1248,7 @@ void Database::RollbackTransaction() {
   DoRollback();
 }
 
-bool Database::CommitTransaction() {
+bool Database::CommitTransaction(InternalApiToken) {
   TRACE_EVENT0("sql", "Database::CommitTransaction");
 
   DCHECK_GE(transaction_nesting_, 0);
@@ -1280,6 +1278,18 @@ bool Database::CommitTransaction() {
   ReleaseCacheMemoryIfNeeded(false);
 
   return succeeded;
+}
+
+bool Database::BeginTransactionDeprecated() {
+  return BeginTransaction(InternalApiToken());
+}
+
+bool Database::CommitTransactionDeprecated() {
+  return CommitTransaction(InternalApiToken());
+}
+
+void Database::RollbackTransactionDeprecated() {
+  RollbackTransaction(InternalApiToken());
 }
 
 void Database::RollbackAllTransactions() {

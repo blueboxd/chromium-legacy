@@ -1097,6 +1097,17 @@ chromium-metrics-reviews@google.com.
   <int value="4" label="Error Page"/>
 </enum>
 
+<enum name="NetworkPortalState">
+  <summary>
+    Used for Network.NetworkPortalDetectorState for the Chrome detection result.
+  </summary>
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Online"/>
+  <int value="2" label="PortalSuspected"/>
+  <int value="3" label="Portal"/>
+  <int value="4" label="NoInternet"/>
+</enum>
+
 <enum name="NetworkPortalStatus">
   <summary>
     DEPRECATED. Remove with Network.NetworkPortalDetectorResult 2024-07-21.
@@ -2322,6 +2333,25 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Configured by policy"/>
 </enum>
 
+<enum name="VPNConnectFailureReason">
+  <int value="0" label="Disconnect request"/>
+  <int value="1" label="Unknown"/>
+  <int value="2" label="Internal"/>
+  <int value="3" label="Underlying network change"/>
+  <int value="4" label="Authentication failure"/>
+  <int value="5" label="DNS lookup failure"/>
+  <int value="6" label="Connect timeout"/>
+  <int value="7" label="Invalid configuration"/>
+</enum>
+
+<enum name="VPNConnectionLostReason">
+  <int value="0" label="Disconnect request"/>
+  <int value="1" label="Unknown"/>
+  <int value="2" label="Internal"/>
+  <int value="3" label="Underlying network change"/>
+  <int value="4" label="Reconnect"/>
+</enum>
+
 <enum name="VPNDriver">
   <int value="0" label="OpenVPN"/>
   <int value="1" label="L2TP/IPSec"/>
@@ -2393,6 +2423,13 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Tunnel group is used"/>
 </enum>
 
+<enum name="VPNNameServers">
+  <int value="0" label="None"/>
+  <int value="1" label="IPv4 only"/>
+  <int value="2" label="IPv6 only"/>
+  <int value="3" label="Dual stack"/>
+</enum>
+
 <enum name="VPNOpenVPNCipher">
   <int value="0" label="Unknown"/>
   <int value="1" label="BF-CBC"/>
@@ -2406,6 +2443,13 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="L2TP/IPsec Default"/>
   <int value="3" label="L2TP/IPsec Certificate"/>
   <int value="4" label="L2TP/IPsec PSK"/>
+</enum>
+
+<enum name="VPNRoutingType">
+  <int value="0" label="Full"/>
+  <int value="1" label="Split routing"/>
+  <int value="2" label="Bypass"/>
+  <int value="3" label="Blocked"/>
 </enum>
 
 <enum name="VPNUserAuthenticationType">
@@ -2542,6 +2586,32 @@ chromium-metrics-reviews@google.com.
 <enum name="WiFiCQMNotificationType">
   <int value="0" label="Packet loss"/>
   <int value="1" label="Beacon loss"/>
+</enum>
+
+<enum name="WifiP2PCapabilities">
+  <int value="0" label="Neither group owner nor client is ready."/>
+  <int value="1" label="Only group owner is ready."/>
+  <int value="2" label="Only group client is ready."/>
+  <int value="3" label="Both group owner and client are ready."/>
+</enum>
+
+<enum name="WifiP2POperationResult">
+  <int value="0" label="Success."/>
+  <int value="1" label="Operation not allowed."/>
+  <int value="2" label="Operation not supported."/>
+  <int value="3" label="Concurreny not supported"/>
+  <int value="4" label="Frequency not supported"/>
+  <int value="5" label="Authentication failed."/>
+  <int value="6" label="P2P group not found."/>
+  <int value="7" label="P2P group already connected."/>
+  <int value="8" label="Not connected to P2P group."/>
+  <int value="9" label="Operaion in progress."/>
+  <int value="10" label="Invalid arguments."/>
+  <int value="11" label="Operation timed out."/>
+  <int value="12" label="Invalid or missing result code."/>
+  <int value="13" label="P2P group miss or has invalid properties."/>
+  <int value="14" label="Operation failed."/>
+  <int value="15" label="DBus error."/>
 </enum>
 
 <enum name="WiFiReasonCode">

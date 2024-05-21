@@ -247,7 +247,7 @@ bool IsAAForcedOff(const DrawQuad* quad) {
       return PictureDrawQuad::MaterialCast(quad)->force_anti_aliasing_off;
     case DrawQuad::Material::kCompositorRenderPass:
       // We should not have compositor render passes here.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return CompositorRenderPassDrawQuad::MaterialCast(quad)
           ->force_anti_aliasing_off;
     case DrawQuad::Material::kAggregatedRenderPass:
@@ -436,22 +436,26 @@ class SkiaRenderer::VizDebuggerLog {
     if (enabled) {
       DBG_LOG("renderer.skia.render_pass_backings",
               "render_pass_backings_ = [");
-      for (auto& kv : render_pass_backings) {
+      for (auto& [render_pass_id, backing] : render_pass_backings) {
         base::trace_event::TracedValueJSON value;
         base::trace_event::TracedValue::Dictionary(
             {
-                {"size", kv.second.size.ToString()},
-                {"generate_mipmap", kv.second.generate_mipmap},
-                {"color_space", kv.second.color_space.ToString()},
-                {"format", kv.second.format.ToString()},
-                {"mailbox", kv.second.mailbox.ToDebugString()},
-                {"is_root", kv.second.is_root},
-                {"is_scanout", kv.second.is_scanout},
-                {"scanout_dcomp_surface", kv.second.scanout_dcomp_surface},
+                {"size", backing.size.ToString()},
+                {"generate_mipmap", backing.generate_mipmap},
+                {"color_space", backing.color_space.ToString()},
+                {"alpha_type",
+                 backing.alpha_type == RenderPassAlphaType::kPremul ? "premul"
+                                                                    : "opaque"},
+                {"format", backing.format.ToString()},
+                {"mailbox", backing.mailbox.ToDebugString()},
+                {"is_root", backing.is_root},
+                {"is_scanout", backing.is_scanout},
+                {"scanout_dcomp_surface", backing.scanout_dcomp_surface},
+                {"drawn_rect", backing.drawn_rect.ToString()},
             })
             .WriteToValue(&value);
         DBG_LOG("renderer.skia.render_pass_backings", "%" PRIu64 ": %s",
-                kv.first.value(), value.ToFormattedJSON().c_str());
+                render_pass_id.value(), value.ToFormattedJSON().c_str());
       }
       DBG_LOG("renderer.skia.render_pass_backings", "]");
     }
@@ -979,7 +983,7 @@ class SkiaRenderer::FrameResourceGpuCommandsCompletedFence
   // ResourceFence implementation.
   bool HasPassed() override { return passed_; }
   gfx::GpuFenceHandle GetGpuFenceHandle() override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return gfx::GpuFenceHandle();
   }
 
@@ -1221,8 +1225,6 @@ void SkiaRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
 
   OutputSurfaceFrame output_frame;
   output_frame.latency_info = std::move(swap_frame_data.latency_info);
-  output_frame.top_controls_visible_height_changed =
-      swap_frame_data.top_controls_visible_height_changed;
   output_frame.choreographer_vsync_id = swap_frame_data.choreographer_vsync_id;
   output_frame.size = viewport_size_for_swap_buffers();
   output_frame.data.seq = swap_frame_data.seq;
@@ -1366,8 +1368,7 @@ void SkiaRenderer::DidReceiveReleasedOverlays(
       resource_provider_.get(), /*allow_access_to_gpu_thread=*/true);
 
   for (const auto& mailbox : released_overlays) {
-    auto iter = base::ranges::find(awaiting_release_overlay_locks_, mailbox,
-                                   &OverlayLock::mailbox);
+    auto iter = awaiting_release_overlay_locks_.find(mailbox);
     if (iter == awaiting_release_overlay_locks_.end()) {
       // The released overlay should always be found as awaiting to be released.
       DLOG(FATAL) << "Got an unexpected mailbox";
@@ -1378,14 +1379,8 @@ void SkiaRenderer::DidReceiveReleasedOverlays(
 #else
   // Only macOS has the requirement of polling the OS compositor to check if the
   // overlay images have been released.
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 #endif
-}
-
-bool SkiaRenderer::FlippedFramebuffer() const {
-  // TODO(weiliangc): Make sure flipped correctly for Windows.
-  // (crbug.com/644851)
-  return false;
 }
 
 void SkiaRenderer::EnsureScissorTestDisabled() {
@@ -1502,7 +1497,7 @@ void SkiaRenderer::BeginDrawingRenderPass(
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("viz.quads"),
                "SkiaRenderer::BeginDrawingRenderPass");
 
-  if (render_pass_update_rect == current_viewport_rect_) {
+  if (render_pass_update_rect == gfx::Rect(current_viewport_size_)) {
     EnsureScissorTestDisabled();
   } else {
     SetScissorTestRect(render_pass_update_rect);
@@ -1514,6 +1509,12 @@ void SkiaRenderer::BeginDrawingRenderPass(
                                               /*do_save=*/true);
 
     const SkRect layer_bounds = gfx::RectToSkRect(render_pass_update_rect);
+    if (scissor_rect_.has_value()) {
+      // Set the clip rect so when we pop the layer, we only touch pixels within
+      // the update rect.
+      current_canvas_->clipRect(layer_bounds);
+    }
+
     SkPaint no_blend;
     no_blend.setBlendMode(SkBlendMode::kSrc);
     const gfx::ColorSpace blend_color_space =
@@ -1589,7 +1590,7 @@ void SkiaRenderer::DrawQuadInternal(const DrawQuad* quad,
       // RenderPassDrawQuads should be converted to
       // AggregatedRenderPassDrawQuads at this point.
       DrawUnsupportedQuad(quad, rpdq_params, params);
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
     case DrawQuad::Material::kSolidColor:
       DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad), rpdq_params,
@@ -1603,7 +1604,7 @@ void SkiaRenderer::DrawQuadInternal(const DrawQuad* quad,
       break;
     case DrawQuad::Material::kSharedElement:
       DrawUnsupportedQuad(quad, rpdq_params, params);
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
     case DrawQuad::Material::kYuvVideoContent:
       DrawYUVVideoQuad(YUVVideoDrawQuad::MaterialCast(quad), rpdq_params,
@@ -1611,7 +1612,7 @@ void SkiaRenderer::DrawQuadInternal(const DrawQuad* quad,
       break;
     case DrawQuad::Material::kInvalid:
       DrawUnsupportedQuad(quad, rpdq_params, params);
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
     case DrawQuad::Material::kVideoHole:
       // VideoHoleDrawQuad should only be used by Cast, and should
@@ -1626,7 +1627,7 @@ void SkiaRenderer::DrawQuadInternal(const DrawQuad* quad,
       // If we've reached here, it's a new quad type that needs a
       // dedicated implementation
       DrawUnsupportedQuad(quad, rpdq_params, params);
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 }
@@ -2995,7 +2996,7 @@ void SkiaRenderer::ScheduleOverlays() {
       if (auto backing = GetRenderPassBackingForDirectScanout(
               overlay.rpdq->render_pass_id);
           backing) {
-        DBG_LOG("delegated.overlays.log",
+        DBG_LOG("delegated.overlay.log",
                 "Pass %" PRIu64 ": RPDQ overlay can scanout directly",
                 overlay.rpdq->render_pass_id.value());
 
@@ -4030,7 +4031,7 @@ void SkiaRenderer::PrepareRenderPassOverlay(
       } else if (bypass_mode == BypassMode::kDrawBypassQuad) {
         DrawQuadInternal(bypass->second, &rpdq_params, &params);
       } else {
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
       }
     } else {
       DCHECK(src_quad_backing);
@@ -4415,11 +4416,27 @@ SkiaRenderer::OverlayLock::OverlayLock(SkiaRenderer* renderer,
 #endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE) || BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_APPLE)
-bool SkiaRenderer::OverlayLockComparator::operator()(
+std::size_t SkiaRenderer::OverlayLockHash::operator()(
+    const OverlayLock& o) const {
+  return std::hash<gpu::Mailbox>{}(o.mailbox());
+}
+
+std::size_t SkiaRenderer::OverlayLockHash::operator()(
+    const gpu::Mailbox& m) const {
+  return std::hash<gpu::Mailbox>{}(m);
+}
+
+bool SkiaRenderer::OverlayLockKeyEqual::operator()(
     const OverlayLock& lhs,
     const OverlayLock& rhs) const {
-  return lhs.mailbox() < rhs.mailbox();
+  return lhs.mailbox() == rhs.mailbox();
 }
-#endif  // BUILDFLAG(IS_APPLE)
+
+bool SkiaRenderer::OverlayLockKeyEqual::operator()(
+    const OverlayLock& lhs,
+    const gpu::Mailbox& rhs) const {
+  return lhs.mailbox() == rhs;
+}
+#endif
 
 }  // namespace viz

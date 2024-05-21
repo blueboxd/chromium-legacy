@@ -16,13 +16,15 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.base.ColdStartTracker;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.metrics.SimpleStartupForegroundSessionDetector;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -32,7 +34,7 @@ import java.util.concurrent.ExecutionException;
  * Tests for the {@link StartupPaintPreviewHelper} class. This test suite cannot be batched because
  * tests rely on the cold start behavior of {@link ChromeActivity}.
  */
-@RunWith(StartupPaintPreviewHelperTestRunner.class)
+@RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class StartupPaintPreviewHelperTest {
     @Rule
@@ -46,7 +48,6 @@ public class StartupPaintPreviewHelperTest {
      */
     @Test
     @MediumTest
-    @Restriction(StartupPaintPreviewHelperTestRunner.RESTRICTION_TYPE_KEEP_ACTIVITIES)
     public void testCaptureOnBackgrounded() throws ExecutionException {
         mActivityTestRule.startMainActivityWithURL(
                 mActivityTestRule.getTestServer().getURL(TEST_URL));
@@ -91,11 +92,15 @@ public class StartupPaintPreviewHelperTest {
      */
     @Test
     @MediumTest
-    @Restriction(StartupPaintPreviewHelperTestRunner.RESTRICTION_TYPE_KEEP_ACTIVITIES)
-    @DisabledTest(message = "Very flaky. See crbug.com/333779543.")
+    @DisableFeatures({ChromeFeatureList.ANDROID_TAB_DECLUTTER})
+    @DisabledTest(message = "Pending revival. See crbug.com/333779543.")
     public void testDisplayOnStartup() throws ExecutionException {
         mActivityTestRule.startMainActivityWithURL(
                 mActivityTestRule.getTestServer().getURL(TEST_URL));
+        final ChromeTabbedActivity activity = mActivityTestRule.getActivity();
+        CriteriaHelper.pollUiThread(
+                () -> activity.getTabModelSelector().isTabStateInitialized(),
+                "Tab state never initialized.");
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
         CriteriaHelper.pollUiThread(
                 () ->
@@ -119,12 +124,15 @@ public class StartupPaintPreviewHelperTest {
 
         // Emulate browser cold start. Paint preview should be shown on startup.
         pretendColdStartBeforeForegrounded();
-        ChromeTabbedActivity activity = mActivityTestRule.getActivity();
         TestThreadUtils.runOnUiThreadBlocking(activity::finish);
         CriteriaHelper.pollUiThread(activity::isDestroyed, "Activity didn't get destroyed.");
 
         mActivityTestRule.startMainActivityFromLauncher();
-        final Tab previewTab = mActivityTestRule.getActivity().getActivityTab();
+        final ChromeTabbedActivity newActivity = mActivityTestRule.getActivity();
+        CriteriaHelper.pollUiThread(
+                () -> newActivity.getTabModelSelector().isTabStateInitialized(),
+                "Tab state never initialized.");
+        final Tab previewTab = newActivity.getActivityTab();
         tabbedPaintPreview =
                 TestThreadUtils.runOnUiThreadBlocking(() -> TabbedPaintPreview.get(previewTab));
 

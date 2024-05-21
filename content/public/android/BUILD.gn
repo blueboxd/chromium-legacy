@@ -162,6 +162,7 @@ android_library("content_full_java") {
     "//media/capture/video/android:capture_java",
     "//media/midi:midi_java",
     "//media/mojo/mojom:mojom_java",
+    "//media/mojo/mojom:web_speech_recognition_java",
     "//mojo/public/java:base_java",
     "//mojo/public/java:bindings_java",
     "//mojo/public/java:system_java",
@@ -321,17 +322,11 @@ android_library("content_full_java") {
     "java/src/org/chromium/content/browser/picker/TwoFieldDatePickerDialog.java",
     "java/src/org/chromium/content/browser/picker/WeekPicker.java",
     "java/src/org/chromium/content/browser/picker/WeekPickerDialog.java",
-    "java/src/org/chromium/content/browser/remoteobjects/RemoteObjectAuditorImpl.java",
-    "java/src/org/chromium/content/browser/remoteobjects/RemoteObjectHostImpl.java",
-    "java/src/org/chromium/content/browser/remoteobjects/RemoteObjectImpl.java",
-    "java/src/org/chromium/content/browser/remoteobjects/RemoteObjectInjector.java",
-    "java/src/org/chromium/content/browser/remoteobjects/RemoteObjectRegistry.java",
     "java/src/org/chromium/content/browser/selection/LGEmailActionModeWorkaroundImpl.java",
     "java/src/org/chromium/content/browser/selection/MagnifierAnimator.java",
     "java/src/org/chromium/content/browser/selection/MagnifierSurfaceControl.java",
     "java/src/org/chromium/content/browser/selection/MagnifierWrapper.java",
     "java/src/org/chromium/content/browser/selection/MagnifierWrapperImpl.java",
-    "java/src/org/chromium/content/browser/selection/PasteActionModeCallback.java",
     "java/src/org/chromium/content/browser/selection/SelectActionMenuHelper.java",
     "java/src/org/chromium/content/browser/selection/SelectionIndicesConverter.java",
     "java/src/org/chromium/content/browser/selection/SelectionMenuCachedResult.java",
@@ -346,7 +341,6 @@ android_library("content_full_java") {
     "java/src/org/chromium/content/browser/webcontents/EmptyInternalAccessDelegate.java",
     "java/src/org/chromium/content/browser/webcontents/WebContentsImpl.java",
     "java/src/org/chromium/content/browser/webcontents/WebContentsObserverProxy.java",
-    "java/src/org/chromium/content/browser/webid/DigitalIdentityProvider.java",
     "java/src/org/chromium/content_public/browser/ActionModeCallback.java",
     "java/src/org/chromium/content_public/browser/ActionModeCallbackHelper.java",
     "java/src/org/chromium/content_public/browser/AdditionalNavigationParams.java",
@@ -409,6 +403,7 @@ android_library("content_full_java") {
     "java/src/org/chromium/content_public/browser/WebContentsStatics.java",
     "java/src/org/chromium/content_public/browser/selection/SelectionActionMenuDelegate.java",
     "java/src/org/chromium/content_public/browser/selection/SelectionDropdownMenuDelegate.java",
+    "java/src/org/chromium/content_public/browser/webid/IdentityCredentialsDelegateFactory.java",
   ]
 
   public_deps = [ ":identity_credentials_java" ]
@@ -419,6 +414,7 @@ android_library("identity_credentials_java") {
   sources = [
     "java/src/org/chromium/content/browser/webid/IdentityCredentialsDelegate.java",
     "java/src/org/chromium/content/browser/webid/IdentityCredentialsDelegateImpl.java",
+    "java/src/org/chromium/content_public/browser/webid/IdentityCredentialsDelegate.java",
   ]
   deps = [ "//base:base_java" ]
   jar_excluded_patterns = [ "*/IdentityCredentialsDelegateImpl.class" ]
@@ -519,7 +515,6 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content/browser/sms/SmsProviderGms.java",
     "java/src/org/chromium/content/browser/webcontents/WebContentsImpl.java",
     "java/src/org/chromium/content/browser/webcontents/WebContentsObserverProxy.java",
-    "java/src/org/chromium/content/browser/webid/DigitalIdentityProvider.java",
     "java/src/org/chromium/content_public/browser/ContentFeatureMap.java",
     "java/src/org/chromium/content_public/browser/ContentWebFeatureUsageUtils.java",
     "java/src/org/chromium/content_public/browser/LoadCommittedDetails.java",
@@ -663,7 +658,6 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/input/StylusGestureEndToEndTest.java",
     "javatests/src/org/chromium/content/browser/input/TextSuggestionMenuTest.java",
     "javatests/src/org/chromium/content/browser/picker/DateTimePickerDialogTest.java",
-    "javatests/src/org/chromium/content/browser/remoteobjects/RemoteObjectHostImplTest.java",
     "javatests/src/org/chromium/content/browser/scheduler/NativePostTaskTest.java",
     "javatests/src/org/chromium/content/browser/scheduler/UiThreadSchedulerTest.java",
     "javatests/src/org/chromium/content/browser/scheduler/UncaughtExceptionTest.java",
@@ -702,8 +696,6 @@ robolectric_binary("content_junit_tests") {
     "junit/src/org/chromium/content/browser/input/ThreadedInputConnectionFactoryTest.java",
     "junit/src/org/chromium/content/browser/input/ThreadedInputConnectionTest.java",
     "junit/src/org/chromium/content/browser/picker/DateDialogNormalizerTest.java",
-    "junit/src/org/chromium/content/browser/remoteobjects/RemoteObjectImplTest.java",
-    "junit/src/org/chromium/content/browser/remoteobjects/RemoteObjectRegistryTest.java",
     "junit/src/org/chromium/content/browser/selection/MagnifierAnimatorTest.java",
     "junit/src/org/chromium/content/browser/selection/SelectActionMenuHelperTest.java",
     "junit/src/org/chromium/content/browser/selection/SelectionMenuCachedResultTest.java",
@@ -712,7 +704,6 @@ robolectric_binary("content_junit_tests") {
     "junit/src/org/chromium/content/browser/sms/SmsProviderGmsTest.java",
     "junit/src/org/chromium/content/browser/webcontents/WebContentsImplTest.java",
     "junit/src/org/chromium/content/browser/webcontents/WebContentsObserverProxyTest.java",
-    "junit/src/org/chromium/content/browser/webid/DigitalIdentityProviderTest.java",
     "junit/src/org/chromium/content_public/browser/MessagePayloadTest.java",
   ]
 

@@ -9,7 +9,7 @@
 namespace viz {
 
 // static
-TransferableResource TransferableResource::MakeSoftware(
+TransferableResource TransferableResource::MakeSoftwareSharedBitmap(
     const SharedBitmapId& id,
     const gpu::SyncToken& sync_token,
     const gfx::Size& size,
@@ -17,22 +17,12 @@ TransferableResource TransferableResource::MakeSoftware(
     ResourceSource source) {
   TransferableResource r;
   r.is_software = true;
-  r.mailbox_ = id;
+  r.memory_buffer_id_ = id;
   r.sync_token_ = sync_token;
   r.size = size;
   r.format = format;
   r.resource_source = source;
   return r;
-}
-
-// static
-TransferableResource TransferableResource::MakeSoftwareSharedBitmap(
-    const SharedBitmapId& id,
-    const gpu::SyncToken& sync_token,
-    const gfx::Size& size,
-    SharedImageFormat format,
-    ResourceSource source) {
-  return MakeSoftware(id, sync_token, size, format, source);
 }
 
 // static
@@ -42,8 +32,14 @@ TransferableResource TransferableResource::MakeSoftwareSharedImage(
     const gfx::Size& size,
     SharedImageFormat format,
     ResourceSource source) {
-  return MakeSoftware(client_shared_image->mailbox(), sync_token, size, format,
-                      source);
+  TransferableResource r;
+  r.is_software = true;
+  r.memory_buffer_id_ = client_shared_image->mailbox();
+  r.sync_token_ = sync_token;
+  r.size = size;
+  r.format = format;
+  r.resource_source = source;
+  return r;
 }
 
 // static
@@ -57,7 +53,7 @@ TransferableResource TransferableResource::MakeGpu(
     ResourceSource source) {
   TransferableResource r;
   r.is_software = false;
-  r.mailbox_ = mailbox;
+  r.memory_buffer_id_ = mailbox;
   r.texture_target_ = texture_target;
   r.sync_token_ = sync_token;
   r.size = size;
@@ -108,7 +104,7 @@ std::vector<ReturnedResource> TransferableResource::ReturnResources(
 
 bool TransferableResource::IsSoftwareSharedImage() const {
   CHECK(is_software);
-  return mailbox_.IsSharedImage();
+  return absl::holds_alternative<gpu::Mailbox>(memory_buffer_id_);
 }
 
 }  // namespace viz

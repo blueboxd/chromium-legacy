@@ -555,8 +555,7 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
       // Fast path for ASCII.
       next_char = *c;
     } else if (!ReadUnicodeCharacter(input_.data(), input_.length(), &index_,
-                                     &next_char) ||
-               !IsValidCodepoint(next_char)) {
+                                     &next_char)) {
       if ((options_ & JSON_REPLACE_INVALID_CHARACTERS) == 0) {
         ReportError(JSON_UNSUPPORTED_ENCODING, 0);
         return false;
@@ -803,25 +802,6 @@ std::optional<Value> JSONParser::ConsumeNumber() {
     end_index = index_;
   }
 
-  // ReadInt is greedy because numbers have no easily detectable sentinel,
-  // so save off where the parser should be on exit (see Consume invariant at
-  // the top of the header), then make sure the next token is one which is
-  // valid.
-  size_t exit_index = index_;
-
-  switch (GetNextToken()) {
-    case T_OBJECT_END:
-    case T_ARRAY_END:
-    case T_LIST_SEPARATOR:
-    case T_END_OF_INPUT:
-      break;
-    default:
-      ReportError(JSON_SYNTAX_ERROR, 0);
-      return std::nullopt;
-  }
-
-  index_ = exit_index;
-
   std::string_view num_string(num_start, end_index - start_index);
 
   int num_int;
@@ -829,9 +809,7 @@ std::optional<Value> JSONParser::ConsumeNumber() {
     // StringToInt will treat `-0` as zero, losing the significance of the
     // negation.
     if (num_int == 0 && num_string.starts_with('-')) {
-      if (base::FeatureList::IsEnabled(features::kJsonNegativeZero)) {
-        return Value(-0.0);
-      }
+      return Value(-0.0);
     }
     return Value(num_int);
   }

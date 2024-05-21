@@ -202,15 +202,6 @@ struct COMPONENT_EXPORT(SQL) DatabaseOptions {
   // If this option is false, CREATE VIEW and DROP VIEW succeed, but SELECT
   // statements targeting views fail.
   bool enable_views_discouraged = false;
-
-  // If true, enables virtual tables (a discouraged feature) for this database.
-  //
-  // The use of virtual tables is discouraged for Chrome code. See README.md for
-  // details and recommended replacements.
-  //
-  // If this option is false, CREATE VIRTUAL TABLE and DROP VIRTUAL TABLE
-  // succeed, but statements targeting virtual tables fail.
-  bool enable_virtual_tables_discouraged = false;
 };
 
 // Holds database diagnostics in a structured format.
@@ -487,9 +478,15 @@ class COMPONENT_EXPORT(SQL) Database {
   //
   // Normally you should use sql::Transaction to manage a transaction, which
   // will scope it to a C++ context.
-  bool BeginTransaction();
-  void RollbackTransaction();
-  bool CommitTransaction();
+  [[nodiscard]] bool BeginTransaction(InternalApiToken);
+  void RollbackTransaction(InternalApiToken);
+  [[nodiscard]] bool CommitTransaction(InternalApiToken);
+
+  // These methods are deprecated and will be removed in the future: The
+  // `Transaction` class should be used instead.
+  bool BeginTransactionDeprecated();
+  void RollbackTransactionDeprecated();
+  bool CommitTransactionDeprecated();
 
   // Rollback all outstanding transactions.  Use with care, there may
   // be scoped transactions on the stack.
@@ -725,6 +722,7 @@ class COMPONENT_EXPORT(SQL) Database {
   FRIEND_TEST_ALL_PREFIXES(SQLDatabaseTest, ComputeMmapSizeForOpenAltStatus);
   FRIEND_TEST_ALL_PREFIXES(SQLDatabaseTest, OnMemoryDump);
   FRIEND_TEST_ALL_PREFIXES(SQLDatabaseTest, RegisterIntentToUpload);
+  FRIEND_TEST_ALL_PREFIXES(SQLiteFeaturesTest, FTS3_Prefix);
   FRIEND_TEST_ALL_PREFIXES(SQLiteFeaturesTest, WALNoClose);
   FRIEND_TEST_ALL_PREFIXES(SQLEmptyPathDatabaseTest, EmptyPathTest);
 
@@ -937,6 +935,10 @@ class COMPONENT_EXPORT(SQL) Database {
   // This method must only be called while the database is successfully opened.
   sqlite3_file* GetSqliteVfsFile();
 
+  void SetEnableVirtualTablesForTesting(bool enable) {
+    enable_virtual_tables_ = enable;
+  }
+
   // Will eventually be checked on all methods. See https://crbug.com/1306694
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -947,6 +949,10 @@ class COMPONENT_EXPORT(SQL) Database {
   // TODO(shuagga@microsoft.com): Make `options_` const after removing all
   // setters.
   DatabaseOptions options_;
+
+  // TODO(crbug.com/340805983): Remove this once virtual tables are no longer needed for
+  // WebSQL, which requires them for fts3 support.
+  bool enable_virtual_tables_ = false;
 
   // Holds references to all cached statements so they remain active.
   //

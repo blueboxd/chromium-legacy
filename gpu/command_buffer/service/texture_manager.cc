@@ -18,6 +18,7 @@
 #include "base/format_macros.h"
 #include "base/lazy_instance.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/stack_allocated.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -339,7 +340,7 @@ GLenum GetSwizzleForChannel(GLenum channel,
     case GL_ALPHA:
       return swizzle->alpha;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return GL_NONE;
   }
 }
@@ -405,6 +406,8 @@ class ScopedResetPixelUnpackBuffer{
 };
 
 class ScopedMemTrackerChange {
+  STACK_ALLOCATED();
+
  public:
   explicit ScopedMemTrackerChange(Texture* texture)
       : texture_(texture),
@@ -422,8 +425,8 @@ class ScopedMemTrackerChange {
   }
 
  private:
-  raw_ptr<Texture> texture_;
-  raw_ptr<MemoryTypeTracker> previous_tracker_;
+  Texture* texture_;
+  MemoryTypeTracker* previous_tracker_;
   uint32_t previous_size_;
 };
 
@@ -1416,7 +1419,7 @@ GLenum Texture::SetParameteri(
     case GL_REQUIRED_TEXTURE_IMAGE_UNITS_OES:
       return GL_INVALID_ENUM;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return GL_INVALID_ENUM;
   }
   Update();
@@ -1923,7 +1926,7 @@ void TextureManager::RemoveFramebufferManager(
       return;
     }
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void TextureManager::Initialize() {
@@ -2449,7 +2452,7 @@ TextureRef* TextureManager::GetTextureInfoForTarget(
       texture = unit.bound_texture_2d_array.get();
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return nullptr;
   }
   return texture;
@@ -3246,7 +3249,7 @@ GLenum TextureManager::AdjustTexInternalFormat(
             return GL_RG8;
         }
       } else {
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
       }
     }
   }
@@ -3936,7 +3939,7 @@ bool Texture::CompatibleWithSamplerUniformType(
       category = SAMPLER_SHADOW;
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 
   const LevelInfo* level_info = GetBaseLevelInfo();
@@ -3995,11 +3998,11 @@ bool Texture::CompatibleWithSamplerUniformType(
       // Unsigned integer formats.
       return category == SAMPLER_UNSIGNED;
     default:
-      NOTREACHED() << "Type: " << GLES2Util::GetStringEnum(level_info->type)
-                   << " Format: "
-                   << GLES2Util::GetStringEnum(level_info->format)
-                   << "  Internal format: "
-                   << GLES2Util::GetStringEnum(level_info->internal_format);
+      NOTREACHED_IN_MIGRATION()
+          << "Type: " << GLES2Util::GetStringEnum(level_info->type)
+          << " Format: " << GLES2Util::GetStringEnum(level_info->format)
+          << "  Internal format: "
+          << GLES2Util::GetStringEnum(level_info->internal_format);
   }
   return false;
 }

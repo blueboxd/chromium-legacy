@@ -1386,13 +1386,10 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       shell3->web_contents()->GetFirstWebContentsInLiveOriginalOpenerChain());
 }
 
-// TODO(clamy): Make the test work on Windows and on Mac. On Mac and Windows,
-// there seem to be an issue with the ShellJavascriptDialogManager.
-// Flaky on all platforms: https://crbug.com/655628
 // Test that if a BeforeUnload dialog is destroyed due to the commit of a
 // cross-site navigation, it will not reset the loading state.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       DISABLED_NoResetOnBeforeUnloadCanceledOnCommit) {
+                       NoResetOnBeforeUnloadCanceledOnCommit) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL kStartURL(
       embedded_test_server()->GetURL("/hang_before_unload.html"));
@@ -1403,10 +1400,15 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), kStartURL));
 
   // Start a cross-site navigation that will not commit for the moment.
+  // This intentionally does not trigger a BeforeUnload dialog because the
+  // main frame has never had user activation.
   TestNavigationManager cross_site_delayer(shell()->web_contents(),
                                            kCrossSiteURL);
   shell()->LoadURL(kCrossSiteURL);
   EXPECT_TRUE(cross_site_delayer.WaitForRequestStart());
+
+  // Disable beforeunload timer to prevent flakiness.
+  PrepContentsForBeforeUnloadTest(shell()->web_contents());
 
   // Click on a link in the page. This will show the BeforeUnload dialog.
   // Ensure the dialog is not dismissed, which will cause it to still be
@@ -4346,6 +4348,33 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
     EXPECT_TRUE(text_input_manager->IsRegistered(child_view));
     EXPECT_TRUE(text_input_manager->IsRegistered(grandchild_view));
   }
+}
+
+// Non-regression test for crbug.com/336843455.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, InnerWebContentsVisibility) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  auto* root_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  WebContentsImpl* inner_contents =
+      static_cast<WebContentsImpl*>(CreateAndAttachInnerContents(
+          ChildFrameAt(root_contents->GetPrimaryMainFrame(), 0)));
+  ASSERT_TRUE(NavigateToURLFromRenderer(inner_contents, url_b));
+
+  root_contents->WasShown();
+  EXPECT_EQ(Visibility::VISIBLE, root_contents->GetVisibility());
+  EXPECT_EQ(PageVisibilityState::kVisible,
+            root_contents->GetPrimaryMainFrame()->GetVisibilityState());
+  EXPECT_EQ(Visibility::VISIBLE, inner_contents->GetVisibility());
+
+  root_contents->WasHidden();
+  EXPECT_EQ(Visibility::HIDDEN, root_contents->GetVisibility());
+  EXPECT_EQ(PageVisibilityState::kHidden,
+            root_contents->GetPrimaryMainFrame()->GetVisibilityState());
+  EXPECT_EQ(Visibility::HIDDEN, inner_contents->GetVisibility());
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,

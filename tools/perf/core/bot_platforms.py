@@ -39,7 +39,8 @@ class PerfPlatform(object):
                is_calibration=False,
                run_reference_build=False,
                pinpoint_only=False,
-               executables=None):
+               executables=None,
+               crossbench=None):
     benchmark_configs = benchmark_configs.Frozenset()
     self._name = name
     self._description = description
@@ -51,6 +52,7 @@ class PerfPlatform(object):
     self.run_reference_build = run_reference_build
     self.pinpoint_only = pinpoint_only
     self.executables = executables or frozenset()
+    self.crossbench = crossbench or frozenset()
     assert num_shards
     self._num_shards = num_shards
     # pylint: disable=redefined-outer-name
@@ -190,6 +192,16 @@ class ExecutableConfig(object):
     self.abridged = False
     self.stories = [GTEST_STORY_NAME]
     self.is_telemetry = False
+    self.repeat = 1
+
+
+class CrossbenchConfig:
+
+  def __init__(self, name, crossbench_name, estimated_runtime=60, stories=None):
+    self.name = name
+    self.crossbench_name = crossbench_name
+    self.estimated_runtime = estimated_runtime
+    self.stories = stories or ['default']
     self.repeat = 1
 
 
@@ -339,6 +351,17 @@ def _views_perftests(estimated_runtime=7):
                           flags=['--xvfb'],
                           estimated_runtime=estimated_runtime)
 
+
+def _crossbench_speedometer3_0(estimated_runtime=60):
+  return CrossbenchConfig('speedometer3.crossbench',
+                          'speedometer_3.0',
+                          estimated_runtime=estimated_runtime)
+
+
+_CROSSBENCH_BENCHMARKS = frozenset([
+    _crossbench_speedometer3_0(),
+])
+
 _CHROME_HEALTH_BENCHMARK_CONFIGS_DESKTOP = PerfSuite([
     _GetBenchmarkConfig('system_health.common_desktop')
 ])
@@ -416,7 +439,6 @@ _LINUX_EXECUTABLE_CONFIGS = frozenset([
     # TODO(crbug.com/40562709): Add views_perftests.
     _base_perftests(200),
     _load_library_perf_tests(),
-    _performance_browser_tests(165),
     _tracing_perftests(5),
 ])
 _MAC_HIGH_END_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
@@ -426,7 +448,6 @@ _MAC_HIGH_END_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
 _MAC_HIGH_END_EXECUTABLE_CONFIGS = frozenset([
     _base_perftests(300),
     # _dawn_perf_tests(330),    # b/332611618
-    _performance_browser_tests(190),
     _views_perftests(),
 ])
 _MAC_LOW_END_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
@@ -435,7 +456,6 @@ _MAC_LOW_END_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
 ])
 _MAC_LOW_END_EXECUTABLE_CONFIGS = frozenset([
     _load_library_perf_tests(),
-    _performance_browser_tests(210),
 ])
 _MAC_M1_MINI_2020_BENCHMARK_CONFIGS = PerfSuite(
     OFFICIAL_BENCHMARK_CONFIGS).Remove([
@@ -461,7 +481,6 @@ _MAC_M1_PRO_BENCHMARK_CONFIGS = PerfSuite([
 _MAC_M1_MINI_2020_EXECUTABLE_CONFIGS = frozenset([
     _base_perftests(300),
     _dawn_perf_tests(330),
-    _performance_browser_tests(190),
     _views_perftests(),
 ])
 _MAC_M2_PRO_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
@@ -595,7 +614,8 @@ _FUCHSIA_PERF_SHERLOCK_BENCHMARK_CONFIGS = \
     _FUCHSIA_PERF_NELSON_BENCHMARK_CONFIGS
 _LINUX_PERF_FYI_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('speedometer2'),
-    _GetBenchmarkConfig('speedometer2-nominorms')
+    _GetBenchmarkConfig('speedometer2-nominorms'),
+    _GetBenchmarkConfig('speedometer3'),
 ])
 _LINUX_PERF_CALIBRATION_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('speedometer2'),
@@ -894,8 +914,9 @@ CHROMEOS_KEVIN_PERF_FYI = PerfPlatform('chromeos-kevin-perf-fyi',
 LINUX_PERF_FYI = PerfPlatform('linux-perf-fyi',
                               '',
                               _LINUX_PERF_FYI_BENCHMARK_CONFIGS,
-                              1,
+                              4,
                               'linux',
+                              crossbench=_CROSSBENCH_BENCHMARKS,
                               is_fyi=True)
 
 # Calibration bots

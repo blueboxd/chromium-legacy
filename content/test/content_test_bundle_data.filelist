@@ -5506,6 +5506,7 @@ data/accessibility/regression/reused-map-move-image-to-top.html
 data/accessibility/regression/reused-map-move-image.html
 data/accessibility/regression/reused-map.html
 data/accessibility/regression/root-becomes-leaf.html
+data/accessibility/regression/select-expand-many-options-crash.html
 data/accessibility/regression/slot-creation-crash-expected-blink.txt
 data/accessibility/regression/slot-creation-crash.html
 data/accessibility/regression/title-in-shadow-expected-blink.txt
@@ -5634,6 +5635,7 @@ data/attribution_reporting/interop/destination_rate_limit.json
 data/attribution_reporting/interop/event_level_epsilon.json
 data/attribution_reporting/interop/event_level_report_time.json
 data/attribution_reporting/interop/event_level_storage_limit.json
+data/attribution_reporting/interop/event_level_storage_limit_replacement.json
 data/attribution_reporting/interop/event_level_trigger_filter_data.json
 data/attribution_reporting/interop/event_level_trigger_priority.json
 data/attribution_reporting/interop/event_report_window.json
@@ -5839,6 +5841,7 @@ data/cacheable.svg
 data/cacheable.svg.mock-http-headers
 data/cacheable2.js
 data/cacheable2.js.mock-http-headers
+data/changing_color.html
 data/click-nocontent-link.html
 data/click-noreferrer-links.html
 data/client_redirect.html
@@ -6378,6 +6381,7 @@ data/gpu/pixel_video_test.js
 data/gpu/pixel_video_underlay.html
 data/gpu/pixel_video_vp9.html
 data/gpu/pixel_video_vp9_i420a.html
+data/gpu/pixel_view_transitions_capture.html
 data/gpu/pixel_webgl2_blitframebuffer_result_displayed.html
 data/gpu/pixel_webgl2_clearbufferfv_result_displayed.html
 data/gpu/pixel_webgl_aa_alpha.html
@@ -6687,6 +6691,8 @@ data/interest_group/bidding_logic_use_wasm.js
 data/interest_group/bidding_logic_use_wasm.js.mock-http-headers
 data/interest_group/bidding_logic_with_debugging_report.js
 data/interest_group/bidding_logic_with_debugging_report.js.mock-http-headers
+data/interest_group/bidding_logic_with_real_time_reporting.js
+data/interest_group/bidding_logic_with_real_time_reporting.js.mock-http-headers
 data/interest_group/bidding_logic_with_size.js
 data/interest_group/bidding_logic_with_size.js.mock-http-headers
 data/interest_group/bidding_no_direct_from_seller_signals_validator.js
@@ -6715,6 +6721,8 @@ data/interest_group/decision_logic_throws.js
 data/interest_group/decision_logic_throws.js.mock-http-headers
 data/interest_group/decision_logic_with_debugging_report.js
 data/interest_group/decision_logic_with_debugging_report.js.mock-http-headers
+data/interest_group/decision_logic_with_real_time_reporting.js
+data/interest_group/decision_logic_with_real_time_reporting.js.mock-http-headers
 data/interest_group/decision_no_direct_from_seller_signals_validator.js
 data/interest_group/decision_no_direct_from_seller_signals_validator.js.mock-http-headers
 data/interest_group/decision_simple_direct_from_seller_signals_validator.js
@@ -7314,8 +7322,6 @@ data/session_history/post.html
 data/session_history/record_length.html
 data/session_history/replace.html
 data/session_history/top.html
-data/session_storage/partition_deprecation_trial.html
-data/session_storage/partition_deprecation_trial.html.mock-http-headers
 data/set_cookie.html
 data/set_cookie.html.mock-http-headers
 data/set_document_cookie.html
@@ -7340,6 +7346,8 @@ data/shared_storage/customizable_script.js
 data/shared_storage/erroneous_function_module.js
 data/shared_storage/erroneous_module.js
 data/shared_storage/getter_module.js
+data/shared_storage/large_cacheable_script.js
+data/shared_storage/large_cacheable_script.js.mock-http-headers
 data/shared_storage/module_with_custom_header.js
 data/shared_storage/module_with_custom_header.js.mock-http-headers
 data/shared_storage/page-with-non-shared-storage-writable-iframe.html

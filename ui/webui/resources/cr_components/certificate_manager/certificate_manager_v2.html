@@ -5,67 +5,88 @@
     margin-bottom: 24px;
   }
 
-  #crsCerts {
-    padding-inline-end: var(--cr-section-padding);
-    padding-inline-start: var(--cr-section-indent-padding);
-  }
-
-  .cert-row {
-    display: flex;
-  }
-
-  .certs-export-button {
+  .push-left {
     margin-left: auto;
   }
 </style>
 
 <cr-tabs id="tabs" tab-names="[[tabNames_]]" selected="{{selectedTabIndex_}}">
 </cr-tabs>
+
+<!-- TODO(crbug.com/40928765): localize strings -->
 <iron-pages selected="[[selectedTabIndex_]]">
 
-  <div>Client Certificates
+  <div>
     <if expr="is_win or is_macosx">
-      <div id="provisioned-client-certs">
-        From your administrator
-        <template is="dom-repeat" items="[[provisionedClientCerts_]]">
-          <div class="cr-row cr-padded-text cert-row">
-            [[item.displayName]] - [[item.sha256hashHex]]
-          </div>
-        </template>
-      </div>
+      <certificate-list-v2
+          id="provisionedClientCerts"
+          cert-source="[[certificateSourceEnum_.kProvisionedClientCert]]"
+          header-text="From your administrator"
+          hide-export
+          on-hash-copied="onHashCopied_">
+      </certificate-list-v2>
     </if>
 
-    <div id="platform-client-certs">
-      Client certificates from platform
-      <template is="dom-repeat" items="[[platformClientCerts_]]">
-        <div class="cr-row cr-padded-text cert-row">
-          [[item.displayName]] - [[item.sha256hashHex]]
-        </div>
-      </template>
-    </div>
+    <certificate-list-v2
+        id="platformClientCerts"
+        cert-source="[[certificateSourceEnum_.kPlatformClientCert]]"
+        header-text="Client certificates from platform"
+        hide-export
+        on-hash-copied="onHashCopied_">
+    </certificate-list-v2>
   </div>
 
-  <div>Local Certificates</div>
+  <div class="cr-centered-card-container">
+    Local certificates that have been added by your operating system or your
+    administrator.
+
+    <!-- TODO(crbug.com/40928765): wire up all of the dynamic content
+      in the local certificates section (
+      * # of imported OS certs
+      * toggle for enabling/disabling import of OS certs
+      * viewing/managing imported certs from OS
+      * # of admin policy certs
+      * viewing admin policy certs
+      * Dynamically figuring out OS name
+      -->
+    <h3> Windows </h3>
+    <div class="cr-row">
+      <div class="cr-padded-text">
+        <div>
+          Use imported local certificates from your operating system
+        </div>
+        <div class="cr-secondary-text">
+          56 leaf certs
+        </div>
+      </div>
+      <cr-toggle class="push-left"
+          aria-label="Toggle operating system certificate imports"
+          checked=true>
+      </cr-toggle>
+    </div>
+
+    <cr-link-row label="View imported certificates from Windows">
+    </cr-link-row>
+    <cr-link-row external label="Manage imported certificates from Windows">
+    </cr-link-row>
+
+    <h3> Custom </h3>
+
+    <cr-link-row label="Installed by your administrator"
+        sub-label="23 certs">
+      <cr-button class="action-button" id="exportAdminCerts">
+        Export
+      </cr-button>
+    </cr-link-row>
+  </div>
 
   <div>
-    <cr-expand-button class="cr-row first"
-        expanded="{{crsTrustedCertsOpened_}}">
-      <div class="cert-row">
-        Trusted Certificates
-        <cr-button class="action-button certs-export-button"
-            id="exportCRS" on-click="onExportCrs_">
-          Export
-        </cr-button>
-      </div>
-    </cr-expand-button>
-    <cr-collapse id="crsCerts" opened="[[crsTrustedCertsOpened_]]">
-      <template is="dom-repeat" items="[[crsCertificates_]]">
-        <certificate-entry-v2 display-name="[[item.displayName]]"
-            sha256hash-hex="[[item.sha256hashHex]]"
-            on-hash-copied="onValueCopied_">
-        </certificate-entry-v2>
-      </template>
-    </cr-collapse>
+    <certificate-list-v2
+        id="crsCerts"
+        cert-source="[[certificateSourceEnum_.kChromeRootStore]]"
+        header-text="Trusted Certificates"
+        on-hash-copied="onHashCopied_">
+    </certificate-list-v2>
   </div>
 
 </iron-pages>

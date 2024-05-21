@@ -29,19 +29,24 @@ export class DestinationDropdownController extends EventTarget {
     super();
     eventTracker.add(
         this.destinationManager, DESTINATION_MANAGER_ACTIVE_DESTINATION_CHANGED,
-        (e: Event): void =>
-            this.onDestinationManagerActiveDestinationChanged(e));
+        (): void => this.onDestinationManagerActiveDestinationChanged());
   }
 
   // Handles logic for notifying UI to update when destination manager
   // active destination changes.
-  private onDestinationManagerActiveDestinationChanged(_event: Event): void {
+  private onDestinationManagerActiveDestinationChanged(): void {
     this.dispatchEvent(
         createCustomEvent(DESTINATION_DROPDOWN_UPDATE_SELECTED_DESTINATION));
   }
 
   getSelectedDestination(): Destination|null {
     return this.destinationManager.getActiveDestination();
+  }
+
+  // TODO(b/323421684): Replace with functions to get list of digital and
+  // recent destinations.
+  getDestinations(): Destination[] {
+    return this.destinationManager.getDestinations();
   }
 }
 

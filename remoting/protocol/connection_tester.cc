@@ -158,9 +158,9 @@ class MessagePipeConnectionTester::MessageSender
     }
   }
   void OnMessageReceived(std::unique_ptr<CompoundBuffer> message) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
-  void OnMessagePipeClosed() override { NOTREACHED(); }
+  void OnMessagePipeClosed() override { NOTREACHED_IN_MIGRATION(); }
 
  private:
   raw_ptr<MessagePipe> pipe_;

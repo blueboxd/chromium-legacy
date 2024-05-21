@@ -35,7 +35,7 @@
 #include "chrome/browser/ash/guest_os/public/guest_os_mount_provider_registry.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
 #include "chrome/browser/ash/guest_os/public/types.h"
-#include "chrome/browser/ash/policy/local_user_files/policy_utils.h"
+#include "chrome/browser/ash/policy/skyvault/policy_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chromeos/ash/components/drivefs/drivefs_pinning_manager.h"
@@ -86,7 +86,7 @@ void GetFileNativeLocalPathForSaving(Profile* profile,
                                      const base::FilePath& path,
                                      LocalPathCallback callback) {
   // TODO(kinaba): For now, there are no writable non-local volumes.
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   std::move(callback).Run(base::FilePath());
 }
 
@@ -244,7 +244,7 @@ fmp::VmType VmTypeToJs(guest_os::VmType vm_type) {
     case guest_os::VmType::UNKNOWN:
     case guest_os::VmType::VmType_INT_MIN_SENTINEL_DO_NOT_USE_:
     case guest_os::VmType::VmType_INT_MAX_SENTINEL_DO_NOT_USE_:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return fmp::VmType::kNone;
   }
 }
@@ -276,7 +276,7 @@ fmp::BulkPinStage DrivefsPinStageToJs(drivefs::pinning::Stage stage) {
       return fmp::BulkPinStage::kCannotEnableDocsOffline;
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return fmp::BulkPinStage::kNone;
 }
 
@@ -669,7 +669,7 @@ void VolumeToVolumeMetadata(Profile* profile,
       volume_metadata->volume_type = fmp::VolumeType::kGuestOs;
       break;
     case NUM_VOLUME_TYPE:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 
@@ -829,7 +829,7 @@ bool ToRecentSourceFileType(fmp::FileCategory input_category,
       return true;
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return false;
 }
 

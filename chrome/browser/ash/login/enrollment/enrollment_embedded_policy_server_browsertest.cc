@@ -5,7 +5,6 @@
 #include <optional>
 #include <string>
 
-#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "base/check.h"
@@ -14,7 +13,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/app_mode/kiosk_chrome_app_manager.h"
-#include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
+#include "chrome/browser/ash/app_mode/kiosk_test_helper.h"
 #include "chrome/browser/ash/login/app_mode/test/kiosk_apps_mixin.h"
 #include "chrome/browser/ash/login/app_mode/test/kiosk_test_helpers.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_check_screen.h"
@@ -164,14 +163,10 @@ class EnrollmentEmbeddedPolicyServerBase : public OobeBaseTest {
     test::OobeJS().ClickOnPath(kEnterprisePrimaryButton);
     SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserPassword,
                                  FakeGaiaMixin::kPasswordPath);
-    if (features::IsKioskEnrollmentInOobeEnabled()) {
-      if (enroll_kiosk) {
-        test::OobeJS().ClickOnPath(kKioskEnrollmentButton);
-      } else {
-        test::OobeJS().ClickOnPath(kEnterpriseEnrollmentButton);
-      }
+    if (enroll_kiosk) {
+      test::OobeJS().ClickOnPath(kKioskEnrollmentButton);
     } else {
-      test::OobeJS().ClickOnPath(kEnterprisePrimaryButton);
+      test::OobeJS().ClickOnPath(kEnterpriseEnrollmentButton);
     }
   }
 
@@ -1272,11 +1267,6 @@ IN_PROC_BROWSER_TEST_F(EnrollmentEmbeddedPolicyServerBase,
 class KioskEnrollmentPolicyServerTest
     : public EnrollmentEmbeddedPolicyServerBase {
  public:
-  KioskEnrollmentPolicyServerTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kEnableKioskEnrollmentInOobe);
-  }
-
   void TriggerKioskEnrollmentAndSignInSuccessfully(bool enroll_kiosk = false) {
     host()->HandleAccelerator(LoginAcceleratorAction::kStartKioskEnrollment);
     OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
@@ -1296,9 +1286,6 @@ class KioskEnrollmentPolicyServerTest
       test::OobeJS().ClickOnPath(kKioskModeEnterpriseEnrollmentButton);
     }
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(KioskEnrollmentPolicyServerTest, KioskEnrollment) {
@@ -1388,7 +1375,7 @@ class KioskEnrollmentTest : public EnrollmentEmbeddedPolicyServerBase {
  private:
   KioskAppsMixin kiosk_apps_{&mixin_host_, embedded_test_server()};
   base::AutoReset<bool> skip_splash_wait_override_ =
-      KioskLaunchController::SkipSplashScreenWaitForTesting();
+      KioskTestHelper::SkipSplashScreenWait();
 };
 
 IN_PROC_BROWSER_TEST_F(KioskEnrollmentTest,

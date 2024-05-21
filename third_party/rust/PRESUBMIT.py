@@ -24,8 +24,29 @@ def CheckCargoVet(input_api, output_api):
         name=cmd_name,
         cmd=[input_api.python3_executable, run_cargo_vet_path] + vet_args,
         kwargs={},
-        message=output_api.PresubmitPromptWarning)
+        message=output_api.PresubmitError)
     if input_api.verbose:
         print('Running ' + cmd_name)
     return input_api.RunTests([test_cmd])
 
+def CheckVetConfigTomlAndItsTemplateAreEditedTogether(input_api, output_api):
+    chromium_crates_io = input_api.os_path.join(
+        'third_party', 'rust', 'chromium_crates_io')
+    toml_path = input_api.os_path.join(
+        chromium_crates_io, 'supply-chain', 'config.toml')
+    hbs_path = input_api.os_path.join(chromium_crates_io, 'vet_config.toml.hbs')
+
+    affected_files = input_api.LocalPaths()
+    is_toml_edited = toml_path in affected_files
+    is_hbs_edited = hbs_path in affected_files
+
+    if is_toml_edited != is_hbs_edited:
+        return [output_api.PresubmitError(
+            f"ERROR: `{hbs_path}` and `{toml_path}` are not modified together",
+            long_text=\
+                f"Please edit `{hbs_path}` " + \
+                f"and then regenerate `{toml_path}` " + \
+                f"by running `tools/crates/run_gnrt.py vendor`" \
+        )]
+
+    return []

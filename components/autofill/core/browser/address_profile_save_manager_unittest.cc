@@ -171,17 +171,17 @@ class AddressProfileSaveManagerTest
     : public testing::Test,
       public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
-  void SetUp() override {
+  AddressProfileSaveManagerTest() {
     // These parameters would typically be set by `FormDataImporter` when
     // creating the `ImportScenarioTestCase::observed_profile`. This step
     // precedes the saving logic tested here. They expand the
     // `ImportScenarioTestCase`, but are part of the fixture, so they can be
     // tested in a parameterized way.
-    import_metadata_ = {.phone_import_status = std::get<0>(GetParam())
-                                                   ? PhoneImportStatus::kInvalid
-                                                   : PhoneImportStatus::kValid,
-                        .did_import_from_unrecognized_autocomplete_field =
-                            std::get<1>(GetParam())};
+    import_metadata_.phone_import_status = std::get<0>(GetParam())
+                                               ? PhoneImportStatus::kInvalid
+                                               : PhoneImportStatus::kValid;
+    import_metadata_.did_import_from_unrecognized_autocomplete_field =
+        std::get<1>(GetParam());
   }
 
   void BlockProfileForUpdates(const std::string& guid) {
@@ -440,7 +440,7 @@ void AddressProfileSaveManagerTest::VerifyUpdateAffectedTypesHistogram(
       break;
 
     default:
-      NOTREACHED() << "Decision not covered by test logic.";
+      NOTREACHED_IN_MIGRATION() << "Decision not covered by test logic.";
   }
   for (auto changed_type :
        test_scenario.expected_affeceted_types_in_merge_for_metrics) {

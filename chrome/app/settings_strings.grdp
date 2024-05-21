@@ -216,6 +216,24 @@
   <message name="IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_SUBTITLE" desc="Subtitle for screen reader image labels feature.">
     If an image doesn’t have a useful description, Chrome will try to provide one for you. To create descriptions, images are sent to Google.
   </message>
+  <message name="IDS_SETTINGS_MAIN_NODE_ANNOTATIONS_DOWNLOAD_COMPLETE" desc="Success message when it has downloaded main node annotation files." translateable="false">
+    Main node annotation files downloaded
+  </message>
+  <message name="IDS_SETTINGS_MAIN_NODE_ANNOTATIONS_DOWNLOAD_ERROR" desc="Generic error message when it fails to download main node annotation files." translateable="false">
+    Can't download main node annotation files. Try again later.
+  </message>
+  <message name="IDS_SETTINGS_MAIN_NODE_ANNOTATIONS_DOWNLOAD_PROGRESS" desc="Download progress indicator after main node annotation is enabled. The user needs to download certain files for the feature to work." translateable="false">
+    Downloading main node annotation files… <ph name="PERCENT">$1<ex>17</ex></ph>%
+  </message>
+  <message name="IDS_SETTINGS_MAIN_NODE_ANNOTATIONS_DOWNLOADING" desc="Generic message when it has started downloading main node annotation files." translateable="false">
+    Downloading main node annotation files
+  </message>
+  <message name="IDS_SETTINGS_MAIN_NODE_ANNOTATIONS_TITLE" desc="Description for screen reader main node annotations feature." translateable="false">
+    Annotate main node
+  </message>
+  <message name="IDS_SETTINGS_MAIN_NODE_ANNOTATIONS_SUBTITLE" desc="Subtitle for screen reader main node annotation feature." translateable="false">
+    Identify the main landmark in web pages for assistive technology
+  </message>
   <message name="IDS_SETTINGS_PDF_OCR_DOWNLOAD_COMPLETE" desc="Success message when it has downloaded PDF OCR files.">
     Text recognition files downloaded
   </message>
@@ -802,6 +820,23 @@
     </message>
     <message name="IDS_SETTINGS_DEFAULT_BROWSER_MAKE_DEFAULT_BUTTON" desc="Text of the button used to make Chrome the default browser on the user's system.">
       Make default
+    </message>
+  </if>
+
+  <if expr="chrome_root_store_cert_management_ui">
+    <!-- TODO(crbug.com/40928765): Make translatable once UI/strings are finalized. -->
+    <!-- Certificate Manager V2 Page -->
+    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_V2_CLIENT_CERTIFICATES" desc="Label for the client certificates tab in certificate manager." translateable="false">
+      Your certificates
+    </message>
+    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_V2_LOCAL_CERTIFICATES" desc="Label for the local certificates tab in certificate manager." translateable="false">
+      Local certificates
+    </message>
+    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_V2_CRS_CERTIFICATES" desc="Label for the Chrome Root Store certificates tab in certificate manager." translateable="false">
+      Chrome Root Store
+    </message>
+    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_V2_HASH_COPIED_TOAST" desc="Label for the hash copied toast message in certificate manager." translateable="false">
+      Hash copied to clipboard
     </message>
   </if>
 
@@ -1536,6 +1571,15 @@
   <message name="IDS_SETTINGS_OFFER_WRITING_HELP_DISABLED_SUB_LABEL" desc="Sub-label for the site settings writing help page link, used when the offer writing help preference is disabled.">
     Don't allow "Help me write" to automatically open
   </message>
+  <message name="IDS_SETTINGS_OFFER_WRITING_HELP_DISABLED_SITES_LABEL" desc="Label of the list of sites on which the writing help suggestion feature is disabled.">
+    Never offer writing help on these sites
+  </message>
+  <message name="IDS_SETTINGS_OFFER_WRITING_HELP_NO_DISABLED_SITES" desc="Placeholder text for the writing help suggestions disabled sites list, when no sites have been added.">
+    No sites added
+  </message>
+  <message name="IDS_SETTINGS_OFFER_WRITING_HELP_REMOVE_SITE_ARIA_LABEL" desc="Text read by screen readers when focusing on the remove icon for disabled sites. Activating this button will remove the corresponding site. This text only announced by screen readers and is not visible in the UI.">
+    Remove <ph name="SITE_NAME">$1<ex>https://www.google.com</ex></ph> from disabled sites
+  </message>
 
   <!-- Anti-abuse Page -->
   <message name="IDS_SETTINGS_ANTI_ABUSE_ENABLED_SUB_LABEL" desc="The label used for the anti-abuse site settings sub-label when the anti-abuse setting is turned on.">
@@ -1999,6 +2043,11 @@
     {NUM_SITES, plural,
      =1 {To protect your data, permissions were removed from a site you haven't visited recently}
      other {To protect your data, permissions were removed from sites you haven't visited recently}}
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_REVOKED_PERMISSIONS_SECONDARY_LABEL" desc="'Revoked Permissions' shows websites for which permissions have been revoked. This label is the description of the module in the site settings page.">
+    {NUM_SITES, plural,
+     =1 {To protect your privacy, permissions were removed from a site}
+     other {To protect your privacy, permissions were removed from some sites}}
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_TOAST_BULK_LABEL" desc="'Unused Site Permissions' shows unused websites for which permissions have been revoked. This label is shown in a toast popup message after a user has clicked a button to acknowledge all revoked permissions.">
     {NUM_SITES, plural,
@@ -4552,6 +4601,11 @@
     {NUM_SITES, plural,
       =1 {Removed permissions for 1 unused site}
       other {Removed permissions for {NUM_SITES} unused sites}}
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_REVOKED_PERMISSIONS_MENU_NOTIFICATION" desc="The revoked permissions module of Safety Hub revokes permissions of sites that the user hasn't visited in a while or that send abusive notifications. This label is for the notification in Chrome's three-dot menu indicating for how many sites the permission was revoked.">
+    {NUM_SITES, plural,
+      =1 {Removed permissions for 1 site}
+      other {Removed permissions for {NUM_SITES} sites}}
   </message>
   <message name="IDS_SETTINGS_SAFETY_HUB_REVIEW_NOTIFICATION_PERMISSIONS_MENU_NOTIFICATION" desc="The review notification permissions module of Safety Hub marks sites that send a lot of notifications for review by the user. This label is for the notification in Chrome's three-dot menu indicating how many sites should be reviewed.">
     {NUM_SITES, plural,

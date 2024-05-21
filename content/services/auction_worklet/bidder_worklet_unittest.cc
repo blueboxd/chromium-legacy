@@ -21,6 +21,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
@@ -112,9 +113,8 @@ static std::string CreateBasicGenerateBidScript() {
       R"({ad: ["ad"], bid:1, render:"https://response.test/"})");
 }
 
-// Returns a working script which calls forDebuggingOnly.reportAdAuctionLoss()
-// and forDebuggingOnly.reportAdAuctionWin() if corresponding url is provided.
-static std::string CreateBasicGenerateBidScriptWithDebuggingReport(
+// Returns a working script which executes given `extra_code` as well.
+static std::string CreateBasicGenerateBidScriptWithExtraCode(
     const std::string& extra_code) {
   return CreateGenerateBidScript(
       R"({ad: ["ad"], bid:1, render:"https://response.test/"})", extra_code);
@@ -2942,8 +2942,8 @@ TEST_F(BidderWorkletMultiBidTest, TargetNumAdComponents) {
       {"https://url.test/ generateBid() numMandatoryAdComponents cannot exceed "
        "targetNumAdComponents."});
 
-  // Providing invalid (as opposed to non-k-anon) component ads
-  // beyond the limit is still an error.
+  // Providing invalid (as opposed to non-k-anon) component ads beyond the limit
+  // is still an error.
   RunGenerateBidWithReturnValueExpectingResult(
       R"({ad: "ad", bid: 5,
           render: {url: "https://response.test/"},
@@ -7231,7 +7231,7 @@ TEST_F(BidderWorkletTest, ForDebuggingOnlyReportsWithDebugFeatureDisabled) {
       blink::features::kBiddingAndScoringDebugReportingAPI);
 
   RunGenerateBidWithJavascriptExpectingResult(
-      CreateBasicGenerateBidScriptWithDebuggingReport(
+      CreateBasicGenerateBidScriptWithExtraCode(
           R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url"))"),
       mojom::BidderWorkletBid::New(
           auction_worklet::mojom::BidRole::kUnenforcedKAnon, "[\"ad\"]", 1,
@@ -7242,7 +7242,7 @@ TEST_F(BidderWorkletTest, ForDebuggingOnlyReportsWithDebugFeatureDisabled) {
           /*modeling_signals=*/std::nullopt, base::TimeDelta()));
 
   RunGenerateBidWithJavascriptExpectingResult(
-      CreateBasicGenerateBidScriptWithDebuggingReport(
+      CreateBasicGenerateBidScriptWithExtraCode(
           R"(forDebuggingOnly.reportAdAuctionWin("https://win.url"))"),
       mojom::BidderWorkletBid::New(
           auction_worklet::mojom::BidRole::kUnenforcedKAnon, "[\"ad\"]", 1,
@@ -8912,7 +8912,7 @@ class BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest
 TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
        ForDebuggingOnlyReports) {
   RunGenerateBidWithJavascriptExpectingResult(
-      CreateBasicGenerateBidScriptWithDebuggingReport(
+      CreateBasicGenerateBidScriptWithExtraCode(
           R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url");
             forDebuggingOnly.reportAdAuctionWin("https://win.url"))"),
       mojom::BidderWorkletBid::New(
@@ -8928,7 +8928,7 @@ TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
 
   // It's OK to call one API but not the other.
   RunGenerateBidWithJavascriptExpectingResult(
-      CreateBasicGenerateBidScriptWithDebuggingReport(
+      CreateBasicGenerateBidScriptWithExtraCode(
           R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url"))"),
       mojom::BidderWorkletBid::New(
           auction_worklet::mojom::BidRole::kUnenforcedKAnon, "[\"ad\"]", 1,
@@ -8941,7 +8941,7 @@ TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
       /*expected_errors=*/{}, GURL("https://loss.url"),
       /*expected_debug_win_report_url=*/std::nullopt);
   RunGenerateBidWithJavascriptExpectingResult(
-      CreateBasicGenerateBidScriptWithDebuggingReport(
+      CreateBasicGenerateBidScriptWithExtraCode(
           R"(forDebuggingOnly.reportAdAuctionWin("https://win.url"))"),
       mojom::BidderWorkletBid::New(
           auction_worklet::mojom::BidRole::kUnenforcedKAnon, "[\"ad\"]", 1,
@@ -8956,7 +8956,7 @@ TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
 
   // forDebuggingOnly binding errors are collected by bidder worklets.
   RunGenerateBidWithJavascriptExpectingResult(
-      CreateBasicGenerateBidScriptWithDebuggingReport(
+      CreateBasicGenerateBidScriptWithExtraCode(
           R"(forDebuggingOnly.reportAdAuctionLoss())"),
       /*expected_bids=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/std::nullopt,
@@ -8992,7 +8992,7 @@ TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
   {
     AddJavascriptResponse(
         &url_loader_factory_, interest_group_bidding_url_,
-        CreateBasicGenerateBidScriptWithDebuggingReport(
+        CreateBasicGenerateBidScriptWithExtraCode(
             base::StringPrintf(R"(forDebuggingOnly.reportAdAuctionLoss("%s");
                                   forDebuggingOnly.reportAdAuctionWin("%s"))",
                                almost_too_long_loss_report_url.c_str(),
@@ -9032,7 +9032,7 @@ TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
   {
     AddJavascriptResponse(
         &url_loader_factory_, interest_group_bidding_url_,
-        CreateBasicGenerateBidScriptWithDebuggingReport(
+        CreateBasicGenerateBidScriptWithExtraCode(
             base::StringPrintf(R"(forDebuggingOnly.reportAdAuctionLoss("%s");
                                   forDebuggingOnly.reportAdAuctionWin("%s"))",
                                too_long_loss_report_url.c_str(),
@@ -9072,7 +9072,7 @@ TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
 TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
        ForDebuggingOnlyArgumentTimeout) {
   RunGenerateBidWithJavascriptExpectingResult(
-      CreateBasicGenerateBidScriptWithDebuggingReport(
+      CreateBasicGenerateBidScriptWithExtraCode(
           R"(forDebuggingOnly.reportAdAuctionLoss({
               toString:() => {while(true) {}}
           }))"),
@@ -9081,7 +9081,7 @@ TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
       {"https://url.test/ execution of `generateBid` timed out."});
 
   RunGenerateBidWithJavascriptExpectingResult(
-      CreateBasicGenerateBidScriptWithDebuggingReport(
+      CreateBasicGenerateBidScriptWithExtraCode(
           R"(forDebuggingOnly.reportAdAuctionWin({
               toString:() => {while(true) {}}
           }))"),
@@ -9096,7 +9096,7 @@ TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
        ForDebuggingOnlyReportsInvalidGenerateBidParameter) {
   auction_signals_ = "invalid json";
   RunGenerateBidWithJavascriptExpectingResult(
-      CreateBasicGenerateBidScriptWithDebuggingReport(
+      CreateBasicGenerateBidScriptWithExtraCode(
           R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url");
             forDebuggingOnly.reportAdAuctionWin("https://win.url"))"),
       /*expected_bids=*/mojom::BidderWorkletBidPtr(),
@@ -9124,8 +9124,8 @@ TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
 
 TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
        GenerateBidInvalidReturnValue) {
-  // Keep debugging loss report URLs when generateBid() returns invalid
-  // value type.
+  // Keep debugging loss report URLs when generateBid() returns invalid value
+  // type.
   RunGenerateBidWithJavascriptExpectingResult(
       CreateGenerateBidScript(
           R"({ad: ["ad"], bid:"invalid", render:"https://response.test/"})",
@@ -11997,6 +11997,8 @@ class BidderWorkletCrossOriginTrustedSignalsTest : public BidderWorkletTest {
 // With the feature on, same-origin trusted signals still come in the same,
 // only there is an extra null param.
 TEST_F(BidderWorkletCrossOriginTrustedSignalsTest, SameOrigin) {
+  base::HistogramTester histogram_tester;
+
   const GURL kBaseSignalsUrl("https://signals.test/");
   interest_group_bidding_url_ = kBaseSignalsUrl;
   interest_group_trusted_bidding_signals_url_ = kBaseSignalsUrl;
@@ -12030,11 +12032,17 @@ TEST_F(BidderWorkletCrossOriginTrustedSignalsTest, SameOrigin) {
 
   RunGenerateBidExpectingExpressionIsTrue("trustedBiddingSignals['key1'] === 1",
                                           /*expected_data_version=*/5);
+
+  // Should have one sample for each test.
+  histogram_tester.ExpectUniqueSample(
+      "Ads.InterestGroup.Auction.TrustedBidderSignalsOriginRelation",
+      BidderWorklet::SignalsOriginRelation::kSameOriginSignals, 5);
 }
 
 // Cross-origin signals (and their version) come in as different parameters
 // and fields.
 TEST_F(BidderWorkletCrossOriginTrustedSignalsTest, CrossOrigin) {
+  base::HistogramTester histogram_tester;
   const GURL kBaseSignalsUrl("https://signals.test/");
   interest_group_bidding_url_ = GURL("https://url.test/");
   interest_group_trusted_bidding_signals_url_ = kBaseSignalsUrl;
@@ -12078,6 +12086,10 @@ TEST_F(BidderWorkletCrossOriginTrustedSignalsTest, CrossOrigin) {
 
   RunGenerateBidExpectingExpressionIsTrue("trustedBiddingSignals === null",
                                           /*expected_data_version=*/5);
+  // Should have one sample for each test.
+  histogram_tester.ExpectUniqueSample(
+      "Ads.InterestGroup.Auction.TrustedBidderSignalsOriginRelation",
+      BidderWorklet::SignalsOriginRelation::kCrossOriginSignals, 5);
 }
 
 class BidderWorkletRealTimeReportingEnabledTest : public BidderWorkletTest {
@@ -12108,9 +12120,7 @@ realTimeReporting.contributeToRealTimeHistogram(100, {priorityWeight: 0.5})
   expected_real_time_contributions.push_back(expected_histogram.Clone());
 
   RunGenerateBidWithJavascriptExpectingResult(
-      // TODO: rename the function, if really need to use it, to
-      //  CreateBasicGenerateBidScriptWithExtraReport.
-      CreateBasicGenerateBidScriptWithDebuggingReport(kExtraCode),
+      CreateBasicGenerateBidScriptWithExtraCode(kExtraCode),
       mojom::BidderWorkletBid::New(
           auction_worklet::mojom::BidRole::kUnenforcedKAnon, "[\"ad\"]", 1,
           /*bid_currency=*/std::nullopt,
@@ -12178,9 +12188,7 @@ while (1);
       expected_latency_histogram.Clone());
 
   RunGenerateBidWithJavascriptExpectingResult(
-      // TODO(qingxinwu): rename the function, if really need to use it, to
-      //  CreateBasicGenerateBidScriptWithExtraReport.
-      CreateBasicGenerateBidScriptWithDebuggingReport(kExtraCode),
+      CreateBasicGenerateBidScriptWithExtraCode(kExtraCode),
       /*expected_bids=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/std::nullopt,
       /*expected_errors=*/
@@ -12213,9 +12221,7 @@ realTimeReporting.contributeOnWorkletLatency(
   expected_real_time_contributions.push_back(expected_histogram.Clone());
 
   RunGenerateBidWithJavascriptExpectingResult(
-      // TODO: rename the function, if really need to use it, to
-      //  CreateBasicGenerateBidScriptWithExtraReport.
-      CreateBasicGenerateBidScriptWithDebuggingReport(kExtraCode),
+      CreateBasicGenerateBidScriptWithExtraCode(kExtraCode),
       mojom::BidderWorkletBid::New(
           auction_worklet::mojom::BidRole::kUnenforcedKAnon, "[\"ad\"]", 1,
           /*bid_currency=*/std::nullopt,

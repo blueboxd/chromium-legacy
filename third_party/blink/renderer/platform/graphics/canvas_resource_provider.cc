@@ -32,6 +32,7 @@
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
+#include "gpu/config/gpu_feature_type.h"
 #include "skia/buildflags.h"
 #include "skia/ext/legacy_display_globals.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -755,7 +756,7 @@ class CanvasResourceProviderPassThrough final : public CanvasResourceProvider {
   scoped_refptr<CanvasResource> CreateResource() final {
     // This class has no CanvasResource to provide: this must be imported via
     // ImportResource() and kept in the parent class.
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return nullptr;
   }
 
@@ -764,7 +765,7 @@ class CanvasResourceProviderPassThrough final : public CanvasResourceProvider {
   }
 
   sk_sp<SkSurface> CreateSkSurface() const override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return nullptr;
   }
 
@@ -1312,6 +1313,11 @@ const base::FeatureParam<int> kMaxPinnedImageKB(&kCanvas2DAutoFlushParams,
                                                 "max_pinned_image_kb",
                                                 32 * 1024);
 
+// Feature only consulted if graphite is enabled.
+BASE_FEATURE(kUseLargerRecordedPaintOpBuffer,
+             "UseLargerRecordedPaintOpBuffer",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 CanvasResourceProvider::CanvasResourceProvider(
     const ResourceProviderType& type,
     const SkImageInfo& info,
@@ -1336,6 +1342,14 @@ CanvasResourceProvider::CanvasResourceProvider(
     const auto& caps =
         context_provider_wrapper_->ContextProvider()->GetCapabilities();
     oopr_uses_dmsaa_ = !caps.msaa_is_slow && !caps.avoid_stencil_buffers;
+    // Graphite can handle a large buffer size.
+    if (base::FeatureList::IsEnabled(kUseLargerRecordedPaintOpBuffer) &&
+        context_provider_wrapper_->ContextProvider()
+                ->GetGpuFeatureInfo()
+                .status_values[gpu::GPU_FEATURE_TYPE_SKIA_GRAPHITE] ==
+            gpu::kGpuFeatureStatusEnabled) {
+      max_recorded_op_bytes_ = 4 * 1024 * 1024;
+    }
   }
 
   CanvasMemoryDumpProvider::Instance()->RegisterClient(this);
@@ -1649,9 +1663,10 @@ void CanvasResourceProvider::RasterRecordOOP(cc::PaintRecord last_recording,
                           can_use_lcd_text, /*visible=*/true, GetColorSpace(),
                           /*hdr_headroom=*/1.f, mailbox.name);
 
-  ri->RasterCHROMIUM(list.get(), GetOrCreateCanvasImageProvider(), size,
-                     full_raster_rect, playback_rect, post_translate,
-                     post_scale, false /* requires_clear */, &max_op_size_hint);
+  ri->RasterCHROMIUM(
+      list.get(), GetOrCreateCanvasImageProvider(), size, full_raster_rect,
+      playback_rect, post_translate, post_scale, /*requires_clear=*/false,
+      /*raster_inducing_scroll_offsets=*/nullptr, &max_op_size_hint);
 
   ri->EndRasterCHROMIUM();
 }
@@ -1708,7 +1723,7 @@ uint32_t CanvasResourceProvider::ContentUniqueID() const {
 
 scoped_refptr<CanvasResource> CanvasResourceProvider::CreateResource() {
   // Needs to be implemented in subclasses that use resource recycling.
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 

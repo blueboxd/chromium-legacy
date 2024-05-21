@@ -17,6 +17,7 @@ import org.chromium.components.data_sharing.DataSharingUIDelegate;
 import org.chromium.components.data_sharing.configs.AvatarConfig;
 import org.chromium.components.data_sharing.configs.GroupMemberConfig;
 import org.chromium.components.data_sharing.configs.MemberPickerConfig;
+import org.chromium.url.GURL;
 
 import java.util.List;
 
@@ -58,4 +59,7 @@ class DataSharingUIDelegateImpl implements DataSharingUIDelegate, UserData {
             String groupId,
             String tokenSecret,
             GroupMemberConfig config) {}
+
+    @Override
+    public void handleShareURLIntercepted(GURL url) {}
 }

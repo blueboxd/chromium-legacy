@@ -237,7 +237,11 @@ const base::FeatureParam<int> kNumPendingFrames{&kVSyncAlignedPresent,
 
 BASE_FEATURE(kAllowUndamagedNonrootRenderPassToSkip,
              "AllowUndamagedNonrootRenderPassToSkip",
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_LACROS)
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else
              base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 // Allow SurfaceAggregator to merge render passes when they contain quads that
 // require overlay (e.g. protected video). See usage in |EmitSurfaceContent|.
@@ -357,7 +361,7 @@ BASE_FEATURE(kHideDelegatedFrameHostMac,
 // Enabled by default 03/2014, kept to run a holdback experiment.
 BASE_FEATURE(kEvictionUnlocksResources,
              "EvictionUnlocksResources",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, FrameRateDecider will toggle to half framerate if there's only
 // one video on screen whose framerate is lower than the display vsync and in
@@ -395,7 +399,19 @@ const base::FeatureParam<double> kSnapshotEvictedRootSurfaceScale{
 // inserting a separate color conversion pass during surface aggregation.
 BASE_FEATURE(kColorConversionInRenderer,
              "ColorConversionInRenderer",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Changes BeginFrame issue to use LastUsedBeginFrameArgs() instead of the
+// current set of BeginFrameArgs.
+// TODO(b/333940735): Should be removed if the issue isn't fixed.
+BASE_FEATURE(kUseLastBeginFrameArgs,
+             "UseLastBeginFrameArgs",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Use BlitRequests for copy requests made by ViewTransition.
+BASE_FEATURE(kBlitRequestsForViewTransition,
+             "BlitRequestsForViewTransition",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsDelegatedCompositingEnabled() {
   return base::FeatureList::IsEnabled(kDelegatedCompositing);
@@ -441,7 +457,7 @@ std::optional<int> ShouldDrawPredictedInkPoints() {
   else if (predicted_points == kDraw2Points3Ms)
     return viz::PredictionConfig::k2Points3Ms;
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return std::nullopt;
 }
 

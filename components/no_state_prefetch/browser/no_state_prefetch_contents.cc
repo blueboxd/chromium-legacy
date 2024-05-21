@@ -176,7 +176,6 @@ NoStatePrefetchContents::NoStatePrefetchContents(
       process_pid_(base::kNullProcessId),
       origin_(origin) {
   switch (origin) {
-    case ORIGIN_OMNIBOX:
     case ORIGIN_NAVIGATION_PREDICTOR:
       DCHECK(!initiator_origin_.has_value());
       break;
@@ -190,7 +189,7 @@ NoStatePrefetchContents::NoStatePrefetchContents(
       break;
     case ORIGIN_NONE:
     case ORIGIN_MAX:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 
   DCHECK(no_state_prefetch_manager);
@@ -303,10 +302,7 @@ void NoStatePrefetchContents::StartPrerendering(
   load_url_params.referrer = referrer_;
   load_url_params.initiator_origin = initiator_origin_;
   load_url_params.transition_type = ui::PAGE_TRANSITION_LINK;
-  if (origin_ == ORIGIN_OMNIBOX) {
-    load_url_params.transition_type = ui::PageTransitionFromInt(
-        ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-  } else if (origin_ == ORIGIN_NAVIGATION_PREDICTOR) {
+  if (origin_ == ORIGIN_NAVIGATION_PREDICTOR) {
     load_url_params.transition_type =
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_GENERATED);
   }

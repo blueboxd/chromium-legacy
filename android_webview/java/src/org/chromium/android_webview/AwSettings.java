@@ -34,6 +34,7 @@ import org.chromium.android_webview.safe_browsing.AwSafeBrowsingConfigHelper;
 import org.chromium.android_webview.settings.AttributionBehavior;
 import org.chromium.android_webview.settings.ForceDarkBehavior;
 import org.chromium.android_webview.settings.ForceDarkMode;
+import org.chromium.android_webview.settings.SpeculativeLoadingAllowedFlags;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -171,6 +172,11 @@ public class AwSettings {
     private boolean mEnableSupportedHardwareAcceleratedFeatures;
     private int mMixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW;
     private int mAttributionBehavior = AttributionBehavior.APP_SOURCE_AND_WEB_TRIGGER;
+
+    @SpeculativeLoadingAllowedFlags
+    private int mSpeculativeLoadingAllowedFlags =
+            SpeculativeLoadingAllowedFlags.SPECULATIVE_LOADING_DISABLED;
+
     private boolean mCSSHexAlphaColorEnabled;
     private boolean mScrollTopLeftInteropEnabled;
     private boolean mWillSuppressErrorPage;
@@ -304,6 +310,10 @@ public class AwSettings {
         void updateAllowFileAccessLocked() {
             runOnUiThreadBlockingAndLocked(() -> updateAllowFileAccessOnUiThreadLocked());
         }
+
+        void updateSpeculativeLoadingAllowedLocked() {
+            runOnUiThreadBlockingAndLocked(() -> updateSpeculativeLoadingAllowedOnUiThreadLocked());
+        }
     }
 
     interface ZoomSupportChangeListener {
@@ -371,14 +381,11 @@ public class AwSettings {
             mAllowFileUrlAccess =
                     ContextUtils.getApplicationContext().getApplicationInfo().targetSdkVersion
                             < Build.VERSION_CODES.R;
-            if (AwFeatureMap.isEnabled(
-                    AwFeatures.WEBVIEW_X_REQUESTED_WITH_HEADER_MANIFEST_ALLOW_LIST)) {
-                mRequestedWithHeaderAllowedOriginRules =
-                        ManifestMetadataUtil.getXRequestedWithAllowList();
-            } else {
-                mRequestedWithHeaderAllowedOriginRules = Collections.emptySet();
-            }
+            mRequestedWithHeaderAllowedOriginRules =
+                    ManifestMetadataUtil.getXRequestedWithAllowList();
             mIntegrityApiStatusConfig = new AwMediaIntegrityApiStatusConfig();
+            mSpeculativeLoadingAllowedFlags =
+                    SpeculativeLoadingAllowedFlags.SPECULATIVE_LOADING_DISABLED;
         }
         // Defer initializing the native side until a native WebContents instance is set.
     }
@@ -1754,6 +1761,23 @@ public class AwSettings {
         }
     }
 
+    public void setSpeculativeLoadingAllowed(@SpeculativeLoadingAllowedFlags int flags) {
+        synchronized (mAwSettingsLock) {
+            if (mSpeculativeLoadingAllowedFlags != flags) {
+                mSpeculativeLoadingAllowedFlags = flags;
+                mEventHandler.updateSpeculativeLoadingAllowedLocked();
+            }
+        }
+    }
+
+    @CalledByNative
+    @SpeculativeLoadingAllowedFlags
+    public int getSpeculativeLoadingAllowed() {
+        synchronized (mAwSettingsLock) {
+            return mSpeculativeLoadingAllowedFlags;
+        }
+    }
+
     @ForceDarkMode
     public int getForceDarkMode() {
         synchronized (mAwSettingsLock) {
@@ -2046,6 +2070,15 @@ public class AwSettings {
         }
     }
 
+    private void updateSpeculativeLoadingAllowedOnUiThreadLocked() {
+        assert mEventHandler.mHandler != null;
+        ThreadUtils.assertOnUiThread();
+        if (mNativeAwSettings != 0) {
+            AwSettingsJni.get()
+                    .updateSpeculativeLoadingAllowedLocked(mNativeAwSettings, AwSettings.this);
+        }
+    }
+
     public void setEnterpriseAuthenticationAppLinkPolicyEnabled(boolean enabled) {
         synchronized (mAwSettingsLock) {
             mEventHandler.runOnUiThreadBlockingAndLocked(
@@ -2152,6 +2185,8 @@ public class AwSettings {
         void updateCookiePolicyLocked(long nativeAwSettings, AwSettings caller);
 
         void updateAllowFileAccessLocked(long nativeAwSettings, AwSettings caller);
+
+        void updateSpeculativeLoadingAllowedLocked(long nativeAwSettings, AwSettings caller);
 
         boolean isForceDarkApplied(long nativeAwSettings, AwSettings caller);
 

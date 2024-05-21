@@ -217,11 +217,6 @@ CHAR_LIMIT guidelines:
         Advanced
       </message>
 
-      <!-- TODO(b/326574743): Revisit string and mark it as translateable.-->
-      <message name="IDS_ACCOUNT_ADVANCED_HEADER" desc="Heading of a section with settings related to the user's Google Account and data. [CHAR_LIMIT=32]" translateable="false">
-        Control your data &amp; account
-      </message>
-
       <!-- Notification channels -->
       <message name="IDS_NOTIFICATION_CATEGORY_GROUP_GENERAL" desc='Subheading for "General" section of a list of notification categories. [CHAR_LIMIT=32]'>
         General
@@ -654,8 +649,35 @@ CHAR_LIMIT guidelines:
       <message name="IDS_PASSWORD_SETTINGS_SAVE_PASSWORDS" desc="Title for the checkbox toggling whether passwords are saved or not. [CHAR_LIMIT=32]">
         Save passwords
       </message>
+      <message name="IDS_PASSWORDS_ACCOUNT_STORAGE_TOGGLE_TITLE" desc="Title for the toggle in settings that controls whether signed-in users can save/autofill passwords to/from their account.">
+        Use and save passwords in your Google Account
+      </message>
+      <message name="IDS_PASSWORDS_ACCOUNT_STORAGE_TOGGLE_SUMMARY" desc="Summary for the toggle in settings that controls whether signed-in users can save/autofill passwords to/from their account.">
+        When on, passwords are saved in <ph name="ACCOUNT">%1$s<ex>foo@gmail.com</ex></ph>. When off, passwords are saved only to this device.
+      </message>
+      <message name="IDS_PASSWORDS_ACCOUNT_STORAGE_TOGGLE_SUMMARY_NO_EMAIL" desc="Same as IDS_PASSWORDS_ACCOUNT_STORAGE_TOGGLE_SUMMARY but for accounts whose emails we cannot display.">
+        When on, passwords are saved in your account. When off, passwords are saved only to this device.
+      </message>
       <message name="IDS_PASSWORDS_AUTO_SIGNIN_TITLE" desc="Title for checkbox to enable automatically signing the user in to websites">
         Auto Sign-in
+      </message>
+      <message name="IDS_PASSWORDS_ACCOUNT_STORAGE_NOTICE_TITLE" desc="Title of the sheet that notifies the user they are saving passwords to their Google Account.">
+        Passwords on all your devices
+      </message>
+      <message name="IDS_PASSWORDS_ACCOUNT_STORAGE_NOTICE_SUBTITLE" desc="Subtitle of the sheet that notifies the user they are saving passwords to their Google Account.">
+        When you’re signed in to Chrome, passwords you save will go in your Google Account. To turn this off, <ph name="BEGIN_LINK">&lt;link&gt;</ph>go to settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+      </message>
+      <message name="IDS_PASSWORDS_ACCOUNT_STORAGE_NOTICE_BUTTON_TEXT" desc="Button text for the sheet that notifies the user they are saving passwords to their Google Account.">
+        Got it
+      </message>
+      <message name="IDS_PASSWORDS_ACCOUNT_STORAGE_NOTICE_HALF_HEIGHT_ACCESSIBILITY_LABEL" desc="Accessibility label of the sheet that notifies the user they are saving passwords to their Google Account, when the sheet is at half height.">
+        Passwords on all your devices opened at half height
+      </message>
+      <message name="IDS_PASSWORDS_ACCOUNT_STORAGE_NOTICE_FULL_HEIGHT_ACCESSIBILITY_LABEL" desc="Accessibility label of the sheet that notifies the user they are saving passwords to their Google Account, when the sheet is at full height.">
+        Passwords on all your devices opened at full height
+      </message>
+      <message name="IDS_PASSWORDS_ACCOUNT_STORAGE_NOTICE_CLOSED_ACCESSIBILITY_LABEL" desc="Accessibility label of the sheet that notifies the user they are saving passwords to their Google Account, when the sheet is closed.">
+        Passwords on all your devices closed
       </message>
       <message name="IDS_PASSWORDS_AUTO_SIGNIN_DESCRIPTION" desc="Text under 'Auto sign-in' checkbox">
         Automatically sign in to websites using stored credentials. When the feature is off, you’ll be asked for verification every time before signing in to a website.
@@ -1333,10 +1355,16 @@ Your Google account may have other forms of browsing history like searches and a
         Some of your history might not show up here. To see all your Chrome history, open full Chrome history.
       </message>
       <message name="IDS_ANDROID_APP_HISTORY_OPEN_FULL_OTHER_FORMS" desc="The informational message at the top of the history page letting users know that app-specific history may be missing some entries, followed by the info on the other forms of browing history.">
-        Some of your history might not show up here. To see all your Chrome history, open full Chrome history. Also, Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK">&lt;link&gt;</ph>myactivity.google.com<ph name="END_LINK">&lt;/link&gt;</ph>.
+        Some of your history might not show up here. To see all your Chrome history, open full Chrome history. Also, your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK">&lt;link&gt;</ph>myactivity.google.com<ph name="END_LINK">&lt;/link&gt;</ph>.
       </message>
       <message name="IDS_ANDROID_HISTORY_OTHER_FORMS_OF_HISTORY" desc="The notification at the top of the history page indicating that deleting Chrome browsing history will not delete other forms of history stored at Google My Activity.">
         Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK">&lt;link&gt;</ph>myactivity.google.com<ph name="END_LINK">&lt;/link&gt;</ph>.
+      </message>
+      <message name="IDS_ANDROID_HISTORY_FROM_OTHER_APPS" desc="The notification at the top of the history page indicating that users will see the history from other apps that open links in Chrome.">
+        You may see the history from other apps that open links in Chrome.
+      </message>
+      <message name="IDS_ANDROID_HISTORY_FROM_OTHER_APPS_OTHER_FORMS_OF_HISTORY" desc="The notification at the top of the history page indicating that 1) users will see the history from other apps that open links in Chrome 2) deleting Chrome browsing history will not delete other forms of history stored at Google My Activity.">
+        You may see the history from other apps that open links in Chrome. Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK">&lt;link&gt;</ph>myactivity.google.com<ph name="END_LINK">&lt;/link&gt;</ph>.
       </message>
       <message name="IDS_ANDROID_HISTORY_BLOCKED_SITE" desc="The text displayed in the history page indicating that a visit to a web site was blocked due to an administrator policy.">
         Blocked site
@@ -2173,20 +2201,16 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_SIGNOUT_MANAGED_ACCOUNT_MESSAGE" desc="Message to display for sign out of Chrome dialog when the account has enterprise management, and all user data will be erased">
         Because you're signing out of an account managed by <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph>, your Chrome data will be deleted from this device. It will remain in your Google Account.
       </message>
-      <!-- TODO(crbug.com/41493790): Add description and remove translateable once strings are finalized. -->
-      <message name="IDS_SIGN_OUT_SNACKBAR_MESSAGE" desc="to be added" translateable="false">
-          Signed out. Sign back in to use the bookmarks, passwords and more in your account.
+      <message name="IDS_SIGN_OUT_SNACKBAR_MESSAGE" desc="Snackbar message shown after signing out from account settings">
+        Signed out. Sign back in to use the bookmarks, passwords and more in your account.
       </message>
-      <!-- TODO(crbug.com/41493791): Add description and remove translateable once strings are finalized. -->
-      <message name="IDS_SIGN_OUT_UNSAVED_DATA_TITLE" desc="to be added" translateable="false">
-        Unsaved data
+      <message name="IDS_SIGN_OUT_UNSAVED_DATA_TITLE" desc="Title of a dialog shown to users when they sign out of Chrome but Chrome hasn't synced some data yet, which is permanently deleted if the user proceeds.">
+        Some data isn\u2019t saved yet
       </message>
-      <!-- TODO(crbug.com/41493791): Add description and remove translateable once strings are finalized. -->
-      <message name="IDS_SIGN_OUT_UNSAVED_DATA_MESSAGE" desc="to be added" translateable="false">
+      <message name="IDS_SIGN_OUT_UNSAVED_DATA_MESSAGE" desc="Body of a dialog shown to users when they sign out of Chrome but Chrome hasn't synced some data yet, which is permanently deleted if the user proceeds.">
         Some of your Chrome data hasn\u2019t been saved in your Google Account yet.\nTry waiting a few minutes before signing out. If you sign out now, this data will be deleted.
       </message>
-      <!-- TODO(crbug.com/41493791): Add description and remove translateable once strings are finalized. -->
-      <message name="IDS_SIGN_OUT_UNSAVED_DATA_PRIMARY_BUTTON" desc="to be added" translateable="false">
+      <message name="IDS_SIGN_OUT_UNSAVED_DATA_PRIMARY_BUTTON" desc="Button title of a dialog shown to users when they sign out of Chrome but Chrome hasn't synced some data yet, which is parmanently deleted if the user proceeds by pressing this button">
         Delete and sign out
       </message>
       <message name="IDS_SIGN_IN_GETTING_ACCOUNT_MANAGEMENT_POLICY" desc="Title of progress bar dialog for getting management policy">
@@ -2251,10 +2275,6 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_SYNC_HISTORY" desc="Title for preference which enables sync'ing of history data. [CHAR_LIMIT=32]">
         History
       </message>
-      <!-- TODO(b/326574743): Revisit string and mark it as translatable.-->
-      <message name="IDS_SYNC_HISTORY_AND_TABS" desc="Title for preference which enables sync'ing of history data and open tabs. [CHAR_LIMIT=32]" translateable="false">
-        History and Tabs
-      </message>
       <message name="IDS_SYNC_PASSWORDS" desc="Title for preference which enables sync'ing of passwords. [CHAR_LIMIT=32]">
         Passwords
       </message>
@@ -2270,12 +2290,38 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_SYNC_APPS" desc="Title for preference which enables sync'ing of WebAPKs. [CHAR_LIMIT=32]">
         Apps
       </message>
-      <!-- TODO(b/326574743): Revisit string and mark it as translatable.-->
-      <message name="IDS_ACCOUNT_SECTION_FOOTER" desc="Footer below a section with toggles to control which types of data users can use and save in their Google Account (as opposed to saving them only on the device)." translateable="false">
-        When on, use and save data in your Google Account. When off, data is saved only to this device.
-      </message>
       <message name="IDS_SYNC_PAYMENTS_INTEGRATION" desc="Title for preference which enables import of Google Pay data for Autofill. 'Google Pay' should not be translated as it is the product name.">
         Payment methods, offers, and addresses using Google Pay
+      </message>
+      <message name="IDS_ACCOUNT_SECTION_HEADER" desc="Header of a section with toggles to control which types of data users can use and save in their Google Account (as opposed to saving them only on the device). Try to avoid long strings because this is a header in large font size.">
+        In your Google Account
+      </message>
+      <message name="IDS_ACCOUNT_SECTION_HISTORY_TOGGLE" desc="History and tabs, one of the data types that we allow syncing. Shown on next to the toggle that controls whether history should be saved in the Google Account and synced across devices.">
+        History and Tabs
+      </message>
+      <message name="IDS_ACCOUNT_SECTION_BOOKMARKS_TOGGLE" desc="Bookmarks, one of the data types that we allow syncing. Shown on next to the toggle that controls whether bookmarks should be saved in the Google Account and synced across devices.">
+        Bookmarks
+      </message>
+      <message name="IDS_ACCOUNT_SECTION_READING_LIST_TOGGLE" desc="Reading List, one of the data types that we allow syncing. Shown on next to the toggle that controls whether reading list should be saved in the Google Account and synced across devices.">
+        Reading list
+      </message>
+      <message name="IDS_ACCOUNT_SECTION_ADDRESSES_TOGGLE" desc="Form Autofill items, one of the data types that we allow syncing. Shown on next to the toggle that controls whether addresses should be saved in the Google Account and synced across devices.">
+        Addresses and more
+      </message>
+      <message name="IDS_ACCOUNT_SECTION_PASSWORDS_TOGGLE" desc="Saved passwords, one of the data types that we allow syncing. Shown on next to the toggle that controls whether passwords should be saved in the Google Account and synced across devices.">
+        Passwords
+      </message>
+      <message name="IDS_ACCOUNT_SECTION_PAYMENTS_TOGGLE" desc="Google Pay data for Autofill, one of the data types that we allow syncing. 'Google Pay' should not be translated as it is the product name. Shown on next to the toggle that controls whether Google Pay data for Autofill should be saved in the Google Account and synced across devices.">
+        Payment methods, offers, and addresses using Google Pay
+      </message>
+      <message name="IDS_ACCOUNT_SECTION_SETTINGS_TOGGLE" desc="Settings, one of the data types that we allow syncing. Shown on next to the toggle that controls whether Settings should be saved in the Google Account and synced across devices.">
+        Settings
+      </message>
+      <message name="IDS_ACCOUNT_SECTION_FOOTER" desc="Footer below a section with toggles to control which types of data users can use and save in their Google Account (as opposed to saving them only on the device).">
+        When on, use and save data in your Google Account. When off, data is saved only to this device.
+      </message>
+      <message name="IDS_ACCOUNT_ADVANCED_HEADER" desc="Heading of a section with settings related to the user's Google Account and data.">
+        Control your data &amp; account
       </message>
       <message name="IDS_SYNC_ENCRYPTION" desc="Preference category name for sync encryption. [CHAR_LIMIT=32]">
         Encryption
@@ -2633,14 +2679,8 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>delete the Chrome d
       </message>
 
       <!-- Password manager dialogs -->
-      <message name="IDS_PASSWORD_GENERATION_DIALOG_TITLE" desc="Text shown in a modal dialog that displays a generated password. This dialog is triggered by the user requesting to generate a password. Unified Password Manager version.">
-        Use strong password?
-      </message>
       <message name="IDS_PASSWORD_GENERATION_DIALOG_CANCEL_BUTTON" desc="Text for the cancel button belonging to the modal dialog that displays a generated password. Can be used by the user to cancel the password generation flow.">
         Cancel
-      </message>
-      <message name="IDS_PASSWORD_GENERATION_DIALOG_USE_PASSWORD_BUTTON" desc="Text for a button belonging to the modal dialog that displayes a generated password. Can be used by the user to accept the generated password.">
-        Use password
       </message>
       <message name="IDS_PASSWORD_FILLING_REAUTH_PROMPT_TITLE" desc="The title of the authentication dialog displayed before the password manager fills a saved password into a website.">
         Verify it’s you
@@ -3311,10 +3351,10 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>delete the Chrome d
       <message name="IDS_SIGNIN_TITLE" desc="Title for the screen that asks users to sign-in and turn on Sync. [CHAR_LIMIT=27]">
         Turn on sync?
       </message>
-      <message name="IDS_HISTORY_SYNC_CONSENT_TITLE_C" desc="This string appears as a heading on a full-page screen that asks users if they want to turn on history sync. Typing refers to typing urls in the address bar. The tone should be informative and inviting. [CHAR_LIMIT=35]">
-        Save time and type less
+      <message name="IDS_HISTORY_SYNC_TITLE" desc="Title of a page that asks users to start syncing their tabs and browsing history, so they can get back to sites they visited more quickly without having to type them, for example by seeing these sites suggested in the Omnibox.">
+        Save time, type less
       </message>
-      <message name="IDS_HISTORY_SYNC_CONSENT_SUBTITLE_C" desc="This string appears as a subheading on a full-page screen that asks users if they want to turn on browsing history sync. Sync is short for synchronization. The tone should be informative and inviting. [CHAR_LIMIT=100]">
+      <message name="IDS_HISTORY_SYNC_SUBTITLE" desc="Text of a page that asks users to start syncing their tabs and browsing history, so they can get back to sites they visited more quickly without having to type them, for example by seeing these sites suggested in the Omnibox.">
         To quickly get back to sites you’ve visited, sync your tabs and history
       </message>
       <message name="IDS_SIGNIN_SYNC_TITLE" desc="Title of Sync feature for the screen that asks users to sign-in and turn on Sync.">
@@ -3326,12 +3366,17 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>delete the Chrome d
       <message name="IDS_SIGNIN_DETAILS_DESCRIPTION" desc="Message with a link to customize Sync settings. Shown on the screen that asks the user to turn on Sync.">
         You can always choose what to sync in <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph>.
       </message>
-      <!-- TODO(b/41493786): replace strings with final version and set as translateable -->
-      <message name="IDS_HISTORY_SYNC_SIGNED_IN_FOOTER" translateable="false">
-        You are signed in as <ph name="EMAIL">%1$s<ex>jane.doe@example.com</ex></ph>. You can always choose what to sync in settings. Google may personalize Search and other services based on your history.
+      <message name="IDS_HISTORY_SYNC_FOOTER_WITH_EMAIL" desc="Small text above the main button on a page that asks users to start syncing their tabs and browsing history. The first sentence reminds the user that they're signed in with a certain account. The second sentence is meant to reassure users that they can always change their mind and opt out again. The third sentence explains how history data may be used to personalise the user's experience in other services. The tone should be friendly and reassuring.">
+        You are signed in as <ph name="EMAIL">%1$s<ex>jane.doe@example.com</ex></ph>. You can stop syncing anytime in settings. Google may personalize Search and other services based on your history.
       </message>
-      <message name="IDS_HISTORY_SYNC_FOOTER" translateable="false">
-        You can always choose what to sync in settings. Google may personalize Search and other services based on your history.
+      <message name="IDS_HISTORY_SYNC_FOOTER_WITHOUT_EMAIL" desc="Small text above the main button on a page that asks users to start syncing their tabs and browsing history. The first sentence is meant to reassure users that they can always change their mind and opt out again. Separately, the second sentence explains how history data may be used to personalise the user's experience in other services.  The tone should be friendly and reassuring.">
+        You can stop syncing anytime in settings. Google may personalize Search and other services based on your history.
+      </message>
+      <message name="IDS_HISTORY_SYNC_PRIMARY_ACTION" desc="Text for the confirmation button on the history sync screen that asks users to start syncing their tabs and browsing history. By clicking this button users sign in and turn on history sync. [CHAR_LIMIT=20]">
+        Yes, I’m in
+      </message>
+      <message name="IDS_HISTORY_SYNC_SECONDARY_ACTION" desc="Text for the decline button on the history sync screen that asks users to start syncing their tabs and browsing history. By clicking this button users decline to turn on history sync and dismiss the screen. [CHAR_LIMIT=20]">
+        No thanks
       </message>
       <message name="IDS_SIGNIN_ACCEPT_BUTTON" desc="Text for the confirmation button in the sign-in screen. By clicking this button users signs in and turns on Sync. [CHAR_LIMIT=20]">
         Yes, I'm in
@@ -3425,6 +3470,9 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>delete the Chrome d
       <message name="IDS_SYNC_PROMO_DESCRIPTION_BOOKMARKS" desc="This string is the body of a card that appears when the user opens Chrome's bookmarks; the user may be signed in to Chrome, but isn't syncing their Chrome data. The headline above this string is 'Get all your bookmarks'. There's no character limit but try to keep the translation under 120 characters." meaning="This message means that the user can get the bookmarks from their computer on their phone, and their phone's bookmarks on their computer. We want users to read this card and tap the 'Continue' button and turn on sync. The tone should be inviting.">
         Sync to get your bookmarks from your other devices
       </message>
+      <message name="IDS_SIGNIN_PROMO_TITLE_BOOKMARKS" desc="This string is the headline of a card that appears when the user opens Chrome's bookmarks; the user may be signed in to Chrome, but isn't syncing their Chrome data. The line below this string is 'Sync to get your bookmarks from your other devices'. [CHAR_LIMIT=70]" meaning="This headline means that the user can get the bookmarks from their computer on their phone, and their phone's bookmarks on their computer. We want users to read this card and tap the 'Continue' button and sign-in. The tone should be inviting.">
+        Get all your bookmarks
+      </message>
       <message name="IDS_SIGNIN_PROMO_DESCRIPTION_BOOKMARKS" desc="This string is the body of a card that appears when the user opens Chrome's bookmarks; the user is signed out of Chrome. The headline above this string is 'Get all your bookmarks'. There's no character limit but try to keep the translation under 120 characters." meaning="This message means that the user can get the bookmarks from their computer on their phone, and their phone's bookmarks on their computer. We want users to read this card and tap the 'Continue' button and sign-in. The tone should be inviting.">
         Sign in to get your bookmarks and more from your other devices
       </message>
@@ -3433,6 +3481,12 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>delete the Chrome d
       </message>
       <message name="IDS_SYNC_PROMO_DESCRIPTION_NTP_CONTENT_SUGGESTIONS" desc="This string is the body of a card that appears when the user visits Chrome's new tab page; the user may be signed in to Chrome, but isn't syncing their Chrome data. The headline above this string is 'See stories for you'. There's no character limit but try to keep the translation under 120 characters." meaning="This message means that the user is missing out on more interesting and relevant news articles. We want users to read this card and tap the 'Continue' button and turn on sync. The tone should be inviting.">
         Sync to get the most relevant content from Google
+      </message>
+      <message name="IDS_SIGNIN_PROMO_TITLE_NTP_FEED_TOP_PROMO" desc="This string is the headline of a card that appears when the user visits Chrome's new tab page; the user isn't signed in to Chrome. The line below this string is 'Sign in to get content based on your interests'. [CHAR_LIMIT=70]">
+        Get better content
+      </message>
+      <message name="IDS_SIGNIN_PROMO_DESCRIPTION_NTP_FEED_TOP_PROMO" desc="This string is the body of a card that appears when the user visits Chrome's new tab page; the user isn't signed in to Chrome. The headline above this string is 'Get better content'. There's no character limit but try to keep the translation under 120 characters." meaning="This message means that the user is missing out on more interesting and relevant news articles. We want users to read this card and tap the 'Continue' button and sign-in. The tone should be inviting.">
+        Sign in to get content based on your interests
       </message>
       <message name="IDS_SYNC_PROMO_TITLE_RECENT_TABS" desc="This string is the headline of a card that appears when the user opens Chrome's recent tabs. The user may be signed in to Chrome, but isn't syncing their Chrome data. The line below this string is 'Sync to get your tabs from your other devices'. [CHAR_LIMIT=70]" meaning="This headline means that the user can see some of their recent tabs from their computer on their phone, and their phone's recent tabs on their computer. We want users to read this card and tap the 'Continue' button and turn on sync. The tone should be inviting.">
         Get all your tabs
@@ -4667,6 +4721,20 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>delete the Chrome d
       </message>
       <message name="IDS_PAGE_INSIGHTS_HUB_PRIVACY_NOTICE_CLOSE" desc="Close button for closing privacy notice of page insights hub">
 	Close button to close privacy notice of page insights hub.
+      </message>
+
+      <!-- GoogleBottomBar -->
+      <message name="IDS_GOOGLE_BOTTOM_BAR_SAVE_DISABLED_TOOLTIP_MESSAGE" desc="Tooltip message when disabled save button is clicked">
+      Sign in to save this page
+      </message>
+      <message name="IDS_GOOGLE_BOTTOM_BAR_SAVE_DISABLED_BUTTON_DESCRIPTION" desc="Content description for disabled save button">
+      Disabled save button
+      </message>
+      <message name="IDS_GOOGLE_BOTTOM_BAR_SHARE_BUTTON_DESCRIPTION" desc="Content description for share button">
+      Share button
+      </message>
+      <message name="IDS_GOOGLE_BOTTOM_BAR_PAGE_INSIGHTS_BUTTON_DESCRIPTION" desc="Content description for page insights button">
+      Page insights button
       </message>
 
       <!-- WebFeed -->
@@ -6203,6 +6271,18 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>delete the Chrome d
       <!-- Inline PDF viewer support -->
       <message name="IDS_PDF_TRANSIENT_TAB_TITLE" desc="This string is shown as the temporary tab title when a PDF file is loading in a tab. The tab title will be updated to the actual PDF file name once available.">
         Loading PDF…
+      </message>
+
+      <!-- Tab declutter -->
+      <message name="IDS_ARCHIVED_TAB_CARD_TITLE" desc="Shown in the tab switcher to prompt the user to review their inactive tabs. Indicates how many tabs are inactive.">
+        {ARCHIVED_TAB_COUNT, plural,
+          =1 {Inactive tab (1)}
+          other {Inactive tabs (#)}}
+      </message>
+      <message name="IDS_ARCHIVED_TAB_CARD_SUBTITLE" desc="Shown in the tab switcher to inform the user how long the relevant tabs have been in active for.">
+        {INACTIVE_TIME_DAYS, plural,
+          =1 {Not used for 1 day or more}
+          other {Not used for # days or more}}
       </message>
     </messages>
   </release>

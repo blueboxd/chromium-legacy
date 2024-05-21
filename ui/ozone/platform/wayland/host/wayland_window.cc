@@ -52,6 +52,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_frame_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_output.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
+#include "ui/ozone/platform/wayland/host/wayland_popup.h"
 #include "ui/ozone/platform/wayland/host/wayland_screen.h"
 #include "ui/ozone/platform/wayland/host/wayland_seat.h"
 #include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
@@ -122,13 +123,13 @@ WaylandWindow::~WaylandWindow() {
   }
 
   // This might have already been hidden and another window has been shown.
-  // Thus, the parent will have another child window. Do not reset it.
-  if (parent_window_ && parent_window_->child_window() == this) {
-    parent_window_->set_child_window(nullptr);
+  // Thus, the parent will have another child popup. Do not reset it.
+  if (parent_window_ && parent_window_->child_popup() == this) {
+    parent_window_->set_child_popup(nullptr);
   }
 
-  if (child_window_) {
-    child_window_->set_parent_window(nullptr);
+  if (child_popup_) {
+    child_popup_->set_parent_window(nullptr);
   }
 
   for (auto bubble : child_bubbles_) {
@@ -166,12 +167,12 @@ void WaylandWindow::UpdateWindowScale(bool update_bounds) {
   float new_scale = output->scale_factor();
   SetWindowScale(new_scale);
 
-  // Propagate update to the child windows
-  if (child_window_) {
-    child_window_->UpdateWindowScale(update_bounds);
+  // Propagate update to the popups.
+  if (child_popup_) {
+    child_popup_->UpdateWindowScale(update_bounds);
   }
 
-  // Propagate update to the bubble windows
+  // Propagate update to the bubble windows.
   for (auto bubble : child_bubbles_) {
     bubble->UpdateWindowScale(update_bounds);
   }
@@ -232,7 +233,7 @@ void WaylandWindow::SetWindowScale(float new_scale) {
 }
 
 std::optional<WaylandOutput::Id> WaylandWindow::GetPreferredEnteredOutputId() {
-  // Child windows don't store entered outputs. Instead, take the window's
+  // Child popups don't store entered outputs. Instead, take the window's
   // root parent window and use its preferred output.
   if (parent_window_) {
     return GetRootParentWindow()->GetPreferredEnteredOutputId();
@@ -445,7 +446,7 @@ void WaylandWindow::Close() {
 }
 
 bool WaylandWindow::IsVisible() const {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return false;
 }
 
@@ -689,7 +690,7 @@ EventTarget* WaylandWindow::GetParentTarget() {
 }
 
 std::unique_ptr<EventTargetIterator> WaylandWindow::GetChildIterator() const {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 
@@ -716,7 +717,7 @@ void WaylandWindow::OcclusionStateChanged(
 }
 
 void WaylandWindow::HandleSurfaceConfigure(uint32_t serial) {
-  NOTREACHED()
+  NOTREACHED_IN_MIGRATION()
       << "Only shell surfaces must receive HandleSurfaceConfigure calls.";
 }
 
@@ -757,6 +758,9 @@ std::string WaylandWindow::WindowStates::ToString() const {
   if (is_floated) {
     states += "floated ";
   }
+  if (is_pip) {
+    states += "pip ";
+  }
   if (states.empty()) {
     states = "<default>";
   } else {
@@ -790,7 +794,7 @@ std::string WaylandWindow::WindowStates::ToString() const {
 void WaylandWindow::HandleToplevelConfigure(int32_t widht,
                                             int32_t height,
                                             const WindowStates& window_states) {
-  NOTREACHED()
+  NOTREACHED_IN_MIGRATION()
       << "Only shell toplevels must receive HandleToplevelConfigure calls.";
 }
 
@@ -800,12 +804,13 @@ void WaylandWindow::HandleAuraToplevelConfigure(
     int32_t width,
     int32_t height,
     const WindowStates& window_states) {
-  NOTREACHED()
+  NOTREACHED_IN_MIGRATION()
       << "Only shell toplevels must receive HandleAuraToplevelConfigure calls.";
 }
 
 void WaylandWindow::HandlePopupConfigure(const gfx::Rect& bounds_dip) {
-  NOTREACHED() << "Only shell popups must receive HandlePopupConfigure calls.";
+  NOTREACHED_IN_MIGRATION()
+      << "Only shell popups must receive HandlePopupConfigure calls.";
 }
 
 void WaylandWindow::OnCloseRequest() {
@@ -984,7 +989,7 @@ void WaylandWindow::OnLeftOutput() {
 }
 
 WaylandWindow* WaylandWindow::GetTopMostChildWindow() {
-  return child_window_ ? child_window_->GetTopMostChildWindow() : this;
+  return child_popup_ ? child_popup_->GetTopMostChildWindow() : this;
 }
 
 WaylandWindow* WaylandWindow::GetXdgParentWindow() {
@@ -1301,6 +1306,14 @@ void WaylandWindow::ProcessPendingConfigureState(uint32_t serial) {
 
   // Reset values.
   pending_configure_state_ = PendingConfigureState();
+
+  // If we get a configure which is immediately applied and latched (meaning
+  // that the configure does nothing), we will have immediately acked it, and we
+  // can immediately commit it. See crbug.com/340500574.
+  if (state == applied_state_ && state == latched_state_ &&
+      in_flight_requests_.empty()) {
+    root_surface_->Commit(/*flush=*/true);
+  }
 }
 
 void WaylandWindow::RequestStateFromServer(PlatformWindowDelegate::State state,
@@ -1424,7 +1437,8 @@ void WaylandWindow::ProcessSequencePoint(int64_t viz_seq) {
   }
 
   if (UseTestConfigForPlatformWindows()) {
-    for (auto i = in_flight_requests_.begin(); i != iter; ++i) {
+    const auto end = std::next(iter);
+    for (auto i = in_flight_requests_.begin(); i != end; ++i) {
       // We need to set `latest_latched_viz_seq_for_testing_` to the highest viz
       // seq for all requests at or before the last request we latch.
       latest_latched_viz_seq_for_testing_ =
@@ -1547,14 +1561,6 @@ void WaylandWindow::MaybeApplyLatestStateRequest(bool force) {
   }
   latest.applied = true;
 
-  if (UseTestConfigForPlatformWindows()) {
-    latest_applied_viz_seq_for_testing_ = std::max(
-        latest_applied_viz_seq_for_testing_,
-        base::ranges::max(in_flight_requests_, {}, [](const StateRequest& req) {
-          return req.viz_seq;
-        }).viz_seq);
-  }
-
   // Set the applied state here so it can be used by e.g. OnBoundsChanged to
   // pick up the new bounds.
   auto old = applied_state_;
@@ -1565,6 +1571,14 @@ void WaylandWindow::MaybeApplyLatestStateRequest(bool force) {
   // old and new states are the same, or it only changes the origin of the
   // bounds.
   latest.viz_seq = delegate()->OnStateUpdate(old, latest.state);
+
+  if (UseTestConfigForPlatformWindows()) {
+    latest_applied_viz_seq_for_testing_ = std::max(
+        latest_applied_viz_seq_for_testing_,
+        base::ranges::max(in_flight_requests_, {}, [](const StateRequest& req) {
+          return req.viz_seq;
+        }).viz_seq);
+  }
 
   // `ProcessSequencePoint` may re-entrantly call
   // `MaybeApplyLatestStateRequest`. This is safe as long as we do not hold

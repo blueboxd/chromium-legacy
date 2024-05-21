@@ -118,9 +118,11 @@ import java.util.Map;
     // available to provide a default value. This should be enabled if the feature is enabled by
     // default or removed if the flag is removed.
     ChromeFeatureList.SYNC_ANDROID_LIMIT_NTP_PROMO_IMPRESSIONS,
+    ChromeFeatureList.FEED_CONTAINMENT
 })
 @EnableFeatures({
     ChromeFeatureList.KID_FRIENDLY_CONTENT_FEED,
+    ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS,
 })
 public class FeedSurfaceCoordinatorTest {
     private static final @SurfaceType int SURFACE_TYPE = SurfaceType.NEW_TAB_PAGE;

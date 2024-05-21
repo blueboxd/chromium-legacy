@@ -253,7 +253,7 @@ Status PrepareDesktopCommandLine(const Capabilities& capabilities,
   // disable throttling all together.
   // TODO(crbug.com/chromedriver/4762): Remove after the Mapper is moved away
   // from the tab.
-  if (capabilities.webSocketUrl) {
+  if (capabilities.web_socket_url) {
     switches.SetSwitch("disable-background-timer-throttling");
   }
 
@@ -380,10 +380,12 @@ Status CreateBrowserwideDevToolsClientAndConnect(
     const std::vector<std::unique_ptr<DevToolsEventListener>>&
         devtools_event_listeners,
     const std::string& web_socket_url,
+    bool autoaccept_beforeunload,
     std::unique_ptr<DevToolsClient>& browser_client) {
   SyncWebSocket* socket_ptr = socket.get();
   std::unique_ptr<DevToolsClientImpl> client(new DevToolsClientImpl(
       DevToolsClientImpl::kBrowserwideDevToolsClientId, ""));
+  client->SetAutoAcceptBeforeunload(autoaccept_beforeunload);
   for (const auto& listener : devtools_event_listeners) {
     // Only add listeners that subscribe to the browser-wide |DevToolsClient|.
     // Otherwise, listeners will think this client is associated with a webview,
@@ -439,7 +441,7 @@ Status LaunchRemoteChromeSession(
   }
   status = CreateBrowserwideDevToolsClientAndConnect(
       std::move(socket), devtools_event_listeners, browser_info.web_socket_url,
-      devtools_websocket_client);
+      !capabilities.web_socket_url, devtools_websocket_client);
   if (status.IsError()) {
     return WrapStatusIfNeeded(status, kSessionNotCreated);
   }
@@ -447,7 +449,8 @@ Status LaunchRemoteChromeSession(
   chrome = std::make_unique<ChromeRemoteImpl>(
       browser_info, capabilities.window_types,
       std::move(devtools_websocket_client), std::move(devtools_event_listeners),
-      capabilities.mobile_device, capabilities.page_load_strategy);
+      capabilities.mobile_device, capabilities.page_load_strategy,
+      !capabilities.web_socket_url);
   return Status(kOk);
 }
 
@@ -659,7 +662,8 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
       }
       status = CreateBrowserwideDevToolsClientAndConnect(
           std::move(socket), devtools_event_listeners,
-          browser_info.web_socket_url, devtools_websocket_client);
+          browser_info.web_socket_url, !capabilities.web_socket_url,
+          devtools_websocket_client);
     }
   } else {
     Timeout timeout(capabilities.browser_startup_timeout);
@@ -674,7 +678,8 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
       DCHECK(socket);
       status = CreateBrowserwideDevToolsClientAndConnect(
           std::move(socket), devtools_event_listeners,
-          browser_info.web_socket_url, devtools_websocket_client);
+          browser_info.web_socket_url, !capabilities.web_socket_url,
+          devtools_websocket_client);
     }
     if (status.IsOk()) {
       status =
@@ -759,20 +764,18 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
           std::move(devtools_event_listeners), capabilities.mobile_device,
           capabilities.page_load_strategy, std::move(process), command,
           &user_data_dir_temp_dir, &extension_dir,
-          capabilities.network_emulation_enabled);
+          capabilities.network_emulation_enabled, !capabilities.web_socket_url);
   if (!capabilities.extension_load_timeout.is_zero()) {
-    for (size_t i = 0; i < extension_bg_pages.size(); ++i) {
-      VLOG(0) << "Waiting for extension bg page load: "
-              << extension_bg_pages[i];
+    for (const std::string& url : extension_bg_pages) {
+      VLOG(0) << "Waiting for extension bg page load: " << url;
       std::unique_ptr<WebView> web_view;
       status = chrome_desktop->WaitForPageToLoad(
-          extension_bg_pages[i], capabilities.extension_load_timeout, &web_view,
-          w3c_compliant);
+          url, capabilities.extension_load_timeout, &web_view, w3c_compliant);
       if (status.IsError()) {
-        return Status(kSessionNotCreated,
-                      "failed to wait for extension background page to load: " +
-                          extension_bg_pages[i],
-                      status);
+        return Status(
+            kSessionNotCreated,
+            "failed to wait for extension background page to load: " + url,
+            status);
       }
     }
   }
@@ -841,13 +844,13 @@ Status LaunchAndroidChrome(network::mojom::URLLoaderFactory* factory,
   status = CreateBrowserwideDevToolsClientAndConnect(
       std::move(socket), devtools_event_listeners,
       devtools_http_client->browser_info()->web_socket_url,
-      devtools_websocket_client);
+      !capabilities.web_socket_url, devtools_websocket_client);
 
   chrome = std::make_unique<ChromeAndroidImpl>(
       browser_info, capabilities.window_types,
       std::move(devtools_websocket_client), std::move(devtools_event_listeners),
       capabilities.mobile_device, capabilities.page_load_strategy,
-      std::move(device));
+      std::move(device), !capabilities.web_socket_url);
   return Status(kOk);
 }
 
@@ -897,7 +900,7 @@ Status LaunchReplayChrome(network::mojom::URLLoaderFactory* factory,
   }
   status = CreateBrowserwideDevToolsClientAndConnect(
       std::move(socket), devtools_event_listeners, browser_info.web_socket_url,
-      devtools_websocket_client);
+      !capabilities.web_socket_url, devtools_websocket_client);
 
   base::Process dummy_process;
   std::unique_ptr<ChromeDesktopImpl> chrome_impl =
@@ -907,21 +910,19 @@ Status LaunchReplayChrome(network::mojom::URLLoaderFactory* factory,
           std::move(devtools_event_listeners), capabilities.mobile_device,
           capabilities.page_load_strategy, std::move(dummy_process), command,
           &user_data_dir_temp_dir, &extension_dir,
-          capabilities.network_emulation_enabled);
+          capabilities.network_emulation_enabled, !capabilities.web_socket_url);
 
   if (!capabilities.extension_load_timeout.is_zero()) {
-    for (size_t i = 0; i < extension_bg_pages.size(); ++i) {
-      VLOG(0) << "Waiting for extension bg page load: "
-              << extension_bg_pages[i];
+    for (const std::string& url : extension_bg_pages) {
+      VLOG(0) << "Waiting for extension bg page load: " << url;
       std::unique_ptr<WebView> web_view;
       status = chrome_impl->WaitForPageToLoad(
-          extension_bg_pages[i], capabilities.extension_load_timeout, &web_view,
-          w3c_compliant);
+          url, capabilities.extension_load_timeout, &web_view, w3c_compliant);
       if (status.IsError()) {
-        return Status(kSessionNotCreated,
-                      "failed to wait for extension background page to load: " +
-                          extension_bg_pages[i],
-                      status);
+        return Status(
+            kSessionNotCreated,
+            "failed to wait for extension background page to load: " + url,
+            status);
       }
     }
   }
@@ -1321,10 +1322,10 @@ std::string GetTerminationReason(base::TerminationStatus status) {
       return "integrity failure";
 #endif
     case base::TERMINATION_STATUS_MAX_ENUM:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return "max enum";
   }
-  NOTREACHED() << "Unknown Termination Status.";
+  NOTREACHED_IN_MIGRATION() << "Unknown Termination Status.";
   return "unknown";
 }
 

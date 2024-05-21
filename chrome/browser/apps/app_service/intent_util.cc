@@ -25,6 +25,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/file_utils.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "components/services/app_service/public/cpp/file_handler_info.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
@@ -661,7 +662,7 @@ arc::IntentFilter ConvertAppServiceToArcIntentFilter(
             case apps::PatternMatchType::kFileExtension:
             case apps::PatternMatchType::kIsDirectory:
             case apps::PatternMatchType::kSuffix:
-              NOTREACHED();
+              NOTREACHED_IN_MIGRATION();
               return arc::IntentFilter();
           }
           paths.emplace_back(condition_value->value, match_type);
@@ -679,7 +680,7 @@ arc::IntentFilter ConvertAppServiceToArcIntentFilter(
         }
         break;
       case apps::ConditionType::kFile:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         return arc::IntentFilter();
     }
   }

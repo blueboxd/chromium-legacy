@@ -11,7 +11,22 @@ import {TestBrowserProxy} from 'chrome-untrusted://webui-test/test_browser_proxy
  * browser from WebUI.
  */
 export class TestLensSidePanelPageHandler extends TestBrowserProxy implements
-    LensSidePanelPageHandlerInterface {}
+    LensSidePanelPageHandlerInterface {
+  constructor() {
+    super([
+      'closeRequestedBySidePanelEscapeKeyPress',
+      'popAndLoadQueryFromHistory',
+    ]);
+  }
+
+  closeRequestedBySidePanelEscapeKeyPress() {
+    this.methodCalled('closeRequestedBySidePanelEscapeKeyPress');
+  }
+
+  popAndLoadQueryFromHistory() {
+    this.methodCalled('popAndLoadQueryFromHistory');
+  }
+}
 
 /**
  * Test version of the BrowserProxy used in connecting Lens Side Panel to the

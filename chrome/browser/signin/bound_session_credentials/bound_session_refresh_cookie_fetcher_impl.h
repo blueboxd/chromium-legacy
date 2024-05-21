@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <memory>
 #include <optional>
+#include <string_view>
 
 #include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
@@ -33,6 +34,7 @@ class BoundSessionRefreshCookieFetcherImpl
   BoundSessionRefreshCookieFetcherImpl(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       SessionBindingHelper& session_binding_helper,
+      std::string_view session_id,
       const GURL& refresh_url,
       const GURL& cookie_url,
       base::flat_set<std::string> cookie_names,
@@ -56,9 +58,13 @@ class BoundSessionRefreshCookieFetcherImpl
       BoundSessionRefreshCookieFetcherImplParseChallengeHeaderTest,
       ParseChallengeHeader);
 
-  // Returns empty if parsing challenge header failed. Otherwise, returns the
-  // decoded challenge field value.
-  static std::string ParseChallengeHeader(const std::string& header);
+  struct ChallengeHeaderItems {
+    std::string challenge;
+    std::string session_id;
+  };
+
+  // Returns parameters encoded in the challenge header value.
+  static ChallengeHeaderItems ParseChallengeHeader(const std::string& header);
 
   void StartRefreshRequest(
       std::optional<std::string> sec_session_challenge_response);
@@ -85,11 +91,17 @@ class BoundSessionRefreshCookieFetcherImpl
   void Clone(mojo::PendingReceiver<network::mojom::CookieAccessObserver>
                  observer) override;
 
+  // TODO(b/325441004): remove after `refresh_url_` is always valid.
+  const GURL& GetRefreshUrl();
+
   const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   const raw_ref<SessionBindingHelper> session_binding_helper_;
 
+  const std::string session_id_;
+
   // Temporarily, this URL might be empty, meaning that the hardcoded URL must
-  // be used instead.
+  // be used instead. Use `GetRefreshUrl()` instead of reading this value
+  // directly.
   // TODO(b/325441004): require URL to be valid after migrating the storage.
   const GURL refresh_url_;
 

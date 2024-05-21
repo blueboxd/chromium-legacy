@@ -68,7 +68,6 @@
 <translation id="2241587408274973373">Karty na stránke na novej karte</translation>
 <translation id="2241634353105152135">Iba raz</translation>
 <translation id="2253414712144136228">Odobrať osobu alebo odstrániť položku <ph name="NAME_OF_LIST_ITEM" /></translation>
-<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{1 blokovaný web}few{# blokované weby}many{# sites blocked}other{# blokovaných webov}}</translation>
 <translation id="228293613124499805">Väčšina webov, ktoré navštevujete, pravdepodobne ukladá dáta vo vašom zariadení. Často ukladajú vaše predvoľby alebo informácie, ktoré s nimi zdieľate, čím zlepšujú vaše prostredie. Toto nastavenie odporúčame nechať zapnuté.</translation>
 <translation id="2289270750774289114">Opýtať sa, keď chce web objavovať zariadenia Bluetooth v okolí (odporúčané)</translation>
 <translation id="2315043854645842844">Operačný systém nepodporuje výber certifikátu na strane klienta.</translation>
@@ -305,6 +304,7 @@
 <translation id="6015775454662021376">Ovládajte prístup tohto webu do vášho zariadenia</translation>
 <translation id="6040143037577758943">Zavrieť</translation>
 <translation id="6042308850641462728">Viac</translation>
+<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Vaša posledná karta</translation>
 <translation id="6064125863973209585">Sťahovanie bolo dokončené</translation>
 <translation id="6071501408666570960">Môžeme dôjsť k vášmu odhláseniu z tohto webu</translation>
 <translation id="6120483543004435978">Keď je táto možnosť zapnutá, weby môžu žiadať o povolenie zistiť, kedy aktívne používate zariadenie. Keď je táto možnosť vypnutá, weby nemôžu zistiť, kedy aktívne používate zariadenie.</translation>
@@ -426,6 +426,7 @@
 <translation id="7986741934819883144">Výber kontaktu</translation>
 <translation id="7990211076305263060">Keď je táto možnosť zapnutá, weby môžu žiadať o povolenie používať váš mikrofón. Keď je táto možnosť vypnutá, weby nemôžu používať váš mikrofón.</translation>
 <translation id="8007176423574883786">Vypnuté v tomto zariadení</translation>
+<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> zo zariadenia <ph name="FROM_DEVICE" /></translation>
 <translation id="802154636333426148">Stiahnutie zlyhalo</translation>
 <translation id="8042586301629853791">Zoradiť podľa:</translation>
 <translation id="8067883171444229417">Prehrať video</translation>
@@ -480,7 +481,6 @@
 <translation id="8721719390026067591">Keď je táto možnosť zapnutá, weby môžu žiadať o povolenie vyhľadávať zariadenia s rozhraním Bluetooth. Keď je táto možnosť vypnutá, weby nemôžu vyhľadávať zariadenia s rozhraním Bluetooth.</translation>
 <translation id="8725066075913043281">Skúsiť znova</translation>
 <translation id="8730621377337864115">Hotovo</translation>
-<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{1 povolený web}few{# povolené weby}many{# sites allowed}other{# povolených webov}}</translation>
 <translation id="8751914237388039244">Vyberte obrázok</translation>
 <translation id="8800034312320686233">Web nefunguje?</translation>
 <translation id="8801436777607969138">Blokovať JavaScript na konkrétnom webe.</translation>

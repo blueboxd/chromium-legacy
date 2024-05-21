@@ -67,7 +67,11 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
   using RealTimeReportingContributions =
       std::vector<auction_worklet::mojom::RealTimeReportingContributionPtr>;
 
+  using GetNextThreadIndexCallback = base::RepeatingCallback<size_t()>;
+
   // Classification of how trusted signals related to this worklet.
+  // This is used for histograms, so entries should not be reordered or
+  // otherwise renumbered.
   enum class SignalsOriginRelation {
     kNoTrustedSignals,
     kSameOriginSignals,
@@ -77,14 +81,16 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
     // forbidden once the permission header is received (or is found missing).
     kUnknownPermissionCrossOriginSignals,
     kPermittedCrossOriginSignals,
-    kForbiddenCrossOriginSignals
+    kForbiddenCrossOriginSignals,
+
+    kMaxValue = kForbiddenCrossOriginSignals
   };
 
   // Starts loading the worklet script on construction.
   SellerWorklet(
-      scoped_refptr<AuctionV8Helper> v8_helper,
-      mojo::PendingRemote<mojom::AuctionSharedStorageHost>
-          shared_storage_host_remote,
+      std::vector<scoped_refptr<AuctionV8Helper>> v8_helpers,
+      std::vector<mojo::PendingRemote<mojom::AuctionSharedStorageHost>>
+          shared_storage_hosts,
       bool pause_for_debugger_on_start,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_url_loader_factory,
@@ -94,7 +100,8 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
       const std::optional<GURL>& trusted_scoring_signals_url,
       const url::Origin& top_window_origin,
       mojom::AuctionWorkletPermissionsPolicyStatePtr permissions_policy_state,
-      std::optional<uint16_t> experiment_group_id);
+      std::optional<uint16_t> experiment_group_id,
+      GetNextThreadIndexCallback next_thread_index_callback);
 
   explicit SellerWorklet(const SellerWorklet&) = delete;
   SellerWorklet& operator=(const SellerWorklet&) = delete;
@@ -110,7 +117,7 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
     close_pipe_callback_ = std::move(close_pipe_callback);
   }
 
-  int context_group_id_for_testing() const;
+  std::vector<int> context_group_ids_for_testing() const;
 
   // mojom::SellerWorklet implementation:
   void ScoreAd(
@@ -164,8 +171,8 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
       uint64_t trace_id,
       ReportResultCallback callback) override;
   void ConnectDevToolsAgent(
-      mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent)
-      override;
+      mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent,
+      uint32_t thread_index) override;
 
  private:
   // Contains all data needed for a ScoreAd() call. Destroyed only when its
@@ -560,9 +567,9 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
   // Returns true if unpaused and the script has loaded.
   bool IsCodeReady() const;
 
-  scoped_refptr<base::SequencedTaskRunner> v8_runner_;
-  scoped_refptr<AuctionV8Helper> v8_helper_;
-  scoped_refptr<AuctionV8Helper::DebugId> debug_id_;
+  std::vector<scoped_refptr<base::SequencedTaskRunner>> v8_runners_;
+  std::vector<scoped_refptr<AuctionV8Helper>> v8_helpers_;
+  std::vector<scoped_refptr<AuctionV8Helper::DebugId>> debug_ids_;
 
   mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
 
@@ -572,6 +579,11 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
   // `trusted_scoring_signals_url`.
   std::unique_ptr<TrustedSignalsRequestManager>
       trusted_signals_request_manager_;
+
+  // If any trusted signals requests were deferred because of waiting
+  // on trusted signals classification, this is the first time it
+  // happened.
+  std::optional<base::TimeTicks> first_deferred_trusted_signals_time_;
 
   const std::optional<url::Origin> trusted_scoring_signals_origin_;
   SignalsOriginRelation trusted_signals_relation_ =
@@ -585,6 +597,8 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
 
   bool paused_;
 
+  size_t resumed_count_ = 0;
+
   // Pending calls to the corresponding Javascript method. Only accessed on
   // main thread, but iterators to its elements are bound to callbacks passed
   // to the v8 thread, so it needs to be an std::lists rather than an
@@ -595,9 +609,9 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
   // Deleted once load has completed.
   std::unique_ptr<WorkletLoader> worklet_loader_;
 
-  // Lives on `v8_runner_`. Since it's deleted there, tasks can be safely
+  // Lives on `v8_runners_`. Since it's deleted there, tasks can be safely
   // posted from main thread to it with an Unretained pointer.
-  std::unique_ptr<V8State, base::OnTaskRunnerDeleter> v8_state_;
+  std::vector<std::unique_ptr<V8State, base::OnTaskRunnerDeleter>> v8_state_;
 
   ClosePipeCallback close_pipe_callback_;
 
@@ -608,6 +622,8 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
 
   mojo::Remote<auction_worklet::mojom::AuctionNetworkEventsHandler>
       auction_network_events_handler_;
+
+  GetNextThreadIndexCallback get_next_thread_index_callback_;
 
   SEQUENCE_CHECKER(user_sequence_checker_);
 

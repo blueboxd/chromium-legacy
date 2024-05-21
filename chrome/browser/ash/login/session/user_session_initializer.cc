@@ -144,7 +144,7 @@ void UserSessionInitializer::OnUserProfileLoaded(const AccountId& account_id) {
     // TODO(https://crbug.com/1208416): Investigate why OnUserProfileLoaded
     // is called more than once.
     if (primary_profile_ != nullptr) {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       CHECK_EQ(primary_profile_, profile);
       return;
     }
@@ -288,8 +288,7 @@ void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
   if (is_primary_user) {
     DCHECK_EQ(primary_profile_, profile);
 
-    // Ensure that the `BirchKeyedService` for `profile` is created. It is
-    // created one per user in a multiprofile session.
+    // Ensure that one `BirchKeyedService` is created for the primary profile.
     BirchKeyedServiceFactory::GetInstance()->GetService(profile);
 
     // Ensure that PhoneHubManager and EcheAppManager are created for the

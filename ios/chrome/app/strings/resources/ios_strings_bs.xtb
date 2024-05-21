@@ -99,6 +99,7 @@
 <translation id="1506063256525392513">To vam omogućava da snimate i otpremate fotografije kao i da skenirate QR kodove</translation>
 <translation id="1509486075633541495">Prijava na web lokaciju</translation>
 <translation id="1509960214886564027">Moguće je da će funkcije na mnogim web lokacijama prestati s radom</translation>
+<translation id="1520027731907768768">Primajte upozorenja o padu cijena za proizvode koje pratite.</translation>
 <translation id="152234381334907219">Nikada nije sačuvano</translation>
 <translation id="1523341279170789507">Dozvoli sve kolačiće</translation>
 <translation id="1524563461097350801">Ne, hvala</translation>
@@ -862,7 +863,7 @@ Ako je primjenjivo, pogledajte uputstva pretraživača da saznate kako izbrisati
 <translation id="5444892875087332195">Oznake</translation>
 <translation id="5454211924362324495">Da spriječite druge da koriste vašu lozinku, <ph name="BEGIN_LINK" />promijenite lozinku na <ph name="WEBSITE" /><ph name="END_LINK" /></translation>
 <translation id="5457226814769348910">Otvori offline verziju</translation>
-<translation id="5459548306731933777">Prikaži pojedinosti</translation>
+<translation id="5459548306731933777">Prikaži detalje</translation>
 <translation id="5475069061743940393">Praćenje paketa</translation>
 <translation id="5478327362747197944">Kreirajte događaje u Kalendaru direktno klikom na datum na web stranici.</translation>
 <translation id="5482922178977937393">Želite li primati obavještenja za vijesti, sportove i drugo na osnovu svojih interesovanja?</translation>
@@ -1443,7 +1444,6 @@ Web lokacije mogu koristiti kolačiće da vide vašu aktivnost pregledanja na ra
 <translation id="8283172974887967105">Postavi…</translation>
 <translation id="8286036467436129157">Prijava</translation>
 <translation id="8289930144142009940">Obavještenja za funkciju <ph name="FEATURE_NAME" /> su isključena</translation>
-<translation id="8292843446079898078">Primajte obavještenja o padu cijene za proizvode koje pratite.</translation>
 <translation id="8299417921174340354">Prvo postavite šifru na uređaju da koristite lozinke.</translation>
 <translation id="8299613349954694191">Otvorite anonimnu karticu za privatno pregledanje weba.</translation>
 <translation id="8311853334103696030">Sakrij praćenje cijena</translation>

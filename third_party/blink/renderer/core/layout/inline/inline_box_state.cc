@@ -25,6 +25,17 @@ namespace blink {
 
 namespace {
 
+FontHeight FontHeightWithLeading(const ComputedStyle& style,
+                                 const Font& font,
+                                 const FontMetrics& font_metrics,
+                                 FontBaseline baseline_type) {
+  FontHeight metrics = font_metrics.GetFontHeight(baseline_type);
+  const LayoutUnit line_height = style.ComputedLineHeightAsFixed(font);
+  const FontHeight leading = CalculateLeadingSpace(line_height, metrics);
+  metrics.AddLeading(leading);
+  return metrics;
+}
+
 FontHeight ComputeEmphasisMarkOutsets(const ComputedStyle& style,
                                       const Font& font) {
   if (style.GetTextEmphasisMark() == TextEmphasisMark::kNone)
@@ -160,6 +171,65 @@ void InlineBoxState::ComputeTextMetrics(const ComputedStyle& styleref,
   include_used_fonts = styleref.LineHeight().IsAuto();
 }
 
+void InlineBoxState::AdjustEdges(const ComputedStyle& style,
+                                 const Font& font,
+                                 FontBaseline baseline_type,
+                                 bool should_apply_over,
+                                 bool should_apply_under,
+                                 FontHeight& metrics) {
+  DCHECK(should_apply_over || should_apply_under);
+  const SimpleFontData* font_data = font.PrimaryFont();
+  if (UNLIKELY(!font_data)) {
+    return;
+  }
+  const FontMetrics& font_metrics = font_data->GetFontMetrics();
+  std::optional<FontHeight> font_height_with_leading;
+  const TextBoxEdge text_box_edge = style.GetTextBoxEdge();
+  if (should_apply_over) {
+    switch (text_box_edge.Over()) {
+      case TextBoxEdge::Type::kLeading:
+        font_height_with_leading =
+            FontHeightWithLeading(style, font, font_metrics, baseline_type);
+        metrics.ascent = font_height_with_leading->ascent;
+        break;
+      case TextBoxEdge::Type::kText:
+        metrics.ascent = font_metrics.FixedAscent(baseline_type);
+        break;
+      case TextBoxEdge::Type::kCap:
+        metrics.ascent = font_metrics.FixedCapHeight(baseline_type);
+        break;
+      case TextBoxEdge::Type::kEx:
+        metrics.ascent = font_metrics.FixedXHeight(baseline_type);
+        break;
+      case TextBoxEdge::Type::kAlphabetic:
+        NOTREACHED_NORETURN();
+    }
+  }
+
+  if (should_apply_under) {
+    switch (text_box_edge.Under()) {
+      case TextBoxEdge::Type::kLeading:
+        if (!font_height_with_leading) {
+          font_height_with_leading =
+              FontHeightWithLeading(style, font, font_metrics, baseline_type);
+        }
+        metrics.descent = font_height_with_leading->descent;
+        break;
+      case TextBoxEdge::Type::kText:
+        metrics.descent = font_metrics.FixedDescent(baseline_type);
+        break;
+      case TextBoxEdge::Type::kAlphabetic:
+        // `FixedAlphabetic()` returns a value in the ascent coordinates. Negate
+        // it when applying to descent.
+        metrics.descent = -font_metrics.FixedAlphabetic(baseline_type);
+        break;
+      case TextBoxEdge::Type::kCap:
+      case TextBoxEdge::Type::kEx:
+        NOTREACHED_NORETURN();
+    }
+  }
+}
+
 void InlineBoxState::ResetTextMetrics() {
   metrics = text_metrics = FontHeight::Empty();
   text_top = text_height = LayoutUnit();
@@ -192,7 +262,7 @@ LayoutUnit InlineBoxState::TextTop(FontBaseline baseline_type) const {
     return text_top;
   if (const SimpleFontData* font_data = font->PrimaryFont())
     return -font_data->GetFontMetrics().FixedAscent(baseline_type);
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return LayoutUnit();
 }
 
@@ -951,14 +1021,18 @@ const LayoutResult* InlineLayoutStateStack::BoxData::CreateBoxFragment(
   }
   if (ruby_column_list) {
     for (auto& logical_column : *ruby_column_list) {
-      for (unsigned i = 0; i < logical_column->annotation_items->size(); ++i) {
-        LogicalLineItem& child = (*logical_column->annotation_items)[i];
+      auto& annotation_items = *logical_column->annotation_items;
+      if (annotation_items.WasPropagated()) {
+        continue;
+      }
+      for (unsigned i = 0; i < annotation_items.size(); ++i) {
+        LogicalLineItem& child = annotation_items[i];
         if (child.children_count) {
           i += child.children_count - 1;
         }
         handle_box_child(child);
       }
-      logical_column->annotation_items->SetPropagated();
+      annotation_items.SetPropagated();
     }
     ruby_column_list.Clear();
   }
@@ -1007,14 +1081,14 @@ InlineLayoutStateStack::ApplyBaselineShift(InlineBoxState* box,
             baseline_shift = text_bottom - child.metrics.descent;
             break;
           }
-          NOTREACHED();
+          NOTREACHED_IN_MIGRATION();
           break;
         case EVerticalAlign::kTop:
         case EVerticalAlign::kBottom:
           has_top_or_bottom = true;
           continue;
         default:
-          NOTREACHED();
+          NOTREACHED_IN_MIGRATION();
           continue;
       }
       child.metrics.Move(baseline_shift);
@@ -1039,7 +1113,7 @@ InlineLayoutStateStack::ApplyBaselineShift(InlineBoxState* box,
           case EVerticalAlign::kTextBottom:
             continue;
           default:
-            NOTREACHED();
+            NOTREACHED_IN_MIGRATION();
             continue;
         }
         child.metrics.Move(baseline_shift);

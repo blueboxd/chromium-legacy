@@ -62,11 +62,13 @@ import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.SessionHandler;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.content.WebContentsFactory;
 import org.chromium.chrome.browser.customtabs.ClientManager.CalledWarmup;
 import org.chromium.chrome.browser.customtabs.content.EngagementSignalsHandler;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.page_insights.PageInsightsConfigRequest;
 import org.chromium.chrome.browser.page_insights.proto.Config.PageInsightsConfig;
@@ -444,7 +446,7 @@ public class CustomTabsConnection {
                         try (TraceEvent e =
                                 TraceEvent.scoped("CustomTabsConnection.initializeBrowser()")) {
                             initializeBrowser(ContextUtils.getApplicationContext());
-                            ChromeBrowserInitializer.getInstance().initNetworkChangeNotifier();
+                            ProcessInitializationHandler.getInstance().initNetworkChangeNotifier();
                             mWarmupHasBeenFinished.set(true);
                         }
                     });
@@ -547,7 +549,17 @@ public class CustomTabsConnection {
             boolean canUseHiddenTab =
                     mClientManager.getCanUseHiddenTab(session)
                             && !IntentHandler.hasAnyIncognitoExtra(extras);
-            startSpeculation(session, url, canUseHiddenTab, extras, uid);
+
+            boolean useSeparateStoragePartitionForExperiment =
+                    ChromeFeatureList.isEnabled(
+                            ChromeFeatureList.MAYLAUNCHURL_USES_SEPARATE_STORAGE_PARTITION);
+            startSpeculation(
+                    session,
+                    url,
+                    canUseHiddenTab,
+                    extras,
+                    uid,
+                    useSeparateStoragePartitionForExperiment);
         }
         preconnectUrls(otherLikelyBundles);
     }
@@ -1818,7 +1830,8 @@ public class CustomTabsConnection {
             String url,
             boolean useHiddenTab,
             Bundle extras,
-            int uid) {
+            int uid,
+            boolean useSeparateStoragePartitionForExperiment) {
         WarmupManager warmupManager = WarmupManager.getInstance();
         Profile profile = ProfileManager.getLastUsedRegularProfile();
 
@@ -1826,7 +1839,8 @@ public class CustomTabsConnection {
         cancelSpeculation(null);
 
         if (useHiddenTab) {
-            launchUrlInHiddenTab(session, profile, url, extras);
+            launchUrlInHiddenTab(
+                    session, profile, url, extras, useSeparateStoragePartitionForExperiment);
         } else {
             createSpareWebContents(profile);
         }
@@ -1835,15 +1849,29 @@ public class CustomTabsConnection {
 
     /** Creates a hidden tab and initiates a navigation. */
     private void launchUrlInHiddenTab(
-            CustomTabsSessionToken session, Profile profile, String url, @Nullable Bundle extras) {
+            CustomTabsSessionToken session,
+            Profile profile,
+            String url,
+            @Nullable Bundle extras,
+            boolean useSeparateStoragePartitionForExperiment) {
         ThreadUtils.assertOnUiThread();
+
+        WebContents webContents = null;
+
+        if (useSeparateStoragePartitionForExperiment) {
+            webContents =
+                    WebContentsFactory.createWebContentsWithSeparateStoragePartitionForExperiment(
+                            profile);
+        }
+
         mHiddenTabHolder.launchUrlInHiddenTab(
                 (Tab tab) -> setClientDataHeaderForNewTab(session, tab.getWebContents()),
                 session,
                 profile,
                 mClientManager,
                 url,
-                extras);
+                extras,
+                webContents);
     }
 
     @VisibleForTesting
@@ -2043,6 +2071,27 @@ public class CustomTabsConnection {
     public boolean shouldEnableGoogleBottomBarForIntent(
             BrowserServicesIntentDataProvider intentData) {
         return false;
+    }
+
+    /**
+     * Checks whether Google Bottom Bar buttons are present in the Intent data. False by default.
+     *
+     * @param intentData {@link BrowserServicesIntentDataProvider} built from the Intent that
+     *     launched this CCT.
+     */
+    public boolean hasExtraGoogleBottomBarButtons(BrowserServicesIntentDataProvider intentData) {
+        return false;
+    }
+
+    /**
+     * Returns Google Bottom Bar buttons that are added to the Intent.
+     *
+     * @param intentData {@link BrowserServicesIntentDataProvider} built from the Intent that
+     *     launched this CCT.
+     * @return An ArrayList of Bundles, each representing a Google Bottom Bar item.
+     */
+    public List<Bundle> getGoogleBottomBarButtons(BrowserServicesIntentDataProvider intentData) {
+        return new ArrayList<>();
     }
 
     public GoogleBottomBarIntentParams getGoogleBottomBarIntentParams(

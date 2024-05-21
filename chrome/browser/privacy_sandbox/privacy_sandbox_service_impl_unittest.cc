@@ -171,7 +171,7 @@ class TestInterestGroupManager : public content::InterestGroupManager {
   // content::InterestGroupManager:
   void GetAllInterestGroupJoiningOrigins(
       base::OnceCallback<void(std::vector<url::Origin>)> callback) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
   void GetAllInterestGroupDataKeys(
       base::OnceCallback<void(std::vector<InterestGroupDataKey>)> callback)
@@ -180,7 +180,7 @@ class TestInterestGroupManager : public content::InterestGroupManager {
   }
   void RemoveInterestGroupsByDataKey(InterestGroupDataKey data_key,
                                      base::OnceClosure callback) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
  private:
@@ -283,7 +283,7 @@ std::vector<int> GetTopicsSettingsStringIdentifiers(bool did_consent,
             IDS_SETTINGS_TOPICS_PAGE_FOOTER_CANONICAL};
   }
 
-  NOTREACHED() << "Invalid topics settings consent state";
+  NOTREACHED_IN_MIGRATION() << "Invalid topics settings consent state";
   return {};
 }
 
@@ -347,9 +347,9 @@ class PrivacySandboxServiceTest : public testing::Test {
             profile());
 #endif
     privacy_sandbox_service_ = std::make_unique<PrivacySandboxServiceImpl>(
-        privacy_sandbox_settings(), cookie_settings(), profile()->GetPrefs(),
-        test_interest_group_manager(), GetProfileType(),
-        browsing_data_remover(), host_content_settings_map(),
+        privacy_sandbox_settings(), tracking_protection_settings(),
+        cookie_settings(), profile()->GetPrefs(), test_interest_group_manager(),
+        GetProfileType(), browsing_data_remover(), host_content_settings_map(),
 #if !BUILDFLAG(IS_ANDROID)
         mock_sentiment_service(),
 #endif
@@ -968,6 +968,24 @@ TEST_F(PrivacySandboxServiceTest, TestFakeTopics) {
     EXPECT_THAT(service->GetCurrentTopTopics(), ElementsAre(topic1, topic2));
     EXPECT_THAT(service->GetBlockedTopics(), ElementsAre(topic3, topic4));
   }
+}
+using PrivacySandboxServiceDeathTest = PrivacySandboxServiceTest;
+
+TEST_F(PrivacySandboxServiceDeathTest, TPSettingsNullExpectDeath) {
+  ASSERT_DEATH(
+      {
+        PrivacySandboxServiceImpl(
+            privacy_sandbox_settings(),
+            /*tracking_protection_settings=*/nullptr, cookie_settings(),
+            profile()->GetPrefs(), test_interest_group_manager(),
+            GetProfileType(), browsing_data_remover(),
+            host_content_settings_map(),
+#if !BUILDFLAG(IS_ANDROID)
+            mock_sentiment_service(),
+#endif
+            mock_browsing_topics_service(), first_party_sets_policy_service());
+      },
+      "");
 }
 
 TEST_F(PrivacySandboxServiceTest,
@@ -2054,14 +2072,30 @@ TEST_F(PrivacySandboxServiceM1PromptTest, NonChromeBuildPrompt) {
 }
 #endif
 
-TEST_F(PrivacySandboxServiceM1PromptTest, ThirdPartyCookiesBlocked) {
+TEST_F(PrivacySandboxServiceM1PromptTest, ThirdPartyCookiesBlockedPostTP3PC) {
+  // If third party cookies are blocked, set the suppressed reason as
+  // kThirdPartyCookiesBlocked and return kNone.
+  RunTestCase(
+      TestState{{kM1PromptPreviouslySuppressedReason,
+                 static_cast<int>(PromptSuppressedReason::kNone)},
+                {kBlockAll3pcToggleEnabledUserPrefValue, true},
+                {kTrackingProtection3pcdEnabledUserPrefValue, true}},
+      TestInput{{kForceChromeBuild, true}},
+      TestOutput{{kPromptType, static_cast<int>(PromptType::kNone)},
+                 {kM1PromptSuppressedReason,
+                  static_cast<int>(
+                      PromptSuppressedReason::kThirdPartyCookiesBlocked)}});
+}
+
+TEST_F(PrivacySandboxServiceM1PromptTest, ThirdPartyCookiesBlockedPreTP3PC) {
   // If third party cookies are blocked, set the suppressed reason as
   // kThirdPartyCookiesBlocked and return kNone.
   RunTestCase(
       TestState{{kM1PromptPreviouslySuppressedReason,
                  static_cast<int>(PromptSuppressedReason::kNone)},
                 {kCookieControlsModeUserPrefValue,
-                 content_settings::CookieControlsMode::kBlockThirdParty}},
+                 content_settings::CookieControlsMode::kBlockThirdParty},
+                {kTrackingProtection3pcdEnabledUserPrefValue, false}},
       TestInput{{kForceChromeBuild, true}},
       TestOutput{{kPromptType, static_cast<int>(PromptType::kNone)},
                  {kM1PromptSuppressedReason,

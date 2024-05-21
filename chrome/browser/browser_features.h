@@ -56,6 +56,9 @@ extern const base::FeatureParam<bool> kDevToolsConsoleInsightsDogfoodOptIn;
 BASE_DECLARE_FEATURE(kDevToolsConsoleInsightsSettingVisible);
 extern const base::FeatureParam<std::string>
     kDevToolsConsoleInsightsSettingVisibleBlockedReason;
+
+BASE_DECLARE_FEATURE(kDevToolsFreestylerDogfood);
+
 BASE_DECLARE_FEATURE(kDevToolsSharedProcessInfobar);
 BASE_DECLARE_FEATURE(kDevToolsTabTarget);
 BASE_DECLARE_FEATURE(kDevToolsVeLogging);
@@ -65,7 +68,6 @@ BASE_DECLARE_FEATURE(kDoubleTapToZoomInTabletMode);
 #endif
 
 #if BUILDFLAG(IS_WIN)
-BASE_DECLARE_FEATURE(kEnableDPAPIEncryptionProvider);
 BASE_DECLARE_FEATURE(kRegisterAppBoundEncryptionProvider);
 #endif
 

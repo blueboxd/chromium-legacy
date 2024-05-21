@@ -80,7 +80,12 @@ config("tflite_flags") {
   ]
 
   if (build_tflite_with_xnnpack) {
-    defines += [ "TFLITE_BUILD_WITH_XNNPACK_DELEGATE" ]
+    defines += [
+      "TFLITE_BUILD_WITH_XNNPACK_DELEGATE",
+      "XNNPACK_DELEGATE_ENABLE_QS8",
+      "XNNPACK_DELEGATE_ENABLE_QU8",
+      "XNNPACK_DELEGATE_USE_LATEST_OPS",
+    ]
   } else {
     defines += [ "TFLITE_WITHOUT_XNNPACK" ]
   }
@@ -192,7 +197,10 @@ tflite_static_library("tflite_builtin_op_resolver") {
 
   public_configs = [ ":tflite_config" ]
 
-  visibility = [ "//third_party/mediapipe/*" ]
+  visibility = [
+    ":tflite_benchmark",
+    "//third_party/mediapipe/*",
+  ]
 
   conditional_deps = [ ":tflite" ]
 }
@@ -271,6 +279,9 @@ source_set("tflite_kernel_internals") {
     "src/tensorflow/lite/kernels/internal/kernel_utils.h",
     "src/tensorflow/lite/kernels/internal/max.h",
     "src/tensorflow/lite/kernels/internal/min.h",
+    "src/tensorflow/lite/kernels/internal/optimized/4bit/fully_connected_reference.cc",
+    "src/tensorflow/lite/kernels/internal/optimized/4bit/fully_connected_reference.h",
+    "src/tensorflow/lite/kernels/internal/optimized/4bit/fully_connected_reference_impl.h",
     "src/tensorflow/lite/kernels/internal/optimized/batch_matmul.h",
     "src/tensorflow/lite/kernels/internal/optimized/cpu_check.cc",
     "src/tensorflow/lite/kernels/internal/optimized/cpu_check.h",
@@ -442,9 +453,6 @@ tflite_static_library("tflite_kernels") {
     "src/tensorflow/lite/kernels/gather_nd.cc",
     "src/tensorflow/lite/kernels/hashtable_lookup.cc",
     "src/tensorflow/lite/kernels/if.cc",
-    "src/tensorflow/lite/kernels/internal/optimized/4bit/fully_connected_reference.cc",
-    "src/tensorflow/lite/kernels/internal/optimized/4bit/fully_connected_reference.h",
-    "src/tensorflow/lite/kernels/internal/optimized/4bit/fully_connected_reference_impl.h",
     "src/tensorflow/lite/kernels/kernel_util.cc",
     "src/tensorflow/lite/kernels/kernel_util.h",
     "src/tensorflow/lite/kernels/l2norm.cc",
@@ -721,6 +729,8 @@ tflite_static_library("tflite") {
     sources += [
       "src/tensorflow/lite/delegates/xnnpack/quantization_util.cc",
       "src/tensorflow/lite/delegates/xnnpack/quantization_util.h",
+      "src/tensorflow/lite/delegates/xnnpack/weight_cache.cc",
+      "src/tensorflow/lite/delegates/xnnpack/weight_cache.h",
       "src/tensorflow/lite/delegates/xnnpack/xnnpack_delegate.cc",
       "src/tensorflow/lite/delegates/xnnpack/xnnpack_delegate.h",
     ]
@@ -798,4 +808,50 @@ tflite_static_library("tflite") {
   # target (which is assumed to be for third-party code that is OK to have
   # these switches).
   public_deps_for_standalone = [ "//third_party/neon_2_sse" ]
+}
+
+executable("tflite_benchmark") {
+  sources = [
+    "src/tensorflow/lite/tools/benchmark/benchmark_main.cc",
+    "src/tensorflow/lite/tools/benchmark/benchmark_model.cc",
+    "src/tensorflow/lite/tools/benchmark/benchmark_model.h",
+    "src/tensorflow/lite/tools/benchmark/benchmark_tflite_model.cc",
+    "src/tensorflow/lite/tools/benchmark/benchmark_tflite_model.h",
+    "src/tensorflow/lite/tools/benchmark/benchmark_utils.cc",
+    "src/tensorflow/lite/tools/benchmark/benchmark_utils.h",
+    "src/tensorflow/lite/tools/benchmark/profiling_listener.cc",
+    "src/tensorflow/lite/tools/benchmark/profiling_listener.h",
+    "src/tensorflow/lite/tools/command_line_flags.cc",
+    "src/tensorflow/lite/tools/command_line_flags.h",
+    "src/tensorflow/lite/tools/delegates/delegate_provider.cc",
+    "src/tensorflow/lite/tools/delegates/delegate_provider.h",
+    "src/tensorflow/lite/tools/model_loader.cc",
+    "src/tensorflow/lite/tools/model_loader.h",
+    "src/tensorflow/lite/tools/tool_params.cc",
+    "src/tensorflow/lite/tools/tool_params.h",
+    "src/tensorflow/lite/tools/utils.cc",
+    "src/tensorflow/lite/tools/utils.h",
+  ]
+  deps = [
+    ":tflite_standalone",
+    ":tflite_builtin_op_resolver_standalone",
+    "//third_party/abseil-cpp:absl",
+    "//third_party/ruy",
+  ]
+
+  public_configs = [ ":tflite_config" ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/eigen3:eigen_includes",
+    ":tflite_flags",
+  ]
+
+  if (is_clang) {
+    cflags_cc = [
+      "-Wno-ignored-qualifiers",
+      "-Wno-defaulted-function-deleted",
+    ]
+  }
 }

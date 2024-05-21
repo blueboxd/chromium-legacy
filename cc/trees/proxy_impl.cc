@@ -272,6 +272,12 @@ void ProxyImpl::SetVisibleOnImpl(bool visible) {
   scheduler_->SetVisible(visible);
 }
 
+void ProxyImpl::SetShouldWarmUpOnImpl() {
+  TRACE_EVENT0("cc", "ProxyImpl::SetShouldWarmUpOnImpl");
+  DCHECK(IsImplThread());
+  scheduler_->SetShouldWarmUp();
+}
+
 void ProxyImpl::ReleaseLayerTreeFrameSinkOnImpl(CompletionEvent* completion) {
   DCHECK(IsImplThread());
 
@@ -321,7 +327,7 @@ bool ProxyImpl::IsInSynchronousComposite() const {
 
 void ProxyImpl::FrameSinksToThrottleUpdated(
     const base::flat_set<viz::FrameSinkId>& ids) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void ProxyImpl::SetHasActiveThreadedScroll(bool is_scrolling) {
@@ -892,13 +898,11 @@ DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
   }
 
   if (draw_frame) {
-    if (std::optional<LayerTreeHostImpl::SubmitInfo> submit_info =
+    if (std::optional<SubmitInfo> submit_info =
             host_impl_->DrawLayers(&frame)) {
       DCHECK_NE(frame.frame_token, 0u);
       // Drawing implies we submitted a frame to the LayerTreeFrameSink.
-      scheduler_->DidSubmitCompositorFrame(
-          frame.frame_token, submit_info->time,
-          std::move(submit_info->events_metrics), frame.has_missing_content);
+      scheduler_->DidSubmitCompositorFrame(submit_info.value());
     }
     result = DrawResult::kSuccess;
   } else {

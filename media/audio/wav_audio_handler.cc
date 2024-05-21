@@ -47,12 +47,21 @@ const size_t kSubFormatOffset = 24;
 // A convenience struct for passing WAV parameters around. AudioParameters is
 // too heavyweight for this. Keep this class internal to this implementation.
 struct WavAudioParameters {
-  WavAudioHandler::AudioFormat audio_format;
-  uint16_t num_channels;
-  uint32_t sample_rate;
-  uint16_t bits_per_sample;
-  uint16_t valid_bits_per_sample;
-  bool is_extensible;
+  // TODO(crbug.com/340824112): note that zero-initializing this field does not
+  // correspond to any enumerator value defined in the `AudioFormat` enum.
+  // However, not initializing is also problematic: `ParseFmtChunk()` simply
+  // early-returns on failure, leaving random fields uninitialized and causing
+  // MSan errors elsewhere. A better long-term solution would be for
+  // `ParseFmtChunk` to return a `std::optional<WavAudioParameters>`. For now,
+  // zero-initializing this field has a (small) benefit that it won't
+  // correspond to any valid format and is guaranteed to fail the
+  // `ParamsAreValid()` check.
+  WavAudioHandler::AudioFormat audio_format = {};
+  uint16_t num_channels = 0;
+  uint32_t sample_rate = 0;
+  uint16_t bits_per_sample = 0;
+  uint16_t valid_bits_per_sample = 0;
+  bool is_extensible = false;
 };
 
 bool ParamsAreValid(const WavAudioParameters& params) {
@@ -273,7 +282,7 @@ bool WavAudioHandler::CopyTo(AudioBus* bus, size_t* frames_written) {
               reinterpret_cast<const int32_t*>(source), frames);
           break;
         default:
-          NOTREACHED()
+          NOTREACHED_IN_MIGRATION()
               << "Unsupported bytes per sample encountered for integer PCM: "
               << bytes_per_frame;
           bus->ZeroFrames(frames);
@@ -290,15 +299,15 @@ bool WavAudioHandler::CopyTo(AudioBus* bus, size_t* frames_written) {
               reinterpret_cast<const double*>(source), frames);
           break;
         default:
-          NOTREACHED()
+          NOTREACHED_IN_MIGRATION()
               << "Unsupported bytes per sample encountered for float PCM: "
               << bytes_per_frame;
           bus->ZeroFrames(frames);
       }
       break;
     default:
-      NOTREACHED() << "Unsupported audio format encountered: "
-                   << static_cast<uint16_t>(audio_format_);
+      NOTREACHED_IN_MIGRATION() << "Unsupported audio format encountered: "
+                                << static_cast<uint16_t>(audio_format_);
       bus->ZeroFrames(frames);
   }
   *frames_written = frames;

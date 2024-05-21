@@ -544,7 +544,7 @@ bool AutofillProfile::IsPresentButInvalid(FieldType type) const {
       return !IsValidEmailAddress(data);
 
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return false;
   }
 }
@@ -844,10 +844,6 @@ bool AutofillProfile::MergeDataFrom(const AutofillProfile& profile,
 void AutofillProfile::MergeFormGroupTokenQuality(
     const FormGroup& merged_group,
     const AutofillProfile& other_profile) {
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillTrackProfileTokenQuality)) {
-    return;
-  }
   FieldTypeSet supported_types;
   merged_group.GetSupportedTypes(&supported_types);
   for (FieldType type : supported_types) {
@@ -1185,7 +1181,7 @@ FormGroup* AutofillProfile::MutableFormGroupForType(const AutofillType& type) {
       return nullptr;
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 

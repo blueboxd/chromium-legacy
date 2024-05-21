@@ -62,6 +62,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -181,7 +182,7 @@ ResourceLoadPriority TypeToPriority(ResourceType type) {
       return ResourceLoadPriority::kVeryLow;
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return ResourceLoadPriority::kUnresolved;
 }
 
@@ -428,7 +429,7 @@ mojom::blink::RequestContextType ResourceFetcher::DetermineRequestContext(
     case ResourceType::kDictionary:
       return mojom::blink::RequestContextType::SUBRESOURCE;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return mojom::blink::RequestContextType::SUBRESOURCE;
 }
 
@@ -461,7 +462,7 @@ network::mojom::RequestDestination ResourceFetcher::DetermineRequestDestination(
     case ResourceType::kDictionary:
       return network::mojom::RequestDestination::kEmpty;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return network::mojom::RequestDestination::kEmpty;
 }
 
@@ -1382,6 +1383,10 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
     resource->DidChangePriority(resource_request.Priority(), 0);
   }
 
+  // The resource width can change after the request was initially created.
+  resource->UpdateResourceWidth(
+      resource_request.HttpHeaderField(AtomicString("sec-ch-width")));
+
   // If only the fragment identifiers differ, it is the same resource.
   DCHECK(EqualIgnoringFragmentIdentifier(resource->Url(), params.Url()));
   if (policy == RevalidationPolicy::kUse &&
@@ -1723,12 +1728,12 @@ void ResourceFetcher::PrintPreloadMismatch(Resource* resource,
 
   StringBuilder builder;
   builder.Append("A preload for '");
-  builder.Append(resource->Url());
+  builder.Append(resource->Url().GetString());
   builder.Append("' is found, but is not used ");
 
   switch (status) {
     case Resource::MatchStatus::kOk:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
     case Resource::MatchStatus::kUnknownFailure:
       builder.Append("due to an unknown reason.");
@@ -1851,7 +1856,7 @@ const char* ResourceFetcher::GetNameFor(RevalidationPolicy policy) {
     case RevalidationPolicy::kLoad:
       return "load";
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 std::pair<ResourceFetcher::RevalidationPolicy, const char*>
@@ -2518,15 +2523,19 @@ void ResourceFetcher::ScheduleLoadingPotentiallyUnusedPreload(
       features::kLcppDeferUnusedPreloadTiming.Get();
   switch (load_timing) {
     case features::LcppDeferUnusedPreloadTiming::kPostTask:
-      freezable_task_runner_->PostTask(
-          FROM_HERE,
-          WTF::BindOnce(&ResourceFetcher::StartLoadAndFinishIfFailed,
-                        WrapWeakPersistent(this), WrapWeakPersistent(resource),
-                        /*is_potentially_unused_preload=*/true));
+      ScheduleStartLoadAndFinishIfFailed(
+          resource, /*is_potentially_unused_preload=*/true);
       break;
     case features::LcppDeferUnusedPreloadTiming::kLcpTimingPredictor:
       context_->AddLcpPredictedCallback(
           WTF::BindOnce(&ResourceFetcher::StartLoadAndFinishIfFailed,
+                        WrapWeakPersistent(this), WrapWeakPersistent(resource),
+                        /*is_potentially_unused_preload=*/true));
+      break;
+    case features::LcppDeferUnusedPreloadTiming::
+        kLcpTimingPredictorWithPostTask:
+      context_->AddLcpPredictedCallback(
+          WTF::BindOnce(&ResourceFetcher::ScheduleStartLoadAndFinishIfFailed,
                         WrapWeakPersistent(this), WrapWeakPersistent(resource),
                         /*is_potentially_unused_preload=*/true));
       break;
@@ -2555,6 +2564,16 @@ void ResourceFetcher::StartLoadAndFinishIfFailed(
   }
 }
 
+void ResourceFetcher::ScheduleStartLoadAndFinishIfFailed(
+    Resource* resource,
+    bool is_potentially_unused_preload) {
+  freezable_task_runner_->PostTask(
+      FROM_HERE,
+      WTF::BindOnce(&ResourceFetcher::StartLoadAndFinishIfFailed,
+                    WrapWeakPersistent(this), WrapWeakPersistent(resource),
+                    is_potentially_unused_preload));
+}
+
 void ResourceFetcher::RemoveResourceLoader(ResourceLoader* loader) {
   DCHECK(loader);
 
@@ -2563,7 +2582,7 @@ void ResourceFetcher::RemoveResourceLoader(ResourceLoader* loader) {
   else if (non_blocking_loaders_.Contains(loader))
     non_blocking_loaders_.erase(loader);
   else
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
 
   if (loaders_.empty() && non_blocking_loaders_.empty())
     keepalive_loaders_task_handle_.Cancel();

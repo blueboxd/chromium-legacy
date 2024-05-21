@@ -85,7 +85,7 @@ std::string ToString(PasswordForm::GenerationUploadStatus status) {
       return "Negative Signal Sent";
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return std::string();
 }
 
@@ -328,6 +328,23 @@ bool PasswordForm::IsLikelyChangePasswordForm() const {
 bool PasswordForm::IsLikelyResetPasswordForm() const {
   return HasNewPasswordElement() && !HasPasswordElement() &&
          !HasUsernameElement();
+}
+
+autofill::AutofillClient::PasswordFormType PasswordForm::GetPasswordFormType()
+    const {
+  using enum autofill::AutofillClient::PasswordFormType;
+  if (IsLikelyLoginForm()) {
+    return kLoginForm;
+  } else if (IsLikelySignupForm()) {
+    return kSignupForm;
+  } else if (IsLikelyChangePasswordForm()) {
+    return kChangePasswordForm;
+  } else if (IsLikelyResetPasswordForm()) {
+    return kResetPasswordForm;
+  } else if (IsSingleUsername()) {
+    return kSingleUsernameForm;
+  }
+  return kNoPasswordForm;
 }
 
 bool PasswordForm::HasUsernameElement() const {

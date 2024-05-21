@@ -435,7 +435,7 @@ class HostResolverFactory final : public net::HostResolver::Factory {
       const net::HostResolver::ManagerOptions& options,
       std::string_view host_mapping_rules,
       bool enable_caching) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return nullptr;
   }
 
@@ -496,7 +496,7 @@ class NetworkContextTest : public testing::Test {
       break;
     }
 
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return net::URLRequestContextBuilder::HttpCacheParams::IN_MEMORY;
   }
 
@@ -1516,7 +1516,7 @@ TEST_F(NetworkContextTest, HostResolutionFailure) {
 TEST_F(NetworkContextTest, P2PHostResolution) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      net::features::kSplitHostCacheByNetworkIsolationKey);
+      net::features::kPartitionConnectionsByNetworkIsolationKey);
 
   const char kHostname[] = "foo.test.";
   net::IPAddress ip_address;

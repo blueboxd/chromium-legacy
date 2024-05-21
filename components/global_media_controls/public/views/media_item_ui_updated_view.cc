@@ -4,6 +4,7 @@
 
 #include "components/global_media_controls/public/views/media_item_ui_updated_view.h"
 
+#include "components/global_media_controls/media_view_utils.h"
 #include "components/global_media_controls/public/media_item_ui_observer.h"
 #include "components/global_media_controls/public/views/media_progress_view.h"
 #include "components/media_message_center/media_notification_item.h"
@@ -51,25 +52,14 @@ constexpr gfx::Size kArtworkSize = gfx::Size(80, 80);
 constexpr gfx::Size kPlayPauseButtonSize = gfx::Size(48, 48);
 constexpr gfx::Size kMediaActionButtonSize = gfx::Size(24, 24);
 
-constexpr base::TimeDelta kSeekTime = base::Seconds(10);
-
-// If the image does not fit the square view, scale the image to fill the view
-// even if part of the image is cropped.
-gfx::Size ScaleImageSizeToFitView(const gfx::Size& image_size,
-                                  const gfx::Size& view_size) {
-  const float scale =
-      std::max(view_size.width() / static_cast<float>(image_size.width()),
-               view_size.height() / static_cast<float>(image_size.height()));
-  return gfx::ScaleToFlooredSize(image_size, scale);
-}
-
 }  // namespace
 
 MediaItemUIUpdatedView::MediaItemUIUpdatedView(
     const std::string& id,
     base::WeakPtr<media_message_center::MediaNotificationItem> item,
     media_message_center::MediaColorTheme media_color_theme,
-    std::unique_ptr<MediaItemUIDeviceSelector> device_selector_view)
+    std::unique_ptr<MediaItemUIDeviceSelector> device_selector_view,
+    std::unique_ptr<MediaItemUIFooter> footer_view)
     : id_(id), item_(std::move(item)), media_color_theme_(media_color_theme) {
   CHECK(item_);
 
@@ -131,16 +121,11 @@ MediaItemUIUpdatedView::MediaItemUIUpdatedView(
       kSourceRowButtonContainerSeparator);
 
   // Create the start casting button.
-  if (device_selector_view) {
-    start_casting_button_ = CreateMediaActionButton(
-        source_row_button_container, kEmptyMediaActionButtonId,
-        vector_icons::kCastIcon,
-        IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_SHOW_DEVICE_LIST);
-    start_casting_button_->SetCallback(
-        base::BindRepeating(&MediaItemUIUpdatedView::StartCastingButtonPressed,
-                            base::Unretained(this)));
-    start_casting_button_->SetVisible(false);
-  }
+  start_casting_button_ = CreateMediaActionButton(
+      source_row_button_container, kEmptyMediaActionButtonId,
+      vector_icons::kCastIcon,
+      IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_SHOW_DEVICE_LIST);
+  start_casting_button_->SetVisible(false);
 
   // Create the picture-in-picture button.
   picture_in_picture_button_ = CreateMediaActionButton(
@@ -228,10 +213,12 @@ MediaItemUIUpdatedView::MediaItemUIUpdatedView(
       IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_NEXT_TRACK);
 
   // Add the device selector view below the |progress_row| if there is one.
-  if (device_selector_view) {
-    device_selector_view_ = AddChildView(std::move(device_selector_view));
-    device_selector_view_->SetMediaItemUIUpdatedView(this);
-  }
+  UpdateDeviceSelectorView(std::move(device_selector_view));
+
+  // Add the cast device footer view below the |progress_row| if there is one.
+  // It will only show up when this media item is being casted to another
+  // device.
+  UpdateFooterView(std::move(footer_view));
 
   item_->SetView(this);
 }
@@ -381,11 +368,9 @@ void MediaItemUIUpdatedView::UpdateDeviceSelectorVisibility(bool visible) {
 
 void MediaItemUIUpdatedView::UpdateDeviceSelectorAvailability(
     bool has_devices) {
-  CHECK(start_casting_button_);
-  // Do not show the start casting button if this media item is being casted to
-  // another device and has a footer view of stop casting button.
-  // TODO(yrw): Add "&& !footer_view_" when it is ready.
-  bool visible = has_devices;
+  // Do not show the start casting button for a casting media item. Only show it
+  // if there are available devices in the selector view.
+  bool visible = has_devices && !footer_view_;
   if (visible != start_casting_button_->GetVisible()) {
     start_casting_button_->SetVisible(visible);
   }
@@ -393,6 +378,39 @@ void MediaItemUIUpdatedView::UpdateDeviceSelectorAvailability(
 
 ///////////////////////////////////////////////////////////////////////////////
 // MediaItemUIUpdatedView implementations:
+
+void MediaItemUIUpdatedView::UpdateDeviceSelectorView(
+    std::unique_ptr<MediaItemUIDeviceSelector> device_selector_view) {
+  // Remove the existing device selector view.
+  if (device_selector_view_) {
+    RemoveChildViewT(device_selector_view_);
+    device_selector_view_ = nullptr;
+    start_casting_button_->SetCallback(views::Button::PressedCallback());
+  }
+  // Add the new device selector view.
+  if (device_selector_view) {
+    device_selector_view_ = AddChildView(std::move(device_selector_view));
+    device_selector_view_->SetMediaItemUIUpdatedView(this);
+    start_casting_button_->SetCallback(
+        base::BindRepeating(&MediaItemUIUpdatedView::StartCastingButtonPressed,
+                            base::Unretained(this)));
+  }
+}
+
+void MediaItemUIUpdatedView::UpdateFooterView(
+    std::unique_ptr<MediaItemUIFooter> footer_view) {
+  // Remove the existing footer view.
+  if (footer_view_) {
+    RemoveChildViewT(footer_view_);
+    footer_view_ = nullptr;
+  }
+  // Add the new footer view.
+  if (footer_view) {
+    footer_view_ = AddChildView(std::move(footer_view));
+  }
+  // Footer view changes can change the picture-in-picture button's visibility.
+  UpdateMediaActionButtonsVisibility();
+}
 
 MediaActionButton* MediaItemUIUpdatedView::CreateMediaActionButton(
     views::View* parent,
@@ -443,6 +461,10 @@ void MediaItemUIUpdatedView::UpdateMediaActionButtonsVisibility() {
   for (views::Button* button : media_action_buttons_) {
     bool should_show = base::Contains(
         media_actions_, static_cast<MediaSessionAction>(button->GetID()));
+    // Do not show the picture-in-picture button for a casting media item.
+    if (button == picture_in_picture_button_ && footer_view_) {
+      should_show = false;
+    }
     if (should_show != button->GetVisible()) {
       button->SetVisible(should_show);
       should_invalidate_layout = true;
@@ -474,7 +496,6 @@ void MediaItemUIUpdatedView::StartCastingButtonPressed() {
 }
 
 void MediaItemUIUpdatedView::UpdateCastingState() {
-  CHECK(start_casting_button_);
   CHECK(device_selector_view_);
 
   if (start_casting_button_->GetVisible()) {
@@ -541,6 +562,10 @@ MediaActionButton* MediaItemUIUpdatedView::GetStartCastingButtonForTesting() {
 MediaItemUIDeviceSelector*
 MediaItemUIUpdatedView::GetDeviceSelectorForTesting() {
   return device_selector_view_;
+}
+
+MediaItemUIFooter* MediaItemUIUpdatedView::GetFooterForTesting() {
+  return footer_view_;
 }
 
 BEGIN_METADATA(MediaItemUIUpdatedView)

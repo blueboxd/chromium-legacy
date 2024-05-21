@@ -502,10 +502,6 @@ bool IsLacrosColorManagementEnabled() {
   return base::FeatureList::IsEnabled(kLacrosColorManagement);
 }
 
-BASE_FEATURE(kCustomizeChromeSidePanel,
-             "CustomizeChromeSidePanel",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kChromeRefresh2023,
              "ChromeRefresh2023",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -515,13 +511,11 @@ BASE_FEATURE(kChromeRefreshSecondary2023,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsChromeRefresh2023() {
-  return base::FeatureList::IsEnabled(kChromeRefresh2023) ||
-         base::FeatureList::IsEnabled(kChromeRefreshSecondary2023);
+  return true;
 }
 
 bool IsChromeWebuiRefresh2023() {
-  return IsChromeRefresh2023() &&
-         base::FeatureList::IsEnabled(kChromeRefreshSecondary2023);
+  return true;
 }
 
 BASE_FEATURE(kBubbleMetricsApi,

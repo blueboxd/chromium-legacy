@@ -14,6 +14,7 @@
 
 #include "base/check.h"
 #include "base/containers/span.h"
+#include "base/feature_list.h"
 #include "base/functional/function_ref.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/values_equivalent.h"
@@ -50,6 +51,11 @@
 
 namespace cc {
 namespace {
+
+BASE_FEATURE(kUseLitePaintOps,
+             "UseLitePaintOps",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // In a future CL, convert DrawImage to explicitly take sampling instead of
 // quality
 PaintFlags::FilterQuality sampling_to_quality(
@@ -130,12 +136,14 @@ void DrawImageRect(SkCanvas* canvas,
   M(ConcatOp)                \
   M(CustomDataOp)            \
   M(DrawArcOp)               \
+  M(DrawArcLiteOp)           \
   M(DrawColorOp)             \
   M(DrawDRRectOp)            \
   M(DrawImageOp)             \
   M(DrawImageRectOp)         \
   M(DrawIRectOp)             \
   M(DrawLineOp)              \
+  M(DrawLineLiteOp)          \
   M(DrawOvalOp)              \
   M(DrawPathOp)              \
   M(DrawRecordOp)            \
@@ -165,10 +173,6 @@ static constexpr size_t kNumOpTypes = PaintOp::kNumOpTypes;
 static_assert(kNumOpTypes == TYPES(M), "Missing op in list");
 #undef M
 
-#define M(T) PaintOpBuffer::ComputeOpAlignedSize<T>(),
-static constexpr uint16_t g_type_to_aligned_size[kNumOpTypes] = {TYPES(M)};
-#undef M
-
 template <typename T, bool HasFlags>
 struct Rasterizer {
   static void RasterWithFlags(const T* op,
@@ -179,7 +183,7 @@ struct Rasterizer {
         !T::kHasPaintFlags,
         "This function should not be used for a PaintOp that has PaintFlags");
     DCHECK(op->IsValid());
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
   static void Raster(const T* op,
                      SkCanvas* canvas,
@@ -276,7 +280,6 @@ PaintOp* Deserialize(PaintOpReader& reader, void* output, size_t output_size) {
     op->~T();
     return nullptr;
   }
-  op->aligned_size = PaintOpBuffer::ComputeOpAlignedSize<T>();
   return op;
 }
 #define M(T) &Deserialize<T>,
@@ -327,6 +330,10 @@ static const AnalyzeOpFunc g_analyze_op_functions[kNumOpTypes] = {TYPES(M)};
 #undef M
 
 }  // namespace
+
+#define M(T) PaintOpBuffer::ComputeOpAlignedSize<T>(),
+uint16_t PaintOp::g_type_to_aligned_size[kNumOpTypes] = {TYPES(M)};
+#undef M
 
 #define M(T) T::kIsDrawOp,
 bool PaintOp::g_is_draw_op[kNumOpTypes] = {TYPES(M)};
@@ -479,6 +486,13 @@ void DrawLineOp::Serialize(PaintOpWriter& writer,
   writer.WriteSimpleMultiple(x0, y0, x1, y1, draw_as_path);
 }
 
+void DrawLineLiteOp::Serialize(PaintOpWriter& writer,
+                               const PaintFlags* flags_to_serialize,
+                               const SkM44& current_ctm,
+                               const SkM44& original_ctm) const {
+  writer.WriteSimpleMultiple(x0, y0, x1, y1, core_paint_flags);
+}
+
 void DrawArcOp::Serialize(PaintOpWriter& writer,
                           const PaintFlags* flags_to_serialize,
                           const SkM44& current_ctm,
@@ -487,6 +501,14 @@ void DrawArcOp::Serialize(PaintOpWriter& writer,
   writer.Write(oval);
   writer.Write(start_angle_degrees);
   writer.Write(sweep_angle_degrees);
+}
+
+void DrawArcLiteOp::Serialize(PaintOpWriter& writer,
+                              const PaintFlags* flags_to_serialize,
+                              const SkM44& current_ctm,
+                              const SkM44& original_ctm) const {
+  writer.WriteSimpleMultiple(oval, start_angle_degrees, sweep_angle_degrees,
+                             core_paint_flags);
 }
 
 void DrawOvalOp::Serialize(PaintOpWriter& writer,
@@ -511,7 +533,7 @@ void DrawRecordOp::Serialize(PaintOpWriter& writer,
                              const SkM44& current_ctm,
                              const SkM44& original_ctm) const {
   // These are flattened in PaintOpBufferSerializer.
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void DrawRectOp::Serialize(PaintOpWriter& writer,
@@ -535,7 +557,7 @@ void DrawScrollingContentsOp::Serialize(PaintOpWriter& writer,
                                         const SkM44& current_ctm,
                                         const SkM44& original_ctm) const {
   // These are flattened in PaintOpBufferSerializer.
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void DrawVerticesOp::Serialize(PaintOpWriter& writer,
@@ -839,12 +861,31 @@ PaintOp* DrawLineOp::Deserialize(PaintOpReader& reader, void* output) {
   return op;
 }
 
+PaintOp* DrawLineLiteOp::Deserialize(PaintOpReader& reader, void* output) {
+  DrawLineLiteOp* op = new (output) DrawLineLiteOp;
+  reader.Read(&op->x0);
+  reader.Read(&op->y0);
+  reader.Read(&op->x1);
+  reader.Read(&op->y1);
+  reader.Read(&op->core_paint_flags);
+  return op;
+}
+
 PaintOp* DrawArcOp::Deserialize(PaintOpReader& reader, void* output) {
   DrawArcOp* op = new (output) DrawArcOp;
   reader.Read(&op->flags);
   reader.Read(&op->oval);
   reader.Read(&op->start_angle_degrees);
   reader.Read(&op->sweep_angle_degrees);
+  return op;
+}
+
+PaintOp* DrawArcLiteOp::Deserialize(PaintOpReader& reader, void* output) {
+  DrawArcLiteOp* op = new (output) DrawArcLiteOp;
+  reader.Read(&op->oval);
+  reader.Read(&op->start_angle_degrees);
+  reader.Read(&op->sweep_angle_degrees);
+  reader.Read(&op->core_paint_flags);
   return op;
 }
 
@@ -1022,7 +1063,7 @@ PaintOp* DrawSlugOp::Deserialize(PaintOpReader& reader, void* output) {
 }
 
 PaintOp* DrawTextBlobOp::Deserialize(PaintOpReader& reader, void* output) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 
@@ -1416,6 +1457,15 @@ void DrawLineOp::RasterWithFlags(const DrawLineOp* op,
   });
 }
 
+void DrawLineLiteOp::Raster(const DrawLineLiteOp* op,
+                            SkCanvas* canvas,
+                            const PlaybackParams& params) {
+  PaintFlags flags(op->core_paint_flags);
+  flags.DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
+    c->drawLine(op->x0, op->y0, op->x1, op->y1, p);
+  });
+}
+
 void DrawArcOp::RasterWithFlags(const DrawArcOp* op,
                                 const PaintFlags* flags,
                                 SkCanvas* canvas,
@@ -1436,6 +1486,26 @@ void DrawArcOp::RasterWithFlagsImpl(const PaintFlags* flags,
       return;
     }
     c->drawArc(oval, start_angle_degrees, sweep_angle_degrees, false, p);
+  });
+}
+
+void DrawArcLiteOp::Raster(const DrawArcLiteOp* op,
+                           SkCanvas* canvas,
+                           const PlaybackParams& params) {
+  PaintFlags flags(op->core_paint_flags);
+  flags.DrawToSk(canvas, [op, &flags](SkCanvas* c, const SkPaint& p) {
+    if (flags.isArcClosed() &&
+        !SkScalarNearlyEqual(op->sweep_angle_degrees, SkIntToScalar(360)) &&
+        !SkScalarNearlyEqual(op->sweep_angle_degrees, SkIntToScalar(-360))) {
+      SkPath path;
+      path.arcTo(op->oval, op->start_angle_degrees, op->sweep_angle_degrees,
+                 false);
+      path.close();
+      c->drawPath(path, p);
+      return;
+    }
+    c->drawArc(op->oval, op->start_angle_degrees, op->sweep_angle_degrees,
+               false, p);
   });
 }
 
@@ -1766,11 +1836,23 @@ bool DrawLineOp::EqualsForTesting(const DrawLineOp& other) const {
          x0 == other.x0 && y0 == other.y0 && x1 == other.x1 && y1 == other.y1;
 }
 
+bool DrawLineLiteOp::EqualsForTesting(const DrawLineLiteOp& other) const {
+  return x0 == other.x0 && y0 == other.y0 && x1 == other.x1 && y1 == other.y1 &&
+         core_paint_flags == other.core_paint_flags;
+}
+
 bool DrawArcOp::EqualsForTesting(const DrawArcOp& other) const {
   return flags.EqualsForTesting(other.flags) &&  // IN-TEST
          oval == other.oval &&
          start_angle_degrees == other.start_angle_degrees &&
          sweep_angle_degrees == other.sweep_angle_degrees;
+}
+
+bool DrawArcLiteOp::EqualsForTesting(const DrawArcLiteOp& other) const {
+  return oval == other.oval &&
+         start_angle_degrees == other.start_angle_degrees &&
+         sweep_angle_degrees == other.sweep_angle_degrees &&
+         core_paint_flags == other.core_paint_flags;
 }
 
 bool DrawOvalOp::EqualsForTesting(const DrawOvalOp& other) const {
@@ -1977,9 +2059,19 @@ PaintOp* PaintOp::DeserializeIntoPaintOpBuffer(
 
 // static
 bool PaintOp::GetBounds(const PaintOp& op, SkRect* rect) {
-  DCHECK(op.IsDrawOp());
-
   switch (op.GetType()) {
+    case PaintOpType::kAnnotate:
+      return false;
+    case PaintOpType::kClipPath:
+      return false;
+    case PaintOpType::kClipRect:
+      return false;
+    case PaintOpType::kClipRRect:
+      return false;
+    case PaintOpType::kConcat:
+      return false;
+    case PaintOpType::kCustomData:
+      return false;
     case PaintOpType::kDrawColor:
       return false;
     case PaintOpType::kDrawDRRect: {
@@ -2013,8 +2105,20 @@ bool PaintOp::GetBounds(const PaintOp& op, SkRect* rect) {
       rect->sort();
       return true;
     }
+    case PaintOpType::kDrawLineLite: {
+      const auto& line_op = static_cast<const DrawLineLiteOp&>(op);
+      rect->setLTRB(line_op.x0, line_op.y0, line_op.x1, line_op.y1);
+      rect->sort();
+      return true;
+    }
     case PaintOpType::kDrawArc: {
       const auto& arc_op = static_cast<const DrawArcOp&>(op);
+      *rect = arc_op.oval;
+      rect->sort();
+      return true;
+    }
+    case PaintOpType::kDrawArcLite: {
+      const auto& arc_op = static_cast<const DrawArcLiteOp&>(op);
       *rect = arc_op.oval;
       rect->sort();
       return true;
@@ -2072,8 +2176,28 @@ bool PaintOp::GetBounds(const PaintOp& op, SkRect* rect) {
           base::checked_cast<int>(vertices_op.vertices->data().size()));
       return true;
     }
-    default:
-      NOTREACHED();
+    case PaintOpType::kNoop:
+      return false;
+    case PaintOpType::kRestore:
+      return false;
+    case PaintOpType::kRotate:
+      return false;
+    case PaintOpType::kSave:
+      return false;
+    case PaintOpType::kSaveLayer:
+      return false;
+    case PaintOpType::kSaveLayerAlpha:
+      return false;
+    case PaintOpType::kSaveLayerFilters:
+      return false;
+    case PaintOpType::kScale:
+      return false;
+    case PaintOpType::kSetMatrix:
+      return false;
+    case PaintOpType::kSetNodeId:
+      return false;
+    case PaintOpType::kTranslate:
+      return false;
   }
   return false;
 }
@@ -2084,7 +2208,7 @@ gfx::Rect PaintOp::ComputePaintRect(const PaintOp& op,
                                     const SkMatrix& ctm) {
   gfx::Rect transformed_rect;
   SkRect op_rect;
-  if (!op.IsDrawOp() || !PaintOp::GetBounds(op, &op_rect)) {
+  if (!PaintOp::GetBounds(op, &op_rect)) {
     // If we can't provide a conservative bounding rect for the op, assume it
     // covers the complete current clip.
     // TODO(khushalsagar): See if we can do something better for non-draw ops.
@@ -2280,8 +2404,14 @@ bool DrawScrollingContentsOp::HasEffectsPreventingLCDTextForSaveLayerAlpha()
 
 gfx::PointF DrawScrollingContentsOp::GetScrollOffset(
     const PlaybackParams& params) const {
-  // TODO(wangxianzhu): Plumb impl-side scroll offset here.
-  return main_scroll_offset;
+  gfx::PointF scroll_offset = main_scroll_offset;
+  if (params.raster_inducing_scroll_offsets) {
+    auto it = params.raster_inducing_scroll_offsets->find(scroll_element_id);
+    if (it != params.raster_inducing_scroll_offsets->end()) {
+      scroll_offset = it->second;
+    }
+  }
+  return scroll_offset;
 }
 
 AnnotateOp::AnnotateOp() : PaintOp(kType) {}
@@ -2465,5 +2595,10 @@ SaveLayerFiltersOp::SaveLayerFiltersOp(base::span<sk_sp<PaintFilter>> filters,
 SaveLayerFiltersOp::SaveLayerFiltersOp() : PaintOpWithFlags(kType) {}
 
 SaveLayerFiltersOp::~SaveLayerFiltersOp() = default;
+
+bool AreLiteOpsEnabled() {
+  static const bool enabled = base::FeatureList::IsEnabled(kUseLitePaintOps);
+  return enabled;
+}
 
 }  // namespace cc

@@ -33,6 +33,7 @@ import com.google.android.material.appbar.AppBarLayout;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
+import org.chromium.base.JavaExceptionReporter;
 import org.chromium.base.ResettersForTesting;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.ObservableSupplier;
@@ -64,6 +65,7 @@ import org.chromium.chrome.browser.dragdrop.toolbar.ToolbarDragDropCoordinator;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.findinpage.FindToolbarObserver;
+import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
@@ -78,6 +80,7 @@ import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.merchant_viewer.MerchantTrustSignalsCoordinator;
+import org.chromium.chrome.browser.metrics.UmaActivityObserver;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.offlinepages.OfflinePageTabData;
@@ -198,7 +201,7 @@ import org.chromium.url.GURL;
 import java.util.List;
 
 /**
- * Contains logic for managing the toolbar visual component.  This class manages the interactions
+ * Contains logic for managing the toolbar visual component. This class manages the interactions
  * with the rest of the application to ensure the toolbar is always visually up to date.
  */
 public class ToolbarManager
@@ -1128,6 +1131,11 @@ public class ToolbarManager
                     public void onNavigationStateChanged() {
                         onBackPressStateChanged();
                     }
+
+                    @Override
+                    public void didFirstVisuallyNonEmptyPaint(Tab tab) {
+                        mToolbar.onDidFirstVisuallyNonEmptyPaint();
+                    }
                 };
 
         mTabModelSelectorObserver =
@@ -1355,6 +1363,7 @@ public class ToolbarManager
 
     /**
      * Set container view on which GTS toolbar needs to inflate.
+     *
      * @param containerView view containing GTS fullscreen toolbar.
      */
     public void setTabSwitcherFullScreenView(ViewGroup containerView) {
@@ -1365,6 +1374,7 @@ public class ToolbarManager
 
     /**
      * Handle a layout change event.
+     *
      * @param layoutType The layout being switched to.
      */
     private void updateForLayout(@LayoutType int layoutType) {
@@ -1871,6 +1881,7 @@ public class ToolbarManager
 
     /**
      * Adds a custom action button to the {@link Toolbar}, if it is supported.
+     *
      * @param drawable The {@link Drawable} to use as the background for the button.
      * @param description The content description for the custom action button.
      * @param listener The {@link OnClickListener} to use for clicks to the button.
@@ -2122,10 +2133,22 @@ public class ToolbarManager
 
     /**
      * Triggered when the URL input field has gained or lost focus.
+     *
      * @param hasFocus Whether the URL field has gained focus.
      */
     @Override
     public void onUrlFocusChange(boolean hasFocus) {
+        // Detect and report Omnibox sessions originating from CCT if Search in CCT is disabled.
+        // This is important to reduce CCT ActivityType bleeding into Chrome Browser.
+        if (!ChromeFeatureList.sSearchInCCT.isEnabled()
+                && UmaActivityObserver.getCurrentActivityType() == ActivityType.CUSTOM_TAB) {
+            // TODO(b/339910285): Remove this once bleeding is negligile or eliminated completely.
+            JavaExceptionReporter.reportException(
+                    new Exception(
+                            "NOT A CRASH: Unexpected ActivityType reported by"
+                                    + " UmaActivityObserver"));
+        }
+
         mToolbar.onUrlFocusChange(hasFocus);
 
         if (mLayoutStateProvider != null
@@ -2633,6 +2656,7 @@ public class ToolbarManager
 
     /**
      * Sets the top margin for the control container.
+     *
      * @param margin The margin in pixels.
      */
     private void setControlContainerTopMargin(int margin) {
@@ -2669,8 +2693,8 @@ public class ToolbarManager
         return mToolbar.getToolbarAlphaInOverviewObserver();
     }
 
-    /** Returns {@link LocationBar} for access in tests. */
-    public LocationBar getLocationBarForTesting() {
+    /** Returns {@link LocationBar}. */
+    public LocationBar getLocationBar() {
         return mLocationBar;
     }
 

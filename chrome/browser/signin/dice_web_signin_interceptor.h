@@ -235,6 +235,11 @@ class DiceWebSigninInterceptor : public KeyedService,
       const WebSigninInterceptor::Delegate::BubbleParameters& bubble_parameters,
       base::OnceCallback<void(SigninInterceptionResult)> callback);
 
+  // Attempts showing the In-Product-Help for remembering the explicit browser
+  // sign-in preference.
+  void MaybeShowExplicitBrowserSigninPreferenceRememberedIPH(
+      const AccountInfo& account_info);
+
   // Ensure that we are observing changes in extended account info. Idempotent.
   void EnsureObservingExtendedAccountInfo();
 
@@ -397,7 +402,6 @@ class DiceWebSigninInterceptor : public KeyedService,
   const raw_ptr<Profile, DanglingUntriaged> profile_;
   const raw_ptr<signin::IdentityManager, DanglingUntriaged> identity_manager_;
   std::unique_ptr<WebSigninInterceptor::Delegate> delegate_;
-  SigninPrefs signin_prefs_;
   base::ScopedObservation<signin::IdentityManager,
                           signin::IdentityManager::Observer>
       account_info_update_observation_{this};

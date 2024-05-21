@@ -52,7 +52,7 @@ class TouchToFillDelegateAndroidImpl;
 // implementation in browser side to interact with AutofillDriver.
 //
 // AutofillManager has two implementations:
-// - AndroidAutofillManager for WebView and WebLayer,
+// - AndroidAutofillManager for WebView,
 // - BrowserAutofillManager for Chrome.
 //
 // It is owned by the AutofillDriver.
@@ -85,6 +85,15 @@ class AutofillManager
                                    base::span<const FormGlobalId> forms) {}
     virtual void OnAfterFormsSeen(AutofillManager& manager,
                                   base::span<const FormGlobalId> forms) {}
+
+    virtual void OnBeforeCaretMovedInFormField(AutofillManager& manager,
+                                               const FormGlobalId& form,
+                                               const FieldGlobalId& field,
+                                               const gfx::Rect& caret_bounds) {}
+    virtual void OnAfterCaretMovedInFormField(AutofillManager& manager,
+                                              const FormGlobalId& form,
+                                              const FieldGlobalId& field,
+                                              const gfx::Rect& caret_bounds) {}
 
     virtual void OnBeforeTextFieldDidChange(AutofillManager& manager,
                                             FormGlobalId form,
@@ -226,8 +235,12 @@ class AutofillManager
   virtual void OnAskForValuesToFill(
       const FormData& form,
       const FormFieldData& field,
+      const gfx::Rect& caret_bounds,
       AutofillSuggestionTriggerSource trigger_source);
   void OnHidePopup();
+  virtual void OnCaretMovedInFormField(const FormData& form,
+                                       const FormFieldData& field,
+                                       const gfx::Rect& caret_bounds);
   virtual void OnDidFillAutofillFormData(const FormData& form,
                                          const base::TimeTicks timestamp);
   virtual void OnJavaScriptChangedAutofilledValue(
@@ -322,6 +335,9 @@ class AutofillManager
   virtual void OnFormSubmittedImpl(const FormData& form,
                                    bool known_success,
                                    mojom::SubmissionSource source) = 0;
+  virtual void OnCaretMovedInFormFieldImpl(const FormData& form,
+                                           const FormFieldData& field,
+                                           const gfx::Rect& caret_bounds) = 0;
   virtual void OnTextFieldDidChangeImpl(const FormData& form,
                                         const FormFieldData& field,
                                         const base::TimeTicks timestamp) = 0;
@@ -338,6 +354,7 @@ class AutofillManager
   virtual void OnAskForValuesToFillImpl(
       const FormData& form,
       const FormFieldData& field,
+      const gfx::Rect& caret_bounds,
       AutofillSuggestionTriggerSource trigger_source) = 0;
   virtual void OnDidFillAutofillFormDataImpl(
       const FormData& form,

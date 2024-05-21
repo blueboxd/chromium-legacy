@@ -894,7 +894,10 @@ public class AwContents implements SmartClipProvider {
 
         @Override
         public void onScrollUpdateGestureConsumed() {
-            mScrollAccessibilityHelper.postViewScrolledAccessibilityEventCallback();
+            if (!AwFeatureMap.isEnabled(
+                    AwFeatures.WEBVIEW_DO_NOT_SEND_ACCESSIBILITY_EVENTS_ON_GSU)) {
+                mScrollAccessibilityHelper.postViewScrolledAccessibilityEventCallback();
+            }
             if (AwFeatureMap.isEnabled(AwFeatures.WEBVIEW_INVOKE_ZOOM_PICKER_ON_GSU)) {
                 mZoomControls.invokeZoomPicker();
             }
@@ -913,6 +916,10 @@ public class AwContents implements SmartClipProvider {
                 mAwFrameMetricsListener.onWebContentsScrollStateUpdate(
                         /* isScrolling= */ true, mId);
             }
+            if (AwFeatureMap.isEnabled(
+                    AwFeatures.WEBVIEW_DO_NOT_SEND_ACCESSIBILITY_EVENTS_ON_GSU)) {
+                mScrollAccessibilityHelper.setIsInAScroll(true);
+            }
         }
 
         @Override
@@ -926,6 +933,10 @@ public class AwContents implements SmartClipProvider {
             if (mAwFrameMetricsListener != null) {
                 mAwFrameMetricsListener.onWebContentsScrollStateUpdate(
                         /* isScrolling= */ false, mId);
+            }
+            if (AwFeatureMap.isEnabled(
+                    AwFeatures.WEBVIEW_DO_NOT_SEND_ACCESSIBILITY_EVENTS_ON_GSU)) {
+                mScrollAccessibilityHelper.setIsInAScroll(false);
             }
         }
 
@@ -2056,10 +2067,7 @@ public class AwContents implements SmartClipProvider {
 
     private JavascriptInjector getJavascriptInjector() {
         if (mJavascriptInjector == null) {
-            mJavascriptInjector =
-                    JavascriptInjector.fromWebContents(
-                            mWebContents,
-                            AwFeatureMap.isEnabled(AwFeatures.WEBVIEW_JAVA_JS_BRIDGE_MOJO));
+            mJavascriptInjector = JavascriptInjector.fromWebContents(mWebContents);
         }
         return mJavascriptInjector;
     }
@@ -3159,24 +3167,24 @@ public class AwContents implements SmartClipProvider {
      * Add a JavaScript snippet that will run after the document has been created, but before any
      * script in the document executes. Note that calling this method multiple times will add
      * multiple scripts. Added scripts will take effect from the next navigation. If want to remove
-     * previously set script, use the returned ScriptHandler object to do so. Any JavaScript
-     * objects injected by addWebMessageListener() or addJavascriptInterface() will be available to
-     * use in this script. Scripts can be removed using the ScriptHandler object returned when
-     * they were added. The DOM tree may not be ready at the moment that the script runs.
+     * previously set script, use the returned ScriptHandler object to do so. Any JavaScript objects
+     * injected by addWebMessageListener() or addJavascriptInterface() will be available to use in
+     * this script. Scripts can be removed using the ScriptHandler object returned when they were
+     * added. The DOM tree may not be ready at the moment that the script runs.
      *
-     * If multiple scripts are added, they will be executed in the same order they were added.
+     * <p>If multiple scripts are added, they will be executed in the same order they were added.
      *
-     * @param script             The JavaScript snippet to be run.
+     * @param script The JavaScript snippet to be run.
      * @param allowedOriginRules The JavaScript snippet will run on every frame whose origin matches
-     *                           any one of the allowedOriginRules.
-     *
+     *     any one of the allowedOriginRules.
      * @throws IllegalArgumentException if one of the allowedOriginRules is invalid or one of
-     *                                  jsObjectName and allowedOriginRules is {@code null}.
+     *     jsObjectName and allowedOriginRules is {@code null}.
      * @return A {@link ScriptHandler} for removing the script.
      */
     public ScriptHandler addDocumentStartJavaScript(
             @NonNull String script, @NonNull String[] allowedOriginRules) {
         if (TRACE) Log.i(TAG, "%s addDocumentStartJavaScript", this);
+        if (isDestroyed(WARN)) return null;
         if (script == null) {
             throw new IllegalArgumentException("script shouldn't be null.");
         }
@@ -3195,6 +3203,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     /* package */ void removeDocumentStartJavaScript(int scriptId) {
+        if (isDestroyed(WARN)) return;
         AwContentsJni.get().removeDocumentStartJavaScript(mNativeAwContents, scriptId);
     }
 
@@ -3204,16 +3213,14 @@ public class AwContents implements SmartClipProvider {
      * this call will not inject the JS object immediately. The JS object will be injected only for
      * future navigations (in DidClearWindowObject).
      *
-     * @param jsObjectName    The name for the injected JavaScript object for this {@link
-     *                        WebMessageListener}.
-     * @param allowedOrigins  A list of matching rules for the allowed origins.
-     *                        The JavaScript object will be injected when the frame's origin matches
-     *                        any one of the allowed origins. If a wildcard "*" is provided, it will
-     *                        inject JavaScript object to all frames.
-     * @param listener        The {@link WebMessageListener} to be called when received
-     *                        onPostMessage().
+     * @param jsObjectName The name for the injected JavaScript object for this {@link
+     *     WebMessageListener}.
+     * @param allowedOrigins A list of matching rules for the allowed origins. The JavaScript object
+     *     will be injected when the frame's origin matches any one of the allowed origins. If a
+     *     wildcard "*" is provided, it will inject JavaScript object to all frames.
+     * @param listener The {@link WebMessageListener} to be called when received onPostMessage().
      * @throws IllegalArgumentException if one of the allowedOriginRules is invalid or one of
-     *                                  jsObjectName and allowedOriginRules is {@code null}.
+     *     jsObjectName and allowedOriginRules is {@code null}.
      * @throws NullPointerException if listener is {@code null}.
      */
     public void addWebMessageListener(
@@ -3221,6 +3228,7 @@ public class AwContents implements SmartClipProvider {
             @NonNull String[] allowedOriginRules,
             @NonNull WebMessageListener listener) {
         if (TRACE) Log.i(TAG, "%s addWebMessageListener=%s", this, jsObjectName);
+        if (isDestroyed(WARN)) return;
         if (listener == null) {
             throw new NullPointerException("listener shouldn't be null");
         }
@@ -3259,6 +3267,7 @@ public class AwContents implements SmartClipProvider {
      */
     public void removeWebMessageListener(@NonNull String jsObjectName) {
         if (TRACE) Log.i(TAG, "%s removeWebMessageListener=%s", this, jsObjectName);
+        if (isDestroyed(WARN)) return;
         AwContentsJni.get().removeWebMessageListener(mNativeAwContents, jsObjectName);
     }
 

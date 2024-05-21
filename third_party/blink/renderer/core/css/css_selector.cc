@@ -226,12 +226,12 @@ inline unsigned CSSSelector::SpecificityForOneSelector() const {
       return kTagSpecificity;
     case kInvalidList:
     case kPagePseudoClass:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return 0;
     case kUnknown:
       return 0;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return 0;
 }
 
@@ -255,7 +255,7 @@ unsigned CSSSelector::SpecificityForPage() const {
             s += 1;
             break;
           default:
-            NOTREACHED();
+            NOTREACHED_IN_MIGRATION();
         }
         break;
       default:
@@ -285,8 +285,8 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
       return kPseudoIdScrollbar;
     case kPseudoScrollMarker:
       return kPseudoIdScrollMarker;
-    case kPseudoScrollMarkers:
-      return kPseudoIdScrollMarkers;
+    case kPseudoScrollMarkerGroup:
+      return kPseudoIdScrollMarkerGroup;
     case kPseudoScrollbarButton:
       return kPseudoIdScrollbarButton;
     case kPseudoScrollbarCorner:
@@ -299,6 +299,8 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
       return kPseudoIdScrollbarTrackPiece;
     case kPseudoResizer:
       return kPseudoIdResizer;
+    case kPseudoSearchText:
+      return kPseudoIdSearchText;
     case kPseudoTargetText:
       return kPseudoIdTargetText;
     case kPseudoHighlight:
@@ -330,6 +332,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoClosed:
     case kPseudoCornerPresent:
     case kPseudoCue:
+    case kPseudoCurrent:
     case kPseudoDecrement:
     case kPseudoDefault:
     case kPseudoDefined:
@@ -435,7 +438,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
       return kPseudoIdNone;
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return kPseudoIdNone;
 }
 
@@ -502,6 +505,7 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"closed", CSSSelector::kPseudoClosed},
     {"corner-present", CSSSelector::kPseudoCornerPresent},
     {"cue", CSSSelector::kPseudoWebKitCustomElement},
+    {"current", CSSSelector::kPseudoCurrent},
     {"decrement", CSSSelector::kPseudoDecrement},
     {"default", CSSSelector::kPseudoDefault},
     {"defined", CSSSelector::kPseudoDefined},
@@ -557,7 +561,8 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"root", CSSSelector::kPseudoRoot},
     {"scope", CSSSelector::kPseudoScope},
     {"scroll-marker", CSSSelector::kPseudoScrollMarker},
-    {"scroll-markers", CSSSelector::kPseudoScrollMarkers},
+    {"scroll-marker-group", CSSSelector::kPseudoScrollMarkerGroup},
+    {"search-text", CSSSelector::kPseudoSearchText},
     {"select-fallback-button", CSSSelector::kPseudoSelectFallbackButton},
     {"select-fallback-button-icon",
      CSSSelector::kPseudoSelectFallbackButtonIcon},
@@ -668,7 +673,7 @@ CSSSelector::PseudoType CSSSelector::NameToPseudoType(
   }
 
   if ((match->type == CSSSelector::kPseudoScrollMarker ||
-       match->type == CSSSelector::kPseudoScrollMarkers) &&
+       match->type == CSSSelector::kPseudoScrollMarkerGroup) &&
       !RuntimeEnabledFeatures::CSSPseudoScrollMarkersEnabled()) {
     return CSSSelector::kPseudoUnknown;
   }
@@ -684,6 +689,12 @@ CSSSelector::PseudoType CSSSelector::NameToPseudoType(
        match->type == CSSSelector::kPseudoSelectFallbackButtonText ||
        match->type == CSSSelector::kPseudoSelectFallbackDatalist) &&
       !RuntimeEnabledFeatures::StylableSelectEnabled()) {
+    return CSSSelector::kPseudoUnknown;
+  }
+
+  if ((match->type == CSSSelector::kPseudoSearchText ||
+       match->type == CSSSelector::kPseudoCurrent) &&
+      !RuntimeEnabledFeatures::SearchTextHighlightPseudoEnabled()) {
     return CSSSelector::kPseudoUnknown;
   }
 
@@ -775,7 +786,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoScrollbarTrack:
     case kPseudoScrollbarTrackPiece:
     case kPseudoScrollMarker:
-    case kPseudoScrollMarkers:
+    case kPseudoScrollMarkerGroup:
     case kPseudoSelectFallbackButton:
     case kPseudoSelectFallbackButtonIcon:
     case kPseudoSelectFallbackButtonText:
@@ -783,6 +794,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoSelection:
     case kPseudoWebKitCustomElement:
     case kPseudoSlotted:
+    case kPseudoSearchText:
     case kPseudoTargetText:
     case kPseudoHighlight:
     case kPseudoSpellingError:
@@ -827,6 +839,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoChecked:
     case kPseudoClosed:
     case kPseudoCornerPresent:
+    case kPseudoCurrent:
     case kPseudoDecrement:
     case kPseudoDefault:
     case kPseudoDefined:
@@ -1063,7 +1076,7 @@ bool CSSSelector::SerializeSimpleSelector(StringBuilder& builder) const {
         builder.Append('&');
         break;
       case kPseudoRelativeAnchor:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         return false;
       case kPseudoActiveViewTransitionType: {
         CHECK(!IdentList().empty());
@@ -1246,7 +1259,7 @@ String CSSSelector::SelectorText() const {
         break;
       case kSubSelector:
       case kScopeActivation:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
       case kShadowPart:
       case kUAShadow:
@@ -1263,7 +1276,7 @@ String CSSSelector::SelectorText() const {
         return "~ " + builder.ReleaseString() + result;
     }
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return String();
 }
 
@@ -1329,7 +1342,7 @@ static bool ValidateSubSelector(const CSSSelector* selector) {
     case CSSSelector::kPseudoClass:
       break;
     case CSSSelector::kInvalidList:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 
   switch (selector->GetPseudoType()) {
@@ -1475,6 +1488,7 @@ bool CSSSelector::IsAllowedAfterPart() const {
     case kPseudoSelectFallbackButtonText:
     case kPseudoSelectFallbackDatalist:
     case kPseudoSelection:
+    case kPseudoSearchText:
     case kPseudoTargetText:
     case kPseudoHighlight:
     case kPseudoSpellingError:
@@ -1654,7 +1668,7 @@ CSSSelector::RelationType ConvertRelationToRelative(
     case CSSSelector::kIndirectAdjacent:
       return CSSSelector::kRelativeIndirectAdjacent;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return {};
   }
 }

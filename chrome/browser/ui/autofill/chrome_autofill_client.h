@@ -113,7 +113,6 @@ class ChromeAutofillClient : public ContentAutofillClient,
   void OfferPlusAddressCreation(const url::Origin& main_frame_origin,
                                 PlusAddressCallback callback) override;
   MerchantPromoCodeManager* GetMerchantPromoCodeManager() override;
-  CreditCardRiskBasedAuthenticator* GetRiskBasedAuthenticator() override;
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;
   syncer::SyncService* GetSyncService() override;
@@ -149,10 +148,6 @@ class ChromeAutofillClient : public ContentAutofillClient,
   void ShowMandatoryReauthOptInConfirmation() override;
 #if !BUILDFLAG(IS_ANDROID)
   void HideVirtualCardEnrollBubbleAndIconIfVisible() override;
-  void ShowWebauthnOfferDialog(
-      WebauthnDialogCallback offer_dialog_callback) override;
-  void ShowWebauthnVerifyPendingDialog(
-      WebauthnDialogCallback verify_pending_dialog_callback) override;
   void UpdateWebauthnOfferDialogWithError() override;
   bool CloseWebauthnDialog() override;
 #else  // !BUILDFLAG(IS_ANDROID)
@@ -233,14 +228,18 @@ class ChromeAutofillClient : public ContentAutofillClient,
       const FormFieldData& field) override;
   void HideAutofillFieldIphForManualFallbackFeature() override;
   void NotifyAutofillManualFallbackUsed() override;
+  void set_test_addresses(std::vector<AutofillProfile> test_addresses) override;
+  base::span<const AutofillProfile> GetTestAddresses() const override;
+  PasswordFormType ClassifyAsPasswordForm(
+      AutofillManager& manager,
+      FormGlobalId form_id,
+      FieldGlobalId field_id) const override;
 
   // TODO(b/320634151): Create a test API.
   base::WeakPtr<AutofillSuggestionController>
   suggestion_controller_for_testing() {
     return suggestion_controller_;
   }
-  void set_test_addresses(std::vector<AutofillProfile> test_addresses) override;
-  base::span<const AutofillProfile> GetTestAddresses() const override;
 #if defined(UNIT_TEST)
   void SetKeepPopupOpenForTesting(bool keep_popup_open_for_testing) {
     keep_popup_open_for_testing_ = keep_popup_open_for_testing;
@@ -280,7 +279,6 @@ class ChromeAutofillClient : public ContentAutofillClient,
   std::unique_ptr<AutofillCrowdsourcingManager> crowdsourcing_manager_;
   std::unique_ptr<payments::ChromePaymentsAutofillClient>
       payments_autofill_client_;
-  std::unique_ptr<CreditCardRiskBasedAuthenticator> risk_based_authenticator_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
   std::unique_ptr<payments::MandatoryReauthManager>
       payments_mandatory_reauth_manager_;

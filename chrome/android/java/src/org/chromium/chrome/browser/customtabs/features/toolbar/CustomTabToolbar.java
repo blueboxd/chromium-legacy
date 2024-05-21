@@ -80,10 +80,11 @@ import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.omnibox.status.PageInfoIPHController;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsVisualState;
 import org.chromium.chrome.browser.page_info.ChromePageInfo;
 import org.chromium.chrome.browser.page_info.ChromePageInfoHighlight;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.searchwidget.SearchActivityUtils;
+import org.chromium.chrome.browser.searchwidget.SearchActivityClientImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TrustedCdn;
 import org.chromium.chrome.browser.tabmodel.TabCreator;
@@ -122,6 +123,8 @@ import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 import org.chromium.ui.widget.Toast;
 import org.chromium.url.GURL;
+
+import java.util.Optional;
 
 /** The Toolbar layout to be used for a custom tab. This is used for both phone and tablet UIs. */
 public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickListener {
@@ -1839,6 +1842,11 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         }
 
         @Override
+        public Optional<OmniboxSuggestionsVisualState> getOmniboxSuggestionsVisualState() {
+            return Optional.empty();
+        }
+
+        @Override
         public boolean onLongClick(View v) {
             if (v == mTitleUrlContainer) {
                 Tab tab = getCurrentTab();
@@ -1876,7 +1884,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                     v -> {
                         RecordUserAction.record("CustomTabs.OmniboxClicked");
                         var tab = getCurrentTab();
-                        SearchActivityUtils.requestOmniboxForResult(
+                        SearchActivityClientImpl.requestOmniboxForResult(
                                 tab.getWindowAndroid().getActivity().get(),
                                 tab.getUrl(),
                                 clientPackageName);

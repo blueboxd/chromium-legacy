@@ -491,16 +491,12 @@ bool VaapiMjpegDecodeAccelerator::Decoder::OutputPictureVpp(
   }
 
   // Bind a VA surface to |video_frame|.
-  scoped_refptr<VASurface> output_surface =
+  const std::unique_ptr<ScopedVASurface> output_surface =
       vpp_vaapi_wrapper_->CreateVASurfaceForPixmap(std::move(pixmap));
   if (!output_surface) {
     VLOGF(1) << "Cannot create VA surface for output buffer";
     return false;
   }
-
-  scoped_refptr<VASurface> src_surface = base::MakeRefCounted<VASurface>(
-      surface->id(), surface->size(), surface->format(),
-      /*release_cb=*/base::DoNothing());
 
   // We should call vaSyncSurface() when passing surface between contexts, but
   // on Intel platform, we don't have to call vaSyncSurface() because the
@@ -513,8 +509,9 @@ bool VaapiMjpegDecodeAccelerator::Decoder::OutputPictureVpp(
     VLOGF(1) << "Cannot sync VPP input surface";
     return false;
   }
-  if (!vpp_vaapi_wrapper_->BlitSurface(*src_surface, *output_surface,
-                                       crop_rect)) {
+  if (!vpp_vaapi_wrapper_->BlitSurface(surface->id(), surface->size(),
+                                       output_surface->id(),
+                                       output_surface->size(), crop_rect)) {
     VLOGF(1) << "Cannot convert decoded image into output buffer";
     return false;
   }

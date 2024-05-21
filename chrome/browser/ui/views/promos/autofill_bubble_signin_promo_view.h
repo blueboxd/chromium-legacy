@@ -31,11 +31,15 @@ class AutofillBubbleSignInPromoView : public views::View {
  public:
   explicit AutofillBubbleSignInPromoView(
       content::WebContents* web_contents,
-      signin::SignInAutofillBubblePromoType promo_type);
+      signin::SignInAutofillBubblePromoType promo_type,
+      const password_manager::PasswordForm& saved_password);
   AutofillBubbleSignInPromoView(const AutofillBubbleSignInPromoView&) = delete;
   AutofillBubbleSignInPromoView& operator=(
       const AutofillBubbleSignInPromoView&) = delete;
   ~AutofillBubbleSignInPromoView() override;
+
+  // Records that the bubble has been dismissed.
+  static void RecordSignInPromoDismissed(content::WebContents* web_contents);
 
  private:
   // Delegate for the personalized sign in promo view used when desktop identity

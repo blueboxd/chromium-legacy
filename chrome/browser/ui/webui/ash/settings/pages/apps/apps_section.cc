@@ -408,6 +408,18 @@ void AddBorealisStrings(content::WebUIDataSource* html_source) {
 
 void AddAppParentalControlsStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"appParentalControlsAccessDialogTitle",
+       IDS_SETTINGS_APP_PARENTAL_CONTROLS_ACCESS_DIALOG_TITLE},
+      {"appParentalControlsChoosePinSubtitle",
+       IDS_SETTINGS_APP_PARENTAL_CONTROLS_CHOOSE_PIN_SUBTITLE},
+      {"appParentalControlsChoosePinTitle",
+       IDS_SETTINGS_APP_PARENTAL_CONTROLS_CHOOSE_PIN_TITLE},
+      {"appParentalControlsConfirmPinTitle",
+       IDS_SETTINGS_APP_PARENTAL_CONTROLS_CONFIRM_PIN_TITLE},
+      {"appParentalControlsForgotPinLinkName",
+       IDS_SETTINGS_APP_PARENTAL_CONTROLS_FORGOT_PIN_LINK_NAME},
+      {"appParentalControlsPinMismatchErrorText",
+       IDS_SETTINGS_APP_PARENTAL_CONTROLS_PIN_MISMATCH_ERROR_TEXT},
       {"appParentalControlsTitle", IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_LABEL},
       {"appParentalControlsSubtitle",
        IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_SUBLABEL},
@@ -541,6 +553,14 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_APP_MANAGEMENT_PERMISSION_ALLOWED_TEXT_WITH_DETAILS_AND_TURN_ON_SYSTEM_MICROPHONE_ACCESS_BUTTON},
       {"permissionAllowedTextWithDetailsAndTurnOnLocationAccessButton",
        IDS_APP_MANAGEMENT_PERMISSION_ALLOWED_TEXT_WITH_DETAILS_AND_TURN_ON_SYSTEM_LOCATION_ACCESS_BUTTON},
+      {"permissionAllowedButNoCameraConnectedText",
+       IDS_APP_MANAGEMENT_PERMISSION_ALLOWED_BUT_NO_CAMERA_CONNECTED_TEXT},
+      {"permissionAllowedButNoMicrophoneConnectedText",
+       IDS_APP_MANAGEMENT_PERMISSION_ALLOWED_BUT_NO_MICROPHONE_CONNECTED_TEXT},
+      {"permissionAllowedButNoCameraConnectedTextWithDetails",
+       IDS_APP_MANAGEMENT_PERMISSION_ALLOWED_BUT_NO_CAMERA_CONNECTED_TEXT_WITH_DETAILS},
+      {"permissionAllowedButNoMicrophoneConnectedTextWithDetails",
+       IDS_APP_MANAGEMENT_PERMISSION_ALLOWED_BUT_NO_MICROPHONE_CONNECTED_TEXT_WITH_DETAILS},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 

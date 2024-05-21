@@ -198,7 +198,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="AppManagement.AppDetailViews" enum="AppManagementUserAction"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
 <!-- Name completed by histogram_suffixes name="AppType" -->
 
   <owner>sharminzaman@google.com</owner>
@@ -1085,7 +1085,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.Search.ContinueResultCount.{Type}" units="count"
-    expires_after="2024-09-14">
+    expires_after="2024-11-17">
   <owner>dgrebenyuk@google.com</owner>
   <owner>ypitsishin@google.com</owner>
   <owner>chromeos-launcher-search@google.com</owner>
@@ -1102,12 +1102,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.Search.ContinueResultRemoved"
-    enum="LauncherContinueSectionResultType" expires_after="2024-04-28">
+    enum="LauncherContinueSectionResultType" expires_after="2025-05-15">
   <owner>anasalazar@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
   <summary>
     Records the type of a zero-state result when it is removed from the Continue
     section. Recorded once every time a result is removed. Chrome OS only.
+
+    Warning: this histogram was expired from 2024-04-28 to 2024-05-16; data may
+    be missing.
   </summary>
 </histogram>
 
@@ -1150,9 +1153,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.Search.Federated.Actions"
-    enum="AppListFederatedActions" expires_after="2024-08-01">
+    enum="AppListFederatedActions" expires_after="2024-11-01">
   <owner>amandadeacon@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
+  <owner>amoylan@chromium.org</owner>
   <summary>
     Emitted on usage of launcher search. Records overall impressions, launches,
     abandons, and ignores, for the query list view when federated analytics is
@@ -1173,9 +1177,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.Search.Federated.InitStatus"
-    enum="AppListFederatedInitStatus" expires_after="2024-09-01">
+    enum="AppListFederatedInitStatus" expires_after="2024-11-01">
   <owner>amandadeacon@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
+  <owner>amoylan@chromium.org</owner>
   <summary>
     Records status in initialization of federated analytics. These are expected
     to be rare, and the bucket proportion is not meaningful.
@@ -1183,9 +1188,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.Search.Federated.QueryLengthOnStorageSuccess"
-    units="characters" expires_after="2024-06-01">
+    units="characters" expires_after="2024-11-01">
   <owner>amandadeacon@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
+  <owner>amoylan@chromium.org</owner>
   <summary>
     Records the length of launcher query strings which are successfully reported
     to on-device (Federated Service) storage.
@@ -1196,6 +1202,7 @@ chromium-metrics-reviews@google.com.
     enum="AppListFederatedReportStatus" expires_after="2024-11-03">
   <owner>amandadeacon@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
+  <owner>amoylan@chromium.org</owner>
   <summary>
     Records status in reporting of federated analytics examples. These are
     expected to be rare, and the bucket proportion is not meaningful.
@@ -1205,7 +1212,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Apps.AppList.Search.Federated.SearchSessionConclusion"
     enum="AppListFederatedSearchSessionConclusion" expires_after="2024-11-03">
   <owner>amandadeacon@chromium.org</owner>
-  <owner>tby@chromium.org</owner>
+  <owner>amoylan@chromium.org</owner>
   <summary>
     Tracks the conclusion of each search session starting from the search box.
     Records launcher dismissals (&quot;quit&quot;), launches, and viewings of
@@ -1776,7 +1783,7 @@ chromium-metrics-reviews@google.com.
     different category.
   </summary>
   <token key="AppListPage">
-    <variant name="AppCollectionsPage" summary=""/>
+    <variant name="AppsCollectionsPage" summary=""/>
     <variant name="AppsPage" summary=""/>
   </token>
   <token key="ExperimentalArm">
@@ -1799,7 +1806,7 @@ chromium-metrics-reviews@google.com.
     entity that the apps belongs to (Default apps or Third-Party apps).
   </summary>
   <token key="AppListPage">
-    <variant name="AppCollectionsPage" summary=""/>
+    <variant name="AppsCollectionsPage" summary=""/>
     <variant name="AppsPage" summary=""/>
   </token>
   <token key="ExperimentalArm">
@@ -1825,13 +1832,13 @@ chromium-metrics-reviews@google.com.
     if it were visible when the apps grid view is not scrolled.
   </summary>
   <token key="AppListPage">
-    <variant name="AppCollectionsPage" summary="Apps Collections page"/>
+    <variant name="AppsCollectionsPage" summary="Apps Collections page"/>
     <variant name="AppsPage" summary="Apps page"/>
   </token>
   <token key="ExperimentalArm">
     <variant name="" summary=""/>
     <variant name=".Counterfactual" summary=""/>
-    <variant name=".Enable" summary=""/>
+    <variant name=".Enabled" summary=""/>
   </token>
   <token key="Visibility">
     <variant name="AboveTheFold" summary="above the launcher fold"/>
@@ -1852,13 +1859,13 @@ chromium-metrics-reviews@google.com.
     bucket records a particular default app.
   </summary>
   <token key="AppListPage">
-    <variant name="AppCollectionsPage" summary="Apps Collections page"/>
+    <variant name="AppsCollectionsPage" summary="Apps Collections page"/>
     <variant name="AppsPage" summary="Apps page"/>
   </token>
   <token key="ExperimentalArm">
     <variant name="" summary=""/>
     <variant name=".Counterfactual" summary=""/>
-    <variant name=".Enable" summary=""/>
+    <variant name=".Enabled" summary=""/>
   </token>
   <token key="Visibility">
     <variant name="AboveTheFold" summary="above the launcher fold"/>
@@ -2191,7 +2198,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppShimSignatureValidationResult"
-    enum="WebAppShimSignatureValidationResult" expires_after="2024-09-15">
+    enum="WebAppShimSignatureValidationResult" expires_after="2024-11-17">
   <owner>markrowe@chromium.org</owner>
   <owner>chrome-platform-security-core@google.com</owner>
   <summary>
@@ -2815,7 +2822,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Apps.ScrollableShelf.AnimationSmoothness{HomeLauncherVisibility}"
-    units="%" expires_after="2023-06-14">
+    units="%" expires_after="2025-05-15">
   <owner>tbarzic@chromium.org</owner>
   <owner>anasalazar@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
@@ -2825,6 +2832,9 @@ chromium-metrics-reviews@google.com.
     frames per second is achieved during the animations. 0% should not happen.
     This metric is recorded exactly once when the user scrolls over the
     scrollable shelf. {HomeLauncherVisibility}
+
+    Warning: this histogram was expired from 2023-06-14 to 2024-05-16; data may
+    be missing.
   </summary>
   <token key="HomeLauncherVisibility" variants="HomeLauncherVisibility">
     <variant name=""/>
@@ -2833,20 +2843,23 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Apps.ScrollableShelf.Drag.PresentationTime.MaxLatency{HomeLauncherVisibility}"
-    units="ms" expires_after="2023-06-06">
+    units="ms" expires_after="2025-05-15">
   <owner>tbarzic@chromium.org</owner>
   <owner>anasalazar@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
     Maximum latency of the presentation time of the drag scroll in the
     scrollable shelf. {HomeLauncherVisibility}
+
+    Warning: this histogram was expired from 2023-06-06 to 2024-05-16; data may
+    be missing.
   </summary>
   <token key="HomeLauncherVisibility" variants="HomeLauncherVisibility"/>
 </histogram>
 
 <histogram
     name="Apps.ScrollableShelf.Drag.PresentationTime{HomeLauncherVisibility}"
-    units="ms" expires_after="2023-06-02">
+    units="ms" expires_after="2025-05-15">
   <owner>tbarzic@chromium.org</owner>
   <owner>anasalazar@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
@@ -2856,6 +2869,9 @@ chromium-metrics-reviews@google.com.
 
     Warning: This histogram was expired from 2021-01-10 to 2022-06-02; data may
     be missing. {HomeLauncherVisibility}
+
+    Warning: this histogram was expired from 2023-06-02 to 2024-05-16; data may
+    be missing.
   </summary>
   <token key="HomeLauncherVisibility" variants="HomeLauncherVisibility"/>
 </histogram>

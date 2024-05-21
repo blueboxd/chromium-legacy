@@ -1189,7 +1189,7 @@ gfx::Size RenderWidgetHostViewAndroid::GetVisibleViewportSize() {
 }
 
 void RenderWidgetHostViewAndroid::SetInsets(const gfx::Insets& insets) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 gfx::Size RenderWidgetHostViewAndroid::GetCompositorViewportPixelSize() {
@@ -1565,6 +1565,7 @@ void RenderWidgetHostViewAndroid::Destroy() {
   UpdateNativeViewTree(/*parent_native_view=*/nullptr,
                        /*parent_layer=*/nullptr);
   delegated_frame_host_.reset();
+  delegated_frame_host_client_.reset();
 
   if (GetTextInputManager() && GetTextInputManager()->HasObserver(this))
     GetTextInputManager()->RemoveObserver(this);
@@ -1969,11 +1970,6 @@ void RenderWidgetHostViewAndroid::OnDidUpdateVisualPropertiesComplete(
     // child update. No more need to unthrottle here.
     SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
                                 metadata.local_surface_id);
-
-  if (delegated_frame_host_) {
-    delegated_frame_host_->SetTopControlsVisibleHeight(
-        metadata.top_controls_height * metadata.top_controls_shown_ratio);
-  }
 
   if (using_browser_compositor_) {
     ui::WindowAndroid* window = view_.GetWindowAndroid();

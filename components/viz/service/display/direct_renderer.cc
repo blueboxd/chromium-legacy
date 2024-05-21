@@ -99,41 +99,20 @@ void DirectRenderer::QuadRectTransform(gfx::Transform* quad_rect_transform,
 }
 
 void DirectRenderer::InitializeViewport(DrawingFrame* frame,
-                                        const gfx::Rect& draw_rect,
-                                        const gfx::Rect& viewport_rect,
-                                        const gfx::Size& surface_size) {
-  DCHECK_GE(viewport_rect.x(), 0);
-  DCHECK_GE(viewport_rect.y(), 0);
-  DCHECK_LE(viewport_rect.right(), surface_size.width());
-  DCHECK_LE(viewport_rect.bottom(), surface_size.height());
-  bool flip_y = FlippedFramebuffer();
-  if (flip_y) {
-    frame->target_to_device_transform = gfx::OrthoProjectionTransform(
-        draw_rect.x(), draw_rect.right(), draw_rect.bottom(), draw_rect.y());
-  } else {
-    frame->target_to_device_transform = gfx::OrthoProjectionTransform(
-        draw_rect.x(), draw_rect.right(), draw_rect.y(), draw_rect.bottom());
-  }
-
-  gfx::Rect window_rect = viewport_rect;
-  if (flip_y)
-    window_rect.set_y(surface_size.height() - viewport_rect.bottom());
-  frame->target_to_device_transform.PostConcat(
-      gfx::WindowTransform(window_rect.x(), window_rect.y(),
-                           window_rect.width(), window_rect.height()));
-  current_draw_rect_ = draw_rect;
-  current_viewport_rect_ = viewport_rect;
-  current_surface_size_ = surface_size;
-  current_window_space_viewport_ = window_rect;
+                                        const gfx::Size& viewport_size) {
+  const gfx::Rect draw_rect = frame->current_render_pass->output_rect;
+  frame->target_to_device_transform = gfx::OrthoProjectionTransform(
+      draw_rect.x(), draw_rect.right(), draw_rect.y(), draw_rect.bottom());
+  frame->target_to_device_transform.PostConcat(gfx::WindowTransform(
+      0, 0, viewport_size.width(), viewport_size.height()));
+  current_viewport_size_ = viewport_size;
 }
 
 gfx::Rect DirectRenderer::MoveFromDrawToWindowSpace(
     const gfx::Rect& draw_rect) const {
   gfx::Rect window_rect = draw_rect;
-  window_rect -= current_draw_rect_.OffsetFromOrigin();
-  window_rect += current_viewport_rect_.OffsetFromOrigin();
-  if (FlippedFramebuffer())
-    window_rect.set_y(current_surface_size_.height() - window_rect.bottom());
+  window_rect -=
+      current_frame()->current_render_pass->output_rect.OffsetFromOrigin();
   return window_rect;
 }
 
@@ -465,10 +444,10 @@ gfx::Rect DirectRenderer::GetTargetDamageBoundingRect() const {
 }
 
 gfx::Rect DirectRenderer::DeviceViewportRectInDrawSpace() const {
-  gfx::Rect device_viewport_rect(current_frame()->device_viewport_size);
-  device_viewport_rect -= current_viewport_rect_.OffsetFromOrigin();
-  device_viewport_rect += current_draw_rect_.OffsetFromOrigin();
-  return device_viewport_rect;
+  gfx::Rect device_viewport_size(current_frame()->device_viewport_size);
+  device_viewport_size +=
+      current_frame()->root_render_pass->output_rect.OffsetFromOrigin();
+  return device_viewport_size;
 }
 
 gfx::Rect DirectRenderer::OutputSurfaceRectInDrawSpace() const {
@@ -853,9 +832,7 @@ void DirectRenderer::UseRenderPass(const AggregatedRenderPass* render_pass) {
   // BindFramebufferToTexture().
   if (is_root && !output_surface_->capabilities().renderer_allocates_images) {
     BindFramebufferToOutputSurface();
-    InitializeViewport(current_frame(), render_pass->output_rect,
-                       gfx::Rect(current_frame()->device_viewport_size),
-                       current_frame()->device_viewport_size);
+    InitializeViewport(current_frame(), current_frame()->device_viewport_size);
     return;
   }
 
@@ -874,11 +851,7 @@ void DirectRenderer::UseRenderPass(const AggregatedRenderPass* render_pass) {
     return;
 
   BindFramebufferToTexture(render_pass->id);
-  InitializeViewport(current_frame(), render_pass->output_rect,
-                     gfx::Rect(render_pass->output_rect.size()),
-                     // If the render pass backing is cached, we might have
-                     // bigger size comparing to the size that was generated.
-                     GetRenderPassBackingPixelSize(render_pass->id));
+  InitializeViewport(current_frame(), render_pass->output_rect.size());
 }
 
 gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
@@ -1196,7 +1169,7 @@ DelegatedInkPointRendererBase* DirectRenderer::GetDelegatedInkPointRenderer(
 }
 
 void DirectRenderer::DrawDelegatedInkTrail() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 bool DirectRenderer::CompositeTimeTracingEnabled() {
@@ -1215,7 +1188,7 @@ gfx::Rect DirectRenderer::GetDelegatedInkTrailDamageRect() {
 }
 
 gpu::Mailbox DirectRenderer::GetPrimaryPlaneOverlayTestingMailbox() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return gpu::Mailbox();
 }
 

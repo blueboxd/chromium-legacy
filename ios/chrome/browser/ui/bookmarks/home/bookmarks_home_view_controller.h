@@ -81,8 +81,8 @@ class GURL;
 // `BookmarksHomeViewController` is on the top of the navigation view.
 - (void)willDismissBySwipeDown;
 
-// Called to update the promo after account settings is closed.
-- (void)updateReviewSettingsPromo;
+// Called when the view will be dismissed.
+- (void)willDismiss;
 
 @end
 

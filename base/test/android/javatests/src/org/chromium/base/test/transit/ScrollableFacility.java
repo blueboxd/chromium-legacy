@@ -24,6 +24,7 @@ import androidx.test.espresso.action.ViewActions;
 import org.hamcrest.Matcher;
 
 import org.chromium.base.test.transit.ScrollableFacility.Item.Presence;
+import org.chromium.base.test.util.RawFailureHandler;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -315,7 +316,15 @@ public abstract class ScrollableFacility<HostStationT extends Station>
 
             ItemOnScreenFacility<HostStationT, SelectReturnT> focusedItem =
                     new ItemOnScreenFacility<>(mHostStation, this);
-            return Facility.enterSync(focusedItem, this::maybeScrollTo);
+
+            try {
+                onView(mOnScreenViewMatcher)
+                        .withFailureHandler(RawFailureHandler.getInstance())
+                        .check(matches(isCompletelyDisplayed()));
+                return mHostStation.enterFacilitySync(focusedItem, /* trigger= */ null);
+            } catch (AssertionError | NoMatchingViewException e) {
+                return mHostStation.enterFacilitySync(focusedItem, this::triggerScrollTo);
+            }
         }
 
         protected void setSelectHandler(Callable<SelectReturnT> selectHandler) {
@@ -335,18 +344,14 @@ public abstract class ScrollableFacility<HostStationT extends Station>
             return mSelectHandler;
         }
 
-        private void maybeScrollTo() {
+        private void triggerScrollTo() {
             try {
-                onView(mOnScreenViewMatcher).check(matches(isCompletelyDisplayed()));
-            } catch (AssertionError | NoMatchingViewException e) {
-                try {
-                    onData(mOffScreenDataMatcher).perform(ViewActions.scrollTo());
-                } catch (PerformException performException) {
-                    throw TravelException.newTravelException(
-                            String.format(
-                                    "Could not scroll using data matcher %s", mOnScreenViewMatcher),
-                            performException);
-                }
+                onData(mOffScreenDataMatcher).perform(ViewActions.scrollTo());
+            } catch (PerformException performException) {
+                throw TravelException.newTravelException(
+                        String.format(
+                                "Could not scroll using data matcher %s", mOnScreenViewMatcher),
+                        performException);
             }
         }
     }
@@ -360,7 +365,8 @@ public abstract class ScrollableFacility<HostStationT extends Station>
             throw new RuntimeException(e);
         }
 
-        return Facility.enterSync(destination, () -> item.getViewElement().perform(click()));
+        return mHostStation.enterFacilitySync(
+                destination, () -> item.getViewElement().perform(click()));
     }
 
     private <DestinationStationT extends Station> DestinationStationT travelToStation(
@@ -372,8 +378,7 @@ public abstract class ScrollableFacility<HostStationT extends Station>
             throw new RuntimeException(e);
         }
 
-        return Trip.travelSync(
-                mHostStation, destination, () -> item.getViewElement().perform(click()));
+        return mHostStation.travelToSync(destination, () -> item.getViewElement().perform(click()));
     }
 
     /** Get all {@link Item}s declared in this {@link ScrollableFacility}. */

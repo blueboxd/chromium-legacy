@@ -78,13 +78,27 @@ void PaginationState::UpdateContentAreaPropertiesForCurrentPage(
   const PhysicalBoxFragment& page_container =
       *GetPageContainer(layout_view, current_page_number_);
   float scale = TargetScaleForPage(page_container);
-  const PhysicalBoxFragment& page_border_box = GetPageBorderBox(page_container);
-  // The page rectangle is in the coordinate system of layout, i.e. with layout
-  // scaling applied. Scale to target, to reverse layout scaling.
-  PhysicalRect target_content_rect = page_border_box.LocalRect();
+  const PhysicalFragmentLink& link = GetPageBorderBoxLink(page_container);
+  const auto& page_border_box = *To<PhysicalBoxFragment>(link.get());
+  // The content rectangle is in the coordinate system of layout, i.e. with
+  // layout scaling applied. Scale to target, to reverse layout scaling and to
+  // apply any shrinking needed to fit the target (if there's a given paper size
+  // to take into consideration).
+  PhysicalRect target_content_rect = page_border_box.ContentRect();
   target_content_rect.Scale(scale);
 
+  // The page border box offset itself is already in the target coordinate
+  // system, on the other hand.
+  PhysicalOffset page_border_box_offset = link.offset;
+  target_content_rect.offset += page_border_box_offset;
+
   gfx::Transform matrix;
+
+  // Translate by the distance from the top/left page box (paper) corner to the
+  // top/left corner of the page content area, in the target coordinate system.
+  matrix.Translate(float(target_content_rect.offset.left),
+                   float(target_content_rect.offset.top));
+
   // Transform into the coordinate system used by layout.
   matrix.Scale(scale);
 

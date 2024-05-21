@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/strike_databases/payments/iban_save_strike_database.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 #include "components/sync/service/sync_user_settings.h"
 
 namespace autofill {
@@ -196,7 +197,8 @@ bool IbanSaveManager::AttemptToOfferUploadSave(Iban& import_candidate) {
       ->GetPaymentsNetworkInterface()
       ->GetIbanUploadDetails(
           personal_data_manager_->app_locale(),
-          payments::GetBillingCustomerId(personal_data_manager_),
+          payments::GetBillingCustomerId(
+              &personal_data_manager_->payments_data_manager()),
           payments::kUploadPaymentMethodBillableServiceNumber,
           import_candidate.GetCountryCode(),
           base::BindOnce(&IbanSaveManager::OnDidGetUploadDetails,
@@ -295,12 +297,17 @@ void IbanSaveManager::OnDidGetUploadDetails(
     bool show_save_prompt,
     Iban import_candidate,
     AutofillClient::PaymentsRpcResult result,
+    const std::u16string& validation_regex,
     const std::u16string& context_token,
     std::unique_ptr<base::Value::Dict> legal_message) {
   if (observer_for_testing_) {
     observer_for_testing_->OnReceivedGetUploadDetailsResponse();
   }
-  if (result == AutofillClient::PaymentsRpcResult::kSuccess) {
+
+  // Upload should only be offered when result is `kSuccess` and the IBAN passes
+  // regex validation.
+  if (result == AutofillClient::PaymentsRpcResult::kSuccess &&
+      MatchesRegex(import_candidate.value(), *CompileRegex(validation_regex))) {
     // Upload should only be offered when legal messages are parsed
     // successfully.
     LegalMessageLines parsed_legal_message_lines;
@@ -337,8 +344,8 @@ void IbanSaveManager::SendUploadRequest(const Iban& import_candidate,
   details.app_locale = personal_data_manager_->app_locale();
   details.billable_service_number =
       payments::kUploadPaymentMethodBillableServiceNumber;
-  details.billing_customer_number =
-      payments::GetBillingCustomerId(personal_data_manager_);
+  details.billing_customer_number = payments::GetBillingCustomerId(
+      &personal_data_manager_->payments_data_manager());
   details.context_token = context_token_;
   details.value = import_candidate.value();
   details.nickname = import_candidate.nickname();

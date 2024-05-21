@@ -528,5 +528,19 @@
   <message name="IDS_PRODUCT_SPECIFICATIONS_PAGE_ACTION_ADDED" translateable="false" desc="The text for the Product Specifications page action chip with a placeholder for what the specifications are for, after adding the current page.">
     Added to <ph name="SPECIFICATION">$1<ex>analysis</ex></ph>
   </message>
-
+  <message name="IDS_PRODUCT_SPECIFICATIONS_RENAME_GROUP" translateable="false" desc="The title of the menu item for renaming the product specification list.">
+    Rename group
+  </message>
+  <message name="IDS_PRODUCT_SPECIFICATIONS_ADD_TO_NEW_GROUP" translateable="false" desc="The title of the menu item for adding all tabs in the product specification list to a new tab group.">
+    Add all tabs to new group
+  </message>
+  <message name="IDS_PRODUCT_SPECIFICATIONS_SEE_ALL" translateable="false" desc="The title of the menu item for viewing all product specification lists.">
+    See all product specification lists
+  </message>
+  <message name="IDS_PRODUCT_SPECIFICATIONS_DELETE" translateable="false" desc="The title of the menu item for deleting the product specification list.">
+    Delete product specification list
+  </message>
+  <message name="IDS_PRODUCT_SPECIFICATIONS_REMOVE_COLUMN" translateable="false" desc="The title of the menu item for removing a column in the product specification list.">
+    Remove column
+  </message>
 </grit-part>

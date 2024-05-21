@@ -43,6 +43,7 @@ align-items: normal
 align-self: auto
 alignment-baseline: auto
 anchor-name: none
+anchor-scope: none
 animation-composition: replace
 animation-delay: 0s
 animation-direction: normal
@@ -292,7 +293,7 @@ pointer-events: auto
 popover-hide-delay: infinity * 1s
 popover-show-delay: 0.5s
 position: static
-position-anchor: implicit
+position-anchor: auto
 position-try-options: none
 position-try-order: normal
 position-visibility: always
@@ -311,6 +312,7 @@ scroll-margin-block-end: 0px
 scroll-margin-block-start: 0px
 scroll-margin-inline-end: 0px
 scroll-margin-inline-start: 0px
+scroll-markers: none
 scroll-padding-block-end: auto
 scroll-padding-block-start: auto
 scroll-padding-inline-end: auto

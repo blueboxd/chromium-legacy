@@ -9,6 +9,7 @@
 #include "base/no_destructor.h"
 #include "base/types/cxx23_to_underlying.h"
 #include "components/compose/core/browser/compose_features.h"
+#include "components/segmentation_platform/public/features.h"
 
 namespace compose {
 
@@ -58,11 +59,18 @@ Config::Config() {
   auto_submit_with_selection =
       base::FeatureList::IsEnabled(features::kComposeAutoSubmit);
 
+  is_nudge_shown_at_cursor =
+      base::FeatureList::IsEnabled(features::kEnableComposeNudgeAtCursor);
+
   saved_state_nudge_enabled =
       base::FeatureList::IsEnabled(features::kEnableComposeSavedStateNudge);
 
   proactive_nudge_enabled =
       base::FeatureList::IsEnabled(features::kEnableComposeProactiveNudge);
+
+  proactive_nudge_compact_ui = base::GetFieldTrialParamByFeatureAsBool(
+      features::kEnableComposeProactiveNudge, "proactive_nudge_compact_ui",
+      proactive_nudge_compact_ui);
 
   proactive_nudge_show_probability = base::GetFieldTrialParamByFeatureAsDouble(
       features::kEnableComposeProactiveNudge,
@@ -73,6 +81,9 @@ Config::Config() {
           features::kEnableComposeProactiveNudge,
           "proactive_nudge_delay_milliseconds",
           proactive_nudge_delay.InMilliseconds()));
+
+  proactive_nudge_segmentation = base::FeatureList::IsEnabled(
+      segmentation_platform::features::kSegmentationPlatformComposePromotion);
 
   saved_state_timeout_milliseconds = base::GetFieldTrialParamByFeatureAsInt(
       features::kEnableComposeSavedStateNotification,

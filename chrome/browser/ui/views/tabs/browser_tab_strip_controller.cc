@@ -28,8 +28,12 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_keyed_service.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_utils.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
+#include "chrome/browser/ui/tabs/tab_group_deletion_dialog_controller.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_network_state.h"
@@ -53,6 +57,8 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/performance_manager/public/user_tuning/prefs.h"
+#include "components/saved_tab_groups/features.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
@@ -194,6 +200,15 @@ BrowserTabStripController::BrowserTabStripController(
     menu_model_factory_ = std::make_unique<TabMenuModelFactory>();
   }
   model_->SetTabStripUI(this);
+
+  should_show_discard_indicator_ = g_browser_process->local_state()->GetBoolean(
+      performance_manager::user_tuning::prefs::kDiscardRingTreatmentEnabled);
+  local_state_registrar_.Init(g_browser_process->local_state());
+  local_state_registrar_.Add(
+      performance_manager::user_tuning::prefs::kDiscardRingTreatmentEnabled,
+      base::BindRepeating(
+          &BrowserTabStripController::OnDiscardRingTreatmentEnabledChanged,
+          base::Unretained(this)));
 }
 
 BrowserTabStripController::~BrowserTabStripController() {
@@ -217,7 +232,7 @@ void BrowserTabStripController::InitFromModel(TabStrip* tabstrip) {
 
 bool BrowserTabStripController::IsCommandEnabledForTab(
     TabStripModel::ContextMenuCommand command_id,
-    Tab* tab) const {
+    const Tab* tab) const {
   const std::optional<int> model_index = tabstrip_->GetModelIndexOf(tab);
   return model_index.has_value() ? model_->IsContextMenuCommandEnabled(
                                        model_index.value(), command_id)
@@ -226,13 +241,13 @@ bool BrowserTabStripController::IsCommandEnabledForTab(
 
 void BrowserTabStripController::ExecuteCommandForTab(
     TabStripModel::ContextMenuCommand command_id,
-    Tab* tab) {
+    const Tab* tab) {
   const std::optional<int> model_index = tabstrip_->GetModelIndexOf(tab);
   if (model_index.has_value())
     model_->ExecuteContextMenuCommand(model_index.value(), command_id);
 }
 
-bool BrowserTabStripController::IsTabPinned(Tab* tab) const {
+bool BrowserTabStripController::IsTabPinned(const Tab* tab) const {
   return IsTabPinned(tabstrip_->GetModelIndexOf(tab).value());
 }
 
@@ -317,21 +332,47 @@ bool BrowserTabStripController::BeforeCloseTab(int model_index,
 
   // Only consider pausing the close operation if this is the last remaining
   // tab (since otherwise closing it won't close the browser window).
-  if (GetCount() > 1)
-    return true;
+  if (GetCount() <= 1) {
+    // Closing this tab will close the current window. See if the browser wants
+    // to prompt the user before the browser is allowed to close.
+    const Browser::WarnBeforeClosingResult result =
+        browser_view_->browser()->MaybeWarnBeforeClosing(base::BindOnce(
+            [](TabStrip* tab_strip, int model_index, CloseTabSource source,
+               Browser::WarnBeforeClosingResult result) {
+              if (result == Browser::WarnBeforeClosingResult::kOkToClose) {
+                tab_strip->CloseTab(tab_strip->tab_at(model_index), source);
+              }
+            },
+            base::Unretained(tabstrip_), model_index, source));
 
-  // Closing this tab will close the current window. See if the browser wants to
-  // prompt the user before the browser is allowed to close.
-  const Browser::WarnBeforeClosingResult result =
-      browser_view_->browser()->MaybeWarnBeforeClosing(base::BindOnce(
-          [](TabStrip* tab_strip, int model_index, CloseTabSource source,
-             Browser::WarnBeforeClosingResult result) {
-            if (result == Browser::WarnBeforeClosingResult::kOkToClose)
-              tab_strip->CloseTab(tab_strip->tab_at(model_index), source);
-          },
-          base::Unretained(tabstrip_), model_index, source));
+    if (result != Browser::WarnBeforeClosingResult::kOkToClose) {
+      return false;
+    }
+  }
 
-  return result == Browser::WarnBeforeClosingResult::kOkToClose;
+  // Check to make sure the tab is not the last in it's group.
+  std::vector<tab_groups::TabGroupId> groups_to_delete =
+      model_->GetGroupsDestroyedFromRemovingIndices({model_index});
+
+  if (tab_groups::IsTabGroupsSaveV2Enabled() && !groups_to_delete.empty()) {
+    // If the user is destroying the last tab in the group via the tabstrip, a
+    // dialog is shown that will decide whether to destroy the tab or not. It
+    // will first ungroup the tab, then close the tab.
+    base::OnceCallback<void()> callback = base::BindOnce(
+        [](TabStrip* tab_strip, TabStripModel* model, int index,
+           CloseTabSource source) {
+          model->RemoveFromGroup({index});
+          tab_strip->CloseTab(tab_strip->tab_at(index), source);
+        },
+        base::Unretained(tabstrip_), base::Unretained(model_), model_index,
+        source);
+
+    return tab_groups::SavedTabGroupUtils::MaybeShowSavedTabGroupDeletionDialog(
+        browser_view_->browser(),
+        tab_groups::DeletionDialogController::DialogType::CloseTabAndDelete,
+        groups_to_delete, std::move(callback));
+  }
+  return true;
 }
 
 void BrowserTabStripController::CloseTab(int model_index) {
@@ -423,9 +464,11 @@ void BrowserTabStripController::ToggleTabGroupCollapsedState(
   }
   tabstrip_->ToggleTabGroup(group, !is_currently_collapsed, origin);
 
-  tab_groups::TabGroupVisualData new_data(
-      GetGroupTitle(group), GetGroupColorId(group), !is_currently_collapsed);
-  model_->group_model()->GetTabGroup(group)->SetVisualData(new_data, true);
+  model_->group_model()->GetTabGroup(group)->SetVisualData(
+      tab_groups::TabGroupVisualData(GetGroupTitle(group),
+                                     GetGroupColorId(group),
+                                     !is_currently_collapsed),
+      true);
 }
 
 void BrowserTabStripController::ShowContextMenuForTab(
@@ -772,10 +815,22 @@ void BrowserTabStripController::AddTab(WebContents* contents, int index) {
 
   tabstrip_->AddTabAt(index, TabRendererData::FromTabInModel(model_, index));
 
+  tabstrip_->tab_at(index)->SetShouldShowDiscardIndicator(
+      should_show_discard_indicator_);
+
   // Try to show tab search IPH if needed.
   constexpr int kTabSearchIPHTriggerThreshold = 8;
   if (tabstrip_->GetTabCount() >= kTabSearchIPHTriggerThreshold) {
     browser_view_->MaybeShowFeaturePromo(
         feature_engagement::kIPHTabSearchFeature);
+  }
+}
+
+void BrowserTabStripController::OnDiscardRingTreatmentEnabledChanged() {
+  should_show_discard_indicator_ = g_browser_process->local_state()->GetBoolean(
+      performance_manager::user_tuning::prefs::kDiscardRingTreatmentEnabled);
+  for (int tab_index = 0; tab_index < tabstrip_->GetTabCount(); ++tab_index) {
+    tabstrip_->tab_at(tab_index)->SetShouldShowDiscardIndicator(
+        should_show_discard_indicator_);
   }
 }

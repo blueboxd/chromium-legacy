@@ -196,7 +196,7 @@
 <translation id="1992055602764528852">Inicia sesión para ver las pestañas de tus otros dispositivos.</translation>
 <translation id="199425419756152024">Ver contraseña</translation>
 <translation id="2010008505735295285">Volver a cargar</translation>
-<translation id="2015722694326466240">Debes establecer primero un bloqueo de pantalla en tu dispositivo para poder ver las contraseñas.</translation>
+<translation id="2015722694326466240">Para ver las contraseñas, primero debes configurar una contraseña en tu dispositivo.</translation>
 <translation id="2021670401941426298">Consulta las instrucciones de tu buscador para eliminar tu historial de búsqueda (si corresponde).</translation>
 <translation id="202292859882676807">Acceso a micrófono permitido</translation>
 <translation id="20485545164632846">nuevo elemento</translation>
@@ -862,6 +862,7 @@ Consulta las instrucciones del buscador para eliminar tu historial de búsqueda 
 <translation id="5444892875087332195">Marcadores</translation>
 <translation id="5454211924362324495">Para impedir que otros usuarios usen tu contraseña, <ph name="BEGIN_LINK" />cámbiala en <ph name="WEBSITE" /><ph name="END_LINK" /></translation>
 <translation id="5457226814769348910">Abrir versión sin conexión</translation>
+<translation id="5459548306731933777">Mostrar detalles</translation>
 <translation id="5475069061743940393">Seguimiento de envíos</translation>
 <translation id="5478327362747197944">Crea eventos del calendario directamente haciendo clic en una fecha en una página web.</translation>
 <translation id="5482922178977937393">¿Quieres recibir notificaciones de noticias, deportes y más según tus intereses?</translation>
@@ -1442,7 +1443,6 @@ Los sitios pueden usar cookies para ver tu actividad de navegación en otros sit
 <translation id="8283172974887967105">Establecer…</translation>
 <translation id="8286036467436129157">Iniciar sesión</translation>
 <translation id="8289930144142009940">Notificaciones de <ph name="FEATURE_NAME" /> desactivadas</translation>
-<translation id="8292843446079898078">Recibe alertas si los productos que sigues bajan de precio.</translation>
 <translation id="8299417921174340354">Para usar las contraseñas, primero debes establecer una contraseña en tu dispositivo.</translation>
 <translation id="8299613349954694191">Abre una pestaña de Incógnito para navegar por la Web en privado.</translation>
 <translation id="8311853334103696030">Ocultar Seguir precio</translation>

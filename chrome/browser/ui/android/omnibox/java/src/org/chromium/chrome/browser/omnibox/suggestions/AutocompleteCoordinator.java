@@ -10,6 +10,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -50,10 +51,12 @@ import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.components.omnibox.AutocompleteMatch;
+import org.chromium.components.omnibox.OmniboxFeatures;
 import org.chromium.components.omnibox.action.OmniboxActionDelegate;
 import org.chromium.components.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.ui.AsyncViewProvider;
 import org.chromium.ui.AsyncViewStub;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.ViewProvider;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -64,19 +67,30 @@ import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /** Coordinator that handles the interactions with the autocomplete system. */
-public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextChangeListener {
+public class AutocompleteCoordinator
+        implements UrlFocusChangeListener, UrlTextChangeListener, OmniboxSuggestionsVisualState {
     private final @NonNull ViewGroup mParent;
     private final @NonNull ObservableSupplier<Profile> mProfileSupplier;
     private final @NonNull Callback<Profile> mProfileChangeCallback;
     private final @NonNull AutocompleteMediator mMediator;
     private final @NonNull Supplier<ModalDialogManager> mModalDialogManagerSupplier;
     private final @NonNull OmniboxSuggestionsDropdownAdapter mAdapter;
-    private final @NonNull PreWarmingRecycledViewPool mRecycledViewPool;
+    private final @NonNull Optional<PreWarmingRecycledViewPool> mRecycledViewPool;
     private @Nullable OmniboxSuggestionsDropdown mDropdown;
     private @NonNull ObserverList<OmniboxSuggestionsDropdownScrollListener> mScrollListenerList =
             new ObserverList<>();
+
+    /** An observer watching for changes to the visual state of the omnibox suggestions. */
+    public interface OmniboxSuggestionsVisualStateObserver {
+        /** Called when the visibility of the omnibox suggestions changes. */
+        void onOmniboxSuggestionsVisibilityChanged(boolean visible);
+
+        /** Called when the background color of the omnibox suggestions changes. */
+        void onOmniboxSuggestionsBackgroundColorChanged(@ColorInt int color);
+    }
 
     public AutocompleteCoordinator(
             @NonNull ViewGroup parent,
@@ -158,7 +172,12 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
         mProfileSupplier.addObserver(mProfileChangeCallback);
 
         mAdapter = createAdapter(listItems);
-        mRecycledViewPool = new PreWarmingRecycledViewPool(mAdapter, context, new Handler());
+
+        if (!OmniboxFeatures.sAsyncViewInflation.isEnabled()) {
+            mRecycledViewPool = Optional.of(new PreWarmingRecycledViewPool(mAdapter, context));
+        } else {
+            mRecycledViewPool = Optional.empty();
+        }
 
         // https://crbug.com/966227 Set initial layout direction ahead of inflating the suggestions.
         updateSuggestionListLayoutDirection();
@@ -166,13 +185,24 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
 
     /** Clean up resources used by this class. */
     public void destroy() {
-        mRecycledViewPool.destroy();
+        mRecycledViewPool.ifPresent(p -> p.destroy());
         mProfileSupplier.removeObserver(mProfileChangeCallback);
         mMediator.destroy();
         if (mDropdown != null) {
             mDropdown.destroy();
             mDropdown = null;
         }
+    }
+
+    /**
+     * Sets the observer watching the state of the omnibox suggestions. This observer will be
+     * notifying of visual changes to the omnibox suggestions view, such as visibility or background
+     * color changes.
+     */
+    @Override
+    public void setOmniboxSuggestionsVisualStateObserver(
+            Optional<OmniboxSuggestionsVisualStateObserver> omniboxSuggestionsVisualStateObserver) {
+        mMediator.setOmniboxSuggestionsVisualStateObserver(omniboxSuggestionsVisualStateObserver);
     }
 
     private ViewProvider<SuggestionListViewHolder> createViewProvider(
@@ -186,7 +216,8 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
             public void inflate() {
                 AsyncViewStub stub =
                         mParent.getRootView().findViewById(R.id.omnibox_results_container_stub);
-                stub.setShouldInflateOnBackgroundThread(true);
+                stub.setShouldInflateOnBackgroundThread(
+                        OmniboxFeatures.sAsyncViewInflation.isEnabled());
                 mAsyncProvider = AsyncViewProvider.of(stub, R.id.omnibox_results_container);
                 mAsyncProvider.whenLoaded(this::onAsyncInflationComplete);
                 mAsyncProvider.inflate();
@@ -194,10 +225,20 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
 
             private void onAsyncInflationComplete(ViewGroup container) {
                 OmniboxSuggestionsDropdown dropdown =
-                        new OmniboxSuggestionsDropdown(
-                                context, mRecycledViewPool, forcePhoneStyleOmnibox);
+                        container.findViewById(R.id.omnibox_suggestions_dropdown);
 
+                dropdown.forcePhoneStyleOmnibox(forcePhoneStyleOmnibox);
                 dropdown.setAdapter(mAdapter);
+                mRecycledViewPool.ifPresent(p -> dropdown.setRecycledViewPool(p));
+
+                if (!OmniboxFeatures.sAsyncViewInflation.isEnabled()) {
+                    // NOTE: Old style Suggestions dropdown visibility management relies on adding
+                    // and removing the view from the view hierarchy. The view inflated from XML is
+                    // automatically added to the hierarchy, which changes the precondition assumed
+                    // by the old logic. The lines below ensure the initial condition is what the
+                    // logic expects it to be.
+                    UiUtils.removeViewFromParent(dropdown);
+                }
 
                 mHolder = new SuggestionListViewHolder(container, dropdown);
                 for (int i = 0; i < mCallbacks.size(); i++) {
@@ -333,7 +374,7 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
     /** Signals that native initialization has completed. */
     public void onNativeInitialized() {
         mMediator.onNativeInitialized();
-        mRecycledViewPool.onNativeInitialized();
+        mRecycledViewPool.ifPresent(p -> p.onNativeInitialized());
     }
 
     /**

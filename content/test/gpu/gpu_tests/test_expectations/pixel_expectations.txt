@@ -404,7 +404,6 @@ crbug.com/1372141 [ android android-sm-a235m ] Pixel_CanvasLowLatencyWebGLAlphaF
 
 crbug.com/1376927 [ win10 target-cpu-32 nvidia-0x2184 ] Pixel_MediaFoundationClearDirectComposition [ Failure ]
 
-crbug.com/1517110 [ debug-x64 no-clang-coverage nvidia-0x2184 nvidia_lt_31.0.15.4601 renderer-skia-gl target-cpu-64 win10 ] Pixel_Video_* [ RetryOnFailure ]
 
 
 # Lacros consistent failures on CrOS devices, skip to save some time
@@ -455,12 +454,10 @@ crbug.com/40937765 [ android android-pixel-6 renderer-skia-vulkan ] Pixel_Video_
 # finder:enable-narrowing
 
 # Flaking due to DCHECK see https://crbug.com/339457781
-crbug.com/339457781 [ android android-SM-S911U1 renderer-skia-vulkan ] Pixel_Video_BackdropFilter [ RetryOnFailure ]
 crbug.com/339457781 [ android android-SM-S911U1 renderer-skia-vulkan ] Pixel_Video_VP9 [ RetryOnFailure ]
 crbug.com/339457781 [ android android-SM-S911U1 renderer-skia-vulkan ] Pixel_Video_MP4 [ RetryOnFailure ]
 crbug.com/339457781 [ android android-SM-S911U1 renderer-skia-vulkan ] Pixel_Video_AV1 [ RetryOnFailure ]
 crbug.com/339457781 [ android android-SM-S911U1 renderer-skia-vulkan ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ RetryOnFailure ]
-crbug.com/339457781 [ android android-SM-S911U1 renderer-skia-vulkan ] Pixel_Video_HEVC [ RetryOnFailure ]
 
 # ChromeOS Volteer failures
 crbug.com/1516977 [ chromeos cros-chrome chromeos-board-volteer ] Pixel_WebGLContextRestored [ Failure ]
@@ -484,15 +481,7 @@ crbug.com/40935289 [ fuchsia web-engine-shell ] Pixel_Video_MP4_Rounded_Corner [
 crbug.com/40935289 [ fuchsia no-clang-coverage web-engine-shell ] Pixel_Video_VP9 [ Failure ]
 
 # Failures on Windows with SkiaGraphite
-crbug.com/329235191 [ amd-0x7340 graphite-enabled release-x64 win10 ] Pixel_VideoStreamFrom2DCanvas [ Failure ]
-crbug.com/329235191 [ graphite-enabled qualcomm-0x41333430 win11 ] Pixel_VideoStreamFrom2DCanvas [ Failure ]
-crbug.com/329235191 [ graphite-enabled qualcomm-0x41333430 win11 ] Pixel_VideoStreamFromWebGLCanvas [ Failure ]
-crbug.com/329235191 [ graphite-enabled qualcomm-0x41333430 win11 ] Pixel_VideoStreamFromWebGLCanvas_OneCopy [ Failure ]
 crbug.com/329235191 [ graphite-enabled nvidia-0x2184 win10 ] Pixel_WebGL_PremultipliedAlpha_False [ Failure ]
-crbug.com/329235191 [ graphite-enabled qualcomm-0x41333430 target-cpu-64 win11 ] Pixel_WebGL_PremultipliedAlpha_False [ Failure ]
-
-# Failures on Mac Asan with Graphite
-crbug.com/338071687 [ mac angle-metal asan graphite-enabled intel-0x3e9b passthrough ] Pixel_Canvas2DBlitText [ Failure ]
 
 # Tab change tests failing to find foreground tabs
 crbug.com/338574386 [ mac angle-metal apple-angle-metal-renderer:-apple-m1 passthrough ] Pixel_Canvas2DTabSwitch [ Failure ]

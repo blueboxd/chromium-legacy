@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_keyed_service.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_pref_names.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_utils.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
@@ -98,6 +99,9 @@ constexpr int kDialogWidth = 240;
 constexpr const char kLearnMoreURL[] =
     "https://support.google.com/chrome/answer/165139";
 static constexpr int kDefaultIconSize = 20;
+// The maximum number of times we will show the footer section with the learn
+// more link.
+constexpr int kFooterDisplayLimit = 5;
 
 std::unique_ptr<views::LabelButton> CreateMenuItem(
     int button_id,
@@ -127,6 +131,8 @@ std::unique_ptr<views::LabelButton> CreateMenuItem(
 
 }  // namespace
 
+namespace saved_tab_group_prefs = tab_groups::saved_tab_groups::prefs;
+
 // static
 views::Widget* TabGroupEditorBubbleView::Show(
     const Browser* browser,
@@ -149,7 +155,6 @@ views::Widget* TabGroupEditorBubbleView::Show(
   tab_group_editor_bubble_view->GetBubbleFrameView()
       ->SetPreferredArrowAdjustment(
           views::BubbleFrameView::PreferredArrowAdjustment::kOffset);
-  tab_group_editor_bubble_view->SizeToContents();
   widget->Show();
   return widget;
 }
@@ -225,14 +230,17 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
     views::View* anchor_view,
     std::optional<gfx::Rect> anchor_rect,
     bool stop_context_menu_propagation)
-    : browser_(browser),
+    : BubbleDialogDelegateView(anchor_view,
+                               views::BubbleBorder::Arrow::TOP_LEFT,
+                               views::BubbleBorder::DIALOG_SHADOW,
+                               true),
+      browser_(browser),
       group_(group),
       title_field_controller_(this),
       use_set_anchor_rect_(anchor_rect) {
   // |anchor_view| should always be defined as it will be used to source the
   // |anchor_widget_|.
   DCHECK(anchor_view);
-  SetAnchorView(anchor_view);
   if (anchor_rect) {
     SetAnchorRect(anchor_rect.value());
   }
@@ -327,9 +335,8 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
     move_menu_item_ptr = AddChildView(std::move(move_menu_item));
   }
 
-  // Add a separator. Add if v2 enabled.
-  bool is_saved = save_group_line_container && save_group_toggle_->GetIsOn();
-  if (is_saved || tab_groups::IsTabGroupsSaveV2Enabled()) {
+  // Add a separator for the delete menu item and footer v2 enabled.
+  if (tab_groups::IsTabGroupsSaveV2Enabled()) {
     // The amount of vertical padding in dips the separator should have to
     // prevent menu items from being visually too close to each other.
     constexpr int kSeparatorPadding = 8;
@@ -337,13 +344,30 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
     separator->SetProperty(views::kMarginsKey,
                            gfx::Insets::VH(kSeparatorPadding, 0));
 
-    menu_items_.push_back(AddChildView(CreateMenuItem(
+    views::LabelButton* delete_group_menu_item = AddChildView(CreateMenuItem(
         IDS_TAB_GROUP_HEADER_CXMENU_DELETE_GROUP,
         l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_DELETE_GROUP),
         base::BindRepeating(&TabGroupEditorBubbleView::DeleteGroupPressed,
                             base::Unretained(this)),
-        ui::ImageModel::FromVectorIcon(kTrashCanRefreshIcon))));
-    footer_ = AddChildView(std::make_unique<Footer>(browser_));
+        ui::ImageModel::FromVectorIcon(kTrashCanRefreshIcon, ui::kColorMenuIcon,
+                                       kDefaultIconSize)));
+    menu_items_.push_back(std::move(delete_group_menu_item));
+
+    PrefService* pref_service = browser_->profile()->GetPrefs();
+    tab_groups::SavedTabGroupKeyedService* const saved_tab_group_service =
+        tab_groups::SavedTabGroupServiceFactory::GetForProfile(
+            browser_->profile());
+
+    if (saved_tab_group_service && pref_service &&
+        saved_tab_group_prefs::GetLearnMoreFooterShownCount(pref_service) <
+            kFooterDisplayLimit) {
+      // Add additional padding before the footer if it is visible.
+      delete_group_menu_item->SetProperty(
+          views::kMarginsKey, gfx::Insets::TLBR(0, 0, kSeparatorPadding, 0));
+      footer_ = AddChildView(std::make_unique<Footer>(browser_));
+      saved_tab_group_prefs::IncrementLearnMoreFooterShownCountPref(
+          pref_service);
+    }
   }
 
   // The move menu item must be added to the menu by this point.
@@ -757,6 +781,8 @@ TabGroupEditorBubbleView::Footer::Footer(const Browser* browser) {
   std::u16string styled_text =
       base::ReplaceStringPlaceholders(u"$1 $2", footer_text_substr, &offsets);
   footer_label->SetText(styled_text);
+  footer_label->SetDefaultTextStyle(views::style::TextStyle::STYLE_BODY_5);
+  footer_label->SetDefaultEnabledColorId(ui::kColorLabelForegroundSecondary);
 
   gfx::Range details_range(offsets[1], styled_text.length());
 
@@ -774,7 +800,7 @@ TabGroupEditorBubbleView::Footer::Footer(const Browser* browser) {
   const gfx::Insets control_insets =
       ui::TouchUiController::Get()->touch_ui()
           ? gfx::Insets::VH(5 * vertical_spacing / 4, horizontal_spacing)
-          : gfx::Insets::VH(vertical_spacing, horizontal_spacing);
+          : gfx::Insets::VH(2 * vertical_spacing, horizontal_spacing);
   footer_label->SizeToFit(kDialogWidth - control_insets.right() -
                           control_insets.left());
   SetSize({kDialogWidth, height()});

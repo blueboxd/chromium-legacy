@@ -51,8 +51,7 @@ SharedImageRepresentation::~SharedImageRepresentation() {
       << "Destroying a SharedImageRepresentation with "
          "outstanding Scoped*Access objects.";
   if (manager_ && backing_->is_ref_counted()) {
-    manager_->OnRepresentationDestroyed(backing_.ExtractAsDangling()->mailbox(),
-                                        this);
+    manager_->OnRepresentationDestroyed(backing_->mailbox(), this);
   }
 }
 
@@ -259,9 +258,10 @@ SkiaGaneshImageRepresentation::ScopedGaneshWriteAccess::ScopedGaneshWriteAccess(
 SkiaGaneshImageRepresentation::ScopedGaneshWriteAccess::
     ~ScopedGaneshWriteAccess() {
   if (end_state_) {
-    NOTREACHED() << "Before ending write access TakeEndState() must be called "
-                    "and the result passed to skia to make sure all layout and "
-                    "ownership transitions are done.";
+    NOTREACHED_IN_MIGRATION()
+        << "Before ending write access TakeEndState() must be called "
+           "and the result passed to skia to make sure all layout and "
+           "ownership transitions are done.";
   }
 }
 
@@ -383,9 +383,10 @@ SkiaGaneshImageRepresentation::ScopedGaneshReadAccess::ScopedGaneshReadAccess(
 SkiaGaneshImageRepresentation::ScopedGaneshReadAccess::
     ~ScopedGaneshReadAccess() {
   if (end_state_) {
-    NOTREACHED() << "Before ending read access TakeEndState() must be called "
-                    "and the result passed to skia to make sure all layout and "
-                    "ownership transitions are done.";
+    NOTREACHED_IN_MIGRATION()
+        << "Before ending read access TakeEndState() must be called "
+           "and the result passed to skia to make sure all layout and "
+           "ownership transitions are done.";
   }
 }
 
@@ -438,7 +439,9 @@ SkiaGaneshImageRepresentation::ScopedGaneshReadAccess::CreateSkImage(
 sk_sp<SkImage>
 SkiaGaneshImageRepresentation::ScopedGaneshReadAccess::CreateSkImageForPlane(
     int plane_index,
-    SharedContextState* context_state) {
+    SharedContextState* context_state,
+    SkImages::TextureReleaseProc texture_release_proc,
+    SkImages::ReleaseContext release_context) {
   auto format = representation()->format();
   DCHECK(format.is_multi_plane());
   DCHECK_EQ(static_cast<int>(promise_image_textures_.size()),
@@ -451,7 +454,8 @@ SkiaGaneshImageRepresentation::ScopedGaneshReadAccess::CreateSkImageForPlane(
   return SkImages::BorrowTextureFrom(
       context_state->gr_context(),
       promise_image_texture(plane_index)->backendTexture(), surface_origin,
-      color_type, alpha_type, /*sk_color_space=*/nullptr);
+      color_type, alpha_type, /*sk_color_space=*/nullptr, texture_release_proc,
+      release_context);
 }
 
 bool SkiaGaneshImageRepresentation::ScopedGaneshReadAccess::
@@ -667,7 +671,10 @@ SkiaGraphiteImageRepresentation::ScopedGraphiteReadAccess::CreateSkImage(
 }
 
 sk_sp<SkImage> SkiaGraphiteImageRepresentation::ScopedGraphiteReadAccess::
-    CreateSkImageForPlane(int plane_index, SharedContextState* context_state) {
+    CreateSkImageForPlane(int plane_index,
+                          SharedContextState* context_state,
+                          SkImages::TextureReleaseProc texture_release_proc,
+                          SkImages::ReleaseContext release_context) {
   auto format = representation()->format();
   CHECK(format.is_multi_plane());
   CHECK_EQ(static_cast<int>(graphite_textures_.size()),
@@ -677,7 +684,8 @@ sk_sp<SkImage> SkiaGraphiteImageRepresentation::ScopedGraphiteReadAccess::
       viz::ToClosestSkColorType(/*gpu_compositing=*/true, format, plane_index);
   return SkImages::AdoptTextureFrom(context_state->gpu_main_graphite_recorder(),
                                     graphite_texture(plane_index), color_type,
-                                    alpha_type, /*colorSpace=*/nullptr);
+                                    alpha_type, /*colorSpace=*/nullptr,
+                                    texture_release_proc, release_context);
 }
 
 bool SkiaGraphiteImageRepresentation::ScopedGraphiteReadAccess::
@@ -723,12 +731,12 @@ SkiaGraphiteImageRepresentation::BeginScopedReadAccess(
 
 #if BUILDFLAG(IS_ANDROID)
 AHardwareBuffer* OverlayImageRepresentation::GetAHardwareBuffer() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
 OverlayImageRepresentation::GetAHardwareBufferFenceSync() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 #elif BUILDFLAG(IS_OZONE)
@@ -738,7 +746,7 @@ scoped_refptr<gfx::NativePixmap> OverlayImageRepresentation::GetNativePixmap() {
 #elif BUILDFLAG(IS_WIN)
 std::optional<gl::DCLayerOverlayImage>
 OverlayImageRepresentation::GetDCLayerOverlayImage() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return std::nullopt;
 }
 #elif BUILDFLAG(IS_APPLE)

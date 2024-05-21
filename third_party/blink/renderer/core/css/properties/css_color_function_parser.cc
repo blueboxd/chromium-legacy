@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/css_color_mix_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_save_point.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
@@ -294,7 +295,7 @@ std::optional<double> ConsumeRelativeColorChannel(
           value = calc_value->ComputeDegrees();
           break;
         default:
-          NOTREACHED();
+          NOTREACHED_IN_MIGRATION();
           return std::nullopt;
       }
       // Consume the range, since it has succeeded.
@@ -578,8 +579,24 @@ bool ColorFunctionParser::ConsumeFunctionalSyntaxColor(
     CSSParserTokenRange& input_range,
     const CSSParserContext& context,
     Color& result) {
-  // Copy the range so that it is not consumed if the parsing fails.
-  CSSParserTokenRange range = input_range;
+  return ConsumeFunctionalSyntaxColorInternal(input_range, context, result);
+}
+
+bool ColorFunctionParser::ConsumeFunctionalSyntaxColor(
+    CSSParserTokenStream& input_stream,
+    const CSSParserContext& context,
+    Color& result) {
+  return ConsumeFunctionalSyntaxColorInternal(input_stream, context, result);
+}
+
+template <class T>
+  requires std::is_same_v<T, CSSParserTokenStream> ||
+           std::is_same_v<T, CSSParserTokenRange>
+bool ColorFunctionParser::ConsumeFunctionalSyntaxColorInternal(
+    T& range,
+    const CSSParserContext& context,
+    Color& result) {
+  CSSParserSavePoint savepoint(range);
 
   CSSValueID function_id = range.Peek().FunctionId();
   if (!IsValidColorFunction(function_id)) {
@@ -641,8 +658,7 @@ bool ColorFunctionParser::ConsumeFunctionalSyntaxColor(
   }
 
   // "None" is not a part of the legacy syntax.
-  if (!args.AtEnd() ||
-      (is_legacy_syntax_ && has_none_)) {
+  if (!args.AtEnd() || (is_legacy_syntax_ && has_none_)) {
     return false;
   }
 
@@ -656,11 +672,11 @@ bool ColorFunctionParser::ConsumeFunctionalSyntaxColor(
     result.ConvertToColorSpace(Color::ColorSpace::kSRGB);
   }
   // The parsing was successful, so we need to consume the input.
-  input_range = range;
+  savepoint.Release();
 
   // TODO(b/40949047): Counters for out-of-gamut are disabled because of
   // repeated merge-conflict creating reverts. Remove this parameter.
-  const bool kEnableCounters = false;
+  const bool kEnableCounters = true;
   if (is_relative_color_) {
     context.Count(WebFeature::kCSSRelativeColor);
   } else {

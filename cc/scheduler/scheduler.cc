@@ -111,6 +111,12 @@ void Scheduler::SetVisible(bool visible) {
   ProcessScheduledActions();
 }
 
+void Scheduler::SetShouldWarmUp() {
+  CHECK(base::FeatureList::IsEnabled(features::kWarmUpCompositor));
+  state_machine_.SetShouldWarmUp();
+  ProcessScheduledActions();
+}
+
 void Scheduler::SetCanDraw(bool can_draw) {
   state_machine_.SetCanDraw(can_draw);
   ProcessScheduledActions();
@@ -177,19 +183,15 @@ void Scheduler::SetNeedsPrepareTiles() {
   ProcessScheduledActions();
 }
 
-void Scheduler::DidSubmitCompositorFrame(uint32_t frame_token,
-                                         base::TimeTicks submit_time,
-                                         EventMetricsSet events_metrics,
-                                         bool has_missing_content) {
+void Scheduler::DidSubmitCompositorFrame(SubmitInfo& submit_info) {
   // Hardware and software draw may occur at the same frame simultaneously for
   // Android WebView. There is no need to call DidSubmitCompositorFrame here for
   // software draw.
   if (!settings_.using_synchronous_renderer_compositor ||
       !state_machine_.resourceless_draw()) {
     compositor_frame_reporting_controller_->DidSubmitCompositorFrame(
-        frame_token, submit_time, begin_main_frame_args_.frame_id,
-        last_activate_origin_frame_args_.frame_id, std::move(events_metrics),
-        has_missing_content);
+        submit_info, begin_main_frame_args_.frame_id,
+        last_activate_origin_frame_args_.frame_id);
   }
   state_machine_.DidSubmitCompositorFrame();
 
@@ -313,8 +315,9 @@ void Scheduler::StartOrStopBeginFrames() {
   }
 
   bool needs_begin_frames = state_machine_.ShouldSubscribeToBeginFrames();
-  if (needs_begin_frames == observing_begin_frame_source_)
+  if (needs_begin_frames == observing_begin_frame_source_) {
     return;
+  }
 
   if (needs_begin_frames) {
     observing_begin_frame_source_ = true;

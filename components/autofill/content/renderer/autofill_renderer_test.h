@@ -48,6 +48,12 @@ class MockAutofillDriver : public mojom::AutofillDriver {
                mojom::SubmissionSource source),
               (override));
   MOCK_METHOD(void,
+              CaretMovedInFormField,
+              (const FormData& form,
+               const FormFieldData& field,
+               const gfx::Rect& caret_bounds),
+              (override));
+  MOCK_METHOD(void,
               TextFieldDidChange,
               (const FormData& form,
                const FormFieldData& field,
@@ -76,6 +82,7 @@ class MockAutofillDriver : public mojom::AutofillDriver {
               AskForValuesToFill,
               (const FormData& form,
                const FormFieldData& field,
+               const gfx::Rect& caret_bounds,
                AutofillSuggestionTriggerSource trigger_source),
               (override));
   MOCK_METHOD(void, HidePopup, (), (override));

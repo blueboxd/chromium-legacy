@@ -22,7 +22,6 @@
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/components/arc/system_ui/arc_system_ui_bridge.h"
-#include "ash/constants/app_types.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
@@ -176,6 +175,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
+#include "chromeos/ui/base/app_types.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/caption_buttons/caption_button_model.h"
 #include "chromeos/ui/frame/default_frame_header.h"
@@ -375,7 +375,7 @@ api::autotest_private::ShelfItemType GetShelfItemType(ash::ShelfItemType type) {
     case ash::TYPE_UNDEFINED:
       return api::autotest_private::ShelfItemType::kNone;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return api::autotest_private::ShelfItemType::kNone;
 }
 
@@ -389,7 +389,7 @@ api::autotest_private::ShelfItemStatus GetShelfItemStatus(
     case ash::STATUS_ATTENTION:
       return api::autotest_private::ShelfItemStatus::kAttention;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return api::autotest_private::ShelfItemStatus::kNone;
 }
 
@@ -424,7 +424,7 @@ api::autotest_private::AppType GetAppType(apps::AppType type) {
     case apps::AppType::kStandaloneBrowserChromeApp:
       return api::autotest_private::AppType::kExtension;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return api::autotest_private::AppType::kNone;
 }
 
@@ -452,29 +452,29 @@ api::autotest_private::AppInstallSource GetAppInstallSource(
     case apps::InstallReason::kCommandLine:
       return api::autotest_private::AppInstallSource::kCommandLine;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return api::autotest_private::AppInstallSource::kNone;
 }
 
-api::autotest_private::AppWindowType GetAppWindowType(ash::AppType type) {
+api::autotest_private::AppWindowType GetAppWindowType(chromeos::AppType type) {
   switch (type) {
-    case ash::AppType::ARC_APP:
+    case chromeos::AppType::ARC_APP:
       return api::autotest_private::AppWindowType::kArcApp;
-    case ash::AppType::SYSTEM_APP:
+    case chromeos::AppType::SYSTEM_APP:
       return api::autotest_private::AppWindowType::kSystemApp;
-    case ash::AppType::CROSTINI_APP:
+    case chromeos::AppType::CROSTINI_APP:
       return api::autotest_private::AppWindowType::kCrostiniApp;
-    case ash::AppType::CHROME_APP:
+    case chromeos::AppType::CHROME_APP:
       return api::autotest_private::AppWindowType::kExtensionApp;
-    case ash::AppType::BROWSER:
+    case chromeos::AppType::BROWSER:
       return api::autotest_private::AppWindowType::kBrowser;
-    case ash::AppType::LACROS:
+    case chromeos::AppType::LACROS:
       return api::autotest_private::AppWindowType::kLacros;
-    case ash::AppType::NON_APP:
+    case chromeos::AppType::NON_APP:
       return api::autotest_private::AppWindowType::kNone;
       // TODO(oshima): Investigate if we want to have "extension" type.
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return api::autotest_private::AppWindowType::kNone;
 }
 
@@ -501,7 +501,7 @@ api::autotest_private::AppReadiness GetAppReadiness(apps::Readiness readiness) {
     case apps::Readiness::kUnknown:
       return api::autotest_private::AppReadiness::kNone;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return api::autotest_private::AppReadiness::kNone;
 }
 
@@ -520,7 +520,7 @@ api::autotest_private::HotseatState GetHotseatState(
       return api::autotest_private::HotseatState::kExtended;
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 api::autotest_private::WakefulnessMode GetWakefulnessMode(
@@ -538,7 +538,7 @@ api::autotest_private::WakefulnessMode GetWakefulnessMode(
       return api::autotest_private::WakefulnessMode::kUnknown;
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 // Helper function to set allowed user pref based on |pref_name| with any
@@ -680,7 +680,7 @@ chromeos::WindowStateType GetExpectedWindowState(
     case api::autotest_private::WMEventType::kWmeventFloat:
       return chromeos::WindowStateType::kFloated;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return chromeos::WindowStateType::kNormal;
   }
 }
@@ -702,7 +702,7 @@ ash::WMEventType ToWMEventType(api::autotest_private::WMEventType event_type) {
     case api::autotest_private::WMEventType::kWmeventFloat:
       return ash::WMEventType::WM_EVENT_FLOAT;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return ash::WMEventType::WM_EVENT_NORMAL;
   }
 }
@@ -733,7 +733,7 @@ api::autotest_private::WindowStateType ToWindowStateType(
     case chromeos::WindowStateType::kFloated:
       return api::autotest_private::WindowStateType::kFloated;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return api::autotest_private::WindowStateType::kNone;
   }
 }
@@ -760,7 +760,7 @@ display::Display::Rotation ToRotation(
     case api::autotest_private::RotationType::kNone:
       break;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return display::Display::ROTATE_0;
 }
 
@@ -859,7 +859,7 @@ ash::OverviewAnimationState ToOverviewAnimationState(
     case api::autotest_private::OverviewStateType::kNone:
       break;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return ash::OverviewAnimationState::kExitAnimationComplete;
 }
 
@@ -889,7 +889,7 @@ ui::KeyboardCode StringToKeyCode(const std::string& str) {
       }
     }
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return ui::VKEY_A;
 }
 
@@ -926,7 +926,7 @@ int GetMouseEventFlags(api::autotest_private::MouseButton button) {
     case api::autotest_private::MouseButton::kForward:
       return ui::EF_FORWARD_MOUSE_BUTTON;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
   return ui::EF_NONE;
 }
@@ -1304,7 +1304,7 @@ class EventGenerator {
         break;
       }
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
     }
 
     // Post a task after scheduling the event and assumes that when the task
@@ -4566,8 +4566,8 @@ AutotestPrivateGetAppWindowListFunction::Run() {
     api::autotest_private::AppWindowInfo window_info;
     window_info.id = window->GetId();
     window_info.name = window->GetName();
-    window_info.window_type = GetAppWindowType(
-        static_cast<ash::AppType>(window->GetProperty(aura::client::kAppType)));
+    window_info.window_type =
+        GetAppWindowType(window->GetProperty(chromeos::kAppTypeKey));
     window_info.state_type =
         ToWindowStateType(window->GetProperty(chromeos::kWindowStateTypeKey));
     window_info.bounds_in_root =
@@ -4603,8 +4603,8 @@ AutotestPrivateGetAppWindowListFunction::Run() {
       }
     }
 
-    if (window->GetProperty(aura::client::kAppType) ==
-        static_cast<int>(ash::AppType::ARC_APP)) {
+    if (window->GetProperty(chromeos::kAppTypeKey) ==
+        chromeos::AppType::ARC_APP) {
       std::string* package_name = window->GetProperty(ash::kArcPackageNameKey);
       if (package_name) {
         window_info.arc_package_name = *package_name;
@@ -5467,8 +5467,8 @@ void AutotestPrivateSetMetricsEnabledFunction::OnDeviceSettingsStored() {
   bool actual;
   if (!ash::CrosSettings::Get()->GetBoolean(ash::kStatsReportingPref,
                                             &actual)) {
-    NOTREACHED() << "AutotestPrivateSetMetricsEnabledFunction: "
-                 << "kStatsReportingPref should be set";
+    NOTREACHED_IN_MIGRATION() << "AutotestPrivateSetMetricsEnabledFunction: "
+                              << "kStatsReportingPref should be set";
     Respond(Error(base::StrCat({"Failed to set metrics consent: ",
                                 ash::kStatsReportingPref, " is not set."})));
     return;

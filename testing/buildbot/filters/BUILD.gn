@@ -211,6 +211,7 @@ source_set("content_shell_test_apk_filters") {
     "//testing/buildbot/filters/android.emulator_12.content_shell_test_apk.filter",
     "//testing/buildbot/filters/android.emulator_12l.content_shell_test_apk.filter",
     "//testing/buildbot/filters/android.emulator_13.content_shell_test_apk.filter",
+    "//testing/buildbot/filters/android.emulator_15.content_shell_test_apk.filter",
   ]
 }
 
@@ -218,6 +219,7 @@ source_set("content_unittests_filters") {
   testonly = true
 
   data = [
+    "//testing/buildbot/filters/android.emulator_14.content_unittests.filter",
     "//testing/buildbot/filters/android.emulator_15.content_unittests.filter",
     "//testing/buildbot/filters/android.mte.content_unittests.filter",
     "//testing/buildbot/filters/fuchsia.lsan.content_unittests.filter",
@@ -455,5 +457,5 @@ source_set("gwp_asan_unittests_filters") {
   data = [
     "//testing/buildbot/filters/android.emulator_15.gwp_asan_unittests.filter",
     "//testing/buildbot/filters/android.mte.gwp_asan_unittests.filter",
-   ]
+  ]
 }

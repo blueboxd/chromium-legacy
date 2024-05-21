@@ -9,10 +9,10 @@ import type {VolumeInfo} from '../../background/js/volume_info.js';
 import type {VolumeManager} from '../../background/js/volume_manager.js';
 import type {SpliceEvent} from '../../common/js/array_data_model.js';
 import {Aggregator, AsyncQueue} from '../../common/js/async_util.js';
-import {convertURLsToEntries, entriesToURLs, getRootType, isFakeEntry, isGuestOs, isNativeEntry, isOneDriveId, isRecentRootType, isSameEntry, urlToEntry} from '../../common/js/entry_utils.js';
+import {convertURLsToEntries, entriesToURLs, getRootType, isFakeEntry, isGuestOs, isNativeEntry, isOneDrive, isOneDriveId, isOneDrivePlaceholder, isRecentRootType, isSameEntry, urlToEntry} from '../../common/js/entry_utils.js';
 import type {FakeEntry, FilesAppDirEntry, FilesAppEntry, GuestOsPlaceholder, UniversalDirectory} from '../../common/js/files_app_entry_types.js';
 import {type CustomEventMap, FilesEventTarget} from '../../common/js/files_event_target.js';
-import {isDlpEnabled, isDriveFsBulkPinningEnabled} from '../../common/js/flags.js';
+import {isDlpEnabled, isDriveFsBulkPinningEnabled, isSkyvaultV2Enabled} from '../../common/js/flags.js';
 import {recordMediumCount} from '../../common/js/metrics.js';
 import {getEntryLabel} from '../../common/js/translations.js';
 import {testSendMessage} from '../../common/js/util.js';
@@ -585,17 +585,16 @@ export class DirectoryModel extends FilesEventTarget<DirectoryModelEventMap> {
       const currentDirectoryOnOdfs =
           isOneDriveId(getVolume(state, currentDirectoryFileData)?.providerId);
       if (currentDirectoryOnOdfs) {
-        const {myFilesEntry} = getMyFiles(state);
-        if (!myFilesEntry) {
-          // This can only happen if local user files are disabled.
-          console.warn(
-              'ODFS disabled, but local user files disabled by policy.');
-          // TODO(b/328030489): Navigate to default display root.
-          this.store_.dispatch(changeDirectory({toKey: ''}));
-          return;
-        }
-        const myFilesRootKey = myFilesEntry.toURL();
-        this.store_.dispatch(changeDirectory({toKey: myFilesRootKey}));
+        const tracker = this.createDirectoryChangeTracker();
+        tracker.start();
+        // Normally the default root is MyFiles, however with SkyVault, this
+        // is the volume in the Cloud (OneDrive or GoogleDrive).
+        this.volumeManager_.getDefaultDisplayRoot().then((displayRoot) => {
+          if (displayRoot && !tracker.hasChanged) {
+            this.changeDirectoryEntry(displayRoot);
+          }
+        });
+        tracker.stop();
       }
     }
   }
@@ -1542,6 +1541,20 @@ export class DirectoryModel extends FilesEventTarget<DirectoryModelEventMap> {
         }
       }
     }
+
+    // If the current directory is the OneDrive placeholder and the real
+    // OneDrive is mounted, switch to it.
+    if (isSkyvaultV2Enabled() && currentDir &&
+        isOneDrivePlaceholder(currentDir)) {
+      for (const newVolume of spliceEventDetail.added) {
+        if (isOneDrive(newVolume)) {
+          newVolume.resolveDisplayRoot().then((displayRoot: DirectoryEntry) => {
+            this.changeDirectoryEntry(displayRoot);
+          });
+        }
+      }
+    }
+
     if (spliceEventDetail.added.length !== 1) {
       return;
     }
@@ -1698,6 +1711,11 @@ export class DirectoryModel extends FilesEventTarget<DirectoryModelEventMap> {
     if (rootType === RootType.TRASH) {
       return () => {
         return new TrashContentScanner(this.volumeManager_);
+      };
+    }
+    if (isOneDrivePlaceholder(entry)) {
+      return () => {
+        return new EmptyContentScanner();
       };
     }
     if (sanitizedQuery) {

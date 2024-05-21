@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Definitions of builders in the tryserver.blink builder group."""
 
-load("//lib/builders.star", "cpu", "os", "reclient")
+load("//lib/builders.star", "cpu", "os", "siso")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/branches.star", "branches")
 load("//lib/try.star", "try_")
@@ -16,10 +16,10 @@ try_.defaults.set(
     pool = try_.DEFAULT_POOL,
     cores = 8,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
-    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
     siso_enabled = True,
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_project = siso.project.DEFAULT_UNTRUSTED,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 consoles.list_view(
@@ -99,7 +99,8 @@ Chrome.\
         retry_failed_shards = False,
     ),
     gn_args = "ci/win10-wpt-chromium-rel",
-    os = os.LINUX_DEFAULT,
+    builderless = True,
+    os = os.WINDOWS_10,
     contact_team_email = "chrome-blink-engprod@google.com",
     main_list_view = "try",
 )
@@ -402,7 +403,10 @@ Chrome.\
         retry_failed_shards = False,
     ),
     gn_args = "ci/mac13-wpt-chromium-rel",
-    os = os.LINUX_DEFAULT,
+    builderless = True,
+    cores = None,
+    os = os.MAC_ANY,
+    cpu = cpu.ARM64,
     contact_team_email = "chrome-blink-engprod@google.com",
     main_list_view = "try",
 )

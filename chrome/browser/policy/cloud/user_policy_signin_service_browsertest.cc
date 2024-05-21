@@ -332,14 +332,14 @@ TestTurnSyncOnHelperDelegate::~TestTurnSyncOnHelperDelegate() {
 }
 
 void TestTurnSyncOnHelperDelegate::ShowLoginError(const SigninUIError& error) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void TestTurnSyncOnHelperDelegate::ShowMergeSyncDataConfirmation(
     const std::string& previous_email,
     const std::string& new_email,
     signin::SigninChoiceCallback callback) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void TestTurnSyncOnHelperDelegate::ShowEnterpriseAccountConfirmation(
@@ -363,14 +363,15 @@ void TestTurnSyncOnHelperDelegate::ShowSyncDisabledConfirmation(
 }
 
 void TestTurnSyncOnHelperDelegate::ShowSyncSettings() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void TestTurnSyncOnHelperDelegate::SwitchToProfile(Profile* new_profile) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
-IN_PROC_BROWSER_TEST_P(UserPolicySigninServiceTest, BasicSignin) {
+// Disabled for Win11 arm64 flakes: https://crbug.com/340623286
+IN_PROC_BROWSER_TEST_P(UserPolicySigninServiceTest, DISABLED_BasicSignin) {
   EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(prefs::kShowHomeButton));
   EXPECT_TRUE(signin_client()->IsClearPrimaryAccountAllowed(
       /*has_sync_account=*/false));
@@ -399,7 +400,8 @@ IN_PROC_BROWSER_TEST_P(UserPolicySigninServiceTest, BasicSignin) {
             base::FeatureList::IsEnabled(kDisallowManagedProfileSignout));
 }
 
-IN_PROC_BROWSER_TEST_P(UserPolicySigninServiceTest, UndoSignin) {
+// Disabled for Win11 arm64 flakes: https://crbug.com/340623286
+IN_PROC_BROWSER_TEST_P(UserPolicySigninServiceTest, DISABLED_UndoSignin) {
   EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(prefs::kShowHomeButton));
   EXPECT_FALSE(
       chrome::enterprise_util::UserAcceptedAccountManagement(profile()));
@@ -488,8 +490,9 @@ IN_PROC_BROWSER_TEST_P(UserPolicySigninServiceTest, ConcurrentSignin) {
             base::FeatureList::IsEnabled(kDisallowManagedProfileSignout));
 }
 
+// Disabled for Win11 arm64 flakes: https://crbug.com/340623286
 IN_PROC_BROWSER_TEST_P(UserPolicySigninServiceTest,
-                       AcceptManagementDeclineSync) {
+                       DISABLED_AcceptManagementDeclineSync) {
   TurnSyncOnHelper::SetShowSyncEnabledUiForTesting(true);
   EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(prefs::kShowHomeButton));
   EXPECT_FALSE(chrome::enterprise_util::ProfileCanBeManaged(profile()));

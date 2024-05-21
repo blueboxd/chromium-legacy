@@ -99,10 +99,20 @@ export class SettingsStorageElement extends SettingsStorageElementBase {
       },
 
       /**
-       * Sublabel for the My Files section, later it will be updated with the
+       * Sublabel for the MyFiles section, later it will be updated with the
        * calculated size.
        */
       myFilesSizeSubLabel_: {
+        type: String,
+        value(this: SettingsStorageElement) {
+          return this.i18n('storageSizeComputing');
+        },
+      },
+
+      /**
+       * Sublabel for storage encryption label.
+       */
+      storageEncryptionSubLabel_: {
         type: String,
         value(this: SettingsStorageElement) {
           return this.i18n('storageSizeComputing');
@@ -129,6 +139,7 @@ export class SettingsStorageElement extends SettingsStorageElementBase {
   private sizeStat_: StorageSizeStat;
   private updateTimerId_: number;
   private myFilesSizeSubLabel_: string;
+  private storageEncryptionSubLabel_: string;
   private readonly isSkyVaultEnabled_: boolean;
 
   constructor() {
@@ -175,6 +186,15 @@ export class SettingsStorageElement extends SettingsStorageElementBase {
           'storage-system-size-changed',
           (size: string) => this.handleSystemSizeChanged_(size));
     }
+    if (!this.isEphemeralUser_) {
+      this.browserProxy_.getStorageEncryptionInfo().then(
+          encryptionInfo => {
+            this.storageEncryptionSubLabel_ = encryptionInfo;
+          },
+          reason => {
+            console.warn(`Unable to get info: ${reason}`);
+          });
+    }
   }
 
   override ready(): void {
@@ -206,7 +226,7 @@ export class SettingsStorageElement extends SettingsStorageElementBase {
   }
 
   /**
-   * Handler for tapping the "My files" item.
+   * Handler for tapping the MyFiles item.
    */
   private onMyFilesClick_(): void {
     if (this.localUserFilesAllowed_(
@@ -273,7 +293,7 @@ export class SettingsStorageElement extends SettingsStorageElementBase {
   }
 
   /**
-   * @param size Formatted string representing the size of My files.
+   * @param size Formatted string representing the size of MyFiles.
    */
   private handleMyFilesSizeChanged_(size: string): void {
     this.myFilesSizeSubLabel_ = size;

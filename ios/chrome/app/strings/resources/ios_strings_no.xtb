@@ -99,6 +99,7 @@
 <translation id="1506063256525392513">Dette gjør at du kan ta og laste opp bilder samt skanne QR-koder</translation>
 <translation id="1509486075633541495">Logg på nettstedet</translation>
 <translation id="1509960214886564027">Det kan hende at funksjoner på mange nettsteder slutter å fungere</translation>
+<translation id="1520027731907768768">Få varsler om avslag for produkter du sporer.</translation>
 <translation id="152234381334907219">Aldri lagret</translation>
 <translation id="1523341279170789507">Tillat alle informasjonskapsler</translation>
 <translation id="1524563461097350801">Nei takk</translation>
@@ -862,6 +863,7 @@ Se eventuelt instruksjonene fra den aktuelle søkemotoren om hvordan du sletter 
 <translation id="5444892875087332195">Bokmerker</translation>
 <translation id="5454211924362324495">For å forhindre andre fra å bruke passordet ditt, <ph name="BEGIN_LINK" />endre det på <ph name="WEBSITE" /><ph name="END_LINK" /></translation>
 <translation id="5457226814769348910">Åpne versjon uten nett</translation>
+<translation id="5459548306731933777">Vis detaljer</translation>
 <translation id="5475069061743940393">Pakkesporing</translation>
 <translation id="5478327362747197944">Opprett kalenderaktiviteter direkte ved å klikke på datoer på nettsider.</translation>
 <translation id="5482922178977937393">Vil du ha varsler om nyheter, sport med mer basert på interessene dine?</translation>
@@ -1442,7 +1444,6 @@ Nettsteder kan bruke informasjonskapsler til å se nettleseraktiviteten din på 
 <translation id="8283172974887967105">Angi…</translation>
 <translation id="8286036467436129157">Logg på</translation>
 <translation id="8289930144142009940">Varsler for <ph name="FEATURE_NAME" /> er slått av</translation>
-<translation id="8292843446079898078">Få varsler om prisfall for produkter du sporer.</translation>
 <translation id="8299417921174340354">For å bruke passord må du først angi en adgangskode på enheten din.</translation>
 <translation id="8299613349954694191">Åpne en inkognitofane for å surfe privat på nettet.</translation>
 <translation id="8311853334103696030">Skjul «Spor prisen»</translation>

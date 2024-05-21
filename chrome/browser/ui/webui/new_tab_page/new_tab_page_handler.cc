@@ -192,9 +192,7 @@ new_tab_page::mojom::ThemePtr MakeTheme(
   theme->text_color = text_color;
   theme->is_dark = !color_utils::IsDark(text_color);
   auto background_image = new_tab_page::mojom::BackgroundImage::New();
-  const bool side_panel_enabled = customize_chrome::IsSidePanelEnabled();
-  if (theme_has_custom_image &&
-      (!custom_background.has_value() || side_panel_enabled)) {
+  if (theme_has_custom_image) {
     if (theme_service->UsingExtensionTheme()) {
       background_image->image_source =
           new_tab_page::mojom::NtpBackgroundImageSource::kThirdPartyTheme;
@@ -283,8 +281,7 @@ new_tab_page::mojom::ThemePtr MakeTheme(
   }
 
   theme->background_image = std::move(background_image);
-  if (custom_background.has_value() &&
-      (!side_panel_enabled || !theme_has_custom_image)) {
+  if (custom_background.has_value() && !theme_has_custom_image) {
     theme->background_image_attribution_1 =
         custom_background->custom_background_attribution_line_1;
     theme->background_image_attribution_2 =
@@ -532,7 +529,6 @@ NewTabPageHandler::NewTabPageHandler(
       base::BindRepeating(&NewTabPageHandler::MaybeShowWebstoreToast,
                           base::Unretained(this)));
 
-  if (customize_chrome::IsSidePanelEnabled()) {
     auto* customize_chrome_tab_helper =
         CustomizeChromeTabHelper::FromWebContents(web_contents_);
     // Lifetime is tied to NewTabPageUI which owns the NewTabPageHandler.
@@ -542,7 +538,6 @@ NewTabPageHandler::NewTabPageHandler(
     customize_chrome_tab_helper->SetCallback(base::BindRepeating(
         &NewTabPageHandler::NotifyCustomizeChromeSidePanelVisibilityChanged,
         weak_ptr_factory_.GetWeakPtr()));
-  }
 }
 
 NewTabPageHandler::~NewTabPageHandler() {
@@ -1026,7 +1021,7 @@ void NewTabPageHandler::MaybeShowFeaturePromo(
           web_contents_.get());
     } break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 }
 
@@ -1143,7 +1138,7 @@ void NewTabPageHandler::OnCustomizeDialogAction(
       event = NTP_CUSTOMIZE_SHORTCUT_VISIBILITY_TOGGLE_CLICKED;
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
   LogEvent(event);
 }
@@ -1163,7 +1158,7 @@ void NewTabPageHandler::OnDoodleImageClicked(
       event = NTP_STATIC_LOGO_CLICKED;
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return;
   }
   LogEvent(event);
@@ -1212,7 +1207,7 @@ void NewTabPageHandler::OnDoodleShared(
       channel_id = 6;
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
   std::string query =

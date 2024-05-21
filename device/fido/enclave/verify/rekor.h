@@ -40,7 +40,8 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) LogEntry {
            std::string log_id,
            uint64_t log_index,
            std::optional<LogEntryVerification> verification);
-  LogEntry(LogEntry& log_entry);
+  LogEntry(const LogEntry& log_entry);
+  LogEntry(LogEntry&& log_entry);
   LogEntry();
   ~LogEntry();
 
@@ -153,8 +154,9 @@ std::optional<Body> COMPONENT_EXPORT(DEVICE_FIDO)
 
 // Parses a blob into a Rekor log entry and verifies the signature in
 // `signed_entry_timestamp` using Rekor's public key.
-bool VerifyRekorSignature(base::span<const uint8_t> log_entry,
-                          base::span<const uint8_t> rekor_public_key);
+bool COMPONENT_EXPORT(DEVICE_FIDO)
+    VerifyRekorSignature(base::span<const uint8_t> log_entry,
+                         base::span<const uint8_t> rekor_public_key);
 
 // Verifies the signature in the body over the contents.
 bool VerifyRekorBody(const Body&, base::span<const uint8_t> contents_bytes);

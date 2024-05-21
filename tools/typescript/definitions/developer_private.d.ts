@@ -251,6 +251,7 @@ declare global {
         path?: string;
         permissions: Permissions;
         prettifiedPath?: string;
+        recommendationsUrl?: string;
         runtimeErrors: RuntimeError[];
         runtimeWarnings: string[];
         state: ExtensionState;
@@ -266,6 +267,7 @@ declare global {
         acknowledgeSafetyCheckWarning: boolean;
         pinnedToToolbar?: boolean;
         isAffectedByMV2Deprecation: boolean;
+        didAcknowledgeMV2DeprecationWarning: boolean;
       }
 
       export interface ProfileInfo {
@@ -274,6 +276,7 @@ declare global {
         isDeveloperModeControlledByPolicy: boolean;
         isIncognitoAvailable: boolean;
         isChildAccount: boolean;
+        isMv2DeprecationWarningDismissed: boolean;
       }
 
       export interface ExtensionConfigurationUpdate {
@@ -290,7 +293,8 @@ declare global {
       }
 
       export interface ProfileConfigurationUpdate {
-        inDeveloperMode: boolean;
+        inDeveloperMode?: boolean;
+        isMv2DeprecationWarningDismissed?: boolean;
       }
 
       export interface ExtensionCommandUpdate {
@@ -502,6 +506,7 @@ declare global {
       export function updateSiteAccess(
           site: string, updates: ExtensionSiteAccessUpdate[]): Promise<void>;
       export function dismissSafetyHubExtensionsMenuNotification(): void;
+      export function dismissMv2DeprecationPanel(): void;
 
       export const onItemStateChanged: ChromeEvent<(data: EventData) => void>;
       export const onProfileStateChanged:

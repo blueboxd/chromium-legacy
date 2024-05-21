@@ -509,6 +509,20 @@ void ChromeRenderFrameObserver::RequestBitmapForContextNode(
   std::move(callback).Run(image);
 }
 
+void ChromeRenderFrameObserver::RequestBoundsForContextNodeDiagnostic(
+    RequestBoundsForContextNodeDiagnosticCallback callback) {
+  WebNode context_node = render_frame()->GetWebFrame()->ContextMenuImageNode();
+  gfx::Rect bounds;
+  if (context_node.IsNull() || !context_node.IsElementNode()) {
+    std::move(callback).Run(bounds);
+    return;
+  }
+
+  WebElement web_element = context_node.To<WebElement>();
+  bounds = web_element.BoundsInWidget();
+  std::move(callback).Run(bounds);
+}
+
 void ChromeRenderFrameObserver::RequestReloadImageForContextNode() {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
   // TODO(dglazkov): This code is clearly in the wrong place. Need
@@ -755,7 +769,7 @@ bool ChromeRenderFrameObserver::NeedsEncodeImage(
   }
 
   // Should never hit this code since all cases were handled above.
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return true;
 }
 

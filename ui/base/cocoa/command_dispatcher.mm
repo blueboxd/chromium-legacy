@@ -201,7 +201,7 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   NSEventType eventType = event.type;
   if (eventType != NSEventTypeKeyDown && eventType != NSEventTypeKeyUp &&
       eventType != NSEventTypeFlagsChanged) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return YES;  // Pretend it's been handled in an effort to limit damage.
   }
 

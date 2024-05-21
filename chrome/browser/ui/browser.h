@@ -56,6 +56,7 @@
 
 class BackgroundContents;
 class BreadcrumbManagerBrowserAgent;
+class BrowserActions;
 class BrowserContentSettingBubbleModelDelegate;
 class BrowserInstantController;
 class BrowserSyncedWindowDelegate;
@@ -500,6 +501,8 @@ class Browser : public TabStripModelObserver,
     return tab_menu_model_delegate_.get();
   }
 
+  BrowserActions* browser_actions() const { return browser_actions_.get(); }
+
   chrome::BrowserCommandController* command_controller() {
     return command_controller_.get();
   }
@@ -865,6 +868,8 @@ class Browser : public TabStripModelObserver,
 
   // BrowserWindowInterface overrides:
   views::WebView* GetWebView() override;
+  void OpenURL(const GURL& gurl, WindowOpenDisposition disposition) override;
+  const SessionID& GetSessionID() override;
 
  private:
   friend class BrowserTest;
@@ -987,13 +992,6 @@ class Browser : public TabStripModelObserver,
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* source) override;
   bool GuestSaveFrame(content::WebContents* guest_web_contents) override;
-#if BUILDFLAG(IS_MAC)
-  std::unique_ptr<content::ColorChooser> OpenColorChooser(
-      content::WebContents* web_contents,
-      SkColor color,
-      const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions)
-      override;
-#endif  // BUILDFLAG(IS_MAC)
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
                       scoped_refptr<content::FileSelectListener> listener,
                       const blink::mojom::FileChooserParams& params) override;
@@ -1397,6 +1395,8 @@ class Browser : public TabStripModelObserver,
 
   std::unique_ptr<extensions::BrowserExtensionWindowController>
       extension_window_controller_;
+
+  std::unique_ptr<BrowserActions> browser_actions_;
 
   std::unique_ptr<chrome::BrowserCommandController> command_controller_;
 

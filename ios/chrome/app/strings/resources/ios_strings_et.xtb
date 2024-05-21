@@ -862,6 +862,7 @@ Vaadake oma otsingumootori juhiseid otsinguajaloo kustutamise kohta, kui see on 
 <translation id="5444892875087332195">Järjehoidjad</translation>
 <translation id="5454211924362324495">Kui soovite, et teised ei saaks teie parooli kasutada, <ph name="BEGIN_LINK" />muutke seda saidil <ph name="WEBSITE" /><ph name="END_LINK" /></translation>
 <translation id="5457226814769348910">Ava võrguühenduseta versioon</translation>
+<translation id="5459548306731933777">Kuva üksikasjad</translation>
 <translation id="5475069061743940393">Paki jälgimine</translation>
 <translation id="5478327362747197944">Looge kalendrisündmusi otse veebilehelt, klõpsates selles sisalduval kuupäeval.</translation>
 <translation id="5482922178977937393">Kas soovite märguandeid uudiste, spordi ja muu kohta, mis põhinevad teie huvidel?</translation>
@@ -1442,7 +1443,6 @@ Saidid saavad küpsisefailide abil eri saitidel teie sirvimistegevust jälgida, 
 <translation id="8283172974887967105">Määra …</translation>
 <translation id="8286036467436129157">Logi sisse</translation>
 <translation id="8289930144142009940">Kanali <ph name="FEATURE_NAME" /> märguanded on välja lülitatud</translation>
-<translation id="8292843446079898078">Saate jälgitavate toodete hinnalanguse hoiatusi.</translation>
 <translation id="8299417921174340354">Paroolide kasutamiseks peate oma seadmes esmalt pääsukoodi seadistama.</translation>
 <translation id="8299613349954694191">Avage inkognito vaheleht ja sirvige veebi privaatselt.</translation>
 <translation id="8311853334103696030">Peida valik „Jälgi hinda“</translation>

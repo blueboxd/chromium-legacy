@@ -45,7 +45,6 @@
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_chrome_app_manager.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
@@ -220,7 +219,8 @@ std::string ReadCPUStatistics() {
       }
     }
     // First line should always start with "cpu ".
-    NOTREACHED() << "Could not parse /proc/stat contents: " << contents;
+    NOTREACHED_IN_MIGRATION()
+        << "Could not parse /proc/stat contents: " << contents;
   }
   LOG(WARNING) << "Unable to read CPU statistics from " << kProcStat;
   return std::string();
@@ -595,7 +595,7 @@ em::CrashReportInfo::CrashReportUploadStatus GetCrashReportUploadStatus(
       return em::CrashReportInfo::UPLOAD_STATUS_UNKNOWN;
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 // Filter the loaded crash reports.
@@ -659,10 +659,10 @@ em::ActiveTimePeriod::SessionType GetSessionType(
       return em::ActiveTimePeriod::SESSION_WEB_KIOSK;
 
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return em::ActiveTimePeriod::SESSION_UNKNOWN;
 }
 
@@ -679,7 +679,7 @@ em::TpmVersionInfo_GscVersion ConvertTpmGscVersion(
       return em::TpmVersionInfo::GSC_VERSION_TI50;
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return em::TpmVersionInfo::GSC_VERSION_UNSPECIFIED;
 }
 
@@ -2715,7 +2715,7 @@ bool DeviceStatusCollector::GetRunningKioskApp(
       break;
     case DeviceLocalAccountType::kPublicSession:
     case DeviceLocalAccountType::kSamlPublicSession:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
   return true;
 }
@@ -3008,7 +3008,7 @@ bool DeviceStatusCollector::GetKioskSessionStatus(
       break;
     case DeviceLocalAccountType::kPublicSession:
     case DeviceLocalAccountType::kSamlPublicSession:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 
   return true;

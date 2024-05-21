@@ -90,17 +90,19 @@ class MockContentCache : public ContentCache {
   MOCK_METHOD(void, CloseFile, (const OpenedCloudFile& file), (override));
   MOCK_METHOD(void, LoadFromDisk, (base::OnceClosure callback), (override));
   MOCK_METHOD(std::vector<base::FilePath>, GetCachedFilePaths, (), (override));
+  MOCK_METHOD(void,
+              Notify,
+              (ProvidedFileSystemObserver::Changes & changes),
+              (override));
   MOCK_METHOD(void, Evict, (const base::FilePath& file_path), (override));
   MOCK_METHOD(void,
               SetOnItemEvictedCallback,
               (OnItemEvictedCallback on_item_evicted_callback),
               (override));
-  MOCK_METHOD(void,
-              RemoveItems,
-              (RemovedItemStatsCallback callback),
-              (override));
   MOCK_METHOD(const SizeInfo, GetSize, (), (const override));
   MOCK_METHOD(void, SetMaxBytesOnDisk, (int64_t), (override));
+  MOCK_METHOD(void, AddObserver, (Observer * observer), (override));
+  MOCK_METHOD(void, RemoveObserver, (Observer * observer), (override));
   MOCK_METHOD(base::WeakPtr<ContentCache>, GetWeakPtr, (), (override));
 
   base::WeakPtr<MockContentCache> GetMockWeakPtr() {
@@ -323,7 +325,7 @@ TEST_F(FileSystemProviderCloudFileSystemTest,
       .WillOnce(RunOnceCallback<4>(/*bytes_read=*/1, /*has_more=*/false,
                                    base::File::FILE_OK));
 
-  // Expect that `StartWriteBytes` should not be called.
+  // Expect that `WriteBytes` should not be called.
   EXPECT_CALL(*mock_content_cache, WriteBytes(_, _, _, _, _)).Times(0);
 
   ReadFileSuccessfully(*cloud_file_system, file_handle, buffer);
@@ -403,7 +405,7 @@ TEST_F(FileSystemProviderCloudFileSystemTest,
   scoped_refptr<net::IOBuffer> buffer =
       base::MakeRefCounted<net::IOBufferWithSize>(1);
 
-  // Neither the `StartReadBytes` nor the `StartWriteBytes` should be called.
+  // Neither the `ReadBytes` nor the `WriteBytes` should be called.
   EXPECT_CALL(*mock_content_cache, ReadBytes(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*mock_content_cache, WriteBytes(_, _, _, _, _)).Times(0);
 
@@ -438,7 +440,7 @@ TEST_F(FileSystemProviderCloudFileSystemTest,
       .WillOnce(RunOnceCallback<4>(/*bytes_read=*/-1, /*has_more=*/false,
                                    base::File::FILE_ERROR_NOT_FOUND));
 
-  // Assert that `StartWriteBytes` never gets called as the underlying FSP
+  // Assert that `WriteBytes` never gets called as the underlying FSP
   // should respond with a `base::File::FILE_ERROR_INVALID_OPERATION` due to the
   // file not existing between the `OpenFile` and the `ReadFile`.
   EXPECT_CALL(*mock_content_cache, WriteBytes(_, _, _, _, _)).Times(0);

@@ -25,10 +25,10 @@ NullRenderer::NullRenderer(const RendererSettings* settings,
 NullRenderer::~NullRenderer() = default;
 
 void NullRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 void NullRenderer::BeginDrawingFrame() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 bool NullRenderer::CanPartialSwap() {
@@ -43,10 +43,6 @@ bool NullRenderer::IsRenderPassResourceAllocated(
 gfx::Size NullRenderer::GetRenderPassBackingPixelSize(
     const AggregatedRenderPassId& render_pass_id) {
   return gfx::Size();
-}
-
-bool NullRenderer::FlippedFramebuffer() const {
-  return false;
 }
 
 void NullRenderer::CopyDrawnRenderPass(

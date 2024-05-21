@@ -39,6 +39,7 @@ source_set("shortcuts") {
       "//chrome/app/theme:chrome_unscaled_resources_grit",
       "//chrome/browser/profiles:profile",
       "//chrome/common:channel_info",
+      "//chrome/common:chrome_features",
       "//components/webapps/common",
       "//components/webapps/common:mojo_bindings",
       "//content/public/browser",
@@ -90,20 +91,37 @@ source_set("shortcuts") {
 source_set("test_support") {
   testonly = true
 
-  public = [ "image_test_utils.h" ]
+  public = [
+    "image_test_utils.h",
+    "shortcut_creation_test_support.h",
+  ]
   sources = [ "image_test_utils.cc" ]
   public_deps = [
     ":shortcuts",
     "//base",
     "//base/test:test_support",
     "//skia",
+    "//url",
   ]
   deps = [ "//ui/gfx/codec" ]
 
   if (is_linux) {
-    public += [ "shortcut_creator_linux_test_support.h" ]
-    sources += [ "shortcut_creator_linux_test_support.cc" ]
-    deps += []
+    public += [
+      "fake_linux_xdg_wrapper.h",
+      "shortcut_creation_test_support_linux.h",
+    ]
+    sources += [
+      "fake_linux_xdg_wrapper.cc",
+      "shortcut_creation_test_support_linux.cc",
+    ]
+    deps += [ "//chrome/browser" ]
+  }
+  if (is_mac) {
+    sources += [ "shortcut_creation_test_support_mac.mm" ]
+  }
+  if (is_win) {
+    sources += [ "shortcut_creation_test_support_win.cc" ]
+    deps += [ "//chrome/browser" ]
   }
 }
 
@@ -155,6 +173,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//build:branding_buildflags",
     "//chrome/app/theme:chrome_unscaled_resources_grit",
+    "//chrome/common:chrome_features",
     "//testing/gtest",
     "//ui/base",
     "//ui/gfx:test_support",
@@ -176,6 +195,9 @@ source_set("unit_tests") {
   }
 
   if (is_linux) {
-    sources += [ "shortcut_creator_linux_unittest.cc" ]
+    sources += [
+      "shortcut_creation_test_support_linux_unittest.cc",
+      "shortcut_creator_linux_unittest.cc",
+    ]
   }
 }

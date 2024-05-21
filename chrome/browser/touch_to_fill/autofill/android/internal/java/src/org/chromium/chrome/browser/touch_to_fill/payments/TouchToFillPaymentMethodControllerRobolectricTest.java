@@ -18,9 +18,12 @@ import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.autofill.AutofillTestHelper.createCreditCard;
 import static org.chromium.chrome.browser.autofill.AutofillTestHelper.createVirtualCreditCard;
-import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodMediator.TOUCH_TO_FILL_INDEX_SELECTED;
+import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodMediator.TOUCH_TO_FILL_CREDIT_CARD_INDEX_SELECTED;
+import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodMediator.TOUCH_TO_FILL_CREDIT_CARD_OUTCOME_HISTOGRAM;
+import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodMediator.TOUCH_TO_FILL_IBAN_INDEX_SELECTED;
+import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodMediator.TOUCH_TO_FILL_IBAN_OUTCOME_HISTOGRAM;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodMediator.TOUCH_TO_FILL_NUMBER_OF_CARDS_SHOWN;
-import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodMediator.TOUCH_TO_FILL_OUTCOME_HISTOGRAM;
+import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodMediator.TOUCH_TO_FILL_NUMBER_OF_IBANS_SHOWN;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodProperties.CreditCardProperties.CARD_NAME;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodProperties.CreditCardProperties.CARD_NUMBER;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodProperties.CreditCardProperties.NETWORK_NAME;
@@ -30,6 +33,7 @@ import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaym
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodProperties.FooterProperties.SHOW_PAYMENT_METHOD_SETTINGS_CALLBACK;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodProperties.IbanProperties.IBAN_NICKNAME;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodProperties.IbanProperties.IBAN_VALUE;
+import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodProperties.IbanProperties.ON_IBAN_CLICK_ACTION;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodProperties.ItemType.CREDIT_CARD;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodProperties.ItemType.FILL_BUTTON;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodProperties.ItemType.FOOTER;
@@ -65,8 +69,8 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.Iban;
 import org.chromium.chrome.browser.touch_to_fill.common.BottomSheetFocusHelper;
 import org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodMediator.TouchToFillCreditCardOutcome;
+import org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodMediator.TouchToFillIbanOutcome;
 import org.chromium.components.autofill.AutofillFeatures;
-import org.chromium.components.autofill.IbanRecordType;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
@@ -137,19 +141,17 @@ public class TouchToFillPaymentMethodControllerRobolectricTest {
                     /* obfuscatedLastFourDigits= */ "• • • • 1111");
 
     private static final Iban LOCAL_IBAN =
-            Iban.create(
+            Iban.createLocal(
                     /* guid= */ "000000111111",
                     /* label= */ "CH56 **** **** **** *800 9",
                     /* nickname= */ "My brother's IBAN",
-                    /* recordType= */ IbanRecordType.LOCAL_IBAN,
                     /* value= */ "CH5604835012345678009");
 
     private static final Iban LOCAL_IBAN_NO_NICKNAME =
-            Iban.create(
+            Iban.createLocal(
                     /* guid= */ "000000222222",
                     /* label= */ "FR76 **** **** **** **** ***0 189",
                     /* nickname= */ "",
-                    /* recordType= */ IbanRecordType.LOCAL_IBAN,
                     /* value= */ "FR7630006000011234567890189");
 
     @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
@@ -264,7 +266,7 @@ public class TouchToFillPaymentMethodControllerRobolectricTest {
         assertEquals(
                 1,
                 RecordHistogram.getHistogramValueCountForTesting(
-                        TOUCH_TO_FILL_OUTCOME_HISTOGRAM,
+                        TOUCH_TO_FILL_CREDIT_CARD_OUTCOME_HISTOGRAM,
                         TouchToFillCreditCardOutcome.SCAN_NEW_CARD));
     }
 
@@ -282,7 +284,7 @@ public class TouchToFillPaymentMethodControllerRobolectricTest {
         assertEquals(
                 1,
                 RecordHistogram.getHistogramValueCountForTesting(
-                        TOUCH_TO_FILL_OUTCOME_HISTOGRAM,
+                        TOUCH_TO_FILL_CREDIT_CARD_OUTCOME_HISTOGRAM,
                         TouchToFillCreditCardOutcome.MANAGE_PAYMENTS));
     }
 
@@ -323,10 +325,12 @@ public class TouchToFillPaymentMethodControllerRobolectricTest {
         assertEquals(
                 1,
                 RecordHistogram.getHistogramValueCountForTesting(
-                        TOUCH_TO_FILL_OUTCOME_HISTOGRAM, TouchToFillCreditCardOutcome.CREDIT_CARD));
+                        TOUCH_TO_FILL_CREDIT_CARD_OUTCOME_HISTOGRAM,
+                        TouchToFillCreditCardOutcome.CREDIT_CARD));
         assertEquals(
                 1,
-                RecordHistogram.getHistogramValueCountForTesting(TOUCH_TO_FILL_INDEX_SELECTED, 0));
+                RecordHistogram.getHistogramValueCountForTesting(
+                        TOUCH_TO_FILL_CREDIT_CARD_INDEX_SELECTED, 0));
     }
 
     @Test
@@ -345,11 +349,12 @@ public class TouchToFillPaymentMethodControllerRobolectricTest {
         assertEquals(
                 1,
                 RecordHistogram.getHistogramValueCountForTesting(
-                        TOUCH_TO_FILL_OUTCOME_HISTOGRAM,
+                        TOUCH_TO_FILL_CREDIT_CARD_OUTCOME_HISTOGRAM,
                         TouchToFillCreditCardOutcome.VIRTUAL_CARD));
         assertEquals(
                 1,
-                RecordHistogram.getHistogramValueCountForTesting(TOUCH_TO_FILL_INDEX_SELECTED, 0));
+                RecordHistogram.getHistogramValueCountForTesting(
+                        TOUCH_TO_FILL_CREDIT_CARD_INDEX_SELECTED, 0));
     }
 
     @Test
@@ -376,14 +381,16 @@ public class TouchToFillPaymentMethodControllerRobolectricTest {
         assertEquals(
                 1,
                 RecordHistogram.getHistogramValueCountForTesting(
-                        TOUCH_TO_FILL_OUTCOME_HISTOGRAM, TouchToFillCreditCardOutcome.DISMISS));
+                        TOUCH_TO_FILL_CREDIT_CARD_OUTCOME_HISTOGRAM,
+                        TouchToFillCreditCardOutcome.DISMISS));
     }
 
     @Test
     public void testDismissWithTapForCreditCard() {
         HistogramWatcher metricsWatcher =
                 HistogramWatcher.newSingleRecordWatcher(
-                        TOUCH_TO_FILL_OUTCOME_HISTOGRAM, TouchToFillCreditCardOutcome.DISMISS);
+                        TOUCH_TO_FILL_CREDIT_CARD_OUTCOME_HISTOGRAM,
+                        TouchToFillCreditCardOutcome.DISMISS);
         mCoordinator.showSheet(List.of(VISA, MASTER_CARD), true);
 
         mTouchToFillPaymentMethodModel.get(DISMISS_HANDLER).onResult(StateChangeReason.TAP_SCRIM);
@@ -467,6 +474,10 @@ public class TouchToFillPaymentMethodControllerRobolectricTest {
     public void testShowIbansWithOneEntry() throws TimeoutException {
         mCoordinator.showSheet(List.of(LOCAL_IBAN));
 
+        assertEquals(
+                1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        TOUCH_TO_FILL_NUMBER_OF_IBANS_SHOWN, 1));
         ModelList itemList = mTouchToFillPaymentMethodModel.get(SHEET_ITEMS);
         assertThat(getModelsOfType(itemList, IBAN).size(), is(1));
 
@@ -482,6 +493,10 @@ public class TouchToFillPaymentMethodControllerRobolectricTest {
     public void testShowIbansWithTwoEntries() throws TimeoutException {
         mCoordinator.showSheet(List.of(LOCAL_IBAN, LOCAL_IBAN_NO_NICKNAME));
 
+        assertEquals(
+                1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        TOUCH_TO_FILL_NUMBER_OF_IBANS_SHOWN, 2));
         ModelList itemList = mTouchToFillPaymentMethodModel.get(SHEET_ITEMS);
         assertThat(getModelsOfType(itemList, IBAN).size(), is(2));
 
@@ -508,6 +523,33 @@ public class TouchToFillPaymentMethodControllerRobolectricTest {
                 .get(SHOW_PAYMENT_METHOD_SETTINGS_CALLBACK)
                 .run();
         verify(mDelegateMock).showPaymentMethodSettings();
+        assertEquals(
+                1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        TOUCH_TO_FILL_IBAN_OUTCOME_HISTOGRAM,
+                        TouchToFillIbanOutcome.MANAGE_PAYMENTS));
+    }
+
+    @Test
+    public void testCallsDelegateForIbanOnSelectingItem() {
+        mCoordinator.showSheet(List.of(LOCAL_IBAN));
+        assertThat(mTouchToFillPaymentMethodModel.get(VISIBLE), is(true));
+
+        Optional<PropertyModel> ibanModel =
+                getIbanModelByAutofillName(
+                        mTouchToFillPaymentMethodModel.get(SHEET_ITEMS), LOCAL_IBAN);
+        assertNotNull(ibanModel.get());
+        mClock.advanceCurrentTimeMillis(InputProtector.POTENTIALLY_UNINTENDED_INPUT_THRESHOLD);
+        ibanModel.get().get(ON_IBAN_CLICK_ACTION).run();
+        verify(mDelegateMock).localIbanSuggestionSelected(LOCAL_IBAN.getGuid());
+        assertEquals(
+                1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        TOUCH_TO_FILL_IBAN_OUTCOME_HISTOGRAM, TouchToFillIbanOutcome.IBAN));
+        assertEquals(
+                1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        TOUCH_TO_FILL_IBAN_INDEX_SELECTED, 0));
     }
 
     @Test

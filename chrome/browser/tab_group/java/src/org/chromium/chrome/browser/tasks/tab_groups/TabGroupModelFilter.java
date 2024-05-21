@@ -508,12 +508,13 @@ public class TabGroupModelFilter extends TabModelFilter {
         TabModel tabModel = getTabModel();
         Tab sourceTab = TabModelUtils.getTabById(tabModel, sourceTabId);
         int sourceIndex = tabModel.indexOf(sourceTab);
-        TabGroup sourceTabGroup = mRootIdToGroupMap.get(sourceTab.getRootId());
+        int oldRootId = sourceTab.getRootId();
+        TabGroup sourceTabGroup = mRootIdToGroupMap.get(oldRootId);
 
-        int prevFilterIndex = mRootIdToGroupIndexMap.get(sourceTab.getRootId());
         if (sourceTabGroup.size() == 1) {
+            int prevFilterIndex = mRootIdToGroupIndexMap.get(oldRootId);
             for (TabGroupModelFilterObserver observer : mGroupFilterObserver) {
-                observer.willMoveTabOutOfGroup(sourceTab, sourceTab.getRootId());
+                observer.willMoveTabOutOfGroup(sourceTab, oldRootId);
             }
             // When moving the last tab out of a tab group of size 1 we should decrement the number
             // of tab groups.
@@ -521,9 +522,7 @@ public class TabGroupModelFilter extends TabModelFilter {
                     && sourceTab.getTabGroupId() != null) {
                 for (TabGroupModelFilterObserver observer : mGroupFilterObserver) {
                     observer.didRemoveTabGroup(
-                            sourceTab.getRootId(),
-                            sourceTab.getTabGroupId(),
-                            DidRemoveTabGroupReason.UNGROUP);
+                            oldRootId, sourceTab.getTabGroupId(), DidRemoveTabGroupReason.UNGROUP);
                 }
             }
             sourceTab.setTabGroupId(null);
@@ -545,8 +544,7 @@ public class TabGroupModelFilter extends TabModelFilter {
         }
         assert targetIndex != TabModel.INVALID_TAB_INDEX;
 
-        boolean sourceTabIdWasRootId = sourceTab.getId() == sourceTab.getRootId();
-        int oldRootId = sourceTab.getRootId();
+        boolean sourceTabIdWasRootId = sourceTab.getId() == oldRootId;
         int newRootId = oldRootId;
         if (sourceTabIdWasRootId) {
             // If moving tab's id is the root id of the group, find a new root id.
@@ -591,6 +589,8 @@ public class TabGroupModelFilter extends TabModelFilter {
         // If moving tab is already in the target index in tab model, no move in tab model.
         if (sourceIndex == targetIndex) {
             resetFilterState();
+            // Find the group that the tab was in that now has newRootId.
+            int prevFilterIndex = mRootIdToGroupIndexMap.get(newRootId);
             for (TabGroupModelFilterObserver observer : mGroupFilterObserver) {
                 observer.didMoveTabOutOfGroup(sourceTab, prevFilterIndex);
             }
@@ -644,6 +644,8 @@ public class TabGroupModelFilter extends TabModelFilter {
         assert currentIndex != TabModel.INVALID_TAB_INDEX;
 
         boolean isChangingRootIds = tab.getRootId() != originalRootId;
+        boolean isChangingStableIds = !Objects.equals(tab.getTabGroupId(), originalTabGroupId);
+        boolean isChangingGroups = isChangingRootIds || isChangingStableIds;
         boolean isChangingIndex = currentIndex != originalIndex;
 
         // We need to explicitly trigger `didMoveTabOutOfGroup` if the tab is changing groups so
@@ -652,13 +654,13 @@ public class TabGroupModelFilter extends TabModelFilter {
         // groups because it lacks enough context, hence the `mIsUndoing` variable is used as a
         // bodge to communicate this. Then we signal `didMergeTabToGroup` separately afterwards
         // so long as the tab is actually becoming part of a tab group.
-        mIsUndoing = isChangingRootIds;
+        mIsUndoing = isChangingGroups;
 
         setBothGroupIds(tab, originalRootId, originalTabGroupId);
         if (isChangingIndex) {
             if (currentIndex < originalIndex) originalIndex++;
             getTabModel().moveTab(tab.getId(), originalIndex);
-        } else if (isChangingRootIds) {
+        } else if (isChangingGroups) {
             didMoveTab(tab, originalIndex, currentIndex);
         }
         // Else we can ignore tabs that remain at the same index if they are not changing root IDs.
@@ -668,7 +670,7 @@ public class TabGroupModelFilter extends TabModelFilter {
         // If undoing results in restoring a tab into a different group then notify observers it was
         // added.
         // TODO(b/b/339480464): Emit a matching willMergeTabToGroup somewhere upstream.
-        if (isChangingRootIds && isTabInTabGroup(tab)) {
+        if (isChangingGroups && isTabInTabGroup(tab)) {
             TabGroup group = mRootIdToGroupMap.get(originalRootId);
             // Last shown tab IDs are not preserved across an undo.
             for (TabGroupModelFilterObserver observer : mGroupFilterObserver) {
@@ -1465,6 +1467,14 @@ public class TabGroupModelFilter extends TabModelFilter {
         TabGroupColorUtils.storeTabGroupColor(rootId, color);
         for (TabGroupModelFilterObserver observer : mGroupFilterObserver) {
             observer.didChangeTabGroupColor(rootId, color);
+        }
+    }
+
+    /** Deletes the color that was recorded for the group. */
+    public void deleteTabGroupColor(int rootId) {
+        TabGroupColorUtils.deleteTabGroupColor(rootId);
+        for (TabGroupModelFilterObserver observer : mGroupFilterObserver) {
+            observer.didChangeTabGroupColor(rootId, TabGroupColorId.GREY);
         }
     }
 

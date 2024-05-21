@@ -179,14 +179,8 @@ class SafetyHubHandler : public settings::SettingsPageUIHandler,
   // Returns the data for Safe Browsing card.
   void HandleGetSafeBrowsingCardData(const base::Value::List& args);
 
-  // Fetches data for the Safe Browsing card to return data to the UI.
-  base::Value::Dict GetSafeBrowsingCardData();
-
   // Returns the data for the password card.
   void HandleGetPasswordCardData(const base::Value::List& args);
-
-  // Fetches data for the password card to return data to the UI.
-  base::Value::Dict GetPasswordCardData();
 
   // Returns the data for the version card.
   void HandleGetVersionCardData(const base::Value::List& args);
@@ -196,6 +190,12 @@ class SafetyHubHandler : public settings::SettingsPageUIHandler,
 
   // Returns the data for Safety Hub entry point.
   void HandleGetSafetyHubEntryPointData(const base::Value::List& args);
+
+  // Returns true if Safety Hub has recommendations.
+  void HandleGetSafetyHubHasRecommendations(const base::Value::List& args);
+
+  // Returns the subheader for Safety Hub entry point in settings.
+  void HandleGetSafetyHubEntryPointSubheader(const base::Value::List& args);
 
   // Sends the list of notification permissions to review to the WebUI.
   void SendNotificationPermissionReviewList();
@@ -237,6 +237,12 @@ class SafetyHubHandler : public settings::SettingsPageUIHandler,
                               const extensions::Extension* extension,
                               extensions::UninstallReason reason) override;
   void OnShutdown(extensions::ExtensionRegistry* registry) override;
+
+  // Record a visit to the Safety Hub page.
+  void HandleRecordSafetyHubVisit(const base::Value::List& args);
+
+  // Record an interaction with one of the Safety Hub modules.
+  void HandleRecordSafetyHubInteraction(const base::Value::List& args);
 
   // The `extension_sh_result_` contains the needed information about how
   // many extensions should be reviewed by the user.

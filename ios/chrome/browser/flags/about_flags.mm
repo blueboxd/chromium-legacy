@@ -33,7 +33,6 @@
 #import "components/dom_distiller/core/dom_distiller_switches.h"
 #import "components/download/public/background_service/features.h"
 #import "components/enterprise/browser/enterprise_switches.h"
-#import "components/enterprise/idle/idle_features.h"
 #import "components/feature_engagement/public/feature_constants.h"
 #import "components/feature_engagement/public/feature_list.h"
 #import "components/feed/feed_feature_list.h"
@@ -91,6 +90,7 @@
 #import "ios/chrome/browser/tabs/model/tab_pickup/features.h"
 #import "ios/chrome/browser/text_selection/model/text_selection_util.h"
 #import "ios/chrome/browser/ui/download/features.h"
+#import "ios/chrome/browser/ui/lens/features.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/browser/ui/page_info/features.h"
@@ -127,18 +127,6 @@ const FeatureEntry::Choice
         {"200", signin::kWaitThresholdMillisecondsForCapabilitiesApi, "200"},
         {"500", signin::kWaitThresholdMillisecondsForCapabilitiesApi, "500"},
         {"5000", signin::kWaitThresholdMillisecondsForCapabilitiesApi, "5000"},
-};
-
-// Uses int values from DefaultPromoType enum.
-const FeatureEntry::Choice kDefaultBrowserPromoForceShowPromoChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {"Show generic promo", "default-browser-promo-force-show-promo", "0"},
-    {"Show tailored stay safe promo", "default-browser-promo-force-show-promo",
-     "1"},
-    {"Show tailored made for ios promo",
-     "default-browser-promo-force-show-promo", "2"},
-    {"Show tailored all tabs promo", "default-browser-promo-force-show-promo",
-     "3"},
 };
 
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
@@ -576,20 +564,40 @@ const FeatureEntry::FeatureVariation
 
 const FeatureEntry::FeatureParam kRichAutocompletionImplementationLabel[] = {
     {kRichAutocompletionParam, kRichAutocompletionParamLabel}};
-const FeatureEntry::FeatureParam kRichAutocompletionImplementationTextField[] =
-    {{kRichAutocompletionParam, kRichAutocompletionParamTextField}};
 const FeatureEntry::FeatureParam
-    kRichAutocompletionImplementationNoAdditionalText[] = {
-        {kRichAutocompletionParam, kRichAutocompletionParamNoAdditionalText}};
+    kRichAutocompletionImplementationTextField3Chars[] = {
+        {kRichAutocompletionParam, kRichAutocompletionParamTextField},
+        {"RichAutocompletionAutocompleteShortcutTextMinChar", "3"}};
+const FeatureEntry::FeatureParam
+    kRichAutocompletionImplementationTextField4Chars[] = {
+        {kRichAutocompletionParam, kRichAutocompletionParamTextField},
+        {"RichAutocompletionAutocompleteShortcutTextMinChar", "4"}};
+const FeatureEntry::FeatureParam
+    kRichAutocompletionImplementationNoAdditionalText3Chars[] = {
+        {kRichAutocompletionParam, kRichAutocompletionParamNoAdditionalText},
+        {"RichAutocompletionAutocompleteShortcutTextMinChar", "3"}};
+const FeatureEntry::FeatureParam
+    kRichAutocompletionImplementationNoAdditionalText4Chars[] = {
+        {kRichAutocompletionParam, kRichAutocompletionParamNoAdditionalText},
+        {"RichAutocompletionAutocompleteShortcutTextMinChar", "4"}};
 const FeatureEntry::FeatureVariation
     kRichAutocompletionImplementationVariations[] = {
         {"In Label", kRichAutocompletionImplementationLabel,
          std::size(kRichAutocompletionImplementationLabel), nullptr},
-        {"In TextField", kRichAutocompletionImplementationTextField,
-         std::size(kRichAutocompletionImplementationTextField), nullptr},
-        {"No Additional Text",
-         kRichAutocompletionImplementationNoAdditionalText,
-         std::size(kRichAutocompletionImplementationNoAdditionalText), nullptr},
+        {"In TextField, 3 Min Chars",
+         kRichAutocompletionImplementationTextField3Chars,
+         std::size(kRichAutocompletionImplementationTextField3Chars), nullptr},
+        {"In TextField, 4 Min Chars",
+         kRichAutocompletionImplementationTextField4Chars,
+         std::size(kRichAutocompletionImplementationTextField4Chars), nullptr},
+        {"No Additional Text, 3 Min Chars",
+         kRichAutocompletionImplementationNoAdditionalText3Chars,
+         std::size(kRichAutocompletionImplementationNoAdditionalText3Chars),
+         nullptr},
+        {"No Additional Text, 4 Min Chars",
+         kRichAutocompletionImplementationNoAdditionalText4Chars,
+         std::size(kRichAutocompletionImplementationNoAdditionalText4Chars),
+         nullptr},
 };
 
 const FeatureEntry::FeatureParam kOneTapForMapsConsentModeDefault[] = {
@@ -806,6 +814,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWaitThresholdMillisecondsForCapabilitiesApiDescription,
      flags_ui::kOsIos,
      MULTI_VALUE_TYPE(kWaitThresholdMillisecondsForCapabilitiesApiChoices)},
+    {"content-notification-experiment",
+     flag_descriptions::kContentNotificationExperimentName,
+     flag_descriptions::kContentNotificationExperimentDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kContentNotificationExperiment)},
     {"content-push-notifications",
      flag_descriptions::kContentPushNotificationsName,
      flag_descriptions::kContentPushNotificationsDescription, flags_ui::kOsIos,
@@ -1056,11 +1068,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillParseVcnCardOnFileStandaloneCvcFields)},
-    {"default-browser-promo-force-show-promo",
-     flag_descriptions::kDefaultBrowserPromoForceShowPromoName,
-     flag_descriptions::kDefaultBrowserPromoForceShowPromoDescription,
-     flags_ui::kOsIos,
-     MULTI_VALUE_TYPE(kDefaultBrowserPromoForceShowPromoChoices)},
     {"default-browser-promo-trigger-criteria-experiment",
      flag_descriptions::kDefaultBrowserTriggerCriteriaExperimentName,
      flag_descriptions::kDefaultBrowserTriggerCriteriaExperimentDescription,
@@ -1378,9 +1385,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabGridCompositionalLayoutName,
      flag_descriptions::kTabGridCompositionalLayoutDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kTabGridCompositionalLayout)},
-    {"idle-timeout-policies", flag_descriptions::kIdleTimeoutPoliciesName,
-     flag_descriptions::kIdleTimeoutPoliciesDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(enterprise_idle::kIdleTimeout)},
     {"bottom-omnibox-promo-fre", flag_descriptions::kBottomOmniboxPromoFREName,
      flag_descriptions::kBottomOmniboxPromoFREDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kBottomOmniboxPromoFRE,
@@ -1596,6 +1600,30 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"tab-group-sync", flag_descriptions::kTabGroupSync,
      flag_descriptions::kTabGroupSync, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kTabGroupSync)},
+    {"lens-circle-to-search-enabled",
+     flag_descriptions::kLensCircleToSearchEnabledName,
+     flag_descriptions::kLensCircleToSearchEnabledDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kLensCircleToSearchEnabled)},
+    {"autofill-enable-save-card-loading-and-confirmation",
+     flag_descriptions::kAutofillEnableSaveCardLoadingAndConfirmationName,
+     flag_descriptions::
+         kAutofillEnableSaveCardLoadingAndConfirmationDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableSaveCardLoadingAndConfirmation)},
+    {"autofill-enable-save-card-local-save-fallback",
+     flag_descriptions::kAutofillEnableSaveCardLocalSaveFallbackName,
+     flag_descriptions::kAutofillEnableSaveCardLocalSaveFallbackDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableSaveCardLocalSaveFallback)},
+    {"autofill-enable-vcn-enroll-loading-and-confirmation",
+     flag_descriptions::kAutofillEnableVcnEnrollLoadingAndConfirmationName,
+     flag_descriptions::
+         kAutofillEnableVcnEnrollLoadingAndConfirmationDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableVcnEnrollLoadingAndConfirmation)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

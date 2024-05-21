@@ -68,7 +68,6 @@
 <translation id="2241587408274973373">Жаңы өтмөк карталары</translation>
 <translation id="2241634353105152135">Бир гана жлу</translation>
 <translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> өчүрүү</translation>
-<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{1 сайт бөгөттөлдү}other{# сайт бөгөттөлдү}}</translation>
 <translation id="228293613124499805">Сиз баш баккан сайттардын көпчүлүгү параметрлериңизди же сайт менен бөлүшкөн маалыматыңызды түзмөгүңүзгө сакташы мүмкүн. Бул көбүнчө кызматты жакшыртуу максатында аткарылат. Бул параметрди күйүк бойдон калтырууну сунуштайбыз.</translation>
 <translation id="2289270750774289114">Сайт жакын жердеги Bluetooth түзмөктөрүн колдонгону жатканда уруксат суралсын (сунушталат)</translation>
 <translation id="2315043854645842844">Кардар тандаган тастыктама операциялык системада колдоого алынбайт.</translation>
@@ -234,7 +233,7 @@
 <translation id="4994033804516042629">Байланыштар табылган жок</translation>
 <translation id="4996978546172906250">Төмөнкү аркылуу бөлүшүү</translation>
 <translation id="5001526427543320409">Үчүнчү тараптын cookie файлдары</translation>
-<translation id="5039804452771397117">Уруксат берүү</translation>
+<translation id="5039804452771397117">Ооба</translation>
 <translation id="5048398596102334565">Сайттарга сенсорлорду колдонууга уруксат берүү (сунушталат)</translation>
 <translation id="5050380848339752099">Бул сайт жашыруун режимден сырткары колдонмо менен маалыматты бөлүшкөнү жатат.</translation>
 <translation id="5063480226653192405">Колдонулушу</translation>
@@ -305,6 +304,7 @@
 <translation id="6015775454662021376">Бул сайттын түзмөгүңүзгө кирүү мүмкүнчүлүгүн көзөмөлдөңүз</translation>
 <translation id="6040143037577758943">Жабуу</translation>
 <translation id="6042308850641462728">Дагы</translation>
+<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Акыркы өтмөгүңүз</translation>
 <translation id="6064125863973209585">Жүктөлүп алынгандар</translation>
 <translation id="6071501408666570960">Бул сайттан чыгарылышыңыз мүмкүн</translation>
 <translation id="6120483543004435978">Бул параметр күйүп турганда, сайттар түзмөгүңүздү көбүрөөк колдонгон убакыт тууралуу маалымат сурашы мүмкүн. Бул параметр өчүп турганда, сайттар түзмөгүңүздү көбүрөөк колдонгон убакыт тууралуу биле алышпайт.</translation>
@@ -426,6 +426,7 @@
 <translation id="7986741934819883144">Байланышты тандоо</translation>
 <translation id="7990211076305263060">Бул параметр күйүп турганда, сайттар микрофонду колдонууга уруксат сурашы мүмкүн. Бул параметр өчүп турганда, сайттар микрофонуңузду колдоно алышпайт.</translation>
 <translation id="8007176423574883786">Бул түзмөк үчүн өчүрүлгөн</translation>
+<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Кимден: <ph name="FROM_DEVICE" /></translation>
 <translation id="802154636333426148">Жүктөлүп алынбай калды</translation>
 <translation id="8042586301629853791">Төмөнкү боюнча иргөө:</translation>
 <translation id="8067883171444229417">Видеону ойнотуу</translation>
@@ -480,7 +481,6 @@
 <translation id="8721719390026067591">Бул параметр күйүп турганда, сайттар Bluetooth түзмөктөрүн издөөгө уруксат сурашы мүмкүн. Бул параметр өчүп турганда, сайттар Bluetooth түзмөктөрүн издей алышпайт.</translation>
 <translation id="8725066075913043281">Кайра аракет кылып көрүү</translation>
 <translation id="8730621377337864115">Бүттү</translation>
-<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{1 сайтка уруксат берилди}other{# сайтка уруксат берилди}}</translation>
 <translation id="8751914237388039244">Сүрөт тандоо</translation>
 <translation id="8800034312320686233">Сайт иштебей жатабы?</translation>
 <translation id="8801436777607969138">Белгилүү бир сайтта JavaScript'ти бөгөттөө.</translation>

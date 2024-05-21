@@ -333,6 +333,10 @@ BASE_FEATURE(kIOSSaveToPhotos,
              "IOSSaveToPhotos",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kIOSDownloadNoUIUpdateInBackground,
+             "IOSDownloadNoUIUpdateInBackground",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kHistoryOptInForRestoreShortyAndReSignin,
              "HistoryOptInForRestoreShortyAndReSignin",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -379,6 +383,14 @@ const char kContentPushNotificationsExperimentType[] =
 BASE_FEATURE(kContentPushNotifications,
              "ContentPushNotifications",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kContentNotificationExperiment,
+             "ContentNotificationExperiment",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsContentNotificationExperimentEnalbed() {
+  return base::FeatureList::IsEnabled(kContentNotificationExperiment);
+}
 
 BASE_FEATURE(kIOSLargeFakebox,
              "IOSLargeFakebox",

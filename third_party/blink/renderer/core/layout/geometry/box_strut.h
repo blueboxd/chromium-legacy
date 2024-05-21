@@ -25,6 +25,8 @@ namespace blink {
 
 struct LineBoxStrut;
 struct PhysicalBoxStrut;
+struct PhysicalRect;
+struct PhysicalSize;
 
 // This struct is used for storing margins, borders or padding of a box on all
 // four edges.
@@ -163,6 +165,10 @@ struct CORE_EXPORT PhysicalBoxStrut {
         bottom(LayoutUnit(b)),
         left(LayoutUnit(l)) {}
 
+  // Create a strut based on an inner rectangle positioned within an area.
+  PhysicalBoxStrut(const PhysicalSize& outer_size,
+                   const PhysicalRect& inner_rect);
+
   // Creates new PhysicalBoxStrut instance from the specified `outsets`.
   // A data member of `outsets` is rounded up to the minimum LayoutUnit value
   // which is equal or lager than the data member.
@@ -299,7 +305,7 @@ inline PhysicalBoxStrut BoxStrut::ConvertToPhysical(
       return PhysicalBoxStrut(direction_end, block_end, direction_start,
                               block_start);
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return PhysicalBoxStrut();
   }
 }

@@ -77,6 +77,8 @@ These builders must pass before a CL may land that affects files outside of
 
 * [mac_chromium_compile_dbg_ng](https://ci.chromium.org/p/chromium/builders/try/mac_chromium_compile_dbg_ng) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""mac_chromium_compile_dbg_ng""))
 
+* [win-arm64-compile-dbg](https://ci.chromium.org/p/chromium/builders/try/win-arm64-compile-dbg) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""win-arm64-compile-dbg""))
+
 * [win-libfuzzer-asan-rel](https://ci.chromium.org/p/chromium/builders/try/win-libfuzzer-asan-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""win-libfuzzer-asan-rel""))
 
 * [win-presubmit](https://ci.chromium.org/p/chromium/builders/try/win-presubmit) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""win-presubmit""))
@@ -115,6 +117,14 @@ builder.
   * [`//build/config/android/.+`](https://cs.chromium.org/chromium/src/build/config/android/)
 
 * [android-cronet-x64-dbg-14-tests](https://ci.chromium.org/p/chromium/builders/try/android-cronet-x64-dbg-14-tests) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-cronet-x64-dbg-14-tests""))
+
+  Location filters:
+  * [`//components/cronet/.+`](https://cs.chromium.org/chromium/src/components/cronet/)
+  * [`//components/grpc_support/.+`](https://cs.chromium.org/chromium/src/components/grpc_support/)
+  * [`//build/android/.+`](https://cs.chromium.org/chromium/src/build/android/)
+  * [`//build/config/android/.+`](https://cs.chromium.org/chromium/src/build/config/android/)
+
+* [android-cronet-x64-rel](https://ci.chromium.org/p/chromium/builders/try/android-cronet-x64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-cronet-x64-rel""))
 
   Location filters:
   * [`//components/cronet/.+`](https://cs.chromium.org/chromium/src/components/cronet/)
@@ -348,6 +358,7 @@ builder.
 
   Location filters:
   * [`//chromecast/.+`](https://cs.chromium.org/chromium/src/chromecast/)
+  * [`//build/fuchsia/sdk_override.txt`](https://cs.chromium.org/search?q=+file:build/fuchsia/sdk_override.txt)
 
 * [fuchsia-x64-accessibility-rel](https://ci.chromium.org/p/chromium/builders/try/fuchsia-x64-accessibility-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""fuchsia-x64-accessibility-rel""))
 
@@ -426,7 +437,7 @@ builder.
   Location filters:
   * [`//chromeos/ash/components/chromebox_for_meetings/.+`](https://cs.chromium.org/chromium/src/chromeos/ash/components/chromebox_for_meetings/)
   * [`//chromeos/ash/components/dbus/chromebox_for_meetings/.+`](https://cs.chromium.org/chromium/src/chromeos/ash/components/dbus/chromebox_for_meetings/)
-  * [`//chromeos/ash/services/chromebox_for_meetings/.+`](https://cs.chromium.org/chromium/src/chromeos/ash/services/chromebox_for_meetings/)
+  * [`//chromeos/services/chromebox_for_meetings/.+`](https://cs.chromium.org/chromium/src/chromeos/services/chromebox_for_meetings/)
   * [`//chrome/browser/ash/chromebox_for_meetings/.+`](https://cs.chromium.org/chromium/src/chrome/browser/ash/chromebox_for_meetings/)
 
 * [linux-headless-shell-rel](https://ci.chromium.org/p/chromium/builders/try/linux-headless-shell-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-headless-shell-rel""))
@@ -677,13 +688,13 @@ as required builders.
 * [mac14-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/mac14-arm64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""mac14-arm64-rel""))
   * Experiment percentage: 1.0
 
-* [win-arm64-compile-dbg](https://ci.chromium.org/p/chromium/builders/try/win-arm64-compile-dbg) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""win-arm64-compile-dbg""))
-  * Experiment percentage: 100.0
-
 
 ## Mega CQ builders
 These builders run when the "Mega" CQ mode is triggered. This mode runs all the
 builders required in the standard CQ, plus a large amount of optional builders.
+
+### chrome
+* [mega-cq-launcher](https://ci.chromium.org/p/chrome/builders/try/mega-cq-launcher) ([definition](https://source.corp.google.com/search?q=+file:/try/.*\.star$+""mega-cq-launcher""))
 
 ### chromium
 * [mega-cq-launcher](https://ci.chromium.org/p/chromium/builders/try/mega-cq-launcher) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""mega-cq-launcher""))

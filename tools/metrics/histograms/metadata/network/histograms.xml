@@ -738,6 +738,41 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Network.Ash.WiFiDirect.CapabilitiesWhenUpgrade"
+    enum="WifiP2PCapabilities" expires_after="2025-02-20">
+  <owner>jiajunz@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Emitted whenever client queries the WiFi Direct capabilities.
+  </summary>
+</histogram>
+
+<histogram name="Network.Ash.WiFiDirect.TagSocket.OperationResult"
+    enum="BooleanSuccess" expires_after="2025-02-20">
+  <owner>jiajunz@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Measures and tracks the result of the tag socket operation. Emitted whenever
+    the operation is attempted.
+  </summary>
+</histogram>
+
+<histogram name="Network.Ash.WiFiDirect.{Operation}.OperationResult"
+    enum="WifiP2POperationResult" expires_after="2025-02-20">
+  <owner>jiajunz@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Measures and tracks the result of {Operation} operation. Emitted whenever
+    {Operation} operation is attempted.
+  </summary>
+  <token key="Operation">
+    <variant name="ConnectP2PGroup"/>
+    <variant name="CreateP2PGroup"/>
+    <variant name="DestroyP2PGroup"/>
+    <variant name="DisconnectP2PGroup"/>
+  </token>
+</histogram>
+
 <histogram name="Network.Ash.{NetworkType}.ConnectionResult.NonUserInitiated"
     enum="ShillConnectResult" expires_after="2025-02-20">
   <owner>jiajunz@chromium.org</owner>
@@ -922,7 +957,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.CarrierLock.Initialization.{Trigger}"
-    units="count" expires_after="2024-09-15">
+    units="count" expires_after="2024-11-17">
   <owner>michamazur@google.com</owner>
   <owner>cros-cellular-core@google.com</owner>
   <summary>
@@ -2044,13 +2079,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.NetworkPortalDetectorHasProxy" enum="Boolean"
-    expires_after="2024-09-22">
+    expires_after="2024-11-17">
   <owner>stevenjb@chromium.org</owner>
   <owner>cros-network-health-team@google.com</owner>
   <summary>
-    Whether a proxy is configured when Chrome captive portal detection
-    completes. This will be used to help prioritize better captive portal
-    detection with a proxy configured.
+    DEPRECATED: This metric was removed in M-126 (chrome portal detection is
+    only run when a proxy is configured starting in M-126). Whether a proxy is
+    configured when Chrome captive portal detection completes. This will be used
+    to help prioritize better captive portal detection with a proxy configured.
   </summary>
 </histogram>
 
@@ -2062,7 +2098,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.NetworkPortalDetectorRunCount" units="attempts"
-    expires_after="2024-09-22">
+    expires_after="2024-12-31">
   <owner>stevenjb@chromium.org</owner>
   <owner>cros-network-health-team@google.com</owner>
   <summary>
@@ -2071,8 +2107,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Network.NetworkPortalDetectorState" enum="NetworkPortalState"
+    expires_after="2024-12-31">
+  <owner>stevenjb@chromium.org</owner>
+  <owner>cros-network-health-team@google.com</owner>
+  <summary>
+    The PortalState result of Chrome portal detection when completed.
+  </summary>
+</histogram>
+
 <histogram name="Network.NetworkPortalDetectorType" enum="NetworkTechnology"
-    expires_after="2024-09-22">
+    expires_after="2024-12-31">
   <owner>stevenjb@chromium.org</owner>
   <owner>cros-network-health-team@google.com</owner>
   <summary>
@@ -2344,7 +2389,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.ConnectResult.{ApnType}"
-    enum="PlatformCellularConnectResult" expires_after="2024-09-15">
+    enum="PlatformCellularConnectResult" expires_after="2024-11-17">
   <owner>danielwinkler@google.com</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2412,7 +2457,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.PortalResult"
-    enum="NetworkPortalResult" expires_after="2024-09-15">
+    enum="NetworkPortalResult" expires_after="2024-11-17">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3067,6 +3112,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.Vpn.ServicesNumber" units="units"
+    expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each user login that tracks the
+    number of the configured VPN services in shill.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Vpn.TimeToConfig" units="ms"
     expires_after="2024-12-31">
   <owner>jiejiang@chromium.org</owner>
@@ -3125,6 +3181,31 @@ chromium-metrics-reviews@google.com.
     ChromeOS network usage metric emitted on each successful WireGuard VPN
     connection that tracks the number of peers used in in this connection.
   </summary>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.{VPNType}.ConnectFailureReason"
+    enum="VPNConnectFailureReason" expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each failed {VPNType} VPN
+    connection attempt that tracks the reason of the connect failure.
+  </summary>
+  <token key="VPNType" variants="VPNType"/>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.{VPNType}.ConnectionLostReason"
+    enum="VPNConnectionLostReason" expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each {VPNType} VPN connection end
+    event (i.e., the VPN is no longer connected) that tracks the reason that the
+    connection gets lost.
+  </summary>
+  <token key="VPNType" variants="VPNType"/>
 </histogram>
 
 <histogram name="Network.Shill.Vpn.{VPNType}.EspEncryptionAlgorithm"
@@ -3200,6 +3281,166 @@ chromium-metrics-reviews@google.com.
   <summary>
     ChromeOS network usage metric emitted on each successful {VPNType} VPN
     connection that tracks the IP family provided in this connection.
+  </summary>
+  <token key="VPNType" variants="VPNType"/>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.{VPNType}.IPv4ExcludedRoutesLargestPrefix"
+    units="units" expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each successful split-routing
+    {VPNType} VPN connection that tracks the length of the largest IPv4 excluded
+    route (the route with the shortest prefix).
+  </summary>
+  <token key="VPNType" variants="VPNType"/>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.{VPNType}.IPv4ExcludedRoutesNumber"
+    units="units" expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each successful {VPNType} VPN
+    connection that tracks the number of IPv4 excluded routes.
+  </summary>
+  <token key="VPNType" variants="VPNType"/>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.{VPNType}.IPv4IncludedRoutesLargestPrefix"
+    units="units" expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each successful split-routing
+    {VPNType} VPN connection that tracks the length of the largest IPv4 included
+    route (the route with the shortest prefix).
+  </summary>
+  <token key="VPNType" variants="VPNType"/>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.{VPNType}.IPv4IncludedRoutesNumber"
+    units="units" expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each successful {VPNType} VPN
+    connection that tracks the number of IPv4 included routes. Note that for a
+    default route, it will always be counted as an included route, even if it is
+    not explicitly set.
+  </summary>
+  <token key="VPNType" variants="VPNType"/>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.{VPNType}.IPv4RoutingType"
+    enum="VPNRoutingType" expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each successful {VPNType} VPN
+    connection that tracks the type of routing setup for IPv4. Caveat: when we
+    calculate whether the address space is fully covered, we will only check if
+    there is a default route and no excluded route. If there is no /0 route but
+    the address space is fully covered by multiple routes, it will be considered
+    as split-routing.
+  </summary>
+  <token key="VPNType" variants="VPNType"/>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.{VPNType}.IPv6ExcludedRoutesLargestPrefix"
+    units="units" expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each successful split-routing
+    {VPNType} VPN connection that tracks the length of the largest IPv6 excluded
+    route (the route with the shortest prefix).
+  </summary>
+  <token key="VPNType" variants="VPNType"/>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.{VPNType}.IPv6ExcludedRoutesNumber"
+    units="units" expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each successful {VPNType} VPN
+    connection that tracks the number of IPv4 excluded routes.
+  </summary>
+  <token key="VPNType" variants="VPNType"/>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.{VPNType}.IPv6IncludedRoutesLargestPrefix"
+    units="units" expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each successful split-routing
+    {VPNType} VPN connection that tracks the length of the largest IPv6 included
+    route (the route with the shortest prefix).
+  </summary>
+  <token key="VPNType" variants="VPNType"/>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.{VPNType}.IPv6IncludedRoutesNumber"
+    units="units" expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each successful {VPNType} VPN
+    connection that tracks the number of IPv6 included routes. Note that for a
+    default route, it will always be counted as an included route, even if it is
+    not explicitly set.
+  </summary>
+  <token key="VPNType" variants="VPNType"/>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.{VPNType}.IPv6RoutingType"
+    enum="VPNRoutingType" expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each successful {VPNType} VPN
+    connection that tracks the type of routing setup for IPv6. Caveat: when we
+    calculate whether the address space is fully covered, we will only check if
+    there is a default route and no excluded route. If there is no /0 route but
+    the address space is fully covered by multiple routes, it will be considered
+    as split-routing.
+  </summary>
+  <token key="VPNType" variants="VPNType"/>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.{VPNType}.MTU" units="units"
+    expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each successful {VPNType} VPN
+    connection that tracks the MTU value of this connection.
+  </summary>
+  <token key="VPNType" variants="VPNType"/>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.{VPNType}.NameServers" enum="VPNNameServers"
+    expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each successful {VPNType} VPN
+    connection that tracks the type of the DNS setup.
   </summary>
   <token key="VPNType" variants="VPNType"/>
 </histogram>
@@ -4585,7 +4826,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.IpProtection.GetAuthTokenResult"
-    enum="BooleanSuccess" expires_after="2024-09-15">
+    enum="BooleanSuccess" expires_after="2024-11-17">
   <owner>djmitche@chromium.org</owner>
   <owner>src/chrome/browser/ip_protection/OWNERS</owner>
   <summary>
@@ -4631,7 +4872,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.IpProtection.OAuthTokenFetchTime" units="ms"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>djmitche@chromium.org</owner>
   <owner>src/chrome/browser/ip_protection/OWNERS</owner>
   <summary>
@@ -4670,7 +4911,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.IpProtection.ProxyAllowList.UpdateSuccess"
-    enum="BooleanSuccess" expires_after="2024-09-15">
+    enum="BooleanSuccess" expires_after="2024-11-17">
   <owner>aakallam@chromium.org</owner>
   <owner>src/chrome/browser/ip_protection/OWNERS</owner>
   <summary>
@@ -4681,7 +4922,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.IpProtection.ProxyChainFallback"
-    enum="IpProtectionProxyChainId" expires_after="2024-09-15">
+    enum="IpProtectionProxyChainId" expires_after="2024-11-17">
   <owner>djmitche@chromium.org</owner>
   <owner>src/chrome/browser/ip_protection/OWNERS</owner>
   <summary>
@@ -4778,7 +5019,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.IpProtection.TryGetAuthTokensResult"
-    enum="IpProtectionTokenBatchRequestResult" expires_after="2024-09-15">
+    enum="IpProtectionTokenBatchRequestResult" expires_after="2024-11-17">
   <owner>djmitche@chromium.org</owner>
   <owner>src/chrome/browser/ip_protection/OWNERS</owner>
   <summary>
@@ -4818,7 +5059,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="NetworkService.MaskedDomainList.NetworkServiceProxyAllowList.EstimatedMemoryUsageInKB"
-    units="KB" expires_after="2024-09-15">
+    units="KB" expires_after="2024-11-17">
   <owner>aakallam@chromium.org</owner>
   <owner>src/chrome/browser/ip_protection/OWNERS</owner>
   <summary>
@@ -4828,7 +5069,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.MaskedDomainList.SizeInKB" units="KB"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>aakallam@chromium.org</owner>
   <owner>src/chrome/browser/ip_protection/OWNERS</owner>
   <summary>
@@ -4925,7 +5166,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.TimeToGrantSharedDictionaryAccess" units="ms"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>horo@chromium.org</owner>
   <owner>src/net/extras/shared_dictionary/OWNERS</owner>
   <summary>

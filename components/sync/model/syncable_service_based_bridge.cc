@@ -78,7 +78,7 @@ SyncChange::SyncChangeType ConvertToSyncChangeType(
     case EntityChange::ACTION_UPDATE:
       return SyncChange::ACTION_UPDATE;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return SyncChange::ACTION_UPDATE;
 }
 
@@ -236,6 +236,8 @@ SyncableServiceBasedBridge::SyncableServiceBasedBridge(
 
 SyncableServiceBasedBridge::~SyncableServiceBasedBridge() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  TRACE_EVENT0("sync",
+               "SyncableServiceBasedBridge::~SyncableServiceBasedBridge");
   // Inform the syncable service to make sure instances of LocalChangeProcessor
   // are not continued to be used.
   if (syncable_service_started_) {
@@ -307,14 +309,14 @@ void SyncableServiceBasedBridge::GetAllDataForDebugging(DataCallback callback) {
 std::string SyncableServiceBasedBridge::GetClientTag(
     const EntityData& entity_data) {
   // Not supported as per SupportsGetClientTag().
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return std::string();
 }
 
 std::string SyncableServiceBasedBridge::GetStorageKey(
     const EntityData& entity_data) {
   // Not supported as per SupportsGetStorageKey().
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return std::string();
 }
 

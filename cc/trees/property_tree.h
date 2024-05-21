@@ -26,6 +26,7 @@
 #include "cc/input/scroll_snap_data.h"
 #include "cc/paint/element_id.h"
 #include "cc/paint/filter_operations.h"
+#include "cc/paint/scroll_offset_map.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/mutator_host.h"
@@ -427,10 +428,6 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
     return render_surfaces_[static_cast<size_t>(id)].get();
   }
 
-  void ClearTransitionPseudoElementEffectNodes();
-  void AddTransitionPseudoElementEffectId(int id);
-  std::vector<RenderSurfaceImpl*> GetTransitionPseudoElementRenderSurfaces();
-
   bool ContributesToDrawnSurface(int id) const;
 
   void ResetChangeTracking();
@@ -473,8 +470,6 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 
   // Indexed by node id.
   std::vector<std::unique_ptr<RenderSurfaceImpl>> render_surfaces_;
-
-  std::unordered_set<int> transition_pseudo_element_effect_nodes_;
 };
 
 // These callbacks are called in the main thread to notify changes of scroll
@@ -630,7 +625,6 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   using PropertyTree::needs_update;
   using PropertyTree::set_needs_update;
 
-  using ScrollOffsetMap = base::flat_map<ElementId, gfx::PointF>;
   using SyncedScrollOffsetMap =
       base::flat_map<ElementId, scoped_refptr<SyncedScrollOffset>>;
 

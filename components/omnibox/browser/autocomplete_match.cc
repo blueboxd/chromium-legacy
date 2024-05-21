@@ -594,9 +594,7 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
     case Type::NULL_RESULT_MESSAGE: {
       // The IPH suggestion uses the spark icon. Otherwise (for No Results
       // Found), fallthrough to use the empty icon.
-      if (OmniboxFieldTrial::IsStarterPackIPHEnabled() &&
-          provider->type() ==
-              AutocompleteProvider::Type::TYPE_FEATURED_SEARCH) {
+      if (IsIPHSuggestion()) {
         return omnibox::kSparkIcon;
       }
       ABSL_FALLTHROUGH_INTENDED;
@@ -808,7 +806,7 @@ ACMatchClassifications AutocompleteMatch::ClassificationsFromString(
     int classification_style = ACMatchClassification::NONE;
     if (!base::StringToInt(tokens[i], &classification_offset) ||
         !base::StringToInt(tokens[i + 1], &classification_style)) {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return classifications;
     }
     classifications.push_back(
@@ -925,6 +923,10 @@ omnibox::GroupId AutocompleteMatch::GetDefaultGroupId(Type type) {
 
   if (type == AutocompleteMatchType::HISTORY_CLUSTER)
     return omnibox::GROUP_HISTORY_CLUSTER;
+
+  if (type == AutocompleteMatchType::NULL_RESULT_MESSAGE) {
+    return omnibox::GROUP_ZERO_SUGGEST_IN_PRODUCT_HELP;
+  }
 
   return omnibox::GROUP_OTHER_NAVS;
 }
@@ -1133,7 +1135,7 @@ void AutocompleteMatch::LogSearchEngineUsed(
       break;
 
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 }
 
@@ -1309,7 +1311,7 @@ AutocompleteMatch::GetOmniboxEventResultType(int action_index) const {
         break;
       case OmniboxActionId::UNKNOWN:
       case OmniboxActionId::LAST:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
     }
   }
@@ -1379,13 +1381,12 @@ AutocompleteMatch::GetOmniboxEventResultType(int action_index) const {
       return OmniboxEventProto::Suggestion::HISTORY_EMBEDDINGS;
     case AutocompleteMatchType::FEATURED_ENTERPRISE_SEARCH:
       return OmniboxEventProto::Suggestion::FEATURED_ENTERPRISE_SEARCH;
+    case AutocompleteMatchType::NULL_RESULT_MESSAGE:
+      return OmniboxEventProto::Suggestion::NULL_RESULT_MESSAGE;
     case AutocompleteMatchType::CONTACT_DEPRECATED:
     case AutocompleteMatchType::PHYSICAL_WEB_DEPRECATED:
     case AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
     case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
-    // NULL_RESULT_MESSAGE suggestions cannot be acted upon, so no need to
-    // log.
-    case AutocompleteMatchType::NULL_RESULT_MESSAGE:
     case AutocompleteMatchType::NUM_TYPES:
       break;
   }
@@ -1447,21 +1448,26 @@ int AutocompleteMatch::GetSortingOrder() const {
       shortcut_boosted) {
     return 2;
   }
-  // IPH message always appears at the bottom of the Omnibox, after all other
-  // suggestions.
-  if (type == AutocompleteMatchType::NULL_RESULT_MESSAGE) {
-    return 5;
-  }
   return 4;
 }
 
 bool AutocompleteMatch::IsUrlScoringEligible() const {
   return scoring_signals.has_value() &&
-         type != AutocompleteMatchType::URL_WHAT_YOU_TYPED;
+         type != AutocompleteMatchType::URL_WHAT_YOU_TYPED &&
+         !force_skip_ml_scoring && !AutocompleteMatch::IsSearchType(type);
 }
 
 bool AutocompleteMatch::IsTrendSuggestion() const {
   return subtypes.contains(/*omnibox::SUBTYPE_TRENDS=*/143);
+}
+
+bool AutocompleteMatch::IsIPHSuggestion() const {
+  if (!OmniboxFieldTrial::IsStarterPackIPHEnabled()) {
+    return false;
+  }
+
+  return type == AutocompleteMatchType::NULL_RESULT_MESSAGE &&
+         provider->type() == AutocompleteProvider::TYPE_FEATURED_SEARCH;
 }
 
 void AutocompleteMatch::FilterOmniboxActions(
@@ -1686,6 +1692,17 @@ void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(
   if (rich_autocompletion_triggered == RichAutocompletionType::kNone) {
     rich_autocompletion_triggered =
         duplicate_match.rich_autocompletion_triggered;
+  }
+
+  // If either one of the matches is ineligible for ML scoring, then ensure that
+  // the final match is marked as ineligible for ML scoring. Search suggestions
+  // are guaranteed to be excluded from ML scoring at this time, so there's no
+  // need to set `force_skip_ml_scoring` for those matches.
+  if (base::FeatureList::IsEnabled(omnibox::kEnableForceSkipMlScoring) &&
+      (!IsUrlScoringEligible() || !duplicate_match.IsUrlScoringEligible()) &&
+      !AutocompleteMatch::IsSearchType(type)) {
+    force_skip_ml_scoring = true;
+    RecordAdditionalInfo("force skip ml scoring", "true");
   }
 
   // Merge scoring signals from duplicate match for ML model scoring and

@@ -81,6 +81,7 @@ PasswordStoreBuiltInBackend::~PasswordStoreBuiltInBackend() {
 void PasswordStoreBuiltInBackend::Shutdown(
     base::OnceClosure shutdown_completed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  weak_ptr_factory_.InvalidateWeakPtrs();
   affiliated_match_helper_ = nullptr;
   if (helper_) {
     background_task_runner_->DeleteSoon(FROM_HERE, std::move(helper_));
@@ -168,7 +169,7 @@ void PasswordStoreBuiltInBackend::GetAutofillableLoginsAsync(
 void PasswordStoreBuiltInBackend::GetAllLoginsForAccountAsync(
     std::string account,
     LoginsOrErrorReply callback) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void PasswordStoreBuiltInBackend::FillMatchingLoginsAsync(

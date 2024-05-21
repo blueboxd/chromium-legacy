@@ -67,6 +67,7 @@
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/cssom/inline_style_property_map.h"
 #include "third_party/blink/renderer/core/css/native_paint_image_generator.h"
+#include "third_party/blink/renderer/core/css/out_of_flow_data.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_selector_parser.h"
 #include "third_party/blink/renderer/core/css/post_style_update_scope.h"
@@ -1163,18 +1164,8 @@ NamedNodeMap* Element::attributesForBindings() const {
   return rare_data.AttributeMap();
 }
 
-Vector<AtomicString> Element::getAttributeNames() const {
-  Vector<AtomicString> attributesVector;
-  if (!hasAttributes()) {
-    return attributesVector;
-  }
-
-  AttributeCollection attributes = element_data_->Attributes();
-  attributesVector.ReserveInitialCapacity(attributes.size());
-  for (const Attribute& attr : attributes) {
-    attributesVector.UncheckedAppend(attr.GetName().ToString());
-  }
-  return attributesVector;
+AttributeNamesView Element::getAttributeNames() const {
+  return bindings::Transform<AttributeToNameTransform>(Attributes());
 }
 
 inline ElementRareDataVector* Element::GetElementRareData() const {
@@ -3301,6 +3292,11 @@ void Element::DetachLayoutTree(bool performing_reattach) {
     if (!performing_reattach) {
       data->ClearPseudoElements();
       data->ClearContainerQueryData();
+      data->ClearOutOfFlowData();
+    } else if (data->GetOutOfFlowData()) {
+      GetDocument()
+          .GetStyleEngine()
+          .MarkLastSuccessfulPositionOptionDirtyForElement(*this);
     }
 
     if (ElementAnimations* element_animations = data->GetElementAnimations()) {
@@ -4147,6 +4143,17 @@ StyleRecalcChange Element::RecalcOwnStyle(
             ? LayoutObject::ApplyStyleChanges::kNo
             : LayoutObject::ApplyStyleChanges::kYes;
 
+    if (diff != ComputedStyle::Difference::kEqual && GetOutOfFlowData() &&
+        (!new_style->HasOutOfFlowPosition() ||
+         !base::ValuesEquivalent(old_style->GetPositionTryOptions().Get(),
+                                 new_style->GetPositionTryOptions().Get()))) {
+      // position-try-options or positioning changed, which both invalidate last
+      // successful try option.
+      GetDocument()
+          .GetStyleEngine()
+          .MarkLastSuccessfulPositionOptionDirtyForElement(*this);
+    }
+
     const ComputedStyle* layout_style = new_style;
     if (auto* pseudo_element = DynamicTo<PseudoElement>(this)) {
       if (layout_style->Display() == EDisplay::kContents) {
@@ -4660,8 +4667,7 @@ bool Element::DoesChildTextNodesDirectionMatchThis(const Node& node) const {
   if (node.IsTextNode()) {
     const std::optional<TextDirection> new_text_direction =
         BidiParagraph::BaseDirectionForString(node.textContent(true));
-    if (!new_text_direction || (*new_text_direction == CachedDirectionality() &&
-                                !DirAutoInheritsFromParent())) {
+    if (!new_text_direction || *new_text_direction == CachedDirectionality()) {
       return true;
     }
   }
@@ -4970,7 +4976,8 @@ Element::HighlightRecalc Element::CalculateHighlightRecalc(
   // effective zoom (‘zoom’ × page zoom × device scale factor) did not change.
   // In that case, we only need to calculate highlight styles once, because our
   // UA styles only use type selectors and we never change them dynamically.
-  if (parentNode() == ContainingTreeScope().RootNode()) {
+  DCHECK(IsInTreeScope());
+  if (parentNode() == GetTreeScope().RootNode()) {
     if (new_style.HasNonUaHighlightPseudoStyles()) {
       return HighlightRecalc::kFull;
     }
@@ -5130,6 +5137,31 @@ const ComputedStyle* Element::RecalcHighlightStyles(
       builder.AccessHighlightData().SetSelection(
           StyleForHighlightPseudoElement(style_recalc_context, highlight_parent,
                                          new_style, kPseudoIdSelection));
+    }
+  }
+
+  if (RuntimeEnabledFeatures::SearchTextHighlightPseudoEnabled() &&
+      UsesHighlightPseudoInheritance(kPseudoIdSearchText) &&
+      new_style.HasPseudoElementStyle(kPseudoIdSearchText)) {
+    const ComputedStyle* highlight_parent_current =
+        parent_highlights ? parent_highlights->SearchTextCurrent() : nullptr;
+    if (ShouldRecalcHighlightPseudoStyle(highlight_recalc,
+                                         highlight_parent_current, new_style,
+                                         style_recalc_context.container)) {
+      builder.AccessHighlightData().SetSearchTextCurrent(
+          StyleForSearchTextPseudoElement(style_recalc_context,
+                                          highlight_parent_current, new_style,
+                                          StyleRequest::kCurrent));
+    }
+    const ComputedStyle* highlight_parent_not_current =
+        parent_highlights ? parent_highlights->SearchTextNotCurrent() : nullptr;
+    if (ShouldRecalcHighlightPseudoStyle(
+            highlight_recalc, highlight_parent_not_current, new_style,
+            style_recalc_context.container)) {
+      builder.AccessHighlightData().SetSearchTextNotCurrent(
+          StyleForSearchTextPseudoElement(
+              style_recalc_context, highlight_parent_not_current, new_style,
+              StyleRequest::kNotCurrent));
     }
   }
 
@@ -6601,14 +6633,14 @@ void Element::SetHasFocusWithinUpToAncestor(bool flag,
     // container needs to know which one of its descendants newly gained or lost
     // focus even if its own HasFocusWithin state has not changed.
     if (element != this && need_snap_container_search) {
-      if (const auto* box = element->GetLayoutBoxForScrolling()) {
+      if (const LayoutBox* box = element->GetLayoutBoxForScrolling()) {
         if (box->Style() && !box->Style()->GetScrollSnapType().is_none) {
-          if (GetDocument().GetFrame() && GetDocument().GetFrame()->View()) {
-            // Tag the enclosing snap container for an update so it can be
-            // updated with focus information.
-            GetDocument().GetFrame()->View()->AddPendingSnapUpdate(
-                box->GetScrollableArea());
-          }
+          // TODO(crbug.com/340983092): We should be able to just call
+          // LocalFrameView::AddPendingSnapUpdate, but that results in a snap
+          // which cancels ongoing scroll animations.
+          // UpdateFocusDataForSnapAreas should be considered a temporary
+          // workaround until the linked bug is addressed.
+          box->GetScrollableArea()->UpdateFocusDataForSnapAreas();
         }
       }
     }
@@ -6830,8 +6862,7 @@ bool Element::IsFocusedElementInDocument() const {
 }
 
 Element* Element::AdjustedFocusedElementInTreeScope() const {
-  return IsInTreeScope() ? ContainingTreeScope().AdjustedFocusedElement()
-                         : nullptr;
+  return IsInTreeScope() ? GetTreeScope().AdjustedFocusedElement() : nullptr;
 }
 
 bool Element::DispatchFocusEvent(Element* old_focused_element,
@@ -7506,6 +7537,11 @@ const ComputedStyle* Element::EnsureOwnComputedStyle(
     return element_style;
   }
 
+  if (pseudo_element_specifier == kPseudoIdSearchText &&
+      !RuntimeEnabledFeatures::SearchTextHighlightPseudoEnabled()) {
+    return nullptr;
+  }
+
   if (const ComputedStyle* pseudo_element_style =
           element_style->GetCachedPseudoElementStyle(pseudo_element_specifier,
                                                      pseudo_argument)) {
@@ -7524,6 +7560,12 @@ const ComputedStyle* Element::EnsureOwnComputedStyle(
   StyleRequest style_request;
   style_request.pseudo_id = pseudo_element_specifier;
   style_request.type = StyleRequest::kForComputedStyle;
+  if (style_request.pseudo_id == kPseudoIdSearchText) {
+    // getComputedStyle for ::search-text is always :not(:current);
+    // see <https://github.com/w3c/csswg-drafts/issues/10297>.
+    DCHECK_EQ(style_request.type, StyleRequest::kForComputedStyle);
+    style_request.search_text_request = StyleRequest::kNotCurrent;
+  }
   if (UsesHighlightPseudoInheritance(pseudo_element_specifier)) {
     const ComputedStyle* highlight_element_style = nullptr;
     if (Element* parent = LayoutTreeBuilderTraversal::ParentElement(*this)) {
@@ -7819,6 +7861,9 @@ PseudoElement* Element::UpdatePseudoElement(
   if (change.ShouldUpdatePseudoElement(*element)) {
     bool generate_pseudo = CanGeneratePseudoElement(pseudo_id);
     if (generate_pseudo) {
+      if (auto* cache = GetDocument().ExistingAXObjectCache()) {
+        cache->RemoveSubtree(this, /*remove_root*/ false);
+      }
       element->RecalcStyle(change.ForPseudoElement(), style_recalc_context);
       if (element->NeedsReattachLayoutTree() &&
           !PseudoElementLayoutObjectIsNeeded(element->GetComputedStyle(),
@@ -8091,6 +8136,17 @@ const ComputedStyle* Element::StyleForHighlightPseudoElement(
     const AtomicString& pseudo_argument) {
   StyleRequest style_request{pseudo_id, highlight_parent, &originating_style,
                              pseudo_argument};
+  return StyleForPseudoElement(style_recalc_context, style_request);
+}
+
+const ComputedStyle* Element::StyleForSearchTextPseudoElement(
+    const StyleRecalcContext& style_recalc_context,
+    const ComputedStyle* highlight_parent,
+    const ComputedStyle& originating_style,
+    StyleRequest::SearchTextRequest search_text_request) {
+  StyleRequest style_request{kPseudoIdSearchText, highlight_parent,
+                             &originating_style};
+  style_request.search_text_request = search_text_request;
   return StyleForPseudoElement(style_recalc_context, style_request);
 }
 
@@ -8451,7 +8507,8 @@ inline void Element::UpdateId(const AtomicString& old_id,
     return;
   }
 
-  UpdateId(ContainingTreeScope(), old_id, new_id);
+  DCHECK(IsInTreeScope());
+  UpdateId(GetTreeScope(), old_id, new_id);
 }
 
 inline void Element::UpdateId(TreeScope& scope,

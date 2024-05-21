@@ -1196,6 +1196,7 @@ Aucun appareil connecté.</translation>
 <translation id="5587506661873751671">Téléchargement à <ph name="DOWNLOAD_PERCENT" /> %</translation>
 <translation id="558849140439112033">Faire glisser pour sélectionner une zone à capturer</translation>
 <translation id="5590609058453685222">Le rappel micro est activé. Vous recevrez une notification si vous parlez alors que le son est coupé.</translation>
+<translation id="5592745162308462420">fn</translation>
 <translation id="5596627076506792578">Plus d'options</translation>
 <translation id="5599242528220103262">Le raccourci clavier est désactivé</translation>
 <translation id="5600837773213129531">Appuyez sur Ctrl+Alt+Z pour désactiver les commentaires audio.</translation>
@@ -1372,6 +1373,7 @@ Aucun appareil connecté.</translation>
 <translation id="6232891689835436217"><ph name="APP_NAME" /> utilise actuellement votre caméra et votre micro</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="62380141479352646">Batterie faible. Économiseur de batterie activé.</translation>
+<translation id="6240603910551255087">Bouton du haut</translation>
 <translation id="6247728804802644171">Ouvrir les notifications</translation>
 <translation id="6249795363855770621">Impossible de marquer la tâche comme terminée. Réessayez une fois en ligne.</translation>
 <translation id="6254629735336163724">Verrouillée en position horizontale</translation>
@@ -2074,6 +2076,7 @@ Pour éteindre l'appareil, appuyez à nouveau de manière prolongée sur le bout
 <translation id="906458777597946297">Agrandir la fenêtre</translation>
 <translation id="9065203028668620118">Modifier</translation>
 <translation id="9070640332319875144">Paramètres de l'Assistant</translation>
+<translation id="9071966355747967534"><ph name="FEATURE_NAME" /> n'est pas disponible</translation>
 <translation id="9072519059834302790">Temps restant avant que la batterie soit déchargée : <ph name="TIME_LEFT" />.</translation>
 <translation id="9074432941673450836">Utilisez des applis pour tout ce dont vous avez besoin sur votre <ph name="PRODUCT_NAME" />. Vous trouverez vos applis dans le Lanceur d'applications. Vous pouvez également appuyer sur la touche Lanceur d'applications (au-dessus de la touche Maj gauche) du clavier.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

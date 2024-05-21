@@ -9,8 +9,7 @@ import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import type {SettingsSafetyHubNotificationPermissionsModuleElement} from 'chrome://settings/lazy_load.js';
 import {SafetyHubBrowserProxyImpl, SafetyHubEvent} from 'chrome://settings/lazy_load.js';
-import type {SettingsRoutes} from 'chrome://settings/settings.js';
-import {MetricsBrowserProxyImpl, Router, routes, SafetyCheckNotificationsModuleInteractions as Interactions, SettingsPluralStringProxyImpl} from 'chrome://settings/settings.js';
+import {MetricsBrowserProxyImpl, resetRouterForTesting, Router, routes, SafetyCheckNotificationsModuleInteractions as Interactions, SettingsPluralStringProxyImpl} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {TestPluralStringProxy} from 'chrome://webui-test/test_plural_string_proxy.js';
@@ -26,7 +25,6 @@ suite('CrSettingsSafetyHubNotificationPermissionsTest', function() {
   let metricsBrowserProxy: TestMetricsBrowserProxy;
 
   let testElement: SettingsSafetyHubNotificationPermissionsModuleElement;
-  let testRoutes: SettingsRoutes;
 
   const origin1 = 'https://www.example1.com:443';
   const detail1 = 'About 4 notifications a day';
@@ -95,7 +93,7 @@ suite('CrSettingsSafetyHubNotificationPermissionsTest', function() {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
     testElement = document.createElement(
         'settings-safety-hub-notification-permissions-module');
-    Router.getInstance().navigateTo(testRoutes.SAFETY_HUB);
+    Router.getInstance().navigateTo(routes.SAFETY_HUB);
     document.body.appendChild(testElement);
     // Wait until the element has asked for the list of revoked permissions
     // that will be shown for review.
@@ -217,10 +215,7 @@ suite('CrSettingsSafetyHubNotificationPermissionsTest', function() {
     MetricsBrowserProxyImpl.setInstance(metricsBrowserProxy);
     pluralStringProxy = new TestPluralStringProxy();
     SettingsPluralStringProxyImpl.setInstance(pluralStringProxy);
-    testRoutes = {
-      SAFETY_HUB: routes.SAFETY_HUB,
-    } as unknown as SettingsRoutes;
-    Router.resetInstanceForTesting(new Router(routes));
+    resetRouterForTesting();
     await createPage();
     assertEquals(2, getEntries().length);
     metricsBrowserProxy.reset();
@@ -268,6 +263,8 @@ suite('CrSettingsSafetyHubNotificationPermissionsTest', function() {
     assertUndoToast(
         true, 'safetyCheckNotificationPermissionReviewBlockedToastLabel');
 
+    await browserProxy.whenCalled('recordSafetyHubInteraction');
+
     // Ensure the metric for 'Block' action is recorded.
     await assertInteractionMetricRecorded(Interactions.BLOCK);
   });
@@ -289,6 +286,8 @@ suite('CrSettingsSafetyHubNotificationPermissionsTest', function() {
         true, 'safetyCheckNotificationPermissionReviewIgnoredToastLabel');
     assertFalse(isVisible(testElement.$.actionMenu.getDialog()));
 
+    await browserProxy.whenCalled('recordSafetyHubInteraction');
+
     // Ensure the metric for 'Ignore' action is recorded.
     await assertInteractionMetricRecorded(Interactions.IGNORE);
   });
@@ -309,6 +308,8 @@ suite('CrSettingsSafetyHubNotificationPermissionsTest', function() {
     assertUndoToast(
         true, 'safetyCheckNotificationPermissionReviewResetToastLabel');
     assertFalse(isVisible(testElement.$.actionMenu.getDialog()));
+
+    await browserProxy.whenCalled('recordSafetyHubInteraction');
 
     // Ensure the metric for 'Reset' action is recorded.
     await assertInteractionMetricRecorded(Interactions.RESET);
@@ -387,6 +388,8 @@ suite('CrSettingsSafetyHubNotificationPermissionsTest', function() {
     // Ensure the browser proxy call is done and no undo toast is shown.
     await assertBrowserCallPlural('blockNotificationPermissionForOrigins');
     assertUndoToast(false);
+
+    await browserProxy.whenCalled('recordSafetyHubInteraction');
 
     // UI should be in a completion state.
     webUIListenerCallback(

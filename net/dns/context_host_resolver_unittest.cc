@@ -706,7 +706,7 @@ TEST_F(ContextHostResolverTest, ResultsAddedToCacheWithNetworkIsolationKey) {
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      features::kSplitHostCacheByNetworkIsolationKey);
+      features::kPartitionConnectionsByNetworkIsolationKey);
 
   MockDnsClientRuleList rules;
   rules.emplace_back("example.com", dns_protocol::kTypeA, false /* secure */,
@@ -859,6 +859,8 @@ TEST_F(ContextHostResolverServiceEndpointTest, DestroyResolver) {
   FakeServiceEndpontRequestDelegate delegate;
   int rv = request->Start(&delegate);
   EXPECT_THAT(rv, test::IsError(ERR_CONTEXT_SHUT_DOWN));
+  EXPECT_THAT(request->GetResolveErrorInfo(),
+              ResolveErrorInfo(ERR_CONTEXT_SHUT_DOWN));
 }
 
 class NetworkBoundResolveContext : public ResolveContext {

@@ -112,9 +112,11 @@ struct IpczMessage : public Channel::Message {
   ~IpczMessage() override = default;
 
   // Channel::Message:
-  void SetHandles(std::vector<PlatformHandle>) override { NOTREACHED(); }
+  void SetHandles(std::vector<PlatformHandle>) override {
+    NOTREACHED_IN_MIGRATION();
+  }
   void SetHandles(std::vector<PlatformHandleInTransit>) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
   std::vector<PlatformHandleInTransit> TakeHandles() override {
     return std::move(handles_);
@@ -123,13 +125,13 @@ struct IpczMessage : public Channel::Message {
 
   const void* data() const override { return data_.get(); }
   void* mutable_data() const override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return nullptr;
   }
   size_t capacity() const override { return size_; }
 
   bool ExtendPayload(size_t) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return false;
   }
 
@@ -1112,7 +1114,7 @@ MOJO_SYSTEM_IMPL_EXPORT bool Channel::SupportsChannelUpgrade() {
 }
 
 MOJO_SYSTEM_IMPL_EXPORT void Channel::OfferChannelUpgrade() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return;
 }
 #endif

@@ -85,10 +85,12 @@ class OzonePlatformDrm : public OzonePlatform {
   }
 
   std::unique_ptr<PlatformScreen> CreateScreen() override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return nullptr;
   }
-  void InitScreen(PlatformScreen* screen) override { NOTREACHED(); }
+  void InitScreen(PlatformScreen* screen) override {
+    NOTREACHED_IN_MIGRATION();
+  }
 
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return drm_device_connector_.get();

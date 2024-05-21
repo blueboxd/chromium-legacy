@@ -12,8 +12,8 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "chrome/browser/ash/app_mode/kiosk_test_helper.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
-#include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
 #include "chrome/browser/ash/login/app_mode/test/kiosk_test_helpers.h"
 #include "chrome/browser/ash/login/demo_mode/demo_mode_test_utils.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
@@ -40,7 +40,6 @@ namespace {
 
 namespace em = enterprise_management;
 using UserSegment = UserTypeByDeviceTypeMetricsProvider::UserSegment;
-using ash::KioskLaunchController;
 using ash::KioskSessionInitializedWaiter;
 using ash::LoginScreenTestApi;
 using ash::ScopedDeviceSettings;
@@ -61,7 +60,7 @@ std::optional<em::PolicyData::MarketSegment> GetMarketSegment(
     case policy::MarketSegment::ENTERPRISE:
       return em::PolicyData::ENROLLED_ENTERPRISE;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return std::nullopt;
 }
 
@@ -82,7 +81,7 @@ std::optional<em::PolicyData::MetricsLogSegment> GetMetricsLogSegment(
     case UserSegment::kDemoMode:
       return std::nullopt;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return std::nullopt;
 }
 
@@ -403,7 +402,7 @@ class UserTypeByDeviceTypeMetricsProviderTest
           policy::DeviceLocalAccount::TYPE_WEB_KIOSK_APP));
   // Not strictly necessary, but makes kiosk tests run much faster.
   base::AutoReset<bool> skip_splash_wait_override_ =
-      KioskLaunchController::SkipSplashScreenWaitForTesting();
+      ash::KioskTestHelper::SkipSplashScreenWait();
   std::unique_ptr<ScopedDeviceSettings> settings_;
 };
 

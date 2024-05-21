@@ -37,7 +37,11 @@ function addPrivacyChildRoutes(r: Partial<SettingsRoutes>) {
     r.PRIVACY_SANDBOX = r.PRIVACY.createChild('/adPrivacy');
     r.PRIVACY_SANDBOX_TOPICS =
         r.PRIVACY_SANDBOX.createChild('/adPrivacy/interests');
-    if (loadTimeData.getBoolean('isProactiveTopicsBlockingEnabled')) {
+    // Manage Topics Route should only be created if PTB is enabled. If user is
+    // in Mode B, only create it if include-mode-b param is true.
+    if (loadTimeData.getBoolean('isProactiveTopicsBlockingEnabled') &&
+        (loadTimeData.getBoolean('proactiveTopicsBlockingIncludesModeB') ||
+         !loadTimeData.getBoolean('isInCookieDeprecationFacilitatedTesting'))) {
       r.PRIVACY_SANDBOX_MANAGE_TOPICS =
           r.PRIVACY_SANDBOX_TOPICS.createChild('/adPrivacy/interests/manage');
     }
@@ -159,7 +163,7 @@ function addPrivacyChildRoutes(r: Partial<SettingsRoutes>) {
 /**
  * Adds Route objects for each path.
  */
-function createBrowserSettingsRoutes(): SettingsRoutes {
+function createRoutes(): SettingsRoutes {
   const r: Partial<SettingsRoutes> = {};
 
   // Root pages.
@@ -265,12 +269,6 @@ function createBrowserSettingsRoutes(): SettingsRoutes {
     r.CAPTIONS = r.ACCESSIBILITY.createChild('/captions');
     // </if>
 
-    // <if expr="is_win">
-    if (!loadTimeData.getBoolean('isWindows10OrNewer')) {
-      r.CAPTIONS = r.ACCESSIBILITY.createChild('/captions');
-    }
-    // </if>
-
     // <if expr="not chromeos_ash">
     r.SYSTEM = r.ADVANCED.createSection(
         '/system', 'system', loadTimeData.getString('systemPageTitle'));
@@ -315,18 +313,25 @@ function createBrowserSettingsRoutes(): SettingsRoutes {
  * @return A router with the browser settings routes.
  */
 export function buildRouter(): Router {
-  return new Router(createBrowserSettingsRoutes());
+  return new Router(createRoutes());
+}
+
+export function resetRouterForTesting(router: Router = buildRouter()) {
+  Router.resetInstanceForTesting(router);
+
+  // Update the exported `routes` variable, otherwise it will be holding stale
+  // routes from the previous singleton instance.
+  routes = Router.getInstance().getRoutes();
 }
 
 Router.setInstance(buildRouter());
-
 window.addEventListener('popstate', function() {
   // On pop state, do not push the state onto the window.history again.
   const routerInstance = Router.getInstance();
   routerInstance.setCurrentRoute(
       routerInstance.getRouteForPath(window.location.pathname) ||
-          (routerInstance.getRoutes() as SettingsRoutes).BASIC,
+          routerInstance.getRoutes().BASIC,
       new URLSearchParams(window.location.search), true);
 });
 
-export const routes = Router.getInstance().getRoutes() as SettingsRoutes;
+export let routes: SettingsRoutes = Router.getInstance().getRoutes();

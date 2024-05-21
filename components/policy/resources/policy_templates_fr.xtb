@@ -4369,6 +4369,15 @@ Sous <ph name="MAC_OS_NAME" />, cette règle n'est disponible que sur les instan
 <translation id="4483738129334574255">Désactiver le jeu easter egg du dinosaure sur les appareils <ph name="PRODUCT_OS_NAME" /> enregistrés, l'activer dans d'autres circonstances</translation>
 <translation id="4484515651939984695">Définir la durée d'affichage (en secondes) d'un appareil Cast sélectionné via un code d'accès ou un code QR dans la liste des appareils Cast du menu <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4485425108474077672">Configurer l'URL de la page "Nouvel onglet"</translation>
+<translation id="4488959486611931919">Remarque : Aucune panne de site n'a été signalée depuis que Chrome a commencé à bloquer ces cookies par défaut à partir de M118. Cette fonctionnalité ne sera donc plus configurable (et cette règle n'aura aucun effet) à partir de M127.
+
+Cette règle permet de désactiver temporairement les modifications apportées à la façon dont Chrome traite les cookies définis via JavaScript qui contiennent certains caractères de contrôle (NULL, retour chariot et saut de ligne).
+Auparavant, la présence d'un de ces caractères dans une chaîne de cookie entraînait sa troncation, mais il restait défini.
+Désormais, toute la chaîne du cookie sera ignorée en présence de ces caractères.
+
+Si cette règle est définie sur "True" (valeur par défaut), le nouveau comportement est activé.
+
+Si cette règle est définie sur "False", l'ancien comportement est activé.</translation>
 <translation id="4490420545181481759">Les certificats X.509 peuvent encoder des contraintes, telles que des contraintes de nom, dans les extensions du certificat. RFC 5280 spécifie que l'application de ces contraintes sur les certificats d'ancres de confiance est facultative. À partir de <ph name="PRODUCT_NAME" /> 112, de telles contraintes dans les certificats chargées à partir du magasin de certificats de la plate-forme seront désormais appliquées.
 
 Cette règle existe en tant que désactivation temporaire, au cas où une entreprise rencontre des problèmes avec les contraintes encodées dans ses racines privées. Dans ce cas, cette règle peut être utilisée pour désactiver temporairement l'application des contraintes tout en corrigeant les problèmes de certificat.
@@ -5377,6 +5386,15 @@ Si cette règle est désactivée, ces deux historiques ne peuvent pas être supp
 <translation id="5323200200131319468">Activer les commentaires audio sur l'écran de connexion</translation>
 <translation id="5323271643727095577">Ne pas afficher de boîte de dialogue d'annulation quand event.preventDefault() est appelé pour l'événement beforeunload. Afficher la boîte de dialogue d'annulation quand beforeunload event.returnValue est la chaîne vide de l'événement beforeunload.</translation>
 <translation id="5324430722441910403">Paramètres de recherche sur site</translation>
+<translation id="5326431956495937408">Si cette règle est activée, l'utilisateur peut envoyer ses mots de passe à des membres de sa famille et en recevoir de leur part (selon les services destinés aux familles).
+Si cette règle est activée ou n'est pas configurée, le Gestionnaire de mots de passe propose un bouton qui permet d'envoyer un mot de passe.
+Les mots de passe reçus sont stockés dans le compte de l'utilisateur et disponibles dans le Gestionnaire de mots de passe.
+
+Si cette règle est désactivée, l'utilisateur ne peut pas envoyer de mots de passe à d'autres utilisateurs depuis le Gestionnaire de mots de passe ni en recevoir de la part d'autres utilisateurs.
+
+Cette fonctionnalité n'est pas disponible si la synchronisation des mots de passe est désactivée (soit dans les paramètres de l'utilisateur, soit si la règle <ph name="SYNC_DISABLED" /> est activée).
+
+Les comptes gérés ne peuvent pas rejoindre ni créer de groupe familial, et ne peuvent donc pas partager de mots de passe.</translation>
 <translation id="532848608876725157">Activer DNS-over-HTTPS avec solution de secours à risque</translation>
 <translation id="5328965694451556034">Signaler une connexion/déconnexion</translation>
 <translation id="5329018127554115226">Le mode Haute efficacité sera désactivé.</translation>
@@ -7088,13 +7106,6 @@ Pour que les modifications apportées à cette règle puissent être appliquées
 <translation id="66265932317331474">Transmettre les informations concernant le ou les processeurs</translation>
 <translation id="6628120204569232711">Envoyer des rapports sur l'état du stockage</translation>
 <translation id="662991036483361836">Empêcher les utilisateurs d'activer le Partage à proximité</translation>
-<translation id="6634974629075330608">Cette règle permet de désactiver temporairement les modifications apportées à la façon dont Chrome traite les cookies définis via JavaScript qui contiennent certains caractères de contrôle (NULL, retour chariot et saut de ligne).
-Auparavant, la présence d'un de ces caractères dans une chaîne de cookie entraînait sa troncation, mais il restait défini.
-Désormais, toute la chaîne du cookie sera ignorée en présence de ces caractères.
-
-Si cette règle est définie sur "True" (valeur par défaut), le nouveau comportement est activé.
-
-Si cette règle est définie sur "False", l'ancien comportement est activé.</translation>
 <translation id="663685822663765995">Limiter l'impression en mode couleur</translation>
 <translation id="6640355849038068978">Si ce paramètre est activé, les utilisateurs pourront lancer l'application Eche, par exemple en cliquant sur une notification Phone Hub.
 
@@ -7853,6 +7864,13 @@ Remarque : Si vous utilisez cette règle pour résoudre automatiquement le fuse
       Pour en savoir plus sur les formats <ph name="URL_LABEL" /> valides, consultez la page https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="719398790886719721">Désactiver l'accès racine aux machines virtuelles Linux</translation>
 <translation id="7194407337890404814">Nom du moteur de recherche par défaut</translation>
+<translation id="7196336906814426783">Cette règle définit une série d'intervalles hebdomadaires pour la planification des suspensions automatiques. L'appareil <ph name="PRODUCT_OS_NAME" /> passe en mode suspendu au début d'un intervalle, puis se réactive à la fin de l'intervalle.
+
+Les plannings dont les intervalles se chevauchent ne sont pas acceptés. Cette règle n'aura aucune effet si elle contient deux intervalles qui se chevauchent.
+
+Les appareils <ph name="PRODUCT_OS_NAME" /> utiliseront le fuseau horaire du système pour appliquer ces intervalles.
+
+Remarque importante : Il est possible que les plannings définis par cette règle ne soient pas suivis comme prévu s'ils entrent en conflit avec d'autres paramètres de gestion de l'alimentation, comme <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />. Assurez-vous que ces paramètres sont configurés pour permettre l'application des intervalles de suspension planifiés.</translation>
 <translation id="7198134478421755850">Extension</translation>
 <translation id="7199304109870655950">Configurez les options d'accès à distance dans l'hôte Bureau à distance Chrome.
 

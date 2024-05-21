@@ -52,7 +52,8 @@ bool IsFooterSuggestionType(SuggestionType type) {
     case SuggestionType::kAddressEntry:
     case SuggestionType::kAddressFieldByFieldFilling:
     case SuggestionType::kAutocompleteEntry:
-    case SuggestionType::kCompose:
+    case SuggestionType::kComposeResumeNudge:
+    case SuggestionType::kComposeProactiveNudge:
     case SuggestionType::kComposeDisable:
     case SuggestionType::kComposeGoToSettings:
     case SuggestionType::kComposeNeverShowOnThisSiteAgain:
@@ -97,6 +98,11 @@ bool IsFooterItem(const std::vector<Suggestion>& suggestions,
   return type == SuggestionType::kSeparator
              ? IsFooterItem(suggestions, line_number + 1)
              : IsFooterSuggestionType(type);
+}
+
+bool IsStandaloneSuggestionType(SuggestionType type) {
+  return !IsFooterSuggestionType(type) ||
+         (type == SuggestionType::kScanCreditCard);
 }
 
 content::RenderFrameHost* GetRenderFrameHost(

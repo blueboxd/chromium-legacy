@@ -26,7 +26,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/helper.h"
-#include "chrome/browser/ash/login/users/avatar/user_image_loader.h"
+#include "chrome/browser/ash/login/users/avatar/user_image_loader_delegate.h"
 #include "chrome/browser/ash/login/users/avatar/user_image_prefs.h"
 #include "chrome/browser/ash/login/users/avatar/user_image_sync_observer.h"
 #include "chrome/browser/ash/login/users/default_user_image/default_user_images.h"
@@ -54,13 +54,13 @@ namespace ash {
 namespace {
 
 // Delay between user login and attempt to update user's profile data.
-const int kProfileDataDownloadDelaySec = 10;
+constexpr int kProfileDataDownloadDelaySec = 10;
 
 // Interval between retries to update user's profile data.
-const int kProfileDataDownloadRetryIntervalSec = 300;
+constexpr int kProfileDataDownloadRetryIntervalSec = 300;
 
 // Delay between subsequent profile refresh attempts (24 hrs).
-const int kProfileRefreshIntervalSec = 24 * 3600;
+constexpr int kProfileRefreshIntervalSec = 24 * 3600;
 
 static bool g_ignore_profile_data_download_delay_ = false;
 
@@ -110,7 +110,7 @@ const char* ChooseExtensionFromImageFormat(
     case user_manager::UserImage::FORMAT_WEBP:
       return ".webp";
     default:
-      NOTREACHED() << "Invalid format: " << image_format;
+      NOTREACHED_IN_MIGRATION() << "Invalid format: " << image_format;
       return ".jpg";
   }
 }
@@ -234,6 +234,10 @@ class UserImageManagerImpl::Job {
 
   const AccountId& account_id() const { return parent_->account_id_; }
 
+  UserImageLoaderDelegate* user_image_loader_delegate() {
+    return parent_->user_image_loader_delegate_;
+  }
+
   raw_ptr<UserImageManagerImpl, DanglingUntriaged> parent_;
 
   // Whether one of the Load*() or Set*() methods has been run already.
@@ -288,7 +292,7 @@ void UserImageManagerImpl::Job::LoadImage(base::FilePath image_path,
       }
       // Fetch the default image from cloud before caching it.
       image_url_ = default_user_image::GetDefaultImageUrl(image_index_);
-      user_image_loader::StartWithGURLAnimated(
+      user_image_loader_delegate()->FromGURLAnimated(
           image_url_, base::BindOnce(&Job::OnLoadImageDone,
                                      weak_factory_.GetWeakPtr(), true));
     }
@@ -306,7 +310,7 @@ void UserImageManagerImpl::Job::LoadImage(base::FilePath image_path,
         base::BindOnce(&Job::OnLoadImageDone, weak_factory_.GetWeakPtr(),
                        false));
   } else {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     NotifyJobDone();
   }
 }
@@ -335,7 +339,7 @@ void UserImageManagerImpl::Job::SetToDefaultImage(int default_image_index) {
     return;
   }
 
-  user_image_loader::StartWithGURLAnimated(
+  user_image_loader_delegate()->FromGURLAnimated(
       image_url_,
       base::BindOnce(&Job::OnLoadImageDone, weak_factory_.GetWeakPtr(), true));
 }
@@ -538,9 +542,11 @@ void UserImageManagerImpl::Job::NotifyJobDone() {
 
 UserImageManagerImpl::UserImageManagerImpl(
     const AccountId& account_id,
-    user_manager::UserManager* user_manager)
+    user_manager::UserManager* user_manager,
+    UserImageLoaderDelegate* user_image_loader_delegate)
     : account_id_(account_id),
       user_manager_(user_manager),
+      user_image_loader_delegate_(user_image_loader_delegate),
       downloading_profile_image_(false),
       has_managed_image_(false) {
   background_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
@@ -567,7 +573,7 @@ void UserImageManagerImpl::LoadUserImage() {
   int image_index = image_properties->FindInt(kImageIndexNodeName)
                         .value_or(user_manager::User::USER_IMAGE_INVALID);
   if (image_index == user_manager::User::USER_IMAGE_INVALID) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return;
   }
 
@@ -620,7 +626,8 @@ void UserImageManagerImpl::UserLoggedIn(bool user_is_new, bool user_is_local) {
     // correspond to (a) special constants and (b) indexes of an array
     // containing resource IDs.
     base::UmaHistogramExactLinear(
-        "UserImage.LoggedIn3", ImageIndexToHistogramIndex(user->image_index()),
+        kUserImageLoggedInHistogramName,
+        ImageIndexToHistogramIndex(user->image_index()),
         default_user_image::kHistogramImagesCount + 1);
   }
 
@@ -968,7 +975,7 @@ void UserImageManagerImpl::OnJobDone() {
     base::SingleThreadTaskRunner::GetCurrentDefault()->DeleteSoon(
         FROM_HERE, job_.release());
   } else {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 }
 

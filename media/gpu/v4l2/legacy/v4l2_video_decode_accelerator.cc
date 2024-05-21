@@ -196,13 +196,15 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
   }
 
   if (config.is_encrypted()) {
-    NOTREACHED() << "Encrypted streams are not supported for this VDA";
+    NOTREACHED_IN_MIGRATION()
+        << "Encrypted streams are not supported for this VDA";
     return false;
   }
 
   if (config.output_mode != Config::OutputMode::kAllocate &&
       config.output_mode != Config::OutputMode::kImport) {
-    NOTREACHED() << "Only ALLOCATE and IMPORT OutputModes are supported";
+    NOTREACHED_IN_MIGRATION()
+        << "Only ALLOCATE and IMPORT OutputModes are supported";
     return false;
   }
 
@@ -1454,7 +1456,7 @@ bool V4L2VideoDecodeAccelerator::EnqueueOutputRecord(
       ret = std::move(buffer).QueueDMABuf(output_record.output_frame);
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 
   if (!ret) {
@@ -2351,8 +2353,8 @@ bool V4L2VideoDecodeAccelerator::ProcessFrame(int32_t bitstream_buffer_id,
           static_cast<const uint8_t*>(buf->GetPlaneMapping(0)),
           static_cast<const uint8_t*>(buf->GetPlaneMapping(1)),
           buf->GetPlaneBytesUsed(0), buf->GetPlaneBytesUsed(1),
-          mapped_output_frame->GetWritableVisibleData(VideoFrame::kYPlane),
-          mapped_output_frame->GetWritableVisibleData(VideoFrame::kUVPlane));
+          mapped_output_frame->GetWritableVisibleData(VideoFrame::Plane::kY),
+          mapped_output_frame->GetWritableVisibleData(VideoFrame::Plane::kUV));
     }
 
     FrameProcessed(bitstream_buffer_id, buf->BufferId(), mapped_output_frame);

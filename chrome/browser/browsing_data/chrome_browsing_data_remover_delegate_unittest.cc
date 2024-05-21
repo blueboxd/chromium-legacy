@@ -23,6 +23,7 @@
 #include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/scoped_observation.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -149,6 +150,7 @@
 #include "components/privacy_sandbox/privacy_sandbox_attestations/privacy_sandbox_attestations.h"
 #include "components/privacy_sandbox/privacy_sandbox_attestations/scoped_privacy_sandbox_attestations.h"
 #include "components/privacy_sandbox/privacy_sandbox_settings.h"
+#include "components/privacy_sandbox/privacy_sandbox_test_util.h"
 #include "components/reading_list/core/mock_reading_list_model_observer.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/safe_browsing/core/browser/verdict_cache_manager.h"
@@ -181,6 +183,7 @@
 #include "net/base/network_anonymization_key.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_access_result.h"
+#include "net/cookies/cookie_partition_key_collection.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_auth_cache.h"
 #include "net/http/http_transaction_factory.h"
@@ -997,12 +1000,12 @@ class MockReportingService : public net::ReportingService {
       const url::Origin& origin,
       const net::IsolationInfo& isolation_info,
       const base::flat_map<std::string, std::string>& endpoints) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   void SendReportsAndRemoveSource(
       const base::UnguessableToken& reporting_source) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   void QueueReport(
@@ -1014,14 +1017,14 @@ class MockReportingService : public net::ReportingService {
       const std::string& type,
       base::Value::Dict body,
       int depth) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   void ProcessReportToHeader(
       const url::Origin& origin,
       const net::NetworkAnonymizationKey& network_anonymization_key,
       const std::string& header_value) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   void RemoveBrowsingData(
@@ -1043,25 +1046,25 @@ class MockReportingService : public net::ReportingService {
 
   const net::ReportingPolicy& GetPolicy() const override {
     static net::ReportingPolicy dummy_policy_;
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return dummy_policy_;
   }
 
   net::ReportingContext* GetContextForTesting() const override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return nullptr;
   }
 
   std::vector<raw_ptr<const net::ReportingReport, VectorExperimental>>
   GetReports() const override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return std::vector<
         raw_ptr<const net::ReportingReport, VectorExperimental>>();
   }
 
   base::flat_map<url::Origin, std::vector<net::ReportingEndpoint>>
   GetV1ReportingEndpointsByOrigin() const override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return base::flat_map<url::Origin, std::vector<net::ReportingEndpoint>>();
   }
 
@@ -1103,13 +1106,13 @@ class MockNetworkErrorLoggingService : public net::NetworkErrorLoggingService {
                 const url::Origin& origin,
                 const net::IPAddress& received_ip_address,
                 const std::string& value) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   void OnRequest(RequestDetails details) override {}
 
   void QueueSignedExchangeReport(SignedExchangeReportDetails details) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   void RemoveBrowsingData(
@@ -2001,6 +2004,20 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveExternalProtocolData) {
   profile->GetPrefs()->SetDict(prefs::kProtocolHandlerPerOriginAllowedProtocols,
                                std::move(prefs));
 
+  EXPECT_FALSE(profile->GetPrefs()
+                   ->GetDict(prefs::kProtocolHandlerPerOriginAllowedProtocols)
+                   .empty());
+
+  auto filter_builder = BrowsingDataFilterBuilder::Create(
+      BrowsingDataFilterBuilder::Mode::kDelete);
+  filter_builder->AddOrigin(test_origin);
+
+  BlockUntilOriginDataRemoved(AnHourAgo(), base::Time::Max(),
+                              constants::DATA_TYPE_EXTERNAL_PROTOCOL_DATA,
+                              std::move(filter_builder));
+
+  // This data type doesn't implement per-origin deletion so just test that
+  // nothing got removed.
   EXPECT_FALSE(profile->GetPrefs()
                    ->GetDict(prefs::kProtocolHandlerPerOriginAllowedProtocols)
                    .empty());
@@ -4032,6 +4049,20 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   EXPECT_EQ(3u, prefs->GetDict(kPermissionActionsPrefPath)
                     .FindList("notifications")
                     ->size());
+
+  auto filter_builder = BrowsingDataFilterBuilder::Create(
+      BrowsingDataFilterBuilder::Mode::kDelete);
+  filter_builder->AddRegisterableDomain("example.com");
+  BlockUntilOriginDataRemoved(first_recorded_time, third_recorded_time,
+                              constants::DATA_TYPE_SITE_USAGE_DATA,
+                              std::move(filter_builder));
+
+  // This data type doesn't implement per-origin deletion so just test that
+  // nothing got removed.
+  EXPECT_EQ(3u, prefs->GetDict(kPermissionActionsPrefPath)
+                    .FindList("notifications")
+                    ->size());
+
   // Remove the first and the second element.
   BlockUntilBrowsingDataRemoved(first_recorded_time, third_recorded_time,
                                 constants::DATA_TYPE_SITE_USAGE_DATA, false);
@@ -4286,6 +4317,56 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+// When most cookies are cleared, PrivacySandboxSettings should call the
+// OnTopicsDataAccessibleSinceUpdated() method of its observers.
+TEST_F(ChromeBrowsingDataRemoverDelegateTest,
+       Call_OnTopicsDataAccessibleSinceUpdated_WhenClearingMostCookies) {
+  privacy_sandbox::PrivacySandboxSettings* settings =
+      PrivacySandboxSettingsFactory::GetForProfile(GetProfile());
+  privacy_sandbox_test_util::MockPrivacySandboxObserver observer;
+  base::ScopedObservation<privacy_sandbox::PrivacySandboxSettings,
+                          privacy_sandbox::PrivacySandboxSettings::Observer>
+      obs(&observer);
+  obs.Observe(settings);
+
+  EXPECT_CALL(observer, OnTopicsDataAccessibleSinceUpdated()).Times(1);
+
+  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder =
+      BrowsingDataFilterBuilder::Create(
+          BrowsingDataFilterBuilder::Mode::kPreserve);
+  filter_builder->AddRegisterableDomain("example.test");
+  ASSERT_TRUE(filter_builder->MatchesMostOriginsAndDomains());
+  BlockUntilOriginDataRemoved(base::Time::Min(), base::Time::Max(),
+                              content::BrowsingDataRemover::DATA_TYPE_COOKIES,
+                              std::move(filter_builder));
+}
+
+// If only some cookies are cleared, PrivacySandboxSettings should NOT call the
+// OnTopicsDataAccessibleSinceUpdated() method of its observers.
+TEST_F(
+    ChromeBrowsingDataRemoverDelegateTest,
+    DontCall_OnTopicsDataAccessibleSinceUpdated_WhenOnlyClearingPartitionedCookies) {
+  privacy_sandbox::PrivacySandboxSettings* settings =
+      PrivacySandboxSettingsFactory::GetForProfile(GetProfile());
+  privacy_sandbox_test_util::MockPrivacySandboxObserver observer;
+  base::ScopedObservation<privacy_sandbox::PrivacySandboxSettings,
+                          privacy_sandbox::PrivacySandboxSettings::Observer>
+      obs(&observer);
+  obs.Observe(settings);
+
+  EXPECT_CALL(observer, OnTopicsDataAccessibleSinceUpdated()).Times(0);
+
+  // Create a filter builder that deletes only partitioned cookies.
+  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder =
+      BrowsingDataFilterBuilder::Create(
+          BrowsingDataFilterBuilder::Mode::kPreserve);
+  filter_builder->SetPartitionedCookiesOnly(true);
+  ASSERT_FALSE(filter_builder->MatchesMostOriginsAndDomains());
+  BlockUntilOriginDataRemoved(base::Time::Min(), base::Time::Max(),
+                              content::BrowsingDataRemover::DATA_TYPE_COOKIES,
+                              std::move(filter_builder));
+}
+
 class ChromeBrowsingDataRemoverDelegateOriginTrialsTest
     : public ChromeBrowsingDataRemoverDelegateTest {
  public:
@@ -4479,7 +4560,7 @@ class ChromeBrowsingDataRemoverDelegateTpcdMetadataTest
     : public ChromeBrowsingDataRemoverDelegateTest {
  public:
   ChromeBrowsingDataRemoverDelegateTpcdMetadataTest() {
-    feature_list_.InitWithFeatures({net::features::kTpcdMetadataStagedRollback},
+    feature_list_.InitWithFeatures({net::features::kTpcdMetadataStageControl},
                                    {});
   }
 };
@@ -4558,7 +4639,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTpcdMetadataTest, ResetAllCohorts) {
   }
 }
 
-TEST_F(ChromeBrowsingDataRemoverDelegateTpcdMetadataTest, ResetAllCohort_PreserveMode) {
+TEST_F(ChromeBrowsingDataRemoverDelegateTpcdMetadataTest,
+       ResetAllCohort_PreserveSome) {
   auto tester = RemoveTpcdMetadataCohortsTester(GetProfile());
 
   const std::string primary_pattern_spec = "https://example1.com";
@@ -4613,12 +4695,12 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTpcdMetadataTest, ResetAllCohort_Preserv
         content_settings::mojom::TpcdMetadataCohort::GRACE_PERIOD_FORCED_ON);
   }
 
-  // Apply deletion of cookies with preservation of select URL.
-  // NOTE: This is still expected to reset all cohorts.
+  // Apply deletion of all cookies.
   std::unique_ptr<BrowsingDataFilterBuilder> filter(
       BrowsingDataFilterBuilder::Create(
           BrowsingDataFilterBuilder::Mode::kPreserve));
   filter->AddRegisterableDomain(GURL(primary_pattern_spec).host());
+  ASSERT_TRUE(filter->MatchesMostOriginsAndDomains());
   BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
                               content::BrowsingDataRemover::DATA_TYPE_COOKIES,
                               std::move(filter));

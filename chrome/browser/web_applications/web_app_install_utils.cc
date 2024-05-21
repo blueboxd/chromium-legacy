@@ -278,7 +278,7 @@ apps::ShareTarget::Method ToAppsShareTargetMethod(
     case blink::mojom::ManifestShareTarget_Method::kPost:
       return apps::ShareTarget::Method::kPost;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 apps::ShareTarget::Enctype ToAppsShareTargetEnctype(
@@ -289,7 +289,7 @@ apps::ShareTarget::Enctype ToAppsShareTargetEnctype(
     case blink::mojom::ManifestShareTarget_Enctype::kMultipartFormData:
       return apps::ShareTarget::Enctype::kMultipartFormData;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 std::optional<apps::ShareTarget> ToWebAppShareTarget(
@@ -759,31 +759,6 @@ void UpdateWebAppInfoFromManifest(const blink::mojom::Manifest& manifest,
         static_cast<SkColor>(manifest.background_color), SK_AlphaOPAQUE);
   }
 
-  if (manifest.has_dark_theme_color) {
-    web_app_info->dark_mode_theme_color = SkColorSetA(
-        static_cast<SkColor>(manifest.dark_theme_color), SK_AlphaOPAQUE);
-  } else if (manifest.user_preferences &&
-             manifest.user_preferences->color_scheme_dark &&
-             manifest.user_preferences->color_scheme_dark->has_theme_color) {
-    web_app_info->dark_mode_theme_color = SkColorSetA(
-        static_cast<SkColor>(
-            manifest.user_preferences->color_scheme_dark->theme_color),
-        SK_AlphaOPAQUE);
-  }
-
-  if (manifest.has_dark_background_color) {
-    web_app_info->dark_mode_background_color = SkColorSetA(
-        static_cast<SkColor>(manifest.dark_background_color), SK_AlphaOPAQUE);
-  } else if (manifest.user_preferences &&
-             manifest.user_preferences->color_scheme_dark &&
-             manifest.user_preferences->color_scheme_dark
-                 ->has_background_color) {
-    web_app_info->dark_mode_background_color = SkColorSetA(
-        static_cast<SkColor>(
-            manifest.user_preferences->color_scheme_dark->background_color),
-        SK_AlphaOPAQUE);
-  }
-
   if (manifest.display != DisplayMode::kUndefined)
     web_app_info->display_mode = manifest.display;
 
@@ -1036,12 +1011,13 @@ webapps::WebappUninstallSource ConvertExternalInstallSourceToUninstallSource(
     case ExternalInstallSource::kSystemInstalled:
       return webapps::WebappUninstallSource::kSystemPreinstalled;
     case ExternalInstallSource::kKiosk:
-      NOTREACHED() << "Kiosk apps should not be uninstalled";
+      NOTREACHED_IN_MIGRATION() << "Kiosk apps should not be uninstalled";
       return webapps::WebappUninstallSource::kUnknown;
     case ExternalInstallSource::kExternalLockScreen:
       return webapps::WebappUninstallSource::kExternalLockScreen;
     case ExternalInstallSource::kInternalMicrosoft365Setup:
-      NOTREACHED() << "Microsoft 365 apps should not be uninstalled externally";
+      NOTREACHED_IN_MIGRATION()
+          << "Microsoft 365 apps should not be uninstalled externally";
       return webapps::WebappUninstallSource::kUnknown;
   }
 }
@@ -1112,7 +1088,7 @@ WebAppManagement::Type ConvertInstallSurfaceToWebAppSource(
       return WebAppManagement::kOneDriveIntegration;
 
     case webapps::WebappInstallSource::COUNT:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return WebAppManagement::kSync;
   }
 }

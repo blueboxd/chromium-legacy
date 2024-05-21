@@ -1272,10 +1272,6 @@ void CollectAncestorRoles(
     [axAttributes addObject:NSAccessibilityDetailsElementsAttribute];
   }
 
-  // Drop effect.
-  if (_node->HasHtmlAttribute("aria-dropeffect"))
-    [axAttributes addObject:NSAccessibilityDropEffectsAttribute];
-
   // Error messages.
   if (_node->HasIntListAttribute(
           ax::mojom::IntListAttribute::kErrormessageIds)) {
@@ -1439,7 +1435,7 @@ void CollectAncestorRoles(
 
   switch (static_cast<ax::mojom::AriaCurrentState>(ariaCurrent)) {
     case ax::mojom::AriaCurrentState::kNone:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return @"false";
     case ax::mojom::AriaCurrentState::kFalse:
       return @"false";
@@ -1457,7 +1453,7 @@ void CollectAncestorRoles(
       return @"time";
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return @"false";
 }
 
@@ -1603,10 +1599,6 @@ void CollectAncestorRoles(
     return base::SysUTF8ToNSString(id);
 
   return @"";
-}
-
-- (NSString*)AXDropEffects {
-  return nil;
 }
 
 - (id)AXEditableAncestor {

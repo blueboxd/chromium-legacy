@@ -15,6 +15,7 @@
 <translation id="1058669287135776095">Nimate vzpostavljene povezave. Preverite internetno povezavo in poskusite znova.</translation>
 <translation id="10614374240317010">Nikoli shranjeno</translation>
 <translation id="107147699690128016">Če spremenite pripono datoteke, se lahko datoteka odpre v drugem programu in je lahko morebitno škodljiva za vašo napravo.</translation>
+<translation id="1080365971383768617">Gesla v vseh napravah</translation>
 <translation id="1082920045291562218">Zaprto deljenje s povzetkom povratnih informacij</translation>
 <translation id="1089606299949659462">Pregled je končan!</translation>
 <translation id="1095761715416917775">Poskrbite, da boste ves čas lahko dostopali do podatkov sinhronizacije</translation>
@@ -81,6 +82,7 @@
 <translation id="1383876407941801731">Išči</translation>
 <translation id="1384704387250346179">Prevedi sliko z Googlom Lens <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="1386674309198842382">Aktivna pred toliko dnevi: <ph name="LAST_UPDATED" /></translation>
+<translation id="1390418506739274310">Morda bo prikazana zgodovina drugih aplikacij, ki odpirajo povezave v Chromu. V računu Google so morda druge vrste zgodovine brskanja na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="13931502444227376">Če želite nadaljevati, bo ponudnik <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> delil vaše ime, e-poštni naslov in profilno sliko s tem spletnim mestom. Oglejte si <ph name="BEGIN_LINK1" />pogoje storitve<ph name="END_LINK1" /> tega spletnega mesta.</translation>
 <translation id="1397811292916898096">Iskanje z iskalnikom <ph name="PRODUCT_NAME" /></translation>
 <translation id="1407069428457324124">Temna tema</translation>
@@ -96,6 +98,7 @@
 <translation id="1448440926884431741">Organizirajte spremljane izdelke v zaznamkih.</translation>
 <translation id="1466383950273130737">Izbierite Chromov jezik</translation>
 <translation id="1477626028522505441">Prenos datoteke <ph name="FILE_NAME" /> ni uspel zaradi težav s strežnikom.</translation>
+<translation id="1480287803138246127">Del vaše zgodovine morda ne bo prikazan tukaj. Če si želite ogledati vso zgodovino uporabe Chroma, odprite celotno zgodovino uporabe Chroma.</translation>
 <translation id="148482509007564431">Postopek shranjevanja zaznamka</translation>
 <translation id="1492417797159476138">Za to spletno mesto ste že shranili to uporabniško ime.</translation>
 <translation id="1493287004536771723">Spremljate spletno mesto <ph name="SITE_NAME" /></translation>
@@ -156,6 +159,7 @@
 <translation id="1825772852827001597">Plačilna sredstva in naslovi iz Googla Pay ne bodo šifrirani. Zgodovina brskanja v Chromu se ne bo sinhronizirala.
 Vaše šifrirane podatke lahko bere samo oseba, ki ima vaše geslo. Geslo ni poslano Googlu in ga Google ne hrani. Če pozabite geslo ali želite to nastavitev spremeniti, <ph name="BEGIN_LINK" />izbrišite podatke iz Chroma v računu<ph name="END_LINK" />.</translation>
 <translation id="1829244130665387512">Poiščite na strani</translation>
+<translation id="1832459821645506983">Da, sem za</translation>
 <translation id="185383612275551373">S sinhronizacijo si zagotovite najustreznejšo vsebino iz Googla.</translation>
 <translation id="1871098866036088250">Odpri v brskalniku Chrome</translation>
 <translation id="1877026089748256423">Chrome je zastarel</translation>
@@ -371,7 +375,6 @@ Vaše šifrirane podatke lahko bere samo oseba, ki ima vaše geslo. Geslo ni pos
 <translation id="2951071800649516099">Dodajte strani na bralni seznam za pozneje.</translation>
 <translation id="2956070106555335453">Povzetek</translation>
 <translation id="2961208450284224863">{READING_LIST_UNREAD_PAGE_COUNT,plural, =1{<ph name="READING_LIST_UNREAD_PAGE_COUNT_ONE" /> neprebrana stran}one{<ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> neprebrana stran}two{<ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> neprebrani strani}few{<ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> neprebrane strani}other{<ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> neprebranih strani}}</translation>
-<translation id="296370266220139811">Prihranite čas in tipkajte manj</translation>
 <translation id="2977350910003566746">Razvrščanje po nazadnje odprtih</translation>
 <translation id="297771753501244313">Razvrsti po naz. odprt.</translation>
 <translation id="2979025552038692506">Izbrani anonimni zavihek</translation>
@@ -387,6 +390,7 @@ Vaše šifrirane podatke lahko bere samo oseba, ki ima vaše geslo. Geslo ni pos
 <translation id="3003253259757197230">URL-ji, ki jih obiščete, se pošljejo Googlu zaradi predvidevanja, katera spletna mesta boste morda obiskali, in zaradi prikaza dodatnih informacij o strani, ki ste jo obiskali</translation>
 <translation id="3026955690410463085">Vključi povezavo</translation>
 <translation id="3027644380269727216">Na podlagi vaše dejavnosti na spletnem mestu. Ta nastavitev je vklopljena.</translation>
+<translation id="3027950907978057636">Iz aplikacije <ph name="APP_LABEL" /></translation>
 <translation id="3029276696788198026">Brez vnaprejšnjega nalaganja</translation>
 <translation id="3029704984691124060">Gesli se ne ujemata</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Poiščite pomoč<ph name="END_LINK" /></translation>
@@ -424,6 +428,7 @@ Vaše šifrirane podatke lahko bere samo oseba, ki ima vaše geslo. Geslo ni pos
 <translation id="3226612997184048185">Če v računu Google shranite tudi zaznamke, lahko v Chromu spremljate cene izdelkov in prejmete obvestilo, ko se cena zniža</translation>
 <translation id="3227557059438308877">Google Chrome kot varnostni ključ</translation>
 <translation id="3232293466644486101">Izbriši podatke brskanja …</translation>
+<translation id="3232459301230493791">Izbrisanih je toliko zavihkov: <ph name="TAB_COUNT" /></translation>
 <translation id="3232754137068452469">Spletna aplikacija</translation>
 <translation id="3236059992281584593">Še 1 min</translation>
 <translation id="3237087289225714896">Standardno vnaprejšnje nalaganje:</translation>
@@ -479,6 +484,7 @@ Vaše šifrirane podatke lahko bere samo oseba, ki ima vaše geslo. Geslo ni pos
 <translation id="3518985090088779359">Sprejmi in nadaljuj</translation>
 <translation id="3521388823983121502">Z računom ponudnika identitete <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> ni mogoče nadaljevati</translation>
 <translation id="3522247891732774234">Posodobitev je na voljo. Več možnosti.</translation>
+<translation id="3523789730715594198">Sinhronizacijo lahko kadar koli ustavite v nastavitvah. Google lahko prilagodi Iskanje Google in druge storitve glede na vašo zgodovino.</translation>
 <translation id="3524138585025253783">Uporabniški vmesnik za razvijalce</translation>
 <translation id="3524334353996115845">Naj <ph name="ORIGIN" /> preveri, da sta to vi.</translation>
 <translation id="3527085408025491307">Mapa</translation>
@@ -761,12 +767,12 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4932247056774066048">Ker se odjavljate iz računa, ki ga upravlja <ph name="DOMAIN_NAME" />, bodo podatki v Chromu izbrisani iz te naprave. Ostali bodo v računu Google.</translation>
 <translation id="4943703118917034429">Navidezna resničnost</translation>
 <translation id="4943872375798546930">Ni rezultatov</translation>
-<translation id="4947095514661310122">iz: <ph name="APP_LABEL" /></translation>
 <translation id="4950924971025849764">Če ste prijavljeni v isti račun Google, lahko druge naprave uporabljajo ta telefon kot varnostni ključ.</translation>
 <translation id="4957722034734105353">Več o tem ...</translation>
 <translation id="4961107849584082341">Prevedite to stran v kateri koli jezik</translation>
 <translation id="496607651705915226">Če želite v računu Google shraniti in uporabljati nova gesla, posodobite storitve Google Play</translation>
 <translation id="4971735654804503942">Hitrejša, še boljša zaščita proti nevarnim spletnim mestom, prenosom in razširitvam. Opozori vas glede kršitev gesel. Zahteva pošiljanje podatkov brskanja Googlu.</translation>
+<translation id="4971753085054504448">Poskusite poiskati nekaj drugega ali odprite celotno zgodovino uporabe Chroma, da si ogledate več rezultatov.</translation>
 <translation id="497421865427891073">Pojdi naprej</translation>
 <translation id="4987271110129728827">Te strani ni mogoče najti. Preverite črkovanje ali poskusite spletno iskanje.</translation>
 <translation id="4988526792673242964">Strani</translation>
@@ -862,6 +868,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5515439363601853141">Odklenite, če si želite ogledati geslo</translation>
 <translation id="5517095782334947753">Iz računa <ph name="FROM_ACCOUNT" /> imate zaznamke, zgodovino, gesla in druge nastavitve.</translation>
 <translation id="5524843473235508879">Preusmeritev je bila blokirana.</translation>
+<translation id="5526281268548144413">Ni mogoče zapreti v več oknih</translation>
 <translation id="5528925345478618296">{MINUTES,plural, =1{Pred # min}one{Pred # min}two{Pred # min}few{Pred # min}other{Pred # min}}</translation>
 <translation id="5548606607480005320">Varnostno preverjanje</translation>
 <translation id="5554520618550346933">Ko uporabite geslo, vas Chrome opozori, če je bilo objavljeno v spletu. Pri tem so vaša gesla in uporabniška imena šifrirana, da jih ne more prebrati nihče, vključno z Googlom.</translation>
@@ -1005,6 +1012,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažejo oglase, ki ne temeljijo na drugih spletnih mestih, ki ste jih obiskali. Veliko spletnih mest bo še vedno zbiralo in uporabljalo vaše podatke o brskanju, na primer za izboljšanje varnosti, zagotavljanje vsebine, oglasov in priporočil ter za pridobivanje statističnih podatkov za poročanje.</translation>
 <translation id="6233974827872475843">Shranjevanje gesel v tej napravi v račun Google z vklopom sinhronizacije</translation>
 <translation id="6247557882553405851">Googlov upravitelj gesel</translation>
+<translation id="6251449557817521191">Tukaj si lahko ogledate zgodovino uporabe Chroma</translation>
 <translation id="6255794742848779505">Spreminjamo način shranjevanja gesel v tej napravi</translation>
 <translation id="6264376385120300461">Vseeno prenesi</translation>
 <translation id="6277522088822131679">Pri tiskanju strani je prišlo do težave. Poskusite znova.</translation>
@@ -1052,6 +1060,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6459045781120991510">Ankete</translation>
 <translation id="6461962085415701688">Datoteke ni mogoče odpreti</translation>
 <translation id="6464977750820128603">Ogledate si lahko spletna mesta, ki jih obiščete v Chromu, in zanje nastavite merilnike časa.\n\nGoogle dobi podatke o spletnih mestih, za katere nastavite merilnike časa, in o tem, kako dolgo traja vaš obisk teh mest. Te podatke uporabljamo za izboljšanje Digitalne dobrobiti.</translation>
+<translation id="6470181189905173055">Strani, ki ste jih odprli v Chromu, ko ste uporabljali aplikacijo <ph name="APP_LABEL" />, bodo prikazane tukaj.</translation>
 <translation id="6473086018775716761">Seznam možnosti deljenja z drugimi je odprt pri polovični višini.</translation>
 <translation id="6475951671322991020">Prenos videoposnetka</translation>
 <translation id="6477928892249167417">Videti je, da so vam ta spletna mesta pomembna:</translation>
@@ -1132,11 +1141,13 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6813446258015311409">Prijava v Chrome, odprto.</translation>
 <translation id="6817747507826986771">Hitro delite to stran. Če želite urediti to bližnjico, pridržite.</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6822587385560699678">Če je vklopljeno, se gesla shranjujejo v računu <ph name="ACCOUNT" />. Če je izklopljeno, se gesla shranjujejo samo v tej napravi.</translation>
 <translation id="6823561724060793716">V naslovni vrstici lahko odprete podatke o strani, da se prikažejo dodatne informacije o strani, ki ste jo obiskali</translation>
 <translation id="6828070228333235514">Ustavi spremljanje cene</translation>
 <translation id="6830728435402077660">Ni varno</translation>
 <translation id="6831043979455480757">Prevedi</translation>
 <translation id="6836206421467243968">Obnovitev skupine zavihkov <ph name="TITLE_OF_GROUP" /> kot nove skupine zavihkov v ozadju.</translation>
+<translation id="683630338945552556">Uporaba in shranjevanje gesel v računu Google</translation>
 <translation id="6846298663435243399">Nalaganje poteka …</translation>
 <translation id="6850409657436465440">Prenos še poteka</translation>
 <translation id="6850830437481525139">Zaprtih je bilo toliko zavihkov: <ph name="TAB_COUNT" /></translation>
@@ -1335,6 +1346,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7759809451544302770">Izbirno</translation>
 <translation id="7762668264895820836">Kartica SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Dodaj naslov</translation>
+<translation id="776533689993750361">Izbrisan je <ph name="TAB_COUNT" /> zavihek</translation>
 <translation id="7772032839648071052">Potrdi geslo</translation>
 <translation id="7772375229873196092">Zapri aplikacijo <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}two{<ph name="PAYMENT_METHOD_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>

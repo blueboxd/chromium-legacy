@@ -104,7 +104,7 @@ namespace printing {
 namespace {
 
 #if BUILDFLAG(IS_MAC)
-const char16_t kBasicPrintShortcut[] = u"(\u2325\u2318P)";
+const char16_t kBasicPrintShortcut[] = u"(⌥⌘P)";
 #elif !BUILDFLAG(IS_CHROMEOS)
 const char16_t kBasicPrintShortcut[] = u"(Ctrl+Shift+P)";
 #endif
@@ -855,7 +855,7 @@ void PrintPreviewUI::DidGetDefaultPageLayout(
     int32_t request_id) {
   if (printable_area_in_points.width() <= 0 ||
       printable_area_in_points.height() <= 0) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return;
   }
   // Save printable_area_in_points information for N-up conversion.

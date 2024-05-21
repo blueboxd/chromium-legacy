@@ -453,7 +453,7 @@ class ConnectionRequestNotificationDelegate
         manager_->RejectTransfer();
         break;
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
     }
   }
@@ -559,7 +559,7 @@ class SuccessNotificationDelegate : public NearbyNotificationDelegate {
             CopyTextToClipboard();
             break;
           default:
-            NOTREACHED();
+            NOTREACHED_IN_MIGRATION();
             break;
         }
         break;
@@ -576,7 +576,7 @@ class SuccessNotificationDelegate : public NearbyNotificationDelegate {
             CopyImageToClipboard();
             break;
           default:
-            NOTREACHED();
+            NOTREACHED_IN_MIGRATION();
             break;
         }
         break;
@@ -687,7 +687,7 @@ class NearbyDeviceTryingToShareNotificationDelegate
             /*did_click_dismiss=*/true);
         break;
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
     }
   }
@@ -725,7 +725,7 @@ class NearbyVisibilityReminderNotificationDelegate
         manager_->OnNearbyVisibilityReminderDismissed();
         break;
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
     }
   }
@@ -1122,7 +1122,7 @@ void NearbyNotificationManager::ShowIncomingSuccess(
 
   if (!image.isNull()) {
     notification.set_type(message_center::NOTIFICATION_TYPE_IMAGE);
-    notification.set_image(gfx::Image::CreateFrom1xBitmap(image));
+    notification.SetImage(gfx::Image::CreateFrom1xBitmap(image));
   }
 
   std::vector<message_center::ButtonInfo> notification_actions;

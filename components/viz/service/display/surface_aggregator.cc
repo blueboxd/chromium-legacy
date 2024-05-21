@@ -1710,6 +1710,9 @@ void SurfaceAggregator::CopyPasses(ResolvedFrameData& resolved_frame) {
     dest_pass_list_->push_back(std::move(copy_pass));
   }
 
+  dest_pass_list_->back()->video_capture_enabled =
+      surface->IsVideoCaptureOnFromClient();
+
   if (!apply_surface_transform_to_root_pass)
     AddDisplayTransformPass();
 }
@@ -1843,7 +1846,7 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
   // at this point). |damage_rect| has damage from all quads below the current
   // iterated quad, and can be used to determine if there's any intersection
   // with the current quad when needed.
-  for (const DrawQuad* quad : base::Reversed(resolved_pass.prewalk_quads())) {
+  for (const DrawQuad* quad : base::Reversed(render_pass.quad_list)) {
     gfx::Rect quad_damage_rect;
     gfx::Rect quad_target_space_damage_rect;
     if (quad->material == DrawQuad::Material::kSurfaceContent) {
@@ -2027,11 +2030,11 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
       // same frame as last aggregation and there is no damage OR there is
       // already full damage for the surface.
       if (damage_type == FrameDamageType::kFrame) {
-        auto& per_quad_damage_rect = GetOptionalDamageRectFromQuad(quad);
-        DCHECK(per_quad_damage_rect.has_value());
-        // The DrawQuad `per_quad_damage_rect` is already in the render pass
-        // coordinate space instead of quad rect coordinate space.
-        quad_target_space_damage_rect = per_quad_damage_rect.value();
+        if (auto& per_quad_damage_rect = GetOptionalDamageRectFromQuad(quad)) {
+          // The DrawQuad `per_quad_damage_rect` is already in the render pass
+          // coordinate space instead of quad rect coordinate space.
+          quad_target_space_damage_rect = per_quad_damage_rect.value();
+        }
       }
     }
 
@@ -2327,9 +2330,6 @@ AggregatedFrame SurfaceAggregator::Aggregate(
       });
 
   AggregatedFrame frame;
-  frame.top_controls_visible_height =
-      root_surface_frame.metadata.top_controls_visible_height;
-
   dest_pass_list_ = &frame.render_pass_list;
   surface_damage_rect_list_ = &frame.surface_damage_rect_list_;
 

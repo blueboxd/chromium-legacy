@@ -21,21 +21,29 @@
 
 namespace blink {
 
-ExceptionCode WebCdmExceptionToExceptionCode(
-    WebContentDecryptionModuleException cdm_exception) {
+void WebCdmExceptionToPromiseRejection(
+    ScriptPromiseResolverBase* resolver,
+    WebContentDecryptionModuleException cdm_exception,
+    const String& message) {
   switch (cdm_exception) {
     case kWebContentDecryptionModuleExceptionTypeError:
-      return ToExceptionCode(ESErrorType::kTypeError);
+      resolver->RejectWithTypeError(message);
+      return;
     case kWebContentDecryptionModuleExceptionNotSupportedError:
-      return ToExceptionCode(DOMExceptionCode::kNotSupportedError);
+      resolver->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
+                                       message);
+      return;
     case kWebContentDecryptionModuleExceptionInvalidStateError:
-      return ToExceptionCode(DOMExceptionCode::kInvalidStateError);
+      resolver->RejectWithDOMException(DOMExceptionCode::kInvalidStateError,
+                                       message);
+      return;
     case kWebContentDecryptionModuleExceptionQuotaExceededError:
-      return ToExceptionCode(DOMExceptionCode::kQuotaExceededError);
+      resolver->RejectWithDOMException(DOMExceptionCode::kQuotaExceededError,
+                                       message);
+      return;
   }
 
-  NOTREACHED();
-  return ToExceptionCode(DOMExceptionCode::kUnknownError);
+  NOTREACHED_IN_MIGRATION();
 }
 
 ContentDecryptionModuleResultPromise::ContentDecryptionModuleResultPromise(
@@ -48,37 +56,41 @@ ContentDecryptionModuleResultPromise::~ContentDecryptionModuleResultPromise() =
     default;
 
 void ContentDecryptionModuleResultPromise::Complete() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   if (!IsValidToFulfillPromise())
     return;
-  Reject(ToExceptionCode(DOMExceptionCode::kInvalidStateError),
-         "Unexpected completion.");
+  resolver_->RejectWithDOMException(DOMExceptionCode::kInvalidStateError,
+                                    "Unexpected completion.");
+  resolver_.Clear();
 }
 
 void ContentDecryptionModuleResultPromise::CompleteWithContentDecryptionModule(
     WebContentDecryptionModule* cdm) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   if (!IsValidToFulfillPromise())
     return;
-  Reject(ToExceptionCode(DOMExceptionCode::kInvalidStateError),
-         "Unexpected completion.");
+  resolver_->RejectWithDOMException(DOMExceptionCode::kInvalidStateError,
+                                    "Unexpected completion.");
+  resolver_.Clear();
 }
 
 void ContentDecryptionModuleResultPromise::CompleteWithSession(
     WebContentDecryptionModuleResult::SessionStatus status) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   if (!IsValidToFulfillPromise())
     return;
-  Reject(ToExceptionCode(DOMExceptionCode::kInvalidStateError),
-         "Unexpected completion.");
+  resolver_->RejectWithDOMException(DOMExceptionCode::kInvalidStateError,
+                                    "Unexpected completion.");
+  resolver_.Clear();
 }
 
 void ContentDecryptionModuleResultPromise::CompleteWithKeyStatus(
     WebEncryptedMediaKeyInformation::KeyStatus) {
   if (!IsValidToFulfillPromise())
     return;
-  Reject(ToExceptionCode(DOMExceptionCode::kInvalidStateError),
-         "Unexpected completion.");
+  resolver_->RejectWithDOMException(DOMExceptionCode::kInvalidStateError,
+                                    "Unexpected completion.");
+  resolver_.Clear();
 }
 
 void ContentDecryptionModuleResultPromise::CompleteWithError(
@@ -118,21 +130,8 @@ void ContentDecryptionModuleResultPromise::CompleteWithError(
     result.Append(')');
   }
 
-  Reject(WebCdmExceptionToExceptionCode(exception_code), result.ToString());
-}
-void ContentDecryptionModuleResultPromise::Reject(ExceptionCode code,
-                                                  const String& error_message) {
-  DCHECK(IsValidToFulfillPromise());
-
-  ScriptState::Scope scope(resolver_->GetScriptState());
-  ExceptionState exception_state(
-      resolver_->GetScriptState()->GetIsolate(),
-      ExceptionContextType::kOperationInvoke,
-      EncryptedMediaUtils::GetInterfaceName(api_type_),
-      EncryptedMediaUtils::GetPropertyName(api_type_));
-  exception_state.ThrowException(code, error_message);
-  resolver_->Reject(exception_state);
-
+  WebCdmExceptionToPromiseRejection(resolver_, exception_code,
+                                    result.ToString());
   resolver_.Clear();
 }
 

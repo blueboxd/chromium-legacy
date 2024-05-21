@@ -22,7 +22,7 @@
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 #if BUILDFLAG(IS_WIN)
-#include "services/webnn/dml/graph_impl.h"
+#include "services/webnn/dml/graph_impl_dml.h"
 #endif
 
 namespace webnn {
@@ -51,7 +51,7 @@ size_t GetBytesPerElement(mojom::Operand::DataType operand_type) {
     case mojom::Operand::DataType::kUint8:
       return sizeof(uint8_t);
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 webnn::Operand::DataType MojoOperandTypeToComponent(

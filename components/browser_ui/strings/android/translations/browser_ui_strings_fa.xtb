@@ -68,7 +68,6 @@
 <translation id="2241587408274973373">کارت‌های صفحه برگه جدید</translation>
 <translation id="2241634353105152135">فقط یک بار</translation>
 <translation id="2253414712144136228">برداشتن <ph name="NAME_OF_LIST_ITEM" /></translation>
-<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{یک سایت مسدود است}one{# سایت مسدود است}other{# سایت مسدود هستند}}</translation>
 <translation id="228293613124499805">اکثر سایت‌هایی که بازدید می‌کنید احتمالاً در دستگاهتان داده ذخیره می‌کنند و هدف از این کار، اغلب بهبود تجربه شما با ذخیره اولویت‌ها یا اطلاعاتی است که با سایت هم‌رسانی می‌کنید. توصیه می‌کنیم این تنظیم را روشن نگه دارید.</translation>
 <translation id="2289270750774289114">وقتی سایتی می‌خواهد دستگا‌ه‌های بلوتوث اطراف را پیدا کند، سؤال شود (توصیه می‌شود)</translation>
 <translation id="2315043854645842844">انتخاب گواهی سمت کلاینت توسط سیستم‌عامل پشتیبانی نمی‌شود.</translation>
@@ -305,6 +304,7 @@
 <translation id="6015775454662021376">کنترل کردن دسترسی این سایت به دستگاه</translation>
 <translation id="6040143037577758943">بستن</translation>
 <translation id="6042308850641462728">بیشتر</translation>
+<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> آخرین برگه شما</translation>
 <translation id="6064125863973209585">بارگیری‌های کامل‌شده</translation>
 <translation id="6071501408666570960">ممکن است از سیستم این سایت خارج شده باشید</translation>
 <translation id="6120483543004435978">هرگاه روشن باشد، سایت‌ها می‌توانند مطلع شدن از مواقعی را که فعالانه از دستگاهتان استفاده می‌کنید درخواست کنند. هرگاه خاموش باشد، سایت‌ها نمی‌توانند بدانند چه مواقعی فعالانه از دستگاهتان استفاده می‌کنید.</translation>
@@ -426,6 +426,7 @@
 <translation id="7986741934819883144">مخاطبی انتخاب کنید</translation>
 <translation id="7990211076305263060">هرگاه روشن باشد، سایت‌ها می‌توانند استفاده از میکروفون را درخواست کنند. هرگاه خاموش باشد، سایت‌ها نمی‌توانند از میکروفون استفاده کنند.</translation>
 <translation id="8007176423574883786">برای این دستگاه غیرفعال شد</translation>
+<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> از <ph name="FROM_DEVICE" /></translation>
 <translation id="802154636333426148">بارگیری نشد</translation>
 <translation id="8042586301629853791">مرتب‌سازی براساس:</translation>
 <translation id="8067883171444229417">پخش ویدیو</translation>
@@ -480,7 +481,6 @@
 <translation id="8721719390026067591">هرگاه روشن باشد، سایت‌ها می‌توانند جستجوی دستگاه‌های بلوتوث را درخواست کنند. هرگاه خاموش باشد،‌ سایت‌ها نمی‌توانند دستگاه‌های بلوتوث را جستجو کنند.</translation>
 <translation id="8725066075913043281">سعی مجدد</translation>
 <translation id="8730621377337864115">تمام</translation>
-<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{یک سایت اجازه دارد}one{# سایت اجازه دارد}other{# سایت اجازه دارند}}</translation>
 <translation id="8751914237388039244">تصویری انتخاب کنید</translation>
 <translation id="8800034312320686233">سایت کار نمی‌کند؟</translation>
 <translation id="8801436777607969138">مسدود کردن جاوااسکریپت برای سایتی خاص.</translation>

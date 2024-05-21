@@ -87,6 +87,7 @@
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
 #include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
+#include "chromeos/ash/components/tether/pref_names.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "components/account_manager_core/pref_names.h"
@@ -177,8 +178,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[autofill::prefs::kAutofillProfileEnabled] =
       settings_api::PrefType::kBoolean;
   (*s_allowlist)[autofill::prefs::kAutofillCreditCardEnabled] =
-      settings_api::PrefType::kBoolean;
-  (*s_allowlist)[autofill::prefs::kAutofillCreditCardFidoAuthEnabled] =
       settings_api::PrefType::kBoolean;
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   (*s_allowlist)[autofill::prefs::kAutofillPaymentMethodsMandatoryReauth] =
@@ -449,6 +448,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kString;
   (*s_allowlist)[::prefs::kNearbySharingDataUsageName] =
       settings_api::PrefType::kNumber;
+
+  // Instant Hotspot
+  (*s_allowlist)[::ash::tether::prefs::kNotificationsEnabled] =
+      settings_api::PrefType::kBoolean;
 #endif
 
   // Search page.
@@ -473,6 +476,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
           settings_api::PrefType::kBoolean;
   (*s_allowlist)[prefs::kEnableProactiveNudge] =
       settings_api::PrefType::kBoolean;
+  (*s_allowlist)[prefs::kProactiveNudgeDisabledSitesWithTime] =
+      settings_api::PrefType::kDictionary;
 
   // Clear browsing data settings.
   (*s_allowlist)[browsing_data::prefs::kDeleteBrowsingHistory] =
@@ -538,6 +543,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kString;
 #endif
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  (*s_allowlist)[::prefs::kAccessibilityMainNodeAnnotationsEnabled] =
+      settings_api::PrefType::kBoolean;
   (*s_allowlist)[::prefs::kAccessibilityPdfOcrAlwaysActive] =
       settings_api::PrefType::kBoolean;
 #endif
@@ -688,12 +695,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kBoolean;
   (*s_allowlist)[ash::prefs::kAccessibilityMouseKeysEnabled] =
       settings_api::PrefType::kBoolean;
-  (*s_allowlist)[ash::prefs::kAccessibilityMouseKeysDisableInTextFields] =
-      settings_api::PrefType::kBoolean;
   (*s_allowlist)[ash::prefs::kAccessibilityMouseKeysAcceleration] =
       settings_api::PrefType::kNumber;
   (*s_allowlist)[ash::prefs::kAccessibilityMouseKeysMaxSpeed] =
       settings_api::PrefType::kNumber;
+  (*s_allowlist)[ash::prefs::kAccessibilityMouseKeysUsePrimaryKeys] =
+      settings_api::PrefType::kBoolean;
   (*s_allowlist)[ash::prefs::kAccessibilityMouseKeysDominantHand] =
       settings_api::PrefType::kBoolean;
   (*s_allowlist)
@@ -785,6 +792,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kBoolean;
 
   // App - On-Device Parental Controls
+  (*s_allowlist)[::ash::prefs::kOnDeviceAppControlsPin] =
+      settings_api::PrefType::kString;
   (*s_allowlist)[::ash::prefs::kOnDeviceAppControlsSetupCompleted] =
       settings_api::PrefType::kBoolean;
 

@@ -88,7 +88,7 @@ std::string VideoFrame::StorageTypeToString(
       return "GPU_MEMORY_BUFFER";
   }
 
-  NOTREACHED() << "Invalid StorageType provided: " << storage_type;
+  NOTREACHED_IN_MIGRATION() << "Invalid StorageType provided: " << storage_type;
   return "INVALID";
 }
 
@@ -120,12 +120,12 @@ gfx::Size VideoFrame::SampleSize(VideoPixelFormat format, size_t plane) {
   DCHECK(IsValidPlane(format, plane));
 
   switch (plane) {
-    case kYPlane:  // and kARGBPlane:
-    case kAPlane:
+    case Plane::kY:  // and Plane::kARGB:
+    case Plane::kA:
       return gfx::Size(1, 1);
 
-    case kUPlane:  // and kUVPlane:
-    case kVPlane:  // and kAPlaneTriPlanar:
+    case Plane::kU:  // and Plane::kUV:
+    case Plane::kV:  // and Plane::kATriPlanar:
       switch (format) {
         case PIXEL_FORMAT_I444:
         case PIXEL_FORMAT_YUV444P9:
@@ -134,6 +134,8 @@ gfx::Size VideoFrame::SampleSize(VideoPixelFormat format, size_t plane) {
         case PIXEL_FORMAT_Y16:
         case PIXEL_FORMAT_I444A:
         case PIXEL_FORMAT_YUV444AP10:
+        case PIXEL_FORMAT_NV24:
+        case PIXEL_FORMAT_P416LE:
           return gfx::Size(1, 1);
 
         case PIXEL_FORMAT_I422:
@@ -142,6 +144,8 @@ gfx::Size VideoFrame::SampleSize(VideoPixelFormat format, size_t plane) {
         case PIXEL_FORMAT_YUV422P12:
         case PIXEL_FORMAT_I422A:
         case PIXEL_FORMAT_YUV422AP10:
+        case PIXEL_FORMAT_NV16:
+        case PIXEL_FORMAT_P216LE:
           return gfx::Size(2, 1);
 
         case PIXEL_FORMAT_YV12:
@@ -157,7 +161,7 @@ gfx::Size VideoFrame::SampleSize(VideoPixelFormat format, size_t plane) {
           return gfx::Size(2, 2);
 
         case PIXEL_FORMAT_NV12A:
-          return plane == kUVPlane ? gfx::Size(2, 2) : gfx::Size(1, 1);
+          return plane == Plane::kUV ? gfx::Size(2, 2) : gfx::Size(1, 1);
 
         case PIXEL_FORMAT_UYVY:
         case PIXEL_FORMAT_UNKNOWN:
@@ -207,7 +211,9 @@ static bool RequiresEvenSizeAllocation(VideoPixelFormat format) {
       return false;
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV12A:
+    case PIXEL_FORMAT_NV16:
     case PIXEL_FORMAT_NV21:
+    case PIXEL_FORMAT_NV24:
     case PIXEL_FORMAT_I420:
     case PIXEL_FORMAT_MJPEG:
     case PIXEL_FORMAT_YUY2:
@@ -226,6 +232,8 @@ static bool RequiresEvenSizeAllocation(VideoPixelFormat format) {
     case PIXEL_FORMAT_I420A:
     case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_P016LE:
+    case PIXEL_FORMAT_P216LE:
+    case PIXEL_FORMAT_P416LE:
     case PIXEL_FORMAT_I422A:
     case PIXEL_FORMAT_I444A:
     case PIXEL_FORMAT_YUV420AP10:
@@ -235,7 +243,7 @@ static bool RequiresEvenSizeAllocation(VideoPixelFormat format) {
     case PIXEL_FORMAT_UNKNOWN:
       break;
   }
-  NOTREACHED() << "Unsupported video frame format: " << format;
+  NOTREACHED_IN_MIGRATION() << "Unsupported video frame format: " << format;
   return false;
 }
 
@@ -382,10 +390,12 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrameForNativeTexturesInternal(
     const gfx::Size& natural_size,
     base::TimeDelta timestamp) {
   if (format != PIXEL_FORMAT_ARGB && format != PIXEL_FORMAT_XRGB &&
-      format != PIXEL_FORMAT_NV12 && format != PIXEL_FORMAT_NV12A &&
+      format != PIXEL_FORMAT_NV12 && format != PIXEL_FORMAT_NV16 &&
+      format != PIXEL_FORMAT_NV24 && format != PIXEL_FORMAT_NV12A &&
       format != PIXEL_FORMAT_I420 && format != PIXEL_FORMAT_ABGR &&
       format != PIXEL_FORMAT_XBGR && format != PIXEL_FORMAT_XR30 &&
       format != PIXEL_FORMAT_XB30 && format != PIXEL_FORMAT_P016LE &&
+      format != PIXEL_FORMAT_P216LE && format != PIXEL_FORMAT_P416LE &&
       format != PIXEL_FORMAT_RGBAF16 && format != PIXEL_FORMAT_YV12 &&
       format != PIXEL_FORMAT_BGRA) {
     DLOG(ERROR) << "Unsupported pixel format: "
@@ -499,7 +509,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTextures(
     return nullptr;
   }
 
-  for (int i = 0; i < kMaxPlanes; ++i) {
+  for (size_t i = 0; i < kMaxPlanes; ++i) {
     frame->mailbox_holders_[i] = mailbox_holders[i];
   }
   frame->mailbox_holders_and_gmb_release_cb_ =
@@ -529,7 +539,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapSharedImages(
     return nullptr;
   }
 
-  for (int i = 0; i < kMaxPlanes; ++i) {
+  for (size_t i = 0; i < kMaxPlanes; ++i) {
     if (shared_images[i]) {
       frame->mailbox_holders_[i] = gpu::MailboxHolder(
           shared_images[i]->mailbox(), sync_token, texture_target);
@@ -641,9 +651,9 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvDataWithLayout(
   DCHECK_LE(NumPlanes(format), 3u);
   scoped_refptr<VideoFrame> frame(
       new VideoFrame(layout, storage, visible_rect, natural_size, timestamp));
-  frame->data_[kYPlane] = y_data;
-  frame->data_[kUPlane] = u_data;
-  frame->data_[kVPlane] = v_data;
+  frame->data_[Plane::kY] = y_data;
+  frame->data_[Plane::kU] = u_data;
+  frame->data_[Plane::kV] = v_data;
   return frame;
 }
 
@@ -685,10 +695,10 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvaData(
 
   scoped_refptr<VideoFrame> frame(
       new VideoFrame(*layout, storage, visible_rect, natural_size, timestamp));
-  frame->data_[kYPlane] = y_data;
-  frame->data_[kUPlane] = u_data;
-  frame->data_[kVPlane] = v_data;
-  frame->data_[kAPlane] = a_data;
+  frame->data_[Plane::kY] = y_data;
+  frame->data_[Plane::kU] = u_data;
+  frame->data_[Plane::kV] = v_data;
+  frame->data_[Plane::kA] = a_data;
   return frame;
 }
 
@@ -725,8 +735,8 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
 
   scoped_refptr<VideoFrame> frame(
       new VideoFrame(*layout, storage, visible_rect, natural_size, timestamp));
-  frame->data_[kYPlane] = y_data;
-  frame->data_[kUVPlane] = uv_data;
+  frame->data_[Plane::kY] = y_data;
+  frame->data_[Plane::kUV] = uv_data;
 
   return frame;
 }
@@ -746,7 +756,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalGpuMemoryBuffer(
     return nullptr;
   }
 
-  for (int i = 0; i < kMaxPlanes; ++i) {
+  for (size_t i = 0; i < kMaxPlanes; ++i) {
     frame->mailbox_holders_[i] = mailbox_holders[i];
   }
   return frame;
@@ -768,7 +778,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalGpuMemoryBuffer(
     return nullptr;
   }
 
-  for (int i = 0; i < kMaxPlanes; ++i) {
+  for (size_t i = 0; i < kMaxPlanes; ++i) {
     if (shared_images[i]) {
       frame->mailbox_holders_[i] = gpu::MailboxHolder(
           shared_images[i]->mailbox(), sync_token, texture_target);
@@ -1174,7 +1184,9 @@ int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
     case PIXEL_FORMAT_YUV444AP10:
       return 2;
     case PIXEL_FORMAT_NV12:
-    case PIXEL_FORMAT_NV21: {
+    case PIXEL_FORMAT_NV16:
+    case PIXEL_FORMAT_NV21:
+    case PIXEL_FORMAT_NV24: {
       static const int bytes_per_element[] = {1, 2};
       DCHECK_LT(plane, std::size(bytes_per_element));
       return bytes_per_element[plane];
@@ -1184,7 +1196,9 @@ int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
       DCHECK_LT(plane, std::size(bytes_per_element));
       return bytes_per_element[plane];
     }
-    case PIXEL_FORMAT_P016LE: {
+    case PIXEL_FORMAT_P016LE:
+    case PIXEL_FORMAT_P216LE:
+    case PIXEL_FORMAT_P416LE: {
       static const int bytes_per_element[] = {1, 2};
       DCHECK_LT(plane, std::size(bytes_per_element));
       return bytes_per_element[plane] * 2;
@@ -1788,7 +1802,7 @@ gfx::Size VideoFrame::CommonAlignment(VideoPixelFormat format) {
 
 bool VideoFrame::AllocateMemory(bool zero_initialize_memory) {
   DCHECK_EQ(storage_type_, STORAGE_OWNED_MEMORY);
-  static_assert(0 == kYPlane, "y plane data must be index 0");
+  static_assert(0 == Plane::kY, "y plane data must be index 0");
 
   std::vector<size_t> plane_size = CalculatePlaneSize();
   const size_t buffer_size =
@@ -1870,10 +1884,10 @@ std::vector<size_t> VideoFrame::CalculatePlaneSize(
     // overreads by one line in some cases, see libavcodec/utils.c:
     // avcodec_align_dimensions2() and libavcodec/x86/h264_chromamc.asm:
     // put_h264_chroma_mc4_ssse3().
-    DCHECK(IsValidPlane(format, kUPlane));
-    DCHECK(kUPlane < num_planes);
+    DCHECK(IsValidPlane(format, Plane::kU));
+    DCHECK(Plane::kU < num_planes);
     plane_size.back() +=
-        std::abs(layout.planes()[kUPlane].stride) + kFrameSizePadding;
+        std::abs(layout.planes()[Plane::kU].stride) + kFrameSizePadding;
   }
   return plane_size;
 }

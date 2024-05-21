@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_AUTOFILL_IOS_CHROME_PAYMENTS_AUTOFILL_CLIENT_H_
 
 #import <memory>
+#include <optional>
 
 #import "base/functional/callback.h"
 #import "base/memory/raw_ref.h"
@@ -30,6 +31,7 @@ class CardUnmaskAuthenticationSelectionDialogControllerImpl;
 class ChromeAutofillClientIOS;
 class CreditCardCvcAuthenticator;
 class CreditCardOtpAuthenticator;
+class CreditCardRiskBasedAuthenticator;
 class OtpUnmaskDelegate;
 enum class OtpUnmaskResult;
 class VirtualCardEnrollmentManager;
@@ -58,7 +60,9 @@ class IOSChromePaymentsAutofillClient : public PaymentsAutofillClient {
       base::OnceCallback<void(const std::string&)> callback) override;
 
   // PaymentsAutofillClient:
-  void CreditCardUploadCompleted(bool card_saved) override;
+  void CreditCardUploadCompleted(bool card_saved,
+                                 std::optional<OnConfirmationClosedCallback>
+                                     on_confirmation_closed_callback) override;
   void ShowCardUnmaskOtpInputDialog(
       const CardUnmaskChallengeOption& challenge_option,
       base::WeakPtr<OtpUnmaskDelegate> delegate) override;
@@ -88,6 +92,7 @@ class IOSChromePaymentsAutofillClient : public PaymentsAutofillClient {
   VirtualCardEnrollmentManager* GetVirtualCardEnrollmentManager() override;
   CreditCardCvcAuthenticator& GetCvcAuthenticator() override;
   CreditCardOtpAuthenticator* GetOtpAuthenticator() override;
+  CreditCardRiskBasedAuthenticator* GetRiskBasedAuthenticator() override;
 
   std::unique_ptr<AutofillProgressDialogControllerImpl>
   GetProgressDialogModel() {
@@ -134,6 +139,8 @@ class IOSChromePaymentsAutofillClient : public PaymentsAutofillClient {
 
   base::WeakPtr<CardUnmaskAuthenticationSelectionDialogControllerImpl>
       card_unmask_authentication_selection_controller_;
+
+  std::unique_ptr<CreditCardRiskBasedAuthenticator> risk_based_authenticator_;
 };
 
 }  // namespace payments

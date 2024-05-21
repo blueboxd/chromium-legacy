@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.app.tabmodel;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 
 import static org.chromium.base.ThreadUtils.runOnUiThreadBlocking;
 
@@ -18,6 +20,10 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.mockito.quality.Strictness;
 
 import org.chromium.base.FeatureList;
 import org.chromium.base.FeatureList.TestValues;
@@ -82,6 +88,10 @@ public class ArchivedTabModelOrchestratorTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
+    @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.LENIENT);
+
+    @Mock private ArchivedTabModelOrchestrator.Observer mObserver;
+
     private Profile mProfile;
     private FakeTaskRunner mTaskRunner;
     private FakeDeferredStartupHandler mDeferredStartupHandler;
@@ -115,7 +125,7 @@ public class ArchivedTabModelOrchestratorTest {
                 () -> {
                     mDeferredStartupHandler.runAllTasks();
                     assert mOrchestrator.areTabModelsInitialized();
-                    mOrchestrator.getArchiveSettingsForTesting().resetSettingsForTesting();
+                    mOrchestrator.getTabArchiveSettings().resetSettingsForTesting();
                     mArchivedTabModel = mOrchestrator.getTabModelSelector().getModel(false);
                     mRegularTabModel = mActivityTestRule.getActivity().getCurrentTabModel();
                     mRegularTabCreator = mActivityTestRule.getActivity().getTabCreator(false);
@@ -133,8 +143,10 @@ public class ArchivedTabModelOrchestratorTest {
     @MediumTest
     public void testDeferredInitialization() {
         assertFalse(mOrchestrator.areTabModelsInitialized());
+        runOnUiThreadBlocking(() -> mOrchestrator.addObserver(mObserver));
         finishLoading();
         assertTrue(mOrchestrator.areTabModelsInitialized());
+        verify(mObserver).onTabModelCreated(any());
     }
 
     @Test
@@ -159,7 +171,7 @@ public class ArchivedTabModelOrchestratorTest {
     @MediumTest
     public void testScheduledDeclutter() {
         finishLoading();
-        mOrchestrator.getArchiveSettingsForTesting().setArchiveEnabled(false);
+        mOrchestrator.getTabArchiveSettings().setArchiveEnabled(false);
         mActivityTestRule.loadUrlInNewTab(
                 mActivityTestRule.getTestServer().getURL(TEST_PATH), /* incognito= */ false);
 
@@ -175,7 +187,7 @@ public class ArchivedTabModelOrchestratorTest {
         assertEquals(2, mRegularTabModel.getCount());
         assertEquals(0, mArchivedTabModel.getCount());
 
-        mOrchestrator.getArchiveSettingsForTesting().setArchiveEnabled(true);
+        mOrchestrator.getTabArchiveSettings().setArchiveEnabled(true);
         // A task was scheduled to perform a scheduled declutter, get it and run it.
         runOnUiThreadBlocking(() -> mTaskRunner.mDelayedTasks.get(0).first.run());
 

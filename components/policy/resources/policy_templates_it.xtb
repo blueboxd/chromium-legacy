@@ -181,6 +181,7 @@ Se il criterio non viene configurato, non sono consentite eccezioni a <ph name="
 <translation id="1107538157073168076">Disattiva estensione Insights</translation>
 <translation id="1110426799149444997">Disattiva la ricerca per sezione di <ph name="GOOGLE_LENS_PRODUCT_NAME" />.</translation>
 <translation id="1111324374369583989">Non visualizzare la schermata di impostazione delle dimensioni di visualizzazione durante l'accesso</translation>
+<translation id="1111824532252882775">Attivato: le barre di scorrimento sono attivabili per impostazione predefinita.</translation>
 <translation id="1117535567637097036">I gestori di protocollo impostati tramite questa norma non sono utilizzati durante la gestione degli intent di Android.</translation>
 <translation id="1118093128235245168">Consenti ai siti di chiedere all'utente di concedere l'accesso a un dispositivo USB collegato</translation>
 <translation id="111910763555783249">Impostazioni di notifica</translation>
@@ -4417,6 +4418,15 @@ Su <ph name="MAC_OS_NAME" />, questo criterio è disponibile soltanto per le ist
 <translation id="4483738129334574255">Disattiva il gioco del dinosauro sui dispositivi <ph name="PRODUCT_OS_NAME" /> registrati, attivalo in altre circostanze</translation>
 <translation id="4484515651939984695">Specifica per quanto tempo (in secondi) un dispositivo di trasmissione selezionato con un codice di accesso o un codice QR rimane nell'elenco del menu di <ph name="PRODUCT_NAME" /> dei dispositivi di trasmissione.</translation>
 <translation id="4485425108474077672">Configura l'URL per la pagina Nuova scheda</translation>
+<translation id="4488959486611931919">Nota: non sono stati segnalati problemi di interruzione dei siti da quando Chrome ha iniziato a bloccare questi cookie per impostazione predefinita a partire dalla versione M118, pertanto questa funzionalità non sarà configurabile (e questo criterio non avrà alcun effetto) a partire dalla versione M127.
+
+Questo criterio consente di disattivare temporaneamente le modifiche al modo in cui Chrome gestisce i cookie impostati tramite JavaScript che contengono determinati caratteri di controllo (null, ritorno a capo e avanzamento riga).
+In precedenza, la presenza di uno qualsiasi di questi caratteri in una stringa di cookie causava un troncamento ma il criterio veniva comunque impostato.
+Ora, la presenza di questi caratteri farà sì che l'intera stringa di cookie venga ignorata.
+
+Se questo criterio viene impostato su True (valore predefinito), il nuovo comportamento viene attivato.
+
+Se questo criterio viene impostato su False, viene attivato il comportamento precedente.</translation>
 <translation id="4490420545181481759">I certificati X.509 possono codificare i vincoli, ad esempio i vincoli relativi ai nomi, nelle estensioni dei certificati. RFC 5280 specifica che l'applicazione forzata di questi vincoli sui certificati per trust anchor è facoltativa. A partire dalla versione 112 di <ph name="PRODUCT_NAME" />, questi vincoli nei certificati caricati dall'archivio certificati della piattaforma verranno applicati.
 
 Questo criterio è una soluzione di disattivazione temporanea nel caso in cui un'azienda riscontri problemi con i vincoli codificati nei propri certificati root privati. In questo caso è possibile usare questo criterio per disattivare temporaneamente l'applicazione forzata dei vincoli durante la risoluzione dei problemi dei certificati.
@@ -5431,6 +5441,15 @@ Se il criterio viene impostato su Disattivato, la cronologia di navigazione e qu
 <translation id="5323200200131319468">Attiva la funzione di lettura vocale nella schermata di accesso</translation>
 <translation id="5323271643727095577">Non mostrare la finestra di dialogo di annullamento quando viene chiamato event.preventDefault() per l'evento beforeunload. Mostra la finestra di dialogo di annullamento quando event.returnValue è la stringa vuota dell'evento beforeunload.</translation>
 <translation id="5324430722441910403">Impostazioni ricerca sui siti</translation>
+<translation id="5326431956495937408">Se il criterio viene attivato, gli utenti possono inviare le loro password ai membri del gruppo Famiglia (in base al servizio per le famiglie) e ricevere password dai membri.
+Se il criterio viene attivato o se non viene configurato, in Gestore delle password viene visualizzato un pulsante che consente di inviare una password.
+Le password ricevute vengono memorizzate nell'account dell'utente e sono disponibili in Gestore delle password.
+
+Se il criterio viene disattivato, gli utenti non possono inviare password da Gestore delle password ad altri utenti e non possono riceverle da altri utenti.
+
+La funzionalità non è disponibile se la sincronizzazione delle password viene disattivata (tramite le impostazioni dell'utente o attivando il criterio <ph name="SYNC_DISABLED" />).
+
+Gli account gestiti non sono idonei a far parte di un gruppo Famiglia o a crearli, pertanto non possono condividere le password.</translation>
 <translation id="532848608876725157">Attiva DNS over HTTPS con fallback non sicuro</translation>
 <translation id="5328965694451556034">Segnala accesso/uscita</translation>
 <translation id="5329018127554115226">La modalità ad alta efficienza verrà disattivata.</translation>
@@ -6886,6 +6905,7 @@ Se il criterio non viene configurato, gli utenti potranno attivare o disattivare
 <translation id="6452882999388592166">Se impostato su Attivato, l'estensione del componente CryptoToken integrata viene caricata all'avvio. Se impostato su Disattivato o se non viene configurato, CryptoToken non viene caricato all'avvio del browser. Questo criterio è inteso come soluzione alternativa temporanea per i siti non funzionanti perché "chrome.runtime" non è definito come effetto collaterale della rimozione di CryptoToken nella versione M106. I siti web non devono dipendere dalla definizione senza condizioni di "chrome.runtime".</translation>
 <translation id="6453641799812499182">Attiva le mitigazioni dei controlli <ph name="CORS" /> nella nuova implementazione <ph name="CORS" /></translation>
 <translation id="645425387487868471">Attiva l'accesso forzato per <ph name="PRODUCT_NAME" /></translation>
+<translation id="6454450724849956537">Attiva le barre di scorrimento attivabili da tastiera</translation>
 <translation id="645467061280066516">Se il criterio viene attivato, la pagina Nuova scheda viene impostata come pagina iniziale dell'utente e l'eventuale URL della pagina iniziale specificato viene ignorato. Se viene disattivato, la pagina iniziale dell'utente non sarà mai la pagina Nuova scheda, a meno che chrome://newtab non venga impostato come URL della pagina iniziale dell'utente.
 
 Se il criterio viene configurato, gli utenti non possono cambiare il tipo di pagina iniziale in <ph name="PRODUCT_NAME" />. Se non viene configurato, l'utente può decidere se impostare o meno la pagina Nuova scheda come pagina iniziale.
@@ -7174,13 +7194,6 @@ Le modifiche al criterio vengono applicate solo mentre ARC non è in esecuzione,
 <translation id="66265932317331474">Segnala informazioni sulla CPU</translation>
 <translation id="6628120204569232711">Segnala lo stato di archiviazione</translation>
 <translation id="662991036483361836">Impedisci agli utenti di attivare la Condivisione nelle vicinanze</translation>
-<translation id="6634974629075330608">Questo criterio consente di disattivare temporaneamente le modifiche al modo in cui Chrome gestisce i cookie impostati tramite JavaScript che contengono determinati caratteri di controllo (null, ritorno a capo e avanzamento riga).
-In precedenza, la presenza di uno qualsiasi di questi caratteri in una stringa di cookie causava un troncamento ma il criterio veniva comunque impostato.
-Ora, la presenza di questi caratteri farà sì che l'intera stringa di cookie venga ignorata.
-
-Se questo criterio viene impostato su Vero (valore predefinito), il nuovo comportamento viene attivato.
-
-Se questo criterio viene impostato su Falso, viene attivato il comportamento precedente.</translation>
 <translation id="663685822663765995">Limita la modalità di stampa a colori</translation>
 <translation id="6640355849038068978">Se questa impostazione viene attivata, gli utenti potranno avviare l'applicazione Eche, ad esempio facendo clic su una notifica di Phone Hub.
 
@@ -8960,6 +8973,13 @@ In questo tipo di scenari non è garantita la corretta migrazione dei dati.
 <translation id="802776363472387903">L'hash SHA-256 dell'immagine <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="8028814157747157754">Attiva il provider di ricerca predefinito e consenti agli utenti di modificare l'elenco dei provider di ricerca</translation>
 <translation id="8029201909194194377">Durata massima della sessione consentita per le connessioni di accesso remoto</translation>
+<translation id="8033450879690820321">Questo criterio consente di disattivare temporaneamente il nuovo comportamento delle barre di scorrimento attivabili da tastiera.
+
+Se viene attivato o se non viene configurato, le barre di scorrimento senza elementi secondari attivabili sono attivabili con la tastiera per impostazione predefinita. Inoltre, le barre di scorrimento sono attivabili con un clic e tramite programmazione per impostazione predefinita.
+
+Se questo criterio viene disattivato, le barre di scorrimento non saranno attivabili per impostazione predefinita.
+
+Questo criterio è una soluzione alternativa temporanea e verrà rimosso nella versione M135.</translation>
 <translation id="8035570672225663428">Consenti al modello di ricarica adattiva di sospendere la procedura di ricarica per prolungare la durata della batteria</translation>
 <translation id="8036284429246268475">Se il criterio viene attivato, gli utenti possono impostare <ph name="PRODUCT_NAME" /> in modo che controlli se nomi utente e password inseriti sono stati resi noti nell'ambito di una fuga di dati.
 
@@ -9505,6 +9525,7 @@ La dimensione <ph name="ENTERPRISE_CONNECTOR_MINIMUM_DATA_SIZE" /> indica la qua
           Se la norma non viene impostata, viene utilizzato per tutti i siti il renderer predefinito specificato dalla norma "ChromeFrameRendererSettings".
 
           Per avere pattern di esempio, visita il sito https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489169564515126823">Disattivato: le barre di scorrimento non sono attivabili per impostazione predefinita.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Disabilita salvataggio della cronologia del browser</translation>
 <translation id="8499172469244085141">Impostazioni predefinite (gli utenti possono ignorarle)</translation>

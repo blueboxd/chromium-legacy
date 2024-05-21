@@ -108,7 +108,7 @@ void UpdateSymbologyHint(mojom::BarcodeFormat format,
       [hint addObject:VNBarcodeSymbologyUPCE];
       return;
     case mojom::BarcodeFormat::UNKNOWN:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return;
   }
 }

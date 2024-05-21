@@ -23,7 +23,6 @@
 #import "components/autofill/core/browser/payments/autofill_save_card_delegate.h"
 #import "components/autofill/core/browser/payments/autofill_save_card_infobar_delegate_mobile.h"
 #import "components/autofill/core/browser/payments/autofill_save_card_ui_info.h"
-#import "components/autofill/core/browser/payments/credit_card_risk_based_authenticator.h"
 #import "components/autofill/core/browser/payments/payments_network_interface.h"
 #import "components/autofill/core/browser/payments/virtual_card_enroll_metrics_logger.h"
 #import "components/autofill/core/browser/ui/payments/virtual_card_enroll_ui_model.h"
@@ -34,6 +33,8 @@
 #import "components/infobars/core/infobar.h"
 #import "components/infobars/core/infobar_manager.h"
 #import "components/keyed_service/core/service_access_type.h"
+#import "components/password_manager/core/browser/form_parsing/form_data_parser.h"
+#import "components/password_manager/core/browser/password_form.h"
 #import "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/plus_addresses/plus_address_service.h"
 #import "components/security_state/ios/security_state_utils.h"
@@ -151,15 +152,6 @@ ChromeAutofillClientIOS::GetAutocompleteHistoryManager() {
   return autocomplete_history_manager_;
 }
 
-CreditCardRiskBasedAuthenticator*
-ChromeAutofillClientIOS::GetRiskBasedAuthenticator() {
-  if (!risk_based_authenticator_) {
-    risk_based_authenticator_ =
-        std::make_unique<CreditCardRiskBasedAuthenticator>(this);
-  }
-  return risk_based_authenticator_.get();
-}
-
 PrefService* ChromeAutofillClientIOS::GetPrefs() {
   return const_cast<PrefService*>(std::as_const(*this).GetPrefs());
 }
@@ -265,7 +257,7 @@ GeoIpCountryCode ChromeAutofillClientIOS::GetVariationConfigCountryCode()
 
 void ChromeAutofillClientIOS::ShowAutofillSettings(
     FillingProduct main_filling_product) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 payments::MandatoryReauthManager*
@@ -406,18 +398,18 @@ bool ChromeAutofillClientIOS::HasCreditCardScanFeature() const {
 }
 
 void ChromeAutofillClientIOS::ScanCreditCard(CreditCardScanCallback callback) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 bool ChromeAutofillClientIOS::ShowTouchToFillCreditCard(
     base::WeakPtr<TouchToFillDelegate> delegate,
     base::span<const CreditCard> cards_to_suggest) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return false;
 }
 
 void ChromeAutofillClientIOS::HideTouchToFillCreditCard() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void ChromeAutofillClientIOS::ShowAutofillSuggestions(
@@ -541,6 +533,34 @@ std::optional<std::u16string> ChromeAutofillClientIOS::GetUserEmail() {
     return base::SysNSStringToUTF16(identity.userEmail);
   }
   return std::nullopt;
+}
+
+AutofillClient::PasswordFormType
+ChromeAutofillClientIOS::ClassifyAsPasswordForm(AutofillManager& manager,
+                                                FormGlobalId form_id,
+                                                FieldGlobalId field_id) const {
+  FormStructure* form_structure = manager.FindCachedFormById(form_id);
+  if (!form_structure) {
+    return PasswordFormType::kNoPasswordForm;
+  }
+  // There is no form flattening on iOS (yet) - we can assume that the form here
+  // consists of a single renderer form.
+  FormDataAndServerPredictions form_and_predictions =
+      GetFormDataAndServerPredictions(*form_structure);
+  const FormData& form = form_and_predictions.form_data;
+
+  password_manager::FormDataParser parser;
+  // The driver id is irrelevant here because it would only be used by password
+  // manager logic that handles the `PasswordForm` returned by the parser.
+  parser.set_predictions(password_manager::ConvertToFormPredictions(
+      /*driver_id=*/0, form, form_and_predictions.predictions));
+  // The parser can use stored usernames to identify a filled username field by
+  // the value it contains. Here it remains empty.
+  std::unique_ptr<password_manager::PasswordForm> pw_form =
+      parser.Parse(form, password_manager::FormDataParser::Mode::kFilling,
+                   /*stored_usernames=*/{});
+  return pw_form ? pw_form->GetPasswordFormType()
+                 : PasswordFormType::kNoPasswordForm;
 }
 
 }  // namespace autofill

@@ -31,6 +31,7 @@
 #include "components/safe_browsing/content/browser/web_api_handshake_checker.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/digital_identity_provider.h"
 #include "content/public/browser/legacy_tech_cookie_issue_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/alternative_error_page_override_info.mojom-forward.h"
@@ -184,6 +185,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& destination_url) override;
   bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
                                const GURL& site_url) override;
+  bool ShouldAllowProcessPerSiteForMultipleMainFrames(
+      content::BrowserContext* context) override;
   bool ShouldUseSpareRenderProcessHost(content::BrowserContext* browser_context,
                                        const GURL& site_url) override;
   bool DoesSiteRequireDedicatedProcess(content::BrowserContext* browser_context,
@@ -908,6 +911,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const url::Origin& origin,
       bool is_only_requesting_age,
       DigitalIdentityInterstitialCallback callback) override;
+
+  std::unique_ptr<content::DigitalIdentityProvider>
+  CreateDigitalIdentityProvider() override;
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -1043,6 +1049,15 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void BindModelManager(
       content::RenderFrameHost* rfh,
       mojo::PendingReceiver<blink::mojom::ModelManager> receiver) override;
+
+#if !BUILDFLAG(IS_ANDROID)
+  void QueryInstalledWebAppsByManifestId(
+      const GURL& frame_url,
+      const GURL& manifest_id,
+      content::BrowserContext* browser_context,
+      base::OnceCallback<void(std::optional<blink::mojom::RelatedApplication>)>
+          callback) override;
+#endif  // !BUILDFLAG(IS_ANDROID)
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

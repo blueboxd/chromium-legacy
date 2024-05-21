@@ -63,7 +63,7 @@ std::u16string PossibleResidentKeyWarning(
     case device::ResidentKeyRequirement::kRequired:
       return l10n_util::GetStringUTF16(IDS_WEBAUTHN_RESIDENT_KEY_PRIVACY);
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return std::u16string();
 }
 
@@ -149,7 +149,7 @@ void AuthenticatorSheetModelBase::OnBack() {
 }
 
 void AuthenticatorSheetModelBase::OnAccept() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void AuthenticatorSheetModelBase::OnCancel() {
@@ -2054,9 +2054,10 @@ AuthenticatorGpmIncognitoCreateSheetModel::
         AuthenticatorRequestDialogModel* dialog_model)
     : AuthenticatorSheetModelBase(dialog_model,
                                   OtherMechanismButtonVisibility::kHidden) {
-  // TODO(enclave): Add the new incognito illustration to use instead.
-  lottie_illustrations_.emplace(IDR_WEBAUTHN_GPM_PASSKEY_LIGHT,
-                                IDR_WEBAUTHN_GPM_PASSKEY_DARK);
+  // Incognito always has a dark color scheme and so the two illustrations are
+  // the same.
+  lottie_illustrations_.emplace(IDR_WEBAUTHN_GPM_INCOGNITO,
+                                IDR_WEBAUTHN_GPM_INCOGNITO);
 }
 
 AuthenticatorGpmIncognitoCreateSheetModel::

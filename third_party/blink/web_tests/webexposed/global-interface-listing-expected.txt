@@ -848,7 +848,7 @@ interface CSSNumericValue : CSSStyleValue
     method to
     method toSum
     method type
-interface CSSPageRule : CSSRule
+interface CSSPageRule : CSSGroupingRule
     attribute @@toStringTag
     getter selectorText
     getter style
@@ -6514,6 +6514,7 @@ interface MimeTypeArray
 interface ModelGenericSession
     attribute @@toStringTag
     method constructor
+    method destroy
     method execute
     method executeStreaming
 interface ModelManager
@@ -9979,6 +9980,7 @@ interface TextMetrics
     getter ideographicBaseline
     getter width
     method constructor
+    method getSelectionRects
 interface TextTrack : EventTarget
     attribute @@toStringTag
     getter activeCues

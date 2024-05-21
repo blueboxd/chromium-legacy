@@ -209,7 +209,6 @@
 #endif
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/signin/managed_user_profile_notice_ui.h"
 #include "chrome/browser/ui/webui/signin/profile_customization_ui.h"
 #include "chrome/browser/ui/webui/signin/profile_picker_ui.h"
@@ -533,8 +532,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     if (url.host_piece() == chrome::kChromeUINewTabPageThirdPartyHost)
       return &NewWebUI<NewTabPageThirdPartyUI>;
   }
-  if (url.host_piece() == chrome::kChromeUICustomizeChromeSidePanelHost &&
-      customize_chrome::IsSidePanelEnabled()) {
+  if (url.host_piece() == chrome::kChromeUICustomizeChromeSidePanelHost) {
     return &NewWebUI<CustomizeChromeUI>;
   }
   if (base::FeatureList::IsEnabled(history_clusters::kSidePanelJourneys)) {
@@ -911,7 +909,7 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
 #if !BUILDFLAG(IS_ANDROID)
   // The extension scheme is handled in GetFaviconForURL.
   if (page_url.SchemeIs(extensions::kExtensionScheme)) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return nullptr;
   }
 #endif
@@ -1074,6 +1072,7 @@ ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
     GURL(chrome::kChromeUIOSSettingsURL),
     GURL(chrome::kChromeUIPowerUrl),
     GURL(chrome::kChromeUIPrintManagementUrl),
+    GURL(chrome::kChromeUISanitizeAppURL),
     GURL(chrome::kChromeUIScanningAppURL),
     GURL(chrome::kChromeUISensorInfoURL),
     GURL(chrome::kChromeUISetTimeURL),

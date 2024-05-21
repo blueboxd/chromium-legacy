@@ -63,6 +63,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
+#include "services/screen_ai/public/mojom/screen_ai_service.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "ui/chromeos/styles/cros_styles.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -404,7 +405,7 @@ ChromeCameraAppUIDelegate::ChromeCameraAppUIDelegate(content::WebUI* web_ui)
   InitializeStorageMonitor();
   // TODO(b/338363415): Check the service availability before trying to use it.
   optical_character_recognizer_ = screen_ai::OpticalCharacterRecognizer::Create(
-      Profile::FromWebUI(web_ui_));
+      Profile::FromWebUI(web_ui_), screen_ai::mojom::OcrClientType::kCameraApp);
   pdf_service_manager_ =
       std::make_unique<PdfServiceManager>(optical_character_recognizer_);
 }
@@ -550,7 +551,7 @@ std::string ChromeCameraAppUIDelegate::GetFilePathInArcByName(
   }
   if (requires_sharing) {
     LOG(ERROR) << "File path should be in MyFiles and not require any sharing";
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return std::string();
   }
   return arc_url_out.spec();
@@ -699,8 +700,8 @@ void ChromeCameraAppUIDelegate::OpenWifiDialog(WifiConfig wifi_config) {
   } else if (wifi_config.security == onc::wifi::kWPA_EAP) {
     config->security = SecurityType::kWpaEap;
   } else {
-    NOTREACHED() << "Unexpected network security type: "
-                 << wifi_config.security;
+    NOTREACHED_IN_MIGRATION()
+        << "Unexpected network security type: " << wifi_config.security;
   }
   config->passphrase = wifi_config.password;
   if (config->security == SecurityType::kWpaEap) {

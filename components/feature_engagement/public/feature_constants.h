@@ -35,6 +35,7 @@ BASE_DECLARE_FEATURE(kIPHDesktopReEngagementFeature);
 BASE_DECLARE_FEATURE(kIPHDiscardRingFeature);
 BASE_DECLARE_FEATURE(kIPHDownloadEsbPromoFeature);
 BASE_DECLARE_FEATURE(kIPHExperimentalAIPromoFeature);
+BASE_DECLARE_FEATURE(kIPHExplicitBrowserSigninPreferenceRememberedFeature);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 BASE_DECLARE_FEATURE(kIPHExtensionsMenuFeature);
 BASE_DECLARE_FEATURE(kIPHExtensionsRequestAccessButtonFeature);
@@ -51,6 +52,7 @@ BASE_DECLARE_FEATURE(kIPHPasswordsManagementBubbleDuringSigninFeature);
 BASE_DECLARE_FEATURE(kIPHPasswordsWebAppProfileSwitchFeature);
 BASE_DECLARE_FEATURE(kIPHPasswordManagerShortcutFeature);
 BASE_DECLARE_FEATURE(kIPHPasswordSharingFeature);
+BASE_DECLARE_FEATURE(kIPHPerformanceInterventionDialogFeature);
 BASE_DECLARE_FEATURE(kIPHPowerBookmarksSidePanelFeature);
 BASE_DECLARE_FEATURE(kIPHPriceInsightsPageActionIconLabelFeature);
 BASE_DECLARE_FEATURE(kIPHPriceTrackingEmailConsentFeature);

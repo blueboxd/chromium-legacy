@@ -54,6 +54,7 @@ import org.chromium.chrome.browser.sync.ui.PassphraseTypeDialogFragment;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.signin.SignOutCoordinator;
 import org.chromium.chrome.browser.ui.signin.SigninUtils;
+import org.chromium.chrome.browser.ui.signin.SignoutButtonPreference;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.FragmentSettingsLauncher;
@@ -61,8 +62,11 @@ import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.Tribool;
+import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.sync.SyncService;
 import org.chromium.components.sync.UserSelectableType;
@@ -95,6 +99,9 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
     @VisibleForTesting public static final String FRAGMENT_PASSPHRASE_TYPE = "password_type";
 
     @VisibleForTesting
+    private static final String PREF_CENTRAL_ACCOUNT_CARD_PREFERENCE = "central_account_card";
+
+    @VisibleForTesting
     public static final String PREF_SYNC_ERROR_CARD_PREFERENCE = "sync_error_card";
 
     @VisibleForTesting
@@ -109,10 +116,6 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
     public static final String PREF_SYNC_PAYMENTS_INTEGRATION = "sync_payments_integration";
 
     @VisibleForTesting public static final String PREF_SYNC_HISTORY = "sync_history";
-
-    @VisibleForTesting
-    public static final String PREF_SYNC_HISTORY_AND_TABS = "sync_history_and_tabs";
-
     @VisibleForTesting public static final String PREF_SYNC_PASSWORDS = "sync_passwords";
     @VisibleForTesting public static final String PREF_SYNC_READING_LIST = "sync_reading_list";
     @VisibleForTesting public static final String PREF_SYNC_RECENT_TABS = "sync_recent_tabs";
@@ -120,6 +123,34 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
     @VisibleForTesting public static final String PREF_SYNC_APPS = "sync_apps";
     @VisibleForTesting public static final String PREF_TURN_OFF_SYNC = "turn_off_sync";
     private static final String PREF_ADVANCED_CATEGORY = "advanced_category";
+
+    @VisibleForTesting
+    public static final String PREF_ACCOUNT_SECTION_HISTORY_TOGGLE =
+            "account_section_history_toggle";
+
+    @VisibleForTesting
+    public static final String PREF_ACCOUNT_SECTION_BOOKMARKS_TOGGLE =
+            "account_section_bookmarks_toggle";
+
+    @VisibleForTesting
+    public static final String PREF_ACCOUNT_SECTION_READING_LIST_TOGGLE =
+            "account_section_reading_list_toggle";
+
+    @VisibleForTesting
+    public static final String PREF_ACCOUNT_SECTION_ADDRESSES_TOGGLE =
+            "account_section_addresses_toggle";
+
+    @VisibleForTesting
+    public static final String PREF_ACCOUNT_SECTION_PASSWORDS_TOGGLE =
+            "account_section_passwords_toggle";
+
+    @VisibleForTesting
+    public static final String PREF_ACCOUNT_SECTION_PAYMENTS_TOGGLE =
+            "account_section_payments_toggle";
+
+    @VisibleForTesting
+    public static final String PREF_ACCOUNT_SECTION_SETTINGS_TOGGLE =
+            "account_section_settings_toggle";
 
     @VisibleForTesting
     public static final String PREF_GOOGLE_ACTIVITY_CONTROLS = "google_activity_controls";
@@ -139,6 +170,8 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
 
     @VisibleForTesting
     public static final String PREF_URL_KEYED_ANONYMIZED_DATA = "url_keyed_anonymized_data";
+
+    @VisibleForTesting public static final String PREF_SIGN_OUT = "sign_out_button";
 
     private static final int REQUEST_CODE_TRUSTED_VAULT_KEY_RETRIEVAL = 1;
     private static final int REQUEST_CODE_TRUSTED_VAULT_RECOVERABILITY_DEGRADED = 2;
@@ -193,8 +226,19 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
         setHasOptionsMenu(true);
 
         if (shouldReplaceSyncSettingsWithAccountSettings()) {
+            getActivity().setTitle(R.string.account_section_header);
+
             SettingsUtils.addPreferencesFromResource(
                     this, R.xml.unified_account_settings_preferences);
+
+            CentralAccountCardPreference centralAccountCardPreference =
+                    (CentralAccountCardPreference)
+                            findPreference(PREF_CENTRAL_ACCOUNT_CARD_PREFERENCE);
+            centralAccountCardPreference.initialize(
+                    IdentityServicesProvider.get()
+                            .getIdentityManager(getProfile())
+                            .getPrimaryAccountInfo(ConsentLevel.SIGNIN),
+                    ProfileDataCache.createWithDefaultImageSizeAndNoBadge(getContext()));
 
             IdentityErrorCardPreference identityErrorCardPreference =
                     (IdentityErrorCardPreference)
@@ -203,22 +247,29 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
 
             mSyncTypeSwitchPreferencesMap = new HashMap<>();
             mSyncTypeSwitchPreferencesMap.put(
-                    UserSelectableType.AUTOFILL, findPreference(PREF_SYNC_AUTOFILL));
+                    UserSelectableType.AUTOFILL,
+                    findPreference(PREF_ACCOUNT_SECTION_ADDRESSES_TOGGLE));
             mSyncTypeSwitchPreferencesMap.put(
-                    UserSelectableType.BOOKMARKS, findPreference(PREF_SYNC_BOOKMARKS));
+                    UserSelectableType.BOOKMARKS,
+                    findPreference(PREF_ACCOUNT_SECTION_BOOKMARKS_TOGGLE));
             // HISTORY and TABS are bundled in the same switch in the new settings panel.
             mSyncTypeSwitchPreferencesMap.put(
-                    UserSelectableType.HISTORY, findPreference(PREF_SYNC_HISTORY_AND_TABS));
+                    UserSelectableType.HISTORY,
+                    findPreference(PREF_ACCOUNT_SECTION_HISTORY_TOGGLE));
             mSyncTypeSwitchPreferencesMap.put(
-                    UserSelectableType.TABS, findPreference(PREF_SYNC_HISTORY_AND_TABS));
+                    UserSelectableType.TABS, findPreference(PREF_ACCOUNT_SECTION_HISTORY_TOGGLE));
             mSyncTypeSwitchPreferencesMap.put(
-                    UserSelectableType.PASSWORDS, findPreference(PREF_SYNC_PASSWORDS));
+                    UserSelectableType.PASSWORDS,
+                    findPreference(PREF_ACCOUNT_SECTION_PASSWORDS_TOGGLE));
             mSyncTypeSwitchPreferencesMap.put(
-                    UserSelectableType.PAYMENTS, findPreference(PREF_SYNC_PAYMENTS_INTEGRATION));
+                    UserSelectableType.PAYMENTS,
+                    findPreference(PREF_ACCOUNT_SECTION_PAYMENTS_TOGGLE));
             mSyncTypeSwitchPreferencesMap.put(
-                    UserSelectableType.PREFERENCES, findPreference(PREF_SYNC_SETTINGS));
+                    UserSelectableType.PREFERENCES,
+                    findPreference(PREF_ACCOUNT_SECTION_SETTINGS_TOGGLE));
             mSyncTypeSwitchPreferencesMap.put(
-                    UserSelectableType.READING_LIST, findPreference(PREF_SYNC_READING_LIST));
+                    UserSelectableType.READING_LIST,
+                    findPreference(PREF_ACCOUNT_SECTION_READING_LIST_TOGGLE));
 
             mSyncTypeSwitchPreferencesMap
                     .values()
@@ -237,6 +288,14 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
             manageAccountsOnThisDevice.setOnPreferenceClickListener(
                     SyncSettingsUtils.toOnClickListener(
                             this, () -> SigninUtils.openSettingsForAllAccounts(getActivity())));
+
+            SignoutButtonPreference signOutPreference =
+                    (SignoutButtonPreference) findPreference(PREF_SIGN_OUT);
+            if (isSupervisedUser()) {
+                signOutPreference.setVisible(false);
+            } else {
+                signOutPreference.initialize(getProfile());
+            }
         } else {
             getActivity().setTitle(R.string.sync_category_title);
 
@@ -736,7 +795,8 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
                 boolean managed = mSyncService.isTypeManagedByPolicy(type);
 
                 if (type == UserSelectableType.TABS || type == UserSelectableType.HISTORY) {
-                    // PREF_SYNC_HISTORY_AND_TABS toggle represents both History and Tabs in this
+                    // PREF_ACCOUNT_SECTION_HISTORY_TOGGLE toggle represents both History and Tabs
+                    // in this
                     // case.
                     // History and Tabs should usually have the same value, but in some
                     // cases they may not, e.g. if one of them is disabled by policy. In that
@@ -960,5 +1020,29 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
         TemplateUrlService templateUrlService =
                 TemplateUrlServiceFactory.getForProfile(getProfile());
         return templateUrlService.isEeaChoiceCountry();
+    }
+
+    private boolean isSupervisedUser() {
+        if (ChromeFeatureList.isEnabled(
+                ChromeFeatureList.MIGRATE_ACCOUNT_MANAGEMENT_SETTINGS_TO_CAPABILITIES)) {
+            IdentityManager identityManager =
+                    IdentityServicesProvider.get().getIdentityManager(getProfile());
+
+            // SEED_ACCOUNTS_REVAMP is needed for using capabilities, otherwise
+            // findExtendedAccountInfoByEmailAddress is not guaranteed to have the needed account
+            assert ChromeFeatureList.isEnabled(ChromeFeatureList.SEED_ACCOUNTS_REVAMP);
+
+            CoreAccountInfo corePrimaryAccountInfo =
+                    identityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN);
+            if (corePrimaryAccountInfo != null) {
+                AccountInfo extendedAccountInfo =
+                        identityManager.findExtendedAccountInfoByEmailAddress(
+                                corePrimaryAccountInfo.getEmail());
+                return extendedAccountInfo.getAccountCapabilities().isSubjectToParentalControls()
+                        == Tribool.TRUE;
+            }
+            return false;
+        }
+        return getProfile().isChild();
     }
 }

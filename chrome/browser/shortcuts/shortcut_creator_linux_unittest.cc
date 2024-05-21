@@ -17,10 +17,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/gmock_expected_support.h"
-#include "base/test/scoped_path_override.h"
 #include "base/types/expected.h"
+#include "chrome/browser/shortcuts/fake_linux_xdg_wrapper.h"
 #include "chrome/browser/shortcuts/linux_xdg_wrapper.h"
-#include "chrome/browser/shortcuts/shortcut_creator_linux_test_support.h"
+#include "chrome/browser/shortcuts/shortcut_creation_test_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -81,12 +81,10 @@ class ShortcutCreatorLinuxTest : public testing::Test {
 
   void SetUp() override { ASSERT_TRUE(profile_path_.CreateUniqueTempDir()); }
 
-  ShortcutCreatorLinuxTestSupport& test_support() { return test_support_; }
-
   const base::FilePath& profile_path() const { return profile_path_.GetPath(); }
 
  private:
-  ShortcutCreatorLinuxTestSupport test_support_;
+  ShortcutCreationTestSupport test_support_;
   base::ScopedTempDir profile_path_;
 };
 
@@ -99,9 +97,11 @@ TEST_F(ShortcutCreatorLinuxTest, ShortcutCreatedWithIcons) {
   EXPECT_FALSE(base::PathExists(shortcut_icon_path));
   EXPECT_FALSE(base::DirectoryExists(GetShortcutIconDir()));
 
-  ShortcutCreatorResult result = CreateShortcutOnLinuxDesktop(
-      "Test Name", kUrl, std::move(image), profile_path(), test_support());
-  EXPECT_EQ(ShortcutCreatorResult::kSuccess, result);
+  FakeLinuxXdgWrapper xdg_wrapper;
+  ShortcutCreatorOutput creation_metadata = CreateShortcutOnLinuxDesktop(
+      "Test Name", kUrl, std::move(image), profile_path(), xdg_wrapper);
+  EXPECT_EQ(ShortcutCreatorResult::kSuccess, creation_metadata.result);
+  EXPECT_TRUE(base::PathExists(creation_metadata.shortcut_path));
 
   EXPECT_TRUE(base::PathExists(shortcut_icon_path));
   EXPECT_THAT(LoadIcon(shortcut_icon_path),
@@ -113,14 +113,19 @@ TEST_F(ShortcutCreatorLinuxTest, ShortcutCreatedWithCorrectFile) {
   base::FilePath shortcut_icon_path =
       GetShortcutIconDir().Append(kShortcutBaseName);
 
-  ShortcutCreatorResult result = CreateShortcutOnLinuxDesktop(
-      "Test Name", kUrl, std::move(image), profile_path(), test_support());
-  EXPECT_EQ(ShortcutCreatorResult::kSuccess, result);
+  FakeLinuxXdgWrapper xdg_wrapper;
+  ShortcutCreatorOutput creation_metadata = CreateShortcutOnLinuxDesktop(
+      "Test Name", kUrl, std::move(image), profile_path(), xdg_wrapper);
+  EXPECT_EQ(ShortcutCreatorResult::kSuccess, creation_metadata.result);
 
-  ASSERT_EQ(test_support().GetInstalls().size(), 1u);
-  base::FilePath desktop_file = test_support().GetInstalls()[0];
+  const base::FilePath& shortcut_path = creation_metadata.shortcut_path;
+  EXPECT_TRUE(base::PathExists(shortcut_path));
+
+  ASSERT_EQ(xdg_wrapper.GetInstalls().size(), 1u);
+  base::FilePath desktop_file = xdg_wrapper.GetInstalls()[0];
   EXPECT_EQ(GetUserDesktopPath().AppendASCII("chrome-Test_Name.desktop"),
             desktop_file);
+  EXPECT_EQ(shortcut_path, desktop_file);
   std::string file;
   ASSERT_TRUE(base::ReadFileToString(desktop_file, &file));
 
@@ -139,7 +144,7 @@ TEST_F(ShortcutCreatorLinuxTest, ShortcutCreatedWithCorrectFile) {
   // Note: The profile directory is expected to be simply the base name, and not
   // the full path.
   std::string expected_command_line_args = base::StringPrintf(
-      "--profile-directory=%s \"%s\"",
+      "--profile-directory=%s --ignore-profile-directory-if-not-exists \"%s\"",
       profile_path().BaseName().value().c_str(), kUrl.spec().c_str());
   EXPECT_THAT(file, HasSubstr(expected_command_line_args));
 
@@ -149,6 +154,11 @@ TEST_F(ShortcutCreatorLinuxTest, ShortcutCreatedWithCorrectFile) {
 
   // URL
   EXPECT_THAT(file, HasSubstr(base::StrCat({"URL=", kUrl.spec()})));
+
+  // Verify that the shortcut matchers work correctly as well.
+  EXPECT_THAT(desktop_file, IsShortcutForUrl(kUrl));
+  EXPECT_THAT(desktop_file, IsShortcutForProfile(profile_path()));
+  EXPECT_THAT(desktop_file, IsShortcutWithTitle(u"Test Name"));
 }
 
 }  // namespace

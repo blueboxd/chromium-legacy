@@ -303,14 +303,11 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
 
     @Override
     public void onQueryAppsComplete(List<String> items) {
-        boolean hasAppToShow = mManager.onQueryAppsComplete(items);
+        mManager.onQueryAppsComplete(items);
 
         // Querying apps was completed after the search mode is entered (or within search mode).
-        // Enable/disable the filter header/button accordingly.
-        if (mIsSearching) {
-            mAppFilterHeaderItem.getView().setVisibility(hasAppToShow ? View.VISIBLE : View.GONE);
-            mAppFilterChip.setEnabled(hasAppToShow);
-        }
+        // Set the headers again to show/hide the header item for the app filter button.
+        if (mIsSearching) setHeaders();
     }
 
     @Override
@@ -462,19 +459,30 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
 
     private void updatePrivacyDisclaimerText() {
         Context context = mPrivacyDisclaimerTextView.getContext();
-        CharSequence text;
-        if (mManager.launchedForApp()) {
-            if (!hasPrivacyDisclaimers()) {
-                text = context.getResources().getString(R.string.android_app_history_open_full);
-            } else {
-                text = getPrivacyDisclaimerClickableSpanString(
-                        context, R.string.android_app_history_open_full_other_forms);
-            }
+        CharSequence text = null;
+        if (!HistoryManager.isAppSpecificHistoryEnabled()) {
+            text =
+                    getPrivacyDisclaimerClickableSpanString(
+                            context, R.string.android_history_other_forms_of_history);
         } else {
-            text = getPrivacyDisclaimerClickableSpanString(
-                    context, R.string.android_history_other_forms_of_history);
+            if (mManager.launchedForApp()) { // In-app History UI
+                if (hasPrivacyDisclaimers()) {
+                    int res = R.string.android_app_history_open_full_other_forms;
+                    text = getPrivacyDisclaimerClickableSpanString(context, res);
+                } else {
+                    text = context.getResources().getString(R.string.android_app_history_open_full);
+                }
+            } else if (mManager.showAppFilter()) { // History UI in BrApp
+                if (hasPrivacyDisclaimers()) {
+                    int res = R.string.android_history_from_other_apps_other_forms_of_history;
+                    text = getPrivacyDisclaimerClickableSpanString(context, res);
+                } else {
+                    int res = R.string.android_history_from_other_apps;
+                    text = context.getResources().getString(res);
+                }
+            }
         }
-        mPrivacyDisclaimerTextView.setText(text);
+        if (text != null) mPrivacyDisclaimerTextView.setText(text);
     }
 
     private void updatePrivacyDisclaimerBottomSpace() {
@@ -495,16 +503,9 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     private void setHeaders() {
         ArrayList<HeaderItem> args = new ArrayList<>();
         if (mIsSearching) {
-            if (mShowAppFilter) {
-                args.add(mAppFilterHeaderItem);
-                // Query for apps list could be still pending. Keep the header hidden and the button
-                // disabled until the result is ready.
-                // TODO(b/339497723): Prefer not adding the header to making it hidden as it could
-                //     cause an issue regarding a11y.
-                boolean visible = mManager.hasFilterList();
-                mAppFilterHeaderItem.getView().setVisibility(visible ? View.VISIBLE : View.GONE);
-                mAppFilterChip.setEnabled(visible);
-            }
+            // Query for apps could be still pending. |setHeaders()| will be invoked
+            // again when the query is completed in order to set the header accordingly.
+            if (mShowAppFilter && mManager.hasFilterList()) args.add(mAppFilterHeaderItem);
         } else {
             if (mPrivacyDisclaimersVisible) {
                 args.add(mPrivacyDisclaimerHeaderItem);
@@ -536,10 +537,17 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
 
     /** Set text of privacy disclaimer and visibility of its container. */
     void setPrivacyDisclaimer() {
-        boolean shouldShowPrivacyDisclaimers =
-                (hasPrivacyDisclaimers() || mManager.launchedForApp())
-                        && mManager.getShouldShowPrivacyDisclaimersIfAvailable();
-
+        boolean shouldShowPrivacyDisclaimers;
+        if (HistoryManager.isAppSpecificHistoryEnabled()) {
+            shouldShowPrivacyDisclaimers =
+                    !mManager.isIncognito()
+                            && (mManager.launchedForApp() || mManager.showAppFilter())
+                            && mManager.getShouldShowPrivacyDisclaimersIfAvailable();
+        } else {
+            shouldShowPrivacyDisclaimers =
+                    hasPrivacyDisclaimers()
+                            && mManager.getShouldShowPrivacyDisclaimersIfAvailable();
+        }
         // Prevent from refreshing the recycler view if header visibility is not changed.
         if (mPrivacyDisclaimersVisible == shouldShowPrivacyDisclaimers) return;
         mPrivacyDisclaimersVisible = shouldShowPrivacyDisclaimers;
@@ -591,14 +599,10 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     }
 
     void generateHeaderItemsForTest() {
-        generateHeaderItemsForTest(null);
-    }
-
-    void generateHeaderItemsForTest(View appFilterContainer) {
         mPrivacyDisclaimerHeaderItem = new HeaderItem(0, null);
         mClearBrowsingDataButtonHeaderItem = new HeaderItem(1, null);
         mClearBrowsingDataButtonVisible = true;
-        mAppFilterHeaderItem = new HeaderItem(0, appFilterContainer);
+        mAppFilterHeaderItem = new HeaderItem(0, null);
     }
 
     void generateFooterItemsForTest(MoreProgressButton mockButton) {
@@ -630,10 +634,6 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
 
     void setAppFilterButtonForTest(ChipView appFilterChip) {
         mAppFilterChip = appFilterChip;
-    }
-
-    boolean isAppFilterHeaderItemVisible() {
-        return mAppFilterHeaderItem.getView().getVisibility() == View.VISIBLE;
     }
 
     boolean showSourceAppForTest() {

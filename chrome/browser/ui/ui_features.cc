@@ -127,6 +127,12 @@ BASE_FEATURE(kGetTheMostOutOfChrome,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // This feature controls whether the user can be shown the Chrome for iOS promo
+// when saving or updating passwords.
+BASE_FEATURE(kIOSPromoRefreshedPasswordBubble,
+             "IOSPromoRefreshedPasswordBubble",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// This feature controls whether the user can be shown the Chrome for iOS promo
 // when saving or updating addresses.
 BASE_FEATURE(kIOSPromoAddressBubble,
              "IOSPromoAddressBubble",
@@ -178,14 +184,20 @@ BASE_FEATURE(kLightweightExtensionOverrideConfirmations,
 BASE_FEATURE(kPreloadTopChromeWebUI,
              "PreloadTopChromeWebUI",
              base::FEATURE_DISABLED_BY_DEFAULT);
+const char kPreloadTopChromeWebUIModeName[] = "preload-mode";
+const char kPreloadTopChromeWebUIModePreloadOnWarmupName[] =
+    "preload-on-warmup";
+const char kPreloadTopChromeWebUIModePreloadOnMakeContentsName[] =
+    "preload-on-make-contents";
 constexpr base::FeatureParam<PreloadTopChromeWebUIMode>::Option
     kPreloadTopChromeWebUIModeOptions[] = {
-        {PreloadTopChromeWebUIMode::kPreloadOnWarmup, "preload-on-warmup"},
+        {PreloadTopChromeWebUIMode::kPreloadOnWarmup,
+         kPreloadTopChromeWebUIModePreloadOnWarmupName},
         {PreloadTopChromeWebUIMode::kPreloadOnMakeContents,
-         "preload-on-make-contents"},
+         kPreloadTopChromeWebUIModePreloadOnMakeContentsName},
 };
 const base::FeatureParam<PreloadTopChromeWebUIMode> kPreloadTopChromeWebUIMode{
-    &kPreloadTopChromeWebUI, "preload-mode",
+    &kPreloadTopChromeWebUI, kPreloadTopChromeWebUIModeName,
     PreloadTopChromeWebUIMode::kPreloadOnMakeContents,
     &kPreloadTopChromeWebUIModeOptions};
 

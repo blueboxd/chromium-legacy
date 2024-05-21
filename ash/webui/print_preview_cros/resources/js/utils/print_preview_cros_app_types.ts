@@ -30,6 +30,11 @@ export interface Destination {
   printerStatusReason: PrinterStatusReason|null;
 }
 
+// Used to track which fields are set by UI and values need to be maintained
+// during an update to destination.
+export type UiManagedDestinationFields =
+    Pick<Destination, 'printerManuallySelected'>;
+
 export interface PrintRequestOutcome {
   success: boolean;
   error?: string;
@@ -241,6 +246,245 @@ export interface PrintTicket {
   shouldPrintBackgrounds: boolean;
 }
 
+export interface PageRange {
+  from: number;
+  to: number;
+}
+
+export interface PreviewTicket {
+  // ID used to map a CrOS preview session to the responsible PrintViewManager
+  // and related web contents.
+  printPreviewId: UnguessableToken;
+
+  // Unique ID for this preview request. During a preview session, this
+  // increments for each preview request.
+  requestId: number;
+
+  // Id of destination.
+  deviceName: string;
+
+  // Whether source document is PDF or HTML.
+  previewModifiable: boolean;
+
+  // Whether to print full document or selected section.
+  shouldPrintSelectionOnly: boolean;
+
+  // Used when printing multiple copies. When true, prints a full set of the
+  // document before printing the next copy. When false, prints N-copies of page
+  // one, then page two until all pages are printed.
+  collate: boolean;
+
+  // Print job color mode value.
+  color: ColorModel;
+
+  // Number of prints to make of source document.
+  copies: number;
+
+  // Horizontal DPI used for setting print job resolution.
+  dpiHorizontal: number;
+
+  // Vertical DPI used for setting print job resolution.
+  dpiVertical: number;
+
+  // Determine if printing should be done on both sides and along which edge
+  // of the media.
+  duplex: DuplexMode;
+
+  // Whether the header and footer content will be added to generated PDF.
+  headerFooterEnabled: boolean;
+
+  // Whether orientation should be in landscape or portrait mode.
+  landscape: boolean;
+
+  // Whether to use predefined margins or custom.
+  marginsType: MarginType;
+
+  // Margins defined by users when marginsType is MarginType.CUSTOM_MARGINS.
+  marginsCustom?: MarginsSetting;
+
+  // Used to set requested media and printable area size.
+  // See: printing/print_settings_conversion.cc
+  mediaSize: MediaSize;
+
+  // For n-up, number of pages to print on a single sheet.
+  pagesPerSheet: PagesPerSheetValue;
+
+  // Printer type used determine correct logic and handler for print job
+  // destination.
+  printerType: PrinterType;
+
+  // Whether to treat source as an image when generating PDF.
+  rasterizePDF: boolean;
+
+  // Percent to scale source as integer.
+  scaleFactor: number;
+
+  // Whether to use custom scale or presets.
+  scalingType: ScalingType;
+
+  // Whether to generate PDF with CSS backgrounds included.
+  shouldPrintBackgrounds: boolean;
+
+  // Page ranges to print.
+  pageRange: PageRange[];
+
+  // Is this the first preview request.
+  isFirstRequest: boolean;
+}
+
+export interface ColorOption {
+  optionType?: string;
+
+  vendorId?: string;
+
+  customDisplayName?: string;
+
+  isDefault?: boolean;
+}
+
+export interface ColorCapability {
+  options: ColorOption[];
+
+  resetToDefault?: boolean;
+}
+
+export interface CollateCapability {
+  valueDefault?: boolean;
+}
+
+export interface CopiesCapability {
+  valueDefault?: number;
+
+  max?: number;
+}
+
+export interface DuplexOption {
+  type?: string;
+
+  isDefault?: boolean;
+}
+
+export interface DuplexCapability {
+  options: DuplexOption[];
+
+  resetToDefault?: boolean;
+}
+
+export interface PageOrientationOption {
+  type?: string;
+
+  isDefault?: boolean;
+}
+
+export interface PageOrientationCapability {
+  options: PageOrientationOption[];
+
+  resetToDefault?: boolean;
+}
+
+export interface LocalizedString {
+  locale: string;
+
+  value: string;
+}
+
+export interface SelectOption {
+  customDisplayName?: string;
+
+  customDisplayNameLocalized?: LocalizedString[];
+
+  name?: string;
+
+  isDefault?: boolean;
+}
+
+export interface MediaSizeOption {
+  // TODO(b/323421684): Verify if `type` is still needed in capabilities.
+  optionType?: string;
+
+  vendorId?: string;
+
+  heightMicrons: number;
+
+  widthMicrons: number;
+
+  imageableAreaLeftMicrons?: number;
+
+  imageableAreaBottomMicrons?: number;
+
+  imageableAreaRightMicrons?: number;
+
+  imageableAreaTopMicrons?: number;
+
+  hasBorderlessVariant?: boolean;
+
+  selectOption: SelectOption;
+}
+
+export interface MediaSizeCapability {
+  options: MediaSizeOption[];
+
+  resetToDefault?: boolean;
+}
+
+export interface MediaTypeOption {
+  vendorId: string;
+
+  selectOption: SelectOption;
+}
+
+export interface MediaTypeCapability {
+  options: MediaTypeOption[];
+
+  resetToDefault?: boolean;
+}
+
+export interface DpiOption {
+  vendorId?: string;
+
+  horizontalDpi: number;
+
+  verticalDpi: number;
+
+  isDefault?: boolean;
+}
+
+export interface DpiCapability {
+  options: DpiOption[];
+
+  resetToDefault?: boolean;
+}
+
+export interface PinCapability {
+  supported?: boolean;
+}
+
+/**
+ * Capabilities of a print destination.
+ */
+export interface Capabilities {
+  destinationId: string;
+
+  collate?: CollateCapability;
+
+  color?: ColorCapability;
+
+  copies?: CopiesCapability;
+
+  duplex?: DuplexCapability;
+
+  pageOrientation?: PageOrientationCapability;
+
+  mediaSize?: MediaSizeCapability;
+
+  mediaType?: MediaTypeCapability;
+
+  dpi?: DpiCapability;
+
+  pin?: PinCapability;
+  // TODO(b/323421684): Support vendor_capability.
+}
+
 // Immutable session configuration details for the current CrOS preview request.
 export interface SessionContext {
   // ID used to map a CrOS preview session to the responsible PrintViewManager
@@ -269,10 +513,26 @@ export interface PrintPreviewPageHandler {
 
   // Cancel the print preview and close the window.
   cancel(): void;
+
+  // Send a request to generate a PDF with the desired settings.
+  generatePreview(previewTicket: PreviewTicket): Promise<void>;
+}
+
+export interface FakeDestinationObserverInterface {
+  onDestinationsChanged(destinations: Destination[]): void;
 }
 
 // Placeholder for the DestinationProvider mojo interface.
 export interface DestinationProvider {
   // Retrieve a list of local print destinations; usually provided by CUPS.
   getLocalDestinations(): Promise<Destination[]>;
+
+  // Registers an observer which is notified every time the set of known
+  // destinations are appended or updated;
+  // TODO(b/323421684): Replace observer type with observer mojo interface.
+  observeDestinationChanges(observer: FakeDestinationObserverInterface): void;
+
+  // Fetch the printing capabilities for a specific destination.
+  fetchCapabilities(destinationId: string, printerType: PrinterType):
+      Promise<Capabilities>;
 }

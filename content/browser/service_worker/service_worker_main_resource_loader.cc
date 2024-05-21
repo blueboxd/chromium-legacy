@@ -270,6 +270,8 @@ void ServiceWorkerMainResourceLoader::StartRequest(
         active_worker->router_evaluator()->rules().rules.size();
     router_info->evaluation_worker_status = worker_status;
 
+    response_head_->load_timing.service_worker_router_evaluation_start =
+        base::TimeTicks::Now();
     auto eval_result = active_worker->router_evaluator()->Evaluate(
         resource_request_, running_status);
     // ServiceWorkerStaticRouter_Evaluate is counted only here.
@@ -282,7 +284,7 @@ void ServiceWorkerMainResourceLoader::StartRequest(
     if (eval_result) {  // matched the rule.
       const auto& sources = eval_result->sources;
       auto source_type = sources[0].type;
-      set_used_router_source_type(source_type);
+      set_matched_router_source_type(source_type);
       router_info->rule_id_matched = eval_result->id;
       router_info->matched_source_type = source_type;
 
@@ -309,9 +311,11 @@ void ServiceWorkerMainResourceLoader::StartRequest(
                   [](NavigationLoaderInterceptor::FallbackCallback
                          fallback_callback,
                      scoped_refptr<ServiceWorkerVersion> active_worker,
-                     network::mojom::ServiceWorkerRouterInfoPtr router_info) {
+                     network::mojom::ServiceWorkerRouterInfoPtr router_info,
+                     net::LoadTimingInfo load_timing_info) {
                     ResponseHeadUpdateParams head_update_params;
                     head_update_params.router_info = std::move(router_info);
+                    head_update_params.load_timing_info = load_timing_info;
                     std::move(fallback_callback)
                         .Run(std::move(head_update_params));
                     if (active_worker->running_status() !=
@@ -325,7 +329,8 @@ void ServiceWorkerMainResourceLoader::StartRequest(
                     }
                   },
                   std::move(fallback_callback_), active_worker,
-                  std::move(response_head_->service_worker_router_info)));
+                  std::move(response_head_->service_worker_router_info),
+                  response_head_->load_timing));
           return;
         case network::mojom::ServiceWorkerRouterSourceType::kRace:
           race_network_request_mode = RaceNetworkRequestMode::kForced;
@@ -613,14 +618,21 @@ void ServiceWorkerMainResourceLoader::CommitResponseBody(
   TransitionToStatus(Status::kSentBody);
 
   // When a `response_head` is not `response_head_`, set the
-  // `service_worker_router_info` manually to pass the correct routing
-  // information. Currently, this is only applicable to when
-  // `race-network-and-fetch` is specified, and when this method is called
-  // from `ServiceWorkerRaceNetworkRequestURLLoaderClient`.
-  if (response_head_.get() != response_head.get() &&
-      response_head_->service_worker_router_info) {
-    response_head->service_worker_router_info =
-        std::move(response_head_->service_worker_router_info);
+  // `service_worker_router_info` and relevant fields in `load_timing` manually
+  // to pass the correct routing information. Currently, this is only applicable
+  // to when `race-network-and-fetch` is specified, and when this method is
+  // called from `ServiceWorkerRaceNetworkRequestURLLoaderClient`.
+  if (response_head_.get() != response_head.get()) {
+    if (response_head_->service_worker_router_info) {
+      response_head->service_worker_router_info =
+          std::move(response_head_->service_worker_router_info);
+    }
+
+    if (!response_head_->load_timing.service_worker_router_evaluation_start
+             .is_null()) {
+      response_head->load_timing.service_worker_router_evaluation_start =
+          response_head_->load_timing.service_worker_router_evaluation_start;
+    }
   }
 
   url_loader_client_->OnReceiveResponse(response_head.Clone(),
@@ -657,7 +669,7 @@ void ServiceWorkerMainResourceLoader::CommitCompleted(int error_code,
       case FetchResponseFrom::kNoResponseYet:
       case FetchResponseFrom::kSubresourceLoaderIsHandlingRedirect:
       case FetchResponseFrom::kAutoPreloadHandlingFallback:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
       case FetchResponseFrom::kServiceWorker:
         RecordTimingMetricsForFetchHandlerHandledCase();
@@ -701,6 +713,16 @@ void ServiceWorkerMainResourceLoader::DidDispatchFetchEvent(
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "status",
       blink::ServiceWorkerStatusToString(status), "result",
       ComposeFetchEventResultString(fetch_result, *response));
+
+  // When kRaceNetworkRequest preload is triggered, it's possible that the
+  // response is already committed without waiting for the fetch event result.
+  // Invalidate and destruct if the class already detached from the request.
+  has_fetch_event_finished_ = true;
+  if (dispatched_preload_type() == DispatchedPreloadType::kRaceNetworkRequest &&
+      is_detached_ && status_ == Status::kCompleted) {
+    InvalidateAndDeleteIfNeeded();
+    return;
+  }
 
   bool is_fallback =
       fetch_result ==
@@ -847,20 +869,29 @@ void ServiceWorkerMainResourceLoader::DidDispatchFetchEvent(
     return;
   }
 
+  if (IsMatchedRouterSourceType(
+          network::mojom::ServiceWorkerRouterSourceType::kCache)) {
+    CHECK(cache_matcher_);
+    response_head_->load_timing.service_worker_cache_lookup_start =
+        cache_matcher_->cache_lookup_start();
+  }
+
   // Record the timing of when the fetch event is dispatched on the worker
-  // thread. This is used for PerformanceResourceTiming#fetchStart and
-  // PerformanceResourceTiming#requestStart, but it's still under spec
-  // discussion.
-  // See https://github.com/w3c/resource-timing/issues/119 for more details.
-  // Exposed as PerformanceResourceTiming#fetchStart.
-  response_head_->load_timing.service_worker_ready_time =
-      fetch_event_timing_->dispatch_event_time;
-  // Exposed as PerformanceResourceTiming#requestStart.
-  response_head_->load_timing.send_start =
-      fetch_event_timing_->dispatch_event_time;
-  // Recorded for the DevTools.
-  response_head_->load_timing.send_end =
-      fetch_event_timing_->dispatch_event_time;
+  // thread, when the fetch start for service worker should exist.
+  // This means that the static routing API is not used, or the API is used
+  // with `fetch-event` or `race`. This is used for
+  // PerformanceResourceTiming#fetchStart and
+  // PerformanceResourceTiming#requestStart.
+  if (ShouldRecordServiceWorkerFetchStart()) {
+    response_head_->load_timing.service_worker_ready_time =
+        fetch_event_timing_->dispatch_event_time;
+    // Exposed as PerformanceResourceTiming#requestStart.
+    response_head_->load_timing.send_start =
+        fetch_event_timing_->dispatch_event_time;
+    // Recorded for the DevTools.
+    response_head_->load_timing.send_end =
+        fetch_event_timing_->dispatch_event_time;
+  }
 
   // Records the metrics only if the code has been executed successfully in
   // the service workers because we aim to see the fallback ratio and timing.
@@ -926,7 +957,7 @@ void ServiceWorkerMainResourceLoader::StartResponse(
   response_head_->load_timing.receive_headers_end =
       response_head_->load_timing.receive_headers_start;
   response_source_ = response->response_source;
-  if (!ShouldAvoidRecordingServiceWorkerTimingInfo()) {
+  if (ShouldRecordServiceWorkerFetchStart()) {
     response_head_->load_timing.service_worker_fetch_start =
         fetch_event_timing_->dispatch_event_time;
     response_head_->load_timing.service_worker_respond_with_settled =
@@ -1080,6 +1111,20 @@ void ServiceWorkerMainResourceLoader::OnConnectionClosed() {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerMainResourceLoader::OnConnectionClosed",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+  InvalidateAndDeleteIfNeeded();
+}
+
+void ServiceWorkerMainResourceLoader::InvalidateAndDeleteIfNeeded() {
+  // Postpone the invalidation and destruction if both conditions are satisfied:
+  // 1) RaceNetworkRequest is dispatched and the network wins the race.
+  // 2) The fetch event result is not received yet.
+  // The postponed things will be done in DidDispatchFetchEvent().
+  if (dispatched_preload_type() == DispatchedPreloadType::kRaceNetworkRequest &&
+      race_network_request_url_loader_client_.has_value() &&
+      !has_fetch_event_finished_) {
+    CHECK(fetch_dispatcher_);
+    return;
+  }
 
   // The fetch dispatcher or stream waiter may still be running. Don't let them
   // do callbacks back to this loader, since it is now done with the request.
@@ -1239,7 +1284,7 @@ bool ServiceWorkerMainResourceLoader::IsEligibleForRecordingTimingMetrics() {
     return false;
   }
 
-  if (ShouldAvoidRecordingServiceWorkerTimingInfo()) {
+  if (!ShouldRecordServiceWorkerFetchStart()) {
     return false;
   }
 
@@ -1548,7 +1593,7 @@ void ServiceWorkerMainResourceLoader::TransitionToStatus(Status new_status) {
 #if DCHECK_IS_ON()
   switch (new_status) {
     case Status::kNotStarted:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
     case Status::kStarted:
       DCHECK_EQ(status_, Status::kNotStarted);

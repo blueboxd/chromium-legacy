@@ -653,46 +653,6 @@ suite('<settings-cursor-and-touchpad-page>', () => {
     assertNull(enableMouseKeysToggle);
   });
 
-  test('Moust keys: Disable in text fields', async () => {
-    await initPage();
-
-    if (!loadTimeData.getBoolean('isAccessibilityMouseKeysEnabled')) {
-      // Skip if the flag isn't enabled.
-      return;
-    }
-
-    // If the flag is enabled, check that the UI works.
-    assertFalse(page.prefs.settings.a11y.mouse_keys.enabled.value);
-
-    const enableMouseKeysToggle =
-        page.shadowRoot!.querySelector<SettingsToggleButtonElement>(
-            '#enableMouseKeys');
-    assert(enableMouseKeysToggle);
-    assertTrue(isVisible(enableMouseKeysToggle));
-
-    enableMouseKeysToggle.click();
-    await waitBeforeNextRender(page);
-    flush();
-
-    assertTrue(page.prefs.settings.a11y.mouse_keys.enabled.value);
-
-    // kAccessibilityMouseKeysDisableInTextFields
-    assertTrue(
-        page.prefs.settings.a11y.mouse_keys.disable_in_text_fields.value);
-    const enableMouseKeysDisableInTextFieldsToggle =
-        page.shadowRoot!.querySelector<SettingsToggleButtonElement>(
-            '#enableMouseKeysDisableInTextFields');
-    assert(enableMouseKeysDisableInTextFieldsToggle);
-    assertTrue(isVisible(enableMouseKeysDisableInTextFieldsToggle));
-
-    enableMouseKeysDisableInTextFieldsToggle.click();
-    await waitBeforeNextRender(page);
-    flush();
-
-    assertFalse(
-        page.prefs.settings.a11y.mouse_keys.disable_in_text_fields.value);
-  });
-
   test('Mouse keys: Dominant Hand', async () => {
     await initPage();
 
@@ -702,6 +662,9 @@ suite('<settings-cursor-and-touchpad-page>', () => {
     }
     // If the flag is enabled, check that the UI works.
     assertFalse(page.prefs.settings.a11y.mouse_keys.enabled.value);
+
+    // We should use primary keys by default.
+    assertTrue(page.prefs.settings.a11y.mouse_keys.use_primary_keys.value);
 
     const enableMouseKeysToggle =
         page.shadowRoot!.querySelector<SettingsToggleButtonElement>(
@@ -716,25 +679,42 @@ suite('<settings-cursor-and-touchpad-page>', () => {
     assertTrue(page.prefs.settings.a11y.mouse_keys.enabled.value);
 
     // kAccessibilityMouseKeysDominantHand
-    // Ensure control exists.
-    const control =
+    // Ensure dominantHandControl exists.
+    const dominantHandControl =
         page.shadowRoot!.querySelector<HTMLElement>(`#mouseKeysDominantHand`);
-    assert(control);
+    assert(dominantHandControl);
+    assertTrue(isVisible(dominantHandControl));
 
     // Ensure pref is set to the default value.
     let pref = page.getPref('settings.a11y.mouse_keys.dominant_hand');
     assertEquals(pref.value, 0);
 
-    // Update control to alternate value.
-    await waitAfterNextRender(control);
-    const controlElement = control.shadowRoot!.querySelector('select');
-    assert(controlElement);
-    controlElement.value = String(1);
-    controlElement.dispatchEvent(new CustomEvent('change'));
+    // Update dominantHandControl to alternate value.
+    await waitAfterNextRender(dominantHandControl);
+    const dominantHandControlElement =
+        dominantHandControl.shadowRoot!.querySelector('select');
+    assert(dominantHandControlElement);
+    dominantHandControlElement.value = String(1);
+    dominantHandControlElement.dispatchEvent(new CustomEvent('change'));
 
     // Ensure pref is set to the alternate value.
     pref = page.getPref('settings.a11y.mouse_keys.dominant_hand');
     assertEquals(pref.value, 1);
-  });
 
+    // Switch to num pad.
+    const usePrimaryKeysToggle =
+        page.shadowRoot!.querySelector<SettingsToggleButtonElement>(
+            '#mouseKeysUsePrimaryKeys');
+    assert(usePrimaryKeysToggle);
+    assertTrue(isVisible(usePrimaryKeysToggle));
+
+    usePrimaryKeysToggle.click();
+    await waitBeforeNextRender(page);
+    flush();
+
+    // kAccessibilityMouseKeysUsePrimaryKeys
+    assertFalse(page.prefs.settings.a11y.mouse_keys.use_primary_keys.value);
+
+    assertFalse(isVisible(dominantHandControl));
+  });
 });

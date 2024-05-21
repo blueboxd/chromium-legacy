@@ -1422,6 +1422,10 @@ inline constexpr char kOverscrollHistoryNavigationEnabled[] =
 inline constexpr char kAccessibilityPdfOcrAlwaysActive[] =
     "settings.a11y.pdf_ocr_always_active";
 
+// Whether main node annotations are enabled.
+inline constexpr char kAccessibilityMainNodeAnnotationsEnabled[] =
+    "settings.a11y.enable_main_node_annotations";
+
 // Pref indicating the page colors option the user wants. Page colors is an
 // accessibility feature that simulates forced colors mode at the browser level.
 inline constexpr char kPageColors[] = "settings.a11y.page_colors";
@@ -1903,6 +1907,19 @@ inline constexpr char kPrefHasCompletedComposeFRE[] =
 // enabled. When false, the UI will never be shown.
 inline constexpr char kEnableProactiveNudge[] =
     "compose.proactive_nudge_enabled";
+
+// Dictionary of domains mapped to the time that they are added. A domain can be
+// added through the proactive nudge UI, and can be removed through the "Offer
+// writing help" settings page. When a domain is on the disabled list, the
+// proactive nudge is prevented from being shown on all pages under that domain.
+// The recorded time tracks when the domain was added to the disabled list and
+// is used for integrating with the Chrome settings "Clear browsing data"
+// feature.
+// TODO(b/339524210): Refactor the stored dictionary value to track a second
+// timestamp, `last_visit`, that can be used for re-surfacing the nudge after an
+// elapsed time.
+inline constexpr char kProactiveNudgeDisabledSitesWithTime[] =
+    "compose.proactive_nudge_disabled_sites_with_time";
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -1918,17 +1935,6 @@ inline constexpr char kChromeDataRegionSetting[] = "chrome_data_region_setting";
 // Stored as a dict with annotation hash codes as keys.
 inline constexpr char kNetworkAnnotationBlocklist[] =
     "network_annotation_blocklist";
-
-// Booleans indicating whether the user had dismissed the dialog with "Dont ask
-// again". This value is assumed false, if true the dialog should not show.
-inline constexpr char kTabGroupsDeletionSkipDialogOnDelete[] =
-    "tab_groups.deletion.skip_dialog_on_delete";
-inline constexpr char kTabGroupsDeletionSkipDialogOnUngroup[] =
-    "tab_groups.deletion.skip_dialog_on_ungroup";
-inline constexpr char kTabGroupsDeletionSkipDialogOnRemoveTab[] =
-    "tab_groups.deletion.skip_dialog_on_remove_tab";
-inline constexpr char kTabGroupsDeletionSkipDialogOnCloseTab[] =
-    "tab_groups.deletion.skip_dialog_on_close_tab";
 
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
@@ -3932,6 +3938,10 @@ inline constexpr char kLensDesktopNTPSearchEnabled[] =
     "policy.lens_desktop_ntp_search_enabled";
 #endif
 
+// An integer indicating the number of times the Lens Overlay was started.
+inline constexpr char kLensOverlayStartCount[] =
+    "lens.lens_overlay_start_count";
+
 // A boolean indicating whether the Privacy guide feature has been viewed. This
 // is set to true if the user has done any of the following: (1) opened the
 // privacy guide, (2) dismissed the privacy guide promo, (3) seen the privacy
@@ -4101,10 +4111,12 @@ inline constexpr char kCADistrustedCertificates[] =
 inline constexpr char kCAHintCertificates[] =
     "certificates.ca_hint_certificates";
 
+#if !BUILDFLAG(IS_CHROMEOS)
 // Boolean that specifies whether to use user-added certificates that are in the
 // platform trust stores.
 inline constexpr char kCAPlatformIntegrationEnabled[] =
     "certificates.ca_platform_integration_enabled";
+#endif
 #endif  // BUILDFLAG(CHROME_CERTIFICATE_POLICIES_SUPPORTED)
 
 // Integer value controlling whether to show any enterprise badging on a managed
@@ -4140,9 +4152,11 @@ inline constexpr char kBreachedCredentialsCount[] =
     "profile.safety_hub_breached_credentials_count";
 #endif  // BUILDFLAG(IS_ANDROID)
 
-inline constexpr char kTabGroupSavesUIUpdateMigrated[] =
-    "tab_group_saves_ui_update_migrated";
-
+#if BUILDFLAG(IS_MAC)
+// The integer value of the ExtensibleEnterpriseSSOEnabled policy.
+inline constexpr char kExtensibleEnterpriseSSOEnabled[] =
+    "extensible_enterprise_sso.enabled";
+#endif  //  BUILDFLAG(IS_MAC)
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

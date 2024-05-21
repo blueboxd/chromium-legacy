@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
+#include "chrome/services/sharing/nearby/platform/bluetooth_utils.h"
 #include "chrome/services/sharing/nearby/platform/count_down_latch.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
@@ -75,10 +76,22 @@ std::string_view GattErrorCodeToString(
 
 namespace nearby::chrome {
 
+std::unique_ptr<BleV2GattServer::GattService>
+BleV2GattServer::GattService::Factory::Create() {
+  return base::WrapUnique(new BleV2GattServer::GattService());
+}
+
+BleV2GattServer::GattService::Factory::~Factory() = default;
+
+BleV2GattServer::GattService::GattService() = default;
+BleV2GattServer::GattService::~GattService() = default;
+
 BleV2GattServer::BleV2GattServer(
-    const mojo::SharedRemote<bluetooth::mojom::Adapter>& adapter)
+    const mojo::SharedRemote<bluetooth::mojom::Adapter>& adapter,
+    std::unique_ptr<GattService::Factory> gatt_service_factory)
     : task_runner_(
           base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})),
+      gatt_service_factory_(std::move(gatt_service_factory)),
       bluetooth_adapter_(std::make_unique<BluetoothAdapter>(adapter)),
       adapter_remote_(adapter) {
   CHECK(adapter_remote_.is_bound());
@@ -122,10 +135,14 @@ BleV2GattServer::CreateCharacteristic(
       return std::nullopt;
     }
 
-    auto gatt_service = std::make_unique<GattService>();
+    auto gatt_service = gatt_service_factory_->Create();
     gatt_service->gatt_service_remote.Bind(
         std::move(gatt_service_pending_remote),
         /*bind_task_runner=*/task_runner_);
+    gatt_service->gatt_service_remote.set_disconnect_handler(
+        base::BindOnce(&BleV2GattServer::OnGattServiceDisconnected,
+                       base::Unretained(this), service_uuid),
+        /*handler_task_runner=*/task_runner_);
     service_it =
         uuid_to_gatt_service_map_.emplace(service_uuid, std::move(gatt_service))
             .first;
@@ -158,9 +175,10 @@ BleV2GattServer::CreateCharacteristic(
   // only contain a single value.
   CHECK(gatt_service->gatt_service_remote.is_bound());
   bool create_characteristic_success;
+  device::BluetoothUUID bluetooth_characteristic_uuid{
+      std::string(characteristic_uuid)};
   gatt_service->gatt_service_remote->CreateCharacteristic(
-      /*characteristic_uuid=*/device::BluetoothUUID(
-          characteristic_uuid.Get16BitAsString()),
+      /*characteristic_uuid=*/bluetooth_characteristic_uuid,
       /*permissions=*/ConvertPermission(permission),
       /*properties=*/ConvertProperty(property),
       /*out_success=*/&create_characteristic_success);
@@ -297,9 +315,6 @@ void BleV2GattServer::OnRegisterGattService(
   }
 }
 
-BleV2GattServer::GattService::GattService() = default;
-BleV2GattServer::GattService::~GattService() = default;
-
 void BleV2GattServer::OnLocalCharacteristicRead(
     bluetooth::mojom::DeviceInfoPtr remote_device,
     const device::BluetoothUUID& characteristic_uuid,
@@ -308,8 +323,9 @@ void BleV2GattServer::OnLocalCharacteristicRead(
     OnLocalCharacteristicReadCallback callback) {
   VLOG(1) << __func__;
 
-  Uuid nearby_service_uuid = Uuid(service_uuid.value());
-  Uuid nearby_characteristic_uuid = Uuid(characteristic_uuid.value());
+  Uuid nearby_service_uuid = BluetoothUuidToNearbyUuid(service_uuid);
+  Uuid nearby_characteristic_uuid =
+      BluetoothUuidToNearbyUuid(characteristic_uuid);
 
   // Expect that `OnLocalCharacteristicRead()` is called for a
   // characteristic that already exists in the `uuid_to_gatt_service_map_` of
@@ -362,6 +378,14 @@ void BleV2GattServer::OnLocalCharacteristicRead(
   std::move(callback).Run(
       bluetooth::mojom::LocalCharacteristicReadResult::NewData(
           std::move(read_value)));
+}
+
+void BleV2GattServer::OnGattServiceDisconnected(const Uuid& gatt_service_id) {
+  LOG(WARNING) << __func__ << ": GATT service at "
+               << gatt_service_id.Get16BitAsString()
+               << ": unexpectedly disconnected.";
+
+  uuid_to_gatt_service_map_.erase(gatt_service_id);
 }
 
 }  // namespace nearby::chrome

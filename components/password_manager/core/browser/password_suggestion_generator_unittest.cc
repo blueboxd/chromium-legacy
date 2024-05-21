@@ -18,6 +18,7 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
+#include "components/password_manager/core/common/password_manager_constants.h"
 #include "components/sync/base/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,7 +47,7 @@ using testing::ReturnRef;
 Matcher<Suggestion> EqualsDomainPasswordSuggestion(
     SuggestionType id,
     const std::u16string& main_text,
-    const std::u16string& additional_label,
+    const std::u16string& password_label,
     const std::u16string& realm_label,
     const gfx::Image& custom_icon,
     Suggestion::Icon trailing_icon = Suggestion::Icon::kNoIcon) {
@@ -54,12 +55,9 @@ Matcher<Suggestion> EqualsDomainPasswordSuggestion(
       realm_label.empty() ? u"" : base::StrCat({u", ", realm_label});
   return AllOf(
       EqualsSuggestion(id, main_text, Suggestion::Icon::kGlobe),
-      Field("additional_label", &Suggestion::additional_label,
-            additional_label),
-      Field(
-          "labels", &Suggestion::labels,
-          Conditional(realm_label.empty(), IsEmpty(),
-                      ElementsAre(ElementsAre(Suggestion::Text(realm_label))))),
+      Field("additional_label", &Suggestion::additional_label, realm_label),
+      Field("labels", &Suggestion::labels,
+            ElementsAre(ElementsAre(Suggestion::Text(password_label)))),
       Field("voice_over", &Suggestion::voice_over,
             Conditional(
                 realm_label.empty(),
@@ -91,14 +89,15 @@ Matcher<Suggestion> EqualsPasskeySuggestion(
 Matcher<Suggestion> EqualsManualFallbackSuggestion(
     SuggestionType id,
     const std::u16string& main_text,
-    const std::u16string& additional_label,
+    const std::u16string& username_label,
     Suggestion::Icon icon,
     bool is_acceptable,
     const Suggestion::Payload& payload) {
   return AllOf(
       EqualsSuggestion(id, main_text, icon),
-      Field("additional_label", &Suggestion::additional_label,
-            additional_label),
+      Field(
+          "labels", &Suggestion::labels,
+          ElementsAre(ElementsAre(autofill::Suggestion::Text(username_label)))),
       Field("is_acceptable", &Suggestion::is_acceptable, is_acceptable),
       Field("payload", &Suggestion::payload, payload));
 }
@@ -234,7 +233,7 @@ class PasswordSuggestionGeneratorTest : public testing::Test {
   }
 
   std::u16string password_label(size_t length) const {
-    return std::u16string(length, 0x2022);
+    return std::u16string(length, constants::kPasswordReplacementChar);
   }
 
   CredentialUIEntry android_credential_ui_entry() const {
@@ -326,9 +325,15 @@ TEST_F(PasswordSuggestionGeneratorTest, PasswordSuggestions_FromProfileStore) {
                           EqualsManagePasswordsSuggestion()));
 }
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 // Verify that suggestion for account store credential receives a different
 // `SuggestionType` and trailing icon.
-TEST_F(PasswordSuggestionGeneratorTest, PasswordSuggestions_FromAccountStore) {
+// TODO crbug/40943570: Remove after feature is fully rolled out.
+TEST_F(PasswordSuggestionGeneratorTest,
+       PasswordSuggestions_FromAccountStore_ButterFollowupDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      password_manager::features::kButterOnDesktopFollowup);
   PasswordFormFillData fill_data = password_form_fill_data();
   fill_data.preferred_login.uses_account_store = true;
 
@@ -341,24 +346,18 @@ TEST_F(PasswordSuggestionGeneratorTest, PasswordSuggestions_FromAccountStore) {
                               SuggestionType::kAccountStoragePasswordEntry,
                               u"username", password_label(8u),
                               /*realm_label=*/u"", favicon(),
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
                               Suggestion::Icon::kGoogle
-#else
-                              Suggestion::Icon::kNoIcon
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
                               ),
                           EqualsSuggestion(SuggestionType::kSeparator),
                           EqualsManagePasswordsSuggestion()));
 }
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 // Verify that the trailing icon is not set for the account store credential if
 // the `kButterOnDesktopFollowup` is enabled.
-TEST_F(PasswordSuggestionGeneratorTest,
-       PasswordSuggestions_FromAccountStore_ButterFollowupEnabled) {
-  base::test::ScopedFeatureList feature_list(
+TEST_F(PasswordSuggestionGeneratorTest, PasswordSuggestions_FromAccountStore) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
       password_manager::features::kButterOnDesktopFollowup);
-
   PasswordFormFillData fill_data = password_form_fill_data();
   fill_data.preferred_login.uses_account_store = true;
 
@@ -401,7 +400,10 @@ TEST_F(PasswordSuggestionGeneratorTest,
        PasswordSuggestions_WithAdditionalLogin) {
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(syncer::kSyncWebauthnCredentials);
+  feature_list.InitWithFeatureStates(
+      {{syncer::kSyncWebauthnCredentials, false},
+       {password_manager::features::kButterOnDesktopFollowup, true}});
+
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   PasswordFormFillData fill_data = password_form_fill_data();
   PasswordAndMetadata additional_login;
@@ -424,11 +426,7 @@ TEST_F(PasswordSuggestionGeneratorTest,
               SuggestionType::kAccountStoragePasswordEntry, u"additional_login",
               password_label(19u),
               /*realm_label=*/u"additional.login.com", favicon(),
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-              Suggestion::Icon::kGoogle
-#else
               Suggestion::Icon::kNoIcon
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
               ),
           EqualsSuggestion(SuggestionType::kSeparator),
           EqualsManagePasswordsSuggestion()));

@@ -31,12 +31,16 @@ export class DestinationDropdownElement extends PolymerElement {
 
   static get properties() {
     return {
+      destinations: Array,
+      open: Boolean,
       selectedDestination: Object,
     };
   }
 
   private controller: DestinationDropdownController;
   private eventTracker = new EventTracker();
+  private destinations: Destination[] = [];
+  private open = false;
   private selectedDestination: Destination|null;
 
   override connectedCallback(): void {
@@ -45,11 +49,11 @@ export class DestinationDropdownElement extends PolymerElement {
 
     this.eventTracker.add(
         this.controller, DESTINATION_DROPDOWN_UPDATE_SELECTED_DESTINATION,
-        (e: Event): void =>
-            this.onDestinationDropdownUpdateSelectedDestination(e));
+        (): void => this.onDestinationDropdownUpdateSelectedDestination());
 
     // Initialize properties using the controller.
     this.selectedDestination = this.controller.getSelectedDestination();
+    this.destinations = this.controller.getDestinations();
   }
 
   override disconnectedCallback(): void {
@@ -57,8 +61,13 @@ export class DestinationDropdownElement extends PolymerElement {
     this.eventTracker.removeAll();
   }
 
+  // Handles toggling visibility of dropdown content.
+  onSelectedClicked(): void {
+    this.open = !this.open;
+  }
+
   // Handles updating UI when update selected destination event occurs.
-  private onDestinationDropdownUpdateSelectedDestination(_e: Event): void {
+  private onDestinationDropdownUpdateSelectedDestination(): void {
     this.selectedDestination = this.controller.getSelectedDestination();
   }
 

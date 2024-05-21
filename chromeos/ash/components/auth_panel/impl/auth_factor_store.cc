@@ -72,8 +72,9 @@ void AuthFactorStore::OnUserAction(
             State::AuthenticationStage::kAuthenticating;
         SubmitPassword(password);
       } else {
-        NOTREACHED() << "AuthPanel: Password was submitted while textfield is "
-                     << "empty or password factor is disabled";
+        NOTREACHED_IN_MIGRATION()
+            << "AuthPanel: Password was submitted while textfield is "
+            << "empty or password factor is disabled";
       }
 
       break;
@@ -129,6 +130,7 @@ void AuthFactorStore::OnFactorStateChanged(AshAuthFactor factor,
       state_.password_view_state_->factor_state_ = state;
       break;
     case AshAuthFactor::kCryptohomePin:
+    case AshAuthFactor::kFingerprint:
     case AshAuthFactor::kSmartCard:
     case AshAuthFactor::kSmartUnlock:
     case AshAuthFactor::kRecovery:

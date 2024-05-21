@@ -110,20 +110,23 @@ class ScopedSavedTabGroupTutorialState
     : public user_education::ScopedTutorialState {
  public:
   explicit ScopedSavedTabGroupTutorialState(ui::ElementContext ctx)
-      : user_education::ScopedTutorialState(ctx),
-        browser_(chrome::FindBrowserWithUiElementContext(ctx)) {
-    CHECK(browser_);
+      : user_education::ScopedTutorialState(ctx) {
+    auto* browser = chrome::FindBrowserWithUiElementContext(ctx);
+    CHECK(browser);
+    browser_ = browser->AsWeakPtr();
     browser_->SetForceShowBookmarkBarFlag(
         Browser::ForceShowBookmarkBarFlag::kTabGroupsTutorialActive);
   }
 
   ~ScopedSavedTabGroupTutorialState() override {
-    browser_->ClearForceShowBookmarkBarFlag(
-        Browser::ForceShowBookmarkBarFlag::kTabGroupsTutorialActive);
+    if (browser_ && !browser_->IsBrowserClosing()) {
+      browser_->ClearForceShowBookmarkBarFlag(
+          Browser::ForceShowBookmarkBarFlag::kTabGroupsTutorialActive);
+    }
   }
 
  private:
-  raw_ptr<Browser> browser_;
+  base::WeakPtr<Browser> browser_;
 };
 
 bool HasTabGroups(const BrowserView* browser_view) {
@@ -554,6 +557,40 @@ void MaybeRegisterChromeFeaturePromos(
                                PromoSubtype::kKeyedNotice)));
 
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+  // kIPHExplicitBrowserSigninPreferenceRememberedFeature:
+  registry.RegisterFeature(std::move(
+      FeaturePromoSpecification::CreateForCustomAction(
+          feature_engagement::
+              kIPHExplicitBrowserSigninPreferenceRememberedFeature,
+          kToolbarAvatarButtonElementId,
+          IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_IPH_TEXT_SIGNIN,
+          IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_IPH_SETTINGS_BUTTON,
+          base::BindRepeating([](ui::ElementContext ctx,
+                                 user_education::FeaturePromoHandle
+                                     promo_handle) {
+            auto* browser = chrome::FindBrowserWithUiElementContext(ctx);
+            if (!browser) {
+              return;
+            }
+            ShowPromoInPage::Params params;
+            params.bubble_anchor_id = kToolbarAvatarButtonElementId;
+            params.bubble_arrow = user_education::HelpBubbleArrow::kTopRight;
+            params.bubble_text = l10n_util::GetStringUTF16(
+                IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_IPH_TEXT_SIGNIN);
+            ShowPromoInPage::Start(browser, std::move(params));
+            chrome::ShowSettingsSubPage(browser, chrome::kSyncSetupSubPage);
+            base::RecordAction(
+                base::UserMetricsAction("ExplicitBrowserSigninPreferenceRemembe"
+                                        "red_IPHPromo_SettingsPageOpened"));
+          }))
+          .SetPromoSubtype(user_education::FeaturePromoSpecification::
+                               PromoSubtype::kKeyedNotice)
+          .SetBubbleTitleText(
+              IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_IPH_TITLE_SIGNIN)
+          .SetCustomActionIsDefault(false)));
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 
   // kIPHCookieControlsFeature:
   registry.RegisterFeature(std::move(
@@ -1327,6 +1364,12 @@ void MaybeRegisterChromeNewBadges(user_education::NewBadgeRegistry& registry) {
       lens::features::kLensOverlay,
       user_education::Metadata(126, "jdonnelly@google.com, dfried@google.com",
                                "Shown in app and web context menus.")));
+
+  registry.RegisterFeature(user_education::NewBadgeSpecification(
+      features::kTabOrganization,
+      user_education::Metadata(
+          126, "emshack@chromium.org",
+          "Shown in app menu when TabOrganizationAppMenuItem is enabled.")));
 }
 
 std::unique_ptr<BrowserFeaturePromoController> CreateUserEducationResources(

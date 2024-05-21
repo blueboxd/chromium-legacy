@@ -169,6 +169,10 @@ RenderProcessImpl::RenderProcessImpl()
                         "--wasm-lazy-compilation",
                         "--no-wasm-lazy-compilation");
 
+  SetV8FlagIfOverridden(features::kWebAssemblyMemory64,
+                        "--experimental-wasm-memory64",
+                        "--no-experimental-wasm-memory64");
+
   SetV8FlagIfOverridden(features::kWebAssemblyTiering, "--wasm-tier-up",
                         "--no-wasm-tier-up");
 
@@ -224,11 +228,11 @@ std::unique_ptr<RenderProcess> RenderProcessImpl::Create() {
 }
 
 void RenderProcessImpl::AddRefProcess() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void RenderProcessImpl::ReleaseProcess() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 }  // namespace content

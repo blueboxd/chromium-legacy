@@ -27,6 +27,7 @@
 #include "components/optimization_guide/core/model_info.h"
 #include "components/optimization_guide/core/optimization_guide_model_executor.h"
 #include "components/optimization_guide/proto/model_execution.pb.h"
+#include "feature_keys.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/on_device_model/public/cpp/model_assets.h"
 #include "services/on_device_model/public/mojom/on_device_model.mojom.h"
@@ -41,6 +42,7 @@ class FilePath;
 namespace optimization_guide {
 enum class OnDeviceModelEligibilityReason;
 class OnDeviceModelAccessController;
+class OnDeviceModelAdaptationMetadata;
 class OnDeviceModelComponentStateManager;
 class OnDeviceModelMetadata;
 class ModelQualityLogsUploaderService;
@@ -115,9 +117,18 @@ class OnDeviceModelServiceController
   // Updates the main execution model.
   void UpdateModel(std::unique_ptr<OnDeviceModelMetadata> model_metadata);
 
+  // Updates the model adaptation for the feature.
+  void MaybeUpdateModelAdaptation(
+      ModelBasedCapabilityKey feature,
+      std::unique_ptr<OnDeviceModelAdaptationMetadata> adaptation_metadata);
+
   // Called when the model adaptation remote is disconnected.
   void OnModelAdaptationRemoteDisconnected(ModelBasedCapabilityKey feature,
                                            ModelRemoteDisconnectReason reason);
+
+  base::WeakPtr<OnDeviceModelServiceController> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
 
  protected:
   virtual ~OnDeviceModelServiceController();
@@ -189,6 +200,9 @@ class OnDeviceModelServiceController
   // idle.
   void OnRemoteIdle();
 
+  scoped_refptr<const OnDeviceModelFeatureAdapter> GetFeatureAdapter(
+      ModelBasedCapabilityKey feature);
+
   // This may be null in the destructor, otherwise non-null.
   std::unique_ptr<OnDeviceModelAccessController> access_controller_;
   std::optional<OnDeviceModelMetadataLoader> model_metadata_loader_;
@@ -214,9 +228,8 @@ class OnDeviceModelServiceController
   // Map from feature to its adaptation assets. Present only for features that
   // have valid model adaptation. It could be missing for features that require
   // model adaptation, but they have not been loaded yet.
-  base::flat_map<proto::ModelExecutionFeature,
-                 on_device_model::AdaptationAssetPaths>
-      model_adaptation_assets_;
+  base::flat_map<ModelBasedCapabilityKey, OnDeviceModelAdaptationMetadata>
+      model_adaptation_metadata_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -5,7 +5,7 @@
 
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "os", "reclient")
+load("//lib/builders.star", "os", "siso")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
@@ -20,10 +20,10 @@ try_.defaults.set(
     compilator_cores = 32,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     orchestrator_cores = 4,
-    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
     siso_enabled = True,
-    siso_remote_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
+    siso_project = siso.project.DEFAULT_UNTRUSTED,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CQ,
 )
 
 consoles.list_view(
@@ -55,7 +55,7 @@ try_.builder(
             "release_try_builder",
         ],
     ),
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -70,7 +70,7 @@ try_.builder(
             "debug_try_builder",
         ],
     ),
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -87,7 +87,7 @@ try_.builder(
         ],
     ),
     contact_team_email = "clank-engprod@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -115,7 +115,7 @@ try_.builder(
             "release_try_builder",
         ],
     ),
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -131,7 +131,7 @@ try_.builder(
         ],
     ),
     contact_team_email = "clank-engprod@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -147,7 +147,7 @@ try_.builder(
         ],
     ),
     contact_team_email = "clank-engprod@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -163,7 +163,7 @@ try_.builder(
         ],
     ),
     contact_team_email = "clank-engprod@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -229,7 +229,7 @@ try_.builder(
         ],
     ),
     contact_team_email = "chrome-mte@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 # TODO(crbug.com/40240078): Reenable this builder once the reboot issue is resolved.
@@ -243,7 +243,7 @@ try_.builder(
 #             "minimal_symbols",
 #         ],
 #     ),
-#     siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+#     siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 # )
 
 try_.builder(
@@ -263,7 +263,7 @@ try_.builder(
             "release_try_builder",
         ],
     ),
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -341,7 +341,7 @@ try_.builder(
     ),
     contact_team_email = "cronet-team@google.com",
     main_list_view = "try",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
         location_filters = [
             "components/cronet/.+",
@@ -357,7 +357,7 @@ try_.builder(
     mirrors = ["ci/android-cronet-arm64-dbg"],
     gn_args = "ci/android-cronet-arm64-dbg",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -367,7 +367,7 @@ try_.builder(
     # shared library loading is fixed.
     gn_args = "ci/android-cronet-arm64-rel",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -375,7 +375,7 @@ try_.builder(
     mirrors = ["ci/android-cronet-asan-arm-rel"],
     gn_args = "ci/android-cronet-asan-arm-rel",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -383,7 +383,7 @@ try_.builder(
     mirrors = ["ci/android-cronet-mainline-clang-arm64-dbg"],
     gn_args = "ci/android-cronet-mainline-clang-arm64-dbg",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -391,7 +391,7 @@ try_.builder(
     mirrors = ["ci/android-cronet-mainline-clang-arm64-rel"],
     gn_args = "ci/android-cronet-mainline-clang-arm64-rel",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -399,7 +399,7 @@ try_.builder(
     mirrors = ["ci/android-cronet-mainline-clang-riscv64-dbg"],
     gn_args = "ci/android-cronet-mainline-clang-riscv64-dbg",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -407,7 +407,7 @@ try_.builder(
     mirrors = ["ci/android-cronet-mainline-clang-riscv64-rel"],
     gn_args = "ci/android-cronet-mainline-clang-riscv64-rel",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -416,7 +416,7 @@ try_.builder(
     mirrors = ["ci/android-cronet-mainline-clang-x86-dbg"],
     gn_args = "ci/android-cronet-mainline-clang-x86-dbg",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -424,7 +424,7 @@ try_.builder(
     mirrors = ["ci/android-cronet-mainline-clang-x86-rel"],
     gn_args = "ci/android-cronet-mainline-clang-x86-rel",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -433,7 +433,7 @@ try_.builder(
     mirrors = ["ci/android-cronet-riscv64-dbg"],
     gn_args = "ci/android-cronet-riscv64-dbg",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -442,7 +442,7 @@ try_.builder(
     mirrors = ["ci/android-cronet-riscv64-rel"],
     gn_args = "ci/android-cronet-riscv64-rel",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -450,7 +450,15 @@ try_.builder(
     mirrors = ["ci/android-cronet-x64-rel"],
     gn_args = "ci/android-cronet-x64-rel",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
+    tryjob = try_.job(
+        location_filters = [
+            "components/cronet/.+",
+            "components/grpc_support/.+",
+            "build/android/.+",
+            "build/config/android/.+",
+        ],
+    ),
 )
 
 try_.builder(
@@ -459,7 +467,7 @@ try_.builder(
     mirrors = ["ci/android-cronet-x64-dbg"],
     gn_args = "ci/android-cronet-x64-dbg",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -470,7 +478,7 @@ try_.builder(
     ],
     gn_args = "ci/android-cronet-x64-dbg",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -481,7 +489,7 @@ try_.builder(
     ],
     gn_args = "ci/android-cronet-x64-dbg",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -502,7 +510,7 @@ try_.builder(
     ),
     contact_team_email = "cronet-team@google.com",
     main_list_view = "try",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
         location_filters = [
             "components/cronet/.+",
@@ -519,7 +527,7 @@ try_.builder(
     mirrors = ["ci/android-cronet-x86-dbg"],
     gn_args = "ci/android-cronet-x86-dbg",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -527,7 +535,7 @@ try_.builder(
     mirrors = ["ci/android-cronet-x86-rel"],
     gn_args = "ci/android-cronet-x86-rel",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -541,7 +549,7 @@ try_.builder(
         configs = ["ci/android-cronet-x86-dbg"],
     ),
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -552,7 +560,7 @@ try_.builder(
     ],
     gn_args = "ci/android-cronet-x86-dbg",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -563,7 +571,7 @@ try_.builder(
     ],
     gn_args = "ci/android-cronet-x86-dbg",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -574,7 +582,7 @@ try_.builder(
     ],
     gn_args = "ci/android-cronet-x86-dbg",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -585,7 +593,7 @@ try_.builder(
     ],
     gn_args = "ci/android-cronet-x86-dbg",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -605,7 +613,7 @@ try_.builder(
     ),
     contact_team_email = "cronet-team@google.com",
     main_list_view = "try",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
         location_filters = [
             "components/cronet/.+",
@@ -632,7 +640,7 @@ try_.builder(
     ),
     contact_team_email = "cronet-team@google.com",
     main_list_view = "try",
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
         experiment_percentage = 100,
         location_filters = [
@@ -650,7 +658,7 @@ try_.builder(
     ],
     gn_args = "ci/android-cronet-x86-dbg",
     contact_team_email = "cronet-team@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -694,7 +702,6 @@ try_.builder(
 
 try_.builder(
     name = "android-oreo-arm64-dbg",
-    branch_selector = branches.selector.ANDROID_BRANCHES,
     mirrors = [
         "ci/Android arm64 Builder (dbg)",
         "ci/Oreo Phone Tester",
@@ -707,7 +714,7 @@ try_.builder(
             "arm64",
         ],
     ),
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -850,7 +857,7 @@ try_.builder(
             "debug_try_builder",
         ],
     ),
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -865,7 +872,7 @@ try_.builder(
             "debug_try_builder",
         ],
     ),
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -883,14 +890,14 @@ try_.builder(
         ],
     ),
     contact_team_email = "woa-engprod@google.com",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "android-webview-pie-x86-wpt-fyi-rel",
     mirrors = ["ci/android-webview-pie-x86-wpt-fyi-rel"],
     gn_args = "ci/android-webview-pie-x86-wpt-fyi-rel",
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -908,7 +915,7 @@ try_.builder(
             "webview_monochrome",
         ],
     ),
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -926,7 +933,7 @@ try_.builder(
             "webview_monochrome",
         ],
     ),
-    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.orchestrator_builder(
@@ -1132,7 +1139,7 @@ try_.builder(
         "chromium.enable_cleandead": 100,
     },
     main_list_view = "try",
-    siso_remote_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CQ,
     tryjob = try_.job(),
 )
 

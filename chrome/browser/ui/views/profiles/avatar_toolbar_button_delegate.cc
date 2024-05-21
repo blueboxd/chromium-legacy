@@ -54,6 +54,7 @@
 #include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_change_event.h"
+#include "components/sync/base/features.h"
 #include "components/sync/service/sync_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -950,7 +951,8 @@ class StateManager : public StateObserver,
       }
     }
 
-    NOTREACHED() << "There should at least be one active state in the map.";
+    NOTREACHED_IN_MIGRATION()
+        << "There should at least be one active state in the map.";
   }
 
   // `AvatarToolbarButton::UpdateIcon()` will notify observers, the
@@ -1187,7 +1189,10 @@ AvatarToolbarButtonDelegate::GetTextAndColor(
       break;
     }
     case ButtonState::kShowIdentityName:
-      text = GetShortProfileName();
+      text = switches::IsExplicitBrowserSigninUIOnDesktopEnabled()
+                 ? l10n_util::GetStringFUTF16(IDS_AVATAR_BUTTON_GREETING,
+                                              GetShortProfileName())
+                 : GetShortProfileName();
       break;
     case ButtonState::kExplicitTextShowing: {
       const internal::ExplicitStateProvider* explicit_state =
@@ -1196,6 +1201,7 @@ AvatarToolbarButtonDelegate::GetTextAndColor(
               .AsExplicit();
       CHECK(explicit_state);
       text = explicit_state->GetExplicitText();
+      color = color_provider->GetColor(kColorAvatarButtonHighlightExplicitText);
       break;
     }
     case ButtonState::kSyncError: {
@@ -1287,15 +1293,13 @@ SkColor AvatarToolbarButtonDelegate::GetHighlightTextColor(
             kColorAvatarButtonHighlightSyncErrorForeground);
       }
     }
-    case ButtonState::kGuestSession:
-    case ButtonState::kExplicitTextShowing:
-    case ButtonState::kShowIdentityName:
-      return color_provider->GetColor(
-          kColorAvatarButtonHighlightDefaultForeground);
     case ButtonState::kManagement:
     case ButtonState::kSigninPaused:
       return color_provider->GetColor(
           kColorAvatarButtonHighlightNormalForeground);
+    case ButtonState::kExplicitTextShowing:
+    case ButtonState::kGuestSession:
+    case ButtonState::kShowIdentityName:
     case ButtonState::kNormal:
       return color_provider->GetColor(
           kColorAvatarButtonHighlightDefaultForeground);
@@ -1419,7 +1423,9 @@ void AvatarToolbarButtonDelegate::OnErrorStateOfRefreshTokenUpdatedForAccount(
     const CoreAccountInfo& account_info,
     const GoogleServiceAuthError& error,
     signin_metrics::SourceForRefreshTokenOperation token_operation_source) {
-  if (profile_->GetPrefs()->GetBoolean(prefs::kExplicitBrowserSignin) &&
+  if (base::FeatureList::IsEnabled(
+          syncer::kReplaceSyncPromosWithSignInPromos) &&
+      profile_->GetPrefs()->GetBoolean(prefs::kExplicitBrowserSignin) &&
       account_info == identity_manager_->GetPrimaryAccountInfo(
                           signin::ConsentLevel::kSignin) &&
       !identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync) &&

@@ -80,9 +80,7 @@ std::unique_ptr<KeyedService> BuildSidePanelService(
 class SidePanelCoordinatorTest : public TestWithBrowserView {
  public:
   void SetUp() override {
-    feature_list_.InitWithFeatures(
-        {features::kSidePanelPinning, features::kChromeRefresh2023},
-        {});
+    feature_list_.InitWithFeatures({features::kSidePanelPinning}, {});
     TestWithBrowserView::SetUp();
 
     AddTabToBrowser(GURL("http://foo1.com"));
@@ -207,6 +205,8 @@ class SidePanelCoordinatorTest : public TestWithBrowserView {
         SidePanelRegistry::Get(browser_view()->GetActiveWebContents());
     registry->Deregister(
         SidePanelEntry::Key(SidePanelEntry::Id::kSearchCompanion));
+    registry->Deregister(
+        SidePanelEntry::Key(SidePanelEntry::Id::kReadAnything));
   }
 
  protected:
@@ -1836,9 +1836,7 @@ class SidePanelCoordinatorLoadingContentTest : public SidePanelCoordinatorTest {
  public:
   void SetUp() override {
     feature_list_.InitWithFeatures(
-        {features::kSidePanelPinning, features::kChromeRefresh2023,
-         features::kResponsiveToolbar},
-        {});
+        {features::kSidePanelPinning, features::kResponsiveToolbar}, {});
     TestWithBrowserView::SetUp();
 
     AddTabToBrowser(GURL("http://foo1.com"));

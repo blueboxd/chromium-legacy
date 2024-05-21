@@ -129,6 +129,7 @@ void PasswordStoreProxyBackend::InitBackend(
 }
 
 void PasswordStoreProxyBackend::Shutdown(base::OnceClosure shutdown_completed) {
+  weak_ptr_factory_.InvalidateWeakPtrs();
   base::RepeatingClosure pending_shutdown_calls = base::BarrierClosure(
       /*num_closures=*/2, std::move(shutdown_completed));
   android_backend_->Shutdown(pending_shutdown_calls);
@@ -160,7 +161,7 @@ void PasswordStoreProxyBackend::GetAutofillableLoginsAsync(
 void PasswordStoreProxyBackend::GetAllLoginsForAccountAsync(
     std::string account,
     LoginsOrErrorReply callback) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void PasswordStoreProxyBackend::FillMatchingLoginsAsync(

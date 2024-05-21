@@ -76,7 +76,9 @@ network::mojom::LoadTimingInfo ToMojoLoadTiming(
       load_timing.push_end, load_timing.service_worker_start_time,
       load_timing.service_worker_ready_time,
       load_timing.service_worker_fetch_start,
-      load_timing.service_worker_respond_with_settled);
+      load_timing.service_worker_respond_with_settled,
+      load_timing.service_worker_router_evaluation_start,
+      load_timing.service_worker_cache_lookup_start);
 }
 
 // TODO(https://crbug.com/862940): Use KURL here.
@@ -114,7 +116,7 @@ void SetSecurityStyleAndDetails(const GURL& url,
   }
 
   if (!ssl_info.cert) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     response->SetSecurityStyle(SecurityStyle::kUnknown);
     return;
   }
@@ -319,6 +321,10 @@ void WebURLResponse::SetLoadTiming(
   timing->SetConnectStart(mojo_timing.connect_timing.connect_start);
   timing->SetConnectEnd(mojo_timing.connect_timing.connect_end);
   timing->SetWorkerStart(mojo_timing.service_worker_start_time);
+  timing->SetWorkerRouterEvaluationStart(
+      mojo_timing.service_worker_router_evaluation_start);
+  timing->SetWorkerCacheLookupStart(
+      mojo_timing.service_worker_cache_lookup_start);
   timing->SetWorkerReady(mojo_timing.service_worker_ready_time);
   timing->SetWorkerFetchStart(mojo_timing.service_worker_fetch_start);
   timing->SetWorkerRespondWithSettled(
@@ -497,6 +503,9 @@ void WebURLResponse::SetServiceWorkerRouterInfo(
   auto info = ServiceWorkerRouterInfo::Create();
   info->SetRuleIdMatched(value.rule_id_matched);
   info->SetMatchedSourceType(value.matched_source_type);
+  info->SetActualSourceType(value.actual_source_type);
+  info->SetRouteRuleNum(value.route_rule_num);
+  info->SetEvaluationWorkerStatus(value.evaluation_worker_status);
   resource_response_->SetServiceWorkerRouterInfo(std::move(info));
 }
 

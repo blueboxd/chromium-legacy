@@ -27,6 +27,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/compose/core/browser/compose_features.h"
 #include "components/feature_engagement/public/feature_constants.h"
+#include "components/password_manager/core/common/password_manager_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_education/views/new_badge_label.h"
 #include "content/public/browser/web_contents.h"
@@ -283,15 +284,11 @@ std::unique_ptr<PopupRowContentView> CreateFooterPopupRowContentView(
 
 std::unique_ptr<views::Label> CreatePasswordDescriptionLabel(
     const Suggestion& suggestion) {
-  if (suggestion.labels.empty()) {
+  if (suggestion.additional_label.empty()) {
     return nullptr;
   }
-
-  CHECK_EQ(suggestion.labels.size(), 1u);
-  CHECK_EQ(suggestion.labels[0].size(), 1u);
-
   auto label = std::make_unique<views::Label>(
-      suggestion.labels[0][0].value, views::style::CONTEXT_DIALOG_BODY_TEXT,
+      suggestion.additional_label, views::style::CONTEXT_DIALOG_BODY_TEXT,
       views::style::STYLE_SECONDARY);
   label->SetElideBehavior(gfx::ELIDE_HEAD);
   label->SetMaximumWidthSingleLine(kAutofillPopupUsernameMaxWidth);
@@ -301,13 +298,30 @@ std::unique_ptr<views::Label> CreatePasswordDescriptionLabel(
 std::vector<std::unique_ptr<views::View>> CreateAndTrackPasswordSubtextViews(
     const Suggestion& suggestion,
     PopupRowContentView& content_view) {
-  auto label = std::make_unique<views::Label>(
-      suggestion.additional_label, views::style::CONTEXT_DIALOG_BODY_TEXT,
+  CHECK_EQ(suggestion.labels.size(), 1u);
+  CHECK_EQ(suggestion.labels[0].size(), 1u);
+
+  const auto& label = suggestion.labels[0][0].value;
+  auto label_view = std::make_unique<views::Label>(
+      label, views::style::CONTEXT_DIALOG_BODY_TEXT,
       views::style::STYLE_SECONDARY);
-  label->SetElideBehavior(gfx::TRUNCATE);
-  label->SetMaximumWidthSingleLine(kAutofillPopupPasswordMaxWidth);
+  // Password labels are obfuscated using password replacement character. Manual
+  // fallback suggestions display credential username, which is not obfuscated
+  // and should not be truncated.
+  const bool is_password_label =
+      label.find_first_not_of(
+          password_manager::constants::kPasswordReplacementChar) ==
+      std::u16string::npos;
+  if (is_password_label) {
+    label_view->SetElideBehavior(gfx::TRUNCATE);
+    label_view->SetMaximumWidthSingleLine(kAutofillPopupPasswordMaxWidth);
+  } else {
+    label_view->SetElideBehavior(gfx::ELIDE_HEAD);
+    label_view->SetMaximumWidthSingleLine(kAutofillPopupUsernameMaxWidth);
+  }
+
   std::vector<std::unique_ptr<views::View>> result;
-  result.push_back(std::move(label));
+  result.push_back(std::move(label_view));
   return result;
 }
 
@@ -479,7 +493,10 @@ std::unique_ptr<PopupRowView> CreatePopupRowView(
           a11y_selection_delegate, selection_delegate, controller, line_number,
           CreatePasswordPopupRowContentView(suggestion,
                                             std::move(filter_match)));
-    case SuggestionType::kCompose: {
+    case SuggestionType::kComposeResumeNudge:
+    case SuggestionType::kComposeProactiveNudge: {
+      // Todo (http://b/340147177): Confirm that both Compose popups should use
+      // the same feature for a new badge and update feature name.
       const bool show_new_badge = UserEducationService::MaybeShowNewBadge(
           controller->GetWebContents()->GetBrowserContext(),
           compose::features::kEnableComposeSavedStateNudge);

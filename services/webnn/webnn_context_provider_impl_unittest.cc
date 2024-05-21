@@ -43,11 +43,11 @@ class WebNNContextProviderImplTest : public testing::Test {
 // For supported platforms, it should be tested by the backend specific test
 // cases.
 //
-// For Windows platform, `dml::ContextImpl` is implemented by the DirectML
+// For Windows platform, `dml::ContextImplDml` is implemented by the DirectML
 // backend. It relies on a real GPU adapter and is tested by
 // `WebNNContextDMLImplTest`.
 //
-// For platforms using TFLite, `tflite::ContextImpl` is always available.
+// For platforms using TFLite, `tflite::ContextImplTflite` is always available.
 
 #if !BUILDFLAG(IS_WIN) && !BUILDFLAG(WEBNN_USE_TFLITE)
 
@@ -79,8 +79,7 @@ TEST_F(WebNNContextProviderImplTest, NotSupported) {
 
 #if BUILDFLAG(IS_WIN)
 
-// The DirectML implementation does not support CPU execution.
-TEST_F(WebNNContextProviderImplTest, CPUNotSupported) {
+TEST_F(WebNNContextProviderImplTest, CPUIsSupported) {
   mojo::Remote<mojom::WebNNContextProvider> provider_remote;
 
   WebNNContextProviderImpl::CreateForTesting(
@@ -94,10 +93,8 @@ TEST_F(WebNNContextProviderImplTest, CPUNotSupported) {
           /*thread_count_hint=*/0),
       future.GetCallback());
   mojom::CreateContextResultPtr result = future.Take();
-  ASSERT_TRUE(result->is_error());
-  const mojom::ErrorPtr& create_context_error = result->get_error();
-  EXPECT_EQ(create_context_error->code, mojom::Error::Code::kNotSupportedError);
-  EXPECT_EQ(create_context_error->message, "The cpu device is not supported.");
+  ASSERT_TRUE(result->is_context_remote());
+  EXPECT_TRUE(result->get_context_remote().is_valid());
 }
 
 // Checking for GPU compatibility is Windows-specific because only the DirectML

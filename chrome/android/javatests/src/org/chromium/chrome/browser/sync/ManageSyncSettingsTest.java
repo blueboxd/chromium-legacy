@@ -32,6 +32,7 @@ import android.app.Dialog;
 import android.app.Instrumentation.ActivityResult;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -42,6 +43,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.Preference;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.espresso.intent.matcher.IntentMatchers;
 import androidx.test.filters.LargeTest;
@@ -96,10 +98,12 @@ import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.policy.test.annotations.Policies;
 import org.chromium.components.search_engines.TemplateUrlService;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.sync.SyncFeatureMap;
 import org.chromium.components.sync.SyncService;
 import org.chromium.components.sync.UserSelectableType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.ViewUtils;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -113,7 +117,7 @@ import java.util.Set;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ManageSyncSettingsTest {
-    private static final int RENDER_TEST_REVISION = 5;
+    private static final int RENDER_TEST_REVISION = 6;
 
     /** Maps selected types to their UI element IDs. */
     private Map<Integer, String> mUiDataTypes;
@@ -121,21 +125,31 @@ public class ManageSyncSettingsTest {
     /** Maps selected types to their Account UI element IDs. */
     private static final Map<Integer, String> ACCOUNT_UI_DATATYPES =
             Map.ofEntries(
-                    entry(UserSelectableType.AUTOFILL, ManageSyncSettings.PREF_SYNC_AUTOFILL),
-                    entry(UserSelectableType.BOOKMARKS, ManageSyncSettings.PREF_SYNC_BOOKMARKS),
+                    entry(
+                            UserSelectableType.AUTOFILL,
+                            ManageSyncSettings.PREF_ACCOUNT_SECTION_ADDRESSES_TOGGLE),
+                    entry(
+                            UserSelectableType.BOOKMARKS,
+                            ManageSyncSettings.PREF_ACCOUNT_SECTION_BOOKMARKS_TOGGLE),
                     entry(
                             UserSelectableType.PAYMENTS,
-                            ManageSyncSettings.PREF_SYNC_PAYMENTS_INTEGRATION),
+                            ManageSyncSettings.PREF_ACCOUNT_SECTION_PAYMENTS_TOGGLE),
                     // HISTORY and TABS are bundled in the same switch in the new settings panel.
                     entry(
                             UserSelectableType.HISTORY,
-                            ManageSyncSettings.PREF_SYNC_HISTORY_AND_TABS),
-                    entry(UserSelectableType.TABS, ManageSyncSettings.PREF_SYNC_HISTORY_AND_TABS),
-                    entry(UserSelectableType.PASSWORDS, ManageSyncSettings.PREF_SYNC_PASSWORDS),
+                            ManageSyncSettings.PREF_ACCOUNT_SECTION_HISTORY_TOGGLE),
+                    entry(
+                            UserSelectableType.TABS,
+                            ManageSyncSettings.PREF_ACCOUNT_SECTION_HISTORY_TOGGLE),
+                    entry(
+                            UserSelectableType.PASSWORDS,
+                            ManageSyncSettings.PREF_ACCOUNT_SECTION_PASSWORDS_TOGGLE),
                     entry(
                             UserSelectableType.READING_LIST,
-                            ManageSyncSettings.PREF_SYNC_READING_LIST),
-                    entry(UserSelectableType.PREFERENCES, ManageSyncSettings.PREF_SYNC_SETTINGS));
+                            ManageSyncSettings.PREF_ACCOUNT_SECTION_READING_LIST_TOGGLE),
+                    entry(
+                            UserSelectableType.PREFERENCES,
+                            ManageSyncSettings.PREF_ACCOUNT_SECTION_SETTINGS_TOGGLE));
 
     private SettingsActivity mSettingsActivity;
 
@@ -244,9 +258,9 @@ public class ManageSyncSettingsTest {
 
         for (ChromeSwitchPreference dataType : dataTypes) {
             // Only settings and payments are available upon sign in without toggling more flags.
-            if (dataType.getKey().equals(ManageSyncSettings.PREF_SYNC_SETTINGS)
+            if (dataType.getKey().equals(ManageSyncSettings.PREF_ACCOUNT_SECTION_SETTINGS_TOGGLE)
                     || dataType.getKey()
-                            .equals(ManageSyncSettings.PREF_SYNC_PAYMENTS_INTEGRATION)) {
+                            .equals(ManageSyncSettings.PREF_ACCOUNT_SECTION_PAYMENTS_TOGGLE)) {
                 Assert.assertTrue(dataType.isChecked());
             } else {
                 Assert.assertFalse(dataType.isChecked());
@@ -380,6 +394,23 @@ public class ManageSyncSettingsTest {
         // empty set in the backend. But sync stop request should not be called.
         mSyncTestRule.togglePreference(getSyncEverything(fragment));
         Assert.assertTrue(SyncTestUtil.isSyncFeatureEnabled());
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Sync"})
+    @EnableFeatures({ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS})
+    public void testPressingSignOut() {
+        mSyncTestRule.setUpAccountAndSignInForTesting();
+
+        Assert.assertNotNull(
+                mSyncTestRule.getSigninTestRule().getPrimaryAccount(ConsentLevel.SIGNIN));
+
+        ManageSyncSettings fragment = startManageSyncPreferences();
+
+        onView(withId(R.id.recycler_view)).perform(RecyclerViewActions.scrollToLastPosition());
+        onView(withText(R.string.sign_out)).perform(click());
+        Assert.assertNull(mSyncTestRule.getSigninTestRule().getPrimaryAccount(ConsentLevel.SIGNIN));
     }
 
     @Test
@@ -785,6 +816,23 @@ public class ManageSyncSettingsTest {
                         .isVisible());
         Assert.assertNotNull(fragment.getView().findViewById(R.id.bottom_bar_shadow));
         Assert.assertNotNull(fragment.getView().findViewById(R.id.bottom_bar_button_container));
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Sync", "RenderTest"})
+    @EnableFeatures({ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS})
+    public void testSigninSettingsTopAvatar() throws Exception {
+        mSyncTestRule.setUpAccountAndSignInForTesting();
+        final ManageSyncSettings fragment = startManageSyncPreferences();
+
+        ViewUtils.waitForVisibleView(withId(R.id.central_account_card));
+        View view =
+                TestThreadUtils.runOnUiThreadBlockingNoException(
+                        () -> {
+                            return fragment.getActivity().findViewById(R.id.central_account_card);
+                        });
+        mRenderTestRule.render(view, "sign_in_settings_top_avatar");
     }
 
     @Test

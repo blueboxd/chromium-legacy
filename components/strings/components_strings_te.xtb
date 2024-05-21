@@ -145,7 +145,6 @@
 <translation id="1262388120645841613"><ph name="MANAGE_CHROME_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" />, మీ Chrome సెట్టింగ్‌లను మేనేజ్ చేయడానికి Tabను నొక్కి, ఆపై Enterను నొక్కండి</translation>
 <translation id="1264309058268477500">ఆల్టర్నేట్</translation>
 <translation id="1264974993859112054">క్రీడలు</translation>
-<translation id="1266469291454105242">పరికర అన్‌లాక్</translation>
 <translation id="126728463333482584">ట్రాకింగ్ నుండి రక్షణను ముందుగా ఎక్స్‌పీరియన్స్ చేసే వారిలో మీరు ఒకరు, మీరు బ్రౌజ్ చేస్తున్నప్పుడు థర్డ్-పార్టీ కుక్కీలను ఉపయోగించి మిమ్మల్ని ట్రాక్ చేయకుండా ఈ ఫీచర్ సైట్‌లను పరిమితం చేస్తుంది.</translation>
 <translation id="1268480293435976622">ఎన్వలప్ చైనీస్ #7</translation>
 <translation id="1269516672602708785">Google Sitesలో కొత్త సైట్‌ను త్వరగా క్రియేట్ చేయండి</translation>
@@ -154,6 +153,7 @@
 <translation id="1273592791152866347">ధర ట్రాకింగ్ ఆఫ్‌లో ఉంది</translation>
 <translation id="127777513559587977">టీవీ టాక్ షోలు</translation>
 <translation id="1281476433249504884">స్టాకర్ 1</translation>
+<translation id="1281536351321444151">తర్వాతసారి ఈ IBANను ఆటోఫిల్ చేయడానికి, దాన్ని మీ Google ఖాతాలో సేవ్ చేయండి</translation>
 <translation id="1282358575813748144">బోట్‌లు &amp; నీటిపై వెళ్లే వాహనాలు</translation>
 <translation id="1283977499362032052">రెజ్యూమ్‌లు &amp; పోర్ట్‌ఫోలియోలు</translation>
 <translation id="1285320974508926690">ఈ సైట్‌ను ఎప్పటికీ అనువదించవద్దు</translation>
@@ -288,6 +288,7 @@
 <translation id="1529789484829130889">ట్రే 8</translation>
 <translation id="1530707389502320859">ఇప్పుడు మీరు సందర్శించాలని ప్రయత్నించిన సైట్ నకిలీదిగా అనిపిస్తుంది. URLకు చిన్న, అంత తేలికగా కనపడని మార్పులను చేయడం ద్వారా దాడి చేసేవారు కొన్నిసార్లు సైట్‌లను అనుకరిస్తారు.</translation>
 <translation id="1532118530259321453">ఈ పేజీ ఇలా చెబుతోంది</translation>
+<translation id="1533966801397200693">మీరు సైన్ ఇన్ చేసిన ప్రొఫైల్, మేనేజ్ చేయబడే ప్రొఫైల్. మీ అడ్మినిస్ట్రేటర్ మీ ప్రొఫైల్ సెట్టింగ్‌లకు రిమోట్‌గా మార్పులు చేయవచ్చు, రిపోర్టింగ్ ద్వారా బ్రౌజర్ గురించిన సమాచారాన్ని విశ్లేషించవచ్చు, అవసరమైన ఇతర టాస్క్‌లను అమలు చేయవచ్చు. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="1536390784834419204">పేజీని అనువాదం చేయి</translation>
 <translation id="1537807545287921620">ఈ PDFను యాక్సెస్ చేయడం సాధ్యం కాదు. సంబంధిత మెనూను తెరిచి, "PDF నుండి టెక్స్ట్‌ను ఎక్స్‌ట్రాక్ట్ చేయండి"ని ఆన్ చేయండి</translation>
 <translation id="1539840569003678498">రిపోర్ట్ పంపబడింది:</translation>
@@ -564,6 +565,7 @@
 <translation id="2046951263634619614">పుస్తకాల రిటైలర్‌లు</translation>
 <translation id="2048261947532620704">పేజీని అనువదిస్తోంది</translation>
 <translation id="2053111141626950936"><ph name="LANGUAGE" /> భాషలో ఉన్న పేజీలు అనువదించబడవు.</translation>
+<translation id="2055461225779831292">మీ కెమెరాలను ఉపయోగించండి &amp; తరలించండి (<ph name="CAMERAS_COUNT" />)</translation>
 <translation id="2056492565825767809">మీ మౌస్ పాయింటర్‌ను లాక్ చేయండి</translation>
 <translation id="2056658168519009885">మీకు కనిపించే యాడ్‌లను వ్యక్తిగతీకరించడంలో సహాయపడే సమాచారాన్ని అందించాల్సిందిగా సైట్‌లు Chromeను అడగవచ్చు.</translation>
 <translation id="2059166748188874810">మున్సిపాలిటీ</translation>
@@ -674,6 +676,7 @@
 <translation id="2227758700723188171">విద్యా సంబంధిత మంజూరీలు &amp; స్కాలర్‌షిప్‌లు</translation>
 <translation id="2228057197024893428">ఈ అడ్రస్ ప్రస్తుతం Chromeలో సేవ్ అవుతుంది. దీనిని Google ప్రోడక్ట్‌లన్నింటిలో ఉపయోగించాలంటే, మీ Google ఖాతా, <ph name="ACCOUNT" />‌లో దానిని సేవ్ చేయండి.</translation>
 <translation id="2229456043301340598">విస్మరించబడిన నాన్-యూనిక్ షార్ట్‌కట్: <ph name="SHORTCUT_NAME" /></translation>
+<translation id="2233041017768270281">{COUNT,plural, =1{1 ట్యాబ్}other{# ట్యాబ్‌లు}}</translation>
 <translation id="2233745931693710080">కాంపాక్ట్ డిస్క్</translation>
 <translation id="2235344399760031203">థర్డ్-పార్టీ కుక్కీలు బ్లాక్ చేయబడ్డాయి</translation>
 <translation id="2239100178324503013">ఇప్పుడే పంపండి</translation>
@@ -710,6 +713,7 @@
 <translation id="2300306941146563769">అప్‌లోడ్ చేయలేదు</translation>
 <translation id="2301098101308036335">ఏ వెబ్‌సైట్‌లను సందర్శించారు, అలాగే ఎప్పుడు సందర్శించారు.</translation>
 <translation id="230286397113210245">'అజ్ఞాత విండోను తెరవండి' బటన్, ప్రైవేట్‌గా బ్రౌజ్ చేయడం కోసం కొత్త అజ్ఞాత విండోను తెరవడానికి దీన్ని యాక్టివేట్ చేయండి</translation>
+<translation id="2306124309679506798">లీనమయ్యే అనుభవాన్ని అనుమతించాలా?</translation>
 <translation id="2312234273148520048">మసాలాలు &amp; డ్రస్సింగ్</translation>
 <translation id="2316087952091171402"><ph name="UPPER_ESTIMATE" /> కంటే తక్కువ. మీరు తర్వాతిసారి ఉపయోగించినప్పుడు కొన్ని సైట్‌లు మరింత నిదానంగా లోడ్ కావచ్చు.</translation>
 <translation id="2316159751672436664">ChromeOS సెట్టింగ్‌లలో మీ యాక్సెసిబిలిటీ టూల్స్‌ను వ్యక్తిగతీకరించండి</translation>
@@ -717,6 +721,7 @@
 <translation id="2317259163369394535"><ph name="DOMAIN" />కు వినియోగదారు పేరు మరియు పాస్‌వర్డ్ అవసరం.</translation>
 <translation id="2318594867107319532">చివరి పాలసీ టైమ్ స్టాంప్:</translation>
 <translation id="2320564945062300737">ముఖ సంరక్షణ ప్రోడక్ట్‌లు</translation>
+<translation id="2322254345061973671">{COUNT,plural, =1{1 విండో}other{# విండోలు}}</translation>
 <translation id="2328651992442742497">అనుమతించబడుతుంది (ఆటోమేటిక్ సెట్టింగ్)</translation>
 <translation id="2328955282645810595">నిర్మాణం &amp; పవర్ టూల్స్</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, గడువు <ph name="EXPIRATION_DATE_ABBR" />న ముగుస్తుంది</translation>
@@ -1002,7 +1007,6 @@
 <translation id="2928905813689894207">బిల్లింగ్ అడ్రస్‌</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="2930577230479659665">ప్రతి కాపీ తర్వాత కత్తిరించండి</translation>
-<translation id="2932085390869194046">పాస్‌వర్డ్‌‌ను సూచించు...</translation>
 <translation id="2933624813161016821">ఎంబాసింగ్ ఫాయిల్</translation>
 <translation id="2938225289965773019"><ph name="PROTOCOL" /> లింక్‌లను తెరవండి</translation>
 <translation id="2941878205777356567">9 x 12 అంగుళాల ఎన్వలప్</translation>
@@ -1165,6 +1169,7 @@
 <translation id="3240683217920639535"><ph name="MANAGE_CHROME_THEMES_FOCUSED_FRIENDLY_MATCH_TEXT" />, మీ బ్రౌజర్ రూపాన్ని అనుకూలంగా మార్చడానికి 'Tab'ను నొక్కి, ఆపై 'Enter'ను నొక్కండి</translation>
 <translation id="3240791268468473923">సురక్షితమైన పేమెంట్ ఆధారానికి సంబంధించిన మ్యాచ్ అయ్యే ఆధారాల షీట్ ఏదీ తెరవబడలేదు</translation>
 <translation id="324180406144491771">“<ph name="HOST_NAME" />” లింక్‌లు బ్లాక్ చేయబడ్డాయి</translation>
+<translation id="3248329428895535435">ఈ సైట్‌లో చూపవద్దు</translation>
 <translation id="3252772880526154546">ఆర్కిటెక్చర్</translation>
 <translation id="3254301855501243548">18 x 22 అంగుళాలు</translation>
 <translation id="3255926992597692024">పేమెంట్ ఆప్షన్‌లను పూరించడానికి సంబంధించిన సెట్టింగ్‌లను ఎడిట్ చేయడానికి Chromium ట్రై చేస్తోంది.</translation>
@@ -1180,6 +1185,7 @@
 <translation id="3272091146646336650">Super B</translation>
 <translation id="3272112314896217187"><ph name="NUMBER_OF_DIGITS" />-డిజిట్ వెరిఫికేషన్ కోడ్‌ను ఎంటర్ చేయండి</translation>
 <translation id="3272643614306383237">1 MB కంటే తక్కువ. మీరు తర్వాతిసారి ఉపయోగించినప్పుడు కొన్ని సైట్‌లు మరింత నిదానంగా లోడ్ కావచ్చు.</translation>
+<translation id="3273738040255912340">మీ అడ్మినిస్ట్రేటర్ మీ ప్రొఫైల్, బ్రౌజర్ సెట్టింగ్‌లకు రిమోట్‌గా మార్పులు చేయవచ్చు, రిపోర్టింగ్ ద్వారా బ్రౌజర్ గురించిన సమాచారాన్ని విశ్లేషించవచ్చు, అవసరమైన ఇతర టాస్క్‌లను అమలు చేయవచ్చు. ఈ పరికరంలోని యాక్టివిటీని Chromium వెలుపల కూడా మేనేజ్ చేయవచ్చు. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="3281350579597955952">{0,plural, =1{<ph name="DESTINATION_NAME" />‌లో ఈ ఫైల్‌ను తెరవవద్దని అడ్మినిస్ట్రేటర్ పాలసీ సిఫార్సు చేస్తోంది}other{<ph name="DESTINATION_NAME" />‌లో ఈ ఫైల్స్‌ను తెరవవద్దని అడ్మినిస్ట్రేటర్ పాలసీ సిఫార్సు చేస్తోంది}}</translation>
 <translation id="3282085321714087552">సెట్టింగ్‌లు లేదా పాలసీల వంటి కొంత సమాచారాన్ని మీ సంస్థ <ph name="ENROLLMENT_DOMAIN" />, దిగువున పేర్కొన్న వెబ్‌సైట్‌లకు పంపింది.</translation>
 <translation id="3286372614333682499">పోర్ట్రెయిట్‌లో ఉంది</translation>
@@ -1375,7 +1381,6 @@
       దీన్ని లిస్ట్‌ నుండి తీసివేసి, ఆపై మళ్లీ జోడించి ప్రయత్నించండి.</translation>
 <translation id="3630426379756188722">Find My Device బటన్, Google ఖాతాలో మీ పరికరాన్ని కనుగొనడానికి దీన్ని యాక్టివేట్ చేయండి</translation>
 <translation id="3630699740441428070">ఈ పరికరానికి సంబంధించిన అడ్మినిస్ట్రేట‌ర్‌లు మీ నెట్‌వర్క్ కనెక్షన్‌ను కాన్ఫిగర్ చేశారు, ఇది మీరు సందర్శించే వెబ్‌సైట్‌లతో సహా మీ నెట్‌వర్క్ ట్రాఫిక్‌ను చూడటానికి వారిని అనుమతించవచ్చు.</translation>
-<translation id="3631244953324577188">బయోమెట్రిక్స్</translation>
 <translation id="3632503704576938756">స్క్రీన్ షేరింగ్ కొనసాగించబడింది</translation>
 <translation id="3632892046558972264">స్క్రీన్ షేరింగ్ పాజ్ చేయబడింది</translation>
 <translation id="3634530185120165534">ట్రే 5</translation>
@@ -1588,7 +1593,6 @@
 <translation id="4060880210388108757">ఇండీ &amp; ఆల్టర్నేటివ్ మ్యూజిక్</translation>
 <translation id="4063063121357725926">మీ కార్ట్‌ల కోసం డిస్కౌంట్‌లను కనుగొనడంలో మీకు సహాయపడటానికి Googleకు అనుమతినివ్వండి</translation>
 <translation id="406358100705415968">పని చేసేటప్పుడు రక్షణ కల్పించే దుస్తులు లేదా వస్తువులు</translation>
-<translation id="4063924980214801036">కార్డ్‌లను వేగంగా నిర్ధారించడానికి పరికర అన్‌లాక్‌ను ఉపయోగించండి</translation>
 <translation id="4065659219963895623">రెస్టారెంట్‌లు</translation>
 <translation id="4067774859633143413">ఫుల్ స్క్రీన్ నుండి ఎగ్జిట్ అయ్యి, డౌన్‌లోడ్‌ను చూడటానికి, |<ph name="ACCELERATOR" />|ను నొక్కి, పట్టుకోండి</translation>
 <translation id="4067947977115446013">చెల్లుబాటు అయ్యే అడ్రస్‌ను జోడించండి</translation>
@@ -1600,6 +1604,7 @@
 <translation id="4082333119419111506">పేపర్ (ప్రీప్రింటెడ్)</translation>
 <translation id="4082393374666368382">సెట్టింగ్‌లు - నిర్వహణ</translation>
 <translation id="4084219288110917128">ఎన్వలప్ C1</translation>
+<translation id="4085326869263783566">రాయడంలో సహాయం పొందండి. తెరవడానికి, Tabతో పాటు, Enter కీని నొక్కండి</translation>
 <translation id="4088981014127559358">1 వైపు ప్రింట్‌లో చిత్రాన్ని Y అక్షంలో జరపు</translation>
 <translation id="4089152113577680600">ట్రే 14</translation>
 <translation id="4092349052316400070">అడ్రస్‌ను పూరించండి</translation>
@@ -1915,7 +1920,6 @@
 <translation id="4703342001883078444">ఫ్యామిలీ &amp; అనుబంధాలు</translation>
 <translation id="4708268264240856090">మీ కనెక్షన్‌కు అంతరాయం ఏర్పడింది</translation>
 <translation id="4708276642004148190">నీటి సరఫరా &amp; చికిత్స</translation>
-<translation id="4712404868219726379">Windows Hell</translation>
 <translation id="471880041731876836">ఈ సైట్‌ను సందర్శించడానికి మీకు అనుమతి లేదు</translation>
 <translation id="4718897478554657123">600 x 900 మి.మీ.</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows నెట్‌వర్క్ సమస్య విశ్లేషణలను అమలు చేయడం<ph name="END_LINK" /></translation>
@@ -2301,6 +2305,7 @@
 <translation id="5447765697759493033">ఈ సైట్ అనువదించబడదు</translation>
 <translation id="5452270690849572955">ఈ <ph name="HOST_NAME" /> పేజీ కనుగొనబడలేదు</translation>
 <translation id="5455374756549232013">చెల్లని విధాన సమయముద్ర</translation>
+<translation id="5456428544444655325">ఎప్పుడూ చూపవద్దు</translation>
 <translation id="5456839782162429664">మీరు ఆటోఫిల్‌ను ఉపయోగించి పేమెంట్ చేసిన ప్రతిసారీ మాన్యువల్‌గా వెరిఫై చేయండి</translation>
 <translation id="5457113250005438886">చెల్లదు</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
@@ -2441,6 +2446,7 @@
 <translation id="571403275720188526">(arm64)</translation>
 <translation id="571510845185711675">పశువైద్య నిపుణులు</translation>
 <translation id="5715150588940290235">సేవ్ అయ్యి ఉన్న సెక్యూరిటీ కోడ్‌లను తొలగించాలా?</translation>
+<translation id="5715918316982363436">ఈ పరికరంలో <ph name="WINDOW_COUNT" /> నుండి <ph name="TAB_COUNT" />‌కు సంబంధించిన డేటాను క్లియర్ చేయండి</translation>
 <translation id="5717509257172454543">ఐస్ స్కేటింగ్</translation>
 <translation id="5720705177508910913">ప్రస్తుత వినియోగదారు</translation>
 <translation id="5720895412771013401">డెస్క్‌టాప్ కంప్యూటర్‌లు</translation>
@@ -2951,6 +2957,7 @@
 <translation id="6709133671862442373">News</translation>
 <translation id="6710213216561001401">మునుపటి</translation>
 <translation id="6710594484020273272">&lt;శోధన పదాన్ని టైప్ చేయండి&gt;</translation>
+<translation id="6710648923880003133">శక్తివంతమైన పాస్‌వర్డ్‌ను సూచించండి</translation>
 <translation id="671076103358959139">నమోదు టోకెన్:</translation>
 <translation id="6711464428925977395">ప్రాక్సీ సర్వర్‌లో ఏదో తప్పు ఉంది లేదా అడ్రస్‌ సరైనది కాదు.</translation>
 <translation id="6716672519412350405">మీ పరిసరాల 3D మ్యాప్‌ను రూపొందించడానికి, కెమెరా పొజిషన్‌ను ట్రాక్ చేయడానికి <ph name="URL" /> అనుమతి అడుగుతోంది</translation>
@@ -3095,7 +3102,6 @@
 <translation id="7003278537452757231">రగ్గులు &amp; తివాచీలు</translation>
 <translation id="7003322000677139268">వాహన భాగాలు &amp; యాక్సెసరీలు</translation>
 <translation id="7004499039102548441">ఇటీవలి ట్యాబ్‌లు</translation>
-<translation id="7004583254764674281">కార్డ్‌లను వేగంగా నిర్ధారించడానికి Windows Helloను ఉపయోగించండి</translation>
 <translation id="7006930604109697472">ఏదేమైనా పంపు</translation>
 <translation id="7010658264061801199">ఫుడ్ &amp; డ్రింక్</translation>
 <translation id="7012363358306927923">చైనా యూనియన్ పే</translation>
@@ -3132,7 +3138,6 @@
 <translation id="7078665357168027058">RA3</translation>
 <translation id="7079138647457502205">మరింత గోప్యంగా బ్రౌజ్ చేయండి</translation>
 <translation id="7079718277001814089">ఈ సైట్‌లో మాల్వేర్ ఉంది</translation>
-<translation id="7081308185095828845">మీ పరికరంలో ఈ ఫీచర్ అందుబాటులో లేదు</translation>
 <translation id="7081311540357715807">ఆహారం &amp; కిరాణా రిటైలర్‌లు</translation>
 <translation id="7083258188081898530">ట్రే 9</translation>
 <translation id="7086090958708083563">అప్‌లోడ్‌ను యూజర్ రిక్వెస్ట్ చేశారు</translation>
@@ -3404,6 +3409,7 @@
 <translation id="7564667064360547717">షర్ట్‌లు &amp; టాప్‌లు</translation>
 <translation id="7567204685887185387">ఈ సర్వర్ <ph name="DOMAIN" /> అని నిరూపించుకోలేకపోయింది; దీని భద్రతా ప్రమాణపత్రం మోసపూరితంగా జారీ అయ్యి ఉండవచ్చు. ఇది తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా దాడిచేసే వ్యక్తి మీ కనెక్షన్‌కు అంతరాయం కలిగించడం వలన జరిగి ఉండవచ్చు.</translation>
 <translation id="7568616151991626879"><ph name="APP_NAME" />‌లో మీ పాస్‌వర్డ్‌ను పూరించడానికి Google Chrome ట్రై చేస్తోంది.</translation>
+<translation id="7569072768465750771">{COUNT,plural, =0{ఏవీ లేవు}=1{ఈ పరికరంలో 1 ట్యాబ్}other{ఈ పరికరంలో # ట్యాబ్‌లు}}</translation>
 <translation id="7569490014721427265">గోల్ఫ్</translation>
 <translation id="7569952961197462199">Chrome నుండి క్రెడిట్ కార్డ్‌ను తీసివేయాలా?</translation>
 <translation id="7569983096843329377">నలుపు</translation>
@@ -3779,6 +3785,7 @@
 <translation id="8263001937536038617">ఫోటో &amp; వీడియో సర్వీస్‌లు</translation>
 <translation id="8265992338205884890">కనిపించే డేటా</translation>
 <translation id="8267698848189296333"><ph name="USERNAME" />గా సైన్ ఇన్ చేస్తోంది</translation>
+<translation id="8268967003421414091">Verve</translation>
 <translation id="8269242089528251720">విడి డాక్యుమెంట్‌లు/సమగ్ర కాపీలు</translation>
 <translation id="8269703227894255363">{0,plural, =1{తెరవకుండా ఫైల్ బ్లాక్ చేయబడింది}other{తెరవకుండా <ph name="FILE_COUNT" /> ఫైల్స్ బ్లాక్ చేయబడ్డాయి}}</translation>
 <translation id="8270173610195068258">నేరం &amp; న్యాయం</translation>
@@ -3883,6 +3890,7 @@
 <translation id="8446884382197647889">మరింత తెలుసుకోండి</translation>
 <translation id="8449155699563577224">17 x 24 అంగుళాలు</translation>
 <translation id="8449836157089738489">అన్నింటినీ కొత్త ట్యాబ్ గ్రూప్‌లో తెరవండి</translation>
+<translation id="84561192812921051">మీ అడ్మినిస్ట్రేటర్ మీ ప్రొఫైల్, బ్రౌజర్ సెట్టింగ్‌లకు రిమోట్‌గా మార్పులు చేయవచ్చు, రిపోర్టింగ్ ద్వారా బ్రౌజర్ గురించిన సమాచారాన్ని విశ్లేషించవచ్చు, అవసరమైన ఇతర టాస్క్‌లను అమలు చేయవచ్చు. ఈ పరికరంలోని యాక్టివిటీని Chrome వెలుపల కూడా మేనేజ్ చేయవచ్చు.  <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="8457125768502047971">అనిశ్చితం</translation>
 <translation id="8458202188076138974">లెటర్ అదనం</translation>
 <translation id="8460854335417802511">దీన్ని ఆన్ చేయండి</translation>
@@ -4174,8 +4182,6 @@
 <translation id="9049981332609050619">మీరు <ph name="DOMAIN" />ను చేరుకోవడానికి ప్రయత్నించారు, కానీ సర్వర్ ఒక చెల్లుబాటులో లేని ప్రమాణపత్రంను అందించింది.</translation>
 <translation id="9050666287014529139">రహస్య పదబంధం</translation>
 <translation id="9051072642122229460">కాఫీ &amp; ఎస్‌ప్రెసో మేకర్‌లు</translation>
-<translation id="9051260467258969162">మళ్లీ <ph name="BEGIN_LINK" />సైన్ ఇన్ చేసి<ph name="END_LINK" />,
-    తర్వాత తిరిగి ఈ ట్యాబ్‌కు వచ్చి రాయడంలో సహాయం పొందండి</translation>
 <translation id="9053840549256861041">మేము యాడ్‌ల విషయంలో, యాడ్ మెజర్‌మెంట్ అనే కొత్త గోప్యతా ఫీచర్‌ను లాంచ్ చేస్తున్నాము. Chrome సైట్‌ల మధ్య చాలా పరిమిత సమాచారాన్ని మాత్రమే షేర్ చేస్తుంది, అంటే మీకు యాడ్ చూపబడినప్పుడు, యాడ్‌ల పనితీరును కొలవడానికి సైట్‌లకు సహాయం చేస్తుంది.</translation>
 <translation id="9056953843249698117">స్టోర్</translation>
 <translation id="9062620674789239642">ఇది తరలించబడి గానీ, ఎడిట్ చేసి గానీ లేదా తొలగించబడి ఉండవచ్చు.</translation>
@@ -4199,6 +4205,7 @@
 <translation id="9094544726794842788">మీరు ఈ ఫలితాలను ఎందుకు డిస్‌లైక్ చేశారు అనే దాని గురించి వివరణాత్మక ఫీడ్‌బ్యాక్‌ను పంపడానికి 'బాగా లేదు' ఆప్షన్ మీ కోసం ఫారమ్‌ను తెరుస్తుంది</translation>
 <translation id="9095388113577226029">మరిన్ని భాషలు...</translation>
 <translation id="9096425087209440047"><ph name="SET_CHROME_AS_DEFAULT_BROWSER_FOCUSED_FRIENDLY_MATCH_TEXT" />, ట్యాబ్‌ను నొక్కి, ఆపై 'Enter'ను నొక్కి iOS సెట్టింగ్‌లలో Chromeను సిస్టమ్ ఆటోమేటిక్ బ్రౌజర్‌గా సెట్ చేయండి</translation>
+<translation id="9101450247048146228">కెమెరా ఉపయోగం &amp; తరలింపు (<ph name="CAMERAS_COUNT" />)</translation>
 <translation id="9101630580131696064">ట్రే 1</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> సాధారణంగా మీ సమాచారాన్ని రక్షించడానికి ఎన్‌క్రిప్ష‌న్‌ను ఉపయోగిస్తుంది. Chromium ఈసారి <ph name="SITE" />‌ను కనెక్ట్ చేయడానికి ప్రయత్నించినప్పుడు, వెబ్‌సైట్ అసాధారణ మరియు తప్పు ఆధారాలు అని ప్రతిస్పందించింది. దాడి చేసే వ్యక్తి <ph name="SITE" />గా వ్యవహరించి మోసగించడానికి ప్రయత్నిస్తున్నప్పుడు లేదా Wi-Fi సైన్-ఇన్ స్క్రీన్ కనెక్షన్‌కు అంతరాయం కలిగించినప్పుడు ఇలా జరగవచ్చు. ఎలాంటి డేటా వినిమయం సంభవించక ముందే Chromium, కనెక్షన్‌ను ఆపివేసినందున మీ సమాచారం ఇప్పటికీ సురక్షితంగానే ఉంది.</translation>
 <translation id="9107467864910557787"><ph name="MANAGER" />, మీ బ్రౌజర్‌ను మేనేజ్ చేస్తోంది</translation>
@@ -4221,6 +4228,8 @@
 <translation id="9139318394846604261">షాపింగ్</translation>
 <translation id="9141013498910525015">అడ్రస్‌లను నిర్వహించండి</translation>
 <translation id="9144951720726881238">గడువు తేదీ:</translation>
+<translation id="9145910032514306808">మళ్లీ <ph name="BEGIN_LINK" />సైన్ ఇన్ చేసి<ph name="END_LINK" />,
+    తర్వాత తిరిగి ఈ ట్యాబ్‌కు వచ్చి రాయడంలో సహాయం పొందండి</translation>
 <translation id="9148507642005240123">&amp;సవరించడాన్ని రద్దు చేయండి</translation>
 <translation id="9148599396704355100">ధర తక్కువగా ఉంటుంది</translation>
 <translation id="9150025764986957246">మీరు ఇటువంటి అంశాలను ఎంటర్ చేయవచ్చు:</translation>

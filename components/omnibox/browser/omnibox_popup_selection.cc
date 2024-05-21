@@ -86,7 +86,8 @@ bool OmniboxPopupSelection::IsControlPresentOnMatch(
       return match.suggestion_group_id != previous_match.suggestion_group_id;
     }
     case NORMAL:
-      return true;
+      // `NULL_RESULT_MESSAGE` cannot be focused.
+      return match.type != AutocompleteMatchType::NULL_RESULT_MESSAGE;
     case KEYWORD_MODE:
       return match.associated_keyword != nullptr;
     case FOCUSED_BUTTON_ACTION: {
@@ -98,7 +99,7 @@ bool OmniboxPopupSelection::IsControlPresentOnMatch(
     default:
       break;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return false;
 }
 
@@ -167,7 +168,7 @@ OmniboxPopupSelection OmniboxPopupSelection::GetNextSelection(
     return *(current - 1);
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return *this;
 }
 

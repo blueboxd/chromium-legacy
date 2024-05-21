@@ -44,7 +44,6 @@
   },
   "$build/reclient": {
     "instance": "rbe-chromium-trusted",
-    "jobs": 250,
     "metrics_project": "chromium-reclient-metrics",
     "scandeps_server": true
   },
@@ -67,5 +66,5 @@
   },
   "builder_group": "chromium.fyi",
   "recipe": "chromium",
-  "xcode_build_version": "15f31c"
+  "xcode_build_version": "15f31d"
 }

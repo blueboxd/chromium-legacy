@@ -5,7 +5,29 @@
 #include "chrome/browser/push_notification/push_notification_service_desktop_impl.h"
 
 #include "base/check.h"
+#include "base/functional/bind.h"
+#include "chrome/browser/push_notification/prefs/push_notification_prefs.h"
+#include "chrome/browser/push_notification/protos/notifications_multi_login_update.pb.h"
+#include "chrome/browser/push_notification/server_client/push_notification_desktop_api_call_flow_impl.h"
+#include "chrome/browser/push_notification/server_client/push_notification_server_client.h"
+#include "chrome/browser/push_notification/server_client/push_notification_server_client_desktop_impl.h"
+#include "chromeos/ash/components/nearby/common/scheduling/nearby_scheduler_factory.h"
+#include "components/gcm_driver/gcm_driver.h"
+#include "components/gcm_driver/gcm_profile_service.h"
+#include "components/gcm_driver/instance_id/instance_id.h"
+#include "components/gcm_driver/instance_id/instance_id_driver.h"
+#include "components/gcm_driver/instance_id/instance_id_profile_service.h"
 #include "components/prefs/pref_service.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+
+namespace {
+
+const char kPushNotificationAppId[] = "com.google.chrome.push_notification";
+const char kPushNotificationScope[] = "GCM";
+const char kPushNotificationSenderId[] = "745476177629";
+const char kClientId[] = "ChromeDesktop";
+
+}  // namespace
 
 namespace push_notification {
 
@@ -22,6 +44,15 @@ PushNotificationServiceDesktopImpl::PushNotificationServiceDesktopImpl(
   CHECK(instance_id_driver_);
   CHECK(identity_manager_);
   CHECK(url_loader_factory_);
+  initialization_on_demand_scheduler_ =
+      ash::nearby::NearbySchedulerFactory::CreateOnDemandScheduler(
+          /*retry_failures=*/true, /*require_connectivity=*/true,
+          prefs::kPushNotificationRegistrationAttemptBackoffSchedulerPrefName,
+          pref_service_,
+          base::BindRepeating(&PushNotificationServiceDesktopImpl::Initialize,
+                              base::Unretained(this)),
+          Feature::NEARBY_INFRA, base::DefaultClock::GetInstance());
+  initialization_on_demand_scheduler_->Start();
 }
 
 PushNotificationServiceDesktopImpl::~PushNotificationServiceDesktopImpl() =
@@ -30,8 +61,9 @@ PushNotificationServiceDesktopImpl::~PushNotificationServiceDesktopImpl() =
 void PushNotificationServiceDesktopImpl::ShutdownHandler() {
   // Shutdown() should come before and it removes us from the list of app
   // handlers of gcm::GCMDriver so this shouldn't ever been called.
-  NOTREACHED() << "The Push Notification Service should have removed itself "
-                  "from the list of app handlers before this could be called.";
+  NOTREACHED_IN_MIGRATION()
+      << "The Push Notification Service should have removed itself "
+         "from the list of app handlers before this could be called.";
 }
 
 void PushNotificationServiceDesktopImpl::OnStoreReset() {
@@ -41,7 +73,19 @@ void PushNotificationServiceDesktopImpl::OnStoreReset() {
 void PushNotificationServiceDesktopImpl::OnMessage(
     const std::string& app_id,
     const gcm::IncomingMessage& message) {
-  // TODO(b/321305014): Handle message here.
+  PushNotificationClientManager::PushNotificationMessage
+      push_notification_message;
+  push_notification_message.sender_id = message.sender_id;
+  push_notification_message.message_id = message.message_id;
+  push_notification_message.collapse_key = message.collapse_key;
+  push_notification_message.raw_data = message.raw_data;
+
+  for (const auto& data : message.data) {
+    push_notification_message.data.insert_or_assign(data.first, data.second);
+  }
+
+  client_manager_->NotifyPushNotificationClientOfMessage(
+      push_notification_message);
 }
 
 void PushNotificationServiceDesktopImpl::OnMessagesDeleted(
@@ -49,13 +93,13 @@ void PushNotificationServiceDesktopImpl::OnMessagesDeleted(
 void PushNotificationServiceDesktopImpl::OnSendError(
     const std::string& app_id,
     const gcm::GCMClient::SendErrorDetails& send_error_details) {
-  NOTREACHED()
+  NOTREACHED_IN_MIGRATION()
       << "The Push Notification Service shouldn't have sent messages upstream";
 }
 void PushNotificationServiceDesktopImpl::OnSendAcknowledged(
     const std::string& app_id,
     const std::string& message_id) {
-  NOTREACHED()
+  NOTREACHED_IN_MIGRATION()
       << "The Push Notification Service shouldn't have sent messages upstream";
 }
 
@@ -72,9 +116,102 @@ bool PushNotificationServiceDesktopImpl::CanHandle(
 }
 
 void PushNotificationServiceDesktopImpl::Shutdown() {
-  // TODO(b/306398998): Once fetching GCM token is implemented, reset the token
-  // here.
   client_manager_.reset();
+  token_.clear();
+  instance_id_driver_->GetInstanceID(kPushNotificationAppId)
+      ->gcm_driver()
+      ->RemoveAppHandler(kPushNotificationAppId);
+}
+
+void PushNotificationServiceDesktopImpl::Initialize() {
+  if (is_initialized_) {
+    return;
+  }
+
+  instance_id_driver_->GetInstanceID(kPushNotificationAppId)
+      ->GetToken(
+          kPushNotificationSenderId, kPushNotificationScope,
+          /*time_to_live=*/base::TimeDelta(), /*flags=*/{},
+          base::BindOnce(&PushNotificationServiceDesktopImpl::OnTokenReceived,
+                         base::Unretained(this)));
+}
+
+void PushNotificationServiceDesktopImpl::OnTokenReceived(
+    const std::string& token,
+    instance_id::InstanceID::Result result) {
+  if (result != instance_id::InstanceID::Result::SUCCESS) {
+    LOG(ERROR) << "Failed to retrieve GCM token: " << result;
+
+    initialization_on_demand_scheduler_->HandleResult(/*success=*/false);
+    return;
+  }
+
+  VLOG(1) << "Successfully retrieved GCM token. ";
+  token_ = token;
+
+  // Add `PushNotificationService` as a GCM app handler.
+  instance_id_driver_->GetInstanceID(kPushNotificationAppId)
+      ->gcm_driver()
+      ->AddAppHandler(kPushNotificationAppId, this);
+
+  // Create the `NotificationsMultiLoginUpdateRequest` proto which is used to
+  // make the registration API call.
+  push_notification::proto::NotificationsMultiLoginUpdateRequest request_proto;
+  request_proto.mutable_target()->set_channel_type(
+      push_notification::proto::ChannelType::GCM_DEVICE_PUSH);
+  request_proto.mutable_target()
+      ->mutable_delivery_address()
+      ->mutable_gcm_device_address()
+      ->set_registration_id(token_);
+  request_proto.mutable_target()
+      ->mutable_delivery_address()
+      ->mutable_gcm_device_address()
+      ->set_application_id(kPushNotificationAppId);
+  request_proto.add_registrations();
+  request_proto.set_registration_reason(
+      push_notification::proto::RegistrationReason::COLLABORATOR_API_CALL);
+  request_proto.set_client_id(kClientId);
+
+  // Construct a HTTP client for the request. The HTTP client lifetime is
+  // tied to a single request.
+  server_client_ = PushNotificationServerClientDesktopImpl::Factory::Create(
+      std::make_unique<PushNotificationDesktopApiCallFlowImpl>(),
+      identity_manager_, url_loader_factory_);
+
+  server_client_->RegisterWithPushNotificationService(
+      request_proto,
+      base::BindOnce(&PushNotificationServiceDesktopImpl::
+                         OnPushNotificationRegistrationSuccess,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&PushNotificationServiceDesktopImpl::
+                         OnPushNotificationRegistrationFailure,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PushNotificationServiceDesktopImpl::OnPushNotificationRegistrationSuccess(
+    const proto::NotificationsMultiLoginUpdateResponse& response) {
+  VLOG(1) << __func__ << ": Push notification service registration successful";
+  is_initialized_ = true;
+  server_client_.reset();
+  initialization_on_demand_scheduler_->HandleResult(/*success=*/true);
+
+  // TODO(b/321305351): Use response proto to update prefs with response
+  // information for later calls.
+}
+
+void PushNotificationServiceDesktopImpl::OnPushNotificationRegistrationFailure(
+    PushNotificationDesktopApiCallFlow::PushNotificationApiCallFlowError
+        error) {
+  LOG(ERROR) << __func__
+             << ": Push notification service registration failure: " << error;
+  server_client_.reset();
+
+  // Remove ourselves as a GCM app handler since initialization failed.
+  instance_id_driver_->GetInstanceID(kPushNotificationAppId)
+      ->gcm_driver()
+      ->RemoveAppHandler(kPushNotificationAppId);
+
+  initialization_on_demand_scheduler_->HandleResult(/*success=*/false);
 }
 
 }  // namespace push_notification

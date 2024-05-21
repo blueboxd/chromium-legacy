@@ -88,6 +88,8 @@ BASE_DECLARE_FEATURE(kEvDetailsInPageInfo);
 #if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 BASE_DECLARE_FEATURE(kGetTheMostOutOfChrome);
 
+BASE_DECLARE_FEATURE(kIOSPromoRefreshedPasswordBubble);
+
 BASE_DECLARE_FEATURE(kIOSPromoAddressBubble);
 
 BASE_DECLARE_FEATURE(kIOSPromoBookmarkBubble);
@@ -120,6 +122,9 @@ enum class PreloadTopChromeWebUIMode {
   kPreloadOnWarmup = 0,
   kPreloadOnMakeContents = 1
 };
+extern const char kPreloadTopChromeWebUIModeName[];
+extern const char kPreloadTopChromeWebUIModePreloadOnWarmupName[];
+extern const char kPreloadTopChromeWebUIModePreloadOnMakeContentsName[];
 extern const base::FeatureParam<PreloadTopChromeWebUIMode>
     kPreloadTopChromeWebUIMode;
 

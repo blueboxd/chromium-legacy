@@ -91,11 +91,6 @@ class FormDataImporter : public AddressDataManager::Observer,
   ExtractCreditCardFromFormResult ExtractCreditCardFromForm(
       const FormStructure& form);
 
-  // TODO(crbug.com/40876814): Rename to ExtractCreditCardFromForm() once
-  // `features::kAutofillRelaxCreditCardImport` is launched.
-  ExtractCreditCardFromFormResult ExtractCreditCardFromFormRelaxed(
-      const FormStructure& form);
-
   // Tries to initiate the saving of `extracted_iban` if applicable.
   bool ProcessIbanImportCandidate(Iban& extracted_iban);
 
@@ -142,9 +137,7 @@ class FormDataImporter : public AddressDataManager::Observer,
   // otherwise it should set to nullopt.
   void SetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted(
       std::optional<NonInteractivePaymentMethodType>
-          payment_method_type_if_non_interactive_authentication_flow_completed_);
-  std::optional<NonInteractivePaymentMethodType>
-  GetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted() const;
+          payment_method_type_if_non_interactive_authentication_flow_completed);
 
  private:
   // Defines a candidate for address profile import.

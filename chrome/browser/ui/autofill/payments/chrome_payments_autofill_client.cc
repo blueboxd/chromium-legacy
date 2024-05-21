@@ -4,11 +4,14 @@
 
 #include "chrome/browser/ui/autofill/payments/chrome_payments_autofill_client.h"
 
+#include <optional>
+
 #include "base/check_deref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/payments/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/autofill/payments/iban_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/view_factory.h"
+#include "chrome/browser/ui/autofill/payments/virtual_card_enroll_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/risk_util.h"
 #include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/core/browser/metrics/payments/risk_data_metrics.h"
@@ -16,6 +19,7 @@
 #include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
 #include "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
 #include "components/autofill/core/browser/payments/credit_card_otp_authenticator.h"
+#include "components/autofill/core/browser/payments/credit_card_risk_based_authenticator.h"
 #include "components/autofill/core/browser/payments/otp_unmask_delegate.h"
 #include "components/autofill/core/browser/payments/otp_unmask_result.h"
 #include "components/autofill/core/browser/payments/payments_network_interface.h"
@@ -39,7 +43,7 @@
 #include "chrome/browser/ui/autofill/payments/desktop_payments_window_manager.h"
 #include "chrome/browser/ui/autofill/payments/manage_migration_ui_controller.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
-#include "chrome/browser/ui/autofill/payments/virtual_card_enroll_bubble_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/webauthn_dialog_controller_impl.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -119,21 +123,25 @@ void ChromePaymentsAutofillClient::ShowLocalCardMigrationResults(
                                    delete_local_card_callback);
 }
 
-void ChromePaymentsAutofillClient::VirtualCardEnrollCompleted(
-    bool is_vcn_enrolled) {
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnableVcnEnrollLoadingAndConfirmation)) {
-    VirtualCardEnrollBubbleControllerImpl::CreateForWebContents(web_contents());
-    VirtualCardEnrollBubbleControllerImpl* controller =
-        VirtualCardEnrollBubbleControllerImpl::FromWebContents(web_contents());
-    if (controller && controller->IsIconVisible()) {
-      controller->ShowConfirmationBubbleView(is_vcn_enrolled);
-    }
-  }
+void ChromePaymentsAutofillClient::ShowWebauthnOfferDialog(
+    WebauthnDialogCallback offer_dialog_callback) {
+  WebauthnDialogControllerImpl::GetOrCreateForPage(
+      web_contents()->GetPrimaryPage())
+      ->ShowOfferDialog(std::move(offer_dialog_callback));
+}
+
+void ChromePaymentsAutofillClient::ShowWebauthnVerifyPendingDialog(
+    WebauthnDialogCallback verify_pending_dialog_callback) {
+  WebauthnDialogControllerImpl::GetOrCreateForPage(
+      web_contents()->GetPrimaryPage())
+      ->ShowVerifyPendingDialog(std::move(verify_pending_dialog_callback));
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-void ChromePaymentsAutofillClient::CreditCardUploadCompleted(bool card_saved) {
+void ChromePaymentsAutofillClient::CreditCardUploadCompleted(
+    bool card_saved,
+    std::optional<OnConfirmationClosedCallback>
+        on_confirmation_closed_callback) {
 #if BUILDFLAG(IS_ANDROID)
   if (auto* bridge = GetOrCreateAutofillSaveCardBottomSheetBridge()) {
     bridge->Hide();
@@ -141,22 +149,13 @@ void ChromePaymentsAutofillClient::CreditCardUploadCompleted(bool card_saved) {
 #else  // !BUILDFLAG(IS_ANDROID)
   if (SaveCardBubbleControllerImpl* controller =
           SaveCardBubbleControllerImpl::FromWebContents(web_contents())) {
-    controller->ShowConfirmationBubbleView(card_saved);
+    controller->ShowConfirmationBubbleView(
+        card_saved, std::move(on_confirmation_closed_callback));
   }
 #endif
 }
 
-bool ChromePaymentsAutofillClient::IsSaveCardPromptVisible() const {
-#if !BUILDFLAG(IS_ANDROID)
-  SaveCardBubbleControllerImpl* controller =
-      SaveCardBubbleControllerImpl::FromWebContents(web_contents());
-  return controller && controller->IsIconVisible();
-#else
-  return false;
-#endif
-}
-
-void ChromePaymentsAutofillClient::HideSaveCardPromptPrompt() {
+void ChromePaymentsAutofillClient::HideSaveCardPrompt() {
 #if !BUILDFLAG(IS_ANDROID)
   SaveCardBubbleControllerImpl* controller =
       SaveCardBubbleControllerImpl::FromWebContents(web_contents());
@@ -164,6 +163,19 @@ void ChromePaymentsAutofillClient::HideSaveCardPromptPrompt() {
     controller->HideSaveCardBubble();
   }
 #endif
+}
+
+void ChromePaymentsAutofillClient::VirtualCardEnrollCompleted(
+    bool is_vcn_enrolled) {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableVcnEnrollLoadingAndConfirmation)) {
+    VirtualCardEnrollBubbleControllerImpl::CreateForWebContents(web_contents());
+    if (VirtualCardEnrollBubbleControllerImpl* controller =
+            VirtualCardEnrollBubbleControllerImpl::FromWebContents(
+                web_contents())) {
+      controller->ShowConfirmationBubbleView(is_vcn_enrolled);
+    }
+  }
 }
 
 void ChromePaymentsAutofillClient::ConfirmSaveIbanLocally(
@@ -335,7 +347,7 @@ void ChromePaymentsAutofillClient::OnUnmaskVerificationResult(
       // Do nothing
       break;
     case AutofillClient::PaymentsRpcResult::kNone:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return;
   }
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -369,6 +381,15 @@ ChromePaymentsAutofillClient::GetOtpAuthenticator() {
         std::make_unique<CreditCardOtpAuthenticator>(&client_.get());
   }
   return otp_authenticator_.get();
+}
+
+CreditCardRiskBasedAuthenticator*
+ChromePaymentsAutofillClient::GetRiskBasedAuthenticator() {
+  if (!risk_based_authenticator_) {
+    risk_based_authenticator_ =
+        std::make_unique<CreditCardRiskBasedAuthenticator>(&client_.get());
+  }
+  return risk_based_authenticator_.get();
 }
 
 #if BUILDFLAG(IS_ANDROID)

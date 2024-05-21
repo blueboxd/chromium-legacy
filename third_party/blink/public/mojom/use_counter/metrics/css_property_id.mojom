@@ -846,6 +846,8 @@ enum CSSSampleId {
     kTypes = 790,
     kLineClamp = 791,
     kFontVariantEmoji = 792,
+    kScrollMarkers = 793,
+    kAnchorScope = 794,
 
     // 1. Add new features above this line (don't change the assigned numbers of
     //    the existing items).

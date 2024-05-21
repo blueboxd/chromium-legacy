@@ -398,7 +398,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FamilyUser.ManagedSiteList.SubdomainConflictType"
-    enum="FamilyLinkFilteringSubdomainConflictType" expires_after="2024-09-15">
+    enum="FamilyLinkFilteringSubdomainConflictType" expires_after="2024-11-17">
   <owner>anthie@google.com</owner>
   <owner>chrome-kids-eng@google.com</owner>
   <owner>cros-families-eng@google.com</owner>
@@ -467,7 +467,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FamilyUser.SessionEngagement.Weekday" units="Hour of day"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>agawronska@chromium.org</owner>
   <owner>cros-families-eng@google.com</owner>
   <summary>
@@ -478,7 +478,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FamilyUser.SessionEngagement.Weekend" units="Hour of day"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>agawronska@chromium.org</owner>
   <owner>cros-families-eng@google.com</owner>
   <summary>
@@ -517,7 +517,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FamilyUser.WebFilterType.PerRecord"
-    enum="FamilyLinkWebFilterType" expires_after="2024-09-15">
+    enum="FamilyLinkWebFilterType" expires_after="2024-11-17">
   <owner>fernandex@chromium.org</owner>
   <owner>agawronska@chromium.org</owner>
   <owner>chrome-kids-eng@google.com</owner>
@@ -686,6 +686,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="SupervisedUsers.ImplicitParentApprovalGrantEntryPoint"
+    enum="SupervisedUserImplicitParentApprovalGrantEntryPoint"
+    expires_after="2024-12-12">
+  <owner>anthie@google.com</owner>
+  <owner>chrome-kids-eng@google.com</owner>
+  <summary>
+    Records the different flows that lead to granting an automatic parent
+    approval on an extension (without having to explicitely request the
+    approval).
+  </summary>
+</histogram>
+
 <histogram name="SupervisedUsers.ParentPermissionDialog"
     enum="SupervisedUserParentPermissionDialog" expires_after="2024-12-12">
   <owner>courtneywong@chromium.org</owner>
@@ -742,6 +754,26 @@ chromium-metrics-reviews@google.com.
   <summary>
     The total number of PerAppTimeLimits policy changes seen in a session.
     Recorded once at the end of the session.
+  </summary>
+</histogram>
+
+<histogram
+    name="SupervisedUsers.SkipParentApprovalToInstallExtensions.PerRecord"
+    enum="SupervisedUserToggleState" expires_after="2024-12-31">
+  <owner>anthie@google.com</owner>
+  <owner>chrome-kids-eng@google.com</owner>
+  <owner>cros-families-eng@google.com</owner>
+  <summary>
+    Records the state of the &quot;Extensions&quot; toggle. When
+    parents/custodians have the toggle enabled, supervised users may install
+    extensions without explicit parent/custodian approval. Any extensions
+    installed under this mode receive automatic parent approval. Otherwise,
+    supervised users may install extensions upon receiving explicit
+    parent/custodian approval on each installation. Unsupervised users are
+    ignored in the process of deciding what to record. The value is recorded
+    with every UMA record upload from the current session. It should therefore
+    be used as a filter, or looking at unique client counts (raw counts are not
+    meaningful).
   </summary>
 </histogram>
 

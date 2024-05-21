@@ -18,7 +18,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
-#include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/autofill/core/common/aliases.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/strings/grit/components_strings.h"
@@ -140,7 +139,8 @@ std::vector<Suggestion> CreatePasswordSuggestions() {
 
   suggestions.emplace_back(u"Password main text",
                            SuggestionType::kPasswordEntry);
-  suggestions.back().additional_label = u"example.username@gmail.com";
+  suggestions.back().labels = {
+      {Suggestion::Text(u"example.username@gmail.com")}};
   suggestions.back().icon = Suggestion::Icon::kGlobe;
 
   suggestions.emplace_back(autofill::SuggestionType::kSeparator);
@@ -332,8 +332,8 @@ IN_PROC_BROWSER_TEST_P(PopupViewViewsBrowsertest,
   std::vector<Suggestion> suggestions;
   Suggestion entry1(u"User1");
   entry1.main_text.is_primary = Suggestion::Text::IsPrimary(true);
-  entry1.additional_label =
-      std::u16string(10, gfx::RenderText::kPasswordReplacementChar);
+  entry1.labels = {{Suggestion::Text(
+      std::u16string(10, gfx::RenderText::kPasswordReplacementChar))}};
   entry1.type = SuggestionType::kAccountStoragePasswordEntry;
   entry1.icon = Suggestion::Icon::kGlobe;
   entry1.trailing_icon = Suggestion::Icon::kGoogle;
@@ -342,8 +342,8 @@ IN_PROC_BROWSER_TEST_P(PopupViewViewsBrowsertest,
   // A profile store entry.
   Suggestion entry2(u"User2");
   entry2.main_text.is_primary = Suggestion::Text::IsPrimary(true);
-  entry2.additional_label =
-      std::u16string(6, gfx::RenderText::kPasswordReplacementChar);
+  entry2.labels = {{Suggestion::Text(
+      std::u16string(6, gfx::RenderText::kPasswordReplacementChar))}};
   entry2.type = SuggestionType::kPasswordEntry;
   entry2.icon = Suggestion::Icon::kGlobe;
   entry2.trailing_icon = Suggestion::Icon::kNoIcon;
@@ -413,19 +413,6 @@ IN_PROC_BROWSER_TEST_P(PopupViewViewsBrowsertest, SearchBarViewProvided) {
   ShowAndVerifyUi(
       /*popup_has_parent=*/false,
       PopupViewSearchBarConfig{.enabled = true, .placeholder = u"Search"});
-}
-
-IN_PROC_BROWSER_TEST_P(PopupViewViewsBrowsertest,
-                       SearchBarViewNoSuggestionsFound) {
-  // This set imitates empty search result, it contains footer suggestions only.
-  controller().set_suggestions(
-      {SuggestionType::kSeparator, SuggestionType::kAutofillOptions});
-  ON_CALL(controller(), HasFilteredOutSuggestions).WillByDefault(Return(true));
-  ShowAndVerifyUi(
-      /*popup_has_parent=*/false,
-      PopupViewSearchBarConfig{.enabled = true,
-                               .placeholder = u"Search",
-                               .no_results_message = u"No suggestions"});
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

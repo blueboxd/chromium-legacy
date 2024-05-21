@@ -10,6 +10,7 @@
 
 #include "base/containers/heap_array.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/numerics/checked_math.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -271,9 +272,8 @@ std::optional<VideoPixelFormat> GetConversionFormat(VideoCodecProfile profile,
       }
       break;
     default:
-      NOTREACHED();  // Checked during Initialize().
+      NOTREACHED_NORETURN();  // Checked during Initialize().
   }
-
   return std::nullopt;
 }
 
@@ -281,14 +281,14 @@ std::optional<VideoPixelFormat> GetConversionFormat(VideoCodecProfile profile,
 void SetupStandardYuvPlanes(const VideoFrame& frame, vpx_image_t* vpx_image) {
   DCHECK_EQ(VideoFrame::NumPlanes(frame.format()), 3u);
   vpx_image->planes[VPX_PLANE_Y] =
-      const_cast<uint8_t*>(frame.visible_data(VideoFrame::kYPlane));
+      const_cast<uint8_t*>(frame.visible_data(VideoFrame::Plane::kY));
   vpx_image->planes[VPX_PLANE_U] =
-      const_cast<uint8_t*>(frame.visible_data(VideoFrame::kUPlane));
+      const_cast<uint8_t*>(frame.visible_data(VideoFrame::Plane::kU));
   vpx_image->planes[VPX_PLANE_V] =
-      const_cast<uint8_t*>(frame.visible_data(VideoFrame::kVPlane));
-  vpx_image->stride[VPX_PLANE_Y] = frame.stride(VideoFrame::kYPlane);
-  vpx_image->stride[VPX_PLANE_U] = frame.stride(VideoFrame::kUPlane);
-  vpx_image->stride[VPX_PLANE_V] = frame.stride(VideoFrame::kVPlane);
+      const_cast<uint8_t*>(frame.visible_data(VideoFrame::Plane::kV));
+  vpx_image->stride[VPX_PLANE_Y] = frame.stride(VideoFrame::Plane::kY);
+  vpx_image->stride[VPX_PLANE_U] = frame.stride(VideoFrame::Plane::kU);
+  vpx_image->stride[VPX_PLANE_V] = frame.stride(VideoFrame::Plane::kV);
 }
 
 void I444ToI410(const VideoFrame& frame, vpx_image_t* vpx_image) {
@@ -415,7 +415,7 @@ void VpxVideoEncoder::Initialize(VideoCodecProfile profile,
       codec_config_.g_input_bit_depth = 10;
       break;
     default:
-      NOTREACHED();  // Enforced via a profile check above.
+      NOTREACHED_NORETURN();  // Enforced via a profile check above.
   }
 
   auto status = SetUpVpxConfig(options, profile_, &codec_config_);
@@ -456,9 +456,19 @@ void VpxVideoEncoder::Initialize(VideoCodecProfile profile,
     // Set the number of column tiles in encoding an input frame, with number of
     // tile columns (in Log2 unit) as the parameter.
     // The minimum width of a tile column is 256 pixels, the maximum is 4096.
+    unsigned int tile_columns = (codec_config_.g_w + 255) / 256;
+    // The valid range of VP9E_SET_TILE_COLUMNS is [0..6].
     int log2_tile_columns =
-        static_cast<int>(std::log2(codec_config_.g_w / 256));
-    vpx_codec_control(codec.get(), VP9E_SET_TILE_COLUMNS, log2_tile_columns);
+        std::min(static_cast<int>(std::log2(tile_columns)), 6);
+    vpx_error = vpx_codec_control(codec.get(), VP9E_SET_TILE_COLUMNS,
+                                  log2_tile_columns);
+    if (vpx_error != VPX_CODEC_OK) {
+      auto msg = LogVpxErrorMessage(
+          codec.get(), "VPX encoder VP9E_SET_TILE_COLUMNS error", vpx_error);
+      std::move(done_cb).Run(EncoderStatus(
+          EncoderStatus::Codes::kEncoderInitializationError, msg));
+      return;
+    }
 
     // Turn on row level multi-threading.
     vpx_codec_control(codec.get(), VP9E_SET_ROW_MT, 1);
@@ -543,7 +553,7 @@ void VpxVideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
   bool key_frame = encode_options.key_frame;
   if (!frame) {
     std::move(done_cb).Run(
-        EncoderStatus(EncoderStatus::Codes::kEncoderFailedEncode,
+        EncoderStatus(EncoderStatus::Codes::kInvalidInputFrame,
                       "No frame provided for encoding."));
     return;
   }
@@ -552,7 +562,7 @@ void VpxVideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
     frame = ConvertToMemoryMappedFrame(frame);
     if (!frame) {
       std::move(done_cb).Run(
-          EncoderStatus(EncoderStatus::Codes::kEncoderFailedEncode,
+          EncoderStatus(EncoderStatus::Codes::kSystemAPICallError,
                         "Convert GMB frame to MemoryMappedFrame failed."));
       return;
     }
@@ -560,9 +570,9 @@ void VpxVideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
 
   if (!frame->IsMappable()) {
     std::move(done_cb).Run(
-        EncoderStatus(EncoderStatus::Codes::kEncoderFailedEncode,
-                      "Unexpected frame format.")
-            .WithData("IsMappable", frame->IsMappable())
+        EncoderStatus(EncoderStatus::Codes::kInvalidInputFrame,
+                      "Frame is not mappable")
+            .WithData("storage type", frame->storage_type())
             .WithData("format", frame->format()));
     return;
   }
@@ -578,7 +588,7 @@ void VpxVideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
         options_.frame_size, frame->timestamp());
     if (!temp_frame) {
       std::move(done_cb).Run(
-          EncoderStatus(EncoderStatus::Codes::kEncoderFailedEncode,
+          EncoderStatus(EncoderStatus::Codes::kOutOfMemoryError,
                         "Can't allocate a temporary frame for conversion"));
       return;
     }
@@ -586,9 +596,7 @@ void VpxVideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
     // If `frame->format()` is unsupported ConvertAndScale() will fail.
     auto convert_status = frame_converter_.ConvertAndScale(*frame, *temp_frame);
     if (!convert_status.is_ok()) {
-      std::move(done_cb).Run(
-          EncoderStatus(EncoderStatus::Codes::kEncoderFailedEncode)
-              .AddCause(std::move(convert_status)));
+      std::move(done_cb).Run(std::move(convert_status));
       return;
     }
 
@@ -605,16 +613,16 @@ void VpxVideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
       if (frame->format() == PIXEL_FORMAT_NV12) {
         RecreateVpxImageIfNeeded(VPX_IMG_FMT_NV12, /*needs_memory=*/false);
         vpx_image_.planes[VPX_PLANE_Y] =
-            const_cast<uint8_t*>(frame->visible_data(VideoFrame::kYPlane));
+            const_cast<uint8_t*>(frame->visible_data(VideoFrame::Plane::kY));
         vpx_image_.planes[VPX_PLANE_U] =
-            const_cast<uint8_t*>(frame->visible_data(VideoFrame::kUVPlane));
+            const_cast<uint8_t*>(frame->visible_data(VideoFrame::Plane::kUV));
         // In NV12 U and V samples are combined in one plane (bytes go UVUVUV),
         // but libvpx treats them as two planes with the same stride but shifted
         // by one byte.
         vpx_image_.planes[VPX_PLANE_V] = vpx_image_.planes[VPX_PLANE_U] + 1;
-        vpx_image_.stride[VPX_PLANE_Y] = frame->stride(VideoFrame::kYPlane);
-        vpx_image_.stride[VPX_PLANE_U] = frame->stride(VideoFrame::kUVPlane);
-        vpx_image_.stride[VPX_PLANE_V] = frame->stride(VideoFrame::kUVPlane);
+        vpx_image_.stride[VPX_PLANE_Y] = frame->stride(VideoFrame::Plane::kY);
+        vpx_image_.stride[VPX_PLANE_U] = frame->stride(VideoFrame::Plane::kUV);
+        vpx_image_.stride[VPX_PLANE_V] = frame->stride(VideoFrame::Plane::kUV);
       } else {
         RecreateVpxImageIfNeeded(VPX_IMG_FMT_I420, /*needs_memory=*/false);
         SetupStandardYuvPlanes(*frame, &vpx_image_);
@@ -631,12 +639,12 @@ void VpxVideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
       }
       RecreateVpxImageIfNeeded(VPX_IMG_FMT_I42016, /*needs_memory=*/true);
       libyuv::I420ToI010(
-          frame->visible_data(VideoFrame::kYPlane),
-          frame->stride(VideoFrame::kYPlane),
-          frame->visible_data(VideoFrame::kUPlane),
-          frame->stride(VideoFrame::kUPlane),
-          frame->visible_data(VideoFrame::kVPlane),
-          frame->stride(VideoFrame::kVPlane),
+          frame->visible_data(VideoFrame::Plane::kY),
+          frame->stride(VideoFrame::Plane::kY),
+          frame->visible_data(VideoFrame::Plane::kU),
+          frame->stride(VideoFrame::Plane::kU),
+          frame->visible_data(VideoFrame::Plane::kV),
+          frame->stride(VideoFrame::Plane::kV),
           reinterpret_cast<uint16_t*>(vpx_image_.planes[VPX_PLANE_Y]),
           vpx_image_.stride[VPX_PLANE_Y] / 2,
           reinterpret_cast<uint16_t*>(vpx_image_.planes[VPX_PLANE_U]),
@@ -665,7 +673,7 @@ void VpxVideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
       break;
 
     default:
-      NOTREACHED();  // Checked during Initialize().
+      NOTREACHED_NORETURN();  // Checked during Initialize().
   }
 
   // Use zero as a timestamp, so encoder will not use it for rate control.

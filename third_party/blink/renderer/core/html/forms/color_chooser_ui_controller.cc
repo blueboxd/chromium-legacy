@@ -60,7 +60,7 @@ void ColorChooserUIController::OpenUI() {
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   OpenColorChooser();
 #else
-  NOTREACHED()
+  NOTREACHED_IN_MIGRATION()
       << "ColorChooserUIController should only be used on Android or iOS";
 #endif
 }
@@ -84,7 +84,7 @@ void ColorChooserUIController::DidChooseColor(uint32_t color) {
   client_->DidChooseColor(Color::FromRGBA32(color));
 }
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 void ColorChooserUIController::OpenColorChooser() {
   DCHECK(!chooser_);
   scoped_refptr<base::SequencedTaskRunner> runner =

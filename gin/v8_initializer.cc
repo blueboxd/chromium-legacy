@@ -117,11 +117,11 @@ const char* GetSnapshotFileName(const V8SnapshotFileType file_type) {
 #if BUILDFLAG(USE_V8_CONTEXT_SNAPSHOT)
       return kV8ContextSnapshotFileName;
 #else
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return nullptr;
 #endif
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 
@@ -322,6 +322,9 @@ void SetFlags(IsolateHolder::ScriptMode mode,
   SetV8FlagsIfOverridden(features::kV8SingleThreadedGCInBackground,
                          "--single-threaded-gc-in-background",
                          "--no-single-threaded-gc-in-background");
+  SetV8FlagsIfOverridden(features::kV8DecommitPooledPages,
+                         "--decommit-pooled-pages",
+                         "--no-decommit-pooled-pages");
 
   if (base::FeatureList::IsEnabled(features::kV8ConcurrentSparkplug)) {
     if (int max_threads = features::kV8ConcurrentSparkplugMaxThreads.Get()) {
@@ -398,14 +401,6 @@ void SetFlags(IsolateHolder::ScriptMode mode,
                          "--no-intel-jcc-erratum-mitigation");
 
   // JavaScript language features.
-  if (base::FeatureList::IsEnabled(features::kJavaScriptRabGsab)) {
-    SetV8Flags("--harmony-rab-gsab");
-  } else {
-    SetV8Flags("--no-harmony-rab-gsab");
-  }
-  SetV8FlagsIfOverridden(features::kJavaScriptArrayBufferTransfer,
-                         "--harmony-rab-gsab-transfer",
-                         "--no-harmony-rab-gsab-transfer");
   SetV8FlagsIfOverridden(features::kJavaScriptIteratorHelpers,
                          "--harmony-iterator-helpers",
                          "--no-harmony-iterator-helpers");
@@ -443,9 +438,6 @@ void SetFlags(IsolateHolder::ScriptMode mode,
 
   // WebAssembly features.
 
-  SetV8FlagsIfOverridden(features::kWebAssemblyTailCall,
-                         "--experimental-wasm-return-call",
-                         "--no-experimental-wasm-return-call");
   SetV8FlagsIfOverridden(features::kWebAssemblyInlining,
                          "--experimental-wasm-inlining",
                          "--no-experimental-wasm-inlining");

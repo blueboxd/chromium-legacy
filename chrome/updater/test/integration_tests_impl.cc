@@ -478,7 +478,7 @@ void InstallUpdaterAndApp(UpdaterScope scope,
     CloseInstallCompleteDialog(base::ASCIIToWide(child_window_text_to_find),
                                verify_app_logo_loaded);
 #else
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
 #endif
   }
 }
@@ -1321,13 +1321,13 @@ void ExpectCleanProcesses() {
 void RunOfflineInstall(UpdaterScope scope,
                        bool is_legacy_install,
                        bool is_silent_install) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void RunOfflineInstallOsNotSupported(UpdaterScope scope,
                                      bool is_legacy_install,
                                      bool is_silent_install) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 #endif  // !BUILDFLAG(IS_WIN)
 
@@ -1355,8 +1355,10 @@ void DMCleanup(UpdaterScope scope) {
   EXPECT_TRUE(base::DeletePathRecursively(storage->policy_cache_folder()));
 
 #if BUILDFLAG(IS_WIN)
+  RegDeleteKey(HKEY_LOCAL_MACHINE, kRegKeyCompanyLegacyCloudManagement);
   RegDeleteKey(HKEY_LOCAL_MACHINE, kRegKeyCompanyCloudManagement);
   RegDeleteKey(HKEY_LOCAL_MACHINE, UPDATER_POLICIES_KEY);
+  RegDeleteKey(HKEY_LOCAL_MACHINE, COMPANY_POLICIES_KEY);
 #endif
 }
 

@@ -12,10 +12,10 @@
 #include "third_party/blink/renderer/core/frame/pagination_state.h"
 #include "third_party/blink/renderer/core/layout/constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
-#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/out_of_flow_layout_part.h"
 #include "third_party/blink/renderer/core/layout/page_border_box_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/page_container_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/pagination_utils.h"
 #include "third_party/blink/renderer/core/layout/physical_box_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
@@ -104,13 +104,6 @@ PaginatedRootLayoutAlgorithm::LayoutPageContainer(
     const AtomicString& page_name,
     const PageAreaLayoutParams& page_area_params) {
   Document& document = root_node.GetDocument();
-  const LayoutView* view = document.GetLayoutView();
-  WritingMode writing_mode = parent_space.GetWritingMode();
-  LogicalSize page_size =
-      view->PageAreaSize(page_index, page_name).ConvertToLogical(writing_mode);
-
-  DCHECK(page_size.inline_size != kIndefiniteSize);
-  DCHECK(page_size.block_size != kIndefiniteSize);
   const ComputedStyle* page_container_style =
       document.GetStyleResolver().StyleForPage(page_index, page_name);
 
@@ -119,14 +112,77 @@ PaginatedRootLayoutAlgorithm::LayoutPageContainer(
           document, *page_container_style);
   BlockNode page_container_node(page_container);
 
-  ConstraintSpace child_space =
-      CreateConstraintSpaceForPages(root_node, parent_space, page_size);
-  FragmentGeometry fragment_geometry = CalculateInitialFragmentGeometry(
-      child_space, root_node, /*break_token=*/nullptr);
-  LayoutAlgorithmParams params(page_container_node, fragment_geometry,
+  // Calculate the page border box size based on @page properties, such as
+  // 'size' and 'margin', but also padding, width, height, min-height, and so
+  // on. Auto margins will be resolved. One interesting detail here is how
+  // over-constrainedness is handled. Although, for regular CSS boxes, margins
+  // will be adjusted to resolve it, for page boxes, the containing block size
+  // (the one set by the 'size' descriptor / property) is adjusted instead.
+  //
+  // Example: @page { size:500px; margin:50px; width:100px; }
+  //
+  // The equation (omitting border and padding, since they are 0 in this
+  // example):
+  // 'margin-left' + 'width' + 'margin-right' = width of containing block
+  //
+  // The width of the containing block is 500px (from size). This is what needs
+  // to be adjusted to resolve the overconstraintedness - i.e. it needs to
+  // become 50+100+50=200. So we end up with a page box size of 200x500, and a
+  // page area size of 100x400.
+  //
+  // https://drafts.csswg.org/css-page-3/#page-model
+  FragmentGeometry geometry;
+  BoxStrut margins;
+  LogicalSize page_containing_block_size =
+      DesiredPageContainingBlockSize(document, *page_container_style);
+  ResolvePageBoxGeometry(page_container_node, page_containing_block_size,
+                         &geometry, &margins);
+
+  // Check if the resulting page area size is usable.
+  LogicalSize desired_page_area_size =
+      geometry.border_box_size - geometry.border - geometry.padding;
+  bool ignore_author_page_style = false;
+  if (desired_page_area_size.inline_size < LayoutUnit(1) ||
+      desired_page_area_size.block_size < LayoutUnit(1)) {
+    // The resulting page area size would become zero (or very close to
+    // it). Ignore CSS, and use the default values provided as input. There are
+    // tests that currently expect this behavior. But see
+    // https://github.com/w3c/csswg-drafts/issues/8335
+    ignore_author_page_style = true;
+    page_container_style = document.GetStyleResolver().StyleForPage(
+        page_index, page_name, 1.0, ignore_author_page_style);
+    page_container->SetStyle(page_container_style,
+                             LayoutObject::ApplyStyleChanges::kNo);
+    page_containing_block_size =
+        DesiredPageContainingBlockSize(document, *page_container_style);
+    ResolvePageBoxGeometry(page_container_node, page_containing_block_size,
+                           &geometry, &margins);
+  }
+
+  // Convert from border box size to margin box size, and use that to calculate
+  // the final page container size. If the destination is a printer, i.e. so
+  // that there's a given paper size, the resulting size will be that of the
+  // paper, honoring the orientation implied by the margin box size. If the
+  // destination is PDF, on the other hand, no fitting will be required.
+  LogicalSize margin_box_size(geometry.border_box_size + margins);
+  LogicalSize page_container_size = FittedPageContainerSize(
+      document, page_container_node.Style(), margin_box_size);
+
+  ConstraintSpaceBuilder space_builder(
+      parent_space, page_container_style->GetWritingDirection(),
+      /*is_new_fc=*/true);
+  SetUpSpaceBuilderForPageBox(page_container_size, &space_builder);
+  space_builder.SetShouldPropagateChildBreakValues();
+  ConstraintSpace child_space = space_builder.ToConstraintSpace();
+
+  FragmentGeometry margin_box_geometry = {.border_box_size =
+                                              page_container_size};
+
+  LayoutAlgorithmParams params(page_container_node, margin_box_geometry,
                                child_space, /*break_token=*/nullptr);
-  PageContainerLayoutAlgorithm child_algorithm(params, root_node,
-                                               page_area_params);
+  PageContainerLayoutAlgorithm child_algorithm(params, page_index, page_name,
+                                               root_node, page_area_params,
+                                               ignore_author_page_style);
   const LayoutResult* result = child_algorithm.Layout();
 
   // Since we didn't lay out via BlockNode::Layout(), but rather picked and
@@ -137,21 +193,6 @@ PaginatedRootLayoutAlgorithm::LayoutPageContainer(
   return PageContainerResult(
       To<PhysicalBoxFragment>(result->GetPhysicalFragment()),
       child_algorithm.FragmentainerBreakToken());
-}
-
-ConstraintSpace PaginatedRootLayoutAlgorithm::CreateConstraintSpaceForPages(
-    const BlockNode& node,
-    const ConstraintSpace& space,
-    const LogicalSize& page_size) {
-  ConstraintSpaceBuilder space_builder(
-      space, node.Style().GetWritingDirection(), /*is_new_fc=*/true);
-  space_builder.SetAvailableSize(page_size);
-  space_builder.SetPercentageResolutionSize(page_size);
-  space_builder.SetInlineAutoBehavior(AutoSizeBehavior::kStretchImplicit);
-  space_builder.SetBlockAutoBehavior(AutoSizeBehavior::kStretchImplicit);
-  space_builder.SetShouldPropagateChildBreakValues();
-
-  return space_builder.ToConstraintSpace();
 }
 
 }  // namespace blink

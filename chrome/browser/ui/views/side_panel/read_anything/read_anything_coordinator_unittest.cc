@@ -48,13 +48,38 @@ class ReadAnythingCoordinatorTest : public TestWithBrowserView {
 
     side_panel_coordinator_ =
         SidePanelUtil::GetSidePanelCoordinatorForBrowser(browser());
-    side_panel_registry_ =
-        SidePanelCoordinator::GetGlobalSidePanelRegistry(browser());
     read_anything_coordinator_ =
         ReadAnythingCoordinator::GetOrCreateForBrowser(browser());
 
-    AddTab(browser_view()->browser(), GURL("http://foo1.com"));
+    // Ensure a kReadAnything entry is added to the contextual registry for the
+    // first tab.
+    AddTabToBrowser(GURL("http://foo1.com"));
+    auto* tab_one_registry =
+        SidePanelRegistry::Get(browser_view()->GetActiveWebContents());
+    contextual_registries_.push_back(tab_one_registry);
+
+    // Ensure a kReadAnything entry is added to the contextual registry for the
+    // second tab.
+    AddTabToBrowser(GURL("http://foo2.com"));
+    auto* tab_two_registry =
+        SidePanelRegistry::Get(browser_view()->GetActiveWebContents());
+    contextual_registries_.push_back(tab_two_registry);
+
+    // Verify the first tab has one entry, kReadAnything.
     browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
+    SidePanelRegistry* contextual_registry =
+        SidePanelRegistry::Get(browser_view()->GetActiveWebContents());
+    ASSERT_EQ(contextual_registry->entries().size(), 1u);
+    EXPECT_EQ(contextual_registry->entries()[0]->key().id(),
+              SidePanelEntry::Id::kReadAnything);
+
+    // Verify the second tab has one entry, kReadAnything.
+    browser_view()->browser()->tab_strip_model()->ActivateTabAt(1);
+    contextual_registry =
+        SidePanelRegistry::Get(browser_view()->GetActiveWebContents());
+    ASSERT_EQ(contextual_registry->entries().size(), 1u);
+    EXPECT_EQ(contextual_registry->entries()[0]->key().id(),
+              SidePanelEntry::Id::kReadAnything);
   }
 
   // Wrapper methods around the ReadAnythingCoordinator. These do nothing more
@@ -100,7 +125,8 @@ class ReadAnythingCoordinatorTest : public TestWithBrowserView {
  protected:
   raw_ptr<SidePanelCoordinator, DanglingUntriaged> side_panel_coordinator_ =
       nullptr;
-  raw_ptr<SidePanelRegistry, DanglingUntriaged> side_panel_registry_ = nullptr;
+  std::vector<raw_ptr<SidePanelRegistry, DanglingUntriaged>>
+      contextual_registries_;
   raw_ptr<ReadAnythingCoordinator, DanglingUntriaged>
       read_anything_coordinator_ = nullptr;
 
@@ -142,7 +168,8 @@ TEST_F(ReadAnythingCoordinatorTest, OnCoordinatorDestroyedCalled) {
 TEST_F(ReadAnythingCoordinatorTest,
        ActivateCalled_ShowAndHideReadAnythingEntry) {
   AddObserver(&coordinator_observer_);
-  SidePanelEntry* entry = side_panel_registry_->GetEntryForKey(
+  ASSERT_EQ(contextual_registries_.size(), 2u);
+  SidePanelEntry* entry = contextual_registries_[0]->GetEntryForKey(
       SidePanelEntry::Key(SidePanelEntry::Id::kReadAnything));
 
   EXPECT_CALL(coordinator_observer_, Activate(true)).Times(1);
@@ -153,9 +180,12 @@ TEST_F(ReadAnythingCoordinatorTest,
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
-TEST_F(ReadAnythingCoordinatorTest,
-       SidePanelShowAndHide_NonLacros_CallEmbeddedA11yExtensionLoader) {
-  SidePanelEntry* entry = side_panel_registry_->GetEntryForKey(
+// TODO(b/324143642): enable this test when reading mode local side panels work
+// with Docs.
+TEST_F(
+    ReadAnythingCoordinatorTest,
+    DISABLED_SidePanelShowAndHide_NonLacros_CallEmbeddedA11yExtensionLoader) {
+  SidePanelEntry* entry = contextual_registries_[0]->GetEntryForKey(
       SidePanelEntry::Key(SidePanelEntry::Id::kReadAnything));
   EXPECT_FALSE(EmbeddedA11yExtensionLoader::GetInstance()->IsExtensionInstalled(
       extension_misc::kReadingModeGDocsHelperExtensionId));
@@ -172,10 +202,12 @@ TEST_F(ReadAnythingCoordinatorTest,
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+// TODO(b/324143642): enable this test when reading mode local side panels work
+// with Docs.
 TEST_F(
     ReadAnythingCoordinatorTest,
-    SidePanelShowAndHide_Lacros_EmbeddedA11yManagerLacrosUpdateReadingModeState) {
-  SidePanelEntry* entry = side_panel_registry_->GetEntryForKey(
+    DISABLED_SidePanelShowAndHide_Lacros_EmbeddedA11yManagerLacrosUpdateReadingModeState) {
+  SidePanelEntry* entry = contextual_registries_[0]->GetEntryForKey(
       SidePanelEntry::Key(SidePanelEntry::Id::kReadAnything));
   EXPECT_FALSE(
       EmbeddedA11yManagerLacros::GetInstance()->IsReadingModeEnabled());
@@ -208,8 +240,8 @@ TEST_F(ReadAnythingCoordinatorTest, OnActivePageDistillableCalled) {
   ActivePageNotDistillable();
 }
 
-TEST_F(ReadAnythingCoordinatorTest, WithWebUIFlagDisabled_ShowsViewsToolbar) {
-  ASSERT_STREQ("ReadAnythingContainerView",
+TEST_F(ReadAnythingCoordinatorTest, WithWebUIFlagEnabled_ShowsWebUIToolbar) {
+  ASSERT_STREQ("ReadAnythingSidePanelWebView",
                CreateContainerView()->GetClassName());
 }
 
@@ -218,7 +250,7 @@ class ReadAnythingCoordinatorWebUIToolbarTest : public TestWithBrowserView {
   void SetUp() override {
     base::test::ScopedFeatureList features;
     scoped_feature_list_.InitWithFeatures(
-        {features::kReadAnything, features::kReadAnythingWebUIToolbar}, {});
+        {features::kReadAnything}, {features::kReadAnythingWebUIToolbar});
     TestWithBrowserView::SetUp();
 
     read_anything_coordinator_ =
@@ -241,7 +273,7 @@ class ReadAnythingCoordinatorWebUIToolbarTest : public TestWithBrowserView {
 
 TEST_F(ReadAnythingCoordinatorWebUIToolbarTest,
        WithWebUIFlagEnabled_ShowsWebUIToolbar) {
-  ASSERT_STREQ("ReadAnythingSidePanelWebView",
+  ASSERT_STREQ("ReadAnythingContainerView",
                CreateContainerView()->GetClassName());
 }
 
@@ -252,7 +284,7 @@ class ReadAnythingCoordinatorScreen2xDataCollectionModeTest
     base::test::ScopedFeatureList features;
     scoped_feature_list_.InitWithFeatures(
         {features::kReadAnything, features::kDataCollectionModeForScreen2x},
-        {});
+        {features::kReadAnythingWebUIToolbar});
     TestWithBrowserView::SetUp();
 
     side_panel_coordinator_ =

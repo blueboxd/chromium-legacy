@@ -190,7 +190,8 @@ namespace {
 base::FilePath GetPathInAppDirectory(std::string path) {
   base::FilePath result;
   if (!base::PathService::Get(base::DIR_ANDROID_APP_DATA, &result)) {
-    NOTREACHED() << "Failed to get app data directory for Android WebView";
+    NOTREACHED_IN_MIGRATION()
+        << "Failed to get app data directory for Android WebView";
   }
   result = result.Append(FILE_PATH_LITERAL(path));
   return result;
@@ -497,8 +498,7 @@ void CookieManager::SetCookieHelper(const GURL& host,
 
   std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
       new_host, value, base::Time::Now(), std::nullopt /* server_time */,
-      cookie_partition_key,
-      /*block_truncated=*/true, net::CookieSourceType::kOther,
+      cookie_partition_key, net::CookieSourceType::kOther,
       /*status=*/nullptr));
 
   if (!cc || !should_allow_cookie) {

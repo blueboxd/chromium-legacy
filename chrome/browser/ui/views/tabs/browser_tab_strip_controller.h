@@ -56,10 +56,10 @@ class BrowserTabStripController : public TabStripController,
   TabStripModel* model() const { return model_; }
 
   bool IsCommandEnabledForTab(TabStripModel::ContextMenuCommand command_id,
-                              Tab* tab) const;
+                              const Tab* tab) const;
   void ExecuteCommandForTab(TabStripModel::ContextMenuCommand command_id,
-                            Tab* tab);
-  bool IsTabPinned(Tab* tab) const;
+                            const Tab* tab);
+  bool IsTabPinned(const Tab* tab) const;
 
   // TabStripController implementation:
   const ui::ListSelectionModel& GetSelectionModel() const override;
@@ -158,6 +158,8 @@ class BrowserTabStripController : public TabStripController,
   // Adds a tab.
   void AddTab(content::WebContents* contents, int index);
 
+  void OnDiscardRingTreatmentEnabledChanged();
+
   raw_ptr<TabStripModel> model_;
 
   raw_ptr<TabStrip> tabstrip_;
@@ -175,9 +177,11 @@ class BrowserTabStripController : public TabStripController,
   // tabs.
   std::unique_ptr<ImmersiveRevealedLock> immersive_reveal_lock_;
 
-  PrefChangeRegistrar local_pref_registrar_;
+  PrefChangeRegistrar local_state_registrar_;
 
   std::unique_ptr<TabMenuModelFactory> menu_model_factory_;
+
+  bool should_show_discard_indicator_ = true;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_BROWSER_TAB_STRIP_CONTROLLER_H_

@@ -10034,6 +10034,12 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action
+    name="ExplicitBrowserSigninPreferenceRemembered_IPHPromo_SettingsPageOpened">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of the metric.</description>
+</action>
+
 <action name="ExploreSites.ContextMenu">
   <owner>chili@chromium.org</owner>
   <owner>dewittj@chromium.org</owner>
@@ -10243,6 +10249,42 @@ should be able to be added at any place in this file.
   <owner>extensions-core@chromium.org</owner>
   <description>
     The user opened an extension's site permissions page in the extensions menu.
+  </description>
+</action>
+
+<action name="Extensions.Mv2Deprecation.Warning.Dismissed">
+  <owner>emiliapaz@chomium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user dismissed the MV2 deprecation panel in chrome://extensions for the
+    rest of the MV2 warning experiment stage.
+  </description>
+</action>
+
+<action name="Extensions.Mv2Deprecation.Warning.DismissedForExtension">
+  <owner>emiliapaz@chomium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user clicked on the dismiss button for an extension in
+    chrome://extensions during the MV2 warning experiment stage.
+  </description>
+</action>
+
+<action name="Extensions.Mv2Deprecation.Warning.FindAlternativeForExtension">
+  <owner>emiliapaz@chomium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user clicked on the find alternative button for an extension in
+    chrome://extensions during the MV2 warning experiment stage.
+  </description>
+</action>
+
+<action name="Extensions.Mv2Deprecation.Warning.RemoveExtension">
+  <owner>emiliapaz@chomium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user clicked on the remove button for an extension in
+    chrome://extensions during the MV2 warning experiment stage.
   </description>
 </action>
 
@@ -42701,6 +42743,8 @@ should be able to be added at any place in this file.
       label="For Download toolbar button feature."/>
   <suffix name="EphemeralTab" label="For Ephemeral Tab."/>
   <suffix name="ExperimentalAIPromo" label="For Experimental AI feature."/>
+  <suffix name="ExplicitBrowserSigninPreferenceRemembered"
+      label="For Explicit Browser Signin Preference Remembered feature."/>
   <suffix name="ExploreSitesTile" label="For Explore Sites feature."/>
   <suffix name="ExtensionsMenu" label="For Extensions menu opening."/>
   <suffix name="ExtensionsRequestAccessButton"
@@ -42868,6 +42912,9 @@ should be able to be added at any place in this file.
   <suffix name="PasswordSuggestions" label="For PasswordSuggestions feature."/>
   <suffix name="PasswordsWebAppProfileSwitch"
       label="For PasswordsWebAppProfileSwitch feature."/>
+  <suffix name="PerformanceInterventionDialog"
+      label="For triggering the performance intervention dialog and toolbar
+             button feature."/>
   <suffix name="PerformanceNewBadge"
       label="For new badge next to Performance feature."/>
   <suffix name="PowerBookmarksSidePanel"
@@ -43574,6 +43621,8 @@ should be able to be added at any place in this file.
   <suffix name="PinnedNewIncognitoWindowButton"
       label="Pinned new incognito window button"/>
   <suffix name="PinnedPrintButton" label="Pinned print button"/>
+  <suffix name="PinnedSendTabToSelfButton"
+      label="Pinned send tab to self button"/>
   <suffix name="PinnedShowBookmarkSidePanelButton"
       label="Pinned show bookmark side panel button"/>
   <suffix name="PinnedShowHistorySidePanelButton"
@@ -43584,6 +43633,8 @@ should be able to be added at any place in this file.
       label="Pinned show reading list side panel button"/>
   <suffix name="PinnedShowSearchCompanionSidePanelButton"
       label="Pinned show search companion side panel button"/>
+  <suffix name="PinnedShowTranslateButton"
+      label="Pinned show translate button"/>
   <suffix name="PinnedTaskManagerButton" label="Pinned task manager button"/>
   <suffix name="ShowPerformanceSidePanelButton"
       label="Show performance side panel button"/>

@@ -2844,11 +2844,6 @@ EGL_FUNCTIONS = [
                  'extensions': ['EGL_ANDROID_blob_cache'] }],
   'arguments':
       'EGLDisplay dpy, EGLSetBlobFuncANDROID set, EGLGetBlobFuncANDROID get' },
-{ 'return_type': 'void',
-  'versions': [{ 'name': 'eglSetValidationEnabledANGLE',
-                 'extensions': ['EGL_ANGLE_no_error'] }],
-  'arguments':
-      'EGLBoolean validationState' },
 { 'return_type': 'EGLBoolean',
   'versions': [{ 'name': 'eglStreamAttribKHR',
                  'extensions': ['EGL_KHR_stream'] }],
@@ -2923,7 +2918,6 @@ EGL_FUNCTIONS = [
 # EGL client extensions that may not add a function but are still queried.
 EGL_CLIENT_EXTENSIONS_EXTRA = [
   'EGL_ANGLE_display_power_preference',
-  'EGL_ANGLE_no_error',
   'EGL_ANGLE_platform_angle',
   'EGL_ANGLE_platform_angle_d3d',
   'EGL_ANGLE_platform_angle_device_id',
@@ -3632,7 +3626,7 @@ void DisplayExtensionsEGL::InitializeExtensionSettings(EGLDisplay display) {
     file.write('void NoContextHelper(const char* method_name) {\n')
     no_context_error = ('<< "Trying to call " << method_name << " without '
                         'current GL context"')
-    file.write('  NOTREACHED() %s;\n' % no_context_error)
+    file.write('  NOTREACHED_IN_MIGRATION() %s;\n' % no_context_error)
     file.write('  LOG(ERROR) %s;\n' % no_context_error)
     file.write('}\n')
     file.write('}  // namespace\n')
@@ -3755,7 +3749,7 @@ namespace gl {
   # GLProcAddress().
   file.write('\n')
   file.write('static void Mock%sInvalidFunction() {\n' % set_name.capitalize())
-  file.write('  NOTREACHED();\n')
+  file.write('  NOTREACHED_IN_MIGRATION();\n')
   file.write('}\n')
 
   # Write a function to lookup a mock GL function based on its name.

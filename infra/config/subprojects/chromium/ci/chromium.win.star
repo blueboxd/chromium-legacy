@@ -7,7 +7,7 @@ load("//lib/args.star", "args")
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builder_health_indicators.star", "health_spec")
-load("//lib/builders.star", "os", "reclient", "sheriff_rotations")
+load("//lib/builders.star", "os", "sheriff_rotations", "siso")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
@@ -16,6 +16,9 @@ load("//lib/targets.star", "targets")
 ci.defaults.set(
     executable = ci.DEFAULT_EXECUTABLE,
     builder_group = "chromium.win",
+    builder_config_settings = builder_config.ci_settings(
+        retry_failed_shards = True,
+    ),
     pool = ci.DEFAULT_POOL,
     cores = 8,
     os = os.WINDOWS_DEFAULT,
@@ -25,12 +28,11 @@ ci.defaults.set(
     contact_team_email = "chrome-desktop-engprod@google.com",
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     health_spec = health_spec.DEFAULT,
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
-    reclient_jobs = reclient.jobs.DEFAULT,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     shadow_service_account = ci.DEFAULT_SHADOW_SERVICE_ACCOUNT,
     siso_enabled = True,
-    siso_remote_jobs = reclient.jobs.DEFAULT,
+    siso_project = siso.project.DEFAULT_TRUSTED,
+    siso_remote_jobs = siso.remote_jobs.DEFAULT,
 )
 
 consoles.console_view(
@@ -275,9 +277,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-win-archive",
     ),
-    builder_config_settings = builder_config.ci_settings(
-        retry_failed_shards = True,
-    ),
     builderless = False,
     console_view_entry = consoles.console_view_entry(
         category = "release|tester",
@@ -307,9 +306,6 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.WIN,
         ),
         build_gs_bucket = "chromium-win-archive",
-    ),
-    builder_config_settings = builder_config.ci_settings(
-        retry_failed_shards = True,
     ),
     tree_closing = False,
     console_view_entry = consoles.console_view_entry(
@@ -390,9 +386,6 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-win-archive",
     ),
-    builder_config_settings = builder_config.ci_settings(
-        retry_failed_shards = True,
-    ),
     tree_closing = False,
     console_view_entry = consoles.console_view_entry(
         category = "release|tester",
@@ -438,6 +431,7 @@ ci.builder(
         short_name = "a64",
     ),
     contact_team_email = "chrome-desktop-engprod@google.com",
+    execution_timeout = 4 * time.hour,
 )
 
 ci.thin_tester(
@@ -460,9 +454,6 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.WIN,
         ),
         build_gs_bucket = "chromium-win-archive",
-    ),
-    builder_config_settings = builder_config.ci_settings(
-        retry_failed_shards = True,
     ),
     # TODO(crbug.com/40877793): Enable sheriff when stable and green.
     sheriff_rotations = args.ignore_default(None),

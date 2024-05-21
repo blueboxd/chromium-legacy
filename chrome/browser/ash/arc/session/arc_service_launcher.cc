@@ -17,7 +17,7 @@
 #include "ash/components/arc/clipboard/arc_clipboard_bridge.h"
 #include "ash/components/arc/compat_mode/arc_resize_lock_manager.h"
 #include "ash/components/arc/crash_collector/arc_crash_collector_bridge.h"
-#include "ash/components/arc/disk_quota/arc_disk_quota_bridge.h"
+#include "ash/components/arc/disk_space/arc_disk_space_bridge.h"
 #include "ash/components/arc/ime/arc_ime_service.h"
 #include "ash/components/arc/keyboard_shortcut/arc_keyboard_shortcut_bridge.h"
 #include "ash/components/arc/media_session/arc_media_session_bridge.h"
@@ -74,7 +74,6 @@
 #include "chrome/browser/ash/arc/intent_helper/chrome_arc_intent_helper_delegate.h"
 #include "chrome/browser/ash/arc/keymaster/arc_keymaster_bridge.h"
 #include "chrome/browser/ash/arc/keymint/arc_keymint_bridge.h"
-#include "chrome/browser/ash/arc/kiosk/arc_kiosk_bridge.h"
 #include "chrome/browser/ash/arc/metrics/arc_metrics_service_proxy.h"
 #include "chrome/browser/ash/arc/nearby_share/arc_nearby_share_bridge.h"
 #include "chrome/browser/ash/arc/net/browser_url_opener_impl.h"
@@ -259,8 +258,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcClipboardBridge::GetForBrowserContext(profile);
   ArcCrashCollectorBridge::GetForBrowserContext(profile);
   ArcDigitalGoodsBridge::GetForBrowserContext(profile);
-  ArcDiskQuotaBridge::GetForBrowserContext(profile)->SetAccountId(
-      multi_user_util::GetAccountIdFromProfile(profile));
+  ArcDiskSpaceBridge::GetForBrowserContext(profile);
   ArcEnterpriseReportingService::GetForBrowserContext(profile);
   ArcFileSystemBridge::GetForBrowserContext(profile);
   ArcFileSystemMounter::GetForBrowserContext(profile);
@@ -283,7 +281,6 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   } else {
     ArcKeymasterBridge::GetForBrowserContext(profile);
   }
-  ArcKioskBridge::GetForBrowserContext(profile);
   ArcMediaSessionBridge::GetForBrowserContext(profile);
   {
     auto* metrics_service = ArcMetricsService::GetForBrowserContext(profile);
@@ -455,7 +452,7 @@ void ArcServiceLauncher::EnsureFactoriesBuilt() {
   ArcClipboardBridge::EnsureFactoryBuilt();
   ArcCrashCollectorBridge::EnsureFactoryBuilt();
   ArcDigitalGoodsBridge::EnsureFactoryBuilt();
-  ArcDiskQuotaBridge::EnsureFactoryBuilt();
+  ArcDiskSpaceBridge::EnsureFactoryBuilt();
   ArcDocumentsProviderRootMapFactory::GetInstance();
   ArcEnterpriseReportingService::EnsureFactoryBuilt();
   ArcFileSystemMounter::EnsureFactoryBuilt();
@@ -472,7 +469,6 @@ void ArcServiceLauncher::EnsureFactoriesBuilt() {
   } else {
     ArcKeymasterBridge::EnsureFactoryBuilt();
   }
-  ArcKioskBridge::EnsureFactoryBuilt();
   ArcMediaSessionBridge::EnsureFactoryBuilt();
   ArcMemoryBridge::EnsureFactoryBuilt();
   ArcMemoryPressureBridge::EnsureFactoryBuilt();

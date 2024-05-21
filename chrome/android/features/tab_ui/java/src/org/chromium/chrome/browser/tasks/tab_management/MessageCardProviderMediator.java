@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType.ARCHIVED_TABS_MESSAGE;
 import static org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType.INCOGNITO_REAUTH_PROMO_MESSAGE;
 import static org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType.IPH;
 import static org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType.PRICE_MESSAGE;
-import static org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType.TAB_SUGGESTION;
 
 import android.content.Context;
 
@@ -111,12 +111,6 @@ public class MessageCardProviderMediator implements MessageService.MessageObserv
 
     private PropertyModel buildModel(int messageType, MessageService.MessageData data) {
         switch (messageType) {
-            case TAB_SUGGESTION:
-                assert data instanceof TabSuggestionMessageService.TabSuggestionMessageData;
-                return TabSuggestionMessageCardViewModel.create(
-                        mContext,
-                        this::invalidateShownMessage,
-                        (TabSuggestionMessageService.TabSuggestionMessageData) data);
             case IPH:
                 assert data instanceof IphMessageService.IphMessageData;
                 return IphMessageCardViewModel.create(
@@ -137,6 +131,10 @@ public class MessageCardProviderMediator implements MessageService.MessageObserv
                         mContext,
                         this::invalidateShownMessage,
                         (IncognitoReauthPromoMessageService.IncognitoReauthMessageData) data);
+            case ARCHIVED_TABS_MESSAGE:
+                assert data instanceof ArchivedTabsMessageService.ArchivedTabsMessageData;
+                return CustomMessageCardViewModel.create(
+                        ((ArchivedTabsMessageService.ArchivedTabsMessageData) data).getProvider());
             default:
                 return new PropertyModel.Builder(MessageCardViewProperties.ALL_KEYS)
                         .with(MessageCardViewProperties.IS_INCOGNITO, false)
@@ -145,6 +143,7 @@ public class MessageCardProviderMediator implements MessageService.MessageObserv
     }
 
     // MessageObserver implementations.
+
     @Override
     public void messageReady(
             @MessageService.MessageType int type, MessageService.MessageData data) {

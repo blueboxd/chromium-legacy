@@ -50,10 +50,12 @@ class FakeRestrictedUDPSocket
               const net::HostPortPair& dest_addr,
               net::DnsQueryType dns_query_type,
               SendToCallback callback) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
-  void ReceiveMore(uint32_t num_additional_datagrams) override { NOTREACHED(); }
+  void ReceiveMore(uint32_t num_additional_datagrams) override {
+    NOTREACHED_IN_MIGRATION();
+  }
 
   const Vector<uint8_t>& GetReceivedData() const { return data_; }
   void Trace(cppgc::Visitor* visitor) const {}

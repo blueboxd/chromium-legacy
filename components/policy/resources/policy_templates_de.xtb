@@ -4366,6 +4366,15 @@ Unter <ph name="MAC_OS_NAME" /> steht diese Richtlinie nur bei Instanzen zur Ver
 <translation id="4483738129334574255">Easter-Egg-Dinosaurierspiel auf registrierten <ph name="PRODUCT_OS_NAME" />-Geräten deaktivieren, aber auf anderen Geräten aktivieren</translation>
 <translation id="4484515651939984695">Gibt an, wie lange (in Sekunden) ein Übertragungsgerät, das mit einem Zugriffscode oder QR-Code ausgewählt wurde, im <ph name="PRODUCT_NAME" />-Menü für Übertragungsgeräte angezeigt wird.</translation>
 <translation id="4485425108474077672">URL für "Neuer Tab"-Seite konfigurieren</translation>
+<translation id="4488959486611931919">Hinweis: Seit Chrome diese Cookies ab M118 standardmäßig blockiert, wurde keine Websitebeschädigung gemeldet. Daher kann diese Funktion ab M127 nicht konfiguriert werden und diese Richtlinie ist dann nicht mehr wirksam.
+
+Durch diese Richtlinie wird vorübergehend die Zustimmung zu Änderungen am Umgang von Chrome mit Cookies widerrufen, die per JavaScript mit bestimmten Steuerzeichen festgelegt werden (NULL, Zeilenumbruch und Zeilenvorschub).
+Bisher führten diese Zeichen in einem Cookie-String dazu, dass der String abgeschnitten, aber dennoch festgelegt wurde.
+Jetzt führen diese Zeichen dazu, dass der gesamte Cookie-String ignoriert wird.
+
+Wenn diese Richtlinie auf „true“ gesetzt ist (Standardeinstellung), ist das neue Verhalten aktiviert.
+
+Wenn diese Richtlinie auf „false“ gesetzt ist, ist das alte Verhalten aktiviert.</translation>
 <translation id="4490420545181481759">Mit X.509-Zertifikaten können Einschränkungen wie Namensbeschränkungen in Erweiterungen in das Zertifikat codiert werden. RFC 5280 gibt an, dass die Durchsetzung solcher Einschränkungen für Trust-Anchor-Zertifikate optional ist. Ab <ph name="PRODUCT_NAME" /> 112 werden solche Einschränkungen in Zertifikaten, die aus dem Shop für Plattformzertifikate geladen werden, erzwungen.
 
 Diese Richtlinie ist ein vorübergehender Deaktivierungsmechanismus für den Fall, dass Unternehmen Probleme mit den in ihre privaten Root-Zertifikate codierten Einschränkungen haben. Diese Richtlinie kann dann verwendet werden, um die Erzwingung der Einschränkungen vorübergehend zu deaktivieren und die Probleme mit dem Zertifikat zu beheben.
@@ -5366,6 +5375,15 @@ Ist die Richtlinie deaktiviert, können der Browser‑ und der Downloadverlauf n
 <translation id="5323200200131319468">Gesprochenes Feedback auf dem Anmeldebildschirm aktivieren</translation>
 <translation id="5323271643727095577">Dialogfeld zum Abbrechen nicht anzeigen, wenn „event.preventDefault()“ für ein „beforeunload“-Ereignis aufgerufen wird. Dialogfeld zum Abbrechen anzeigen, wenn „beforeunload event.returnValue“ der leere String für ein „beforeunload“-Ereignis ist.</translation>
 <translation id="5324430722441910403">Einstellungen für die Websitesuche</translation>
+<translation id="5326431956495937408">Wenn die Richtlinie aktiviert ist, können Nutzer ihre Passwörter gemäß den Familiendiensten an Familienmitglieder senden und von ihnen empfangen.
+Ist sie aktiviert oder nicht konfiguriert, gibt es im Passwortmanager eine Schaltfläche, über die ein Passwort gesendet werden kann.
+Empfangene Passwörter werden im Konto des Nutzers gespeichert und sind im Passwortmanager verfügbar.
+
+Ist die Richtlinie deaktiviert, können Nutzer keine Passwörter vom Passwortmanager aus an andere Nutzer senden und auch keine Passwörter von anderen Nutzern empfangen.
+
+Die Funktion ist nicht verfügbar, wenn die Synchronisierung von Passwörtern deaktiviert ist (entweder über die Nutzereinstellungen oder wenn die Richtlinie „<ph name="SYNC_DISABLED" />“ aktiviert ist).
+
+Verwaltete Konten können keiner Familiengruppe beitreten oder eine erstellen und können daher keine Passwörter teilen.</translation>
 <translation id="532848608876725157">DoH-Modus mit unsicherem Fallback-Verhalten aktivieren</translation>
 <translation id="5328965694451556034">Anmeldung/Abmeldung melden</translation>
 <translation id="5329018127554115226">Der Modus für hohe Effizienz wird deaktiviert.</translation>
@@ -7065,13 +7083,6 @@ Hinweis: Durch einen Neustart oder eine Abmeldung wird der Cache geleert.</trans
 <translation id="66265932317331474">CPU-Informationen ausgeben</translation>
 <translation id="6628120204569232711">Speicherstatus melden</translation>
 <translation id="662991036483361836">Nutzer dürfen Nearby Share nicht aktivieren</translation>
-<translation id="6634974629075330608">Durch diese Richtlinie wird vorübergehend die Zustimmung zu Änderungen am Umgang von Chrome mit Cookies widerrufen, die per JavaScript mit bestimmten Steuerzeichen festgelegt werden (NULL, Zeilenumbruch und Zeilenvorschub).
-Bisher führten diese Zeichen in einem Cookie-String dazu, dass der String abgeschnitten, aber dennoch festgelegt wurde.
-Jetzt führen diese Zeichen dazu, dass der gesamte Cookie-String ignoriert wird.
-
-Wenn diese Richtlinie auf „true“ gesetzt ist (Standardeinstellung), ist das neue Verhalten aktiviert.
-
-Wenn diese Richtlinie auf „false“ gesetzt ist, ist das alte Verhalten aktiviert.</translation>
 <translation id="663685822663765995">Farbdruck einschränken</translation>
 <translation id="6640355849038068978">Wenn diese Einstellung aktiviert ist, können Nutzer die App „Eche“ starten, z. B. mit einem Klick auf eine Phone Hub-Benachrichtigung.
 
@@ -7828,6 +7839,13 @@ Hinweis: Wenn du diese Richtlinie verwendest, um die Zeitzone automatisch zu erm
       Genaue Informationen zu gültigen <ph name="URL_LABEL" />-Mustern findest du unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="719398790886719721">Root-Zugriff auf virtuelle Maschinen mit Linux deaktivieren</translation>
 <translation id="7194407337890404814">Name der Standardsuchmaschine</translation>
+<translation id="7196336906814426783">Diese Richtlinie legt eine Reihe von wöchentlichen Intervallen zur Planung des automatischen Ruhemodus fest. Zu Beginn eines Intervalls wechselt das <ph name="PRODUCT_OS_NAME" />-Gerät in den Ruhemodus und wird wieder aktiv, wenn das Intervall endet.
+
+Zeitpläne mit Intervallen, die sich überschneiden, werden nicht unterstützt. Diese Richtlinie wird nicht angewendet, wenn sie zwei Intervalle enthält, die sich überschneiden.
+
+<ph name="PRODUCT_OS_NAME" />-Geräte verwenden für diese Intervalle die Systemzeitzone.
+
+Wichtiger Hinweis: Die durch diese Richtlinie festgelegten Zeitpläne werden möglicherweise nicht wie erwartet ausgeführt, wenn sie mit anderen Einstellungen für die Energieverwaltung in Konflikt stehen, z. B. <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />. Diese Einstellungen müssen so konfiguriert sein, dass die Intervalle zum geplanten Ruhemodus ausgeführt werden können.</translation>
 <translation id="7198134478421755850">Erweiterung</translation>
 <translation id="7199304109870655950">Konfiguriert die Optionen für den Remotezugriff im Chrome Remote Desktop-Host.
 

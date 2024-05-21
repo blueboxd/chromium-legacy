@@ -202,6 +202,7 @@ ComposeSession::ComposeSession(
     base::Token session_id,
     InnerTextProvider* inner_text,
     autofill::FieldRendererId node_id,
+    Observer* observer,
     ComposeCallback callback)
     : executor_(executor),
       handler_receiver_(this),
@@ -214,6 +215,7 @@ ComposeSession::ComposeSession(
       close_reason_(compose::ComposeSessionCloseReason::kEndedImplicitly),
       final_status_(optimization_guide::proto::FinalStatus::STATUS_UNSPECIFIED),
       web_contents_(web_contents),
+      observer_(observer),
       collect_inner_text_(
           base::FeatureList::IsEnabled(compose::features::kComposeInnerText)),
       inner_text_caller_(inner_text),
@@ -260,6 +262,10 @@ base::optional_ref<ComposeState> ComposeSession::CurrentState(int offset) {
 ComposeSession::~ComposeSession() {
   std::optional<compose::EvalLocation> eval_location =
       compose::GetEvalLocationFromEvents(session_events_);
+
+  if (observer_) {
+    observer_->OnSessionComplete(node_id_, close_reason_, session_events_);
+  }
 
   if (session_events_.fre_dialog_shown_count > 0 &&
       (!fre_complete_ || session_events_.fre_completed_in_session)) {
@@ -620,7 +626,8 @@ void ComposeSession::ModelExecutionComplete(
     result.log_entry->quality_data<optimization_guide::ComposeFeatureTypeMap>()
         ->set_was_generated_via_edit(was_input_edited);
     result.log_entry->quality_data<optimization_guide::ComposeFeatureTypeMap>()
-        ->set_started_with_proactive_nudge(started_with_proactive_nudge_);
+        ->set_started_with_proactive_nudge(
+            session_events_.started_with_proactive_nudge);
     result.log_entry->quality_data<optimization_guide::ComposeFeatureTypeMap>()
         ->set_request_latency_ms(request_delta.InMilliseconds());
     optimization_guide::proto::Int128* token =

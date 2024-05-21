@@ -65,7 +65,9 @@ class Delegate : public TurnSyncOnHelper::Delegate {
   ~Delegate() override = default;
 
   // TurnSyncOnHelper::Delegate:
-  void ShowLoginError(const SigninUIError& error) override { NOTREACHED(); }
+  void ShowLoginError(const SigninUIError& error) override {
+    NOTREACHED_IN_MIGRATION();
+  }
   void ShowMergeSyncDataConfirmation(
       const std::string& previous_email,
       const std::string& new_email,
@@ -86,8 +88,10 @@ class Delegate : public TurnSyncOnHelper::Delegate {
       SyncConfirmationCallback callback) override {
     AdvanceFlowOrCapture(BlockingStep::kSyncDisabled, std::move(callback));
   }
-  void ShowSyncSettings() override { NOTREACHED(); }
-  void SwitchToProfile(Profile* new_profile) override { NOTREACHED(); }
+  void ShowSyncSettings() override { NOTREACHED_IN_MIGRATION(); }
+  void SwitchToProfile(Profile* new_profile) override {
+    NOTREACHED_IN_MIGRATION();
+  }
 
   BlockingStep blocking_step() const { return blocking_step_; }
 
@@ -116,7 +120,7 @@ class Delegate : public TurnSyncOnHelper::Delegate {
 
     switch (blocking_step) {
       case BlockingStep::kNone:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
       case BlockingStep::kMergeData:
         ASSERT_TRUE(choices_.merge_data_choice.has_value());
@@ -145,7 +149,7 @@ class Delegate : public TurnSyncOnHelper::Delegate {
   void AdvanceFlowOrCapture(BlockingStep step, CallbackVariant callback) {
     switch (step) {
       case BlockingStep::kNone:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
       case BlockingStep::kMergeData:
         if (!choices_.merge_data_choice.has_value()) {
@@ -341,7 +345,7 @@ IN_PROC_BROWSER_TEST_P(TurnSyncOnHelperBrowserTestWithParam,
     case TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT_ON_WEB_ONLY:
       // This case is handled in the TurnSyncOnHelperBrowserTestWithUnoDesktop
       // test suite, since this mode is used only when Uno Desktop is enabled.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 }
 

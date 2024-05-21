@@ -43,7 +43,7 @@
 #include "chrome/browser/ash/fileapi/recent_model_factory.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
-#include "chrome/browser/ash/policy/local_user_files/policy_utils.h"
+#include "chrome/browser/ash/policy/skyvault/policy_utils.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/upload_office_to_cloud/upload_office_to_cloud.h"
@@ -205,7 +205,7 @@ bool IsAllowedSource(storage::FileSystemType type,
                      fmp::SourceRestriction restriction) {
   switch (restriction) {
     case fmp::SourceRestriction::kNone:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return false;
 
     case fmp::SourceRestriction::kAnySource:
@@ -358,7 +358,7 @@ ExtensionFunction::ResponseAction FileManagerPrivateZoomFunction::Run() {
       zoom_type = content::PAGE_ZOOM_RESET;
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return RespondNow(Error(kUnknownErrorDoNotUse));
   }
   zoom::PageZoom::Zoom(GetSenderWebContents(), zoom_type);
@@ -427,7 +427,7 @@ FileManagerPrivateOpenInspectorFunction::Run() {
       }
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return RespondNow(Error(
           base::StringPrintf("Unexpected inspection type(%d) is specified.",
                              static_cast<int>(params->type))));
@@ -911,7 +911,7 @@ void FileManagerPrivateInternalInstallLinuxPackageFunction::
       response = fmp::InstallLinuxPackageStatus::kInstallAlreadyActive;
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
   Respond(ArgumentList(fmpi::InstallLinuxPackage::Results::Create(response)));
 }
@@ -1033,16 +1033,22 @@ FileManagerPrivateInternalGetRecentFilesFunction::Run() {
     return RespondNow(Error("Cannot convert category to file type"));
   }
 
+  ash::RecentModelOptions options = {
+      .now_delta = base::Days(params->cutoff_days),
+      .max_files = 1000u,
+      .invalidate_cache = params->invalidate_cache,
+      .file_type = file_type,
+  };
+
   if (base::FeatureList::IsEnabled(ash::features::kFSPsInRecents)) {
     // If File System Provider is enabled, we set the maximum latency to be 3s.
     // This is based on "User Preference and Search Engine Latency" paper, which
     // stated that "[...] once latency exceeds 3 seconds for the slower engine,
     // users are 1.5 times as likely to choose the faster engine."
-    model->SetScanTimeout(base::Milliseconds(3000));
+    options.scan_timeout = base::Milliseconds(3000);
   }
   model->GetRecentFiles(
-      file_system_context.get(), source_url(), params->query,
-      base::Days(params->cutoff_days), file_type, params->invalidate_cache,
+      file_system_context.get(), source_url(), params->query, options,
       base::BindOnce(
           &FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles,
           this, params->restriction));

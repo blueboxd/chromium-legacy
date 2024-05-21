@@ -54,6 +54,7 @@ void PasswordStoreAndroidLocalBackend::InitBackend(
 
 void PasswordStoreAndroidLocalBackend::Shutdown(
     base::OnceClosure shutdown_completed) {
+  weak_ptr_factory_.InvalidateWeakPtrs();
   PasswordStoreAndroidBackend::Shutdown(std::move(shutdown_completed));
 }
 
@@ -80,7 +81,7 @@ void PasswordStoreAndroidLocalBackend::GetAutofillableLoginsAsync(
 void PasswordStoreAndroidLocalBackend::GetAllLoginsForAccountAsync(
     std::string account,
     LoginsOrErrorReply callback) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void PasswordStoreAndroidLocalBackend::FillMatchingLoginsAsync(

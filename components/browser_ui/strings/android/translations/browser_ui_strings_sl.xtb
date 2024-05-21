@@ -68,7 +68,6 @@
 <translation id="2241587408274973373">Kartice strani s povezavami</translation>
 <translation id="2241634353105152135">Samo enkrat</translation>
 <translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> Odstrani</translation>
-<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{Blokirani so za 1 spletno mesto}one{Blokirani so za # spletno mesto}two{Blokirani so za # spletni mesti}few{Blokirani so za # spletna mesta}other{Blokirani so za # spletnih mest}}</translation>
 <translation id="228293613124499805">Večina spletnih mest, ki jih obiščete, v napravo verjetno shrani podatke, pogosto zaradi izboljšanja izkušnje, in sicer tako, da shrani nastavitve ali podatke, ki jih razkrijete spletnemu mestu. Priporočamo, da pustite to nastavitev vklopljeno.</translation>
 <translation id="2289270750774289114">Vprašaj, ko želi spletno mesto odkrivati naprave Bluetooth v bližini (priporočljivo)</translation>
 <translation id="2315043854645842844">Operacijski sistem ne podpira izbire potrdila pri odjemalcu.</translation>
@@ -305,6 +304,7 @@
 <translation id="6015775454662021376">Nadziranje dostopa spletnega mesta do naprave</translation>
 <translation id="6040143037577758943">Zapri</translation>
 <translation id="6042308850641462728">Več</translation>
+<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Zadnji zavihek</translation>
 <translation id="6064125863973209585">Dokončani prenosi</translation>
 <translation id="6071501408666570960">Morda ste odjavljeni s tega spletnega mesta.</translation>
 <translation id="6120483543004435978">Če je ta možnost vklopljena, spletna mesta lahko vprašajo, ali aktivno uporabljate napravo. Če je ta možnost izklopljena, spletna mesta ne smejo vprašati, ali aktivno uporabljate napravo.</translation>
@@ -426,6 +426,7 @@
 <translation id="7986741934819883144">Izberite stik</translation>
 <translation id="7990211076305263060">Če je ta možnost vklopljena, spletna mesta lahko zahtevajo uporabo mikrofona. Če je ta možnost izklopljena, spletna mesta ne smejo uporabljati mikrofona.</translation>
 <translation id="8007176423574883786">Izklopljeno za to napravo</translation>
+<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Iz naprave <ph name="FROM_DEVICE" /></translation>
 <translation id="802154636333426148">Prenos ni uspel</translation>
 <translation id="8042586301629853791">Razvrsti po:</translation>
 <translation id="8067883171444229417">Predvajanje videa</translation>
@@ -480,7 +481,6 @@
 <translation id="8721719390026067591">Če je ta možnost vklopljena, spletna mesta lahko zahtevajo iskanje naprav Bluetooth. Če je ta možnost izklopljena, spletna mesta ne smejo iskati naprav Bluetooth.</translation>
 <translation id="8725066075913043281">Poskusite znova</translation>
 <translation id="8730621377337864115">Končano</translation>
-<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{Dovoljeni so za 1 spletno mesto}one{Dovoljeni so za # spletno mesto}two{Dovoljeni so za # spletni mesti}few{Dovoljeni so za # spletna mesta}other{Dovoljeni so za # spletnih mest}}</translation>
 <translation id="8751914237388039244">Izberite sliko</translation>
 <translation id="8800034312320686233">Ali spletno mesto ne deluje?</translation>
 <translation id="8801436777607969138">Preprečevanje JavaScripta za določeno spletno mesto.</translation>

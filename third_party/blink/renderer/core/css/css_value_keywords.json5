@@ -161,6 +161,7 @@
     "cap-height",
     "ch-width",
     "ic-width",
+    "ic-height",
     // from-font
 
     //
@@ -286,6 +287,12 @@
     // <https://github.com/w3c/csswg-drafts/issues/7522>
     "-internal-spelling-error-color",
     "-internal-grammar-error-color",
+    // ::search-text
+    // <https://github.com/w3c/csswg-drafts/issues/10329>
+    "-internal-search-color",
+    "-internal-search-text-color",
+    "-internal-current-search-color",
+    "-internal-current-search-text-color",
 
     //
     // "Extended" named colors
@@ -1739,7 +1746,7 @@
     "self-inline",
 
     // position-anchor
-    "implicit",
+    // auto,
     // none,
 
     // animation-[end-]delay
@@ -1880,5 +1887,8 @@
     // container-progress()
     "container-progress",
     "of",
+
+    // @supports blink-feature(RuntimeEnabledFeatureName)
+    "blink-feature",
   ],
 }

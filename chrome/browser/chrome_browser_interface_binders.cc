@@ -160,6 +160,7 @@
 #include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters.mojom.h"
 #include "chrome/browser/new_tab_page/modules/photos/photos.mojom.h"
 #include "chrome/browser/new_tab_page/modules/recipes/recipes.mojom.h"
+#include "chrome/browser/new_tab_page/modules/v2/calendar/google_calendar.mojom.h"
 #include "chrome/browser/new_tab_page/modules/v2/history_clusters/history_clusters_v2.mojom.h"
 #include "chrome/browser/new_tab_page/modules/v2/most_relevant_tab_resumption/most_relevant_tab_resumption.mojom.h"
 #include "chrome/browser/new_tab_page/modules/v2/tab_resumption/tab_resumption.mojom.h"
@@ -1282,7 +1283,7 @@ void PopulateChromeWebUIFrameBinders(
       map);
 #endif  // !defined(OFFICIAL_BUILD)
 
-  if (IsCartModuleEnabled() && customize_chrome::IsSidePanelEnabled()) {
+  if (IsCartModuleEnabled()) {
     RegisterWebUIControllerInterfaceBinder<chrome_cart::mojom::CartHandler,
                                            NewTabPageUI, CustomizeChromeUI>(
         map);
@@ -1335,6 +1336,11 @@ void PopulateChromeWebUIFrameBinders(
         map);
   }
 
+  if (base::FeatureList::IsEnabled(ntp_features::kNtpCalendarModule)) {
+    RegisterWebUIControllerInterfaceBinder<
+        ntp::calendar::mojom::GoogleCalendarPageHandler, NewTabPageUI>(map);
+  }
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (ash::features::IsBluetoothDisconnectWarningEnabled()) {
     RegisterWebUIControllerInterfaceBinder<
@@ -1361,25 +1367,23 @@ void PopulateChromeWebUIFrameBinders(
         PerformanceSidePanelUI>(map);
   }
 
-  if (customize_chrome::IsSidePanelEnabled()) {
+  RegisterWebUIControllerInterfaceBinder<
+      side_panel::mojom::CustomizeChromePageHandlerFactory, CustomizeChromeUI>(
+      map);
+
+  if (base::FeatureList::IsEnabled(
+          ntp_features::kCustomizeChromeWallpaperSearch) &&
+      base::FeatureList::IsEnabled(
+          optimization_guide::features::kOptimizationGuideModelExecution)) {
     RegisterWebUIControllerInterfaceBinder<
-        side_panel::mojom::CustomizeChromePageHandlerFactory,
+        side_panel::customize_chrome::mojom::WallpaperSearchHandlerFactory,
         CustomizeChromeUI>(map);
+  }
 
-    if (base::FeatureList::IsEnabled(
-            ntp_features::kCustomizeChromeWallpaperSearch) &&
-        base::FeatureList::IsEnabled(
-            optimization_guide::features::kOptimizationGuideModelExecution)) {
-      RegisterWebUIControllerInterfaceBinder<
-          side_panel::customize_chrome::mojom::WallpaperSearchHandlerFactory,
-          CustomizeChromeUI>(map);
-    }
-
-    if (features::IsToolbarPinningEnabled()) {
-      RegisterWebUIControllerInterfaceBinder<
-          side_panel::customize_chrome::mojom::CustomizeToolbarHandlerFactory,
-          CustomizeChromeUI>(map);
-    }
+  if (features::IsToolbarPinningEnabled()) {
+    RegisterWebUIControllerInterfaceBinder<
+        side_panel::customize_chrome::mojom::CustomizeToolbarHandlerFactory,
+        CustomizeChromeUI>(map);
   }
 
   if (user_notes::IsUserNotesEnabled()) {

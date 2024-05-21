@@ -750,7 +750,7 @@ void HostProcess::SetState(HostState target_state) {
       break;
     case HOST_STOPPED:  // HOST_STOPPED is a terminal state.
     default:
-      NOTREACHED() << state_ << " -> " << target_state;
+      NOTREACHED_IN_MIGRATION() << state_ << " -> " << target_state;
       break;
   }
   state_ = target_state;
@@ -887,7 +887,8 @@ void HostProcess::CreateAuthenticatorFactory() {
 
 // IPC::Listener implementation.
 bool HostProcess::OnMessageReceived(const IPC::Message& message) {
-  NOTREACHED() << "Received unexpected IPC type: " << message.type();
+  NOTREACHED_IN_MIGRATION()
+      << "Received unexpected IPC type: " << message.type();
   return false;
 }
 
@@ -1546,7 +1547,7 @@ bool HostProcess::OnHostTokenUrlPolicyUpdate(
       // Unreachable, because PolicyWatcher::OnPolicyUpdated() enforces that
       // the policy is well-formed (including checks specific to
       // ThirdPartyAuthConfig), before notifying of policy updates.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return false;
   }
 }
@@ -2081,7 +2082,7 @@ void HostProcess::OnHostOfflineReasonAck(bool success) {
     context_->ui_task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&HostProcess::ShutdownOnUiThread, this));
   } else {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 }
 

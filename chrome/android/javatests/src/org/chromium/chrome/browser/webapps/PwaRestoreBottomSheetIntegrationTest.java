@@ -9,6 +9,8 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
+import static androidx.test.espresso.matcher.ViewMatchers.isNotEnabled;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
@@ -17,6 +19,7 @@ import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 
+import androidx.test.espresso.Espresso;
 import androidx.test.filters.SmallTest;
 
 import org.junit.After;
@@ -237,6 +240,38 @@ public class PwaRestoreBottomSheetIntegrationTest {
     @Test
     @SmallTest
     @Feature({"PwaRestore"})
+    public void testBackButton() {
+        // This test opens the dialog, clicks the Review button to expand the bottom sheet dialog
+        // and then presses the Back in the OS twice to see what happens (first click should
+        // navigate back to the initial dialog state, second click closes the dialog).
+
+        Assert.assertTrue(setTestAppsForRestoring(sDefaultApps, sDefaultLastUsed));
+
+        // Ensure the promo dialog shows.
+        setAppsAvailableAndPromoStage(true, DisplayStage.SHOW_PROMO);
+
+        mActivityTestRule.startMainActivityFromLauncher();
+
+        // Verify we're in initial state for the dialog.
+        assertDialogShown(true);
+        onViewWaiting(withText("Restore your web apps")).check(matches(isDisplayed()));
+
+        // Go to PWA list mode.
+        onView(withId(R.id.review_button)).perform(click());
+        onViewWaiting(withText("Web apps used in the last month")).check(matches(isDisplayed()));
+
+        // Pressing the Back button in Android once should bring us to the initial dialog state.
+        Espresso.pressBack();
+        onViewWaiting(withText("Restore your web apps")).check(matches(isDisplayed()));
+
+        // Pressing the Back button again should close the bottom sheet.
+        Espresso.pressBack();
+        assertDialogShown(false);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"PwaRestore"})
     public void testClickForwarding() {
         Assert.assertTrue(setTestAppsForRestoring(sDefaultApps, sDefaultLastUsed));
 
@@ -270,6 +305,10 @@ public class PwaRestoreBottomSheetIntegrationTest {
         assertIsComboCheckedAtIndex(1, true);
         assertIsComboCheckedAtIndex(2, true);
 
+        // Deselect and Restore buttons should start in enabled state.
+        onView(withId(R.id.deselect_button)).check(matches(isEnabled()));
+        onView(withId(R.id.restore_button)).check(matches(isEnabled()));
+
         // Now verify the Deselect function leaves everything in unchecked state.
         onView(withId(R.id.deselect_button)).check(matches(isDisplayed()));
         onView(withId(R.id.deselect_button)).perform(click());
@@ -277,10 +316,26 @@ public class PwaRestoreBottomSheetIntegrationTest {
         assertIsComboCheckedAtIndex(1, false);
         assertIsComboCheckedAtIndex(2, false);
 
+        // Deselect and Restore buttons should now be disabled (nothing to act on).
+        onView(withId(R.id.deselect_button)).check(matches(isNotEnabled()));
+        onView(withId(R.id.restore_button)).check(matches(isNotEnabled()));
+
         // Ensure one entry gets checked.
         onView(withText("App 1")).check(matches(isDisplayed()));
         onView(withText("App 1")).perform(click());
         assertIsComboCheckedAtIndex(1, true);
+
+        // Deselect and Restore buttons become enabled since we have something to act on.
+        onView(withId(R.id.deselect_button)).check(matches(isEnabled()));
+        onView(withId(R.id.restore_button)).check(matches(isEnabled()));
+
+        // Ensure same entry gets unchecked again.
+        onView(withText("App 1")).perform(click());
+        assertIsComboCheckedAtIndex(1, false);
+
+        // Deselect and Restore buttons become disabled since no item remains selected.
+        onView(withId(R.id.deselect_button)).check(matches(isNotEnabled()));
+        onView(withId(R.id.restore_button)).check(matches(isNotEnabled()));
     }
 
     @Test

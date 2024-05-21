@@ -32,7 +32,6 @@ BASE_DECLARE_FEATURE(kWebViewInvokeZoomPickerOnGSU);
 // Feature parameter for `network::features::kMaskedDomainList` which is
 // defined in //services/network.
 extern const base::FeatureParam<int> kWebViewIpProtectionExclusionCriteria;
-BASE_DECLARE_FEATURE(kWebViewJavaJsBridgeMojo);
 BASE_DECLARE_FEATURE(kWebViewMediaIntegrityApi);
 BASE_DECLARE_FEATURE(kWebViewMediaIntegrityApiBlinkExtension);
 BASE_DECLARE_FEATURE(kWebViewMixedContentAutoupgrades);
@@ -45,19 +44,18 @@ BASE_DECLARE_FEATURE(kWebViewSuppressDifferentOriginSubframeJSDialogs);
 BASE_DECLARE_FEATURE(kWebViewTestFeature);
 BASE_DECLARE_FEATURE(kWebViewUseMetricsUploadService);
 BASE_DECLARE_FEATURE(kWebViewUseMetricsUploadServiceOnlySdkRuntime);
-BASE_DECLARE_FEATURE(kWebViewPrerender2);
 BASE_DECLARE_FEATURE(kWebViewPropagateNetworkChangeSignals);
 BASE_DECLARE_FEATURE(kWebViewUnreducedProductVersion);
 BASE_DECLARE_FEATURE(kWebViewWideColorGamutSupport);
 BASE_DECLARE_FEATURE(kWebViewXRequestedWithHeaderControl);
 extern const base::FeatureParam<int> kWebViewXRequestedWithHeaderMode;
-BASE_DECLARE_FEATURE(kWebViewXRequestedWithHeaderManifestAllowList);
 BASE_DECLARE_FEATURE(kWebViewUseInitialNetworkStateAtStartup);
 BASE_DECLARE_FEATURE(kWebViewZoomKeyboardShortcuts);
 BASE_DECLARE_FEATURE(kWebViewReduceUAAndroidVersionDeviceModel);
 BASE_DECLARE_FEATURE(kWebViewEnableCrash);
 BASE_DECLARE_FEATURE(kWebViewAsyncDns);
 BASE_DECLARE_FEATURE(kWebViewPreloadClasses);
+BASE_DECLARE_FEATURE(kWebViewDoNotSendAccessibilityEventsOnGSU);
 
 }  // namespace features
 }  // namespace android_webview

@@ -37,7 +37,14 @@ void BirchRanker::RankCalendarItems(std::vector<BirchCalendarItem>* items) {
   bool found_tomorrow_event = false;
 
   for (BirchCalendarItem& item : *items) {
-    // Ongoing events have priority in the morning.
+    // All-day events have low priority. We only show all-day events from today
+    // (e.g. ongoing all-day events).
+    if (item.all_day_event() && IsOngoingEvent(item)) {
+      item.set_ranking(36.f);
+      continue;
+    }
+
+    // Non-all-day ongoing events have priority in the morning.
     if (is_morning && IsOngoingEvent(item)) {
       item.set_ranking(6.f);
       continue;
@@ -50,7 +57,7 @@ void BirchRanker::RankCalendarItems(std::vector<BirchCalendarItem>* items) {
       continue;
     }
 
-    // Ongoing events have medium priority all day.
+    // Non-all-day ongoing events have medium priority all day.
     if (IsOngoingEvent(item)) {
       item.set_ranking(9.f);
       continue;
@@ -160,6 +167,31 @@ void BirchRanker::RankRecentTabItems(std::vector<BirchTabItem>* items) {
     // Desktop items from the last day have low priority.
     if (is_desktop && now_ - base::Days(1) < item.timestamp()) {
       item.set_ranking(30.f);
+      continue;
+    }
+  }
+}
+
+void BirchRanker::RankSelfShareItems(std::vector<BirchSelfShareItem>* items) {
+  CHECK(items);
+
+  // Sort the self share items by their shared time, descending.
+  std::sort(items->begin(), items->end(),
+            [](const BirchSelfShareItem& a, const BirchSelfShareItem& b) {
+              return b.shared_time() < a.shared_time();
+            });
+
+  for (BirchSelfShareItem& item : *items) {
+    if (now_ - base::Hours(1) < item.shared_time()) {
+      item.set_ranking(11.f);
+      continue;
+    }
+    if (now_ - base::Days(1) < item.shared_time()) {
+      item.set_ranking(27.f);
+      continue;
+    }
+    if (now_ - base::Days(2) < item.shared_time()) {
+      item.set_ranking(37.f);
       continue;
     }
   }

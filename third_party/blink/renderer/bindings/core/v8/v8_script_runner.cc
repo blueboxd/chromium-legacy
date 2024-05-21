@@ -284,12 +284,12 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
       return script;
     }
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 
   // All switch branches should return and we should never get here.
   // But some compilers aren't sure, hence this default.
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return v8::MaybeLocal<v8::Script>();
 }
 
@@ -438,7 +438,7 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
         break;
       }
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
     }
   }
 
@@ -667,7 +667,12 @@ ScriptEvaluationResult V8ScriptRunner::CompileAndRunScript(
             classic_script->SourceUrl(), classic_script->StartPosition(),
             produce_cache_options);
       }
-      if (compile_options == v8::ScriptCompiler::kProduceCompileHints) {
+
+      // `SharedStorageWorkletGlobalScope` has a out-of-process worklet
+      // architecture that does not have a `page` associated.
+      // TODO(crbug.com/340920456): Figure out what should be done here.
+      if (compile_options == v8::ScriptCompiler::kProduceCompileHints &&
+          !execution_context->IsSharedStorageWorkletGlobalScope()) {
         CHECK(page);
         CHECK(frame);
         // We can produce both crowdsourced and local compile hints at the

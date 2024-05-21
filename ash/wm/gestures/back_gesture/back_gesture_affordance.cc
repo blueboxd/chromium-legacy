@@ -307,7 +307,7 @@ void BackGestureAffordance::Abort() {
 }
 
 void BackGestureAffordance::Complete() {
-  DCHECK_EQ(State::DRAGGING, state_);
+  CHECK_EQ(State::DRAGGING, state_);
   state_ = State::COMPLETING;
 
   animation_ = std::make_unique<gfx::LinearAnimation>(
@@ -473,7 +473,7 @@ void BackGestureAffordance::AnimationProgressed(
     const gfx::Animation* animation) {
   switch (state_) {
     case State::DRAGGING:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
     case State::ABORTING:
       SetAbortProgress(animation->GetCurrentValue());
@@ -485,7 +485,7 @@ void BackGestureAffordance::AnimationProgressed(
 }
 
 void BackGestureAffordance::AnimationCanceled(const gfx::Animation* animation) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 }  // namespace ash

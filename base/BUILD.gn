@@ -4288,6 +4288,7 @@ if (enable_nocompile_tests) {
       "strings/cstring_view_nocompile.nc",
       "strings/string_piece_nocompile.nc",
       "strings/stringprintf_nocompile.nc",
+      "synchronization/lock_nocompile.nc",
       "task/bind_post_task_nocompile.nc",
       "task/task_traits_nocompile.nc",
       "test/bind_test_nocompile.nc",
@@ -4298,10 +4299,7 @@ if (enable_nocompile_tests) {
       "unsafe_buffers_nocompile.nc",
       "values_nocompile.nc",
     ]
-    deps = [
-      ":base",
-      "//build/config/clang:unsafe_buffers_buildflags",
-    ]
+    deps = [ ":base" ]
   }
 }
 
@@ -4818,11 +4816,9 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/BaseJUnit4TestRule.java",
       "test/android/javatests/src/org/chromium/base/test/LoadNative.java",
       "test/android/javatests/src/org/chromium/base/test/MockitoErrorHandler.java",
-      "test/android/javatests/src/org/chromium/base/test/ResetCachedFlagValuesTestHook.java",
       "test/android/javatests/src/org/chromium/base/test/ScreenshotOnFailureStatement.java",
       "test/android/javatests/src/org/chromium/base/test/TestTraceEvent.java",
       "test/android/javatests/src/org/chromium/base/test/UnitTestLifetimeAssertRule.java",
-      "test/android/javatests/src/org/chromium/base/test/UnitTestNoBrowserProcessHook.java",
       "test/android/javatests/src/org/chromium/base/test/params/BaseJUnit4RunnerDelegate.java",
       "test/android/javatests/src/org/chromium/base/test/params/BlockJUnit4RunnerDelegate.java",
       "test/android/javatests/src/org/chromium/base/test/params/MethodParamAnnotationRule.java",
@@ -4871,6 +4867,7 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/util/MinAndroidSdkLevel.java",
       "test/android/javatests/src/org/chromium/base/test/util/PackageManagerWrapper.java",
       "test/android/javatests/src/org/chromium/base/test/util/PayloadCallbackHelper.java",
+      "test/android/javatests/src/org/chromium/base/test/util/RawFailureHandler.java",
       "test/android/javatests/src/org/chromium/base/test/util/RequiresRestart.java",
       "test/android/javatests/src/org/chromium/base/test/util/Restriction.java",
       "test/android/javatests/src/org/chromium/base/test/util/RestrictionSkipCheck.java",

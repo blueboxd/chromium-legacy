@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/file_system_provider/content_cache/local_fd.h"
+#include "chrome/browser/ash/file_system_provider/opened_cloud_file.h"
 
 namespace ash::file_system_provider {
 
@@ -24,11 +25,13 @@ inline constexpr int kUnknownId = -1;
 class CacheFileContext {
  public:
   // When repopulating the context on session startup with the file information
-  // that is already cached on disk, use the `bytes_on_disk` and `id` fields.
-  // Otherwise leave the default values.
-  explicit CacheFileContext(const std::string& version_tag,
-                            int64_t bytes_on_disk = 0,
-                            int64_t id = kUnknownId);
+  // that is already cached on disk, use the `bytes_on_disk`, `id` and
+  // `path_on_disk` fields. Otherwise leave the default values.
+  explicit CacheFileContext(
+      const std::string& version_tag,
+      int64_t bytes_on_disk = 0,
+      int64_t id = kUnknownId,
+      const base::FilePath& path_on_disk = base::FilePath());
 
   CacheFileContext(CacheFileContext&&);
   CacheFileContext(const CacheFileContext&) = delete;
@@ -36,11 +39,10 @@ class CacheFileContext {
 
   ~CacheFileContext();
 
-  bool HasLocalFD(int request_id) { return open_fds_.contains(request_id); }
-  LocalFD& GetOrCreateLocalFD(
-      int request_id,
-      base::FilePath path_on_disk,
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
+  bool HasLocalFDs() const { return !open_fds_.empty(); }
+  bool CanGetLocalFD(const OpenedCloudFile& file) const;
+  LocalFD& GetLocalFD(const OpenedCloudFile& file,
+                      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
   bool CloseLocalFD(int request_id) { return open_fds_.erase(request_id) == 1; }
 
   int64_t bytes_on_disk() const { return bytes_on_disk_; }
@@ -58,12 +60,20 @@ class CacheFileContext {
   int64_t id() const { return id_; }
   void set_id(int64_t id) { id_ = id; }
 
+  const base::FilePath& path_on_disk() const { return path_on_disk_; }
+  void set_path_on_disk(const base::FilePath& path_on_disk) {
+    path_on_disk_ = path_on_disk;
+  }
+
   bool has_writer() const { return has_writer_; }
   void set_has_writer(bool has_writer) { has_writer_ = has_writer; }
 
-  bool pending_removal() const { return pending_removal_; }
-  void set_pending_removal(bool pending_removal) {
-    pending_removal_ = pending_removal;
+  bool evicted() const { return evicted_; }
+  void set_evicted(bool evicted) { evicted_ = evicted; }
+
+  bool removal_in_progress() const { return removal_in_progress_; }
+  void set_removal_in_progress(bool removal_in_progress) {
+    removal_in_progress_ = removal_in_progress;
   }
 
  private:
@@ -85,13 +95,19 @@ class CacheFileContext {
   // disk.
   int64_t id_;
 
+  // The path of the cached file on disk.
+  base::FilePath path_on_disk_;
+
   // True if there is an open writer to this file, multiple writers at
   // disjoint offset ranges is currently not supported.
   bool has_writer_ = false;
 
   // Evicted items are scheduled to be removed from disk and the database, so
   // any further use should be disallowed.
-  bool pending_removal_ = false;
+  bool evicted_ = false;
+
+  // True if the removal of this item has started.
+  bool removal_in_progress_ = false;
 
   // A map (keyed by request ID) that represents any open file descriptors for
   // this specific file.

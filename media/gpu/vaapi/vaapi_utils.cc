@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/lock.h"
 #include "build/chromeos_buildflags.h"
+#include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/gpu/vp8_picture.h"
@@ -217,6 +218,15 @@ ScopedVASurface::ScopedVASurface(scoped_refptr<VaapiWrapper> vaapi_wrapper,
       size_(size),
       va_rt_format_(va_rt_format) {
   DCHECK(vaapi_wrapper_);
+}
+
+scoped_refptr<VASurface> ScopedVASurface::AsVASurface() {
+  auto ref_counted_va_surface = base::MakeRefCounted<VASurface>(
+      va_surface_id_, size_, va_rt_format_,
+      base::BindOnce(&VaapiWrapper::DestroySurface,
+                     std ::move(vaapi_wrapper_)));
+  va_surface_id_ = VA_INVALID_ID;
+  return ref_counted_va_surface;
 }
 
 ScopedVASurface::~ScopedVASurface() {

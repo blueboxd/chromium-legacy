@@ -106,11 +106,6 @@ BASE_FEATURE(kWebViewExtraHeadersSameOriginOnly,
              "WebViewExtraHeadersSameOriginOnly",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enable the new Java/JS Bridge code path with mojo implementation.
-BASE_FEATURE(kWebViewJavaJsBridgeMojo,
-             "WebViewJavaJsBridgeMojo",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Whether to record size of the embedding app's data directory to the UMA
 // histogram Android.WebView.AppDataDirectorySize.
 BASE_FEATURE(kWebViewRecordAppDataDirectorySize,
@@ -158,11 +153,6 @@ BASE_FEATURE(kWebViewUseMetricsUploadServiceOnlySdkRuntime,
              "WebViewUseMetricsUploadServiceOnlySdkRuntime",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables prerender2 on WebView (https://crbug.com/1517472).
-BASE_FEATURE(kWebViewPrerender2,
-             "WebViewPrerender2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Propagate Android's network change notification signals to the networking
 // stack. This only propagates the following notifications:
 // * OnNetworkConnected
@@ -198,12 +188,6 @@ BASE_FEATURE(kWebViewXRequestedWithHeaderControl,
 // |AwSettings::RequestedWithHeaderMode|
 const base::FeatureParam<int> kWebViewXRequestedWithHeaderMode{
     &kWebViewXRequestedWithHeaderControl, "WebViewXRequestedWithHeaderMode", 0};
-
-// Control whether WebView will attempt to read the XRW header allow-list from
-// the manifest.
-BASE_FEATURE(kWebViewXRequestedWithHeaderManifestAllowList,
-             "WebViewXRequestedWithHeaderManifestAllowList",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // This enables image drage out for Webview.
 BASE_FEATURE(kWebViewImageDrag,
@@ -241,7 +225,7 @@ BASE_FEATURE(kWebViewReduceUAAndroidVersionDeviceModel,
 // This enables WebView crashes.
 BASE_FEATURE(kWebViewEnableCrash,
              "WebViewEnableCrash",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the built-in DNS resolver (Async DNS) on WebView.
 BASE_FEATURE(kWebViewAsyncDns,
@@ -252,6 +236,16 @@ BASE_FEATURE(kWebViewAsyncDns,
 BASE_FEATURE(kWebViewPreloadClasses,
              "WebViewPreloadClasses",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled TYPE_SCROLLED accessibility events are sent every 100ms when user
+// is scrolling irrespective of GestureScrollUpdate being consumed or not.
+// If disabled events are sent on GSU consumed ack.
+// Planning to keep it as kill switch in case we need to revert back to old
+// default behavior.
+// TODO(b/328601354): Cleanup after the change has been in stable for some time.
+BASE_FEATURE(kWebViewDoNotSendAccessibilityEventsOnGSU,
+             "WebViewDoNotSendAccessibilityEventsOnGSU",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features
 }  // namespace android_webview

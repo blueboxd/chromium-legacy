@@ -484,11 +484,6 @@ class ComputedStyle final : public ComputedStyleBase {
    * class, and be kept to a minimum.
    */
 
-  // position-anchor
-  bool PositionAnchorDataEquivalent(const ComputedStyle& o) const {
-    return base::ValuesEquivalent(PositionAnchor(), o.PositionAnchor());
-  }
-
   // anchor-name
   bool AnchorNameDataEquivalent(const ComputedStyle& o) const {
     return base::ValuesEquivalent(AnchorName(), o.AnchorName());
@@ -587,11 +582,6 @@ class ComputedStyle final : public ComputedStyleBase {
     return BorderWidth(BorderRightStyle(), BorderRightWidthInternal());
   }
 
-  // box-shadow (aka -webkit-box-shadow)
-  bool BoxShadowDataEquivalent(const ComputedStyle& other) const {
-    return base::ValuesEquivalent(BoxShadow(), other.BoxShadow());
-  }
-
   // clip-path
   ClipPathOperation* ClipPath() const {
     // This method is accessed frequently during SVG Hit Testing, but the
@@ -619,7 +609,7 @@ class ComputedStyle final : public ComputedStyleBase {
   // `display: -webkit-box`). To get the raw value of the properties, use
   // `StandardLineClamp()` or `WebkitLineClamp()`.
   int LineClamp() const {
-    if (StandardLineClamp() != 0) {
+    if (HasAutoStandardLineClamp() || StandardLineClamp() != 0) {
       DCHECK(RuntimeEnabledFeatures::CSSLineClampEnabled());
       return StandardLineClamp();
     }
@@ -629,25 +619,8 @@ class ComputedStyle final : public ComputedStyleBase {
     return 0;
   }
   // Returns whether `line-clamp` or `-webkit-line-clamp` are set and apply.
-  bool HasLineClamp() const { return LineClamp() != 0; }
-
-  bool OpacityChangedStackingContext(const ComputedStyle& other) const {
-    // We only need do layout for opacity changes if adding or losing opacity
-    // could trigger a change
-    // in us being a stacking context.
-    if (IsStackingContextWithoutContainment() ==
-            other.IsStackingContextWithoutContainment() ||
-        HasOpacity() == other.HasOpacity()) {
-      // FIXME: We would like to use SimplifiedLayout here, but we can't quite
-      // do that yet.  We need to make sure SimplifiedLayout can operate
-      // correctly on LayoutInlines (we will need to add a
-      // selfNeedsSimplifiedLayout bit in order to not get confused and taint
-      // every line).  In addition we need to solve the floating object issue
-      // when layers come and go. Right now a full layout is necessary to keep
-      // floating object lists sane.
-      return true;
-    }
-    return false;
+  bool HasLineClamp() const {
+    return HasAutoStandardLineClamp() || LineClamp() != 0;
   }
 
   // Outline properties.
@@ -737,9 +710,6 @@ class ComputedStyle final : public ComputedStyleBase {
 
   // shape-outside (aka -webkit-shape-outside)
   ShapeValue* ShapeOutside() const { return ShapeOutsideInternal().Get(); }
-  bool ShapeOutsideDataEquivalent(const ComputedStyle& other) const {
-    return base::ValuesEquivalent(ShapeOutside(), other.ShapeOutside());
-  }
 
   // vertical-align
   EVerticalAlign VerticalAlign() const {
@@ -753,11 +723,6 @@ class ComputedStyle final : public ComputedStyleBase {
   // specified in style (used for e.g. style comparisons and computed style
   // reporting)
   int EffectiveZIndex() const { return EffectiveZIndexZero() ? 0 : ZIndex(); }
-
-  // -webkit-clip-path
-  bool ClipPathDataEquivalent(const ComputedStyle& other) const {
-    return base::ValuesEquivalent(ClipPath(), other.ClipPath());
-  }
 
   // Mask properties.
   // -webkit-mask-box-image-outset
@@ -805,12 +770,6 @@ class ComputedStyle final : public ComputedStyleBase {
   // In some cases, it should be inline even if `list-style-position` property
   // value is `outside`.
   bool MarkerShouldBeInside(const Element& parent) const;
-
-  // quotes
-  bool QuotesDataEquivalent(const ComputedStyle&) const;
-
-  // text-shadow
-  bool TextShadowDataEquivalent(const ComputedStyle&) const;
 
   // Text emphasis properties.
   TextEmphasisMark GetTextEmphasisMark() const;
@@ -930,7 +889,6 @@ class ComputedStyle final : public ComputedStyleBase {
            InternalVisitedStrokePaint().HasCurrentColor();
   }
   bool HasDashArray() const { return !StrokeDashArray()->data.empty(); }
-  bool StrokeDashArrayDataEquivalent(const ComputedStyle&) const;
 
   // accent-color
   // An empty optional means the accent-color is 'auto'
@@ -1056,9 +1014,6 @@ class ComputedStyle final : public ComputedStyleBase {
     return FlexDirection() == EFlexDirection::kRowReverse;
   }
   bool HasBoxReflect() const { return BoxReflect(); }
-  bool ReflectionDataEquivalent(const ComputedStyle& other) const {
-    return base::ValuesEquivalent(BoxReflect(), other.BoxReflect());
-  }
   float ResolvedFlexGrow(const ComputedStyle& box_style) const {
     if (box_style.IsDeprecatedWebkitBox()) {
       return BoxFlex() > 0 ? BoxFlex() : 0.0f;
@@ -1224,12 +1179,6 @@ class ComputedStyle final : public ComputedStyleBase {
   const Length& MarginBlockEndUsing(const ComputedStyle& other) const {
     return PhysicalMarginToLogical(other).BlockEnd();
   }
-  bool MarginEqual(const ComputedStyle& other) const {
-    return MarginTop() == other.MarginTop() &&
-           MarginLeft() == other.MarginLeft() &&
-           MarginRight() == other.MarginRight() &&
-           MarginBottom() == other.MarginBottom();
-  }
 
   // Padding utility functions.
   const Length& PaddingBlockStart() const {
@@ -1308,10 +1257,6 @@ class ComputedStyle final : public ComputedStyleBase {
     return false;
   }
 
-  bool BorderRadiusEqual(const ComputedStyle& o) const {
-    return !DiffBorderRadius(*this, o);
-  }
-
   bool BorderVisuallyEqual(const ComputedStyle& o) const {
     auto BorderSideVisuallyEqual =
         [&](const StyleColor& color, const StyleColor& other_color,
@@ -1350,12 +1295,6 @@ class ComputedStyle final : public ComputedStyleBase {
   bool BorderVisualOverflowEqual(const ComputedStyle& o) const {
     return BorderImage().Outset() == o.BorderImage().Outset();
   }
-
-  void AdjustDiffForClipPath(const ComputedStyle& o,
-                             StyleDifference& diff) const;
-
-  void AdjustDiffForBackgroundVisuallyEqual(const ComputedStyle& o,
-                                            StyleDifference& diff) const;
 
   bool CanRenderBorderImage() const;
 
@@ -1465,25 +1404,6 @@ class ComputedStyle final : public ComputedStyleBase {
   const Length& ClipRight() const { return Clip().Right(); }
   const Length& ClipTop() const { return Clip().Top(); }
   const Length& ClipBottom() const { return Clip().Bottom(); }
-
-  // Offset utility functions.
-  // Accessors for positioned object edges that take into account writing mode.
-  const Length& LogicalInlineStart() const {
-    return PhysicalBoundsToLogical().InlineStart();
-  }
-  const Length& LogicalInlineEnd() const {
-    return PhysicalBoundsToLogical().InlineEnd();
-  }
-  const Length& LogicalTop() const {
-    return PhysicalBoundsToLogical().BlockStart();
-  }
-  const Length& LogicalBottom() const {
-    return PhysicalBoundsToLogical().BlockEnd();
-  }
-  bool InsetsEqual(const ComputedStyle& other) const {
-    return Left() == other.Left() && Right() == other.Right() &&
-           Top() == other.Top() && Bottom() == other.Bottom();
-  }
 
   // Whether or not a positioned element requires normal flow x/y to be computed
   // to determine its position.
@@ -1664,7 +1584,8 @@ class ComputedStyle final : public ComputedStyleBase {
     // If an inline box (inline flow) is inlinified, it recursively inlinifies
     // all of its in-flow children
     return IsInInlinifyingDisplay() &&
-           (display == EDisplay::kContents || display == EDisplay::kInline);
+           (display == EDisplay::kContents || display == EDisplay::kInline ||
+            display == EDisplay::kInlineListItem);
   }
 
   // Return true if an element with this computed style requires LayoutNG
@@ -1762,7 +1683,7 @@ class ComputedStyle final : public ComputedStyleBase {
   }
 
   // Text decoration utility functions.
-  bool TextDecorationVisualOverflowEqual(const ComputedStyle& o) const;
+  bool TextDecorationVisualOverflowChanged(const ComputedStyle& o) const;
   CORE_EXPORT TextDecorationLine TextDecorationsInEffect() const;
   CORE_EXPORT const Vector<AppliedTextDecoration, 1>& AppliedTextDecorations()
       const;
@@ -1976,14 +1897,6 @@ class ComputedStyle final : public ComputedStyleBase {
     return HasGroupingPropertyForUsedTransformStyle3D()
                ? ETransformStyle3D::kFlat
                : ETransformStyle3D::kPreserve3d;
-  }
-  // Returns whether the transform operations for |otherStyle| differ from the
-  // operations for this style instance. Note that callers may want to also
-  // check hasTransform(), as it is possible for two styles to have matching
-  // transform operations but differ in other transform-impacting style
-  // respects.
-  bool TransformDataEquivalent(const ComputedStyle& other) const {
-    return !DiffTransformData(*this, other);
   }
   bool Preserves3D() const {
     return UsedTransformStyle3D() != ETransformStyle3D::kFlat;
@@ -2492,36 +2405,29 @@ class ComputedStyle final : public ComputedStyleBase {
            display == EDisplay::kTableCaption;
   }
 
-  bool InternalVisitedBorderLeftColorHasNotChanged(
-      const ComputedStyle& other) const {
-    return (InternalVisitedBorderLeftColor() ==
-                other.InternalVisitedBorderLeftColor() ||
-            !BorderLeftWidth());
-  }
-  bool InternalVisitedBorderRightColorHasNotChanged(
-      const ComputedStyle& other) const {
-    return (InternalVisitedBorderRightColor() ==
-                other.InternalVisitedBorderRightColor() ||
-            !BorderRightWidth());
-  }
-  bool InternalVisitedBorderBottomColorHasNotChanged(
-      const ComputedStyle& other) const {
-    return (InternalVisitedBorderBottomColor() ==
-                other.InternalVisitedBorderBottomColor() ||
-            !BorderBottomWidth());
-  }
-  bool InternalVisitedBorderTopColorHasNotChanged(
-      const ComputedStyle& other) const {
-    return (InternalVisitedBorderTopColor() ==
-                other.InternalVisitedBorderTopColor() ||
-            !BorderTopWidth());
-  }
-
-  bool InternalVisitedOutlineColorHasNotChanged(
-      const ComputedStyle& other) const {
-    return (InternalVisitedOutlineColor() ==
-                other.InternalVisitedOutlineColor() ||
-            !OutlineWidth());
+  bool BorderOutlineVisitedColorChanged(const ComputedStyle& other) const {
+    // Only invalidate if the border/outline is present.
+    if (BorderTopWidth() && InternalVisitedBorderTopColor() !=
+                                other.InternalVisitedBorderTopColor()) {
+      return true;
+    }
+    if (BorderRightWidth() && InternalVisitedBorderRightColor() !=
+                                  other.InternalVisitedBorderRightColor()) {
+      return true;
+    }
+    if (BorderBottomWidth() && InternalVisitedBorderBottomColor() !=
+                                   other.InternalVisitedBorderBottomColor()) {
+      return true;
+    }
+    if (BorderLeftWidth() && InternalVisitedBorderLeftColor() !=
+                                 other.InternalVisitedBorderLeftColor()) {
+      return true;
+    }
+    if (OutlineWidth() &&
+        InternalVisitedOutlineColor() != other.InternalVisitedOutlineColor()) {
+      return true;
+    }
+    return false;
   }
 
   StyleColor DecorationColorIncludingFallback(bool visited_link) const;
@@ -2544,24 +2450,26 @@ class ComputedStyle final : public ComputedStyleBase {
       const gfx::SizeF& reference_box_size) const;
   PointAndTangent CalculatePointAndTangentOnPath(const Path& path) const;
 
-  bool ScrollAnchorDisablingPropertyChanged(const ComputedStyle& other,
-                                            const StyleDifference&) const;
-  bool DiffNeedsFullLayoutAndPaintInvalidation(
-      const ComputedStyle& other) const;
-  bool DiffNeedsFullLayout(const Document&, const ComputedStyle& other) const;
+  bool DiffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle& other,
+                                               uint64_t field_diff) const;
+  bool DiffNeedsFullLayout(const Document&,
+                           const ComputedStyle& other,
+                           uint64_t field_diff) const;
   bool DiffNeedsFullLayoutForLayoutCustom(const Document&,
                                           const ComputedStyle& other) const;
   bool DiffNeedsFullLayoutForLayoutCustomChild(
       const Document&,
       const ComputedStyle& other) const;
-  void AdjustDiffForNeedsPaintInvalidation(const ComputedStyle& other,
-                                           StyleDifference&,
-                                           const Document&) const;
+  bool DiffNeedsNormalPaintInvalidation(const Document&,
+                                        const ComputedStyle& other,
+                                        uint64_t field_diff) const;
   bool DiffNeedsPaintInvalidationForPaintImage(const StyleImage&,
                                                const ComputedStyle& other,
                                                const Document&) const;
-  void UpdatePropertySpecificDifferences(const ComputedStyle& other,
-                                         StyleDifference&) const;
+  bool DiffNeedsRecomputeVisualOverflow(const ComputedStyle& other,
+                                        uint64_t field_diff) const;
+  bool DiffCompositingReasonsChanged(const ComputedStyle& other,
+                                     uint64_t field_diff) const;
   bool PotentialCompositingReasonsFor3DTransformChanged(
       const ComputedStyle& other) const;
 
@@ -2664,6 +2572,9 @@ inline bool ComputedStyle::HasAnyHighlightPseudoElementStyles() const {
   static_assert(kPseudoIdSelection >= kFirstPublicPseudoId &&
                     kPseudoIdSelection <= kLastTrackedPublicPseudoId,
                 "kPseudoIdSelection must be public");
+  static_assert(kPseudoIdSearchText >= kFirstPublicPseudoId &&
+                    kPseudoIdSearchText <= kLastTrackedPublicPseudoId,
+                "kPseudoIdSearchText must be public");
   static_assert(kPseudoIdTargetText >= kFirstPublicPseudoId &&
                     kPseudoIdTargetText <= kLastTrackedPublicPseudoId,
                 "kPseudoIdTargetText must be public");
@@ -2678,6 +2589,7 @@ inline bool ComputedStyle::HasAnyHighlightPseudoElementStyles() const {
                 "kPseudoIdHighlight must be public");
 
   const unsigned mask = (1 << (kPseudoIdSelection - kFirstPublicPseudoId)) |
+                        (1 << (kPseudoIdSearchText - kFirstPublicPseudoId)) |
                         (1 << (kPseudoIdTargetText - kFirstPublicPseudoId)) |
                         (1 << (kPseudoIdSpellingError - kFirstPublicPseudoId)) |
                         (1 << (kPseudoIdGrammarError - kFirstPublicPseudoId)) |
@@ -2991,6 +2903,17 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     FontDescription description(GetFontDescription());
     description.SetLetterSpacing(letter_spacing);
     SetFontDescription(description);
+  }
+
+  // line-clamp
+  void SetHasAutoStandardLineClamp() {
+    SetHasAutoStandardLineClampInternal(true);
+    SetStandardLineClampInternal(0);
+  }
+
+  void SetStandardLineClamp(int v) {
+    SetHasAutoStandardLineClampInternal(false);
+    SetStandardLineClampInternal(v);
   }
 
   // line-height

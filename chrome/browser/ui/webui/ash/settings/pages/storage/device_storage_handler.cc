@@ -64,7 +64,7 @@ const char* CalculationTypeToEventName(SizeCalculator::CalculationType x) {
     case SizeCalculator::CalculationType::kSystem:
       return "storage-system-size-changed";
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return "";
   }
 }
@@ -103,10 +103,6 @@ void StorageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "openMyFiles", base::BindRepeating(&StorageHandler::HandleOpenMyFiles,
                                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "openArcStorage",
-      base::BindRepeating(&StorageHandler::HandleOpenArcStorage,
-                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "updateExternalStorages",
       base::BindRepeating(&StorageHandler::HandleUpdateExternalStorages,
@@ -217,15 +213,6 @@ void StorageHandler::HandleOpenMyFiles(const base::Value::List& unused_args) {
                           platform_util::OpenOperationCallback());
 }
 
-void StorageHandler::HandleOpenArcStorage(
-    const base::Value::List& unused_args) {
-  auto* arc_storage_manager =
-      arc::ArcStorageManager::GetForBrowserContext(profile_);
-  if (arc_storage_manager) {
-    arc_storage_manager->OpenPrivateVolumeSettings();
-  }
-}
-
 void StorageHandler::HandleOpenBrowsingDataSettings(
     const base::Value::List& unused_args) {
   ash::NewWindowDelegate::GetPrimary()->OpenUrl(
@@ -321,7 +308,8 @@ void StorageHandler::OnSizeCalculated(
       UpdateStorageItem(calculation_type);
       break;
     default:
-      NOTREACHED() << "Unexpected calculation type: " << item_index;
+      NOTREACHED_IN_MIGRATION()
+          << "Unexpected calculation type: " << item_index;
   }
   UpdateSystemSizeItem();
 }

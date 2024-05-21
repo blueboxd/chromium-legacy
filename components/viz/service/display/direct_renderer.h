@@ -109,7 +109,6 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
 
     std::vector<ui::LatencyInfo> latency_info;
     int64_t seq = -1;
-    bool top_controls_visible_height_changed = false;
 #if BUILDFLAG(IS_APPLE)
     gfx::CALayerResult ca_layer_error_code = gfx::kCALayerSuccess;
 #endif
@@ -224,10 +223,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
                                 const gfx::RectF& quad_rect);
   // This function takes DrawingFrame as an argument because RenderPass drawing
   // code uses its computations for buffer sizing.
-  void InitializeViewport(DrawingFrame* frame,
-                          const gfx::Rect& draw_rect,
-                          const gfx::Rect& viewport_rect,
-                          const gfx::Size& surface_size);
+  void InitializeViewport(DrawingFrame* frame, const gfx::Size& viewport_size);
   gfx::Rect MoveFromDrawToWindowSpace(const gfx::Rect& draw_rect) const;
 
   gfx::Rect DeviceViewportRectInDrawSpace() const;
@@ -314,7 +310,6 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   // return that quad, otherwise return null.
   virtual const DrawQuad* CanPassBeDrawnDirectly(
       const AggregatedRenderPass* pass);
-  virtual bool FlippedFramebuffer() const = 0;
   virtual void EnsureScissorTestDisabled() = 0;
   virtual void DidChangeVisibility() = 0;
   virtual void CopyDrawnRenderPass(
@@ -395,15 +390,11 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   bool visible_ = false;
   bool disable_color_checks_for_testing_ = false;
 
-  // For use in coordinate conversion, this stores the output rect, viewport
-  // rect (= unflipped version of glViewport rect), the size of target
-  // framebuffer, and the current window space viewport. During a draw, this
-  // stores the values for the current render pass; in between draws, they
-  // retain the values for the root render pass of the last draw.
-  gfx::Rect current_draw_rect_;
-  gfx::Rect current_viewport_rect_;
-  gfx::Size current_surface_size_;
-  gfx::Rect current_window_space_viewport_;
+  // For use in deciding whether to enable the scissor rect test.
+  //
+  // During a draw, this stores the value for the current render pass; between
+  // draws, it retains the value for the root render pass of the last draw.
+  gfx::Size current_viewport_size_;
 
   DrawingFrame* current_frame() {
     DCHECK(current_frame_valid_);

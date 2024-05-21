@@ -236,7 +236,7 @@ gfx::Rect GetGridBoundsInScreen(
       case SplitViewController::State::kBothSnapped:
         // When this function is called, SplitViewController should have
         // already handled the state change.
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
     }
   }
 
@@ -363,10 +363,9 @@ void MoveFocusToView(OverviewFocusableView* target_view) {
     return;
   }
 
-  auto* focus_cycler_old = overview_session->focus_cycler_old();
-  CHECK(focus_cycler_old);
-
-  focus_cycler_old->MoveFocusToView(target_view);
+  if (auto* focus_cycler_old = overview_session->focus_cycler_old()) {
+    focus_cycler_old->MoveFocusToView(target_view);
+  }
 }
 
 void SetWindowsVisibleDuringItemDragging(const aura::Window::Windows& windows,

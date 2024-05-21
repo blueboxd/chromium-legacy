@@ -25,6 +25,7 @@
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/commerce_utils.h"
 #include "components/commerce/core/compare/cluster_manager.h"
+#include "components/commerce/core/compare/product_group.h"
 #include "components/commerce/core/compare/product_specifications_server_proxy.h"
 #include "components/commerce/core/discounts_storage.h"
 #include "components/commerce/core/feature_utils.h"
@@ -1771,6 +1772,14 @@ base::WeakPtr<ShoppingService> ShoppingService::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
+std::optional<EntryPointInfo> ShoppingService::GetEntryPointInfoForNavigation(
+    GURL url) {
+  if (!cluster_manager_) {
+    return std::nullopt;
+  }
+  return cluster_manager_->GetEntryPointInfoForNavigation(url);
+}
+
 std::optional<EntryPointInfo> ShoppingService::GetEntryPointInfoForSelection(
     GURL old_url,
     GURL new_url) {
@@ -1778,6 +1787,28 @@ std::optional<EntryPointInfo> ShoppingService::GetEntryPointInfoForSelection(
     return std::nullopt;
   }
   return cluster_manager_->GetEntryPointInfoForSelection(old_url, new_url);
+}
+
+std::optional<ProductGroup> ShoppingService::GetProductGroupForCandidateProduct(
+    const GURL& product_url) {
+  if (!cluster_manager_) {
+    return std::nullopt;
+  }
+  return cluster_manager_->GetProductGroupForCandidateProduct(product_url);
+}
+
+void ShoppingService::AddClusterManagerObserver(
+    ClusterManager::Observer* observer) {
+  if (cluster_manager_) {
+    cluster_manager_->AddObserver(observer);
+  }
+}
+
+void ShoppingService::RemoveClusterManagerObserver(
+    ClusterManager::Observer* observer) {
+  if (cluster_manager_) {
+    cluster_manager_->RemoveObserver(observer);
+  }
 }
 
 void ShoppingService::Shutdown() {

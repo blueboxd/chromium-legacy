@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "base/version.h"
 #include "build/branding_buildflags.h"
 #include "build/buildflag.h"
 #include "chromeos/ash/components/growth/growth_metrics.h"
@@ -46,9 +47,12 @@ inline constexpr char kMaxDemoModeAppVersion[] = "appVersion.max";
 
 // Device Targeting paths.
 inline constexpr char kDeviceTargeting[] = "device";
-inline constexpr char kDeviceLocales[] = "locales";
+inline constexpr char kApplicationLocales[] = "locales";
+inline constexpr char kUserLocales[] = "userLocales";
 inline constexpr char kMinMilestone[] = "milestone.min";
 inline constexpr char kMaxMilestone[] = "milestone.max";
+inline constexpr char kMinVersion[] = "version.min";
+inline constexpr char kMaxVersion[] = "version.max";
 inline constexpr char kFeatureAware[] = "isFeatureAwareDevice";
 inline constexpr char kRegisteredTime[] = "registeredTime";
 inline constexpr char kDeviceAgeInHours[] = "deviceAgeInHours";
@@ -75,7 +79,11 @@ inline constexpr int kDismissalCapDefaultValue = 1;
 inline constexpr char kRuntimeTargeting[] = "runtime";
 
 // Trigger Targeting paths.
-inline constexpr char kTriggerTargetings[] = "triggers";
+// Path `triggers` was used in M126 and has been deprecated since M127.
+// Path `triggersList` was added for M127.
+inline constexpr char kTriggerTargetings[] = "triggerList";
+inline constexpr char kTriggerType[] = "triggerType";
+inline constexpr char kTriggerEvents[] = "triggerEvents";
 
 // Scheduling Targeting paths.
 inline constexpr char kSchedulingTargetings[] = "schedulings";
@@ -144,7 +152,21 @@ std::optional<BuiltInIcon> GetBuiltInIconType(
   return static_cast<BuiltInIcon>(built_in_icon_value.value());
 }
 
+std::optional<base::Version> StringToVersion(const std::string* version_value) {
+  if (!version_value) {
+    return std::nullopt;
+  }
+
+  const auto version = base::Version(*version_value);
+  if (!version.IsValid()) {
+    return std::nullopt;
+  }
+  return std::move(version);
+}
+
 }  // namespace
+
+Trigger::Trigger(TriggerType type) : type(type) {}
 
 Campaigns* GetMutableCampaignsBySlot(CampaignsPerSlot* campaigns_per_slot,
                                      Slot slot) {
@@ -182,7 +204,7 @@ const Payload* GetPayloadBySlot(const Campaign* campaign, Slot slot) {
       return campaign->FindDictByDottedPath(
           base::StringPrintf(kPayloadPathTemplate, kNotificationPayloadPath));
     case Slot::kDemoModeFreePlayApps:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 
@@ -256,12 +278,12 @@ const base::Value::List* DemoModeTargeting::GetCountries() const {
   return GetListCriteria(kDemoModeCountries);
 }
 
-const std::string* DemoModeTargeting::GetAppMinVersion() const {
-  return GetStringCriteria(kMinDemoModeAppVersion);
+const std::optional<base::Version> DemoModeTargeting::GetAppMinVersion() const {
+  return StringToVersion(GetStringCriteria(kMinDemoModeAppVersion));
 }
 
-const std::string* DemoModeTargeting::GetAppMaxVersion() const {
-  return GetStringCriteria(kMaxDemoModeAppVersion);
+const std::optional<base::Version> DemoModeTargeting::GetAppMaxVersion() const {
+  return StringToVersion(GetStringCriteria(kMaxDemoModeAppVersion));
 }
 
 const std::optional<bool> DemoModeTargeting::TargetCloudGamingDevice() const {
@@ -279,7 +301,11 @@ DeviceTargeting::DeviceTargeting(const Targeting* targeting_dict)
 DeviceTargeting::~DeviceTargeting() = default;
 
 const base::Value::List* DeviceTargeting::GetLocales() const {
-  return GetListCriteria(kDeviceLocales);
+  return GetListCriteria(kApplicationLocales);
+}
+
+const base::Value::List* DeviceTargeting::GetUserLocales() const {
+  return GetListCriteria(kUserLocales);
 }
 
 const std::optional<int> DeviceTargeting::GetMinMilestone() const {
@@ -288,6 +314,14 @@ const std::optional<int> DeviceTargeting::GetMinMilestone() const {
 
 const std::optional<int> DeviceTargeting::GetMaxMilestone() const {
   return GetIntCriteria(kMaxMilestone);
+}
+
+const std::optional<base::Version> DeviceTargeting::GetMinVersion() const {
+  return StringToVersion(GetStringCriteria(kMinVersion));
+}
+
+const std::optional<base::Version> DeviceTargeting::GetMaxVersion() const {
+  return StringToVersion(GetStringCriteria(kMaxVersion));
 }
 
 const std::optional<bool> DeviceTargeting::GetFeatureAwareDevice() const {
@@ -342,6 +376,20 @@ int EventsTargeting::GetDismissalCap() const {
 
 const base::Value::List* EventsTargeting::GetEventsConditions() const {
   return config_dict_->FindList(kEventsConditions);
+}
+
+// Trigger Targeting.
+TriggerTargeting::TriggerTargeting(const base::Value::Dict* trigger_dict)
+    : trigger_dict_(trigger_dict) {}
+
+TriggerTargeting::~TriggerTargeting() = default;
+
+std::optional<int> TriggerTargeting::GetTriggerType() const {
+  return trigger_dict_->FindInt(kTriggerType);
+}
+
+const base::Value::List* TriggerTargeting::GetTriggerEvents() const {
+  return trigger_dict_->FindList(kTriggerEvents);
 }
 
 // Time window Targeting.
@@ -411,12 +459,12 @@ RuntimeTargeting::~RuntimeTargeting() = default;
 const std::vector<std::unique_ptr<TimeWindowTargeting>>
 RuntimeTargeting::GetSchedulings() const {
   std::vector<std::unique_ptr<TimeWindowTargeting>> schedulings;
-  auto* scheduling_dicts = GetListCriteria(kSchedulingTargetings);
-  if (!scheduling_dicts) {
+  auto* scheduling_list = GetListCriteria(kSchedulingTargetings);
+  if (!scheduling_list) {
     return schedulings;
   }
 
-  for (auto& scheduling_dict : *scheduling_dicts) {
+  for (auto& scheduling_dict : *scheduling_list) {
     if (!scheduling_dict.is_dict()) {
       // Ignore invalid scheduling.
       RecordCampaignsManagerError(CampaignsManagerError::kInvalidScheduling);
@@ -426,27 +474,6 @@ RuntimeTargeting::GetSchedulings() const {
         std::make_unique<TimeWindowTargeting>(&scheduling_dict.GetDict()));
   }
   return schedulings;
-}
-
-const std::vector<TriggeringType> RuntimeTargeting::GetTriggers() const {
-  std::vector<TriggeringType> triggers;
-  auto* triggers_list = GetListCriteria(kTriggerTargetings);
-  if (!triggers_list) {
-    return triggers;
-  }
-
-  for (auto& trigger : *triggers_list) {
-    if (!trigger.is_int()) {
-      // Ignore invalid trigger.
-      RecordCampaignsManagerError(CampaignsManagerError::kInvalidTrigger);
-      continue;
-    }
-
-    // TODO: b/330931877 - Add bounds check for casting to enum from value in
-    // campaign payload.
-    triggers.push_back(static_cast<TriggeringType>(trigger.GetInt()));
-  }
-  return triggers;
 }
 
 const std::vector<std::unique_ptr<AppTargeting>>
@@ -497,6 +524,26 @@ std::unique_ptr<EventsTargeting> RuntimeTargeting::GetEventsConfig() const {
   }
 
   return std::make_unique<EventsTargeting>(config);
+}
+
+const std::vector<std::unique_ptr<TriggerTargeting>>
+RuntimeTargeting::GetTriggers() const {
+  std::vector<std::unique_ptr<TriggerTargeting>> triggers;
+  auto* triggers_list = GetListCriteria(kTriggerTargetings);
+  if (!triggers_list) {
+    return triggers;
+  }
+
+  for (const auto& trigger : *triggers_list) {
+    if (!trigger.is_dict()) {
+      // Ignore invalid trigger.
+      RecordCampaignsManagerError(CampaignsManagerError::kInvalidTrigger);
+      continue;
+    }
+
+    triggers.push_back(std::make_unique<TriggerTargeting>(&trigger.GetDict()));
+  }
+  return triggers;
 }
 
 // Action.

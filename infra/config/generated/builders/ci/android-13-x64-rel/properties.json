@@ -55,7 +55,6 @@
   },
   "$build/reclient": {
     "instance": "rbe-chromium-trusted",
-    "jobs": 500,
     "metrics_project": "chromium-reclient-metrics",
     "scandeps_server": true
   },
@@ -77,5 +76,8 @@
     ]
   },
   "builder_group": "chromium.android",
-  "recipe": "chromium"
+  "recipe": "chromium",
+  "sheriff_rotations": [
+    "android"
+  ]
 }

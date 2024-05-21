@@ -68,7 +68,7 @@ export {SettingsStartupUrlDialogElement} from './on_startup_page/startup_url_dia
 export {EDIT_STARTUP_URL_EVENT, SettingsStartupUrlEntryElement} from './on_startup_page/startup_url_entry.js';
 export {SettingsStartupUrlsPageElement} from './on_startup_page/startup_urls_page.js';
 export {StartupUrlsPageBrowserProxy, StartupUrlsPageBrowserProxyImpl} from './on_startup_page/startup_urls_page_browser_proxy.js';
-export {pageVisibility, PrivacyPageVisibility, setPageVisibilityForTesting} from './page_visibility.js';
+export {pageVisibility, PrivacyPageVisibility, resetPageVisibilityForTesting} from './page_visibility.js';
 // <if expr="chromeos_ash">
 export {AccountManagerBrowserProxy, AccountManagerBrowserProxyImpl} from './people_page/account_manager_browser_proxy.js';
 // </if>
@@ -90,7 +90,7 @@ export {CanonicalTopic, FirstLevelTopicsState, FledgeState, PrivacySandboxBrowse
 export {RelaunchMixin, RestartType} from './relaunch_mixin.js';
 export {ResetBrowserProxy, ResetBrowserProxyImpl} from './reset_page/reset_browser_proxy.js';
 export {SettingsResetProfileBannerElement} from './reset_page/reset_profile_banner.js';
-export {buildRouter, routes} from './route.js';
+export {buildRouter, resetRouterForTesting, routes} from './route.js';
 export {Route, Router, SettingsRoutes} from './router.js';
 export {SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckExtensionsStatus, SafetyCheckParentStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus} from './safety_check_page/safety_check_browser_proxy.js';
 export {SafetyCheckIconStatus, SettingsSafetyCheckChildElement} from './safety_check_page/safety_check_child.js';
@@ -112,6 +112,6 @@ export {SettingsMenuElement} from './settings_menu/settings_menu.js';
 export {SettingsSectionElement} from './settings_page/settings_section.js';
 export {SettingsUiElement} from './settings_ui/settings_ui.js';
 export {SiteFaviconElement} from './site_favicon.js';
-export {COMPOSE_PROACTIVE_NUDGE_PREF, SettingsOfferWritingHelpPageElement} from './site_settings/offer_writing_help_page.js';
+export {COMPOSE_PROACTIVE_NUDGE_DISABLED_SITES_PREF, COMPOSE_PROACTIVE_NUDGE_PREF, SettingsOfferWritingHelpPageElement} from './site_settings/offer_writing_help_page.js';
 export {convertDateToWindowsEpoch} from './time.js';
 export {TooltipMixin, TooltipMixinInterface} from './tooltip_mixin.js';

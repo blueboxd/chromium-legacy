@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.recent_tabs.ForeignSessionHelper.ForeignSessi
 import org.chromium.chrome.browser.recent_tabs.ForeignSessionHelper.ForeignSessionTab;
 import org.chromium.chrome.browser.recent_tabs.ForeignSessionHelper.ForeignSessionWindow;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.url.GURL;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,10 +18,18 @@ import java.util.List;
 
 /** A SuggestionBackend backed by ForeignSessionHelper. */
 public class ForeignSessionSuggestionBackend implements SuggestionBackend {
-    private final ForeignSessionHelper mForeignSessionHelper;
+    // The delegate to wrap the logic whether to exclude a suggestion based on its URL.
+    interface UrlFilteringDelegate {
+        boolean shouldExcludeUrl(GURL url);
+    }
 
-    public ForeignSessionSuggestionBackend(ForeignSessionHelper foreignSessionHelper) {
+    private final ForeignSessionHelper mForeignSessionHelper;
+    private final UrlFilteringDelegate mUrlFilteringDelegate;
+
+    public ForeignSessionSuggestionBackend(
+            ForeignSessionHelper foreignSessionHelper, UrlFilteringDelegate urlFilteringDelegate) {
         mForeignSessionHelper = foreignSessionHelper;
+        mUrlFilteringDelegate = urlFilteringDelegate;
     }
 
     /** Implements {@link SuggestionBackend} */
@@ -46,7 +55,7 @@ public class ForeignSessionSuggestionBackend implements SuggestionBackend {
     public void readCached(Callback<List<SuggestionEntry>> callback) {
         List<SuggestionEntry> suggestions = new ArrayList<SuggestionEntry>();
 
-        long currentTimeMs = getCurrentTimeMs();
+        long currentTimeMs = TabResumptionModuleUtils.getCurrentTimeMs();
         List<ForeignSession> foreignSessions = mForeignSessionHelper.getForeignSessions();
         for (ForeignSession session : foreignSessions) {
             for (ForeignSessionWindow window : session.windows) {
@@ -68,13 +77,10 @@ public class ForeignSessionSuggestionBackend implements SuggestionBackend {
         callback.onResult(suggestions);
     }
 
-    /** Returns the current time in ms since the epoch. */
-    long getCurrentTimeMs() {
-        return System.currentTimeMillis();
-    }
-
     private boolean isForeignSessionTabUsable(ForeignSessionTab tab) {
         String scheme = tab.url.getScheme();
-        return scheme.equals(UrlConstants.HTTP_SCHEME) || scheme.equals(UrlConstants.HTTPS_SCHEME);
+
+        return (scheme.equals(UrlConstants.HTTP_SCHEME) || scheme.equals(UrlConstants.HTTPS_SCHEME))
+                && !mUrlFilteringDelegate.shouldExcludeUrl(tab.url);
     }
 }

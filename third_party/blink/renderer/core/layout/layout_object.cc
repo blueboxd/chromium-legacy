@@ -421,7 +421,7 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
       return MakeGarbageCollected<LayoutCustom>(element);
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 
@@ -632,7 +632,7 @@ void LayoutObject::AssertClearedPaintInvalidationFlags() const {
 
   if (PaintInvalidationStateIsDirty()) {
     ShowLayoutTreeForThis();
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   // Assert that the number of FragmentData and PhysicalBoxFragment objects
@@ -1026,7 +1026,7 @@ bool LayoutObject::IsBeforeInPreOrder(const LayoutObject& other) const {
     if (child == data.other_last)
       return false;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return false;
 }
 
@@ -2208,7 +2208,7 @@ PhysicalRect LayoutObject::VisualRectInDocument(VisualRectFlags flags) const {
 
 PhysicalRect LayoutObject::LocalVisualRectIgnoringVisibility() const {
   NOT_DESTROYED();
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return PhysicalRect();
 }
 
@@ -2517,7 +2517,7 @@ const ComputedStyle& LayoutObject::SlowEffectiveStyle(
         return block->FirstLineStyleRef();
       return FirstLineStyleRef();
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return StyleRef();
 }
 
@@ -2683,41 +2683,54 @@ void LayoutObject::SetStyle(const ComputedStyle* style,
           GetDocument(), *style));
     }
 
-    auto HighlightPseudoUpdateDiff = [this, style,
-                                      &diff](const PseudoId pseudo) {
-      DCHECK(pseudo == kPseudoIdTargetText ||
-             pseudo == kPseudoIdSpellingError ||
-             pseudo == kPseudoIdGrammarError);
+    auto HighlightPseudoUpdateDiff =
+        [this, style, &diff](const PseudoId pseudo,
+                             const ComputedStyle* pseudo_old_style,
+                             const ComputedStyle* pseudo_new_style) {
+          DCHECK(pseudo == kPseudoIdSearchText ||
+                 pseudo == kPseudoIdTargetText ||
+                 pseudo == kPseudoIdSpellingError ||
+                 pseudo == kPseudoIdGrammarError);
 
-      if (style_->HasPseudoElementStyle(pseudo) ||
-          style->HasPseudoElementStyle(pseudo)) {
-        const ComputedStyle* pseudo_old_style =
-            style_->HighlightData().Style(pseudo);
-        const ComputedStyle* pseudo_new_style =
-            style->HighlightData().Style(pseudo);
-
-        if (pseudo_old_style && pseudo_new_style) {
-          diff.Merge(pseudo_old_style->VisualInvalidationDiff(
-              GetDocument(), *pseudo_new_style));
-        } else {
-          diff.SetNeedsNormalPaintInvalidation();
-        }
-      }
-    };
+          if (style_->HasPseudoElementStyle(pseudo) ||
+              style->HasPseudoElementStyle(pseudo)) {
+            if (pseudo_old_style && pseudo_new_style) {
+              diff.Merge(pseudo_old_style->VisualInvalidationDiff(
+                  GetDocument(), *pseudo_new_style));
+            } else {
+              diff.SetNeedsNormalPaintInvalidation();
+            }
+          }
+        };
 
     // See HighlightRegistry for ::highlight() paint invalidation.
     // TODO(rego): We don't do anything regarding ::selection, as ::selection
     // uses its own mechanism for this (see
     // LayoutObject::InvalidateSelectedChildrenOnStyleChange()). Maybe in the
     // future we could detect changes here for ::selection too.
+    if (RuntimeEnabledFeatures::SearchTextHighlightPseudoEnabled() &&
+        UsesHighlightPseudoInheritance(kPseudoIdSearchText)) {
+      HighlightPseudoUpdateDiff(kPseudoIdSearchText,
+                                style_->HighlightData().SearchTextCurrent(),
+                                style->HighlightData().SearchTextCurrent());
+      HighlightPseudoUpdateDiff(kPseudoIdSearchText,
+                                style_->HighlightData().SearchTextNotCurrent(),
+                                style->HighlightData().SearchTextNotCurrent());
+    }
     if (UsesHighlightPseudoInheritance(kPseudoIdTargetText)) {
-      HighlightPseudoUpdateDiff(kPseudoIdTargetText);
+      HighlightPseudoUpdateDiff(kPseudoIdTargetText,
+                                style_->HighlightData().TargetText(),
+                                style->HighlightData().TargetText());
     }
     if (UsesHighlightPseudoInheritance(kPseudoIdSpellingError)) {
-      HighlightPseudoUpdateDiff(kPseudoIdSpellingError);
+      HighlightPseudoUpdateDiff(kPseudoIdSpellingError,
+                                style_->HighlightData().SpellingError(),
+                                style->HighlightData().SpellingError());
     }
     if (UsesHighlightPseudoInheritance(kPseudoIdGrammarError)) {
-      HighlightPseudoUpdateDiff(kPseudoIdGrammarError);
+      HighlightPseudoUpdateDiff(kPseudoIdGrammarError,
+                                style_->HighlightData().GrammarError(),
+                                style->HighlightData().GrammarError());
     }
   }
 
@@ -2810,8 +2823,8 @@ void LayoutObject::SetStyle(const ComputedStyle* style,
 
   // Clip Path animations need a property update when they're composited, as it
   // changes between mask based and path based clip.
-  if ((diff.NeedsNormalPaintInvalidation() && old_style &&
-       !old_style->ClipPathDataEquivalent(*style_))) {
+  if (old_style && diff.NeedsNormalPaintInvalidation() &&
+      diff.ClipPathChanged()) {
     SetNeedsPaintPropertyUpdate();
     PaintingLayer()->SetNeedsCompositingInputsUpdate();
   }
@@ -2929,7 +2942,7 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
     if (style_->ContentVisibility() != new_style.ContentVisibility()) {
       if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
         if (GetNode()) {
-          cache->RemoveSubtreeWhenSafe(GetNode(), /* remove_root */ false);
+          cache->RemoveSubtree(GetNode(), /* remove_root */ false);
         }
       }
     }
@@ -4524,25 +4537,25 @@ SVGLayoutResult LayoutObject::UpdateSVGLayout(const SVGLayoutInfo&) {
 
 gfx::RectF LayoutObject::ObjectBoundingBox() const {
   NOT_DESTROYED();
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return gfx::RectF();
 }
 
 gfx::RectF LayoutObject::StrokeBoundingBox() const {
   NOT_DESTROYED();
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return gfx::RectF();
 }
 
 gfx::RectF LayoutObject::DecoratedBoundingBox() const {
   NOT_DESTROYED();
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return gfx::RectF();
 }
 
 gfx::RectF LayoutObject::VisualRectInLocalSVGCoordinates() const {
   NOT_DESTROYED();
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return gfx::RectF();
 }
 

@@ -257,7 +257,6 @@
 <translation id="3083975830683400843">dispositius Chromebit</translation>
 <translation id="3085752524577180175">Amfitrió SOCKS</translation>
 <translation id="3104793765551262433">Xarxa <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" />% d'intensitat del senyal, bloquejada per l'administrador, detalls</translation>
-<translation id="3113153474486991170">No s'ha pogut obrir el fitxer <ph name="PATH" /> des d'aquesta ubicació. Copia'l a Els meus fitxers per obrir-lo.</translation>
 <translation id="3113592018909187986">Et queda 1 intent. No podràs utilitzar aquesta xarxa fins que no configuris un PIN nou.</translation>
 <translation id="3124404833828281817">Persona fantasiejant</translation>
 <translation id="3126026824346185272">Ctrl</translation>
@@ -281,7 +280,7 @@
 <translation id="3264582393905923483">Context</translation>
 <translation id="3272909651715601089"><ph name="PATH" /> no s'ha pogut obrir</translation>
 <translation id="3280431534455935878">S'està preparant</translation>
-<translation id="3280719573299097127">Tens connexió a una xarxa d'ús mesurat. La sincronització de fitxers s'ha posat en pausa.</translation>
+<translation id="3280719573299097127">Tens connexió de xarxa d'ús mesurat. La sincronització de fitxers s'ha posat en pausa.</translation>
 <translation id="3280987981688031357">Disc de vinil</translation>
 <translation id="3290356915286466215">No segura</translation>
 <translation id="3291218047831493686">Connecta amb aquesta xarxa per canviar la configuració del bloqueig de la SIM</translation>

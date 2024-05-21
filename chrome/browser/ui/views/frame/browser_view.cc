@@ -109,7 +109,6 @@
 #include "chrome/browser/ui/views/eye_dropper/eye_dropper.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
-#include "chrome/browser/ui/views/frame/browser_actions.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
@@ -235,7 +234,6 @@
 #include "extensions/common/command.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
-#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_mode_observer.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -313,7 +311,9 @@
 #endif
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "chrome/browser/promos/promos_types.h"
 #include "chrome/browser/promos/promos_utils.h"
+#include "chrome/browser/ui/views/promos/ios_promo_bubble.h"
 #include "chrome/browser/ui/views/promos/ios_promo_password_bubble.h"
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
@@ -844,12 +844,6 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
       browser_(std::move(browser)),
       accessibility_mode_observer_(
           std::make_unique<AccessibilityModeObserver>(this)) {
-  // Store the actions so that the access is available for other classes.
-  if (features::IsSidePanelPinningEnabled()) {
-    browser_->SetUserData(BrowserActions::UserDataKey(),
-                          std::make_unique<BrowserActions>(*browser_));
-  }
-
   SetShowIcon(
       ::ShouldShowWindowIcon(browser_.get(), AppUsesWindowControlsOverlay()));
 
@@ -1170,10 +1164,6 @@ bool BrowserView::UsesImmersiveFullscreenTabbedMode() const {
 #endif
 
 TabSearchBubbleHost* BrowserView::GetTabSearchBubbleHost() {
-  if (auto* tab_search_host =
-          frame_->GetFrameView()->GetTabSearchBubbleHost()) {
-    return tab_search_host;
-  }
   if (auto* tab_search_container =
           tab_strip_region_view_->tab_search_container()) {
     return tab_search_container->tab_search_button()->tab_search_bubble_host();
@@ -1352,8 +1342,7 @@ void BrowserView::Show() {
   }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  if (features::IsAccessibilityFocusHighlightEnabled() &&
-      !accessibility_focus_highlight_) {
+  if (!accessibility_focus_highlight_) {
     accessibility_focus_highlight_ =
         std::make_unique<AccessibilityFocusHighlight>(this);
   }
@@ -2945,12 +2934,20 @@ void BrowserView::ShowIOSPasswordPromoBubble() {
   ToolbarButtonProvider* button_provider =
       BrowserView::GetBrowserViewForBrowser(browser_.get())
           ->toolbar_button_provider();
-
-  IOSPromoPasswordBubble::ShowBubble(
-      button_provider->GetAnchorView(PageActionIconType::kManagePasswords),
-      button_provider->GetPageActionIconView(
-          PageActionIconType::kManagePasswords),
-      browser_.get());
+  if (base::FeatureList::IsEnabled(
+          features::kIOSPromoRefreshedPasswordBubble)) {
+    IOSPromoBubble::ShowPromoBubble(
+        button_provider->GetAnchorView(PageActionIconType::kManagePasswords),
+        button_provider->GetPageActionIconView(
+            PageActionIconType::kManagePasswords),
+        browser_.get(), IOSPromoType::kPassword);
+  } else {
+    IOSPromoPasswordBubble::ShowBubble(
+        button_provider->GetAnchorView(PageActionIconType::kManagePasswords),
+        button_provider->GetPageActionIconView(
+            PageActionIconType::kManagePasswords),
+        browser_.get());
+  }
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 

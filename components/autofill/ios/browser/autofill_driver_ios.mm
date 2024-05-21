@@ -5,6 +5,7 @@
 #import "components/autofill/ios/browser/autofill_driver_ios.h"
 
 #import "base/memory/ptr_util.h"
+#import "base/metrics/histogram_functions.h"
 #import "components/autofill/core/browser/form_structure.h"
 #import "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/core/common/field_data_manager.h"
@@ -250,8 +251,11 @@ void AutofillDriverIOS::AskForValuesToFill(const FormData& form,
                                            const FormFieldData& field) {
   // TODO(crbug.com/40266699): Route this using AutofillDriverRouter.
   // TODO(crbug.com/40269303): Distinguish between different trigger sources.
+  // The caret position is currently not extracted on iOS .
+  gfx::Rect caret_bounds;
   GetAutofillManager().OnAskForValuesToFill(
-      form, field, autofill::AutofillSuggestionTriggerSource::kiOS);
+      form, field, caret_bounds,
+      autofill::AutofillSuggestionTriggerSource::kiOS);
 }
 
 void AutofillDriverIOS::DidFillAutofillFormData(const FormData& form,
@@ -293,9 +297,17 @@ void AutofillDriverIOS::FormSubmitted(
     const FormData& form,
     bool known_success,
     mojom::SubmissionSource submission_source) {
+  base::UmaHistogramEnumeration(kAutofillSubmissionDetectionSourceHistogram,
+                                submission_source);
   // TODO(crbug.com/40266699): Route this using AutofillDriverRouter.
   GetAutofillManager().OnFormSubmitted(form, known_success, submission_source);
   ClearLastInteractedForm();
+}
+
+void AutofillDriverIOS::CaretMovedInFormField(const FormData& form,
+                                              const FormFieldData& field,
+                                              const gfx::Rect& caret_bounds) {
+  GetAutofillManager().OnCaretMovedInFormField(form, field, caret_bounds);
 }
 
 void AutofillDriverIOS::TextFieldDidChange(const FormData& form,
@@ -368,8 +380,13 @@ void AutofillDriverIOS::FormsRemoved(
   CHECK(base::FeatureList::IsEnabled(
       autofill::features::kAutofillEnableXHRSubmissionDetectionIOS));
 
-  if (DetectFormSubmissionAfterFormRemoval(removed_forms,
-                                           removed_unowned_fields)) {
+  const bool submission_detected = DetectFormSubmissionAfterFormRemoval(
+      removed_forms, removed_unowned_fields);
+  RecordFormRemoval(
+      submission_detected, /*removed_forms_count=*/removed_forms.size(),
+      /*removed_unowned_fields_count=*/removed_unowned_fields.size());
+
+  if (submission_detected) {
     UpdateLastInteractedFormFromFieldDataManager();
 
     FormSubmitted(last_interacted_form_->form_data,
@@ -383,7 +400,7 @@ void AutofillDriverIOS::FormsRemoved(
 
 bool AutofillDriverIOS::DetectFormSubmissionAfterFormRemoval(
     const std::set<FormRendererId>& removed_forms,
-    const std::set<autofill::FieldRendererId>& removed_unowned_fields) const {
+    const std::set<FieldRendererId>& removed_unowned_fields) const {
   // Detect a form submission only if the last interacted form or formless field
   // was removed.
   if (!last_interacted_form_) {
@@ -426,6 +443,25 @@ void AutofillDriverIOS::UpdateLastInteractedFormFromFieldDataManager() {
     field.set_value(field_data_manager->GetUserInput(field_id));
     field.set_properties_mask(
         field_data_manager->GetFieldPropertiesMask(field_id));
+  }
+}
+
+void AutofillDriverIOS::RecordFormRemoval(bool submission_detected,
+                                          int removed_forms_count,
+                                          int removed_unowned_fields_count) {
+  base::UmaHistogramBoolean(/*name=*/kFormSubmissionAfterFormRemovalHistogram,
+                            /*sample=*/submission_detected);
+  base::UmaHistogramCounts100(/*name=*/kFormRemovalRemovedFormsHistogram,
+                              /*sample=*/removed_forms_count);
+  base::UmaHistogramCounts100(
+      /*name=*/kFormRemovalRemovedUnownedFieldsHistogram,
+      /*sample=*/removed_unowned_fields_count);
+
+  if (submission_detected) {
+    CHECK(last_interacted_form_);
+    base::UmaHistogramBoolean(
+        /*name=*/kFormlessSubmissionAfterFormRemovalHistogram,
+        /*sample=*/!last_interacted_form_->form_data.renderer_id);
   }
 }
 

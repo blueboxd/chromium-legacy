@@ -2602,7 +2602,8 @@
         "alderlake",
         "alchemist",
         "raptorlake",
-        "meteorlake"
+        "meteorlake",
+        "lunarlake"
       ],
       "features": [
         "force_rgb10a2_overlay_support"
@@ -2763,7 +2764,8 @@
         "alderlake",
         "alchemist",
         "raptorlake",
-        "meteorlake"
+        "meteorlake",
+        "lunarlake"
       ],
       "features": [
         "supports_two_yuv_hardware_overlays"

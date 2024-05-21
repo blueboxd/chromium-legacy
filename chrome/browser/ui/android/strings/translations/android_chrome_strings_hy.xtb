@@ -15,6 +15,7 @@
 <translation id="1058669287135776095">Դուք անցանց ռեժիմում եք։ Ստուգեք կապը և նորից փորձեք։</translation>
 <translation id="10614374240317010">Կայքեր, որոնց համար գաղտնաբառերը երբեք չեն պահվում</translation>
 <translation id="107147699690128016">Եթե փոխեք ընդլայնումը, ֆայլը կարող է բացվել այլ հավելվածով և վնասել ձեր սարքը:</translation>
+<translation id="1080365971383768617">Գաղտնաբառերը ձեր բոլոր սարքերում</translation>
 <translation id="1082920045291562218">Ամփոփագրի մասին կարծիքով կիսվելու թերթը փակվեց</translation>
 <translation id="1089606299949659462">Ստուգումն ավարտված է</translation>
 <translation id="1095761715416917775">Համոզվեք, որ ձեր համաժամացված տվյալները միշտ հասանելի են ձեզ</translation>
@@ -39,7 +40,7 @@
 <translation id="1187810343066461819">Նաև ջնջել էջանիշները, պատմությունը և այլ տվյալներ այս մեքենայից</translation>
 <translation id="1193729455103054076">Օգտագործե՞լ հուսալի գաղտնաբառ</translation>
 <translation id="1197267115302279827">Տեղափոխել էջանիշները</translation>
-<translation id="1197761954713363183">Անցաբառի հաստատման թերթը փակված է</translation>
+<translation id="1197761954713363183">Մուտքի բանալու հաստատման թերթը փակված է</translation>
 <translation id="1201402288615127009">Հաջորդը</translation>
 <translation id="1202892408424955784">Ապրանքներ, որոնց գներին հետևում եք</translation>
 <translation id="1204037785786432551">Ներբեռնել հղումը</translation>
@@ -81,6 +82,7 @@
 <translation id="1383876407941801731">Որոնում</translation>
 <translation id="1384704387250346179">Թարգմանել Տեսապակու միջոցով <ph name="BEGIN_NEW" />Նոր<ph name="END_NEW" /></translation>
 <translation id="1386674309198842382">Ակտիվ է եղել <ph name="LAST_UPDATED" /> օր առաջ</translation>
+<translation id="1390418506739274310">Դուք կարող եք տեսնել պատմությունը այլ հավելվածներից, որոնք հղումներ են բացում Chrome-ում։ Ձեր Google հաշվում կարող են լինել այցելությունների պատմության այլ ձևեր, որոնք կարող եք գտնել <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> էջում։</translation>
 <translation id="13931502444227376">Շարունակելու համար <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> ընկերությունը կփոխանցի ձեր անունը, էլ․ հասցեն և պրոֆիլի նկարը այս կայքին։ Ծանոթացեք այս կայքի <ph name="BEGIN_LINK1" />օգտագործման պայմաններին<ph name="END_LINK1" />։</translation>
 <translation id="1397811292916898096">Որոնում <ph name="PRODUCT_NAME" />-ում</translation>
 <translation id="1407069428457324124">Մուգ թեմա</translation>
@@ -96,6 +98,7 @@
 <translation id="1448440926884431741">Էջանիշներում դասավորեք ապրանքները, որոնց հետևում եք</translation>
 <translation id="1466383950273130737">Ընտրեք Chrome-ի լեզուն</translation>
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> ֆայլի ներբեռնումը ձախողվեց՝ սերվերի հետ կապված խնդրի պատճառով:</translation>
+<translation id="1480287803138246127">Պատմության որոշ տվյալներ կարող են չցուցադրվել այստեղ։ Chrome-ի պատմության բոլոր տվյալները տեսնելու համար բացեք Chrome-ի ամբողջ պատմությունը։</translation>
 <translation id="148482509007564431">Էջանիշի պահման էջ</translation>
 <translation id="1492417797159476138">Օգտանունն արդեն պահված է այս կայքի համար</translation>
 <translation id="1493287004536771723">Դուք հետևում եք <ph name="SITE_NAME" /> կայքին</translation>
@@ -135,7 +138,7 @@
 <translation id="1718835860248848330">Վերջին 1 ժամվա</translation>
 <translation id="1724977129262658800">Ապակողպեք էկրանը՝ ձեր գաղտնաբառը փոխելու համար</translation>
 <translation id="1726477445370128854">Դուք կարող եք արագացնել Chrome-ի աշխատանքը, եթե թույլատրեք, որ այն նախապես էջեր բեռնի։</translation>
-<translation id="1728803206919861584">Պահե՞լ անցաբառը ինկոգնիտո ռեժիմից դուրս</translation>
+<translation id="1728803206919861584">Պահե՞լ մուտքի բանալին ինկոգնիտո ռեժիմից դուրս</translation>
 <translation id="1749561566933687563">Համաժամացրեք ձեր էջանիշները</translation>
 <translation id="1750238553597293878">Շարունակեք օգտագործել գաղտնաբառերը ձեր Google հաշվում</translation>
 <translation id="1750259112639922169">Ներդիրների խումբ – <ph name="TAB_COUNT" /> ներդիր</translation>
@@ -156,6 +159,7 @@
 <translation id="1825772852827001597">Վճարման եղանակները և Google Pay-ի հասցեները չեն գաղտնագրվի։ Chrome-ի այցելությունների պատմությունը չի համաժամացվի։
 Միայն ձեր անցաբառն ունեցող մարդիկ կարող են կարդալ ձեր գաղտնագրված տվյալները։ Անցաբառը չի ուղարկվում Google-ին կամ պահվում նրա կողմից։ Եթե մոռացել եք ձեր անցաբառը կամ ուզում եք փոխել այս կարգավորումը, <ph name="BEGIN_LINK" />ջնջեք Chrome-ի տվյալները ձեր հաշվում<ph name="END_LINK" />։</translation>
 <translation id="1829244130665387512">Գտնել էջում</translation>
+<translation id="1832459821645506983">Այո, թույլատրել</translation>
 <translation id="185383612275551373">Կատարեք համաժամացում, որպեսզի առավել համապատասխան բովանդակություն ստանաք Google-ից</translation>
 <translation id="1871098866036088250">Բացել Chrome դիտարկիչում</translation>
 <translation id="1877026089748256423">Chrome-ը հնացած է</translation>
@@ -371,7 +375,6 @@
 <translation id="2951071800649516099">Ավելացրեք էջեր ձեր ընթերցանության ցանկում</translation>
 <translation id="2956070106555335453">Ամփոփագիր</translation>
 <translation id="2961208450284224863">{READING_LIST_UNREAD_PAGE_COUNT,plural, =1{<ph name="READING_LIST_UNREAD_PAGE_COUNT_ONE" /> չկարդացված էջ}one{<ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> չկարդացված էջ}other{<ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> չկարդացված էջ}}</translation>
-<translation id="296370266220139811">Քիչ մուտքագրելով՝ ժամանակ խնայեք</translation>
 <translation id="2977350910003566746">Տեսակավորում ըստ վերջին բացվածի</translation>
 <translation id="297771753501244313">Ըստ օգտագործման ամսաթվի</translation>
 <translation id="2979025552038692506">Ընտրված ինկոգնիտո ներդիր</translation>
@@ -387,6 +390,7 @@
 <translation id="3003253259757197230">Ձեր այցելած էջերի URL-ներն ուղարկվում են Google-ին՝ կանխատեսելու, թե հաջորդիվ ինչ կայքեր կարող եք այցելել, և ցուցադրելու լրացուցիչ տեղեկություններ ձեր այցելած էջի մասին</translation>
 <translation id="3026955690410463085">Ներառել հղումը</translation>
 <translation id="3027644380269727216">Կայքում ձեր գործողությունների հիման վրա։ Այս կարգավորումը միացված է։</translation>
+<translation id="3027950907978057636"><ph name="APP_LABEL" /> հավելվածից</translation>
 <translation id="3029276696788198026">Առանց նախաբեռնման</translation>
 <translation id="3029704984691124060">Անցաբառերը չեն համընկնում</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Ստացեք օգնություն<ph name="END_LINK" /></translation>
@@ -424,6 +428,7 @@
 <translation id="3226612997184048185">Պահելով էջանիշները Google հաշվում՝ դուք կարող եք հետագծել ապրանքների գները Chrome-ում և ստանալ զեղչերի մասին ծանուցումներ</translation>
 <translation id="3227557059438308877">Google Chrome-ը որպես անվտանգության բանալի</translation>
 <translation id="3232293466644486101">Ջնջել այցելությունների պատմությունը…</translation>
+<translation id="3232459301230493791"><ph name="TAB_COUNT" /> ներդիր ջնջվեց</translation>
 <translation id="3232754137068452469">Վեբ ծրագիր</translation>
 <translation id="3236059992281584593">Մնացել է 1 րոպե</translation>
 <translation id="3237087289225714896">Սովորական նախաբեռնում՝</translation>
@@ -479,6 +484,7 @@
 <translation id="3518985090088779359">Ընդունել և շարունակել</translation>
 <translation id="3521388823983121502">Չհաջողվեց շարունակել <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" />-ի օգնությամբ</translation>
 <translation id="3522247891732774234">Առկա է թարմացում: Լրացուցիչ ընտրանքներ</translation>
+<translation id="3523789730715594198">Ցանկացած ժամանակ կարգավորումներում կարող եք կանգնեցնել համաժամացումը։ Google-ը կարող է ձեր պատմության հիման վրա անհատականացնել Որոնումը և այլ ծառայություններ։</translation>
 <translation id="3524138585025253783">Մշակողի միջերես</translation>
 <translation id="3524334353996115845">Թույլ տվեք, որ <ph name="ORIGIN" /> կայքը ստուգի ձեր ինքնությունը</translation>
 <translation id="3527085408025491307">Պանակ</translation>
@@ -640,7 +646,7 @@
 <translation id="4409271659088619928">Դուք օգտագործում եք <ph name="DSE" /> որոնողական համակարգը։ Որոնումների պատմությունը ջնջելու համար կարդացեք համապատասխան ցուցումները։</translation>
 <translation id="4415276339145661267">Կառավարել Google հաշիվը</translation>
 <translation id="4425140285732600465">Դուք հետևում եք այս ապրանքի գնին։ Երբ որևէ կայքում այն իջնի, դուք կստանաք ծանուցում։</translation>
-<translation id="4425173294238317796">Անցաբառի հաստատման թերթ</translation>
+<translation id="4425173294238317796">Մուտքի բանալու հաստատման թերթ</translation>
 <translation id="442518031075347249">Դուք այլևս չեք կարողանա օգտագործել ձեր վիրտուալ քարտը՝ Google Pay-ի միջոցով վճարումներ կատարելու համար։ <ph name="BEGIN_LINK1" />Իմանալ ավելին վիրտուալ քարտերի մասին<ph name="END_LINK1" /></translation>
 <translation id="4430277756566635951">Ներկայումս ընտրված է <ph name="EMAIL" /> հաշիվը։ Ընտրեք հաշիվ։</translation>
 <translation id="4452411734226507615">Փակել <ph name="TAB_TITLE" /> ներդիրը</translation>
@@ -761,7 +767,6 @@
 <translation id="4932247056774066048">Դուք դուրս եք գալիս <ph name="DOMAIN_NAME" /> տիրույթի ադմինիստրատորի կողմից կառավարվող հաշվից: Chrome-ի ձեր տվյալները կհեռացվեն այս սարքից, սակայն կպահպանվեն Google հաշվում:</translation>
 <translation id="4943703118917034429">Վիրտուալ իրականություն</translation>
 <translation id="4943872375798546930">Արդյունքներ չկան</translation>
-<translation id="4947095514661310122"><ph name="APP_LABEL" /> հավելվածից</translation>
 <translation id="4950924971025849764">Դուք կարող եք օգտագործել այս հեռախոսը որպես անվտանգության բանալի, երբ մուտք եք գործում միևնույն Google հաշիվ այլ սարքերում։</translation>
 <translation id="4957722034734105353">Իմանալ ավելին…</translation>
 <translation id="4961107849584082341">Թարգմանել կայքը</translation>
@@ -804,7 +809,7 @@
 <translation id="5142281402488957685">Նոր պատմություններ տեսնելու համար քաշեք էջը ներքև</translation>
 <translation id="5152843274749979095">Աջակցվող հավելվածներ չեն տեղադրվել</translation>
 <translation id="5161254044473106830">Վերնագիրը պարտադիր է</translation>
-<translation id="5161262286013276579">Անցաբառի հաստատման թերթը բացված է</translation>
+<translation id="5161262286013276579">Մուտքի բանալու հաստատման թերթը բացված է</translation>
 <translation id="5163361352003913350">Ներկայումս ընտրված է <ph name="NAME" /> հաշիվը։ Ընտրեք հաշիվ։</translation>
 <translation id="5170568018924773124">Ցույց տալ պանակում</translation>
 <translation id="5171045022955879922">Որոնեք կամ մուտքագրեք URL-ը</translation>
@@ -863,6 +868,7 @@
 <translation id="5515439363601853141">Գաղտնաբառը տեսնելու համար ապակողպեք էկրանը</translation>
 <translation id="5517095782334947753">Դուք էջանիշներ, պատմություն, գաղտնաբառեր և այլ կարգավորումներ ունեք <ph name="FROM_ACCOUNT" /> հաշվից:</translation>
 <translation id="5524843473235508879">Վերահասցեավորումն արգելափակված է:</translation>
+<translation id="5526281268548144413">Հնարավոր չէ փակել ներդիրները, որոնք բացված են մեկից ավելի պատուհանում</translation>
 <translation id="5528925345478618296">{MINUTES,plural, =1{# ր առաջ}one{# ր առաջ}other{# ր առաջ}}</translation>
 <translation id="5548606607480005320">Անվտանգության ստուգում</translation>
 <translation id="5554520618550346933">Երբ գաղտնաբառ եք օգտագործում, Chrome-ը զգուշացնում է ձեզ, եթե այն հրապարակվել է համացանցում։ Այդ ժամանակ ձեր գաղտնաբառերը և օգտանունները գաղտնագրվում են, այնպես որ ոչ ոք, այդ թվում՝ Google-ը, չի կարող կարդալ դրանք։</translation>
@@ -1006,6 +1012,7 @@
 Օրինակ, որոշ վեբկայքեր կարող են այս հարցմանը պատասխանել՝ ներկայացնելով գովազդ, որը հիմնված չէ ձեր այցելությունների վրա: Շատ վեբկայքեր կշարունակեն հավաքել և օգտագործել ձեր այցելությունների պատմությունը: Այն կարող է օգտագործվել, օրինակ, անվտանգությունը բարելավելու, բովանդակություն, գովազդ և խորհուրդներ տրամադրելու և վիճակագրական տվյալներ հավաքելու նպատակով:</translation>
 <translation id="6233974827872475843">Պահեք այս սարքի գաղտնաբառերը ձեր Google հաշվում՝ միացնելով համաժամացումը</translation>
 <translation id="6247557882553405851">Google գաղտնաբառերի կառավարիչ</translation>
+<translation id="6251449557817521191">Դիտեք Chrome-ի պատմությունն այստեղ</translation>
 <translation id="6255794742848779505">Մենք փոխում ենք այս սարքում գաղտնաբառերի պահման եղանակը</translation>
 <translation id="6264376385120300461">Ներբեռնել</translation>
 <translation id="6277522088822131679">Այս էջը տպելիս խնդիր առաջացավ: Նորից փորձեք:</translation>
@@ -1134,11 +1141,13 @@
 <translation id="6813446258015311409">Մուտք գործել Chrome, բացված է։</translation>
 <translation id="6817747507826986771">Արագ կիսվեք այս էջով։ Այս դյուրանցումը փոփոխելու համար հպեք դրան և պահեք։</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6822587385560699678">Երբ այս գործառույթը միացված է, գաղտնաբառերը պահվում են <ph name="ACCOUNT" /> հաշվում։ Երբ այն անջատված է, գաղտնաբառերը պահվում են միայն այս սարքում։</translation>
 <translation id="6823561724060793716">Հասցեագոտում դուք կարող եք լրացուցիչ տեղեկություններ բացել ձեր այցելած էջի մասին</translation>
 <translation id="6828070228333235514">Դադարեցնել գների հետագծումը</translation>
 <translation id="6830728435402077660">Անվտանգ չէ</translation>
 <translation id="6831043979455480757">Թարգմանել</translation>
 <translation id="6836206421467243968">Վերականգնել «<ph name="TITLE_OF_GROUP" />» ներդիրների խումբը որպես ներդիրների նոր ֆոնային խումբ։</translation>
+<translation id="683630338945552556">Օգտագործել և պահել գաղտնաբառերը Google հաշվում</translation>
 <translation id="6846298663435243399">Բեռնում…</translation>
 <translation id="6850409657436465440">Ներբեռնումն ընթացքում է</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> փակված ներդիր</translation>
@@ -1180,7 +1189,7 @@
 <translation id="6987047470128880212">Ինկոգնիտո ռեժիմը հասանելի չէ այս սարքում</translation>
 <translation id="6995899638241819463">Զգուշացնել, եթե տվյալների արտահոսքի արդյունքում իմ գաղտնաբառերը հայտնի դառնան կողմնակի անձանց</translation>
 <translation id="6996145122199359148">Ներբեռնել այս էջը</translation>
-<translation id="7013762323294215682">Այս անցաբառը կպահվի ձեր գաղտնաբառի կառավարիչում։ Բոլորը, ովքեր թույլտվություն ունեն, կկարողանան օգտագործել այն։</translation>
+<translation id="7013762323294215682">Այս մուտքի բանալին կպահվի ձեր գաղտնաբառի կառավարիչում։ Բոլորը, ովքեր թույլտվություն ունեն, կկարողանան օգտագործել այն։</translation>
 <translation id="7020741890149022655">Ավելացնել ընթերցանության ցանկում <ph name="BEGIN_NEW" />Նոր<ph name="END_NEW" /></translation>
 <translation id="7022756207310403729">Բացել դիտարկիչով</translation>
 <translation id="7025769836128625875">Սա արհեստական բանականության փորձառական գործառույթ է և երբեմն կարող է սխալներով աշխատել։ <ph name="BEGIN_LINK" />Իմանալ ավելին<ph name="END_LINK" /></translation>
@@ -1337,6 +1346,7 @@
 <translation id="7759809451544302770">Կամընտիր</translation>
 <translation id="7762668264895820836">SD քարտ <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Ավելացնել հասցե</translation>
+<translation id="776533689993750361"><ph name="TAB_COUNT" /> ներդիր ջնջվեց</translation>
 <translation id="7772032839648071052">Հաստատեք անցաբառը</translation>
 <translation id="7772375229873196092">Փակել <ph name="APP_NAME" />-ը</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ու վճարման ևս <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> եղանակ}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ու վճարման ևս <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> եղանակ}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ու վճարման ևս <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> եղանակ}}</translation>

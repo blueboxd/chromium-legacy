@@ -15,6 +15,7 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_sink.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
+#include "third_party/blink/renderer/platform/audio/audio_frame_stats_accumulator.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -76,7 +77,10 @@ class PLATFORM_EXPORT MediaStreamTrackPlatform {
   // https://w3c.github.io/mediacapture-extensions/#the-mediastreamtrackaudiostats-interface
   class PLATFORM_EXPORT AudioFrameStats {
    public:
-    AudioFrameStats();
+    AudioFrameStats() = default;
+    AudioFrameStats(const AudioFrameStats&) = delete;
+    AudioFrameStats& operator=(const AudioFrameStats&) = delete;
+    ~AudioFrameStats() = default;
 
     // Updates the stats with information from a new buffer.
     void Update(const media::AudioParameters& params,
@@ -91,38 +95,17 @@ class PLATFORM_EXPORT MediaStreamTrackPlatform {
     void Absorb(AudioFrameStats& from);
 
     // Implementations of the getters in the API.
-    size_t DeliveredFrames();
-    base::TimeDelta DeliveredFramesDuration();
-    size_t TotalFrames();
-    base::TimeDelta TotalFramesDuration();
-    base::TimeDelta Latency();
-    base::TimeDelta AverageLatency();
-    base::TimeDelta MinimumLatency();
-    base::TimeDelta MaximumLatency();
+    size_t DeliveredFrames() const;
+    base::TimeDelta DeliveredFramesDuration() const;
+    size_t TotalFrames() const;
+    base::TimeDelta TotalFramesDuration() const;
+    base::TimeDelta Latency() const;
+    base::TimeDelta AverageLatency() const;
+    base::TimeDelta MinimumLatency() const;
+    base::TimeDelta MaximumLatency() const;
 
    private:
-    // Counters for delivered frames and glitched frames. These only
-    // increment.
-    size_t delivered_frames_ = 0u;
-    base::TimeDelta delivered_frames_duration_;
-    size_t glitch_frames_ = 0u;
-    base::TimeDelta glitch_frames_duration_;
-
-    // Latency of the last audio buffer.
-    base::TimeDelta last_latency_;
-
-    // Latency information about an interval. It is accumulated on calls to
-    // Update() and Absorb(), and reset when the object is used as an input for
-    // a call to Absorb() on another AudioFrameStats object.
-    size_t interval_frames_ = 0u;
-    base::TimeDelta interval_frames_latency_sum_;
-    base::TimeDelta interval_minimum_latency_;
-    base::TimeDelta interval_maximum_latency_;
-
-    // Helper function to merge new latency extremes into the existing latency
-    // extremes.
-    void MergeLatencyExtremes(base::TimeDelta new_minumum,
-                              base::TimeDelta new_maximum);
+    AudioFrameStatsAccumulator accumulator_;
   };
 
   struct CaptureHandle {
@@ -167,7 +150,7 @@ class PLATFORM_EXPORT MediaStreamTrackPlatform {
 
   virtual VideoFrameStats GetVideoFrameStats() const {
     // This method is only callable on video tracks.
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return {};
   }
 
@@ -177,7 +160,7 @@ class PLATFORM_EXPORT MediaStreamTrackPlatform {
   // consecutive but non-overlaping intervals.
   virtual void TransferAudioFrameStatsTo(AudioFrameStats& destination) {
     // This method is only callable on audio tracks.
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   virtual CaptureHandle GetCaptureHandle();
@@ -201,7 +184,9 @@ class PLATFORM_EXPORT MediaStreamTrackPlatform {
   // Add an audio sink to the track. This function must only be called for audio
   // tracks. It will trigger a OnSetFormat() call on the |sink| before the first
   // chunk of audio is delivered.
-  virtual void AddSink(WebMediaStreamAudioSink* sink) { NOTREACHED(); }
+  virtual void AddSink(WebMediaStreamAudioSink* sink) {
+    NOTREACHED_IN_MIGRATION();
+  }
   // Add a video sink to track. This function must only be called for video
   // tracks.  The |sink| will receive video track state changes on the main
   // render thread and video frames in the |callback| method on the IO-thread.
@@ -210,7 +195,7 @@ class PLATFORM_EXPORT MediaStreamTrackPlatform {
                        const VideoCaptureDeliverFrameCB& callback,
                        MediaStreamVideoSink::IsSecure is_secure,
                        MediaStreamVideoSink::UsesAlpha uses_alpha) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
  private:

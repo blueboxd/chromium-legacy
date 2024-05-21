@@ -29,6 +29,7 @@
       'chromeos-arm-generic-cfi-thin-lto-chrome': 'chromeos_arm-generic_cfi_thin_lto_official_reclient',
       'chromeos-arm64-generic-cfi-thin-lto-chrome': 'chromeos_arm64-generic_cfi_thin_lto_official_reclient',
       'chromeos-betty-arc-r-chrome': 'chromeos_betty-arc-r_include_unwind_tables_official_use_fake_dbus_clients_reclient',
+      'chromeos-betty-chrome': 'chromeos_betty_include_unwind_tables_official_reclient',
       'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'chromeos_betty-pi-arc_cfi_thin_lto_official_reclient',
       'chromeos-betty-pi-arc-chrome': 'chromeos_betty-pi-arc_dchecks_reclient',
       'chromeos-brya-chrome-skylab': 'chromeos_brya_include_unwind_tables_official_skylab_reclient',
@@ -212,6 +213,7 @@
     },
 
     'internal.chromeos.fyi': {
+      'chromeos-betty-chrome': 'chromeos_betty_include_unwind_tables_official_reclient',
       'chromeos-betty-pi-arc-chrome-accessibility-fyi': 'chromeos_betty-pi-arc_dchecks_reclient',
       'chromeos-betty-pi-arc-chrome-dchecks': 'chromeos_betty-pi-arc_dchecks_reclient',
       'chromeos-betty-pi-arc-finch-smoke-chrome': 'chromeos_betty-pi-arc_dchecks_reclient',
@@ -304,23 +306,8 @@
     },
 
     'tryserver.chromium.perf': {
-      'Android Compile Perf': 'official_goma_minimal_symbols_android',
-      'Android Compile Perf PGO': 'official_goma_minimal_symbols_android_pgo',
       'Android arm64 Compile Perf': 'official_minimal_symbols_android_arm64',
-      'Android arm64 Compile Perf PGO': 'official_goma_minimal_symbols_android_arm64_pgo',
-      'Android arm64 High End Compile Perf': 'official_goma_minimal_symbols_android_arm64_high_end',
-      'Android arm64 High End Compile Perf PGO': 'official_goma_minimal_symbols_android_arm64_high_end_pgo',
-      'Chromeos Amd64 Generic Lacros Builder Perf': 'chromeos_amd64-generic_lacros_official',
-      'Fuchsia Builder Perf': 'official_goma_fuchsia_arm64_perf',
-      'Fuchsia Builder Perf x64': 'official_goma_fuchsia_x64_perf',
       'Linux Builder Perf': 'official_linux_perf',
-      'Linux Builder Perf PGO': 'official_goma_linux_perf_pgo',
-      'Mac Builder Perf': 'official_goma_mac_perf',
-      'Mac Builder Perf PGO': 'official_goma_mac_perf_pgo',
-      'Mac arm Builder Perf': 'official_goma_mac_arm_perf',
-      'Mac arm Builder Perf PGO': 'official_goma_mac_arm_perf_pgo',
-      'Win x64 Builder Perf': 'official_goma_perf',
-      'Win x64 Builder Perf PGO': 'official_goma_perf_pgo',
     },
 
     'tryserver.devtools-frontend': {
@@ -404,10 +391,6 @@
       'chrome_branded', 'minimal_symbols', 'release_bot_reclient',
     ],
 
-    'chromeos_amd64-generic_lacros_official': [
-      'chromeos_amd64-generic-crostoolchain', 'lacros', 'official', 'minimal_symbols', 'cfi', 'thin_lto', 'no_reclient', 'goma',
-    ],
-
     'chromeos_amd64-generic_lacros_official_reclient': [
       'chromeos_amd64-generic-crostoolchain_reclient', 'lacros', 'official', 'minimal_symbols', 'cfi', 'thin_lto',
     ],
@@ -484,6 +467,11 @@
     'chromeos_betty-pi-arc_dchecks_reclient': [
       'chromeos_device_reclient', 'betty-pi-arc', 'include_unwind_tables', 'official',
       'use_fake_dbus_clients', 'dcheck_always_on',
+      'also_build_lacros_chrome_for_architecture_amd64', 'ozone_headless'
+    ],
+
+    'chromeos_betty_include_unwind_tables_official_reclient': [
+      'chromeos_device_reclient', 'betty', 'include_unwind_tables', 'official',
       'also_build_lacros_chrome_for_architecture_amd64', 'ozone_headless'
     ],
 
@@ -690,62 +678,6 @@
 
     'official_fuchsia_x64': [
       'fuchsia', 'official', 'x64', 'custom_args',
-    ],
-
-    'official_goma_fuchsia_arm64_perf': [
-      'cast_receiver_size_optimized_internal', 'official', 'goma', 'minimal_symbols', 'fuchsia', 'fuchsia_include_sd_images', 'arm64', 'ffmpeg_branding_chrome', 'proprietary_codecs', 'test_isolate_no_emulator'
-    ],
-
-    'official_goma_fuchsia_x64_perf': [
-      'official', 'goma', 'minimal_symbols', 'fuchsia', 'x64', 'ffmpeg_branding_chrome', 'proprietary_codecs', 'test_isolate_no_emulator', 'fuchsia_chrome'
-    ],
-
-    'official_goma_linux_perf_pgo': [
-      'official', 'goma', 'no_gnome_keyring', 'minimal_symbols',
-    ],
-
-    'official_goma_mac_arm_perf': [
-      'official', 'goma', 'no_keystone_registration_framework', 'no_widevine_cdm_host_verification', 'minimal_symbols', 'arm64', 'pgo_phase_0',
-    ],
-
-    'official_goma_mac_arm_perf_pgo': [
-      'official', 'goma', 'no_keystone_registration_framework', 'no_widevine_cdm_host_verification', 'minimal_symbols', 'arm64',
-    ],
-
-    'official_goma_mac_perf': [
-      'official', 'goma', 'no_keystone_registration_framework', 'no_widevine_cdm_host_verification', 'minimal_symbols', 'pgo_phase_0',
-    ],
-
-    'official_goma_mac_perf_pgo': [
-      'official', 'goma', 'no_keystone_registration_framework', 'no_widevine_cdm_host_verification', 'minimal_symbols',
-    ],
-
-    'official_goma_minimal_symbols_android': [
-      'official', 'goma', 'minimal_symbols', 'android', 'pgo_phase_0', 'no_default_afdo'
-    ],
-
-    'official_goma_minimal_symbols_android_arm64_high_end': [
-      'official', 'goma', 'minimal_symbols', 'android', 'arm64', 'pgo_phase_0', 'no_default_afdo', 'android_high_end'
-    ],
-
-    'official_goma_minimal_symbols_android_arm64_high_end_pgo': [
-      'official', 'goma', 'minimal_symbols', 'android', 'arm64', 'no_default_afdo', 'android_high_end'
-    ],
-
-    'official_goma_minimal_symbols_android_arm64_pgo': [
-      'official', 'goma', 'minimal_symbols', 'android', 'arm64', 'android_low_end'
-    ],
-
-    'official_goma_minimal_symbols_android_pgo': [
-      'official', 'goma', 'minimal_symbols', 'android'
-    ],
-
-    'official_goma_perf': [
-      'official', 'goma', 'minimal_symbols', 'pgo_phase_0',
-    ],
-
-    'official_goma_perf_pgo': [
-      'official', 'goma', 'minimal_symbols',
     ],
 
    'official_lacros_amd64_pgo': [
@@ -1051,6 +983,10 @@
       'gn_args': 'is_asan=true',
     },
 
+    'betty': {
+      'args_file': '//build/args/chromeos/betty.gni',
+    },
+
     'betty-arc-r': {
       'args_file': '//build/args/chromeos/betty-arc-r.gni',
     },
@@ -1260,20 +1196,12 @@
       'gn_args': 'target_os="fuchsia"',
     },
 
-    'fuchsia_chrome': {
-      'gn_args': 'fuchsia_browser_type="chrome"',
-    },
-
     'fuchsia_include_sd_images': {
       'gn_args': 'fuchsia_additional_boot_images=["//third_party/fuchsia-sdk/images-internal/astro-release/","//third_party/fuchsia-sdk/images-internal/sherlock-release/","//third_party/fuchsia-sdk/images-internal/nelson-release/"]',
     },
 
     'full_symbols': {
       'gn_args': 'symbol_level=2',
-    },
-
-    'goma': {
-      'gn_args': 'use_goma=true',
     },
 
     'gpu_tests': {
@@ -1343,10 +1271,6 @@
 
     'no_keystone_registration_framework': {
       'gn_args': 'enable_keystone_registration_framework=false',
-    },
-
-    'no_reclient': {
-      'gn_args': 'use_remoteexec=false',
     },
 
     'no_symbols': {

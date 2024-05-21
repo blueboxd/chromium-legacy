@@ -143,6 +143,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
                                  std::optional<mojo_base::BigBuffer> metadata);
   void OnBodyReadingComplete(int net_error);
 
+  void SetCommitResponsibility(FetchResponseFrom fetch_response_from) override;
+
   // ServiceWorkerResourceLoader overrides:
   void CommitResponseHeaders(
       const network::mojom::URLResponseHeadPtr&) override;
@@ -227,6 +229,9 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   void DidCacheStorageMatch(base::TimeTicks event_dispatch_time,
                             blink::mojom::MatchResultPtr result);
+
+  void MaybeDeleteThis();
+  bool IsResponseAlreadyCommittedByRaceNetworkRequest();
 
   network::mojom::URLResponseHeadPtr response_head_;
   std::optional<net::RedirectInfo> redirect_info_;

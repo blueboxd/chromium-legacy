@@ -5,10 +5,10 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.app.Activity;
-import android.content.Context;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
@@ -17,19 +17,15 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.profiles.ProfileProvider;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab_ui.TabContentManager;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
-import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab.TitleProvider;
-import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.TabListCoordinator.TabListMode;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.tab_ui.R;
@@ -38,10 +34,13 @@ import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator.SystemUiScrimDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.util.TokenHolder;
 
 /** Holds dependencies for constructing a {@link TabSwitcherPane}. */
 public class TabSwitcherPaneCoordinatorFactory {
-    private final TitleProvider mTitleProvider = this::getTitle;
+    private final TokenHolder mMessageManagerTokenHolder =
+            new TokenHolder(this::onMessageManagerTokenStateChanged);
+
     private final Activity mActivity;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
     private final OneshotSupplier<ProfileProvider> mProfileProviderSupplier;
@@ -55,6 +54,8 @@ public class TabSwitcherPaneCoordinatorFactory {
     private final ModalDialogManager mModalDialogManager;
     private final @TabListMode int mMode;
     private final @NonNull BottomSheetController mBottomSheetController;
+
+    private @Nullable TabSwitcherMessageManager mMessageManager;
 
     /**
      * @param activity The {@link Activity} that hosts the pane.
@@ -124,28 +125,28 @@ public class TabSwitcherPaneCoordinatorFactory {
             @NonNull ObservableSupplier<Boolean> isAnimatingSupplier,
             @NonNull Callback<Integer> onTabClickCallback,
             boolean isIncognito) {
+        int token = mMessageManagerTokenHolder.acquireToken();
+        assert mMessageManager != null;
         return new TabSwitcherPaneCoordinator(
                 mActivity,
-                mLifecycleDispatcher,
                 mProfileProviderSupplier,
                 createTabModelFilterSupplier(isIncognito),
                 () -> mTabModelSelector.getModel(false),
                 mTabContentManager,
                 mTabCreatorManager,
-                mTitleProvider,
                 mBrowserControlsStateProvider,
-                mMultiWindowModeStateDispatcher,
                 mScrimCoordinator,
-                mSnackbarManager,
                 mModalDialogManager,
                 mBottomSheetController,
+                mMessageManager,
                 parentView,
                 resetHandler,
                 isVisibleSupplier,
                 isAnimatingSupplier,
                 onTabClickCallback,
                 mMode,
-                /* supportsEmptyState= */ !isIncognito);
+                /* supportsEmptyState= */ !isIncognito,
+                () -> mMessageManagerTokenHolder.releaseToken(token));
     }
 
     /** Returns the {@link TabListMode} of the produced {@link TabListCoordinator}s. */
@@ -155,23 +156,6 @@ public class TabSwitcherPaneCoordinatorFactory {
         // low-end and is not subject to change. Certain behaviors are limited to LIST vs GRID
         // mode and this information may be required even if a coordinator does not exist.
         return mMode;
-    }
-
-    /** Returns the title of a tab or tab group for display in the tab switcher. */
-    @VisibleForTesting
-    String getTitle(@NonNull Context context, @NonNull PseudoTab pseudoTab) {
-        assert mTabModelSelector.isTabStateInitialized();
-        TabGroupModelFilter filter =
-                (TabGroupModelFilter)
-                        mTabModelSelector
-                                .getTabModelFilterProvider()
-                                .getTabModelFilter(pseudoTab.isIncognito());
-        Tab tab = TabModelUtils.getTabById(filter.getTabModel(), pseudoTab.getId());
-        assert tab != null;
-        if (!filter.isTabInTabGroup(tab)) return tab.getTitle();
-
-        return TabGroupTitleEditor.getDefaultTitle(
-                context, filter.getRelatedTabCountForRootId(tab.getRootId()));
     }
 
     /** Returns a scrim coordinator to use for tab grid dialog on LFF devices. */
@@ -226,5 +210,43 @@ public class TabSwitcherPaneCoordinatorFactory {
                     });
         }
         return tabModelFilterSupplier;
+    }
+
+    private void onMessageManagerTokenStateChanged() {
+        if (mMessageManagerTokenHolder.hasTokens()) {
+            assert mMessageManager == null : "MessageManager should not exist yet.";
+            mMessageManager =
+                    new TabSwitcherMessageManager(
+                            mActivity,
+                            mLifecycleDispatcher,
+                            mTabModelSelector
+                                    .getTabModelFilterProvider()
+                                    .getCurrentTabModelFilterSupplier(),
+                            mMultiWindowModeStateDispatcher,
+                            mSnackbarManager,
+                            mModalDialogManager);
+            if (mLifecycleDispatcher.isNativeInitializationFinished()) {
+                mMessageManager.initWithNative(
+                        mProfileProviderSupplier.get().getOriginalProfile(), getTabListMode());
+            } else {
+                mLifecycleDispatcher.register(
+                        new NativeInitObserver() {
+                            @Override
+                            public void onFinishNativeInitialization() {
+                                mMessageManager.initWithNative(
+                                        mProfileProviderSupplier.get().getOriginalProfile(),
+                                        getTabListMode());
+                                mLifecycleDispatcher.unregister(this);
+                            }
+                        });
+            }
+        } else {
+            mMessageManager.destroy();
+            mMessageManager = null;
+        }
+    }
+
+    TabSwitcherMessageManager getMessageManagerForTesting() {
+        return mMessageManager;
     }
 }

@@ -9,6 +9,7 @@ alignSelf
 alignmentBaseline
 all
 anchorName
+anchorScope
 animation
 animationComposition
 animationDelay
@@ -386,6 +387,7 @@ scrollMarginInlineStart
 scrollMarginLeft
 scrollMarginRight
 scrollMarginTop
+scrollMarkers
 scrollPadding
 scrollPaddingBlock
 scrollPaddingBlockEnd

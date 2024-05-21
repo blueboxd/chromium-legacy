@@ -382,6 +382,8 @@ LayoutUnit CommitPendingEndOverhang(const InlineItem& text_item,
 }
 
 std::pair<LayoutUnit, LayoutUnit> ApplyRubyAlign(LayoutUnit available_line_size,
+                                                 bool on_start_edge,
+                                                 bool on_end_edge,
                                                  LineInfo& line_info) {
   DCHECK(line_info.IsRubyBase() || line_info.IsRubyText());
   LayoutUnit space = available_line_size - line_info.WidthForAlignment();
@@ -394,14 +396,31 @@ std::pair<LayoutUnit, LayoutUnit> ApplyRubyAlign(LayoutUnit available_line_size,
     JustificationTarget target = JustificationTarget::kNormal;
     if (line_info.IsRubyBase()) {
       target = JustificationTarget::kRubyBase;
+      // Switch to `space-between` if this needs to align both edges.
+      if (on_start_edge && on_end_edge) {
+        target = JustificationTarget::kNormal;
+      }
     } else {
       DCHECK(line_info.IsRubyText());
       target = JustificationTarget::kRubyText;
     }
     std::optional<LayoutUnit> inset =
         ApplyJustification(space, target, &line_info);
+    // https://drafts.csswg.org/css-ruby/#line-edge
     if (inset) {
+      if (on_start_edge && !on_end_edge) {
+        return {LayoutUnit(), *inset * 2};
+      }
+      if (!on_start_edge && on_end_edge) {
+        return {*inset * 2, LayoutUnit()};
+      }
       return {*inset, *inset};
+    }
+    if (on_start_edge && !on_end_edge) {
+      return {LayoutUnit(), space};
+    }
+    if (!on_start_edge && on_end_edge) {
+      return {space, LayoutUnit()};
     }
     return {space / 2, space / 2};
   }
@@ -428,7 +447,7 @@ std::pair<LayoutUnit, LayoutUnit> ApplyRubyAlign(LayoutUnit available_line_size,
     case ETextAlign::kStart:
     case ETextAlign::kEnd:
     case ETextAlign::kJustify:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
   return {LayoutUnit(), LayoutUnit()};
@@ -576,11 +595,12 @@ PhysicalRect ComputeRubyEmHeightBox(const PhysicalFragment& fragment,
     case PhysicalFragment::kFragmentBox:
       return ComputeRubyEmHeightBox(To<PhysicalBoxFragment>(fragment));
     case PhysicalFragment::kFragmentLineBox:
-      NOTREACHED() << "You must call LineBoxFragment::ComputeRubyEmHeightBox "
-                      "explicitly.";
+      NOTREACHED_IN_MIGRATION()
+          << "You must call LineBoxFragment::ComputeRubyEmHeightBox "
+             "explicitly.";
       break;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return {{}, fragment.Size()};
 }
 
@@ -592,7 +612,7 @@ void AdjustRubyEmHeightBoxForPropagation(const PhysicalFragment& fragment,
     return;
   }
   if (UNLIKELY(fragment.IsLayoutObjectDestroyedOrMoved())) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return;
   }
 
@@ -658,7 +678,7 @@ void AddRubyEmHeightBoxForInlineChild(const PhysicalFragment& child,
     const FragmentItem* item = descendants.CurrentItem();
     DCHECK(item);
     if (UNLIKELY(item->IsLayoutObjectDestroyedOrMoved())) {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       descendants.MoveToNextSkippingChildren();
       continue;
     }
@@ -930,7 +950,7 @@ PhysicalRect ComputeRubyEmHeightBox(const PhysicalBoxFragment& box_fragment) {
   // TODO(kojii): It might be that |ComputeAnnotationOverflow| should move to
   // scrollable overflow recalc, but it is to be thought out.
   if (UNLIKELY(box_fragment.IsLayoutObjectDestroyedOrMoved())) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return PhysicalRect();
   }
   const LayoutObject* layout_object = box_fragment.GetLayoutObject();
@@ -957,7 +977,7 @@ PhysicalRect ComputeRubyEmHeightBox(const PhysicalBoxFragment& box_fragment) {
     }
     return overflow;
   } else {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
   return PhysicalRect({}, box_fragment.Size());
 }
@@ -983,8 +1003,9 @@ void UpdateRubyColumnInlinePositions(
         inline_offset = inline_size;
       }
     } else {
-      NOTREACHED() << " LogicalLineItems::size()=" << line_items.size()
-                   << " LogicalRubyColumn::start_index=" << start_index;
+      NOTREACHED_IN_MIGRATION()
+          << " LogicalLineItems::size()=" << line_items.size()
+          << " LogicalRubyColumn::start_index=" << start_index;
     }
     // TODO(crbug.com/324111880): Handle overhang.
     column->annotation_items->MoveInInlineDirection(inline_offset);

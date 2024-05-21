@@ -68,7 +68,6 @@
 <translation id="2241587408274973373">Tarjetas de la página Nueva pestaña</translation>
 <translation id="2241634353105152135">Solo esta vez</translation>
 <translation id="2253414712144136228">Quitar <ph name="NAME_OF_LIST_ITEM" /></translation>
-<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{Se bloqueó 1 sitio}other{Se bloquearon # sitios}}</translation>
 <translation id="228293613124499805">Es probable que la mayoría de los sitios que visitas guarden datos en tu dispositivo, a menudo para mejorar tu experiencia, ya que guardan tus preferencias o la información que compartes con ellos. Te recomendamos que mantengas esta configuración activada.</translation>
 <translation id="2289270750774289114">Preguntarme cuando un sitio intente conectarse a dispositivos Bluetooth cercanos (recomendado)</translation>
 <translation id="2315043854645842844">El sistema operativo no admite la selección de certificados del lado del cliente.</translation>
@@ -221,7 +220,7 @@
 <translation id="4751476147751820511">Sensores de luz o movimiento</translation>
 <translation id="4755971844837804407">Cuando esta opción está activada, los sitios pueden mostrarte cualquier anuncio. Cuando está desactivada, los sitios no pueden mostrar anuncios intrusivos o engañosos.</translation>
 <translation id="4779083564647765204">Zoom</translation>
-<translation id="4811450222531576619">Obtén más información sobre el tema y la fuente de la página</translation>
+<translation id="4811450222531576619">Más información sobre el tema y la fuente</translation>
 <translation id="4836046166855586901">Permitir que los sitios pregunten en qué momento estás usando activamente este dispositivo</translation>
 <translation id="483914009762354899">Incluir todos los sitios en este dominio</translation>
 <translation id="4883854917563148705">No puede restablecerse la configuración administrada</translation>
@@ -305,6 +304,7 @@
 <translation id="6015775454662021376">Controla el acceso de este sitio a tu dispositivo</translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="6042308850641462728">Más</translation>
+<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Tu pestaña más reciente</translation>
 <translation id="6064125863973209585">Descargas completadas</translation>
 <translation id="6071501408666570960">Es posible que se cierre tu sesión en este sitio</translation>
 <translation id="6120483543004435978">Cuando esta opción está activada, los sitios pueden solicitar saber si estás usando activamente el dispositivo. Cuando está desactivada, los sitios no pueden saber si estás usando activamente el dispositivo.</translation>
@@ -426,6 +426,7 @@
 <translation id="7986741934819883144">Seleccionar un contacto</translation>
 <translation id="7990211076305263060">Cuando esta opción está activada, los sitios pueden solicitar permiso para usar el micrófono. Cuando está desactivada, los sitios no pueden usar el micrófono.</translation>
 <translation id="8007176423574883786">Desactivado para este dispositivo</translation>
+<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> De <ph name="FROM_DEVICE" /></translation>
 <translation id="802154636333426148">Error en la descarga</translation>
 <translation id="8042586301629853791">Ordenar por:</translation>
 <translation id="8067883171444229417">Reproducir video</translation>
@@ -480,7 +481,6 @@
 <translation id="8721719390026067591">Cuando esta opción está activada, los sitios pueden solicitar permiso para buscar dispositivos Bluetooth. Cuando está desactivada, los sitios no pueden buscar dispositivos Bluetooth.</translation>
 <translation id="8725066075913043281">Intentar nuevamente</translation>
 <translation id="8730621377337864115">Listo</translation>
-<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{Se permite 1 sitio}other{Se permiten # sitios}}</translation>
 <translation id="8751914237388039244">Seleccionar una imagen</translation>
 <translation id="8800034312320686233">¿No funciona el sitio?</translation>
 <translation id="8801436777607969138">Bloquea JavaScript para un sitio específico.</translation>

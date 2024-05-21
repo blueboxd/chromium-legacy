@@ -358,6 +358,33 @@ using chrome_test_util::SettingsDoneButton;
   [SigninEarlGreyUI verifySigninPromoNotVisible];
 }
 
+// Tests that account settings promo is displayed when the bookmark view is
+// opened from an incognito tab.
+// See: crbug.com/339472472.
+- (void)testAccountSettingsHiddenFromIncognitoTab {
+  FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey signinWithFakeIdentity:fakeIdentity1];
+
+  [ChromeEarlGrey openNewIncognitoTab];
+  // By default, `signinWithFakeIdentity` above enables bookmarks data type, so
+  // turn it off.
+  [SigninEarlGrey setSelectedType:(syncer::UserSelectableType::kBookmarks)
+                          enabled:NO];
+  [BookmarkEarlGreyUI openBookmarks];
+  [SigninEarlGreyUI verifySigninPromoVisibleWithMode:
+                        SigninPromoViewModeSignedInWithPrimaryAccount];
+
+  // Open the settings using the sign-in promo.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(PrimarySignInButton(),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kManageSyncTableViewAccessibilityIdentifier)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
 // Tests that review account settings promo is shown if the user is signed in
 // only but bookmarks account storage is off and gets removed after enabling
 // bookmarks.

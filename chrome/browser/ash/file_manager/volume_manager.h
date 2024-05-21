@@ -26,7 +26,7 @@
 #include "chrome/browser/ash/file_system_provider/observer.h"
 #include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/ash/guest_os/public/types.h"
-#include "chrome/browser/ash/policy/local_user_files/observer.h"
+#include "chrome/browser/ash/policy/skyvault/observer.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/storage_monitor/removable_storage_observer.h"
 #include "services/device/public/mojom/mtp_manager.mojom.h"
@@ -365,9 +365,9 @@ class VolumeManager : public KeyedService,
   // revokes the arc volumes.
   void UnsubscribeAndUnmountArc();
 
-  // Mounts local folders (My Files, Play and Linux files).
+  // Mounts local folders (MyFiles, Play and Linux files).
   void OnLocalUserFilesEnabled();
-  // Unmounts local folders (My Files, Play and Linux files).
+  // Unmounts local folders (MyFiles, Play and Linux files).
   void OnLocalUserFilesDisabled();
 
   static int counter_;

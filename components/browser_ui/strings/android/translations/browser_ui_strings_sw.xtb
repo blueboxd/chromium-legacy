@@ -68,7 +68,6 @@
 <translation id="2241587408274973373">Kadi za ukurasa wa kichupo kipya</translation>
 <translation id="2241634353105152135">Mara moja tu</translation>
 <translation id="2253414712144136228">Ondoa <ph name="NAME_OF_LIST_ITEM" /></translation>
-<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{Tovuti 1 imezuiwa}other{Tovuti # zimezuiwa}}</translation>
 <translation id="228293613124499805">Mara nyingi henda tovuti nyingi unazotembelea zikahifadhi data kwenye kifaa chako kwa ajili ya kuboresha hali yako ya utumiaji kwa kuhifadhi mapendeleo au taarifa unazoshiriki na tovuti. Tunapendekeza mipangilio hii isalie ikiwa imewashwa.</translation>
 <translation id="2289270750774289114">Niulize wakati tovuti inataka kugundua vifaa vya Bluetooth vilivyo karibu (inapendekezwa)</translation>
 <translation id="2315043854645842844">Uchaguzi wa cheti cha sehemu ya seva teja hautumiwi na mfumo wa uendeshaji.</translation>
@@ -305,6 +304,7 @@
 <translation id="6015775454662021376">Dhibiti ufikiaji wa tovuti hii kwenye kifaa chako</translation>
 <translation id="6040143037577758943">Funga</translation>
 <translation id="6042308850641462728">Zaidi</translation>
+<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Kichupo chako cha mwisho</translation>
 <translation id="6064125863973209585">Faili zilizopakuliwa</translation>
 <translation id="6071501408666570960">Unaweza kuondolewa katika akaunti kwenye tovuti hii</translation>
 <translation id="6120483543004435978">Kikiwashwa, tovuti zinaweza kuomba ruhusa ya kujua unapotumia kifaa chako sana. Kikizimwa, tovuti haziwezi kujua unapotumia kifaa chako sana.</translation>
@@ -426,6 +426,7 @@
 <translation id="7986741934819883144">Chagua anwani</translation>
 <translation id="7990211076305263060">Kikiwashwa, tovuti zinaweza kuomba ruhusa ya kutumia maikrofoni. Kikizimwa, tovuti haziwezi kutumia maikrofoni yako.</translation>
 <translation id="8007176423574883786">Imezimwa kwa kifaa hiki</translation>
+<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Kutoka <ph name="FROM_DEVICE" /></translation>
 <translation id="802154636333426148">Haikuweza kupakua</translation>
 <translation id="8042586301629853791">Panga kulingana na:</translation>
 <translation id="8067883171444229417">Cheza video</translation>
@@ -480,7 +481,6 @@
 <translation id="8721719390026067591">Kikiwashwa, tovuti zinaweza kuomba ruhusa ya kutafuta vifaa vya Bluetooth. Kikizimwa, tovuti haziwezi kutafuta vifaa vya Bluetooth.</translation>
 <translation id="8725066075913043281">Jaribu tena</translation>
 <translation id="8730621377337864115">Nimemaliza</translation>
-<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{Tovuti 1 imeruhusiwa}other{Tovuti # zimeruhusiwa}}</translation>
 <translation id="8751914237388039244">Chagua picha</translation>
 <translation id="8800034312320686233">Je, tovuti haifanyi kazi?</translation>
 <translation id="8801436777607969138">Zuia JavaScript katika tovuti mahususi.</translation>

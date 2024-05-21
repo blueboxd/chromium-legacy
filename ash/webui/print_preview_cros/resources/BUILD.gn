@@ -16,8 +16,10 @@ build_webui("build") {
   css_files = [ "css/print_preview_cros_shared.css" ]
 
   non_web_component_files = [
+    "js/data/capabilities_manager.ts",
     "js/data/destination_constants.ts",
     "js/data/destination_manager.ts",
+    "js/data/preview_ticket_manager.ts",
     "js/data/print_ticket_manager.ts",
     "js/data/ticket_constants.ts",
     "js/destination_dropdown_controller.ts",
@@ -25,6 +27,7 @@ build_webui("build") {
     "js/destination_select_controller.ts",
     "js/print_preview_cros_app_controller.ts",
     "js/summary_panel_controller.ts",
+    "js/fakes/fake_data.ts",
     "js/fakes/fake_destination_provider.ts",
     "js/fakes/fake_print_preview_page_handler.ts",
     "js/utils/event_utils.ts",

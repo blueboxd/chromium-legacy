@@ -40,6 +40,7 @@
 #import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/browser/commerce/model/push_notification/push_notification_feature.h"
+#import "ios/chrome/browser/content_notification/model/content_notification_util.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/language/model/language_model_manager_factory.h"
@@ -1278,7 +1279,7 @@ UIImage* GetBrandedGoogleServicesSymbol() {
                                 action:@selector(viewSourceSwitchToggled:)
                       forControlEvents:UIControlEventValueChanged];
 #else
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
 #endif  // BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
       break;
     }
@@ -2127,7 +2128,7 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 - (BOOL)shouldShowNotificationsSettings {
   return base::FeatureList::IsEnabled(kNotificationSettingsMenuItem) &&
          (IsPriceNotificationsEnabled() ||
-          IsContentPushNotificationsEnabled() ||
+          IsContentNotificationEnabled(_browserState) ||
           IsIOSTipsNotificationsEnabled());
 }
 
@@ -2184,7 +2185,7 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 
 - (void)reportBackUserAction {
   // Not called for root settings controller.
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 - (void)settingsWillBeDismissed {
@@ -2391,7 +2392,7 @@ UIImage* GetBrandedGoogleServicesSymbol() {
             : l10n_util::GetNSString(IDS_IOS_TOP_ADDRESS_BAR_OPTION);
     [self reconfigureCellsForItems:@[ _addressBarPreferenceItem ]];
   } else {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 }
 

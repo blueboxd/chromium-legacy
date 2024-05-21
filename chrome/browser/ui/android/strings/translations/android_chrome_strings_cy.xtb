@@ -15,6 +15,7 @@
 <translation id="1058669287135776095">Rydych chi all-lein. Gwiriwch eich cysylltiad rhyngrwyd a rhowch gynnig arall arni.</translation>
 <translation id="10614374240317010">Erioed wedi'i gadw</translation>
 <translation id="107147699690128016">Os byddwch yn newid yr estyniad ffeil, gall y ffeil agor mewn apiau gwahanol ac mae'n bosib y bydd yn berygl i'ch dyfais.</translation>
+<translation id="1080365971383768617">Cyfrineiriau ar eich holl ddyfeisiau</translation>
 <translation id="1082920045291562218">Rhannu gyda thaflen adborth gryno ar gau</translation>
 <translation id="1089606299949659462">Adolygiad wedi'i gwblhau!</translation>
 <translation id="1095761715416917775">Gwnewch yn siŵr eich bod bob amser yn gallu cael mynediad at eich data cysoni</translation>
@@ -81,6 +82,7 @@
 <translation id="1383876407941801731">Chwilio</translation>
 <translation id="1384704387250346179">Cyfieithu â Google Lens <ph name="BEGIN_NEW" />Newydd<ph name="END_NEW" /></translation>
 <translation id="1386674309198842382">Yma <ph name="LAST_UPDATED" /> o ddiwrnodau yn ôl</translation>
+<translation id="1390418506739274310">Mae'n bosib y byddwch yn gweld yr hanes o apiau eraill sy'n agor dolenni yn Chrome. Mae'n bosib y bydd gan eich Cyfrif Google fathau eraill o hanes pori yn <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="13931502444227376">I barhau, bydd <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> yn rhannu eich enw, eich e-bost, eich cyfeiriad, a'ch llun proffil gyda'r wefan. Gweler <ph name="BEGIN_LINK1" />telerau gwasanaeth<ph name="END_LINK1" /> y wefan hon.</translation>
 <translation id="1397811292916898096">Chwilio gyda <ph name="PRODUCT_NAME" /></translation>
 <translation id="1407069428457324124">Thema dywyll</translation>
@@ -96,6 +98,7 @@
 <translation id="1448440926884431741">Trefnu eich cynhyrchion sy'n cael eu dilyn yn Nodau tudalen</translation>
 <translation id="1466383950273130737">Dewiswch iaith Chrome</translation>
 <translation id="1477626028522505441">Wedi methu â lawrlwytho <ph name="FILE_NAME" /> oherwydd problemau gweinydd.</translation>
+<translation id="1480287803138246127">Mae'n bosib na fydd rhywfaint o'ch hanes yn ymddangos yma. I weld eich holl hanes Chrome, agorwch hanes Chrome llawn.</translation>
 <translation id="148482509007564431">Llif cadw nodau tudalen</translation>
 <translation id="1492417797159476138">Rydych eisoes wedi cadw'r enw defnyddiwr hwn ar gyfer y wefan hon.</translation>
 <translation id="1493287004536771723">Rydych yn dilyn <ph name="SITE_NAME" /></translation>
@@ -156,6 +159,7 @@
 <translation id="1825772852827001597">Ni fydd dulliau talu a chyfeiriadau o Google Pay yn cael eu hamgryptio. Ni fydd hanes pori o Chrome yn cysoni.
 Dim ond rhywun sydd â'ch cyfrinymadrodd all ddarllen eich data sydd wedi'u hamgryptio. Nid yw'r cyfrinymadrodd yn cael ei anfon at Google na'i storio. Os byddwch yn anghofio'ch cyfrinymadrodd neu eisiau newid y gosodiad hwn, <ph name="BEGIN_LINK" />dileu'r data Chrome yn eich cyfrif<ph name="END_LINK" />.</translation>
 <translation id="1829244130665387512">Chwilio'r dudalen</translation>
+<translation id="1832459821645506983">Iawn, rwy'n cydsynio</translation>
 <translation id="185383612275551373">Cysonwch i gael y cynnwys mwyaf perthnasol o Google</translation>
 <translation id="1871098866036088250">Agor mewn porwr Chrome</translation>
 <translation id="1877026089748256423">Rydych yn defnyddio hen fersiwn o Chrome</translation>
@@ -371,7 +375,6 @@ Dim ond rhywun sydd â'ch cyfrinymadrodd all ddarllen eich data sydd wedi'u hamg
 <translation id="2951071800649516099">Ychwanegu tudalennau at eich rhestr ddarllen ar gyfer nes ymlaen</translation>
 <translation id="2956070106555335453">Crynodeb</translation>
 <translation id="2961208450284224863">{READING_LIST_UNREAD_PAGE_COUNT,plural, =1{Mae <ph name="READING_LIST_UNREAD_PAGE_COUNT_ONE" /> dudalen sydd heb ei darllen}zero{Mae <ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> tudalen sydd heb eu darllen}two{Mae <ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> dudalen sydd heb eu darllen}few{Mae <ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> tudalen sydd heb eu darllen}many{Mae <ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> thudalen sydd heb eu darllen}other{Mae <ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> tudalen sydd heb eu darllen}}</translation>
-<translation id="296370266220139811">Arbed amser a theipio llai</translation>
 <translation id="2977350910003566746">Wrthi'n trefnu yn ôl agorwyd ddiwethaf</translation>
 <translation id="297771753501244313">Trefnu yn ôl agorwyd ddiwethaf</translation>
 <translation id="2979025552038692506">Y Tab Anhysbys a Ddewisir</translation>
@@ -387,6 +390,7 @@ Dim ond rhywun sydd â'ch cyfrinymadrodd all ddarllen eich data sydd wedi'u hamg
 <translation id="3003253259757197230">Anfonir cyfeiriadau URL rydych yn ymweld â nhw at Google i ragweld pa wefannau y gallech ymweld â hwy nesaf ac i ddangos gwybodaeth ychwanegol i chi am y dudalen rydych yn ymweld â hi</translation>
 <translation id="3026955690410463085">Cynnwys y ddolen</translation>
 <translation id="3027644380269727216">Yn seiliedig ar eich gweithgarwch ar wefan. Mae'r gosodiad hwn wedi'i droi ymlaen.</translation>
+<translation id="3027950907978057636">O <ph name="APP_LABEL" /></translation>
 <translation id="3029276696788198026">Dim rhaglwytho</translation>
 <translation id="3029704984691124060">Nid yw'r cyfrinymadroddion yn cyfateb</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Cael help<ph name="END_LINK" /></translation>
@@ -424,6 +428,7 @@ Dim ond rhywun sydd â'ch cyfrinymadrodd all ddarllen eich data sydd wedi'u hamg
 <translation id="3226612997184048185">Os ydych hefyd yn cadw eich nodau tudalen yn eich Cyfrif Google, gallwch olrhain prisiau cynnyrch yn Chrome a chael gwybod pan fydd y pris yn gostwng</translation>
 <translation id="3227557059438308877">Google Chrome fel Allwedd Ddiogelwch</translation>
 <translation id="3232293466644486101">Dileu data pori…</translation>
+<translation id="3232459301230493791"><ph name="TAB_COUNT" /> o dabiau wedi'u dileu</translation>
 <translation id="3232754137068452469">Ap Gwe</translation>
 <translation id="3236059992281584593">1 funud ar ôl</translation>
 <translation id="3237087289225714896">Rhaglwytho safonol:</translation>
@@ -479,6 +484,7 @@ Dim ond rhywun sydd â'ch cyfrinymadrodd all ddarllen eich data sydd wedi'u hamg
 <translation id="3518985090088779359">Derbyn a pharhau</translation>
 <translation id="3521388823983121502">Methu â pharhau gyda <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /></translation>
 <translation id="3522247891732774234">Mae diweddariad ar gael. Rhagor o ddewisiadau</translation>
+<translation id="3523789730715594198">Gallwch stopio cysoni unrhyw bryd yn y gosodiadau. Gall Google bersonoleiddio Search a gwasanaethau eraill yn seiliedig ar eich hanes.</translation>
 <translation id="3524138585025253783">UI Datblygwr</translation>
 <translation id="3524334353996115845">Gadael i <ph name="ORIGIN" /> wirio mai chi sydd yno</translation>
 <translation id="3527085408025491307">Ffolder</translation>
@@ -761,12 +767,12 @@ Mae'n bosib y bydd gan eich cyfrif Google fathau eraill o hanes pori megis chwil
 <translation id="4932247056774066048">Oherwydd eich bod yn allgofnodi o gyfrif a reolir gan <ph name="DOMAIN_NAME" />, bydd eich data Chrome yn cael eu dileu o'r ddyfais hon. Bydd yn aros yn eich Cyfrif Google.</translation>
 <translation id="4943703118917034429">Rhithwirionedd</translation>
 <translation id="4943872375798546930">Dim canlyniadau</translation>
-<translation id="4947095514661310122">o <ph name="APP_LABEL" /></translation>
 <translation id="4950924971025849764">Pan fyddwch wedi mewngofnodi i'r un Cyfrif Google, gall dyfeisiau eraill ddefnyddio'r ffôn hwn fel allwedd ddiogelwch.</translation>
 <translation id="4957722034734105353">Dysgu rhagor...</translation>
 <translation id="4961107849584082341">Cyfieithu'r dudalen hon i unrhyw iaith</translation>
 <translation id="496607651705915226">I gadw a defnyddio cyfrineiriau newydd yn eich Cyfrif Google, diweddarwch wasanaethau Google Play</translation>
 <translation id="4971735654804503942">Amddiffyniad cynt a rhagweithiol yn erbyn gwefannau, lawrlwythiadau ac estyniadau peryglus. Mae'n eich rhybuddio am achosion o dor diogelwch mewn perthynas â chyfrineiriau. Mae angen anfon data pori at Google.</translation>
+<translation id="4971753085054504448">Rhowch gynnig ar chwilio am rywbeth arall neu agorwch hanes Chrome llawn i weld rhagor o ganlyniadau.</translation>
 <translation id="497421865427891073">Mynd ymlaen</translation>
 <translation id="4987271110129728827">Methu â dod o hyd i'r dudalen honno. Gwiriwch eich sillafu neu rhowch gynnig ar chwiliad gwe.</translation>
 <translation id="4988526792673242964">Tudalennau</translation>
@@ -862,6 +868,7 @@ Mae'n bosib y bydd gan eich cyfrif Google fathau eraill o hanes pori megis chwil
 <translation id="5515439363601853141">Datglowch i weld eich cyfrinair</translation>
 <translation id="5517095782334947753">Mae gennych nodau tudalen, hanes, cyfrineiriau a gosodiadau eraill o <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Ailgyfeirio wedi'i rwystro.</translation>
+<translation id="5526281268548144413">Nid oes modd ei gau ar draws sawl ffenestr</translation>
 <translation id="5528925345478618296">{MINUTES,plural, =1{# funud yn ôl}zero{# munud yn ôl}two{# funud yn ôl}few{# munud yn ôl}many{# munud yn ôl}other{# munud yn ôl}}</translation>
 <translation id="5548606607480005320">Gwiriad diogelwch</translation>
 <translation id="5554520618550346933">Pan fyddwch yn defnyddio cyfrinair, mae Chrome yn eich rhybuddio os yw wedi'i gyhoeddi ar-lein. Wrth wneud hyn, mae eich cyfrineiriau a'ch enwau defnyddiwr wedi'u hamgryptio, felly ni all unrhyw un, gan gynnwys Google, eu darllen.</translation>
@@ -1005,6 +1012,7 @@ Mae'n bosib y bydd gan eich cyfrif Google fathau eraill o hanes pori megis chwil
 Er enghraifft, gall rhai gwefannau ymateb i'r cais hwn drwy ddangos hysbysebion i chi nad ydynt seiliedig ar wefannau eraill rydych wedi ymweld â nhw. Bydd llawer o wefannau yn dal i gasglu a defnyddio'ch data pori - er enghraifft i wella diogelwch, i ddarparu cynnwys, hysbysebion ac argymhellion, ac i gynhyrchu ystadegau adrodd.</translation>
 <translation id="6233974827872475843">Cadwch y cyfrineiriau ar y ddyfais hon yn eich Cyfrif Google trwy droi cysoni ymlaen</translation>
 <translation id="6247557882553405851">Rheolwr Cyfrineiriau Google</translation>
+<translation id="6251449557817521191">Gweld eich hanes Chrome yma</translation>
 <translation id="6255794742848779505">Rydym yn newid sut mae cyfrineiriau'n cael eu cadw ar y ddyfais hon</translation>
 <translation id="6264376385120300461">Lawrlwytho beth bynnag</translation>
 <translation id="6277522088822131679">Bu gwall wrth argraffu'r dudalen. Rhowch gynnig arall arni.</translation>
@@ -1052,6 +1060,7 @@ Er enghraifft, gall rhai gwefannau ymateb i'r cais hwn drwy ddangos hysbysebion 
 <translation id="6459045781120991510">Arolygon</translation>
 <translation id="6461962085415701688">Methu ag agor y ffeil</translation>
 <translation id="6464977750820128603">Gallwch weld gwefannau rydych yn ymweld â nhw yn Chrome a gosod amseryddion ar eu cyfer.\n\nMae Google yn derbyn gwybodaeth am y gwefannau rydych yn gosod amseryddion ar eu cyfer ac am faint o amser rydych yn ymweld â nhw. Caiff y wybodaeth hon ei defnyddio i wella Digital Wellbeing.</translation>
+<translation id="6470181189905173055">Bydd y tudalennau rydych chi wedi'u hagor yn Chrome wrth ddefnyddio <ph name="APP_LABEL" /> yn ymddangos yma.</translation>
 <translation id="6473086018775716761">Agorodd rhestr o ddewisiadau rhannu ar uchder llawn.</translation>
 <translation id="6475951671322991020">Lawrlwytho'r fideo</translation>
 <translation id="6477928892249167417">Mae'n debyg bod y gwefannau hyn yn bwysig i chi:</translation>
@@ -1132,11 +1141,13 @@ Er enghraifft, gall rhai gwefannau ymateb i'r cais hwn drwy ddangos hysbysebion 
 <translation id="6813446258015311409">Mewngofnodi i Chrome, wedi'i agor.</translation>
 <translation id="6817747507826986771">Rhannu'r dudalen hon yn gyflym. I olygu'r llwybr byr hwn, cyffwrddwch a daliwch.</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6822587385560699678">Pan fydd ymlaen, caiff cyfrineiriau eu cadw yn <ph name="ACCOUNT" />. Pan fydd wedi'i ddiffodd, dim ond ar y ddyfais hon y caiff cyfrineiriau eu cadw.</translation>
 <translation id="6823561724060793716">O'r bar cyfeiriad, gallwch agor gwybodaeth tudalen i weld gwybodaeth ychwanegol am y dudalen rydych yn ymweld â hi</translation>
 <translation id="6828070228333235514">Stopio dilyn y pris</translation>
 <translation id="6830728435402077660">Ddim yn ddiogel</translation>
 <translation id="6831043979455480757">Cyfieithu</translation>
 <translation id="6836206421467243968">Adfer grŵp tabiau <ph name="TITLE_OF_GROUP" /> fel grŵp tabiau cefndirol newydd.</translation>
+<translation id="683630338945552556">Defnyddio a chadw cyfrineiriau yn eich Cyfrif Google</translation>
 <translation id="6846298663435243399">Yn llwytho…</translation>
 <translation id="6850409657436465440">Dal wrthi'n lawrlwytho</translation>
 <translation id="6850830437481525139">Mae <ph name="TAB_COUNT" /> o dabiau wedi'u cau</translation>
@@ -1335,6 +1346,7 @@ I newid y gosodiad hwn, <ph name="BEGIN_LINK" />dileu'r data Chrome yn eich cyfr
 <translation id="7759809451544302770">Dewisol</translation>
 <translation id="7762668264895820836">Cerdyn SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Ychwanegu cyfeiriad</translation>
+<translation id="776533689993750361"><ph name="TAB_COUNT" /> tab wedi'i ddileu</translation>
 <translation id="7772032839648071052">Cadarnhau cyfrinymadrodd</translation>
 <translation id="7772375229873196092">Cau <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ac <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> arall}zero{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> arall}two{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> arall}few{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> arall}many{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> arall}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> arall}}</translation>

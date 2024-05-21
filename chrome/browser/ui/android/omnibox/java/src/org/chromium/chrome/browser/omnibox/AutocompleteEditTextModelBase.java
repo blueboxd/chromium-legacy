@@ -11,6 +11,8 @@ import android.view.inputmethod.InputConnection;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 /** An abstraction of the text model to show, keep track of, and update autocomplete. */
@@ -174,7 +176,7 @@ public interface AutocompleteEditTextModelBase {
      * Returns the length of the autocomplete text currently displayed, zero if none is currently
      * displayed.
      */
-    String getAutocompleteText();
+    int getAutocompleteTextLength();
 
     /**
      * Sets whether text changes should trigger autocomplete.
@@ -190,7 +192,8 @@ public interface AutocompleteEditTextModelBase {
      * @param userText user The text entered by the user.
      * @param inlineAutocompleteText The suggested autocompletion for the user's text.
      */
-    void setAutocompleteText(CharSequence userText, CharSequence inlineAutocompleteText);
+    void setAutocompleteText(
+            @NonNull CharSequence userText, @Nullable CharSequence inlineAutocompleteText);
 
     /**
      * Whether we want to be showing inline autocomplete results. We don't want to show them as the

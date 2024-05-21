@@ -25,6 +25,7 @@
 #include "components/commerce/core/account_checker.h"
 #include "components/commerce/core/commerce_info_cache.h"
 #include "components/commerce/core/commerce_types.h"
+#include "components/commerce/core/compare/cluster_manager.h"
 #include "components/commerce/core/product_specifications/product_specifications_service.h"
 #include "components/commerce/core/product_specifications/product_specifications_set.h"
 #include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
@@ -109,7 +110,6 @@ class ScheduledMetricsManager;
 }  // namespace metrics
 
 class BookmarkUpdateManager;
-class ClusterManager;
 class DiscountsStorage;
 class ParcelsManager;
 class ProductSpecificationsServerProxy;
@@ -121,6 +121,7 @@ class SubscriptionsObserver;
 class WebWrapper;
 enum class SubscriptionType;
 struct CommerceSubscription;
+struct ProductGroup;
 
 // Types of shopping pages from backend.
 enum class ShoppingPageType {
@@ -432,9 +433,15 @@ class ShoppingService : public KeyedService,
   virtual ProductSpecificationsService* GetProductSpecificationsService();
 
   // ClusterManager APIs.
+  virtual std::optional<EntryPointInfo> GetEntryPointInfoForNavigation(
+      GURL url);
   virtual std::optional<EntryPointInfo> GetEntryPointInfoForSelection(
       GURL old_url,
       GURL new_url);
+  virtual std::optional<ProductGroup> GetProductGroupForCandidateProduct(
+      const GURL& product_url);
+  void AddClusterManagerObserver(ClusterManager::Observer* observer);
+  void RemoveClusterManagerObserver(ClusterManager::Observer* observer);
 
   // Get a weak pointer for this service instance.
   base::WeakPtr<ShoppingService> AsWeakPtr();

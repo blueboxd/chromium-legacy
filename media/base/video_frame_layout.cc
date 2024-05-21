@@ -59,8 +59,12 @@ size_t VideoFrameLayout::NumPlanes(VideoPixelFormat format) {
     case PIXEL_FORMAT_RGBAF16:
       return 1;
     case PIXEL_FORMAT_NV12:
+    case PIXEL_FORMAT_NV16:
     case PIXEL_FORMAT_NV21:
+    case PIXEL_FORMAT_NV24:
     case PIXEL_FORMAT_P016LE:
+    case PIXEL_FORMAT_P216LE:
+    case PIXEL_FORMAT_P416LE:
       return 2;
     case PIXEL_FORMAT_I420:
     case PIXEL_FORMAT_YV12:
@@ -89,7 +93,7 @@ size_t VideoFrameLayout::NumPlanes(VideoPixelFormat format) {
       // Set its NumPlanes() to zero to avoid NOTREACHED().
       return 0;
   }
-  NOTREACHED() << "Unsupported video frame format: " << format;
+  NOTREACHED_IN_MIGRATION() << "Unsupported video frame format: " << format;
   return 0;
 }
 

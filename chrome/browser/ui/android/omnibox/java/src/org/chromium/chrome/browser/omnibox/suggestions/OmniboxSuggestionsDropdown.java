@@ -9,6 +9,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.util.AttributeSet;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -30,11 +31,11 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.omnibox.OmniboxMetrics;
 import org.chromium.chrome.browser.omnibox.R;
+import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownEmbedder.OmniboxAlignment;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewBinder;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
-import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.RoundedCornerOutlineProvider;
 import org.chromium.components.omnibox.OmniboxFeatures;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -50,9 +51,6 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
      */
     private static final long LIST_COMPOSITION_ACCESSIBILITY_ANNOUNCEMENT_DELAY_MS = 300;
 
-    private final int mStandardBgColor;
-    private final int mIncognitoBgColor;
-
     private final SuggestionLayoutScrollListener mLayoutScrollListener;
     private final RecyclerViewSelectionController mSelectionController;
 
@@ -67,7 +65,6 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
     private int mListViewMaxHeight;
     private int mLastBroadcastedListViewMaxHeight;
     private @Nullable Callback<OmniboxAlignment> mOmniboxAlignmentObserver;
-    private final boolean mForcePhoneStyleOmnibox;
     private float mChildVerticalTranslation;
 
     /**
@@ -217,15 +214,10 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
      *
      * @param context Context used for contained views.
      */
-    public OmniboxSuggestionsDropdown(
-            @NonNull Context context,
-            RecycledViewPool recycledViewPool,
-            boolean forcePhoneStyleOmnibox) {
-        super(context, null, android.R.attr.dropDownListViewStyle);
+    public OmniboxSuggestionsDropdown(@NonNull Context context, AttributeSet attrs) {
+        super(context, attrs, android.R.attr.dropDownListViewStyle);
         setFocusable(true);
         setFocusableInTouchMode(true);
-        setRecycledViewPool(recycledViewPool);
-        mForcePhoneStyleOmnibox = forcePhoneStyleOmnibox;
         setId(R.id.omnibox_suggestions_dropdown);
 
         // By default RecyclerViews come with item animators.
@@ -243,22 +235,33 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
                 resources.getDimensionPixelOffset(R.dimen.omnibox_suggestion_list_padding_top);
         ViewCompat.setPaddingRelative(this, 0, paddingTop, 0, paddingBottom);
 
-        mStandardBgColor =
-                ChromeColors.getSurfaceColor(
-                        context, R.dimen.omnibox_suggestion_dropdown_bg_elevation);
-        int incognitoBgColorRes = R.color.omnibox_dropdown_bg_incognito;
-        mIncognitoBgColor = context.getColor(incognitoBgColorRes);
-        if (!mForcePhoneStyleOmnibox
-                && DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
-                && context.getResources().getConfiguration().screenWidthDp
+        if (OmniboxFeatures.sAsyncViewInflation.isEnabled()) {
+            setRecycledViewPool(new PreWarmingRecycledViewPool(mAdapter, context));
+        }
+    }
+
+    /**
+     * Override the visuals of the Omnibox. This method is particularly relevant for SearchActivity,
+     * which presents Phone-style omnibox even when running on Tablets.
+     *
+     * @param shouldForce whether Omnibox should be forced to use Phone-style visuals
+     */
+    public void forcePhoneStyleOmnibox(boolean shouldForce) {
+        if (!shouldForce
+                && DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())
+                && getContext().getResources().getConfiguration().screenWidthDp
                         >= DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP) {
             setOutlineProvider(
                     new RoundedCornerOutlineProvider(
-                            context.getResources()
+                            getContext()
+                                    .getResources()
                                     .getDimensionPixelSize(
                                             R.dimen
                                                     .omnibox_suggestion_dropdown_round_corner_radius)));
             setClipToOutline(true);
+        } else {
+            setOutlineProvider(null);
+            setClipToOutline(false);
         }
     }
 
@@ -367,9 +370,9 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
      */
     public void refreshPopupBackground(@BrandedColorScheme int brandedColorScheme) {
         int color =
-                brandedColorScheme == BrandedColorScheme.INCOGNITO
-                        ? mIncognitoBgColor
-                        : mStandardBgColor;
+                OmniboxResourceProvider.getSuggestionsDropdownBackgroundColorForColorScheme(
+                        getContext(), brandedColorScheme);
+
         if (!isHardwareAccelerated()) {
             // When HW acceleration is disabled, changing mSuggestionList' items somehow erases
             // mOmniboxResultsContainer' background from the area not covered by
@@ -390,8 +393,37 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
     }
 
     @Override
+    public void setVisibility(int visibility) {
+        if (OmniboxFeatures.sAsyncViewInflation.isEnabled()) {
+            if (visibility == VISIBLE) {
+                installAlignmentObserver();
+            } else {
+                removeAlignmentObserver();
+            }
+        }
+
+        super.setVisibility(visibility);
+    }
+
+    @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
+        if (!OmniboxFeatures.sAsyncViewInflation.isEnabled()) {
+            installAlignmentObserver();
+        }
+    }
+
+    private void installAlignmentObserver() {
+        // TODO(40253396): this is needed only to permit view to be inflated from XML while keeping
+        // the old logic that relies on adding/removing the view to/from the view hierarchy.
+        // AsyncViewInflater automatically attaches the SuggestionsDropdown to the view hierarchy
+        // once it is done inflating the view, which triggers onAttachedToWindow(). We permit the
+        // old style management and remove the view from view hierarchy immediately after, which
+        // triggers onDetachedFromWindow().
+        // This should not be needed once we are ready to manage view presence using
+        // setVisibility().
+        if (mEmbedder == null) return;
+
         mEmbedder.onAttachedToWindow();
         mOmniboxAlignmentObserver = this::onOmniboxAlignmentChanged;
         mOmniboxAlignment = mEmbedder.addAlignmentObserver(mOmniboxAlignmentObserver);
@@ -401,6 +433,22 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+        if (!OmniboxFeatures.sAsyncViewInflation.isEnabled()) {
+            removeAlignmentObserver();
+        }
+    }
+
+    private void removeAlignmentObserver() {
+        // TODO(40253396): this is needed only to permit view to be inflated from XML while keeping
+        // the old logic that relies on adding/removing the view to/from the view hierarchy.
+        // AsyncViewInflater automatically attaches the SuggestionsDropdown to the view hierarchy
+        // once it is done inflating the view, which triggers onAttachedToWindow(). We permit the
+        // old style management and remove the view from view hierarchy immediately after, which
+        // triggers onDetachedFromWindow().
+        // This should not be needed once we are ready to manage view presence using
+        // setVisibility().
+        if (mEmbedder == null) return;
+
         mEmbedder.onDetachedFromWindow();
         mOmniboxAlignment = OmniboxAlignment.UNSPECIFIED;
         if (!OmniboxFeatures.shouldPreWarmRecyclerViewPool()) {
@@ -598,16 +646,6 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
                                             mAdapter.getItemCount()));
                 },
                 LIST_COMPOSITION_ACCESSIBILITY_ANNOUNCEMENT_DELAY_MS);
-    }
-
-    @VisibleForTesting
-    public int getStandardBgColor() {
-        return mStandardBgColor;
-    }
-
-    @VisibleForTesting
-    public int getIncognitoBgColor() {
-        return mIncognitoBgColor;
     }
 
     @VisibleForTesting

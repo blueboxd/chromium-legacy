@@ -72,8 +72,7 @@ class QuickAnswersView : public chromeos::ReadWriteCardsView {
   ui::ImageModel GetIconImageModelForTesting();
 
  private:
-  void InitLayout();
-  void AddContentView();
+  bool HasFocusInside();
   void AddFrameButtons();
   bool ShouldAddPhoneticsAudioButton(ResultType result_type,
                                      GURL phonetics_audio,
@@ -81,9 +80,6 @@ class QuickAnswersView : public chromeos::ReadWriteCardsView {
   void AddPhoneticsAudioButton(
       const quick_answers::PhoneticsInfo& phonetics_info,
       View* container);
-  void AddAssistantIcon();
-  void AddGoogleIcon();
-  void AddDefaultResultTypeIcon();
   int GetLabelWidth(bool is_title);
   void ResetContentView();
   void UpdateQuickAnswerResult(const quick_answers::QuickAnswer& quick_answer);
@@ -97,12 +93,13 @@ class QuickAnswersView : public chromeos::ReadWriteCardsView {
 
   base::WeakPtr<QuickAnswersUiController> controller_;
   std::string title_;
-  bool is_internal_ = false;
+  const bool is_internal_;
+  const bool is_rich_answers_enabled_;
+  const bool maximum_view_height_;
 
   views::ViewTracker base_view_;
   views::ViewTracker main_view_;
   views::ViewTracker content_view_;
-  views::ViewTracker report_query_view_;
   raw_ptr<views::Label> first_answer_label_ = nullptr;
   raw_ptr<views::LabelButton> retry_label_ = nullptr;
   raw_ptr<views::ImageButton> dogfood_feedback_button_ = nullptr;

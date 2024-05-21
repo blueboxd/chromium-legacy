@@ -44,12 +44,12 @@
           "builder": "android-asan",
           "project": "chromium"
         }
-      ]
+      ],
+      "retry_failed_shards": true
     }
   },
   "$build/reclient": {
     "instance": "rbe-chromium-trusted",
-    "jobs": 500,
     "metrics_project": "chromium-reclient-metrics",
     "scandeps_server": true
   },

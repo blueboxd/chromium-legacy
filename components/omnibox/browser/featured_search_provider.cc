@@ -6,16 +6,21 @@
 
 #include <stddef.h>
 
+#include <climits>
 #include <string>
+#include <vector>
 
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_classification.h"
+#include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/in_memory_url_index_types.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
+#include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service.h"
@@ -47,19 +52,32 @@ FeaturedSearchProvider::FeaturedSearchProvider(
 void FeaturedSearchProvider::Start(const AutocompleteInput& input,
                                    bool minimal_changes) {
   matches_.clear();
+
+  if (ShouldShowIPHMatch(input)) {
+    AddIPHMatch();
+  }
+
   if (input.focus_type() != metrics::OmniboxFocusType::INTERACTION_DEFAULT ||
       (input.type() == metrics::OmniboxInputType::EMPTY)) {
     return;
   }
 
   DoStarterPackAutocompletion(input);
+}
 
-  // TODO(crbug.com/333762301): Implement smarter triggering for the IPH match.
-  //  As is, the IPH message will always be displayed. This might make sense to
-  //  move to the ZPS provider.
-  if (OmniboxFieldTrial::IsStarterPackIPHEnabled()) {
-    AddIPHMatch();
-  }
+void FeaturedSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
+  // Only `NULL_RESULT_MESSAGE` types from this provider are deletable.
+  CHECK(match.deletable);
+  CHECK(match.type == AutocompleteMatchType::NULL_RESULT_MESSAGE);
+
+  // Set the pref so this provider doesn't continue to offer the suggestion.
+  PrefService* prefs = client_->GetPrefs();
+  prefs->SetBoolean(omnibox::kShowGeminiIPH, false);
+
+  // Delete `match` from `matches_`.
+  std::erase_if(matches_, [&match](const auto& i) {
+    return i.contents == match.contents;
+  });
 }
 
 FeaturedSearchProvider::~FeaturedSearchProvider() = default;
@@ -176,6 +194,7 @@ void FeaturedSearchProvider::AddIPHMatch() {
   // Use this suggestion's contents field to display a message to the user that
   // cannot be acted upon.
   match.contents = l10n_util::GetStringUTF16(IDS_OMNIBOX_GEMINI_IPH);
+  match.deletable = true;
 
   // Bolds just the "@gemini" portion of the IPH string. The rest of the string
   // is dimmed.
@@ -185,6 +204,7 @@ void FeaturedSearchProvider::AddIPHMatch() {
       ACMatchClassification::DIM);
 
   matches_.push_back(match);
+  iph_shown_count_++;
 }
 
 void FeaturedSearchProvider::AddFeaturedEnterpriseSearchMatch(
@@ -215,4 +235,33 @@ void FeaturedSearchProvider::AddFeaturedEnterpriseSearchMatch(
   match.keyword = template_url.keyword();
 
   matches_.push_back(match);
+}
+
+bool FeaturedSearchProvider::ShouldShowIPHMatch(
+    const AutocompleteInput& input) {
+  // The IPH suggestion should only be shown in Zero prefix state.
+  if (!OmniboxFieldTrial::IsStarterPackIPHEnabled() || !input.IsZeroSuggest()) {
+    return false;
+  }
+
+  // If the IPH suggestion has been shown more than the limited number of times
+  // this session, or has been manually deleted by the user, do not continue to
+  // offer it. If the limit is set to INT_MAX, do not limit.
+  PrefService* prefs = client_->GetPrefs();
+  size_t iph_shown_limit =
+      OmniboxFieldTrial::kStarterPackIPHPerSessionLimit.Get();
+  if (!prefs->GetBoolean(omnibox::kShowGeminiIPH) ||
+      ((iph_shown_limit != INT_MAX) && (iph_shown_count_ >= iph_shown_limit))) {
+    return false;
+  }
+
+  // The @gemini IPH should no longer be shown once a user has successfully
+  // used @gemini.
+  TemplateURL* gemini_turl = template_url_service_->FindStarterPackTemplateURL(
+      TemplateURLStarterPackData::kAskGoogle);
+  if (gemini_turl && gemini_turl->usage_count() > 0) {
+    return false;
+  }
+
+  return true;
 }

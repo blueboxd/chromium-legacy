@@ -862,6 +862,7 @@ Consulta las instrucciones de tu motor de búsqueda para borrar el historial de 
 <translation id="5444892875087332195">Favoritos</translation>
 <translation id="5454211924362324495">Para evitar que otras personas usen tu contraseña, <ph name="BEGIN_LINK" />cámbiala en <ph name="WEBSITE" /><ph name="END_LINK" /></translation>
 <translation id="5457226814769348910">Versión sin conexión</translation>
+<translation id="5459548306731933777">Mostrar detalles</translation>
 <translation id="5475069061743940393">Seguimiento de paquetes</translation>
 <translation id="5478327362747197944">Crea eventos de calendario directamente haciendo clic en una fecha en una página web.</translation>
 <translation id="5482922178977937393">¿Te gustaría recibir notificaciones sobre noticias, deportes y mucho más en función de tus intereses?</translation>
@@ -1442,7 +1443,6 @@ También pueden usar cookies para ver la actividad de navegación en diferentes 
 <translation id="8283172974887967105">Establecer…</translation>
 <translation id="8286036467436129157">Acceder</translation>
 <translation id="8289930144142009940">Se desactivaron las notificaciones de <ph name="FEATURE_NAME" /></translation>
-<translation id="8292843446079898078">Recibe alertas de reducción de precio para los productos que sigues.</translation>
 <translation id="8299417921174340354">Para usar contraseñas, primero debes establecer una en tu dispositivo.</translation>
 <translation id="8299613349954694191">Abre una pestaña de incógnito para navegar por la Web de forma privada.</translation>
 <translation id="8311853334103696030">Ocultar la opción Seguir precio</translation>

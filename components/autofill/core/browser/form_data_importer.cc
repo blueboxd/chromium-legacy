@@ -570,6 +570,14 @@ FormDataImporter::GetAddressObservedFieldValues(
 
     observed_field_values.insert_or_assign(autofill_type.GetStorableType(),
                                            value);
+    // The `autofill_source_profile_guid()` is not reset when a field is
+    // manually edited or filled with non-address information later.
+    import_metadata.filled_types_to_autofill_guid.insert_or_assign(
+        autofill_type.GetStorableType(),
+        field->is_autofilled() &&
+                field->filling_product() == FillingProduct::kAddress
+            ? field->autofill_source_profile_guid()
+            : std::nullopt);
 
     if (FieldTypeGroupToFormType(autofill_type.group()) ==
         FormType::kAddressForm) {
@@ -597,8 +605,8 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
   bool has_invalid_field_types = false;
 
   // Metadata about the way we construct candidate_profile.
-  ProfileImportMetadata import_metadata{.origin =
-                                            url::Origin::Create(source_url)};
+  ProfileImportMetadata import_metadata;
+  import_metadata.origin = url::Origin::Create(source_url);
 
   // Tracks if any of the fields belongs to FormType::kAddressForm.
   bool has_address_related_fields = false;
@@ -747,10 +755,12 @@ bool FormDataImporter::ProcessExtractedCreditCard(
     return false;
   }
 
-  // If a flow where there was no interactive authentication was completed,
-  // re-auth opt-in flow might be offered.
+  // If a flow without interactive authentication was completed and the user
+  // didn't update the result that was filled into the form, re-auth opt-in flow
+  // might be offered.
   if (auto* mandatory_reauth_manager =
           client_->GetOrCreatePaymentsMandatoryReauthManager();
+      credit_card_import_type_ != CreditCardImportType::kNewCard &&
       mandatory_reauth_manager &&
       mandatory_reauth_manager->ShouldOfferOptin(
           payment_method_type_if_non_interactive_authentication_flow_completed_)) {
@@ -978,77 +988,6 @@ std::optional<Iban> FormDataImporter::ExtractIban(const FormStructure& form) {
 
 FormDataImporter::ExtractCreditCardFromFormResult
 FormDataImporter::ExtractCreditCardFromForm(const FormStructure& form) {
-  if (base::FeatureList::IsEnabled(features::kAutofillRelaxCreditCardImport)) {
-    return ExtractCreditCardFromFormRelaxed(form);
-  }
-
-  ExtractCreditCardFromFormResult result;
-
-  FieldTypeSet types_seen;
-  for (const auto& field : form) {
-    // If we don't know the type of the field, then skip it.
-    if (!field->IsFieldFillable()) {
-      continue;
-    }
-
-    AutofillType autofill_type = field->Type();
-    // Field was not identified as a credit card field.
-    if (autofill_type.group() != FieldTypeGroup::kCreditCard) {
-      continue;
-    }
-
-    FieldType field_type = autofill_type.GetStorableType();
-
-    std::u16string value_view = field->value();
-    std::u16string_view user_input_view =
-        base::TrimWhitespace(field->user_input(), base::TRIM_ALL);
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillUseTypedCreditCardNumber) &&
-        field_type == FieldType::CREDIT_CARD_NUMBER &&
-        !user_input_view.empty()) {
-      value_view = user_input_view;
-    }
-    value_view = base::TrimWhitespace(value_view, base::TRIM_ALL);
-
-    // If the user hasn't entered any information into the field, then skip it.
-    if (value_view.empty()) {
-      continue;
-    }
-
-    std::u16string value = value_view;
-
-    result.has_duplicate_credit_card_field_type |=
-        types_seen.contains(field_type);
-    types_seen.insert(field_type);
-
-    // If |field| is an HTML5 month input, handle it as a special case.
-    if (field->form_control_type() == FormControlType::kInputMonth) {
-      DCHECK_EQ(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, field_type);
-      result.card.SetInfoForMonthInputType(value);
-      continue;
-    }
-
-    // CreditCard handles storing the |value| according to |autofill_type|.
-    bool saved = result.card.SetInfo(autofill_type, value, app_locale_);
-
-    // Saving with the option text (here |value|) may fail for the expiration
-    // month. Attempt to save with the option value. First find the index of the
-    // option text in the select options and try the corresponding value.
-    if (!saved && field_type == CREDIT_CARD_EXP_MONTH) {
-      for (const SelectOption& option : field->options()) {
-        if (value == option.content) {
-          result.card.SetInfo(autofill_type, option.value, app_locale_);
-          break;
-        }
-      }
-    }
-  }
-
-  return result;
-}
-
-FormDataImporter::ExtractCreditCardFromFormResult
-FormDataImporter::ExtractCreditCardFromFormRelaxed(const FormStructure& form) {
   // Populated by the lambdas below.
   ExtractCreditCardFromFormResult result;
 
@@ -1219,11 +1158,6 @@ void FormDataImporter::
             payment_method_type_if_non_interactive_authentication_flow_completed) {
   payment_method_type_if_non_interactive_authentication_flow_completed_ =
       payment_method_type_if_non_interactive_authentication_flow_completed;
-}
-
-std::optional<NonInteractivePaymentMethodType> FormDataImporter::
-    GetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted() const {
-  return payment_method_type_if_non_interactive_authentication_flow_completed_;
 }
 
 }  // namespace autofill

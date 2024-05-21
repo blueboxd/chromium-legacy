@@ -155,6 +155,11 @@ const std::string kArbitraryNickname = "Grocery Card";
 const std::u16string kArbitraryNickname16 = u"Grocery Card";
 Suggestion::Icon kAddressEntryIcon = Suggestion::Icon::kAccount;
 
+gfx::Rect GetFakeCaretBounds(const FormFieldData& focused_field) {
+  gfx::PointF p = focused_field.bounds().origin();
+  return gfx::Rect(gfx::Point(p.x(), p.y()), gfx::Size(0, 10));
+}
+
 bool ShouldSplitCardNameAndLastFourDigitsForMetadata() {
   // Splitting card name and last four logic does not apply to iOS because the
   // AutofillSuggestionGenerator on iOS doesn't currently support it.
@@ -491,7 +496,10 @@ class MockTouchToFillDelegate : public TouchToFillDelegate {
               CreditCardSuggestionSelected,
               (std::string unique_id, bool is_virtual),
               (override));
-  MOCK_METHOD(void, IbanSuggestionSelected, (Iban::Guid guid), (override));
+  MOCK_METHOD(void,
+              IbanSuggestionSelected,
+              ((absl::variant<Iban::Guid, Iban::InstrumentId>)),
+              (override));
   MOCK_METHOD(void, OnDismissed, (bool dismissed_by_user), (override));
   MOCK_METHOD(void,
               LogMetricsAfterSubmission,
@@ -769,8 +777,8 @@ class BrowserAutofillManagerTest : public testing::Test {
       const FormFieldData& field,
       AutofillSuggestionTriggerSource trigger_source =
           AutofillSuggestionTriggerSource::kTextFieldDidChange) {
-    browser_autofill_manager_->OnAskForValuesToFill(form, field,
-                                                    trigger_source);
+    browser_autofill_manager_->OnAskForValuesToFill(
+        form, field, GetFakeCaretBounds(field), trigger_source);
   }
 
   void DidShowAutofillSuggestions(
@@ -785,7 +793,7 @@ class BrowserAutofillManagerTest : public testing::Test {
                             const FormFieldData& field,
                             bool form_element_was_clicked) {
     browser_autofill_manager_->OnAskForValuesToFill(
-        form, field,
+        form, field, GetFakeCaretBounds(field),
         form_element_was_clicked
             ? AutofillSuggestionTriggerSource::kFormControlElementClicked
             : AutofillSuggestionTriggerSource::kTextFieldDidChange);
@@ -810,7 +818,7 @@ class BrowserAutofillManagerTest : public testing::Test {
       AutofillTriggerDetails trigger_details = {
           .trigger_source = AutofillTriggerSource::kPopup}) {
     browser_autofill_manager_->OnAskForValuesToFill(
-        form, field,
+        form, field, GetFakeCaretBounds(field),
         AutofillSuggestionTriggerSource::kTextFieldDidReceiveKeyDown);
     if (const AutofillProfile* profile =
             personal_data().address_data_manager().GetProfileByGUID(guid)) {
@@ -1150,7 +1158,7 @@ class BrowserAutofillManagerTest : public testing::Test {
         matchers.push_back(
             Equal(absl::get<RationalizationFieldLogEvent>(event)));
       } else {
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
       }
     }
     return ElementsAreArray(matchers);
@@ -1205,7 +1213,7 @@ class BrowserAutofillManagerTest : public testing::Test {
       if (metric & (1 << sample))
         return sample;
 
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return 0;
   }
 
@@ -4626,7 +4634,7 @@ TEST_F(BrowserAutofillManagerWithLogEventsTest, LogIBANField) {
   browser_autofill_manager_->FillOrPreviewField(
       mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
       form, form.fields.front(), u"CH93 0076 2011 6238 5295 7",
-      SuggestionType::kIbanEntry);
+      SuggestionType::kIbanEntry, IBAN_VALUE);
   FormSubmitted(form);
 
   const std::vector<AutofillField::FieldLogEventType>& fill_field_log_events =
@@ -5140,10 +5148,11 @@ TEST_F(BrowserAutofillManagerTest, FormSubmittedWithDefaultValues) {
 
   // Simulate form submission. The profile should not be updated with the
   // meaningless default value of the street address field.
-  personal_data()
-      .address_data_manager()
-      .GetProfileByGUID(kElvisProfileGuid)
-      ->ClearFields({ADDRESS_HOME_STREET_ADDRESS});
+  AutofillProfile profile =
+      *personal_data().address_data_manager().GetProfileByGUID(
+          kElvisProfileGuid);
+  profile.ClearFields({ADDRESS_HOME_STREET_ADDRESS});
+  personal_data().address_data_manager().UpdateProfile(profile);
   FormSubmitted(response_data);
   EXPECT_FALSE(personal_data()
                    .address_data_manager()
@@ -5170,10 +5179,11 @@ void DoTestFormSubmittedControlWithDefaultValue(
   FormData response_data = test->FillAutofillFormDataAndGetResults(
       form, form.fields[3], kElvisProfileGuid);
 
-  test->personal_data()
-      .address_data_manager()
-      .GetProfileByGUID(kElvisProfileGuid)
-      ->ClearFields({ADDRESS_HOME_STATE});
+  AutofillProfile profile =
+      *test->personal_data().address_data_manager().GetProfileByGUID(
+          kElvisProfileGuid);
+  profile.ClearFields({ADDRESS_HOME_STATE});
+  test->personal_data().address_data_manager().UpdateProfile(profile);
   test->FormSubmitted(response_data);
   // Expect that the profile was updated with the value of the state select.
   EXPECT_EQ(state_field->value(), test->personal_data()
@@ -5222,10 +5232,11 @@ void DoTestFormSubmittedNonAddressControlWithDefaultValue(
       form, form.fields[3], kElvisProfileGuid);
 
   // Value of country code field should have been saved.
-  test->personal_data()
-      .address_data_manager()
-      .GetProfileByGUID(kElvisProfileGuid)
-      ->ClearFields({PHONE_HOME_WHOLE_NUMBER});
+  AutofillProfile profile =
+      *test->personal_data().address_data_manager().GetProfileByGUID(
+          kElvisProfileGuid);
+  profile.ClearFields({PHONE_HOME_WHOLE_NUMBER});
+  test->personal_data().address_data_manager().UpdateProfile(profile);
   test->FormSubmitted(response_data);
   std::u16string formatted_phone_number =
       test->personal_data()
@@ -7121,7 +7132,8 @@ TEST_F(BrowserAutofillManagerTest, ComposeSuggestionsOnFocusWithoutClick) {
                                      Eq(form.fields[3].global_id())),
                             autofill::AutofillSuggestionTriggerSource::
                                 kTextareaFocusedWithoutClick))
-      .WillOnce(Return(Suggestion(u"Help me write", SuggestionType::kCompose)));
+      .WillOnce(Return(
+          Suggestion(u"Help me write", SuggestionType::kComposeResumeNudge)));
   GetAutofillSuggestions(
       form, form.fields[3],
       AutofillSuggestionTriggerSource::kTextareaFocusedWithoutClick);
@@ -7150,7 +7162,8 @@ TEST_F(BrowserAutofillManagerTest, ComposeSuggestionsAreQueriedForTextareas) {
       GetSuggestion(
           Property(&FormFieldData::global_id, Eq(form.fields[0].global_id())),
           autofill::AutofillSuggestionTriggerSource::kTextFieldDidChange))
-      .WillOnce(Return(Suggestion(u"Help me write", SuggestionType::kCompose)));
+      .WillOnce(Return(
+          Suggestion(u"Help me write", SuggestionType::kComposeResumeNudge)));
   GetAutofillSuggestions(form, form.fields[0]);
   external_delegate()->CheckSuggestionCount(form.fields[0].global_id(), 1);
 }
@@ -7730,7 +7743,7 @@ TEST_F(BrowserAutofillManagerTest, FillAddressForm_UpdateProfile) {
   profile.set_use_date(AutofillClock::Now());
   profile.set_use_count(1u);
   personal_data().address_data_manager().AddProfile(profile);
-  AutofillProfile* pdm_profile =
+  const AutofillProfile* pdm_profile =
       personal_data().address_data_manager().GetProfileByGUID(profile.guid());
   ASSERT_TRUE(pdm_profile);
 
@@ -7745,17 +7758,15 @@ TEST_F(BrowserAutofillManagerTest, FillAddressForm_UpdateProfile) {
 // Tests that `ProfileTokenQuality` is correctly integrated into
 // `AutofillProfile` and that on form submit, observations are collected.
 TEST_F(BrowserAutofillManagerTest, FillAddressForm_CollectObservations) {
-  base::test::ScopedFeatureList profile_token_quality_feature{
-      features::kAutofillTrackProfileTokenQuality};
   personal_data().ClearProfiles();
   AutofillProfile profile = test::GetFullProfile();
   // This is needed to not get an update prompt that would compromise the test.
   profile.set_source_for_testing(AutofillProfile::Source::kAccount);
+  profile.token_quality().disable_randomization_for_testing();
   personal_data().address_data_manager().AddProfile(profile);
-  AutofillProfile* pdm_profile =
+  const AutofillProfile* pdm_profile =
       personal_data().address_data_manager().GetProfileByGUID(profile.guid());
   ASSERT_TRUE(pdm_profile);
-  pdm_profile->token_quality().disable_randomization_for_testing();
 
   // Create and fill an address form with profile `kElvisProfileGuid`.
   FormData form = test::CreateTestAddressFormData();
@@ -7861,7 +7872,7 @@ TEST_F(BrowserAutofillManagerPlusAddressTest, ManualFallbackPlusAddress) {
   EXPECT_CALL(
       plus_address_delegate(),
       GetSuggestions(
-          _, _, _,
+          _, _, _, _,
           AutofillSuggestionTriggerSource::kManualFallbackPlusAddresses))
       .WillOnce(Return(std::vector<Suggestion>{
           Suggestion(SuggestionType::kCreateNewPlusAddress)}));

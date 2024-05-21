@@ -394,6 +394,7 @@ Dit vervangt het beëindigde beleid <ph name="DEFAULT_WINDOW_PLACEMENT_SETTING_P
 <translation id="1305400589435476516">Als je het beleid toepast, is dataroaming toegestaan voor het apparaat.
 
       Als je het beleid niet toepast of niet instelt, is dataroaming niet beschikbaar.</translation>
+<translation id="1306041796676461437">Ondersteuning voor Extensible Enterprise SSO uitzetten</translation>
 <translation id="1308526987406924874">Als je het beleid instelt, kun je een lijst met URL-patronen maken om op te geven welke sites gebruikers niet mogen vragen om toegang tot een seriële poort.
 
       Als je het beleid niet instelt, is <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> (indien ingesteld) van toepassing op alle sites. Zo niet, dan gelden de persoonlijke instellingen van de gebruiker.
@@ -3326,6 +3327,15 @@ Zorg dat je dit beleid niet altijd toepast, vooral niet tijdens productie-implem
 <translation id="3606571057705314194">Profielkiezer staat uit bij opstarten</translation>
 <translation id="3608206578291537084">De Encrypted Reporting Pipeline aanzetten</translation>
 <translation id="3608281460204780443">Het Chrome Web Store-icoon tonen in de <ph name="PRODUCT_OS_NAME" />-launcher en op de pagina Nieuw tabblad</translation>
+<translation id="3608411984079625468">Hiermee wordt automatisch inloggen voor gebruikers ingesteld voor accounts met verificatieproviders door een Enterprise SSO-extensie.
+
+Als je dit beleid instelt op 1 (<ph name="POLICY_VALUE_ENABLED" />) of niet instelt, gebruiken verificatieproviders met een SSO-extensie op het apparaat die extensie om gebruikers te verifiëren die proberen in te loggen.
+
+Als je dit beleid instelt op 0 (<ph name="POLICY_VALUE_DISABLED" />), wordt automatisch inloggen zoals hierboven beschreven uitgezet.
+
+Deze functie is beschikbaar vanaf MacOS Catalina.
+
+Opmerking: Dit beleid is niet van toepassing op de incognito- of gastmodus.</translation>
 <translation id="3612482251405108708">Automatisch starten van online opnieuw verifiëren op het vergrendelscherm</translation>
 <translation id="3616490235694929053">Met dit beleid bepaal je of het instellingenscherm voor de weergavegrootte aan de gebruiker wordt getoond als deze de eerste keer inlogt.
       Als je dit beleid instelt op False, wordt het instellingenscherm voor de weergavegrootte niet getoond.
@@ -4359,6 +4369,15 @@ In <ph name="MAC_OS_NAME" /> is dit beleid alleen beschikbaar voor instanties di
 <translation id="4483738129334574255">Easter egg-dinosaurusgame uitzetten op ingeschreven <ph name="PRODUCT_OS_NAME" />-apparaten, aanzetten onder andere omstandigheden</translation>
 <translation id="4484515651939984695">Hiermee geef je op hoelang (in seconden) een cast-apparaat dat via een toegangscode of QR-code is geselecteerd, in de lijst met cast-apparaten van het <ph name="PRODUCT_NAME" />-menu blijft staan.</translation>
 <translation id="4485425108474077672">De URL van de pagina 'Nieuw tabblad' configureren</translation>
+<translation id="4488959486611931919">Opmerking: Er zijn geen sitebreuken gemeld sinds Chrome deze cookies standaard is gaan blokkeren vanaf M118. Deze functionaliteit is vanaf M127 dus niet meer instelbaar (en dit beleid heeft geen effect).
+
+Dit beleid biedt een tijdelijke afmelding voor wijzigingen in de manier waarop Chrome omgaat met cookies die zijn ingesteld via JavaScript en die bepaalde besturingstekens bevatten (NULL, regelterugloop en regelopschuiving).
+Eerder zorgde de aanwezigheid van een van deze tekens in een cookietekenreeks ervoor dat deze werd afgekapt, maar wel werd ingesteld.
+Nu zorgt de aanwezigheid van deze tekens ervoor dat de hele cookietekenreeks wordt genegeerd.
+
+Als je dit beleid instelt op Waar (standaard), wordt het nieuwe gedrag toegepast.
+
+Als je dit beleid instelt op Onwaar, wordt het oude gedrag toegepast.</translation>
 <translation id="4490420545181481759">X.509-certificaten kunnen beperkingen, zoals naambeperkingen, coderen in extensies in het certificaat. RFC 5280 bepaalt dat het afdwingen van dergelijke beperkingen voor vertrouwensankercertificaten optioneel is. Vanaf <ph name="PRODUCT_NAME" /> 112 worden dergelijke beperkingen afgedwongen in certificaten die worden geladen vanuit de certificaatopslag van het platform.
 
 Dit beleid bestaat als tijdelijke afmelding voor als een bedrijf problemen ondervindt met de beperkingen die in hun eigen roots zijn gecodeerd. In dat geval kan dit beleid worden gebruikt om het afdwingen van de beperkingen tijdelijk uit te zetten en de certificaatproblemen te verhelpen.
@@ -5212,6 +5231,7 @@ Als dit beleid niet is ingesteld of de lijst geen geldige verwijzingen naar afbe
       Als het achtergrondbeleid voor het apparaat is ingesteld, downloadt het Chrome OS-apparaat de achtergrondafbeelding en gebruikt deze op het inlogscherm als er nog geen gebruiker is ingelogd op het apparaat. Zodra de gebruiker inlogt, wordt het achtergrondbeleid van de gebruiker toegepast.
 
       Als het achtergrondbeleid voor het apparaat niet is ingesteld, wordt op basis van het achtergrondbeleid van de gebruiker (als dit is ingesteld) bepaald wat wordt weergegeven.</translation>
+<translation id="5217106427763720473">Ondersteuning voor Extensible Enterprise SSO aanzetten</translation>
 <translation id="5219844027738217407">Voor Android-apps is dit beleid alleen van invloed op de microfoon. Wanneer dit beleid is ingesteld op True, wordt voor alle Android-apps, zonder uitzondering, de microfoon uitgezet.</translation>
 <translation id="5222325605346216869">Throttling van JavaScript-timers op de achtergrond afdwingen</translation>
 <translation id="5223606242837275233">Niet toestaan dat sites scrollen naar specifieke tekstfragmenten via de URL</translation>
@@ -5359,6 +5379,15 @@ Als je dit beleid niet toepast, kunnen de browser- en downloadgeschiedenis niet 
 <translation id="5323200200131319468">Gesproken feedback op het inlogscherm aanzetten</translation>
 <translation id="5323271643727095577">Geen annuleringsdialoogvenster tonen als event.preventDefault() wordt aangeroepen voor beforeunload-gebeurtenis. Annuleringsdialoogvenster tonen als event.returnValue de lege tekenreeks voor de beforeunload-gebeurtenis is.</translation>
 <translation id="5324430722441910403">Instellingen voor Zoekopdrachten op site</translation>
+<translation id="5326431956495937408">Als je het beleid aanzet, kunnen gebruikers hun wachtwoord sturen naar en krijgen van gezinsleden (volgens de Gezinsservice).
+Als het beleid aanstaat of niet is ingesteld, is er een knop in Wachtwoordmanager waarmee je een wachtwoord kunt sturen.
+De ontvangen wachtwoorden worden opgeslagen in het account van de gebruiker en zijn beschikbaar in Wachtwoordmanager.
+
+Als je het beleid uitzet, kunnen gebruikers geen wachtwoorden van Wachtwoordmanager naar andere gebruikers sturen en geen wachtwoorden van andere gebruikers krijgen.
+
+De functie is niet beschikbaar als synchronisatie van wachtwoorden uitstaat (via de gebruikersinstellingen of als het beleid <ph name="SYNC_DISABLED" /> aanstaat).
+
+Beheerde accounts kunnen geen lid te worden van een gezinsgroep of er zelf een maken en kunnen daarom geen wachtwoorden delen.</translation>
 <translation id="532848608876725157">DNS-over-HTTPS met onbeveiligde fallback aanzetten</translation>
 <translation id="5328965694451556034">Inloggen/uitloggen rapporteren</translation>
 <translation id="5329018127554115226">De modus voor hoge efficiëntie wordt uitgezet.</translation>
@@ -7055,13 +7084,6 @@ Wijzigingen in het beleid zijn alleen van toepassing als ARC niet actief is, bij
 <translation id="66265932317331474">CPU-info melden</translation>
 <translation id="6628120204569232711">Opslagstatus rapporteren</translation>
 <translation id="662991036483361836">Niet toestaan dat gebruikers Dichtbij delen aanzetten</translation>
-<translation id="6634974629075330608">Dit beleid biedt een tijdelijke afmelding voor wijzigingen in de manier waarop Chrome omgaat met cookies die zijn ingesteld via JavaScript en die bepaalde besturingstekens bevatten (NULL, regelterugloop en regelopschuiving).
-Eerder zorgde de aanwezigheid van een van deze tekens in een cookietekenreeks ervoor dat deze werd afgekapt, maar wel werd ingesteld.
-Nu zorgt de aanwezigheid van deze tekens ervoor dat de hele cookietekenreeks wordt genegeerd.
-
-Als je dit beleid instelt op True (standaard), wordt het nieuwe gedrag toegepast.
-
-Als je dit beleid instelt op False, wordt het oude gedrag toegepast.</translation>
 <translation id="663685822663765995">Afdrukken in kleurenmodus beperken</translation>
 <translation id="6640355849038068978">Als deze instelling aanstaat, kunnen gebruikers de Eche-app starten, bijvoorbeeld door op een Telefoonhub-melding te klikken.
 
@@ -7816,6 +7838,13 @@ Opmerking: Als je dit beleid gebruikt om de tijdzone automatisch te wijzigen, mo
       Ga naar https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns voor gedetailleerde informatie over geldige <ph name="URL_LABEL" />-patronen.</translation>
 <translation id="719398790886719721">Roottoegang tot virtuele Linux-machines uitzetten</translation>
 <translation id="7194407337890404814">Naam van standaardzoekprovider</translation>
+<translation id="7196336906814426783">Met dit beleid stel je een reeks wekelijkse intervallen vast om automatische opschorting te plannen. Als een interval begint, wordt de opschortingsstand van het <ph name="PRODUCT_OS_NAME" />-apparaat geactiveerd. Het apparaat wordt weer geactiveerd als het interval voorbij is.
+
+Planningen met overlappende intervallen worden niet ondersteund. Dit beleid heeft geen effect als het 2 overlappende intervallen bevat.
+
+<ph name="PRODUCT_OS_NAME" />-apparaten gebruiken de tijdzone van het systeem om deze intervallen toe te passen.
+
+Belangrijke opmerking: De planningen die door dit beleid zijn ingesteld, worden misschien niet uitgevoerd zoals verwacht als ze conflicteren met andere instellingen voor energiebeheer, zoals <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />. Zorg dat deze instellingen zo zijn ingesteld dat de geplande opschortingsintervallen van kracht worden.</translation>
 <translation id="7198134478421755850">Extensie</translation>
 <translation id="7199304109870655950">Configureer opties voor externe toegang in de Chrome Remote Desktop-host.
 

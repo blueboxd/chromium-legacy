@@ -22,6 +22,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/signin/public/base/gaia_id_hash.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -275,20 +276,18 @@ SyncServiceImpl::SyncServiceImpl(InitParams init_params)
 }
 
 void SyncServiceImpl::RegisterTrustedVaultSyntheticFieldTrialsIfNecessary() {
-  const sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo debug_info =
-      sync_prefs_.GetCachedTrustedVaultAutoUpgradeDebugInfo().value_or(
-          sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo());
-
-  const TrustedVaultAutoUpgradeSyntheticFieldTrialGroup group =
-      TrustedVaultAutoUpgradeSyntheticFieldTrialGroup::FromProto(
-          debug_info.auto_upgrade_experiment_group(),
-          debug_info.auto_upgrade_cohort_id());
-
   if (trusted_vault_auto_upgrade_synthetic_field_trial_registered_) {
     // Registration function already invoked. It cannot be invoked twice, as
     // runtime changes to the group assignment is not supported (e.g. signout).
     return;
   }
+
+  const sync_pb::TrustedVaultAutoUpgradeExperimentGroup proto =
+      sync_prefs_.GetCachedTrustedVaultAutoUpgradeExperimentGroup().value_or(
+          sync_pb::TrustedVaultAutoUpgradeExperimentGroup());
+
+  const TrustedVaultAutoUpgradeSyntheticFieldTrialGroup group =
+      TrustedVaultAutoUpgradeSyntheticFieldTrialGroup::FromProto(proto);
 
   if (!group.is_valid()) {
     // Broadcasting an invalid group isn't allowed, as it would otherwise use
@@ -383,7 +382,7 @@ void SyncServiceImpl::Initialize() {
   // If sync is disabled permanently, clean up old data that may be around (e.g.
   // crash during signout).
   if (HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY)) {
-    StopAndClear();
+    StopAndClear(ResetEngineReason::kEnterprisePolicy);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     // On ChromeOS Ash, sync-the-feature stays disabled even after the policy is
     // removed, for historic reasons. It is unclear if this behavior is
@@ -400,7 +399,7 @@ void SyncServiceImpl::Initialize() {
     // first startup of a fresh profile, the signed-in account isn't known yet
     // at this point (see also https://crbug.com/1458701#c7).
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-    StopAndClear();
+    StopAndClear(ResetEngineReason::kNotSignedIn);
 #endif
   }
 
@@ -441,7 +440,8 @@ void SyncServiceImpl::Initialize() {
 
   if (IsEngineAllowedToRun()) {
     if (!sync_client_->GetSyncApiComponentFactory()
-             ->HasTransportDataIncludingFirstSync()) {
+             ->HasTransportDataIncludingFirstSync(
+                 signin::GaiaIdHash::FromGaiaId(GetAccountInfo().gaia))) {
       // Sync never initialized before on this profile, so let's try immediately
       // the very first time. This is particularly useful for Chrome Ash (where
       // the user is signed in to begin with) and local sync (where sign-in
@@ -512,7 +512,30 @@ ShutdownReason SyncServiceImpl::ShutdownReasonForResetEngineReason(
     case ResetEngineReason::kDisabledAccount:
     case ResetEngineReason::kResetLocalData:
     case ResetEngineReason::kStopAndClear:
+    case ResetEngineReason::kNotSignedIn:
+    case ResetEngineReason::kEnterprisePolicy:
+    case ResetEngineReason::kDisableSyncOnClient:
       return ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA;
+  }
+}
+
+bool SyncServiceImpl::ShouldClearTransportDataForAccount(
+    ResetEngineReason reset_reason) {
+  switch (reset_reason) {
+    case ResetEngineReason::kShutdown:
+    case ResetEngineReason::kDisabledAccount:
+    case ResetEngineReason::kStopAndClear:
+    case ResetEngineReason::kCredentialsChanged:
+    case ResetEngineReason::kNotSignedIn:
+    case ResetEngineReason::kEnterprisePolicy:
+      // Regular/benign cases; no need to clear.
+      return false;
+    case ResetEngineReason::kUnrecoverableError:
+    case ResetEngineReason::kResetLocalData:
+    case ResetEngineReason::kDisableSyncOnClient:
+      // Weird error, or explicit request to reset. Clear transport data to
+      // start over fresh.
+      return true;
   }
 }
 
@@ -522,7 +545,7 @@ void SyncServiceImpl::AccountStateChanged() {
   if (!IsSignedIn()) {
     // The account was signed out, so shut down.
     sync_disabled_by_admin_ = false;
-    StopAndClear();
+    StopAndClear(ResetEngineReason::kNotSignedIn);
     DCHECK(!engine_);
   } else {
     // Either a new account was signed in, or the existing account's
@@ -639,7 +662,9 @@ void SyncServiceImpl::TryStartImpl() {
   }
 
   engine_ = sync_client_->GetSyncApiComponentFactory()->CreateSyncEngine(
-      debug_identifier_, sync_client_->GetSyncInvalidationsService());
+      debug_identifier_,
+      signin::GaiaIdHash::FromGaiaId(authenticated_account_info.gaia),
+      sync_client_->GetSyncInvalidationsService());
   DCHECK(engine_);
 
   // Clear any old errors the first time sync starts.
@@ -685,6 +710,7 @@ void SyncServiceImpl::TryStartImpl() {
 
 void SyncServiceImpl::Shutdown() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  TRACE_EVENT0("sync", "SyncServiceImpl::Shutdown");
 
   NotifyShutdown();
 
@@ -718,6 +744,7 @@ void SyncServiceImpl::RecordReasonIfWaitingForUpdates(
 
 std::unique_ptr<SyncEngine> SyncServiceImpl::ResetEngine(
     ResetEngineReason reset_reason) {
+  TRACE_EVENT0("sync", "SyncServiceImpl::ResetEngine");
   CHECK(data_type_manager_);
 
   const ShutdownReason shutdown_reason =
@@ -727,7 +754,7 @@ std::unique_ptr<SyncEngine> SyncServiceImpl::ResetEngine(
     // If the engine hasn't started or is already shut down when a DISABLE_SYNC
     // happens, the Directory needs to be cleaned up here.
     if (shutdown_reason == ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA) {
-      sync_client_->GetSyncApiComponentFactory()->ClearAllTransportData();
+      sync_client_->GetSyncApiComponentFactory()->CleanupOnDisableSync();
     }
     if (shutdown_reason != ShutdownReason::BROWSER_SHUTDOWN_AND_KEEP_DATA) {
       // Call controller's Stop() to inform them to clear the metadata.
@@ -738,6 +765,12 @@ std::unique_ptr<SyncEngine> SyncServiceImpl::ResetEngine(
       for (auto& [type, controller] : model_type_controllers_) {
         controller->Stop(fate, base::DoNothing());
       }
+    }
+    // Depending on the `reset_reason`, maybe clear account-keyed transport
+    // data.
+    if (ShouldClearTransportDataForAccount(reset_reason)) {
+      sync_client_->GetSyncApiComponentFactory()->ClearTransportDataForAccount(
+          signin::GaiaIdHash::FromGaiaId(GetAccountInfo().gaia));
     }
     return nullptr;
   }
@@ -783,6 +816,12 @@ std::unique_ptr<SyncEngine> SyncServiceImpl::ResetEngine(
   // Clear various state.
   crypto_.Reset();
   last_snapshot_ = SyncCycleSnapshot();
+
+  // Depending on the `reset_reason`, maybe clear account-keyed transport data.
+  if (ShouldClearTransportDataForAccount(reset_reason)) {
+    sync_client_->GetSyncApiComponentFactory()->ClearTransportDataForAccount(
+        signin::GaiaIdHash::FromGaiaId(GetAccountInfo().gaia));
+  }
 
   if (!IsLocalSyncEnabled()) {
     auth_manager_->ConnectionClosed();
@@ -936,7 +975,7 @@ SyncService::UserActionableError SyncServiceImpl::GetUserActionableError()
     case GoogleServiceAuthError::REQUEST_CANCELED:
     case GoogleServiceAuthError::CHALLENGE_RESPONSE_REQUIRED:
       // Transient errors aren't reachable.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
     case GoogleServiceAuthError::SERVICE_ERROR:
     case GoogleServiceAuthError::SCOPE_LIMITED_UNRECOVERABLE_ERROR:
@@ -950,7 +989,7 @@ SyncService::UserActionableError SyncServiceImpl::GetUserActionableError()
       break;
     // Conventional value for counting the states, never used.
     case GoogleServiceAuthError::NUM_STATES:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 
@@ -1168,7 +1207,7 @@ void SyncServiceImpl::OnActionableProtocolError(
       // Note: This method might get called again in the following code when
       // clearing the primary account. But due to rarity of the event, this
       // should be okay.
-      StopAndClear();
+      StopAndClear(ResetEngineReason::kDisableSyncOnClient);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       // On Ash, the primary account is always set and sync the feature
@@ -1217,7 +1256,7 @@ void SyncServiceImpl::OnActionableProtocolError(
       ResetEngine(ResetEngineReason::kResetLocalData);
       break;
     case UNKNOWN_ACTION:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
   DVLOG(2) << "Notify observers OnActionableProtocolError";
   NotifyObservers();
@@ -1559,7 +1598,8 @@ ModelTypeSet SyncServiceImpl::GetTypesWithPendingDownloadForInitialSync()
 
   if (GetTransportState() == TransportState::INITIALIZING &&
       !sync_client_->GetSyncApiComponentFactory()
-           ->HasTransportDataIncludingFirstSync()) {
+           ->HasTransportDataIncludingFirstSync(
+               signin::GaiaIdHash::FromGaiaId(GetAccountInfo().gaia))) {
     // The engine is initializing for the very first sync (usually after
     // sign-in). In this case all types are reported as pending download,
     // optimistically assuming datatype preconditions will be met.
@@ -1848,7 +1888,7 @@ void SyncServiceImpl::OnSyncManagedPrefChange(bool is_sync_managed) {
   }
 
   if (is_sync_managed) {
-    StopAndClear();
+    StopAndClear(ResetEngineReason::kEnterprisePolicy);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     // On ChromeOS Ash, sync-the-feature stays disabled even after the policy is
     // removed, for historic reasons. It is unclear if this behavior is
@@ -2169,9 +2209,9 @@ void SyncServiceImpl::CacheTrustedVaultDebugInfoToPrefsFromEngine() {
   CHECK(engine_);
   CHECK(engine_->IsInitialized());
 
-  sync_prefs_.SetCachedTrustedVaultAutoUpgradeDebugInfo(
+  sync_prefs_.SetCachedTrustedVaultAutoUpgradeExperimentGroup(
       engine_->GetDetailedStatus()
-          .trusted_vault_debug_info.auto_upgrade_debug_info());
+          .trusted_vault_debug_info.auto_upgrade_experiment_group());
 
   RegisterTrustedVaultSyntheticFieldTrialsIfNecessary();
 }
@@ -2250,27 +2290,31 @@ void SyncServiceImpl::SendExplicitPassphraseToPlatformClient() {
 }
 
 void SyncServiceImpl::StopAndClear() {
+  StopAndClear(ResetEngineReason::kStopAndClear);
+}
+
+void SyncServiceImpl::StopAndClear(ResetEngineReason reset_engine_reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   ClearUnrecoverableError();
-  ResetEngine(ResetEngineReason::kStopAndClear);
-  // Note: ResetEngine(kStopAndClear) does *not* clear prefs which
-  // are directly user-controlled such as the set of selected types here, so
-  // that if the user ever chooses to enable Sync again, they start off with
-  // their previous settings by default. We do however require going through
-  // first-time setup again and set SyncRequested to false.
+  ResetEngine(reset_engine_reason);
+
   // For explicit passphrase users, clear the encryption key, such that they
   // will need to reenter it if sync gets re-enabled. Note: the gaia-keyed
   // passphrase pref should be cleared before clearing
   // InitialSyncFeatureSetupComplete().
   sync_prefs_.ClearAllEncryptionBootstrapTokens();
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
+  // Note: ResetEngine() does *not* clear directly user-controlled prefs (such
+  // as the set of selected types), so that if the user ever chooses to enable
+  // Sync again, they start off with their previous settings by default.
+  // However, they do have to go through the initial setup again.
   sync_prefs_.ClearInitialSyncFeatureSetupComplete();
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
   sync_prefs_.ClearPassphrasePromptMutedProductVersion();
   // Cached information provided by SyncEngine must be cleared.
   sync_prefs_.ClearCachedPassphraseType();
-  sync_prefs_.ClearCachedTrustedVaultAutoUpgradeDebugInfo();
+  sync_prefs_.ClearCachedTrustedVaultAutoUpgradeExperimentGroup();
   // If the migration didn't finish before StopAndClear() was called, mark it as
   // done so it doesn't trigger again if the user signs in later.
   sync_prefs_.MarkPartialSyncToSigninMigrationFullyDone();

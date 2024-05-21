@@ -10,6 +10,7 @@ ci/Dawn Android arm64 DEPS Release (Pixel 6)
 ci/Dawn Android arm64 Experimental Release (Pixel 6)
 ci/Dawn Android arm64 Release (Pixel 6)
 ci/Dawn Android arm64 Release (Samsung S24)
+ci/Dawn ChromeOS Skylab Release (volteer)
 ci/Dawn Linux TSAN Release
 ci/Dawn Linux x64 Builder
 ci/Dawn Linux x64 DEPS Builder
@@ -17,6 +18,7 @@ ci/Dawn Linux x64 DEPS Release (Intel UHD 630)
 ci/Dawn Linux x64 DEPS Release (NVIDIA)
 ci/Dawn Linux x64 Experimental Release (Intel UHD 630)
 ci/Dawn Linux x64 Release (Intel UHD 630)
+ci/Dawn Linux x64 Release (Intel UHD 770)
 ci/Dawn Linux x64 Release (NVIDIA)
 ci/Dawn Mac arm64 Builder
 ci/Dawn Mac arm64 DEPS Builder
@@ -40,6 +42,7 @@ ci/Dawn Win10 x64 DEPS Release (Intel)
 ci/Dawn Win10 x64 DEPS Release (NVIDIA)
 ci/Dawn Win10 x64 Experimental Release (Intel)
 ci/Dawn Win10 x64 Experimental Release (NVIDIA)
+ci/Dawn Win10 x64 Release (Intel UHD 770)
 ci/Dawn Win10 x64 Release (Intel)
 ci/Dawn Win10 x64 Release (NVIDIA)
 ci/Dawn Win10 x86 Builder

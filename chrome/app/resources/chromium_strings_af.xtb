@@ -60,6 +60,7 @@ Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekenin
 <translation id="2018879682492276940">Kan nie installeer nie. Probeer weer.</translation>
 <translation id="2020032459870799438"><ph name="BEGIN_LINK" />Meld by Chromium aan<ph name="END_LINK" /> om te kyk of jou ander wagwoorde teen dataskendings en ander sekuriteitkwessies beveilig word.</translation>
 <translation id="2049376729098081731">Kies of jy Chromium-geskiedenis wil insluit vir meer gepersonaliseerde ervarings in Google-dienste</translation>
+<translation id="2065461321550902389">Meld aan by Chromium om wagwoorde en meer op al jou toestelle te stoor en te gebruik. Hierdie wagwoord sal in jou Google-rekening gestoor word nadat jy aangemeld het.</translation>
 <translation id="2086476982681781442">Chromium het hierdie aflaai geblokkeer omdat die lêer misleidend is en onverwagte veranderinge aan jou toestel kan maak</translation>
 <translation id="2088953378266246249">Inligting oor hoe Chromium sy kernsertifikate bestuur</translation>
 <translation id="2120965832000301375">{COUNT,plural, =1{Jou organisasie vee blaaierdata outomaties uit nadat Chromium 1 minuut lank nie gebruik is nie. Dit kan geskiedenis, outovul en aflaaie insluit. Jou oortjies sal oopbly.}other{Jou organisasie vee blaaierdata outomaties uit nadat Chromium # minute lank nie gebruik is nie. Dit kan geskiedenis, outovul en aflaaie insluit. Jou oortjies sal oopbly.}}</translation>
@@ -125,6 +126,7 @@ Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekenin
 <translation id="3155163173539279776">Herbegin Chromium</translation>
 <translation id="3179665906251668410">Maak skakel in 'n incognitovenster in Chromium oop</translation>
 <translation id="3185330573522821672">Pasmaak jou nuwe Chromium-profiel</translation>
+<translation id="318879170965183683">Jy kan jou Google-rekening se wagwoorde in Chromium gebruik terwyl jy aangemeld is</translation>
 <translation id="3190315855212034486">Sjoe! Chromium het omgeval. Wil jy nou herbegin?</translation>
 <translation id="3224847870593914902">Meld in die Instellings-bladsy by Chromium af om jou Google-rekening uit Chromium te verwyder</translation>
 <translation id="3258596308407688501">Chromium kan nie sy datagids lees of daarheen skryf nie:
@@ -146,6 +148,7 @@ Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekenin
 <translation id="3474745554856756813">Dit sal <ph name="ITEMS_COUNT" /> items op hierdie toestel uitvee. Meld as <ph name="USER_EMAIL" /> by Chromium aan om jou data later op te haal.</translation>
 <translation id="3497319089134299931"><ph name="SHORTCUT" /> kan tussen Chromium-profiele wissel</translation>
 <translation id="3509308970982693815">Maak asseblief alle Chromium-vensters toe en probeer weer.</translation>
+<translation id="3530103706039034513"><ph name="EXISTING_USER" /> is reeds aangemeld.  Meld in jou eie profiel as <ph name="USER_EMAIL_ADDRESS" /> by Chromium aan om jou blaai-aktiwiteit apart te hou.</translation>
 <translation id="3533435340678213462">Ons vee outomaties jou belangstellings uit wat ouer as 4 weke is om jou privaatheid te beskerm. Terwyl jy aanhou blaai, kan ’n belangstelling weer op die lys verskyn. Of jy kan belangstellings verwyder wat jy nie wil hê Chromium moet oorweeg nie.</translation>
 <translation id="3567254597502212821">Jou blaaigeskiedenis, ’n rekord van werwe wat jy besoek het deur Chromium op hierdie toestel te gebruik.</translation>
 <translation id="3639635944603682591">Hierdie persoon se blaaierdata sal van hierdie toestel af uitgevee word. Meld as <ph name="USER_EMAIL" /> by Chromium aan om die data te herwin.</translation>
@@ -205,6 +208,8 @@ Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekenin
 <translation id="4501471624619070934">Installasie het misluk omdat toegang in hierdie land beperk is.</translation>
 <translation id="4510853178268397146">Hierdie uitbreiding het nie privaatheidpraktyke gepubliseer nie, soos hoe dit data insamel en gebruik. Chromium beveel aan dat jy dit verwyder.</translation>
 <translation id="452711251841752011">Welkom by Chromium; nuwe blaaiervenster is oopgemaak</translation>
+<translation id="4531137820806573936">Chromium het toestemming nodig om jou omgewing te karteer en jou hande na te spoor</translation>
+<translation id="4536805923587466102">Jy het reeds in ’n ander Chromium-profiel as <ph name="USER_EMAIL_ADDRESS" /> aangemeld</translation>
 <translation id="4544142686420020088">Chromium het nie opgedateer nie; iets het skeefgeloop. <ph name="BEGIN_LINK" />Stel Chrome-opdateringprobleme en mislukte opdaterings reg.<ph name="END_LINK" /></translation>
 <translation id="454579500955453258">Gaan voort in 'n nuwe Chromium-profiel?</translation>
 <translation id="4567424176335768812">Jy is as <ph name="USER_EMAIL_ADDRESS" /> aangemeld. Nou kan jy op al jou aangemelde toestelle by jou boekmerke, geskiedenis en ander instellings ingaan.</translation>
@@ -306,7 +311,6 @@ Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekenin
 <translation id="6248213926982192922">Maak Chromium die verstekblaaier</translation>
 <translation id="6266342355635466082">Chromium kan nie nagaan of daar opdaterings is nie. Probeer om jou internetverbinding na te gaan.</translation>
 <translation id="6268381023930128611">Meld by Chromium af?</translation>
-<translation id="6273793429163604305">Op jou merke …</translation>
 <translation id="6281746429495226318">Pasmaak jou Chromium-profiel</translation>
 <translation id="6290827346642914212">Gee jou Chromium-profiel 'n naam</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> kan gevaarlik wees en daarom het Chromium dit geblokkeer.</translation>
@@ -314,6 +318,7 @@ Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekenin
 <translation id="6327105987658262776">Geen opdatering is beskikbaar nie.</translation>
 <translation id="6333502561965082103">'n Ander handeling in Chromium vind tans plaas. Probeer asseblief later weer.</translation>
 <translation id="6334986366598267305">Nou is dit makliker om Chromium met jou Google-rekening en op gedeelde rekenaars te gebruik.</translation>
+<translation id="6347933965114150440">Chromium-kortpad</translation>
 <translation id="6366160072964553914">Chromium het hierdie aflaai geblokkeer omdat die lêer nie algemeen afgelaai word nie en dit gevaarlik kan wees</translation>
 <translation id="6373523479360886564">Is jy seker jy wil Chromium deïnstalleer?</translation>
 <translation id="6375219077595103062">Voeg ’n kortpad na Wagwoordbestuurder by</translation>
@@ -378,7 +383,6 @@ Sommige kenmerke sal dalk nie beskikbaar wees nie. Spesifiseer 'n ander profielg
 <translation id="718435575166326686">Chromium het kameratoestemming vir hierdie werf nodig</translation>
 <translation id="7196312274710523067">Kon nie Chromium begin nie. Probeer weer.</translation>
 <translation id="7197677400338048821">Chromium kan nie jou wagwoorde nagaan nie. Probeer weer ná 24 uur.</translation>
-<translation id="7198365860059291213">Chromium benodig toestemming vir toneelbegrip en handnasporing om ’n omvattende sessie te begin</translation>
 <translation id="7213407614656404070">Gebruik Chromium enige tyd wanneer jy op skakels in boodskappe, dokumente en ander apps klik</translation>
 <translation id="7223968959479464213">Taakbestuurder – Chromium</translation>
 <translation id="7246575524853130370">Jou belangstellings soos geskat deur Chromium</translation>
@@ -435,6 +439,7 @@ Chromium kan nie jou instellings herwin nie.</translation>
 <translation id="81770708095080097">Hierdie lêer is gevaarlik en daarom het Chromium dit geblokkeer.</translation>
 <translation id="8232193495299001329">Chromium kan nie verifieer waar hierdie uitbreiding vandaan kom nie, en dit kan dalk onveilig wees. Verwyder dit uit Chromium sodat dit nie meer jou data, insluitend persoonlike inligting, op werwe wat jy besoek kan sien en verander nie.</translation>
 <translation id="8248265253516264921">As 'n prent nie 'n nuttige beskrywing het nie, sal Chromium probeer om een vir jou te verskaf. Prente word na Google toe gestuur om beskrywings te skep. Jy kan dit enige tyd in instellings afskakel.</translation>
+<translation id="8254601181414348851">Meld in ’n nuwe profiel by Chromium aan?</translation>
 <translation id="8266560134891435528">Chromium kan nie jou wagwoorde nagaan nie, want jy is nie aangemeld nie</translation>
 <translation id="8286943863733751221"><ph name="BEGIN_LINK" />Chromium waarsku jou<ph name="END_LINK" /> oor onveilige werwe en aflaaie</translation>
 <translation id="8290862415967981663">Hierdie lêer kan gevaarlik wees en daarom het Chromium dit geblokkeer.</translation>
@@ -456,7 +461,6 @@ Chromium kan nie jou instellings herwin nie.</translation>
 <translation id="8555465886620020932">Diensfout: <ph name="SERVICE_ERROR" />.</translation>
 <translation id="8568283329061645092">Chromium kan jou wagwoorde nagaan as jy met jou Google-rekening aanmeld</translation>
 <translation id="8586442755830160949">Kopiereg <ph name="YEAR" /> Die Chromium-outeurs. Alle regte voorbehou.</translation>
-<translation id="858822505990366713">Pasmaak jou Chromium</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />Hoe ons hierdie data gebruik:<ph name="END_BOLD" /> Werwe kan inligting oor jou belangstellings in Chromium stoor. As jy byvoorbeeld ’n werf besoek om skoene vir ’n marathon te koop, kan die werf jou belangstelling definieer as iemand wat marathons hardloop. As jy later ’n ander werf besoek om vir ’n wedloop te registreer, kan daardie werf vir jou ’n advertensie vir drafskoene op grond van jou belangstellings wys.</translation>
 <translation id="8619360774459241877">Begin tans Chromium …</translation>
 <translation id="8621669128220841554">Kon weens 'n ongespesifiseerde fout nie installeer nie. Laai Chromium asseblief weer af.</translation>
@@ -475,7 +479,6 @@ Chromium kan nie jou instellings herwin nie.</translation>
 <translation id="8907580949721785412">Chromium probeer tans om wagwoorde te wys. Tik jou Windows-wagwoord in om dit toe te laat.</translation>
 <translation id="8931379085695076764">Chromium kan jou belangstellings op grond van jou blaaigeskiedenis die afgelope paar weke skat. Hierdie inligting bly op jou toestel.</translation>
 <translation id="8941642502866065432">Kan nie Chromium opdateer nie</translation>
-<translation id="895999862145835951">Pasmaak jou Chromium</translation>
 <translation id="897581876605952338">Chromium Enterprise-logo</translation>
 <translation id="8986207147630327271">Jy voeg tans 'n werkprofiel by hierdie blaaier en gee jou administrateur beheer oor net jou werkprofiel.</translation>
 <translation id="8988036198400390003">Bestuur Chromium-profiele</translation>

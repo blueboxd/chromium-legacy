@@ -4,13 +4,16 @@
 
 #include "chrome/browser/ui/views/autofill/payments/save_payment_icon_view.h"
 
+#include "base/notreached.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/autofill/payments/save_payment_icon_controller.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/autofill/autofill_location_bar_bubble.h"
 #include "chrome/browser/ui/views/autofill/payments/manage_saved_iban_bubble_view.h"
+#include "chrome/browser/ui/views/autofill/payments/save_card_and_virtual_card_enroll_confirmation_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/payments/save_card_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/payments/save_iban_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -50,24 +53,9 @@ SavePaymentIconView::SavePaymentIconView(
 SavePaymentIconView::~SavePaymentIconView() = default;
 
 views::BubbleDialogDelegate* SavePaymentIconView::GetBubble() const {
-  SavePaymentIconController* controller = GetController();
-  if (!controller) {
-    return nullptr;
-  }
-
-  switch (controller->GetPaymentBubbleType()) {
-    case SavePaymentIconController::PaymentBubbleType::kUnknown:
-      return nullptr;
-    case SavePaymentIconController::PaymentBubbleType::kCreditCard:
-      return static_cast<autofill::SaveCardBubbleViews*>(
-          controller->GetPaymentBubbleView());
-    case SavePaymentIconController::PaymentBubbleType::kSaveIban:
-      return static_cast<autofill::SaveIbanBubbleView*>(
-          controller->GetPaymentBubbleView());
-    case SavePaymentIconController::PaymentBubbleType::kManageSavedIban:
-      return static_cast<autofill::ManageSavedIbanBubbleView*>(
-          controller->GetPaymentBubbleView());
-  }
+  return GetController() ? static_cast<AutofillLocationBarBubble*>(
+                               GetController()->GetPaymentBubbleView())
+                         : nullptr;
 }
 
 void SavePaymentIconView::UpdateImpl() {

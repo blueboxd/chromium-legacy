@@ -17,7 +17,7 @@ BASE_FEATURE(kAutoApproveSharedPasswordUpdatesFromSameSender,
 #if BUILDFLAG(IS_WIN)
 BASE_FEATURE(kAuthenticateUsingNewWindowsHelloApi,
              "AuthenticateUsingNewWindowsHelloApi",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 BASE_FEATURE(kBiometricTouchToFill,
@@ -27,8 +27,12 @@ BASE_FEATURE(kBiometricTouchToFill,
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
 BASE_FEATURE(kButterOnDesktopFollowup,
              "ButterOnDesktopFollowup",
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else
              base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
 BASE_FEATURE(kClearUndecryptablePasswords,
              "ClearUndecryptablePasswords",

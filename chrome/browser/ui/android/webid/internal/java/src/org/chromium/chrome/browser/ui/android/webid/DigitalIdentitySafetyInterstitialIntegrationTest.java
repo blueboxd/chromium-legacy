@@ -32,10 +32,11 @@ import org.chromium.base.test.util.CriteriaNotSatisfiedException;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.webid.DigitalIdentityProvider;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.ContentFeatureList;
-import org.chromium.content_public.browser.test.util.DigitalCredentialProviderUtils;
+import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.DigitalCredentialProviderUtils.MockIdentityCredentialsDelegate;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -114,6 +115,10 @@ public class DigitalIdentitySafetyInterstitialIntegrationTest {
             return mPromise;
         }
 
+        public boolean hasPromiseToFulfill() {
+            return mPromise != null;
+        }
+
         public void fulfillPromise() {
             mPromise.fulfill("token".getBytes());
         }
@@ -138,8 +143,7 @@ public class DigitalIdentitySafetyInterstitialIntegrationTest {
     public void setUp() {
         mActivityTestRule.getEmbeddedTestServerRule().setServerUsesHttps(true);
         mTestServer = mActivityTestRule.getTestServer();
-        DigitalCredentialProviderUtils.setDelegateForTesting(
-                new ReturnTokenIdentityCredentialsDelegate());
+        DigitalIdentityProvider.setDelegateForTesting(new ReturnTokenIdentityCredentialsDelegate());
 
         mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(TEST_PAGE));
 
@@ -211,14 +215,13 @@ public class DigitalIdentitySafetyInterstitialIntegrationTest {
 
     public void checkDigitalIdentityRequestWithDialogFieldTrialParam(
             String dialogParamValue,
-            String jsMethodToCall,
+            String nodeIdToClick,
             int expectedInterstitialParagraph1ResourceId)
             throws TimeoutException {
         setFieldTrialParam(dialogParamValue);
         addModalDialogObserver(expectedInterstitialParagraph1ResourceId);
 
-        JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                mActivityTestRule.getWebContents(), jsMethodToCall);
+        DOMUtils.clickNode(mActivityTestRule.getWebContents(), nodeIdToClick);
 
         waitTillLogTextAreaHasTextContent("\"token\"");
 
@@ -242,7 +245,7 @@ public class DigitalIdentitySafetyInterstitialIntegrationTest {
         checkDigitalIdentityRequestWithDialogFieldTrialParam(
                 DigitalIdentitySafetyInterstitialBridge
                         .DIGITAL_IDENTITY_LOW_RISK_DIALOG_PARAM_VALUE,
-                "requestAgeOnly()",
+                "request_age_only_button",
                 R.string.digital_identity_interstitial_low_risk_dialog_text);
     }
 
@@ -258,7 +261,7 @@ public class DigitalIdentitySafetyInterstitialIntegrationTest {
         checkDigitalIdentityRequestWithDialogFieldTrialParam(
                 DigitalIdentitySafetyInterstitialBridge
                         .DIGITAL_IDENTITY_HIGH_RISK_DIALOG_PARAM_VALUE,
-                "requestAgeOnly()",
+                "request_age_only_button",
                 R.string.digital_identity_interstitial_high_risk_dialog_text);
     }
 
@@ -273,7 +276,7 @@ public class DigitalIdentitySafetyInterstitialIntegrationTest {
         checkDigitalIdentityRequestWithDialogFieldTrialParam(
                 DigitalIdentitySafetyInterstitialBridge
                         .DIGITAL_IDENTITY_HIGH_RISK_DIALOG_PARAM_VALUE,
-                "requestAgeAndName()",
+                "request_age_and_name_button",
                 R.string.digital_identity_interstitial_high_risk_dialog_text);
     }
 
@@ -284,7 +287,7 @@ public class DigitalIdentitySafetyInterstitialIntegrationTest {
     public void testNoDialogByDefault() throws TimeoutException {
         checkDigitalIdentityRequestWithDialogFieldTrialParam(
                 /* dialogParamValue= */ "",
-                "requestAgeOnly()",
+                "request_age_only_button",
                 /* expectedInterstitialParagraph1ResourceId= */ -1);
     }
 
@@ -299,14 +302,18 @@ public class DigitalIdentitySafetyInterstitialIntegrationTest {
     public void testNoDialogIfNavigationDuringAndroidOsCall() throws TimeoutException {
         DelayedReturnIdentityCredentialsDelegate delegate =
                 new DelayedReturnIdentityCredentialsDelegate();
-        DigitalCredentialProviderUtils.setDelegateForTesting(delegate);
+        DigitalIdentityProvider.setDelegateForTesting(delegate);
         setFieldTrialParam(
                 DigitalIdentitySafetyInterstitialBridge
                         .DIGITAL_IDENTITY_HIGH_RISK_DIALOG_PARAM_VALUE);
         addModalDialogObserver(/* expectedInterstitialParagraph1ResourceId= */ -1);
 
-        JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                mActivityTestRule.getWebContents(), "requestAgeOnly()");
+        DOMUtils.clickNode(mActivityTestRule.getWebContents(), "request_age_only_button");
+
+        CriteriaHelper.pollInstrumentationThread(
+                () -> {
+                    return delegate.hasPromiseToFulfill();
+                });
 
         // Do page navigation during the Android OS call.
         mActivityTestRule.loadUrl(mTestServer.getURL("/chrome/test/data/android/simple.html"));

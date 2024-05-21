@@ -24,6 +24,7 @@
 #include "media/gpu/v4l2/stateless/vp8_delegate.h"
 #include "media/gpu/v4l2/stateless/vp9_delegate.h"
 #include "media/gpu/v4l2/v4l2_status.h"
+#include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
 
 // Logging for the decoder is following this convention:
 //
@@ -242,14 +243,25 @@ void V4L2StatelessVideoDecoder::Reset(base::OnceClosure reset_cb) {
 
   // In order to preserve the order of the callbacks between Decode() and
   // Reset(), we also trampoline |reset_cb|.
-  base::ScopedClosureRunner scoped_trampoline_reset_cb(
-      base::BindOnce(base::IgnoreResult(&base::SequencedTaskRunner::PostTask),
-                     base::SequencedTaskRunner::GetCurrentDefault(), FROM_HERE,
-                     std::move(reset_cb)));
+  absl::Cleanup scoped_trampoline_reset_cb =
+      [reset_cb = std::move(reset_cb)]() mutable {
+        base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+            FROM_HERE, std::move(reset_cb));
+      };
 
   decoder_->Reset();
 
   ClearPendingRequests(DecoderStatus::Codes::kAborted);
+
+  // If a reset occurs during a resolution change, followed by a reset before
+  // the resolution change is done the pipeline may not signal that
+  // ApplyResolutionChange() should occur. The |client_| will check that there
+  // are no outstanding frames. Because the previous resolution change is stuck
+  // waiting for the queues to clear out, the |client_| will not call
+  // ApplyResolution() so it is pinged from here.
+  if (resolution_changing_) {
+    ApplyResolutionChange();
+  }
 
   // If the reset happened in the middle of a flush the flush will not be
   // completed.
@@ -259,31 +271,64 @@ void V4L2StatelessVideoDecoder::Reset(base::OnceClosure reset_cb) {
 }
 
 bool V4L2StatelessVideoDecoder::NeedsBitstreamConversion() const {
-  NOTREACHED() << "Our only owner VideoDecoderPipeline never calls here";
+  NOTREACHED_IN_MIGRATION()
+      << "Our only owner VideoDecoderPipeline never calls here";
   return false;
 }
 
 bool V4L2StatelessVideoDecoder::CanReadWithoutStalling() const {
-  NOTREACHED() << "Our only owner VideoDecoderPipeline never calls here";
+  NOTREACHED_IN_MIGRATION()
+      << "Our only owner VideoDecoderPipeline never calls here";
   return false;
 }
 
 int V4L2StatelessVideoDecoder::GetMaxDecodeRequests() const {
-  NOTREACHED() << "Our only owner VideoDecoderPipeline never calls here";
+  NOTREACHED_IN_MIGRATION()
+      << "Our only owner VideoDecoderPipeline never calls here";
   return -1;
 }
 
 VideoDecoderType V4L2StatelessVideoDecoder::GetDecoderType() const {
-  NOTREACHED() << "Our only owner VideoDecoderPipeline never calls here";
+  NOTREACHED_IN_MIGRATION()
+      << "Our only owner VideoDecoderPipeline never calls here";
   return VideoDecoderType::kV4L2;
 }
 
 bool V4L2StatelessVideoDecoder::IsPlatformDecoder() const {
-  NOTREACHED() << "Our only owner VideoDecoderPipeline never calls here";
+  NOTREACHED_IN_MIGRATION()
+      << "Our only owner VideoDecoderPipeline never calls here";
   return true;
 }
 
 void V4L2StatelessVideoDecoder::ApplyResolutionChange() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(3);
+
+  if (!resolution_changing_) {
+    return;
+  }
+
+  // Before a resolution change occurs all of the buffers in flight need to be
+  // cleaned up.
+  if ((input_queue_ && input_queue_->OutstandingBuffers()) ||
+      (output_queue_ && output_queue_->OutstandingBuffers()) ||
+      !display_queue_.empty()) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&V4L2StatelessVideoDecoder::ApplyResolutionChange,
+                       weak_ptr_factory_for_events_.GetWeakPtr()),
+        base::Milliseconds(1));
+    return;
+  }
+
+  // Always tear down the |output_queue_| because the size of the output buffers
+  // has changed.
+  output_queue_.reset();
+
+  ConfigureInputQueue();
+}
+
+void V4L2StatelessVideoDecoder::ConfigureInputQueue() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
@@ -296,24 +341,6 @@ void V4L2StatelessVideoDecoder::ApplyResolutionChange() {
       input_queue_.reset();
     }
   }
-
-  // Always tear down the |output_queue_| because the size of the output buffers
-  // has changed.
-  output_queue_.reset();
-
-  // The driver can be busy cleaning up the resources that were freed up by
-  // resetting the queues. This delayed task allows for any messages resulting
-  // from the queue teardown to be serviced.
-  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&V4L2StatelessVideoDecoder::ContinueApplyResolutionChange,
-                     weak_ptr_factory_for_events_.GetWeakPtr()),
-      base::Milliseconds(1));
-}
-
-void V4L2StatelessVideoDecoder::ContinueApplyResolutionChange() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DVLOGF(3);
 
   // TODO(frkoenig): There only needs to be a single buffer in order to
   // decode. This should be investigated later to see if additional buffers

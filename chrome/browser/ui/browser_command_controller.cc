@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_actions.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -135,6 +136,10 @@
 #if BUILDFLAG(IS_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
 #endif
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
+#include "chrome/browser/ui/shortcuts/desktop_shortcuts_utils.h"
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 
 using WebExposedIsolationLevel = content::WebExposedIsolationLevel;
 
@@ -955,14 +960,14 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       ShowChromeTips(browser_);
 #else
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
       break;
     case IDC_CHROME_WHATS_NEW:
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       ShowChromeWhatsNew(browser_);
 #else
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
       break;
     case IDC_SHOW_BETA_FORUM:
@@ -1589,21 +1594,38 @@ void BrowserCommandController::UpdateCommandsForTabState() {
 
   bool can_create_web_app = web_app::CanCreateWebApp(browser_);
   command_updater_.UpdateCommandEnabled(IDC_INSTALL_PWA, can_create_web_app);
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
+  if (base::FeatureList::IsEnabled(features::kShortcutsNotApps)) {
+    command_updater_.UpdateCommandEnabled(
+        IDC_CREATE_SHORTCUT, shortcuts::CanCreateDesktopShortcut(browser_));
+  } else {
+    command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUT,
+                                          can_create_web_app);
+  }
+#else
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUT,
                                         can_create_web_app);
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 
-  command_updater_.UpdateCommandEnabled(IDC_SEND_TAB_TO_SELF,
-                                        CanSendTabToSelf(browser_));
+  UpdateCommandAndActionEnabled(IDC_SEND_TAB_TO_SELF, kActionSendTabToSelf,
+                                CanSendTabToSelf(browser_));
+
   command_updater_.UpdateCommandEnabled(IDC_QRCODE_GENERATOR,
                                         CanGenerateQrCode(browser_));
 
   if (features::IsChromeRefresh2023()) {
     ChromeTranslateClient* chrome_translate_client =
         ChromeTranslateClient::FromWebContents(current_web_contents);
-    command_updater_.UpdateCommandEnabled(
-        IDC_SHOW_TRANSLATE, chrome_translate_client &&
-                                chrome_translate_client->GetTranslateManager()
-                                    ->CanManuallyTranslate());
+    const bool can_translate =
+        chrome_translate_client &&
+        chrome_translate_client->GetTranslateManager()->CanManuallyTranslate();
+    command_updater_.UpdateCommandEnabled(IDC_SHOW_TRANSLATE, can_translate);
+    if (features::IsToolbarPinningEnabled()) {
+      actions::ActionManager::Get()
+          .FindAction(kActionShowTranslate)
+          ->SetEnabled(can_translate);
+    }
   }
 
   bool is_isolated_app = current_web_contents->GetPrimaryMainFrame()
@@ -1858,15 +1880,7 @@ void BrowserCommandController::UpdatePrintingState() {
   if (is_locked_fullscreen_)
     return;
 
-  bool print_enabled = CanPrint(browser_);
-  command_updater_.UpdateCommandEnabled(IDC_PRINT, print_enabled);
-  if (features::IsToolbarPinningEnabled()) {
-    actions::ActionItem* const print_action =
-        actions::ActionManager::Get().FindAction(kActionPrint);
-    if (print_action) {
-      print_action->SetEnabled(print_enabled);
-    }
-  }
+  UpdateCommandAndActionEnabled(IDC_PRINT, kActionPrint, CanPrint(browser_));
 #if BUILDFLAG(ENABLE_PRINTING)
   command_updater_.UpdateCommandEnabled(IDC_BASIC_PRINT,
                                         CanBasicPrint(browser_));
@@ -1971,6 +1985,25 @@ void BrowserCommandController::UpdateCommandsForTabStripStateChanged() {
   command_updater_.UpdateCommandEnabled(IDC_MOVE_TAB_TO_NEW_WINDOW,
                                         CanMoveActiveTabToNewWindow(browser_));
   UpdateCommandsForBookmarkEditing();
+}
+
+actions::ActionItem* BrowserCommandController::FindAction(
+    actions::ActionId action_id) {
+  BrowserActions* browser_actions = browser_->browser_actions();
+  return actions::ActionManager::Get().FindAction(
+      action_id, browser_actions->root_action_item());
+}
+
+void BrowserCommandController::UpdateCommandAndActionEnabled(
+    int command_id,
+    actions::ActionId action_id,
+    bool enabled) {
+  command_updater_.UpdateCommandEnabled(command_id, enabled);
+  if (features::IsToolbarPinningEnabled()) {
+    if (auto* const action = FindAction(action_id)) {
+      action->SetEnabled(enabled);
+    }
+  }
 }
 
 BrowserWindow* BrowserCommandController::window() {

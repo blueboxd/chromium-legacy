@@ -9,6 +9,7 @@
 #include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/commerce/shopping_ui_handler_delegate.h"
 #include "chrome/browser/ui/webui/sanitized_image_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -56,26 +57,26 @@ ProductSpecificationsUI::ProductSpecificationsUI(content::WebUI* web_ui)
       IDR_COMMERCE_PRODUCT_SPECIFICATIONS_PRODUCT_SPECIFICATIONS_HTML);
 
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"addToNewGroup", IDS_PRODUCT_SPECIFICATIONS_ADD_TO_NEW_GROUP},
+      {"delete", IDS_PRODUCT_SPECIFICATIONS_DELETE},
       {"emptyMenu", IDS_PRODUCT_SPECIFICATIONS_EMPTY_SELECTION_MENU},
       {"emptyProductSelector",
        IDS_PRODUCT_SPECIFICATIONS_EMPTY_PRODUCT_SELECTOR},
       {"emptyStateDescription",
        IDS_PRODUCT_SPECIFICATIONS_EMPTY_STATE_TITLE_DESCRIPTION},
       {"emptyStateTitle", IDS_PRODUCT_SPECIFICATIONS_EMPTY_STATE_TITLE},
+      {"openTabs", IDS_PRODUCT_SPECIFICATIONS_OPEN_TABS_SECTION},
+      {"recentlyViewedTabs",
+       IDS_PRODUCT_SPECIFICATIONS_RECENTLY_VIEWED_TABS_SECTION},
+      {"removeColumn", IDS_PRODUCT_SPECIFICATIONS_REMOVE_COLUMN},
+      {"renameGroup", IDS_PRODUCT_SPECIFICATIONS_RENAME_GROUP},
+      {"seeAll", IDS_PRODUCT_SPECIFICATIONS_SEE_ALL},
   };
   source->AddLocalizedStrings(kLocalizedStrings);
 
   source->AddString("message", "Some example content...");
   source->AddString("pageTitle", "Product Specifications");
   source->AddString("summaryTitle", "Summary");
-
-  static constexpr webui::LocalizedString kStrings[] = {
-      {"openTabs", IDS_PRODUCT_SPECIFICATIONS_OPEN_TABS_SECTION},
-      {"recentlyViewedTabs",
-       IDS_PRODUCT_SPECIFICATIONS_RECENTLY_VIEWED_TABS_SECTION},
-  };
-
-  source->AddLocalizedStrings(kStrings);
 }
 
 void ProductSpecificationsUI::BindInterface(
@@ -106,7 +107,9 @@ void ProductSpecificationsUI::CreateShoppingServiceHandler(
   shopping_service_handler_ =
       std::make_unique<commerce::ShoppingServiceHandler>(
           std::move(page), std::move(receiver), bookmark_model,
-          shopping_service, profile->GetPrefs(), tracker, nullptr);
+          shopping_service, profile->GetPrefs(), tracker,
+          std::make_unique<commerce::ShoppingUiHandlerDelegate>(nullptr,
+                                                                profile));
 }
 
 ProductSpecificationsUI::~ProductSpecificationsUI() = default;

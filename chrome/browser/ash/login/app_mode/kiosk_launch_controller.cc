@@ -8,7 +8,6 @@
 #include <optional>
 #include <string>
 #include <utility>
-#include <variant>
 
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/constants/ash_switches.h"
@@ -22,7 +21,6 @@
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
-#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
@@ -35,13 +33,13 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/app_mode/app_launch_utils.h"
-#include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_service.h"
 #include "chrome/browser/ash/app_mode/kiosk_app.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/app_mode/kiosk_chrome_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_controller.h"
+#include "chrome/browser/ash/app_mode/kiosk_profile_load_failed_observer.h"
 #include "chrome/browser/ash/app_mode/kiosk_profile_loader.h"
 #include "chrome/browser/ash/app_mode/lacros_launcher.h"
 #include "chrome/browser/ash/app_mode/startup_app_launcher.h"
@@ -53,7 +51,6 @@
 #include "chrome/browser/ash/login/app_mode/force_install_observer.h"
 #include "chrome/browser/ash/login/app_mode/network_ui_controller.h"
 #include "chrome/browser/ash/login/enterprise_user_session_metrics.h"
-#include "chrome/browser/ash/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/webui_login_view.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
@@ -62,7 +59,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/webui/ash/login/app_launch_splash_screen_handler.h"
-#include "chrome/browser/ui/webui/ash/login/encryption_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/oobe_ui.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/ash/components/network/network_handler.h"
@@ -75,13 +71,6 @@
 
 namespace ash {
 namespace {
-
-// Whether we should skip the wait for minimum screen show time.
-bool g_skip_splash_wait_for_testing = false;
-bool g_block_app_launch_for_testing = false;
-bool g_block_system_session_creation_for_testing = false;
-// Whether we should prevent Kiosk launcher from exiting when launch fails.
-bool g_block_exit_on_failure_for_testing = false;
 
 // Enum types for Kiosk.LaunchType UMA so don't change its values.
 // KioskLaunchType in histogram.xml must be updated when making changes here.
@@ -116,9 +105,6 @@ void RecordKioskLaunchUMA(bool is_auto_launch) {
 
 void RecordKioskLaunchDuration(KioskAppType type, base::TimeDelta duration) {
   switch (type) {
-    case KioskAppType::kArcApp:
-      base::UmaHistogramLongTimes("Kiosk.LaunchDuration.Arc", duration);
-      break;
     case KioskAppType::kChromeApp:
       base::UmaHistogramLongTimes("Kiosk.LaunchDuration.ChromeApp", duration);
       break;
@@ -127,50 +113,12 @@ void RecordKioskLaunchDuration(KioskAppType type, base::TimeDelta duration) {
       break;
   }
 }
-// This is a not-owning wrapper around ArcKioskAppService which allows to be
-// plugged into a unique_ptr safely.
-// TODO(apotapchuk): Remove this when ARC kiosk is fully deprecated.
-class ArcKioskAppServiceWrapper : public KioskAppLauncher {
- public:
-  ArcKioskAppServiceWrapper(ArcKioskAppService* service,
-                            KioskAppLauncher::NetworkDelegate* delegate)
-      : service_(service) {
-    service_->SetNetworkDelegate(delegate);
-  }
-
-  ~ArcKioskAppServiceWrapper() override {
-    service_->SetNetworkDelegate(nullptr);
-  }
-
-  // `KioskAppLauncher`:
-  void AddObserver(KioskAppLauncher::Observer* observer) override {
-    service_->AddObserver(observer);
-  }
-  void RemoveObserver(KioskAppLauncher::Observer* observer) override {
-    service_->RemoveObserver(observer);
-  }
-  void Initialize() override { service_->Initialize(); }
-  void ContinueWithNetworkReady() override {
-    service_->ContinueWithNetworkReady();
-  }
-  void LaunchApp() override { service_->LaunchApp(); }
-
- private:
-  // `service_` is externally owned and it's the caller's responsibility to
-  // ensure that it outlives this wrapper.
-  const raw_ptr<ArcKioskAppService> service_;
-};
 
 std::unique_ptr<KioskAppLauncher> BuildKioskAppLauncher(
     Profile* profile,
     const KioskAppId& kiosk_app_id,
     KioskAppLauncher::NetworkDelegate* network_delegate) {
   switch (kiosk_app_id.type) {
-    case KioskAppType::kArcApp:
-      // ArcKioskAppService lifetime is bound to the profile, therefore
-      // wrap it into a separate object.
-      return std::make_unique<ArcKioskAppServiceWrapper>(
-          ArcKioskAppService::Get(profile), network_delegate);
     case KioskAppType::kChromeApp:
       return std::make_unique<StartupAppLauncher>(
           profile, kiosk_app_id.app_id.value(), /*should_skip_install=*/false,
@@ -297,7 +245,6 @@ std::string ToString(KioskAppLaunchError::Error error) {
     CASE(kPolicyLoadFailed);
     CASE(kUnableToDownload);
     CASE(kUnableToLaunch);
-    CASE(kArcAuthFailed);
     CASE(kExtensionsLoadTimeout);
     CASE(kExtensionsPolicyInvalid);
     CASE(kUserNotAllowlisted);
@@ -309,6 +256,13 @@ std::string ToString(KioskAppLaunchError::Error error) {
 }
 
 }  // namespace
+
+// static
+bool KioskLaunchController::TestOverrides::skip_splash_wait = false;
+bool KioskLaunchController::TestOverrides::block_app_launch = false;
+bool KioskLaunchController::TestOverrides::block_system_session_creation =
+    false;
+bool KioskLaunchController::TestOverrides::block_exit_on_failure = false;
 
 using NetworkUIState = NetworkUiController::NetworkUIState;
 
@@ -694,7 +648,7 @@ void KioskLaunchController::OnLaunchFailed(KioskAppLaunchError::Error error) {
   // Don't exit on launch failure if a test checks for Kiosk splash screen after
   // launch fails, which happens to MSan browser_tests since this build variant
   // runs significantly slower.
-  if (g_block_exit_on_failure_for_testing) {
+  if (TestOverrides::block_exit_on_failure) {
     return;
   }
 
@@ -729,7 +683,7 @@ void KioskLaunchController::FinishForcedExtensionsInstall(
       AppLaunchSplashScreenView::AppLaunchState::kWaitingAppWindow);
   splash_screen_view_->Show(GetSplashScreenAppData());
 
-  if (launch_on_install_ || g_skip_splash_wait_for_testing) {
+  if (launch_on_install_ || TestOverrides::skip_splash_wait) {
     LaunchApp();
   }
 }
@@ -754,7 +708,7 @@ void KioskLaunchController::OnAppWindowCreated(
   DUMP_WILL_BE_CHECK_EQ(app_state_, AppState::kLaunched);
 
   SetKioskLaunchStateCrashKey(KioskLaunchState::kAppWindowCreated);
-  if (!g_block_system_session_creation_for_testing) {
+  if (!TestOverrides::block_system_session_creation) {
     CreateKioskSystemSession(kiosk_app_id_, profile_, app_name);
   }
   // If timer is running, do not remove splash screen for a few
@@ -773,13 +727,7 @@ void KioskLaunchController::OnAppDataUpdated() {
 }
 
 void KioskLaunchController::HandleProfileLoadError(
-    KioskProfileLoader::ErrorResult error) {
-  if (auto* user_context =
-          std::get_if<KioskProfileLoader::OldEncryptionUserContext>(&error)) {
-    return HandleOldEncryption(std::move(*user_context));
-  }
-
-  auto launch_error = std::get<KioskAppLaunchError::Error>(error);
+    KioskAppLaunchError::Error launch_error) {
   if (launch_error == KioskAppLaunchError::Error::kNone) {
     return;
   }
@@ -788,25 +736,6 @@ void KioskLaunchController::HandleProfileLoadError(
     observer.OnKioskProfileLoadFailed();
   }
   OnLaunchFailed(launch_error);
-}
-
-void KioskLaunchController::HandleOldEncryption(
-    std::unique_ptr<UserContext> user_context) {
-  if (kiosk_app_id_.type != KioskAppType::kArcApp) {
-    NOTREACHED();
-    return;
-  }
-  if (!host_) {
-    CHECK_IS_TEST();
-    return;
-  }
-  host_->StartWizard(EncryptionMigrationScreenView::kScreenId);
-  EncryptionMigrationScreen* migration_screen =
-      static_cast<EncryptionMigrationScreen*>(
-          host_->GetWizardController()->current_screen());
-  DCHECK(migration_screen);
-  migration_screen->SetUserContext(std::move(user_context));
-  migration_screen->SetupInitialView();
 }
 
 void KioskLaunchController::OnNetworkConfigRequested() {
@@ -847,7 +776,7 @@ void KioskLaunchController::OnNetworkLost() {
 }
 
 void KioskLaunchController::LaunchApp() {
-  if (g_block_app_launch_for_testing) {
+  if (TestOverrides::block_app_launch) {
     return;
   }
 
@@ -873,28 +802,6 @@ void KioskLaunchController::FinishLaunchWithError(
 
 NetworkUiController* KioskLaunchController::GetNetworkUiControllerForTesting() {
   return network_ui_controller_.get();
-}
-
-// static
-base::AutoReset<bool> KioskLaunchController::SkipSplashScreenWaitForTesting() {
-  return base::AutoReset<bool>(&g_skip_splash_wait_for_testing, true);
-}
-
-// static
-base::AutoReset<bool> KioskLaunchController::BlockAppLaunchForTesting() {
-  return base::AutoReset<bool>(&g_block_app_launch_for_testing, true);
-}
-
-// static
-base::AutoReset<bool>
-KioskLaunchController::BlockSystemSessionCreationForTesting() {
-  return base::AutoReset<bool>(&g_block_system_session_creation_for_testing,
-                               true);
-}
-
-// static
-base::AutoReset<bool> KioskLaunchController::BlockExitOnFailureForTesting() {
-  return base::AutoReset<bool>(&g_block_exit_on_failure_for_testing, true);
 }
 
 }  // namespace ash

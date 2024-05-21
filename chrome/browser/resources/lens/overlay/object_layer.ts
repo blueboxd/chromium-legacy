@@ -10,6 +10,7 @@ import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.m
 import type {DomRepeat} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxyImpl} from './browser_proxy.js';
+import {type CursorTooltipData, CursorTooltipType} from './cursor_tooltip.js';
 import {CenterRotatedBox_CoordinateType} from './geometry.mojom-webui.js';
 import type {CenterRotatedBox} from './geometry.mojom-webui.js';
 import type {LensPageCallbackRouter} from './lens.mojom-webui.js';
@@ -63,6 +64,7 @@ function compareArea(object1: OverlayObject, object2: OverlayObject): number {
 
 export interface ObjectLayerElement {
   $: {
+    hiddenCanvas: HTMLCanvasElement,
     highlightImg: HTMLImageElement,
     objectsContainer: DomRepeat,
     objectSelectionCanvas: HTMLCanvasElement,
@@ -93,7 +95,12 @@ export class ObjectLayerElement extends PolymerElement {
       },
       debugMode: {
         type: Boolean,
-        value: loadTimeData.getBoolean('enableDebuggingMode'),
+        value: () => loadTimeData.getBoolean('enableDebuggingMode'),
+        reflectToAttribute: true,
+      },
+      preciseHighlight: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('enablePreciseHighlight'),
         reflectToAttribute: true,
       },
       screenshotDataUri: String,
@@ -104,11 +111,16 @@ export class ObjectLayerElement extends PolymerElement {
   private canvasWidth: number;
   private canvasPhysicalHeight: number;
   private canvasPhysicalWidth: number;
+  // Whether canvas is currently blank.
+  private canvasIsBlank: boolean = true;
   private context: CanvasRenderingContext2D;
+  private hiddenContext?: CanvasRenderingContext2D;
   // The data URI of the current overlay screenshot.
   private screenshotDataUri: string;
   // The objects rendered in this layer.
   private renderedObjects: OverlayObject[];
+  // Whether precise object highlighting is enabled.
+  private preciseHighlight: boolean;
 
   private readonly router: LensPageCallbackRouter =
       BrowserProxyImpl.getInstance().callbackRouter;
@@ -118,6 +130,9 @@ export class ObjectLayerElement extends PolymerElement {
     super.ready();
 
     this.context = this.$.objectSelectionCanvas.getContext('2d')!;
+    if (this.preciseHighlight) {
+      this.hiddenContext = this.$.hiddenCanvas.getContext('2d')!;
+    }
   }
 
   override connectedCallback() {
@@ -160,22 +175,84 @@ export class ObjectLayerElement extends PolymerElement {
     return true;
   }
 
+  private onSegmentationHovered(object: OverlayObject) {
+    this.drawObject(this.context, object);
+    this.focusShimmer(object);
+    this.dispatchEvent(new CustomEvent<CursorData>('set-cursor', {
+      bubbles: true,
+      composed: true,
+      detail: {cursor: CursorType.POINTER},
+    }));
+    this.dispatchEvent(
+        new CustomEvent<CursorTooltipData>('set-cursor-tooltip', {
+          bubbles: true,
+          composed: true,
+          detail: {tooltipType: CursorTooltipType.CLICK_SEARCH},
+        }));
+  }
+
+  private onSegmentationUnhovered() {
+    this.clearCanvas(this.context);
+    unfocusShimmer(this, ShimmerControlRequester.SEGMENTATION);
+    this.dispatchEvent(new CustomEvent<CursorData>('set-cursor', {
+      bubbles: true,
+      composed: true,
+      detail: {cursor: CursorType.DEFAULT},
+    }));
+    this.dispatchEvent(
+        new CustomEvent<CursorTooltipData>('set-cursor-tooltip', {
+          bubbles: true,
+          composed: true,
+          detail: {tooltipType: CursorTooltipType.REGION_SEARCH},
+        }));
+  }
+
   private handlePointerEnter(event: PointerEvent) {
     assertInstanceof(event.target, HTMLElement);
-    const object =
-      this.$.objectsContainer.itemForElement(event.target);
-    this.drawObject(object);
-    this.dispatchEvent(new CustomEvent<CursorData>(
-        'set-cursor',
-        {bubbles: true, composed: true, detail: {cursor: CursorType.POINTER}}));
+    const object = this.$.objectsContainer.itemForElement(event.target);
+    if (this.preciseHighlight) {
+      // Draw the object in the hidden canvas which is used to highlight the
+      // object in the visible canvas when the pointer is inside the object.
+      this.drawObject(this.hiddenContext!, object);
+    } else {
+      this.onSegmentationHovered(object);
+    }
   }
 
   private handlePointerLeave() {
-    this.clearCanvas();
-    unfocusShimmer(this, ShimmerControlRequester.SEGMENTATION);
-    this.dispatchEvent(new CustomEvent<CursorData>(
-        'set-cursor',
-        {bubbles: true, composed: true, detail: {cursor: CursorType.DEFAULT}}));
+    if (this.preciseHighlight) {
+      // Clear the hidden canvas and reset state.
+      this.clearCanvas(this.hiddenContext!);
+      this.canvasIsBlank = true;
+    }
+    this.onSegmentationUnhovered();
+  }
+
+  private handlePointerMove(event: MouseEvent) {
+    if (!this.preciseHighlight) {
+      return;
+    }
+
+    assertInstanceof(event.target, HTMLElement);
+    if (this.hiddenContext!.isPointInPath(
+            event.clientX * window.devicePixelRatio,
+            event.clientY * window.devicePixelRatio)) {
+      // Ensure the object is drawn only once.
+      if (!this.canvasIsBlank) {
+        return;
+      }
+      this.canvasIsBlank = false;
+      const object = this.$.objectsContainer.itemForElement(event.target);
+      this.onSegmentationHovered(object);
+
+    } else {
+      // Ensure the canvas is cleared only once.
+      if (this.canvasIsBlank) {
+        return;
+      }
+      this.canvasIsBlank = true;
+      this.onSegmentationUnhovered();
+    }
   }
 
   setCanvasSizeTo(width: number, height: number) {
@@ -186,15 +263,52 @@ export class ObjectLayerElement extends PolymerElement {
     this.canvasPhysicalHeight = height * window.devicePixelRatio;
     this.context.setTransform(
         window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+    if (this.preciseHighlight) {
+      this.hiddenContext!.setTransform(
+          window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+    }
   }
 
-  private drawObject(object: OverlayObject) {
+  private drawObject(context: CanvasRenderingContext2D, object: OverlayObject) {
     const polygons = object.geometry.segmentationPolygon;
     if (!polygons) {
       return;
     }
-    const objectBoundingBox = object.geometry.boundingBox;
+
+    context.beginPath();
+    for (const polygon of polygons) {
+      // TODO(b/330183480): Currently, we are assuming that polygon
+      // coordinates are normalized. We should still implement
+      // rendering in case this assumption is ever violated.
+      if (polygon.coordinateType !== Polygon_CoordinateType.kNormalized) {
+        continue;
+      }
+
+      const firstVertex = polygon.vertex[0];
+      context.moveTo(
+          firstVertex.x * this.canvasWidth, firstVertex.y * this.canvasHeight);
+      for (const vertex of polygon.vertex.slice(1)) {
+        context.lineTo(
+            vertex.x * this.canvasWidth, vertex.y * this.canvasHeight);
+      }
+    }
+    context.closePath();
+
+    // Draw the highlight image clipped to the path.
+    context.save();
+    context.filter = 'none';
+    context.clip();
+    context.drawImage(
+        this.$.highlightImg, 0, 0, this.canvasWidth, this.canvasHeight);
+    context.restore();
+
+    // Stroke the path on top of the image.
+    context.lineCap = 'round';
+    context.lineJoin = 'round';
+    context.lineWidth = 2;
+    context.filter = 'blur(4px)';
     // Fit a square around the bounding box to use for gradient coordinates.
+    const objectBoundingBox = object.geometry.boundingBox;
     const longestEdge =
         Math.max(objectBoundingBox.box.width, objectBoundingBox.box.height);
     const left = (objectBoundingBox.box.x - longestEdge / 2) * this.canvasWidth;
@@ -203,13 +317,32 @@ export class ObjectLayerElement extends PolymerElement {
         (objectBoundingBox.box.x + longestEdge / 2) * this.canvasWidth;
     const bottom =
         (objectBoundingBox.box.y + longestEdge / 2) * this.canvasHeight;
+    const gradient = context.createLinearGradient(
+        left,
+        top,
+        right,
+        bottom,
+    );
+    gradient.addColorStop(0, '#ffffff');
+    gradient.addColorStop(1, '#ffffff');
+    context.strokeStyle = gradient;
+    context.stroke();
+  }
+
+  private clearCanvas(context: CanvasRenderingContext2D) {
+    context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+  }
+
+  private focusShimmer(object: OverlayObject) {
+    const polygons = object.geometry.segmentationPolygon;
+    if (!polygons) {
+      return;
+    }
 
     let leftMostPoint = 0;
     let rightMostPoint = 0;
     let topMostPoint = 0;
     let bottomMostPoint = 0;
-
-    this.context.beginPath();
     for (const polygon of polygons) {
       // TODO(b/330183480): Currently, we are assuming that polygon
       // coordinates are normalized. We should still implement
@@ -224,12 +357,7 @@ export class ObjectLayerElement extends PolymerElement {
       leftMostPoint = firstVertex.x;
       rightMostPoint = firstVertex.x;
 
-      this.context.moveTo(
-          firstVertex.x * this.canvasWidth, firstVertex.y * this.canvasHeight);
       for (const vertex of polygon.vertex.slice(1)) {
-        this.context.lineTo(
-            vertex.x * this.canvasWidth, vertex.y * this.canvasHeight);
-
         topMostPoint = Math.min(topMostPoint, vertex.y);
         bottomMostPoint = Math.max(bottomMostPoint, vertex.y);
         leftMostPoint = Math.min(leftMostPoint, vertex.x);
@@ -241,32 +369,6 @@ export class ObjectLayerElement extends PolymerElement {
     focusShimmerOnRegion(
         this, topMostPoint, leftMostPoint, rightMostPoint - leftMostPoint,
         bottomMostPoint - topMostPoint, ShimmerControlRequester.SEGMENTATION);
-
-    // Draw the highlight image clipped to the path.
-    this.context.save();
-    this.context.clip();
-    this.context.drawImage(
-        this.$.highlightImg, 0, 0, this.canvasWidth, this.canvasHeight);
-    this.context.restore();
-
-    // Stroke the path on top of the image.
-    this.context.lineCap = 'round';
-    this.context.lineJoin = 'round';
-    this.context.lineWidth = 4;
-    const gradient = this.context.createLinearGradient(
-        left,
-        top,
-        right,
-        bottom,
-    );
-    gradient.addColorStop(0, '#0177DC');
-    gradient.addColorStop(1, '#D5E3FF');
-    this.context.strokeStyle = gradient;
-    this.context.stroke();
-  }
-
-  private clearCanvas() {
-    this.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
   }
 
   private onObjectsReceived(objects: OverlayObject[]) {

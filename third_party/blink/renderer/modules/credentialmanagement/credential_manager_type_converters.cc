@@ -166,7 +166,7 @@ TypeConverter<blink::Credential*, CredentialInfoPtr>::Convert(
     case CredentialType::EMPTY:
       return nullptr;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 
@@ -296,7 +296,7 @@ PublicKeyCredentialType TypeConverter<PublicKeyCredentialType, String>::Convert(
     const String& type) {
   if (type == "public-key")
     return PublicKeyCredentialType::PUBLIC_KEY;
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return PublicKeyCredentialType::PUBLIC_KEY;
 }
 
@@ -331,7 +331,7 @@ String TypeConverter<String, AuthenticatorTransport>::Convert(
     return "hybrid";
   if (transport == AuthenticatorTransport::INTERNAL)
     return "internal";
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return "usb";
 }
 
@@ -869,8 +869,8 @@ TypeConverter<IdentityProviderRequestOptionsPtr,
 
   // We do not need to check whether authz is enabled because the bindings
   // code will check that for us due to the RuntimeEnabled= flag in the IDL.
-  if (options.hasScope()) {
-    mojo_options->scope = options.scope();
+  if (options.hasFields()) {
+    mojo_options->fields = options.fields();
   }
   if (options.hasParams()) {
     HashMap<String, String> params;

@@ -400,7 +400,7 @@ TextDecorationStyleToAXTextDecorationStyle(
       return ax::mojom::blink::TextDecorationStyle::kWavy;
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return ax::mojom::blink::TextDecorationStyle::kNone;
 }
 
@@ -995,9 +995,8 @@ bool AXNodeObject::ComputeIsIgnored(
       return ParentObject()->IsIgnored();
     }
     // Fallback elements inside of a <canvas> are invisible, but are not ignored
-    if (IsAriaHidden() || IsHiddenViaStyle() || IsHiddenByChildTree() ||
-        !node || !node->parentElement() ||
-        !node->parentElement()->IsInCanvasSubtree()) {
+    if (IsAriaHidden() || IsHiddenViaStyle() || !node ||
+        !node->parentElement() || !node->parentElement()->IsInCanvasSubtree()) {
       return true;
     }
   }
@@ -1833,15 +1832,6 @@ ax::mojom::blink::Role AXNodeObject::RoleFromLayoutObjectOrNode() const {
 
   DCHECK(GetLayoutObject());
 
-  Node* node = GetNode();  // Can be null in the case of pseudo content.
-
-  if (IsA<HTMLLIElement>(node)) {
-    if (ShouldIgnoreListItem(node)) {
-      return ax::mojom::blink::Role::kNone;
-    }
-    return ax::mojom::blink::Role::kListItem;
-  }
-
   if (GetLayoutObject()->IsListMarker()) {
     Node* list_item = GetLayoutObject()->GeneratingNode();
     if (list_item && ShouldIgnoreListItem(list_item)) {
@@ -1859,6 +1849,8 @@ ax::mojom::blink::Role AXNodeObject::RoleFromLayoutObjectOrNode() const {
   if (GetLayoutObject()->IsText()) {
     return ax::mojom::blink::Role::kStaticText;
   }
+
+  Node* node = GetNode();  // Can be null in the case of pseudo content.
 
   // Chrome exposes both table markup and table CSS as a tables, letting
   // the screen reader determine what to do for CSS tables. If this line
@@ -1914,7 +1906,7 @@ ax::mojom::blink::Role AXNodeObject::RoleFromLayoutObjectOrNode() const {
     if (GetLayoutObject()->IsSVGShape()) {
       return ax::mojom::blink::Role::kGraphicsSymbol;
     }
-    if (GetLayoutObject()->IsSVGForeignObject() || IsA<SVGGElement>(node)) {
+    if (GetLayoutObject()->IsSVGForeignObject()) {
       return ax::mojom::blink::Role::kGroup;
     }
     if (IsA<SVGUseElement>(node)) {
@@ -2004,6 +1996,10 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
     }
 
     return ax::mojom::blink::Role::kGenericContainer;
+  }
+
+  if (IsA<SVGGElement>(*GetNode())) {
+    return ax::mojom::blink::Role::kGroup;
   }
 
   if (IsA<HTMLButtonElement>(*GetNode()))
@@ -2126,6 +2122,13 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
     // exposing as a role=menu, because if it's just used semantically, it won't
     // be interactive. If used as a widget, the author must provide role=menu.
     return ax::mojom::blink::Role::kList;
+  }
+
+  if (IsA<HTMLLIElement>(*GetNode())) {
+    if (ShouldIgnoreListItem(GetNode())) {
+      return ax::mojom::blink::Role::kNone;
+    }
+    return ax::mojom::blink::Role::kListItem;
   }
 
   if (IsA<HTMLMeterElement>(*GetNode()))
@@ -2350,7 +2353,8 @@ ax::mojom::blink::Role AXNodeObject::DetermineRoleValue() {
 #endif
 
   if (IsDetached()) {
-    NOTREACHED() << "Do not compute role on detached object: " << this;
+    NOTREACHED_IN_MIGRATION()
+        << "Do not compute role on detached object: " << this;
     return ax::mojom::blink::Role::kUnknown;
   }
 
@@ -3260,7 +3264,7 @@ ax::mojom::blink::ListStyle AXNodeObject::GetListStyle() const {
         return ax::mojom::blink::ListStyle::kOther;
       case CounterStyleSpeakAs::kAuto:
       case CounterStyleSpeakAs::kReference:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         return ax::mojom::blink::ListStyle::kOther;
     }
   }
@@ -3505,7 +3509,7 @@ ax::mojom::blink::WritingDirection AXNodeObject::GetTextDirection() const {
     }
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return AXObject::GetTextDirection();
 }
 
@@ -4489,7 +4493,7 @@ static LayoutBlockFlow* GetNearestBlockFlow(LayoutObject* object) {
     current = current->Parent();
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 
@@ -5036,16 +5040,15 @@ void AXNodeObject::GetRelativeBounds(AXObject** out_container,
     auto* select = To<HTMLOptionElement>(GetNode())->OwnerSelectElement();
     if (auto* ax_select = AXObjectCache().Get(select)) {
       if (ax_select->IsExpanded() == kExpandedExpanded) {
-        WTF::Vector<gfx::Rect> options_bounds =
-            AXObjectCache().GetOptionsBounds(*ax_select);
-        if (options_bounds.size()) {
+        auto* options_bounds = AXObjectCache().GetOptionsBounds(*ax_select);
+        if (options_bounds) {
           unsigned int index = static_cast<unsigned int>(
               To<HTMLOptionElement>(GetNode())->index());
-          DUMP_WILL_BE_CHECK(index < options_bounds.size())
+          DUMP_WILL_BE_CHECK(index < options_bounds->size())
               << "Out of bounds option index=" << index
-              << " should be less than " << options_bounds.size()
+              << " should be less than " << options_bounds->size()
               << "\n* Object = " << this;
-          out_bounds_in_container = gfx::RectF(options_bounds.at(index));
+          out_bounds_in_container = gfx::RectF(options_bounds->at(index));
           return;
         }
       }
@@ -5522,10 +5525,10 @@ void AXNodeObject::AddOwnedChildren() {
 }
 
 void AXNodeObject::AddChildrenImpl() {
-#define CHECK_ATTACHED()                                  \
-  if (IsDetached()) {                                     \
-    NOTREACHED() << "Detached adding children: " << this; \
-    return;                                               \
+#define CHECK_ATTACHED()                                               \
+  if (IsDetached()) {                                                  \
+    NOTREACHED_IN_MIGRATION() << "Detached adding children: " << this; \
+    return;                                                            \
   }
 
   CHECK(NeedsToUpdateChildren());
@@ -5746,6 +5749,12 @@ void AXNodeObject::InsertChild(AXObject* child,
 
 bool AXNodeObject::CanHaveChildren() const {
   DCHECK(!IsDetached());
+
+  // A child tree has been stitched onto this node, hiding its usual subtree.
+  if (child_tree_id()) {
+    return false;
+  }
+
   // Notes:
   // * Native text fields expose any children they might have, complying
   // with browser-side expectations that editable controls have children
@@ -6007,6 +6016,7 @@ bool AXNodeObject::OnNativeFocusAction() {
     return true;
   }
 
+#if BUILDFLAG(IS_ANDROID)
   // If this node is already the currently focused node, then calling
   // focus() won't do anything.  That is a problem when focus is removed
   // from the webpage to chrome, and then returns.  In these cases, we need
@@ -6020,6 +6030,7 @@ bool AXNodeObject::OnNativeFocusAction() {
       return false;
     }
   }
+#endif
 
   element->Focus(FocusParams(FocusTrigger::kUserGesture));
 
@@ -6525,6 +6536,28 @@ String AXNodeObject::NativeTextAlternative(
       return text_alternative;
     }
     return text_alternative;
+  }
+
+  // <input type="file">
+  if (input_element &&
+      input_element->FormControlType() == FormControlType::kInputFile) {
+    // Append label of inner shadow root button + value attribute.
+    name_from = ax::mojom::blink::NameFrom::kContents;
+    if (name_sources) {
+      name_sources->push_back(NameSource(*found_text_alternative, kValueAttr));
+      name_sources->back().type = name_from;
+    }
+    if (ShadowRoot* shadow_root = input_element->UserAgentShadowRoot()) {
+      text_alternative =
+          To<HTMLInputElement>(shadow_root->firstElementChild())->Value();
+      if (name_sources) {
+        NameSource& source = name_sources->back();
+        source.text = text_alternative;
+        *found_text_alternative = true;
+      } else {
+        return text_alternative;
+      }
+    }
   }
 
   // 5.1 Text inputs - step 3 (placeholder attribute)

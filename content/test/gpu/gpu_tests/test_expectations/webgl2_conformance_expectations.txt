@@ -422,7 +422,7 @@ crbug.com/891953 [ android ] WebglExtension_OVR_multiview2 [ Failure ]
 # ========================
 
 # Failing new updated tests
-crbug.com/338008895 [ win angle-d3d11 nvidia-0x2184 passthrough release ] conformance2/rendering/framebuffer-render-to-layer.html [ Failure ]
+crbug.com/338008895 [ angle-d3d11 graphite-disabled nvidia-0x2184 nvidia_lt_31.0.15.4601 passthrough release win ] conformance2/rendering/framebuffer-render-to-layer.html [ Failure ]
 crbug.com/1131224 [ angle-d3d11 desktop no-asan oop-c passthrough release win10 ] conformance2/rendering/framebuffer-mismatched-attachment-targets.html [ Failure ]
 crbug.com/1108086 [ no-passthrough ] conformance2/renderbuffers/framebuffer-object-attachment.html [ Failure ]
 crbug.com/angleproject/4807 [ win angle-d3d11 passthrough ] conformance2/glsl3/switch-case.html [ Failure ]
@@ -501,8 +501,6 @@ crbug.com/1523401 [ win11 qualcomm-0x41333430 angle-d3d11 ] conformance2/reading
 crbug.com/1523401 [ win11 qualcomm-0x41333430 angle-d3d11 ] conformance2/rendering/framebuffer-mismatched-attachment-targets.html [ Failure ]
 crbug.com/338008895 [ win11 angle-d3d11 qualcomm-0x41333430 passthrough release ] conformance2/textures/image_bitmap_from_video/tex-2d-r32f-red-float.html [ Failure ]
 crbug.com/338008895 [ win11 angle-d3d11 qualcomm-0x41333430 passthrough release ] conformance2/textures/image_bitmap_from_video/tex-3d-rg16f-rg-float.html [ Failure ]
-crbug.com/1523401 [ win11 qualcomm-0x41333430 angle-d3d11 ] conformance2/textures/image_bitmap_from_video/tex-3d-rgba8ui-rgba_integer-unsigned_byte.html [ Failure ]
-crbug.com/1523401 [ win11 qualcomm-0x41333430 angle-d3d11 ] conformance2/textures/video/tex-3d-rgba4-rgba-unsigned_byte.html [ Failure ]
 crbug.com/1523401 [ win11 qualcomm-0x41333430 angle-d3d11 ] deqp/data/gles3/shaders/linkage.html [ Failure ]
 crbug.com/1523401 [ win11 qualcomm-0x41333430 angle-d3d11 ] deqp/functional/gles3/shaderindexing/tmp.html [ Failure ]
 crbug.com/1523401 [ win11 qualcomm-0x41333430 angle-d3d11 ] deqp/functional/gles3/shaderindexing/varying.html [ Failure ]
@@ -764,7 +762,6 @@ crbug.com/1081978 [ angle-opengl intel-0x9bc5 linux passthrough ] conformance2/t
 ## Linux NVIDIA ##
 
 crbug.com/1115314 [ linux nvidia-0x2184 angle-opengl passthrough ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
-crbug.com/1502174 [ linux nvidia-0x2184 angle-opengl passthrough ] conformance2/textures/video/tex-2d-rg16f-rg-float.html [ RetryOnFailure ]
 
 ## Linux AMD RX 5500 XT ##
 
@@ -1041,10 +1038,6 @@ crbug.com/335203259 [ linux ] conformance2/wasm/getbuffersubdata-16gb-wasm-memor
 crbug.com/335203259 [ linux ] conformance2/wasm/readpixels-16gb-wasm-memory.html [ Failure ]
 crbug.com/335203259 [ linux ] conformance2/wasm/teximage2d-16gb-wasm-memory.html [ Failure ]
 crbug.com/335203259 [ linux ] conformance2/wasm/texsubimage2d-16gb-wasm-memory.html [ Failure ]
-crbug.com/335203259 [ win target-cpu-64 ] conformance2/wasm/bufferdata-16gb-wasm-memory.html [ RetryOnFailure ]
-crbug.com/335203259 [ win target-cpu-64 ] conformance2/wasm/buffersubdata-16gb-wasm-memory.html [ RetryOnFailure ]
-crbug.com/335203259 [ win target-cpu-64 ] conformance2/wasm/getbuffersubdata-16gb-wasm-memory.html [ RetryOnFailure ]
-crbug.com/335203259 [ win target-cpu-64 ] conformance2/wasm/texsubimage2d-16gb-wasm-memory.html [ RetryOnFailure ]
 crbug.com/335203259 [ win target-cpu-32 ] conformance2/wasm/bufferdata-16gb-wasm-memory.html [ Failure ]
 crbug.com/335203259 [ win target-cpu-32 ] conformance2/wasm/bufferdata-4gb-wasm-memory.html [ Failure ]
 crbug.com/335203259 [ win target-cpu-32 ] conformance2/wasm/buffersubdata-16gb-wasm-memory.html [ Failure ]

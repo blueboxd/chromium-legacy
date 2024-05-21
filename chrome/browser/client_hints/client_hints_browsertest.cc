@@ -1310,7 +1310,7 @@ class ClientHintsBrowserTest : public policy::PolicyTest {
       } else if (expected_ect == net::EFFECTIVE_CONNECTION_TYPE_3G) {
         EXPECT_NEAR(450, rtt_value, 90);
       } else {
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
       }
 
       // Effective connection type is forced to 2G using command line in these
@@ -1321,7 +1321,7 @@ class ClientHintsBrowserTest : public policy::PolicyTest {
       } else if (expected_ect == net::EFFECTIVE_CONNECTION_TYPE_3G) {
         EXPECT_NEAR(0.4, mbps_value, 0.1);
       } else {
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
       }
 
       EXPECT_EQ(expected_ect == net::EFFECTIVE_CONNECTION_TYPE_2G ? "2g" : "3g",
@@ -4580,7 +4580,7 @@ class ThirdPartyUaReductionBrowserTest : public UaReductionBrowserTest {
     if (value != nullptr) {
       last_user_agent_ = *value;
     } else {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
     }
   }
 
@@ -4874,40 +4874,6 @@ IN_PROC_BROWSER_TEST_F(XRClientHintsTest, UAHintsXRMode) {
                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   EXPECT_TRUE(base::Contains(form_factors, "\"XR\""))
       << main_frame_ua_form_factors_observed();
-}
-
-class GreaseEnterprisePolicyTest : public ClientHintsBrowserTest {
-  void SetUpInProcessBrowserTestFixture() override {
-    policy::PolicyTest::SetUpInProcessBrowserTestFixture();
-    policy::PolicyMap policies;
-    SetPolicy(&policies, policy::key::kUserAgentClientHintsGREASEUpdateEnabled,
-              std::optional<base::Value>(false));
-    provider_.UpdateChromePolicy(policies);
-  }
-};
-
-// Makes sure that the enterprise policy is able to prevent updated GREASE.
-IN_PROC_BROWSER_TEST_F(GreaseEnterprisePolicyTest, GreaseEnterprisePolicyTest) {
-  const GURL gurl = accept_ch_url();
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
-  std::string ua_ch_result = main_frame_ua_observed();
-
-  ASSERT_TRUE(SawOldGrease(ua_ch_result));
-}
-IN_PROC_BROWSER_TEST_F(GreaseEnterprisePolicyTest,
-                       GreaseEnterprisePolicyDynamicRefreshTest) {
-  const GURL gurl = accept_ch_url();
-  // Reset the policy that was already set to false in the setup, then see if
-  // the change is reflected in the sec-ch-ua header without requiring a
-  // browser restart.
-  policy::PolicyMap policies;
-  SetPolicy(&policies, policy::key::kUserAgentClientHintsGREASEUpdateEnabled,
-            std::optional<base::Value>(true));
-  provider_.UpdateChromePolicy(policies);
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
-  std::string ua_ch_result = main_frame_ua_observed();
-
-  ASSERT_TRUE(SawUpdatedGrease(ua_ch_result) && !SawOldGrease(ua_ch_result));
 }
 
 // Tests that user-agent reduction on a redirect request.

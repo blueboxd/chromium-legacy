@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/pill_button.h"
+#include "ash/style/rounded_rect_cutout_path_builder.h"
 #include "ash/style/typography.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_properties.h"
@@ -120,6 +121,9 @@ std::unique_ptr<views::Widget> PineContentsView::Create(
       display::Screen::GetScreen()->GetDisplayMatching(contents_bounds).id());
 
   views::Widget::InitParams params;
+  params.activatable = features::IsOverviewNewFocusEnabled()
+                           ? views::Widget::InitParams::Activatable::kYes
+                           : views::Widget::InitParams::Activatable::kNo;
   params.bounds = contents_bounds;
   params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
   params.init_properties_container.SetProperty(kOverviewUiKey, true);
@@ -331,7 +335,6 @@ void PineContentsView::CreateChildViews() {
     screenshot_size.set_height(
         std::max(kScreenshotMinHeight, screenshot_size.height()));
 
-    views::View* image_view;
     views::BoxLayoutView* icon_row_container;
     views::View* icon_row_spacer;
     // This box layout is used to set the vertical space when the screenshot's
@@ -346,26 +349,24 @@ void PineContentsView::CreateChildViews() {
                     .SetLayoutManager(std::make_unique<views::FillLayout>())
                     .SetPreferredSize(screenshot_size)
                     .AddChildren(
-                        views::Builder<views::ImageView>()
-                            .CopyAddressTo(&image_view)
-                            .SetPaintToLayer()
-                            .SetImage(pine_image)
-                            .SetImageSize(screenshot_size),
                         views::Builder<views::BoxLayoutView>()
                             .CopyAddressTo(&icon_row_container)
                             .SetPaintToLayer()
                             .SetOrientation(
                                 views::BoxLayout::Orientation::kVertical)
                             .AddChildren(views::Builder<views::View>()
-                                             .CopyAddressTo(&icon_row_spacer))))
+                                             .CopyAddressTo(&icon_row_spacer)),
+                        views::Builder<views::ImageView>()
+                            .CopyAddressTo(&image_view_)
+                            .SetPaintToLayer()
+                            .SetImage(pine_image)
+                            .SetImageSize(screenshot_size)))
             .Build());
 
-    image_view->layer()->SetFillsBoundsOpaquely(false);
-    image_view->layer()->SetRoundedCornerRadius(
-        gfx::RoundedCornersF(pine::kPreviewContainerRadius));
     icon_row_container->layer()->SetFillsBoundsOpaquely(false);
-
-    icon_row_container->AddChildView(
+    icon_row_container->layer()->SetRoundedCornerRadius(
+        gfx::RoundedCornersF(pine::kPreviewContainerRadius));
+    screenshot_icon_row_view_ = icon_row_container->AddChildView(
         std::make_unique<PineScreenshotIconRowView>(
             pine_contents_data->apps_infos));
     icon_row_container->SetFlexForView(icon_row_spacer, 1);
@@ -428,6 +429,24 @@ void PineContentsView::OnMenuClosed() {
   menu_runner_.reset();
   menu_model_adapter_.reset();
   context_menu_model_.reset();
+}
+
+void PineContentsView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  if (showing_list_view_) {
+    return;
+  }
+
+  const gfx::Size icon_row_size = screenshot_icon_row_view_->GetPreferredSize();
+  auto builder =
+      RoundedRectCutoutPathBuilder(gfx::SizeF(image_view_->GetPreferredSize()));
+  builder.CornerRadius(pine::kPreviewContainerRadius);
+  builder.AddCutout(
+      RoundedRectCutoutPathBuilder::Corner::kLowerLeft,
+      gfx::SizeF(icon_row_size.width() - pine::kPreviewContainerRadius,
+                 icon_row_size.height() - pine::kPreviewContainerRadius));
+  builder.CutoutOuterCornerRadius(pine::kPreviewContainerRadius);
+  builder.CutoutInnerCornerRadius(pine::kPreviewContainerRadius);
+  image_view_->SetClipPath(builder.Build());
 }
 
 BEGIN_METADATA(PineContentsView)

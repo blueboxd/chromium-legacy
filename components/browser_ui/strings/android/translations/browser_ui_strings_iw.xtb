@@ -68,7 +68,6 @@
 <translation id="2241587408274973373">כרטיסים בדף 'כרטיסייה חדשה'</translation>
 <translation id="2241634353105152135">פעם אחת בלבד</translation>
 <translation id="2253414712144136228">הסרה של <ph name="NAME_OF_LIST_ITEM" /></translation>
-<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{אתר אחד חסום}one{# אתרים חסומים}two{# אתרים חסומים}other{# אתרים חסומים}}</translation>
 <translation id="228293613124499805">סביר להניח שרוב האתרים שבהם מבקרים שומרים נתונים במכשיר, לרוב כדי לשפר את החוויה בהם. הנתונים שנשמרים הם ההעדפות או המידע שמשתפים עם האתר. מומלץ להשאיר את ההגדרה הזו פועלת.</translation>
 <translation id="2289270750774289114">‏המערכת מבקשת אישור כשאתר רוצה לאתר התקני Bluetooth קרובים (מומלץ)</translation>
 <translation id="2315043854645842844">מערכת ההפעלה אינה תומכת בבחירת אישור בצד הלקוח.</translation>
@@ -345,7 +344,7 @@
 <translation id="6554732001434021288">הביקור האחרון התבצע לפני <ph name="NUM_DAYS" /> ימים</translation>
 <translation id="656065428026159829">אפשרויות נוספות</translation>
 <translation id="6561560012278703671">הצגת התראות שקטה יותר (למניעת הקפצה של חלוניות מפריעות)</translation>
-<translation id="6593061639179217415">לגרסה במחשב</translation>
+<translation id="6593061639179217415">אתר שמותאם למחשב</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" />GB</translation>
 <translation id="6612358246767739896">תוכן מוגן</translation>
 <translation id="662080504995468778">להמשיך במצב אנונימי</translation>
@@ -481,7 +480,6 @@
 <translation id="8721719390026067591">‏כשהאפשרות מופעלת, אתרים יכולים לבקש הרשאה לחפש מכשירי Bluetooth. כשהאפשרות מושבתת, אתרים לא יכולים לחפש מכשירי Bluetooth.</translation>
 <translation id="8725066075913043281">ניסיון חוזר</translation>
 <translation id="8730621377337864115">בוצע</translation>
-<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{יש אתר אחד עם הרשאה}one{יש # אתרים עם הרשאה}two{יש # אתרים עם הרשאה}other{יש # אתרים עם הרשאה}}</translation>
 <translation id="8751914237388039244">בחירת תמונה</translation>
 <translation id="8800034312320686233">האתר לא פועל?</translation>
 <translation id="8801436777607969138">‏חסימת JavaScript באתר ספציפי.</translation>

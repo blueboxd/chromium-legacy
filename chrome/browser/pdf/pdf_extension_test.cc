@@ -9,6 +9,7 @@
 #include <variant>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
@@ -2669,6 +2670,32 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, DefaultFocusForNonEmbeddedPDF) {
   ASSERT_EQ(true, content::EvalJs(extension_host, script));
 }
 
+IN_PROC_BROWSER_TEST_P(PDFExtensionTest, PdfVisibility) {
+  GURL url = embedded_test_server()->GetURL("/pdf/pdf_embed.html");
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(content::Visibility::VISIBLE, web_contents->GetVisibility());
+
+  web_contents->WasHidden();
+  EXPECT_EQ(content::Visibility::HIDDEN, web_contents->GetVisibility());
+
+  auto inner_contents = web_contents->GetInnerWebContents();
+  if (base::FeatureList::IsEnabled(chrome_pdf::features::kPdfOopif)) {
+    // No inner WebContents, nothing to do.
+    EXPECT_EQ(0u, inner_contents.size());
+    return;
+  }
+
+  ASSERT_EQ(1u, inner_contents.size());
+  WebContents* inner = inner_contents[0];
+  EXPECT_EQ(content::Visibility::HIDDEN, inner->GetVisibility());
+
+  web_contents->WasShown();
+  EXPECT_EQ(content::Visibility::VISIBLE, web_contents->GetVisibility());
+  EXPECT_EQ(content::Visibility::VISIBLE, inner->GetVisibility());
+}
+
 // A helper for waiting for the first request for |url_to_intercept|.
 class RequestWaiter {
  public:
@@ -2763,35 +2790,41 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, DidStopLoading) {
 // a new popup window when using document.write.  See also
 // https://crbug.com/1041880.
 IN_PROC_BROWSER_TEST_P(PDFExtensionTest, DocumentWriteIntoNewPopup) {
-  // TODO(crbug.com/40268279): Remove this once the test passes for OOPIF PDF.
-  if (UseOopif()) {
-    GTEST_SKIP();
-  }
-
   // Navigate to an empty/boring test page.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
 
   // Open a new popup and call document.write to add an embedded PDF.
+  const GURL pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+
+  content::TestNavigationObserver navigation_observer(pdf_url);
+  navigation_observer.StartWatchingNewWebContents();
+
   WebContents* popup = nullptr;
   {
     const char kScriptTemplate[] = R"(
-        const url = $1;
-        const html = '<embed type="application/pdf" src="' + url + '">';
+      const url = $1;
+      const html = '<embed type="application/pdf" src="' + url + '">';
 
-        const popup = window.open('', '_blank');
-        popup.document.write(html);
-    )";
+      const popup = window.open('', '_blank');
+      popup.document.write(html);
+  )";
     content::WebContentsAddedObserver popup_observer;
-    ASSERT_TRUE(content::ExecJs(
-        GetActiveWebContents(),
-        content::JsReplace(kScriptTemplate,
-                           embedded_test_server()->GetURL("/pdf/test.pdf"))));
+    ASSERT_TRUE(content::ExecJs(GetActiveWebContents(),
+                                content::JsReplace(kScriptTemplate, pdf_url)));
     popup = popup_observer.GetWebContents();
   }
 
+  // Wait for the PDF navigation to finish.
+  navigation_observer.Wait();
+
   // Verify the PDF loaded successfully.
-  ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(popup));
+  if (UseOopif()) {
+    EXPECT_TRUE(
+        GetTestPdfViewerStreamManager(popup)->WaitUntilPdfLoadedInFirstChild());
+  } else {
+    EXPECT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(popup));
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionTest, LoadPdfFromExtension) {

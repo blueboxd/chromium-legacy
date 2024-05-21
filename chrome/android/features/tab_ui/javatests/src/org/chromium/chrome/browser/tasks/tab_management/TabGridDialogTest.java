@@ -29,7 +29,9 @@ import static androidx.test.espresso.matcher.ViewMatchers.withParent;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -37,6 +39,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -135,7 +138,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
@@ -198,7 +200,7 @@ public class TabGridDialogTest {
             ChromeRenderTestRule.Builder.withPublicCorpus()
                     .setBugComponent(
                             ChromeRenderTestRule.Component.UI_BROWSER_MOBILE_TAB_SWITCHER_GRID)
-                    .setRevision(8)
+                    .setRevision(9)
                     .build();
 
     // Must force tab re-creation to ensure tab group names make sense.
@@ -1193,8 +1195,6 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    // Swipe action Fails with espresso 3.2. b/329707221
-    @DisableIf.Build(sdk_is_greater_than = android.os.Build.VERSION_CODES.S)
     public void testSwipeToDismiss_Dialog() {
         ChromeTabbedActivity cta = sActivityTestRule.getActivity();
         // Create 2 tabs and merge them into one group.
@@ -1897,9 +1897,7 @@ public class TabGridDialogTest {
         finishActivity(sActivityTestRule.getActivity());
         createThumbnailBitmapAndWriteToFile(0, mBrowserControlsStateProvider);
         createThumbnailBitmapAndWriteToFile(1, mBrowserControlsStateProvider);
-        TabAttributeCache.setRootIdForTesting(0, 0);
-        TabAttributeCache.setRootIdForTesting(1, 0);
-        createTabStatesAndMetadataFile(new int[] {0, 1});
+        createTabStatesAndMetadataFile(new int[] {0, 1}, new int[] {0, 0});
 
         // Restart Chrome and make sure tab strip is showing.
         sActivityTestRule.startMainActivityFromLauncher();
@@ -2253,11 +2251,10 @@ public class TabGridDialogTest {
         // If isDialog is true, we are checking the position of TabGridDialog; otherwise we are
         // checking the position of TabListEditor.
         int contentViewId = isDialog ? R.id.dialog_container_view : R.id.selectable_list;
-        int smallMargin =
-                (int) cta.getResources().getDimension(R.dimen.tab_grid_dialog_side_margin);
-        int largeMargin = (int) cta.getResources().getDimension(R.dimen.tab_grid_dialog_top_margin);
-        int topMargin = isPortrait ? largeMargin : smallMargin;
-        int sideMargin = isPortrait ? smallMargin : largeMargin;
+        int minMargin =
+                cta.getResources().getDimensionPixelSize(R.dimen.tab_grid_dialog_min_margin);
+        int maxMargin =
+                cta.getResources().getDimensionPixelSize(R.dimen.tab_grid_dialog_max_margin);
         View parentView = cta.getCompositorViewHolderForTesting();
         Rect parentRect = new Rect();
         parentView.getGlobalVisibleRect(parentRect);
@@ -2268,14 +2265,27 @@ public class TabGridDialogTest {
                         (v, e) -> {
                             int[] location = new int[2];
                             v.getLocationOnScreen(location);
-                            int relLoc0 = location[0] - parentLoc[0];
-                            int relLoc1 = location[1] - parentLoc[1];
+                            int side = location[0] - parentLoc[0];
+                            int top = location[1] - parentLoc[1];
                             // Check the position.
-                            assertEquals(sideMargin, relLoc0);
-                            assertEquals(topMargin, relLoc1);
+                            if (isPortrait) {
+                                assertEquals(side, minMargin);
+                                assertThat(
+                                        top,
+                                        allOf(
+                                                greaterThanOrEqualTo(minMargin),
+                                                lessThanOrEqualTo(maxMargin)));
+                            } else {
+                                assertThat(
+                                        side,
+                                        allOf(
+                                                greaterThanOrEqualTo(minMargin),
+                                                lessThanOrEqualTo(maxMargin)));
+                                assertEquals(top, minMargin);
+                            }
                             // Check the size.
-                            assertEquals(parentView.getHeight() - 2 * topMargin, v.getHeight());
-                            assertEquals(parentView.getWidth() - 2 * sideMargin, v.getWidth());
+                            assertEquals(parentView.getHeight() - 2 * top, v.getHeight());
+                            assertEquals(parentView.getWidth() - 2 * side, v.getWidth());
                         });
     }
 

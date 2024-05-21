@@ -525,12 +525,8 @@ AutofillPopupControllerImpl::GetPopupScreenLocation() const {
 }
 
 bool AutofillPopupControllerImpl::HasSuggestions() const {
-  if (GetSuggestions().empty()) {
-    return false;
-  }
-  SuggestionType type = GetSuggestions()[0].type;
-  return base::Contains(kItemsTriggeringFieldFilling, type) ||
-         type == SuggestionType::kScanCreditCard;
+  return !GetSuggestions().empty() &&
+         IsStandaloneSuggestionType(GetSuggestions()[0].type);
 }
 
 void AutofillPopupControllerImpl::SetSuggestions(
@@ -768,11 +764,6 @@ bool AutofillPopupControllerImpl::HandleKeyPressEvent(
   }
 
   return view_ && view_->HandleKeyPressEvent(event);
-}
-
-bool AutofillPopupControllerImpl::HasFilteredOutSuggestions() const {
-  return filter_.has_value() &&
-         filtered_suggestions_.size() != non_filtered_suggestions_.size();
 }
 
 void AutofillPopupControllerImpl::SetViewForTesting(

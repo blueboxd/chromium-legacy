@@ -32,7 +32,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -6022,7 +6021,7 @@ class SameProxyWithDifferentSchemesProxyResolver : public ProxyResolver {
       results->UsePacString("HTTPS " + ProxyHostPortPairAsString());
       return OK;
     }
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return ERR_NOT_IMPLEMENTED;
   }
 };
@@ -14099,7 +14098,6 @@ TEST_P(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
 // Test that an HTTPS Proxy cannot redirect a CONNECT request for subresources.
 TEST_P(HttpNetworkTransactionTest,
        RedirectOfHttpsConnectSubresourceViaHttpsProxy) {
-  base::HistogramTester histograms;
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResultForTest(
           "HTTPS proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -14146,7 +14144,6 @@ TEST_P(HttpNetworkTransactionTest,
 // request for main frames.
 TEST_P(HttpNetworkTransactionTest,
        RedirectOfHttpsConnectViaAutoDetectedHttpsProxy) {
-  base::HistogramTester histograms;
   session_deps_.proxy_resolution_service = ConfiguredProxyResolutionService::
       CreateFixedFromAutoDetectedPacResultForTest("HTTPS proxy:70",
                                                   TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -14193,7 +14190,6 @@ TEST_P(HttpNetworkTransactionTest,
 // Tests that an HTTPS (SPDY) Proxy's cannot redirect a CONNECT request for main
 // frames.
 TEST_P(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
-  base::HistogramTester histograms;
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedForTest(
           "https://proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -16256,14 +16252,8 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
 TEST_P(HttpNetworkTransactionTest,
        HonorAlternativeServiceHeaderWithNetworkAnonymizationKey) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      // enabled_features
-      {features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
-       // Need to partition connections by NetworkAnonymizationKey for
-       // SpdySessionKeys to include NetworkAnonymizationKeys.
-       features::kPartitionConnectionsByNetworkIsolationKey},
-      // disabled_features
-      {});
+  feature_list.InitAndEnableFeature(
+      features::kPartitionConnectionsByNetworkIsolationKey);
   // Since HttpServerProperties caches the feature value, have to create a new
   // one.
   session_deps_.http_server_properties =
@@ -23437,7 +23427,7 @@ class HttpNetworkTransactionReportingTest
  protected:
   HttpNetworkTransactionReportingTest() {
     std::vector<base::test::FeatureRef> required_features = {
-        features::kPartitionNelAndReportingByNetworkIsolationKey};
+        features::kPartitionConnectionsByNetworkIsolationKey};
     if (UseDocumentReporting()) {
       required_features.push_back(features::kDocumentReporting);
     }
@@ -25960,9 +25950,9 @@ TEST_P(HttpNetworkTransactionTest, ClientCertSocketReuse) {
   EXPECT_EQ(200, trans->GetResponseInfo()->headers->response_code());
 }
 
-// Test for kPartitionConnectionsByNetworkIsolationKey. Runs 3 requests in
-// sequence with two different NetworkAnonymizationKeys, the first and last have
-// the same key, the second a different one. Checks that the requests are
+// Test for partitioning connections by NetworkAnonymizationKey. Runs 3 requests
+// in sequence with two different NetworkAnonymizationKeys, the first and last
+// have the same key, the second a different one. Checks that the requests are
 // partitioned across sockets as expected.
 TEST_P(HttpNetworkTransactionTest, NetworkIsolation) {
   const SchemefulSite kSite1(GURL("http://origin1/"));
@@ -26487,10 +26477,8 @@ TEST_P(HttpNetworkTransactionTest, NetworkIsolationPreconnect) {
 // session cache is isolated.
 TEST_P(HttpNetworkTransactionTest, NetworkIsolationSSL) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kPartitionConnectionsByNetworkIsolationKey,
-       features::kPartitionSSLSessionsByNetworkIsolationKey},
-      {});
+  feature_list.InitAndEnableFeature(
+      features::kPartitionConnectionsByNetworkIsolationKey);
 
   const SchemefulSite kSite1(GURL("http://origin1/"));
   const SchemefulSite kSite2(GURL("http://origin2/"));
@@ -26613,10 +26601,8 @@ TEST_P(HttpNetworkTransactionTest, NetworkIsolationSSL) {
 // session cache is isolated, for both origins and proxies.
 TEST_P(HttpNetworkTransactionTest, NetworkIsolationSSLProxy) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kPartitionConnectionsByNetworkIsolationKey,
-       features::kPartitionSSLSessionsByNetworkIsolationKey},
-      {});
+  feature_list.InitAndEnableFeature(
+      features::kPartitionConnectionsByNetworkIsolationKey);
 
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedForTest(
@@ -27591,7 +27577,7 @@ TEST_P(HttpNetworkTransactionTest,
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  auto kIpProtectionDirectChain =
+  const auto kIpProtectionDirectChain =
       ProxyChain::ForIpProtection(std::vector<ProxyServer>());
 
   session_deps_.proxy_resolution_service =

@@ -102,7 +102,7 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
       scroll_state_data.is_ending = true;
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
   scroll_state_data.is_direct_manipulation =
@@ -130,7 +130,7 @@ ui::ScrollInputType GestureScrollInputType(WebGestureDevice device) {
     case WebGestureDevice::kScrollbar:
       return ui::ScrollInputType::kScrollbar;
     case WebGestureDevice::kUninitialized:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return ui::ScrollInputType::kMaxValue;
   }
 }
@@ -145,7 +145,7 @@ cc::SnapFlingController::GestureScrollType GestureScrollEventType(
     case WebInputEvent::Type::kGestureScrollEnd:
       return cc::SnapFlingController::GestureScrollType::kEnd;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return cc::SnapFlingController::GestureScrollType::kBegin;
   }
 }
@@ -184,7 +184,7 @@ cc::ScrollBeginThreadState RecordScrollingThread(
     // TODO(crbug.com/1101502): Add support for
     // Renderer4.ScrollingThread.Scrollbar
   } else {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
   return status;
 }
@@ -261,9 +261,6 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
     std::unique_ptr<cc::EventMetrics> metrics,
     EventDispositionCallback callback) {
   DCHECK(input_handler_);
-
-  static bool queue_blocking_gesture_scrolls =
-      base::FeatureList::IsEnabled(features::kQueueBlockingGestureScrolls);
 
   input_handler_->NotifyInputEvent();
 
@@ -346,23 +343,6 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
       DispatchQueuedInputEvents(false /* frame_aligned */);
       return;
     }
-    // Scroll updates should typically be queued and wait until a
-    // BeginImplFrame to dispatch. However, the first scroll update to be
-    // generated from a *blocking* touch sequence will have waited for the
-    // touch event to be ACK'ed by the renderer as unconsumed. Queueing here
-    // again until BeginImplFrame means we'll likely add a whole frame of
-    // latency to so we flush the queue immediately. This happens only for the
-    // first scroll update because once a scroll starts touch events are
-    // dispatched non-blocking so scroll updates don't wait for a touch ACK.
-    // The |is_source_touch_event_set_blocking| bit is set based on the
-    // renderer's reply that a blocking touch stream should be made
-    // non-blocking. Note: unlike wheel events below, the first GSU in a touch
-    // may have come from a non-blocking touch sequence, e.g. if the earlier
-    // touchstart determined we're in a |touch-action: pan-y| region. Because
-    // of this, we can't simply look at the first GSU like wheels do.
-    bool is_from_blocking_touch =
-        gesture_event.SourceDevice() == WebGestureDevice::kTouchscreen &&
-        gesture_event.is_source_touch_event_set_blocking;
 
     // TODO(bokan): This was added in https://crrev.com/c/557463 before async
     // wheel events. It's not clear to me why flushing on a scroll end would
@@ -385,8 +365,7 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
 
     // |synchronous_input_handler_| is WebView only. WebView has different
     // mechanisms and we want to forward all events immediately.
-    if ((is_from_blocking_touch && !queue_blocking_gesture_scrolls) ||
-        is_scroll_end_from_wheel || is_first_wheel_scroll_update ||
+    if (is_scroll_end_from_wheel || is_first_wheel_scroll_update ||
         synchronous_input_handler_) {
       DispatchQueuedInputEvents(false /* frame_aligned */);
     }
@@ -804,7 +783,7 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
     // the renderer.
     case WebInputEvent::Type::kGestureFlingStart:
     case WebInputEvent::Type::kGestureFlingCancel:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
 
     default:
@@ -1042,7 +1021,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
       result = DROP_EVENT;
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 
@@ -1252,7 +1231,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HitTestTouchEvent(
         result = DROP_EVENT;
         break;
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         result = DROP_EVENT;
         break;
     }

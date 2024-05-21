@@ -35,8 +35,8 @@ sys.path.append(
 # In the case that a Rust roll fails and you want to roll Clang alone, reset
 # this back to its previous value _AND_ set `OVERRIDE_CLANG_REVISION` below
 # to the `CLANG_REVISION` that was in place before the roll.
-RUST_REVISION = '31e6e8c6c5b6ce62656c922c7384d3376018c980'
-RUST_SUB_REVISION = 1
+RUST_REVISION = '32dd3795bce8b347fda786529cf5e42a813e0b7d'
+RUST_SUB_REVISION = 2
 
 # If not None, this overrides the `CLANG_REVISION` in
 # //tools/clang/scripts/update.py in order to download a Rust toolchain that
@@ -57,7 +57,7 @@ CRUBIT_SUB_REVISION = 1
 # Hash of src/stage0.json, which itself contains the stage0 toolchain hashes.
 # We trust the Rust build system checks, but to ensure it is not tampered with
 # itself check the hash.
-STAGE0_JSON_SHA256 = '4c02260e8961a1ecd9823906a84dd8c663a22e5c91dd4647f0ea55c9109beccb'
+STAGE0_JSON_SHA256 = '803ce275a74899f722bc03ca12ecce03dfd937b71c9f2f3ff473ea80439ce596'
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 CHROMIUM_DIR = os.path.abspath(os.path.join(THIS_DIR, '..', '..'))
@@ -141,7 +141,7 @@ def main():
 
     try:
         url = f'{platform_prefix}rust-toolchain-{version}.tar.xz'
-        DownloadAndUnpack(url, THIRD_PARTY_DIR)
+        DownloadAndUnpack(url, RUST_TOOLCHAIN_OUT_DIR)
         # The archive contains a VERSION file. Copy it to INSTALLED_VERSION as
         # the very last step in case the unpack fails after writing VERSION.
         shutil.copyfile(VERSION_SRC_PATH, VERSION_STAMP_PATH)

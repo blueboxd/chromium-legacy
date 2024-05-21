@@ -120,7 +120,8 @@ static const char* MkvCodeIcForMediaVideoCodecId(VideoCodec video_codec) {
     case VideoCodec::kH264:
       return kH264CodecId;
     default:
-      NOTREACHED() << "Unsupported codec " << GetCodecName(video_codec);
+      NOTREACHED_IN_MIGRATION()
+          << "Unsupported codec " << GetCodecName(video_codec);
       return "";
   }
 }
@@ -262,7 +263,7 @@ void WebmMuxer::AddVideoTrack(
   video_track_index_ =
       segment_.AddVideoTrack(frame_size.width(), frame_size.height(), 0);
   if (video_track_index_ <= 0) {  // See https://crbug.com/616391.
-    NOTREACHED() << "Error adding video track";
+    NOTREACHED_IN_MIGRATION() << "Error adding video track";
     return;
   }
 
@@ -307,7 +308,7 @@ void WebmMuxer::AddAudioTrack(const AudioParameters& params) {
   audio_track_index_ =
       segment_.AddAudioTrack(params.sample_rate(), params.channels(), 0);
   if (audio_track_index_ <= 0) {  // See https://crbug.com/616391.
-    NOTREACHED() << "Error adding audio track";
+    NOTREACHED_IN_MIGRATION() << "Error adding audio track";
     return;
   }
 
@@ -373,6 +374,13 @@ bool WebmMuxer::PutFrame(EncodedFrame frame,
         << GetCodecName(video_params->codec);
 
     if (!video_track_index_) {
+      // TODO(crbug.com/339841680): Potential issue for the first frame.
+      if (!frame.is_keyframe) {
+        CHECK_EQ(video_params->codec, VideoCodec::kVP9);
+        DVLOG(1) << __func__ << ", not a key frame";
+        return true;
+      }
+
       // |track_index_|, cannot be zero (!), initialize WebmMuxer in that case.
       // http://www.matroska.org/technical/specs/index.html#Tracks
       video_codec_ = video_params->codec;

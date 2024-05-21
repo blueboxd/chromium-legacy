@@ -1090,6 +1090,15 @@ void Resource::DidChangePriority(ResourceLoadPriority load_priority,
     loader_->DidChangePriority(load_priority, intra_priority_value);
 }
 
+void Resource::UpdateResourceWidth(const AtomicString& resource_width) {
+  if (resource_width) {
+    resource_request_.SetHttpHeaderField(AtomicString("sec-ch-width"),
+                                         resource_width);
+  } else {
+    resource_request_.ClearHttpHeaderField(AtomicString("sec-ch-width"));
+  }
+}
+
 // TODO(toyoshim): Consider to generate automatically. https://crbug.com/675515.
 static const char* InitiatorTypeNameToString(
     const AtomicString& initiator_type_name) {
@@ -1188,7 +1197,7 @@ const char* Resource::ResourceTypeToString(
     case ResourceType::kDictionary:
       return "Dictionary";
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return InitiatorTypeNameToString(fetch_initiator_name);
 }
 
@@ -1214,7 +1223,7 @@ bool Resource::IsLoadEventBlockingResourceType() const {
     case ResourceType::kDictionary:
       return false;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return false;
 }
 
@@ -1237,8 +1246,8 @@ void Resource::UpdateMemoryCacheLastAccessedTime() {
   memory_cache_last_accessed_ = base::TimeTicks::Now();
 }
 
-scoped_refptr<BackgroundResponseProcessor>
-Resource::MaybeCreateBackgroundResponseProcessor() {
+std::unique_ptr<BackgroundResponseProcessorFactory>
+Resource::MaybeCreateBackgroundResponseProcessorFactory() {
   return nullptr;
 }
 

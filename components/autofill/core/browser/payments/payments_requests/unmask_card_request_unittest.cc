@@ -157,7 +157,7 @@ TEST_F(UnmaskCardRequestTest, FidoChallengeReturned_ParseResponse) {
   EXPECT_EQ("fake_context_token", response_details.context_token);
   // Verify the FIDO request challenge is correctly parsed.
   EXPECT_EQ("fake_fido_challenge",
-            *response_details.fido_request_options->FindString("challenge"));
+            *response_details.fido_request_options.FindString("challenge"));
 
   // Verify that the response is considered complete.
   EXPECT_TRUE(GetRequest()->IsResponseComplete());
@@ -302,9 +302,11 @@ TEST_P(VirtualCardUnmaskCardRequestTest,
       "\"a******b@google.com\"}}, {\"email_otp_challenge_option\": "
       "{\"challenge_id\": \"fake_challenge_id_6\", \"masked_email_address\": "
       "\"c******d@google.com\", \"otp_length\": 4}}, "
-      "{\"redirect_challenge_option\": "
-      "{\"challenge_id\": \"fake_challenge_id_7\", \"redirect_url\": "
-      "\"https://example.com/\"}}]}");
+      "{\"popup_challenge_option\": "
+      "{\"challenge_id\": \"fake_challenge_id_7\", \"popup_url\": "
+      "\"https://example.com/\", \"query_params_for_popup_close\": "
+      "{\"success_query_param_name\": \"token\", "
+      "\"failure_query_param_name\": \"failure\"}}}]}");
   ASSERT_TRUE(response.has_value());
   GetRequest()->ParseResponse(response->GetDict());
 
@@ -313,7 +315,7 @@ TEST_P(VirtualCardUnmaskCardRequestTest,
   EXPECT_EQ("fake_context_token", response_details.context_token);
   // Verify the FIDO request challenge is correctly parsed.
   EXPECT_EQ("fake_fido_challenge",
-            *response_details.fido_request_options->FindString("challenge"));
+            *response_details.fido_request_options.FindString("challenge"));
 
   // Verify the six (or seven, if 3DS is enabled) challenge options are two SMS
   // OTP challenge options, two CVC challenge options, two email OTP challenge
@@ -375,7 +377,12 @@ TEST_P(VirtualCardUnmaskCardRequestTest,
     EXPECT_EQ(CardUnmaskChallengeOptionType::kThreeDomainSecure,
               challenge_option_7.type);
     EXPECT_EQ("fake_challenge_id_7", challenge_option_7.id.value());
-    EXPECT_EQ(GURL("https://example.com/"), challenge_option_7.url_to_open);
+    EXPECT_EQ(GURL("https://example.com/"),
+              challenge_option_7.vcn_3ds_metadata->url_to_open);
+    EXPECT_EQ("token",
+              challenge_option_7.vcn_3ds_metadata->success_query_param_name);
+    EXPECT_EQ("failure",
+              challenge_option_7.vcn_3ds_metadata->failure_query_param_name);
     EXPECT_EQ(
         l10n_util::GetStringUTF16(
             IDS_AUTOFILL_CARD_UNMASK_AUTHENTICATION_SELECTION_DIALOG_THREE_DOMAIN_SECURE_CHALLENGE_INFO),

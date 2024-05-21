@@ -182,13 +182,6 @@ bool IsValidTimeNumber(const std::u16string& contents) {
   return true;
 }
 
-std::u16string GetAccessibleNameForDndButton(bool do_not_disturb_enabled) {
-  return l10n_util::GetStringUTF16(
-      do_not_disturb_enabled
-          ? IDS_ASH_STATUS_TRAY_FOCUS_MODE_DO_NOT_DISTURB_ACCESSIBLE_NAME_ENABLED
-          : IDS_ASH_STATUS_TRAY_FOCUS_MODE_DO_NOT_DISTURB_ACCESSIBLE_NAME_DISABLED);
-}
-
 }  // namespace
 
 // Handles input validation and events for the textfield in
@@ -512,9 +505,14 @@ void FocusModeDetailedView::UpdateToggleButtonAccessibility(
       views::AsViewClass<PillButton>(toggle_view_->right_view());
 
   if (!in_focus_session) {
-    toggle_button->SetAccessibleName(l10n_util::GetStringUTF16(
+    const std::u16string duration_string = focus_mode_util::GetDurationString(
+        FocusModeController::Get()->session_duration(),
+        /*digital_format=*/false);
+    toggle_button->SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_BUTTON_INACTIVE,
+        duration_string));
+    toggle_button->SetTooltipText(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_START_BUTTON_ACCESSIBLE_NAME));
-    toggle_button->SetTooltipText(toggle_button->GetAccessibleName());
     return;
   }
 
@@ -628,18 +626,20 @@ void FocusModeDetailedView::CreateTimerView() {
   views::InstallRoundRectHighlightPathGenerator(timer_textfield_, gfx::Insets(),
                                                 kTimerTextfieldCornerRadius);
 
-  views::Label* minutes_label = textfield_container->AddChildView(
-      std::make_unique<views::Label>(l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_FOCUS_MODE_MINUTES_LABEL)));
-  minutes_label->SetHorizontalAlignment(
+  auto* controller = FocusModeController::Get();
+  minutes_label_ = textfield_container->AddChildView(
+      std::make_unique<views::Label>(l10n_util::GetPluralStringFUTF16(
+          IDS_ASH_STATUS_TRAY_FOCUS_MODE_MINUTES_LABEL,
+          controller->session_duration().InMinutes())));
+  minutes_label_->SetHorizontalAlignment(
       gfx::HorizontalAlignment::ALIGN_TO_HEAD);
   TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosDisplay6Regular,
-                                        *minutes_label);
+                                        *minutes_label_);
   timer_setting_view_->SetFlexForView(end_time_container, 1);
 
   // The minutes label ignores the between child spacing on its left side so
   // that it can be directly next to the textfield.
-  minutes_label->SetProperty(
+  minutes_label_->SetProperty(
       views::kMarginsKey,
       gfx::Insets::TLBR(0, -1 * kTimerSettingViewBetweenChildSpacing, 0, 0));
 
@@ -679,7 +679,7 @@ void FocusModeDetailedView::CreateTimerView() {
   views::InkDrop::Get(timer_increment_button_)
       ->SetMode(views::InkDropHost::InkDropMode::OFF);
 
-  UpdateTimerView(FocusModeController::Get()->in_focus_session());
+  UpdateTimerView(controller->in_focus_session());
 }
 
 void FocusModeDetailedView::UpdateTimerView(bool in_focus_session) {
@@ -791,8 +791,8 @@ void FocusModeDetailedView::CreateDoNotDisturbContainer() {
                           weak_factory_.GetWeakPtr()));
   auto* controller = FocusModeController::Get();
   const bool do_not_disturb_enabled = controller->turn_on_do_not_disturb();
-  toggle->SetAccessibleName(
-      GetAccessibleNameForDndButton(do_not_disturb_enabled));
+  toggle->SetAccessibleName(l10n_util::GetStringUTF16(
+      IDS_ASH_STATUS_TRAY_FOCUS_MODE_DO_NOT_DISTURB_ACCESSIBLE_NAME));
   toggle->SetIsOn(do_not_disturb_enabled);
   do_not_disturb_toggle_button_ = toggle.get();
   toggle_row->AddRightView(toggle.release(),
@@ -813,9 +813,6 @@ void FocusModeDetailedView::OnDoNotDisturbToggleClicked() {
 
   controller->set_turn_on_do_not_disturb(
       do_not_disturb_toggle_button_->GetIsOn());
-
-  do_not_disturb_toggle_button_->SetAccessibleName(
-      GetAccessibleNameForDndButton(controller->turn_on_do_not_disturb()));
 }
 
 void FocusModeDetailedView::CreateFeedbackButton() {
@@ -912,6 +909,9 @@ void FocusModeDetailedView::UpdateTimerSettingViewUI() {
                                          /*digital_format=*/false)));
   timer_textfield_controller_->RefreshTextfieldSize(
       new_session_duration_string);
+  minutes_label_->SetText(l10n_util::GetPluralStringFUTF16(
+      IDS_ASH_STATUS_TRAY_FOCUS_MODE_MINUTES_LABEL,
+      session_duration.InMinutes()));
 
   timer_decrement_button_->SetEnabled(session_duration >
                                       focus_mode_util::kMinimumDuration);

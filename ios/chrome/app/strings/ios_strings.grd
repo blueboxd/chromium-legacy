@@ -412,6 +412,9 @@
       <message name="IDS_IOS_AUTOFILL_SAVE_CARD_BADGE_HINT" desc="Accessibility Hint for the Save Card button which presents the current options to Save a Card. This is spoken by VoiceOver.   [Length:Unlimited] [iOS only]">
         Options to Save Card
       </message>
+      <message name="IDS_IOS_AUTOFILL_SAVE_CARD_CLOSE" desc="Title for the save credit card modal's bar button to close the view. [iOS only]">
+        Close
+      </message>
       <message name="IDS_IOS_AUTOFILL_SAVE_ELLIPSIS" desc="Title for the button that presents the View for Saving a credit card. The ellipsis indicate that a following action (the presentation) will take place. [Length: 10em] [iOS only]">
         Save...
       </message>
@@ -2505,7 +2508,7 @@ See your search engine’s instructions for deleting your search history, if app
         Manage
       </message>
       <message name="IDS_IOS_NOTIFICATIONS_OPT_IN_PRICE_TRACKING_TOGGLE_MESSAGE" desc="The label for the notification opt-in toggle message for price tracking notifications.">
-        Recieve price drop alerts for products you track.
+        Receive price drop alerts for products you track.
       </message>
       <message name="IDS_IOS_NOTIFICATIONS_OPT_IN_PRICE_TRACKING_TOGGLE_TITLE" desc="The label for the notification opt-in toggle title for price tracking notifications.">
         Price Tracking

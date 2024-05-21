@@ -3411,7 +3411,7 @@ enum WebFeature {
 
   kAllowPaymentRequestAttributeHasEffect = 4094,
   kV8PaymentResponse_Retry_Method = 4095,
-  kWebAppManifestUserPreferences = 4096,
+  kOBSOLETE_kWebAppManifestUserPreferences = 4096,
   kV8HTMLInputElement_ShowPicker_Method = 4097,
   kLayerXYWithMediaTarget = 4098,
   kLayerXYWithCanvasTarget = 4099,
@@ -3778,7 +3778,7 @@ enum WebFeature {
   kCSSBackgroundClipBorder = 4436,
   kCSSBackgroundClipContent = 4437,
   kCSSBackgroundClipPadding = 4438,
-  kDisableThirdPartySessionStoragePartitioningAfterGeneralPartitioning = 4439,
+  kOBSOLETE_DisableThirdPartySessionStoragePartitioningAfterGeneralPartitioning = 4439,
   kOBSOLETE_kCSSPseudoHasContainsMixOfValidAndInvalid = 4440,
   kOBSOLETE_kCSSPseudoIsWhereContainsMixOfValidAndInvalid = 4441,
   kPrivateNetworkAccessFetchedSubFrame = 4442,
@@ -4356,16 +4356,15 @@ enum WebFeature {
   kPrefersReducedDataMediaFeature = 4963,
   kScriptingMediaFeature = 4964,
   kInvertedColorsMediaFeature = 4965,
-
   kCSSLightDark = 4966,
-
   kPrivateAggregationApiFilteringIds = 4967,
   kHTMLInputInSelect = 4968,
-
   kCanvas2DMesh = 4969,
   kCaretPositionFromPoint = 4970,
-
   kDocumentPolicyIncludeJSCallStacksInCrashReports = 4971,
+  kMaximumHTMLParserDOMTreeDepthHit = 4972,
+
+  kV8ModelGenericSession_Destroy_Method = 4973,
 
 
   // Add new features immediately above this line. Don't change assigned

@@ -360,7 +360,7 @@ std::unique_ptr<Profile> Profile::CreateProfile(const base::FilePath& path,
       CreateProfileReadme(path);
     }
   } else {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   std::unique_ptr<Profile> profile = base::WrapUnique(new ProfileImpl(
@@ -439,7 +439,8 @@ ProfileImpl::ProfileImpl(
     CreateMode create_mode,
     base::Time path_creation_time,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
-    : path_(path),
+    : Profile(nullptr),
+      path_(path),
       path_creation_time_(path_creation_time),
       io_task_runner_(std::move(io_task_runner)),
       start_time_(base::Time::Now()),
@@ -1001,14 +1002,6 @@ scoped_refptr<base::SequencedTaskRunner> ProfileImpl::GetIOTaskRunner() {
   return io_task_runner_;
 }
 
-bool ProfileImpl::IsOffTheRecord() {
-  return false;
-}
-
-bool ProfileImpl::IsOffTheRecord() const {
-  return false;
-}
-
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 bool ProfileImpl::IsMainProfile() const {
   // Profile must be at "Default" path.
@@ -1017,13 +1010,6 @@ bool ProfileImpl::IsMainProfile() const {
   return Profile::IsMainProfilePath(GetPath());
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-
-const Profile::OTRProfileID& ProfileImpl::GetOTRProfileID() const {
-  NOTREACHED();
-  static base::NoDestructor<OTRProfileID> otr_profile_id(
-      OTRProfileID::CreateUnique("ProfileImp::NoOTRProfileID"));
-  return *otr_profile_id;
-}
 
 Profile* ProfileImpl::GetOffTheRecordProfile(const OTRProfileID& otr_profile_id,
                                              bool create_if_needed) {
@@ -1466,7 +1452,7 @@ void ProfileImpl::EnsureSessionServiceCreated() {
 void ProfileImpl::ChangeAppLocale(const std::string& new_locale,
                                   AppLocaleChangedVia via) {
   if (new_locale.empty()) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return;
   }
   PrefService* local_state = g_browser_process->local_state();
@@ -1546,7 +1532,7 @@ void ProfileImpl::ChangeAppLocale(const std::string& new_locale,
       break;
     }
     case APP_LOCALE_CHANGED_VIA_UNKNOWN: {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
     }
   }

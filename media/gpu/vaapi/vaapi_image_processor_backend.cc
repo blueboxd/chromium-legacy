@@ -112,11 +112,11 @@ VaapiImageProcessorBackend::VaapiImageProcessorBackend(
 VaapiImageProcessorBackend::~VaapiImageProcessorBackend() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
 
-  DCHECK(vaapi_wrapper_ || allocated_va_surfaces_.empty());
+  DCHECK(vaapi_wrapper_ || allocated_va_surfaces_.IsEmpty());
   if (vaapi_wrapper_) {
     // To clear |allocated_va_surfaces_|, we have to first DestroyContext().
     vaapi_wrapper_->DestroyContext();
-    allocated_va_surfaces_.clear();
+    allocated_va_surfaces_.Clear();
   }
 }
 
@@ -124,13 +124,13 @@ std::string VaapiImageProcessorBackend::type() const {
   return "VaapiImageProcessor";
 }
 
-const VASurface* VaapiImageProcessorBackend::GetSurfaceForFrame(
+const ScopedVASurface* VaapiImageProcessorBackend::GetOrCreateSurfaceForFrame(
     const FrameResource& frame,
     bool use_protected) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
-  const gfx::GenericSharedMemoryId shared_memory_id = frame.GetSharedMemoryId();
-  if (base::Contains(allocated_va_surfaces_, shared_memory_id)) {
-    const VASurface* surface = allocated_va_surfaces_[shared_memory_id].get();
+  const auto shared_memory_id = frame.GetSharedMemoryId().id;
+  const auto* surface = allocated_va_surfaces_.Lookup(shared_memory_id);
+  if (surface) {
     CHECK_EQ(frame.coded_size(), surface->size());
     const auto buffer_format =
         VideoPixelFormatToGfxBufferFormat(frame.format());
@@ -150,8 +150,8 @@ const VASurface* VaapiImageProcessorBackend::GetSurfaceForFrame(
     return nullptr;
   }
 
-  allocated_va_surfaces_[shared_memory_id] = std::move(va_surface);
-  return allocated_va_surfaces_[shared_memory_id].get();
+  allocated_va_surfaces_.AddWithID(std::move(va_surface), shared_memory_id);
+  return allocated_va_surfaces_.Lookup(shared_memory_id);
 }
 
 void VaapiImageProcessorBackend::ProcessFrame(
@@ -218,21 +218,22 @@ void VaapiImageProcessorBackend::ProcessFrame(
 
   DCHECK(input_frame);
   DCHECK(output_frame);
-  const VASurface* src_va_surface =
-      GetSurfaceForFrame(*input_frame, use_protected);
+  const ScopedVASurface* src_va_surface =
+      GetOrCreateSurfaceForFrame(*input_frame, use_protected);
   if (!src_va_surface) {
     error_cb_.Run();
     return;
   }
-  const VASurface* dst_va_surface =
-      GetSurfaceForFrame(*output_frame, use_protected);
+  const ScopedVASurface* dst_va_surface =
+      GetOrCreateSurfaceForFrame(*output_frame, use_protected);
   if (!dst_va_surface) {
     error_cb_.Run();
     return;
   }
 
   // VA-API performs pixel format conversion and scaling without any filters.
-  if (!vaapi_wrapper_->BlitSurface(*src_va_surface, *dst_va_surface,
+  if (!vaapi_wrapper_->BlitSurface(src_va_surface->id(), src_va_surface->size(),
+                                   dst_va_surface->id(), dst_va_surface->size(),
                                    input_frame->visible_rect(),
                                    output_frame->visible_rect()
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -271,11 +272,11 @@ void VaapiImageProcessorBackend::Reset() {
   DVLOGF(4);
   DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
 
-  DCHECK(vaapi_wrapper_ || allocated_va_surfaces_.empty());
+  DCHECK(vaapi_wrapper_ || allocated_va_surfaces_.IsEmpty());
   if (vaapi_wrapper_) {
     // To clear |allocated_va_surfaces_|, we have to first DestroyContext().
     vaapi_wrapper_->DestroyContext();
-    allocated_va_surfaces_.clear();
+    allocated_va_surfaces_.Clear();
   }
   needs_context_ = true;
 }

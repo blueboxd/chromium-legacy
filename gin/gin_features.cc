@@ -18,6 +18,11 @@ BASE_FEATURE(kV8CompactWithStack,
              "V8CompactWithStack",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Decommit (rather than discard) pooled pages.
+BASE_FEATURE(kV8DecommitPooledPages,
+             "DecommitPooledPages",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables optimization of JavaScript in V8.
 BASE_FEATURE(kV8OptimizeJavascript,
              "V8OptimizeJavascript",
@@ -236,16 +241,6 @@ BASE_FEATURE(kV8IntelJCCErratumMitigation,
 
 // JavaScript language features.
 
-// Enables the Resizable ArrayBuffer proposal.
-BASE_FEATURE(kJavaScriptRabGsab,
-             "JavaScriptRabGsab",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables the ArrayBuffer transfer proposal.
-BASE_FEATURE(kJavaScriptArrayBufferTransfer,
-             "JavaScriptArrayBufferTransfer",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables the experiment with compile hints as magic comments.
 BASE_FEATURE(kJavaScriptCompileHintsMagic,
              "JavaScriptCompileHintsMagic",
@@ -287,12 +282,6 @@ BASE_FEATURE(kJavaScriptRegExpDuplicateNamedGroups,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // WebAssembly features.
-
-// Enable support for the WebAssembly tail-call proposal:
-// https://github.com/WebAssembly/tail-call.
-BASE_FEATURE(kWebAssemblyTailCall,
-             "WebAssemblyTailCall",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable WebAssembly inlining (not user visible).
 BASE_FEATURE(kWebAssemblyInlining,

@@ -194,7 +194,7 @@ WebViewSyncClient::GetExtensionsActivity() {
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 WebViewSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
 }
 
@@ -205,11 +205,6 @@ WebViewSyncClient::GetSyncApiComponentFactory() {
 
 bool WebViewSyncClient::IsCustomPassphraseAllowed() {
   return true;
-}
-
-void WebViewSyncClient::OnLocalSyncTransportDataCleared() {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  metrics::ClearDemographicsPrefs(pref_service_);
 }
 
 bool WebViewSyncClient::IsPasswordSyncAllowed() {

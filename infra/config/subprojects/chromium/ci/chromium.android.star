@@ -6,7 +6,7 @@
 load("//lib/args.star", "args")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builder_health_indicators.star", "health_spec")
-load("//lib/builders.star", "builders", "os", "reclient", "sheriff_rotations")
+load("//lib/builders.star", "builders", "os", "sheriff_rotations", "siso")
 load("//lib/branches.star", "branches")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
@@ -22,12 +22,11 @@ ci.defaults.set(
     sheriff_rotations = sheriff_rotations.ANDROID,
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     health_spec = health_spec.DEFAULT,
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     shadow_service_account = ci.DEFAULT_SHADOW_SERVICE_ACCOUNT,
     siso_enabled = True,
-    siso_remote_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_project = siso.project.DEFAULT_TRUSTED,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 targets.builder_defaults.set(
@@ -253,7 +252,7 @@ ci.builder(
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "clank-engprod@google.com",
     execution_timeout = 4 * time.hour,
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -514,7 +513,7 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "woa-engprod@google.com",
-    reclient_jobs = reclient.jobs.DEFAULT,
+    siso_remote_jobs = siso.remote_jobs.DEFAULT,
 )
 
 ci.thin_tester(
@@ -632,12 +631,11 @@ ci.builder(
     contact_team_email = "clank-engprod@google.com",
     execution_timeout = 6 * time.hour,
     notifies = ["Deterministic Android"],
-    reclient_jobs = reclient.jobs.DEFAULT,
+    siso_remote_jobs = siso.remote_jobs.DEFAULT,
 )
 
 ci.thin_tester(
     name = "Oreo Phone Tester",
-    branch_selector = branches.selector.ANDROID_BRANCHES,
     triggered_by = ["ci/Android arm64 Builder (dbg)"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
@@ -881,7 +879,7 @@ ci.builder(
         short_name = "size",
     ),
     contact_team_email = "clank-engprod@google.com",
-    reclient_jobs = reclient.jobs.DEFAULT,
+    siso_remote_jobs = siso.remote_jobs.DEFAULT,
 )
 
 ci.builder(
@@ -1382,7 +1380,7 @@ ci.builder(
     ),
     contact_team_email = "cronet-team@google.com",
     notifies = ["cronet"],
-    reclient_jobs = reclient.jobs.DEFAULT,
+    siso_remote_jobs = siso.remote_jobs.DEFAULT,
 )
 
 ci.builder(
@@ -2301,10 +2299,7 @@ ci.builder(
             "webview_shell",
         ],
     ),
-    # TODO(crbug.com/40886566): Enable sheriff once tests are stable
-    sheriff_rotations = args.ignore_default(None),
-    # TODO(crbug.com/40886566): Enable tree_closing once compile are stable
-    #tree_closing = True,
+    tree_closing = True,
     console_view_entry = consoles.console_view_entry(
         category = "builder_tester|x64",
         short_name = "13",

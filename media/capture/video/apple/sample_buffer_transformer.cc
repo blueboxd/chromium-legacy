@@ -57,13 +57,13 @@ struct I420Planes {
 
 size_t GetContiguousI420BufferSize(size_t width, size_t height) {
   gfx::Size dimensions(width, height);
-  return VideoFrame::PlaneSize(PIXEL_FORMAT_I420, VideoFrame::kYPlane,
+  return VideoFrame::PlaneSize(PIXEL_FORMAT_I420, VideoFrame::Plane::kY,
                                dimensions)
              .GetArea() +
-         VideoFrame::PlaneSize(PIXEL_FORMAT_I420, VideoFrame::kUPlane,
+         VideoFrame::PlaneSize(PIXEL_FORMAT_I420, VideoFrame::Plane::kU,
                                dimensions)
              .GetArea() +
-         VideoFrame::PlaneSize(PIXEL_FORMAT_I420, VideoFrame::kVPlane,
+         VideoFrame::PlaneSize(PIXEL_FORMAT_I420, VideoFrame::Plane::kV,
                                dimensions)
              .GetArea();
 }
@@ -72,12 +72,12 @@ I420Planes GetI420PlanesFromContiguousBuffer(uint8_t* data_base_address,
                                              size_t width,
                                              size_t height) {
   gfx::Size dimensions(width, height);
-  gfx::Size y_plane_size =
-      VideoFrame::PlaneSize(PIXEL_FORMAT_I420, VideoFrame::kYPlane, dimensions);
-  gfx::Size u_plane_size =
-      VideoFrame::PlaneSize(PIXEL_FORMAT_I420, VideoFrame::kUPlane, dimensions);
-  gfx::Size v_plane_size =
-      VideoFrame::PlaneSize(PIXEL_FORMAT_I420, VideoFrame::kUPlane, dimensions);
+  gfx::Size y_plane_size = VideoFrame::PlaneSize(
+      PIXEL_FORMAT_I420, VideoFrame::Plane::kY, dimensions);
+  gfx::Size u_plane_size = VideoFrame::PlaneSize(
+      PIXEL_FORMAT_I420, VideoFrame::Plane::kU, dimensions);
+  gfx::Size v_plane_size = VideoFrame::PlaneSize(
+      PIXEL_FORMAT_I420, VideoFrame::Plane::kU, dimensions);
   I420Planes i420_planes;
   i420_planes.width = width;
   i420_planes.height = height;
@@ -149,10 +149,10 @@ void CopyNV12(const uint8_t* src_y,
 
 size_t GetContiguousNV12BufferSize(size_t width, size_t height) {
   gfx::Size dimensions(width, height);
-  return VideoFrame::PlaneSize(PIXEL_FORMAT_NV12, VideoFrame::kYPlane,
+  return VideoFrame::PlaneSize(PIXEL_FORMAT_NV12, VideoFrame::Plane::kY,
                                dimensions)
              .GetArea() +
-         VideoFrame::PlaneSize(PIXEL_FORMAT_NV12, VideoFrame::kUVPlane,
+         VideoFrame::PlaneSize(PIXEL_FORMAT_NV12, VideoFrame::Plane::kUV,
                                dimensions)
              .GetArea();
 }
@@ -161,10 +161,10 @@ NV12Planes GetNV12PlanesFromContiguousBuffer(uint8_t* data_base_address,
                                              size_t width,
                                              size_t height) {
   gfx::Size dimensions(width, height);
-  gfx::Size y_plane_size =
-      VideoFrame::PlaneSize(PIXEL_FORMAT_NV12, VideoFrame::kYPlane, dimensions);
+  gfx::Size y_plane_size = VideoFrame::PlaneSize(
+      PIXEL_FORMAT_NV12, VideoFrame::Plane::kY, dimensions);
   gfx::Size uv_plane_size = VideoFrame::PlaneSize(
-      PIXEL_FORMAT_NV12, VideoFrame::kUVPlane, dimensions);
+      PIXEL_FORMAT_NV12, VideoFrame::Plane::kUV, dimensions);
   NV12Planes nv12_planes;
   nv12_planes.width = width;
   nv12_planes.height = height;
@@ -285,7 +285,8 @@ void ConvertFromAnyToNV12(CVPixelBufferRef source_pixel_buffer,
       return;
     }
     default:
-      NOTREACHED() << "Pixel format " << pixel_format << " not supported.";
+      NOTREACHED_IN_MIGRATION()
+          << "Pixel format " << pixel_format << " not supported.";
   }
 }
 
@@ -366,7 +367,8 @@ void ConvertFromAnyToI420(CVPixelBufferRef source_pixel_buffer,
       return;
     }
     default:
-      NOTREACHED() << "Pixel format " << pixel_format << " not supported.";
+      NOTREACHED_IN_MIGRATION()
+          << "Pixel format " << pixel_format << " not supported.";
   }
 }
 
@@ -623,7 +625,7 @@ void SampleBufferTransformer::TransformPixelBuffer(
       return TransformPixelBufferWithLibyuv(source_pixel_buffer,
                                             destination_pixel_buffer);
     case Transformer::kNotConfigured:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 }
 
@@ -659,7 +661,7 @@ void SampleBufferTransformer::TransformPixelBufferWithLibyuv(
                                                   destination_pixel_buffer);
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 
   // Unlock source and destination pixel buffers.
@@ -804,7 +806,7 @@ bool SampleBufferTransformer::TransformSampleBuffer(
           destination_pixel_buffer);
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
   // Unlock destination pixel buffer.
   lock_status = CVPixelBufferUnlockBaseAddress(destination_pixel_buffer, 0);

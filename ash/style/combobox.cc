@@ -353,6 +353,9 @@ Combobox::Combobox(ui::ComboboxModel* model)
   // Set up layout.
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetInteriorMargin(kComboboxBorderInsets);
+  // TODO(crbug.com/40232718): See View::SetLayoutManagerUseConstrainedSpace.
+  SetLayoutManagerUseConstrainedSpace(false);
+
   // Allow `title_` to shrink and elide, so that `drop_down_arrow_` on the
   // right always remains visible.
   title_->SetProperty(
@@ -447,8 +450,9 @@ views::View* Combobox::MenuView() const {
 }
 
 void Combobox::SetCallback(PressedCallback callback) {
-  NOTREACHED() << "Clients shouldn't modify this. Maybe you want to use "
-                  "SetSelectionChangedCallback?";
+  NOTREACHED_IN_MIGRATION()
+      << "Clients shouldn't modify this. Maybe you want to use "
+         "SetSelectionChangedCallback?";
 }
 
 void Combobox::OnBoundsChanged(const gfx::Rect& previous_bounds) {

@@ -2324,7 +2324,7 @@ class ServiceWorkerSha256ScriptChecksumBrowserTest
           return "03DCAF85CA3E2B73158B9C43FAC7086BAA6AE9B83B503E389F4323660F58D"
                  "D09";
         }
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         return "";
       case ServiceWorkerScriptImportType::kStaticImport:
         if (before_script_update) {
@@ -2341,7 +2341,7 @@ class ServiceWorkerSha256ScriptChecksumBrowserTest
           return "3E6C3E5F3C40F87B69D1913FD7201760BD3C8824026837D4BFB4828811F60"
                  "3D7";
         }
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         return "";
     }
   }
@@ -2763,15 +2763,15 @@ class CacheStorageControlForBadOrigin
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) override {
     // The CodeCacheHostImpl should not try to add a receiver if the StorageKey
     // is bad.
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
   void AddObserver(mojo::PendingRemote<storage::mojom::CacheStorageObserver>
                        observer) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
   void ApplyPolicyUpdates(std::vector<storage::mojom::StoragePolicyUpdatePtr>
                               policy_updates) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 };
 
@@ -4725,7 +4725,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerWarmUpByVisibilityBrowserTest,
       run_loop.RunUntilIdle();
     }
   } else {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 }
 
@@ -5278,6 +5278,82 @@ IN_PROC_BROWSER_TEST_F(
       entry, MainResourceLoadCompletedUkmEntry::kActualRouterSourceTypeName,
       static_cast<std::int64_t>(
           network::mojom::ServiceWorkerRouterSourceType::kNetwork));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    ServiceWorkerStaticRouterRaceNetworkAndFetchHandlerSourceBrowserTest,
+    NetworkRequest_Wins_PassThrough) {
+  // Register the ServiceWorker and navigate to the in scope URL.
+  SetupAndRegisterServiceWorker();
+  // Capture the response head.
+  const GURL test_url = embedded_test_server()->GetURL(
+      "/service_worker/mock_response?sw_slow&sw_pass_through");
+
+  NavigationHandleObserver observer(web_contents(), test_url);
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
+  EXPECT_TRUE(observer.has_committed());
+
+  // ServiceWorker will respond after the delay, so we expect the response from
+  // the network request initiated by the RaceNetworkRequest mode comes first.
+  EXPECT_EQ("[ServiceWorkerRaceNetworkRequest] Response from the network",
+            GetInnerText());
+
+  // Check the response header. "X-Response-From: fetch-handler" is returned
+  // when the result from the fetch handler is used.
+  EXPECT_NE("fetch-handler",
+            observer.GetNormalizedResponseHeader("X-Response-From"));
+
+  // Dispatch another request that returns a response from the fetch handler,
+  // which should ensure the first fetch handler execution has finished.
+  EXPECT_EQ("[ServiceWorkerRaceNetworkRequest] Response from the fetch handler",
+            EvalJs(GetPrimaryMainFrame(),
+                   "fetch('/service_worker/no_race?sw_respond').then(response "
+                   "=> response.text())"));
+
+  // Check the network error count happened inside the fetch handler.
+  const std::string script = R"(
+    new Promise((resolve, reject) => {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        resolve(event.data.length);
+      });
+      navigator.serviceWorker.controller.postMessage('errors');
+    });
+  )";
+
+  EXPECT_EQ(0, EvalJs(GetPrimaryMainFrame(), script));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    ServiceWorkerStaticRouterRaceNetworkAndFetchHandlerSourceBrowserTest,
+    Subresource_NetworkRequest_Wins_PassThrough) {
+  // Register the ServiceWorker and navigate to the in scope URL.
+  SetupAndRegisterServiceWorker();
+
+  // The network request wins, fetch() will be executed with some delay.
+  EXPECT_EQ("[ServiceWorkerRaceNetworkRequest] Response from the network",
+            EvalJs(GetPrimaryMainFrame(),
+                   "fetch('/service_worker/"
+                   "mock_response?sw_slow&sw_pass_through').then(response => "
+                   "response.text())"));
+
+  // Dispatch another request that returns a response from the fetch handler,
+  // which should ensure the first fetch handler execution has finished.
+  EXPECT_EQ("[ServiceWorkerRaceNetworkRequest] Response from the fetch handler",
+            EvalJs(GetPrimaryMainFrame(),
+                   "fetch('/service_worker/no_race?sw_respond').then(response "
+                   "=> response.text())"));
+
+  // Check the network error count happened inside the fetch handler.
+  const std::string script = R"(
+    new Promise((resolve, reject) => {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        resolve(event.data.length);
+      });
+      navigator.serviceWorker.controller.postMessage('errors');
+    });
+  )";
+
+  EXPECT_EQ(0, EvalJs(GetPrimaryMainFrame(), script));
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -6563,9 +6639,9 @@ class ServiceWorkerAutoPreloadAllowListBrowserTest
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  std::string kValidChecksum =
-      "042D3C49B5FA366582CEBA01E6E3DCD6259531CCAF64B26635B7F0C11C18BE0D";
-  std::string kInvalidChecksum = "";
+  static constexpr char kValidChecksum[] =
+      "E3F7EBC59086064254D833F18B01BAAE4B9DB5F5321E271AC345F2648518324A";
+  static constexpr char kInvalidChecksum[] = "";
 };
 
 INSTANTIATE_TEST_SUITE_P(ALL,

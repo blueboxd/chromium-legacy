@@ -17,7 +17,6 @@ static_library("tether") {
     "asynchronous_shutdown_object_container_impl.h",
     "connect_tethering_operation.cc",
     "connect_tethering_operation.h",
-    "connection_preserver.cc",
     "connection_preserver.h",
     "connection_preserver_impl.cc",
     "connection_preserver_impl.h",
@@ -147,6 +146,7 @@ static_library("tether") {
   public_deps = [
     "//chromeos/ash/services/device_sync/proto",
     "//chromeos/ash/services/multidevice_setup/public/mojom",
+    "//third_party/nearby:presence_types",
   ]
 }
 
@@ -166,6 +166,8 @@ static_library("test_support") {
     "fake_disconnect_tethering_request_sender.h",
     "fake_gms_core_notifications_state_tracker.cc",
     "fake_gms_core_notifications_state_tracker.h",
+    "fake_host_connection.cc",
+    "fake_host_connection.h",
     "fake_host_scan_cache.cc",
     "fake_host_scan_cache.h",
     "fake_host_scan_scheduler.cc",
@@ -262,6 +264,7 @@ source_set("unit_tests") {
     "tether_disconnector_impl_unittest.cc",
     "tether_host_fetcher_impl_unittest.cc",
     "tether_host_response_recorder_unittest.cc",
+    "tether_host_unittest.cc",
     "tether_network_disconnection_handler_unittest.cc",
     "tether_session_completion_logger_unittest.cc",
     "top_level_host_scan_cache_unittest.cc",

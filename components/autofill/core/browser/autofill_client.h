@@ -18,7 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/types/optional_ref.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/autofill_plus_address_delegate.h"
 #include "components/autofill/core/browser/autofill_trigger_details.h"
 #include "components/autofill/core/browser/country_type.h"
 #include "components/autofill/core/browser/filling_product.h"
@@ -81,10 +80,10 @@ class AutofillOfferData;
 class AutofillOfferManager;
 class AutofillOptimizationGuide;
 class AutofillSuggestionDelegate;
+class AutofillPlusAddressDelegate;
 class AutofillProfile;
 class CreditCard;
 enum class CreditCardFetchResult;
-class CreditCardRiskBasedAuthenticator;
 class FormDataImporter;
 class Iban;
 class IbanAccessManager;
@@ -98,13 +97,15 @@ struct Suggestion;
 class TouchToFillDelegate;
 struct VirtualCardEnrollmentFields;
 struct VirtualCardManualFallbackBubbleOptions;
-enum class WebauthnDialogCallbackType;
 enum class WebauthnDialogState;
 
 namespace payments {
 class MandatoryReauthManager;
 class PaymentsAutofillClient;
 }
+
+// Fills the focused field with the string passed to it.
+using PlusAddressCallback = base::OnceCallback<void(const std::string&)>;
 
 // A client interface that needs to be supplied to the Autofill component by the
 // embedder.
@@ -334,11 +335,6 @@ class AutofillClient {
 
   using CreditCardScanCallback = base::OnceCallback<void(const CreditCard&)>;
 
-  // Callback to run if the OK button or the cancel button in a
-  // Webauthn dialog is clicked.
-  using WebauthnDialogCallback =
-      base::RepeatingCallback<void(WebauthnDialogCallbackType)>;
-
   // Callback to run when the user makes a decision on whether to save the
   // profile. If the user edits the Autofill profile and then accepts edits, the
   // edited version of the profile should be passed as the second parameter. No
@@ -412,9 +408,6 @@ class AutofillClient {
   // Gets the MerchantPromoCodeManager instance associated with the
   // client (can be null for unsupported platforms).
   virtual MerchantPromoCodeManager* GetMerchantPromoCodeManager();
-
-  // Can be null on unsupported platforms.
-  virtual CreditCardRiskBasedAuthenticator* GetRiskBasedAuthenticator();
 
   // Gets the preferences associated with the client.
   virtual PrefService* GetPrefs() = 0;
@@ -516,23 +509,6 @@ class AutofillClient {
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   // Hides the virtual card enroll bubble and icon if it is visible.
   virtual void HideVirtualCardEnrollBubbleAndIconIfVisible();
-
-  // TODO(crbug.com/40639086): Find a way to merge these two functions.
-  // Shouldn't use WebauthnDialogState as that state is a purely UI state
-  // (should not be accessible for managers?), and some of the states
-  // |KInactive| may be confusing here. Do we want to add another Enum?
-
-  // Will show a dialog offering the option to use device's platform
-  // authenticator in the future instead of CVC to verify the card being
-  // unmasked. Runs |offer_dialog_callback| if the OK button or the cancel
-  // button in the dialog is clicked.
-  virtual void ShowWebauthnOfferDialog(
-      WebauthnDialogCallback offer_dialog_callback);
-
-  // Will show a dialog indicating the card verification is in progress. It is
-  // shown after verification starts only if the WebAuthn is enabled.
-  virtual void ShowWebauthnVerifyPendingDialog(
-      WebauthnDialogCallback verify_pending_dialog_callback);
 
   // Will update the WebAuthn dialog content when there is an error fetching the
   // challenge.
@@ -780,6 +756,37 @@ class AutofillClient {
   virtual void set_test_addresses(std::vector<AutofillProfile> test_addresses);
 
   virtual base::span<const AutofillProfile> GetTestAddresses() const;
+
+  // `PasswordFormType` describes the different outcomes of Password Manager's
+  // form parsing heuristics (see `FormDataParser`). Note that these are all
+  // predictions and may be inaccurate.
+  enum class PasswordFormType {
+    // The form is not password-related.
+    kNoPasswordForm = 0,
+    // The form is a predicted to be a login form, i.e. it has a username and a
+    // password field.
+    kLoginForm = 1,
+    // The form is predicted to be a signup form, i.e. it has a username field
+    // and a new password field.
+    kSignupForm = 2,
+    // The form is predicted to be a change password form, i.e. it has a current
+    // password field and a new password field.
+    kChangePasswordForm = 3,
+    // The form is predicted to be a reset password form, i.e. it has a new
+    // password field.
+    kResetPasswordForm = 4,
+    // The form is predicted to be the username form of a username-first flow,
+    // i.e. there is only a username field.
+    kSingleUsernameForm = 5
+  };
+  // Returns the heuristics predictions for the renderer form to which
+  // `field_id` belongs inside the form with `form_id`. The browser form with
+  // `form_id` is decomposed into renderer forms prior to running Password
+  // Manager heuristics.
+  // If the form cannot be found, `kNoPasswordForm` is returned.
+  virtual PasswordFormType ClassifyAsPasswordForm(AutofillManager& manager,
+                                                  FormGlobalId form_id,
+                                                  FieldGlobalId field_id) const;
 };
 
 }  // namespace autofill

@@ -654,6 +654,7 @@ if (is_android) {
       "android/javatests/src/org/chromium/base/test/transit/ConditionalState.java",
       "android/javatests/src/org/chromium/base/test/transit/ElementInState.java",
       "android/javatests/src/org/chromium/base/test/transit/Elements.java",
+      "android/javatests/src/org/chromium/base/test/transit/EntryPointSentinelStation.java",
       "android/javatests/src/org/chromium/base/test/transit/Facility.java",
       "android/javatests/src/org/chromium/base/test/transit/FacilityCheckIn.java",
       "android/javatests/src/org/chromium/base/test/transit/FacilityCheckOut.java",
@@ -675,4 +676,13 @@ if (is_android) {
       "android/javatests/src/org/chromium/base/test/transit/ViewElementInState.java",
     ]
   }
+}
+
+source_set("fuzztest_support") {
+  testonly = true
+  sources = [ "fuzztest_support.h" ]
+  deps = [
+    "//base",
+    "//third_party/fuzztest:fuzztest_internal",
+  ]
 }

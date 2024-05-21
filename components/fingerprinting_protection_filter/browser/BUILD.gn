@@ -12,6 +12,7 @@ if (use_blink) {
       "fingerprinting_protection_child_navigation_throttle.h",
       "fingerprinting_protection_filter_constants.cc",
       "fingerprinting_protection_filter_constants.h",
+      "fingerprinting_protection_observer.h",
       "fingerprinting_protection_page_activation_throttle.cc",
       "fingerprinting_protection_page_activation_throttle.h",
       "fingerprinting_protection_profile_interaction_manager.cc",
@@ -22,12 +23,15 @@ if (use_blink) {
     public_deps = [
       ":features",
       "//base",
+      "//components/content_settings/core/browser:cookie_settings",
+      "//components/content_settings/core/common:common",
       "//components/privacy_sandbox:tracking_protection_settings",
       "//components/subresource_filter/content/shared/browser",
       "//components/subresource_filter/content/shared/common",
       "//content/public/browser",
     ]
     deps = [
+      "//components/content_settings/browser",
       "//components/subresource_filter/core/browser",
       "//components/subresource_filter/core/common",
       "//components/subresource_filter/core/mojom",

@@ -83,7 +83,7 @@ bool NeedsAnchorPositionScrollData(Element& element,
   if (style.PositionAnchor()) {
     return true;
   }
-  // Now we have `position-anchor: implicit`. We need `AnchorPositionScrollData`
+  // Now we have `position-anchor: auto`. We need `AnchorPositionScrollData`
   // only if there's an implicit anchor element to track.
   return element.ImplicitAnchorElement();
 }
@@ -196,7 +196,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
       CreateLayerAfterStyleChange();
     }
   } else if (Layer() && Layer()->Parent()) {
-    Layer()->UpdateFilters(old_style, StyleRef());
+    Layer()->UpdateFilters(diff, old_style, StyleRef());
     Layer()->UpdateBackdropFilters(old_style, StyleRef());
     Layer()->UpdateClipPath(old_style, StyleRef());
     Layer()->UpdateOffsetPath(old_style, StyleRef());

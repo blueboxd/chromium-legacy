@@ -25,7 +25,6 @@
 #include "net/cookies/cookie_util.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
 #include "services/network/public/cpp/session_cookie_delete_predicate.h"
-#include "third_party/abseil-cpp/absl/types/variant.h"
 
 class GURL;
 
@@ -90,10 +89,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
   void set_content_settings(ContentSettingsType type,
                             const ContentSettingsForOneType& settings);
 
-  void set_block_truncated_cookies(bool block_truncated_cookies) {
-    block_truncated_cookies_ = block_truncated_cookies;
-  }
-
   void set_mitigations_enabled_for_3pcd(bool enable) {
     mitigations_enabled_for_3pcd_ = enable;
   }
@@ -104,10 +99,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
 
   void set_tpcd_metadata_manager(tpcd::metadata::Manager* manager) {
     tpcd_metadata_manager_ = manager;
-  }
-
-  bool are_truncated_cookies_blocked() const {
-    return block_truncated_cookies_;
   }
 
   // Returns a predicate that takes the domain of a cookie and a bool whether
@@ -186,9 +177,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
 
   bool IsThirdPartyPhaseoutEnabled() const;
 
-  const ContentSettingsForOneType& GetContentSettings(
-      ContentSettingsType type) const;
-
   // Returns a vector of host-indexed content settings associated with the input
   // `type`. Each element of the vector corresponds to a Provider from
   // HostContentSettingsMap with the highest priority Provider first.
@@ -238,7 +226,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
   // Returns true if user blocks 3PC or 3PCD is on.
   bool block_third_party_cookies_ =
       net::cookie_util::IsForceThirdPartyCookieBlockingEnabled();
-  bool block_truncated_cookies_ = true;
   bool mitigations_enabled_for_3pcd_ = false;
   // This bool makes sure the correct cookie exclusion reasons are used.
   bool tracking_protection_enabled_for_3pcd_ = false;
@@ -253,9 +240,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
       std::vector<content_settings::HostIndexedContentSettings>>
       EntryIndex;
 
-  // Holds an EntryIndex if kHostIndexedMetadataGrants is enabled.
-  // Holds an EntryMap otherwise.
-  absl::variant<EntryMap, EntryIndex> content_settings_;
+  EntryIndex content_settings_;
 
   raw_ptr<tpcd::metadata::Manager> tpcd_metadata_manager_;
 };

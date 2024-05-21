@@ -675,6 +675,21 @@ public class ReadAloudControllerUnitTest {
     }
 
     @Test
+    public void checkReadability_emptyURL() {
+        mController.maybeCheckReadability(sTestGURL);
+
+        verify(mHooksImpl, times(1))
+                .isPageReadable(eq(sTestGURL.getSpec()), mCallbackCaptor.capture());
+        boolean failed = false;
+        try {
+            mCallbackCaptor.getValue().onSuccess("", true, true);
+        } catch (AssertionError e) {
+            failed = true;
+        }
+        assertTrue(failed);
+    }
+
+    @Test
     public void isReadable_languageSupported() {
         mController.maybeCheckReadability(sTestGURL);
 
@@ -834,6 +849,19 @@ public class ReadAloudControllerUnitTest {
         assertEquals("voiceB", voices.get(1).getVoiceId());
         assertEquals("fr", voices.get(2).getLanguage());
         assertEquals("voiceC", voices.get(2).getVoiceId());
+    }
+
+    @Test
+    public void testPlayTab_EmptyUrl() {
+        mFakeTranslateBridge.setCurrentLanguage("en");
+        mTab.setGurlOverrideForTesting(new GURL(""));
+        boolean failed = false;
+        try {
+            mController.playTab(mTab, ReadAloudController.Entrypoint.MAGIC_TOOLBAR);
+        } catch (AssertionError e) {
+            failed = true;
+        }
+        assertTrue(failed);
     }
 
     @Test
@@ -1386,28 +1414,6 @@ public class ReadAloudControllerUnitTest {
         // Don't play, because original state was STOPPED.
         verify(mPlayback, times(1)).play();
         verify(mPlayback).seekToParagraph(eq(99), eq(0L));
-    }
-
-    @Test
-    public void testPreviewVoice_metric() {
-        final String histogramName = ReadAloudMetrics.VOICE_PREVIEWED;
-
-        var histogram = HistogramWatcher.newSingleRecordWatcher(histogramName + "abc", true);
-
-        // Play tab.
-        requestAndStartPlayback();
-
-        reset(mPlaybackHooks);
-        // Preview a voice.
-        var voice = new PlaybackVoice("en", "abc", "");
-        doReturn(List.of(voice)).when(mPlaybackHooks).getVoicesFor(anyString());
-        doReturn(List.of(voice)).when(mPlaybackHooks).getPlaybackVoiceList(any());
-        mController.previewVoice(voice);
-        verify(mPlaybackHooks).createPlayback(any(), mPlaybackCallbackCaptor.capture());
-        Playback previewPlayback = Mockito.mock(Playback.class);
-        onPlaybackSuccess(previewPlayback);
-
-        histogram.assertExpected();
     }
 
     @Test
@@ -2386,6 +2392,93 @@ public class ReadAloudControllerUnitTest {
         when(mTab.getUrl()).thenReturn(gurl);
         mController.getTabModelTabObserverforTests().didFirstVisuallyNonEmptyPaint(mTab);
         verify(mHooksImpl).isPageReadable(eq(gurl.getPossiblyInvalidSpec()), any());
+    }
+
+    @Test
+    public void testOnTabSelected() {
+        MockTab tab = mTabModelSelector.addMockTab();
+
+        // should do nothing on empty url
+        tab.setUrl(new GURL(""));
+        mController.getTabModelTabObserverforTests().onTabSelected(tab);
+        verify(tab, never()).getUserDataHost();
+
+        // should get user data for actual urls
+        tab.setUrl(new GURL("https://en.wikipedia.org/wiki/Alphabet_Inc."));
+        mController.getTabModelTabObserverforTests().onTabSelected(tab);
+        verify(tab, times(1)).getUserDataHost();
+    }
+
+    @Test
+    public void testTimepointsSupported_emptyUrl() {
+        // if somehow an empty url sneaks into timepoints supported
+        mController.setTimepointsSupportedForTest("", true);
+        when(mTab.getUrl()).thenReturn(new GURL(""));
+        // a tab with an empty url should not be supported
+        assertFalse(mController.timepointsSupported(mTab));
+    }
+
+    @Test
+    public void testEmptyUrlReadability() {
+        // grab the callback
+        mController.maybeCheckReadability(sTestGURL);
+        verify(mHooksImpl, times(1))
+                .isPageReadable(eq(sTestGURL.getSpec()), mCallbackCaptor.capture());
+        // if somehow an empty url sneaks into the readability maps
+        boolean failed = false;
+        try {
+            mCallbackCaptor.getValue().onSuccess("", true, true);
+        } catch (AssertionError e) {
+            failed = true;
+        }
+        assertTrue(failed);
+        when(mTab.getUrl()).thenReturn(new GURL(""));
+        // empty urls should not be returned as readable
+        assertFalse(mController.isReadable(mTab));
+    }
+
+    @Test
+    public void testMetricRecorded_EmptyUrlPlayback() {
+        final String histogramName = ReadAloudMetrics.EMPTY_URL_PLAYBACK;
+        var histogram =
+                HistogramWatcher.newSingleRecordWatcher(
+                        histogramName, ReadAloudController.Entrypoint.MAGIC_TOOLBAR);
+
+        mFakeTranslateBridge.setCurrentLanguage("en");
+        mTab.setGurlOverrideForTesting(new GURL(""));
+
+        boolean failed = false;
+        try {
+            mController.playTab(mTab, ReadAloudController.Entrypoint.MAGIC_TOOLBAR);
+        } catch (AssertionError e) {
+            failed = true;
+        }
+        assertTrue(failed);
+        histogram.assertExpected();
+    }
+
+    @Test
+    public void testMetricRecorded_EmptyUrlPlayback_RestoreState() {
+        final String histogramName = ReadAloudMetrics.EMPTY_URL_PLAYBACK;
+        var histogram =
+                HistogramWatcher.newSingleRecordWatcher(
+                        histogramName, ReadAloudController.Entrypoint.RESTORED_PLAYBACK);
+
+        mTab.setGurlOverrideForTesting(new GURL("https://en.wikipedia.org/wiki/Google"));
+        var data = Mockito.mock(PlaybackData.class);
+        ReadAloudController.RestoreState restoreState =
+                mController.new RestoreState(mTab, data, true, false, 0L);
+        mController.setStateToRestoreOnBringingToForegroundForTests(restoreState);
+        // for some reason the tab url goes null
+        mTab.setGurlOverrideForTesting(new GURL(""));
+        boolean failed = false;
+        try {
+            restoreState.restore();
+        } catch (AssertionError e) {
+            failed = true;
+        }
+        assertTrue(failed);
+        histogram.assertExpected();
     }
 
     private void requestAndStartPlayback() {

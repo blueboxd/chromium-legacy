@@ -13,7 +13,6 @@
 #include "chrome/browser/enterprise/connectors/analysis/content_analysis_dialog.h"
 #include "chrome/browser/enterprise/connectors/analysis/content_analysis_downloads_delegate.h"
 #include "chrome/browser/enterprise/connectors/analysis/content_analysis_features.h"
-#include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/enterprise/util/affiliation.h"
 #include "chrome/browser/policy/dm_token_utils.h"
@@ -22,6 +21,7 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
 #include "components/enterprise/browser/controller/browser_dm_token_storage.h"
+#include "components/enterprise/connectors/connectors_prefs.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -262,7 +262,7 @@ const char* ConnectorPref(AnalysisConnector connector) {
       return kOnFileTransferPref;
 #endif
     case AnalysisConnector::ANALYSIS_CONNECTOR_UNSPECIFIED:
-      NOTREACHED() << "Using unspecified analysis connector";
+      NOTREACHED_IN_MIGRATION() << "Using unspecified analysis connector";
       return "";
   }
 }
@@ -289,7 +289,7 @@ const char* ConnectorScopePref(AnalysisConnector connector) {
       return kOnFileTransferScopePref;
 #endif
     case AnalysisConnector::ANALYSIS_CONNECTOR_UNSPECIFIED:
-      NOTREACHED() << "Using unspecified analysis connector";
+      NOTREACHED_IN_MIGRATION() << "Using unspecified analysis connector";
       return "";
   }
 }
@@ -345,7 +345,7 @@ TriggeredRule::Action GetHighestPrecedenceAction(
       action_2 == TriggeredRule::ACTION_UNSPECIFIED) {
     return TriggeredRule::ACTION_UNSPECIFIED;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return TriggeredRule::ACTION_UNSPECIFIED;
 }
 
@@ -376,7 +376,7 @@ ContentAnalysisAcknowledgement::FinalAction GetHighestPrecedenceAction(
       action_2 == ContentAnalysisAcknowledgement::ACTION_UNSPECIFIED) {
     return ContentAnalysisAcknowledgement::ACTION_UNSPECIFIED;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return ContentAnalysisAcknowledgement::ACTION_UNSPECIFIED;
 }
 

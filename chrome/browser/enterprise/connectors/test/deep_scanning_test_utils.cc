@@ -13,13 +13,13 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/connectors/common.h"
-#include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 #include "chrome/browser/enterprise/connectors/reporting/realtime_reporting_client.h"
 #include "chrome/browser/enterprise/connectors/reporting/realtime_reporting_client_factory.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/policy/dm_token_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/enterprise/connectors/connectors_prefs.h"
 #include "components/policy/core/common/cloud/cloud_policy_client_registration_helper.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
@@ -55,7 +55,7 @@ void EventReportValidator::ExpectUnscannedFileEvent(
     const std::string& expected_trigger,
     const std::string& expected_reason,
     const std::set<std::string>* expected_mimetypes,
-    int64_t expected_content_size,
+    std::optional<int64_t> expected_content_size,
     const std::string& expected_result,
     const std::string& expected_profile_username,
     const std::string& expected_profile_identifier,

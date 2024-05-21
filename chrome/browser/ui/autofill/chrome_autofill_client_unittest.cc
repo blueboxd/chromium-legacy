@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 
+#include <optional>
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/ui/autofill/autofill_field_promo_controller.h"
 #include "chrome/browser/ui/autofill/edit_address_profile_dialog_controller_impl.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/autofill/content/browser/autofill_test_utils.h"
 #include "components/autofill/content/browser/test_autofill_client_injector.h"
 #include "components/autofill/content/browser/test_autofill_driver_injector.h"
 #include "components/autofill/content/browser/test_autofill_manager_injector.h"
@@ -29,10 +31,12 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
+#include "components/autofill/core/browser/test_autofill_manager_waiter.h"
 #include "components/autofill/core/browser/test_browser_autofill_manager.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/ui/mock_autofill_suggestion_delegate.h"
 #include "components/autofill/core/browser/ui/mock_fast_checkout_client.h"
+#include "components/autofill/core/common/autofill_test_utils.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_interactions_flow.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -42,6 +46,8 @@
 #include "components/unified_consent/pref_names.h"
 #include "components/user_education/test/mock_feature_promo_controller.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/test/navigation_simulator.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -64,7 +70,10 @@
 namespace autofill {
 namespace {
 
+using test::CreateFormDataForRenderFrameHost;
+using test::CreateTestFormField;
 using ::testing::_;
+using ::testing::A;
 using ::testing::AllOf;
 using ::testing::Field;
 using ::testing::InSequence;
@@ -93,7 +102,13 @@ class MockSaveCardBubbleController : public SaveCardBubbleControllerImpl {
       : SaveCardBubbleControllerImpl(web_contents) {}
   ~MockSaveCardBubbleController() override = default;
 
-  MOCK_METHOD(void, ShowConfirmationBubbleView, (bool), (override));
+  MOCK_METHOD(
+      void,
+      ShowConfirmationBubbleView,
+      (bool,
+       std::optional<
+           payments::PaymentsAutofillClient::OnConfirmationClosedCallback>),
+      (override));
 };
 #endif
 
@@ -167,6 +182,10 @@ class ChromeAutofillClientTest : public ChromeRenderViewHostTestHarness {
     return test_autofill_client_injector_[web_contents()];
   }
 
+  ContentAutofillDriver* driver(content::RenderFrameHost* rfh) {
+    return client()->GetAutofillDriverFactory()->DriverForFrame(rfh);
+  }
+
   TestPersonalDataManager* personal_data_manager() {
     return personal_data_manager_;
   }
@@ -202,6 +221,8 @@ class ChromeAutofillClientTest : public ChromeRenderViewHostTestHarness {
         unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled, true);
   }
 
+  autofill::test::AutofillUnitTestEnvironment autofill_environment_{
+      {.disable_server_communication = true}};
   raw_ptr<TestPersonalDataManager> personal_data_manager_ = nullptr;
   raw_ptr<MockAutofillFieldPromoController>
       autofill_field_promo_controller_manual_fallback_;
@@ -209,6 +230,94 @@ class ChromeAutofillClientTest : public ChromeRenderViewHostTestHarness {
       test_autofill_client_injector_;
   base::OnceCallback<void()> setup_flags_;
 };
+
+// Tests that `ClassifyAsPasswordForm()` correctly recognizes a login form on a
+// single frame.
+TEST_F(ChromeAutofillClientTest, ClassifiesLoginFormOnMainFrame) {
+  constexpr char kUrl[] = "https://www.foo.com/login.html";
+
+  NavigateAndCommit(GURL(kUrl));
+  ContentAutofillDriver* autofill_driver = driver(main_rfh());
+  ASSERT_TRUE(autofill_driver);
+
+  FormData form = CreateFormDataForRenderFrameHost(
+      *main_rfh(), {CreateTestFormField("Username", "username", "",
+                                        FormControlType::kInputText),
+                    CreateTestFormField("Password", "password", "",
+                                        FormControlType::kInputPassword)});
+
+  {
+    TestAutofillManagerWaiter waiter(autofill_driver->GetAutofillManager(),
+                                     {AutofillManagerEvent::kFormsSeen});
+    autofill_driver->renderer_events().FormsSeen(/*updated_forms=*/{form},
+                                                 /*removed_forms=*/{});
+    ASSERT_TRUE(waiter.Wait(/*num_awaiting_calls=*/1));
+  }
+
+  EXPECT_EQ(client()->ClassifyAsPasswordForm(
+                autofill_driver->GetAutofillManager(), form.global_id(),
+                form.fields[0].global_id()),
+            AutofillClient::PasswordFormType::kLoginForm);
+}
+
+// Tests that `ClassifyAsPasswordForm()` correctly recognizes a login form on
+// a child frame.
+TEST_F(ChromeAutofillClientTest, ClassifiesLoginFormOnChildFrame) {
+  constexpr char kUrl1[] = "https://www.foo.com/login.html";
+  constexpr char kUrl2[] = "https://www.foo.com/otp.html";
+
+  NavigateAndCommit(GURL(kUrl1));
+  content::RenderFrameHost* child_rfh =
+      content::RenderFrameHostTester::For(main_rfh())
+          ->AppendChild(std::string("child"));
+  child_rfh = content::NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL(kUrl2), child_rfh);
+  ContentAutofillClient* autofill_client =
+      ContentAutofillClient::FromWebContents(web_contents());
+  ASSERT_TRUE(autofill_client);
+  ContentAutofillDriver* main_driver = driver(main_rfh());
+  ContentAutofillDriver* child_driver = driver(child_rfh);
+  ASSERT_TRUE(main_driver);
+  ASSERT_TRUE(child_driver);
+
+  FormData main_form = CreateFormDataForRenderFrameHost(
+      *main_rfh(), {CreateTestFormField("Search", "search", "",
+                                        FormControlType::kInputText)});
+  FormData child_form = CreateFormDataForRenderFrameHost(
+      *child_rfh, {CreateTestFormField("Username", "username", "",
+                                       FormControlType::kInputText),
+                   CreateTestFormField("Password", "password", "",
+                                       FormControlType::kInputPassword)});
+
+  // Ensure that the child frame is picked up as a child frame of `main_form`.
+  {
+    autofill::FrameTokenWithPredecessor child_frame_information;
+    child_frame_information.token = child_form.host_frame;
+    main_form.child_frames = {child_frame_information};
+  }
+
+  {
+    autofill::TestAutofillManagerWaiter waiter(
+        main_driver->GetAutofillManager(),
+        {autofill::AutofillManagerEvent::kFormsSeen});
+    main_driver->renderer_events().FormsSeen(/*updated_forms=*/{main_form},
+                                             /*removed_forms=*/{});
+    child_driver->renderer_events().FormsSeen(/*updated_forms=*/{child_form},
+                                              /*removed_forms=*/{});
+    ASSERT_TRUE(waiter.Wait(/*num_awaiting_calls=*/2));
+  }
+
+  // The form fields in the main frame do not form a valid password form.
+  EXPECT_EQ(client()->ClassifyAsPasswordForm(main_driver->GetAutofillManager(),
+                                             main_form.global_id(),
+                                             main_form.fields[0].global_id()),
+            AutofillClient::PasswordFormType::kNoPasswordForm);
+  // The form fields in the child frame form a login form.
+  EXPECT_EQ(client()->ClassifyAsPasswordForm(main_driver->GetAutofillManager(),
+                                             main_form.global_id(),
+                                             child_form.fields[0].global_id()),
+            AutofillClient::PasswordFormType::kLoginForm);
+}
 
 TEST_F(ChromeAutofillClientTest, GetFormInteractionsFlowId_BelowMaxFlowTime) {
   // Arbitrary fixed date to avoid using Now().
@@ -316,14 +425,22 @@ TEST_F(ChromeAutofillClientTest,
 
 TEST_F(ChromeAutofillClientTest,
        CreditCardUploadCompleted_ShowConfirmationBubbleView_CardSaved) {
-  EXPECT_CALL(save_card_bubble_controller(), ShowConfirmationBubbleView(true));
-  client()->GetPaymentsAutofillClient()->CreditCardUploadCompleted(true);
+  EXPECT_CALL(save_card_bubble_controller(),
+              ShowConfirmationBubbleView(
+                  true, A<std::optional<payments::PaymentsAutofillClient::
+                                            OnConfirmationClosedCallback>>()));
+  client()->GetPaymentsAutofillClient()->CreditCardUploadCompleted(
+      true, /*on_confirmation_closed_callback=*/std::nullopt);
 }
 
 TEST_F(ChromeAutofillClientTest,
        CreditCardUploadCompleted_ShowConfirmationBubbleView_CardNotSaved) {
-  EXPECT_CALL(save_card_bubble_controller(), ShowConfirmationBubbleView(false));
-  client()->GetPaymentsAutofillClient()->CreditCardUploadCompleted(false);
+  EXPECT_CALL(save_card_bubble_controller(),
+              ShowConfirmationBubbleView(
+                  false, A<std::optional<payments::PaymentsAutofillClient::
+                                             OnConfirmationClosedCallback>>()));
+  client()->GetPaymentsAutofillClient()->CreditCardUploadCompleted(
+      false, /*on_confirmation_closed_callback=*/std::nullopt);
 }
 
 TEST_F(ChromeAutofillClientTest, EditAddressDialogFooter) {

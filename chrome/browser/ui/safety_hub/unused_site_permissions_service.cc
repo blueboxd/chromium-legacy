@@ -45,6 +45,7 @@
 #include "components/permissions/pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -224,7 +225,7 @@ bool UnusedSitePermissionsService::UnusedSitePermissionsResult::
     } else if (origin_val.is_string()) {
       origin_str = &origin_val.GetString();
     } else {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
     }
     ContentSettingsPattern origin =
         ContentSettingsPattern::FromString(*origin_str);
@@ -242,7 +243,10 @@ std::u16string UnusedSitePermissionsService::UnusedSitePermissionsResult::
     return std::u16string();
   }
   return l10n_util::GetPluralStringFUTF16(
-      IDS_SETTINGS_SAFETY_HUB_UNUSED_SITE_PERMISSIONS_MENU_NOTIFICATION,
+      base::FeatureList::IsEnabled(
+          safe_browsing::kSafetyHubAbusiveNotificationRevocation)
+          ? IDS_SETTINGS_SAFETY_HUB_REVOKED_PERMISSIONS_MENU_NOTIFICATION
+          : IDS_SETTINGS_SAFETY_HUB_UNUSED_SITE_PERMISSIONS_MENU_NOTIFICATION,
       revoked_permissions_.size());
 #else
   // Menu notifications are not present on Android.
@@ -374,9 +378,10 @@ void UnusedSitePermissionsService::RegrantPermissionsForOrigin(
           info.primary_pattern, info.secondary_pattern, type,
           base::Value(std::move(*revoked_value)));
     } else {
-      NOTREACHED() << "Unable to find ContentSettingsType in neither "
-                   << "ContentSettingsRegistry nor WebsiteSettingsRegistry: "
-                   << ConvertContentSettingsTypeToKey(type);
+      NOTREACHED_IN_MIGRATION()
+          << "Unable to find ContentSettingsType in neither "
+          << "ContentSettingsRegistry nor WebsiteSettingsRegistry: "
+          << ConvertContentSettingsTypeToKey(type);
     }
   }
 
@@ -410,9 +415,10 @@ void UnusedSitePermissionsService::UndoRegrantPermissionsForOrigin(
           permissions_data.origin.ToRepresentativeUrl(), GURL(), permission,
           base::Value());
     } else {
-      NOTREACHED() << "Unable to find ContentSettingsType in neither "
-                   << "ContentSettingsRegistry nor WebsiteSettingsRegistry: "
-                   << ConvertContentSettingsTypeToKey(permission);
+      NOTREACHED_IN_MIGRATION()
+          << "Unable to find ContentSettingsType in neither "
+          << "ContentSettingsRegistry nor WebsiteSettingsRegistry: "
+          << ConvertContentSettingsTypeToKey(permission);
     }
   }
 
@@ -633,6 +639,10 @@ void UnusedSitePermissionsService::RevokeUnusedPermissions() {
             browser_context_.get(), entry.source.primary_pattern,
             entry.source.secondary_pattern, entry.type,
             permissions::PermissionSourceUI::SAFETY_HUB_AUTO_REVOCATION);
+        // Record the number of permissions auto-revoked per permission type.
+        base::UmaHistogramEnumeration(
+            "Settings.SafetyHub.UnusedSitePermissionsModule.AutoRevoked",
+            entry.type);
         revoked_permissions.insert(entry.type);
         if (IsContentSetting(entry.type)) {
           hcsm()->SetContentSettingCustomScope(
@@ -647,7 +657,7 @@ void UnusedSitePermissionsService::RevokeUnusedPermissions() {
                                                entry.source.secondary_pattern,
                                                entry.type, base::Value());
         } else {
-          NOTREACHED()
+          NOTREACHED_IN_MIGRATION()
               << "Unable to find ContentSettingsType in neither "
               << "ContentSettingsRegistry nor WebsiteSettingsRegistry: "
               << ConvertContentSettingsTypeToKey(entry.type);

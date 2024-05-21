@@ -43,7 +43,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
-import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType;
 import org.chromium.chrome.browser.tasks.tab_management.TabProperties.TabActionState;
@@ -125,7 +124,6 @@ public class TabListCoordinator
      * @param tabModelFilterSupplier The supplier for the current tab model filter.
      * @param regularTabModelSupplier The supplier for the regular tab model.
      * @param thumbnailProvider Provider to provide screenshot related details.
-     * @param titleProvider Provider for a given tab's title.
      * @param actionOnRelatedTabs Whether tab-related actions should be operated on all related
      *     tabs.
      * @param gridCardOnClickListenerProvider Provides the onClickListener for opening dialog when
@@ -155,7 +153,6 @@ public class TabListCoordinator
             @NonNull ObservableSupplier<TabModelFilter> tabModelFilterSupplier,
             @NonNull Supplier<TabModel> regularTabModelSupplier,
             @Nullable ThumbnailProvider thumbnailProvider,
-            @Nullable PseudoTab.TitleProvider titleProvider,
             boolean actionOnRelatedTabs,
             @Nullable
                     TabListMediator.GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
@@ -176,7 +173,6 @@ public class TabListCoordinator
                 tabModelFilterSupplier,
                 regularTabModelSupplier,
                 thumbnailProvider,
-                titleProvider,
                 actionOnRelatedTabs,
                 gridCardOnClickListenerProvider,
                 dialogHandler,
@@ -202,7 +198,6 @@ public class TabListCoordinator
             @NonNull ObservableSupplier<TabModelFilter> tabModelFilterSupplier,
             @NonNull Supplier<TabModel> regularTabModelSupplier,
             @Nullable ThumbnailProvider thumbnailProvider,
-            @Nullable PseudoTab.TitleProvider titleProvider,
             boolean actionOnRelatedTabs,
             @Nullable
                     TabListMediator.GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
@@ -322,7 +317,6 @@ public class TabListCoordinator
                         tabModelFilterSupplier,
                         regularTabModelSupplier,
                         thumbnailProvider,
-                        titleProvider,
                         tabListFaviconProvider,
                         new TabGroupColorFaviconProvider(mContext),
                         actionOnRelatedTabs,
@@ -405,12 +399,16 @@ public class TabListCoordinator
 
         mHasEmptyView = hasEmptyView;
         if (mHasEmptyView) {
-            mTabListEmptyCoordinator =
-                    new TabListEmptyCoordinator(parentView, mModel, browserControlsStateProvider);
+            mTabListEmptyCoordinator = new TabListEmptyCoordinator(parentView, mModel);
             mEmptyStateHeadingResId = emptyHeadingStringResId;
             mEmptyStateSubheadingResId = emptySubheadingStringResId;
             mEmptyStateImageResId = emptyImageResId;
         }
+    }
+
+    /** Returns the {@link TabListMode} of the coordinator. */
+    public @TabListMode int getTabListMode() {
+        return mMode;
     }
 
     /**
@@ -659,12 +657,8 @@ public class TabListCoordinator
     /**
      * @see TabListMediator#resetWithListOfTabs(List, boolean)
      */
-    boolean resetWithListOfTabs(@Nullable List<PseudoTab> tabs, boolean quickMode) {
+    boolean resetWithListOfTabs(@Nullable List<Tab> tabs, boolean quickMode) {
         return mMediator.resetWithListOfTabs(tabs, quickMode);
-    }
-
-    boolean resetWithListOfTabs(@Nullable List<Tab> tabs) {
-        return resetWithListOfTabs(PseudoTab.getListOfPseudoTab(tabs), false);
     }
 
     void softCleanup() {

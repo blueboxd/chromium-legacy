@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_constants.h"
 #import "ios/chrome/browser/ui/passwords/bottom_sheet/password_suggestion_bottom_sheet_app_interface.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_manager_egtest_utils.h"
 #import "ios/chrome/browser/ui/settings/password/password_manager_ui_features.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings_app_interface.h"
@@ -947,7 +948,7 @@ void CheckKeyboardIsUpAndNotCovered() {
   // Open the password manual fill view.
   OpenPasswordManualFillView(/*has_suggestions=*/false);
 
-  // Select a 'Suggest Password...' option.
+  // Select a suggest password option.
   [[EarlGrey selectElementWithMatcher:ManualFallbackSuggestPasswordMatcher()]
       performAction:grey_tap()];
 
@@ -977,11 +978,11 @@ void CheckKeyboardIsUpAndNotCovered() {
   // Open the password manual fill view.
   OpenPasswordManualFillView(/*has_suggestions=*/false);
 
-  // Verify a 'Suggest Password...' option is showing.
+  // Verify a suggest password option is showing.
   [[EarlGrey selectElementWithMatcher:ManualFallbackSuggestPasswordMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  // Select a 'Suggest Password...' option.
+  // Select a suggest password option.
   [[EarlGrey selectElementWithMatcher:ManualFallbackSuggestPasswordMatcher()]
       performAction:grey_tap()];
 }
@@ -1011,7 +1012,7 @@ void CheckKeyboardIsUpAndNotCovered() {
   // Open the password manual fill view.
   OpenPasswordManualFillView(/*has_suggestions=*/false);
 
-  // Verify the 'Suggest Password...' option is not shown.
+  // Verify the suggest password option is not shown.
   [[EarlGrey selectElementWithMatcher:ManualFallbackSuggestPasswordMatcher()]
       assertWithMatcher:grey_notVisible()];
 }
@@ -1047,7 +1048,7 @@ void CheckKeyboardIsUpAndNotCovered() {
   // Open the password manual fill view.
   OpenPasswordManualFillView(/*has_suggestions=*/false);
 
-  // Verify the 'Suggest Password...' option is not shown.
+  // Verify the suggest password option is not shown.
   [[EarlGrey selectElementWithMatcher:ManualFallbackSuggestPasswordMatcher()]
       assertWithMatcher:grey_notVisible()];
 }
@@ -1118,7 +1119,12 @@ void CheckKeyboardIsUpAndNotCovered() {
   [[EarlGrey selectElementWithMatcher:OverflowMenuEditAction()]
       performAction:grey_tap()];
 
-  // TODO(crbug.com/326413057): Check that the password details opened in search
+  // Check that the details page opened.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kPasswordDetailsViewControllerID)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // TODO(crbug.com/326406846): Check that the details page was opened in edit
   // mode.
 }
 

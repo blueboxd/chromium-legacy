@@ -68,7 +68,6 @@
 <translation id="2241587408274973373">Karten auf der Seite „Neuer Tab“</translation>
 <translation id="2241634353105152135">Nur einmal</translation>
 <translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> entfernen</translation>
-<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{1 Website blockiert}other{# Websites blockiert}}</translation>
 <translation id="228293613124499805">Die meisten Websites, die du besuchst, speichern wahrscheinlich Daten auf deinem Gerät. Damit du bequemer im Internet surfen kannst, werden häufig Einstellungen oder Informationen gespeichert, die du an die jeweiligen Websites weitergibst. Wir empfehlen, diese Einstellung aktiviert zu lassen.</translation>
 <translation id="2289270750774289114">Nachfragen, wenn eine Website nach Bluetooth-Geräten in der Nähe suchen möchte (empfohlen)</translation>
 <translation id="2315043854645842844">Die clientseitige Zertifikatauswahl wird vom Betriebssystem nicht unterstützt.</translation>
@@ -305,6 +304,7 @@
 <translation id="6015775454662021376">Zugriff dieser Website auf dein Gerät steuern</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="6042308850641462728">Mehr</translation>
+<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> dein letzter Tab</translation>
 <translation id="6064125863973209585">Abgeschlossene Downloads</translation>
 <translation id="6071501408666570960">Du wirst möglicherweise von dieser Website abgemeldet</translation>
 <translation id="6120483543004435978">Wenn dieser Schalter aktiviert ist, können Websites anfragen, ob sie ermitteln dürfen, wann du dein Gerät aktiv nutzt. Wenn er deaktiviert ist, können Websites nicht ermitteln, wann du dein Gerät aktiv nutzt.</translation>
@@ -426,6 +426,7 @@
 <translation id="7986741934819883144">Kontakt auswählen</translation>
 <translation id="7990211076305263060">Wenn dieser Schalter aktiviert ist, können Websites anfragen, ob sie dein Mikrofon verwenden dürfen. Wenn er deaktiviert ist, können Websites dein Mikrofon nicht verwenden.</translation>
 <translation id="8007176423574883786">Für dieses Gerät deaktiviert</translation>
+<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> von <ph name="FROM_DEVICE" /></translation>
 <translation id="802154636333426148">Downloadfehler</translation>
 <translation id="8042586301629853791">Sortieren nach:</translation>
 <translation id="8067883171444229417">Video ansehen</translation>
@@ -480,7 +481,6 @@
 <translation id="8721719390026067591">Wenn dieser Schalter aktiviert ist, können Websites anfragen, ob sie nach Bluetooth-Geräten suchen dürfen. Wenn er deaktiviert ist, können Websites nicht nach Bluetooth-Geräten suchen.</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="8730621377337864115">Fertig</translation>
-<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{1 Website zugelassen}other{# Websites zugelassen}}</translation>
 <translation id="8751914237388039244">Bild auswählen</translation>
 <translation id="8800034312320686233">Website funktioniert nicht?</translation>
 <translation id="8801436777607969138">Hier kannst du Websites angeben, für die JavaScript blockiert werden soll.</translation>

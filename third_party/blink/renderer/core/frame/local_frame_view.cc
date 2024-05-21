@@ -156,6 +156,7 @@
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/position_try_options.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition.h"
@@ -2426,7 +2427,9 @@ bool LocalFrameView::RunResizeObserverSteps(
   }
   disconnected_elements_with_remembered_size_.clear();
 
-  bool re_run_lifecycles = false;
+  // https://drafts.csswg.org/css-anchor-position-1/#last-successful-position-option
+  bool re_run_lifecycles = UpdateLastSuccessfulPositionOptions();
+
   ForAllNonThrottledLocalFrameViews(
       [&re_run_lifecycles](LocalFrameView& frame_view) {
         bool result = frame_view.NotifyResizeObservers();
@@ -3204,8 +3207,8 @@ void LocalFrameView::ForceLayoutForPagination(float maximum_shrink_factor) {
     return;
   }
 
-  auto LayoutForPrinting = [&layout_view]() {
-    Document& document = layout_view->GetDocument();
+  Document& document = *frame_->GetDocument();
+  auto LayoutForPrinting = [&layout_view, &document]() {
     document.GetStyleEngine().UpdateViewportSize();
     document.MarkViewportUnitsDirty();
     layout_view->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
@@ -3216,7 +3219,7 @@ void LocalFrameView::ForceLayoutForPagination(float maximum_shrink_factor) {
   // Need to update computed style before we can set the initial containing
   // block size. A zoom factor may have been set, and it shouldn't be applied
   // when printing, e.g. when resolving @page margins.
-  frame_->GetDocument()->UpdateStyleAndLayoutTree();
+  document.UpdateStyleAndLayoutTree();
 
   // Set up the initial containing block size for pagination. This is defined as
   // the page area size of the *first* page. [1] The size of the first page may
@@ -3229,29 +3232,23 @@ void LocalFrameView::ForceLayoutForPagination(float maximum_shrink_factor) {
   // [1] https://www.w3.org/TR/css-page-3/#page-model
   // [2] https://www.w3.org/TR/css-page-3/#using-named-pages
   PhysicalSize initial_containing_block_size =
-      layout_view->PageAreaSize(/* page_index */ 0u,
-                                /* page_name */ AtomicString());
+      CalculateInitialContainingBlockSizeForPagination(document);
   layout_view->SetInitialContainingBlockSizeForPagination(
       initial_containing_block_size);
 
   LayoutForPrinting();
 
-  const auto& first_page = To<PhysicalBoxFragment>(
-      *layout_view->GetPhysicalFragment(0)->Children()[0]);
-  const AtomicString& first_page_name = first_page.PageName();
-  if (first_page_name) {
-    PhysicalSize new_size =
-        layout_view->PageAreaSize(/* page_index */ 0u, first_page_name);
-    if (new_size != initial_containing_block_size) {
-      // If the first page was named (this isn't something we can detect without
-      // laying out first), and the size of the first page is different from
-      // what we got above, the initial containing block used was wrong (which
-      // affects e.g. elements with viewport units). Set a new size and lay out
-      // again.
-      layout_view->SetInitialContainingBlockSizeForPagination(new_size);
+  PhysicalSize new_initial_containing_block_size =
+      CalculateInitialContainingBlockSizeForPagination(document);
+  if (new_initial_containing_block_size != initial_containing_block_size) {
+    // If the first page was named (this isn't something we can detect without
+    // laying out first), and the size of the first page is different from what
+    // we got above, the initial containing block used was wrong (which affects
+    // e.g. elements with viewport units). Set a new size and lay out again.
+    layout_view->SetInitialContainingBlockSizeForPagination(
+        new_initial_containing_block_size);
 
-      LayoutForPrinting();
-    }
+    LayoutForPrinting();
   }
 
   // If we don't fit in the given page width, we'll lay out again. If we don't
@@ -3269,13 +3266,14 @@ void LocalFrameView::ForceLayoutForPagination(float maximum_shrink_factor) {
     layout_view->SetPaginationScaleFactor(layout_view->PaginationScaleFactor() *
                                           overall_scale_factor);
     PhysicalSize new_size =
-        layout_view->PageAreaSize(/* page_index */ 0u, first_page_name);
+        CalculateInitialContainingBlockSizeForPagination(document);
     layout_view->SetInitialContainingBlockSizeForPagination(new_size);
     LayoutForPrinting();
   }
 
-  if (TextAutosizer* text_autosizer = frame_->GetDocument()->GetTextAutosizer())
+  if (TextAutosizer* text_autosizer = document.GetTextAutosizer()) {
     text_autosizer->UpdatePageInfo();
+  }
   AdjustViewSize();
   UpdateStyleAndLayout();
 }
@@ -4170,21 +4168,28 @@ void LocalFrameView::CollectDraggableRegions(
 bool LocalFrameView::UpdateViewportIntersectionsForSubtree(
     unsigned parent_flags,
     std::optional<base::TimeTicks>& monotonic_time) {
+  // This will be recomputed, but default to the previous computed value if
+  // there's an early return.
+  bool needs_occlusion_tracking = false;
+  IntersectionObserverController* controller =
+      GetFrame().GetDocument()->GetIntersectionObserverController();
+  if (controller) {
+    needs_occlusion_tracking = controller->NeedsOcclusionTracking();
+  }
+
   // TODO(dcheng): Since LocalFrameView tree updates are deferred, FrameViews
   // might still be in the LocalFrameView hierarchy even though the associated
   // Document is already detached. Investigate if this check and a similar check
   // in lifecycle updates are still needed when there are no more deferred
   // LocalFrameView updates: https://crbug.com/561683
   if (!GetFrame().GetDocument()->IsActive()) {
-    return false;
+    return needs_occlusion_tracking;
   }
 
   unsigned flags = GetIntersectionObservationFlags(parent_flags);
-  bool needs_occlusion_tracking = false;
   if (!NeedsLayout() || IsDisplayLocked()) {
     // Notify javascript IntersectionObservers
-    if (IntersectionObserverController* controller =
-            GetFrame().GetDocument()->GetIntersectionObserverController()) {
+    if (controller) {
       needs_occlusion_tracking = controller->ComputeIntersections(
           flags, GetUkmAggregator(), monotonic_time,
           accumulated_scroll_delta_since_last_intersection_update_);
@@ -4920,24 +4925,26 @@ bool LocalFrameView::ExecuteAllPendingUpdates() {
   DCHECK(GetFrame().IsLocalRoot() || !IsAttached());
   bool updated = false;
   ForAllNonThrottledLocalFrameViews([&updated](LocalFrameView& frame_view) {
-    if (frame_view.pending_opacity_updates_) {
+    if (frame_view.pending_opacity_updates_ &&
+        !frame_view.pending_opacity_updates_->empty()) {
       for (LayoutObject* object : *frame_view.pending_opacity_updates_) {
         DCHECK(
             !DisplayLockUtilities::LockedAncestorPreventingPrePaint(*object));
         PaintPropertyTreeBuilder::DirectlyUpdateOpacityValue(*object);
-        updated = true;
       }
+      updated = true;
       frame_view.pending_opacity_updates_->clear();
     }
-    if (frame_view.pending_transform_updates_) {
+    if (frame_view.pending_transform_updates_ &&
+        !frame_view.pending_transform_updates_->empty()) {
       for (LayoutObject* object : *frame_view.pending_transform_updates_) {
         DCHECK(
             !DisplayLockUtilities::LockedAncestorPreventingPrePaint(*object));
         PaintPropertyTreeBuilder::DirectlyUpdateTransformMatrix(*object);
-        updated = true;
       }
-      frame_view.pending_transform_updates_->clear();
+      updated = true;
       frame_view.SetIntersectionObservationState(kDesired);
+      frame_view.pending_transform_updates_->clear();
     }
   });
   return updated;
@@ -5030,6 +5037,13 @@ void LocalFrameView::ExecutePendingSnapUpdates() {
 void LocalFrameView::NotifyElementWithRememberedSizeDisconnected(
     Element* element) {
   disconnected_elements_with_remembered_size_.insert(element);
+}
+
+bool LocalFrameView::UpdateLastSuccessfulPositionOptions() {
+  return GetFrame()
+      .GetDocument()
+      ->GetStyleEngine()
+      .UpdateLastSuccessfulPositionOptions();
 }
 
 }  // namespace blink

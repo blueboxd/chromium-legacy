@@ -105,7 +105,7 @@ v8::RAILMode RAILModeToV8RAILMode(RAILMode rail_mode) {
     case RAILMode::kLoad:
       return v8::RAILMode::PERFORMANCE_LOAD;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 }
 
@@ -159,7 +159,7 @@ const char* RendererProcessTypeToString(WebRendererProcessType process_type) {
     case WebRendererProcessType::kExtensionRenderer:
       return "extension";
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return "";  // MSVC needs that.
 }
 
@@ -207,7 +207,7 @@ const char* InputEventStateToString(
     case WidgetScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD:
       return "event_forwarded_to_main_thread";
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return nullptr;
   }
 }
@@ -541,10 +541,6 @@ MainThreadSchedulerImpl::AnyThread::AnyThread(
 MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
   mbi_override_task_runner_handle =
       base::FeatureList::IsEnabled(kMbiOverrideTaskRunnerHandle);
-
-  mbi_compositor_task_runner_per_agent_scheduling_group =
-      base::FeatureList::IsEnabled(
-          kMbiCompositorTaskRunnerPerAgentSchedulingGroup);
 
   compositor_tq_policy_during_threaded_scroll =
       base::FeatureList::IsEnabled(kThreadedScrollPreventRenderingStarvation)
@@ -1196,14 +1192,6 @@ void MainThreadSchedulerImpl::DidHandleInputEventOnCompositorThread(
   UpdateForInputEventOnCompositorThread(web_input_event, event_state);
 }
 
-void MainThreadSchedulerImpl::DidAnimateForInputOnCompositorThread() {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-               "MainThreadSchedulerImpl::DidAnimateForInputOnCompositorThread");
-  base::AutoLock lock(any_thread_lock_);
-  any_thread().fling_compositor_escalation_deadline =
-      helper_.NowTicks() + base::Milliseconds(kFlingEscalationLimitMillis);
-}
-
 void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
     const blink::WebInputEvent& web_input_event,
     WidgetScheduler::InputEventState input_event_state) {
@@ -1271,9 +1259,6 @@ void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
       break;
 
     case blink::WebInputEvent::Type::kGestureFlingCancel:
-      any_thread().fling_compositor_escalation_deadline = base::TimeTicks();
-      break;
-
     case blink::WebInputEvent::Type::kGestureTapDown:
     case blink::WebInputEvent::Type::kGestureShowPress:
     case blink::WebInputEvent::Type::kGestureScrollEnd:
@@ -1407,7 +1392,7 @@ bool MainThreadSchedulerImpl::ShouldYieldForHighPriorityWork() {
       return false;
 
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return false;
   }
 }
@@ -1551,7 +1536,7 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       break;
 
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 
   // TODO(skyostil): Add an idle state for foreground tabs too.
@@ -1652,14 +1637,7 @@ UseCase MainThreadSchedulerImpl::ComputeCurrentUseCase(
     base::TimeTicks now,
     base::TimeDelta* expected_use_case_duration) const {
   any_thread_lock_.AssertAcquired();
-  // Special case for flings. This is needed because we don't get notification
-  // of a fling ending (although we do for cancellation).
-  if (any_thread().fling_compositor_escalation_deadline > now &&
-      !any_thread().awaiting_touch_start_response) {
-    *expected_use_case_duration =
-        any_thread().fling_compositor_escalation_deadline - now;
-    return UseCase::kCompositorGesture;
-  }
+
   // Above all else we want to be responsive to user input.
   *expected_use_case_duration =
       any_thread().user_model.TimeLeftInUserGesture(now);
@@ -1838,10 +1816,6 @@ void MainThreadSchedulerImpl::WriteIntoTraceLocked(
   dict.Add("renderer_backgrounded",
            main_thread_only().renderer_backgrounded.get());
   dict.Add("now", (optional_now - base::TimeTicks()).InMillisecondsF());
-  dict.Add(
-      "fling_compositor_escalation_deadline",
-      (any_thread().fling_compositor_escalation_deadline - base::TimeTicks())
-          .InMillisecondsF());
   dict.Add("last_idle_period_end_time",
            (any_thread().last_idle_period_end_time - base::TimeTicks())
                .InMillisecondsF());
@@ -2308,12 +2282,6 @@ void MainThreadSchedulerImpl::OnPageResumed() {
   UpdatePolicy();
 }
 
-void MainThreadSchedulerImpl::BroadcastIntervention(const String& message) {
-  helper_.CheckOnValidThread();
-  for (auto* page_scheduler : main_thread_only().page_schedulers)
-    page_scheduler->ReportIntervention(message);
-}
-
 void MainThreadSchedulerImpl::OnTaskStarted(
     MainThreadTaskQueue* queue,
     const base::sequence_manager::Task& task,
@@ -2505,7 +2473,7 @@ TaskPriority MainThreadSchedulerImpl::ComputePriority(
     case MainThreadTaskQueue::QueueTraits::PrioritisationType::kLow:
       return TaskPriority::kLowPriority;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return TaskPriority::kNormalPriority;
   }
 }
@@ -2748,7 +2716,7 @@ MainThreadSchedulerImpl::ComputeCompositorPriorityFromUseCase() const {
       return std::nullopt;
 
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return std::nullopt;
   }
 }
@@ -2804,7 +2772,7 @@ const char* MainThreadSchedulerImpl::UseCaseToString(UseCase use_case) {
     case UseCase::kMainThreadGesture:
       return "main_thread_gesture";
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return nullptr;
   }
 }
@@ -2821,7 +2789,7 @@ const char* MainThreadSchedulerImpl::RAILModeToString(RAILMode rail_mode) {
     case RAILMode::kLoad:
       return "load";
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return nullptr;
   }
 }
@@ -2835,7 +2803,7 @@ const char* MainThreadSchedulerImpl::TimeDomainTypeToString(
     case TimeDomainType::kVirtual:
       return "virtual";
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return nullptr;
   }
 }
@@ -2843,6 +2811,12 @@ const char* MainThreadSchedulerImpl::TimeDomainTypeToString(
 WTF::Vector<base::OnceClosure>&
 MainThreadSchedulerImpl::GetOnTaskCompletionCallbacks() {
   return main_thread_only().on_task_completion_callbacks;
+}
+
+void MainThreadSchedulerImpl::ExecuteAfterCurrentTaskForTesting(
+    base::OnceClosure on_completion_task,
+    ExecuteAfterCurrentTaskRestricted) {
+  ThreadSchedulerBase::ExecuteAfterCurrentTask(std::move(on_completion_task));
 }
 
 void MainThreadSchedulerImpl::OnUrgentMessageReceived() {

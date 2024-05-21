@@ -84,6 +84,21 @@ std::unique_ptr<net::DatagramServerSocket> DefaultSocketFactory(
   return base::WrapUnique(socket);
 }
 
+rtc::EcnMarking GetEcnMarking(net::DscpAndEcn tos) {
+  switch (tos.ecn) {
+    case net::ECN_NO_CHANGE:
+      NOTREACHED_NORETURN();
+    case net::ECN_NOT_ECT:
+      return rtc::EcnMarking::kNotEct;
+    case net::ECN_ECT1:
+      return rtc::EcnMarking::kEct1;
+    case net::ECN_ECT0:
+      return rtc::EcnMarking::kEct0;
+    case net::ECN_CE:
+      return rtc::EcnMarking::kCe;
+  }
+}
+
 }  // namespace
 
 namespace network {
@@ -296,7 +311,8 @@ bool P2PSocketUdp::HandleReadResult(int result) {
     delegate_->DumpPacket(data, true);
     auto packet = mojom::P2PReceivedPacket::New(
         data, recv_address_,
-        base::TimeTicks() + base::Nanoseconds(rtc::TimeNanos()));
+        base::TimeTicks() + base::Nanoseconds(rtc::TimeNanos()),
+        GetEcnMarking(socket_->GetLastTos()));
 
     if (interceptor_) {
       interceptor_->EnqueueReceive(std::move(packet), std::move(recv_buffer_),
@@ -480,7 +496,7 @@ void P2PSocketUdp::Send(base::span<const uint8_t> data,
 bool P2PSocketUdp::SendPacket(base::span<const uint8_t> data,
                               const P2PPacketInfo& packet_info) {
   if (data.size() > kMaximumPacketSize) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     OnError();
     return false;
   }
@@ -539,7 +555,7 @@ void P2PSocketUdp::SetOption(P2PSocketOption option, int32_t value) {
           static_cast<net::DiffServCodePoint>(value));
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 }
 

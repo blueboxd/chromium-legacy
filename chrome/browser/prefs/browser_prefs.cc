@@ -28,7 +28,6 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/engagement/important_sites_util.h"
-#include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 #include "chrome/browser/enterprise/reporting/prefs.h"
 #include "chrome/browser/enterprise/util/managed_browser_utils.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
@@ -85,6 +84,7 @@
 #include "chrome/browser/ui/side_panel/side_panel_prefs.h"
 #include "chrome/browser/ui/tabs/organization/prefs.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_pref_names.h"
 #include "chrome/browser/ui/toolbar/chrome_labs/chrome_labs_prefs.h"
 #include "chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_pref_names.h"
@@ -116,6 +116,7 @@
 #include "components/embedder_support/origin_trials/origin_trial_prefs.h"
 #include "components/enterprise/browser/identifiers/identifiers_prefs.h"
 #include "components/enterprise/buildflags/buildflags.h"
+#include "components/enterprise/connectors/connectors_prefs.h"
 #include "components/fingerprinting_protection_filter/browser/fingerprinting_protection_filter_constants.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/history_clusters/core/history_clusters_prefs.h"
@@ -280,6 +281,7 @@
 #include "chrome/browser/new_tab_page/modules/photos/photos_service.h"
 #include "chrome/browser/new_tab_page/modules/recipes/recipes_service.h"
 #include "chrome/browser/new_tab_page/modules/safe_browsing/safe_browsing_handler.h"
+#include "chrome/browser/new_tab_page/modules/v2/calendar/google_calendar_page_handler.h"
 #include "chrome/browser/new_tab_page/modules/v2/tab_resumption/tab_resumption_page_handler.h"
 #include "chrome/browser/new_tab_page/promos/promo_service.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
@@ -291,7 +293,6 @@
 #include "chrome/browser/ui/lens/lens_overlay_permission_utils.h"
 #include "chrome/browser/ui/safety_hub/safety_hub_prefs.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
-#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_utils.h"
 #include "chrome/browser/ui/webui/cr_components/theme_color_picker/theme_color_picker_handler.h"
 #include "chrome/browser/ui/webui/history/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
@@ -344,7 +345,6 @@
 #include "chrome/browser/ash/account_manager/account_manager_edu_coexistence_controller.h"
 #include "chrome/browser/ash/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_chrome_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_cryptohome_remover.h"
 #include "chrome/browser/ash/app_mode/kiosk_system_session.h"
@@ -1059,6 +1059,7 @@ constexpr char kGlanceablesEnabled[] = "ash.glanceables_enabled";
 // Deprecated 05/2024.
 // A preference to keep track of the device registered time.
 constexpr char kDeviceRegisteredTime[] = "DeviceRegisteredTime";
+constexpr char kArcKioskDictionaryName[] = "arc-kiosk";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -1081,7 +1082,22 @@ inline constexpr char kHasShownRefreshWhatsNew[] =
 // keyboard shortcut.
 inline constexpr char kAccessibilityMouseKeysShortcutToPauseEnabled[] =
     "settings.a11y.mouse_keys.ctrl_to_pause_enabled";
+// A boolean pref which determines if mouse keys is automatically disabled in
+// text fields.
+inline constexpr char kAccessibilityMouseKeysDisableInTextFields[] =
+    "settings.a11y.mouse_keys.disable_in_text_fields";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Deprecated 05/2024.
+constexpr char kBlockTruncatedCookies[] = "profile.cookie_block_truncated";
+
+// Deprecated 05/2024
+inline constexpr char kDefaultSearchProviderChoiceLocationPrefName[] =
+    "default_search_provider_data.choice_location";
+
+// Deprecated 05/2024.
+inline constexpr char kSyncCachedTrustedVaultAutoUpgradeDebugInfo[] =
+    "sync.cached_trusted_vault_auto_upgrade_debug_info";
 
 // Register local state used only for migration (clearing or moving to a new
 // key).
@@ -1204,6 +1220,7 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
 
   // Deprecated 05/2024.
   registry->RegisterTimePref(kDeviceRegisteredTime, base::Time());
+  registry->RegisterDictionaryPref(kArcKioskDictionaryName);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Deprecated 04/2024.
@@ -1552,7 +1569,20 @@ void RegisterProfilePrefsForMigration(
   // Deprecated 05/2024.
   registry->RegisterBooleanPref(kAccessibilityMouseKeysShortcutToPauseEnabled,
                                 true);
+  registry->RegisterBooleanPref(kAccessibilityMouseKeysDisableInTextFields,
+                                true);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  // Deprecated 05/2024.
+  registry->RegisterBooleanPref(kBlockTruncatedCookies, true);
+
+  // Deprecated 05/2024
+  registry->RegisterIntegerPref(
+      kDefaultSearchProviderChoiceLocationPrefName,
+      static_cast<int>(search_engines::ChoiceMadeLocation::kOther));
+
+  // Deprecated 05/2024.
+  registry->RegisterStringPref(kSyncCachedTrustedVaultAutoUpgradeDebugInfo, "");
 }
 
 void ClearSyncRequestedPrefAndMaybeMigrate(PrefService* profile_prefs) {
@@ -1698,7 +1728,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   arc::prefs::RegisterLocalStatePrefs(registry);
   ChromeOSMetricsProvider::RegisterPrefs(registry);
-  ash::ArcKioskAppManager::RegisterPrefs(registry);
   ash::AudioDevicesPrefHandlerImpl::RegisterPrefs(registry);
   ash::carrier_lock::CarrierLockManager::RegisterLocalPrefs(registry);
   ash::cert_provisioning::RegisterLocalStatePrefs(registry);
@@ -2045,6 +2074,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   extensions::TabsCaptureVisibleTabFunction::RegisterProfilePrefs(registry);
   first_run::RegisterProfilePrefs(registry);
   gcm::RegisterProfilePrefs(registry);
+  GoogleCalendarPageHandler::RegisterProfilePrefs(registry);
   HatsServiceDesktop::RegisterProfilePrefs(registry);
   lens::prefs::RegisterProfilePrefs(registry);
   NtpCustomBackgroundService::RegisterProfilePrefs(registry);
@@ -2066,13 +2096,13 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   signin::RegisterProfilePrefs(registry);
   StartupBrowserCreator::RegisterProfilePrefs(registry);
   TabResumptionPageHandler::RegisterProfilePrefs(registry);
+  tab_groups::saved_tab_groups::prefs::RegisterProfilePrefs(registry);
   tab_organization_prefs::RegisterProfilePrefs(registry);
   tab_search_prefs::RegisterProfilePrefs(registry);
   ThemeColorPickerHandler::RegisterProfilePrefs(registry);
   toolbar::RegisterProfilePrefs(registry);
   UnifiedAutoplayConfig::RegisterProfilePrefs(registry);
   user_notes::RegisterProfilePrefs(registry);
-  tab_groups::SavedTabGroupUtils::RegisterProfilePrefs(registry);
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
   captions::LiveCaptionController::RegisterProfilePrefs(registry);
@@ -2269,6 +2299,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 #endif
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityMainNodeAnnotationsEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kAccessibilityPdfOcrAlwaysActive, true);
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
@@ -2276,7 +2309,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   registry->RegisterBooleanPref(kClearUserDataDir1Pref, false);
 #endif
 
-  registry->RegisterBooleanPref(prefs::kBlockTruncatedCookies, true);
   registry->RegisterBooleanPref(
       prefs::kManagedPrivateNetworkAccessRestrictionsEnabled, false);
 
@@ -2292,20 +2324,14 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 #if BUILDFLAG(ENABLE_COMPOSE)
   registry->RegisterBooleanPref(prefs::kPrefHasCompletedComposeFRE, false);
   registry->RegisterBooleanPref(prefs::kEnableProactiveNudge, true);
+  registry->RegisterDictionaryPref(prefs::kProactiveNudgeDisabledSitesWithTime);
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
   registry->RegisterIntegerPref(prefs::kChromeDataRegionSetting, 0);
 #endif
 
-  registry->RegisterBooleanPref(prefs::kTabGroupsDeletionSkipDialogOnDelete,
-                                false);
-  registry->RegisterBooleanPref(prefs::kTabGroupsDeletionSkipDialogOnUngroup,
-                                false);
-  registry->RegisterBooleanPref(prefs::kTabGroupsDeletionSkipDialogOnRemoveTab,
-                                false);
-  registry->RegisterBooleanPref(prefs::kTabGroupsDeletionSkipDialogOnCloseTab,
-                                false);
+  registry->RegisterIntegerPref(prefs::kLensOverlayStartCount, 0);
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -2465,6 +2491,7 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
 
   // Added 05/2024.
   local_state->ClearPref(kDeviceRegisteredTime);
+  local_state->ClearPref(kArcKioskDictionaryName);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Added 04/2024 .
@@ -2913,7 +2940,17 @@ void MigrateObsoleteProfilePrefs(PrefService* profile_prefs,
 
   // Added 05/2024.
   profile_prefs->ClearPref(kAccessibilityMouseKeysShortcutToPauseEnabled);
+  profile_prefs->ClearPref(kAccessibilityMouseKeysDisableInTextFields);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  // Added 05/2024.
+  profile_prefs->ClearPref(kBlockTruncatedCookies);
+
+  // Added 05/2024
+  profile_prefs->ClearPref(kDefaultSearchProviderChoiceLocationPrefName);
+
+  // Added 05/2024.
+  profile_prefs->ClearPref(kSyncCachedTrustedVaultAutoUpgradeDebugInfo);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

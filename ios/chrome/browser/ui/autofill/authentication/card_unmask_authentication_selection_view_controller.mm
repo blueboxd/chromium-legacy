@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
+#import "ios/chrome/browser/ui/autofill/authentication/card_unmask_authentication_selection_constants.h"
 #import "ios/chrome/browser/ui/autofill/cells/card_unmask_header_item.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -29,7 +30,7 @@ static NSString* kSectionIdChallengeOptions = @"SectionIdChallengeOptions";
   NSString* _headerText;
   NSString* _footerText;
   NSArray<CardUnmaskChallengeOptionIOS*>* _challengeOptions;
-  NSNumber* _selectedChallengeOptionIndex;
+  NSInteger _selectedChallengeOptionIndex;
   UITableViewDiffableDataSource<NSString*, NSNumber*>*
       _challengeOptionsDataSource;
 }
@@ -42,10 +43,13 @@ static NSString* kSectionIdChallengeOptions = @"SectionIdChallengeOptions";
   self.title = l10n_util::GetNSString(
       IDS_AUTOFILL_CARD_UNMASK_PROMPT_NAVIGATION_TITLE_VERIFICATION);
   // Configure the cancel button.
-  self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]
+  UIBarButtonItem* cancelBarButtonItem = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                            target:self
                            action:@selector(didTapCancelButton)];
+  cancelBarButtonItem.accessibilityIdentifier =
+      kCardUnmaskAuthenticationSelectionCancelButtonAccessibilityIdentifier;
+  self.navigationItem.leftBarButtonItem = cancelBarButtonItem;
 
   // Configure the table items.
   self.tableView.allowsSelection = YES;
@@ -59,7 +63,7 @@ static NSString* kSectionIdChallengeOptions = @"SectionIdChallengeOptions";
                           NSNumber* itemId) {
              return [weakSelf provideCellForTableView:tableView
                                             indexPath:indexPath
-                                 challengeOptionIndex:itemId];
+                                 challengeOptionIndex:itemId.integerValue];
            }];
   self.tableView.dataSource = _challengeOptionsDataSource;
   NSDiffableDataSourceSnapshot<NSString*, NSNumber*>* snapshot =
@@ -106,11 +110,14 @@ static NSString* kSectionIdChallengeOptions = @"SectionIdChallengeOptions";
 }
 
 - (void)setChallengeAcceptanceLabel:(NSString*)challengeAcceptanceLabel {
-  self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]
+  UIBarButtonItem* barButtonItem = [[UIBarButtonItem alloc]
       initWithTitle:challengeAcceptanceLabel
               style:UIBarButtonItemStylePlain
              target:self
              action:@selector(didTapChallengeAcceptanceButton)];
+  barButtonItem.accessibilityIdentifier =
+      kCardUnmaskAuthenticationSelectionAcceptanceButtonAccessibilityIdentifier;
+  self.navigationItem.rightBarButtonItem = barButtonItem;
 }
 
 - (void)enterPendingState {
@@ -137,8 +144,7 @@ static NSString* kSectionIdChallengeOptions = @"SectionIdChallengeOptions";
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   // Set a checkmark on the cell when being selected.
   CHECK((NSUInteger)indexPath.row < [_challengeOptions count]);
-  [self setSelectedChallengeOptionIndex:[NSNumber
-                                            numberWithInteger:indexPath.row]];
+  [self setSelectedChallengeOptionIndex:indexPath.row];
   [self.mutator didSelectChallengeOption:_challengeOptions[indexPath.row]];
 }
 
@@ -166,17 +172,15 @@ static NSString* kSectionIdChallengeOptions = @"SectionIdChallengeOptions";
 // Deques and sets up a cell for the challenge option at index.
 - (UITableViewCell*)provideCellForTableView:(UITableView*)tableView
                                   indexPath:(NSIndexPath*)indexPath
-                       challengeOptionIndex:(NSNumber*)challengeOptionIndex {
+                       challengeOptionIndex:(NSInteger)challengeOptionIndex {
   TableViewDetailIconCell* cell =
       DequeueTableViewCell<TableViewDetailIconCell>(self.tableView);
   cell.textLabel.text = _challengeOptions[indexPath.row].modeLabel;
   [cell setDetailText:_challengeOptions[indexPath.row].challengeInfo];
 
-  BOOL isSelected =
-      (_selectedChallengeOptionIndex != nil &&
-       [_selectedChallengeOptionIndex isEqualToNumber:challengeOptionIndex]);
-  [cell setAccessoryType:isSelected ? UITableViewCellAccessoryCheckmark
-                                    : UITableViewCellAccessoryNone];
+  [cell setAccessoryType:_selectedChallengeOptionIndex == challengeOptionIndex
+                             ? UITableViewCellAccessoryCheckmark
+                             : UITableViewCellAccessoryNone];
   [cell setTextLayoutConstraintAxis:UILayoutConstraintAxisVertical];
 
   [cell setDetailTextNumberOfLines:0];  // Use as many lines as needed.
@@ -204,19 +208,15 @@ static NSString* kSectionIdChallengeOptions = @"SectionIdChallengeOptions";
 }
 
 // Sets the selected challenge option, updating the circle/checkmark icon.
-- (void)setSelectedChallengeOptionIndex:(NSNumber*)selectedIndex {
-  if ([_selectedChallengeOptionIndex isEqualToNumber:selectedIndex]) {
+- (void)setSelectedChallengeOptionIndex:(NSInteger)selectedIndex {
+  if (_selectedChallengeOptionIndex == selectedIndex) {
     return;
   }
   NSDiffableDataSourceSnapshot<NSString*, NSNumber*>* snapshot =
       [_challengeOptionsDataSource snapshot];
-  if (_selectedChallengeOptionIndex != nil) {
-    [snapshot reloadItemsWithIdentifiers:@[ _selectedChallengeOptionIndex ]];
-  }
+  [snapshot reloadItemsWithIdentifiers:@[ @(_selectedChallengeOptionIndex) ]];
   _selectedChallengeOptionIndex = selectedIndex;
-  if (_selectedChallengeOptionIndex != nil) {
-    [snapshot reloadItemsWithIdentifiers:@[ _selectedChallengeOptionIndex ]];
-  }
+  [snapshot reloadItemsWithIdentifiers:@[ @(_selectedChallengeOptionIndex) ]];
   [_challengeOptionsDataSource applySnapshotUsingReloadData:snapshot];
 }
 

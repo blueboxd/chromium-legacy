@@ -444,7 +444,7 @@ void ToolbarView::Init() {
   if (base::FeatureList::IsEnabled(
           performance_manager::features::kPerformanceIntervention)) {
     performance_intervention_button_ = container_view_->AddChildView(
-        std::make_unique<PerformanceInterventionButton>());
+        std::make_unique<PerformanceInterventionButton>(browser_view_));
   }
 
   if (cast)
@@ -1197,6 +1197,15 @@ views::AccessiblePaneView* ToolbarView::GetAsAccessiblePaneView() {
 
 views::View* ToolbarView::GetAnchorView(
     std::optional<PageActionIconType> type) {
+  if (type.has_value()) {
+    const actions::ActionId action_id =
+        GetPageActionIconView(type.value())->action_id();
+    if (action_id &&
+        pinned_toolbar_actions_container_->IsActionPinnedOrPoppedOut(
+            action_id)) {
+      return pinned_toolbar_actions_container_->GetButtonFor(action_id);
+    }
+  }
   return location_bar_;
 }
 

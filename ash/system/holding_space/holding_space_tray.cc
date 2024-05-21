@@ -367,6 +367,13 @@ void HoldingSpaceTray::ShowBubble() {
 
   DCHECK(tray_container());
 
+  // Refresh suggestions before showing the bubble so that cached suggestions
+  // will be shown immediately rather than being animated in. This reduces the
+  // likelihood of a suggestions related animation occurring while also
+  // animating in the bubble. Note that a suggestions related animation may
+  // still occur in the case of a cache miss.
+  HoldingSpaceController::Get()->client()->RefreshSuggestions();
+
   bubble_ = std::make_unique<HoldingSpaceTrayBubble>(this);
   bubble_->Init();
 
@@ -693,7 +700,7 @@ void HoldingSpaceTray::ExecuteCommand(int command_id, int event_flags) {
           Shell::Get()->session_controller()->GetActivePrefService(), true);
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 }

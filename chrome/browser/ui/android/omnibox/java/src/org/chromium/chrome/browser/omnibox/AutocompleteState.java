@@ -6,14 +6,17 @@ package org.chromium.chrome.browser.omnibox;
 
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import java.util.Locale;
+import java.util.Optional;
 
 /** A state to keep track of EditText and autocomplete. */
 class AutocompleteState {
-    private String mUserText;
-    private String mAutocompleteText;
+    @NonNull private String mUserText;
+    @NonNull private Optional<String> mAutocompleteText;
     private int mSelStart;
     private int mSelEnd;
 
@@ -21,11 +24,19 @@ class AutocompleteState {
         copyFrom(a);
     }
 
-    public AutocompleteState(String userText, String autocompleteText, int selStart, int selEnd) {
-        set(userText, autocompleteText, selStart, selEnd);
+    public AutocompleteState(
+            @NonNull String userText, @Nullable String autocompleteText, int selStart, int selEnd) {
+        set(
+                userText,
+                TextUtils.isEmpty(autocompleteText)
+                        ? Optional.empty()
+                        : Optional.of(autocompleteText),
+                selStart,
+                selEnd);
     }
 
-    public void set(String userText, String autocompleteText, int selStart, int selEnd) {
+    public void set(
+            @NonNull String userText, Optional<String> autocompleteText, int selStart, int selEnd) {
         mUserText = userText;
         mAutocompleteText = autocompleteText;
         mSelStart = selStart;
@@ -36,23 +47,21 @@ class AutocompleteState {
         set(a.mUserText, a.mAutocompleteText, a.mSelStart, a.mSelEnd);
     }
 
+    @NonNull
     public String getUserText() {
         return mUserText;
     }
 
-    public String getAutocompleteText() {
+    public Optional<String> getAutocompleteText() {
         return mAutocompleteText;
-    }
-
-    public boolean hasAutocompleteText() {
-        return !TextUtils.isEmpty(mAutocompleteText);
     }
 
     /**
      * @return The whole text including autocomplete text.
      */
+    @NonNull
     public String getText() {
-        return mUserText + mAutocompleteText;
+        return TextUtils.concat(mUserText, mAutocompleteText.orElse("")).toString();
     }
 
     public int getSelStart() {
@@ -72,12 +81,12 @@ class AutocompleteState {
         mUserText = userText;
     }
 
-    public void setAutocompleteText(String autocompleteText) {
+    public void setAutocompleteText(Optional<String> autocompleteText) {
         mAutocompleteText = autocompleteText;
     }
 
     public void clearAutocompleteText() {
-        mAutocompleteText = "";
+        mAutocompleteText = Optional.empty();
     }
 
     public boolean isCursorAtEndOfUserText() {
@@ -137,13 +146,13 @@ class AutocompleteState {
         int diff = mUserText.length() - prevState.mUserText.length();
         if (diff < 0) return false;
         if (!isPrefix(mUserText, prevState.getText())) return false;
-        mAutocompleteText = prevState.mAutocompleteText.substring(diff);
+        mAutocompleteText = prevState.getAutocompleteText().map(s -> s.substring(diff));
         return true;
     }
 
     public void commitAutocompleteText() {
-        mUserText += mAutocompleteText;
-        mAutocompleteText = "";
+        mAutocompleteText.ifPresent(s -> mUserText += s);
+        mAutocompleteText = Optional.empty();
     }
 
     @Override
@@ -160,7 +169,7 @@ class AutocompleteState {
     @Override
     public int hashCode() {
         return mUserText.hashCode() * 2
-                + mAutocompleteText.hashCode() * 3
+                + mAutocompleteText.map(s -> s.hashCode()).orElse(0) * 3
                 + mSelStart * 5
                 + mSelEnd * 7;
     }

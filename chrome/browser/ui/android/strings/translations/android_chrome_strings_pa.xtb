@@ -15,6 +15,7 @@
 <translation id="1058669287135776095">ਤੁਸੀਂ ਆਫ਼ਲਾਈਨ ਹੋ। ਆਪਣੇ ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਦੀ ਜਾਂਚ ਕਰ ਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="10614374240317010">ਕਦੇ ਵੀ ਸੁਰੱਖਿਅਤ ਨਹੀਂ ਕੀਤਾ</translation>
 <translation id="107147699690128016">ਜੇ ਤੁਸੀਂ ਫ਼ਾਈਲ ਐਕਸਟੈਂਸ਼ਨ ਬਦਲਦੇ ਹੋ, ਤਾਂ ਫ਼ਾਈਲ ਸ਼ਾਇਦ ਕਿਸੇ ਵੱਖਰੀ ਐਪਲੀਕੇਸ਼ਨ ਵਿੱਚ ਖੁੱਲ੍ਹੇ ਅਤੇ ਸੰਭਾਵੀ ਤੌਰ 'ਤੇ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਦਾ ਨੁਕਸਾਨ ਹੋ ਸਕਦਾ ਹੈ।</translation>
+<translation id="1080365971383768617">ਤੁਹਾਡੇ ਸਾਰੇ ਡੀਵਾਈਸਾਂ 'ਤੇ ਪਾਸਵਰਡ</translation>
 <translation id="1082920045291562218">ਸਾਰਾਂਸ਼ ਵਿਚਾਰ ਸ਼ੀਟ ਨਾਲ ਸਾਂਝਾ ਕਰਨ ਦੀ ਸੁਵਿਧਾ ਬੰਦ ਹੈ</translation>
 <translation id="1089606299949659462">ਸਮੀਖਿਆ ਪੂਰੀ ਹੋ ਗਈ!</translation>
 <translation id="1095761715416917775">ਪੱਕਾ ਕਰੋ ਤੁਸੀਂ ਆਪਣੇ ਸਿੰਕ ਕੀਤੇ ਡਾਟੇ ਤੱਕ ਹਮੇਸ਼ਾਂ ਪਹੁੰਚ ਕਰ ਸਕੋ</translation>
@@ -81,6 +82,7 @@
 <translation id="1383876407941801731">ਖੋਜੋ</translation>
 <translation id="1384704387250346179">Google Lens ਨਾਲ ਚਿੱਤਰ ਦਾ ਅਨੁਵਾਦ ਕਰੋ <ph name="BEGIN_NEW" />ਨਵਾਂ<ph name="END_NEW" /></translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> ਦਿਨ ਪਹਿਲਾਂ ਕਿਰਿਆਸ਼ੀਲ</translation>
+<translation id="1390418506739274310">ਤੁਸੀਂ ਉਨ੍ਹਾਂ ਹੋਰ ਐਪਾਂ ਦਾ ਇਤਿਹਾਸ ਦੇਖ ਸਕਦੇ ਹੋ, ਜਿਨ੍ਹਾਂ ਦੇ ਲਿੰਕ Chrome ਵਿੱਚ ਖੁੱਲ੍ਹਦੇ ਹਨ। ਤੁਹਾਡੇ Google ਖਾਤੇ ਵਿੱਚ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 'ਤੇ ਬ੍ਰਾਊਜ਼ਿੰਗ ਇਤਿਹਾਸ ਦੀਆਂ ਹੋਰ ਕਿਸਮਾਂ ਹੋ ਸਕਦੀਆਂ ਹਨ।</translation>
 <translation id="13931502444227376">ਜਾਰੀ ਰੱਖਣ ਲਈ, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> ਤੁਹਾਡੇ ਨਾਮ, ਈਮੇਲ ਪਤੇ ਅਤੇ ਪ੍ਰੋਫਾਈਲ ਤਸਵੀਰ ਨੂੰ ਇਸ ਸਾਈਟ ਨਾਲ ਸਾਂਝਾ ਕਰੇਗਾ। ਇਸ ਸਾਈਟ ਦੇ <ph name="BEGIN_LINK1" />ਸੇਵਾ ਦੇ ਨਿਯਮ<ph name="END_LINK1" /> ਦੇਖੋ।</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> ਨਾਲ ਖੋਜੋ</translation>
 <translation id="1407069428457324124">ਗੂੜ੍ਹਾ ਥੀਮ</translation>
@@ -96,6 +98,7 @@
 <translation id="1448440926884431741">Bookmarks ਵਿੱਚ ਆਪਣੇ ਟਰੈਕ ਕੀਤੇ ਉਤਪਾਦਾਂ ਨੂੰ ਵਿਵਸਥਿਤ ਕਰੋ</translation>
 <translation id="1466383950273130737">Chrome ਦੀ ਭਾਸ਼ਾ ਚੁਣੋ</translation>
 <translation id="1477626028522505441">ਸਰਵਰ ਸਮੱਸਿਆਵਾਂ ਦੇ ਕਾਰਨ <ph name="FILE_NAME" /> ਡਾਊਨਲੋਡ ਅਸਫ਼ਲ ਰਿਹਾ।</translation>
+<translation id="1480287803138246127">ਤੁਹਾਡਾ ਕੁਝ ਇਤਿਹਾਸ ਸ਼ਾਇਦ ਇੱਥੇ ਦਿਖਾਈ ਨਾ ਦੇਵੇ। ਆਪਣਾ ਸਾਰਾ Chrome ਇਤਿਹਾਸ ਦੇਖਣ ਲਈ, ਪੂਰਾ Chrome ਇਤਿਹਾਸ ਖੋਲ੍ਹੋ।</translation>
 <translation id="148482509007564431">ਬੁੱਕਮਾਰਕ ਰੱਖਿਅਤ ਕਰਨ ਸੰਬੰਧੀ ਪ੍ਰਵਾਹ</translation>
 <translation id="1492417797159476138">ਤੁਸੀਂ ਪਹਿਲਾਂ ਹੀ ਇਸ ਸਾਈਟ ਲਈ ਇਹ ਵਰਤੋਂਕਾਰ ਨਾਮ ਰੱਖਿਅਤ ਕਰ ਚੁੱਕੇ ਹੋ</translation>
 <translation id="1493287004536771723">ਤੁਸੀਂ <ph name="SITE_NAME" /> ਦਾ ਅਨੁਸਰਣ ਕਰ ਰਹੇ ਹੋ</translation>
@@ -156,6 +159,7 @@
 <translation id="1825772852827001597">Google Pay ਦੀਆਂ ਭੁਗਤਾਨ ਵਿਧੀਆਂ ਅਤੇ ਪਤਿਆਂ ਨੂੰ ਇਨਕ੍ਰਿਪਟ ਨਹੀਂ ਕੀਤਾ ਜਾਵੇਗਾ। Chrome ਦੇ ਬ੍ਰਾਊਜ਼ਿੰਗ ਇਤਿਹਾਸ ਨੂੰ ਸਿੰਕ ਨਹੀਂ ਕੀਤਾ ਜਾਵੇਗਾ।
 ਸਿਰਫ਼ ਤੁਹਾਡੇ ਪਾਸਫਰੇਜ਼ ਨਾਲ ਹੀ ਕੋਈ ਤੁਹਾਡੇ ਇਨਕ੍ਰਿਪਟਡ ਡਾਟੇ ਨੂੰ ਪੜ੍ਹ ਸਕਦਾ ਹੈ। ਪਾਸਫਰੇਜ਼ Google ਨੂੰ ਨਹੀਂ ਭੇਜਿਆ ਜਾਂਦਾ ਜਾਂ ਇਸ ਵੱਲੋਂ ਸਟੋਰ ਨਹੀਂ ਕੀਤਾ ਜਾਂਦਾ। ਜੇ ਤੁਸੀਂ ਆਪਣਾ ਪਾਸਫਰੇਜ਼ ਭੁੱਲ ਜਾਂਦੇ ਹੋ ਜਾਂ ਇਸ ਸੈਟਿੰਗ ਨੂੰ ਬਦਲਣਾ ਚਾਹੁੰਦੇ ਹੋ, ਤਾਂ <ph name="BEGIN_LINK" />ਆਪਣੇ ਖਾਤੇ ਵਿੱਚ Chrome ਡਾਟੇ ਨੂੰ ਮਿਟਾਓ<ph name="END_LINK" />।</translation>
 <translation id="1829244130665387512">ਸਫ਼ੇ ਵਿੱਚ ਲੱਭੋ</translation>
+<translation id="1832459821645506983">ਹਾਂ, ਮੈਂ ਸਹਿਮਤ ਹਾਂ</translation>
 <translation id="185383612275551373">Google ਤੋਂ ਸਭ ਤੋਂ ਢੁਕਵੀਂ ਸਮੱਗਰੀ ਪ੍ਰਾਪਤ ਕਰਨ ਲਈ ਸਿੰਕ ਕਰੋ</translation>
 <translation id="1871098866036088250">Chrome ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਖੋਲ੍ਹੋ</translation>
 <translation id="1877026089748256423">Chrome ਦਾ ਇਹ ਵਰਜਨ ਪੁਰਾਣਾ ਹੈ</translation>
@@ -371,7 +375,6 @@
 <translation id="2951071800649516099">ਬਾਅਦ 'ਚ ਪੜ੍ਹਨ ਲਈ ਪੰਨਿਆਂ ਨੂੰ ਆਪਣੀ ਪੜ੍ਹਨ-ਸੂਚੀ ਵਿੱਚ ਸ਼ਾਮਲ ਕਰੋ</translation>
 <translation id="2956070106555335453">ਸਾਰਾਂਸ਼</translation>
 <translation id="2961208450284224863">{READING_LIST_UNREAD_PAGE_COUNT,plural, =1{<ph name="READING_LIST_UNREAD_PAGE_COUNT_ONE" /> ਨਾ-ਪੜ੍ਹਿਆ ਪੰਨਾ}one{<ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> ਨਾ-ਪੜ੍ਹਿਆ ਪੰਨਾ}other{<ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> ਨਾ-ਪੜ੍ਹੇ ਪੰਨੇ}}</translation>
-<translation id="296370266220139811">ਸਮਾਂ ਬਚਾਓ ਅਤੇ ਘੱਟ ਟਾਈਪ ਕਰੋ</translation>
 <translation id="2977350910003566746">ਪਿਛਲੀ ਵਾਰ ਖੋਲ੍ਹੇ ਜਾਣ ਦੀ ਤਾਰੀਖ ਮੁਤਾਬਕ ਕ੍ਰਮ-ਬੱਧ ਕਰਨਾ</translation>
 <translation id="297771753501244313">ਪਿਛਲੀ ਵਾਰ ਖੋਲ੍ਹਣ ਦੀ ਤਾਰੀਖ ਮੁਤਾਬਕ ਕ੍ਰਮ-ਬੱਧ ਕਰੋ</translation>
 <translation id="2979025552038692506">ਚੁਣੀ ਗਈ ਇਨਕੋਗਨਿਟੋ ਟੈਬ</translation>
@@ -387,6 +390,7 @@
 <translation id="3003253259757197230">ਤੁਹਾਡੇ ਵੱਲੋਂ ਖੋਲ੍ਹੇ ਜਾਣ ਵਾਲੇ URL, Google ਨੂੰ ਭੇਜੇ ਜਾਂਦੇ ਹਨ ਤਾਂ ਕਿ ਇਹ ਅੰਦਾਜ਼ਾ ਲਗਾਇਆ ਜਾ ਸਕੇ ਕਿ ਤੁਸੀਂ ਅੱਗੇ ਕਿਹੜੀਆਂ ਸਾਈਟਾਂ 'ਤੇ ਜਾ ਸਕਦੇ ਹੋ ਅਤੇ ਨਾਲ ਹੀ ਤੁਹਾਨੂੰ ਉਸ ਪੰਨੇ ਬਾਰੇ ਵਧੀਕ ਜਾਣਕਾਰੀ ਵੀ ਦਿਖਾਈ ਜਾਂਦੀ ਹੈ ਜਿਸ 'ਤੇ ਤੁਸੀਂ ਜਾ ਰਹੇ ਹੋ</translation>
 <translation id="3026955690410463085">ਲਿੰਕ ਸ਼ਾਮਲ ਕਰੋ</translation>
 <translation id="3027644380269727216">ਕਿਸੇ ਸਾਈਟ 'ਤੇ ਤੁਹਾਡੀ ਸਰਗਰਮੀ ਦੇ ਆਧਾਰ 'ਤੇ। ਇਹ ਸੈਟਿੰਗ ਚਾਲੂ ਹੈ।</translation>
+<translation id="3027950907978057636"><ph name="APP_LABEL" /> ਤੋਂ</translation>
 <translation id="3029276696788198026">ਕੋਈ ਪ੍ਰੀਲੋਡਿੰਗ ਨਹੀਂ</translation>
 <translation id="3029704984691124060">ਪਾਸਫਰੇਜ ਮੇਲ ਨਹੀਂ ਖਾਂਦੇ।</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ਮਦਦ ਪ੍ਰਾਪਤ ਕਰੋ<ph name="END_LINK" /></translation>
@@ -424,6 +428,7 @@
 <translation id="3226612997184048185">ਜੇ ਤੁਸੀਂ ਵੀ ਆਪਣੇ Google ਖਾਤੇ ਵਿੱਚ ਆਪਣੇ ਬੁੱਕਮਾਰਕ ਨੂੰ ਰੱਖਿਅਤ ਕਰਦੇ ਹੋ ਤਾਂ, ਤੁਸੀਂ Chrome ਵਿੱਚ ਉਤਪਾਦਾਂ ਦੀਆਂ ਕੀਮਤਾਂ ਨੂੰ ਟਰੈਕ ਕਰ ਸਕਦੇ ਹੋ ਅਤੇ ਕੀਮਤਾਂ ਡਿੱਗਣ 'ਤੇ ਸੂਚਨਾ ਪ੍ਰਾਪਤ ਕਰ ਸਕਦੇ ਹੋ</translation>
 <translation id="3227557059438308877">Google Chrome ਨੂੰ ਤੁਹਾਡੇ ਫ਼ੋਨ ਦੀ ਸੁਰੱਖਿਆ ਕੁੰਜੀ ਵਜੋਂ ਵਰਤਣਾ</translation>
 <translation id="3232293466644486101">ਬ੍ਰਾਊਜ਼ਿੰਗ ਡਾਟਾ ਮਿਟਾਓ…</translation>
+<translation id="3232459301230493791"><ph name="TAB_COUNT" /> ਟੈਬਾਂ ਨੂੰ ਮਿਟਾਇਆ ਗਿਆ</translation>
 <translation id="3232754137068452469">ਵੈੱਬ ਐਪ</translation>
 <translation id="3236059992281584593">1 ਮਿੰਟ ਬਾਕੀ</translation>
 <translation id="3237087289225714896">ਮਿਆਰੀ ਪ੍ਰੀਲੋਡਿੰਗ:</translation>
@@ -479,6 +484,7 @@
 <translation id="3518985090088779359">ਸਵੀਕਾਰ ਕਰੋ &amp; ਜਾਰੀ ਰੱਖੋ</translation>
 <translation id="3521388823983121502"><ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> ਨਾਲ ਜਾਰੀ ਨਹੀਂ ਰੱਖਿਆ ਜਾ ਸਕਦਾ</translation>
 <translation id="3522247891732774234">ਅੱਪਡੇਟ ਉਪਲਬਧ ਹੈ। ਹੋਰ ਵਿਕਲਪ</translation>
+<translation id="3523789730715594198">ਤੁਸੀਂ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਜਾ ਕੇ ਕਦੇ ਵੀ ਸਿੰਕ ਕਰਨਾ ਬੰਦ ਕਰ ਸਕਦੇ ਹੋ। Google ਤੁਹਾਡੇ ਇਤਿਹਾਸ ਦੇ ਆਧਾਰ 'ਤੇ Search ਅਤੇ ਹੋਰ ਸੇਵਾਵਾਂ ਨੂੰ ਵਿਅਕਤੀਗਤ ਬਣਾ ਸਕਦਾ ਹੈ।</translation>
 <translation id="3524138585025253783">ਵਿਕਾਸਕਾਰ UI</translation>
 <translation id="3524334353996115845"><ph name="ORIGIN" /> ਨੂੰ ਤੁਹਾਡੀ ਪੁਸ਼ਟੀ ਕਰਨ ਦਿਓ</translation>
 <translation id="3527085408025491307">ਫੋਲਡਰ</translation>
@@ -761,12 +767,12 @@
 <translation id="4932247056774066048">ਕਿਉਂਕਿ ਤੁਸੀਂ <ph name="DOMAIN_NAME" /> ਵੱਲੋਂ ਪ੍ਰਬੰਧਿਤ ਕੀਤੇ ਖਾਤੇ ਤੋਂ ਸਾਈਨ-ਆਊਟ ਕਰ ਰਹੇ ਹੋ, ਤਾਂ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਤੁਹਾਡਾ Chrome ਡਾਟਾ ਮਿਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ। ਪਰ ਇਹ ਤੁਹਾਡੇ Google ਖਾਤੇ ਵਿੱਚ ਬਰਕਰਾਰ ਰਹੇਗਾ।</translation>
 <translation id="4943703118917034429">ਆਭਾਸੀ ਵਾਸਤਵਿਕਤਾ</translation>
 <translation id="4943872375798546930">ਕੋਈ ਨਤੀਜੇ ਨਹੀਂ</translation>
-<translation id="4947095514661310122"><ph name="APP_LABEL" /> ਤੋਂ</translation>
 <translation id="4950924971025849764">ਜਦੋਂ ਤੁਸੀਂ ਉਸੇ Google ਖਾਤੇ ਵਿੱਚ ਸਾਈਨ-ਇਨ ਕਰਦੇ ਹੋ, ਤਾਂ ਹੋਰ ਡੀਵਾਈਸਾਂ ਇਸ ਫ਼ੋਨ ਨੂੰ ਸੁਰੱਖਿਆ ਕੁੰਜੀ ਵਜੋਂ ਵਰਤ ਸਕਦੇ ਹਨ।</translation>
 <translation id="4957722034734105353">ਹੋਰ ਜਾਣੋ...</translation>
 <translation id="4961107849584082341">ਇਸ ਪੰਨੇ ਦਾ ਕਿਸੇ ਵੀ ਭਾਸ਼ਾ ਵਿੱਚ ਅਨੁਵਾਦ ਕਰੋ</translation>
 <translation id="496607651705915226">ਆਪਣੇ Google ਖਾਤੇ ਵਿੱਚ ਨਵੇਂ ਪਾਸਵਰਡਾਂ ਨੂੰ ਰੱਖਿਅਤ ਕਰਨ ਅਤੇ ਉਨ੍ਹਾਂ ਨੂੰ ਵਰਤਣ ਲਈ, Google Play ਸੇਵਾਵਾਂ ਨੂੰ ਅੱਪਡੇਟ ਕਰੋ</translation>
 <translation id="4971735654804503942">ਖਤਰਨਾਕ ਵੈੱਬਸਾਈਟਾਂ, ਡਾਊਨਲੋਡਾਂ ਅਤੇ ਐਕਸਟੈਂਸ਼ਨਾਂ ਤੋਂ ਵਧੇਰੇ ਤੇਜ਼ ਅਤੇ ਚੁਸਤ ਸੁਰੱਖਿਆ। ਤੁਹਾਨੂੰ ਪਾਸਵਰਡ ਉਲੰਘਣਾਵਾਂ ਬਾਰੇ ਚਿਤਾਵਨੀ ਦਿੱਤੀ ਜਾਂਦੀ ਹੈ। ਬ੍ਰਾਊਜ਼ਿੰਗ ਡਾਟਾ Google ਨੂੰ ਭੇਜਣ ਦੀ ਲੋੜ ਪੈਂਦੀ ਹੈ।</translation>
+<translation id="4971753085054504448">ਕੁਝ ਹੋਰ ਖੋਜ ਕੇ ਦੇਖੋ ਜਾਂ ਹੋਰ ਨਤੀਜੇ ਦੇਖਣ ਲਈ ਪੂਰਾ Chrome ਇਤਿਹਾਸ ਖੋਲ੍ਹੋ।</translation>
 <translation id="497421865427891073">ਅੱਗੇ ਵੱਲ ਜਾਓ</translation>
 <translation id="4987271110129728827">ਉਹ ਪੰਨਾ ਨਹੀਂ ਮਿਲਿਆ। ਆਪਣੇ ਸ਼ਬਦ-ਜੋੜ ਦੀ ਜਾਂਚ ਕਰੋ ਜਾਂ ਵੈੱਬ ਖੋਜ ਕਰ ਕੇ ਦੇਖੋ।</translation>
 <translation id="4988526792673242964">ਸਫ਼ੇ</translation>
@@ -862,6 +868,7 @@
 <translation id="5515439363601853141">ਆਪਣਾ ਪਾਸਵਰਡ ਦੇਖਣ ਲਈ ਅਣਲਾਕ ਕਰੋ</translation>
 <translation id="5517095782334947753">ਤੁਹਾਡੇ ਕੋਲ <ph name="FROM_ACCOUNT" /> ਤੋਂ ਬੁੱਕਮਾਰਕ, ਇਤਿਹਾਸ, ਪਾਸਵਰਡ ਅਤੇ ਹੋਰ ਸੈਟਿੰਗਾਂ ਹਨ।</translation>
 <translation id="5524843473235508879">ਰੀਡਾਇਰੈਕਟ ਨੂੰ ਬਲਾਕ ਕੀਤਾ ਗਿਆ।</translation>
+<translation id="5526281268548144413">ਇਨ੍ਹਾਂ ਨੂੰ ਇੱਕ ਤੋਂ ਵੱਧ ਵਿੰਡੋਆਂ 'ਤੇ ਬੰਦ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ</translation>
 <translation id="5528925345478618296">{MINUTES,plural, =1{# ਮਿੰਟ ਪਹਿਲਾਂ}one{# ਮਿੰਟ ਪਹਿਲਾਂ}other{# ਮਿੰਟ ਪਹਿਲਾਂ}}</translation>
 <translation id="5548606607480005320">ਸੁਰੱਖਿਆ ਜਾਂਚ</translation>
 <translation id="5554520618550346933">ਜਦੋਂ ਤੁਸੀਂ ਪਾਸਵਰਡ ਵਰਤਦੇ ਹੋ, ਤਾਂ Chrome ਉਸਦੇ ਆਨਲਾਈਨ ਪ੍ਰਕਾਸ਼ਿਤ ਹੋਣ ਦੀ ਸਥਿਤੀ ਵਿੱਚ ਤੁਹਾਨੂੰ ਚਿਤਾਵਨੀ ਦਿੰਦਾ ਹੈ। ਅਜਿਹਾ ਕਰਨ ਵੇਲੇ, ਤੁਹਾਡੇ ਪਾਸਵਰਡ ਅਤੇ ਵਰਤੋਂਕਾਰ ਨਾਮ ਇਨਕ੍ਰਿਪਟ ਕੀਤੇ ਜਾਂਦੇ ਹਨ, ਇਸ ਲਈ ਉਹ Google ਸਮੇਤ ਕਿਸੇ ਵੱਲੋਂ ਵੀ ਪੜ੍ਹੇ ਨਹੀਂ ਜਾ ਸਕਦੇ।</translation>
@@ -1005,6 +1012,7 @@
 ਉਦਾਹਰਨ ਲਈ, ਕੁਝ ਵੈੱਬਸਾਈਟਾਂ ਤੁਹਾਨੂੰ ਉਹ ਵਿਗਿਆਪਨ ਦਿਖਾ ਕੇ ਇਸ ਬੇਨਤੀ ਦਾ ਜਵਾਬ ਦੇ ਸਕਦੀਆਂ ਹਨ ਜੋ ਤੁਹਾਡੇ ਵੱਲੋਂ ਹੋਰਾਂ ਵੈੱਬਸਾਈਟਾਂ 'ਤੇ ਜਾਣ 'ਤੇ ਆਧਾਰਿਤ ਨਹੀਂ ਹਨ। ਕਈ ਵੈੱਬਸਾਈਟਾਂ ਤਦ ਵੀ ਤੁਹਾਡਾ ਬ੍ਰਾਊਜ਼ ਕਰਨ ਸੰਬੰਧੀ ਡਾਟਾ ਇਕੱਤਰ ਕਰਨਗੀਆਂ ਅਤੇ ਇਸ ਦੀ ਵਰਤੋਂ ਕਰਨਗੀਆਂ - ਉਦਾਹਰਨ ਲਈ ਸੁਰੱਖਿਆ ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਲਈ, ਸਮੱਗਰੀ, ਵਿਗਿਆਪਨ ਅਤੇ ਸਿਫ਼ਾਰਸ਼ਾਂ ਮੁਹੱਈਆ ਕਰਵਾਉਣ ਲਈ ਅਤੇ ਰਿਪੋਰਟਿੰਗ ਅੰਕੜੇ ਸਿਰਜਣ ਲਈ।</translation>
 <translation id="6233974827872475843">ਸਿੰਕ ਨੂੰ ਚਾਲੂ ਕਰ ਕੇ ਆਪਣੇ Google ਖਾਤੇ ਵਿੱਚ ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਪਾਸਵਰਡ ਰੱਖਿਅਤ ਕਰੋ</translation>
 <translation id="6247557882553405851">Google Password Manager</translation>
+<translation id="6251449557817521191">ਆਪਣਾ Chrome ਇਤਿਹਾਸ ਇੱਥੇ ਦੇਖੋ</translation>
 <translation id="6255794742848779505">ਅਸੀਂ ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਪਾਸਵਰਡ ਰੱਖਿਅਤ ਕਰਨ ਦੇ ਤਰੀਕੇ ਨੂੰ ਬਦਲ ਰਹੇ ਹਾਂ</translation>
 <translation id="6264376385120300461">ਫਿਰ ਵੀ ਡਾਊਨਲੋਡ ਕਰੋ</translation>
 <translation id="6277522088822131679">ਸਫ਼ਾ ਪ੍ਰਿੰਟ ਕਰਨ ਵਿੱਚ ਇੱਕ ਸਮੱਸਿਆ ਹੋਈ ਸੀ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
@@ -1052,6 +1060,7 @@
 <translation id="6459045781120991510">ਸਰਵੇਖਣ</translation>
 <translation id="6461962085415701688">ਫ਼ਾਈਲ ਨੂੰ ਖੋਲ੍ਹਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ</translation>
 <translation id="6464977750820128603">ਤੁਸੀਂ ਉਨ੍ਹਾਂ ਸਾਈਟਾਂ ਨੂੰ ਦੇਖ ਸਕਦੇ ਹੋ ਜਿਨ੍ਹਾਂ 'ਤੇ ਤੁਸੀਂ Chrome ਵਿੱਚ ਜਾਂਦੇ ਹੋ ਅਤੇ ਉਨ੍ਹਾਂ ਲਈ ਟਾਈਮਰ ਸੈੱਟ ਕਰ ਸਕਦੇ ਹੋ।\n\nGoogle ਉਨ੍ਹਾਂ ਸਾਈਟਾਂ ਬਾਰੇ ਜਾਣਕਾਰੀ ਪ੍ਰਾਪਤ ਕਰਦਾ ਹੈ ਜਿਨ੍ਹਾਂ ਲਈ ਤੁਸੀਂ ਟਾਈਮਰ ਸੈੱਟ ਕੀਤਾ ਹੁੰਦਾ ਹੈ ਅਤੇ ਨਾਲ ਹੀ ਇਹ ਜਾਣਕਾਰੀ ਵੀ ਪ੍ਰਾਪਤ ਕਰਦਾ ਹੈ ਕਿ ਤੁਸੀਂ ਉਨ੍ਹਾਂ ਸਾਈਟਾਂ ਨੂੰ ਕਿੰਨੀ ਦੇਰ ਤੱਕ ਦੇਖਦੇ ਰਹੇ ਹੋ। ਇਹ ਜਾਣਕਾਰੀ ਡਿਜੀਟਲ ਜੀਵਨਸ਼ੈਲੀ ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਲਈ ਵਰਤੀ ਜਾਂਦੀ ਹੈ।</translation>
+<translation id="6470181189905173055"><ph name="APP_LABEL" /> ਦੀ ਵਰਤੋਂ ਕਰਨ ਵੇਲੇ ਤੁਹਾਡੇ ਵੱਲੋਂ Chrome ਵਿੱਚ ਖੋਲ੍ਹੇ ਗਏ ਪੰਨੇ ਇੱਥੇ ਦਿਸਣਗੇ।</translation>
 <translation id="6473086018775716761">ਸਾਂਝਾਕਰਨ ਵਿਕਲਪਾਂ ਦੀ ਸੂਚੀ ਅੱਧੀ ਸਕ੍ਰੀਨ 'ਤੇ ਖੁੱਲ੍ਹੀ ਹੋਈ ਹੈ।</translation>
 <translation id="6475951671322991020">ਵੀਡੀਓ ਡਾਊਨਲੋਡ ਕਰੋ</translation>
 <translation id="6477928892249167417">ਇਹ ਸਾਈਟਾਂ ਤੁਹਾਡੇ ਲਈ ਮਹੱਤਵਪੂਰਨ ਲੱਗ ਰਹੀਆਂ ਹਨ:</translation>
@@ -1132,11 +1141,13 @@
 <translation id="6813446258015311409">Chrome ਵਿੱਚ ਸਾਈਨ-ਇਨ ਕਰੋ, ਖੋਲ੍ਹਿਆ ਗਿਆ।</translation>
 <translation id="6817747507826986771">ਇਸ ਪੰਨੇ ਨੂੰ ਤੁਰੰਤ ਸਾਂਝਾ ਕਰੋ। ਇਸ ਸ਼ਾਰਟਕੱਟ ਦਾ ਸੰਪਾਦਨ ਕਰਨ ਲਈ, ਸਪਰਸ਼ ਕਰਕੇ ਰੱਖੋ।</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6822587385560699678">ਚਾਲੂ ਹੋਣ 'ਤੇ, ਪਾਸਵਰਡ <ph name="ACCOUNT" /> ਵਿੱਚ ਰੱਖਿਅਤ ਕੀਤੇ ਜਾਂਦੇ ਹਨ। ਬੰਦ ਹੋਣ 'ਤੇ, ਪਾਸਵਰਡ ਸਿਰਫ਼ ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਰੱਖਿਅਤ ਕੀਤੇ ਜਾਂਦੇ ਹਨ।</translation>
 <translation id="6823561724060793716">ਜਿਸ ਪੰਨੇ 'ਤੇ ਤੁਸੀਂ ਜਾ ਰਹੇ ਹੋ, ਉਸ ਬਾਰੇ ਵਧੀਕ ਜਾਣਕਾਰੀ ਦੇਖਣ ਲਈ, ਤੁਸੀਂ ਪਤਾ ਬਾਰ ਤੋਂ, ਪੰਨੇ ਦੀ ਜਾਣਕਾਰੀ ਨੂੰ ਖੋਲ੍ਹ ਸਕਦੇ ਹੋ</translation>
 <translation id="6828070228333235514">ਕੀਮਤ ਨੂੰ ਟਰੈਕ ਕਰਨਾ ਬੰਦ ਕਰੋ</translation>
 <translation id="6830728435402077660">ਸੁਰੱਖਿਅਤ ਨਹੀਂ</translation>
 <translation id="6831043979455480757">ਅਨੁਵਾਦ ਕਰੋ</translation>
 <translation id="6836206421467243968">ਟੈਬ ਗਰੁੱਪ <ph name="TITLE_OF_GROUP" /> ਨੂੰ ਨਵੇਂ ਬੈਕਗ੍ਰਾਊਂਡ ਟੈਬ ਗਰੁੱਪ ਵਜੋਂ ਮੁੜ-ਬਹਾਲ ਕਰੋ।</translation>
+<translation id="683630338945552556">ਆਪਣੇ Google ਖਾਤੇ ਤੋਂ ਪਾਸਵਰਡ ਵਰਤੋ ਅਤੇ ਰੱਖਿਅਤ ਕਰੋ</translation>
 <translation id="6846298663435243399">ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...</translation>
 <translation id="6850409657436465440">ਤੁਹਾਡਾ ਡਾਊਨਲੋਡ ਅਜੇ ਵੀ ਜਾਰੀ ਹੈ</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> ਟੈਬਸ ਬੰਦ ਕੀਤੀਆਂ</translation>
@@ -1335,6 +1346,7 @@
 <translation id="7759809451544302770">ਵਿਕਲਪਿਕ</translation>
 <translation id="7762668264895820836">SD ਕਾਰਡ <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">ਪਤਾ ਜੋੜੋ</translation>
+<translation id="776533689993750361"><ph name="TAB_COUNT" /> ਟੈਬ ਨੂੰ ਮਿਟਾਇਆ ਗਿਆ</translation>
 <translation id="7772032839648071052">ਪਾਸਫਰੇਜ਼ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ</translation>
 <translation id="7772375229873196092"><ph name="APP_NAME" /> ਨੂੰ ਬੰਦ ਕਰੋ</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ਅਤੇ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ਹੋਰ}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ਅਤੇ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ਹੋਰ}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ਅਤੇ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ਹੋਰ}}</translation>

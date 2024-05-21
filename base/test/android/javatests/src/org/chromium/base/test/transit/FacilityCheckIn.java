@@ -32,11 +32,12 @@ class FacilityCheckIn extends Transition {
         mFacility = facility;
     }
 
-    void enterSync() {
+    void transitionSync() {
         // TODO(crbug.com/333735412): Unify Trip#travelSyncInternal(), FacilityCheckIn#enterSync()
         // and FacilityCheckOut#exitSync().
         onBeforeTransition();
         mWaits = createWaits();
+        ConditionWaiter.preCheck(mWaits, mOptions, mTrigger);
         for (ConditionWait wait : mWaits) {
             wait.getCondition().onStartMonitoring();
         }

@@ -86,6 +86,14 @@ static network::mojom::URLLoaderFactory* g_url_loader_factory_for_testing =
 static network::mojom::NetworkContext*
     g_network_context_for_proxy_lookup_for_testing = nullptr;
 
+PrefetchService::PrefetchResponseCompletedCallbackForTesting&
+GetPrefetchResponseCompletedCallbackForTesting() {
+  static base::NoDestructor<
+      PrefetchService::PrefetchResponseCompletedCallbackForTesting>
+      prefetch_response_completed_callback_for_testing;
+  return *prefetch_response_completed_callback_for_testing;
+}
+
 bool ShouldConsiderDecoyRequestForStatus(PreloadingEligibility eligibility) {
   switch (eligibility) {
     case PreloadingEligibility::kUserHasCookies:
@@ -110,7 +118,7 @@ bool ShouldConsiderDecoyRequestForStatus(PreloadingEligibility eligibility) {
     case PreloadingEligibility::kEligible:
     default:
       // Other ineligible cases are not used in `PrefetchService`.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return false;
   }
 }
@@ -453,7 +461,8 @@ void PrefetchService::CheckEligibilityOfPrefetch(
   // moving each check to a separate function, and 2) requiring that failed
   // checks provide a PrefetchStatus related to the check.
 
-  if (browser_context_->IsOffTheRecord()) {
+  if (browser_context_->IsOffTheRecord() &&
+      !base::FeatureList::IsEnabled(features::kPrefetchOffTheRecord)) {
     std::move(result_callback)
         .Run(prefetch_container,
              PreloadingEligibility::kBrowserContextOffTheRecord);
@@ -1340,8 +1349,9 @@ void PrefetchService::OnPrefetchResponseCompleted(
 
   prefetch_container->OnPrefetchComplete(completion_status);
 
-  if (on_prefetch_response_completed_for_testing_) {
-    on_prefetch_response_completed_for_testing_.Run(prefetch_container);
+  if (GetPrefetchResponseCompletedCallbackForTesting()) {
+    GetPrefetchResponseCompletedCallbackForTesting().Run(  // IN-TEST
+        prefetch_container);
   }
 
   Prefetch();
@@ -1784,6 +1794,13 @@ void PrefetchService::SetURLLoaderFactoryForTesting(
 void PrefetchService::SetNetworkContextForProxyLookupForTesting(
     network::mojom::NetworkContext* network_context) {
   g_network_context_for_proxy_lookup_for_testing = network_context;
+}
+
+// static
+void PrefetchService::SetPrefetchResponseCompletedCallbackForTesting(
+    PrefetchResponseCompletedCallbackForTesting callback) {
+  GetPrefetchResponseCompletedCallbackForTesting() =  // IN-TEST
+      std::move(callback);
 }
 
 base::WeakPtr<PrefetchService> PrefetchService::GetWeakPtr() {

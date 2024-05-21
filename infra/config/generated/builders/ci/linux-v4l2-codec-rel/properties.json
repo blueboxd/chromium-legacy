@@ -44,12 +44,12 @@
           "builder": "linux-v4l2-codec-rel",
           "group": "tryserver.chromium.linux"
         }
-      ]
+      ],
+      "retry_failed_shards": true
     }
   },
   "$build/reclient": {
     "instance": "rbe-chromium-trusted",
-    "jobs": 500,
     "metrics_project": "chromium-reclient-metrics",
     "scandeps_server": true
   },

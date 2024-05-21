@@ -57,7 +57,7 @@ class CORE_EXPORT InlineLayoutAlgorithm final
   const LayoutResult* Layout();
 
   MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesFloatInput&) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return MinMaxSizesResult();
   }
 
@@ -89,7 +89,7 @@ class CORE_EXPORT InlineLayoutAlgorithm final
 
   LayoutUnit ApplyTextAlign(LineInfo*);
 
-  void ApplyTextBoxTrim(const LineInfo&);
+  void ApplyTextBoxTrim(LineInfo&);
 
   // Add any trailing clearance requested by a BR 'clear' attribute on the line.
   // Return true if this was successful (this also includes cases where there is
@@ -103,7 +103,8 @@ class CORE_EXPORT InlineLayoutAlgorithm final
       const FontHeight& line_box_metrics,
       std::optional<FontHeight> annotation_font_height);
 
-  bool ShouldLineClamp(const LineInfo*) const;
+  bool ShouldLineClamp(const LineInfo*, LayoutUnit line_height) const;
+  bool ShouldHideLine(LayoutUnit line_height) const;
 
   InlineLayoutStateStack* box_states_;
   InlineChildLayoutContext* context_;

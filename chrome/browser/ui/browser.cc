@@ -93,6 +93,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/breadcrumb_manager_browser_agent.h"
+#include "chrome/browser/ui/browser_actions.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
@@ -282,7 +283,6 @@
 #endif
 
 #if BUILDFLAG(IS_MAC)
-#include "chrome/browser/ui/color_chooser.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
@@ -547,6 +547,7 @@ Browser::Browser(const CreateParams& params)
       synced_window_delegate_(new BrowserSyncedWindowDelegate(this)),
       app_controller_(web_app::MaybeCreateAppBrowserController(this)),
       bookmark_bar_state_(BookmarkBar::HIDDEN),
+      browser_actions_(new BrowserActions(*this)),
       command_controller_(new chrome::BrowserCommandController(this)),
       tab_group_deletion_dialog_controller_(
           std::make_unique<tab_groups::DeletionDialogController>(this)),
@@ -1055,6 +1056,17 @@ void Browser::ClearForceShowBookmarkBarFlag(ForceShowBookmarkBarFlag flag) {
 
 views::WebView* Browser::GetWebView() {
   return window_->GetContentsWebView();
+}
+
+void Browser::OpenURL(const GURL& gurl, WindowOpenDisposition disposition) {
+  OpenURL(content::OpenURLParams(gurl, content::Referrer(), disposition,
+                                 ui::PAGE_TRANSITION_LINK,
+                                 /*is_renderer_initiated=*/false),
+          /*navigation_handle_callback=*/{});
+}
+
+const SessionID& Browser::GetSessionID() {
+  return session_id_;
 }
 
 void Browser::OnWindowClosing() {
@@ -2046,15 +2058,6 @@ bool Browser::GuestSaveFrame(content::WebContents* guest_web_contents) {
       extensions::MimeHandlerViewGuest::FromWebContents(guest_web_contents);
   return guest_view && guest_view->PluginDoSave();
 }
-
-#if BUILDFLAG(IS_MAC)
-std::unique_ptr<content::ColorChooser> Browser::OpenColorChooser(
-    WebContents* web_contents,
-    SkColor initial_color,
-    const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
-  return chrome::ShowColorChooser(web_contents, initial_color);
-}
-#endif  // BUILDFLAG(IS_MAC)
 
 std::unique_ptr<content::EyeDropper> Browser::OpenEyeDropper(
     content::RenderFrameHost* frame,

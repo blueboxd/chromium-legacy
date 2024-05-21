@@ -35,7 +35,6 @@
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/geoposition.h"
-#include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/chrome_launcher.h"
@@ -72,11 +71,9 @@ Status EvaluateScriptAndIgnoreResult(Session* session,
   Status status = session->GetTargetWindow(&web_view);
   if (status.IsError())
     return status;
-  if (!web_view->IsServiceWorker() &&
-      web_view->GetJavaScriptDialogManager()->IsDialogOpen()) {
+  if (!web_view->IsServiceWorker() && web_view->IsDialogOpen()) {
     std::string alert_text;
-    status =
-        web_view->GetJavaScriptDialogManager()->GetDialogMessage(&alert_text);
+    status = web_view->GetDialogMessage(alert_text);
     if (status.IsError())
       return Status(kUnexpectedAlertOpen);
     return Status(kUnexpectedAlertOpen, "{Alert text : " + alert_text + "}");
@@ -259,7 +256,7 @@ base::Value::Dict CreateCapabilities(Session* session,
     caps.Set("hasTouchScreen", session->chrome->HasTouchScreen());
   }
 
-  if (session->webSocketUrl) {
+  if (session->web_socket_url) {
     caps.Set("webSocketUrl",
              "ws://" + session->host + "/session/" + session->id);
   }
@@ -300,7 +297,7 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   // |session| will own the |CommandListener|s.
   session->command_listeners.swap(command_listeners);
 
-  if (session->webSocketUrl) {
+  if (session->web_socket_url) {
     // Suffixes used with the client channels.
     std::string client_suffixes[] = {Session::kChannelSuffix,
                                      Session::kNoChannelSuffix,
@@ -350,7 +347,7 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
     *value = std::make_unique<base::Value>(session->capabilities->Clone());
   }
 
-  if (session->webSocketUrl) {
+  if (session->web_socket_url) {
     WebView* web_view = nullptr;
     status = session->GetTargetWindow(&web_view);
     if (status.IsError())
@@ -457,7 +454,7 @@ Status ConfigureSession(Session* session,
   session->script_timeout = capabilities->script_timeout;
   session->strict_file_interactability =
       capabilities->strict_file_interactability;
-  session->webSocketUrl = capabilities->webSocketUrl;
+  session->web_socket_url = capabilities->web_socket_url;
   Log::Level driver_level = Log::kWarning;
   if (capabilities->logging_prefs.count(WebDriverLog::kDriverType))
     driver_level = capabilities->logging_prefs[WebDriverLog::kDriverType];
@@ -776,7 +773,7 @@ Status ExecuteClose(Session* session,
   if (status.IsError())
     return status;
   bool is_last_web_view = web_view_ids.size() == 1u;
-  if (session->webSocketUrl) {
+  if (session->web_socket_url) {
     is_last_web_view = web_view_ids.size() <= 2u;
   }
   web_view_ids.clear();
@@ -790,12 +787,9 @@ Status ExecuteClose(Session* session,
   if (status.IsError())
     return status;
 
-
-  JavaScriptDialogManager* dialog_manager =
-      web_view->GetJavaScriptDialogManager();
-  if (dialog_manager->IsDialogOpen()) {
+  if (web_view->IsDialogOpen()) {
     std::string alert_text;
-    status = dialog_manager->GetDialogMessage(&alert_text);
+    status = web_view->GetDialogMessage(alert_text);
     if (status.IsError())
       return status;
 
@@ -805,10 +799,10 @@ Status ExecuteClose(Session* session,
 
     if (prompt_behavior == ::prompt_behavior::kAccept ||
         prompt_behavior == ::prompt_behavior::kAcceptAndNotify) {
-      status = dialog_manager->HandleDialog(true, session->prompt_text.get());
+      status = web_view->HandleDialog(true, session->prompt_text);
     } else if (prompt_behavior == ::prompt_behavior::kDismiss ||
                prompt_behavior == ::prompt_behavior::kDismissAndNotify) {
-      status = dialog_manager->HandleDialog(false, session->prompt_text.get());
+      status = web_view->HandleDialog(false, session->prompt_text);
     }
     if (status.IsError())
       return status;
@@ -850,7 +844,7 @@ Status ExecuteGetWindowHandles(Session* session,
   if (status.IsError())
     return status;
 
-  if (session->webSocketUrl) {
+  if (session->web_socket_url) {
     auto it =
         base::ranges::find(web_view_ids, session->bidi_mapper_web_view_id);
     if (it != web_view_ids.end()) {
@@ -1720,14 +1714,14 @@ Status ForwardBidiCommand(Session* session,
       return status;
     }
 
-    std::list<std::string> web_view_ids;
-    status =
-        session->chrome->GetWebViewIds(&web_view_ids, session->w3c_compliant);
+    size_t web_view_count;
+    status = session->chrome->GetWebViewCount(&web_view_count,
+                                              session->w3c_compliant);
     if (status.IsError()) {
       return status;
     }
 
-    bool is_last_web_view = web_view_ids.size() <= 1u;
+    bool is_last_web_view = web_view_count <= 1u;
     if (is_last_web_view) {
       session->quit = true;
       status = session->chrome->Quit();

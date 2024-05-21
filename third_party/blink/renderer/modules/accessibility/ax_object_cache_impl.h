@@ -183,7 +183,9 @@ class MODULES_EXPORT AXObjectCacheImpl
   void ListboxActiveIndexChanged(HTMLSelectElement*) override;
   void SetMenuListOptionsBounds(HTMLSelectElement*,
                                 const WTF::Vector<gfx::Rect>&) override;
-  const WTF::Vector<gfx::Rect>& GetOptionsBounds(
+  // Return the bounds for <option>s in an open <select>, or nullptr if they
+  // are not available.
+  const WTF::Vector<gfx::Rect>* GetOptionsBounds(
       const AXObject& ax_menu_list) const;
 
   void ImageLoaded(const LayoutObject*) override;
@@ -210,20 +212,18 @@ class MODULES_EXPORT AXObjectCacheImpl
   // If |notify_parent|, call ChildrenChanged() on the parent.
   // If |only_layout_objects|, will only remove nodes in the subtree that
   // corresponded with an AXLayoutObject (useful for subtrees that lose layout).
-  void RemoveSubtreeWithFlatTraversal(const Node*,
-                                      bool remove_root = true,
-                                      bool notify_parent = true);
-  void RemoveSubtreeWhenSafe(Node*, bool remove_root = true) override;
+  void RemoveSubtree(const Node*) override;
+  void RemoveSubtree(const Node*, bool remove_root) override;
+  void RemoveSubtree(const Node*, bool remove_root, bool notify_parent);
 
   // Remove the cached subtree of included AXObjects. If |remove_root| is false,
   // then only descendants will be removed. To remove unincluded AXObjects as
-  // well, call RemoveSubtreeWithFlatTraversal() or RemoveSubtreeWhenSafe().
+  // well, call RemoveSubtree().
   // If |remove_root|, remove the root of the subtree, otherwise only
   // descendants are removed.
   void RemoveIncludedSubtree(AXObject* object, bool remove_root);
   // Remove all AXObjects in the layout subtree of node, and notify the parent.
   void RemoveAXObjectsInLayoutSubtree(LayoutObject* layout_object) override;
-  void RemoveAXObjectsInLayoutSubtree(Node* node) override;
 
   // For any ancestor that could contain the passed-in AXObject* in their cached
   // children, clear their children and set needs to update children on them.
@@ -302,10 +302,12 @@ class MODULES_EXPORT AXObjectCacheImpl
   // in order to more efficiently batch changes.
   int GetDeferredEventsDelay() const;
 
+  // Get the amount of time, in ms, that location serialization should be
+  // deferred in order to more efficiently batch changes.
+  int GetLocationSerializationDelay();
+
   // Called during the accessibility lifecycle to refresh the AX tree.
   void ProcessDeferredAccessibilityEvents(Document&, bool force) override;
-  // Remove AXObject subtrees (once flat tree traversal is safe).
-  void ProcessSubtreeRemovals() override;
 
   // Called when a HTMLFrameOwnerElement (such as an iframe element) changes the
   // embedding token of its child frame.
@@ -319,6 +321,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   // Invalidates the bounding box, which can be later retrieved by
   // SerializeLocationChanges.
   void InvalidateBoundingBox(const LayoutObject*) override;
+  void InvalidateBoundingBox(const AXID&);
 
   void SetCachedBoundingBox(AXID id, const ui::AXRelativeBounds& bounds);
 
@@ -377,10 +380,10 @@ class MODULES_EXPORT AXObjectCacheImpl
   void MarkSubtreeDirty(Node*);
   void NotifySubtreeDirty(AXObject* obj);
 
-  // Set the parent of |child|. If no parent is possible, this means the child
-  // can no longer be in the AXTree, so remove the child.
-  AXObject* RestoreParentOrPrune(AXObject* child);
-  AXObject* RestoreParentOrPruneWithCleanLayout(AXObject* child);
+  // Set the parent of the AXObject associated with |child|. If no parent is
+  // possible, this means the child can no longer be in the AXTree, so remove
+  // any AXObject subtree associated with the child.
+  void RestoreParentOrPrune(Node* child_node);
 
   // When an object is created or its id changes, this must be called so that
   // the relation cache is updated.
@@ -397,7 +400,6 @@ class MODULES_EXPORT AXObjectCacheImpl
   void HandleNodeLostFocusWithCleanLayout(Node*);
   void HandleNodeGainedFocusWithCleanLayout(Node*);
   void NodeIsAttachedWithCleanLayout(Node*);
-  void HandleScrollPositionChangedWithCleanLayout(Node*);
   void HandleValidationMessageVisibilityChangedWithCleanLayout(const Node*);
   void HandleEditableTextContentChangedWithCleanLayout(Node*);
   void UpdateAriaOwnsWithCleanLayout(Node*);
@@ -718,13 +720,15 @@ class MODULES_EXPORT AXObjectCacheImpl
   void ProcessDeferredAccessibilityEventsImpl(Document&);
   void UpdateLifecycleIfNeeded(Document& document);
 
+  // Helper for ProcessDeferredAccessibilityEvents. Checks if layout is ready.
+  bool IsReadyToProcessDeferredEvents();
+
   // Is the main document currently parsing content, as opposed to being blocked
   // by script execution or being load complete state.
   bool IsParsingMainDocument() const;
 
   bool IsMainDocumentDirty() const;
   bool IsPopupDocumentDirty() const;
-  void ProcessSubtreeRemoval(Node*, bool remove_root);
 
   // Returns true if the AXID is for a DOM node.
   // All other AXIDs are generated.
@@ -1074,12 +1078,10 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   // Help de-dupe processing of repetitive events.
   HashSet<AXID> nodes_with_pending_children_changed_;
+  HashSet<AXID> nodes_with_pending_scroll_changed_;
 
   // Nodes with document markers that have received accessibility updates.
   HashSet<AXID> nodes_with_spelling_or_grammar_markers_;
-
-  // Nodes renoved from flat tree.
-  HeapVector<std::pair<Member<Node>, bool>> nodes_for_subtree_removal_;
 
   AXID last_value_change_node_ = ui::AXNodeData::kInvalidAXID;
 
@@ -1103,6 +1105,9 @@ class MODULES_EXPORT AXObjectCacheImpl
   // period only need to be serialized once, e.g. during page loads or
   // animations.
   base::Time last_serialization_timestamp_ = base::Time::UnixEpoch();
+
+  // The last time dirty_objects_from_location_change_ were serialized and sent.
+  base::Time last_location_serialization_time_ = base::Time::UnixEpoch();
 
   // If true, will not attempt to batch and will serialize at the next
   // opportunity.
@@ -1210,6 +1215,11 @@ class MODULES_EXPORT AXObjectCacheImpl
   // remaining to be serialized.
   blink::WeakCellFactory<AXObjectCacheImpl>
       weak_factory_for_serialization_pipeline_{this};
+
+  // So we can ensure the location changes pipeline never stalls with location
+  // changes remaining to be serialized.
+  blink::WeakCellFactory<AXObjectCacheImpl>
+      weak_factory_for_loc_updates_pipeline_{this};
 };
 
 // This is the only subclass of AXObjectCache.

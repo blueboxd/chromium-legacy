@@ -341,6 +341,10 @@ void LocationBarView::Init() {
     // first so that they appear on the left side of the icon container.
     // TODO(crbug.com/40835681): Improve the ordering heuristics for page action
     // icons and determine a way to handle simultaneous icon animations.
+    if (base::FeatureList::IsEnabled(commerce::kProductSpecifications)) {
+      params.types_enabled.push_back(
+          PageActionIconType::kProductSpecifications);
+    }
     params.types_enabled.push_back(PageActionIconType::kPriceInsights);
     params.types_enabled.push_back(PageActionIconType::kPriceTracking);
 
@@ -1556,14 +1560,25 @@ ui::ImageModel LocationBarView::GetLocationIcon(
 }
 
 void LocationBarView::UpdateChipVisibility() {
-  if (!GetChipController()->chip()->GetVisible()) {
+  if (!IsEditingOrEmpty()) {
     return;
   }
 
-  if (IsEditingOrEmpty()) {
+  if (GetChipController()->chip()->GetVisible()) {
     // If a user starts typing, a permission request should be ignored and the
     // chip finalized.
     GetChipController()->ResetPermissionPromptChip();
+  }
+
+  if (base::FeatureList::IsEnabled(
+          content_settings::features::kLeftHandSideActivityIndicators)) {
+    // Hide the LHS indicator to prevent it appearing in the location bar
+    // search panel.
+    // This is needed only if the indicator is already visible. If the
+    // location bar is in editing mode, we do not show new indicators.
+    if (permission_dashboard_view_->GetVisible()) {
+      permission_dashboard_view_->SetVisible(false);
+    }
   }
 }
 

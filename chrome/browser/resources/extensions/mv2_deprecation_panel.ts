@@ -8,6 +8,7 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './shared_style.css.js';
 
 import type {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -17,6 +18,7 @@ import type {ItemDelegate} from './item.js';
 import {getTemplate} from './mv2_deprecation_panel.html.js';
 
 export interface Mv2DeprecationPanelDelegate {
+  dismissMv2DeprecationWarning(): void;
   dismissMv2DeprecationWarningForExtension(id: string): void;
 }
 
@@ -56,6 +58,11 @@ export class ExtensionsMv2DeprecationPanelElement extends PolymerElement {
        * The string for the panel's subtitle.
        */
       subtitleString_: String,
+
+      /**
+       * Extension which has its action menu opened.
+       */
+      extensionWithActionMenuOpened_: Object,
     };
   }
 
@@ -67,7 +74,7 @@ export class ExtensionsMv2DeprecationPanelElement extends PolymerElement {
   delegate: ItemDelegate&Mv2DeprecationPanelDelegate;
   private headerString_: string;
   private subtitleString_: string;
-  private lastClickedExtensionId_: string;
+  private extensionWithActionMenuOpened_: chrome.developerPrivate.ExtensionInfo;
 
   /**
    * Updates properties after extensions change.
@@ -90,12 +97,35 @@ export class ExtensionsMv2DeprecationPanelElement extends PolymerElement {
   }
 
   /**
-   * Opens the action menu.
+   * Triggers the panel dismissal when the dismiss button is clicked.
+   */
+  private onDismissButtonClick_() {
+    chrome.metricsPrivate.recordUserAction(
+        'Extensions.Mv2Deprecation.Warning.Dismissed');
+    this.delegate.dismissMv2DeprecationWarning();
+  }
+
+  /**
+   * Opens a URL in the Web Store with extensions recommendations for the
+   * extension whose find alternative button is clicked.
+   */
+  private onFindAlternativeButtonClick_(
+      event: DomRepeatEvent<chrome.developerPrivate.ExtensionInfo>): void {
+    chrome.metricsPrivate.recordUserAction(
+        'Extensions.Mv2Deprecation.Warning.FindAlternativeForExtension');
+    const recommendationsUrl: string|undefined =
+        event.model.item.recommendationsUrl;
+    assert(!!recommendationsUrl);
+    this.delegate.openUrl(recommendationsUrl);
+  }
+
+  /**
+   * Opens the action menu for a specific extension when the action menu button
+   * is clicked.
    */
   private onExtensionActionMenuClick_(
       event: DomRepeatEvent<chrome.developerPrivate.ExtensionInfo>): void {
-    // Store the id of the extension whose action menu was opened.
-    this.lastClickedExtensionId_ = event.model.item.id;
+    this.extensionWithActionMenuOpened_ = event.model.item;
     this.$.actionMenu.showAt(event.target as HTMLElement);
   }
 
@@ -104,17 +134,21 @@ export class ExtensionsMv2DeprecationPanelElement extends PolymerElement {
    * extension.
    */
   private onRemoveExtensionActionClicked_(): void {
+    chrome.metricsPrivate.recordUserAction(
+        'Extensions.Mv2Deprecation.Warning.RemoveExtension');
     this.$.actionMenu.close();
-    this.delegate.deleteItem(this.lastClickedExtensionId_);
+    this.delegate.deleteItem(this.extensionWithActionMenuOpened_.id);
   }
 
   /**
    * Dismisses the warning for a given extension. It will not be shown again.
    */
   private onKeepExtensionActionClick_(): void {
+    chrome.metricsPrivate.recordUserAction(
+        'Extensions.Mv2Deprecation.Warning.DismissedForExtension');
     this.$.actionMenu.close();
     this.delegate.dismissMv2DeprecationWarningForExtension(
-        this.lastClickedExtensionId_);
+        this.extensionWithActionMenuOpened_.id);
   }
 }
 

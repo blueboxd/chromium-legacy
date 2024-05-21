@@ -68,7 +68,6 @@
 <translation id="2241587408274973373">Шинэ табын хуудасны картууд</translation>
 <translation id="2241634353105152135">Ганц удаа</translation>
 <translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" />-г хасах</translation>
-<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{1 сайтыг блоклосон}other{# сайтыг блоклосон}}</translation>
 <translation id="228293613124499805">Таны зочилсон ихэнх сайт ихэвчлэн түүнтэй хуваалцсан сонголт эсвэл мэдээллийг хадгалснаар хэрэглээг тань сайжруулахын тулд өгөгдлийг төхөөрөмжид тань хадгалдаг байж магадгүй. Бид энэ тохиргоог асаалтай байлгахыг зөвлөдөг.</translation>
 <translation id="2289270750774289114">Сайт ойролцоох Bluetooth төхөөрөмжийг илрүүлэх хүсэлтэй үед асуух (санал болгосон)</translation>
 <translation id="2315043854645842844">Үйлчлүүлэгч талын сертификатын сонголтыг үйлдлийн системээс дэмжээгүй.</translation>
@@ -305,6 +304,7 @@
 <translation id="6015775454662021376">Таны төхөөрөмж рүү хандах энэ сайтын хандалтыг удирдах</translation>
 <translation id="6040143037577758943">Хаах</translation>
 <translation id="6042308850641462728">Илүү их</translation>
+<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Таны сүүлийн таб</translation>
 <translation id="6064125863973209585">Татаж дууссан файл</translation>
 <translation id="6071501408666570960">Таныг энэ сайтаас гаргаж магадгүй</translation>
 <translation id="6120483543004435978">Асаалттай үед сайтууд таныг төхөөрөмжөө хэзээ идэвхтэй ашиглаж буйг мэдэхийг хүсэх боломжтой. Унтраалттай үед сайтууд таныг төхөөрөмжөө хэзээ идэвхтэй ашиглаж буйг мэдэх боломжгүй.</translation>
@@ -426,6 +426,7 @@
 <translation id="7986741934819883144">Харилцагч сонгох</translation>
 <translation id="7990211076305263060">Асаалттай үед сайтууд таны микрофоныг ашиглахыг хүсэх боломжтой. Унтраалттай үед сайтууд таны микрофоныг ашиглах боломжгүй.</translation>
 <translation id="8007176423574883786">Энэ төхөөрөмж дээр унтраастай байна</translation>
+<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> <ph name="FROM_DEVICE" />-с</translation>
 <translation id="802154636333426148">Татаж чадсангүй</translation>
 <translation id="8042586301629853791">Дараахаар эрэмбэлэх:</translation>
 <translation id="8067883171444229417">Видео тоглуулах</translation>
@@ -480,7 +481,6 @@
 <translation id="8721719390026067591">Асаалттай үед сайтууд Bluetooth төхөөрөмжүүдийг хайхыг хүсэх боломжтой. Унтраалттай үед сайтууд Bluetooth төхөөрөмжүүдийг хайх боломжгүй.</translation>
 <translation id="8725066075913043281">Дахин оролдож үзнэ үү.</translation>
 <translation id="8730621377337864115">хийсэн</translation>
-<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{1 сайтад зөвшөөрсөн}other{# сайтад зөвшөөрсөн}}</translation>
 <translation id="8751914237388039244">Зураг сонгох</translation>
 <translation id="8800034312320686233">Сайт ажиллахгүй байна уу?</translation>
 <translation id="8801436777607969138">Зарим сайт дээр JavaScript-г блоклоно уу.</translation>

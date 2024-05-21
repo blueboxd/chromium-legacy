@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 
 #include "third_party/blink/public/common/loader/lcp_critical_path_predictor_util.h"
-#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
@@ -111,10 +110,6 @@ HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
       form_was_set_by_parser_(false),
       element_created_by_parser_(created_by_parser),
       is_fallback_image_(false),
-      is_default_overridden_intrinsic_size_(
-          !document.IsImageDocument() && GetExecutionContext() &&
-          !GetExecutionContext()->IsFeatureEnabled(
-              mojom::blink::DocumentPolicyFeature::kUnsizedMedia)),
       is_legacy_format_or_unoptimized_image_(false),
       is_ad_related_(false),
       is_lcp_element_(false),
@@ -419,12 +414,6 @@ void HTMLImageElement::ParseAttribute(
           mojom::blink::ConsoleMessageLevel::kError,
           WebString::FromUTF8("sharedStorageWritable: sharedStorage operations "
                               "are only available in secure contexts.")));
-    } else if (GetExecutionContext()->GetSecurityOrigin()->IsOpaque()) {
-      GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-          mojom::blink::ConsoleMessageSource::kOther,
-          mojom::blink::ConsoleMessageLevel::kError,
-          WebString::FromUTF8("sharedStorageWritable: sharedStorage operations "
-                              "are not available for opaque origins.")));
     } else if (!params.new_value.IsNull()) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kSharedStorageAPI_Image_Attribute);
@@ -535,7 +524,7 @@ LayoutObject* HTMLImageElement::CreateLayoutObject(const ComputedStyle& style) {
     }
     case LayoutDisposition::kCollapsed:  // Falls through.
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return nullptr;
   }
 }
@@ -676,10 +665,6 @@ unsigned HTMLImageElement::height() {
 }
 
 PhysicalSize HTMLImageElement::DensityCorrectedIntrinsicDimensions() const {
-  if (IsDefaultIntrinsicSize()) {
-    return PhysicalSize(LayoutUnit(LayoutReplaced::kDefaultWidth),
-                        LayoutUnit(LayoutReplaced::kDefaultHeight));
-  }
   ImageResourceContent* image_content = GetImageLoader().GetContent();
   if (!image_content || !image_content->HasImage())
     return PhysicalSize();
@@ -931,9 +916,15 @@ static SourceSizeValueResult SourceSizeValue(const Element* element,
   SourceSizeValueResult result;
 
   auto* img = DynamicTo<HTMLImageElement>(element);
-  if (auto* picture_parent =
-          DynamicTo<HTMLPictureElement>(element->parentNode())) {
-    img = DynamicTo<HTMLImageElement>(picture_parent->lastChild());
+
+  if (!img) {
+    // Lookup the <img> from the parent <picture>. The content model for
+    // <picture> is "zero or more source elements, followed by one img element,
+    // optionally intermixed with script-supporting elements."
+    // https://html.spec.whatwg.org/multipage/embedded-content.html#the-picture-element
+    if (auto* picture = DynamicTo<HTMLPictureElement>(element->parentNode())) {
+      img = Traversal<HTMLImageElement>::LastChild(*picture);
+    }
   }
 
   String sizes = element->FastGetAttribute(html_names::kSizesAttr);

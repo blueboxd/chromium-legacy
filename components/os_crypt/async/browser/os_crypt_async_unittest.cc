@@ -395,7 +395,7 @@ TEST_F(OSCryptAsyncTest, SubscriptionCancelled) {
     auto sub = factory.GetInstance(
         base::BindOnce([](Encryptor encryptor, bool success) {
           // This should not be called, as the subscription went out of scope.
-          NOTREACHED();
+          NOTREACHED_IN_MIGRATION();
         }));
   }
 
@@ -424,6 +424,16 @@ TEST_F(OSCryptAsyncTest, TestOSCryptAsyncInterface) {
     // the same keys.
     auto second_encryptor = GetInstanceSync(*os_crypt);
     auto decrypted = second_encryptor.DecryptData(*ciphertext);
+    ASSERT_TRUE(decrypted);
+    EXPECT_EQ(*decrypted, "testsecrets");
+  }
+  {
+    // Verify that the key used by the encryptor returned from the testing
+    // instance indicates compatibility with OSCrypt Sync. This avoids all tests
+    // having to install the OSCrypt mocker in every fixture.
+    auto another_encryptor =
+        GetInstanceSync(*os_crypt, Encryptor::Option::kEncryptSyncCompat);
+    auto decrypted = another_encryptor.DecryptData(*ciphertext);
     ASSERT_TRUE(decrypted);
     EXPECT_EQ(*decrypted, "testsecrets");
   }

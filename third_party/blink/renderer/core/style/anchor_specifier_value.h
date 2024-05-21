@@ -14,29 +14,26 @@ namespace blink {
 
 class ScopedCSSName;
 
-// Represents an anchor specifier: default | implicit | <dashed-ident>
+// Represents an anchor specifier: default | auto | <dashed-ident>
 // https://drafts4.csswg.org/css-anchor-1/#target-anchor-element
 class CORE_EXPORT AnchorSpecifierValue
     : public GarbageCollected<AnchorSpecifierValue> {
  public:
   enum class Type {
     kDefault,
-    kImplicit,
     kNamed,
   };
 
   // Creates a named value.
   explicit AnchorSpecifierValue(const ScopedCSSName&);
 
-  // Gets or creates the default/implicit keyword values.
+  // Gets or creates the default keyword value.
   static AnchorSpecifierValue* Default();
-  static AnchorSpecifierValue* Implicit();
 
   // For creating the keyword values only.
   explicit AnchorSpecifierValue(base::PassKey<AnchorSpecifierValue>, Type type);
 
   bool IsDefault() const { return type_ == Type::kDefault; }
-  bool IsImplicit() const { return type_ == Type::kImplicit; }
   bool IsNamed() const { return type_ == Type::kNamed; }
   const ScopedCSSName& GetName() const {
     DCHECK(IsNamed());

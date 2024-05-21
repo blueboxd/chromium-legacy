@@ -5,11 +5,14 @@
 #include "chrome/browser/facilitated_payments/ui/chrome_facilitated_payments_client.h"
 
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/facilitated_payments/ui/android/facilitated_payments_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/autofill/risk_util.h"
+#include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/facilitated_payments/core/browser/network_api/facilitated_payments_network_interface.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/web_contents.h"
 
 ChromeFacilitatedPaymentsClient::ChromeFacilitatedPaymentsClient(
@@ -29,14 +32,16 @@ void ChromeFacilitatedPaymentsClient::LoadRiskData(
                                     std::move(on_risk_data_loaded_callback));
 }
 
-autofill::PersonalDataManager*
-ChromeFacilitatedPaymentsClient::GetPersonalDataManager() {
+autofill::PaymentsDataManager*
+ChromeFacilitatedPaymentsClient::GetPaymentsDataManager() {
   Profile* profile =
       Profile::FromBrowserContext(GetWebContents().GetBrowserContext());
-  if (profile) {
-    return autofill::PersonalDataManagerFactory::GetForProfile(profile);
+  if (!profile) {
+    return nullptr;
   }
-  return nullptr;
+  autofill::PersonalDataManager* pdm =
+      autofill::PersonalDataManagerFactory::GetForProfile(profile);
+  return pdm ? &pdm->payments_data_manager() : nullptr;
 }
 
 payments::facilitated::FacilitatedPaymentsNetworkInterface*
@@ -51,16 +56,35 @@ ChromeFacilitatedPaymentsClient::GetFacilitatedPaymentsNetworkInterface() {
         payments::facilitated::FacilitatedPaymentsNetworkInterface>(
         profile->GetURLLoaderFactory(),
         IdentityManagerFactory::GetForProfile(profile->GetOriginalProfile()),
-        &GetPersonalDataManager()->payments_data_manager(),
-        profile->IsOffTheRecord());
+        GetPaymentsDataManager(), profile->IsOffTheRecord());
   }
   return facilitated_payments_network_interface_.get();
+}
+
+std::optional<CoreAccountInfo>
+ChromeFacilitatedPaymentsClient::GetCoreAccountInfo() {
+  Profile* profile =
+      Profile::FromBrowserContext(GetWebContents().GetBrowserContext());
+  if (!profile) {
+    return std::nullopt;
+  }
+  auto* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile->GetOriginalProfile());
+  return identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
 }
 
 bool ChromeFacilitatedPaymentsClient::ShowPixPaymentPrompt(
     base::span<autofill::BankAccount> bank_account_suggestions,
     base::OnceCallback<void(bool, int64_t)> on_user_decision_callback) {
-  return false;
+#if BUILDFLAG(IS_ANDROID)
+  return facilitated_payments_controller_.Show(
+      std::make_unique<
+          payments::facilitated::FacilitatedPaymentsBottomSheetBridge>(),
+      &GetWebContents());
+#else
+  // Facilitated Payments is not supported on Desktop.
+  NOTREACHED_NORETURN();
+#endif
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromeFacilitatedPaymentsClient);

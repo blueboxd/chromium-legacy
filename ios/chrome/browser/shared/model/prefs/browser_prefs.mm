@@ -79,6 +79,7 @@
 #import "ios/chrome/browser/metrics/model/ios_chrome_metrics_service_client.h"
 #import "ios/chrome/browser/ntp/model/set_up_list_prefs.h"
 #import "ios/chrome/browser/ntp_tiles/model/tab_resumption/tab_resumption_prefs.h"
+#import "ios/chrome/browser/parcel_tracking/parcel_tracking_opt_in_status.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_prefs.h"
 #import "ios/chrome/browser/photos/model/photos_policy.h"
 #import "ios/chrome/browser/policy/model/policy_util.h"
@@ -184,6 +185,10 @@ const char kObsoleteAccountStorageNoticeShown[] =
 // Deprecated 03/2024.
 constexpr char kPreferencesMigratedToBasic[] =
     "browser.clear_data.preferences_migrated_to_basic";
+
+// Deprecated 05/2024.
+constexpr char kSyncCachedTrustedVaultAutoUpgradeDebugInfo[] =
+    "sync.cached_trusted_vault_auto_upgrade_debug_info";
 
 // Helper function migrating the preference `pref_name` of type "double" from
 // `defaults` to `pref_service`.
@@ -716,7 +721,9 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // Preferences related to parcel tracking.
   registry->RegisterBooleanPref(
       prefs::kIosParcelTrackingOptInPromptDisplayLimitMet, false);
-  registry->RegisterIntegerPref(prefs::kIosParcelTrackingOptInStatus, 2);
+  registry->RegisterIntegerPref(
+      prefs::kIosParcelTrackingOptInStatus,
+      static_cast<int>(IOSParcelTrackingOptInStatus::kStatusNotSet));
   registry->RegisterBooleanPref(prefs::kIosParcelTrackingOptInPromptSwipedDown,
                                 false);
 
@@ -796,6 +803,8 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   registry->RegisterDictionaryPref(
       prefs::kContentNotificationsEnrollmentEligibility);
+
+  registry->RegisterStringPref(kSyncCachedTrustedVaultAutoUpgradeDebugInfo, "");
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -1009,6 +1018,9 @@ void MigrateObsoleteBrowserStatePrefs(const base::FilePath& state_path,
       spotlight::kSpotlightLastIndexingVersionKey, prefs, defaults);
   MigrateNSDatePreferenceFromUserDefaults(
       spotlight::kSpotlightLastIndexingDateKey, prefs, defaults);
+
+  // Added 05/2024.
+  prefs->ClearPref(kSyncCachedTrustedVaultAutoUpgradeDebugInfo);
 }
 
 void MigrateObsoleteUserDefault() {

@@ -137,10 +137,6 @@ void FakeLoginDisplayHost::UpdateOobeDialogState(OobeDialogState state) {}
 
 void FakeLoginDisplayHost::CancelPasswordChangedFlow() {}
 
-void FakeLoginDisplayHost::MigrateUserData(const std::string& old_password) {}
-
-void FakeLoginDisplayHost::ResyncUserData() {}
-
 bool FakeLoginDisplayHost::HandleAccelerator(LoginAcceleratorAction action) {
   return false;
 }
@@ -166,7 +162,7 @@ SigninUI* FakeLoginDisplayHost::GetSigninUI() {
 
 void FakeLoginDisplayHost::AddWizardCreatedObserverForTests(
     base::RepeatingClosure on_created) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 bool FakeLoginDisplayHost::IsWizardControllerCreated() const {
@@ -174,7 +170,7 @@ bool FakeLoginDisplayHost::IsWizardControllerCreated() const {
 }
 
 WizardContext* FakeLoginDisplayHost::GetWizardContextForTesting() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 

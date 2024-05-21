@@ -1,4 +1,4 @@
-# CHECK(), DCHECK(), NOTREACHED_NORETURN() and NOTREACHED()
+# CHECK(), DCHECK(), NOTREACHED_NORETURN() and NOTREACHED_IN_MIGRATION()
 
 `CHECK()`, `DCHECK()`, `NOTREACHED_NORETURN()` and `NOTREACHED()` are all used
 to ensure that invariants hold.  They document (and verify) programmer
@@ -147,7 +147,7 @@ if (!foo) {
 //
 // Use CHECK(bar); instead.
 if (!bar) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return;
 }
 ```

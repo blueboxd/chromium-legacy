@@ -708,7 +708,7 @@ bool AudioContext::AreAutoplayRequirementsFulfilled() const {
       return AutoplayPolicy::IsDocumentAllowedToPlay(*GetWindow()->document());
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return false;
 }
 
@@ -743,7 +743,7 @@ bool AudioContext::IsAllowedToStart() const {
 
   switch (GetAutoplayPolicy()) {
     case AutoplayPolicy::Type::kNoUserGestureRequired:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
     case AutoplayPolicy::Type::kUserGestureRequired:
       DCHECK(window->GetFrame());
@@ -821,8 +821,12 @@ RealtimeAudioDestinationNode* AudioContext::GetRealtimeAudioDestinationNode()
   return static_cast<RealtimeAudioDestinationNode*>(destination());
 }
 
-bool AudioContext::HandlePreRenderTasks(const AudioIOPosition* output_position,
-                                        const AudioCallbackMetric* metric) {
+bool AudioContext::HandlePreRenderTasks(
+    uint32_t frames_to_process,
+    const AudioIOPosition* output_position,
+    const AudioCallbackMetric* metric,
+    base::TimeDelta playout_delay,
+    const media::AudioGlitchInfo& glitch_info) {
   DCHECK(IsAudioThread());
 
   // At the beginning of every render quantum, try to update the internal

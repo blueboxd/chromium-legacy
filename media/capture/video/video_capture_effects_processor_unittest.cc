@@ -13,8 +13,8 @@
 #include "base/test/test_future.h"
 #include "base/time/time.h"
 #include "components/viz/test/test_context_provider.h"
-#include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
+#include "gpu/command_buffer/client/test_gpu_memory_buffer_manager.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/base/video_types.h"
 #include "media/capture/mojom/video_capture_buffer.mojom.h"
@@ -102,7 +102,7 @@ class VideoCaptureEffectsProcessorTest
     : public testing::TestWithParam<VideoPixelFormat> {
  public:
   void SetUp() override {
-    test_sii_ = base::MakeRefCounted<viz::TestSharedImageInterface>();
+    test_sii_ = base::MakeRefCounted<gpu::TestSharedImageInterface>();
 
     mojo::PendingReceiver<video_effects::mojom::VideoEffectsProcessor>
         pending_receiver;
@@ -126,8 +126,8 @@ class VideoCaptureEffectsProcessorTest
  protected:
   base::test::TaskEnvironment task_environment_;
 
-  scoped_refptr<viz::TestSharedImageInterface> test_sii_;
-  viz::TestGpuMemoryBufferManager test_gmb_manager_;
+  scoped_refptr<gpu::TestSharedImageInterface> test_sii_;
+  gpu::TestGpuMemoryBufferManager test_gmb_manager_;
 
   std::optional<VideoEffectsProcessor> video_effects_processor_;
 

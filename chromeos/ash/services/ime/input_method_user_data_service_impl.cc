@@ -13,23 +13,22 @@
 #include "chromeos/ash/services/ime/public/mojom/user_data_japanese_legacy_config.mojom.h"
 #include "chromeos/ash/services/ime/user_data/japanese_dictionary.h"
 #include "chromeos/ash/services/ime/user_data/japanese_legacy_config.h"
+#include "chromeos/ash/services/ime/user_data_c_api_interface.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace ash {
 namespace ime {
+namespace {
+
+namespace mojom = ::ash::ime::mojom;
+
+}
 
 InputMethodUserDataServiceImpl::~InputMethodUserDataServiceImpl() = default;
 
 InputMethodUserDataServiceImpl::InputMethodUserDataServiceImpl(
-    ImeCrosPlatform* platform,
-    ImeSharedLibraryWrapper::EntryPoints shared_library_entry_points)
-    : shared_library_entry_points_(shared_library_entry_points) {
-  if (shared_library_entry_points_.init_user_data_service) {
-    shared_library_entry_points_.init_user_data_service(platform);
-  } else {
-    LOG(ERROR) << "sharedlib init_user_data_service not intialized";
-  }
-}
+    std::unique_ptr<UserDataCApiInterface> c_api)
+    : c_api_(std::move(c_api)) {}
 
 void InputMethodUserDataServiceImpl::FetchJapaneseLegacyConfig(
     FetchJapaneseLegacyConfigCallback callback) {
@@ -37,7 +36,7 @@ void InputMethodUserDataServiceImpl::FetchJapaneseLegacyConfig(
   chromeos_input::FetchJapaneseLegacyConfigRequest fetch_request;
   *request.mutable_fetch_japanese_legacy_config() = fetch_request;
   chromeos_input::UserDataResponse user_data_response =
-      ProcessUserDataRequest(request);
+      c_api_->ProcessUserDataRequest(request);
 
   if (user_data_response.status().success() &&
       user_data_response.has_fetch_japanese_legacy_config()) {
@@ -63,7 +62,7 @@ void InputMethodUserDataServiceImpl::FetchJapaneseDictionary(
   *request.mutable_fetch_japanese_dictionary() = fetch_request;
 
   chromeos_input::UserDataResponse user_data_response =
-      ProcessUserDataRequest(request);
+      c_api_->ProcessUserDataRequest(request);
 
   mojom::JapaneseDictionaryResponsePtr response =
       mojom::JapaneseDictionaryResponse::NewDictionaries({});
@@ -77,30 +76,134 @@ void InputMethodUserDataServiceImpl::FetchJapaneseDictionary(
   std::move(callback).Run(std::move(response));
 }
 
+void InputMethodUserDataServiceImpl::AddJapaneseDictionaryEntry(
+    uint64_t dict_id,
+    mojom::JapaneseDictionaryEntryPtr entry,
+    AddJapaneseDictionaryEntryCallback callback) {
+  chromeos_input::UserDataRequest user_data_request;
+
+  chromeos_input::AddJapaneseDictionaryEntryRequest& request =
+      *user_data_request.mutable_add_japanese_dictionary_entry();
+  request.set_dictionary_id(dict_id);
+  *request.mutable_entry() = MakeProtoJpDictEntry(*entry);
+
+  chromeos_input::UserDataResponse user_data_response =
+      c_api_->ProcessUserDataRequest(user_data_request);
+
+  mojom::StatusPtr response = mojom::Status::New();
+  response->success = user_data_response.status().success();
+  if (user_data_response.status().has_reason()) {
+    response->reason = user_data_response.status().reason();
+  }
+  std::move(callback).Run(std::move(response));
+}
+
+void InputMethodUserDataServiceImpl::EditJapaneseDictionaryEntry(
+    uint64_t dict_id,
+    uint32_t entry_index,
+    ash::ime::mojom::JapaneseDictionaryEntryPtr entry,
+    EditJapaneseDictionaryEntryCallback callback) {
+  chromeos_input::UserDataRequest user_data_request;
+
+  chromeos_input::EditJapaneseDictionaryEntryRequest& request =
+      *user_data_request.mutable_edit_japanese_dictionary_entry();
+  request.set_dictionary_id(dict_id);
+  request.set_entry_index(entry_index);
+  *request.mutable_entry() = MakeProtoJpDictEntry(*entry);
+
+  chromeos_input::UserDataResponse user_data_response =
+      c_api_->ProcessUserDataRequest(user_data_request);
+
+  mojom::StatusPtr response = mojom::Status::New();
+  response->success = user_data_response.status().success();
+  if (user_data_response.status().has_reason()) {
+    response->reason = user_data_response.status().reason();
+  }
+  std::move(callback).Run(std::move(response));
+}
+
+void InputMethodUserDataServiceImpl::DeleteJapaneseDictionaryEntry(
+    uint64_t dict_id,
+    uint32_t entry_index,
+    DeleteJapaneseDictionaryEntryCallback callback) {
+  chromeos_input::UserDataRequest user_data_request;
+
+  chromeos_input::DeleteJapaneseDictionaryEntryRequest& request =
+      *user_data_request.mutable_delete_japanese_dictionary_entry();
+  request.set_dictionary_id(dict_id);
+  request.set_entry_index(entry_index);
+
+  chromeos_input::UserDataResponse user_data_response =
+      c_api_->ProcessUserDataRequest(user_data_request);
+
+  mojom::StatusPtr response = mojom::Status::New();
+  response->success = user_data_response.status().success();
+  if (user_data_response.status().has_reason()) {
+    response->reason = user_data_response.status().reason();
+  }
+  std::move(callback).Run(std::move(response));
+}
+
+void InputMethodUserDataServiceImpl::CreateJapaneseDictionary(
+    const std::string& dictionary_name,
+    CreateJapaneseDictionaryCallback callback) {
+  chromeos_input::UserDataRequest user_data_request;
+  user_data_request.mutable_create_japanese_dictionary()->set_name(
+      dictionary_name);
+
+  chromeos_input::UserDataResponse user_data_response =
+      c_api_->ProcessUserDataRequest(user_data_request);
+
+  mojom::StatusPtr response = mojom::Status::New();
+  response->success = user_data_response.status().success();
+  if (user_data_response.status().has_reason()) {
+    response->reason = user_data_response.status().reason();
+  }
+  std::move(callback).Run(std::move(response));
+}
+
+void InputMethodUserDataServiceImpl::RenameJapaneseDictionary(
+    uint64_t dict_id,
+    const std::string& dictionary_name,
+    RenameJapaneseDictionaryCallback callback) {
+  chromeos_input::UserDataRequest user_data_request;
+  user_data_request.mutable_rename_japanese_dictionary()->set_dictionary_id(
+      dict_id);
+  user_data_request.mutable_rename_japanese_dictionary()->set_name(
+      dictionary_name);
+
+  chromeos_input::UserDataResponse user_data_response =
+      c_api_->ProcessUserDataRequest(user_data_request);
+
+  mojom::StatusPtr response = mojom::Status::New();
+  response->success = user_data_response.status().success();
+  if (user_data_response.status().has_reason()) {
+    response->reason = user_data_response.status().reason();
+  }
+  std::move(callback).Run(std::move(response));
+}
+
+void InputMethodUserDataServiceImpl::DeleteJapaneseDictionary(
+    uint64_t dict_id,
+    DeleteJapaneseDictionaryCallback callback) {
+  chromeos_input::UserDataRequest user_data_request;
+  user_data_request.mutable_delete_japanese_dictionary()->set_dictionary_id(
+      dict_id);
+
+  chromeos_input::UserDataResponse user_data_response =
+      c_api_->ProcessUserDataRequest(user_data_request);
+
+  mojom::StatusPtr response = mojom::Status::New();
+  response->success = user_data_response.status().success();
+  if (user_data_response.status().has_reason()) {
+    response->reason = user_data_response.status().reason();
+  }
+  std::move(callback).Run(std::move(response));
+}
+
 void InputMethodUserDataServiceImpl::AddReceiver(
     mojo::PendingReceiver<mojom::InputMethodUserDataService> receiver) {
   receiver_set_.Add(this, std::move(receiver));
-}
-
-chromeos_input::UserDataResponse
-InputMethodUserDataServiceImpl::ProcessUserDataRequest(
-    chromeos_input::UserDataRequest request_proto) {
-  std::vector<uint8_t> bytes;
-  bytes.resize(request_proto.ByteSizeLong());
-  request_proto.SerializeToArray(
-      bytes.data(), static_cast<int>(request_proto.ByteSizeLong()));
-  C_SerializedProto request{/* buffer= */ bytes.data(),
-                            /* size= */ bytes.size()};
-
-  // This response needs to be deleted manually to avoid a memory leak.
-  // The buffer has to be made persistent in order to be read by chromium.
-  C_SerializedProto response =
-      shared_library_entry_points_.process_user_data_request(request);
-  chromeos_input::UserDataResponse response_proto;
-  response_proto.ParseFromArray(response.buffer, response.size);
-  shared_library_entry_points_.delete_serialized_proto(response);
-
-  return response_proto;
 }
 
 }  // namespace ime

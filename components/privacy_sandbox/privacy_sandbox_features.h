@@ -154,6 +154,13 @@ BASE_DECLARE_FEATURE(kPrivacySandboxAttestationsUserBlockingPriority);
 COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
 BASE_DECLARE_FEATURE(kPrivacySandboxProactiveTopicsBlocking);
 
+COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
+extern const char kPrivacySandboxProactiveTopicsBlockingIncludeModeBName[];
+
+COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
+extern const base::FeatureParam<bool>
+    kPrivacySandboxProactiveTopicsBlockingIncludeModeB;
+
 // Enables showing the rollback notice for Tracking Protection in settings.
 COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
 BASE_DECLARE_FEATURE(kTrackingProtectionSettingsPageRollbackNotice);
@@ -207,6 +214,10 @@ BASE_DECLARE_FEATURE(kPrivacySandboxRelatedWebsiteSetsUi);
 COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
 BASE_DECLARE_FEATURE(kTrackingProtectionSettingsLaunch);
 
+// Enables tracking protection content setting updates.
+COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
+BASE_DECLARE_FEATURE(kTrackingProtectionContentSetting);
+
 #if BUILDFLAG(IS_ANDROID)
 // Enables the trackingProtectionNoticeController to notify the
 // TrackingProtectionOnboardingService when a notice was requested (Message
@@ -252,6 +263,10 @@ extern const char kPrivacySandboxActivityTypeStorageWithinXDaysName[];
 COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
 extern const base::FeatureParam<int>
     kPrivacySandboxActivityTypeStorageWithinXDays;
+
+// Disables the Privacy Sandbox Ads Dialog when all 3pc are blocked.
+COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
+BASE_DECLARE_FEATURE(kPrivacySandboxAdsDialogDisabledOnAll3PCBlock);
 
 }  // namespace privacy_sandbox
 

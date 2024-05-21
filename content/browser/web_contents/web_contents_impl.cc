@@ -269,6 +269,11 @@ BASE_FEATURE(kCrashOnDanglingBrowserContext,
              "CrashOnDanglingBrowserContext",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Kill switch for inner WebContents visibility updates.
+BASE_FEATURE(kUpdateInnerWebContentsVisibility,
+             "UpdateInnerWebContentsVisibility",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 using LifecycleState = RenderFrameHost::LifecycleState;
 using LifecycleStateImpl = RenderFrameHostImpl::LifecycleStateImpl;
 using AttributionReportingOsRegistrar =
@@ -837,7 +842,7 @@ class WebContentsImpl::WebContentsDestructionObserver
   raw_ptr<WebContentsImpl> owner_;
 };
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 // TODO(sreejakshetty): Make |WebContentsImpl::ColorChooserHolder| per-frame
 // instead of WebContents-owned.
 // WebContentsImpl::ColorChooserHolder -----------------------------------------
@@ -888,7 +893,7 @@ class WebContentsImpl::ColorChooserHolder : public blink::mojom::ColorChooser {
   // mojo renderer client.
   mojo::Remote<blink::mojom::ColorChooserClient> client_;
 };
-#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
 // WebContentsImpl::WebContentsTreeNode ----------------------------------------
 WebContentsImpl::WebContentsTreeNode::WebContentsTreeNode(
@@ -956,7 +961,7 @@ WebContentsImpl::WebContentsTreeNode::DetachInnerWebContents(
     }
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 
@@ -1098,7 +1103,7 @@ class WebContentsOfBrowserContext : public base::SupportsUserData::Data {
             << "WebContents (for more info see https://crbug.com/1376879#c44); "
             << "creator = " << creator;
       } else {
-        NOTREACHED()
+        NOTREACHED_IN_MIGRATION()
             << "BrowserContext is getting destroyed without first closing all "
             << "WebContents (for more info see https://crbug.com/1376879#c44); "
             << "creator = " << creator;
@@ -1288,7 +1293,7 @@ WebContentsImpl::~WebContentsImpl() {
     dialog_manager_->CancelDialogs(this, /*reset_state=*/true);
   }
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   color_chooser_holder_.reset();
 #endif
   find_request_manager_.reset();
@@ -2527,11 +2532,11 @@ bool WebContentsImpl::IsCrashed() {
     case base::TERMINATION_STATUS_STILL_RUNNING:
       return false;
     case base::TERMINATION_STATUS_MAX_ENUM:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return false;
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return false;
 }
 
@@ -2719,6 +2724,16 @@ WebContents::ScopedIgnoreInputEvents WebContentsImpl::IgnoreInputEvents(
             wc->web_input_event_audit_callbacks_.erase(*callback_id);
           } else {
             --wc->ignore_input_events_count_;
+            // Reset gesture detection so that we don't continue to generate new
+            // gestures from suppressed touches. These suppressed gestures would
+            // otherwise confuse the event stream validator when input is
+            // re-enabled.
+            if (wc->ignore_input_events_count_ == 0) {
+              if (auto* view = wc->GetRenderWidgetHostView()) {
+                static_cast<RenderWidgetHostViewBase*>(view)
+                    ->ResetGestureDetection();
+              }
+            }
           }
         }
       },
@@ -3141,7 +3156,7 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
     prefs.autoplay_policy =
         blink::mojom::AutoplayPolicy::kDocumentUserActivationRequired;
   } else {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   prefs.dont_send_key_events_to_javascript =
@@ -3662,7 +3677,7 @@ void WebContentsImpl::OnWebContentsDestroyed(WebContentsImpl* web_contents) {
     pending_contents_.erase(iter);
     return;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void WebContentsImpl::OnRenderWidgetHostDestroyed(
@@ -4334,6 +4349,19 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
   if (new_visibility != Visibility::VISIBLE) {
     SetVisibilityAndNotifyObservers(new_visibility);
   }
+
+  if (base::FeatureList::IsEnabled(kUpdateInnerWebContentsVisibility)) {
+    // Inner WebContents are skipped in ForEachRenderViewHost() above, which
+    // causes inner WebContents to not be notified of visibility changes.
+    //
+    // Note: An inner WebContents that is hidden within the embedder could
+    // spuriously be set to visible (e.g. if its parent is display:none), but
+    // this is ignored here for now.
+    for (WebContents* inner : GetInnerWebContents()) {
+      static_cast<WebContentsImpl*>(inner)
+          ->UpdateVisibilityAndNotifyPageAndView(new_visibility, is_activity);
+    }
+  }
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -4462,7 +4490,7 @@ bool WebContentsImpl::RequestKeyboardLock(
                         "esc_key_locked", esc_key_locked);
   DCHECK(render_widget_host);
   if (WebContentsImpl::FromRenderWidgetHostImpl(render_widget_host) != this) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return false;
   }
 
@@ -5166,12 +5194,24 @@ void WebContentsImpl::AXTreeIDForMainFrameHasChanged() {
       &WebContentsObserver::AXTreeIDForMainFrameHasChanged);
 }
 
-void WebContentsImpl::AccessibilityEventReceived(
-    const ui::AXUpdatesAndEvents& details) {
+void WebContentsImpl::ProcessAccessibilityUpdatesAndEvents(
+    ui::AXUpdatesAndEvents& details) {
   OPTIONAL_TRACE_EVENT0("content",
                         "WebContentsImpl::AccessibilityEventReceived");
+
+  // First, supply the data to consumers that won't change it.
   observers_.NotifyObservers(&WebContentsObserver::AccessibilityEventReceived,
                              details);
+
+  // Next, supply the data to consumers that may change it or who need to avoid
+  // extra copying. Note that this also includes those who will pass to mojo
+  // pipes not taking const.
+  // TODO(accessibility): when we add multiple consumers, we will need some kind
+  // of intermediate class to ensure each consumer gets an unmutated copy of the
+  // data, but also minimize copying.
+  if (delegate_) {
+    delegate_->ProcessAccessibilityUpdatesAndEvents(details);
+  }
 }
 
 void WebContentsImpl::AccessibilityLocationChangesReceived(
@@ -6155,7 +6195,7 @@ bool WebContentsImpl::GotResponseToKeyboardLockRequest(bool allowed) {
   }
   if (WebContentsImpl::FromRenderWidgetHostImpl(keyboard_lock_widget_) !=
       this) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return false;
   }
   // KeyboardLock is only supported when called by the top-level browsing
@@ -6190,7 +6230,7 @@ WebContents* WebContentsImpl::GetFirstWebContentsInLiveOriginalOpenerChain() {
                     : nullptr;
 }
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 void WebContentsImpl::DidChooseColorInColorChooser(SkColor color) {
   OPTIONAL_TRACE_EVENT1("content",
                         "WebContentsImpl::DidChooseColorInColorChooser",
@@ -6266,7 +6306,7 @@ void WebContentsImpl::Find(int request_id,
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::Find");
   // Cowardly refuse to search for no text.
   if (search_text.empty()) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return;
   }
 
@@ -6708,7 +6748,7 @@ void WebContentsImpl::DidNavigateMainFramePreCommit(
           GetBackForwardTransitionAnimationManager());
   if (animation_manager) {
     animation_manager->OnDidNavigatePrimaryMainFramePreCommit(
-        *request, frame_tree_node->render_manager()->current_frame_host(),
+        request, frame_tree_node->render_manager()->current_frame_host(),
         request->GetRenderFrameHost());
   }
 #endif
@@ -7384,7 +7424,7 @@ void WebContentsImpl::OnColorChooserFactoryReceiver(
   color_chooser_factory_receivers_.Add(this, std::move(receiver));
 }
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 void WebContentsImpl::OpenColorChooser(
     mojo::PendingReceiver<blink::mojom::ColorChooser> chooser_receiver,
     mojo::PendingRemote<blink::mojom::ColorChooserClient> client,
@@ -7411,7 +7451,7 @@ void WebContentsImpl::OpenColorChooser(
     color_chooser_holder_.reset();
   }
 }
-#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(ENABLE_PPAPI)
 void WebContentsImpl::OnPepperInstanceCreated(RenderFrameHostImpl* source,
@@ -9537,7 +9577,7 @@ gfx::Size WebContentsImpl::GetSize() {
   return view_android->bounds().size();
 #elif BUILDFLAG(IS_IOS)
   // TODO(crbug.com/40254930): Implement me.
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return gfx::Size();
 #endif
 }
@@ -10626,7 +10666,7 @@ void WebContentsImpl::RenderFrameHostStateChanged(
                           dict.Add("new", new_state);
                         });
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_ANDROID)
   if (old_state == LifecycleState::kActive && !render_frame_host->GetParent()) {
     // TODO(sreejakshetty): Remove this reset when ColorChooserHolder becomes
     // per-frame.
@@ -10634,7 +10674,7 @@ void WebContentsImpl::RenderFrameHostStateChanged(
     // kActive.
     color_chooser_holder_.reset();
   }
-#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
+#endif  // BUILDFLAG(IS_ANDROID)
 
   observers_.NotifyObservers(&WebContentsObserver::RenderFrameHostStateChanged,
                              render_frame_host, old_state, new_state);

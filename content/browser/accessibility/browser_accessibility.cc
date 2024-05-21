@@ -72,7 +72,7 @@ BrowserAccessibility::BrowserAccessibility(BrowserAccessibilityManager* manager,
 #if DCHECK_IS_ON()
   if (++browser_accessibility_count > kDumpBrowserAccessibilityLeakNumObjects &&
       !has_dumped_possible_leak) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     has_dumped_possible_leak = true;
   }
 #endif
@@ -901,7 +901,7 @@ BrowserAccessibility::GetUIADirectChildrenInRange(
     ui::AXPlatformNodeDelegate* end) {
   // This method is only called on Windows. Other platforms should not call it.
   // The BrowserAccessibilityWin subclass overrides this method.
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return {};
 }
 
@@ -1277,7 +1277,6 @@ bool BrowserAccessibility::AccessibilityPerformAction(
     case ax::mojom::Action::kStitchChildTree:
       CHECK_NE(data.target_tree_id, ui::AXTreeIDUnknown());
       CHECK_EQ(data.target_tree_id, manager()->GetTreeID());
-      CHECK_NE(data.target_node_id, ui::kInvalidAXNodeID);
       CHECK_EQ(data.target_node_id, node()->id());
       CHECK_NE(data.child_tree_id, ui::AXTreeIDUnknown());
       CHECK_NE(data.child_tree_id, manager()->GetTreeID())
@@ -1954,7 +1953,7 @@ void BrowserAccessibility::MergeSpellingAndGrammarIntoTextAttributes(
     int start_offset,
     ui::TextAttributeMap* text_attributes) {
   if (!text_attributes) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return;
   }
 

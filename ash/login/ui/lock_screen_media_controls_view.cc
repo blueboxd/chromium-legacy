@@ -69,16 +69,12 @@ constexpr int kMinimumArtworkSize = 30;
 constexpr int kDesiredArtworkSize = 48;
 constexpr int kArtworkRowPadding = 16;
 constexpr auto kArtworkRowInsets = gfx::Insets::TLBR(24, 0, 9, 0);
-constexpr gfx::Size kArtworkRowPreferredSize =
-    gfx::Size(328, kDesiredArtworkSize);
 constexpr int kMediaButtonRowPadding = 16;
 constexpr auto kButtonRowInsets = gfx::Insets::TLBR(4, 0, 0, 0);
 constexpr int kPlayPauseIconSize = 40;
 constexpr int kMediaControlsIconSize = 24;
 constexpr gfx::Size kPlayPauseButtonSize = gfx::Size(72, 72);
 constexpr gfx::Size kMediaControlsButtonSize = gfx::Size(48, 48);
-constexpr gfx::Size kMediaControlsButtonRowSize =
-    gfx::Size(328, kPlayPauseButtonSize.height());
 constexpr gfx::Size kMediaButtonGroupSize =
     gfx::Size(2 * kMediaControlsButtonSize.width() + kMediaButtonRowPadding,
               kPlayPauseButtonSize.height());
@@ -140,11 +136,11 @@ const gfx::VectorIcon& GetVectorIconForMediaAction(MediaSessionAction action) {
     case MediaSessionAction::kPreviousSlide:
     case MediaSessionAction::kNextSlide:
     case MediaSessionAction::kEnterAutoPictureInPicture:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return gfx::kNoneIcon;
 }
 
@@ -275,7 +271,6 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
 
   // |artwork_row| contains the session artwork, artist and track info.
   auto artwork_row = std::make_unique<NonAccessibleView>();
-  artwork_row->SetPreferredSize(kArtworkRowPreferredSize);
   auto* artwork_row_layout =
       artwork_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal, kArtworkRowInsets,
@@ -370,7 +365,6 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   right_control_group_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kStart);
 
-  button_row->SetPreferredSize(kMediaControlsButtonRowSize);
   button_row_ = contents_view_->AddChildView(std::move(button_row));
 
   left_control_group->SetPreferredSize(kMediaButtonGroupSize);
@@ -658,8 +652,8 @@ void LockScreenMediaControlsView::MediaControllerImageChanged(
       break;
     }
     case media_session::mojom::MediaSessionImageType::kChapter: {
-      NOTREACHED() << " The chpater images should be updated in "
-                      "`MediaControllerChapterImageChanged` ";
+      NOTREACHED_IN_MIGRATION() << " The chpater images should be updated in "
+                                   "`MediaControllerChapterImageChanged` ";
     }
   }
 }

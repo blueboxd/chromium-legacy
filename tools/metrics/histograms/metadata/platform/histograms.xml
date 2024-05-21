@@ -117,7 +117,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Chaps.ReinitializingToken"
-    enum="ChapsReinitializingToken" expires_after="2024-09-15">
+    enum="ChapsReinitializingToken" expires_after="2024-11-17">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -126,7 +126,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Chaps.Session.{Operation}" enum="ChapsSessionStatus"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -150,7 +150,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Chaps.TokenManager.LoadToken"
-    enum="TokenManagerStatus" expires_after="2024-09-15">
+    enum="TokenManagerStatus" expires_after="2024-11-17">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -172,7 +172,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Chaps.TPMAvailability" enum="ChapsTPMAvailability"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>Each sample is the TPM Availability status.</summary>
@@ -202,7 +202,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.CrOS.CrashSenderRemoveReason"
-    enum="CrosCrashSenderRemoveReason" expires_after="2024-09-15">
+    enum="CrosCrashSenderRemoveReason" expires_after="2024-11-17">
   <owner>iby@chromium.org</owner>
   <owner>chromeos-data-eng@google.com</owner>
   <summary>
@@ -651,7 +651,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.FlexPartitionSize.{Partition}" units="MiB"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>nicholasbishop@google.com</owner>
   <owner>chromeos-flex-eng@google.com</owner>
   <summary>
@@ -805,7 +805,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Platform.Libhwsec.PinWeaverManager.SyncHashTree.ReplayLogResult{ReplayType}"
-    enum="HwsecPinWeaverLogReplayResultEnum" expires_after="2024-09-15">
+    enum="HwsecPinWeaverLogReplayResultEnum" expires_after="2024-11-17">
   <owner>chensa@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -824,7 +824,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Libhwsec.PinWeaverManager.SyncHashTree.SyncOutcome"
-    enum="HwsecPinWeaverSyncOutcomeEnum" expires_after="2024-09-15">
+    enum="HwsecPinWeaverSyncOutcomeEnum" expires_after="2024-11-17">
   <owner>chensa@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -1146,6 +1146,31 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Platform.Memory.PsiPolicyError"
+    enum="Platform.Memory.PsiPolicyError" expires_after="2024-10-10">
+  <owner>kawasin@google.com</owner>
+  <owner>chromeos-memory@google.com</owner>
+  <summary>
+    The error types from psi memory policy feature. This is recorded each time
+    the psi memory handler detects an error. PsiPolicy is not expected to fail.
+    Even if it fails continuously, it reports the error at most once per 1
+    second. If any error is detected, psi policy feature should be turned off by
+    the finch flag.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Memory.ReclaimReason"
+    enum="Platform.Memory.ReclaimReason" expires_after="2024-10-10">
+  <owner>kawasin@google.com</owner>
+  <owner>chromeos-memory@google.com</owner>
+  <summary>
+    The reason of reclaiming memory on memory pressure. This is recorded when
+    resourced detects memory pressure and decides to reclaim memory by
+    discarding tabs or killing processes in VMs. This is reported at most once
+    per 1 second.
+  </summary>
+</histogram>
+
 <histogram name="Platform.Memory.Renderers" units="MiB"
     expires_after="2023-08-08">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryType" -->
@@ -1320,7 +1345,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Missive.KeyDeliveryResult"
-    enum="EnterpriseCloudReportingStatusCode" expires_after="2024-07-10">
+    enum="EnterpriseCloudReportingStatusCode" expires_after="2024-11-17">
   <owner>jrhilke@chromium.org</owner>
   <owner>cros-reporting-team@google.com</owner>
   <summary>
@@ -1403,6 +1428,18 @@ chromium-metrics-reviews@google.com.
     storing encrypted records on devices that have not uploaded any data for the
     last 24 hours (could have updated the encryption key). This is reported once
     every hour and only if the Missive daemon is running.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Missive.UnavailableErrorReason"
+    enum="UnavailableErrorReason" expires_after="2025-06-01">
+  <owner>jrhilke@google.com</owner>
+  <owner>cros-reporting-team@google.com</owner>
+  <summary>
+    Recorded once each time reporting::error::UNAVAILABLE is returned in
+    src/platform2/missive/. There is a 1:1 relationship between the UMA values
+    and error messages used with reporting::error::UNAVAILABLE so that we can
+    understand exactly which parts of the code are failing.
   </summary>
 </histogram>
 
@@ -1499,7 +1536,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Modemfwd.ModemRecoveryState"
-    enum="ModemfwdModemRecoveryState" expires_after="2024-09-15">
+    enum="ModemfwdModemRecoveryState" expires_after="2024-11-17">
   <owner>ujjwalpande@google.com</owner>
   <owner>cros-connectivity@google.com</owner>
   <summary>Report state of modem recovery operation.</summary>
@@ -1556,7 +1593,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Resourced.VmmsReclaimMemoryDuration.{PressureLevel}"
-    units="ms" expires_after="2024-08-23">
+    units="ms" expires_after="2024-11-10">
   <owner>vovoy@chromium.org</owner>
   <owner>chromeos-memory@google.com</owner>
   <summary>
@@ -1795,7 +1832,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Storage.Nvme.PercentageUsed" units="%"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>asavery@chromium.org</owner>
   <owner>gwendal@chromium.org</owner>
   <owner>chromeos-storage@google.com</owner>
@@ -2002,7 +2039,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.DictionaryAttackResetStatus"
-    enum="CrosTPMDictionaryAttackResetStatusEnum" expires_after="2024-09-15">
+    enum="CrosTPMDictionaryAttackResetStatusEnum" expires_after="2024-11-17">
   <owner>yich@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -2085,7 +2122,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.PowerWashResult" enum="TPMPowerWashResult"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -2095,7 +2132,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.TakeOwnershipResult"
-    enum="TPMTakeOwnershipResult" expires_after="2024-09-15">
+    enum="TPMTakeOwnershipResult" expires_after="2024-11-17">
   <owner>yich@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -2221,7 +2258,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Trunks.FirstTimeoutWritingCommand"
-    enum="TPMCommandCode" expires_after="2024-09-15">
+    enum="TPMCommandCode" expires_after="2024-11-17">
   <owner>chingkang@chromium.org</owner>
   <owner>cros-hwsec+uma@google.com</owner>
   <summary>Command code of the first timeout writing TPM command</summary>
@@ -2527,7 +2564,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.{GSC}.MatchingBoardId" enum="Cr50CrosRlzCodes"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>vbendeb@chromium.org</owner>
   <owner>cros-hwsec+uma@google.com</owner>
   <summary>

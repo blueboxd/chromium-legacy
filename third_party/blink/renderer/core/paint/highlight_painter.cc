@@ -442,7 +442,7 @@ HighlightPainter::HighlightPainter(
   }
 }
 
-void HighlightPainter::Paint(Phase phase) {
+void HighlightPainter::PaintNonCssMarkers(Phase phase) {
   if (markers_.empty())
     return;
 
@@ -523,8 +523,8 @@ void HighlightPainter::Paint(Phase phase) {
         if (marker->GetType() == DocumentMarker::kComposition &&
             !styleable_marker.TextColor().IsFullyTransparent() &&
             RuntimeEnabledFeatures::CompositionForegroundMarkersEnabled()) {
-          PaintDecoratedText(text, styleable_marker.TextColor(),
-                             paint_start_offset, paint_end_offset);
+          PaintTextForCompositionMarker(text, styleable_marker.TextColor(),
+                                        paint_start_offset, paint_end_offset);
         }
         break;
       }
@@ -532,7 +532,7 @@ void HighlightPainter::Paint(Phase phase) {
       case DocumentMarker::kGrammar:
       case DocumentMarker::kTextFragment:
       case DocumentMarker::kCustomHighlight:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
     }
   }
@@ -704,7 +704,7 @@ Vector<LayoutSelectionStatus> HighlightPainter::GetHighlights(
   const auto* text_node = DynamicTo<Text>(fragment_item_.GetNode());
   switch (layer.type) {
     case HighlightLayerType::kOriginating:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
     case HighlightLayerType::kCustom: {
       DCHECK(text_node);
@@ -944,7 +944,7 @@ PseudoId HighlightPainter::PseudoFor(DocumentMarker::MarkerType type) {
     case DocumentMarker::kTextFragment:
       return kPseudoIdTargetText;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return {};
   }
 }
@@ -956,7 +956,7 @@ TextDecorationLine HighlightPainter::LineFor(DocumentMarker::MarkerType type) {
     case DocumentMarker::kGrammar:
       return TextDecorationLine::kGrammarError;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return {};
   }
 }
@@ -968,7 +968,7 @@ Color HighlightPainter::ColorFor(DocumentMarker::MarkerType type) {
     case DocumentMarker::kGrammar:
       return LayoutTheme::GetTheme().PlatformGrammarMarkerUnderlineColor();
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return {};
   }
 }
@@ -1155,13 +1155,11 @@ void HighlightPainter::PaintDecorationsOnlyLineThrough(
   }
 }
 
-void HighlightPainter::PaintDecoratedText(const StringView& text,
-                                          const Color& text_color,
-                                          unsigned paint_start_offset,
-                                          unsigned paint_end_offset,
-                                          const PseudoId pseudo,
-                                          const AtomicString& pseudo_argument) {
-  const Document& document = node_->GetDocument();
+void HighlightPainter::PaintTextForCompositionMarker(
+    const StringView& text,
+    const Color& text_color,
+    unsigned paint_start_offset,
+    unsigned paint_end_offset) {
   TextPaintStyle text_style;
   text_style.current_color = text_style.fill_color = text_style.stroke_color =
       text_style.emphasis_mark_color = text_color;
@@ -1170,25 +1168,12 @@ void HighlightPainter::PaintDecoratedText(const StringView& text,
   text_style.shadow = nullptr;
   text_style.paint_order = originating_style_.PaintOrder();
 
-  const ComputedStyle* pseudo_style =
-      pseudo == PseudoId::kPseudoIdNone
-          ? nullptr
-          : HighlightStyleUtils::HighlightPseudoStyle(node_, originating_style_,
-                                                      pseudo, pseudo_argument);
-
-  if (pseudo_style) {
-    text_style = HighlightStyleUtils::HighlightPaintingStyle(
-                     document, originating_style_, node_, pseudo, text_style,
-                     paint_info_, pseudo_argument)
-                     .style;
-  }
   LineRelativeRect decoration_rect = LineRelativeLocalRect(
       fragment_item_, text, paint_start_offset, paint_end_offset);
   decoration_rect.Move(LineRelativeOffset::CreateFromBoxOrigin(box_origin_));
   TextDecorationPainter decoration_painter(
       text_painter_, decoration_painter_.InlineContext(), paint_info_,
-      pseudo_style ? *pseudo_style : originating_style_, text_style,
-      decoration_rect, selection_);
+      originating_style_, text_style, decoration_rect, selection_);
 
   decoration_painter.Begin(fragment_item_, TextDecorationPainter::kOriginating);
   decoration_painter.PaintExceptLineThrough(

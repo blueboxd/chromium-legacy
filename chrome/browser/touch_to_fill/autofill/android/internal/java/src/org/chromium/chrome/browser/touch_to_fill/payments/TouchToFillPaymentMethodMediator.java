@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.touch_to_fill.common.FillableItemCollectionIn
 import org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodComponent.Delegate;
 import org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodProperties.FooterProperties;
 import org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodProperties.HeaderProperties;
+import org.chromium.components.autofill.IbanRecordType;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.components.payments.InputProtector;
@@ -52,9 +53,9 @@ import java.util.function.Function;
  */
 class TouchToFillPaymentMethodMediator {
     /**
-     * The final outcome that closes the Touch To Fill sheet.
+     * The final outcome that closes the credit card Touch To Fill sheet.
      *
-     * Entries should not be renumbered and numeric values should never be reused. Needs to stay
+     * <p>Entries should not be renumbered and numeric values should never be reused. Needs to stay
      * in sync with TouchToFill.CreditCard.Outcome in enums.xml.
      */
     @IntDef({
@@ -74,17 +75,47 @@ class TouchToFillPaymentMethodMediator {
         int MAX_VALUE = DISMISS;
     }
 
+    /**
+     * The final outcome that closes the IBAN Touch To Fill sheet.
+     *
+     * <p>Entries should not be renumbered and numeric values should never be reused. Needs to stay
+     * in sync with TouchToFill.Iban.Outcome in enums.xml.
+     */
+    @IntDef({
+        TouchToFillIbanOutcome.IBAN,
+        TouchToFillIbanOutcome.MANAGE_PAYMENTS,
+        TouchToFillIbanOutcome.DISMISS
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    @interface TouchToFillIbanOutcome {
+        int IBAN = 0;
+        int MANAGE_PAYMENTS = 1;
+        int DISMISS = 2;
+        int MAX_VALUE = DISMISS;
+    }
+
     @VisibleForTesting
-    static final String TOUCH_TO_FILL_OUTCOME_HISTOGRAM =
+    static final String TOUCH_TO_FILL_CREDIT_CARD_OUTCOME_HISTOGRAM =
             "Autofill.TouchToFill.CreditCard.Outcome2";
 
     @VisibleForTesting
-    static final String TOUCH_TO_FILL_INDEX_SELECTED =
+    static final String TOUCH_TO_FILL_CREDIT_CARD_INDEX_SELECTED =
             "Autofill.TouchToFill.CreditCard.SelectedIndex";
 
     @VisibleForTesting
     static final String TOUCH_TO_FILL_NUMBER_OF_CARDS_SHOWN =
             "Autofill.TouchToFill.CreditCard.NumberOfCardsShown";
+
+    @VisibleForTesting
+    static final String TOUCH_TO_FILL_IBAN_OUTCOME_HISTOGRAM = "Autofill.TouchToFill.Iban.Outcome";
+
+    @VisibleForTesting
+    static final String TOUCH_TO_FILL_IBAN_INDEX_SELECTED =
+            "Autofill.TouchToFill.Iban.SelectedIndex";
+
+    @VisibleForTesting
+    static final String TOUCH_TO_FILL_NUMBER_OF_IBANS_SHOWN =
+            "Autofill.TouchToFill.Iban.NumberOfIbansShown";
 
     // TODO(crbug.com/40246126): Remove the Context from the Mediator.
     private Context mContext;
@@ -117,6 +148,7 @@ class TouchToFillPaymentMethodMediator {
 
         assert cards != null;
         mCards = cards;
+        mIbans = null;
 
         ModelList sheetItems = mModel.get(SHEET_ITEMS);
         sheetItems.clear();
@@ -151,6 +183,7 @@ class TouchToFillPaymentMethodMediator {
 
         assert ibans != null;
         mIbans = ibans;
+        mCards = null;
 
         ModelList sheetItems = mModel.get(SHEET_ITEMS);
         sheetItems.clear();
@@ -172,7 +205,8 @@ class TouchToFillPaymentMethodMediator {
 
         mBottomSheetFocusHelper.registerForOneTimeUse();
         mModel.set(VISIBLE, true);
-        // TODO(b/332193789): Add IBAN-related metrics.
+
+        RecordHistogram.recordCount100Histogram(TOUCH_TO_FILL_NUMBER_OF_IBANS_SHOWN, mIbans.size());
     }
 
     void hideSheet() {
@@ -189,36 +223,58 @@ class TouchToFillPaymentMethodMediator {
                         || reason == StateChangeReason.TAP_SCRIM;
         mDelegate.onDismissed(dismissedByUser);
         if (dismissedByUser) {
-            RecordHistogram.recordEnumeratedHistogram(
-                    TOUCH_TO_FILL_OUTCOME_HISTOGRAM,
-                    TouchToFillCreditCardOutcome.DISMISS,
-                    TouchToFillCreditCardOutcome.MAX_VALUE + 1);
+            if (mCards != null) {
+                RecordHistogram.recordEnumeratedHistogram(
+                        TOUCH_TO_FILL_CREDIT_CARD_OUTCOME_HISTOGRAM,
+                        TouchToFillCreditCardOutcome.DISMISS,
+                        TouchToFillCreditCardOutcome.MAX_VALUE + 1);
+            } else {
+                assert mIbans != null;
+                RecordHistogram.recordEnumeratedHistogram(
+                        TOUCH_TO_FILL_IBAN_OUTCOME_HISTOGRAM,
+                        TouchToFillIbanOutcome.DISMISS,
+                        TouchToFillIbanOutcome.MAX_VALUE + 1);
+            }
         }
     }
 
     public void scanCreditCard() {
         mDelegate.scanCreditCard();
-        recordTouchToFillOutcomeHistogram(TouchToFillCreditCardOutcome.SCAN_NEW_CARD);
+        recordTouchToFillCreditCardOutcomeHistogram(TouchToFillCreditCardOutcome.SCAN_NEW_CARD);
     }
 
     public void showPaymentMethodSettings() {
         mDelegate.showPaymentMethodSettings();
-        recordTouchToFillOutcomeHistogram(TouchToFillCreditCardOutcome.MANAGE_PAYMENTS);
+        if (mCards != null) {
+            recordTouchToFillCreditCardOutcomeHistogram(
+                    TouchToFillCreditCardOutcome.MANAGE_PAYMENTS);
+        } else {
+            assert mIbans != null;
+            recordTouchToFillIbanOutcomeHistogram(TouchToFillIbanOutcome.MANAGE_PAYMENTS);
+        }
     }
 
     public void onSelectedCreditCard(CreditCard card) {
         if (!mInputProtector.shouldInputBeProcessed()) return;
         mDelegate.creditCardSuggestionSelected(card.getGUID(), card.getIsVirtual());
-        recordTouchToFillOutcomeHistogram(
+        recordTouchToFillCreditCardOutcomeHistogram(
                 card.getIsVirtual()
                         ? TouchToFillCreditCardOutcome.VIRTUAL_CARD
                         : TouchToFillCreditCardOutcome.CREDIT_CARD);
-        RecordHistogram.recordCount100Histogram(TOUCH_TO_FILL_INDEX_SELECTED, mCards.indexOf(card));
+        RecordHistogram.recordCount100Histogram(
+                TOUCH_TO_FILL_CREDIT_CARD_INDEX_SELECTED, mCards.indexOf(card));
     }
 
     public void onSelectedIban(Iban iban) {
         if (!mInputProtector.shouldInputBeProcessed()) return;
-        mDelegate.ibanSuggestionSelected(iban.getGuid());
+        if (iban.getRecordType() == IbanRecordType.LOCAL_IBAN) {
+            mDelegate.localIbanSuggestionSelected(iban.getGuid());
+        } else {
+            mDelegate.serverIbanSuggestionSelected(iban.getInstrumentId());
+        }
+        recordTouchToFillIbanOutcomeHistogram(TouchToFillIbanOutcome.IBAN);
+        RecordHistogram.recordCount100Histogram(
+                TOUCH_TO_FILL_IBAN_INDEX_SELECTED, mIbans.indexOf(iban));
     }
 
     private PropertyModel createCardModel(
@@ -283,10 +339,10 @@ class TouchToFillPaymentMethodMediator {
                                 TouchToFillPaymentMethodProperties.IbanProperties
                                         .NON_TRANSFORMING_IBAN_KEYS)
                         .with(
-                            TouchToFillPaymentMethodProperties.IbanProperties.IBAN_VALUE,
+                                TouchToFillPaymentMethodProperties.IbanProperties.IBAN_VALUE,
                                 iban.getLabel())
                         .with(
-                            TouchToFillPaymentMethodProperties.IbanProperties.IBAN_NICKNAME,
+                                TouchToFillPaymentMethodProperties.IbanProperties.IBAN_NICKNAME,
                                 iban.getNickname())
                         .with(ON_IBAN_CLICK_ACTION, () -> this.onSelectedIban(iban));
         return ibanModelBuilder.build();
@@ -333,12 +389,19 @@ class TouchToFillPaymentMethodMediator {
         return true;
     }
 
-    private static void recordTouchToFillOutcomeHistogram(
+    private static void recordTouchToFillCreditCardOutcomeHistogram(
             @TouchToFillCreditCardOutcome int outcome) {
         RecordHistogram.recordEnumeratedHistogram(
-                TOUCH_TO_FILL_OUTCOME_HISTOGRAM,
+                TOUCH_TO_FILL_CREDIT_CARD_OUTCOME_HISTOGRAM,
                 outcome,
                 TouchToFillCreditCardOutcome.MAX_VALUE + 1);
+    }
+
+    private static void recordTouchToFillIbanOutcomeHistogram(@TouchToFillIbanOutcome int outcome) {
+        RecordHistogram.recordEnumeratedHistogram(
+                TOUCH_TO_FILL_IBAN_OUTCOME_HISTOGRAM,
+                outcome,
+                TouchToFillIbanOutcome.MAX_VALUE + 1);
     }
 
     void setInputProtectorForTesting(InputProtector inputProtector) {

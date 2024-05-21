@@ -322,7 +322,7 @@ void HTMLConstructionSite::ExecuteTask(HTMLConstructionSiteTask& task) {
   if (task.operation == HTMLConstructionSiteTask::kTakeAllChildren)
     return ExecuteTakeAllChildrenTask(task);
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 // This is only needed for TextDocuments where we might have text nodes
@@ -444,8 +444,11 @@ void HTMLConstructionSite::AttachLater(ContainerNode* parent,
   // Add as a sibling of the parent if we have reached the maximum depth
   // allowed.
   if (open_elements_.StackDepth() > kMaximumHTMLParserDOMTreeDepth &&
-      task.parent->parentNode())
+      task.parent->parentNode()) {
+    UseCounter::Count(OwnerDocumentForCurrentNode(),
+                      WebFeature::kMaximumHTMLParserDOMTreeDepthHit);
     task.parent = task.parent->parentNode();
+  }
 
   DCHECK(task.parent);
   QueueTask(task, true);

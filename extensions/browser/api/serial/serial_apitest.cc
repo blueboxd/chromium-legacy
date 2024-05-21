@@ -135,10 +135,10 @@ class FakeSerialPort : public device::mojom::SerialPort {
       return;
     }
 
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
-  void Drain(DrainCallback callback) override { NOTREACHED(); }
+  void Drain(DrainCallback callback) override { NOTREACHED_IN_MIGRATION(); }
 
   void GetControlSignals(GetControlSignalsCallback callback) override {
     auto signals = device::mojom::SerialPortControlSignals::New();
@@ -213,7 +213,7 @@ class FakeSerialPort : public device::mojom::SerialPort {
       return;
     }
     // The code should not reach other cases.
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   void DoRead(MojoResult result, const mojo::HandleSignalsState& state) {

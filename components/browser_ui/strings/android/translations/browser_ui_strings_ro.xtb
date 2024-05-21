@@ -68,7 +68,6 @@
 <translation id="2241587408274973373">Carduri din pagina Filă nouă</translation>
 <translation id="2241634353105152135">Numai o singură dată</translation>
 <translation id="2253414712144136228">Elimină <ph name="NAME_OF_LIST_ITEM" /></translation>
-<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{Un site blocat}few{# site-uri blocate}other{# de site-uri blocate}}</translation>
 <translation id="228293613124499805">Probabil că majoritatea site-urilor pe care le accesezi salvează date pe dispozitiv, adesea pentru a-ți îmbunătăți experiența, salvând preferințele sau informațiile la care permiți accesul site-ului. Îți recomandăm să păstrezi activată această setare.</translation>
 <translation id="2289270750774289114">Întreabă-mă când un site dorește să descopere dispozitive Bluetooth din apropiere (recomandat)</translation>
 <translation id="2315043854645842844">Selectarea certificatelor pe partea de client nu este acceptată de sistemul de operare.</translation>
@@ -305,6 +304,7 @@
 <translation id="6015775454662021376">Gestionează accesul acestui site la dispozitivul tău</translation>
 <translation id="6040143037577758943">Închide</translation>
 <translation id="6042308850641462728">Mai multe</translation>
+<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Ultima filă</translation>
 <translation id="6064125863973209585">Descărcări finalizate</translation>
 <translation id="6071501408666570960">Este posibil să te fi deconectat de pe acest site</translation>
 <translation id="6120483543004435978">Când opțiunea este activată, site-urile pot solicita permisiunea de a afla când folosești activ dispozitivul. Când opțiunea este dezactivată, site-urile nu pot afla când folosești activ dispozitivul.</translation>
@@ -426,6 +426,7 @@
 <translation id="7986741934819883144">Selectează o persoană de contact</translation>
 <translation id="7990211076305263060">Când opțiunea este activată, site-urile pot solicita permisiunea de a folosi microfonul. Când opțiunea este dezactivată, site-urile nu pot folosi microfonul.</translation>
 <translation id="8007176423574883786">Dezactivată pentru acest dispozitiv</translation>
+<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Din <ph name="FROM_DEVICE" /></translation>
 <translation id="802154636333426148">Descărcarea nu a reușit</translation>
 <translation id="8042586301629853791">Sortează după:</translation>
 <translation id="8067883171444229417">Redă videoclipul</translation>
@@ -480,7 +481,6 @@
 <translation id="8721719390026067591">Când opțiunea este activată, site-urile pot solicita permisiunea de a căuta dispozitive Bluetooth. Când opțiunea este dezactivată, site-urile nu pot căuta dispozitive Bluetooth.</translation>
 <translation id="8725066075913043281">Încearcă din nou</translation>
 <translation id="8730621377337864115">Terminat</translation>
-<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{Un site permis}few{# site-uri permise}other{# de site-uri permise}}</translation>
 <translation id="8751914237388039244">Selectează o imagine</translation>
 <translation id="8800034312320686233">Site-ul nu funcționează?</translation>
 <translation id="8801436777607969138">Blochează JavaScript pentru un anumit site.</translation>

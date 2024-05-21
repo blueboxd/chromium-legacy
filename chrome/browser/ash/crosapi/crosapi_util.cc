@@ -68,6 +68,7 @@
 #include "chromeos/crosapi/mojom/automation.mojom.h"
 #include "chromeos/crosapi/mojom/browser_app_instance_registry.mojom.h"
 #include "chromeos/crosapi/mojom/browser_service.mojom.h"
+#include "chromeos/crosapi/mojom/cec_private.mojom.h"
 #include "chromeos/crosapi/mojom/cert_database.mojom.h"
 #include "chromeos/crosapi/mojom/cert_provisioning.mojom.h"
 #include "chromeos/crosapi/mojom/chaps_service.mojom.h"
@@ -96,6 +97,7 @@
 #include "chromeos/crosapi/mojom/embedded_accessibility_helper.mojom.h"
 #include "chromeos/crosapi/mojom/emoji_picker.mojom.h"
 #include "chromeos/crosapi/mojom/extension_info_private.mojom.h"
+#include "chromeos/crosapi/mojom/extension_printer.mojom.h"
 #include "chromeos/crosapi/mojom/eye_dropper.mojom.h"
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
 #include "chromeos/crosapi/mojom/file_change_service_bridge.mojom.h"
@@ -423,7 +425,7 @@ constexpr InterfaceVersionEntry MakeInterfaceVersionEntry() {
   return {T::Uuid_, T::Version_};
 }
 
-static_assert(crosapi::mojom::Crosapi::Version_ == 137,
+static_assert(crosapi::mojom::Crosapi::Version_ == 139,
               "If you add a new crosapi, please add it to "
               "kInterfaceVersionEntries below.");
 
@@ -446,6 +448,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::BrowserAppInstanceRegistry>(),
     MakeInterfaceVersionEntry<crosapi::mojom::BrowserServiceHost>(),
     MakeInterfaceVersionEntry<crosapi::mojom::BrowserVersionService>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::CecPrivate>(),
     MakeInterfaceVersionEntry<crosapi::mojom::CertDatabase>(),
     MakeInterfaceVersionEntry<crosapi::mojom::CertProvisioning>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ChapsService>(),
@@ -475,6 +478,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::EditorPanelManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::EmojiPicker>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ExtensionInfoPrivate>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::ExtensionPrinterService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::EyeDropper>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Feedback>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FieldTrialService>(),
@@ -953,6 +957,8 @@ void InjectBrowserInitParams(
       chromeos::features::IsOrcaInternationalizeEnabled();
 
   params->is_cros_mall_enabled = chromeos::features::IsCrosMallEnabled();
+
+  params->is_magic_boost_enabled = chromeos::features::IsMagicBoostEnabled();
 
   params->is_mahi_enabled = chromeos::features::IsMahiEnabled();
 

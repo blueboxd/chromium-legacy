@@ -32,11 +32,9 @@ class BubbleSignInPromoSignInButtonView : public views::View {
   // |callback| is called every time the user interacts with this button.
   explicit BubbleSignInPromoSignInButtonView(
       views::Button::PressedCallback callback,
-      ui::ButtonStyle button_style);
-
-  // Add a callback function to the sign in button.
-  void AddCallbackToSignInButton(views::MdTextButton* text_button,
-                                 views::Button::PressedCallback callback);
+      signin_metrics::AccessPoint access_point,
+      ui::ButtonStyle button_style,
+      std::u16string button_text);
 
   // Creates a sign-in button personalized with the data from |account|.
   // |callback| is called every time the user interacts with this button.
@@ -44,6 +42,7 @@ class BubbleSignInPromoSignInButtonView : public views::View {
                                     const gfx::Image& account_icon,
                                     views::Button::PressedCallback callback,
                                     signin_metrics::AccessPoint access_point,
+                                    std::u16string button_text,
                                     bool use_account_name_as_title = false);
   BubbleSignInPromoSignInButtonView(const BubbleSignInPromoSignInButtonView&) =
       delete;
@@ -54,6 +53,17 @@ class BubbleSignInPromoSignInButtonView : public views::View {
   std::optional<AccountInfo> account() const { return account_; }
 
  private:
+  // Calls `AddCallbackToSignInButton`, but adds a delay if it is for an
+  // autofill sign in promo in order to avoid a direct action through
+  // double click on the save button in the bubble before.
+  void AddOrDelayCallbackForSignInButton(
+      signin_metrics::AccessPoint access_point,
+      views::MdTextButton* text_button,
+      views::Button::PressedCallback& callback);
+
+  void AddCallbackToSignInButton(views::MdTextButton* text_button,
+                                 views::Button::PressedCallback callback);
+
   const std::optional<AccountInfo> account_;
 
   base::WeakPtrFactory<BubbleSignInPromoSignInButtonView> weak_ptr_factory_{

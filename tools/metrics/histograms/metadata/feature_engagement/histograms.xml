@@ -163,6 +163,9 @@ chromium-metrics-reviews@google.com.
   <variant name="IPH_EphemeralTab"
       summary="new label on the context menu for Ephemeral Tab"/>
   <variant name="IPH_ExperimentalAIPromo" summary="Experimental AI promo"/>
+  <variant name="IPH_ExplicitBrowserSigninPreferenceRemembered"
+      summary="Confirmation message that the explicit browser signin
+               preference was remembered"/>
   <variant name="IPH_ExploreSitesTile" summary="Explore Sites feature"/>
   <variant name="IPH_ExtensionsMenu" summary="extensions menu opened"/>
   <variant name="IPH_ExtensionsRequestAccessButton"
@@ -330,6 +333,9 @@ chromium-metrics-reviews@google.com.
       summary="the Autofill password suggestions on iOS"/>
   <variant name="IPH_PasswordsWebAppProfileSwitch"
       summary="profile switch in Password Manager web app"/>
+  <variant name="IPH_PerformanceInterventionDialog"
+      summary="triggering the performance intervention dialog and toolbar
+               button"/>
   <variant name="IPH_PerformanceNewBadge"
       summary="New badge shows next to performance item on the app menu"/>
   <variant name="IPH_PowerBookmarksSidePanel"
@@ -542,7 +548,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="InProductHelp.Config.ParsingEvent" enum="ConfigParsingEvent"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>nyquist@chromium.org</owner>
   <summary>
     Records if in-product help configuration is parsed correctly, and the

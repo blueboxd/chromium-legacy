@@ -126,6 +126,7 @@
 #include "content/browser/renderer_host/navigation_metrics_utils.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigation_state_keep_alive.h"
+#include "content/browser/renderer_host/navigation_transitions/navigation_transition_utils.h"
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/page_delegate.h"
 #include "content/browser/renderer_host/private_network_access_util.h"
@@ -472,7 +473,7 @@ RendererEvictionReasonToNotRestoredReason(
       return BackForwardCacheMetrics::NotRestoredReason::
           kBroadcastChannelOnMessage;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return BackForwardCacheMetrics::NotRestoredReason::kUnknown;
 }
 
@@ -895,7 +896,7 @@ perfetto::protos::pbzero::FrameDeleteIntention FrameDeleteIntentionToProto(
           FRAME_DELETE_INTENTION_SPECULATIVE_MAIN_FRAME_FOR_NAVIGATION_CANCELLED;
   }
   // All cases should've been handled by the switch case above.
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return ProtoLevel::FRAME_DELETE_INTENTION_NOT_MAIN_FRAME;
 }
 
@@ -1903,7 +1904,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
         // replace the `DumpWithoutCrashing` with a `CHECK`. Otherwise, add a
         // new browser test for it.
         base::debug::DumpWithoutCrashing();
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
       }
     }
   }
@@ -2630,7 +2631,7 @@ RenderFrameHostImpl::CreateSubresourceLoaderFactoriesForInitialEmptyDocument() {
     case RenderFrameHostImpl::LifecycleStateImpl::kReadyToBeDeleted:
     case RenderFrameHostImpl::LifecycleStateImpl::kRunningUnloadHandlers:
       // A newly-created frame shouldn't be in any of the states above.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
     case RenderFrameHostImpl::LifecycleStateImpl::kSpeculative:
       // No subresource requests should be initiated in the speculative frame.
@@ -2926,7 +2927,7 @@ void RenderFrameHostImpl::OnAssociatedInterfaceRequest(
   // `this` is an `IPC::Listener`, but there is no path by which `this` would
   // receive associated interface requests through this method. Associated
   // interface requests come in through `GetAssociatedInterface()`.
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 std::string RenderFrameHostImpl::ToDebugString() {
@@ -4407,7 +4408,6 @@ bool RenderFrameHostImpl::IsThirdPartyStoragePartitioningEnabled(
   // net::features::ThirdPartyStoragePartitioning.
   if (rfs_document_data_for_storage_key->runtime_feature_state_read_context()
           .IsDisableThirdPartyStoragePartitioningEnabledForThirdParty(
-              main_frame_for_storage_partitioning->GetLastCommittedOrigin(),
               third_party_origins)) {
     return false;
   }
@@ -5247,7 +5247,7 @@ RenderWidgetHostImpl* RenderFrameHostImpl::GetRenderWidgetHost() {
     frame = frame->GetParent();
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 
@@ -5354,7 +5354,8 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
   // If this RenderFrameHost is already pending deletion, it must have already
   // gone through this, therefore just return.
   if (IsPendingDeletion()) {
-    NOTREACHED() << "RFH should be in default state when calling Unload.";
+    NOTREACHED_IN_MIGRATION()
+        << "RFH should be in default state when calling Unload.";
     return;
   }
 
@@ -6523,7 +6524,7 @@ WebUI* RenderFrameHostImpl::GetWebUI() {
 void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
   // Never grant any bindings to browser plugin guests.
   if (GetProcess()->IsForGuestsOnly()) {
-    NOTREACHED() << "Never grant bindings to a guest process.";
+    NOTREACHED_IN_MIGRATION() << "Never grant bindings to a guest process.";
     return;
   }
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::AllowBindings",
@@ -9898,7 +9899,7 @@ void RenderFrameHostImpl::ResourceLoadComplete(
 
 void RenderFrameHostImpl::HandleAXEvents(
     const ui::AXTreeID& tree_id,
-    blink::mojom::AXUpdatesAndEventsPtr updates_and_events,
+    ui::AXUpdatesAndEvents updates_and_events,
     uint32_t reset_token) {
   TRACE_EVENT0("accessibility", "RenderFrameHostImpl::HandleAXEvents");
   SCOPED_UMA_HISTOGRAM_TIMER_MICROS(
@@ -9946,11 +9947,15 @@ void RenderFrameHostImpl::HandleAXEvents(
     DUMP_WILL_BE_CHECK(false);
   }
 
+  // TODO(accessibility): we should probably consolidate these two params.
+  updates_and_events.ax_tree_id = tree_id;
+
   if (base::FeatureList::IsEnabled(features::kEvictOnAXEvents)) {
     // If the flag is on, evict the bfcache entry now that AX events are
     // received.
-    if (IsInactiveAndDisallowActivationForAXEvents(updates_and_events->events))
+    if (IsInactiveAndDisallowActivationForAXEvents(updates_and_events.events)) {
       return;
+    }
   } else {
     // If the page is in back/forward cache, do not return early and continue to
     // apply AX tree updates.
@@ -9964,11 +9969,7 @@ void RenderFrameHostImpl::HandleAXEvents(
 
   GetOrCreateBrowserAccessibilityManager();
 
-  ui::AXUpdatesAndEvents details;
-  details.ax_tree_id = tree_id;
-  details.events = std::move(updates_and_events->events);
-  details.updates = std::move(updates_and_events->updates);
-  for (auto& update : details.updates) {
+  for (auto& update : updates_and_events.updates) {
     if (update.has_tree_data) {
       DCHECK_EQ(tree_id, update.tree_data.tree_id);
       ax_tree_data_ = update.tree_data;
@@ -9979,32 +9980,32 @@ void RenderFrameHostImpl::HandleAXEvents(
   if (needs_ax_root_id_) {
     // This is the first update after the tree id changed. AXTree must be sent
     // a new root id, otherwise crashes are likely to result.
-    DCHECK(!details.updates.empty());
-    DCHECK_NE(ui::kInvalidAXNodeID, details.updates[0].root_id);
+    DCHECK(!updates_and_events.updates.empty());
+    DCHECK_NE(ui::kInvalidAXNodeID, updates_and_events.updates[0].root_id);
     needs_ax_root_id_ = false;
   }
 
   if (features::IsUseMoveNotCopyInMergeTreeUpdateEnabled()) {
-    // While experimenting with moving `details`, we have to ensure this call
+    // While experimenting with moving data, we have to ensure this call
     // order. This won't be the final structure of the code.
-    delegate_->AccessibilityEventReceived(details);
+    delegate_->ProcessAccessibilityUpdatesAndEvents(updates_and_events);
 
-    // This call steals the contents of `details` to avoid copying.
-    SendAccessibilityEventsToManager(details);
+    // This call steals the contents of the data to avoid copying.
+    SendAccessibilityEventsToManager(updates_and_events);
   } else {
-    SendAccessibilityEventsToManager(details);
-    delegate_->AccessibilityEventReceived(details);
+    SendAccessibilityEventsToManager(updates_and_events);
+    delegate_->ProcessAccessibilityUpdatesAndEvents(updates_and_events);
   }
 
   // For testing only.
   if (!accessibility_testing_callback_.is_null()) {
-    if (details.events.empty()) {
+    if (updates_and_events.events.empty()) {
       // Objects were marked dirty but no events were provided.
       // The callback must still run, otherwise dump event tests can hang.
       accessibility_testing_callback_.Run(this, ax::mojom::Event::kNone, 0);
     } else {
       // Call testing callback functions for each event to fire.
-      for (auto& event : details.events) {
+      for (auto& event : updates_and_events.events) {
         if (static_cast<int>(event.event_type) < 0)
           continue;
 
@@ -10872,9 +10873,9 @@ void RenderFrameHostImpl::CommitNavigation(
     // the key does not exceed the 40 character limit.
     SCOPED_CRASH_KEY_BOOL("CommitNavigation", "is_outermost_frame",
                           IsOutermostMainFrame());
-    NOTREACHED() << "Commiting in incompatible process for URL: "
-                 << process_lock.lock_url() << " lock vs "
-                 << common_params->url.DeprecatedGetOriginAsURL();
+    NOTREACHED_IN_MIGRATION() << "Commiting in incompatible process for URL: "
+                              << process_lock.lock_url() << " lock vs "
+                              << common_params->url.DeprecatedGetOriginAsURL();
     base::debug::DumpWithoutCrashing();
   }
 
@@ -11692,7 +11693,7 @@ void RenderFrameHostImpl::UpdateAXTreeData() {
   detail.updates[0].tree_data = GetAXTreeData();
 
   SendAccessibilityEventsToManager(detail);
-  delegate_->AccessibilityEventReceived(detail);
+  delegate_->ProcessAccessibilityUpdatesAndEvents(detail);
 }
 
 RenderFrameHostImpl::UpdateAXFocusDeferScope::UpdateAXFocusDeferScope(
@@ -11777,7 +11778,7 @@ RenderFrameHost::LifecycleState RenderFrameHostImpl::GetLifecycleStateFromImpl(
     case LifecycleStateImpl::kSpeculative:
       // TODO(crbug.com/40171294): Ensure that Speculative
       // RenderFrameHosts are not exposed to embedders.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return LifecycleState::kPendingCommit;
     case LifecycleStateImpl::kPendingCommit:
       return LifecycleState::kPendingCommit;
@@ -11841,7 +11842,8 @@ FrameTreeNode* RenderFrameHostImpl::GetSibling(int relative_offset) const {
     return parent_->child_at(i + relative_offset);
   }
 
-  NOTREACHED() << "FrameTreeNode not found in its parent's children.";
+  NOTREACHED_IN_MIGRATION()
+      << "FrameTreeNode not found in its parent's children.";
   return nullptr;
 }
 
@@ -13377,11 +13379,17 @@ bool RenderFrameHostImpl::ValidateURLAndOrigin(
     bool is_same_document_navigation,
     NavigationRequest* navigation_request,
     std::string origin_calculation_debug_info) {
-  // file: URLs can be allowed to access any other origin, based on settings.
+  // WebView's allow_universal_access_from_file_urls setting allows file origins
+  // to access any other origin and bypass normal commit checks. If new
+  // documents in the same process and origin may also bypass these checks after
+  // the setting is disabled (e.g., due to document.open), they are allowed a
+  // narrower exemption in ChildProcessSecurityPolicyImpl::CanCommitOriginAndUrl
+  // due to compatibility requirements for existing apps.
   if (origin.scheme() == url::kFileScheme) {
     auto prefs = GetOrCreateWebPreferences();
-    if (prefs.allow_universal_access_from_file_urls)
+    if (prefs.allow_universal_access_from_file_urls) {
       return true;
+    }
   }
 
   // If the --disable-web-security flag is specified, all bets are off and the
@@ -13416,7 +13424,7 @@ bool RenderFrameHostImpl::ValidateURLAndOrigin(
        renderer_url_info_.was_loaded_from_load_data_with_base_url) ||
       (origin.opaque() &&
        ChildProcessSecurityPolicyImpl::GetInstance()
-           ->IsOpaqueOriginForLoadDataWithBaseURL(process->GetID(), origin))) {
+           ->HasOriginCheckExemptionForWebView(process->GetID(), origin))) {
     // Allow bypass if the process isn't locked. Otherwise run normal checks.
     if (!process->GetProcessLock().is_locked_to_site())
       return true;
@@ -13442,7 +13450,7 @@ bool RenderFrameHostImpl::ValidateURLAndOrigin(
                   << " origin '" << origin << "'"
                   << " lock '" << process->GetProcessLock().ToString() << "'";
       VLOG(1) << "Blocked URL " << url.spec();
-      LogCannotCommitUrlCrashKeys(url, is_same_document_navigation,
+      LogCannotCommitUrlCrashKeys(url, origin, is_same_document_navigation,
                                   navigation_request,
                                   origin_calculation_debug_info);
 
@@ -13625,9 +13633,9 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     //   DidCommitSameDocumentNavigation).
     // TODO(crbug.com/40150370): Make this a CHECK instead once we're
     // sure we never hit this case.
-    LogCannotCommitUrlCrashKeys(params->url, is_same_document_navigation,
-                                navigation_request.get(),
-                                params->origin_calculation_debug_info);
+    LogCannotCommitUrlCrashKeys(
+        params->url, params->origin, is_same_document_navigation,
+        navigation_request.get(), params->origin_calculation_debug_info);
     base::debug::DumpWithoutCrashing();
   }
 
@@ -13650,9 +13658,9 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
           params->url, frame_tree_node_->is_on_initial_empty_document());
   if (!navigation_request && !is_synchronous_about_blank_commit &&
       !is_same_document_navigation) {
-    LogCannotCommitUrlCrashKeys(params->url, is_same_document_navigation,
-                                navigation_request.get(),
-                                params->origin_calculation_debug_info);
+    LogCannotCommitUrlCrashKeys(
+        params->url, params->origin, is_same_document_navigation,
+        navigation_request.get(), params->origin_calculation_debug_info);
 
     bad_message::ReceivedBadMessage(
         GetProcess(),
@@ -13670,14 +13678,37 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   // CanCommitURL checks (unlike opaque origins for pseudoschemes, as seen in
   // https://crbug.com/326250356).
   //
-  // TODO(crbug.com/40092527): Move this to UpdatePermissionsForNavigation
+  // A similar exemption is granted for file origins when WebView's
+  // allow_universal_access_from_file_urls setting is enabled, in case that
+  // setting is later disabled and then a previously-exempted URL is inherited
+  // by a new same-origin document via document.open.
+  //
+  // TODO(crbug.com/40092527): Move these to UpdatePermissionsForNavigation
   // once origin can be reliably computed by NavigationRequest at commit time.
   if (navigation_request && navigation_request->IsLoadDataWithBaseURL() &&
       params->origin.opaque() &&
       !GetProcess()->GetProcessLock().is_locked_to_site()) {
     ChildProcessSecurityPolicyImpl::GetInstance()
-        ->GrantOpaqueOriginForLoadDataWithBaseURL(GetProcess()->GetID(),
-                                                  params->origin);
+        ->GrantOriginCheckExemptionForWebView(GetProcess()->GetID(),
+                                              params->origin);
+    // Log a crash key when LoadDataWithBaseURL is given an exemption, to help
+    // diagnose any renderer kills that result from it.
+    static auto* const crash_key = base::debug::AllocateCrashKeyString(
+        "ever_had_loaddatawithbaseurl_exemption",
+        base::debug::CrashKeySize::Size32);
+    base::debug::SetCrashKeyString(crash_key, "true");
+  }
+  if (GetOrCreateWebPreferences().allow_universal_access_from_file_urls &&
+      params->origin.scheme() == url::kFileScheme) {
+    ChildProcessSecurityPolicyImpl::GetInstance()
+        ->GrantOriginCheckExemptionForWebView(GetProcess()->GetID(),
+                                              params->origin);
+    // Log a crash key when universal access is given an exemption, to help
+    // diagnose any renderer kills that result from it.
+    static auto* const crash_key = base::debug::AllocateCrashKeyString(
+        "ever_had_universal_access_exemption",
+        base::debug::CrashKeySize::Size32);
+    base::debug::SetCrashKeyString(crash_key, "true");
   }
 
   if (!ValidateDidCommitParams(navigation_request.get(), params.get(),
@@ -13964,6 +13995,14 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     document_associated_data_->owned_page()->set_last_main_document_source_id(
         ukm::ConvertToSourceId(navigation_request->GetNavigationId(),
                                ukm::SourceIdType::NAVIGATION_ID));
+  }
+
+  if (is_same_document_navigation &&
+      same_document_params->navigation_entry_screenshot_destination
+          .has_value()) {
+    NavigationTransitionUtils::SetSameDocumentNavigationEntryScreenshotToken(
+        *(navigation_request.get()),
+        same_document_params->navigation_entry_screenshot_destination.value());
   }
 
   // TODO(crbug.com/40150370): Do not pass |params| to DidNavigate().
@@ -14467,11 +14506,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
                   GetSiteInstance()->GetStoragePartitionConfig())
               ->id();
       partition->BindSessionStorageAreaForProcess(
-          process_id,
-          navigation_request->frame_tree_node()
-              ->frame_tree()
-              .GetSessionStorageKey(commit_params->storage_key),
-          namespace_id,
+          process_id, commit_params->storage_key, namespace_id,
           storage_info->session_storage_area.InitWithNewPipeAndPassReceiver());
     }
   }
@@ -14910,6 +14945,7 @@ void RenderFrameHostImpl::AddMessageToConsoleImpl(
 
 void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
     const GURL& url,
+    const url::Origin& origin,
     bool is_same_document_navigation,
     NavigationRequest* navigation_request,
     std::string& origin_calculation_debug_info) {
@@ -14949,6 +14985,17 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
       "is_local_root", base::debug::CrashKeySize::Size32);
   base::debug::SetCrashKeyString(is_local_root_key,
                                  bool_to_crash_key(is_local_root()));
+
+  static auto* const is_opaque_origin_key = base::debug::AllocateCrashKeyString(
+      "is_opaque_origin", base::debug::CrashKeySize::Size32);
+  base::debug::SetCrashKeyString(is_opaque_origin_key,
+                                 bool_to_crash_key(origin.opaque()));
+
+  static auto* const is_file_origin_key = base::debug::AllocateCrashKeyString(
+      "is_file_origin", base::debug::CrashKeySize::Size32);
+  base::debug::SetCrashKeyString(
+      is_file_origin_key,
+      bool_to_crash_key(origin.scheme() == url::kFileScheme));
 
   static auto* const site_lock_key = base::debug::AllocateCrashKeyString(
       "site_lock", base::debug::CrashKeySize::Size256);
@@ -16603,18 +16650,19 @@ bool RenderFrameHostImpl::ShouldWaitForUnloadHandlers() const {
 }
 
 void RenderFrameHostImpl::AssertFrameWasCommitted() const {
-  if (LIKELY(lifecycle_state() != LifecycleStateImpl::kSpeculative &&
-             lifecycle_state() != LifecycleStateImpl::kPendingCommit)) {
+  if (lifecycle_state() != LifecycleStateImpl::kSpeculative &&
+      lifecycle_state() != LifecycleStateImpl::kPendingCommit) [[likely]] {
     return;
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   base::debug::DumpWithoutCrashing();
 }
 
 void RenderFrameHostImpl::AssertBrowserContextShutdownHasntStarted() {
-  if (LIKELY(!GetBrowserContext()->ShutdownStarted()))
+  if (!GetBrowserContext()->ShutdownStarted()) [[likely]] {
     return;
+  }
 
   std::string debug_string = ToDebugString();
   SCOPED_CRASH_KEY_STRING256("shutdown", "frame->ToDebugString", debug_string);

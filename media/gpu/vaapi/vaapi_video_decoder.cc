@@ -158,7 +158,7 @@ VaapiVideoDecoder::~VaapiVideoDecoder() {
   decoder_ = nullptr;
   if (vaapi_wrapper_) {
     vaapi_wrapper_->DestroyContext();
-    allocated_va_surfaces_.clear();
+    allocated_va_surfaces_.Clear();
 
     DCHECK(vaapi_wrapper_->HasOneRef());
     vaapi_wrapper_ = nullptr;
@@ -198,7 +198,7 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
     DCHECK(vaapi_wrapper_);
     // To clear |allocated_va_surfaces_|, we have to first DestroyContext().
     vaapi_wrapper_->DestroyContext();
-    allocated_va_surfaces_.clear();
+    allocated_va_surfaces_.Clear();
 
     DCHECK(vaapi_wrapper_->HasOneRef());
     vaapi_wrapper_ = nullptr;
@@ -446,7 +446,7 @@ void VaapiVideoDecoder::HandleDecodeTask() {
           // destroyed.
           CHECK(!!vaapi_wrapper_);
           CHECK(!vaapi_wrapper_->HasContext());
-          allocated_va_surfaces_.clear();
+          allocated_va_surfaces_.Clear();
           const gfx::Size decoder_pic_size = decoder_->GetPicSize();
           if (decoder_pic_size.IsEmpty()) {
             SetErrorState("|decoder_| returned an empty picture size");
@@ -498,29 +498,29 @@ scoped_refptr<VASurface> VaapiVideoDecoder::CreateSurface() {
     return nullptr;
   }
 
-  const gfx::GpuMemoryBufferId frame_id = frame->GetSharedMemoryId();
-  DCHECK(frame_id.is_valid());
+  DCHECK(frame->GetSharedMemoryId().is_valid());
+  const auto frame_id = frame->GetSharedMemoryId().id;
+  const auto* surface = allocated_va_surfaces_.Lookup(frame_id);
 
-  scoped_refptr<VASurface> va_surface;
-  if (!base::Contains(allocated_va_surfaces_, frame_id)) {
-    va_surface = vaapi_wrapper_->CreateVASurfaceForFrameResource(
-        *frame, cdm_context_ref_ || transcryption_);
+  if (!surface) {
+    std::unique_ptr<ScopedVASurface> va_surface =
+        vaapi_wrapper_->CreateVASurfaceForFrameResource(
+            *frame, cdm_context_ref_ || transcryption_);
     if (!va_surface || va_surface->id() == VA_INVALID_ID) {
       SetErrorState("failed to create VASurface from FrameResource");
       return nullptr;
     }
-
-    allocated_va_surfaces_[frame_id] = va_surface;
+    allocated_va_surfaces_.AddWithID(std::move(va_surface), frame_id);
   } else {
-    va_surface = allocated_va_surfaces_[frame_id];
-    DCHECK_EQ(frame->coded_size(), va_surface->size());
+    DCHECK_EQ(frame->coded_size(), surface->size());
   }
 
   // Store the mapping between surface and video frame, so we know which video
   // frame to output when the surface is ready. It's also important to keep a
   // reference to the video frame during decoding, as the frame will be
   // automatically returned to the pool when the last reference is dropped.
-  VASurfaceID surface_id = va_surface->id();
+  const ScopedVASurface* va_surface = allocated_va_surfaces_.Lookup(frame_id);
+  const VASurfaceID surface_id = va_surface->id();
   DCHECK_EQ(output_frames_.count(surface_id), 0u);
   output_frames_[surface_id] = frame;
 
@@ -667,7 +667,7 @@ void VaapiVideoDecoder::ApplyResolutionChangeWithScreenSizes(
   // resolution change, so we can safely DestroyContext() here; that, in turn,
   // allows for clearing the |allocated_va_surfaces_|.
   vaapi_wrapper_->DestroyContext();
-  allocated_va_surfaces_.clear();
+  allocated_va_surfaces_.Clear();
 
   const gfx::Rect decoder_visible_rect = decoder_->GetVisibleRect();
   const gfx::Size decoder_pic_size = decoder_->GetPicSize();
@@ -879,7 +879,7 @@ VaapiVideoDecoder::AllocateCustomFrame(VideoPixelFormat format,
   DCHECK(!use_linear_buffers);
   DCHECK(!needs_detiling);
 
-  scoped_refptr<VASurface> surface;
+  std::unique_ptr<ScopedVASurface> surface;
   switch (format) {
     case PIXEL_FORMAT_NV12: {
       surface = vaapi_wrapper_->CreateVASurfaceWithUsageHints(
@@ -901,7 +901,7 @@ VaapiVideoDecoder::AllocateCustomFrame(VideoPixelFormat format,
   if (!surface)
     return CroStatus::Codes::kFailedToCreateVideoFrame;
   auto pixmap_and_info =
-      vaapi_wrapper_->ExportVASurfaceAsNativePixmapDmaBuf(*surface);
+      vaapi_wrapper_->ExportVASurfaceAsNativePixmapDmaBuf(*surface.get());
   if (!pixmap_and_info)
     return CroStatus::Codes::kFailedToCreateVideoFrame;
 
@@ -911,7 +911,8 @@ VaapiVideoDecoder::AllocateCustomFrame(VideoPixelFormat format,
   if (!frame)
     return CroStatus::Codes::kFailedToCreateVideoFrame;
 
-  allocated_va_surfaces_[frame->GetSharedMemoryId()] = surface;
+  allocated_va_surfaces_.AddWithID(std::move(surface),
+                                   frame->GetSharedMemoryId().id);
 
   return frame;
 }
@@ -919,7 +920,7 @@ VaapiVideoDecoder::AllocateCustomFrame(VideoPixelFormat format,
 bool VaapiVideoDecoder::NeedsBitstreamConversion() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(output_cb_) << "VaapiVideoDecoder hasn't been initialized";
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) ||
          (profile_ >= HEVCPROFILE_MIN && profile_ <= HEVCPROFILE_MAX);
 }

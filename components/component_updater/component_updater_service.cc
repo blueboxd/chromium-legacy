@@ -331,7 +331,6 @@ void CrxUpdateService::MaybeThrottle(const std::string& id,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const auto it = components_.find(id);
   if (it != components_.end()) {
-    DCHECK_EQ(it->first, id);
     if (OnDemandUpdateWithCooldown(id)) {
       ready_callbacks_.insert(std::make_pair(id, std::move(callback)));
       return;
@@ -397,7 +396,7 @@ void CrxUpdateService::OnDemandUpdateInternal(const std::string& id,
     update_client_->Update({id}, std::move(crx_data_callback), {}, false,
                            std::move(update_complete_callback));
   } else {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 }
 

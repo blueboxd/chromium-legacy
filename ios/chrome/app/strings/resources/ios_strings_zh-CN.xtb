@@ -544,7 +544,7 @@
 <translation id="3819183753496523827">您未联网。请检查您的互联网连接状况，然后重试。</translation>
 <translation id="3832419617903252251">密码仅保存在此设备上</translation>
 <translation id="3835964409414434850">转到下一个标签页</translation>
-<translation id="383781833195845844">使用此标签页继续</translation>
+<translation id="383781833195845844">继续使用此标签页</translation>
 <translation id="3838691874161539578">检查您已保存的密码，让您在上网时更安全、更安心</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3851938967634752633">用于登录 <ph name="WEBSITE" />、<ph name="SECOND_WEBSITE" /> 和另外 <ph name="NUMBER_OF_ACCOUNTS" /> 个网站的密码将被删除。您的相关账号不会被删除。</translation>
@@ -862,6 +862,7 @@
 <translation id="5444892875087332195">书签</translation>
 <translation id="5454211924362324495">为防止他人使用您的密码，请<ph name="BEGIN_LINK" />前往 <ph name="WEBSITE" /> 更改密码<ph name="END_LINK" /></translation>
 <translation id="5457226814769348910">打开离线版</translation>
+<translation id="5459548306731933777">显示详细信息</translation>
 <translation id="5475069061743940393">包裹跟踪</translation>
 <translation id="5478327362747197944">点击网页上的日期即可直接创建日历活动。</translation>
 <translation id="5482922178977937393">是否愿意接收系统根据您的兴趣推送的新闻、体育等方面的通知？</translation>
@@ -1442,7 +1443,6 @@
 <translation id="8283172974887967105">设置…</translation>
 <translation id="8286036467436129157">登录</translation>
 <translation id="8289930144142009940">“<ph name="FEATURE_NAME" />”通知已关闭</translation>
-<translation id="8292843446079898078">接收所跟踪商品的降价提醒。</translation>
 <translation id="8299417921174340354">您必须先在设备上设置密码，才能使用密码。</translation>
 <translation id="8299613349954694191">打开一个无痕式标签页即可私密地浏览网页。</translation>
 <translation id="8311853334103696030">隐藏“跟踪价格”</translation>

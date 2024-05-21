@@ -48,7 +48,6 @@
 #include "chrome/browser/ui/profiles/profile_colors_util.h"
 #include "chrome/browser/ui/profiles/profile_picker.h"
 #include "chrome/browser/ui/profiles/profile_view_utils.h"
-#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -387,6 +386,15 @@ void ProfileMenuView::OnSigninButtonClicked(CoreAccountInfo account,
   if (!perform_menu_actions())
     return;
   GetWidget()->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
+
+  if (button_type == ActionableItem::kSigninReauthButton) {
+    // The reauth button does not trigger a sync opt in.
+    signin_ui_util::ShowReauthForAccount(
+        browser()->profile(), account.email,
+        signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
+    return;
+  }
+
   signin_ui_util::EnableSyncFromSingleAccountPromo(
       browser()->profile(), account,
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
@@ -462,7 +470,7 @@ void ProfileMenuView::OnOtherProfileSelected(
     app_profile_switcher_->SwitchToProfile(profile_path);
 #else
     // WebApps can only be installed for the main profile on ChromeOS.
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
 #endif
   }
 }
@@ -719,6 +727,7 @@ void ProfileMenuView::BuildSyncInfo() {
         identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
             account_info.account_id)) {
       // Sign-in pending state.
+      button_type = ActionableItem::kSigninReauthButton;
       description =
           l10n_util::GetStringUTF16(IDS_SIGNIN_PAUSED_USER_MENU_VERIFY_MESSAGE);
       button_text =

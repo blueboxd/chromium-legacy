@@ -91,10 +91,6 @@ MerchantPromoCodeManager* AutofillClient::GetMerchantPromoCodeManager() {
   return nullptr;
 }
 
-CreditCardRiskBasedAuthenticator* AutofillClient::GetRiskBasedAuthenticator() {
-  return nullptr;
-}
-
 payments::PaymentsAutofillClient* AutofillClient::GetPaymentsAutofillClient() {
   return nullptr;
 }
@@ -136,14 +132,6 @@ void AutofillClient::ShowMandatoryReauthOptInConfirmation() {}
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 void AutofillClient::HideVirtualCardEnrollBubbleAndIconIfVisible() {
-}
-
-void AutofillClient::ShowWebauthnOfferDialog(
-    WebauthnDialogCallback offer_dialog_callback) {
-}
-
-void AutofillClient::ShowWebauthnVerifyPendingDialog(
-    WebauthnDialogCallback verify_pending_dialog_callback) {
 }
 
 void AutofillClient::UpdateWebauthnOfferDialogWithError() {
@@ -255,6 +243,13 @@ void AutofillClient::set_test_addresses(
 
 base::span<const AutofillProfile> AutofillClient::GetTestAddresses() const {
   return {};
+}
+
+AutofillClient::PasswordFormType AutofillClient::ClassifyAsPasswordForm(
+    AutofillManager& manager,
+    FormGlobalId form_id,
+    FieldGlobalId field_id) const {
+  return PasswordFormType::kNoPasswordForm;
 }
 
 }  // namespace autofill

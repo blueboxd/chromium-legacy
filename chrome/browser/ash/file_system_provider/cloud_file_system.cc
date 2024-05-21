@@ -72,19 +72,20 @@ std::ostream& operator<<(std::ostream& out,
   NOTREACHED_NORETURN() << "Unknown ChangeType: " << type;
 }
 
+std::ostream& operator<<(std::ostream& out, CloudFileInfo* cloud_file_info) {
+  if (!cloud_file_info) {
+    return out << "none";
+  }
+  return out << "{version_tag = '" << cloud_file_info->version_tag << "'}";
+}
+
 std::ostream& operator<<(std::ostream& out, EntryMetadata* metadata) {
   if (!metadata) {
     return out << "none";
   }
-  out << "{";
-  if (metadata->cloud_file_info) {
-    out << "version_tag = '" << metadata->cloud_file_info->version_tag << "'";
-    if (metadata->size) {
-      out << ", ";
-    }
-  }
+  out << "{ cloud_file_info = " << metadata->cloud_file_info.get();
   if (metadata->size) {
-    out << "size = '" << *metadata->size << "'";
+    out << ", size = '" << *metadata->size << "'";
   }
   return out << "}";
 }
@@ -166,10 +167,14 @@ void CloudFileSystem::OnContentCacheInitialized(
 
 void CloudFileSystem::OnItemEvictedFromCache(const base::FilePath& file_path) {
   VLOG(1) << file_path << " evicted from the content cache";
-  RemoveWatcher(GetContentCacheURL(), file_path, /*recursive=*/false,
-                base::BindOnce([](base::File::Error result) {
-                  VLOG(1) << "Removed file watcher on file: " << result;
-                }));
+  RemoveWatcher(
+      GetContentCacheURL(), file_path, /*recursive=*/false,
+      base::BindOnce(
+          [](const base::FilePath& file_path, base::File::Error result) {
+            VLOG(1) << "Removed file watcher on '" << file_path
+                    << "' result: " << result;
+          },
+          file_path));
 }
 
 AbortCallback CloudFileSystem::RequestUnmount(
@@ -244,9 +249,6 @@ AbortCallback CloudFileSystem::ReadFile(int file_handle,
                                   callback);
   }
 
-  // Attempt to read the file from the content cache, in the event
-  // `StartReadBytes` succeeds, an actual read of the underlying FD will be
-  // kicked off, for the purposes of this method it has finished successfully.
   const OpenedCloudFile& opened_cloud_file = it->second;
   scoped_refptr<net::IOBuffer> buffer_ref = base::WrapRefCounted(buffer);
   content_cache_->ReadBytes(
@@ -330,12 +332,16 @@ void CloudFileSystem::OnBytesWrittenToCache(
       // This file is newly added to the cache so watch it to track any changes.
       // Notifications are received though Notify() so no notification_callback
       // is needed.
-      AddWatcher(GetContentCacheURL(), file_path,
-                 /*recursive=*/false, /*persistent=*/false,
-                 base::BindOnce([](base::File::Error result) {
-                   VLOG(1) << "Added file watcher on file: " << result;
-                 }),
-                 base::DoNothing());
+      AddWatcher(
+          GetContentCacheURL(), file_path,
+          /*recursive=*/false, /*persistent=*/false,
+          base::BindOnce(
+              [](const base::FilePath& file_path, base::File::Error result) {
+                VLOG(1) << "Added file watcher on '" << file_path
+                        << "' result: " << result;
+              },
+              file_path),
+          base::DoNothing());
     }
   }
   readchunk_success_callback.Run();
@@ -521,6 +527,11 @@ void CloudFileSystem::Notify(
   VLOG(2) << "Notify {fsid = '" << GetFileSystemId() << "', recursive = '"
           << recursive << "', change_type = '" << change_type << "', tag = '"
           << tag << "', changes = {" << changes.get() << "}}";
+
+  if (content_cache_ && changes) {
+    content_cache_->Notify(*changes);
+  }
+
   return file_system_->Notify(entry_path, recursive, change_type,
                               std::move(changes), tag, std::move(callback));
 }
@@ -572,7 +583,7 @@ void CloudFileSystem::OnOpenFileCompleted(
                               OpenedCloudFile(file_path, mode, file_handle,
                                               GetVersionTag(metadata.get()),
                                               GetCloudSize(metadata.get())));
-  } else if (result == base::File::FILE_ERROR_NOT_FOUND) {
+  } else if (content_cache_ && result == base::File::FILE_ERROR_NOT_FOUND) {
     // The file doesn't exist on the FSP, evict it from the cache.
     content_cache_->Evict(file_path);
   }
@@ -597,7 +608,7 @@ void CloudFileSystem::OnGetMetadataCompleted(
     GetMetadataCallback callback,
     std::unique_ptr<EntryMetadata> entry_metadata,
     base::File::Error result) {
-  if (result == base::File::FILE_ERROR_NOT_FOUND) {
+  if (content_cache_ && result == base::File::FILE_ERROR_NOT_FOUND) {
     // The file doesn't exist on the FSP, evict it from the cache.
     content_cache_->Evict(entry_path);
   }

@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {isOneDriveId} from '../../common/js/entry_utils.js';
+import {isOneDrive, isOneDriveId} from '../../common/js/entry_utils.js';
 import type {EntryList, FilesAppEntry, VolumeEntry} from '../../common/js/files_app_entry_types.js';
+import {isSkyvaultV2Enabled} from '../../common/js/flags.js';
 import {VolumeType} from '../../common/js/volume_manager_types.js';
 import {Slice} from '../../lib/base_store.js';
 import {type AndroidApp, DialogType, type NavigationKey, type NavigationRoot, NavigationSection, NavigationType, type State, type Volume} from '../../state/state.js';
 import {getMyFiles} from '../ducks/all_entries.js';
-import {driveRootEntryListKey, recentRootKey, trashRootKey} from '../ducks/volumes.js';
+import {driveRootEntryListKey, oneDriveFakeRootKey, recentRootKey, trashRootKey} from '../ducks/volumes.js';
 import {getEntry} from '../store.js';
 
 /**
@@ -160,6 +161,24 @@ function refreshNavigationRootsReducer(currentState: State): State {
     processedEntryKeys.add(driveEntry.toURL());
   }
 
+  // Add OneDrive placeholder if needed.
+  // OneDrive is always added directly below Drive.
+  if (isSkyvaultV2Enabled()) {
+    const oneDriveUIEntryExists =
+        currentState.uiEntries.includes(oneDriveFakeRootKey);
+    const oneDriveVolumeExists =
+        Object.values<Volume>(currentState.volumes).find(v => isOneDrive(v)) !==
+        undefined;
+    if (oneDriveUIEntryExists && !oneDriveVolumeExists) {
+      roots.push({
+        key: oneDriveFakeRootKey,
+        section: NavigationSection.ODFS,
+        separator: true,
+        type: NavigationType.VOLUME,
+      });
+      processedEntryKeys.add(oneDriveFakeRootKey);
+    }
+  }
 
   // Other volumes.
   const volumesOrder: Partial<Record<VolumeType, number>> = {

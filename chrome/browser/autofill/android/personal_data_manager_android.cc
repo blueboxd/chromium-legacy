@@ -207,7 +207,7 @@ PersonalDataManagerAndroid::GetProfileGUIDsToSuggest(JNIEnv* env) {
 ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetProfileByGUID(
     JNIEnv* env,
     const JavaParamRef<jstring>& jguid) {
-  AutofillProfile* profile =
+  const AutofillProfile* profile =
       personal_data_manager_->address_data_manager().GetProfileByGUID(
           ConvertJavaStringToUTF8(env, jguid));
   if (!profile)
@@ -439,7 +439,7 @@ void PersonalDataManagerAndroid::OnPersonalDataChanged() {
 void PersonalDataManagerAndroid::RecordAndLogProfileUse(
     JNIEnv* env,
     const JavaParamRef<jstring>& jguid) {
-  AutofillProfile* profile =
+  const AutofillProfile* profile =
       personal_data_manager_->address_data_manager().GetProfileByGUID(
           ConvertJavaStringToUTF8(env, jguid));
   if (profile) {
@@ -454,20 +454,18 @@ void PersonalDataManagerAndroid::SetProfileUseStatsForTesting(
     jint days_since_last_used) {
   DCHECK(count >= 0 && days_since_last_used >= 0);
 
-  AutofillProfile* profile =
-      personal_data_manager_->address_data_manager().GetProfileByGUID(
+  AutofillProfile profile =
+      *personal_data_manager_->address_data_manager().GetProfileByGUID(
           ConvertJavaStringToUTF8(env, jguid));
-  profile->set_use_count(static_cast<size_t>(count));
-  profile->set_use_date(AutofillClock::Now() -
-                        base::Days(days_since_last_used));
-
-  personal_data_manager_->NotifyPersonalDataObserver();
+  profile.set_use_count(static_cast<size_t>(count));
+  profile.set_use_date(AutofillClock::Now() - base::Days(days_since_last_used));
+  personal_data_manager_->address_data_manager().UpdateProfile(profile);
 }
 
 jint PersonalDataManagerAndroid::GetProfileUseCountForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& jguid) {
-  AutofillProfile* profile =
+  const AutofillProfile* profile =
       personal_data_manager_->address_data_manager().GetProfileByGUID(
           ConvertJavaStringToUTF8(env, jguid));
   return profile->use_count();
@@ -476,7 +474,7 @@ jint PersonalDataManagerAndroid::GetProfileUseCountForTesting(
 jlong PersonalDataManagerAndroid::GetProfileUseDateForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& jguid) {
-  AutofillProfile* profile =
+  const AutofillProfile* profile =
       personal_data_manager_->address_data_manager().GetProfileByGUID(
           ConvertJavaStringToUTF8(env, jguid));
   return profile->use_date().ToTimeT();
@@ -728,14 +726,29 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
 ScopedJavaLocalRef<jobject>
 PersonalDataManagerAndroid::CreateJavaIbanFromNative(JNIEnv* env,
                                                      const Iban& iban) {
-  // TODO(b/324635902): Add support for server IBAN.
-  return Java_Iban_create(
-      env, ConvertUTF8ToJavaString(env, iban.guid()),
-      ConvertUTF16ToJavaString(env,
-                               iban.GetIdentifierStringForAutofillDisplay()),
-      ConvertUTF16ToJavaString(env, iban.nickname()),
-      static_cast<jint>(iban.record_type()),
-      ConvertUTF16ToJavaString(env, iban.GetRawInfo(IBAN_VALUE)));
+  switch (iban.record_type()) {
+    case Iban::kLocalIban:
+      return Java_Iban_createLocal(
+          env, ConvertUTF8ToJavaString(env, iban.guid()),
+          ConvertUTF16ToJavaString(
+              env, iban.GetIdentifierStringForAutofillDisplay()),
+          ConvertUTF16ToJavaString(env, iban.nickname()),
+          ConvertUTF16ToJavaString(env, iban.GetRawInfo(IBAN_VALUE)));
+    case Iban::kServerIban:
+      return Java_Iban_createServer(
+          env, iban.instrument_id(),
+          ConvertUTF16ToJavaString(
+              env, iban.GetIdentifierStringForAutofillDisplay()),
+          ConvertUTF16ToJavaString(env, iban.nickname()),
+          ConvertUTF16ToJavaString(env, iban.GetRawInfo(IBAN_VALUE)));
+    case Iban::kUnknown:
+      return Java_Iban_createEphemeral(
+          env,
+          ConvertUTF16ToJavaString(
+              env, iban.GetIdentifierStringForAutofillDisplay()),
+          ConvertUTF16ToJavaString(env, iban.nickname()),
+          ConvertUTF16ToJavaString(env, iban.GetRawInfo(IBAN_VALUE)));
+  }
 }
 
 void PersonalDataManagerAndroid::PopulateNativeIbanFromJava(

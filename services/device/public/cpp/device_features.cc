@@ -47,4 +47,27 @@ BASE_FEATURE(kSerialPortConnected,
              "SerialPortConnected",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables usage of the location provider manager to select between
+// the operating system's location API or our network-based provider
+// as the source of location data for Geolocation API.
+BASE_FEATURE(kLocationProviderManager,
+             "LocationProviderManager",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<device::mojom::LocationProviderManagerMode>::Option
+    location_provider_manager_mode_options[] = {
+        {device::mojom::LocationProviderManagerMode::kNetworkOnly,
+         "NetworkOnly"},
+        {device::mojom::LocationProviderManagerMode::kPlatformOnly,
+         "PlatformOnly"},
+        {device::mojom::LocationProviderManagerMode::kHybridPlatform,
+         "HybridPlatform"},
+};
+
+const base::FeatureParam<device::mojom::LocationProviderManagerMode>
+    kLocationProviderManagerParam{
+        &kLocationProviderManager, "LocationProviderManagerMode",
+        device::mojom::LocationProviderManagerMode::kNetworkOnly,
+        &location_provider_manager_mode_options};
+
 }  // namespace features

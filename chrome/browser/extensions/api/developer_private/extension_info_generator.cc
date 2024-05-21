@@ -54,6 +54,7 @@
 #include "extensions/common/api/extension_action/action_info.h"
 #include "extensions/common/command.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -112,7 +113,7 @@ developer::ExtensionType GetExtensionType(Manifest::Type manifest_type) {
       type = developer::ExtensionType::kExtension;
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
   return type;
 }
@@ -292,7 +293,7 @@ developer::RuntimeError ConstructRuntimeError(const RuntimeError& error) {
       result.severity = developer::ErrorLevel::kError;
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
   result.context_url = error.context_url().spec();
   result.occurrences = error.occurrences();
@@ -880,7 +881,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
           // https://crbug.com/503427.
           break;
         case ExtensionError::NUM_ERROR_TYPES:
-          NOTREACHED();
+          NOTREACHED_IN_MIGRATION();
           break;
       }
     }
@@ -956,6 +957,13 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   CHECK(mv2_experiment_manager);
   info->is_affected_by_mv2_deprecation =
       mv2_experiment_manager->IsExtensionAffected(extension);
+  info->did_acknowledge_mv2_deprecation_warning =
+      mv2_experiment_manager->DidUserAcknowledgeWarning(extension.id());
+  if (info->web_store_url.length() > 0) {
+    info->recommendations_url =
+        extension_urls::GetNewWebstoreItemRecommendationsUrl(extension.id())
+            .spec();
+  }
 
   // The icon.
   ExtensionResource icon = IconsInfo::GetIconResource(

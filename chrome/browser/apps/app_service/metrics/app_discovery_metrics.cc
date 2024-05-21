@@ -15,6 +15,7 @@
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "components/metrics/structured/structured_events.h"
 #include "components/metrics/structured/structured_metrics_client.h"
 #include "components/prefs/pref_service.h"
@@ -24,6 +25,7 @@
 #include "components/services/app_service/public/cpp/package_id.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/service/sync_service.h"
+#include "components/ukm/app_source_url_recorder.h"
 
 namespace apps {
 
@@ -78,6 +80,31 @@ void AppDiscoveryMetrics::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kAppDiscoveryAppsInstallList);
 }
 
+std::optional<std::string> AppDiscoveryMetrics::GetAppStringToRecordForPackage(
+    const PackageId& package_id) {
+  switch (package_id.package_type()) {
+    case apps::PackageType::kArc:
+      return ukm::AppSourceUrlRecorder::GetURLForArcPackageName(
+                 package_id.identifier())
+          .spec();
+    case apps::PackageType::kBorealis:
+      return ukm::AppSourceUrlRecorder::GetURLForBorealis(
+                 package_id.identifier())
+          .spec();
+    case apps::PackageType::kChromeApp:
+      return ukm::AppSourceUrlRecorder::GetURLForChromeApp(
+                 package_id.identifier())
+          .spec();
+    case apps::PackageType::kWeb:
+      return web_app::GenerateAppIdFromManifestId(
+          GURL(package_id.identifier()));
+    case apps::PackageType::kGeForceNow:
+      // GFN is not currently supported by the metrics system.
+    case apps::PackageType::kUnknown:
+      return std::nullopt;
+  }
+}
+
 void AppDiscoveryMetrics::OnAppInstalled(const std::string& app_id,
                                          AppType app_type,
                                          InstallSource app_install_source,
@@ -102,7 +129,7 @@ void AppDiscoveryMetrics::OnAppInstalled(const std::string& app_id,
   }
 
   // Do not record cros-events if app-sync is disabled.
-  if (!ShouldRecordUkmForAppId(app_id)) {
+  if (!ShouldRecordAppKMForAppId(app_id)) {
     return;
   }
 
@@ -118,7 +145,7 @@ void AppDiscoveryMetrics::OnAppLaunched(const std::string& app_id,
                                         AppType app_type,
                                         LaunchSource launch_source) {
   // Do not record if app-sync is disabled.
-  if (!ShouldRecordUkmForAppId(app_id)) {
+  if (!ShouldRecordAppKMForAppId(app_id)) {
     return;
   }
 
@@ -149,7 +176,7 @@ void AppDiscoveryMetrics::OnAppUninstalled(
   base::UmaHistogramEnumeration("Apps.AppDiscovery.Uninstall", app_type_name);
 
   // Do not record cros-events if app-sync is disabled.
-  if (!ShouldRecordUkmForAppId(app_id)) {
+  if (!ShouldRecordAppKMForAppId(app_id)) {
     return;
   }
 
@@ -180,7 +207,7 @@ void AppDiscoveryMetrics::OnInstanceUpdate(
   // Check whether the app is installed or not since there is a maximum
   // number of apps we want to kepp track of. If the app is not in the installed
   // apps list, do not emit state changes of the app.
-  if (ShouldRecordUkmForAppId(app_id) &&
+  if (ShouldRecordAppKMForAppId(app_id) &&
       IsAppInstalled(GetAppStringToRecord(app_id, app_type))) {
     RecordAppState(instance_update);
   }
@@ -220,9 +247,9 @@ void AppDiscoveryMetrics::OnInstanceRegistryWillBeDestroyed(
   instance_registry_observation_.Reset();
 }
 
-bool AppDiscoveryMetrics::ShouldRecordUkmForAppId(const std::string& app_id) {
-  return ::apps::ShouldRecordUkmForAppId(profile_, app_registry_cache_.get(),
-                                         app_id);
+bool AppDiscoveryMetrics::ShouldRecordAppKMForAppId(const std::string& app_id) {
+  return ::apps::ShouldRecordAppKMForAppId(profile_, app_registry_cache_.get(),
+                                           app_id);
 }
 
 bool AppDiscoveryMetrics::IsAnyAppInstanceActive(

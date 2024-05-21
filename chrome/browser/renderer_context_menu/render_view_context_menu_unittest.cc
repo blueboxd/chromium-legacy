@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -1124,12 +1125,13 @@ TEST_F(RenderViewContextMenuPrefsTest,
   EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_SAVELINKAS));
 }
 
-// Verify that item "Search web for" on password Manager is not present
+// Verify that item "Search web for" on password Manager - passwords is not
+// present
 TEST_F(RenderViewContextMenuPrefsTest,
-       SearchWebForOptionOnPasswordsManagerIsDisabled) {
+       SearchWebForOptionOnPasswordsManagerSubPageIsDisabled) {
   content::ContextMenuParams params =
       CreateParams(MenuItem::SELECTION | MenuItem::EDITABLE);
-  params.page_url = chrome::GetSettingsUrl(chrome::kPasswordManagerSubPage);
+  params.page_url = GURL(GetGooglePasswordManagerSubPageURLStr());
   auto menu = std::make_unique<TestRenderViewContextMenu>(
       *web_contents()->GetPrimaryMainFrame(), params);
   menu->set_selection_navigation_url(GURL("https://www.foo.com/"));
@@ -1141,10 +1143,25 @@ TEST_F(RenderViewContextMenuPrefsTest,
 
 // Verify that item "Search web for" on password check is not present
 TEST_F(RenderViewContextMenuPrefsTest,
-       SearchWebForOptionOnPasswordCheckIsDisabled) {
+       SearchWebForOptionOnPasswordManagerCheckIsDisabled) {
   content::ContextMenuParams params =
       CreateParams(MenuItem::SELECTION | MenuItem::EDITABLE);
-  params.page_url = chrome::GetSettingsUrl(chrome::kPasswordCheckSubPage);
+  params.page_url = GURL(chrome::kChromeUIPasswordManagerCheckupURL);
+  auto menu = std::make_unique<TestRenderViewContextMenu>(
+      *web_contents()->GetPrimaryMainFrame(), params);
+  menu->set_selection_navigation_url(GURL("https://www.foo.com/"));
+  menu->Init();
+
+  EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_SEARCHWEBFOR));
+  EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB));
+}
+
+// Verify that item "Search web for" on password settings is not present
+TEST_F(RenderViewContextMenuPrefsTest,
+       SearchWebForOptionOnPasswordManagerSettingsIsDisabled) {
+  content::ContextMenuParams params =
+      CreateParams(MenuItem::SELECTION | MenuItem::EDITABLE);
+  params.page_url = GURL(chrome::kChromeUIPasswordManagerSettingsURL);
   auto menu = std::make_unique<TestRenderViewContextMenu>(
       *web_contents()->GetPrimaryMainFrame(), params);
   menu->set_selection_navigation_url(GURL("https://www.foo.com/"));
@@ -1961,110 +1978,6 @@ TEST_F(RenderViewContextMenuPrefsTest,
       IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE, &model, &index));
 
   ASSERT_EQ(initial_num_processes, mock_rph_factory().GetProcesses()->size());
-}
-
-// Verify that the new badge is added to region search context menu items if
-// appropriate feature is enabled.
-TEST_F(RenderViewContextMenuPrefsTest,
-       CompanionNewBadgeEnabledForRegionSearchContextMenuItem) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(
-      companion::features::kCompanionEnableNewBadgesInContextMenu);
-  SetUserSelectedDefaultSearchProvider("https://www.google.com",
-                                       /*supports_image_search=*/true);
-  content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
-  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
-                                 params);
-  menu.SetBrowser(GetBrowser());
-  menu.Init();
-
-  size_t index = 0;
-  ui::MenuModel* model = nullptr;
-
-  ASSERT_TRUE(menu.GetMenuModelAndItemIndex(
-      IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH, &model, &index));
-  EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
-  EXPECT_TRUE(model->IsNewFeatureAt(index));
-}
-
-// Verify that the new badge is NOT added to region search context menu items if
-// appropriate feature is disabled.
-TEST_F(RenderViewContextMenuPrefsTest,
-       CompanionNewBadgeDisabledForRegionSearchContextMenuItem) {
-  base::test::ScopedFeatureList features;
-  features.InitAndDisableFeature(
-      companion::features::kCompanionEnableNewBadgesInContextMenu);
-  SetUserSelectedDefaultSearchProvider("https://www.google.com",
-                                       /*supports_image_search=*/true);
-  content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
-  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
-                                 params);
-  menu.SetBrowser(GetBrowser());
-  menu.Init();
-
-  size_t index = 0;
-  ui::MenuModel* model = nullptr;
-
-  ASSERT_TRUE(menu.GetMenuModelAndItemIndex(
-      IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH, &model, &index));
-  EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
-  EXPECT_FALSE(model->IsNewFeatureAt(index));
-}
-
-// Verify that the new badge is added to image search context menu items if
-// appropriate feature is enabled.
-TEST_F(RenderViewContextMenuPrefsTest,
-       CompanionNewBadgeEnabledForImageSearchContextMenuItems) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(
-      companion::features::kCompanionEnableNewBadgesInContextMenu);
-  SetUserSelectedDefaultSearchProvider("https://www.google.com",
-                                       /*supports_image_search=*/true);
-  content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
-  params.has_image_contents = true;
-  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
-                                 params);
-  menu.SetBrowser(GetBrowser());
-  menu.Init();
-
-  size_t index = 0;
-  ui::MenuModel* model = nullptr;
-
-  ASSERT_TRUE(menu.GetMenuModelAndItemIndex(
-      IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE, &model, &index));
-  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE));
-  EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE));
-  EXPECT_TRUE(model->IsNewFeatureAt(index));
-  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHWEB));
-  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS));
-}
-
-// Verify that the new badge is NOT added to image search context menu items if
-// appropriate feature is disabled.
-TEST_F(RenderViewContextMenuPrefsTest,
-       CompanionNewBadgeDisabledForImageSearchContextMenuItems) {
-  base::test::ScopedFeatureList features;
-  features.InitAndDisableFeature(
-      companion::features::kCompanionEnableNewBadgesInContextMenu);
-  SetUserSelectedDefaultSearchProvider("https://www.google.com",
-                                       /*supports_image_search=*/true);
-  content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
-  params.has_image_contents = true;
-  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
-                                 params);
-  menu.SetBrowser(GetBrowser());
-  menu.Init();
-
-  size_t index = 0;
-  ui::MenuModel* model = nullptr;
-
-  ASSERT_TRUE(menu.GetMenuModelAndItemIndex(
-      IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE, &model, &index));
-  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE));
-  EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE));
-  EXPECT_FALSE(model->IsNewFeatureAt(index));
-  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHWEB));
-  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS));
 }
 
 // Verify that the Lens Region Search menu item is enabled for Progressive Web

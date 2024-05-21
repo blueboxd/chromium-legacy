@@ -4,22 +4,28 @@
 
 #include "chrome/browser/download/download_warning_desktop_hats_utils.h"
 
+#include <cstdint>
 #include <iterator>
 #include <string>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/version_info/channel.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_item_warning_data.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/hats/hats_service.h"
+#include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/hats/survey_config.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
@@ -174,6 +180,7 @@ DownloadWarningHatsProductSpecificData::Create(
     DownloadWarningHatsType survey_type,
     download::DownloadItem* download_item) {
   CHECK(download_item);
+  CHECK(CanShowDownloadWarningHatsSurvey(download_item));
 
   DownloadWarningHatsProductSpecificData psd{survey_type};
 
@@ -222,7 +229,11 @@ DownloadWarningHatsProductSpecificData::Create(
   psd.string_data_.insert(
       {Fields::kWarningType, GetWarningTypeStringData(download_model)});
 
-  // TODO(chlily): Implement kIgnoreTimeout.
+  if (survey_type == DownloadWarningHatsType::kDownloadBubbleIgnore) {
+    psd.string_data_.insert(
+        {Fields::kIgnoreTimeoutSeconds,
+         ElapsedTimeToSecondsString(GetIgnoreDownloadBubbleWarningDelay())});
+  }
 
   // Assemble the Profile-dependent PSD.
   Profile* profile = Profile::FromBrowserContext(
@@ -333,7 +344,140 @@ DownloadWarningHatsProductSpecificData::GetStringDataFields(
   if (IsDownloadsPageTrigger(survey_type)) {
     fields.push_back(Fields::kNumPageWarnings);
   }
+  if (survey_type == DownloadWarningHatsType::kDownloadBubbleIgnore) {
+    fields.push_back(Fields::kIgnoreTimeoutSeconds);
+  }
   return fields;
+}
+
+DelayedDownloadWarningHatsLauncher::Task::Task(
+    DelayedDownloadWarningHatsLauncher& hats_launcher,
+    download::DownloadItem* download,
+    base::OnceClosure task,
+    base::TimeDelta delay)
+    : observation_(&hats_launcher), task_(std::move(task)) {
+  observation_.Observe(download);
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&Task::RunTask, weak_factory_.GetWeakPtr()),
+      delay);
+}
+
+DelayedDownloadWarningHatsLauncher::Task::~Task() = default;
+
+// It is expected that the caller will delete this after this executes.
+void DelayedDownloadWarningHatsLauncher::Task::RunTask() {
+  CHECK(task_);
+  std::move(task_).Run();
+}
+
+DelayedDownloadWarningHatsLauncher::DelayedDownloadWarningHatsLauncher(
+    Profile* profile,
+    base::TimeDelta delay,
+    PsdCompleter psd_completer)
+    : profile_(profile),
+      delay_(delay),
+      psd_completer_(std::move(psd_completer)) {}
+
+DelayedDownloadWarningHatsLauncher::~DelayedDownloadWarningHatsLauncher() =
+    default;
+
+void DelayedDownloadWarningHatsLauncher::OnDownloadUpdated(
+    download::DownloadItem* download) {
+  // If the formerly-eligible download is no longer eligible, cancel the survey.
+  if (!CanShowDownloadWarningHatsSurvey(download)) {
+    RemoveTaskIfAny(download);
+  }
+}
+
+void DelayedDownloadWarningHatsLauncher::OnDownloadDestroyed(
+    download::DownloadItem* download) {
+  RemoveTaskIfAny(download);
+}
+
+void DelayedDownloadWarningHatsLauncher::RecordBrowserActivity() {
+  last_activity_ = base::Time::Now();
+}
+
+bool DelayedDownloadWarningHatsLauncher::TryScheduleTask(
+    DownloadWarningHatsType survey_type,
+    download::DownloadItem* download) {
+  CHECK(download);
+  TaskKey key = GetTaskKey(download);
+  if (base::Contains(tasks_, key)) {
+    return false;
+  }
+
+  if (!CanShowDownloadWarningHatsSurvey(download)) {
+    return false;
+  }
+
+  auto [_, inserted] = tasks_.try_emplace(
+      key, *this, download,
+      // Unretained is safe because `this` outlives the Task object.
+      // `download` will be valid for as long as the Task lives, because the
+      // Observer mechanism will delete the Task if `download` goes away.
+      base::BindOnce(&DelayedDownloadWarningHatsLauncher::MaybeLaunchSurveyNow,
+                     base::Unretained(this), survey_type, download),
+      delay_);
+  return inserted;
+}
+
+void DelayedDownloadWarningHatsLauncher::RemoveTaskIfAny(
+    download::DownloadItem* download) {
+  RemoveTaskByKeyIfAny(GetTaskKey(download));
+}
+
+DelayedDownloadWarningHatsLauncher::TaskKey
+DelayedDownloadWarningHatsLauncher::GetTaskKey(
+    download::DownloadItem* download) {
+  return reinterpret_cast<TaskKey>(download);
+}
+
+void DelayedDownloadWarningHatsLauncher::RemoveTaskByKeyIfAny(TaskKey key) {
+  tasks_.erase(key);
+}
+
+void DelayedDownloadWarningHatsLauncher::MaybeLaunchSurveyNow(
+    DownloadWarningHatsType survey_type,
+    download::DownloadItem* download) {
+  if (!CanShowDownloadWarningHatsSurvey(download) || !WasUserActive()) {
+    RemoveTaskIfAny(download);
+    return;
+  }
+
+  auto psd =
+      DownloadWarningHatsProductSpecificData::Create(survey_type, download);
+  if (psd_completer_) {
+    psd_completer_.Run(psd);
+  }
+
+  MaybeLaunchDownloadWarningHatsSurvey(profile_, psd,
+                                       MakeSurveyDoneCallback(download),
+                                       MakeSurveyDoneCallback(download));
+}
+
+base::OnceClosure DelayedDownloadWarningHatsLauncher::MakeSurveyDoneCallback(
+    download::DownloadItem* download) {
+  // This is needed to clean up the Task object after the survey runs. It must
+  // be bound to a WeakPtr because nothing guarantees that this will be alive
+  // when the survey task finishes (it generally takes a few seconds to actually
+  // show the survey, and obviously takes much longer for the user to work
+  // through the survey). If this callback runs, then `this` must still be
+  // alive, which means the DownloadItem::Observer mechanism is maintaining the
+  // invariant that any download with an entry in `tasks_` must be alive.
+  // Therefore, the DownloadItem* will not be used after it is freed.
+  return base::BindOnce(
+      &DelayedDownloadWarningHatsLauncher::RemoveTaskByKeyIfAny,
+      weak_factory_.GetWeakPtr(), GetTaskKey(download));
+}
+
+bool DelayedDownloadWarningHatsLauncher::WasUserActive() const {
+  return base::Time::Now() - last_activity_ <= delay_;
+}
+
+bool CanShowDownloadWarningHatsSurvey(download::DownloadItem* download) {
+  CHECK(download);
+  return download->IsDangerous() && !download->IsDone();
 }
 
 std::optional<std::string> MaybeGetDownloadWarningHatsTrigger(
@@ -371,5 +515,30 @@ std::optional<std::string> MaybeGetDownloadWarningHatsTrigger(
       return kHatsSurveyTriggerDownloadWarningPageHeed;
     case DownloadWarningHatsType::kDownloadsPageIgnore:
       return kHatsSurveyTriggerDownloadWarningPageIgnore;
+  }
+}
+
+base::TimeDelta GetIgnoreDownloadBubbleWarningDelay() {
+  return base::Seconds(
+      safe_browsing::kDownloadWarningSurveyIgnoreDelaySeconds.Get());
+}
+
+void MaybeLaunchDownloadWarningHatsSurvey(
+    Profile* profile,
+    const DownloadWarningHatsProductSpecificData& psd,
+    base::OnceClosure success_callback,
+    base::OnceClosure failure_callback) {
+  std::optional<std::string> trigger =
+      MaybeGetDownloadWarningHatsTrigger(psd.survey_type());
+  if (!trigger) {
+    return;
+  }
+
+  HatsService* hats_service =
+      HatsServiceFactory::GetForProfile(profile, /*create_if_necessary=*/true);
+  if (hats_service) {
+    hats_service->LaunchSurvey(*trigger, std::move(success_callback),
+                               std::move(failure_callback), psd.bits_data(),
+                               psd.string_data());
   }
 }

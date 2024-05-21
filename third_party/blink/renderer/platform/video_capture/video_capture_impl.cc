@@ -327,7 +327,7 @@ VideoCaptureImpl::CreateVideoFrameInitData(
         uint8_t* u_data =
             y_data +
             (media::VideoFrame::Rows(
-                 media::VideoFrame::kYPlane,
+                 media::VideoFrame::Plane::kY,
                  video_frame_init_data.ready_buffer->info->pixel_format,
                  video_frame_init_data.ready_buffer->info->coded_size
                      .height()) *
@@ -336,7 +336,7 @@ VideoCaptureImpl::CreateVideoFrameInitData(
         uint8_t* v_data =
             u_data +
             (media::VideoFrame::Rows(
-                 media::VideoFrame::kUPlane,
+                 media::VideoFrame::Plane::kU,
                  video_frame_init_data.ready_buffer->info->pixel_format,
                  video_frame_init_data.ready_buffer->info->coded_size
                      .height()) *
@@ -896,7 +896,7 @@ void VideoCaptureImpl::StartCapture(
     case VIDEO_CAPTURE_STATE_RESUMED:
       // The internal |state_| is never set to PAUSED/RESUMED since
       // VideoCaptureImpl is not modified by those.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return;
   }
 }

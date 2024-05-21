@@ -21,6 +21,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ResettersForTesting;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.cc.input.BrowserControlsState;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider.Observer;
@@ -372,9 +373,9 @@ public class TabStripTransitionCoordinator implements ComponentCallbacks, AppHea
         // clears out, #onTokenUpdated will route into this method again.
         if (mDeferTransitionTokenHolder.hasTokens()) return;
 
-        // Invalid width will be ignored. This can happen when the mControlContainer is created
-        // hidden after theme changes. See crbug.com/1511599.
-        if (tabStripWidth <= 0) return;
+        // Invalid width / height will be ignored. This can happen when the mControlContainer is
+        // created hidden after theme changes. See crbug.com/1511599.
+        if (tabStripWidth <= 0 || controlContainerView().getHeight() == 0) return;
 
         boolean showTabStrip;
         if (ToolbarFeatures.isTabStripWindowLayoutOptimizationEnabled(/* isTablet= */ true)) {
@@ -391,7 +392,11 @@ public class TabStripTransitionCoordinator implements ComponentCallbacks, AppHea
         // Update the min size for the control container. This is needed one-layout-before browser
         // controls start changing its height, as it assumed a fixed size control container during
         // transition. See b/324178484.
-        int maxHeight = calculateTabStripHeight() + mToolbarLayout.getMeasuredHeight();
+        View toolbarHairline = controlContainerView().findViewById(R.id.toolbar_hairline);
+        int maxHeight =
+                calculateTabStripHeight()
+                        + mToolbarLayout.getMeasuredHeight()
+                        + toolbarHairline.getMeasuredHeight();
         controlContainerView().setMinimumHeight(maxHeight);
 
         // When transition kicked off by the BrowserControlsManager, the toolbar capture can be
@@ -452,25 +457,27 @@ public class TabStripTransitionCoordinator implements ComponentCallbacks, AppHea
             observer.onTransitionRequested(newHeight);
         }
 
-        // If the browser control is performing an browser initiated animation,
-        // we should update the view margins right away. This will make sure the
-        // toolbar stays in the same place with changes in control container's Y
-        // translation.
-        //
-        // For cc initiated transition, we'll defer the view updates until the first
-        // #onControlsOffsetChanged is called. This avoid the toolbar margins gets
-        // updated too fast before the cc layer respond, in which the Android views
-        // in the browser control are still visible.
-        //
-        // For cases where transition is disabled (e.g. AppHeaderState updates), we'll
-        // call updateTabStripHeightImpl directly since browser control is already finished
-        // in the same task during #onTransitionRequested before we reach this line.
-        if (mBrowserControlsVisibilityManager.offsetOverridden()
-                || !mBrowserControlsVisibilityManager.shouldAnimateBrowserControlsHeightChanges()) {
+        // If the browser control is performing an browser initiated animation, we should update the
+        // view margins right away. This will make sure the toolbar stays in the same place with
+        // changes in control container's Y translation.
+        boolean javaAnimationInProgress = mBrowserControlsVisibilityManager.offsetOverridden();
+
+        // For cases where transition is finished in sequence during #onTransitionRequested (e.g.
+        // browser control's visibility is under constraint), we'll call updateTabStripHeightImpl
+        // to update the margin for the views.
+        boolean browserControlsHasConstraint =
+                mBrowserControlsVisibilityManager.getBrowserVisibilityDelegate().get()
+                        != BrowserControlsState.BOTH;
+
+        if (javaAnimationInProgress || browserControlsHasConstraint) {
             updateTabStripHeightImpl();
             return;
         }
 
+        // For cc initiated transition, we'll defer the view updates until the first
+        // #onControlsOffsetChanged is called. This prevents the toolbar margins from getting
+        // updated too fast before the cc layer responds, in which case the Android views in the
+        // browser control are still visible.
         if (mTransitionKickoffObserver != null) return;
         mTransitionKickoffObserver =
                 new BrowserControlsStateProvider.Observer() {
@@ -616,8 +623,13 @@ public class TabStripTransitionCoordinator implements ComponentCallbacks, AppHea
         mHandler.post(
                 mCallbackController.makeCancelable(
                         () -> {
+                            View toolbarHairline =
+                                    controlContainerView().findViewById(R.id.toolbar_hairline);
                             controlContainerView()
-                                    .setMinimumHeight(mToolbarLayout.getHeight() + mTabStripHeight);
+                                    .setMinimumHeight(
+                                            mToolbarLayout.getHeight()
+                                                    + mTabStripHeight
+                                                    + toolbarHairline.getHeight());
                             ViewUtils.requestLayout(
                                     controlContainerView(),
                                     "TabStripTransitionCoordinator.remeasureControlContainer");

@@ -9,43 +9,47 @@ found in the LICENSE file.
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <org.chromium.chrome.browser.sync.settings.CentralAccountCardPreference
+        android:key="central_account_card"
+        app:isPreferenceVisible="true"/>
+
     <org.chromium.chrome.browser.sync.settings.IdentityErrorCardPreference
         android:key="identity_error_card"
         app:isPreferenceVisible="false"/>
 
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
-        android:key="sync_history_and_tabs"
-        android:title="@string/sync_history_and_tabs"
+        android:key="account_section_history_toggle"
+        android:title="@string/account_section_history_toggle"
         android:persistent="false"/>
 
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
-        android:key="sync_bookmarks"
-        android:title="@string/sync_bookmarks"
+        android:key="account_section_bookmarks_toggle"
+        android:title="@string/account_section_bookmarks_toggle"
         android:persistent="false"/>
 
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
-        android:key="sync_reading_list"
-        android:title="@string/sync_reading_list"
+        android:key="account_section_reading_list_toggle"
+        android:title="@string/account_section_reading_list_toggle"
         android:persistent="false"/>
 
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
-        android:key="sync_autofill"
-        android:title="@string/sync_autofill"
+        android:key="account_section_addresses_toggle"
+        android:title="@string/account_section_addresses_toggle"
         android:persistent="false"/>
 
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
-        android:key="sync_passwords"
-        android:title="@string/sync_passwords"
+        android:key="account_section_passwords_toggle"
+        android:title="@string/account_section_passwords_toggle"
         android:persistent="false"/>
 
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
-        android:key="sync_payments_integration"
-        android:title="@string/sync_payments_integration"
+        android:key="account_section_payments_toggle"
+        android:title="@string/account_section_payments_toggle"
         android:persistent="false"/>
 
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
-        android:key="sync_settings"
-        android:title="@string/sync_settings"
+        android:key="account_section_settings_toggle"
+        android:title="@string/account_section_settings_toggle"
         android:persistent="false"/>
 
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
@@ -77,5 +81,8 @@ found in the LICENSE file.
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:key="manage_accounts_on_this_device"
         android:title="@string/manage_accounts_on_this_device"/>
+
+    <org.chromium.chrome.browser.ui.signin.SignoutButtonPreference
+        android:key="sign_out_button"/>
 
 </PreferenceScreen>

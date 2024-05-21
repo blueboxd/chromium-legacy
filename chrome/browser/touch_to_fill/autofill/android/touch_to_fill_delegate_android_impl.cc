@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/autofill_suggestion_generator.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
@@ -86,7 +87,7 @@ TouchToFillDelegateAndroidImpl::DryRun(FormGlobalId form_id,
                                        FieldGlobalId field_id,
                                        const FormData& received_form) {
   // Trigger only on supported platforms.
-  if (!IsTouchToFillCreditCardSupported()) {
+  if (!IsTouchToFillPaymentMethodSupported()) {
     return {TriggerOutcome::kUnsupportedFieldType, {}};
   }
   const FormStructure* form = manager_->FindCachedFormById(form_id);
@@ -205,10 +206,12 @@ bool TouchToFillDelegateAndroidImpl::TryToShowTouchToFill(
     }
   }
 
-  if (!IsTriggeredOnIbanField(manager_->FindCachedFormById(form.global_id()),
-                              field)) {
-    // TODO(b/309163888): Revisit how to log IBAN related metrics.
-    if (dry_run.outcome != TriggerOutcome::kUnsupportedFieldType) {
+  if (dry_run.outcome != TriggerOutcome::kUnsupportedFieldType) {
+    if (IsTriggeredOnIbanField(manager_->FindCachedFormById(form.global_id()),
+                               field)) {
+      base::UmaHistogramEnumeration(kUmaTouchToFillIbanTriggerOutcome,
+                                    dry_run.outcome);
+    } else {
       base::UmaHistogramEnumeration(kUmaTouchToFillCreditCardTriggerOutcome,
                                     dry_run.outcome);
     }
@@ -317,11 +320,16 @@ void TouchToFillDelegateAndroidImpl::CreditCardSuggestionSelected(
   }
 }
 
-void TouchToFillDelegateAndroidImpl::IbanSuggestionSelected(Iban::Guid guid) {
+void TouchToFillDelegateAndroidImpl::IbanSuggestionSelected(
+    absl::variant<Iban::Guid, Iban::InstrumentId> backend_id) {
   HideTouchToFill();
 
   manager_->client().GetIbanAccessManager()->FetchValue(
-      Suggestion::BackendId(Suggestion::Guid(guid.value())),
+      absl::holds_alternative<Iban::Guid>(backend_id)
+          ? Suggestion::BackendId(
+                Suggestion::Guid(absl::get<Iban::Guid>(backend_id).value()))
+          : Suggestion::BackendId(Suggestion::InstrumentId(
+                absl::get<Iban::InstrumentId>(backend_id).value())),
       base::BindOnce(
           [](base::WeakPtr<TouchToFillDelegateAndroidImpl> delegate,
              const std::u16string& value) {
@@ -329,7 +337,8 @@ void TouchToFillDelegateAndroidImpl::IbanSuggestionSelected(Iban::Guid guid) {
               delegate->manager_->FillOrPreviewField(
                   mojom::ActionPersistence::kFill,
                   mojom::FieldActionType::kReplaceAll, delegate->query_form_,
-                  delegate->query_field_, value, SuggestionType::kIbanEntry);
+                  delegate->query_field_, value, SuggestionType::kIbanEntry,
+                  IBAN_VALUE);
             }
           },
           GetWeakPtr()));

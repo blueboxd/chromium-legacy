@@ -138,14 +138,9 @@ MethodResult GetMethodResultFromFwupdDbusResult(FwupdDbusResult error) {
   }
 }
 
-base::ScopedFD OpenFileAndGetFileDescriptor(base::FilePath download_path) {
-  base::File dest_file(download_path,
-                       base::File::FLAG_OPEN | base::File::FLAG_READ);
-  if (!dest_file.IsValid() || !base::PathExists(download_path)) {
-    return base::ScopedFD();
-  }
-
-  return base::ScopedFD(dest_file.TakePlatformFile());
+base::File OpenAndGetFile(const base::FilePath& download_path) {
+  return base::File(download_path,
+                    base::File::FLAG_OPEN | base::File::FLAG_READ);
 }
 
 base::File VerifyChecksum(base::File file, const std::string& checksum) {
@@ -384,6 +379,44 @@ std::string UncompressFileAndGetFilename(std::string file_contents) {
   return firmware_filename;
 }
 
+bool RefreshRemoteAllowed(FirmwareUpdateManager::Source source,
+                          bool refresh_remote_for_testing,
+                          bool is_metered) {
+  FIRMWARE_LOG(DEBUG) << "RefreshRemoteAllowed()";
+  DCHECK(NetworkHandler::IsInitialized());
+  const bool connection_ok =
+      !is_metered || source == FirmwareUpdateManager::Source::kUI;
+  FIRMWARE_LOG(DEBUG) << "Connection metered: " << is_metered
+                      << ", Source: " << static_cast<int>(source)
+                      << ", Refresh Remote connection okay: " << connection_ok;
+  if (!connection_ok) {
+    return false;
+  }
+
+  // Always refresh the remote in tests for consistent results.
+  if (refresh_remote_for_testing) {
+    return true;
+  }
+  const base::FilePath local_firmware_path =
+      base::FilePath(kLocalFirmwareBasePath)
+          .Append(kLVFSRemoteId)
+          .Append(kLocalMetadataFileName);
+  base::File::Info info;
+  if (!GetMetadataFileInfo(local_firmware_path, &info)) {
+    // Allow RefreshRemote if file not found or info not found
+    return true;
+  }
+  base::TimeDelta age = base::Time::Now() - info.last_modified;
+  if (age >= base::Hours(0) && age <= base::Hours(24)) {
+    FIRMWARE_LOG(DEBUG) << "Local firmware file age < 24 hours, age: "
+                        << static_cast<int>(age.InHours());
+    return false;
+  }
+  FIRMWARE_LOG(DEBUG) << "Local firmware file age > 24 hours, age: "
+                      << static_cast<int>(age.InHours());
+  return true;
+}
+
 }  // namespace
 
 FirmwareUpdateManager::FirmwareUpdateManager()
@@ -449,46 +482,6 @@ int FirmwareUpdateManager::GetNumCriticalUpdates() {
     }
   }
   return critical_update_count;
-}
-
-bool FirmwareUpdateManager::RefreshRemoteAllowed(
-    FirmwareUpdateManager::Source source) {
-  FIRMWARE_LOG(DEBUG) << "RefreshRemoteAllowed()";
-  DCHECK(NetworkHandler::IsInitialized());
-  const bool is_metered = NetworkHandler::Get()
-                              ->network_state_handler()
-                              ->default_network_is_metered();
-  const bool connection_ok =
-      !is_metered || source == FirmwareUpdateManager::Source::kUI;
-  FIRMWARE_LOG(DEBUG) << "Connection metered: " << is_metered
-                      << ", Source: " << static_cast<int>(source)
-                      << ", Refresh Remote connection okay: " << connection_ok;
-  if (!connection_ok) {
-    return false;
-  }
-
-  // Always refresh the remote in tests for consistent results.
-  if (refresh_remote_for_testing_) {
-    return true;
-  }
-  const base::FilePath local_firmware_path =
-      base::FilePath(kLocalFirmwareBasePath)
-          .Append(kLVFSRemoteId)
-          .Append(kLocalMetadataFileName);
-  base::File::Info info;
-  if (!GetMetadataFileInfo(local_firmware_path, &info)) {
-    // Allow RefreshRemote if file not found or info not found
-    return true;
-  }
-  base::TimeDelta age = base::Time::Now() - info.last_modified;
-  if (age >= base::Hours(0) && age <= base::Hours(24)) {
-    FIRMWARE_LOG(DEBUG) << "Local firmware file age < 24 hours, age: "
-                        << static_cast<int>(age.InHours());
-    return false;
-  }
-  FIRMWARE_LOG(DEBUG) << "Local firmware file age > 24 hours, age: "
-                      << static_cast<int>(age.InHours());
-  return true;
 }
 
 const base::FilePath FirmwareUpdateManager::GetCacheDirPath() {
@@ -577,8 +570,10 @@ void FirmwareUpdateManager::RequestAllUpdates(Source source) {
   is_fetching_updates_ = true;
   task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::BindOnce(&FirmwareUpdateManager::RefreshRemoteAllowed,
-                     base::Unretained(this), source),
+      base::BindOnce(&RefreshRemoteAllowed, source, refresh_remote_for_testing_,
+                     NetworkHandler::Get()
+                         ->network_state_handler()
+                         ->default_network_is_metered()),
       base::BindOnce(&FirmwareUpdateManager::MaybeRefreshRemote,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -684,8 +679,8 @@ void FirmwareUpdateManager::MaybeDownloadFileToInternal(
     std::map<std::string, bool> options = {
         {"none", false}, {"force", true}, {"allow-reinstall", true}};
     task_runner_->PostTaskAndReplyWithResult(
-        FROM_HERE, base::BindOnce(&OpenFileAndGetFileDescriptor, file),
-        base::BindOnce(&FirmwareUpdateManager::OnGetFileDescriptor,
+        FROM_HERE, base::BindOnce(&OpenAndGetFile, file),
+        base::BindOnce(&FirmwareUpdateManager::OnGetFile,
                        weak_ptr_factory_.GetWeakPtr(), device_id,
                        std::move(options), std::move(callback)));
     return;
@@ -751,20 +746,19 @@ void FirmwareUpdateManager::OnUrlDownloadedToFile(
                                          {"allow-reinstall", true}};
 
   task_runner_->PostTaskAndReplyWithResult(
-      FROM_HERE, base::BindOnce(&OpenFileAndGetFileDescriptor, download_path),
-      base::BindOnce(&FirmwareUpdateManager::OnGetFileDescriptor,
+      FROM_HERE, base::BindOnce(&OpenAndGetFile, download_path),
+      base::BindOnce(&FirmwareUpdateManager::OnGetFile,
                      weak_ptr_factory_.GetWeakPtr(), device_id,
                      std::move(options), std::move(callback)));
 }
 
-void FirmwareUpdateManager::OnGetFileDescriptor(
-    const std::string& device_id,
-    FirmwareInstallOptions options,
-    MethodCallback callback,
-    base::ScopedFD file_descriptor) {
-  if (!file_descriptor.is_valid()) {
-    FIRMWARE_LOG(ERROR) << "Invalid file descriptor for device: " << device_id;
-    std::move(callback).Run(MethodResult::kInvalidFileDescriptor);
+void FirmwareUpdateManager::OnGetFile(const std::string& device_id,
+                                      FirmwareInstallOptions options,
+                                      MethodCallback callback,
+                                      base::File file) {
+  if (!file.IsValid()) {
+    FIRMWARE_LOG(ERROR) << "Invalid file for device: " << device_id;
+    std::move(callback).Run(MethodResult::kInvalidFile);
     return;
   }
 
@@ -776,10 +770,9 @@ void FirmwareUpdateManager::OnGetFileDescriptor(
     }
   }
 
-  base::File patch_file(std::move(file_descriptor));
   task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::BindOnce(&VerifyChecksum, std::move(patch_file),
+      base::BindOnce(&VerifyChecksum, std::move(file),
                      inflight_update_->checksum),
       base::BindOnce(&FirmwareUpdateManager::InstallUpdate,
                      weak_ptr_factory_.GetWeakPtr(), device_id,
@@ -1108,12 +1101,7 @@ void FirmwareUpdateManager::GetFileDescriptor(
   }
   FIRMWARE_LOG(DEBUG) << "File downloaded to " << download_path;
   task_runner_->PostTaskAndReplyWithResult(
-      FROM_HERE,
-      base::BindOnce(
-          [](base::FilePath filepath) {
-            return base::File(OpenFileAndGetFileDescriptor(filepath));
-          },
-          download_path),
+      FROM_HERE, base::BindOnce(&OpenAndGetFile, download_path),
       base::BindOnce(std::move(on_download_callback), download_path,
                      std::move(completion_callback)));
 }

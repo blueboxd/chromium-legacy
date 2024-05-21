@@ -499,11 +499,11 @@ InterpretSafeBrowsingResult(safe_browsing::DownloadCheckResult result) {
     case Result::PROMPT_FOR_LOCAL_PASSWORD_SCANNING:
     case Result::DEEP_SCANNED_FAILED:
     case Result::IMMEDIATE_DEEP_SCAN:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return ChromeFileSystemAccessPermissionContext::AfterWriteCheckResult::
           kAllow;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return ChromeFileSystemAccessPermissionContext::AfterWriteCheckResult::kBlock;
 }
 
@@ -907,7 +907,7 @@ class ChromeFileSystemAccessPermissionContext::PermissionGrantImpl
       case PermissionAction::REVOKED:
       case PermissionAction::GRANTED_ONCE:
       case PermissionAction::NUM:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
     }
   }
@@ -981,7 +981,7 @@ class ChromeFileSystemAccessPermissionContext::PermissionGrantImpl
         break;
       case PermissionAction::REVOKED:
       case PermissionAction::NUM:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
     }
   }
@@ -1145,18 +1145,22 @@ bool ChromeFileSystemAccessPermissionContext::RevokeActiveGrants(
     OriginState& origin_state = origin_it->second;
     for (auto& grant : origin_state.read_grants) {
       if (file_path.empty() || grant.first == file_path) {
-        grant.second->SetStatus(
-            PermissionStatus::ASK,
-            PersistedPermissionOptions::kDoNotUpdatePersistedPermission);
-        grant_revoked = true;
+        if (grant.second) {
+          grant.second->SetStatus(
+              PermissionStatus::ASK,
+              PersistedPermissionOptions::kDoNotUpdatePersistedPermission);
+          grant_revoked = true;
+        }
       }
     }
     for (auto& grant : origin_state.write_grants) {
       if (file_path.empty() || grant.first == file_path) {
-        grant.second->SetStatus(
-            PermissionStatus::ASK,
-            PersistedPermissionOptions::kDoNotUpdatePersistedPermission);
-        grant_revoked = true;
+        if (grant.second) {
+          grant.second->SetStatus(
+              PermissionStatus::ASK,
+              PersistedPermissionOptions::kDoNotUpdatePersistedPermission);
+          grant_revoked = true;
+        }
       }
     }
     // Only update `persisted_grant_status` if the state has not already been
@@ -1272,7 +1276,7 @@ ChromeFileSystemAccessPermissionContext::GetReadPermissionGrant(
       }
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 
@@ -1358,7 +1362,7 @@ ChromeFileSystemAccessPermissionContext::GetWritePermissionGrant(
       }
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 
@@ -2494,7 +2498,8 @@ bool ChromeFileSystemAccessPermissionContext::AncestorHasActivePermission(
 
 bool ChromeFileSystemAccessPermissionContext::HasGrantedActivePermissionStatus(
     PermissionGrantImpl* grant) const {
-  return grant->GetActivePermissionStatus() == PermissionStatus::GRANTED;
+  return grant &&
+         grant->GetActivePermissionStatus() == PermissionStatus::GRANTED;
 }
 
 bool ChromeFileSystemAccessPermissionContext::

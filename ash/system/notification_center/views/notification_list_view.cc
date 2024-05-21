@@ -277,7 +277,7 @@ double NotificationListView::GetCurrentAnimationValue() const {
   switch (state_) {
     case State::IDLE:
       // No animations are used for State::IDLE.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       tween = gfx::Tween::LINEAR;
       break;
     case State::CLEAR_ALL_STACKED:
@@ -744,7 +744,7 @@ void NotificationListView::UpdateBounds() {
     // Height is taken from preferred size, which is calculated based on the
     // tween and animation state when animations are occurring. So views which
     // are animating will provide the correct interpolated height here.
-    const int height = view->GetHeightForWidth(message_view_width_);
+    const int height = view->CalculateHeight();
     const int direction = view->GetSlideDirection();
 
     if (y > 0) {

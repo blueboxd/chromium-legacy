@@ -7,7 +7,7 @@ load("//lib/args.star", "args")
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builder_health_indicators.star", "health_spec")
-load("//lib/builders.star", "cpu", "os", "reclient", "sheriff_rotations")
+load("//lib/builders.star", "cpu", "os", "sheriff_rotations", "siso")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
@@ -16,6 +16,9 @@ load("//lib/xcode.star", "xcode")
 ci.defaults.set(
     executable = ci.DEFAULT_EXECUTABLE,
     builder_group = "chromium.mac",
+    builder_config_settings = builder_config.ci_settings(
+        retry_failed_shards = True,
+    ),
     pool = ci.DEFAULT_POOL,
     os = os.MAC_DEFAULT,
     sheriff_rotations = sheriff_rotations.CHROMIUM,
@@ -23,12 +26,11 @@ ci.defaults.set(
     main_console_view = "main",
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     health_spec = health_spec.DEFAULT,
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
-    reclient_jobs = reclient.jobs.DEFAULT,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     shadow_service_account = ci.DEFAULT_SHADOW_SERVICE_ACCOUNT,
     siso_enabled = True,
-    siso_remote_jobs = reclient.jobs.DEFAULT,
+    siso_project = siso.project.DEFAULT_TRUSTED,
+    siso_remote_jobs = siso.remote_jobs.DEFAULT,
     thin_tester_cores = 8,
 )
 
@@ -103,8 +105,8 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "bling-engprod@google.com",
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
-    reclient_jobs = reclient.jobs.DEFAULT,
+    siso_project = siso.project.DEFAULT_TRUSTED,
+    siso_remote_jobs = siso.remote_jobs.DEFAULT,
 )
 
 ci.builder(
@@ -423,6 +425,8 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-mac-archive",
     ),
+    cores = None,
+    cpu = cpu.ARM64,
     console_view_entry = consoles.console_view_entry(
         category = "mac",
         short_name = "15",
@@ -450,9 +454,6 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.MAC,
         ),
     ),
-    builder_config_settings = builder_config.ci_settings(
-        retry_failed_shards = True,
-    ),
     console_view_entry = consoles.console_view_entry(
         category = "mac",
         short_name = "11",
@@ -478,9 +479,6 @@ ci.thin_tester(
             target_bits = 64,
             target_platform = builder_config.target_platform.MAC,
         ),
-    ),
-    builder_config_settings = builder_config.ci_settings(
-        retry_failed_shards = True,
     ),
     console_view_entry = consoles.console_view_entry(
         category = "mac",

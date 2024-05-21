@@ -48,7 +48,7 @@ namespace syncable_prefs_ids {
 // tools/metrics/histograms/metadata/sync/enums.xml. When removing an unused
 // enumerator, comment it out here, making it clear the value was previously
 // used, and add "(obsolete)" to the corresponding entry in enums.xml.
-// LINT.IfChange(SyncablePref)
+// LINT.IfChange(ChromeSyncablePref)
 enum {
   // Starts with 100000 to avoid clash with prefs listed in
   // common_syncable_prefs_database.cc and
@@ -337,6 +337,7 @@ enum {
   kAccessibilityReadAnythingLanguagesEnabled = 100278,
   kKeyboardDefaultSplitModifierSettings = 100279,
   kDisplayAmbientLightSensorLastEnabled = 100280,
+  kAccessibilityMainNodeAnnotationsEnabled = 100281,
   // See components/sync_preferences/README.md about adding new entries here.
   // vvvvv IMPORTANT! vvvvv
   // Note to the reviewer: IT IS YOUR RESPONSIBILITY to ensure that new syncable
@@ -344,7 +345,7 @@ enum {
   // guidance and escalation path in case anything is unclear.
   // ^^^^^ IMPORTANT! ^^^^^
 };
-// LINT.ThenChange(/tools/metrics/histograms/metadata/sync/enums.xml:SyncablePref)
+// LINT.ThenChange(/tools/metrics/histograms/metadata/sync/enums.xml:ChromeSyncablePref)
 }  // namespace syncable_prefs_ids
 
 // Non-iOS specific list of syncable preferences.
@@ -1156,6 +1157,10 @@ constexpr auto kChromeSyncablePrefsAllowlist = base::MakeFixedFlatMap<
     {prefs::kAccessibilityPdfOcrAlwaysActive,
      {syncable_prefs_ids::kAccessibilityPdfOcrAlwaysActive, syncer::PREFERENCES,
       sync_preferences::PrefSensitivity::kNone,
+      sync_preferences::MergeBehavior::kNone}},
+    {prefs::kAccessibilityMainNodeAnnotationsEnabled,
+     {syncable_prefs_ids::kAccessibilityMainNodeAnnotationsEnabled,
+      syncer::PREFERENCES, sync_preferences::PrefSensitivity::kNone,
       sync_preferences::MergeBehavior::kNone}},
     {prefs::kBrowserColorScheme,
      {syncable_prefs_ids::kBrowserColorScheme, syncer::PREFERENCES,

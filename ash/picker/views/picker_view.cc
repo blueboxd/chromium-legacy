@@ -11,18 +11,18 @@
 #include "ash/picker/metrics/picker_session_metrics.h"
 #include "ash/picker/model/picker_search_results_section.h"
 #include "ash/picker/views/picker_category_view.h"
-#include "ash/picker/views/picker_contents_view.h"
 #include "ash/picker/views/picker_key_event_handler.h"
+#include "ash/picker/views/picker_main_container_view.h"
 #include "ash/picker/views/picker_page_view.h"
 #include "ash/picker/views/picker_search_field_view.h"
 #include "ash/picker/views/picker_search_results_view.h"
 #include "ash/picker/views/picker_search_results_view_delegate.h"
 #include "ash/picker/views/picker_strings.h"
+#include "ash/picker/views/picker_style.h"
 #include "ash/picker/views/picker_view_delegate.h"
 #include "ash/picker/views/picker_zero_state_view.h"
 #include "ash/public/cpp/picker/picker_category.h"
 #include "ash/public/cpp/picker/picker_search_result.h"
-#include "ash/style/system_shadow.h"
 #include "base/check.h"
 #include "base/functional/bind.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -30,7 +30,6 @@
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -38,11 +37,9 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/views/background.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/separator.h"
-#include "ui/views/highlight_border.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_class_properties.h"
@@ -53,27 +50,14 @@
 namespace ash {
 namespace {
 
-constexpr gfx::Size kPickerSize(320, 340);
-constexpr int kBorderRadius = 12;
-constexpr SystemShadow::Type kShadowType = SystemShadow::Type::kElevation12;
-constexpr ui::ColorId kBackgroundColor =
-    cros_tokens::kCrosSysSystemBaseElevated;
-
 // Padding to separate the Picker window from the screen edge.
 constexpr gfx::Insets kPaddingFromScreenEdge(16);
 
 std::unique_ptr<views::BubbleBorder> CreateBorder() {
   auto border = std::make_unique<views::BubbleBorder>(
       views::BubbleBorder::NONE, views::BubbleBorder::NO_SHADOW);
-  border->SetCornerRadius(kBorderRadius);
+  border->SetCornerRadius(kPickerContainerBorderRadius);
   return border;
-}
-
-std::unique_ptr<views::Separator> CreateSeparator() {
-  return views::Builder<views::Separator>()
-      .SetOrientation(views::Separator::Orientation::kHorizontal)
-      .SetColorId(cros_tokens::kCrosSysSeparator)
-      .Build();
 }
 
 // Gets the preferred Picker view bounds in screen coordinates. We try to place
@@ -84,7 +68,7 @@ std::unique_ptr<views::Separator> CreateSeparator() {
 // to vertically align the search field with the center of the anchor bounds.
 // `anchor_bounds` and returned bounds should be in screen coordinates.
 gfx::Rect GetPickerViewBounds(const gfx::Rect& anchor_bounds,
-                              PickerView::PickerLayoutType layout_type,
+                              PickerLayoutType layout_type,
                               const gfx::Size& picker_view_size,
                               int picker_view_search_field_vertical_offset) {
   gfx::Rect screen_work_area = display::Screen::GetScreen()
@@ -101,14 +85,14 @@ gfx::Rect GetPickerViewBounds(const gfx::Rect& anchor_bounds,
     picker_view_bounds.Offset(0, -picker_view_search_field_vertical_offset);
   } else {
     switch (layout_type) {
-      case PickerView::PickerLayoutType::kResultsBelowSearchField:
+      case PickerLayoutType::kMainResultsBelowSearchField:
         // Try to place the Picker at the right edge of the screen, below the
         // anchor.
         picker_view_bounds.set_origin(
             {screen_work_area.right() - picker_view_size.width(),
              anchor_bounds.bottom()});
         break;
-      case PickerView::PickerLayoutType::kResultsAboveSearchField:
+      case PickerLayoutType::kMainResultsAboveSearchField:
         // Try to place the Picker at the right edge of the screen, above the
         // anchor.
         picker_view_bounds.set_origin(
@@ -127,10 +111,9 @@ gfx::Rect GetPickerViewBounds(const gfx::Rect& anchor_bounds,
 
 PickerCategory GetCategoryForMoreResults(PickerSectionType type) {
   switch (type) {
+    case PickerSectionType::kNone:
     case PickerSectionType::kCategories:
     case PickerSectionType::kSuggestions:
-    case PickerSectionType::kRecentlyUsed:
-    case PickerSectionType::kExamples:
     case PickerSectionType::kEditorWrite:
     case PickerSectionType::kEditorRewrite:
       NOTREACHED_NORETURN();
@@ -147,6 +130,18 @@ PickerCategory GetCategoryForMoreResults(PickerSectionType type) {
   }
 }
 
+std::vector<PickerSearchResult> GetMostRecentResult(
+    std::vector<PickerSearchResultsSection> results) {
+  if (results.empty() || results[0].type() != PickerSectionType::kNone) {
+    return {};
+  }
+  base::span<const PickerSearchResult> search_results = results[0].results();
+  if (search_results.empty()) {
+    return {};
+  }
+  return {search_results[0]};
+}
+
 }  // namespace
 
 PickerView::PickerView(PickerViewDelegate* delegate,
@@ -154,21 +149,13 @@ PickerView::PickerView(PickerViewDelegate* delegate,
                        const base::TimeTicks trigger_event_timestamp)
     : performance_metrics_(trigger_event_timestamp), delegate_(delegate) {
   SetShowCloseButton(false);
-  SetBackground(views::CreateThemedRoundedRectBackground(kBackgroundColor,
-                                                         kBorderRadius));
-  SetBorder(std::make_unique<views::HighlightBorder>(
-      kBorderRadius, views::HighlightBorder::Type::kHighlightBorderOnShadow));
-  shadow_ =
-      SystemShadow::CreateShadowOnNinePatchLayerForView(this, kShadowType);
-  shadow_->SetRoundedCornerRadius(kBorderRadius);
-  SetPreferredSize(kPickerSize);
+  SetPreferredSize(kPickerViewMaxSize);
   SetProperty(views::kElementIdentifierKey, kPickerElementId);
 
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical);
 
-  AddSearchFieldView();
-  AddContentsViewWithSeparator(layout_type);
+  AddMainContainerView(layout_type);
 
   // Automatically focus on the search field.
   SetInitiallyFocusedView(search_field_view_);
@@ -206,9 +193,15 @@ void PickerView::SelectZeroStateCategory(PickerCategory category) {
   SelectCategory(category);
 }
 
-void PickerView::SelectSuggestedZeroStateResult(
-    const PickerSearchResult& result) {
+void PickerView::SelectZeroStateResult(const PickerSearchResult& result) {
   SelectSearchResult(result);
+}
+
+void PickerView::GetZeroStateRecentResults(PickerCategory category,
+                                           SearchResultsCallback callback) {
+  delegate_->GetResultsForCategory(
+      category,
+      base::BindRepeating(&GetMostRecentResult).Then(std::move(callback)));
 }
 
 void PickerView::GetSuggestedZeroStateEditorResults(
@@ -368,49 +361,35 @@ void PickerView::PublishCategoryResults(
   category_view_->SetResults(std::move(results));
 }
 
-void PickerView::AddSearchFieldView() {
+void PickerView::AddMainContainerView(PickerLayoutType layout_type) {
+  main_container_view_ =
+      AddChildView(std::make_unique<PickerMainContainerView>());
+
   // `base::Unretained` is safe here because this class owns
-  // `search_field_view_`.
-  search_field_view_ = AddChildView(std::make_unique<PickerSearchFieldView>(
-      base::BindRepeating(&PickerView::StartSearch, base::Unretained(this)),
-      &key_event_handler_, &performance_metrics_));
-}
-
-void PickerView::AddContentsViewWithSeparator(PickerLayoutType layout_type) {
-  switch (layout_type) {
-    case PickerLayoutType::kResultsBelowSearchField:
-      AddChildView(CreateSeparator());
-      contents_view_ =
-          AddChildView(std::make_unique<PickerContentsView>(layout_type));
-      break;
-    case PickerLayoutType::kResultsAboveSearchField:
-      contents_view_ =
-          AddChildViewAt(std::make_unique<PickerContentsView>(layout_type), 0);
-      AddChildViewAt(CreateSeparator(), 1);
-      break;
-  }
-
-  contents_view_->SetProperty(
-      views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
-                               views::MaximumFlexSizeRule::kUnbounded)
-          .WithWeight(1));
+  // `main_container_view_`, which owns `search_field_view_`.
+  search_field_view_ = main_container_view_->AddSearchFieldView(
+      std::make_unique<PickerSearchFieldView>(
+          base::BindRepeating(&PickerView::StartSearch, base::Unretained(this)),
+          &key_event_handler_, &performance_metrics_));
+  main_container_view_->AddContentsView(layout_type);
 
   zero_state_view_ =
-      contents_view_->AddPage(std::make_unique<PickerZeroStateView>(
+      main_container_view_->AddPage(std::make_unique<PickerZeroStateView>(
           this, delegate_->GetAvailableCategories(),
-          delegate_->ShouldShowSuggestedResults(), kPickerSize.width()));
-
-  category_view_ = contents_view_->AddPage(std::make_unique<PickerCategoryView>(
-      this, kPickerSize.width(), delegate_->GetAssetFetcher()));
+          delegate_->GetRecentResultsCategories(), kPickerViewMaxSize.width(),
+          delegate_->GetAssetFetcher()));
+  category_view_ =
+      main_container_view_->AddPage(std::make_unique<PickerCategoryView>(
+          this, kPickerViewMaxSize.width(), delegate_->GetAssetFetcher()));
   search_results_view_ =
-      contents_view_->AddPage(std::make_unique<PickerSearchResultsView>(
-          this, kPickerSize.width(), delegate_->GetAssetFetcher()));
+      main_container_view_->AddPage(std::make_unique<PickerSearchResultsView>(
+          this, kPickerViewMaxSize.width(), delegate_->GetAssetFetcher()));
+
   SetActivePage(zero_state_view_);
 }
 
 void PickerView::SetActivePage(PickerPageView* page_view) {
-  contents_view_->SetActivePage(page_view);
+  main_container_view_->SetActivePage(page_view);
   key_event_handler_.SetActivePseudoFocusHandler(page_view);
 }
 

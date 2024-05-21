@@ -1,5 +1,8 @@
 include_rules = [
+  "+components/content_settings/core",
+  "+components/prefs",
   "+components/privacy_sandbox",
+  "+components/content_settings/browser",
   "+components/subresource_filter/content/shared/browser",
   "+components/subresource_filter/content/shared/common",
   "+components/subresource_filter/core",

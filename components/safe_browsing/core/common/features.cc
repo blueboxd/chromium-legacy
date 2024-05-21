@@ -46,6 +46,10 @@ BASE_FEATURE(kClientSideDetectionSamplePing,
              "ClientSideDetectionSamplePing",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kClientSideDetectionVibrationApi,
+             "ClientSideDetectionVibrationApi",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kCreateNotificationsAcceptedClientSafeBrowsingReports,
              "CreateNotificationsAcceptedClientSafeBrowsingReports",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -92,6 +96,9 @@ BASE_FEATURE(kDownloadWarningSurvey,
 // A default value of -1 indicates configuration error.
 const base::FeatureParam<int> kDownloadWarningSurveyType{
     &kDownloadWarningSurvey, "survey_type", -1};
+
+const base::FeatureParam<int> kDownloadWarningSurveyIgnoreDelaySeconds{
+    &kDownloadWarningSurvey, "ignore_delay_seconds", 300};
 
 BASE_FEATURE(kEncryptedArchivesMetadata,
              "SafeBrowsingEncryptedArchivesMetadata",
@@ -178,10 +185,6 @@ BASE_FEATURE(kLogAccountEnhancedProtectionStateInProtegoPings,
              "TailoredSecurityLogAccountEnhancedProtectionStateInProtegoPings",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kMaldocaSkipCheck,
-             "MaldocaSkipCheck",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kMmapSafeBrowsingDatabase,
              "MmapSafeBrowsingDatabase",
 // TODO(crbug.com/40061554): Fix iOS tests with this enabled.
@@ -237,20 +240,26 @@ constexpr base::FeatureParam<int> kReferrerChainEventMaximumCount{
 
 BASE_FEATURE(kSafeBrowsingAsyncRealTimeCheck,
              "SafeBrowsingAsyncRealTimeCheck",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 #if BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kSafeBrowsingCallNewGmsApiOnStartup,
              "SafeBrowsingCallNewGmsApiOnStartup",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSafeBrowsingNewGmsApiForBrowseUrlDatabaseCheck,
              "SafeBrowsingNewGmsApiForBrowseUrlDatabaseCheck",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSafeBrowsingNewGmsApiForSubresourceFilterCheck,
              "SafeBrowsingNewGmsApiForSubresourceFilterCheck",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 BASE_FEATURE(kSafeBrowsingOnUIThread,

@@ -41,8 +41,7 @@ class OnDeviceModelServiceAdaptationControllerTest : public testing::Test {
            {"on_device_model_context_token_chunk_size", "4"},
            {"on_device_model_topk", "1"},
            {"on_device_model_temperature", "0"}}},
-         {features::kTextSafetyClassifier,
-          {{"on_device_must_use_safety_model", "false"}}},
+         {features::kTextSafetyClassifier, {}},
          {features::kOptimizationGuideComposeOnDeviceEval, {{}}},
          {features::internal::kModelAdaptationCompose, {{}}}},
         {});
@@ -63,7 +62,7 @@ class OnDeviceModelServiceAdaptationControllerTest : public testing::Test {
         std::make_unique<OnDeviceModelAccessController>(pref_service_);
     access_controller_ = access_controller.get();
     test_controller_ = base::MakeRefCounted<FakeOnDeviceModelServiceController>(
-        std::move(access_controller),
+        &fake_settings_, std::move(access_controller),
         on_device_component_state_manager_.get()->GetWeakPtr());
   }
 
@@ -100,8 +99,7 @@ class OnDeviceModelServiceAdaptationControllerTest : public testing::Test {
  protected:
   base::test::TaskEnvironment task_environment_;
   TestingPrefServiceSimple pref_service_;
-  ScopedOnDeviceModelServiceTestSettings
-      scoped_on_device_model_service_test_settings_;
+  FakeOnDeviceServiceSettings fake_settings_;
   // Owned by FakeOnDeviceModelServiceController.
   raw_ptr<OnDeviceModelAccessController> access_controller_ = nullptr;
   TestOnDeviceModelComponentStateManager on_device_component_state_manager_{

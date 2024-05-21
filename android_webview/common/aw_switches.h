@@ -12,6 +12,7 @@ extern const char kWebViewSandboxedRenderer[];
 extern const char kWebViewDisableSafebrowsingSupport[];
 extern const char kWebViewSafebrowsingBlockAllResources[];
 extern const char kHighlightAllWebViews[];
+extern const char kNetLog[];
 extern const char kWebViewVerboseLogging[];
 extern const char kFinchSeedExpirationAge[];
 extern const char kFinchSeedIgnorePendingDownload[];
@@ -27,6 +28,7 @@ extern const char kWebViewFpsComponent[];
 extern const char kWebViewForceDisable3pcs[];
 extern const char kWebViewForceCrashJava[];
 extern const char kWebViewForceCrashNative[];
+extern const char kWebViewUseSeparateResourceContext[];
 
 }  // namespace switches
 

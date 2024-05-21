@@ -132,7 +132,7 @@ android_library("internal_java") {
 
 android_resources("java_resources") {
   sources = [
-    "java/res/drawable/ic_vpn_key_off.xml",
+    "java/res/drawable/ic_password_manager_key_off.xml",
     "java/res/layout/accessory_sheet_header.xml",
     "java/res/layout/address_accessory_sheet.xml",
     "java/res/layout/all_passwords_bottom_sheet.xml",
@@ -150,6 +150,7 @@ android_resources("java_resources") {
     "java/res/layout/keyboard_accessory_sheet_tab_promo_code_info.xml",
     "java/res/layout/keyboard_accessory_sheet_tab_title.xml",
     "java/res/layout/keyboard_accessory_suggestion.xml",
+    "java/res/layout/keyboard_accessory_suggestion_large.xml",
     "java/res/layout/password_accessory_passkey_chip.xml",
     "java/res/layout/password_accessory_sheet.xml",
     "java/res/layout/password_accessory_sheet_option.xml",

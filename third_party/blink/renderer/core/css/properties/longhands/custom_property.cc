@@ -214,11 +214,11 @@ void CustomProperty::ApplyValue(StyleResolverState& state,
   builder.SetVariableValue(name_, registered_value, is_inherited_property);
 }
 
-const CSSValue* CustomProperty::ParseSingleValueFromRange(
-    CSSParserTokenRange& range,
+const CSSValue* CustomProperty::ParseSingleValue(
+    CSSParserTokenStream& stream,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context) const {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 

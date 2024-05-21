@@ -114,7 +114,7 @@ struct Session {
 
   const std::string id;
   bool w3c_compliant;
-  bool webSocketUrl = false;
+  bool web_socket_url = false;
   bool quit;
   bool detach;
   bool awaiting_bidi_response = false;
@@ -142,7 +142,7 @@ struct Session {
   base::TimeDelta implicit_wait;
   base::TimeDelta page_load_timeout;
   base::TimeDelta script_timeout;
-  std::unique_ptr<std::string> prompt_text;
+  std::optional<std::string> prompt_text;
   std::unique_ptr<Geoposition> overridden_geoposition;
   std::unique_ptr<DeviceMetrics> overridden_device_metrics;
   std::unique_ptr<NetworkConditions> overridden_network_conditions;

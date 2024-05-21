@@ -6,14 +6,16 @@
 #define COMPONENTS_FACILITATED_PAYMENTS_CORE_BROWSER_FACILITATED_PAYMENTS_CLIENT_H_
 
 #include <cstdint>
+#include <optional>
 
 #include "base/containers/span.h"
 #include "base/functional/callback_forward.h"
 #include "components/autofill/core/browser/payments/risk_data_loader.h"
+#include "components/signin/public/identity_manager/account_info.h"
 
 namespace autofill {
 class BankAccount;
-class PersonalDataManager;
+class PaymentsDataManager;
 }  // namespace autofill
 
 namespace payments::facilitated {
@@ -25,15 +27,18 @@ class FacilitatedPaymentsClient : public autofill::RiskDataLoader {
  public:
   ~FacilitatedPaymentsClient() override;
 
-  // Gets the `PersonalDataManager` instance associated with the Chrome profile.
+  // Gets the `PaymentsDataManager` instance associated with the Chrome profile.
   // It is used to get user's account info.
-  virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
+  virtual autofill::PaymentsDataManager* GetPaymentsDataManager() = 0;
 
   // Gets the `FacilitatedPaymentsNetworkInterface` instance owned by the client
   // used for making payment requests. It can be null if the browser context
   // associated with the WebContents is null.
   virtual FacilitatedPaymentsNetworkInterface*
   GetFacilitatedPaymentsNetworkInterface() = 0;
+
+  // Provides access to the core information of the user's primary account.
+  virtual std::optional<CoreAccountInfo> GetCoreAccountInfo() = 0;
 
   // Shows the user's PIX accounts from their Google Wallet, and prompts to pay.
   // If the UI was shown, then returns true and later invokes the

@@ -29,6 +29,7 @@
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/browser_service_host_ash.h"
 #include "chrome/browser/ash/crosapi/browser_version_service_ash.h"
+#include "chrome/browser/ash/crosapi/cec_private_ash.h"
 #include "chrome/browser/ash/crosapi/cert_database_ash.h"
 #include "chrome/browser/ash/crosapi/cert_provisioning_ash.h"
 #include "chrome/browser/ash/crosapi/chaps_service_ash.h"
@@ -55,6 +56,7 @@
 #include "chrome/browser/ash/crosapi/embedded_accessibility_helper_client_ash.h"
 #include "chrome/browser/ash/crosapi/emoji_picker_ash.h"
 #include "chrome/browser/ash/crosapi/extension_info_private_ash.h"
+#include "chrome/browser/ash/crosapi/extension_printer_service_ash.h"
 #include "chrome/browser/ash/crosapi/eye_dropper_ash.h"
 #include "chrome/browser/ash/crosapi/feedback_ash.h"
 #include "chrome/browser/ash/crosapi/field_trial_service_ash.h"
@@ -128,11 +130,6 @@
 #include "chrome/browser/ash/remote_apps/remote_apps_manager_factory.h"
 #include "chrome/browser/ash/sync/sync_mojo_service_ash.h"
 #include "chrome/browser/ash/sync/sync_mojo_service_factory_ash.h"
-#include "chrome/browser/ash/telemetry_extension/diagnostics/diagnostics_service_ash.h"
-#include "chrome/browser/ash/telemetry_extension/events/telemetry_event_service_ash.h"
-#include "chrome/browser/ash/telemetry_extension/management/telemetry_management_service_ash.h"
-#include "chrome/browser/ash/telemetry_extension/routines/telemetry_diagnostic_routine_service_ash.h"
-#include "chrome/browser/ash/telemetry_extension/telemetry/probe_service_ash.h"
 #include "chrome/browser/ash/trusted_vault/trusted_vault_backend_service_ash.h"
 #include "chrome/browser/ash/trusted_vault/trusted_vault_backend_service_factory_ash.h"
 #include "chrome/browser/ash/video_conference/video_conference_manager_ash.h"
@@ -146,6 +143,11 @@
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chromeos/ash/components/account_manager/account_manager_factory.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
+#include "chromeos/ash/components/telemetry_extension/diagnostics/diagnostics_service_ash.h"
+#include "chromeos/ash/components/telemetry_extension/events/telemetry_event_service_ash.h"
+#include "chromeos/ash/components/telemetry_extension/management/telemetry_management_service_ash.h"
+#include "chromeos/ash/components/telemetry_extension/routines/telemetry_diagnostic_routine_service_ash.h"
+#include "chromeos/ash/components/telemetry_extension/telemetry/probe_service_ash.h"
 #include "chromeos/components/cdm_factory_daemon/cdm_factory_daemon_proxy_ash.h"
 #include "chromeos/components/in_session_auth/in_process_instances.h"
 #include "chromeos/components/in_session_auth/in_session_auth.h"
@@ -154,6 +156,7 @@
 #include "chromeos/crosapi/mojom/device_local_account_extension_service.mojom.h"
 #include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
 #include "chromeos/crosapi/mojom/embedded_accessibility_helper.mojom.h"
+#include "chromeos/crosapi/mojom/extension_printer.mojom.h"
 #include "chromeos/crosapi/mojom/eye_dropper.mojom.h"
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
 #include "chromeos/crosapi/mojom/file_change_service_bridge.mojom.h"
@@ -228,6 +231,7 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
           g_browser_process->component_updater())),
       guest_os_sk_forwarder_factory_ash_(
           std::make_unique<GuestOsSkForwarderFactoryAsh>()),
+      cec_private_ash_(std::make_unique<CecPrivateAsh>()),
       cert_database_ash_(std::make_unique<CertDatabaseAsh>()),
       cert_provisioning_ash_(std::make_unique<CertProvisioningAsh>()),
       chaps_service_ash_(std::make_unique<ChapsServiceAsh>()),
@@ -262,6 +266,8 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
           std::make_unique<EmbeddedAccessibilityHelperClientAsh>()),
       emoji_picker_ash_(std::make_unique<EmojiPickerAsh>()),
       extension_info_private_ash_(std::make_unique<ExtensionInfoPrivateAsh>()),
+      extension_printer_service_ash_(
+          std::make_unique<ExtensionPrinterServiceAsh>()),
       eye_dropper_ash_(std::make_unique<EyeDropperAsh>()),
       feedback_ash_(std::make_unique<FeedbackAsh>()),
       field_trial_service_ash_(std::make_unique<FieldTrialServiceAsh>()),
@@ -447,6 +453,11 @@ void CrosapiAsh::BindBrowserVersionService(
   browser_version_service_ash_->BindReceiver(std::move(receiver));
 }
 
+void CrosapiAsh::BindCecPrivate(
+    mojo::PendingReceiver<mojom::CecPrivate> receiver) {
+  cec_private_ash_->BindReceiver(std::move(receiver));
+}
+
 void CrosapiAsh::BindCertDatabase(
     mojo::PendingReceiver<mojom::CertDatabase> receiver) {
   cert_database_ash_->BindReceiver(std::move(receiver));
@@ -614,6 +625,11 @@ void CrosapiAsh::BindEmojiPicker(
 void CrosapiAsh::BindExtensionInfoPrivate(
     mojo::PendingReceiver<mojom::ExtensionInfoPrivate> receiver) {
   extension_info_private_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindExtensionPrinterService(
+    mojo::PendingReceiver<mojom::ExtensionPrinterService> receiver) {
+  extension_printer_service_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindExtensionPublisher(

@@ -42,6 +42,7 @@ namespace autofill {
 
 class AddressDataCleaner;
 class AlternativeStateNameMapUpdater;
+class ContactInfoPreconditionChecker;
 
 // Contains all address-related logic of the `PersonalDataManager`. See comment
 // above the `PersonalDataManager` first. In the `AddressDataManager` (ADM),
@@ -145,8 +146,7 @@ class AddressDataManager : public AutofillWebDataServiceObserverOnUISequence,
 
   // Returns the profile with the specified `guid`, or nullptr if there is no
   // profile such profile. See `GetProfiles()` for the lifetime of the pointer.
-  // TODO(crbug.com/40283168): Change return type to const AutofillProfile*
-  AutofillProfile* GetProfileByGUID(const std::string& guid) const;
+  const AutofillProfile* GetProfileByGUID(const std::string& guid) const;
 
   // Adds |profile| to the web database.
   virtual void AddProfile(const AutofillProfile& profile);
@@ -403,6 +403,9 @@ class AddressDataManager : public AutofillWebDataServiceObserverOnUISequence,
   // Logs metrics around the number of stored profiles after the initial load
   // has finished.
   void LogStoredDataMetrics() const;
+
+  std::unique_ptr<ContactInfoPreconditionChecker>
+      contact_info_precondition_checker_;
 
   // A copy of the profiles stored in `AddressAutofillTable`. They come from
   // two sources:

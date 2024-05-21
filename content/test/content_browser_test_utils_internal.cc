@@ -422,6 +422,16 @@ std::string FrameTreeVisualizer::DepictFrameTree(FrameTreeNode* root) {
         static_cast<SiteInstanceImpl*>(legend_entry.second);
     std::string description =
         GetUrlWithoutPort(site_instance->GetSiteURL()).spec();
+
+    // data: URLs have site URLs of the form data:nonce, where the nonce is an
+    // UnguessableToken. Make these deterministic for testing by using the
+    // abbreviated letter for the site in the nonce. For example,
+    // "data:nonce_A".
+    if (site_instance->GetSiteURL().SchemeIs(url::kDataScheme)) {
+      description =
+          base::StringPrintf("data:nonce_%s", legend_entry.first.c_str());
+    }
+
     base::StringAppendF(&result, "\n%s%s = %s", prefix,
                         legend_entry.first.c_str(), description.c_str());
     // Highlight some exceptionable conditions.
@@ -793,7 +803,7 @@ void BeforeUnloadBlockingDelegate::RunJavaScriptDialog(
     const std::u16string& default_prompt_text,
     DialogClosedCallback callback,
     bool* did_suppress_message) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void BeforeUnloadBlockingDelegate::RunBeforeUnloadDialog(
@@ -809,7 +819,7 @@ bool BeforeUnloadBlockingDelegate::HandleJavaScriptDialog(
     WebContents* web_contents,
     bool accept,
     const std::u16string* prompt_override) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return true;
 }
 
@@ -1166,7 +1176,7 @@ void WaitForBrowserCompositorFramePresented(WebContents* web_contents) {
   compositor->RequestSuccessfulPresentationTimeForNextFrame(
       std::move(callback));
 #else
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 #endif
   run_loop.Run();
 }

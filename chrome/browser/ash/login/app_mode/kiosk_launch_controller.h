@@ -16,7 +16,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/observer_list_types.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
+#include "chrome/browser/ash/app_mode/kiosk_controller.h"
 #include "chrome/browser/ash/app_mode/kiosk_profile_loader.h"
 #include "chrome/browser/ash/login/app_mode/force_install_observer.h"
 #include "chrome/browser/ash/login/app_mode/network_ui_controller.h"
@@ -35,6 +35,9 @@ class LacrosLauncher;
 }  // namespace app_mode
 
 namespace ash {
+
+class KioskProfileLoadFailedObserver;
+class KioskTestHelper;
 class LoginDisplayHost;
 class OobeUI;
 
@@ -95,11 +98,6 @@ void SetKioskLaunchStateCrashKey(KioskLaunchState state);
 class KioskLaunchController : public KioskAppLauncher::Observer,
                               public NetworkUiController::Observer {
  public:
-  class KioskProfileLoadFailedObserver : public base::CheckedObserver {
-   public:
-    ~KioskProfileLoadFailedObserver() override = default;
-    virtual void OnKioskProfileLoadFailed() = 0;
-  };
   class AcceleratorController {
    public:
     virtual ~AcceleratorController() = default;
@@ -136,14 +134,6 @@ class KioskLaunchController : public KioskAppLauncher::Observer,
   KioskLaunchController& operator=(const KioskLaunchController&) = delete;
   ~KioskLaunchController() override;
 
-  // Scoped overrides used during testing. The original behavior is restored
-  // when the returned objects are destroyed.
-  [[nodiscard]] static base::AutoReset<bool> SkipSplashScreenWaitForTesting();
-  [[nodiscard]] static base::AutoReset<bool> BlockAppLaunchForTesting();
-  [[nodiscard]] static base::AutoReset<bool>
-  BlockSystemSessionCreationForTesting();
-  [[nodiscard]] static base::AutoReset<bool> BlockExitOnFailureForTesting();
-
   void Start(const KioskAppId& kiosk_app_id, bool auto_launch);
 
   void AddKioskProfileLoadFailedObserver(
@@ -165,6 +155,21 @@ class KioskLaunchController : public KioskAppLauncher::Observer,
     return network_ui_controller_->GetNetworkUiStateForTesting();
   }
   NetworkUiController* GetNetworkUiControllerForTesting();
+
+  // Overrides of the launch behavior during testing.
+  // Values here can only be modified through the `KioskTestHelper` class.
+  class TestOverrides {
+   private:
+    friend class KioskTestHelper;
+    friend class KioskLaunchController;
+
+    // Whether we should skip the wait for minimum screen show time.
+    static bool skip_splash_wait;
+    static bool block_app_launch;
+    static bool block_system_session_creation;
+    // Whether we should prevent Kiosk launcher from exiting when launch fails.
+    static bool block_exit_on_failure;
+  };
 
  private:
   friend class KioskLaunchControllerTest;
@@ -200,8 +205,7 @@ class KioskLaunchController : public KioskAppLauncher::Observer,
   void OnAppWindowCreated(const std::optional<std::string>& app_name) override;
 
   void StartAppLaunch(Profile& profile);
-  void HandleProfileLoadError(KioskProfileLoader::ErrorResult error);
-  void HandleOldEncryption(std::unique_ptr<UserContext> user_context);
+  void HandleProfileLoadError(KioskAppLaunchError::Error error);
 
   // Returns the `Data` struct used to populate the splash screen.
   AppLaunchSplashScreenView::Data GetSplashScreenAppData();

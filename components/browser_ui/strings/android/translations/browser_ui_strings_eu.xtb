@@ -68,7 +68,6 @@
 <translation id="2241587408274973373">Fitxa berriaren orriaren txartelak</translation>
 <translation id="2241634353105152135">Behin soilik</translation>
 <translation id="2253414712144136228">Kendu <ph name="NAME_OF_LIST_ITEM" /></translation>
-<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{Webgune batek blokeatu ditu cookieak}other{# webgunek blokeatu dituzte cookieak}}</translation>
 <translation id="228293613124499805">Ziurrenik, bisitatzen dituzun webgune gehienek datuak gailuan gordetzen dituzte. Maiz, zure hobespenak edo webgunearekin partekatzen duzun informazioa gordetzen dituzte, zerbitzu hobea eskaintzeko. Ezarpen hau aktibatuta edukitzea gomendatzen dugu.</translation>
 <translation id="2289270750774289114">Eskatu nire baimena webgune batek inguruko Bluetooth bidezko gailuak bilatu nahi dituenean (gomendatua)</translation>
 <translation id="2315043854645842844">Sistema eragileak ez du onartzen bezeroarentzako ziurtagiria hautatzea.</translation>
@@ -305,6 +304,7 @@
 <translation id="6015775454662021376">Kontrolatu webgune honek gailurako duen sarbidea</translation>
 <translation id="6040143037577758943">Itxi</translation>
 <translation id="6042308850641462728">Gehiago</translation>
+<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Azken fitxa</translation>
 <translation id="6064125863973209585">Osatutako deskargak</translation>
 <translation id="6071501408666570960">Baliteke webguneko saioa amaitzea.</translation>
 <translation id="6120483543004435978">Aktibatuta dagoenean, webguneek gailua noiz erabiltzen ari zaren jakiteko baimena eska dezakete. Desaktibatuta dagoenean, webguneek ezin dute jakin noiz erabiltzen ari zaren gailua.</translation>
@@ -426,6 +426,7 @@
 <translation id="7986741934819883144">Hautatu kontaktu bat</translation>
 <translation id="7990211076305263060">Aktibatuta dagoenean, webguneek mikrofonoa erabiltzeko baimena eska dezakete. Desaktibatuta dagoenean, webguneek ezin dute erabili mikrofonoa.</translation>
 <translation id="8007176423574883786">Desaktibatu egin da gailu honetan</translation>
+<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> <ph name="FROM_DEVICE" /> gailutik</translation>
 <translation id="802154636333426148">Ezin izan da deskargatu</translation>
 <translation id="8042586301629853791">Ordenatzeko irizpidea:</translation>
 <translation id="8067883171444229417">Erreproduzitu bideoa</translation>
@@ -480,7 +481,6 @@
 <translation id="8721719390026067591">Aktibatuta dagoenean, webguneek Bluetooth bidezko gailuak bilatzeko baimena eska dezakete. Desaktibatuta dagoenean, webguneek ezin dute bilatu Bluetooth bidezko gailurik.</translation>
 <translation id="8725066075913043281">Saiatu berriro</translation>
 <translation id="8730621377337864115">Eginda</translation>
-<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{Webgune batek onartzen ditu cookieak}other{# webgunek onartzen dituzte cookieak}}</translation>
 <translation id="8751914237388039244">Hautatu irudi bat</translation>
 <translation id="8800034312320686233">Ez al du funtzionatzen webguneak?</translation>
 <translation id="8801436777607969138">Blokeatu JavaScript webgune zehatz batean.</translation>

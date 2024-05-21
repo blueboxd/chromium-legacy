@@ -187,7 +187,6 @@ class ChromeURLDataManagerWebUITrustedTypesTest
     enabled_features.push_back(whats_new::kForceEnabled);
     enabled_features.push_back(history_clusters::kSidePanelJourneys);
     enabled_features.push_back(features::kSupportTool);
-    enabled_features.push_back(features::kCustomizeChromeSidePanel);
     enabled_features.push_back(ntp_features::kCustomizeChromeWallpaperSearch);
     enabled_features.push_back(
         optimization_guide::features::kOptimizationGuideModelExecution);
@@ -503,7 +502,7 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://conflicts",
 #endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    "chrome://signin-dice-web-intercept/?debug",
+    "chrome://signin-dice-web-intercept.top-chrome/?debug",
     // Note: Disabled because a DCHECK fires when directly visiting the URL.
     // "chrome://signin-reauth",
 #endif

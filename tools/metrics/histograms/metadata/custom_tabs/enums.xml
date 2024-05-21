@@ -114,6 +114,10 @@ chromium-metrics-reviews@google.com.
       label="Scroll content may resize tab
              EXTRA_ACTIVITY_SCROLL_CONTENT_RESIZE"/>
   <int value="55" label="Incognito EXTRA_OPEN_NEW_EPHEMERAL_TAB"/>
+  <int value="56"
+      label="Enable google bottom bar EXTRA_ENABLE_GOOGLE_BOTTOM_BAR"/>
+  <int value="57"
+      label="Google bottom bar buttons EXTRA_GOOGLE_BOTTOM_BAR_BUTTONS"/>
 </enum>
 
 <enum name="CustomTabsMinimizedEvents">
@@ -178,6 +182,21 @@ chromium-metrics-reviews@google.com.
   <int value="8"
       label="Custom Tab in Background, KEEP_ALIVE set, the system is low on
              memory"/>
+</enum>
+
+<enum name="GoogleBottomBarButtonEvent">
+  <int value="0" label="Unknown button"/>
+  <int value="1" label="Chrome Page Insights button"/>
+  <int value="2" label="Embedder Page Insights button"/>
+  <int value="3" label="Disabled Save button"/>
+  <int value="4" label="Embedder Save button"/>
+  <int value="5" label="Chrome Share button"/>
+  <int value="6" label="Embedder Share button"/>
+</enum>
+
+<enum name="GoogleBottomBarCreatedEvent">
+  <int value="0" label="Even layout"/>
+  <int value="1" label="Spotlight layout"/>
 </enum>
 
 <enum name="IncognitoCCTCallerId">

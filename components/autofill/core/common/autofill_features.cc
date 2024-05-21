@@ -4,8 +4,6 @@
 
 #include "components/autofill/core/common/autofill_features.h"
 
-#include "base/feature_list.h"
-#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 
 namespace autofill::features {
@@ -42,6 +40,13 @@ BASE_FEATURE(kAutofillAddressProfileSavePromptNicknameSupport,
 // across quarters.
 BASE_FEATURE(kAutofillAddressUserPerceptionSurvey,
              "AutofillAddressUserPerceptionSurvey",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, Autofill is informed about the caret position while showing a
+// popup.
+// TODO(crbug.com/339156167): Remove when launched.
+BASE_FEATURE(kAutofillCaretExtraction,
+             "AutofillCaretExtraction",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Same as `kAutofillAddressUserPerceptionSurvey` but for credit card forms.
@@ -149,11 +154,11 @@ const base::FeatureParam<int> kAutofillRankingFormulaVirtualCardBoostHalfLife{
     &kAutofillEnableRankingFormulaCreditCards,
     "autofill_ranking_formula_virtual_card_boost_half_life", 15};
 
-// Relaxes the requirements for offering credit card import.
-// TODO(crbug.com/40876814): Clean up when launched.
-BASE_FEATURE(kAutofillRelaxCreditCardImport,
-             "AutofillRelaxCreditCardImport",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+// When enabled, addresses of every country are considered eligible for account
+// address storage.
+BASE_FEATURE(kAutofillEnableAccountStorageForIneligibleCountries,
+             "AutofillEnableAccountStorageForIneligibleCountries",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables a new implementation for address field parsing that is based on
 // backtracking.
@@ -307,7 +312,7 @@ BASE_FEATURE(kAutofillEnableXHRSubmissionDetectionIOS,
 // change was only a reformatting (inserting whitespaces and special
 // characters).
 // This feature should be enabled with
-// blink::features::kAutofillDontSetAutofillStateAfterJavaScriptChanges.
+// blink::features::AllowJavaScriptToResetAutofillState.
 BASE_FEATURE(kAutofillFixCachingOnJavaScriptChanges,
              "AutofillFixCachingOnJavaScriptChanges",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -333,6 +338,17 @@ BASE_FEATURE(kAutofillSuggestionNStrikeModel,
 
 const base::FeatureParam<int> kSuggestionStrikeLimit{
     &kAutofillSuggestionNStrikeModel, "strike-limit", 5};
+
+// Makes disused suggestion suppression logic ignore the first
+// `kNumberOfIgnoredSuggestions` suggestions (in frecency order), so that the
+// logic never returns an empty list after being passed a non-empty one.
+BASE_FEATURE(kAutofillChangeDisusedAddressSuggestionTreatment,
+             "AutofillChangeDisusedAddressSuggestionTreatment",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<int> kNumberOfIgnoredSuggestions{
+    &kAutofillChangeDisusedAddressSuggestionTreatment, "ignored-suggestions",
+    1};
 
 // Unifies the tracking of the last interacted elements between FormTracker and
 // AutofillAgent and fixes inconsistencies in this tracking.
@@ -598,20 +614,13 @@ BASE_FEATURE(kAutofillSilentProfileUpdateForInsufficientImport,
 // elements and maybe contenteditable elements send text change events.
 BASE_FEATURE(kAutofillTextAreaChangeEvents,
              "AutofillTextAreaChangeEvents",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Sends text change events for contenteditable elements. When this is off,
 // only input elements and maybe textarea elements send text change events.
 BASE_FEATURE(kAutofillContentEditableChangeEvents,
              "AutofillContentEditableChangeEvents",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When enabled, on form submit, observations for every used profile are
-// collected into the profile's `token_quality()`.
-// TODO(crbug.com/40271999): Remove when launched.
-BASE_FEATURE(kAutofillTrackProfileTokenQuality,
-             "AutofillTrackProfileTokenQuality",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Whether to favor credit card number that user typed into input field vs
 // input field value (which was potentially modified via JavaScript).
@@ -700,6 +709,17 @@ BASE_FEATURE(kAutofillLogDeduplicationMetrics,
 // TODO(b/325450676): Remove when launched.
 BASE_FEATURE(kAutofillSilentlyRemoveQuasiDuplicates,
              "AutofillSilentlyRemoveQuasiDuplicates",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Currently, the importing logic offers new profile creation if the observed
+// profile is non-mergeable with any existing profile. With this feature, low-
+// quality tokens receive special treatment and can bypass this requirement.
+// In particular, if the observed profile was autofilled, except for an edit in
+// a single type, this qualifies for an update of the autofilled profile, in
+// case the edited type has low-quality.
+// TODO(b/325451601): Remove when launched.
+BASE_FEATURE(kAutofillUpdateLowQualityTokenOnImport,
+             "AutofillUpdateLowQualityTokenOnImport",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_ANDROID)

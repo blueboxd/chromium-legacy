@@ -174,14 +174,6 @@ bool ShouldTriggerDefaultBrowserHighlightFeature(
 // enabled.
 bool IsNonModalDefaultBrowserPromoCooldownRefactorEnabled();
 
-// Returns true if the default browser promo triggering criteria should be
-// skipped.
-bool ShouldForceDefaultPromoType();
-
-// Returns the promo type (DefaultPromoType) of the default browser promo after
-// skipping the triggering criteria.
-DefaultPromoType ForceDefaultPromoType();
-
 // Returns true if client is in Default Browser promo trigger criteria
 // experiment.
 bool IsDefaultBrowserTriggerCriteraExperimentEnabled();
@@ -193,10 +185,6 @@ bool IsDefaultBrowserPromoGenericTailoredTrainEnabled();
 // Returns true if the only-generic arm of the default browser promo generic
 // tailored experiment is enabled.
 bool IsDefaultBrowserPromoOnlyGenericArmTrain();
-
-// Returns true if default Browser full-screen promo should be shown on omnibox
-// copy-paste instead of non-modal promo.
-bool IsFullScreenPromoOnOmniboxCopyPasteEnabled();
 
 // Returns true if client is in default browser video in settings experiment.
 bool IsDefaultBrowserVideoInSettingsEnabled();

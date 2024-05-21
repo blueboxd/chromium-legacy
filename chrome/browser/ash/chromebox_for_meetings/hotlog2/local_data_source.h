@@ -8,7 +8,7 @@
 #include <deque>
 
 #include "base/memory/weak_ptr.h"
-#include "chromeos/ash/services/chromebox_for_meetings/public/mojom/meet_devices_data_aggregator.mojom.h"
+#include "chromeos/services/chromebox_for_meetings/public/mojom/meet_devices_data_aggregator.mojom.h"
 #include "components/feedback/redaction_tool/redaction_tool.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -42,6 +42,8 @@ class LocalDataSource : public mojom::DataSource {
 
  protected:
   void FillDataBuffer();
+  bool IsCurrentlyWaitingForUpload();
+
   // Make this virtual so unittests can override it
   virtual void SerializeDataBuffer(std::vector<std::string>& buffer);
 

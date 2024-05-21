@@ -99,7 +99,7 @@ ash::OnDeviceToServerSpeechRecognitionFallbackReason GetFallbackReason(
     case ash::OnDeviceRecognitionAvailability::kAvailable:
       break;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return ash::OnDeviceToServerSpeechRecognitionFallbackReason::kMaxValue;
 }
 
@@ -307,6 +307,11 @@ void ProjectorClientImpl::OnSpeechRecognitionStateChanged(
 
 void ProjectorClientImpl::OnSpeechRecognitionStopped() {
   SpeechRecognitionEnded(/*forced=*/false);
+}
+
+void ProjectorClientImpl::OnLanguageIdentificationEvent(
+    media::mojom::LanguageIdentificationEventPtr event) {
+  // For now, this is ignored by projector.
 }
 
 void ProjectorClientImpl::SetTool(const ash::AnnotatorTool& tool) {

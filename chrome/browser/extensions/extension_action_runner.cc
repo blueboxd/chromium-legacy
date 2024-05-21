@@ -112,7 +112,7 @@ ExtensionAction::ShowAction ExtensionActionRunner::RunAction(
     // since clicking should run blocked actions *or* the normal extension
     // action, not both.
     GrantTabPermissions({extension});
-    return ExtensionAction::ACTION_NONE;
+    return ExtensionAction::ShowAction::kNone;
   }
 
   // Anything that gets here should have a page or browser action, or toggle the
@@ -133,7 +133,7 @@ ExtensionAction::ShowAction ExtensionActionRunner::RunAction(
         SidePanelService::Get(browser_context_);
     if (side_panel_service &&
         side_panel_service->HasSidePanelActionForTab(*extension, tab_id)) {
-      return ExtensionAction::ACTION_TOGGLE_SIDE_PANEL;
+      return ExtensionAction::ShowAction::kToggleSidePanel;
     }
   }
 
@@ -147,17 +147,17 @@ ExtensionAction::ShowAction ExtensionActionRunner::RunAction(
   DCHECK(extension_action);
 
   if (!extension_action->GetIsVisible(tab_id)) {
-    return ExtensionAction::ACTION_NONE;
+    return ExtensionAction::ShowAction::kNone;
   }
 
   if (extension_action->HasPopup(tab_id)) {
-    return ExtensionAction::ACTION_SHOW_POPUP;
+    return ExtensionAction::ShowAction::kShowPopup;
   }
 
   ExtensionActionAPI::Get(browser_context_)
       ->DispatchExtensionActionClicked(*extension_action, web_contents(),
                                        extension);
-  return ExtensionAction::ACTION_NONE;
+  return ExtensionAction::ShowAction::kNone;
 }
 
 // TODO(crbug.com/40883928): Consider moving this to SitePermissionsHelper since
@@ -246,7 +246,7 @@ int ExtensionActionRunner::GetBlockedActions(
           break;
         case mojom::RunLocation::kUndefined:
         case mojom::RunLocation::kRunDeferred:
-          NOTREACHED();
+          NOTREACHED_IN_MIGRATION();
       }
     }
   }
@@ -287,7 +287,7 @@ ExtensionActionRunner::RequiresUserConsentForScriptInjection(
       return extension->permissions_data()->GetPageAccess(url, tab_id, nullptr);
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return PermissionsData::PageAccess::kDenied;
 }
 
@@ -350,7 +350,7 @@ void ExtensionActionRunner::OnRequestScriptInjectionPermission(
     mojom::RunLocation run_location,
     mojom::LocalFrameHost::RequestScriptInjectionPermissionCallback callback) {
   if (!crx_file::id_util::IdIsValid(extension_id)) {
-    NOTREACHED() << "'" << extension_id << "' is not a valid id.";
+    NOTREACHED_IN_MIGRATION() << "'" << extension_id << "' is not a valid id.";
     std::move(callback).Run(false);
     return;
   }

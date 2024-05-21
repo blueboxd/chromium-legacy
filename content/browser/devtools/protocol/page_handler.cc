@@ -655,6 +655,7 @@ Response PageHandler::Close() {
 
 void PageHandler::Reload(Maybe<bool> bypassCache,
                          Maybe<std::string> script_to_evaluate_on_load,
+                         Maybe<std::string> loader_id,
                          std::unique_ptr<ReloadCallback> callback) {
   Response response = AssureTopLevelActiveFrame();
   if (response.IsError()) {
@@ -667,6 +668,16 @@ void PageHandler::Reload(Maybe<bool> bypassCache,
   // itself will fail.
   RenderFrameHostImpl* outermost_main_frame =
       host_->GetOutermostMainFrameOrEmbedder();
+
+  if (loader_id.has_value()) {
+    auto navigation_token = outermost_main_frame->GetDevToolsNavigationToken();
+    if (!navigation_token.has_value() ||
+        *loader_id != navigation_token->ToString()) {
+      callback->sendFailure(Response::InvalidParams(
+          "Reload was discarded because the page already navigated"));
+      return;
+    }
+  }
 
   // It is important to fallback before triggering reload, so that
   // renderer could prepare beforehand.
@@ -921,7 +932,7 @@ void PageHandler::OnDownloadUpdated(download::DownloadItem* item) {
       state = Page::DownloadProgress::StateEnum::Canceled;
       break;
     case download::DownloadItem::MAX_DOWNLOAD_STATE:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
   frontend_->DownloadProgress(item->GetGuid(), item->GetTotalBytes(),
                               item->GetReceivedBytes(), state);
@@ -1704,7 +1715,7 @@ Page::BackForwardCacheNotRestoredReason NotRestoredReasonToProtocol(
     case Reason::kBlocklistedFeatures:
       // Blocklisted features should be handled separately and be broken down
       // into sub reasons.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return Page::BackForwardCacheNotRestoredReasonEnum::Unknown;
     case Reason::kUnknown:
       return Page::BackForwardCacheNotRestoredReasonEnum::Unknown;
@@ -1813,7 +1824,7 @@ Page::BackForwardCacheNotRestoredReason BlocklistedFeatureToProtocol(
       return Page::BackForwardCacheNotRestoredReasonEnum::IndexedDBEvent;
     case WebSchedulerTrackedFeature::kDummy:
       // This is a test only reason and should never be called.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return Page::BackForwardCacheNotRestoredReasonEnum::Dummy;
     case WebSchedulerTrackedFeature::
         kJsNetworkRequestReceivedCacheControlNoStoreResource:
@@ -1855,10 +1866,10 @@ DisableForRenderFrameHostReasonToProtocol(
     BackForwardCache::DisabledReason reason) {
   switch (reason.source) {
     case BackForwardCache::DisabledSource::kLegacy:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return Page::BackForwardCacheNotRestoredReasonEnum::Unknown;
     case BackForwardCache::DisabledSource::kTesting:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return Page::BackForwardCacheNotRestoredReasonEnum::Unknown;
     case BackForwardCache::DisabledSource::kContent:
       switch (
@@ -2000,7 +2011,7 @@ Page::BackForwardCacheNotRestoredReasonType MapNotRestoredReasonToType(
     case Reason::kUnknown:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::SupportPending;
     case Reason::kBlocklistedFeatures:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::PageSupportNeeded;
   }
 }

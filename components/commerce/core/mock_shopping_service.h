@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/commerce/core/compare/product_group.h"
 #include "components/commerce/core/shopping_service.h"
 #include "components/commerce/core/subscriptions/commerce_subscription.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -142,6 +143,14 @@ class MockShoppingService : public commerce::ShoppingService {
               GetEntryPointInfoForSelection,
               (GURL old_url, GURL new_url),
               (override));
+  MOCK_METHOD(std::optional<EntryPointInfo>,
+              GetEntryPointInfoForNavigation,
+              (GURL url),
+              (override));
+  MOCK_METHOD(std::optional<ProductGroup>,
+              GetProductGroupForCandidateProduct,
+              (const GURL& product_url),
+              (override));
 
   // Make this mock permissive for all features but default to providing empty
   // data for all accessors of shopping data.
@@ -182,6 +191,10 @@ class MockShoppingService : public commerce::ShoppingService {
       ProductSpecifications specs);
   void SetResponseForGetEntryPointInfoForSelection(
       std::optional<EntryPointInfo> entry_point_info);
+  void SetResponseForGetEntryPointInfoForNavigation(
+      std::optional<EntryPointInfo> entry_point_info);
+  void SetResponseForGetProductGroupForCandidateProduct(
+      std::optional<ProductGroup> product_group);
 
  private:
   // Since the discount API wants a const ref to some map, keep a default

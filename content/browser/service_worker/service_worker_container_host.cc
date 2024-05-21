@@ -54,7 +54,7 @@ ServiceWorkerMetrics::EventType PurposeToEventType(
     case blink::mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE:
       return ServiceWorkerMetrics::EventType::FETCH_SUB_RESOURCE;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return ServiceWorkerMetrics::EventType::UNKNOWN;
 }
 
@@ -1496,8 +1496,18 @@ void ServiceWorkerClient::EvictFromBackForwardCache(
 void ServiceWorkerClient::OnEnterBackForwardCache() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsBackForwardCacheEnabled());
-  if (controller_)
+  if (controller_) {
+    // TODO(crbug.com/330928087): remove check when this issue resolved.
+    SCOPED_CRASH_KEY_NUMBER("SWV_RCFBCM", "client_type",
+                            static_cast<int32_t>(GetClientType()));
+    SCOPED_CRASH_KEY_BOOL("SWV_RCFBCM", "is_execution_ready",
+                          is_execution_ready());
+    SCOPED_CRASH_KEY_BOOL("SWV_RCFBCM", "is_blob_url",
+                          url() != GetUrlForScopeMatch());
+    SCOPED_CRASH_KEY_BOOL("SWV_RCFBCM", "is_inherited", is_inherited());
+    CHECK(!controller_->BFCacheContainsControllee(client_uuid()));
     controller_->MoveControlleeToBackForwardCacheMap(client_uuid());
+  }
   is_in_back_forward_cache_ = true;
 }
 
@@ -1608,7 +1618,7 @@ void ServiceWorkerClient::TransitionToClientPhase(ClientPhase new_phase) {
       DCHECK_EQ(new_phase, ClientPhase::kExecutionReady);
       break;
     case ClientPhase::kExecutionReady:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
   client_phase_ = new_phase;
@@ -2315,7 +2325,7 @@ void ServiceWorkerContainerHostForClient::DispatchExtendableMessageEvent(
 
     // Web workers don't yet have access to ServiceWorker objects, so they
     // can't postMessage to one (https://crbug.com/371690).
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 }
 

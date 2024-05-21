@@ -31,6 +31,10 @@ namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
 
+namespace ash::nearby {
+class NearbyScheduler;
+}  // namespace ash::nearby
+
 namespace push_notification {
 
 // Desktop implementation of PushNotificationService.
@@ -38,11 +42,12 @@ class PushNotificationServiceDesktopImpl : public PushNotificationService,
                                            public KeyedService,
                                            public gcm::GCMAppHandler {
  public:
-  explicit PushNotificationServiceDesktopImpl(
+  PushNotificationServiceDesktopImpl(
       PrefService* pref_service,
       instance_id::InstanceIDDriver* instance_id_driver,
       signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+
   PushNotificationServiceDesktopImpl(
       const PushNotificationServiceDesktopImpl&) = delete;
   PushNotificationServiceDesktopImpl& operator=(
@@ -65,11 +70,38 @@ class PushNotificationServiceDesktopImpl : public PushNotificationService,
                                  const std::string& error_message) override;
   bool CanHandle(const std::string& app_id) const override;
 
+  bool IsServiceInitialized() const { return is_initialized_; }
+
  private:
   // KeyedService:
   void Shutdown() override;
 
-  raw_ptr<const PrefService> pref_service_;
+  // Initialize the service. Initialization is async however it is safe to
+  // add/remove clients immediately so clients can interact with object without
+  // waiting for initialization to complete.
+  void Initialize();
+  void OnTokenReceived(const std::string& token,
+                       instance_id::InstanceID::Result result);
+
+  void OnPushNotificationRegistrationSuccess(
+      const proto::NotificationsMultiLoginUpdateResponse& response);
+  void OnPushNotificationRegistrationFailure(
+      PushNotificationDesktopApiCallFlow::PushNotificationApiCallFlowError
+          error);
+
+  bool is_initialized_ = false;
+
+  // Scheduler attempts initialization of the service with unlimited retries.
+  // The scheduler requires internet connection to attempt a retry.
+  std::unique_ptr<ash::nearby::NearbyScheduler>
+      initialization_on_demand_scheduler_;
+
+  // Constructed per RPC request, and destroyed on RPC response (server
+  // interaction completed). This field is reused by multiple RPCs during the
+  // lifetime of the `PushNotificationServerClient` object.
+  std::unique_ptr<PushNotificationServerClient> server_client_;
+  std::string token_;
+  const raw_ptr<PrefService> pref_service_;
   raw_ptr<gcm::GCMDriver> gcm_driver_;
   raw_ptr<instance_id::InstanceIDDriver> instance_id_driver_;
   const raw_ptr<signin::IdentityManager> identity_manager_;

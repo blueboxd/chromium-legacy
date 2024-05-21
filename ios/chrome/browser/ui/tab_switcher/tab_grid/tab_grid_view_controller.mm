@@ -16,7 +16,6 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/notimplemented.h"
 #import "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/crash_report/model/crash_keys_helper.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
@@ -1117,10 +1116,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       [self.regularGridHandler addNewItem];
       break;
     case TabGridPageRemoteTabs:
-      NOTREACHED() << "It is invalid to open a new tab in Recent Tabs.";
+      NOTREACHED_IN_MIGRATION()
+          << "It is invalid to open a new tab in Recent Tabs.";
       break;
     case TabGridPageTabGroups:
-      NOTREACHED() << "It is invalid to open a new tab in Tab Groups.";
+      NOTREACHED_IN_MIGRATION()
+          << "It is invalid to open a new tab in Tab Groups.";
       break;
   }
   self.activePage = page;
@@ -1154,10 +1155,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       [self openNewRegularTabForKeyboardCommand];
       break;
     case TabGridPageRemoteTabs:
-      NOTREACHED() << "It is invalid to open a new tab from Recent Tabs.";
+      NOTREACHED_IN_MIGRATION()
+          << "It is invalid to open a new tab from Recent Tabs.";
       break;
     case TabGridPageTabGroups:
-      NOTREACHED() << "It is invalid to open a new tab from Tab Groups.";
+      NOTREACHED_IN_MIGRATION()
+          << "It is invalid to open a new tab from Tab Groups.";
       break;
   }
 }
@@ -1482,7 +1485,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       self.remoteTabsViewController.searchTerms = searchText;
       break;
     case TabGridPage::TabGridPageTabGroups:
-      NOTREACHED() << "Tab Groups doesn't support searching";
+      NOTREACHED_IN_MIGRATION() << "Tab Groups doesn't support searching";
       break;
   }
 }
@@ -1593,7 +1596,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
   [self.regularGridHandler selectItemWithID:itemID
                                      pinned:YES
-                     isFirstActionOnTabGrid:_idleTabGrid];
+                     isFirstActionOnTabGrid:[self status]];
 
   self.activePage = self.currentPage;
   [self tabGridDidPerformAction:TabGridActionType::kInPageAction];
@@ -1609,7 +1612,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   const NSUInteger totalTabCount =
       count + self.topToolbar.pageControl.regularTabCount;
 
-  crash_keys::SetRegularTabCount(totalTabCount);
   [self handleTabCountChangeWithTabCount:totalTabCount];
 }
 
@@ -1705,7 +1707,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
   [tabsDelegate selectItemWithID:itemID
                           pinned:NO
-          isFirstActionOnTabGrid:_idleTabGrid];
+          isFirstActionOnTabGrid:[self status]];
 
   if (!alreadySelected) {
     [self tabGridDidPerformAction:TabGridActionType::kInPageAction];
@@ -1797,10 +1799,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     const NSUInteger totalTabCount =
         count + self.topToolbar.pageControl.pinnedTabCount;
 
-    crash_keys::SetRegularTabCount(totalTabCount);
     [self handleTabCountChangeWithTabCount:totalTabCount];
   } else if (gridViewController == self.incognitoTabsViewController) {
-    crash_keys::SetIncognitoTabCount(count);
     [self handleTabCountChangeWithTabCount:count];
   }
 }
@@ -1864,7 +1864,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)didTapInactiveTabsSettingsLinkInGridViewController:
     (BaseGridViewController*)gridViewController {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 - (void)gridViewController:(BaseGridViewController*)gridViewController

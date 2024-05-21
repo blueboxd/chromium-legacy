@@ -6,7 +6,7 @@
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builder_health_indicators.star", "health_spec")
-load("//lib/builders.star", "reclient", "sheriff_rotations")
+load("//lib/builders.star", "sheriff_rotations", "siso")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
@@ -19,12 +19,11 @@ ci.defaults.set(
     contact_team_email = "chrome-gpu-infra@google.com",
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     health_spec = health_spec.DEFAULT,
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
-    reclient_jobs = reclient.jobs.DEFAULT,
     service_account = ci.gpu.SERVICE_ACCOUNT,
     shadow_service_account = ci.gpu.SHADOW_SERVICE_ACCOUNT,
     siso_enabled = True,
-    siso_remote_jobs = reclient.jobs.DEFAULT,
+    siso_project = siso.project.DEFAULT_TRUSTED,
+    siso_remote_jobs = siso.remote_jobs.DEFAULT,
     thin_tester_cores = 2,
 )
 
@@ -151,7 +150,7 @@ ci.gpu.linux_builder(
         category = "DEPS|Android|Builder",
         short_name = "arm",
     ),
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.gpu.linux_builder(
@@ -186,7 +185,7 @@ ci.gpu.linux_builder(
         category = "DEPS|Android|Builder",
         short_name = "a64",
     ),
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.thin_tester(
@@ -363,7 +362,7 @@ ci.gpu.linux_builder(
     # Serially executed tests + TSAN = more than the default timeout needed in
     # order to prevent build timeouts.
     execution_timeout = 6 * time.hour,
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CI,
 )
 
 ci.gpu.linux_builder(
@@ -398,7 +397,7 @@ ci.gpu.linux_builder(
         category = "ToT|Android|Builder",
         short_name = "arm",
     ),
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.gpu.linux_builder(
@@ -434,7 +433,7 @@ ci.gpu.linux_builder(
         category = "ToT|Android|Builder",
         short_name = "a64",
     ),
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.thin_tester(
@@ -581,6 +580,57 @@ ci.thin_tester(
     ),
 )
 
+ci.gpu.linux_builder(
+    name = "Dawn ChromeOS Skylab Release (volteer)",
+    description_html = "Runs ToT Dawn tests on Skylab-hosted volteer devices",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chromeos",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_arch = builder_config.target_arch.INTEL,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.CHROMEOS,
+            target_cros_boards = [
+                "volteer",
+            ],
+        ),
+        run_tests_serially = True,
+        skylab_upload_location = builder_config.skylab_upload_location(
+            gs_bucket = "chromium-ci-skylab",
+            gs_extra = "chromeos_gpu",
+        ),
+    ),
+    gn_args = gn_args.config(
+        configs = [
+            "dawn_enable_opengles",
+            "gpu_tests",
+            "chromeos_device",
+            "volteer",
+            "ozone_headless",
+            "release_builder",
+            "try_builder",
+            "reclient",
+            "dcheck_off",
+            "no_symbols",
+            "is_skylab",
+        ],
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "ChromeOS|Intel",
+        short_name = "vlt",
+    ),
+    siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
+)
+
 ci.thin_tester(
     name = "Dawn Linux x64 Experimental Release (Intel UHD 630)",
     description_html = "Runs ToT Dawn tests on experimental Linux/UHD 630 configs",
@@ -632,7 +682,34 @@ ci.thin_tester(
     ),
     console_view_entry = consoles.console_view_entry(
         category = "ToT|Linux|Intel",
-        short_name = "x64",
+        short_name = "630",
+    ),
+)
+
+ci.thin_tester(
+    name = "Dawn Linux x64 Release (Intel UHD 770)",
+    description_html = "Runs ToT Dawn tests on 12th gen Intel CPUs with UHD 770 GPUs",
+    triggered_by = ["Dawn Linux x64 Builder"],
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
+        ),
+        build_gs_bucket = "chromium-dawn-archive",
+        run_tests_serially = True,
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "ToT|Linux|Intel",
+        short_name = "770",
     ),
 )
 
@@ -982,10 +1059,10 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     # Uncomment this entry when this experimental tester is actually in use.
-    console_view_entry = consoles.console_view_entry(
-        category = "ToT|Mac|AMD",
-        short_name = "exp",
-    ),
+    # console_view_entry = consoles.console_view_entry(
+    #     category = "ToT|Mac|AMD",
+    #     short_name = "exp",
+    # ),
     list_view = "chromium.gpu.experimental",
 )
 
@@ -1105,10 +1182,10 @@ ci.gpu.windows_builder(
         ],
     ),
     console_view_entry = consoles.console_view_entry(
-        category = "ToT|Windows|ASAN|Builder",
-        short_name = "x64",
+        category = "ToT|Windows|Builder",
+        short_name = "asn",
     ),
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CI,
 )
 
 ci.thin_tester(
@@ -1135,8 +1212,8 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     console_view_entry = consoles.console_view_entry(
-        category = "ToT|Windows|ASAN|Intel",
-        short_name = "x64",
+        category = "ToT|Windows|x64|Intel",
+        short_name = "asn",
     ),
     # Building DXC from source + ASAN results in longer run times, so
     # increase default timeout.
@@ -1167,8 +1244,8 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     console_view_entry = consoles.console_view_entry(
-        category = "ToT|Windows|ASAN|Nvidia",
-        short_name = "x64",
+        category = "ToT|Windows|x64|Nvidia",
+        short_name = "asn",
     ),
     # Building DXC from source + ASAN results in longer run times, so
     # increase default timeout.
@@ -1209,7 +1286,7 @@ ci.gpu.windows_builder(
         category = "ToT|Windows|Builder",
         short_name = "x64",
     ),
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CI,
 )
 
 ci.gpu.windows_builder(
@@ -1245,7 +1322,7 @@ ci.gpu.windows_builder(
         short_name = "x64",
     ),
     cq_mirrors_console_view = "mirrors",
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CI,
 )
 
 ci.gpu.windows_builder(
@@ -1347,8 +1424,8 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     console_view_entry = consoles.console_view_entry(
-        category = "DEPS|Windows|Intel",
-        short_name = "x64",
+        category = "DEPS|Windows|x64|Intel",
+        short_name = "630",
     ),
     cq_mirrors_console_view = "mirrors",
 )
@@ -1375,8 +1452,8 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     console_view_entry = consoles.console_view_entry(
-        category = "DEPS|Windows|Nvidia",
-        short_name = "x64",
+        category = "DEPS|Windows|x64|Nvidia",
+        short_name = "1660",
     ),
     cq_mirrors_console_view = "mirrors",
 )
@@ -1403,8 +1480,8 @@ ci.thin_tester(
     ),
     # Uncomment this entry when this experimental tester is actually in use.
     # console_view_entry = consoles.console_view_entry(
-    #     category = "ToT|Windows|Intel",
-    #     short_name = "ex64",
+    #     category = "ToT|Windows|x64|Intel",
+    #     short_name = "exp",
     # ),
     list_view = "chromium.gpu.experimental",
 )
@@ -1430,8 +1507,35 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     console_view_entry = consoles.console_view_entry(
-        category = "ToT|Windows|Intel",
-        short_name = "x64",
+        category = "ToT|Windows|x64|Intel",
+        short_name = "630",
+    ),
+)
+
+ci.thin_tester(
+    name = "Dawn Win10 x64 Release (Intel UHD 770)",
+    description_html = "Runs ToT Dawn tests on 12th gen Intel CPUs with UHD 770 GPUs",
+    triggered_by = ["Dawn Win10 x64 Builder"],
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.WIN,
+        ),
+        build_gs_bucket = "chromium-dawn-archive",
+        run_tests_serially = True,
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "ToT|Windows|x64|Intel",
+        short_name = "770",
     ),
 )
 
@@ -1458,8 +1562,8 @@ ci.thin_tester(
     ),
     # Uncomment this entry when this experimental tester is actually in use.
     console_view_entry = consoles.console_view_entry(
-        category = "ToT|Windows|Nvidia",
-        short_name = "ex64",
+        category = "ToT|Windows|x64|Nvidia",
+        short_name = "exp",
     ),
     list_view = "chromium.gpu.experimental",
     execution_timeout = 6 * time.hour,
@@ -1486,8 +1590,8 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     console_view_entry = consoles.console_view_entry(
-        category = "ToT|Windows|Nvidia",
-        short_name = "x64",
+        category = "ToT|Windows|x64|Nvidia",
+        short_name = "1660",
     ),
 )
 
@@ -1525,7 +1629,7 @@ ci.gpu.windows_builder(
         category = "ToT|Windows|Builder",
         short_name = "x86",
     ),
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CI,
 )
 
 ci.gpu.windows_builder(
@@ -1561,7 +1665,7 @@ ci.gpu.windows_builder(
         short_name = "x86",
     ),
     cq_mirrors_console_view = "mirrors",
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CI,
 )
 
 # Note that the Win testers are all thin Linux VMs, triggering jobs on the
@@ -1588,8 +1692,8 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     console_view_entry = consoles.console_view_entry(
-        category = "DEPS|Windows|Intel",
-        short_name = "x86",
+        category = "DEPS|Windows|x86|Intel",
+        short_name = "630",
     ),
     cq_mirrors_console_view = "mirrors",
 )
@@ -1616,8 +1720,8 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     console_view_entry = consoles.console_view_entry(
-        category = "DEPS|Windows|Nvidia",
-        short_name = "x86",
+        category = "DEPS|Windows|x86|Nvidia",
+        short_name = "1660",
     ),
     cq_mirrors_console_view = "mirrors",
 )
@@ -1644,8 +1748,8 @@ ci.thin_tester(
     ),
     # Uncomment this entry when this experimental tester is actually in use.
     # console_view_entry = consoles.console_view_entry(
-    #     category = "ToT|Windows|Intel",
-    #     short_name = "ex86",
+    #     category = "ToT|Windows|x86|Intel",
+    #     short_name = "exp",
     # ),
     list_view = "chromium.gpu.experimental",
 )
@@ -1673,8 +1777,8 @@ ci.thin_tester(
     ),
     # Uncomment this entry when this experimental tester is actually in use.
     console_view_entry = consoles.console_view_entry(
-        category = "ToT|Windows|Nvidia",
-        short_name = "ex86",
+        category = "ToT|Windows|x86|Nvidia",
+        short_name = "exp",
     ),
     list_view = "chromium.gpu.experimental",
 )
@@ -1700,8 +1804,8 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     console_view_entry = consoles.console_view_entry(
-        category = "ToT|Windows|Intel",
-        short_name = "x86",
+        category = "ToT|Windows|x86|Intel",
+        short_name = "630",
     ),
 )
 
@@ -1726,7 +1830,7 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     console_view_entry = consoles.console_view_entry(
-        category = "ToT|Windows|Nvidia",
-        short_name = "x86",
+        category = "ToT|Windows|x86|Nvidia",
+        short_name = "1660",
     ),
 )

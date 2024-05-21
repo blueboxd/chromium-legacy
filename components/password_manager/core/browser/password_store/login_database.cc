@@ -16,7 +16,9 @@
 #include <utility>
 
 #include "base/check_op.h"
+#include "base/command_line.h"
 #include "base/containers/flat_map.h"
+#include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
@@ -39,6 +41,7 @@
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_switches.h"
 #include "components/password_manager/core/browser/password_store/insecure_credentials_table.h"
 #include "components/password_manager/core/browser/password_store/password_notes_table.h"
 #include "components/password_manager/core/browser/password_store/password_store_change.h"
@@ -115,7 +118,8 @@ std::vector<GaiaIdHash> DeserializeGaiaIdHashVector(const base::Pickle& p) {
 
   base::PickleIterator iterator(p);
   while (iterator.ReadString(&hash)) {
-    hashes.push_back(GaiaIdHash::FromBinary(hash));
+    hashes.push_back(GaiaIdHash::FromBinary(std::move(hash)));
+    hash = {};
   }
   return hashes;
 }
@@ -995,6 +999,33 @@ LoginDatabase::EncryptionResult DecryptPasswordFromStatement(
   return encryption_result;
 }
 
+bool ShouldDeleteUndecryptablePasswords() {
+#if BUILDFLAG(IS_LINUX)
+  std::string user_data_dir_string;
+  std::unique_ptr<base::Environment> environment(base::Environment::Create());
+  // On Linux user data directory ca be specified using an env variable. If it
+  // exists, passwords shouldn't be deleted.
+  if (environment->GetVar("CHROME_USER_DATA_DIR", &user_data_dir_string)) {
+    return false;
+  }
+#endif  // BUILDFLAG(IS_LINUX)
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  bool has_pwm_related_switches_enabled =
+      command_line->HasSwitch(password_manager::kUserDataDir);
+
+#if BUILDFLAG(IS_LINUX)
+  has_pwm_related_switches_enabled =
+      has_pwm_related_switches_enabled ||
+      command_line->HasSwitch(password_manager::kPasswordStore) ||
+      command_line->HasSwitch(password_manager::kEnableEncryptionSelection);
+#endif  // BUILDFLAG(IS_LINUX)
+
+  return !has_pwm_related_switches_enabled &&
+         OSCrypt::IsEncryptionAvailable() &&
+         base::FeatureList::IsEnabled(features::kClearUndecryptablePasswords);
+}
+
 }  // namespace
 
 struct LoginDatabase::PrimaryKeyAndPassword {
@@ -1003,14 +1034,10 @@ struct LoginDatabase::PrimaryKeyAndPassword {
   std::string keychain_identifier;
 };
 
-LoginDatabase::LoginDatabase(
-    const base::FilePath& db_path,
-    IsAccountStore is_account_store,
-    const base::RepeatingCallback<void(LoginDatabaseEmptynessState)>&
-        is_empty_cb)
+LoginDatabase::LoginDatabase(const base::FilePath& db_path,
+                             IsAccountStore is_account_store)
     : db_path_(db_path),
       is_account_store_(is_account_store),
-      is_empty_cb_(is_empty_cb),
       // Set options for a small, private database (based on WebDatabase).
       db_({.page_size = 2048, .cache_size = 32}) {}
 
@@ -1812,7 +1839,7 @@ bool LoginDatabase::GetAllLoginsWithBlocklistSetting(
   return true;
 }
 
-LoginDatabase::LoginDatabaseEmptynessState LoginDatabase::IsEmpty() {
+LoginDatabase::LoginDatabaseEmptinessState LoginDatabase::IsEmpty() {
   sql::Statement count_all_logins(db_.GetCachedStatement(
       SQL_FROM_HERE, "SELECT EXISTS(SELECT 1 FROM logins)"));
   // `blacklisted_by_user = 0` means the entry is not a blocklisted entry.
@@ -1823,7 +1850,7 @@ LoginDatabase::LoginDatabaseEmptynessState LoginDatabase::IsEmpty() {
       "SELECT EXISTS(SELECT 1 FROM logins WHERE blacklisted_by_user = 0 AND "
       "LENGTH(federation_url) = 0 AND scheme <> 4)"));
 
-  return LoginDatabase::LoginDatabaseEmptynessState{
+  return LoginDatabase::LoginDatabaseEmptinessState{
       .no_login_found =
           (count_all_logins.Step() && count_all_logins.ColumnInt(0) == 0),
       .autofillable_credentials_exist =
@@ -1906,17 +1933,21 @@ DatabaseCleanupResult LoginDatabase::DeleteUndecryptableLogins() {
 
 bool LoginDatabase::BeginTransaction() {
   TRACE_EVENT0("passwords", "LoginDatabase::BeginTransaction");
-  return db_.BeginTransaction();
+  return db_.BeginTransactionDeprecated();
 }
 
 void LoginDatabase::RollbackTransaction() {
   TRACE_EVENT0("passwords", "LoginDatabase::RollbackTransaction");
-  db_.RollbackTransaction();
+  db_.RollbackTransactionDeprecated();
 }
 
 bool LoginDatabase::CommitTransaction() {
   TRACE_EVENT0("passwords", "LoginDatabase::CommitTransaction");
-  return db_.CommitTransaction();
+  return db_.CommitTransactionDeprecated();
+}
+
+void LoginDatabase::SetIsEmptyCb(IsEmptyCallback is_empty_cb) {
+  is_empty_cb_ = std::move(is_empty_cb);
 }
 
 LoginDatabase::SyncMetadataStore::SyncMetadataStore(sql::Database* db)
@@ -2245,18 +2276,17 @@ FormRetrievalResult LoginDatabase::StatementToForms(
     std::vector<PasswordForm>* forms) {
   DCHECK(forms);
   forms->clear();
-  bool has_service_failure = false;
+  bool failed = false;
   while (statement->Step()) {
     std::u16string plaintext_password;
     EncryptionResult result =
         DecryptPasswordFromStatement(*statement, &plaintext_password);
-    if (result == ENCRYPTION_RESULT_SERVICE_FAILURE) {
-      has_service_failure = true;
+    if (result == ENCRYPTION_RESULT_SERVICE_FAILURE ||
+        result == ENCRYPTION_RESULT_ITEM_FAILURE) {
+      failed = true;
       continue;
     }
-    if (result == ENCRYPTION_RESULT_ITEM_FAILURE) {
-      continue;
-    }
+
     DCHECK_EQ(ENCRYPTION_RESULT_SUCCESS, result);
 
     PasswordForm form = GetFormWithoutPasswordFromStatement(*statement);
@@ -2274,12 +2304,18 @@ FormRetrievalResult LoginDatabase::StatementToForms(
   if (!statement->Succeeded()) {
     return FormRetrievalResult::kDbError;
   }
-  if (has_service_failure &&
-      (forms->empty() || !ShouldReturnPartialPasswords())) {
+  if (failed) {
+    if (ShouldDeleteUndecryptablePasswords()) {
+      DatabaseCleanupResult result = DeleteUndecryptableLogins();
+      return result == DatabaseCleanupResult::kSuccess
+                 ? FormRetrievalResult::kSuccess
+                 : FormRetrievalResult::kEncryptionServiceFailure;
+    }
+    if (ShouldReturnPartialPasswords()) {
+      return FormRetrievalResult::kEncryptionServiceFailureWithPartialData;
+    }
+
     return FormRetrievalResult::kEncryptionServiceFailure;
-  }
-  if (has_service_failure) {
-    return FormRetrievalResult::kEncryptionServiceFailureWithPartialData;
   }
   return FormRetrievalResult::kSuccess;
 }

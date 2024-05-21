@@ -45,6 +45,7 @@
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
+#include "third_party/blink/public/common/scheduler/task_attribution_id.h"
 #include "third_party/blink/public/common/subresource_load_metrics.h"
 #include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/triggering_event_info.mojom-blink-forward.h"
@@ -119,9 +120,6 @@ class SubresourceFilter;
 class WebServiceWorkerNetworkProvider;
 struct JavaScriptFrameworkDetectionResult;
 
-namespace scheduler {
-class TaskAttributionId;
-}  // namespace scheduler
 namespace mojom {
 enum class CommitResult : int32_t;
 }  // namespace mojom
@@ -245,7 +243,10 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
                                    scoped_refptr<SerializedScriptValue>,
                                    WebFrameLoadType,
                                    bool is_browser_initiated = false,
-                                   bool is_synchronously_committed = true);
+                                   bool is_synchronously_committed = true,
+                                   std::optional<scheduler::TaskAttributionId>
+                                       soft_navigation_heuristics_task_id =
+                                           std::nullopt);
 
   // |is_synchronously_committed| is described in comment for
   // CommitSameDocumentNavigation.
@@ -694,13 +695,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   AtomicString origin_calculation_debug_info_;
 
   blink::BlinkStorageKey storage_key_;
-  // The storage key here is the one the browser process believes the renderer
-  // should use when binding session storage. This may differ from
-  // `storage_key_` as a deprecation trial can prevent the partitioning of
-  // session storage.
-  //
-  // TODO(crbug.com/1407150): Remove this when deprecation trial is complete.
-  blink::BlinkStorageKey session_storage_key_;
+
   WebNavigationType navigation_type_;
 
   DocumentLoadTiming document_load_timing_;

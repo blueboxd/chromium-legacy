@@ -61,7 +61,7 @@
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_reporting.pb.h"
-#include "content/browser/attribution_reporting/attribution_storage_delegate.h"
+#include "content/browser/attribution_reporting/attribution_resolver_delegate.h"
 #include "content/browser/attribution_reporting/attribution_storage_sql_migrations.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
@@ -465,13 +465,13 @@ base::FilePath DatabasePath(const base::FilePath& user_data_directory) {
 
 AttributionStorageSql::AttributionStorageSql(
     const base::FilePath& user_data_directory,
-    std::unique_ptr<AttributionStorageDelegate> delegate)
+    AttributionResolverDelegate* delegate)
     : path_to_database_(user_data_directory.empty()
                             ? base::FilePath()
                             : DatabasePath(user_data_directory)),
       db_(sql::DatabaseOptions{.page_size = 4096, .cache_size = 32}),
-      delegate_(std::move(delegate)),
-      rate_limit_table_(delegate_.get()) {
+      delegate_(delegate),
+      rate_limit_table_(delegate_) {
   DCHECK(delegate_);
 
   db_.set_histogram_tag("Conversions");
@@ -1035,6 +1035,7 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
         if (event_level_status == EventLevelResult::kInternalError ||
             aggregatable_status == AggregatableResult::kInternalError) {
           min_null_aggregatable_report_time.reset();
+          limits = CreateReportResult::Limits();
         }
 
         return CreateReportResult(
@@ -1143,7 +1144,6 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
             MaybeCreateEventLevelReport(
                 attribution_info, source_to_attribute->source, trigger,
                 new_event_level_report, dedup_key,
-                limits.max_event_level_reports_per_destination,
                 limits.rate_limits_max_attributions);
         create_event_level_status != EventLevelResult::kSuccess) {
       event_level_status = create_event_level_status;
@@ -1197,7 +1197,8 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
     store_event_level_status = MaybeStoreEventLevelReport(
         *new_event_level_report, dedup_key,
         source_to_attribute->num_conversions, replaced_event_level_report,
-        dropped_event_level_report);
+        dropped_event_level_report,
+        limits.max_event_level_reports_per_destination);
   }
 
   std::optional<AggregatableResult> store_aggregatable_status;
@@ -1349,7 +1350,6 @@ EventLevelResult AttributionStorageSql::MaybeCreateEventLevelReport(
     const AttributionTrigger& trigger,
     std::optional<AttributionReport>& report,
     std::optional<uint64_t>& dedup_key,
-    std::optional<int>& max_event_level_reports_per_destination,
     std::optional<int64_t>& rate_limits_max_attributions) {
   if (source.attribution_logic() == StoredSource::AttributionLogic::kFalsely) {
     DCHECK_EQ(source.active_state(),
@@ -1401,19 +1401,6 @@ EventLevelResult AttributionStorageSql::MaybeCreateEventLevelReport(
       return EventLevelResult::kReportWindowPassed;
   }
 
-  switch (
-      CapacityForStoringReport(trigger, AttributionReport::Type::kEventLevel)) {
-    case ConversionCapacityStatus::kHasCapacity:
-      break;
-    case ConversionCapacityStatus::kNoCapacity:
-      max_event_level_reports_per_destination =
-          delegate_->GetMaxReportsPerDestination(
-              AttributionReport::Type::kEventLevel);
-      return EventLevelResult::kNoCapacityForConversionDestination;
-    case ConversionCapacityStatus::kError:
-      return EventLevelResult::kInternalError;
-  }
-
   switch (rate_limit_table_.AttributionAllowedForAttributionLimit(
       &db_, attribution_info, source,
       RateLimitTable::Scope::kEventLevelAttribution)) {
@@ -1448,7 +1435,8 @@ EventLevelResult AttributionStorageSql::MaybeStoreEventLevelReport(
     std::optional<uint64_t> dedup_key,
     int num_conversions,
     std::optional<AttributionReport>& replaced_report,
-    std::optional<AttributionReport>& dropped_report) {
+    std::optional<AttributionReport>& dropped_report,
+    std::optional<int>& max_event_level_reports_per_destination) {
   auto* event_level_data =
       absl::get_if<AttributionReport::EventLevelData>(&report.data());
   DCHECK(event_level_data);
@@ -1468,25 +1456,56 @@ EventLevelResult AttributionStorageSql::MaybeStoreEventLevelReport(
   const auto maybe_replace_lower_priority_report_result =
       MaybeReplaceLowerPriorityEventLevelReport(
           report, num_conversions, event_level_data->priority, replaced_report);
-  if (maybe_replace_lower_priority_report_result ==
-      ReplaceReportResult::kError) {
-    return EventLevelResult::kInternalError;
-  }
 
-  if (maybe_replace_lower_priority_report_result ==
-          ReplaceReportResult::kDropNewReport ||
-      maybe_replace_lower_priority_report_result ==
-          ReplaceReportResult::kDropNewReportSourceDeactivated) {
-    if (!transaction.Commit()) {
+  switch (maybe_replace_lower_priority_report_result) {
+    case ReplaceReportResult::kError:
       return EventLevelResult::kInternalError;
+    case ReplaceReportResult::kDropNewReport:
+    case ReplaceReportResult::kDropNewReportSourceDeactivated:
+      if (!transaction.Commit()) {
+        return EventLevelResult::kInternalError;
+      }
+
+      dropped_report = std::move(report);
+
+      return maybe_replace_lower_priority_report_result ==
+                     ReplaceReportResult::kDropNewReport
+                 ? EventLevelResult::kPriorityTooLow
+                 : EventLevelResult::kExcessiveReports;
+    case ReplaceReportResult::kAddNewReport: {
+      switch (CapacityForStoringReport(report.attribution_info().context_origin,
+                                       AttributionReport::Type::kEventLevel)) {
+        case ConversionCapacityStatus::kHasCapacity:
+          break;
+        case ConversionCapacityStatus::kNoCapacity:
+          if (!transaction.Commit()) {
+            return EventLevelResult::kInternalError;
+          }
+          max_event_level_reports_per_destination =
+              delegate_->GetMaxReportsPerDestination(
+                  AttributionReport::Type::kEventLevel);
+          return EventLevelResult::kNoCapacityForConversionDestination;
+        case ConversionCapacityStatus::kError:
+          return EventLevelResult::kInternalError;
+      }
+
+      // Only increment the number of conversions associated with the source if
+      // we are adding a new one, rather than replacing a dropped one.
+      static constexpr char kUpdateImpressionForConversionSql[] =
+          "UPDATE sources SET num_attributions=num_attributions+1 "
+          "WHERE source_id=?";
+      sql::Statement impression_update_statement(db_.GetCachedStatement(
+          SQL_FROM_HERE, kUpdateImpressionForConversionSql));
+
+      // Update the attributed source.
+      impression_update_statement.BindInt64(0, *source.source_id());
+      if (!impression_update_statement.Run()) {
+        return EventLevelResult::kInternalError;
+      }
+      break;
     }
-
-    dropped_report = std::move(report);
-
-    return maybe_replace_lower_priority_report_result ==
-                   ReplaceReportResult::kDropNewReport
-               ? EventLevelResult::kPriorityTooLow
-               : EventLevelResult::kExcessiveReports;
+    case ReplaceReportResult::kReplaceOldReport:
+      break;
   }
 
   // Reports with `AttributionLogic::kNever` should be included in all
@@ -1508,23 +1527,6 @@ EventLevelResult AttributionStorageSql::MaybeStoreEventLevelReport(
       !StoreDedupKey(source.source_id(), *dedup_key,
                      AttributionReport::Type::kEventLevel)) {
     return EventLevelResult::kInternalError;
-  }
-
-  // Only increment the number of conversions associated with the source if
-  // we are adding a new one, rather than replacing a dropped one.
-  if (maybe_replace_lower_priority_report_result ==
-      ReplaceReportResult::kAddNewReport) {
-    static constexpr char kUpdateImpressionForConversionSql[] =
-        "UPDATE sources SET num_attributions=num_attributions+1 "
-        "WHERE source_id=?";
-    sql::Statement impression_update_statement(db_.GetCachedStatement(
-        SQL_FROM_HERE, kUpdateImpressionForConversionSql));
-
-    // Update the attributed source.
-    impression_update_statement.BindInt64(0, *source.source_id());
-    if (!impression_update_statement.Run()) {
-      return EventLevelResult::kInternalError;
-    }
   }
 
   if (!transaction.Commit()) {
@@ -2092,12 +2094,11 @@ AttributionStorageSql::ReportAlreadyStored(
 
 AttributionStorageSql::ConversionCapacityStatus
 AttributionStorageSql::CapacityForStoringReport(
-    const AttributionTrigger& trigger,
+    const url::Origin& destination_origin,
     AttributionReport::Type report_type) {
   sql::Statement statement(db_.GetCachedStatement(
       SQL_FROM_HERE, attribution_queries::kCountReportsForDestinationSql));
-  statement.BindString(
-      0, net::SchemefulSite(trigger.destination_origin()).Serialize());
+  statement.BindString(0, net::SchemefulSite(destination_origin).Serialize());
   statement.BindInt(1, SerializeReportType(report_type));
 
   if (!statement.Step()) {
@@ -2973,7 +2974,8 @@ AttributionStorageSql::MaybeCreateAggregatableAttributionReport(
   }
 
   switch (CapacityForStoringReport(
-      trigger, AttributionReport::Type::kAggregatableAttribution)) {
+      attribution_info.context_origin,
+      AttributionReport::Type::kAggregatableAttribution)) {
     case ConversionCapacityStatus::kHasCapacity:
       break;
     case ConversionCapacityStatus::kNoCapacity:
@@ -3290,12 +3292,11 @@ void AttributionStorageSql::DeleteByDataKey(
             /*delete_rate_limit_data=*/true);
 }
 
-void AttributionStorageSql::SetDelegate(
-    std::unique_ptr<AttributionStorageDelegate> delegate) {
+void AttributionStorageSql::SetDelegate(AttributionResolverDelegate* delegate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(delegate);
   rate_limit_table_.SetDelegate(*delegate);
-  delegate_ = std::move(delegate);
+  delegate_ = delegate;
 }
 
 }  // namespace content

@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -90,7 +89,6 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -191,11 +189,9 @@ OmniboxViewViews::OmniboxViewViews(std::unique_ptr<OmniboxClient> client,
         base::BindRepeating(&OmniboxViewViews::Update, base::Unretained(this)));
   }
 
-  if (features::IsChromeRefresh2023()) {
-    // Remove the default textfield hover effect. Omnibox has a custom hover
-    // effect over the entire location bar.
-    RemoveHoverEffect();
-  }
+  // Remove the default textfield hover effect. Omnibox has a custom hover
+  // effect over the entire location bar.
+  RemoveHoverEffect();
 
   // Sometimes there are additional ignored views, such as a View representing
   // the cursor, inside the address bar's text field. These should always be
@@ -1252,9 +1248,8 @@ void OmniboxViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
                                 "both");
 // Expose keyboard shortcut where it makes sense.
 #if BUILDFLAG(IS_MAC)
-  // Use cloverleaf symbol for command key.
   node_data->AddStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts,
-                                base::WideToUTF8(L"\u2318L"));
+                                "⌘L");
 #else
   node_data->AddStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts,
                                 "Ctrl+L");

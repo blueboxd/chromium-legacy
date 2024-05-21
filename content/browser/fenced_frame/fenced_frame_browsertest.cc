@@ -11,6 +11,7 @@
 #include "base/containers/contains.h"
 #include "base/functional/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -55,6 +56,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
+#include "content/shell/browser/shell_paths.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/fenced_frame_test_utils.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
@@ -2071,7 +2073,7 @@ class FencedFrameNestedModesTest
         return "opaque-ads";
     }
 
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return "";
   }
 
@@ -3830,7 +3832,12 @@ class FencedFrameIgnoreCertErrors : public FencedFrameParameterizedBrowserTest {
     // We need to have a dedicated browser context for the tests.
     // Or, SSLManager::UpdateEntry() doesn't update the entry if
     // |ssl_host_state_delegate_| is nullptr.
-    browser_context_ = std::make_unique<TestBrowserContext>();
+    // The directory has to be inside the shell's user data directory for the
+    // storage service to work correctly.
+    base::FilePath path;
+    base::PathService::Get(SHELL_DIR_USER_DATA, &path);
+    path = path.Append(FILE_PATH_LITERAL("fenced_frame_profile"));
+    browser_context_ = std::make_unique<TestBrowserContext>(path);
 
     https_server()->RegisterRequestMonitor(base::BindRepeating(
         &FencedFrameParameterizedBrowserTest::ObserveRequestHeaders,
@@ -5136,10 +5143,12 @@ IN_PROC_BROWSER_TEST_F(FencedFrameParameterizedBrowserTest,
   // Call disable untrusted network on the first fenced frame. Make sure it
   // doesn't resolve.
   EXPECT_EQ(EvalJs(first_fenced_frame, R"(
+    var ff1_promise_resolved = false;
     (async () => {
       let timeout_promise = new Promise(
           resolve => setTimeout(() => {resolve('timeout')}, 1000));
-      let disable_network_promise = window.fence.disableUntrustedNetwork();
+      let disable_network_promise = window.fence.disableUntrustedNetwork().then(
+          () => {ff1_promise_resolved = true;});
       return Promise.race([disable_network_promise, timeout_promise]);
     })();
   )"),
@@ -5150,6 +5159,8 @@ IN_PROC_BROWSER_TEST_F(FencedFrameParameterizedBrowserTest,
       DisableUntrustedNetworkStatus::kCurrentFrameTreeComplete);
   VerifyFencedFrameNetworkStatus(second_fenced_frame,
                                  DisableUntrustedNetworkStatus::kNotStarted);
+  EXPECT_FALSE(
+      EvalJs(first_fenced_frame, "ff1_promise_resolved").ExtractBool());
 
   // Call disable untrusted network on the second fenced frame. This one should
   // resolve and cause the first fenced frame to have full network cutoff.
@@ -5165,6 +5176,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameParameterizedBrowserTest,
   VerifyFencedFrameNetworkStatus(
       second_fenced_frame,
       DisableUntrustedNetworkStatus::kCurrentAndDescendantFrameTreesComplete);
+  EXPECT_TRUE(EvalJs(first_fenced_frame, "ff1_promise_resolved").ExtractBool());
 }
 
 IN_PROC_BROWSER_TEST_F(FencedFrameParameterizedBrowserTest,
@@ -5197,10 +5209,12 @@ IN_PROC_BROWSER_TEST_F(FencedFrameParameterizedBrowserTest,
   // Call disable untrusted network on the first fenced frame. Make sure it
   // doesn't resolve.
   EXPECT_EQ(EvalJs(ff1, R"(
+    var ff1_promise_resolved = false;
     (async () => {
       let timeout_promise = new Promise(
           resolve => setTimeout(() => {resolve('timeout')}, 1000));
-      let disable_network_promise = window.fence.disableUntrustedNetwork();
+      let disable_network_promise = window.fence.disableUntrustedNetwork().then(
+          () => {ff1_promise_resolved = true;});
       return Promise.race([disable_network_promise, timeout_promise]);
     })();
   )"),
@@ -5235,6 +5249,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameParameterizedBrowserTest,
   VerifyFencedFrameNetworkStatus(
       ff4,
       DisableUntrustedNetworkStatus::kCurrentAndDescendantFrameTreesComplete);
+  EXPECT_FALSE(EvalJs(ff1, "ff1_promise_resolved").ExtractBool());
 
   // Call disable untrusted network on the 3rd fenced frame. It should resolve.
   EXPECT_TRUE(ExecJs(ff3, R"(
@@ -5255,6 +5270,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameParameterizedBrowserTest,
   VerifyFencedFrameNetworkStatus(
       ff4,
       DisableUntrustedNetworkStatus::kCurrentAndDescendantFrameTreesComplete);
+  EXPECT_FALSE(EvalJs(ff1, "ff1_promise_resolved").ExtractBool());
 
   // Call disable untrusted network on the 2nd fenced frame. It should resolve.
   EXPECT_TRUE(ExecJs(ff2, R"(
@@ -5278,6 +5294,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameParameterizedBrowserTest,
   VerifyFencedFrameNetworkStatus(
       ff4,
       DisableUntrustedNetworkStatus::kCurrentAndDescendantFrameTreesComplete);
+  EXPECT_TRUE(EvalJs(ff1, "ff1_promise_resolved").ExtractBool());
 }
 
 IN_PROC_BROWSER_TEST_F(FencedFrameParameterizedBrowserTest,
@@ -5369,18 +5386,22 @@ IN_PROC_BROWSER_TEST_F(FencedFrameParameterizedBrowserTest,
   // Call disable untrusted network on the first fenced frame. Make sure it
   // doesn't resolve.
   EXPECT_EQ(EvalJs(ff1, R"(
+    var ff1_promise_resolved = false;
     (async () => {
       let timeout_promise = new Promise(
           resolve => setTimeout(() => {resolve('timeout')}, 1000));
-      let disable_network_promise = window.fence.disableUntrustedNetwork();
+      let disable_network_promise = window.fence.disableUntrustedNetwork().then(
+          () => {ff1_promise_resolved = true;});
       return Promise.race([disable_network_promise, timeout_promise]);
     })();
   )"),
             "timeout");
+
   VerifyFencedFrameNetworkStatus(
       ff1, DisableUntrustedNetworkStatus::kCurrentFrameTreeComplete);
   VerifyFencedFrameNetworkStatus(ff2,
                                  DisableUntrustedNetworkStatus::kNotStarted);
+  EXPECT_FALSE(EvalJs(ff1, "ff1_promise_resolved").ExtractBool());
 
   // Create and attempt to navigate a child fenced frame after network cutoff.
   // The creation should succeed, but the navigation should fail.
@@ -5402,6 +5423,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameParameterizedBrowserTest,
   VerifyFencedFrameNetworkStatus(
       ff2,
       DisableUntrustedNetworkStatus::kCurrentAndDescendantFrameTreesComplete);
+  EXPECT_TRUE(EvalJs(ff1, "ff1_promise_resolved").ExtractBool());
 
   // The addition of a nested fenced frame that doesn't navigate shouldn't
   // change the network revocation status of its ancestor.
@@ -7102,7 +7124,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameReportEventBrowserTest,
           .destination = {"a.test",
                           "/set-header"
                           "?Supports-Loading-Mode: fenced-frame"
-                          "&Allow-Cross-Origin-Event-Reporting: true"},
+                          "&Allow-Cross-Origin-Event-Reporting: ?1"},
           .report_event_result = Step::Result::kSuccess,
       },
       {
@@ -7136,7 +7158,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameReportEventBrowserTest,
           .destination = {"a.test",
                           "/set-header"
                           "?Supports-Loading-Mode: fenced-frame"
-                          "&Allow-Cross-Origin-Event-Reporting: true"},
+                          "&Allow-Cross-Origin-Event-Reporting: ?1"},
           .report_event_result = Step::Result::kSuccess,
       },
       {
@@ -7360,7 +7382,7 @@ IN_PROC_BROWSER_TEST_F(
           .destination = {"a.test",
                           "/set-header"
                           "?Supports-Loading-Mode: fenced-frame"
-                          "&Allow-Cross-Origin-Event-Reporting: true"},
+                          "&Allow-Cross-Origin-Event-Reporting: ?1"},
           .report_event_result = Step::Result::kSuccess,
       },
       {
@@ -7386,7 +7408,7 @@ IN_PROC_BROWSER_TEST_F(
           .destination = {"a.test",
                           "/set-header"
                           "?Supports-Loading-Mode: fenced-frame"
-                          "&Allow-Cross-Origin-Event-Reporting: true"},
+                          "&Allow-Cross-Origin-Event-Reporting: ?1"},
           .report_event_result = Step::Result::kSuccess,
       },
       {

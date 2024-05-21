@@ -111,6 +111,15 @@ void MultiStepImportMerger::MergeImportMetadata(
   // of them were complemented. Otherwise one of them was observed and
   // complementing the country has not made a difference.
   target.did_complement_country &= source.did_complement_country;
+  // Conceptually, this constructs the union of `source` and `target`'s
+  // `filled_types_to_autofill_guid`. There can be edge cases where the same
+  // type is contained in both containers, if subsequent forms contained fields
+  // of the same types and the user filled them with the same value (making the
+  // observed profiles mergeable). In this case, the latter value counts.
+  for (auto& [key, value] : source.filled_types_to_autofill_guid) {
+    target.filled_types_to_autofill_guid.insert_or_assign(key,
+                                                          std::move(value));
+  }
 }
 
 void MultiStepImportMerger::OnBrowsingHistoryCleared(
@@ -127,7 +136,7 @@ void MultiStepImportMerger::OnAddressDataChanged(
     auto next = std::next(it);
     // Incomplete profiles are not imported yet, so they cannot have changed.
     if (it->is_imported) {
-      AutofillProfile* stored_profile =
+      const AutofillProfile* stored_profile =
           address_data_manager.GetProfileByGUID(it->profile.guid());
       if (!stored_profile) {
         // The profile was deleted, so we shouldn't offer importing it again.

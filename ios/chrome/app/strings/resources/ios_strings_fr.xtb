@@ -601,7 +601,7 @@ Lisez les instructions du moteur de recherche pour supprimer l'historique de vos
 <translation id="4148023517926189160">Ce site Web veut télécharger un fichier et l'ajouter à votre agenda.</translation>
 <translation id="4152011295694446843">Vos favoris s'afficheront ici</translation>
 <translation id="4168651806173792090"><ph name="NETWORK_NAME" /> se terminant par <ph name="LAST_FOUR_DIGITS" /></translation>
-<translation id="4169535189173047238">Interdire</translation>
+<translation id="4169535189173047238">Ne pas autoriser</translation>
 <translation id="4172051516777682613">Toujours afficher</translation>
 <translation id="417442848889487144">Étiquette créée. En attente de la date.</translation>
 <translation id="418156467088430727">Afficher version hors connexion dans nouvel onglet</translation>
@@ -862,6 +862,7 @@ Lisez les instructions du moteur de recherche pour supprimer l'historique de vos
 <translation id="5444892875087332195">Favoris</translation>
 <translation id="5454211924362324495">Pour empêcher d'autres personnes d'utiliser votre mot de passe, <ph name="BEGIN_LINK" />modifiez-le sur <ph name="WEBSITE" /><ph name="END_LINK" /></translation>
 <translation id="5457226814769348910">Ouvrir la version hors connexion</translation>
+<translation id="5459548306731933777">Voir les détails</translation>
 <translation id="5475069061743940393">Suivi des colis</translation>
 <translation id="5478327362747197944">Créez des événements d'agenda directement en cliquant sur une date depuis une page Web.</translation>
 <translation id="5482922178977937393">Voulez-vous recevoir des notifications sur l'actualité, le sport et plus, en fonction de vos centres d'intérêt ?</translation>
@@ -1443,7 +1444,6 @@ Ils peuvent également s'en servir pour voir votre activité de navigation sur l
 <translation id="8283172974887967105">Définir…</translation>
 <translation id="8286036467436129157">Connexion</translation>
 <translation id="8289930144142009940">Notifications désactivées concernant les <ph name="FEATURE_NAME" /></translation>
-<translation id="8292843446079898078">Recevoir des alertes en cas de baisse de prix des produits que vous suivez.</translation>
 <translation id="8299417921174340354">Pour utiliser les mots de passe, vous devez d'abord définir un code secret sur votre appareil.</translation>
 <translation id="8299613349954694191">Ouvrez un onglet de navigation privée pour naviguer sur le Web en mode privé.</translation>
 <translation id="8311853334103696030">Masquer "Suivre les prix"</translation>

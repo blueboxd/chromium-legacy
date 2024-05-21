@@ -7,6 +7,7 @@
 #if !BUILDFLAG(IS_CHROMEOS)
 
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/ui/page_info/chrome_page_info_delegate.h"
@@ -26,6 +27,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/label.h"
 
+using base::Bucket;
+using testing::ElementsAre;
+
 namespace {
 
 constexpr char kCameraId[] = "camera_id";
@@ -39,11 +43,14 @@ constexpr char kGroupId[] = "group_id";
 constexpr char kMicId2[] = "mic_id_2";
 constexpr char kMicName2[] = "mic_name_2";
 constexpr char kGroupId2[] = "group_id_2";
+constexpr char kOriginTrialAllowedHistogramName[] =
+    "MediaPreviews.UI.PageInfo.OriginTrialAllowed";
 
 blink::mojom::MediaStreamType GetStreamTypeFromSettingsType(
     ContentSettingsType type) {
   switch (type) {
     case ContentSettingsType::MEDIASTREAM_CAMERA:
+    case ContentSettingsType::CAMERA_PAN_TILT_ZOOM:
       return blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE;
     case ContentSettingsType::MEDIASTREAM_MIC:
       return blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE;
@@ -124,6 +131,12 @@ class PageInfoPermissionContentViewTestMediaPreview
                                       base::NumberToString16(devices));
   }
 
+  std::u16string GetExpectedPTZCameraLabelText(size_t devices) {
+    return l10n_util::GetStringFUTF16(
+        IDS_SITE_SETTINGS_TYPE_CAMERA_PAN_TILT_ZOOM_WITH_COUNT,
+        base::NumberToString16(devices));
+  }
+
   std::u16string GetExpectedMicLabelText(size_t devices) {
     return l10n_util::GetStringFUTF16(IDS_SITE_SETTINGS_TYPE_MIC_WITH_COUNT,
                                       base::NumberToString16(devices));
@@ -140,6 +153,7 @@ class PageInfoPermissionContentViewTestMediaPreview
   std::unique_ptr<PageInfo> presenter_;
   std::unique_ptr<ChromePageInfoUiDelegate> ui_delegate_;
   std::unique_ptr<PageInfoPermissionContentView> page_info_;
+  base::HistogramTester histogram_tester_;
 };
 
 // Verify the device counter as well as the tooltip for the title label for page
@@ -166,6 +180,36 @@ TEST_F(PageInfoPermissionContentViewTestMediaPreview, MediaPreviewCamera) {
 
   ASSERT_TRUE(video_service_.RemoveFakeCameraBlocking(kCameraId2));
   EXPECT_EQ(title_label->GetText(), GetExpectedCameraLabelText(1));
+  EXPECT_EQ(title_label->GetTooltipText(),
+            base::UTF8ToUTF16(std::string(kCameraName)));
+  EXPECT_THAT(histogram_tester_.GetAllSamples(kOriginTrialAllowedHistogramName),
+              ElementsAre(Bucket(1, 1)));
+}
+
+// Verify the device counter as well as the tooltip for the title label for page
+// info ptz camera subpage.
+TEST_F(PageInfoPermissionContentViewTestMediaPreview, MediaPreviewPTZCamera) {
+  InitializePageInfo(ContentSettingsType::CAMERA_PAN_TILT_ZOOM);
+  ASSERT_TRUE(page_info_->GetPreviewsCoordinatorForTesting());
+
+  auto title_label = page_info_->GetTitleForTesting();
+  ASSERT_TRUE(title_label);
+
+  EXPECT_EQ(title_label->GetText(), GetExpectedPTZCameraLabelText(0));
+  EXPECT_EQ(title_label->GetTooltipText(), std::u16string());
+
+  ASSERT_TRUE(video_service_.AddFakeCameraBlocking({kCameraName, kCameraId}));
+  EXPECT_EQ(title_label->GetText(), GetExpectedPTZCameraLabelText(1));
+  EXPECT_EQ(title_label->GetTooltipText(),
+            base::UTF8ToUTF16(std::string(kCameraName)));
+
+  ASSERT_TRUE(video_service_.AddFakeCameraBlocking({kCameraName2, kCameraId2}));
+  EXPECT_EQ(title_label->GetText(), GetExpectedPTZCameraLabelText(2));
+  EXPECT_EQ(title_label->GetTooltipText(),
+            base::UTF8ToUTF16(kCameraName + std::string("\n") + kCameraName2));
+
+  ASSERT_TRUE(video_service_.RemoveFakeCameraBlocking(kCameraId2));
+  EXPECT_EQ(title_label->GetText(), GetExpectedPTZCameraLabelText(1));
   EXPECT_EQ(title_label->GetTooltipText(),
             base::UTF8ToUTF16(std::string(kCameraName)));
 }
@@ -198,6 +242,8 @@ TEST_F(PageInfoPermissionContentViewTestMediaPreview, MediaPreviewMic) {
   EXPECT_EQ(title_label->GetText(), GetExpectedMicLabelText(1));
   EXPECT_EQ(title_label->GetTooltipText(),
             base::UTF8ToUTF16(std::string(kMicName2)));
+  EXPECT_THAT(histogram_tester_.GetAllSamples(kOriginTrialAllowedHistogramName),
+              ElementsAre(Bucket(1, 1)));
 }
 
 // Verify there is no preview created when there is no camera or mic permissions
@@ -206,6 +252,7 @@ TEST_F(PageInfoPermissionContentViewTestMediaPreview,
        MediaPreviewNoCameraOrMic) {
   InitializePageInfo(ContentSettingsType::GEOLOCATION);
   ASSERT_FALSE(page_info_->GetPreviewsCoordinatorForTesting());
+  histogram_tester_.ExpectTotalCount(kOriginTrialAllowedHistogramName, 0);
 }
 
 #endif

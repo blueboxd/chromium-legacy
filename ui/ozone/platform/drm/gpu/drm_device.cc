@@ -79,7 +79,7 @@ bool ProcessDrmEvent(int fd, const DrmEventHandler& callback) {
       case DRM_EVENT_VBLANK:
         break;
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
     }
 
@@ -172,7 +172,9 @@ class DrmDevice::IOWatcher : public base::MessagePumpLibevent::FdWatcher {
       Unregister();
   }
 
-  void OnFileCanWriteWithoutBlocking(int fd) override { NOTREACHED(); }
+  void OnFileCanWriteWithoutBlocking(int fd) override {
+    NOTREACHED_IN_MIGRATION();
+  }
 
   raw_ptr<DrmDevice::PageFlipManager> page_flip_manager_;
 

@@ -34,7 +34,7 @@ void StubAuthenticator::CompleteLogin(
     bool ephemeral,
     std::unique_ptr<UserContext> user_context) {
   if (expected_user_context_ != *user_context)
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   OnAuthSuccess();
 }
 
@@ -176,27 +176,6 @@ void StubAuthenticator::OnAuthSuccess() {
 
 void StubAuthenticator::OnAuthFailure(const AuthFailure& failure) {
   consumer_->OnAuthFailure(failure);
-}
-
-void StubAuthenticator::RecoverEncryptedData(
-    std::unique_ptr<UserContext> user_context,
-    const std::string& old_password) {
-  if (old_password_ != old_password) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&StubAuthenticator::OnPasswordChangeDetected, this));
-    return;
-  }
-
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&StubAuthenticator::OnAuthSuccess, this));
-}
-
-void StubAuthenticator::ResyncEncryptedData(
-    bool ephemeral,
-    std::unique_ptr<UserContext> user_context) {
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&StubAuthenticator::OnAuthSuccess, this));
 }
 
 void StubAuthenticator::LoginAuthenticated(

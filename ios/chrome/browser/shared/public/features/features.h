@@ -327,6 +327,9 @@ BASE_DECLARE_FEATURE(kIOSSaveToDrive);
 // Feature flag enabling Save to Photos.
 BASE_DECLARE_FEATURE(kIOSSaveToPhotos);
 
+// Feature flag enabling a fix for the Download manager mediator.
+BASE_DECLARE_FEATURE(kIOSDownloadNoUIUpdateInBackground);
+
 // Causes the restore shorty and re-signin flows to offer a history opt-in
 // screen.
 BASE_DECLARE_FEATURE(kHistoryOptInForRestoreShortyAndReSignin);
@@ -364,6 +367,9 @@ extern const char kContentPushNotificationsExperimentType[];
 
 // Feature flag to enable the content notifications.
 BASE_DECLARE_FEATURE(kContentPushNotifications);
+
+// Feature flag to enable Content Notification experiments.
+BASE_DECLARE_FEATURE(kContentNotificationExperiment);
 
 // Feature flag to enable the Large Fakebox design changes.
 BASE_DECLARE_FEATURE(kIOSLargeFakebox);
@@ -483,6 +489,9 @@ bool IsFeedAblationEnabled();
 
 // YES when Follow UI Update is enabled.
 bool IsFollowUIUpdateEnabled();
+
+// YES if content push notification experiments are enabled.
+bool IsContentNotificationExperimentEnalbed();
 
 // YES when any of the content push notification variations are enabled.
 bool IsContentPushNotificationsEnabled();

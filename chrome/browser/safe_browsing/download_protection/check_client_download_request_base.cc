@@ -56,25 +56,6 @@ std::string SanitizeUrl(const std::string& url) {
   return GURL(url).DeprecatedGetOriginAsURL().spec();
 }
 
-void MaybeLogDocumentMetrics(const std::string& request_data,
-                             DownloadCheckResultReason reason) {
-  if (request_data.empty()) {
-    return;
-  }
-
-  ClientDownloadRequest request;
-  if (!request.ParseFromString(request_data))
-    return;
-
-  if (request.has_document_summary()) {
-    base::UmaHistogramBoolean(
-        "SBClientDownload.DocumentContainsMacros",
-        request.document_summary().metadata().contains_macros());
-    base::UmaHistogramEnumeration("SBClientDownload.DocumentCheckDownloadStats",
-                                  reason, REASON_MAX);
-  }
-}
-
 }  // namespace
 
 CheckClientDownloadRequestBase::CheckClientDownloadRequestBase(
@@ -159,7 +140,6 @@ void CheckClientDownloadRequestBase::FinishRequest(
 
   base::UmaHistogramEnumeration("SBClientDownload.CheckDownloadStats", reason,
                                 REASON_MAX);
-  MaybeLogDocumentMetrics(client_download_request_data_, reason);
 
   NotifyRequestFinished(result, reason);
   service()->RequestFinished(this, GetBrowserContext(), result);
@@ -243,7 +223,7 @@ void CheckClientDownloadRequestBase::OnUrlAllowlistCheckDone(
 
       default:
         // We only expect the reasons explicitly handled above.
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
     }
   }
   RecordFileExtensionType(kDownloadExtensionUmaName, target_file_path_);
@@ -645,9 +625,6 @@ void CheckClientDownloadRequestBase::OnURLLoaderComplete(
       break;
     case DownloadFileType::DMG:
       metrics_suffix = ".Dmg";
-      break;
-    case DownloadFileType::OFFICE_DOCUMENT:
-      metrics_suffix = ".Document";
       break;
     case DownloadFileType::SEVEN_ZIP:
       if (base::FeatureList::IsEnabled(kSevenZipEvaluationEnabled))

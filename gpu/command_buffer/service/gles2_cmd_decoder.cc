@@ -528,7 +528,7 @@ Outputter* GLES2Decoder::outputter() const {
 }
 
 int GLES2Decoder::GetRasterDecoderId() const {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return -1;
 }
 
@@ -2196,7 +2196,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
       case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
         return GL_TEXTURE_2D_ARRAY;
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         return 0;
     }
   }
@@ -2213,7 +2213,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
         framebuffer = framebuffer_state_.bound_read_framebuffer.get();
         break;
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
     }
     return framebuffer;
@@ -2227,7 +2227,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
         renderbuffer = state_.bound_renderbuffer.get();
         break;
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
     }
     return renderbuffer;
@@ -3802,7 +3802,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
           features().ext_blend_func_extended ? 1 : 0;
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       shader_spec = SH_GLES2_SPEC;
       break;
   }
@@ -4563,7 +4563,7 @@ void GLES2DecoderImpl::MarkDrawBufferAsCleared(
     default:
       // Caller is responsible for breaking GL_DEPTH_STENCIL into GL_DEPTH and
       // GL_STENCIL.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
   framebuffer->MarkAttachmentAsCleared(
       renderbuffer_manager(), texture_manager(), attachment, true);
@@ -5208,7 +5208,7 @@ void GLES2DecoderImpl::BindIndexedBufferImpl(
       break;
     }
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 
@@ -5230,7 +5230,7 @@ void GLES2DecoderImpl::BindIndexedBufferImpl(
         break;
       }
       default:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
     }
 
@@ -5281,7 +5281,7 @@ void GLES2DecoderImpl::BindIndexedBufferImpl(
       bindings = state_.indexed_uniform_buffer_bindings.get();
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
   DCHECK(bindings);
@@ -5293,7 +5293,7 @@ void GLES2DecoderImpl::BindIndexedBufferImpl(
       bindings->DoBindBufferRange(index, buffer, offset, size);
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
   state_.SetBoundBuffer(target, buffer);
@@ -5953,7 +5953,7 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
           attachment = GL_STENCIL_ATTACHMENT;
           break;
         default:
-          NOTREACHED();
+          NOTREACHED_IN_MIGRATION();
           return;
       }
     }
@@ -6021,7 +6021,7 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
           backbuffer_needs_clear_bits_ |= GL_STENCIL_BUFFER_BIT;
           break;
         default:
-          NOTREACHED();
+          NOTREACHED_IN_MIGRATION();
           break;
       }
     }
@@ -6855,7 +6855,7 @@ void GLES2DecoderImpl::DoGetIntegerv(GLenum pname,
     DCHECK_EQ(num_written, params_size);
     return;
   }
-  NOTREACHED() << "Unhandled enum " << pname;
+  NOTREACHED_IN_MIGRATION() << "Unhandled enum " << pname;
 }
 
 template <typename TYPE>
@@ -6905,7 +6905,7 @@ void GLES2DecoderImpl::GetIndexedIntegerImpl(
       // decoder
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
   DCHECK(bindings);
@@ -6936,7 +6936,7 @@ void GLES2DecoderImpl::GetIndexedIntegerImpl(
       // decoder
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 }
@@ -7797,7 +7797,7 @@ void GLES2DecoderImpl::DoFramebufferTextureMultiviewOVR(
     GLint base_view_index,
     GLsizei num_views) {
   // This is only supported in passthrough command buffer.
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(
@@ -7850,7 +7850,7 @@ void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(
           attachment = GL_STENCIL_ATTACHMENT;
           break;
         default:
-          NOTREACHED();
+          NOTREACHED_IN_MIGRATION();
           break;
       }
     }
@@ -8284,7 +8284,7 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
       unsigned int xoffset, yoffset;
       if (!checked_xoffset.AssignIfValid(&xoffset) ||
           !checked_yoffset.AssignIfValid(&yoffset)) {
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         LOCAL_SET_GL_ERROR(
             GL_INVALID_VALUE, func_name,
             "the width or height of src or dst region overflowed");
@@ -10678,7 +10678,7 @@ void GLES2DecoderImpl::DoMultiDrawEndCHROMIUM() {
           result.baseinstances.data(), result.drawcount);
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       MarkContextLost(error::kGuilty);
       group_->LoseContexts(error::kInnocent);
   }
@@ -11363,7 +11363,7 @@ void GLES2DecoderImpl::GetVertexAttribHelper(
       *params = attrib->integer();
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 }
@@ -12438,7 +12438,7 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
       break;
     default:
       // Validation should have prevented us from getting here.
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
   return error::kNoError;
@@ -15027,7 +15027,7 @@ error::Error GLES2DecoderImpl::HandleGetAttachedShaders(
   for (GLsizei ii = 0; ii < count; ++ii) {
     if (!shader_manager()->GetClientId(result->GetData()[ii],
                                        &result->GetData()[ii])) {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return error::kGenericError;
     }
   }
@@ -15794,7 +15794,7 @@ bool GLES2DecoderImpl::CheckResetStatus() {
       MarkContextLost(error::kUnknown);
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return false;
   }
   reset_by_robustness_extension_ = true;
@@ -17335,7 +17335,7 @@ error::Error GLES2DecoderImpl::HandleClientWaitSync(
       // If validation is complete, this only happens if the context is lost.
       return error::kLostContext;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
   *result_dst = status;
@@ -17501,7 +17501,7 @@ error::Error GLES2DecoderImpl::HandleGetInternalformativ(
       values = sample_counts.data();
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 

@@ -145,7 +145,8 @@ class VideoDecoder::Vp8Impl final : public VideoDecoder::ImplBase {
     if (!image)
       return nullptr;
     if (image->fmt != VPX_IMG_FMT_I420) {
-      NOTREACHED() << "Only pixel format supported is I420, got " << image->fmt;
+      NOTREACHED_IN_MIGRATION()
+          << "Only pixel format supported is I420, got " << image->fmt;
       return nullptr;
     }
     DCHECK(vpx_codec_get_frame(&context_, &iter) == nullptr)
@@ -163,12 +164,12 @@ class VideoDecoder::Vp8Impl final : public VideoDecoder::ImplBase {
         image->planes[VPX_PLANE_Y], image->stride[VPX_PLANE_Y],
         image->planes[VPX_PLANE_U], image->stride[VPX_PLANE_U],
         image->planes[VPX_PLANE_V], image->stride[VPX_PLANE_V],
-        decoded_frame->GetWritableVisibleData(media::VideoFrame::kYPlane),
-        decoded_frame->stride(media::VideoFrame::kYPlane),
-        decoded_frame->GetWritableVisibleData(media::VideoFrame::kUPlane),
-        decoded_frame->stride(media::VideoFrame::kUPlane),
-        decoded_frame->GetWritableVisibleData(media::VideoFrame::kVPlane),
-        decoded_frame->stride(media::VideoFrame::kVPlane), frame_size.width(),
+        decoded_frame->GetWritableVisibleData(media::VideoFrame::Plane::kY),
+        decoded_frame->stride(media::VideoFrame::Plane::kY),
+        decoded_frame->GetWritableVisibleData(media::VideoFrame::Plane::kU),
+        decoded_frame->stride(media::VideoFrame::Plane::kU),
+        decoded_frame->GetWritableVisibleData(media::VideoFrame::Plane::kV),
+        decoded_frame->stride(media::VideoFrame::Plane::kV), frame_size.width(),
         frame_size.height());
     return decoded_frame;
   }
@@ -226,7 +227,7 @@ VideoDecoder::VideoDecoder(
       NOTIMPLEMENTED();
       break;
     default:
-      NOTREACHED() << "Unknown or unspecified codec.";
+      NOTREACHED_IN_MIGRATION() << "Unknown or unspecified codec.";
       break;
   }
 }

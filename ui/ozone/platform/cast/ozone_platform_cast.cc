@@ -92,10 +92,12 @@ class OzonePlatformCast : public OzonePlatform {
     return event_factory_ozone_->input_controller();
   }
   std::unique_ptr<PlatformScreen> CreateScreen() override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return nullptr;
   }
-  void InitScreen(PlatformScreen* screen) override { NOTREACHED(); }
+  void InitScreen(PlatformScreen* screen) override {
+    NOTREACHED_IN_MIGRATION();
+  }
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return gpu_platform_support_host_.get();
   }

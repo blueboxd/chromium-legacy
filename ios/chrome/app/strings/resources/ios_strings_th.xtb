@@ -47,7 +47,7 @@
 <translation id="1258491128795710625">มีอะไรใหม่</translation>
 <translation id="1264156759663453185">ข้อความที่เลือกมีจำนวนเยอะเกินไปสำหรับการแปลข้อความบางส่วน</translation>
 <translation id="1264974993859112054">กีฬา</translation>
-<translation id="1265739287306757398">เรียนรู้วิธี</translation>
+<translation id="1265739287306757398">ดูวิธีการ</translation>
 <translation id="1272079795634619415">หยุด</translation>
 <translation id="1273416271143914096">{count,plural, =1{รหัสผ่าน {count} รายการ}other{รหัสผ่าน {count} รายการ}}</translation>
 <translation id="1275718070701477396">เลือกแล้ว</translation>
@@ -99,6 +99,7 @@
 <translation id="1506063256525392513">ช่วยให้คุณถ่ายและอัปโหลดรูปภาพ รวมถึงสแกนคิวอาร์โค้ดได้</translation>
 <translation id="1509486075633541495">ลงชื่อเข้าใช้เว็บไซต์</translation>
 <translation id="1509960214886564027">ฟีเจอร์ในหลายเว็บไซต์อาจใช้งานไม่ได้</translation>
+<translation id="1520027731907768768">รับการแจ้งเตือนเมื่อราคาผลิตภัณฑ์ที่ติดตามต่ำลง</translation>
 <translation id="152234381334907219">ไม่เคยบันทึก</translation>
 <translation id="1523341279170789507">อนุญาตคุกกี้ทั้งหมด</translation>
 <translation id="1524563461097350801">ไม่เป็นไร ขอบคุณ</translation>
@@ -862,6 +863,7 @@
 <translation id="5444892875087332195">บุ๊กมาร์ก</translation>
 <translation id="5454211924362324495">หากไม่ต้องการให้ผู้อื่นใช้รหัสผ่านของคุณ ให้<ph name="BEGIN_LINK" />เปลี่ยนรหัสผ่านใน <ph name="WEBSITE" /><ph name="END_LINK" /></translation>
 <translation id="5457226814769348910">เปิดเวอร์ชันออฟไลน์</translation>
+<translation id="5459548306731933777">แสดงรายละเอียด</translation>
 <translation id="5475069061743940393">การติดตามพัสดุภัณฑ์</translation>
 <translation id="5478327362747197944">สร้างกิจกรรมในปฏิทินโดยตรงด้วยการคลิกวันที่ในหน้าเว็บ</translation>
 <translation id="5482922178977937393">ต้องการรับการแจ้งเตือนเกี่ยวกับข่าว กีฬา และอื่นๆ ตามความสนใจของคุณไหม</translation>
@@ -1442,7 +1444,6 @@
 <translation id="8283172974887967105">ตั้งค่า…</translation>
 <translation id="8286036467436129157">ลงชื่อเข้าใช้</translation>
 <translation id="8289930144142009940">ปิดการแจ้งเตือน<ph name="FEATURE_NAME" /> แล้ว</translation>
-<translation id="8292843446079898078">รับการแจ้งเตือนเมื่อราคาผลิตภัณฑ์ที่ติดตามต่ำลง</translation>
 <translation id="8299417921174340354">หากต้องการใช้รหัสผ่าน คุณต้องตั้งรหัสผ่านในอุปกรณ์ก่อน</translation>
 <translation id="8299613349954694191">เปิดแท็บที่ไม่ระบุตัวตนเพื่อท่องเว็บในแบบส่วนตัว</translation>
 <translation id="8311853334103696030">ซ่อน "ติดตามราคา"</translation>

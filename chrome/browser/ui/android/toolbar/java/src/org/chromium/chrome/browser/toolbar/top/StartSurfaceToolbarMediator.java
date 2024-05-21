@@ -484,14 +484,6 @@ class StartSurfaceToolbarMediator implements ButtonDataProvider.ButtonDataObserv
         return mLayoutType;
     }
 
-    boolean isLogoVisibleForTesting() {
-        return mLogoCoordinator != null && mLogoCoordinator.isLogoVisible();
-    }
-
-    LogoCoordinator getLogoCoordinatorForTesting() {
-        return mLogoCoordinator;
-    }
-
     @Override
     public void buttonDataChanged(boolean canShowHint) {
         // If the identity disc wants to be hidden and is hidden, there's nothing we need to do.
@@ -500,12 +492,12 @@ class StartSurfaceToolbarMediator implements ButtonDataProvider.ButtonDataObserv
     }
 
     /**
-     * Update the background color of the toolbar based on whether it is in the Grid tab switcher
-     * or in the Start surface with either incognito mode or non-incognito mode.
+     * Update the background color of the toolbar based on whether it is in the Grid tab switcher or
+     * in the Start surface with either incognito mode or non-incognito mode.
      */
     private void updateBackgroundColor() {
         @ColorInt int backgroundColor;
-        if (mIsSurfacePolished && isOnHomepage() && !mIsIncognito) {
+        if (isOnHomepage() && !mIsIncognito) {
             backgroundColor =
                     ChromeColors.getSurfaceColor(
                             mContext,

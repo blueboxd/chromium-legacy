@@ -68,7 +68,6 @@
 <translation id="2241587408274973373">Cartes de la page Nouvel onglet</translation>
 <translation id="2241634353105152135">Une fois</translation>
 <translation id="2253414712144136228">Retirer l'élément suivant : <ph name="NAME_OF_LIST_ITEM" /></translation>
-<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{1 site bloqué}one{# site bloqué}other{# sites bloqués}}</translation>
 <translation id="228293613124499805">La plupart des sites que vous visitez peuvent enregistrer des données sur votre appareil, souvent pour améliorer votre expérience en enregistrant vos préférences ou en fonction de vos interactions avec le site. Nous vous recommandons de conserver ce paramètre activé.</translation>
 <translation id="2289270750774289114">Demander quand un site souhaite rechercher les appareils Bluetooth à proximité (recommandé)</translation>
 <translation id="2315043854645842844">La sélection du certificat client SSL n'est pas prise en charge par le système d'exploitation.</translation>
@@ -305,6 +304,7 @@
 <translation id="6015775454662021376">Gérez l'accès de ce site à votre appareil</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6042308850641462728">Plus</translation>
+<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Votre dernier onglet</translation>
 <translation id="6064125863973209585">Téléchargements terminés</translation>
 <translation id="6071501408666570960">Vous pouvez être déconnecté de ce site</translation>
 <translation id="6120483543004435978">Lorsque cette option est activée, les sites peuvent vous demander si vous utilisez activement votre appareil. Lorsqu'elle est désactivée, les sites ne peuvent pas savoir si vous utilisez activement votre appareil.</translation>
@@ -426,6 +426,7 @@
 <translation id="7986741934819883144">Sélectionner un contact</translation>
 <translation id="7990211076305263060">Lorsque cette option est activée, les sites peuvent demander à utiliser votre microphone. Lorsqu'elle est désactivée, les sites ne peuvent pas utiliser votre microphone.</translation>
 <translation id="8007176423574883786">Désactivé pour cet appareil</translation>
+<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> À partir de <ph name="FROM_DEVICE" /></translation>
 <translation id="802154636333426148">Échec du téléchargement</translation>
 <translation id="8042586301629853791">Trier par :</translation>
 <translation id="8067883171444229417">Lire la vidéo</translation>
@@ -480,7 +481,6 @@
 <translation id="8721719390026067591">Lorsque cette option est activée, les sites peuvent demander à rechercher des appareils Bluetooth. Lorsqu'elle est désactivée, les sites ne peuvent pas rechercher d'appareils Bluetooth.</translation>
 <translation id="8725066075913043281">Réessayer</translation>
 <translation id="8730621377337864115">Terminé</translation>
-<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{1 site autorisé}one{# site autorisé}other{# sites autorisés}}</translation>
 <translation id="8751914237388039244">Sélectionner une image</translation>
 <translation id="8800034312320686233">Le site ne fonctionne pas?</translation>
 <translation id="8801436777607969138">Bloquez JavaScript sur un site en particulier.</translation>

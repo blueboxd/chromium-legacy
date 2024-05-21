@@ -11,6 +11,8 @@ import {loadTimeData} from '//resources/js/load_time_data.js';
 import type {Url} from '//resources/mojo/url/mojom/url.mojom-webui.js';
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import type {LensSidePanelPageHandlerInterface} from '../lens.mojom-webui.js';
+
 import {getTemplate} from './side_panel_app.html.js';
 import {SidePanelBrowserProxyImpl} from './side_panel_browser_proxy.js';
 import type {SidePanelBrowserProxy} from './side_panel_browser_proxy.js';
@@ -18,6 +20,14 @@ import type {SidePanelBrowserProxy} from './side_panel_browser_proxy.js';
 // The url query parameter keys for the viewport size.
 const VIEWPORT_HEIGHT_KEY = 'bih';
 const VIEWPORT_WIDTH_KEY = 'biw';
+
+// Closes overlay if the escape key is pressed.
+function maybeCloseOverlay(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    SidePanelBrowserProxyImpl.getInstance()
+        .handler.closeRequestedBySidePanelEscapeKeyPress();
+  }
+}
 
 export interface LensSidePanelAppElement {
   $: {
@@ -37,6 +47,11 @@ export class LensSidePanelAppElement extends PolymerElement {
 
   static get properties() {
     return {
+      isBackArrowVisible: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+      },
       isLoadingResults: {
         type: Boolean,
         value: true,
@@ -50,6 +65,8 @@ export class LensSidePanelAppElement extends PolymerElement {
     };
   }
 
+  // Public for use in browser tests.
+  isBackArrowVisible: boolean;
   // Whether the results iframe is currently loading. This needs to be done via
   // browser because the iframe is cross-origin. Default true since the side
   // panel can open before a navigation has started.
@@ -61,9 +78,11 @@ export class LensSidePanelAppElement extends PolymerElement {
   private browserProxy: SidePanelBrowserProxy =
       SidePanelBrowserProxyImpl.getInstance();
   private listenerIds: number[];
+  private pageHandler: LensSidePanelPageHandlerInterface;
 
   constructor() {
     super();
+    this.pageHandler = SidePanelBrowserProxyImpl.getInstance().handler;
     ColorChangeUpdater.forDocument().start();
   }
 
@@ -75,7 +94,10 @@ export class LensSidePanelAppElement extends PolymerElement {
           this.loadResultsInFrame.bind(this)),
       this.browserProxy.callbackRouter.setIsLoadingResults.addListener(
           this.setIsLoadingResults.bind(this)),
+      this.browserProxy.callbackRouter.setBackArrowVisible.addListener(
+          this.setBackArrowVisible.bind(this)),
     ];
+    window.addEventListener('keyup', maybeCloseOverlay);
   }
 
   override disconnectedCallback() {
@@ -84,6 +106,11 @@ export class LensSidePanelAppElement extends PolymerElement {
     this.listenerIds.forEach(
         id => assert(this.browserProxy.callbackRouter.removeListener(id)));
     this.listenerIds = [];
+    window.removeEventListener('keyup', maybeCloseOverlay);
+  }
+
+  private onBackArrowClick() {
+    this.pageHandler.popAndLoadQueryFromHistory();
   }
 
   private setIsLoadingResults(isLoading: boolean) {
@@ -105,6 +132,10 @@ export class LensSidePanelAppElement extends PolymerElement {
     // to force a reload. We cannot get the currently displayed URL from the
     // frame because of cross-origin restrictions.
     this.$.results.src = url.href;
+  }
+
+  private setBackArrowVisible(visible: boolean) {
+    this.isBackArrowVisible = visible;
   }
 }
 

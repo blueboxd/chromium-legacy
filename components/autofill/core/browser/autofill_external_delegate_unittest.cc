@@ -300,7 +300,8 @@ class MockBrowserAutofillManager : public TestBrowserAutofillManager {
                const FormData&,
                const FormFieldData&,
                const std::u16string&,
-               SuggestionType),
+               SuggestionType,
+               std::optional<FieldType>),
               (override));
 
  private:
@@ -494,7 +495,7 @@ TEST_F(AutofillExternalDelegateUnitTest, GetMainFillingProduct) {
   // Show compose suggestion in the popup.
   external_delegate().OnSuggestionsReturned(
       queried_field().global_id(),
-      {test::CreateAutofillSuggestion(SuggestionType::kCompose,
+      {test::CreateAutofillSuggestion(SuggestionType::kComposeResumeNudge,
                                       u"generated text")});
   EXPECT_EQ(external_delegate().GetMainFillingProduct(),
             FillingProduct::kCompose);
@@ -1133,7 +1134,8 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateFillsIbanEntry) {
                                  mojom::FieldActionType::kReplaceAll,
                                  HasQueriedFormId(), HasQueriedFieldId(),
                                  iban.GetIdentifierStringForAutofillDisplay(),
-                                 SuggestionType::kIbanEntry));
+                                 SuggestionType::kIbanEntry,
+                                 std::optional(IBAN_VALUE)));
   external_delegate().DidSelectSuggestion(suggestions[0]);
   EXPECT_CALL(client(), HideAutofillSuggestions(
                             SuggestionHidingReason::kAcceptSuggestion));
@@ -1141,7 +1143,8 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateFillsIbanEntry) {
               FillOrPreviewField(mojom::ActionPersistence::kFill,
                                  mojom::FieldActionType::kReplaceAll,
                                  HasQueriedFormId(), HasQueriedFieldId(),
-                                 iban.value(), SuggestionType::kIbanEntry));
+                                 iban.value(), SuggestionType::kIbanEntry,
+                                 std::optional(IBAN_VALUE)));
   EXPECT_CALL(*client().GetMockIbanManager(),
               OnSingleFieldSuggestionSelected(
                   iban.GetIdentifierStringForAutofillDisplay(),
@@ -1182,7 +1185,8 @@ TEST_F(AutofillExternalDelegateUnitTest,
                                  mojom::FieldActionType::kReplaceAll,
                                  HasQueriedFormId(), HasQueriedFieldId(),
                                  promo_code_value,
-                                 SuggestionType::kMerchantPromoCodeEntry));
+                                 SuggestionType::kMerchantPromoCodeEntry,
+                                 std::optional(MERCHANT_PROMO_CODE)));
   external_delegate().DidSelectSuggestion(suggestions[0]);
   EXPECT_CALL(client(), HideAutofillSuggestions(
                             SuggestionHidingReason::kAcceptSuggestion));
@@ -1191,7 +1195,8 @@ TEST_F(AutofillExternalDelegateUnitTest,
                                  mojom::FieldActionType::kReplaceAll,
                                  HasQueriedFormId(), HasQueriedFieldId(),
                                  promo_code_value,
-                                 SuggestionType::kMerchantPromoCodeEntry));
+                                 SuggestionType::kMerchantPromoCodeEntry,
+                                 std::optional(MERCHANT_PROMO_CODE)));
 
   external_delegate().DidAcceptSuggestion(suggestions[0],
                                           SuggestionPosition{.row = 0});
@@ -1238,7 +1243,8 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearPreviewedForm) {
                                  mojom::FieldActionType::kReplaceAll,
                                  HasQueriedFormId(), HasQueriedFieldId(),
                                  std::u16string(u"baz foo"),
-                                 SuggestionType::kAutocompleteEntry));
+                                 SuggestionType::kAutocompleteEntry,
+                                 std::optional<FieldType>()));
   external_delegate().DidSelectSuggestion(test::CreateAutofillSuggestion(
       SuggestionType::kAutocompleteEntry, u"baz foo"));
 
@@ -1693,11 +1699,12 @@ TEST_F(AutofillExternalDelegateUnitTest,
   IssueOnQuery(AutofillSuggestionTriggerSource::kManualFallbackPayments);
 
   EXPECT_CALL(manager(),
-              FillOrPreviewField(
-                  mojom::ActionPersistence::kPreview,
-                  mojom::FieldActionType::kReplaceAll, HasQueriedFormId(),
-                  HasQueriedFieldId(), suggestion.main_text.value,
-                  SuggestionType::kCreditCardFieldByFieldFilling));
+              FillOrPreviewField(mojom::ActionPersistence::kPreview,
+                                 mojom::FieldActionType::kReplaceAll,
+                                 HasQueriedFormId(), HasQueriedFieldId(),
+                                 suggestion.main_text.value,
+                                 SuggestionType::kCreditCardFieldByFieldFilling,
+                                 std::optional(CREDIT_CARD_NAME_FULL)));
 
   external_delegate().DidSelectSuggestion(suggestion);
 }
@@ -1711,12 +1718,13 @@ TEST_F(AutofillExternalDelegateUnitTest,
   IssueOnQuery(AutofillSuggestionTriggerSource::kManualFallbackPayments);
 
   EXPECT_CALL(cc_access_manager(), FetchCreditCard).Times(0);
-  EXPECT_CALL(
-      manager(),
-      FillOrPreviewField(
-          mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
-          HasQueriedFormId(), HasQueriedFieldId(), suggestion.main_text.value,
-          SuggestionType::kCreditCardFieldByFieldFilling));
+  EXPECT_CALL(manager(),
+              FillOrPreviewField(mojom::ActionPersistence::kFill,
+                                 mojom::FieldActionType::kReplaceAll,
+                                 HasQueriedFormId(), HasQueriedFieldId(),
+                                 suggestion.main_text.value,
+                                 SuggestionType::kCreditCardFieldByFieldFilling,
+                                 std::optional(CREDIT_CARD_NAME_FULL)));
 
   external_delegate().DidAcceptSuggestion(suggestion,
                                           SuggestionPosition{.row = 1});
@@ -1770,7 +1778,8 @@ TEST_F(AutofillExternalDelegateUnitTest,
           mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
           HasQueriedFormId(), HasQueriedFieldId(),
           unlocked_card.GetInfo(CREDIT_CARD_NUMBER, pdm().app_locale()),
-          SuggestionType::kCreditCardFieldByFieldFilling));
+          SuggestionType::kCreditCardFieldByFieldFilling,
+          std::optional(CREDIT_CARD_NUMBER)));
   external_delegate().DidAcceptSuggestion(suggestion,
                                           SuggestionPosition{.row = 1});
 }
@@ -1944,8 +1953,7 @@ TEST_F(AutofillExternalDelegateUnitTest,
 // Test parameter data for asserting that the expected set of field types
 // is stored in the delegate.
 struct GetLastFieldTypesToFillForSectionTestParams {
-  const std::optional<FieldTypeSet>
-      expected_last_field_types_to_fill_for_section;
+  SuggestionType last_accepted_address_suggestion_for_section;
   const SuggestionType type;
   const std::optional<Section> section;
   const bool is_preview = false;
@@ -1962,7 +1970,8 @@ const GetLastFieldTypesToFillForSectionTestParams
         // Tests that when `SuggestionType::kAddressEntry` is accepted and
         // therefore the user wanted to fill the whole form. Autofill
         // stores the last targeted fields as `kAllFieldTypes`.
-        {.expected_last_field_types_to_fill_for_section = kAllFieldTypes,
+        {.last_accepted_address_suggestion_for_section =
+             SuggestionType::kAddressEntry,
          .type = SuggestionType::kAddressEntry,
          .test_name = "_AllFields"},
         // Tests that when `SuggestionType::kAddressFieldByFieldFilling`
@@ -1970,25 +1979,27 @@ const GetLastFieldTypesToFillForSectionTestParams
         // The last targeted fields is stored as the triggering field type
         // only, this way the next time the user interacts
         // with the form, they are kept at the same filling granularity.
-        {.expected_last_field_types_to_fill_for_section =
-             std::optional<FieldTypeSet>({NAME_FIRST}),
+        {.last_accepted_address_suggestion_for_section =
+             SuggestionType::kAddressFieldByFieldFilling,
          .type = SuggestionType::kAddressFieldByFieldFilling,
          .test_name = "_SingleField"},
         // Tests that when `GetLastFieldTypesToFillForSection` is called for
         // a section for which no information was stored, `std::nullopt` is
         // returned.
-        {.expected_last_field_types_to_fill_for_section = std::nullopt,
+        {.last_accepted_address_suggestion_for_section =
+             SuggestionType::kAddressEntry,
          .type = SuggestionType::kCreditCardEntry,
          .test_name = "_EmptySet"},
-        {.expected_last_field_types_to_fill_for_section = std::nullopt,
+        {.last_accepted_address_suggestion_for_section =
+             SuggestionType::kAddressEntry,
          .type = SuggestionType::kAddressEntry,
          .section = Section::FromAutocomplete({.section = "another-section"}),
          .test_name = "_DoesNotReturnsForNonExistingSection"},
-        // Tests that when `SuggestionType::kAddressEntry` is selected
-        // (i.e preview mode) we do not store anything as last
-        // targeted fields.
-        {.expected_last_field_types_to_fill_for_section = std::nullopt,
-         .type = SuggestionType::kAddressEntry,
+        // Tests that when `SuggestionType::kFillFullAddress` is selected
+        // (i.e preview) we do not store anything as last accepted suggestion.
+        {.last_accepted_address_suggestion_for_section =
+             SuggestionType::kAddressEntry,
+         .type = SuggestionType::kFillFullAddress,
          .is_preview = true,
          .test_name = "_NotStoredDuringPreview"}};
 
@@ -2017,9 +2028,9 @@ TEST_P(GetLastFieldTypesToFillUnitTest, LastFieldTypesToFillForSection) {
   }
 
   EXPECT_EQ(
-      external_delegate().GetLastFieldTypesToFillForSection(
+      external_delegate().GetLastAcceptedSuggestionToFillForSection(
           params.section.value_or(get_triggering_autofill_field()->section())),
-      params.expected_last_field_types_to_fill_for_section);
+      params.last_accepted_address_suggestion_for_section);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -2059,7 +2070,8 @@ TEST_F(AutofillExternalDelegateUnitTest,
       FillOrPreviewField(mojom::ActionPersistence::kPreview,
                          mojom::FieldActionType::kReplaceAll,
                          HasQueriedFormId(), HasQueriedFieldId(), plus_address,
-                         SuggestionType::kFillExistingPlusAddress));
+                         SuggestionType::kFillExistingPlusAddress,
+                         std::optional(EMAIL_ADDRESS)));
   external_delegate().DidSelectSuggestion(suggestions[0]);
   EXPECT_CALL(client(), HideAutofillSuggestions(
                             SuggestionHidingReason::kAcceptSuggestion));
@@ -2072,7 +2084,8 @@ TEST_F(AutofillExternalDelegateUnitTest,
       FillOrPreviewField(mojom::ActionPersistence::kFill,
                          mojom::FieldActionType::kReplaceAll,
                          HasQueriedFormId(), HasQueriedFieldId(), plus_address,
-                         SuggestionType::kFillExistingPlusAddress));
+                         SuggestionType::kFillExistingPlusAddress,
+                         std::optional(EMAIL_ADDRESS)));
   external_delegate().DidAcceptSuggestion(suggestions[0],
                                           SuggestionPosition{.row = 0});
 }
@@ -2121,7 +2134,8 @@ TEST_F(AutofillExternalDelegateUnitTest,
                                  mojom::FieldActionType::kReplaceAll,
                                  HasQueriedFormId(), HasQueriedFieldId(),
                                  kMockPlusAddressForCreationCallback,
-                                 SuggestionType::kCreateNewPlusAddress));
+                                 SuggestionType::kCreateNewPlusAddress,
+                                 std::optional(EMAIL_ADDRESS)));
   external_delegate().DidAcceptSuggestion(suggestions[0],
                                           SuggestionPosition{.row = 0});
 }
@@ -2136,12 +2150,12 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateOpensComposeAndFills) {
   IssueOnQuery();
 
   // Simulate receiving a Compose suggestion.
-  EXPECT_CALL(
-      client(),
-      ShowAutofillSuggestions(
-          PopupOpenArgsAre(SuggestionVectorIdsAre(SuggestionType::kCompose)),
-          _));
-  std::vector<Suggestion> suggestions = {Suggestion(SuggestionType::kCompose)};
+  EXPECT_CALL(client(),
+              ShowAutofillSuggestions(PopupOpenArgsAre(SuggestionVectorIdsAre(
+                                          SuggestionType::kComposeResumeNudge)),
+                                      _));
+  std::vector<Suggestion> suggestions = {
+      Suggestion(SuggestionType::kComposeResumeNudge)};
   external_delegate().OnSuggestionsReturned(queried_field().global_id(),
                                             suggestions);
 
@@ -2359,12 +2373,12 @@ TEST_F(AutofillExternalDelegateUnitTest,
 
   base::HistogramTester histogram_tester;
   std::u16string dummy_autocomplete_string(u"autocomplete");
-  EXPECT_CALL(manager(),
-              FillOrPreviewField(mojom::ActionPersistence::kFill,
-                                 mojom::FieldActionType::kReplaceAll,
-                                 HasQueriedFormId(), HasQueriedFieldId(),
-                                 dummy_autocomplete_string,
-                                 SuggestionType::kAutocompleteEntry));
+  EXPECT_CALL(
+      manager(),
+      FillOrPreviewField(
+          mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
+          HasQueriedFormId(), HasQueriedFieldId(), dummy_autocomplete_string,
+          SuggestionType::kAutocompleteEntry, std::optional<FieldType>()));
   EXPECT_CALL(
       *client().GetMockAutocompleteHistoryManager(),
       OnSingleFieldSuggestionSelected(dummy_autocomplete_string,
@@ -2391,7 +2405,8 @@ TEST_F(AutofillExternalDelegateUnitTest,
                                  mojom::FieldActionType::kReplaceAll,
                                  HasQueriedFormId(), HasQueriedFieldId(),
                                  dummy_promo_code_string,
-                                 SuggestionType::kMerchantPromoCodeEntry));
+                                 SuggestionType::kMerchantPromoCodeEntry,
+                                 std::optional(MERCHANT_PROMO_CODE)));
   EXPECT_CALL(
       *client().GetMockMerchantPromoCodeManager(),
       OnSingleFieldSuggestionSelected(dummy_promo_code_string,
@@ -2414,7 +2429,8 @@ TEST_F(AutofillExternalDelegateUnitTest,
               FillOrPreviewField(mojom::ActionPersistence::kFill,
                                  mojom::FieldActionType::kReplaceAll,
                                  HasQueriedFormId(), HasQueriedFieldId(),
-                                 iban.value(), SuggestionType::kIbanEntry));
+                                 iban.value(), SuggestionType::kIbanEntry,
+                                 std::optional(IBAN_VALUE)));
   EXPECT_CALL(*client().GetMockIbanManager(),
               OnSingleFieldSuggestionSelected(
                   iban.GetIdentifierStringForAutofillDisplay(),
@@ -2447,7 +2463,8 @@ TEST_F(AutofillExternalDelegateUnitTest,
           mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
           HasQueriedFormId(), HasQueriedFieldId(),
           profile.GetRawInfo(*suggestion.field_by_field_filling_type_used),
-          SuggestionType::kAddressFieldByFieldFilling));
+          SuggestionType::kAddressFieldByFieldFilling,
+          std::optional(NAME_FIRST)));
 
   external_delegate().DidAcceptSuggestion(suggestion,
                                           SuggestionPosition{.row = 0});

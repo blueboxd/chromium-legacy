@@ -202,7 +202,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/common/controlled_frame/controlled_frame.h"
 #include "chrome/common/initialize_extensions_client.h"
 #include "chrome/renderer/extensions/api/chrome_extensions_renderer_api_provider.h"
 #include "chrome/renderer/extensions/chrome_extensions_renderer_client.h"
@@ -255,10 +254,6 @@
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 #include "chrome/renderer/media/chrome_key_systems.h"
-#endif
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
-#include "chrome/renderer/cco/multiline_detector.h"
 #endif
 
 using autofill::AutofillAgent;
@@ -389,8 +384,7 @@ ChromeContentRendererClient::ChromeContentRendererClient()
 #endif
       ) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  EnsureExtensionsClientInitialized(
-      controlled_frame::CreateAvailabilityCheckMap());
+  EnsureExtensionsClientInitialized();
   extensions::ExtensionsRendererClient::Set(
       ChromeExtensionsRendererClient::GetInstance());
 #endif
@@ -783,10 +777,6 @@ void ChromeContentRendererClient::RenderFrameCreated(
   }
 #endif
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
-  MultilineDetector::InstallIfNecessary(render_frame);
-#endif
-
   if (render_frame->IsMainFrame()) {
     new commerce::CommerceWebExtractor(render_frame, registry);
   }
@@ -1020,7 +1010,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     };
     switch (status) {
       case chrome::mojom::PluginStatus::kNotFound: {
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
       }
       case chrome::mojom::PluginStatus::kAllowed:
@@ -1328,8 +1318,9 @@ void ChromeContentRendererClient::ReportNaClAppType(
       }
     } else {
       // We found an extension that is not covered by any metric
-      NOTREACHED() << "Invalid NaCl usage in extension. Extension name: "
-                   << extension->name() << ", type: " << extension->GetType();
+      NOTREACHED_IN_MIGRATION()
+          << "Invalid NaCl usage in extension. Extension name: "
+          << extension->name() << ", type: " << extension->GetType();
     }
   }
 

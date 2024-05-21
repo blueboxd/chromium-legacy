@@ -787,7 +787,7 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
                            errorHandler:^(NSError* error) {
                              LOG(ERROR) << base::SysNSStringToUTF8(
                                  error.localizedDescription);
-                             NOTREACHED();
+                             NOTREACHED_IN_MIGRATION();
                            }];
     }
   }
@@ -822,8 +822,10 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
           std::abs(index - activeWebStateIndex) == 1 &&
           index != WebStateList::kInvalidIndex &&
           activeWebStateIndex != WebStateList::kInvalidIndex;
-      if (adjacentTabSelected) {
-        self.tabBasedIPHBrowserAgent->NotifySwitchToAdjacentTabFromTabGrid();
+      if (adjacentTabSelected && self.browser) {
+        TabBasedIPHBrowserAgent* tabBasedIPHBrowserAgent =
+            TabBasedIPHBrowserAgent::FromBrowser(self.browser);
+        tabBasedIPHBrowserAgent->NotifySwitchToAdjacentTabFromTabGrid();
       }
     }
   }
@@ -874,7 +876,7 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
                        errorHandler:^(NSError* error) {
                          LOG(ERROR) << base::SysNSStringToUTF8(
                              error.localizedDescription);
-                         NOTREACHED();
+                         NOTREACHED_IN_MIGRATION();
                        }];
 
   if (!targetSceneState.UIEnabled) {
@@ -1120,7 +1122,7 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
 }
 
 - (void)dragWillBeginForTabGroupItem:(TabSwitcherItem*)item {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 - (void)dragSessionDidEnd {
@@ -1719,7 +1721,7 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
       break;
     }
     case GridItemType::SuggestedActions:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 }

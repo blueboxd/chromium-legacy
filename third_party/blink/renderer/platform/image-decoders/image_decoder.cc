@@ -31,6 +31,7 @@
 #include "media/media_buildflags.h"
 #include "skia/ext/cicp.h"
 #include "third_party/blink/public/common/buildflags.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/image-decoders/bmp/bmp_image_decoder.h"
 #include "third_party/blink/renderer/platform/image-decoders/exif_reader.h"
@@ -46,6 +47,7 @@
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 #include "third_party/blink/renderer/platform/image-decoders/avif/avif_image_decoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/avif/crabbyavif_image_decoder.h"
 #endif
 
 namespace blink {
@@ -188,7 +190,9 @@ String SniffMimeTypeInternal(scoped_refptr<SegmentReader> reader) {
     return "image/bmp";
   }
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-  if (AVIFImageDecoder::MatchesAVIFSignature(fast_reader)) {
+  if (base::FeatureList::IsEnabled(blink::features::kCrabbyAvif)
+          ? CrabbyAVIFImageDecoder::MatchesAVIFSignature(fast_reader)
+          : AVIFImageDecoder::MatchesAVIFSignature(fast_reader)) {
     return "image/avif";
   }
 #endif
@@ -294,9 +298,15 @@ std::unique_ptr<ImageDecoder> ImageDecoder::CreateByMimeType(
                                                 max_decoded_bytes);
 #if BUILDFLAG(ENABLE_AV1_DECODER)
   } else if (mime_type == "image/avif") {
-    decoder = std::make_unique<AVIFImageDecoder>(
-        alpha_option, high_bit_depth_decoding_option, color_behavior,
-        max_decoded_bytes, animation_option);
+    if (base::FeatureList::IsEnabled(blink::features::kCrabbyAvif)) {
+      decoder = std::make_unique<CrabbyAVIFImageDecoder>(
+          alpha_option, high_bit_depth_decoding_option, color_behavior,
+          max_decoded_bytes, animation_option);
+    } else {
+      decoder = std::make_unique<AVIFImageDecoder>(
+          alpha_option, high_bit_depth_decoding_option, color_behavior,
+          max_decoded_bytes, animation_option);
+    }
 #endif
   }
 
@@ -410,7 +420,7 @@ ImageDecoder::CompressionFormat ImageDecoder::GetCompressionFormat(
         return kUndefinedFormat;
       }
     } else {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
     }
   }
 
@@ -489,17 +499,17 @@ cc::YUVSubsampling ImageDecoder::GetYUVSubsampling() const {
 }
 
 gfx::Size ImageDecoder::DecodedYUVSize(cc::YUVIndex) const {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return gfx::Size();
 }
 
 wtf_size_t ImageDecoder::DecodedYUVWidthBytes(cc::YUVIndex) const {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return 0;
 }
 
 SkYUVColorSpace ImageDecoder::GetYUVColorSpace() const {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return SkYUVColorSpace::kIdentity_SkYUVColorSpace;
 }
 
@@ -693,7 +703,7 @@ void ImageDecoder::SetMemoryAllocator(SkBitmap::Allocator* allocator) {
 }
 
 void ImageDecoder::DecodeToYUV() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 bool ImageDecoder::ImageHasBothStillAndAnimatedSubImages() const {
@@ -956,7 +966,7 @@ wtf_size_t ImageDecoder::FindRequiredPreviousFrame(wtf_size_t frame_index,
                  : prev_frame;
     case ImageFrame::kDisposeOverwritePrevious:
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return kNotFound;
   }
 }

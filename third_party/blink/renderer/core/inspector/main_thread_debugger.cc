@@ -79,11 +79,6 @@ namespace blink {
 
 namespace {
 
-base::Lock& CreationLock() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(base::Lock, lock, ());
-  return lock;
-}
-
 LocalFrame* ToFrame(ExecutionContext* context) {
   if (!context)
     return nullptr;
@@ -95,20 +90,11 @@ LocalFrame* ToFrame(ExecutionContext* context) {
 }
 }
 
-MainThreadDebugger* MainThreadDebugger::instance_ = nullptr;
-
 MainThreadDebugger::MainThreadDebugger(v8::Isolate* isolate)
     : ThreadDebuggerCommonImpl(isolate), paused_(false) {
-  base::AutoLock locker(CreationLock());
-  DCHECK(!instance_);
-  instance_ = this;
 }
 
-MainThreadDebugger::~MainThreadDebugger() {
-  base::AutoLock locker(CreationLock());
-  DCHECK_EQ(instance_, this);
-  instance_ = nullptr;
-}
+MainThreadDebugger::~MainThreadDebugger() = default;
 
 void MainThreadDebugger::ReportConsoleMessage(
     ExecutionContext* context,
@@ -192,7 +178,7 @@ void MainThreadDebugger::ExceptionThrown(ExecutionContext* context,
       return;
     script_state = scope->ScriptController()->GetScriptState();
   } else {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   frame->Console().ReportMessageToClient(
@@ -533,12 +519,13 @@ void MainThreadDebugger::XpathSelectorCallback(
   ScriptState* script_state =
       ScriptState::ForRelevantRealm(info.GetIsolate(), info.This());
   if (result->resultType() == XPathResult::kNumberType) {
-    V8SetReturnValue(info, result->numberValue(exception_state));
+    bindings::V8SetReturnValue(info, result->numberValue(exception_state));
   } else if (result->resultType() == XPathResult::kStringType) {
-    V8SetReturnValue(info, result->stringValue(exception_state),
-                     info.GetIsolate(), bindings::V8ReturnValue::kNonNullable);
+    bindings::V8SetReturnValue(info, result->stringValue(exception_state),
+                               info.GetIsolate(),
+                               bindings::V8ReturnValue::kNonNullable);
   } else if (result->resultType() == XPathResult::kBooleanType) {
-    V8SetReturnValue(info, result->booleanValue(exception_state));
+    bindings::V8SetReturnValue(info, result->booleanValue(exception_state));
   } else {
     v8::Isolate* isolate = info.GetIsolate();
     v8::Local<v8::Context> context = isolate->GetCurrentContext();

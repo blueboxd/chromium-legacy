@@ -18,6 +18,7 @@
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "components/password_manager/core/browser/webauthn_credentials_delegate.h"
+#include "components/password_manager/core/common/password_manager_constants.h"
 #include "components/sync/base/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -29,8 +30,6 @@ namespace {
 using affiliations::FacetURI;
 using autofill::Suggestion;
 using autofill::SuggestionType;
-
-constexpr char16_t kPasswordReplacementChar = 0x2022;
 
 // Returns |username| unless it is empty. For an empty |username| returns a
 // localised string saying this username is empty. Use this for displaying the
@@ -177,17 +176,16 @@ void AppendSuggestionIfMatching(const std::u16string& field_suggestion,
         ReplaceEmptyUsername(field_suggestion, &replaced_username));
     suggestion.main_text.is_primary =
         Suggestion::Text::IsPrimary(!replaced_username);
-    suggestion.additional_label =
-        std::u16string(password_length, kPasswordReplacementChar);
+    suggestion.labels = {{autofill::Suggestion::Text(
+        std::u16string(password_length, constants::kPasswordReplacementChar))}};
     suggestion.voice_over = l10n_util::GetStringFUTF16(
         IDS_PASSWORD_MANAGER_PASSWORD_FOR_ACCOUNT, suggestion.main_text.value);
     if (!signon_realm.empty()) {
       // The domainname is only shown for passwords with a common eTLD+1
       // but different subdomain.
-      suggestion.labels = {
-          {Suggestion::Text(GetHumanReadableRealm(signon_realm))}};
+      suggestion.additional_label = GetHumanReadableRealm(signon_realm);
       *suggestion.voice_over += u", ";
-      *suggestion.voice_over += suggestion.labels[0][0].value;
+      *suggestion.voice_over += suggestion.additional_label;
     }
     suggestion.type = from_account_store
                           ? SuggestionType::kAccountStoragePasswordEntry
@@ -277,7 +275,7 @@ void AppendManualFallbackSuggestions(const CredentialUIEntry& credential,
     bool replaced;
     const std::u16string maybe_username =
         ReplaceEmptyUsername(credential.username, &replaced);
-    suggestion.additional_label = maybe_username;
+    suggestion.labels = {{autofill::Suggestion::Text(maybe_username)}};
     suggestion.payload = Suggestion::PasswordSuggestionDetails(
         credential.password, base::UTF8ToUTF16(kDisplaySingonRealm),
         is_cross_origin.value());

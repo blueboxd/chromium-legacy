@@ -16,6 +16,7 @@
 #include "base/timer/timer.h"
 #include "base/types/expected.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/facilitated_payments/core/browser/facilitated_payments_api_client.h"
 #include "components/facilitated_payments/core/browser/facilitated_payments_driver.h"
 #include "components/facilitated_payments/core/browser/network_api/facilitated_payments_initiate_payment_request_details.h"
 #include "components/facilitated_payments/core/browser/network_api/facilitated_payments_initiate_payment_response_details.h"
@@ -28,7 +29,6 @@ class GURL;
 
 namespace payments::facilitated {
 
-class FacilitatedPaymentsApiClient;
 class FacilitatedPaymentsClient;
 class FacilitatedPaymentsDriver;
 
@@ -171,7 +171,21 @@ class FacilitatedPaymentsManager {
                            PaymentNotOfferedReason_ApiNotAvailable);
   FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
                            SendInitiatePaymentRequest);
-
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+                           OnInitiatePaymentResponseReceived_FailureResponse);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+                           OnInitiatePaymentResponseReceived_NoActionToken);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+                           OnInitiatePaymentResponseReceived_NoCoreAccountInfo);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+                           OnInitiatePaymentResponseReceived_LoggedOutProfile);
+  FRIEND_TEST_ALL_PREFIXES(
+      FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+      OnInitiatePaymentResponseReceived_InvokePurchaseActionTriggered);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+                           InvokePurchaseActionCompleted_HistogramLogged);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+                           OnInitiatePaymentResponseReceived_HistogramLogged);
   // Register optimization guide deciders for PIX. It is an allowlist of URLs
   // where we attempt PIX code detection.
   void RegisterPixAllowlist() const;
@@ -234,6 +248,11 @@ class FacilitatedPaymentsManager {
       std::unique_ptr<FacilitatedPaymentsInitiatePaymentResponseDetails>
           response_details);
 
+  // Called after receiving the `result` of invoking the purchase manager for
+  // payment.
+  void OnPurchaseActionResult(
+      FacilitatedPaymentsApiClient::PurchaseActionResult result);
+
   // Calling `Reset` has no effect in tests. Adding this method to specifically
   // test `Resets` in tests.
   void ResetForTesting();
@@ -266,11 +285,18 @@ class FacilitatedPaymentsManager {
 
   // Measures the time taken to check the availability of the facilitated
   // payments API client.
-  base::TimeTicks api_availability_check_latency_;
+  base::TimeTicks api_availability_check_start_time_;
 
   // Measures the time take to load the client token from the facilitated
   // payments API client.
-  base::TimeTicks get_client_token_loading_latency_;
+  base::TimeTicks get_client_token_loading_start_time_;
+
+  // Measures the time take to complete the call to the InitiatePayment backend
+  // api.
+  base::TimeTicks initiate_payment_network_start_time_;
+
+  // Measures the time take to complete the purchase action.
+  base::TimeTicks purchase_action_start_time_;
 
   // Contains the details required for the `InitiatePayment` request to be sent
   // to the Payments server. Its ownership is transferred to

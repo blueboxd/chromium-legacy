@@ -68,7 +68,7 @@ ClipboardFormatType ClipboardFormatType::Deserialize(
   // |serialization| is expected to be a string representing the Windows
   // data_.cfFormat (format number) returned by GetType.
   if (!base::StringToInt(serialization, &clipboard_format)) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return ClipboardFormatType();
   }
   return ClipboardFormatType(clipboard_format);
@@ -203,7 +203,7 @@ const ClipboardFormatType& ClipboardFormatType::FilenameAType() {
 // static
 const ClipboardFormatType& ClipboardFormatType::TextHtmlType() {
   static base::NoDestructor<ClipboardFormatType> format(
-      RegisterClipboardFormatChecked(L"text/html"));
+      RegisterClipboardFormatChecked(CFSTR_MIME_HTML));
   return *format;
 }
 
@@ -298,6 +298,27 @@ const ClipboardFormatType& ClipboardFormatType::WebCustomDataType() {
   // TODO(http://crbug.com/106449): Standardize this name.
   static base::NoDestructor<ClipboardFormatType> format(
       RegisterClipboardFormatChecked(L"Chromium Web Custom MIME Data Format"));
+  return *format;
+}
+
+// static
+const ClipboardFormatType& ClipboardFormatType::InternalSourceUrlType() {
+  static base::NoDestructor<ClipboardFormatType> format(
+      RegisterClipboardFormatChecked(L"Chromium internal source URL"));
+  return *format;
+}
+
+// static
+const ClipboardFormatType& ClipboardFormatType::ClipboardHistoryType() {
+  static base::NoDestructor<ClipboardFormatType> format(
+      RegisterClipboardFormatChecked(L"CanIncludeInClipboardHistory"));
+  return *format;
+}
+
+// static
+const ClipboardFormatType& ClipboardFormatType::UploadCloudClipboardType() {
+  static base::NoDestructor<ClipboardFormatType> format(
+      RegisterClipboardFormatChecked(L"CanUploadToCloudClipboard"));
   return *format;
 }
 

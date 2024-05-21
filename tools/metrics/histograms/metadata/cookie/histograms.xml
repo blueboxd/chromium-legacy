@@ -38,7 +38,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.AvgCookieJarSizePerKey" units="kibibytes"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>dylancutler@google.com</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>
@@ -219,7 +219,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.CorruptMetaTableRecovered" enum="Boolean"
-    expires_after="2024-07-01">
+    expires_after="2024-12-01">
   <owner>arichiv@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <owner>src/net/cookies/OWNERS</owner>
@@ -326,7 +326,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.DomainHasNonASCII" enum="Boolean"
-    expires_after="2024-09-15">
+    expires_after="2024-11-17">
   <owner>johannhof@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>
@@ -389,7 +389,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.ExpirationDuration400DaysGT" units="days"
-    expires_after="2024-07-01">
+    expires_after="2024-12-01">
   <owner>arichiv@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>
@@ -399,7 +399,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.ExpirationDuration400DaysLTE" units="days"
-    expires_after="2024-09-01">
+    expires_after="2024-12-01">
   <owner>arichiv@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>
@@ -409,7 +409,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.ExpirationDurationMinutesNonSecure" units="minutes"
-    expires_after="2024-07-01">
+    expires_after="2024-12-01">
   <owner>arichiv@chromium.org</owner>
   <owner>kaustubhag@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
@@ -425,7 +425,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.FirstPartyPartitioned.HasCrossSiteAncestor"
-    enum="BooleanPresent" expires_after="2024-09-15">
+    enum="BooleanPresent" expires_after="2024-11-17">
   <owner>selya@google.com</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>
@@ -437,7 +437,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.FirstPartySets.ComponentSetsNonfatalErrors"
-    units="sets" expires_after="2024-09-15">
+    units="sets" expires_after="2024-11-17">
   <owner>cfredric@chromium.org</owner>
   <owner>chrome-first-party-sets@chromium.org</owner>
   <summary>
@@ -456,7 +456,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.FirstPartySets.ComponentSetsParsedSuccessfully"
-    units="sets" expires_after="2024-09-15">
+    units="sets" expires_after="2024-11-17">
   <owner>cfredric@chromium.org</owner>
   <owner>chrome-first-party-sets@chromium.org</owner>
   <summary>
@@ -557,7 +557,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.FirstPartySets.ProcessedEntireComponent"
-    enum="BooleanSuccess" expires_after="2024-09-15">
+    enum="BooleanSuccess" expires_after="2024-11-17">
   <owner>cfredric@chromium.org</owner>
   <owner>chrome-first-party-sets@chromium.org</owner>
   <summary>
@@ -1104,7 +1104,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.TimeDatabaseMigrationToV18" units="ms"
-    expires_after="2024-07-01">
+    expires_after="2024-12-01">
   <owner>arichiv@chromium.org</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>
@@ -1176,16 +1176,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     The amount of time (ms) to record periodic statistics for logging. This
     metric is recorded every 10 minutes.
-  </summary>
-</histogram>
-
-<histogram name="Cookie.TruncatingCharacterInCookieString"
-    enum="TruncatingCharacterInCookieStringType" expires_after="2024-06-16">
-  <owner>bingler@chromium.org</owner>
-  <owner>awillia@chromium.org</owner>
-  <summary>
-    Measures which character caused the cookie string to be truncated. Logged
-    whenever a cookie is created via CanonicalCookie::Create().
   </summary>
 </histogram>
 

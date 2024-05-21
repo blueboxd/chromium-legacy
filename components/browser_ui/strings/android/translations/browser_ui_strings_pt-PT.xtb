@@ -68,7 +68,6 @@
 <translation id="2241587408274973373">Cartões da página Novo separador</translation>
 <translation id="2241634353105152135">Apenas uma vez</translation>
 <translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> Remover</translation>
-<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{1 site bloqueado}other{# sites bloqueados}}</translation>
 <translation id="228293613124499805">É provável que a maioria dos sites que visita guarde dados no seu dispositivo, muitas vezes para melhorar a sua experiência ao guardar as suas preferências ou informações que partilha com o site. Recomendamos que mantenha esta definição ativada.</translation>
 <translation id="2289270750774289114">Perguntar quando um site quer detetar dispositivos Bluetooth próximos (recomendado)</translation>
 <translation id="2315043854645842844">O sistema operativo não suporta a seleção do certificado do lado do cliente.</translation>
@@ -305,6 +304,7 @@
 <translation id="6015775454662021376">Controle o acesso deste site ao seu dispositivo.</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6042308850641462728">Mais</translation>
+<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> O seu último separador</translation>
 <translation id="6064125863973209585">Transferências concluídas</translation>
 <translation id="6071501408666570960">A sua sessão neste site pode ser terminada</translation>
 <translation id="6120483543004435978">Quando a opção está ativada, os sites podem pedir para saber quando está a usar ativamente o dispositivo. Quando esta opção está desativada, os sites não sabem quando está a usar ativamente o dispositivo.</translation>
@@ -426,6 +426,7 @@
 <translation id="7986741934819883144">Selecionar um contacto</translation>
 <translation id="7990211076305263060">Quando esta opção está ativada, os sites podem pedir para usar o microfone. Quando esta opção está desativada, os sites não podem usar o microfone.</translation>
 <translation id="8007176423574883786">Desativada para este dispositivo</translation>
+<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> De <ph name="FROM_DEVICE" /></translation>
 <translation id="802154636333426148">Falha ao transferir</translation>
 <translation id="8042586301629853791">Ordenar por:</translation>
 <translation id="8067883171444229417">Ver vídeo</translation>
@@ -480,7 +481,6 @@
 <translation id="8721719390026067591">Quando esta opção está ativada, os sites podem pedir para procurar dispositivos Bluetooth. Quando esta opção está desativada, os sites não podem procurar dispositivos Bluetooth.</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8730621377337864115">Concluído</translation>
-<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{1 site permitido}other{# sites permitidos}}</translation>
 <translation id="8751914237388039244">Selecionar uma imagem</translation>
 <translation id="8800034312320686233">O site não funciona?</translation>
 <translation id="8801436777607969138">Bloqueie JavaScript num site específico.</translation>

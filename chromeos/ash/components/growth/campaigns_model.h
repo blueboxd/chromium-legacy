@@ -15,6 +15,7 @@
 
 namespace base {
 class Time;
+class Version;
 }  // namespace base
 
 namespace gfx {
@@ -40,14 +41,6 @@ enum class Slot {
 
 // These values are deserialized from Growth Campaign, so entries should not
 // be renumbered and numeric values should never be reused.
-enum class TriggeringType {
-  kAppOpened = 0,
-  kCampaignsLoaded = 1,
-  kMaxValue = kCampaignsLoaded
-};
-
-// These values are deserialized from Growth Campaign, so entries should not
-// be renumbered and numeric values should never be reused.
 enum class BuiltInIcon { kRedeem, kContainerApp, kG1 };
 
 // Supported window anchor element.
@@ -55,6 +48,28 @@ enum class BuiltInIcon { kRedeem, kContainerApp, kG1 };
 // be renumbered and numeric values should never be reused.
 enum class WindowAnchorType {
   kCaptionButtonContainer = 0,
+};
+
+// These values are deserialized from Growth Campaign, so entries should not
+// be renumbered and numeric values should never be reused.
+enum class TriggerType {
+  // TODO: b/340950978 - Remove when pass the trigger in GetCampaignsBySlot().
+  kUnSpecified = -1,
+  kAppOpened = 0,
+  kCampaignsLoaded = 1,
+  kEvent = 2,
+  kMaxValue = kEvent
+};
+
+class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_GROWTH) Trigger {
+ public:
+  explicit Trigger(TriggerType type);
+
+  TriggerType type;
+
+  // `event` is only used for `kEvent` trigger, which needs to be matched with
+  // one of the event name in the `triggerEvents` in the `TriggerTargeting`.
+  std::string event;
 };
 
 // Dictionary of supported targetings. For example:
@@ -166,8 +181,8 @@ class DemoModeTargeting : public TargetingBase {
   const base::Value::List* GetStoreIds() const;
   const base::Value::List* GetRetailers() const;
   const base::Value::List* GetCountries() const;
-  const std::string* GetAppMinVersion() const;
-  const std::string* GetAppMaxVersion() const;
+  const std::optional<base::Version> GetAppMinVersion() const;
+  const std::optional<base::Version> GetAppMaxVersion() const;
   const std::optional<bool> TargetCloudGamingDevice() const;
   const std::optional<bool> TargetFeatureAwareDevice() const;
 };
@@ -232,8 +247,11 @@ class DeviceTargeting : public TargetingBase {
   ~DeviceTargeting();
 
   const base::Value::List* GetLocales() const;
+  const base::Value::List* GetUserLocales() const;
   const std::optional<int> GetMinMilestone() const;
   const std::optional<int> GetMaxMilestone() const;
+  const std::optional<base::Version> GetMinVersion() const;
+  const std::optional<base::Version> GetMaxVersion() const;
   const std::optional<bool> GetFeatureAwareDevice() const;
   std::unique_ptr<TimeWindowTargeting> GetRegisteredTime() const;
   const std::unique_ptr<NumberRangeTargeting> GetDeviceAge() const;
@@ -315,6 +333,27 @@ class EventsTargeting {
   raw_ptr<const base::Value::Dict> config_dict_;
 };
 
+// Wrapper around trigger targeting dictionary.
+//
+// The structure looks like:
+// {
+//   "triggerType": 0,
+//   "triggerEvents": ["a", "b"]
+// }
+class TriggerTargeting {
+ public:
+  explicit TriggerTargeting(const base::Value::Dict* app);
+  TriggerTargeting(const TriggerTargeting&) = delete;
+  TriggerTargeting& operator=(const TriggerTargeting) = delete;
+  ~TriggerTargeting();
+
+  std::optional<int> GetTriggerType() const;
+  const base::Value::List* GetTriggerEvents() const;
+
+ private:
+  raw_ptr<const base::Value::Dict> trigger_dict_;
+};
+
 // Wrapper around runtime targeting dictionary.
 //
 // The structure looks like:
@@ -335,15 +374,15 @@ class RuntimeTargeting : public TargetingBase {
   const std::vector<std::unique_ptr<TimeWindowTargeting>> GetSchedulings()
       const;
 
-  // Returns a list of triggers against the current trigger, e.g. `AppOpened`.
-  const std::vector<TriggeringType> GetTriggers() const;
-
   // Returns a list of apps to be matched against the current opened app.
   const std::vector<std::unique_ptr<AppTargeting>> GetAppsOpened() const;
 
   const std::vector<std::string> GetActiveUrlRegexes() const;
 
   std::unique_ptr<EventsTargeting> GetEventsConfig() const;
+
+  // Returns a list of triggers against the current trigger, e.g. `kAppOpened`.
+  const std::vector<std::unique_ptr<TriggerTargeting>> GetTriggers() const;
 };
 
 // Wrapper around the action dictionary for performing an action, including

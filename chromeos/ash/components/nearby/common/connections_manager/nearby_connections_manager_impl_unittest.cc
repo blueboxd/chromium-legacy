@@ -11,6 +11,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -228,6 +229,8 @@ class NearbyConnectionsManagerImplTest : public testing::Test {
           EXPECT_TRUE(options->allowed_mediums->ble);
           EXPECT_EQ(should_use_web_rtc_, options->allowed_mediums->web_rtc);
           EXPECT_FALSE(options->allowed_mediums->wifi_lan);
+          EXPECT_EQ(should_use_wifidirect_,
+                    options->allowed_mediums->wifi_direct);
           EXPECT_EQ(
               device::BluetoothUUID("0000fef3-0000-1000-8000-00805f9b34fb"),
               options->fast_advertisement_service_uuid);
@@ -539,6 +542,7 @@ class NearbyConnectionsManagerImplTest : public testing::Test {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   bool should_use_web_rtc_ = true;
   bool should_use_wifilan_ = false;
+  bool should_use_wifidirect_ = false;
   NearbyConnectionsManager::DataUsage default_data_usage_ =
       NearbyConnectionsManager::DataUsage::kWifiOnly;
   std::unique_ptr<net::test::MockNetworkChangeNotifier> network_notifier_ =
@@ -656,6 +660,7 @@ using ConnectionMediumsTestParam =
     std::tuple<NearbyConnectionsManager::DataUsage,
                net::NetworkChangeNotifier::ConnectionType,
                bool,
+               bool,
                bool>;
 class NearbyConnectionsManagerImplTestConnectionMediums
     : public NearbyConnectionsManagerImplTest,
@@ -669,6 +674,7 @@ TEST_P(NearbyConnectionsManagerImplTestConnectionMediums,
       std::get<1>(param);
   bool is_webrtc_enabled = std::get<2>(GetParam());
   bool is_wifilan_enabled = std::get<3>(GetParam());
+  bool is_wifidirect_enabled = std::get<4>(GetParam());
 
   std::vector<base::test::FeatureRef> enabled_features;
   std::vector<base::test::FeatureRef> disabled_features;
@@ -681,6 +687,11 @@ TEST_P(NearbyConnectionsManagerImplTestConnectionMediums,
     enabled_features.push_back(features::kNearbySharingWifiLan);
   } else {
     disabled_features.push_back(features::kNearbySharingWifiLan);
+  }
+  if (is_wifidirect_enabled) {
+    enabled_features.push_back(features::kNearbySharingWifiDirect);
+  } else {
+    disabled_features.push_back(features::kNearbySharingWifiDirect);
   }
   scoped_feature_list_.Reset();
   scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
@@ -699,13 +710,15 @@ TEST_P(NearbyConnectionsManagerImplTestConnectionMediums,
   should_use_web_rtc_ = is_webrtc_enabled && should_use_internet;
   should_use_wifilan_ = is_wifilan_enabled && should_use_internet &&
                         is_connection_wifi_or_ethernet;
+  should_use_wifidirect_ = is_wifidirect_enabled;
 
   // TODO(crbug.com/1129069): Update when WiFi LAN is supported.
   auto expected_mediums = MediumSelection::New(
       /*bluetooth=*/true,
       /*ble=*/false,
       /*web_rtc=*/should_use_web_rtc_,
-      /*wifi_lan=*/should_use_wifilan_);
+      /*wifi_lan=*/should_use_wifilan_,
+      /*wifi_direct=*/should_use_wifidirect_);
 
   // StartDiscovery will succeed.
   mojo::Remote<EndpointDiscoveryListener> discovery_listener_remote;
@@ -747,6 +760,7 @@ INSTANTIATE_TEST_SUITE_P(
         testing::Values(net::NetworkChangeNotifier::CONNECTION_NONE,
                         net::NetworkChangeNotifier::CONNECTION_WIFI,
                         net::NetworkChangeNotifier::CONNECTION_3G),
+        testing::Bool(),
         testing::Bool(),
         testing::Bool()));
 /******************************************************************************/
@@ -1749,7 +1763,8 @@ TEST_P(NearbyConnectionsManagerImplTestMediums, StartAdvertising_Options) {
       /*bluetooth=*/is_high_power,
       /*ble=*/use_ble,
       /*web_rtc=*/should_use_web_rtc_,
-      /*wifi_lan=*/false);
+      /*wifi_lan=*/false,
+      /*wifi_direct=*/false);
 
   base::RunLoop run_loop;
   const std::vector<uint8_t> local_endpoint_info(std::begin(kEndpointInfo),
@@ -2161,6 +2176,7 @@ TEST_F(NearbyConnectionsManagerImplTest, OnConnectionRequestedV3) {
 }
 
 TEST_F(NearbyConnectionsManagerImplTest, OnBandwidthChangedV3) {
+  base::HistogramTester histogram_tester;
   mojo::Remote<ConnectionListenerV3> connection_listener_v3_remote;
   mojo::Remote<PayloadListenerV3> payload_listener_v3_remote;
 
@@ -2213,11 +2229,15 @@ TEST_F(NearbyConnectionsManagerImplTest, OnBandwidthChangedV3) {
       presence_device.GetEndpointId(),
       nearby::connections::mojom::BandwidthInfo::New(BandwidthQuality::kMedium,
                                                      Medium::kBluetooth));
+  histogram_tester.ExpectTotalCount(
+      "Nearby.Connections.V3.Medium.ChangedToMedium", 0);
   connection_listener_v3_remote->OnBandwidthChangedV3(
       presence_device.GetEndpointId(),
       nearby::connections::mojom::BandwidthInfo::New(BandwidthQuality::kHigh,
                                                      Medium::kWebRtc));
   bandwidth_run_loop.Run();
+  histogram_tester.ExpectBucketCount(
+      "Nearby.Connections.V3.Medium.ChangedToMedium", Medium::kWebRtc, 1);
 }
 
 TEST_F(NearbyConnectionsManagerImplTest, PayloadListenerV3RemoteCallbacks) {

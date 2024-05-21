@@ -4,11 +4,13 @@
 
 #include "components/services/storage/public/cpp/filesystem/filesystem_impl.h"
 
-#include <set>
+#include <map>
 #include <vector>
 
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/debug/dump_without_crashing.h"
+#include "base/debug/stack_trace.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -18,6 +20,7 @@
 #include "base/synchronization/lock.h"
 #include "base/types/expected_macros.h"
 #include "build/build_config.h"
+#include "components/crash/core/common/crash_key.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 #if BUILDFLAG(IS_WIN)
@@ -40,7 +43,20 @@ class LockTable {
   bool AddLock(const base::FilePath& path) {
     DCHECK(path.IsAbsolute());
     base::AutoLock lock(lock_);
-    auto result = lock_paths_.insert(path.NormalizePathSeparators());
+    auto result = lock_paths_.insert(std::make_pair(
+        path.NormalizePathSeparators(), base::debug::StackTrace()));
+
+    // TODO(crbug.com/340398745): resolve this mystery and remove this
+    // block, or even replace it with a CHECK.
+    if (!result.second) {
+      static crash_reporter::CrashKeyString<1024> trace_key(
+          "crbug/340398745/existing_lock_stack");
+      crash_reporter::SetCrashKeyStringToStackTrace(&trace_key,
+                                                    result.first->second);
+      base::debug::DumpWithoutCrashing();
+      trace_key.Clear();
+    }
+
     return result.second;
   }
 
@@ -53,7 +69,8 @@ class LockTable {
 
  private:
   base::Lock lock_;
-  std::set<base::FilePath> lock_paths_ GUARDED_BY(lock_);
+  std::map<base::FilePath, base::debug::StackTrace> lock_paths_
+      GUARDED_BY(lock_);
 };
 
 // Get the global singleton instance of LockTable. This returned object is
@@ -161,7 +178,7 @@ void FilesystemImpl::OpenFile(const base::FilePath& path,
       flags |= base::File::FLAG_OPEN_TRUNCATED;
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return;
   }
 
@@ -172,7 +189,7 @@ void FilesystemImpl::OpenFile(const base::FilePath& path,
       flags |= base::File::FLAG_READ;
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 
@@ -186,7 +203,7 @@ void FilesystemImpl::OpenFile(const base::FilePath& path,
       flags |= base::File::FLAG_APPEND;
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 
@@ -267,13 +284,16 @@ base::FileErrorOr<base::File> FilesystemImpl::LockFileLocal(
   if (!file.IsValid())
     return base::unexpected(file.error_details());
 
-  if (!GetLockTable().AddLock(path))
+  if (!GetLockTable().AddLock(path)) {
     return base::unexpected(base::File::FILE_ERROR_IN_USE);
+  }
 
 #if !BUILDFLAG(IS_FUCHSIA)
   base::File::Error error = file.Lock(base::File::LockMode::kExclusive);
-  if (error != base::File::FILE_OK)
+  if (error != base::File::FILE_OK) {
+    UnlockFileLocal(path);
     return base::unexpected(error);
+  }
 #endif
 
   return file;

@@ -565,9 +565,10 @@ void URLLoader::Context::SetResourceRequestSenderForTesting(
   resource_request_sender_ = std::move(resource_request_sender);
 }
 
-void URLLoader::SetBackgroundResponseProcessor(
-    scoped_refptr<BackgroundResponseProcessor> background_response_processor) {
-  NOTREACHED();
+void URLLoader::SetBackgroundResponseProcessorFactory(
+    std::unique_ptr<BackgroundResponseProcessorFactory>
+        background_response_processor_factory) {
+  NOTREACHED_IN_MIGRATION();
 }
 
 }  // namespace blink

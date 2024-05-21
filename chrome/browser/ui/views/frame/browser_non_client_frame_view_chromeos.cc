@@ -142,7 +142,10 @@ BrowserNonClientFrameViewChromeOS::BrowserNonClientFrameViewChromeOS(
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   frame->GetNativeWindow()->SetEventTargeter(
-      std::make_unique<chromeos::InteriorResizeHandleTargeter>());
+      std::make_unique<chromeos::InteriorResizeHandleTargeter>(
+          base::BindRepeating([](const aura::Window* window) {
+            return window->GetProperty(chromeos::kWindowStateTypeKey);
+          })));
 #endif
 
   // TODO: b/330360595 - Confirm if this is needed in Lacros.
@@ -341,11 +344,6 @@ SkColor BrowserNonClientFrameViewChromeOS::GetFrameColor(
   }
 
   return color.value_or(fallback_color);
-}
-
-TabSearchBubbleHost*
-BrowserNonClientFrameViewChromeOS::GetTabSearchBubbleHost() {
-  return tab_search_bubble_host_;
 }
 
 void BrowserNonClientFrameViewChromeOS::UpdateMinimumSize() {

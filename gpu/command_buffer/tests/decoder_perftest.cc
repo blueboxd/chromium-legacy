@@ -115,7 +115,7 @@ class RecordReplayCommandBuffer : public CommandBufferDirect {
         saved_get_buffer_ = transfer_buffer_id;
         break;
       case kReplay:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
     }
   }
@@ -263,24 +263,24 @@ class RecordReplayContext : public GpuControl {
   }
 
   void SignalQuery(uint32_t query, base::OnceClosure callback) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
-  void CancelAllQueries() override { NOTREACHED(); }
+  void CancelAllQueries() override { NOTREACHED_IN_MIGRATION(); }
 
   void CreateGpuFence(uint32_t gpu_fence_id, ClientGpuFence source) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   void GetGpuFence(uint32_t gpu_fence_id,
                    base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)>
                        callback) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
-  void SetLock(base::Lock*) override { NOTREACHED(); }
+  void SetLock(base::Lock*) override { NOTREACHED_IN_MIGRATION(); }
 
-  void EnsureWorkVisible() override { NOTREACHED(); }
+  void EnsureWorkVisible() override { NOTREACHED_IN_MIGRATION(); }
 
   gpu::CommandBufferNamespace GetNamespaceID() const override {
     return gpu::CommandBufferNamespace::INVALID;
@@ -290,29 +290,29 @@ class RecordReplayContext : public GpuControl {
     return gpu::CommandBufferId();
   }
 
-  void FlushPendingWork() override { NOTREACHED(); }
+  void FlushPendingWork() override { NOTREACHED_IN_MIGRATION(); }
 
   uint64_t GenerateFenceSyncRelease() override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return 0;
   }
 
   bool IsFenceSyncReleased(uint64_t release) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return true;
   }
 
   void SignalSyncToken(const gpu::SyncToken& sync_token,
                        base::OnceClosure callback) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   void WaitSyncToken(const gpu::SyncToken& sync_token) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
   }
 
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return true;
   }
 

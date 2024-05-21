@@ -7,15 +7,15 @@
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "chrome/browser/ui/browser_actions.h"
+#include "chrome/browser/ui/side_panel/side_panel_action_callback.h"
 #include "chrome/browser/ui/ui_features.h"
-#include "chrome/browser/ui/views/frame/browser_actions.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
-#include "chrome/browser/ui/views/side_panel/side_panel_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/lens/lens_features.h"
 #include "components/vector_icons/vector_icons.h"
@@ -51,8 +51,7 @@ class LensSidePanelCoordinatorTest
       features.InitWithFeaturesAndParameters(
           {{lens::features::kLensStandalone,
             {{lens::features::kHomepageURLForLens.name, kLensHomepageURL}}},
-           {features::kSidePanelPinning, {}},
-           {features::kChromeRefresh2023, {}}},
+           {features::kSidePanelPinning, {}}},
           {});
     } else {
       features.InitWithFeaturesAndParameters(
@@ -68,8 +67,8 @@ class LensSidePanelCoordinatorTest
         SidePanelCoordinator::GetGlobalSidePanelRegistry(browser);
     SidePanelUtil::PopulateGlobalEntries(browser, global_registry);
 
-    // Reading list, bookmarks, reading mode.
-    EXPECT_EQ(global_registry->entries().size(), 3u);
+    // Reading list, bookmarks.
+    EXPECT_EQ(global_registry->entries().size(), 2u);
 
     // Create the lens coordinator in Browser.
     lens_side_panel_coordinator_ =
@@ -92,7 +91,7 @@ class LensSidePanelCoordinatorTest
   }
 
   actions::ActionItem* GetActionItem() {
-    BrowserActions* browser_actions = BrowserActions::FromBrowser(browser());
+    BrowserActions* browser_actions = browser()->browser_actions();
     return actions::ActionManager::Get().FindAction(
         kActionSidePanelShowLens, browser_actions->root_action_item());
   }

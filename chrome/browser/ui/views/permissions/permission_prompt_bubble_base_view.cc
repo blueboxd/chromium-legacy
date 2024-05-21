@@ -204,8 +204,6 @@ void PermissionPromptBubbleBaseView::ShowWidget() {
   } else {
     GetWidget()->ShowInactive();
   }
-
-  SizeToContents();
 }
 
 void PermissionPromptBubbleBaseView::UpdateAnchorPosition() {
@@ -269,7 +267,7 @@ void PermissionPromptBubbleBaseView::RunButtonCallback(int button_id) {
       delegate_->Deny();
       return;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 std::u16string PermissionPromptBubbleBaseView::GetPermissionFragmentForTesting()
@@ -297,25 +295,6 @@ bool PermissionPromptBubbleBaseView::IsOneTimePermission(
     }
   }
   return true;
-}
-
-std::u16string PermissionPromptBubbleBaseView::GetAllowAlwaysText(
-    const std::vector<raw_ptr<permissions::PermissionRequest,
-                              VectorExperimental>>& visible_requests) {
-  CHECK_GT(visible_requests.size(), 0u);
-
-  if (visible_requests.size() == 1 &&
-      visible_requests[0]->GetAllowAlwaysText().has_value()) {
-    // A prompt for a single request can use an "allow always" text that is
-    // customized for it.
-    return visible_requests[0]->GetAllowAlwaysText().value();
-  }
-
-  // Use the generic text.
-  return l10n_util::GetStringUTF16(
-      permissions::feature_params::kUseWhileVisitingLanguage.Get()
-          ? IDS_PERMISSION_ALLOW_WHILE_VISITING
-          : IDS_PERMISSION_ALLOW_EVERY_VISIT);
 }
 
 BEGIN_METADATA(PermissionPromptBubbleBaseView)

@@ -561,11 +561,15 @@ class IndexedDBConnectionCoordinator::DeleteRequest
     state_ = RequestState::kDone;
   }
 
-  void BindTransactionReceiver() override { NOTREACHED(); }
+  void BindTransactionReceiver() override { NOTREACHED_IN_MIGRATION(); }
 
-  void UpgradeTransactionStarted(int64_t old_version) override { NOTREACHED(); }
+  void UpgradeTransactionStarted(int64_t old_version) override {
+    NOTREACHED_IN_MIGRATION();
+  }
 
-  void UpgradeTransactionFinished(bool committed) override { NOTREACHED(); }
+  void UpgradeTransactionFinished(bool committed) override {
+    NOTREACHED_IN_MIGRATION();
+  }
 
   // The delete requests should always be run during force close.
   bool ShouldPruneForForceClose() override { return false; }
@@ -688,7 +692,7 @@ IndexedDBConnectionCoordinator::ExecuteTask(bool has_connections) {
 
   switch (request->state()) {
     case RequestState::kNotStarted:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       return {ExecuteTaskResult::kError, leveldb::Status::OK()};
     case RequestState::kPendingNoConnections:
     case RequestState::kPendingLocks:
@@ -720,7 +724,7 @@ IndexedDBConnectionCoordinator::ExecuteTask(bool has_connections) {
       return {ExecuteTaskResult::kError, status};
     }
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 size_t IndexedDBConnectionCoordinator::ActiveOpenDeleteCount() const {

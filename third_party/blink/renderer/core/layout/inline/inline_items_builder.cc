@@ -24,6 +24,32 @@
 namespace blink {
 class HTMLAreaElement;
 
+template <typename MappingBuilder>
+InlineItemsBuilderTemplate<MappingBuilder>::InlineItemsBuilderTemplate(
+    LayoutBlockFlow* block_flow,
+    HeapVector<InlineItem>* items,
+    const String& previous_text_content,
+    const SvgTextChunkOffsets* chunk_offsets)
+    : block_flow_(block_flow),
+      items_(items),
+      text_chunk_offsets_(chunk_offsets),
+      is_text_combine_(block_flow_->IsLayoutTextCombine()) {
+  if (!RuntimeEnabledFeatures::RecollectInlinesReserveCapacityEnabled()) {
+    return;
+  }
+  const LayoutObject* child = block_flow->FirstChild();
+  if (!previous_text_content.IsNull() && child && child->NextSibling()) {
+    // 10 avoids reallocations in many cases of Speedometer3.
+    constexpr wtf_size_t kAdditionalSize = 10;
+    wtf_size_t capacity = previous_text_content.length() + kAdditionalSize;
+    if (previous_text_content.Is8Bit()) {
+      text_.ReserveCapacity(capacity);
+    } else {
+      text_.Reserve16BitCapacity(capacity);
+    }
+  }
+}
+
 // Returns true if items builder is used for other than offset mapping.
 template <typename MappingBuilder>
 bool InlineItemsBuilderTemplate<MappingBuilder>::NeedsBoxInfo() {
@@ -194,6 +220,10 @@ InlineItem* LastItemToCollapseWith(HeapVector<InlineItem>* items) {
     }
   }
   return nullptr;
+}
+
+inline bool IsNonOrc16BitCharacter(UChar ch) {
+  return ch >= 0x100 && ch != kObjectReplacementCharacter;
 }
 
 }  // anonymous namespace
@@ -389,7 +419,7 @@ bool InlineItemsBuilderTemplate<MappingBuilder>::AppendTextReusing(
           RestoreTrailingCollapsibleSpace(last_item);
           return false;
         case InlineItem::kOpaqueToCollapsing:
-          NOTREACHED();
+          NOTREACHED_IN_MIGRATION();
           break;
       }
     } else if (last_item->EndCollapseType() == InlineItem::kCollapsed) {
@@ -454,6 +484,8 @@ bool InlineItemsBuilderTemplate<MappingBuilder>::AppendTextReusing(
     }
 
     unsigned start = text_.length();
+    has_non_orc_16bit_ =
+        has_non_orc_16bit_ || original_data.HasNonOrc16BitCharacters();
     text_.Append(original_string, item.StartOffset(), item.Length());
 
     // If the item's position within the container remains unchanged the item
@@ -498,7 +530,7 @@ template <>
 bool InlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextReusing(
     const InlineNodeData&,
     LayoutText*) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return false;
 }
 
@@ -643,6 +675,7 @@ template <typename MappingBuilder>
 void InlineItemsBuilderTemplate<MappingBuilder>::AppendTransformedString(
     const TransformedString& transformed,
     const LayoutText& layout_text) {
+  has_non_orc_16bit_ = has_non_orc_16bit_ || !transformed.View().Is8Bit();
   text_.Append(transformed.View());
   if (!transformed.HasLengthMap()) {
     mapping_builder_.AppendIdentityMapping(transformed.View().length());
@@ -1159,6 +1192,7 @@ InlineItem& InlineItemsBuilderTemplate<MappingBuilder>::Append(
     LayoutObject* layout_object) {
   DCHECK_NE(character, kSpaceCharacter);
 
+  has_non_orc_16bit_ = has_non_orc_16bit_ || IsNonOrc16BitCharacter(character);
   text_.Append(character);
   mapping_builder_.AppendIdentityMapping(1);
   unsigned end_offset = text_.length();
@@ -1256,6 +1290,7 @@ InlineItem& InlineItemsBuilderTemplate<MappingBuilder>::AppendOpaque(
     InlineItem::InlineItemType type,
     UChar character,
     LayoutObject* layout_object) {
+  has_non_orc_16bit_ = has_non_orc_16bit_ || IsNonOrc16BitCharacter(character);
   text_.Append(character);
   mapping_builder_.AppendIdentityMapping(1);
   unsigned end_offset = text_.length();
@@ -1619,13 +1654,19 @@ template <typename MappingBuilder>
 void InlineItemsBuilderTemplate<MappingBuilder>::DidFinishCollectInlines(
     InlineNodeData* data) {
   data->text_content = ToString();
+  if (!RuntimeEnabledFeatures::
+          LayoutSegmentationFastPathForObjectReplacementEnabled()) {
+    has_non_orc_16bit_ = !data->text_content.Is8Bit();
+  }
+  data->has_non_orc_16bit_ = has_non_orc_16bit_;
 
   // Set |is_bidi_enabled_| for all UTF-16 strings for now, because at this
   // point the string may or may not contain RTL characters.
   // |SegmentText()| will analyze the text and reset |is_bidi_enabled_| if it
   // doesn't contain any RTL characters.
   data->is_bidi_enabled_ =
-      HasBidiControls() || Character::MaybeBidiRtl(data->text_content);
+      HasBidiControls() ||
+      (has_non_orc_16bit_ && Character::MaybeBidiRtl(data->text_content));
   data->has_floats_ = has_floats_;
   data->has_initial_letter_box_ = has_initial_letter_box_;
   data->has_ruby_ = has_ruby_;

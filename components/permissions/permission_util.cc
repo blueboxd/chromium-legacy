@@ -239,6 +239,9 @@ bool PermissionUtil::IsGuardContentSetting(ContentSettingsType type) {
 
 bool PermissionUtil::CanPermissionBeAllowedOnce(ContentSettingsType type) {
   switch (type) {
+#if !BUILDFLAG(IS_ANDROID)
+    case ContentSettingsType::CAMERA_PAN_TILT_ZOOM:
+#endif
     case ContentSettingsType::GEOLOCATION:
     case ContentSettingsType::MEDIASTREAM_MIC:
     case ContentSettingsType::MEDIASTREAM_CAMERA:
@@ -390,7 +393,7 @@ ContentSetting PermissionUtil::PermissionStatusToContentSetting(
       return CONTENT_SETTING_BLOCK;
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return CONTENT_SETTING_DEFAULT;
 }
 
@@ -410,7 +413,7 @@ blink::mojom::PermissionStatus PermissionUtil::ContentSettingToPermissionStatus(
       break;
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return blink::mojom::PermissionStatus::DENIED;
 }
 
@@ -488,7 +491,7 @@ bool PermissionUtil::CanPermissionRequestIgnoreStatus(
       return true;
   }
 
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 // static

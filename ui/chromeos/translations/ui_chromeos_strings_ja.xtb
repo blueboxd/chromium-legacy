@@ -257,7 +257,6 @@
 <translation id="3083975830683400843">Chromebit</translation>
 <translation id="3085752524577180175">SOCKS ホスト</translation>
 <translation id="3104793765551262433"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、<ph name="SECURITY_STATUS" />、<ph name="CONNECTION_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />%、管理者によってブロック、詳細</translation>
-<translation id="3113153474486991170">この場所から「<ph name="PATH" />」を開くことができません。[マイファイル] にコピーして開いてください。</translation>
 <translation id="3113592018909187986">入力できるのはあと 1 回です。新しい PIN を設定するまでこのネットワークは使用できません。</translation>
 <translation id="3124404833828281817">空想にふけっている人</translation>
 <translation id="3126026824346185272">Ctrl</translation>
@@ -1016,7 +1015,7 @@
 <translation id="8688591111840995413">不正なパスワード</translation>
 <translation id="8698464937041809063">Google 図形描画</translation>
 <translation id="8698877009525468705">このファイルは機密情報であり、管理者ポリシーによる制限が適用されます。</translation>
-<translation id="8712637175834984815">OK</translation>
+<translation id="8712637175834984815">理解した</translation>
 <translation id="8713112442029511308">マルタ語</translation>
 <translation id="8714406895390098252">自転車</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> を選択しました。</translation>

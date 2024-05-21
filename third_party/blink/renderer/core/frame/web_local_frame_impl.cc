@@ -98,6 +98,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "cc/base/features.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -396,13 +397,7 @@ class ChromePrintContext : public PrintContext {
           GetFrame()->GetDocument()->GetPageDescription(page_index);
 
       AffineTransform transform;
-      // The transform offset should be in integers, or everything will look
-      // blurry. The value is also rounded to the nearest integer (not ceil /
-      // floor), to better match what it would look like if the same offset were
-      // applied from within the document contents (e.g. margin / padding on a
-      // regular DIV). Some tests depend on this.
-      transform.Translate(std::round(description.margin_left),
-                          current_height + std::round(description.margin_top));
+      transform.Translate(0, current_height);
 
       if (description.orientation == PageOrientation::kUpright) {
         current_height += description.size.height() + 1;
@@ -758,12 +753,12 @@ bool WebLocalFrameImpl::IsWebRemoteFrame() const {
 }
 
 WebRemoteFrame* WebLocalFrameImpl::ToWebRemoteFrame() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 
 const WebRemoteFrame* WebLocalFrameImpl::ToWebRemoteFrame() const {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
 
@@ -1941,6 +1936,15 @@ bool WebLocalFrameImpl::CapturePaintPreview(const gfx::Rect& bounds,
 
 WebPrintPageDescription WebLocalFrameImpl::GetPageDescription(
     uint32_t page_index) {
+  if (page_index >= print_context_->PageCount()) {
+    // TODO(crbug.com/452672): The number of pages may change after layout for
+    // pagination. Very bad, but let's avoid crashing. The GetPageDescription()
+    // API has no way of reporting failure, and the API user should be able to
+    // trust that the numbers of pages reported when generating print layout
+    // anyway. Due to Blink bugs, this isn't always the case, though. Get the
+    // description of the first page.
+    page_index = 0;
+  }
   return print_context_->GetPageDescription(page_index);
 }
 
@@ -2526,6 +2530,21 @@ void WebLocalFrameImpl::DidFailLoad(const ResourceError& error,
 void WebLocalFrameImpl::DidFinish() {
   if (!Client())
     return;
+
+  if (base::FeatureList::IsEnabled(::features::kWarmUpCompositor)) {
+    // If the page is under prerendering, the page requests warm-up compositor
+    // to minimize its activation time. Please see crbug.com/41496019 for more
+    // details.
+    bool is_prerendering =
+        GetFrame()->GetPage() && GetFrame()->GetPage()->IsPrerendering();
+    // TODO(crbug.com/41496019): Seek the best point (instead of
+    // `WebLocalFrameImpl::DidFinish`) to start warm-up.
+    // TODO(crbug.com/41496019): Limit the use of this warm-up to prerender
+    // trigger types that are most affected by this.
+    if (frame_widget_ && is_prerendering) {
+      frame_widget_->WarmUpCompositor();
+    }
+  }
 
   if (WebPluginContainerImpl* plugin = GetFrame()->GetWebPluginContainer())
     plugin->DidFinishLoading();

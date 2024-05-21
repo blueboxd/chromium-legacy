@@ -58,17 +58,20 @@ class ContentCacheImpl : public ContentCache {
 
   std::vector<base::FilePath> GetCachedFilePaths() override;
 
+  void Notify(ProvidedFileSystemObserver::Changes& changes) override;
+
   void Evict(const base::FilePath& file_path) override;
 
   void SetOnItemEvictedCallback(
       OnItemEvictedCallback on_item_evicted_callback) override;
 
-  void RemoveItems(RemovedItemStatsCallback callback) override;
-
   const SizeInfo GetSize() const override;
   void SetMaxBytesOnDisk(int64_t max_bytes_on_disk) override;
 
   base::WeakPtr<ContentCache> GetWeakPtr() override;
+
+  void AddObserver(ContentCache::Observer* observer) override;
+  void RemoveObserver(ContentCache::Observer* observer) override;
 
  private:
   void OnBytesRead(
@@ -82,9 +85,15 @@ class ContentCacheImpl : public ContentCache {
                          scoped_refptr<net::IOBuffer> buffer,
                          int64_t offset,
                          int length,
-                         FileErrorCallback on_bytes_written_callback,
+                         FileErrorCallback callback,
                          std::unique_ptr<int64_t> inserted_id,
                          bool item_add_success);
+
+  void WriteBytesToDisk(const OpenedCloudFile& file,
+                        scoped_refptr<net::IOBuffer> buffer,
+                        int64_t offset,
+                        int length,
+                        FileErrorCallback callback);
 
   void OnBytesWritten(const base::FilePath& file_path,
                       int64_t offset,
@@ -111,7 +120,28 @@ class ContentCacheImpl : public ContentCache {
   void OnStaleItemsPruned(base::OnceClosure callback,
                           std::vector<bool> prune_success);
 
-  void EvictContext(const base::FilePath& path, CacheFileContext& ctx);
+  // Removes items individually from the disk and the lru_cache. Removes items
+  // in bulk from the database.
+  void RemoveItems(std::vector<const base::FilePath>& fsp_paths);
+
+  // Removes items in bulk from the database.
+  void RemoveItemsFromDatabase(std::vector<int64_t>& item_ids);
+
+  void OnItemsRemovedFromDatabase(size_t number_of_items, bool success);
+
+  // Removes an item with `path_on_disk` from the disk. Upon success, removes
+  // item with `fsp_path` from the lru cache.
+  void RemoveItemFromDisk(const base::FilePath& path_on_disk,
+                          const base::FilePath& fsp_path);
+
+  void OnItemRemovedFromDisk(const base::FilePath& fsp_path, bool success);
+
+  // Evict the items with `file_paths`. The items are still accessible to
+  // current FSP requests but inaccessible to new FSP requests. All items that
+  // aren't being accessed by current FSP requests will be removed from the disk
+  // and the database. Each remaining item will be removed once the last FSP
+  // request for the item completes with `CloseFile()`.
+  void EvictItems(std::vector<const base::FilePath>& file_paths);
 
   // The cache has maximum bounds on the number of items available. In the event
   // this boundary is exceeded, excess items should be evicted. There may
@@ -119,22 +149,7 @@ class ContentCacheImpl : public ContentCache {
   // remaining items to evict will be the least-recently used items.
   // TODO(b/330602540): Update the logic to also evict items when the maximum
   // size threshold has been reached.
-  void EvictItems();
-
-  // Removes the evicted items individually from on disk then bulk removes these
-  // items from the database. The `item_ids` contains a list of IDs to be
-  // removed from the database once all items have been removed off the disk.
-  void RemoveEvictedItems(ContentLRUCache::reverse_iterator it,
-                          std::vector<int64_t>& item_ids,
-                          RemovedItemStats& removed_items);
-
-  void OnItemRemovedFromDisk(ContentLRUCache::reverse_iterator it,
-                             std::vector<int64_t>& item_ids,
-                             RemovedItemStats& removed_items,
-                             bool success);
-
-  void OnItemsRemovedFromDatabase(RemovedItemStats& removed_items,
-                                  bool success);
+  void EvictExcessItems();
 
   // Generates the absolute path on disk from the supplied `item_id`.
   const base::FilePath GetPathOnDiskFromId(int64_t item_id);
@@ -154,6 +169,8 @@ class ContentCacheImpl : public ContentCache {
   base::OnceCallbackList<void(RemovedItemStats)> on_removed_callbacks_;
 
   SizeInfo size_;
+
+  base::ObserverList<ContentCache::Observer> observers_;
 
   base::WeakPtrFactory<ContentCacheImpl> weak_ptr_factory_{this};
 };

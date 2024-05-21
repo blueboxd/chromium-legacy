@@ -53,7 +53,7 @@ inline LineBreakStrictness StrictnessFromLineBreak(LineBreak line_break) {
     case LineBreak::kLoose:
       return LineBreakStrictness::kLoose;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return LineBreakStrictness::kDefault;
 }
 
@@ -515,6 +515,7 @@ LineBreaker::LineBreaker(InlineNode node,
   }
 
   current_ = break_token->Start();
+  ruby_break_token_ = break_token->RubyData();
   break_iterator_.SetStartOffset(current_.text_offset);
   is_after_forced_break_ = break_token->IsForcedBreak();
   items_data_->AssertOffset(current_);
@@ -530,7 +531,7 @@ void LineBreaker::SetLineOpportunity(
 }
 
 void LineBreaker::OverrideAvailableWidth(LayoutUnit available_width) {
-  DCHECK(available_width);
+  DCHECK_GE(available_width, LayoutUnit());
   override_available_width_ = available_width;
   UpdateAvailableWidth();
 }
@@ -543,10 +544,12 @@ void LineBreaker::SetBreakAt(const LineBreakPoint& offset) {
 inline InlineItemResult* LineBreaker::AddItem(const InlineItem& item,
                                               unsigned end_offset,
                                               LineInfo* line_info) {
-  DCHECK_EQ(&item, &items_data_->items[current_.item_index]);
-  DCHECK_GE(current_.text_offset, item.StartOffset());
-  DCHECK_GE(end_offset, current_.text_offset);
-  DCHECK_LE(end_offset, item.EndOffset());
+  if (item.Type() != InlineItem::kOpenRubyColumn) {
+    DCHECK_EQ(&item, &items_data_->items[current_.item_index]);
+    DCHECK_GE(current_.text_offset, item.StartOffset());
+    DCHECK_GE(end_offset, current_.text_offset);
+    DCHECK_LE(end_offset, item.EndOffset());
+  }
   if (UNLIKELY(item.IsTextCombine()))
     line_info->SetHaveTextCombineOrRubyItem();
   InlineItemResults* item_results = line_info->MutableResults();
@@ -778,7 +781,7 @@ void LineBreaker::PrepareNextLine(LineInfo* line_info) {
   line_info->SetLineStyle(node_, *items_data_, use_first_line_style_);
 
   DCHECK(!line_info->TextIndent());
-  if (is_first_formatted_line_) {
+  if (is_first_formatted_line_ && end_item_index_ == Items().size()) {
     const Length& length = line_info->LineStyle().TextIndent();
     LayoutUnit maximum_value;
     // Ignore percentages (resolve to 0) when calculating min/max intrinsic
@@ -888,6 +891,11 @@ void LineBreaker::NextLine(LineInfo* line_info) {
     UpdateAvailableWidth();
   }
   ComputeLineLocation(line_info);
+  DCHECK(!ruby_break_token_);
+  const InlineItemResults& results = line_info->Results();
+  if (!results.empty() && results.back().IsRubyColumn()) {
+    ruby_break_token_ = results.back().ruby_column->ruby_break_token;
+  }
   if (mode_ == LineBreakerMode::kContent) {
     line_info->SetBreakToken(CreateBreakToken(*line_info));
   }
@@ -912,6 +920,13 @@ void LineBreaker::BreakLine(LineInfo* line_info) {
           ? LineBreakState::kOverflow
           : LineBreakState::kContinue;
   trailing_whitespace_ = initial_whitespace_;
+
+  if (ruby_break_token_) {
+    HandleRuby(ruby_break_token_, line_info);
+    ruby_break_token_ = nullptr;
+    HandleOverflowIfNeeded(line_info);
+  }
+
   while (state_ != LineBreakState::kDone) {
     // If we reach at the end of the block, this is the last line.
     DCHECK_LE(current_.item_index, items.size());
@@ -1010,16 +1025,17 @@ void LineBreaker::BreakLine(LineInfo* line_info) {
         MoveToNextOf(item);
         continue;
       }
-      if (!HandleRuby(line_info)) {
+      if (!HandleRuby(nullptr, line_info)) {
         AddItem(item, line_info);
         MoveToNextOf(item);
       }
+      HandleOverflowIfNeeded(line_info);
       continue;
     }
     if (item.Type() == InlineItem::kOutOfFlowPositioned) {
       HandleOutOfFlowPositioned(item, line_info);
     } else if (item.Length()) {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       // For other items with text (e.g., bidi controls), use their text to
       // determine the break opportunity.
       InlineItemResult* item_result = AddItem(item, line_info);
@@ -1032,7 +1048,7 @@ void LineBreaker::BreakLine(LineInfo* line_info) {
       DCHECK(!item_result->can_break_after);
       MoveToNextOf(item);
     } else {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       MoveToNextOf(item);
     }
   }
@@ -2886,7 +2902,7 @@ void LineBreaker::HandleControlItem(const InlineItem& item,
       HandleEmptyText(item, line_info);
       return;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       HandleEmptyText(item, line_info);
       return;
   }
@@ -3195,12 +3211,13 @@ void LineBreaker::HandleBlockInInline(const InlineItem& item,
   state_ = LineBreakState::kDone;
 }
 
-bool LineBreaker::HandleRuby(LineInfo* line_info) {
+bool LineBreaker::HandleRuby(const RubyBreakTokenData* ruby_token,
+                             LineInfo* line_info) {
   InlineItemTextIndex base_start = current_;
   wtf_size_t base_end_index;
   Vector<AnnotationBreakTokenData, 1> annotation_data;
   wtf_size_t open_column_item_index;
-  {
+  if (!ruby_token) {
     open_column_item_index = current_.item_index;
     RubyItemIndexes ruby_indexes =
         ParseRubyInInlineItems(Items(), current_.item_index);
@@ -3217,15 +3234,20 @@ bool LineBreaker::HandleRuby(LineInfo* line_info) {
     wtf_size_t start = ruby_indexes.annotation_start;
     annotation_data.push_back(AnnotationBreakTokenData{
         {start, Items()[start].StartOffset()}, start, ruby_indexes.column_end});
+  } else {
+    open_column_item_index = ruby_token->open_column_item_index;
+    base_end_index = ruby_token->ruby_base_end_item_index;
+    annotation_data = ruby_token->annotation_data;
   }
-  // TODO(crbug.com/324111880): Setup for a wrapped ruby column.
   const InlineItem& item = Items()[open_column_item_index];
 
   LineInfo base_line_info = CreateSubLineInfo(
       base_start, base_end_index, LineBreakerMode::kMaxContent, kIndefiniteSize,
       trailing_whitespace_);
 
+  const wtf_size_t number_of_annotations = annotation_data.size();
   HeapVector<LineInfo, 1> annotation_line_list;
+  annotation_line_list.reserve(number_of_annotations);
   for (const auto& data : annotation_data) {
     annotation_line_list.push_back(CreateSubLineInfo(
         data.start, data.end_item_index, LineBreakerMode::kMaxContent,
@@ -3233,8 +3255,9 @@ bool LineBreaker::HandleRuby(LineInfo* line_info) {
   }
 
   LayoutUnit ruby_size = MaxLineWidth(base_line_info, annotation_line_list);
-
-  {
+  LayoutUnit available = RemainingAvailableWidth().ClampNegativeToZero();
+  if (ruby_size <= available ||
+      IsMonolithicRuby(base_line_info, annotation_line_list)) {
     // Recreate lines because lines created with LineBreakerMode::kMaxContent
     // are not usable in InlineLayoutAlgorithm.
     base_line_info =
@@ -3248,14 +3271,98 @@ bool LineBreaker::HandleRuby(LineInfo* line_info) {
     }
 
     AddRubyColumnResult(item, base_line_info, annotation_line_list,
-                        annotation_data, ruby_size, *line_info);
+                        annotation_data, ruby_size, ruby_token, *line_info);
     position_ += ruby_size;
     // Move to a kCloseRubyColumn item.
     current_ = annotation_line_list[0].End();
     return true;
   }
-  // TODO(crbug.com/324111880): Break the ruby if ruby_size is longer than
-  // RemainingAvailableWidth().
+
+  // Try to break the ruby column.
+
+  base_line_info = CreateSubLineInfo(
+      base_start, base_end_index, LineBreakerMode::kContent,
+      available * base_line_info.Width() / ruby_size, trailing_whitespace_);
+
+  bool annotation_is_broken = false;
+  for (wtf_size_t i = 0; i < number_of_annotations; ++i) {
+    LineInfo& line = annotation_line_list[i];
+    // If all items in the base line is consumed, we should consume all items
+    // in annotation lines too.  The point just after the base line might be
+    // non-breakable and we need to continue handling the following InlineItems
+    // in such case. However it's very difficult if annotation items remain.
+    LayoutUnit limit = base_line_info.GetBreakToken()
+                           ? (available * line.Width() / ruby_size)
+                           : kIndefiniteSize;
+    line = CreateSubLineInfo(
+        annotation_data[i].start, annotation_data[i].end_item_index,
+        LineBreakerMode::kContent, limit, WhitespaceState::kLeading);
+    annotation_is_broken = annotation_is_broken || line.GetBreakToken();
+  }
+
+  ruby_size = MaxLineWidth(base_line_info, annotation_line_list);
+  InlineItemResult* result =
+      AddRubyColumnResult(item, base_line_info, annotation_line_list,
+                          annotation_data, ruby_size, ruby_token, *line_info);
+  position_ += ruby_size;
+
+  // If the base line and annotation lines have no BreakToken, we should add
+  // them even though they are wider than the available width.  The
+  // InlineItemResult for the ruby column may be rewound.
+  if (!base_line_info.GetBreakToken() && !annotation_is_broken) {
+    current_ = annotation_line_list[0].End();
+    return true;
+  }
+  DCHECK(base_line_info.GetBreakToken());
+  current_ = base_line_info.End();
+
+  // We have a broken line, and need to provide a RubyBreakTokenData.
+  Vector<AnnotationBreakTokenData, 1> breaks;
+  breaks.reserve(number_of_annotations);
+  for (wtf_size_t i = 0; i < number_of_annotations; ++i) {
+    breaks.push_back(AnnotationBreakTokenData{
+        annotation_line_list[i].End(), annotation_data[i].start_item_index,
+        annotation_data[i].end_item_index});
+  }
+  result->ruby_column->ruby_break_token =
+      MakeGarbageCollected<RubyBreakTokenData>(open_column_item_index,
+                                               base_end_index, breaks);
+
+  // We can't handle following InlineItems if we break inside a ruby column.
+  if (ruby_size <= available) {
+    state_ = LineBreakState::kDone;
+  }
+  return true;
+}
+
+bool LineBreaker::IsMonolithicRuby(
+    const LineInfo& base_line,
+    const HeapVector<LineInfo, 1>& annotation_line_list) const {
+  // Not breakable if it's an inner ruby column of nested rubies.
+  if (end_item_index_ != Items().size()) {
+    return true;
+  }
+
+  // Not breakable if the number of the base letters is <= 4 and the number of
+  // the annotation letters is <= 8.
+  //
+  // TODO(layout-dev): Should we count glyphs?  Should we take into account of
+  // East Asian Width?
+  constexpr wtf_size_t kBaseLetterLimit = 4;
+  constexpr wtf_size_t kAnnotationLetterLimit = 8;
+  if (base_line.EndTextOffset() - base_line.StartOffset() <= kBaseLetterLimit) {
+    auto iter =
+        std::find_if(annotation_line_list.begin(), annotation_line_list.end(),
+                     [](const LineInfo& line) {
+                       return line.EndTextOffset() - line.StartOffset() >
+                              kAnnotationLetterLimit;
+                     });
+    if (iter == annotation_line_list.end()) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 LineInfo LineBreaker::CreateSubLineInfo(
@@ -3293,6 +3400,7 @@ InlineItemResult* LineBreaker::AddRubyColumnResult(
     const HeapVector<LineInfo, 1>& annotation_line_list,
     const Vector<AnnotationBreakTokenData, 1>& annotation_data_list,
     LayoutUnit ruby_size,
+    bool is_continuation,
     LineInfo& line_info) {
   CHECK_EQ(item.Type(), InlineItem::kOpenRubyColumn);
   InlineItemResult* column_result = AddEmptyItem(item, &line_info);
@@ -3306,6 +3414,7 @@ InlineItemResult* LineBreaker::AddRubyColumnResult(
     line_info.SetMayHaveRubyOverhang();
   }
   line_info.SetHaveTextCombineOrRubyItem();
+  data->is_continuation = is_continuation;
 
   data->annotation_line_list = annotation_line_list;
   for (wtf_size_t i = 0; i < annotation_line_list.size(); ++i) {
@@ -3324,7 +3433,8 @@ InlineItemResult* LineBreaker::AddRubyColumnResult(
 
   column_result->text_offset.end = annotation_line_list[0].EndTextOffset();
   column_result->should_create_line_box = true;
-  column_result->can_break_after = CanBreakAfterRubyColumn(*column_result);
+  column_result->can_break_after = CanBreakAfterRubyColumn(
+      *column_result, annotation_data_list[0].end_item_index);
 
   if (base_line_info.Width() < ruby_size) {
     line_info.SetMayHaveRubyOverhang();
@@ -3350,7 +3460,8 @@ InlineItemResult* LineBreaker::AddRubyColumnResult(
 }
 
 bool LineBreaker::CanBreakAfterRubyColumn(
-    const InlineItemResult& column_result) const {
+    const InlineItemResult& column_result,
+    wtf_size_t column_end_item_index) const {
   DCHECK_EQ(column_result.item->Type(), InlineItem::kOpenRubyColumn);
   DCHECK(column_result.ruby_column);
   if (!auto_wrap_) {
@@ -3367,9 +3478,7 @@ bool LineBreaker::CanBreakAfterRubyColumn(
       base_line.EndTextOffset() - base_line.StartOffset();
   text_content.Append(
       StringView(Text(), base_line.StartOffset(), base_text_length));
-  const InlineItem& next_item =
-      Items()[column_result.ruby_column->annotation_line_list[0]
-                  .EndItemIndex()];
+  const InlineItem& next_item = Items()[column_end_item_index];
   DCHECK_EQ(next_item.Type(), InlineItem::kCloseRubyColumn);
   unsigned ignorable_bidi_length = 1 + IgnorableBidiControlLength(next_item);
   text_content.Append(
@@ -3480,8 +3589,15 @@ void LineBreaker::HandleFloat(const InlineItem& item,
   }
 
   const LayoutUnit bfc_block_offset = line_opportunity_.bfc_block_offset;
+  // The BFC offset passed to `ShouldHideForPaint` should be the bottom offset
+  // of the line, which we don't know at this point. However, since block layout
+  // will relayout to fix the clamp BFC offset to the bottom of the last line
+  // before clamp, we now that if the line's BFC offset is equal or greater than
+  // the clamp BFC offset in the final relayout, the line will be hidden.
   bool is_hidden_for_paint =
-      constraint_space_.GetLineClampData().ShouldHideForPaint();
+      constraint_space_.GetLineClampData().ShouldHideForPaint(
+          bfc_block_offset,
+          /*is_float*/ true);
   UnpositionedFloat unpositioned_float(
       BlockNode(To<LayoutBox>(item.GetLayoutObject())), float_break_token,
       constraint_space_.AvailableSize(),
@@ -4040,7 +4156,7 @@ void LineBreaker::Rewind(unsigned new_end, LineInfo* line_info) {
     // we're in the infinite loop.
     if (current_.item_index == last_rewind_->from_item_index &&
         new_end == last_rewind_->to_index) {
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       state_ = LineBreakState::kDone;
       return;
     }
@@ -4361,7 +4477,7 @@ const InlineBreakToken* LineBreaker::CreateBreakToken(
            : 0);
 
   return InlineBreakToken::Create(node_, current_style_, current_, flags,
-                                  sub_break_token);
+                                  sub_break_token, ruby_break_token_);
 }
 
 }  // namespace blink

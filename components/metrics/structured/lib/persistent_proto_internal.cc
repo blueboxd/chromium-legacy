@@ -67,7 +67,10 @@ void PersistentProtoInternal::OnReadComplete(
     base::expected<std::string, ReadStatus> read_status) {
   ReadStatus status;
 
-  proto_ = GetProto();
+  // If the path was updated then we may not need to update the pointer.
+  if (proto_ == nullptr) {
+    proto_ = GetProto();
+  }
 
   if (read_status.has_value()) {
     status = ReadStatus::kOk;
@@ -90,7 +93,7 @@ void PersistentProtoInternal::OnReadComplete(
 
   // Purge the read proto if |purge_after_reading_|.
   if (purge_after_reading_) {
-    proto_->Clear();
+    Purge();
     purge_after_reading_ = false;
   }
 
@@ -126,7 +129,7 @@ void PersistentProtoInternal::OnWriteComplete(const WriteStatus status) {
 void PersistentProtoInternal::Purge() {
   if (proto_) {
     proto_->Clear();
-    QueueWrite();
+    QueueFileDelete();
   } else {
     purge_after_reading_ = true;
   }
@@ -192,6 +195,12 @@ void PersistentProtoInternal::UpdatePath(const base::FilePath& path,
 void PersistentProtoInternal::DeallocProto() {
   FlushQueuedWrites();
   proto_ = nullptr;
+}
+
+void PersistentProtoInternal::QueueFileDelete() {
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                                        proto_file_->path()));
 }
 
 void PersistentProtoInternal::FlushQueuedWrites() {

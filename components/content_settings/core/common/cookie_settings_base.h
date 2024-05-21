@@ -128,8 +128,10 @@ class CookieSettingsBase {
     // Same as kAllowBy3PCDMetadata but for
     // mojom::TpcdMetadataRuleSource::SOURCE_GOV_EDU_TLD rules.
     kAllowBy3PCDMetadataSourceGovEduTld = 18,
+    // Allowed by scheme.
+    kAllowByScheme = 19,
 
-    kMaxValue = kAllowBy3PCDMetadataSourceGovEduTld,
+    kMaxValue = kAllowByScheme,
   };
 
   // Returns true if the allow mechanism represents one of the multiple allow
@@ -392,13 +394,15 @@ class CookieSettingsBase {
   // Returns a decision on whether to allow or block the cookie request. This
   // accounts for user settings, global settings, and special cases.
   absl::variant<AllowAllCookies, AllowPartitionedCookies, BlockAllCookies>
-  DecideAccess(const GURL& url,
-               const GURL& first_party_url,
-               bool is_third_party_request,
-               net::CookieSettingOverrides overrides,
-               const ContentSetting& setting,
-               const SettingSource& setting_source,
-               bool is_explicit_setting) const;
+  DecideAccess(
+      const GURL& url,
+      const GURL& first_party_url,
+      bool is_third_party_request,
+      net::CookieSettingOverrides overrides,
+      const ContentSetting& setting,
+      const SettingSource& setting_source,
+      bool is_explicit_setting,
+      bool global_setting_or_embedder_blocks_third_party_cookies) const;
 
   // Returns whether requests for |url| and |first_party_url| should always
   // be allowed. Called before checking other cookie settings.

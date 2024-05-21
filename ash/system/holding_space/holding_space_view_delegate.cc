@@ -539,7 +539,7 @@ void HoldingSpaceViewDelegate::ExecuteCommand(int command, int event_flags) {
             return remove;
           },
           std::cref(items), std::ref(suggested_file_paths)));
-      HoldingSpaceController::Get()->client()->RemoveFileSuggestions(
+      HoldingSpaceController::Get()->client()->RemoveSuggestions(
           suggested_file_paths);
       break;
     }
@@ -562,11 +562,11 @@ void HoldingSpaceViewDelegate::ExecuteCommand(int command, int event_flags) {
                   item, command_id,
                   holding_space_metrics::EventSource::
                       kHoldingSpaceItemContextMenu)) {
-            NOTREACHED();
+            NOTREACHED_IN_MIGRATION();
           }
         }
       } else {
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
       }
       break;
   }

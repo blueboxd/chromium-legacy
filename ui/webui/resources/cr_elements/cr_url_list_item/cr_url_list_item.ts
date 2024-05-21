@@ -23,7 +23,7 @@ export enum CrUrlListItemSize {
 
 export interface CrUrlListItemElement {
   $: {
-    anchor: HTMLElement,
+    anchor: HTMLAnchorElement,
     badgesContainer: HTMLElement,
     badges: HTMLSlotElement,
     button: HTMLElement,
@@ -117,20 +117,22 @@ export class CrUrlListItemElement extends CrUrlListItemElementBase {
        * activate.
        */
       asAnchor: {type: Boolean},
+      asAnchorTarget: {type: String},
     };
   }
 
-  alwaysShowSuffix: boolean;
+  alwaysShowSuffix: boolean = false;
   asAnchor: boolean = false;
+  asAnchorTarget: string = '_self';
   itemAriaLabel?: string;
   itemAriaDescription?: string;
   count?: number;
   description?: string;
   reverseElideDescription: boolean = false;
   hasBadges: boolean = false;
-  private hasDescriptions_: boolean = false;
-  private hasSlottedContent_: boolean = false;
-  private isFolder_: boolean = false;
+  protected hasDescriptions_: boolean = false;
+  protected hasSlottedContent_: boolean = false;
+  protected isFolder_: boolean = false;
   size: CrUrlListItemSize = CrUrlListItemSize.MEDIUM;
   override title: string = '';
   url?: string;

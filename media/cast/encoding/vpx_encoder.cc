@@ -248,34 +248,40 @@ void VpxEncoder::Encode(scoped_refptr<media::VideoFrame> video_frame,
   vpx_image_t vpx_image;
   vpx_image_t* const result = vpx_img_wrap(
       &vpx_image, vpx_format, frame_size.width(), frame_size.height(), 1,
-      const_cast<uint8_t*>(video_frame->visible_data(VideoFrame::kYPlane)));
+      const_cast<uint8_t*>(video_frame->visible_data(VideoFrame::Plane::kY)));
   DCHECK_EQ(result, &vpx_image);
   switch (vpx_format) {
     case VPX_IMG_FMT_I420:
-      vpx_image.planes[VPX_PLANE_Y] =
-          const_cast<uint8_t*>(video_frame->visible_data(VideoFrame::kYPlane));
-      vpx_image.planes[VPX_PLANE_U] =
-          const_cast<uint8_t*>(video_frame->visible_data(VideoFrame::kUPlane));
-      vpx_image.planes[VPX_PLANE_V] =
-          const_cast<uint8_t*>(video_frame->visible_data(VideoFrame::kVPlane));
-      vpx_image.stride[VPX_PLANE_Y] = video_frame->stride(VideoFrame::kYPlane);
-      vpx_image.stride[VPX_PLANE_U] = video_frame->stride(VideoFrame::kUPlane);
-      vpx_image.stride[VPX_PLANE_V] = video_frame->stride(VideoFrame::kVPlane);
+      vpx_image.planes[VPX_PLANE_Y] = const_cast<uint8_t*>(
+          video_frame->visible_data(VideoFrame::Plane::kY));
+      vpx_image.planes[VPX_PLANE_U] = const_cast<uint8_t*>(
+          video_frame->visible_data(VideoFrame::Plane::kU));
+      vpx_image.planes[VPX_PLANE_V] = const_cast<uint8_t*>(
+          video_frame->visible_data(VideoFrame::Plane::kV));
+      vpx_image.stride[VPX_PLANE_Y] =
+          video_frame->stride(VideoFrame::Plane::kY);
+      vpx_image.stride[VPX_PLANE_U] =
+          video_frame->stride(VideoFrame::Plane::kU);
+      vpx_image.stride[VPX_PLANE_V] =
+          video_frame->stride(VideoFrame::Plane::kV);
       break;
     case VPX_IMG_FMT_NV12:
-      vpx_image.planes[VPX_PLANE_Y] =
-          const_cast<uint8_t*>(video_frame->visible_data(VideoFrame::kYPlane));
+      vpx_image.planes[VPX_PLANE_Y] = const_cast<uint8_t*>(
+          video_frame->visible_data(VideoFrame::Plane::kY));
       // In libvpx, the UV plane of NV12 frames is represented by two planes
       // with the same stride, shifted by one byte.
-      vpx_image.planes[VPX_PLANE_U] =
-          const_cast<uint8_t*>(video_frame->visible_data(VideoFrame::kUVPlane));
+      vpx_image.planes[VPX_PLANE_U] = const_cast<uint8_t*>(
+          video_frame->visible_data(VideoFrame::Plane::kUV));
       vpx_image.planes[VPX_PLANE_V] = vpx_image.planes[VPX_PLANE_U] + 1;
-      vpx_image.stride[VPX_PLANE_Y] = video_frame->stride(VideoFrame::kYPlane);
-      vpx_image.stride[VPX_PLANE_U] = video_frame->stride(VideoFrame::kUVPlane);
-      vpx_image.stride[VPX_PLANE_V] = video_frame->stride(VideoFrame::kUVPlane);
+      vpx_image.stride[VPX_PLANE_Y] =
+          video_frame->stride(VideoFrame::Plane::kY);
+      vpx_image.stride[VPX_PLANE_U] =
+          video_frame->stride(VideoFrame::Plane::kUV);
+      vpx_image.stride[VPX_PLANE_V] =
+          video_frame->stride(VideoFrame::Plane::kUV);
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
   }
 
@@ -446,7 +452,7 @@ void VpxEncoder::UpdateRates(uint32_t new_bitrate) {
 
   // Update encoder context.
   if (vpx_codec_enc_config_set(&encoder_, &config_)) {
-    NOTREACHED() << "Invalid return value";
+    NOTREACHED_IN_MIGRATION() << "Invalid return value";
   }
 
   VLOG(1) << "VPX new rc_target_bitrate: " << new_bitrate_kbit << " kbps";

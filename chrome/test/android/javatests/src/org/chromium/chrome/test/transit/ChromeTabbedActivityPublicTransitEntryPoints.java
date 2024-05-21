@@ -5,8 +5,8 @@
 package org.chromium.chrome.test.transit;
 
 import org.chromium.base.test.transit.BatchedPublicTransitRule;
+import org.chromium.base.test.transit.EntryPointSentinelStation;
 import org.chromium.base.test.transit.Station;
-import org.chromium.base.test.transit.Trip;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 
@@ -27,14 +27,17 @@ public class ChromeTabbedActivityPublicTransitEntryPoints {
      *
      * @return the active entry {@link PageStation}
      */
-    public WebPageStation startOnBlankPage() {
+    public WebPageStation startOnBlankPageNonBatched() {
+        EntryPointSentinelStation sentinel = new EntryPointSentinelStation();
+        sentinel.setAsEntryPoint();
+
         WebPageStation entryPageStation =
                 WebPageStation.newWebPageStationBuilder()
                         .withActivityTestRule(mActivityTestRule)
                         .withEntryPoint()
                         .build();
-        return Trip.travelSync(
-                null, entryPageStation, () -> mActivityTestRule.startMainActivityOnBlankPage());
+        return sentinel.travelToSync(
+                entryPageStation, mActivityTestRule::startMainActivityOnBlankPage);
     }
 
     /**
@@ -42,8 +45,8 @@ public class ChromeTabbedActivityPublicTransitEntryPoints {
      *
      * @return the active entry {@link PageStation}
      */
-    public PageStation startOnBlankPageBatched(BatchedPublicTransitRule<PageStation> batchedRule) {
-        return startBatched(batchedRule, this::startOnBlankPage);
+    public PageStation startOnBlankPage(BatchedPublicTransitRule<PageStation> batchedRule) {
+        return startBatched(batchedRule, this::startOnBlankPageNonBatched);
     }
 
     private <T extends Station> T startBatched(

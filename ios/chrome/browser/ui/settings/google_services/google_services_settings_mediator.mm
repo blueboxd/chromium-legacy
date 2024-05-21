@@ -15,6 +15,7 @@
 #import "components/supervised_user/core/browser/supervised_user_preferences.h"
 #import "components/sync/service/sync_service.h"
 #import "components/unified_consent/pref_names.h"
+#import "ios/chrome/browser/parcel_tracking/parcel_tracking_opt_in_status.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_util.h"
 #import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/settings/model/sync/utils/sync_util.h"
@@ -98,7 +99,7 @@ bool IsSigninControllableByUser(const PrefService* prefService) {
     case BrowserSigninMode::kForced:
       return false;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return true;
 }
 
@@ -113,7 +114,7 @@ bool GetStatusForSigninPolicy() {
     case BrowserSigninMode::kDisabled:
       return false;
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return false;
 }
 
@@ -468,6 +469,7 @@ bool GetStatusForSigninPolicy() {
             IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTO_TRACK_PACKAGES_ALL);
         break;
       case IOSParcelTrackingOptInStatus::kAskToTrack:
+      case IOSParcelTrackingOptInStatus::kStatusNotSet:
         currentOptInStatusString = l10n_util::GetNSString(
             IDS_IOS_PARCEL_TRACKING_OPT_IN_TERTIARY_ACTION);
         break;
@@ -544,7 +546,7 @@ bool GetStatusForSigninPolicy() {
     case BetterSearchAndBrowsingManagedItemType:
     case ImproveChromeManagedItemType:
     case ImproveSearchSuggestionsManagedItemType:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
       break;
     case ParcelTrackingItemType:
       break;

@@ -1184,7 +1184,7 @@ targets.mixin(
             "cpu": "arm64",
             "gpu": "apple:m2",
             "mac_model": "Mac14,7",
-            "os": "Mac-14.3.1|Mac-14.4.1",
+            "os": "Mac-14.4.1",
             "pool": "chromium.tests.gpu",
             "display_attached": "1",
             "hidpi": "1",
@@ -1298,7 +1298,7 @@ targets.mixin(
             "cpu": "x86-64",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-14.3.1|Mac-14.4.1",
+            "os": "Mac-14.4.1",
             "pool": "chromium.tests.gpu",
             "display_attached": "1",
         },
@@ -1312,7 +1312,7 @@ targets.mixin(
             "cpu": "x86-64",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.5",
+            "os": "Mac-14.4.1",
             "pool": "chromium.tests.gpu",
             "display_attached": "1",
         },
@@ -1586,6 +1586,13 @@ targets.mixin(
 )
 
 targets.mixin(
+    name = "skylab-cft",
+    skylab = targets.skylab(
+        run_cft = True,
+    ),
+)
+
+targets.mixin(
     name = "timeout_15m",
     swarming = targets.swarming(
         hard_timeout_sec = 900,
@@ -1842,6 +1849,15 @@ targets.mixin(
 )
 
 targets.mixin(
+    name = "win11-any",
+    swarming = targets.swarming(
+        dimensions = {
+            "os": "Windows-11",
+        },
+    ),
+)
+
+targets.mixin(
     name = "win-arm64",
     swarming = targets.swarming(
         dimensions = {
@@ -1867,12 +1883,12 @@ targets.mixin(
     name = "xcode_15_beta",
     args = [
         "--xcode-build-version",
-        "15f31c",
+        "15f31d",
     ],
     swarming = targets.swarming(
         named_caches = [
             swarming.cache(
-                name = "xcode_ios_15f31c",
+                name = "xcode_ios_15f31d",
                 path = "Xcode.app",
             ),
         ],

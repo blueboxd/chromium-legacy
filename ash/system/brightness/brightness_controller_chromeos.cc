@@ -7,6 +7,7 @@
 #include <optional>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/login_data_dispatcher.h"
@@ -14,6 +15,7 @@
 #include "ash/public/cpp/session/session_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/system/brightness_control_delegate.h"
 #include "ash/system/power/power_status.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
@@ -176,6 +178,44 @@ void BrightnessControllerChromeos::OnSessionStateChanged(
 
 void BrightnessControllerChromeos::OnFocusPod(const AccountId& account_id) {
   active_account_id_ = account_id;
+
+  if (features::IsBrightnessControlInSettingsEnabled()) {
+    RestoreBrightnessSettings(account_id);
+  }
+}
+
+void BrightnessControllerChromeos::RestoreBrightnessSettings(
+    const AccountId& account_id) {
+  // TODO(cambickel): Check if this is the first time the user is logging in,
+  // and restore the value of ambient light sensor from the synced profile pref
+  // if it exists.
+
+  // Get the user's stored preference for whether the ambient light sensor
+  // should be enabled. If there is no saved preference for the ambient light
+  // sensor value, set the ambient light sensor to be enabled to match the
+  // default behavior.
+  user_manager::KnownUser known_user(local_state_);
+  const bool ambient_light_sensor_enabled_for_account =
+      known_user
+          .FindBoolPath(account_id, prefs::kDisplayAmbientLightSensorEnabled)
+          .value_or(true);
+
+  if (!ambient_light_sensor_enabled_for_account) {
+    // If the ambient light sensor is disabled, restore the user's preferred
+    // brightness level.
+    const std::optional<double> brightness_for_account =
+        known_user
+            .FindPath(account_id,
+                      prefs::kInternalDisplayScreenBrightnessPercent)
+            ->GetIfDouble();
+    if (brightness_for_account.has_value()) {
+      SetBrightnessPercent(brightness_for_account.value(), /*gradual=*/true,
+                           BrightnessControlDelegate::BrightnessChangeSource::
+                               kRestoredFromUserPref);
+    }
+  }
+
+  SetAmbientLightSensorEnabled(ambient_light_sensor_enabled_for_account);
 }
 
 void BrightnessControllerChromeos::OnActiveUserSessionChanged(

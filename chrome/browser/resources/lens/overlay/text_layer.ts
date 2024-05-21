@@ -11,6 +11,7 @@ import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.m
 import type {DomRepeat} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxyImpl} from './browser_proxy.js';
+import {type CursorTooltipData, CursorTooltipType} from './cursor_tooltip.js';
 import {CenterRotatedBox_CoordinateType} from './geometry.mojom-webui.js';
 import {bestHit} from './hit.js';
 import type {CursorData, TextContextMenuData} from './selection_overlay.js';
@@ -48,7 +49,9 @@ function isWordRenderable(word: Word): boolean {
 
 // Return the text separator if there is one, else returns a space.
 function getTextSeparator(word: Word): string {
-  return word.textSeparator ? word.textSeparator : ' ';
+  return (word.textSeparator !== null && word.textSeparator !== undefined) ?
+      word.textSeparator :
+      ' ';
 }
 
 export interface TextLayerElement {
@@ -134,6 +137,8 @@ export class TextLayerElement extends PolymerElement {
   private lines: Line[];
   // The paragraphs received from OnTextReceived.
   private paragraphs: Paragraph[];
+  // The content language received from OnTextReceived.
+  private contentLanguage: string;
   private listenerIds: number[];
 
   override connectedCallback() {
@@ -143,6 +148,9 @@ export class TextLayerElement extends PolymerElement {
     this.listenerIds = [
       BrowserProxyImpl.getInstance().callbackRouter.textReceived.addListener(
           this.onTextReceived.bind(this)),
+      BrowserProxyImpl.getInstance()
+          .callbackRouter.clearTextSelection.addListener(
+              this.unselectWords.bind(this)),
       BrowserProxyImpl.getInstance()
           .callbackRouter.clearAllSelections.addListener(
               this.unselectWords.bind(this)),
@@ -165,12 +173,24 @@ export class TextLayerElement extends PolymerElement {
     this.dispatchEvent(new CustomEvent<CursorData>(
         'set-cursor',
         {bubbles: true, composed: true, detail: {cursor: CursorType.TEXT}}));
+    this.dispatchEvent(
+        new CustomEvent<CursorTooltipData>('set-cursor-tooltip', {
+          bubbles: true,
+          composed: true,
+          detail: {tooltipType: CursorTooltipType.TEXT_HIGHLIGHT},
+        }));
   }
 
   private handlePointerLeave() {
     this.dispatchEvent(new CustomEvent<CursorData>(
         'set-cursor',
         {bubbles: true, composed: true, detail: {cursor: CursorType.DEFAULT}}));
+    this.dispatchEvent(
+        new CustomEvent<CursorTooltipData>('set-cursor-tooltip', {
+          bubbles: true,
+          composed: true,
+          detail: {tooltipType: CursorTooltipType.REGION_SEARCH},
+        }));
   }
 
   handleDownGesture(event: GestureEvent): boolean {
@@ -213,6 +233,7 @@ export class TextLayerElement extends PolymerElement {
           composed: true,
           detail: {
             text: highlightedText,
+            contentLanguage: this.contentLanguage,
             left: containingRect.left,
             right: containingRect.right,
             top: containingRect.top,
@@ -250,6 +271,7 @@ export class TextLayerElement extends PolymerElement {
     this.paragraphNumbers = [];
     this.lines = [];
     this.paragraphs = [];
+    this.contentLanguage = text.contentLanguage ?? '';
     let lineNumber = 0;
     let paragraphNumber = 0;
 

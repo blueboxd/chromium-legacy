@@ -7259,7 +7259,7 @@ def generate_install_properties_per_feature(function_name,
     # Assemble the parts.
     header_node.accumulator.add_class_decls(["ScriptState"])
     header_node.accumulator.add_include_headers([
-        "third_party/blink/renderer/platform/runtime_enabled_features.h",
+        "third_party/blink/renderer/platform/feature_context.h",
     ])
     header_node.extend([
         make_copyright_header(),
@@ -7392,7 +7392,7 @@ for (const auto* wrapper_type_info : wrapper_type_info_list) {
       NOTIMPLEMENTED();
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 
   wrapper_type_info->install_context_dependent_props_func(

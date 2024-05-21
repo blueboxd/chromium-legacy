@@ -660,9 +660,13 @@ void AuthenticatorCommonImpl::StartMakeCredentialRequest(
           UsesDiscoverableCreds(*req_state_->make_credential_options),
           is_uvpaa_override_);
 
+  auto platform_discoveries =
+      discovery_factory()->IsTestOverride()
+          ? std::vector<std::unique_ptr<device::FidoDiscoveryBase>>()
+          : req_state_->request_delegate->CreatePlatformDiscoveries();
   req_state_->request_handler =
       std::make_unique<device::MakeCredentialRequestHandler>(
-          discovery_factory(), transports,
+          discovery_factory(), std::move(platform_discoveries), transports,
           *req_state_->ctap_make_credential_request,
           *req_state_->make_credential_options,
           base::BindOnce(&AuthenticatorCommonImpl::OnRegisterResponse,
@@ -715,8 +719,13 @@ void AuthenticatorCommonImpl::StartGetAssertionRequest(
           UsesDiscoverableCreds(*req_state_->ctap_get_assertion_request),
           is_uvpaa_override_);
 
+  auto platform_discoveries =
+      discovery_factory()->IsTestOverride()
+          ? std::vector<std::unique_ptr<device::FidoDiscoveryBase>>()
+          : req_state_->request_delegate->CreatePlatformDiscoveries();
   auto request_handler = std::make_unique<device::GetAssertionRequestHandler>(
-      discovery_factory(), transports, *req_state_->ctap_get_assertion_request,
+      discovery_factory(), std::move(platform_discoveries), transports,
+      *req_state_->ctap_get_assertion_request,
       *req_state_->ctap_get_assertion_options, allow_skipping_pin_touch,
       base::BindOnce(&AuthenticatorCommonImpl::OnSignResponse,
                      weak_factory_.GetWeakPtr()));
@@ -1142,7 +1151,7 @@ void AuthenticatorCommonImpl::GetAssertion(
   if (!payment_options.is_null() && options->allow_credentials.empty()) {
     CompleteGetAssertionRequest(
         blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return;
   }
   bool is_cross_origin_iframe = false;
@@ -1624,6 +1633,12 @@ void AuthenticatorCommonImpl::OnRegisterResponse(
               kWinUserCancelled,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
+    case device::MakeCredentialStatus::kEnclaveCancel:
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kEnclaveCancel,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
+      return;
     case device::MakeCredentialStatus::kSuccess:
       break;
   }
@@ -1881,6 +1896,12 @@ void AuthenticatorCommonImpl::OnSignResponse(
       SignalFailureToRequestDelegate(
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kEnclaveError,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
+      return;
+    case device::GetAssertionStatus::kEnclaveCancel:
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kEnclaveCancel,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::GetAssertionStatus::kSuccess:
@@ -2160,7 +2181,7 @@ AuthenticatorCommonImpl::CreateMakeCredentialResponse(
       case RequestExtension::kLargeBlobRead:
       case RequestExtension::kLargeBlobWrite:
       case RequestExtension::kGetCredBlob:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
     }
   }
@@ -2283,7 +2304,7 @@ AuthenticatorCommonImpl::CreateGetAssertionResponse(
       case RequestExtension::kLargeBlobEnable:
       case RequestExtension::kCredBlob:
       case RequestExtension::kMinPINLength:
-        NOTREACHED();
+        NOTREACHED_IN_MIGRATION();
         break;
     }
   }

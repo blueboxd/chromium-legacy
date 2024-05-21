@@ -50,11 +50,13 @@ class TestModuleRecordResolver final : public ModuleRecordResolver {
   // Implements ModuleRecordResolver:
 
   void RegisterModuleScript(const ModuleScript*) override {}
-  void UnregisterModuleScript(const ModuleScript*) override { NOTREACHED(); }
+  void UnregisterModuleScript(const ModuleScript*) override {
+    NOTREACHED_IN_MIGRATION();
+  }
 
   const ModuleScript* GetModuleScriptFromModuleRecord(
       v8::Local<v8::Module>) const override {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return nullptr;
   }
 

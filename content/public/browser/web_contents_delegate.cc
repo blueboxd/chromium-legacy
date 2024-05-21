@@ -218,7 +218,7 @@ void WebContentsDelegate::RequestKeyboardLock(WebContents* web_contents,
   web_contents->GotResponseToKeyboardLockRequest(true);
 }
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 std::unique_ptr<ColorChooser> WebContentsDelegate::OpenColorChooser(
     WebContents* web_contents,
     SkColor color,
@@ -382,6 +382,11 @@ PreloadingEligibility WebContentsDelegate::IsPrerender2Supported(
 NavigationController::UserAgentOverrideOption
 WebContentsDelegate::ShouldOverrideUserAgentForPrerender2() {
   return NavigationController::UA_OVERRIDE_INHERIT;
+}
+
+bool WebContentsDelegate::ShouldAllowPartialParamMismatchOfPrerender2(
+    NavigationHandle& navigation_handle) {
+  return false;
 }
 
 void WebContentsDelegate::UpdateInspectedWebContentsIfNecessary(

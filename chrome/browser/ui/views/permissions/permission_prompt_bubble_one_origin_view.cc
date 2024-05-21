@@ -170,7 +170,9 @@ PermissionPromptBubbleOneOriginView::PermissionPromptBubbleOneOriginView(
   for (std::size_t i = 0; i < visible_requests.size(); i++) {
     AddRequestLine(visible_requests[i], i);
     if (visible_requests[i]->request_type() ==
-        permissions::RequestType::kCameraStream) {
+            permissions::RequestType::kCameraStream ||
+        visible_requests[i]->request_type() ==
+            permissions::RequestType::kCameraPanTiltZoom) {
       requested_video_capture_device_ids =
           visible_requests[i]->GetRequestedVideoCaptureDeviceIds();
     } else if (visible_requests[i]->request_type() ==
@@ -198,13 +200,6 @@ void PermissionPromptBubbleOneOriginView::RunButtonCallback(int button_id) {
   }
 #endif
   PermissionPromptBubbleBaseView::RunButtonCallback(button_id);
-}
-
-void PermissionPromptBubbleOneOriginView::ChildPreferredSizeChanged(
-    views::View* child) {
-  if (GetBubbleFrameView()) {
-    SizeToContents();
-  }
 }
 
 void PermissionPromptBubbleOneOriginView::AddRequestLine(
@@ -238,6 +233,9 @@ void PermissionPromptBubbleOneOriginView::AddRequestLine(
   } else if (request->request_type() ==
              permissions::RequestType::kCameraStream) {
     camera_permission_label_ = label;
+  } else if (request->request_type() ==
+             permissions::RequestType::kCameraPanTiltZoom) {
+    ptz_camera_permission_label_ = label;
   }
 #endif
 
@@ -267,20 +265,22 @@ void PermissionPromptBubbleOneOriginView::MaybeAddMediaPreview(
     return;
   }
 
-  if (!camera_permission_label_ && !mic_permission_label_) {
+  if (!camera_permission_label_ && !mic_permission_label_ &&
+      !ptz_camera_permission_label_) {
     return;
   }
 
   // Check this last, as it queries the origin trials service.
   if (!media_preview_feature::ShouldShowMediaPreview(
           *browser_->profile(), delegate()->GetRequestingOrigin(),
-          delegate()->GetEmbeddingOrigin())) {
+          delegate()->GetEmbeddingOrigin(),
+          media_preview_metrics::UiLocation::kPermissionPrompt)) {
     return;
   }
 
   auto* cached_device_info = media_effects::MediaDeviceInfo::GetInstance();
   devices_observer_.Observe(cached_device_info);
-  if (camera_permission_label_) {
+  if (camera_permission_label_ || ptz_camera_permission_label_) {
     // Initialize camera label with the current number of cached video devices.
     OnVideoDevicesChanged(cached_device_info->GetVideoDeviceInfos());
   }
@@ -317,18 +317,25 @@ void PermissionPromptBubbleOneOriginView::OnAudioDevicesChanged(
 void PermissionPromptBubbleOneOriginView::OnVideoDevicesChanged(
     const std::optional<std::vector<media::VideoCaptureDeviceInfo>>&
         device_infos) {
-  if (!camera_permission_label_ || !device_infos) {
+  bool have_any_camera_label =
+      ptz_camera_permission_label_ || camera_permission_label_;
+  if (!have_any_camera_label || !device_infos) {
     return;
+  }
+
+  auto camera_label = camera_permission_label_;
+  auto message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY_PERMISSION_FRAGMENT_WITH_COUNT;
+  if (ptz_camera_permission_label_) {
+    camera_label = ptz_camera_permission_label_;
+    message_id =
+        IDS_MEDIA_CAPTURE_CAMERA_PAN_TILT_ZOOM_PERMISSION_FRAGMENT_WITH_COUNT;
   }
 
   const auto real_device_names =
       media_effects::GetRealVideoDeviceNames(device_infos.value());
-
-  camera_permission_label_->SetText(l10n_util::GetStringFUTF16(
-      IDS_MEDIA_CAPTURE_VIDEO_ONLY_PERMISSION_FRAGMENT_WITH_COUNT,
-      base::NumberToString16(real_device_names.size())));
-
-  camera_permission_label_->SetTooltipText(
+  camera_label->SetText(l10n_util::GetStringFUTF16(
+      message_id, base::NumberToString16(real_device_names.size())));
+  camera_label->SetTooltipText(
       base::UTF8ToUTF16(base::JoinString(real_device_names, "\n")));
 }
 #endif

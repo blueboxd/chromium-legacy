@@ -10,9 +10,8 @@
 #include "ash/public/cpp/kiosk_app_menu.h"
 #include "ash/public/cpp/login_screen.h"
 #include "base/check.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_data.h"
-#include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
@@ -38,7 +37,7 @@ KioskAppId ToKioskAppId(const KioskAppMenuEntry& menu_entry) {
       return KioskAppId::ForChromeApp(menu_entry.chrome_app_id.value(),
                                       menu_entry.account_id);
     case KioskAppMenuEntry::AppType::kArcApp:
-      return KioskAppId::ForArcApp(menu_entry.account_id);
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -48,8 +47,6 @@ KioskAppMenuEntry::AppType ToMenuEntryType(KioskAppType type) {
       return KioskAppMenuEntry::AppType::kWebApp;
     case KioskAppType::kChromeApp:
       return KioskAppMenuEntry::AppType::kChromeApp;
-    case KioskAppType::kArcApp:
-      return KioskAppMenuEntry::AppType::kArcApp;
   }
 }
 
@@ -78,7 +75,6 @@ std::vector<KioskAppMenuEntry> BuildKioskAppMenuEntries() {
 
 KioskAppMenuController::KioskAppMenuController() {
   kiosk_observations_.AddObservation(KioskChromeAppManager::Get());
-  kiosk_observations_.AddObservation(ArcKioskAppManager::Get());
   kiosk_observations_.AddObservation(WebKioskAppManager::Get());
 }
 

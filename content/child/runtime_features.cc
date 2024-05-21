@@ -169,7 +169,7 @@ void SetRuntimeFeatureFromChromiumFeature(const base::Feature& chromium_feature,
       }
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_IN_MIGRATION();
   }
 }
 
@@ -476,6 +476,12 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
       {wrf::EnableSharedWorker, switches::kDisableSharedWorkers, false},
       {wrf::EnableMutationEvents, blink::switches::kMutationEventsEnabled,
        true},
+      {wrf::EnableKeyboardFocusableScrollers,
+       blink::switches::kKeyboardFocusableScrollersEnabled, true},
+      {wrf::EnableKeyboardFocusableScrollers,
+       blink::switches::kKeyboardFocusableScrollersOptOut, false},
+      {wrf::EnableCSSCustomStateDeprecatedSyntax,
+       blink::switches::kCSSCustomStateDeprecatedSyntaxEnabled, true},
       {wrf::EnableTextFragmentIdentifiers,
        switches::kDisableScrollToTextFragment, false},
       {wrf::EnableWebAuthenticationRemoteDesktopSupport,

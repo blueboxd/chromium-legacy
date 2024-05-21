@@ -35,6 +35,7 @@ class ASH_EXPORT BatterySaverController : public PowerStatus::Observer {
  public:
   enum class UpdateReason {
     kCharging,
+    kChargeIncrease,
     kLowPower,
     kPowerManager,
     kSettings,
@@ -77,7 +78,7 @@ class ASH_EXPORT BatterySaverController : public PowerStatus::Observer {
  private:
   // Types used for metrics tracking.
   struct EnableRecord {
-    base::Time time;
+    base::TimeTicks time;
     UpdateReason reason;
   };
 

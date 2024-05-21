@@ -390,13 +390,13 @@ TEST_F(ImageResourceTest, CancelOnRemoveObserver) {
   // load inside removeClient().
   observer->RemoveAsObserver();
   EXPECT_EQ(ResourceStatus::kPending, image_resource->GetStatus());
-  EXPECT_TRUE(MemoryCache::Get()->ResourceForURL(test_url));
+  EXPECT_TRUE(MemoryCache::Get()->ResourceForURLForTesting(test_url));
 
   // Trigger the cancel timer, ensure the load was cancelled and the resource
   // was evicted from the cache.
   task_runner->RunUntilIdle();
   EXPECT_EQ(ResourceStatus::kLoadError, image_resource->GetStatus());
-  EXPECT_FALSE(MemoryCache::Get()->ResourceForURL(test_url));
+  EXPECT_FALSE(MemoryCache::Get()->ResourceForURLForTesting(test_url));
 }
 
 class MockFinishObserver : public ResourceFinishObserver {
@@ -446,7 +446,7 @@ TEST_F(ImageResourceTest, CancelWithImageAndFinishObserver) {
   image_resource->Loader()->Cancel();
 
   EXPECT_EQ(ResourceStatus::kLoadError, image_resource->GetStatus());
-  EXPECT_FALSE(MemoryCache::Get()->ResourceForURL(test_url));
+  EXPECT_FALSE(MemoryCache::Get()->ResourceForURLForTesting(test_url));
 
   // ResourceFinishObserver is notified asynchronously.
   EXPECT_CALL(*finish_observer, NotifyFinished());
@@ -822,7 +822,8 @@ TEST_F(ImageResourceTest, CancelOnDecodeError) {
 
   EXPECT_EQ(0, observer->ImageChangedCount());
 
-  image_resource->Loader()->DidReceiveData("notactuallyanimage", 18);
+  image_resource->Loader()->DidReceiveData(
+      base::span_from_cstring("notactuallyanimage"));
 
   EXPECT_EQ(ResourceStatus::kDecodeError, image_resource->GetStatus());
   EXPECT_TRUE(observer->ImageNotifyFinishedCalled());
@@ -895,8 +896,8 @@ TEST_F(ImageResourceTest, PartialContentWithoutDimensions) {
       /*body=*/mojo::ScopedDataPipeConsumerHandle(),
       /*cached_metadata=*/std::nullopt);
   image_resource->Loader()->DidReceiveData(
-      reinterpret_cast<const char*>(kJpegImage),
-      kJpegImageSubrangeWithoutDimensionsLength);
+      base::make_span(reinterpret_cast<const char*>(kJpegImage),
+                      kJpegImageSubrangeWithoutDimensionsLength));
 
   EXPECT_EQ(ResourceStatus::kPending, image_resource->GetStatus());
   EXPECT_FALSE(observer->ImageNotifyFinishedCalled());

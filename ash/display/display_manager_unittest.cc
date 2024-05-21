@@ -8,7 +8,6 @@
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/accelerometer/accelerometer_types.h"
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/constants/app_types.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_configuration_controller.h"
@@ -42,6 +41,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chromeos/ui/base/app_types.h"
+#include "chromeos/ui/base/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_observer.h"
@@ -386,7 +387,7 @@ TEST_F(DisplayManagerTest, RoundedDisplayProviderIsRemovedForRemovedDisplay) {
 TEST_F(DisplayManagerTest, UpdateDisplayTest) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
 
-  // Update primary and add seconary.
+  // Update primary and add secondary.
   UpdateDisplay("100+0-500x400,0+501-400x300");
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ(gfx::Rect(0, 0, 500, 400),
@@ -620,7 +621,7 @@ TEST_F(DisplayManagerTest, EmulatorTest) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
 
   display_manager()->AddRemoveDisplay();
-  // Add seconary.
+  // Add secondary.
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("c0 a1 r0 w1 d1", GetCountSummary());
   reset();
@@ -659,7 +660,7 @@ TEST_F(DisplayManagerTest, UpdateThreeDisplaysWithDefaultLayout) {
   EXPECT_EQ(display_manager()->GetDisplayAt(1).id(), added()[0].id());
   EXPECT_EQ(display_manager()->GetDisplayAt(2).id(), added()[1].id());
   EXPECT_EQ(gfx::Rect(0, 0, 640, 480), changed()[0].bounds());
-  // Secondary and terniary displays are on right.
+  // Secondary and tertiary displays are on right.
   EXPECT_EQ(gfx::Rect(640, 0, 320, 200), added()[0].bounds());
   EXPECT_EQ(gfx::Rect(1000, 0, 320, 200),
             GetDisplayInfo(added()[0]).bounds_in_native());
@@ -694,7 +695,7 @@ TEST_F(DisplayManagerTest, UpdateThreeDisplaysWithDefaultLayout) {
             display_manager()->GetDisplayAt(2).bounds());
 }
 
-TEST_F(DisplayManagerTest, LayoutMorethanThreeDisplaysTest) {
+TEST_F(DisplayManagerTest, LayoutMoreThanThreeDisplaysTest) {
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::DisplayIdList list =
       display::test::CreateDisplayIdListN(primary_id, 3);
@@ -1522,7 +1523,7 @@ TEST_F(DisplayManagerTest, TouchCalibrationTest) {
   EXPECT_EQ(touch_data_2, touch_device_manager->GetCalibrationData(
                               touchdevice, GetDisplayInfoAt(1).id()));
 
-  // Recreate a new 2nd display. It won't apply the touhc calibration data
+  // Recreate a new 2nd display. It won't apply the touch calibration data
   // because the new display has a different ID.
   UpdateDisplay("0+0-500x400");
   UpdateDisplay("0+0-500x400,0+501-400x300");
@@ -1904,7 +1905,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   EXPECT_EQ(internal_display_id,
             display::Screen::GetScreen()->GetPrimaryDisplay().id());
 
-  // This combinatino is new, so internal display becomes primary.
+  // This combination is new, so internal display becomes primary.
   EXPECT_EQ(gfx::Rect(0, 0, 500, 400),
             GetDisplayForId(internal_display_id).bounds());
   EXPECT_EQ(gfx::Rect(1, 1, 200, 100),
@@ -2041,7 +2042,7 @@ TEST_F(DisplayManagerTest, DisplayAddRemoveAtTheSameTime) {
   display_info_list.push_back(secondary_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
 
-  // Secondary seconary_id becomes the primary as it has smaller output index.
+  // Secondary secondary_id becomes the primary as it has smaller output index.
   EXPECT_EQ(secondary_id, WindowTreeHostManager::GetPrimaryDisplayId());
   EXPECT_EQ(third_id, display_manager_test.GetSecondaryDisplay().id());
   EXPECT_EQ(gfx::Size(600, 500), GetDisplayForId(third_id).size());
@@ -2432,7 +2433,7 @@ class CloseDisplayHandler : public ui::EventHandler {
 
 // Make sure that we can emulate disconnecting an external display using
 // Key/MouseEvent while it is in the unified desktop mode. This doesn't happen
-// in real device as the disconnect is trigged by ozone, not by UI events, but
+// in real device as the disconnect is triggered by ozone, not by UI events, but
 // this is still useful in the testing environment.
 TEST_F(DisplayManagerTest, CloseDisplayByEvent) {
   // Don't check root window destruction in unified mode.
@@ -3841,7 +3842,7 @@ class FontTestHelper : public AshTestBase {
   ~FontTestHelper() override { TearDown(); }
 
   // AshTestBase:
-  void TestBody() override { NOTREACHED(); }
+  void TestBody() override { NOTREACHED_IN_MIGRATION(); }
 };
 
 bool IsTextSubpixelPositioningEnabled() {
@@ -4076,7 +4077,7 @@ TEST_F(DisplayManagerTest, DisconnectedInternalDisplayShouldUpdateDisplayInfo) {
 
   // Update the display manager through DisplayChangeObserver.
   observer.GetStateForDisplayIds(outputs);
-  observer.OnDisplayModeChanged(outputs);
+  observer.OnDisplayConfigurationChanged(outputs);
 
   EXPECT_EQ(1u, display_manager()->GetNumDisplays());
   EXPECT_TRUE(display_manager()->IsActiveDisplayId(external_id));
@@ -4109,7 +4110,7 @@ TEST_F(DisplayManagerTest, UpdateInternalDisplayNativeBounds) {
   outputs.push_back(internal_snapshot.get());
 
   observer.GetStateForDisplayIds(outputs);
-  observer.OnDisplayModeChanged(outputs);
+  observer.OnDisplayConfigurationChanged(outputs);
   EXPECT_EQ(1u, display_manager()->GetNumDisplays());
 
   internal_snapshot->set_origin({0, 1000});
@@ -4126,7 +4127,7 @@ TEST_F(DisplayManagerTest, UpdateInternalDisplayNativeBounds) {
 
   reset();
   observer.GetStateForDisplayIds(outputs);
-  observer.OnDisplayModeChanged(outputs);
+  observer.OnDisplayConfigurationChanged(outputs);
 
   EXPECT_EQ(2u, display_manager()->GetNumDisplays());
   EXPECT_TRUE(changed_metrics() &
@@ -4193,7 +4194,7 @@ TEST_F(DisplayManagerTest, ForcedMirrorMode) {
 
   display_manager()->layout_store()->set_forced_mirror_mode_for_tablet(true);
 
-  observer.OnDisplayModeChanged(outputs);
+  observer.OnDisplayConfigurationChanged(outputs);
 
   const display::DisplayIdList current_list =
       display_manager()->GetConnectedDisplayIdList();
@@ -4268,25 +4269,22 @@ TEST_F(DisplayManagerOrientationTest, SaveRestoreUserRotationLock) {
   TestObserver test_observer;
   orientation_controller->AddObserver(&test_observer);
 
-  // Set up windows with portrait,lanscape and any.
+  // Set up windows with portrait, landscape, and any.
   aura::Window* window_a = CreateTestWindowInShellWithId(0);
   {
-    window_a->SetProperty(aura::client::kAppType,
-                          static_cast<int>(AppType::CHROME_APP));
+    window_a->SetProperty(chromeos::kAppTypeKey, chromeos::AppType::CHROME_APP);
     orientation_controller->LockOrientationForWindow(
         window_a, chromeos::OrientationType::kAny);
   }
   aura::Window* window_p = CreateTestWindowInShellWithId(0);
   {
-    window_p->SetProperty(aura::client::kAppType,
-                          static_cast<int>(AppType::CHROME_APP));
+    window_p->SetProperty(chromeos::kAppTypeKey, chromeos::AppType::CHROME_APP);
     orientation_controller->LockOrientationForWindow(
         window_p, chromeos::OrientationType::kPortrait);
   }
   aura::Window* window_l = CreateTestWindowInShellWithId(0);
   {
-    window_l->SetProperty(aura::client::kAppType,
-                          static_cast<int>(AppType::CHROME_APP));
+    window_l->SetProperty(chromeos::kAppTypeKey, chromeos::AppType::CHROME_APP);
     orientation_controller->LockOrientationForWindow(
         window_l, chromeos::OrientationType::kLandscape);
   }
@@ -4321,7 +4319,7 @@ TEST_F(DisplayManagerOrientationTest, SaveRestoreUserRotationLock) {
   EXPECT_EQ(display::Display::ROTATE_0,
             display_manager->registered_internal_display_rotation());
 
-  // Application can overwwrite the locked orientation.
+  // Application can overwrite the locked orientation.
   wm::ActivateWindow(window_p);
   EXPECT_EQ(display::Display::ROTATE_270,
             screen->GetPrimaryDisplay().rotation());
@@ -4375,7 +4373,7 @@ TEST_F(DisplayManagerOrientationTest, SaveRestoreUserRotationLock) {
   EXPECT_EQ(display::Display::ROTATE_270,
             display_manager->registered_internal_display_rotation());
 
-  // ANY will rotate to locked ortation.
+  // ANY will rotate to locked rotation.
   wm::ActivateWindow(window_a);
   EXPECT_EQ(display::Display::ROTATE_270,
             screen->GetPrimaryDisplay().rotation());
@@ -4391,10 +4389,9 @@ TEST_F(DisplayManagerOrientationTest, UserRotationLockReverse) {
   ScreenOrientationController* orientation_controller =
       shell->screen_orientation_controller();
 
-  // Set up windows with portrait,lanscape and any.
+  // Set up windows with portrait, landscape, and any.
   aura::Window* window = CreateTestWindowInShellWithId(0);
-  window->SetProperty(aura::client::kAppType,
-                      static_cast<int>(AppType::CHROME_APP));
+  window->SetProperty(chromeos::kAppTypeKey, chromeos::AppType::CHROME_APP);
   display::Screen* screen = display::Screen::GetScreen();
 
   // Just enabling will not save the lock.
@@ -4437,8 +4434,7 @@ TEST_F(DisplayManagerOrientationTest, LockToSpecificOrientation) {
 
   aura::Window* window_a = CreateTestWindowInShellWithId(0);
   {
-    window_a->SetProperty(aura::client::kAppType,
-                          static_cast<int>(AppType::CHROME_APP));
+    window_a->SetProperty(chromeos::kAppTypeKey, chromeos::AppType::CHROME_APP);
     orientation_controller->LockOrientationForWindow(
         window_a, chromeos::OrientationType::kAny);
   }
@@ -4453,12 +4449,10 @@ TEST_F(DisplayManagerOrientationTest, LockToSpecificOrientation) {
   orientation_controller->OnAccelerometerUpdated(portrait_secondary);
 
   aura::Window* window_lsc = CreateTestWindowInShellWithId(1);
-  window_lsc->SetProperty(aura::client::kAppType,
-                          static_cast<int>(AppType::CHROME_APP));
+  window_lsc->SetProperty(chromeos::kAppTypeKey, chromeos::AppType::CHROME_APP);
 
   aura::Window* window_psc = CreateTestWindowInShellWithId(1);
-  window_psc->SetProperty(aura::client::kAppType,
-                          static_cast<int>(AppType::CHROME_APP));
+  window_psc->SetProperty(chromeos::kAppTypeKey, chromeos::AppType::CHROME_APP);
 
   orientation_controller->LockOrientationForWindow(
       window_psc, chromeos::OrientationType::kPortraitSecondary);
@@ -4491,12 +4485,12 @@ TEST_F(DisplayManagerOrientationTest, LockToSpecificOrientation) {
   wm::ActivateWindow(window_a);
   orientation_controller->OnAccelerometerUpdated(portrait_primary);
 
-  // Swtching to |window_a| enables rotation.
+  // Switching to |window_a| enables rotation.
   EXPECT_EQ(chromeos::OrientationType::kPortraitPrimary,
             test_api.GetCurrentOrientation());
 
-  // The orientation has alraedy been locked to secondary once, so
-  // it should swtich back to the portrait secondary.
+  // The orientation has already been locked to secondary once, so
+  // it should switch back to the portrait secondary.
   wm::ActivateWindow(window_psc);
   EXPECT_EQ(chromeos::OrientationType::kPortraitSecondary,
             test_api.GetCurrentOrientation());
@@ -5140,7 +5134,7 @@ TEST_F(DisplayManagerTest, SoftwareMirrorRotationForTablet) {
             display::Screen::GetScreen()->GetPrimaryDisplay().bounds()));
     transformed_rect2 =
         host_list[0]->window()->transform().MapRect(transformed_rect2);
-    // Use gfx::EncolosingRect because `transformed_rect2` has rounding errors:
+    // Use gfx::ToEnclosingRect because `transformed_rect2` has rounding errors:
     //   137.000000,0.000000 524.999939x699.999939
     EXPECT_EQ(gfx::Rect(137.0f, 0.0f, 525.0f, 700.0f),
               gfx::ToEnclosingRect(transformed_rect2));
@@ -5223,7 +5217,7 @@ TEST_F(DisplayManagerTest, SoftwareMirrorRotationForNonTablet) {
           display::Screen::GetScreen()->GetPrimaryDisplay().bounds()));
   transformed_rect3 =
       host_list[0]->window()->transform().MapRect(transformed_rect3);
-  // Use gfx::EncolosingRect because `transformed_rect3` has rounding errors.
+  // Use gfx::ToEnclosingRect because `transformed_rect3` has rounding errors.
   EXPECT_EQ(gfx::Rect(0.0f, 137.0f, 700.0f, 525.0f),
             gfx::ToEnclosingRect(transformed_rect3));
 }

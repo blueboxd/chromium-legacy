@@ -1737,9 +1737,10 @@ CompositorKeyframeValue* StyleResolver::CreateCompositorKeyframeValueSnapshot(
   return CompositorKeyframeValueFactory::Create(property, *style, offset);
 }
 
-const ComputedStyle* StyleResolver::StyleForPage(
-    uint32_t page_index,
-    const AtomicString& page_name) {
+const ComputedStyle* StyleResolver::StyleForPage(uint32_t page_index,
+                                                 const AtomicString& page_name,
+                                                 float page_fitting_scale,
+                                                 bool ignore_author_style) {
   // The page context inherits from the root element.
   Element* root_element = GetDocument().documentElement();
   if (!root_element) {
@@ -1775,6 +1776,10 @@ const ComputedStyle* StyleResolver::StyleForPage(
   // Calling this function without being in print mode is unusual and special,
   // but it happens from unit tests, if nothing else.
   if (GetDocument().Printing()) {
+    auto* value = CSSNumericLiteralValue::Create(
+        page_fitting_scale, CSSPrimitiveValue::UnitType::kNumber);
+    StyleBuilder::ApplyProperty(GetCSSPropertyZoom(), state, *value);
+
     const WebPrintParams& params = GetDocument().GetFrame()->GetPrintParams();
     const WebPrintPageDescription& description =
         params.default_page_description;
@@ -1782,7 +1787,7 @@ const ComputedStyle* StyleResolver::StyleForPage(
     // unless params.ignore_css_margins is set.
     auto* set =
         MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
-    auto* value = CSSNumericLiteralValue::Create(
+    value = CSSNumericLiteralValue::Create(
         description.margin_top, CSSPrimitiveValue::UnitType::kPixels);
     set->SetProperty(CSSPropertyID::kMarginTop, *value,
                      /*important=*/params.ignore_css_margins);
@@ -1802,9 +1807,11 @@ const ComputedStyle* StyleResolver::StyleForPage(
         set, CascadeOrigin::kUserAgent);
   }
 
-  if (ScopedStyleResolver* scoped_resolver =
-          GetDocument().GetScopedStyleResolver()) {
-    scoped_resolver->MatchPageRules(collector);
+  if (!ignore_author_style) {
+    if (ScopedStyleResolver* scoped_resolver =
+            GetDocument().GetScopedStyleResolver()) {
+      scoped_resolver->MatchPageRules(collector);
+    }
   }
 
   cascade.Apply();
@@ -1980,10 +1987,15 @@ void StyleResolver::CollectPseudoRulesForElement(
     PseudoId pseudo_id,
     const AtomicString& view_transition_name,
     unsigned rules_to_include) {
-  collector.SetPseudoElementStyleRequest(StyleRequest(
-      pseudo_id,
-      /* parent_style */ nullptr,
-      /* originating_element_style */ nullptr, view_transition_name));
+  StyleRequest style_request{pseudo_id,
+                             /* parent_style */ nullptr,
+                             /* originating_element_style */ nullptr,
+                             view_transition_name};
+  if (pseudo_id == kPseudoIdSearchText) {
+    // TODO(crbug.com/339298411): handle :current?
+    style_request.search_text_request = StyleRequest::kNotCurrent;
+  }
+  collector.SetPseudoElementStyleRequest(style_request);
 
   if (rules_to_include & kUACSSRules) {
     MatchUARules(element, collector);

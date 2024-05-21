@@ -15,13 +15,6 @@
 
 namespace features {
 
-BASE_FEATURE(kAccessibilityFocusHighlight,
-             "AccessibilityFocusHighlight",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-bool IsAccessibilityFocusHighlightEnabled() {
-  return base::FeatureList::IsEnabled(::features::kAccessibilityFocusHighlight);
-}
-
 BASE_FEATURE(kAccessibilityPdfOcrForSelectToSpeak,
              "kAccessibilityPdfOcrForSelectToSpeak",
 #if BUILDFLAG(IS_CHROMEOS)
@@ -319,7 +312,7 @@ bool IsReadAnythingEnabled() {
 
 BASE_FEATURE(kReadAnythingLocalSidePanel,
              "ReadAnythingLocalSidePanel",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 bool IsReadAnythingLocalSidePanelEnabled() {
   return base::FeatureList::IsEnabled(
              ::features::kReadAnythingLocalSidePanel) &&
@@ -385,7 +378,7 @@ bool IsReadAnythingReadAloudPhraseHighlightingEnabled() {
 
 BASE_FEATURE(kReadAnythingWebUIToolbar,
              "ReadAnythingWebUIToolbar",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 bool IsReadAnythingWebUIToolbarEnabled() {
   return base::FeatureList::IsEnabled(::features::kReadAnythingWebUIToolbar);
 }

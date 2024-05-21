@@ -862,6 +862,7 @@ Katso tarvittaessa hakukoneesi ohjeet hakuhistorian poistamiselle.</translation>
 <translation id="5444892875087332195">Kirjanmerkit</translation>
 <translation id="5454211924362324495">Jos haluat estää muita käyttämästä salasanaasi, <ph name="BEGIN_LINK" />vaihda se osoitteessa <ph name="WEBSITE" /><ph name="END_LINK" /></translation>
 <translation id="5457226814769348910">Avaa offline-versio</translation>
+<translation id="5459548306731933777">Näytä tiedot</translation>
 <translation id="5475069061743940393">Pakettien seuranta</translation>
 <translation id="5478327362747197944">Luo kalenteritapahtumia suoraan klikkaamalla päivämäärää verkkosivulla.</translation>
 <translation id="5482922178977937393">Haluatko ilmoituksia esimerkiksi uutisista ja urheilusta kiinnostuksen kohteidesi perusteella?</translation>
@@ -1442,7 +1443,6 @@ Sivustot voivat nähdä selaustoimintaasi eri sivustoilta evästeiden kautta esi
 <translation id="8283172974887967105">Valitse…</translation>
 <translation id="8286036467436129157">Kirjaudu sisään</translation>
 <translation id="8289930144142009940"><ph name="FEATURE_NAME" />: ilmoitukset laitettu pois päältä</translation>
-<translation id="8292843446079898078">Tilaa hinnanlaskuilmoitukset seuraamistasi tuotteista.</translation>
 <translation id="8299417921174340354">Salasanojen käyttöä varten sinun on ensin asetettava laitteellesi tunnuskoodi.</translation>
 <translation id="8299613349954694191">Selaa verkkoa yksityisesti avaamalla incognito-välilehden.</translation>
 <translation id="8311853334103696030">Piilota "Hintaseuranta"</translation>

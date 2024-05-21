@@ -6,6 +6,8 @@
 
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/no_destructor.h"
+#include "base/strings/string_split.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/url_util.h"
@@ -599,19 +601,15 @@ std::string GetLCPPDatabaseKey(const GURL& url) {
   return url.host() + first_level_path;
 }
 
-// Returns LcppStat from `data`.
-// If LcppMultipleKeyKeyStat is enabled, this function can modify `data`
-// to emplace new LcppStat. `data_updated` is true on the case and
-// the caller should update the stored data.
-// TODO(yoichio): Updating data in "Get" function sounds weird. It could be
-// nice if we could restructure the functions or rename them.
-LcppStat* GetLcppStatToUpdate(const LoadingPredictorConfig& config,
-                              const GURL& url,
-                              LcppData& data,
-                              bool& data_updated) {
-  if (!IsLcppMultipleKeyKeyStatEnabled()) {
-    return data.mutable_lcpp_stat();
-  }
+// Returns LcppStat from `data` for LcppMultipleKeyKeyStat.
+// This function can modify `data` to emplace new LcppStat. `data_updated` is
+// true on the case and the caller should update the stored data.
+// This can return nullptr based on the FrequencyStatData of `data`.
+LcppStat* TryToGetLcppStatForKeyStat(const LoadingPredictorConfig& config,
+                                     const GURL& url,
+                                     LcppData& data,
+                                     bool& data_updated) {
+  CHECK(IsLcppMultipleKeyKeyStatEnabled());
 
   const std::string first_level_path = GetFirstLevelPath(url);
   if (first_level_path.empty() ||
@@ -642,6 +640,14 @@ LcppStat* GetLcppStatToUpdate(const LoadingPredictorConfig& config,
     }
   }
   return &lcpp_stat_map[first_level_path];
+}
+
+bool IsLCPPFontPrefetchExcludedHost(const GURL& url) {
+  static const base::NoDestructor<base::flat_set<std::string>> excluded_hosts(
+      base::SplitString(
+          blink::features::kLCPPFontURLPredictorExcludedHosts.Get(), ",",
+          base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY));
+  return base::Contains(*excluded_hosts, url.host());
 }
 
 }  // namespace
@@ -965,7 +971,9 @@ bool LcppDataMap::LearnLcpp(const GURL& url, const LcppDataInputs& inputs) {
 
   bool data_updated = false;
   LcppStat* lcpp_stat =
-      GetLcppStatToUpdate(config_, url, lcpp_data, data_updated);
+      IsLcppMultipleKeyKeyStatEnabled()
+          ? TryToGetLcppStatForKeyStat(config_, url, lcpp_data, data_updated)
+          : lcpp_data.mutable_lcpp_stat();
   if (lcpp_stat) {
     if (!IsValidLcppStat(*lcpp_stat)) {
       lcpp_stat->Clear();
@@ -974,6 +982,11 @@ bool LcppDataMap::LearnLcpp(const GURL& url, const LcppDataInputs& inputs) {
     }
     data_updated |=
         UpdateLcppStatWithLcppDataInputs(config_, inputs, *lcpp_stat);
+    if (IsLCPPFontPrefetchExcludedHost(url) &&
+        lcpp_stat->has_fetched_font_url_stat()) {
+      lcpp_stat->clear_fetched_font_url_stat();
+      data_updated = true;
+    }
     DCHECK(IsValidLcppStat(*lcpp_stat));
   }
   if (data_updated) {

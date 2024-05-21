@@ -13,18 +13,18 @@
 #include "ash/public/cpp/login_accelerators.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/app_mode/kiosk_chrome_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_controller.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
-#include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 
 namespace ash {
+
+class KioskLaunchController;
 
 class KioskControllerImpl : public KioskController,
                             public user_manager::UserManager::Observer {
@@ -44,7 +44,13 @@ class KioskControllerImpl : public KioskController,
                     bool is_auto_launch,
                     LoginDisplayHost* host) override;
 
+  bool IsSessionStarting() const override;
   void CancelSessionStart() override;
+
+  void AddProfileLoadFailedObserver(
+      KioskProfileLoadFailedObserver* observer) override;
+  void RemoveProfileLoadFailedObserver(
+      KioskProfileLoadFailedObserver* observer) override;
 
   bool HandleAccelerator(LoginAcceleratorAction action) override;
 
@@ -54,9 +60,6 @@ class KioskControllerImpl : public KioskController,
       const std::optional<std::string>& app_name) override;
 
   KioskSystemSession* GetKioskSystemSession() override;
-
-  KioskLaunchController* GetLaunchController() override;
-
  private:
   // `user_manager::UserManager::Observer` implementation:
   void OnUserLoggedIn(const user_manager::User& user) override;
@@ -68,7 +71,6 @@ class KioskControllerImpl : public KioskController,
 
   WebKioskAppManager web_app_manager_;
   KioskChromeAppManager chrome_app_manager_;
-  ArcKioskAppManager arc_app_manager_;
 
   // Created once the Kiosk session launch starts. Only not null during the
   // kiosk launch.

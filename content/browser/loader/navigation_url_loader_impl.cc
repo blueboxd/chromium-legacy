@@ -455,9 +455,12 @@ void CheckParsedHeadersEquals(const network::mojom::ParsedHeadersPtr& lhs,
                      rhs->no_vary_search_with_parse_error));
   CHECK(mojo::Equals(adjusted_lhs->observe_browsing_topics,
                      rhs->observe_browsing_topics));
-  NOTREACHED() << "The parsed headers don't match, but we don't know which "
-                  "field does not match. Please add a DCHECK before this one "
-                  "checking for the missing field.";
+  CHECK(mojo::Equals(adjusted_lhs->allow_cross_origin_event_reporting,
+                     rhs->allow_cross_origin_event_reporting));
+  NOTREACHED_IN_MIGRATION()
+      << "The parsed headers don't match, but we don't know which "
+         "field does not match. Please add a DCHECK before this one "
+         "checking for the missing field.";
 }
 #endif
 
@@ -978,6 +981,12 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
     head->service_worker_router_info =
         std::move(head_update_params_.router_info);
   }
+  if (!head_update_params_.load_timing_info
+           .service_worker_router_evaluation_start.is_null()) {
+    head->load_timing.service_worker_router_evaluation_start =
+        head_update_params_.load_timing_info
+            .service_worker_router_evaluation_start;
+  }
 
   // If the default loader (network) was used to handle the URL load request
   // we need to see if the interceptors want to potentially create a new
@@ -1141,7 +1150,7 @@ void NavigationURLLoaderImpl::OnUploadProgress(
     int64_t current_position,
     int64_t total_size,
     OnUploadProgressCallback callback) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 void NavigationURLLoaderImpl::OnTransferSizeUpdated(

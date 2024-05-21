@@ -88,7 +88,7 @@ OSStatus ProvideInputCallback(AudioConverterRef decoder,
 AudioConverterRef
 AudioToolboxAudioDecoder::ScopedAudioConverterRefTraits::Retain(
     AudioConverterRef converter) {
-  NOTREACHED() << "Only compatible with ASSUME policy";
+  NOTREACHED_IN_MIGRATION() << "Only compatible with ASSUME policy";
   return converter;
 }
 
@@ -268,7 +268,7 @@ bool AudioToolboxAudioDecoder::CreateDecoder(const AudioDecoderConfig& config) {
       break;
 #endif
     default:
-      NOTREACHED() << "Unsupported codec: " << config.codec();
+      NOTREACHED_IN_MIGRATION() << "Unsupported codec: " << config.codec();
       return false;
   }
 

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -16,6 +17,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.view.ContextThemeWrapper;
 import android.view.View;
@@ -26,9 +28,7 @@ import android.view.ViewGroup.MarginLayoutParams;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView.LayoutParams;
-import androidx.recyclerview.widget.RecyclerView.RecycledViewPool;
 import androidx.test.core.app.ApplicationProvider;
-import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Before;
@@ -40,6 +40,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.shadows.ShadowLooper;
@@ -49,9 +50,11 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Features;
+import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownEmbedder.OmniboxAlignment;
 import org.chromium.chrome.browser.omnibox.test.R;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowDelegate;
 
 /** Unit tests for {@link OmniboxSuggestionsDropdown}. */
@@ -63,7 +66,6 @@ public class OmniboxSuggestionsDropdownUnitTest {
     private @Mock Runnable mDropdownScrollToTopListener;
     private @Mock WindowDelegate mWindowDelegate;
     private @Mock OmniboxSuggestionsDropdownAdapter mAdapter;
-    private @Mock RecycledViewPool mPool;
 
     private Context mContext;
 
@@ -125,7 +127,7 @@ public class OmniboxSuggestionsDropdownUnitTest {
                 new ContextThemeWrapper(
                         ApplicationProvider.getApplicationContext(),
                         R.style.Theme_BrowserUI_DayNight);
-        mDropdown = new OmniboxSuggestionsDropdown(mContext, mPool, false);
+        mDropdown = new OmniboxSuggestionsDropdown(mContext, null);
         mDropdown.setAdapter(mAdapter);
         mListener = mDropdown.getLayoutScrollListener();
     }
@@ -135,21 +137,31 @@ public class OmniboxSuggestionsDropdownUnitTest {
         mListener.resetKeyboardShownState();
     }
 
+    /**
+     * Simulate split screen window width.
+     *
+     * <p>Works in tandem with @Config(qualifiers = "sw###dp").
+     */
+    private Context getContextForWindowWidth(int windowWidthDp) {
+        Configuration config = new Configuration();
+        config.screenWidthDp = windowWidthDp;
+
+        return mContext.createConfigurationContext(config);
+    }
+
     @Test
-    @SmallTest
     @Feature("Omnibox")
     public void testBackgroundColor() {
         assertEquals(
-                mDropdown.getStandardBgColor(),
+                OmniboxResourceProvider.getSuggestionsDropdownStandardBackgroundColor(mContext),
                 ChromeColors.getSurfaceColor(
                         mContext, R.dimen.omnibox_suggestion_dropdown_bg_elevation));
         assertEquals(
-                mDropdown.getIncognitoBgColor(),
+                OmniboxResourceProvider.getSuggestionsDropdownIncognitoBackgroundColor(mContext),
                 mContext.getColor(R.color.omnibox_dropdown_bg_incognito));
     }
 
     @Test
-    @SmallTest
     public void testScrollListener_keyboardShouldDismissOnScrollAttemptFromTop() {
         mDropdown.setSuggestionDropdownScrollListener(mDropdownScrollListener);
 
@@ -165,7 +177,6 @@ public class OmniboxSuggestionsDropdownUnitTest {
     }
 
     @Test
-    @SmallTest
     public void testScrollListener_keyboardShouldDismissOnScrollAttemptFromScrolledList() {
         mDropdown.setSuggestionDropdownScrollListener(mDropdownScrollListener);
 
@@ -181,7 +192,6 @@ public class OmniboxSuggestionsDropdownUnitTest {
     }
 
     @Test
-    @SmallTest
     public void testScrollListener_keyboardShouldShowOnScrollToTop() {
         mDropdown.setSuggestionDropdownScrollListener(mDropdownScrollListener);
         mDropdown.setSuggestionDropdownOverscrolledToTopListener(mDropdownScrollToTopListener);
@@ -212,7 +222,6 @@ public class OmniboxSuggestionsDropdownUnitTest {
     }
 
     @Test
-    @SmallTest
     public void testScrollListener_dismissingKeyboardWhenScrollDoesNotHappen() {
         // In some cases the list may be long enough to stretch below the keyboard, but not long
         // enough to be scrollable. We want to dismiss the keyboard in these cases, too.
@@ -239,7 +248,6 @@ public class OmniboxSuggestionsDropdownUnitTest {
     }
 
     @Test
-    @SmallTest
     public void testScrollListener_dismissingKeyboardWhenTheListIsOnlyBarelyUnderTheKeyboard() {
         mDropdown.setSuggestionDropdownScrollListener(mDropdownScrollListener);
         mDropdown.setSuggestionDropdownOverscrolledToTopListener(mDropdownScrollToTopListener);
@@ -262,7 +270,6 @@ public class OmniboxSuggestionsDropdownUnitTest {
     }
 
     @Test
-    @SmallTest
     public void testScrollListener_reemitsKeyboardDismissOnReset() {
         mDropdown.setSuggestionDropdownScrollListener(mDropdownScrollListener);
 
@@ -283,7 +290,6 @@ public class OmniboxSuggestionsDropdownUnitTest {
     }
 
     @Test
-    @SmallTest
     public void testScrollListener_inactiveWhenObserverNotEquipped() {
         // Note: do not equip the listeners (no calls to setSuggestionDropdownScrollListener() and
         // setSuggestionDropdownOverscrolledToTopListener).
@@ -299,7 +305,6 @@ public class OmniboxSuggestionsDropdownUnitTest {
     }
 
     @Test
-    @SmallTest
     public void testAlignmentProvider_windowAttachment() {
         mDropdown.setEmbedder(mEmbedder);
         assertFalse(mAttachedToWindow);
@@ -312,7 +317,6 @@ public class OmniboxSuggestionsDropdownUnitTest {
     }
 
     @Test
-    @SmallTest
     public void testAlignmentProvider_widthChange() {
         mDropdown.setEmbedder(mEmbedder);
         mDropdown.onAttachedToWindow();
@@ -332,7 +336,6 @@ public class OmniboxSuggestionsDropdownUnitTest {
     }
 
     @Test
-    @SmallTest
     public void testAlignmentProvider_topChange() {
         mDropdown.setEmbedder(mEmbedder);
         mDropdown.onAttachedToWindow();
@@ -359,7 +362,6 @@ public class OmniboxSuggestionsDropdownUnitTest {
     }
 
     @Test
-    @SmallTest
     public void testAlignmentProvider_heightChange() {
         mDropdown.setEmbedder(mEmbedder);
         mDropdown.onAttachedToWindow();
@@ -382,10 +384,9 @@ public class OmniboxSuggestionsDropdownUnitTest {
     }
 
     @Test
-    @SmallTest
     @LooperMode(Mode.PAUSED)
     public void testAlignmentProvider_changeDuringlayout() {
-        mDropdown = Mockito.spy(new OmniboxSuggestionsDropdown(mContext, mPool, false));
+        mDropdown = Mockito.spy(new OmniboxSuggestionsDropdown(mContext, null));
         mDropdown.setAdapter(mAdapter);
         mDropdown.setEmbedder(mEmbedder);
         mDropdown.onAttachedToWindow();
@@ -404,7 +405,6 @@ public class OmniboxSuggestionsDropdownUnitTest {
     }
 
     @Test
-    @SmallTest
     public void translateChildrenVertical() {
         mDropdown.setAdapter(mAdapter);
         mDropdown.setEmbedder(mEmbedder);
@@ -433,5 +433,43 @@ public class OmniboxSuggestionsDropdownUnitTest {
         int heightSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.AT_MOST);
         mDropdown.measure(widthSpec, heightSpec);
         mDropdown.layout(0, 0, mDropdown.getMeasuredWidth(), mDropdown.getMeasuredHeight());
+    }
+
+    @Test
+    @Config(qualifiers = "sw600dp")
+    public void forcePhoneStyleOmnibox_forcing_noClippingWhenForced() {
+        var dropdown = new OmniboxSuggestionsDropdown(mContext, null);
+        dropdown.forcePhoneStyleOmnibox(true);
+        assertFalse(dropdown.getClipToOutline());
+        assertNull(dropdown.getOutlineProvider());
+    }
+
+    @Test
+    @Config(qualifiers = "sw600dp")
+    public void forcePhoneStyleOmnibox_nonForcing_clipsOnTablets_narrowWindow() {
+        var context = getContextForWindowWidth(DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP - 1);
+        var dropdown = new OmniboxSuggestionsDropdown(context, null);
+        dropdown.forcePhoneStyleOmnibox(false);
+        assertFalse(dropdown.getClipToOutline());
+        assertNull(dropdown.getOutlineProvider());
+    }
+
+    @Test
+    @Config(qualifiers = "sw600dp")
+    public void forcePhoneStyleOmnibox_nonForcing_clipsOnTablets_wideWindow() {
+        var context = getContextForWindowWidth(DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP);
+        var dropdown = new OmniboxSuggestionsDropdown(context, null);
+        dropdown.forcePhoneStyleOmnibox(false);
+        assertTrue(dropdown.getClipToOutline());
+        assertNotNull(dropdown.getOutlineProvider());
+    }
+
+    @Test
+    @Config(qualifiers = "sw320dp")
+    public void forcePhoneStyleOmnibox_nonForcing_noClippingOnPhones() {
+        var dropdown = new OmniboxSuggestionsDropdown(mContext, null);
+        dropdown.forcePhoneStyleOmnibox(false);
+        assertFalse(dropdown.getClipToOutline());
+        assertNull(dropdown.getOutlineProvider());
     }
 }

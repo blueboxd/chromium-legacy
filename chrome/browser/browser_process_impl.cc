@@ -203,7 +203,6 @@
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/ui/apps/chrome_app_window_client.h"
-#include "chrome/common/controlled_frame/controlled_frame.h"
 #include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/common/initialize_extensions_client.h"
 #include "components/storage_monitor/storage_monitor.h"
@@ -320,8 +319,7 @@ void BrowserProcessImpl::Init() {
   extension_event_router_forwarder_ =
       base::MakeRefCounted<extensions::EventRouterForwarder>();
 
-  EnsureExtensionsClientInitialized(
-      controlled_frame::CreateAvailabilityCheckMap());
+  EnsureExtensionsClientInitialized();
 
   extensions_browser_client_ =
       std::make_unique<extensions::ChromeExtensionsBrowserClient>();
@@ -929,7 +927,7 @@ printing::PrintJobManager* BrowserProcessImpl::print_job_manager() {
 #if BUILDFLAG(ENABLE_PRINTING)
   return print_job_manager_.get();
 #else
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return nullptr;
 #endif
 }
@@ -1355,17 +1353,15 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   }
 
 #if BUILDFLAG(IS_WIN)
+  // The DPAPI key provider requires OSCrypt::Init to have already been called
+  // to initialize the key storage. This happens in
+  // ChromeBrowserMainPartsWin::PreCreateMainMessageLoop.
+  providers.emplace_back(std::make_pair(
+      /*precedence=*/10u,
+      std::make_unique<os_crypt_async::DPAPIKeyProvider>(local_state())));
+
   // TODO(crbug.com/40241934): For Windows, continue to add providers behind
   // features, as support for them is added.
-  if (base::FeatureList::IsEnabled(features::kEnableDPAPIEncryptionProvider)) {
-    // The DPAPI key provider requires OSCrypt::Init to have already been called
-    // to initialize the key storage. This happens in
-    // ChromeBrowserMainPartsWin::PreCreateMainMessageLoop.
-    providers.emplace_back(std::make_pair(
-        /*precedence=*/10u,
-        std::make_unique<os_crypt_async::DPAPIKeyProvider>(local_state())));
-  }
-
   if (base::FeatureList::IsEnabled(
           features::kRegisterAppBoundEncryptionProvider)) {
     // Support level is logged separately to metrics from

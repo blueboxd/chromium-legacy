@@ -87,6 +87,15 @@ namespace gpu {
 
 namespace {
 
+#if BUILDFLAG(IS_CHROMEOS)
+// Feature enabling ExternalVkImageBacking use on ChromeOS. Serves as reverse
+// killswitch while we roll out disabling of this backing on ChromeOS.
+// TODO(crbug.com/336837285): Remove post-safe rollout.
+BASE_FEATURE(kUseExternalVkImageBackingOnChromeOS,
+             "UseExternalVkImageBackingOnChromeOS",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
 #if BUILDFLAG(IS_WIN)
 // Only allow shmem overlays for NV12 on Windows.
 constexpr bool kAllowShmOverlays = true;
@@ -106,7 +115,7 @@ const char* GmbTypeToString(gfx::GpuMemoryBufferType type) {
     case gfx::ANDROID_HARDWARE_BUFFER:
       return "platform";
   }
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 #if defined(USE_OZONE)
@@ -169,22 +178,29 @@ bool WillGetGmbConfigFromGpu() {
 
 }  // namespace
 
-// Overrides for flat_set lookups:
-bool operator<(
+std::size_t
+SharedImageFactory::SharedImageRepresentationFactoryRefHash::operator()(
+    const std::unique_ptr<SharedImageRepresentationFactoryRef>& o) const {
+  return std::hash<gpu::Mailbox>{}(o->mailbox());
+}
+
+std::size_t
+SharedImageFactory::SharedImageRepresentationFactoryRefHash::operator()(
+    const gpu::Mailbox& m) const {
+  return std::hash<gpu::Mailbox>{}(m);
+}
+
+bool SharedImageFactory::SharedImageRepresentationFactoryRefKeyEqual::
+operator()(
     const std::unique_ptr<SharedImageRepresentationFactoryRef>& lhs,
-    const std::unique_ptr<SharedImageRepresentationFactoryRef>& rhs) {
-  return lhs->mailbox() < rhs->mailbox();
+    const std::unique_ptr<SharedImageRepresentationFactoryRef>& rhs) const {
+  return lhs->mailbox() == rhs->mailbox();
 }
 
-bool operator<(
-    const Mailbox& lhs,
-    const std::unique_ptr<SharedImageRepresentationFactoryRef>& rhs) {
-  return lhs < rhs->mailbox();
-}
-
-bool operator<(const std::unique_ptr<SharedImageRepresentationFactoryRef>& lhs,
-               const Mailbox& rhs) {
-  return lhs->mailbox() < rhs;
+bool SharedImageFactory::SharedImageRepresentationFactoryRefKeyEqual::
+operator()(const std::unique_ptr<SharedImageRepresentationFactoryRef>& lhs,
+           const gpu::Mailbox& rhs) const {
+  return lhs->mailbox() == rhs;
 }
 
 SharedImageFactory::SharedImageFactory(
@@ -223,12 +239,6 @@ SharedImageFactory::SharedImageFactory(
         auto supported_format = GetFormatPixmapSupport(supported_formats);
         base::UmaHistogramEnumeration("GPU.SharedImage.FormatPixmapSupport",
                                       supported_format);
-
-        // Check if hardware GMBs with RG88 format are ever created.
-        bool is_rg88_supported =
-            base::Contains(supported_formats, gfx::BufferFormat::RG_88);
-        base::UmaHistogramBoolean("GPU.SharedImage.IsRG88HardwareGMBSupported",
-                                  is_rg88_supported);
       }
     }
     set_format_supported_metric = true;
@@ -371,7 +381,11 @@ SharedImageFactory::SharedImageFactory(
     factories_.push_back(std::move(ozone_factory));
   }
 #if BUILDFLAG(ENABLE_VULKAN)
-  if (gr_context_type_ == GrContextType::kVulkan) {
+  if (gr_context_type_ == GrContextType::kVulkan
+#if BUILDFLAG(IS_CHROMEOS)
+      && base::FeatureList::IsEnabled(kUseExternalVkImageBackingOnChromeOS)
+#endif
+  ) {
     auto external_vk_image_factory =
         std::make_unique<ExternalVkImageBackingFactory>(context_state_);
     factories_.push_back(std::move(external_vk_image_factory));
@@ -610,13 +624,6 @@ bool SharedImageFactory::CreateSharedImage(
     // Use this for multi-planar and real single-planar formats. All legacy
     // multi-planar GMBs must go through CreateSharedImage() that takes
     // BufferPlane parameter.
-    LOG(ERROR) << "Invalid format " << format.ToString();
-    return false;
-  }
-
-  if (!viz::HasEquivalentBufferFormat(format)) {
-    // Client GMB code still operates on BufferFormat so the SharedImageFormat
-    // received here must have an equivalent BufferFormat.
     LOG(ERROR) << "Invalid format " << format.ToString();
     return false;
   }

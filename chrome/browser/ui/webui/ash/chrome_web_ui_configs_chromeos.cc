@@ -17,6 +17,7 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"         // nogncheck
 #include "chrome/browser/feedback/feedback_dialog_utils.h"  // nogncheck
 
+#include "ash/webui/boca_ui/boca_ui.h"
 #include "ash/webui/camera_app_ui/camera_app_ui.h"
 #include "ash/webui/color_internals/color_internals_ui.h"
 #include "ash/webui/connectivity_diagnostics/connectivity_diagnostics_ui.h"
@@ -32,6 +33,7 @@
 #include "ash/webui/personalization_app/personalization_app_ui.h"
 #include "ash/webui/print_management/print_management_ui.h"
 #include "ash/webui/print_preview_cros/print_preview_cros_ui.h"
+#include "ash/webui/sanitize_ui/sanitize_ui.h"
 #include "ash/webui/scanning/scanning_ui.h"
 #include "ash/webui/shimless_rma/shimless_rma.h"
 #include "ash/webui/shortcut_customization_ui/shortcut_customization_app_ui.h"
@@ -58,7 +60,7 @@
 #include "chrome/browser/ui/webui/ash/account_manager/account_migration_welcome_ui.h"
 #include "chrome/browser/ui/webui/ash/add_supervision/add_supervision_ui.h"
 #include "chrome/browser/ui/webui/ash/app_install/app_install_ui.h"
-#include "chrome/browser/ui/webui/ash/arc_graphics_tracing/arc_graphics_tracing_ui.h"
+#include "chrome/browser/ui/webui/ash/arc_overview_tracing/arc_overview_tracing_ui.h"
 #include "chrome/browser/ui/webui/ash/arc_power_control/arc_power_control_ui.h"
 #include "chrome/browser/ui/webui/ash/assistant_optin/assistant_optin_ui.h"
 #include "chrome/browser/ui/webui/ash/audio/audio_ui.h"
@@ -202,6 +204,15 @@ std::unique_ptr<content::WebUIConfig> MakeEcheAppUIConfig() {
   return std::make_unique<eche_app::EcheAppUIConfig>(create_controller_func);
 }
 
+std::unique_ptr<content::WebUIConfig> MakeSanitizeUIConfig() {
+  CreateWebUIControllerFunc create_controller_func = base::BindRepeating(
+      [](content::WebUI* web_ui,
+         const GURL& url) -> std::unique_ptr<content::WebUIController> {
+        return std::make_unique<SanitizeDialogUI>(web_ui);
+      });
+  return std::make_unique<SanitizeDialogUIConfig>(create_controller_func);
+}
+
 void RegisterAshChromeWebUIConfigs() {
   // Add `WebUIConfig`s for Ash ChromeOS to the list here.
   //
@@ -216,11 +227,12 @@ void RegisterAshChromeWebUIConfigs() {
   map.AddWebUIConfig(std::make_unique<AccountMigrationWelcomeUIConfig>());
   map.AddWebUIConfig(std::make_unique<AddSupervisionUIConfig>());
   map.AddWebUIConfig(std::make_unique<app_install::AppInstallDialogUIConfig>());
-  map.AddWebUIConfig(std::make_unique<ArcGraphicsTracingUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ArcOverviewTracingUIConfig>());
   map.AddWebUIConfig(std::make_unique<ArcPowerControlUIConfig>());
   map.AddWebUIConfig(std::make_unique<AssistantOptInUIConfig>());
   map.AddWebUIConfig(std::make_unique<AudioUIConfig>());
   map.AddWebUIConfig(std::make_unique<BluetoothPairingDialogUIConfig>());
+  map.AddWebUIConfig(std::make_unique<BocaUIConfig>());
   map.AddWebUIConfig(std::make_unique<BorealisInstallerUIConfig>());
   map.AddWebUIConfig(std::make_unique<CertificateManagerDialogUIConfig>());
   map.AddWebUIConfig(std::make_unique<cloud_upload::CloudUploadUIConfig>());
@@ -294,6 +306,7 @@ void RegisterAshChromeWebUIConfigs() {
       std::make_unique<printing::print_preview::PrintPreviewCrosUIConfig>());
   map.AddWebUIConfig(std::make_unique<multidevice::ProximityAuthUIConfig>());
   map.AddWebUIConfig(std::make_unique<RemoteMaintenanceCurtainUIConfig>());
+  map.AddWebUIConfig(MakeSanitizeUIConfig());
   map.AddWebUIConfig(
       MakeComponentConfigWithDelegate<ScanningUIConfig, ScanningUI,
                                       ChromeScanningAppDelegate>());

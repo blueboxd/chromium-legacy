@@ -308,11 +308,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'e0881f06f94a1bc31e0a5ecd4618090002f61c28',
+  'skia_revision': 'ca98796cc19e4ea0ecc32914f2967f003046a282',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '54fbb5fc84ec83a32b25e6746db942e0aaca02af',
+  'v8_revision': '7d50244cc4fdf617bf0a940830b92146c8afc711',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -359,7 +359,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '4ccdc9f98291fe40c2e32cc9914e327810d845ec',
+  'freetype_revision': '347276c1f6dcbc0eed3f0880b3695167a91c205d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -1004,7 +1004,7 @@ deps = {
 
   'src/clank': {
     'url': Var('chrome_git') + '/clank/internal/apps.git' + '@' +
-    'b34fd76317a01da56fc86d37882ca27fe55859ca',
+    '2cffdf40d0973f4fad8cbe455e916c46f1ec64f5',
     'condition': 'checkout_android and checkout_src_internal',
   },
 
@@ -1956,7 +1956,7 @@ deps = {
     Var('pdfium_git') + '/pdfium.git' + '@' +  Var('pdfium_revision'),
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '3ce5202ceef95d02a826c13c516a8485ef26237a',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '9ac50d25a24563cd24268c1a5c6561c8595b4647',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '8ef97ff3b7332e38e61b347a2fbed425a4617151',
@@ -2296,7 +2296,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': '6FwohtL9JxTjoHpDqhB1LFIzwbcPwzcwKsPQrs3kRBEC',
+        'version': '3S_vch9BVEqwxlGe0IC6rd6LBxn7XN9zQENaXTo-30QC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

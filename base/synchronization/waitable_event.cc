@@ -16,7 +16,6 @@
 
 namespace base {
 
-#if !BUILDFLAG(IS_MAC)
 WaitableEvent::~WaitableEvent() {
 #if BUILDFLAG(ENABLE_BASE_TRACING)
   // As requested in the documentation of perfetto::Flow::FromPointer, we should
@@ -37,7 +36,6 @@ WaitableEvent::~WaitableEvent() {
   }
 #endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 }
-#endif
 
 void WaitableEvent::Signal() {
   // Must be ordered before SignalImpl() to guarantee it's emitted before the
